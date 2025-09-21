@@ -19,7 +19,7 @@ interface ErrorProps {
 
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // Log l'erreur pour le monitoring
+    // Log l&apos;erreur pour le monitoring
     console.error("Application error:", error);
   }, [error]);
 
@@ -71,7 +71,7 @@ export default function Error({ error, reset }: ErrorProps) {
               <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20">
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-red-900 dark:text-red-100 mb-2">
-                    Détails de l'erreur (mode développement)
+                    Détails de l&apos;erreur (mode développement)
                   </h3>
                   <pre className="text-xs text-red-700 dark:text-red-300 overflow-auto bg-red-100 dark:bg-red-900/20 p-2 rounded">
                     {error.message}

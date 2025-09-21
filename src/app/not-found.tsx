@@ -53,7 +53,7 @@ export default function NotFound() {
               Oops ! Cette page semble avoir disparu
             </h1>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              La page que vous recherchez n'existe pas ou a été déplacée.
+              La page que vous recherchez n&apos;existe pas ou a été déplacée.
               Peut-être qu&apos;elle s&apos;est vendue sur CashTrade ? 😄
             </p>
           </motion.div>

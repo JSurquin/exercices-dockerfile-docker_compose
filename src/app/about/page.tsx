@@ -327,7 +327,7 @@ export default function AboutPage() {
           >
             <h2 className="text-3xl font-bold mb-4">Notre Histoire</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              De l'idée initiale aux perspectives d'avenir
+              De l&apos;idée initiale aux perspectives d&apos;avenir
             </p>
           </motion.div>
 

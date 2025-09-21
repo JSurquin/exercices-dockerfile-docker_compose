@@ -10,7 +10,7 @@ interface GlobalErrorProps {
 
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
   useEffect(() => {
-    // Log l'erreur globale pour le monitoring
+    // Log l&apos;erreur globale pour le monitoring
     console.error("Global error:", error);
   }, [error]);
 
@@ -39,7 +39,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             {/* Error Message */}
             <h1 className="text-2xl font-bold mb-4">Erreur critique</h1>
             <p className="text-muted-foreground mb-6">
-              Une erreur critique s&apos;est produite. L'application doit être
+              Une erreur critique s&apos;est produite. L&apos;application doit être
               rechargée.
             </p>
 
@@ -47,7 +47,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             {process.env.NODE_ENV === "development" && (
               <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
                 <h3 className="font-semibold text-red-900 dark:text-red-100 mb-2 text-sm">
-                  Détails de l'erreur :
+                  Détails de l&apos;erreur :
                 </h3>
                 <pre className="text-xs text-red-700 dark:text-red-300 overflow-auto">
                   {error.message}

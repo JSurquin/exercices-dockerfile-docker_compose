@@ -66,7 +66,7 @@ Délais de paiement :
 • SEPA : 24-48h ouvrées après trade hold
 • Crypto : Quelques heures après trade hold
 
-Tous les montants sont calculés en centimes pour éviter les erreurs d'arrondi.`,
+Tous les montants sont calculés en centimes pour éviter les erreurs d&apos;arrondi.`,
   },
   {
     id: "kyc",

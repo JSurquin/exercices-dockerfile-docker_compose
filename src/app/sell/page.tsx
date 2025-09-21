@@ -216,8 +216,8 @@ export default function SellPage() {
                       </p>
                       <ol className="list-decimal list-inside space-y-1 text-blue-700 dark:text-blue-300">
                         <li>Ouvrez Steam et allez dans votre inventaire</li>
-                        <li>Cliquez sur "Paramètres de confidentialité"</li>
-                        <li>Copiez l'URL du Trade Link</li>
+                        <li>Cliquez sur &quot;Paramètres de confidentialité&quot;</li>
+                        <li>Copiez l&apos;URL du Trade Link</li>
                       </ol>
                     </div>
                   </div>
@@ -363,7 +363,7 @@ export default function SellPage() {
                 <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-green-500" />
                 <h2 className="text-2xl font-bold mb-2">Trade créé avec succès !</h2>
                 <p className="text-muted-foreground mb-6">
-                  Votre trade a été créé et envoyé. Acceptez l'offre sur Steam pour continuer.
+                  Votre trade a été créé et envoyé. Acceptez l&apos;offre sur Steam pour continuer.
                 </p>
                 
                 <div className="bg-muted/50 rounded-lg p-4 mb-6">

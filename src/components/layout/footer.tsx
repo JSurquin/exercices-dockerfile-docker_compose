@@ -162,7 +162,7 @@ export function Footer() {
         {/* Disclaimer */}
         <div className="mt-8 p-4 bg-muted rounded-lg">
           <p className="text-xs text-muted-foreground">
-            <strong>Avertissement :</strong> CashTrade n'est pas affilié à Valve Corporation ou Steam. 
+            <strong>Avertissement :</strong> CashTrade n&apos;est pas affilié à Valve Corporation ou Steam. 
             Counter-Strike et Steam sont des marques déposées de Valve Corporation. 
             Le trading de skins comporte des risques et les prix peuvent fluctuer. 
             Veuillez trader de manière responsable et ne jamais investir plus que ce que vous pouvez vous permettre de perdre.
