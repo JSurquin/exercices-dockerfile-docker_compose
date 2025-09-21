@@ -10,15 +10,17 @@ export const generateCS2WeaponImage = (
 ): string => {
   const rarityColors = {
     "Consumer Grade": ["#b0c3d9", "#8fb1d3"],
-    "Industrial Grade": ["#5e98d9", "#4a7ba7"], 
+    "Industrial Grade": ["#5e98d9", "#4a7ba7"],
     "Mil-Spec": ["#4b69ff", "#3b52cc"],
-    "Restricted": ["#8847ff", "#6936cc"],
-    "Classified": ["#d32ce6", "#a623b8"],
-    "Covert": ["#eb4b4b", "#cc3333"],
-    "Extraordinary": ["#ffd700", "#e6c200"],
+    Restricted: ["#8847ff", "#6936cc"],
+    Classified: ["#d32ce6", "#a623b8"],
+    Covert: ["#eb4b4b", "#cc3333"],
+    Extraordinary: ["#ffd700", "#e6c200"],
   };
 
-  const [primaryColor, secondaryColor] = rarityColors[rarity as keyof typeof rarityColors] || rarityColors["Consumer Grade"];
+  const [primaryColor, secondaryColor] =
+    rarityColors[rarity as keyof typeof rarityColors] ||
+    rarityColors["Consumer Grade"];
 
   const svg = `
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
@@ -54,7 +56,9 @@ export const generateCS2WeaponImage = (
 
       <!-- Rarity border -->
       <rect x="0" y="0" width="100%" height="4" fill="url(#rarityGradient)"/>
-      <rect x="0" y="${height-4}" width="100%" height="4" fill="url(#rarityGradient)"/>
+      <rect x="0" y="${
+        height - 4
+      }" width="100%" height="4" fill="url(#rarityGradient)"/>
 
       <!-- Weapon silhouette (simplified) -->
       ${generateWeaponSilhouette(weapon, width, height, primaryColor)}
@@ -70,13 +74,13 @@ export const generateCS2WeaponImage = (
         <text x="20" y="50" font-size="12" fill="${primaryColor}">
           ${skin}
         </text>
-        <text x="20" y="${height-20}" font-size="10" fill="#aaaaaa">
+        <text x="20" y="${height - 20}" font-size="10" fill="#aaaaaa">
           ${rarity}
         </text>
       </g>
 
       <!-- Quality indicators -->
-      <g transform="translate(${width-60}, 20)">
+      <g transform="translate(${width - 60}, 20)">
         ${generateQualityStars(5, primaryColor)}
       </g>
     </svg>
@@ -85,40 +89,77 @@ export const generateCS2WeaponImage = (
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 };
 
-const generateWeaponSilhouette = (weapon: string, width: number, height: number, color: string): string => {
+const generateWeaponSilhouette = (
+  weapon: string,
+  width: number,
+  height: number,
+  color: string
+): string => {
   const centerY = height / 2;
   const weaponPaths = {
-    "AK-47": `<path d="M50 ${centerY-10} L${width-100} ${centerY-5} L${width-80} ${centerY+5} L60 ${centerY+10} Z" fill="${color}" opacity="0.6"/>`,
-    "AWP": `<path d="M30 ${centerY-5} L${width-50} ${centerY-8} L${width-40} ${centerY+8} L40 ${centerY+5} Z" fill="${color}" opacity="0.6"/>`,
-    "M4A4": `<path d="M40 ${centerY-8} L${width-90} ${centerY-6} L${width-70} ${centerY+6} L50 ${centerY+8} Z" fill="${color}" opacity="0.6"/>`,
-    "Karambit": `<path d="M${width/2-30} ${centerY-15} Q${width/2} ${centerY-25} ${width/2+30} ${centerY-15} Q${width/2+20} ${centerY} ${width/2} ${centerY+10} Q${width/2-20} ${centerY} ${width/2-30} ${centerY-15} Z" fill="${color}" opacity="0.7"/>`,
+    "AK-47": `<path d="M50 ${centerY - 10} L${width - 100} ${centerY - 5} L${
+      width - 80
+    } ${centerY + 5} L60 ${centerY + 10} Z" fill="${color}" opacity="0.6"/>`,
+    AWP: `<path d="M30 ${centerY - 5} L${width - 50} ${centerY - 8} L${
+      width - 40
+    } ${centerY + 8} L40 ${centerY + 5} Z" fill="${color}" opacity="0.6"/>`,
+    M4A4: `<path d="M40 ${centerY - 8} L${width - 90} ${centerY - 6} L${
+      width - 70
+    } ${centerY + 6} L50 ${centerY + 8} Z" fill="${color}" opacity="0.6"/>`,
+    Karambit: `<path d="M${width / 2 - 30} ${centerY - 15} Q${width / 2} ${
+      centerY - 25
+    } ${width / 2 + 30} ${centerY - 15} Q${width / 2 + 20} ${centerY} ${
+      width / 2
+    } ${centerY + 10} Q${width / 2 - 20} ${centerY} ${width / 2 - 30} ${
+      centerY - 15
+    } Z" fill="${color}" opacity="0.7"/>`,
   };
 
-  return weaponPaths[weapon as keyof typeof weaponPaths] || weaponPaths["AK-47"];
+  return (
+    weaponPaths[weapon as keyof typeof weaponPaths] || weaponPaths["AK-47"]
+  );
 };
 
-const generateSkinPattern = (skin: string, width: number, height: number): string => {
+const generateSkinPattern = (
+  skin: string,
+  width: number,
+  height: number
+): string => {
   const patterns = {
-    "Redline": `
+    Redline: `
       <g opacity="0.3">
-        ${Array.from({length: 5}, (_, i) => 
-          `<line x1="0" y1="${(i+1) * height/6}" x2="${width}" y2="${(i+1) * height/6}" stroke="#ff0000" stroke-width="2"/>`
-        ).join('')}
+        ${Array.from(
+          { length: 5 },
+          (_, i) =>
+            `<line x1="0" y1="${((i + 1) * height) / 6}" x2="${width}" y2="${
+              ((i + 1) * height) / 6
+            }" stroke="#ff0000" stroke-width="2"/>`
+        ).join("")}
       </g>
     `,
     "Dragon Lore": `
       <g opacity="0.4">
-        <path d="M${width*0.6} ${height*0.3} Q${width*0.8} ${height*0.5} ${width*0.7} ${height*0.7}" stroke="#ffd700" stroke-width="3" fill="none"/>
-        <circle cx="${width*0.75}" cy="${height*0.4}" r="8" fill="#ffd700" opacity="0.5"/>
+        <path d="M${width * 0.6} ${height * 0.3} Q${width * 0.8} ${
+      height * 0.5
+    } ${width * 0.7} ${
+      height * 0.7
+    }" stroke="#ffd700" stroke-width="3" fill="none"/>
+        <circle cx="${width * 0.75}" cy="${
+      height * 0.4
+    }" r="8" fill="#ffd700" opacity="0.5"/>
       </g>
     `,
-    "Howl": `
+    Howl: `
       <g opacity="0.4">
-        <circle cx="${width*0.7}" cy="${height*0.4}" r="20" fill="#ff4500" opacity="0.3"/>
-        <path d="M${width*0.65} ${height*0.35} L${width*0.75} ${height*0.45} L${width*0.65} ${height*0.45} Z" fill="#ff0000"/>
+        <circle cx="${width * 0.7}" cy="${
+      height * 0.4
+    }" r="20" fill="#ff4500" opacity="0.3"/>
+        <path d="M${width * 0.65} ${height * 0.35} L${width * 0.75} ${
+      height * 0.45
+    } L${width * 0.65} ${height * 0.45} Z" fill="#ff0000"/>
       </g>
     `,
-    "Fade": `
+    Fade: `
       <defs>
         <linearGradient id="fadeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" style="stop-color:#ff00ff;stop-opacity:0.3" />
@@ -130,13 +171,17 @@ const generateSkinPattern = (skin: string, width: number, height: number): strin
     `,
   };
 
-  return patterns[skin as keyof typeof patterns] || '';
+  return patterns[skin as keyof typeof patterns] || "";
 };
 
 const generateQualityStars = (quality: number, color: string): string => {
-  return Array.from({length: 5}, (_, i) => 
-    `<text x="${i * 10}" y="15" font-size="12" fill="${i < quality ? color : '#333333'}">★</text>`
-  ).join('');
+  return Array.from(
+    { length: 5 },
+    (_, i) =>
+      `<text x="${i * 10}" y="15" font-size="12" fill="${
+        i < quality ? color : "#333333"
+      }">★</text>`
+  ).join("");
 };
 
 export const generateCS2BackgroundImage = (
@@ -162,19 +207,25 @@ export const generateCS2BackgroundImage = (
         <rect width="100%" height="100%" fill="url(#hexPattern)"/>
         
         <!-- CS2 Logo silhouette -->
-        <g transform="translate(${width*0.1}, ${height*0.1})" opacity="0.05">
+        <g transform="translate(${width * 0.1}, ${
+      height * 0.1
+    })" opacity="0.05">
           <circle cx="50" cy="50" r="40" fill="#ff6b35"/>
           <text x="50" y="58" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold" fill="#ffffff">CS2</text>
         </g>
         
         <!-- Geometric elements -->
         <g opacity="0.1">
-          <line x1="0" y1="${height*0.3}" x2="${width}" y2="${height*0.3}" stroke="#ff6b35" stroke-width="1"/>
-          <line x1="${width*0.7}" y1="0" x2="${width*0.7}" y2="${height}" stroke="#ff6b35" stroke-width="1"/>
+          <line x1="0" y1="${height * 0.3}" x2="${width}" y2="${
+      height * 0.3
+    }" stroke="#ff6b35" stroke-width="1"/>
+          <line x1="${width * 0.7}" y1="0" x2="${
+      width * 0.7
+    }" y2="${height}" stroke="#ff6b35" stroke-width="1"/>
         </g>
       </svg>
     `,
-    
+
     trading_bg: `
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -192,7 +243,7 @@ export const generateCS2BackgroundImage = (
         <rect width="100%" height="100%" fill="url(#gridPattern)"/>
         
         <!-- Trading icons -->
-        <g transform="translate(${width*0.8}, ${height*0.2})" opacity="0.1">
+        <g transform="translate(${width * 0.8}, ${height * 0.2})" opacity="0.1">
           <circle cx="0" cy="0" r="30" fill="#00ff88"/>
           <text x="0" y="8" text-anchor="middle" font-family="Arial" font-size="24" fill="#ffffff">$</text>
         </g>
@@ -200,7 +251,8 @@ export const generateCS2BackgroundImage = (
     `,
   };
 
-  const bgSvg = backgrounds[variant as keyof typeof backgrounds] || backgrounds.cs2_main;
+  const bgSvg =
+    backgrounds[variant as keyof typeof backgrounds] || backgrounds.cs2_main;
   return `data:image/svg+xml,${encodeURIComponent(bgSvg)}`;
 };
 
@@ -212,16 +264,16 @@ export const createOptimizedImageUrl = (
   quality: number = 80
 ): string => {
   // Si c'est déjà un data URL ou une URL externe, retourner tel quel
-  if (imagePath.startsWith('data:') || imagePath.startsWith('http')) {
+  if (imagePath.startsWith("data:") || imagePath.startsWith("http")) {
     return imagePath;
   }
 
   // Pour les vraies images, on peut ajouter des paramètres d'optimisation
   const params = new URLSearchParams();
-  if (width) params.set('w', width.toString());
-  if (height) params.set('h', height.toString());
-  params.set('q', quality.toString());
-  params.set('f', 'webp');
+  if (width) params.set("w", width.toString());
+  if (height) params.set("h", height.toString());
+  params.set("q", quality.toString());
+  params.set("f", "webp");
 
   return `${imagePath}?${params.toString()}`;
 };
@@ -234,7 +286,7 @@ export const defaultCS2Images = {
     m4a4_howl: generateCS2WeaponImage("M4A4", "Howl", "Extraordinary"),
     karambit_fade: generateCS2WeaponImage("Karambit", "Fade", "Extraordinary"),
   },
-  
+
   backgrounds: {
     cs2_main: generateCS2BackgroundImage("cs2_main"),
     trading_bg: generateCS2BackgroundImage("trading_bg"),

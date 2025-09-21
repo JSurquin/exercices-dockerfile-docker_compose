@@ -133,7 +133,9 @@ export default function SellPage() {
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
             <ShieldCheckIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">{messages.trade.loginRequired}</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              {messages.trade.loginRequired}
+            </h2>
             <p className="text-muted-foreground mb-6">
               {messages.trade.loginSubtitle}
             </p>
@@ -159,9 +161,7 @@ export default function SellPage() {
           <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
             {messages.trade.title}
           </h1>
-          <p className="text-muted-foreground">
-            {messages.trade.subtitle}
-          </p>
+          <p className="text-muted-foreground">{messages.trade.subtitle}</p>
         </motion.div>
 
         {/* Progress Stepper */}

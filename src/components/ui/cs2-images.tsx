@@ -18,7 +18,7 @@ interface CS2ImageProps {
 const generatePlaceholder = (type: string, rarity?: string) => {
   const colors = {
     weapon: "#1a1a2e",
-    map: "#16213e", 
+    map: "#16213e",
     background: "#0f172a",
     skin: getRarityColor(rarity || "Consumer Grade"),
   };
@@ -60,12 +60,12 @@ const generatePlaceholder = (type: string, rarity?: string) => {
 function getRarityColor(rarity: string): string {
   const colors = {
     "Consumer Grade": "#b0c3d9",
-    "Industrial Grade": "#5e98d9", 
+    "Industrial Grade": "#5e98d9",
     "Mil-Spec": "#4b69ff",
-    "Restricted": "#8847ff",
-    "Classified": "#d32ce6",
-    "Covert": "#eb4b4b",
-    "Extraordinary": "#ffd700",
+    Restricted: "#8847ff",
+    Classified: "#d32ce6",
+    Covert: "#eb4b4b",
+    Extraordinary: "#ffd700",
   };
   return colors[rarity as keyof typeof colors] || colors["Consumer Grade"];
 }
@@ -81,7 +81,7 @@ export const CS2Image: React.FC<CS2ImageProps> = ({
   priority = false,
 }) => {
   const placeholderSrc = generatePlaceholder(placeholder, rarity);
-  
+
   return (
     <div className={cn("relative overflow-hidden", className)}>
       <Image
@@ -94,9 +94,9 @@ export const CS2Image: React.FC<CS2ImageProps> = ({
         placeholder="blur"
         blurDataURL={placeholderSrc}
       />
-      
+
       {rarity && (
-        <div 
+        <div
           className="absolute top-2 right-2 w-3 h-3 rounded-full border-2 border-white shadow-lg"
           style={{ backgroundColor: getRarityColor(rarity) }}
         />
@@ -120,7 +120,7 @@ export const CS2Images = {
   // Cartes emblématiques
   maps: {
     dust2: "/images/cs2/maps/dust2.jpg",
-    mirage: "/images/cs2/maps/mirage.jpg", 
+    mirage: "/images/cs2/maps/mirage.jpg",
     inferno: "/images/cs2/maps/inferno.jpg",
     cache: "/images/cs2/maps/cache.jpg",
     nuke: "/images/cs2/maps/nuke.jpg",
@@ -158,13 +158,16 @@ export const CS2WeaponImage: React.FC<{
     lg: { width: 300, height: 200 },
   };
 
-  const weaponKey = `${weapon.toLowerCase().replace(/\s+/g, '_')}_${skin?.toLowerCase().replace(/\s+/g, '_')}`;
-  const imageSrc = CS2Images.weapons[weaponKey as keyof typeof CS2Images.weapons];
+  const weaponKey = `${weapon.toLowerCase().replace(/\s+/g, "_")}_${skin
+    ?.toLowerCase()
+    .replace(/\s+/g, "_")}`;
+  const imageSrc =
+    CS2Images.weapons[weaponKey as keyof typeof CS2Images.weapons];
 
   return (
     <CS2Image
       src={imageSrc}
-      alt={`${weapon} ${skin ? `| ${skin}` : ''}`}
+      alt={`${weapon} ${skin ? `| ${skin}` : ""}`}
       width={sizes[size].width}
       height={sizes[size].height}
       className={cn("rounded-lg border shadow-lg", className)}
@@ -192,16 +195,12 @@ export const CS2BackgroundImage: React.FC<{
         placeholder="background"
         priority={variant === "cs2_main"}
       />
-      
+
       {overlay && (
         <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]" />
       )}
-      
-      {children && (
-        <div className="relative z-10">
-          {children}
-        </div>
-      )}
+
+      {children && <div className="relative z-10">{children}</div>}
     </div>
   );
 };

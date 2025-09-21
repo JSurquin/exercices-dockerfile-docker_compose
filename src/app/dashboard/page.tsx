@@ -76,7 +76,9 @@ export default function DashboardPage() {
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
             <ChartBarIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">{messages.dashboard.loginRequired}</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              {messages.dashboard.loginRequired}
+            </h2>
             <p className="text-muted-foreground mb-6">
               {messages.dashboard.loginSubtitle}
             </p>
@@ -115,12 +117,12 @@ export default function DashboardPage() {
               </AvatarFallback>
             </Avatar>
             <div>
-               <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold">
-                 {messages.dashboard.welcome}, {user.username}
-               </h1>
-               <p className="text-muted-foreground">
-                 {messages.dashboard.subtitle}
-               </p>
+              <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold">
+                {messages.dashboard.welcome}, {user.username}
+              </h1>
+              <p className="text-muted-foreground">
+                {messages.dashboard.subtitle}
+              </p>
             </div>
           </div>
 
