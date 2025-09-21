@@ -88,16 +88,16 @@ const rights = [
 
 export default function PrivacyPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-12"
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
+          <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             <ShieldCheckIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
             Politique de confidentialité
           </h1>
@@ -119,10 +119,10 @@ export default function PrivacyPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-12"
+          className="mb-8 sm:mb-12"
         >
           <Card>
-            <CardContent className="p-8">
+            <CardContent className="p-6 sm:p-8">
               <h2 className="text-2xl font-semibold mb-4">Notre engagement</h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
                 Chez CashTrade, la protection de vos données personnelles est
@@ -145,12 +145,12 @@ export default function PrivacyPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mb-12"
+          className="mb-8 sm:mb-12"
         >
           <h2 className="text-2xl font-semibold mb-6">
             Types de données collectées
           </h2>
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
             {dataTypes.map((type, index) => (
               <Card key={index} className="h-full">
                 <CardHeader>
@@ -159,7 +159,7 @@ export default function PrivacyPage() {
                     <span>{type.category}</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 sm:space-y-4">
                   <div>
                     <h4 className="font-medium mb-2">Données collectées :</h4>
                     <ul className="text-sm text-muted-foreground space-y-1">
@@ -191,14 +191,14 @@ export default function PrivacyPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mb-12"
+          className="mb-8 sm:mb-12"
         >
           <Card>
             <CardHeader>
               <CardTitle>Base légale du traitement</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-3 gap-6">
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 <div className="text-center p-4 border rounded-lg">
                   <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <DocumentTextIcon className="w-6 h-6 text-blue-600" />
@@ -236,14 +236,14 @@ export default function PrivacyPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mb-12"
+          className="mb-8 sm:mb-12"
         >
           <h2 className="text-2xl font-semibold mb-6">Vos droits RGPD</h2>
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
             {rights.map((right, index) => (
               <Card key={index}>
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-start space-x-3 sm:space-x-4">
                     <right.icon className="w-6 h-6 text-orange-600 flex-shrink-0 mt-1" />
                     <div className="flex-1">
                       <h3 className="font-semibold mb-2">{right.title}</h3>
@@ -266,7 +266,7 @@ export default function PrivacyPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="mb-12"
+          className="mb-8 sm:mb-12"
         >
           <Card>
             <CardHeader>
@@ -275,7 +275,7 @@ export default function PrivacyPage() {
                 <span>Sécurité des données</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 sm:space-y-4">
               <p className="text-muted-foreground leading-relaxed">
                 Nous mettons en œuvre des mesures de sécurité strictes pour
                 protéger vos données :
@@ -309,18 +309,18 @@ export default function PrivacyPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="mb-12"
+          className="mb-8 sm:mb-12"
         >
           <Card>
             <CardHeader>
               <CardTitle>Partage des données</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 sm:space-y-4">
               <p className="text-muted-foreground">
                 Nous ne vendons jamais vos données personnelles. Nous pouvons
                 les partager uniquement dans les cas suivants :
               </p>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="border-l-4 border-orange-500 pl-4">
                   <h4 className="font-medium">Prestataires de services</h4>
                   <p className="text-sm text-muted-foreground">

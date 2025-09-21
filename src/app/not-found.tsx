@@ -63,7 +63,7 @@ export default function NotFound() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="space-y-4"
+            className="space-y-3 sm:space-y-4"
           >
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -83,7 +83,7 @@ export default function NotFound() {
 
             {/* Quick Links */}
             <Card className="mt-8">
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <h3 className="font-semibold mb-4 flex items-center justify-center">
                   <MagnifyingGlassIcon className="w-5 h-5 mr-2" />
                   Liens utiles

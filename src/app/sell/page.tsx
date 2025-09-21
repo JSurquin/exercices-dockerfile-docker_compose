@@ -129,9 +129,9 @@ export default function SellPage() {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
-          <CardContent className="p-8">
+          <CardContent className="p-6 sm:p-8">
             <ShieldCheckIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
             <h2 className="text-xl font-semibold mb-2">Connexion requise</h2>
             <p className="text-muted-foreground mb-6">
@@ -147,16 +147,16 @@ export default function SellPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-8"
+          className="text-center mb-6 sm:mb-6 sm:mb-8"
         >
-          <h1 className="text-3xl font-bold mb-2">{messages.trade.title}</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">{messages.trade.title}</h1>
           <p className="text-muted-foreground">
             Vendez vos skins CS2 en quelques étapes simples
           </p>
@@ -167,7 +167,7 @@ export default function SellPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
           <div className="flex items-center justify-between mb-4">
             {steps.map((step, index) => (
@@ -227,7 +227,7 @@ export default function SellPage() {
                   <span>Lien de Trade Steam</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6">
                 <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <div className="flex items-start space-x-3">
                     <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
@@ -300,7 +300,7 @@ export default function SellPage() {
                       {items.map((item) => (
                         <div
                           key={item.id}
-                          className="flex items-center space-x-4 p-3 border rounded-lg"
+                          className="flex items-center space-x-3 sm:space-x-4 p-3 border rounded-lg"
                         >
                           <img
                             src={item.iconUrl}
@@ -358,7 +358,7 @@ export default function SellPage() {
                       <span>Estimation</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3 sm:space-y-4">
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span>Total brut</span>

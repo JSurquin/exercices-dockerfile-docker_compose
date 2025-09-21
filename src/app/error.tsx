@@ -91,7 +91,7 @@ export default function Error({ error, reset }: ErrorProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
-            className="space-y-4"
+            className="space-y-3 sm:space-y-4"
           >
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -117,7 +117,7 @@ export default function Error({ error, reset }: ErrorProps) {
 
             {/* Quick Tips */}
             <Card className="mt-8">
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <h3 className="font-semibold mb-4">Quelques suggestions :</h3>
                 <ul className="text-sm text-muted-foreground space-y-2 text-left">
                   <li>• Actualisez la page (F5 ou Ctrl+R)</li>

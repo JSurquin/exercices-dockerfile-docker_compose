@@ -70,8 +70,8 @@ const benefits = [
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-24 bg-muted/30">
-      <div className="container mx-auto px-4">
+    <section id="how-it-works" className="py-16 sm:py-20 lg:py-24 bg-muted/30">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -80,16 +80,16 @@ export function HowItWorks() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             Comment ça marche ?
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Un processus simple et sécurisé pour vendre vos skins CS2 en quelques étapes
           </p>
         </motion.div>
 
         {/* Steps */}
-        <div className="grid lg:grid-cols-5 gap-8 mb-16">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-8 mb-12 lg:mb-16">
           {steps.map((step, index) => (
             <motion.div
               key={step.step}

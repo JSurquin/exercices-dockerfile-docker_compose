@@ -55,9 +55,9 @@ export default function DashboardPage() {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
-          <CardContent className="p-8">
+          <CardContent className="p-6 sm:p-8">
             <ChartBarIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
             <h2 className="text-xl font-semibold mb-2">Connexion requise</h2>
             <p className="text-muted-foreground mb-6">
@@ -79,29 +79,29 @@ export default function DashboardPage() {
   const xpProgress = ((user.xp - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel)) * 100;
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
-          <div className="flex items-center space-x-4 mb-6">
+          <div className="flex items-center space-x-3 sm:space-x-4 mb-6">
             <Avatar className="w-16 h-16">
               <AvatarImage src={user.avatar} alt={user.username} />
               <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-3xl font-bold">Bienvenue, {user.username}</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold">Bienvenue, {user.username}</h1>
               <p className="text-muted-foreground">Voici un aperçu de votre activité</p>
             </div>
           </div>
 
           {/* XP Progress */}
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <TrophyIcon className="w-6 h-6 text-yellow-500" />
@@ -129,10 +129,10 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 sm:mb-8"
         >
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Volume total</p>
@@ -146,7 +146,7 @@ export default function DashboardPage() {
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Trades</p>
@@ -160,7 +160,7 @@ export default function DashboardPage() {
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Niveau</p>
@@ -172,7 +172,7 @@ export default function DashboardPage() {
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Tickets</p>
@@ -190,7 +190,7 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <Tabs defaultValue="trades" className="space-y-6">
+          <Tabs defaultValue="trades" className="space-y-4 sm:space-y-6">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="trades">Mes Trades</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -199,13 +199,13 @@ export default function DashboardPage() {
             </TabsList>
 
             {/* Trades Tab */}
-            <TabsContent value="trades" className="space-y-6">
+            <TabsContent value="trades" className="space-y-4 sm:space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Historique des trades</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {mockTrades.map((trade) => (
                       <div key={trade.id} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
@@ -260,7 +260,7 @@ export default function DashboardPage() {
             </TabsContent>
 
             {/* Analytics Tab */}
-            <TabsContent value="analytics" className="space-y-6">
+            <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
               <div className="grid lg:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
@@ -314,7 +314,7 @@ export default function DashboardPage() {
             </TabsContent>
 
             {/* Payments Tab */}
-            <TabsContent value="payments" className="space-y-6">
+            <TabsContent value="payments" className="space-y-4 sm:space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
@@ -323,7 +323,7 @@ export default function DashboardPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="border rounded-lg p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
@@ -370,14 +370,14 @@ export default function DashboardPage() {
             </TabsContent>
 
             {/* Settings Tab */}
-            <TabsContent value="settings" className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
+            <TabsContent value="settings" className="space-y-4 sm:space-y-6">
+              <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
                 <Card>
                   <CardHeader>
                     <CardTitle>Profil</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center space-x-4">
+                  <CardContent className="space-y-3 sm:space-y-4">
+                    <div className="flex items-center space-x-3 sm:space-x-4">
                       <Avatar className="w-16 h-16">
                         <AvatarImage src={user.avatar} alt={user.username} />
                         <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
@@ -397,7 +397,7 @@ export default function DashboardPage() {
                   <CardHeader>
                     <CardTitle>Sécurité</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3 sm:space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">Authentification 2FA</p>

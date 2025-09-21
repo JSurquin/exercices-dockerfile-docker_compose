@@ -131,9 +131,9 @@ export default function KYCPage() {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
-          <CardContent className="p-8">
+          <CardContent className="p-6 sm:p-8">
             <ShieldCheckIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
             <h2 className="text-xl font-semibold mb-2">Connexion requise</h2>
             <p className="text-muted-foreground mb-6">
@@ -151,9 +151,9 @@ export default function KYCPage() {
   // Si KYC déjà vérifié
   if (user.kycStatus === 'verified') {
     return (
-      <div className="container mx-auto px-4 py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
-          <CardContent className="p-8">
+          <CardContent className="p-6 sm:p-8">
             <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-green-500" />
             <h2 className="text-xl font-semibold mb-2">KYC Vérifié</h2>
             <p className="text-muted-foreground mb-6">
@@ -171,9 +171,9 @@ export default function KYCPage() {
   // Si KYC en cours
   if (user.kycStatus === 'in_progress') {
     return (
-      <div className="container mx-auto px-4 py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
-          <CardContent className="p-8">
+          <CardContent className="p-6 sm:p-8">
             <ClockIcon className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
             <h2 className="text-xl font-semibold mb-2">KYC en cours de vérification</h2>
             <p className="text-muted-foreground mb-6">
@@ -191,9 +191,9 @@ export default function KYCPage() {
   // Si KYC rejeté
   if (user.kycStatus === 'rejected') {
     return (
-      <div className="container mx-auto px-4 py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
-          <CardContent className="p-8">
+          <CardContent className="p-6 sm:p-8">
             <XCircleIcon className="w-16 h-16 mx-auto mb-4 text-red-500" />
             <h2 className="text-xl font-semibold mb-2">KYC Rejeté</h2>
             <p className="text-muted-foreground mb-6">
@@ -209,16 +209,16 @@ export default function KYCPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-8"
+          className="text-center mb-6 sm:mb-8"
         >
-          <h1 className="text-3xl font-bold mb-2">Vérification KYC</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Vérification KYC</h1>
           <p className="text-muted-foreground">
             Vérifiez votre identité pour accéder aux paiements sécurisés
           </p>
@@ -229,7 +229,7 @@ export default function KYCPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
           <div className="flex items-center justify-between mb-4">
             {steps.map((step, index) => (
@@ -281,10 +281,10 @@ export default function KYCPage() {
               <span>{steps.find(s => s.id === currentStep)?.title}</span>
             </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               {/* Info Step */}
               {currentStep === 'info' && (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                     <div className="flex items-start space-x-3">
                       <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
@@ -344,7 +344,7 @@ export default function KYCPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <h3 className="font-semibold">Adresse</h3>
                     <div className="space-y-2">
                       <Label htmlFor="address">Adresse complète</Label>
@@ -395,7 +395,7 @@ export default function KYCPage() {
 
               {/* Documents Step */}
               {currentStep === 'documents' && (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="space-y-2">
                     <Label>Type de document *</Label>
                     <Select value={documentType} onValueChange={(value) => setDocumentType(value as DocumentType)}>
@@ -456,7 +456,7 @@ export default function KYCPage() {
 
               {/* Selfie Step */}
               {currentStep === 'selfie' && (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
                     <CameraIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                     <h4 className="font-semibold mb-2">Selfie de vérification</h4>
@@ -504,7 +504,7 @@ export default function KYCPage() {
 
               {/* Address Step */}
               {currentStep === 'address' && (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                     <div className="flex items-start space-x-3">
                       <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
@@ -552,7 +552,7 @@ export default function KYCPage() {
 
               {/* Review Step */}
               {currentStep === 'review' && (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                     <div className="flex items-start space-x-3">
                       <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -567,7 +567,7 @@ export default function KYCPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <h3 className="font-semibold">Informations personnelles</h3>
                     <div className="grid md:grid-cols-2 gap-4 text-sm">
                       <div>
@@ -589,7 +589,7 @@ export default function KYCPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <h3 className="font-semibold">Documents téléchargés</h3>
                     <div className="space-y-2">
                       {uploadedFiles.identity && (

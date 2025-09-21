@@ -206,16 +206,16 @@ export default function StatusPage() {
     services.length;
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-12"
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
+          <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             Statut des services CashTrade
           </h1>
           <p className="text-xl text-muted-foreground mb-6">
@@ -229,7 +229,7 @@ export default function StatusPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <Card className="max-w-md mx-auto">
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-center space-x-3">
                   {getStatusIcon(overallStatus)}
                   <div>
@@ -252,11 +252,11 @@ export default function StatusPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="grid md:grid-cols-3 gap-6 mb-12"
+          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8 sm:mb-12"
         >
           <Card>
             <CardContent className="p-6 text-center">
-              <p className="text-3xl font-bold text-green-600">
+              <p className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold text-green-600">
                 {averageUptime.toFixed(2)}%
               </p>
               <p className="text-sm text-muted-foreground">
@@ -266,7 +266,7 @@ export default function StatusPage() {
           </Card>
           <Card>
             <CardContent className="p-6 text-center">
-              <p className="text-3xl font-bold text-blue-600">
+              <p className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600">
                 {services.filter((s) => s.status === "operational").length}/
                 {services.length}
               </p>
@@ -277,7 +277,7 @@ export default function StatusPage() {
           </Card>
           <Card>
             <CardContent className="p-6 text-center">
-              <p className="text-3xl font-bold text-orange-600">
+              <p className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold text-orange-600">
                 {incidents.filter((i) => i.status !== "resolved").length}
               </p>
               <p className="text-sm text-muted-foreground">Incidents actifs</p>
@@ -290,10 +290,10 @@ export default function StatusPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mb-12"
+          className="mb-8 sm:mb-12"
         >
           <h2 className="text-2xl font-semibold mb-6">Services</h2>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {services.map((service, index) => (
               <motion.div
                 key={service.name}
@@ -302,9 +302,9 @@ export default function StatusPage() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
                 <Card>
-                  <CardContent className="p-6">
+                  <CardContent className="p-4 sm:p-6">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-3 sm:space-x-4">
                         <service.icon className="w-8 h-8 text-muted-foreground" />
                         <div>
                           <h3 className="font-semibold">{service.name}</h3>
@@ -351,10 +351,10 @@ export default function StatusPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="mb-12"
+            className="mb-8 sm:mb-12"
           >
             <h2 className="text-2xl font-semibold mb-6">Incidents récents</h2>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {incidents.map((incident, index) => (
                 <motion.div
                   key={incident.id}
@@ -450,7 +450,7 @@ export default function StatusPage() {
           className="text-center"
         >
           <Card className="bg-muted/50">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <p className="text-sm text-muted-foreground mb-2">
                 Cette page est mise à jour automatiquement toutes les 30
                 secondes

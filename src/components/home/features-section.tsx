@@ -137,7 +137,7 @@ export function FeaturesSection() {
               viewport={{ once: true }}
             >
               <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-6">
                   {/* Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">

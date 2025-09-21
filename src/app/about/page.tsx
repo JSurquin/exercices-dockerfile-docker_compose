@@ -141,7 +141,7 @@ export default function AboutPage() {
                 CashTrade
               </span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-8">
+            <p className="text-xl text-muted-foreground mb-6 sm:mb-8">
               Nous révolutionnons la façon dont les joueurs de Counter-Strike 2
               transforment leurs skins en argent réel. Une plateforme sécurisée,
               transparente et innovante créée par des passionnés pour des
@@ -178,7 +178,7 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="max-w-4xl mx-auto"
           >
-            <h2 className="text-3xl font-bold text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-6 sm:mb-8">
               Notre Mission
             </h2>
             <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -220,9 +220,9 @@ export default function AboutPage() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-8 sm:mb-12"
           >
-            <h2 className="text-3xl font-bold mb-4">Nos Valeurs</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">Nos Valeurs</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Les principes qui guident chacune de nos décisions et innovations
             </p>
@@ -238,7 +238,7 @@ export default function AboutPage() {
                 viewport={{ once: true }}
               >
                 <Card className="h-full text-center hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
+                  <CardContent className="p-4 sm:p-6">
                     <value.icon className="w-12 h-12 mx-auto mb-4 text-orange-600" />
                     <h3 className="font-semibold mb-3">{value.title}</h3>
                     <p className="text-sm text-muted-foreground">
@@ -260,9 +260,9 @@ export default function AboutPage() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-8 sm:mb-12"
           >
-            <h2 className="text-3xl font-bold mb-4">Notre Équipe</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">Notre Équipe</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Des experts passionnés qui travaillent chaque jour pour améliorer
               votre expérience
@@ -279,7 +279,7 @@ export default function AboutPage() {
                 viewport={{ once: true }}
               >
                 <Card className="text-center hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
+                  <CardContent className="p-4 sm:p-6">
                     <Avatar className="w-20 h-20 mx-auto mb-4">
                       <AvatarImage src={member.avatar} alt={member.name} />
                       <AvatarFallback>
@@ -323,9 +323,9 @@ export default function AboutPage() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-8 sm:mb-12"
           >
-            <h2 className="text-3xl font-bold mb-4">Notre Histoire</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">Notre Histoire</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               De l&apos;idée initiale aux perspectives d&apos;avenir
             </p>
@@ -343,7 +343,7 @@ export default function AboutPage() {
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className={`relative flex items-center mb-8 ${
+                  className={`relative flex items-center mb-6 sm:mb-8 ${
                     index % 2 === 0 ? "md:justify-start" : "md:justify-end"
                   }`}
                 >
@@ -359,7 +359,7 @@ export default function AboutPage() {
                     }`}
                   >
                     <Card>
-                      <CardContent className="p-6">
+                      <CardContent className="p-4 sm:p-6">
                         <Badge variant="secondary" className="mb-2">
                           {item.year}
                         </Badge>
@@ -388,10 +388,10 @@ export default function AboutPage() {
             className="text-center"
           >
             <div className="bg-gradient-to-r from-orange-500/10 to-red-600/10 rounded-2xl p-12 border">
-              <h2 className="text-3xl font-bold mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
                 Rejoignez l&apos;aventure CashTrade
               </h2>
-              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              <p className="text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto">
                 Faites partie de la révolution du trading de skins CS2. Une
                 communauté de plus de 15,000 traders vous attend.
               </p>

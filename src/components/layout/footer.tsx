@@ -33,8 +33,8 @@ export function Footer() {
 
   return (
     <footer className="bg-muted/50 border-t">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-8">
           {/* Logo & Description */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center space-x-2 mb-4">
@@ -47,7 +47,7 @@ export function Footer() {
               La plateforme la plus rapide et sécurisée pour convertir vos skins CS2 en argent réel. 
               Vendez vos skins en toute confiance avec notre système de paiement sécurisé.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-3 sm:space-x-4">
               <div className="text-sm text-muted-foreground">
                 <p className="font-medium">Sécurisé par :</p>
                 <div className="flex items-center space-x-2 mt-1">

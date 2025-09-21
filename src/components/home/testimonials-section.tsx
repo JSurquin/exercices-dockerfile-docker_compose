@@ -115,7 +115,7 @@ export function TestimonialsSection() {
           </p>
           
           {/* Rating Summary */}
-          <div className="flex items-center justify-center space-x-4 mt-8">
+          <div className="flex items-center justify-center space-x-3 sm:space-x-4 mt-8">
             <div className="flex items-center space-x-2">
               <RatingStars rating={5} />
               <span className="text-2xl font-bold">4.9</span>
@@ -139,7 +139,7 @@ export function TestimonialsSection() {
               viewport={{ once: true }}
             >
               <Card className="h-full hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-6">
                   {/* Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">

@@ -161,16 +161,16 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-12"
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
+          <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             <QuestionMarkCircleIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
             Centre d'aide
           </h1>
@@ -184,7 +184,7 @@ export default function SupportPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12"
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 sm:mb-12"
         >
           {supportStats.map((stat, index) => (
             <Card key={index}>
@@ -264,7 +264,7 @@ export default function SupportPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="space-y-6"
+              className="space-y-4 sm:space-y-6"
             >
               {/* Quick Actions */}
               <Card>
@@ -300,7 +300,7 @@ export default function SupportPage() {
                   <CardTitle>Contacter le support</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleSubmitTicket} className="space-y-4">
+                  <form onSubmit={handleSubmitTicket} className="space-y-3 sm:space-y-4">
                     {user && (
                       <div className="bg-muted/50 rounded-lg p-3">
                         <div className="flex items-center space-x-2 text-sm">
@@ -402,7 +402,7 @@ export default function SupportPage() {
                 <CardHeader>
                   <CardTitle>Autres moyens de contact</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 sm:space-y-4">
                   <div className="space-y-3">
                     <div>
                       <h4 className="font-medium">Discord Community</h4>

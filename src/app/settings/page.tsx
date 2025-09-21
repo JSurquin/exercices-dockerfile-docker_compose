@@ -53,9 +53,9 @@ export default function SettingsPage() {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
-          <CardContent className="p-8">
+          <CardContent className="p-6 sm:p-8">
             <UserCircleIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
             <h2 className="text-xl font-semibold mb-2">Connexion requise</h2>
             <p className="text-muted-foreground mb-6">
@@ -71,16 +71,16 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
-          <h1 className="text-3xl font-bold mb-2">Paramètres</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Paramètres</h1>
           <p className="text-muted-foreground">
             Gérez vos préférences et paramètres de compte
           </p>
@@ -92,7 +92,7 @@ export default function SettingsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <Tabs defaultValue="profile" className="space-y-6">
+          <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="profile">Profil</TabsTrigger>
               <TabsTrigger value="security">Sécurité</TabsTrigger>
@@ -110,7 +110,7 @@ export default function SettingsPage() {
                     <span>Informations du profil</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-4 sm:space-y-6">
                   <div className="flex items-center space-x-6">
                     <Avatar className="w-20 h-20">
                       <AvatarImage src={user.avatar} alt={user.username} />
@@ -144,7 +144,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <h4 className="font-semibold">Statistiques</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="text-center p-4 bg-muted/50 rounded-lg">
@@ -171,7 +171,7 @@ export default function SettingsPage() {
 
             {/* Security Tab */}
             <TabsContent value="security">
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
@@ -179,7 +179,7 @@ export default function SettingsPage() {
                       <span>Sécurité du compte</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-4 sm:space-y-6">
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <h4 className="font-semibold">Authentification à deux facteurs (2FA)</h4>
@@ -234,7 +234,7 @@ export default function SettingsPage() {
                   <CardHeader>
                     <CardTitle>Données personnelles</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3 sm:space-y-4">
                     <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                       <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
                         Conformité RGPD
@@ -265,8 +265,8 @@ export default function SettingsPage() {
                     <span>Préférences de notification</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
+                <CardContent className="space-y-4 sm:space-y-6">
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="font-semibold">Notifications par email</h4>
@@ -359,8 +359,8 @@ export default function SettingsPage() {
                     <span>Méthodes de paiement</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-4">
+                <CardContent className="space-y-3 sm:space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="border rounded-lg p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
@@ -437,8 +437,8 @@ export default function SettingsPage() {
                     <span>Préférences d&apos;affichage</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
+                <CardContent className="space-y-4 sm:space-y-6">
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="font-semibold">Langue</h4>

@@ -54,7 +54,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
           <div className="relative">
@@ -79,7 +79,7 @@ export function Header() {
         </nav>
 
         {/* Actions Desktop */}
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden md:flex items-center space-x-3 sm:space-x-4">
           {/* Theme Toggle */}
           <Button
             variant="ghost"
@@ -161,7 +161,7 @@ export function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-              <div className="flex flex-col space-y-4 py-4">
+              <div className="flex flex-col space-y-3 sm:space-y-4 py-4">
                 {/* User Section */}
                 {user ? (
                   <div className="flex items-center space-x-3 p-4 border rounded-lg">

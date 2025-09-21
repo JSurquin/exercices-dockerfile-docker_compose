@@ -73,7 +73,7 @@ const GiveawayCard = ({ giveaway, onParticipate }: { giveaway: Giveaway; onParti
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         {/* Prize */}
         <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 rounded-lg p-4 border">
           <div className="flex items-center space-x-3">
@@ -185,16 +185,16 @@ export default function GiveawaysPage() {
   const endedGiveaways = mockGiveaways.filter(g => g.status === 'ended');
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-8"
+          className="text-center mb-6 sm:mb-8"
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
+          <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             <GiftIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
             Giveaways
           </h1>
@@ -209,12 +209,12 @@ export default function GiveawaysPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="mb-8"
+            className="mb-6 sm:mb-8"
           >
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-3 sm:space-x-4">
                     <Avatar className="w-12 h-12">
                       <AvatarImage src={user.avatar} alt={user.username} />
                       <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
@@ -245,7 +245,7 @@ export default function GiveawaysPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
           <Card>
             <CardHeader>
@@ -255,7 +255,7 @@ export default function GiveawaysPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 <div className="text-center">
                   <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mx-auto mb-3">
                     <CurrencyDollarIcon className="w-6 h-6 text-orange-600" />
@@ -294,7 +294,7 @@ export default function GiveawaysPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
+          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4 sm:space-y-6">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="active">
                 En cours ({activeGiveaways.length})
@@ -358,7 +358,7 @@ export default function GiveawaysPage() {
                     <CardTitle>Mes participations</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       {/* Mock entries */}
                       <div className="border rounded-lg p-4">
                         <div className="flex items-center justify-between">

@@ -78,8 +78,8 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZjU3MjIiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSI0Ii8+PC9nPjwvZz48L3N2Zz4=')] bg-repeat" />
       </div>
 
-      <div className="container relative mx-auto px-4 py-24 lg:py-32">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left Column - Hero Content */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -104,16 +104,16 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="space-y-4"
+              className="space-y-3 sm:space-y-4"
             >
-              <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
                 Vendez vos skins{' '}
                 <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
                   CS2
                 </span>{' '}
                 facilement
               </h1>
-              <p className="text-xl text-muted-foreground max-w-lg">
+              <p className="text-lg sm:text-xl text-muted-foreground max-w-lg leading-relaxed">
                 {messages.hero.subtitle}
               </p>
             </motion.div>
@@ -123,7 +123,7 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
             >
               {features.map((feature, index) => (
                 <div key={index} className="flex items-center space-x-2">
@@ -157,7 +157,7 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
               transition={{ duration: 0.6, delay: 0.7 }}
-              className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-8 border-t"
+              className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 pt-6 sm:pt-8 border-t"
             >
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
@@ -187,7 +187,7 @@ export function HeroSection() {
             {/* Main Card */}
             <div className="relative bg-card rounded-2xl border p-8 shadow-2xl">
               {/* Fake Trade Interface */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold">Estimation instantanée</h3>
                   <Badge variant="secondary" className="text-green-600">

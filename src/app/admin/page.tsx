@@ -135,9 +135,9 @@ export default function AdminPage() {
 
   if (!isAdmin) {
     return (
-      <div className="container mx-auto px-4 py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
-          <CardContent className="p-8">
+          <CardContent className="p-6 sm:p-8">
             <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-red-500" />
             <h2 className="text-xl font-semibold mb-2">Accès refusé</h2>
             <p className="text-muted-foreground mb-6">
@@ -168,18 +168,18 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold">Administration CashTrade</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold">Administration CashTrade</h1>
               <p className="text-muted-foreground">Gestion et supervision de la plateforme</p>
             </div>
             <div className="flex space-x-2">
@@ -204,10 +204,10 @@ export default function AdminPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 sm:mb-8"
         >
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Utilisateurs totaux</p>
@@ -222,7 +222,7 @@ export default function AdminPage() {
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Volume total</p>
@@ -237,7 +237,7 @@ export default function AdminPage() {
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Trades totaux</p>
@@ -252,7 +252,7 @@ export default function AdminPage() {
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Revenus (frais)</p>
@@ -272,7 +272,7 @@ export default function AdminPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid lg:grid-cols-2 gap-6 mb-8"
+          className="grid lg:grid-cols-2 gap-6 mb-6 sm:mb-8"
         >
           <Card>
             <CardHeader>
@@ -321,7 +321,7 @@ export default function AdminPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <Tabs defaultValue="users" className="space-y-6">
+          <Tabs defaultValue="users" className="space-y-4 sm:space-y-6">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="users">Utilisateurs</TabsTrigger>
               <TabsTrigger value="trades">Trades</TabsTrigger>
@@ -542,7 +542,7 @@ export default function AdminPage() {
                   <CardTitle>Gestion KYC</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="grid md:grid-cols-3 gap-4">
                       <Card>
                         <CardContent className="p-4 text-center">
