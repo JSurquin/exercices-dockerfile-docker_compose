@@ -20,7 +20,6 @@ import {
   ShieldCheckIcon,
   BellIcon,
   CreditCardIcon,
-  GlobeAltIcon,
   MoonIcon,
   SunIcon,
   ExclamationTriangleIcon,
@@ -28,7 +27,7 @@ import {
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
-  const { user, updateUser } = useAuth();
+  const { user } = useAuth();
   const { locale, setLocale } = useLocale();
   const { theme, setTheme } = useTheme();
   const [settings, setSettings] = useState({
@@ -47,7 +46,7 @@ export default function SettingsPage() {
       // Simulation de sauvegarde
       await new Promise(resolve => setTimeout(resolve, 1000));
       toast.success('Paramètres sauvegardés avec succès');
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la sauvegarde');
     }
   };
@@ -447,7 +446,7 @@ export default function SettingsPage() {
                           Choisissez votre langue préférée
                         </p>
                       </div>
-                      <Select value={locale} onValueChange={(value) => setLocale(value as any)}>
+                      <Select value={locale} onValueChange={(value) => setLocale(value as 'fr' | 'en')}>
                         <SelectTrigger className="w-40">
                           <SelectValue />
                         </SelectTrigger>

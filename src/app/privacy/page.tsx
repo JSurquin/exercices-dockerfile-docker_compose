@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   ShieldCheckIcon,
   EyeIcon,
@@ -12,63 +12,77 @@ import {
   LockClosedIcon,
   TrashIcon,
   ArrowDownTrayIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 const dataTypes = [
   {
-    category: 'Données d\'identification',
+    category: "Données d'identification",
     icon: UserCircleIcon,
-    data: ['Nom et prénom', 'Date de naissance', 'Adresse email', 'Steam ID', 'Adresse IP'],
-    purpose: 'Authentification et vérification d\'identité (KYC)',
-    retention: '5 ans après fermeture du compte',
+    data: [
+      "Nom et prénom",
+      "Date de naissance",
+      "Adresse email",
+      "Steam ID",
+      "Adresse IP",
+    ],
+    purpose: "Authentification et vérification d&apos;identité (KYC)",
+    retention: "5 ans après fermeture du compte",
   },
   {
-    category: 'Données KYC',
+    category: "Données KYC",
     icon: DocumentTextIcon,
-    data: ['Pièce d\'identité', 'Selfie de vérification', 'Justificatif de domicile'],
-    purpose: 'Conformité réglementaire anti-blanchiment',
-    retention: '10 ans (obligation légale)',
+    data: [
+      "Pièce d&apos;identité",
+      "Selfie de vérification",
+      "Justificatif de domicile",
+    ],
+    purpose: "Conformité réglementaire anti-blanchiment",
+    retention: "10 ans (obligation légale)",
   },
   {
-    category: 'Données financières',
+    category: "Données financières",
     icon: LockClosedIcon,
-    data: ['IBAN (haché)', 'Adresses crypto', 'Historique transactions'],
-    purpose: 'Traitement des paiements et audit',
-    retention: '7 ans (obligation comptable)',
+    data: ["IBAN (haché)", "Adresses crypto", "Historique transactions"],
+    purpose: "Traitement des paiements et audit",
+    retention: "7 ans (obligation comptable)",
   },
   {
-    category: 'Données d\'usage',
+    category: "Données d'usage",
     icon: EyeIcon,
-    data: ['Logs de connexion', 'Activité de trading', 'Préférences utilisateur'],
-    purpose: 'Amélioration du service et sécurité',
-    retention: '2 ans maximum',
+    data: [
+      "Logs de connexion",
+      "Activité de trading",
+      "Préférences utilisateur",
+    ],
+    purpose: "Amélioration du service et sécurité",
+    retention: "2 ans maximum",
   },
 ];
 
 const rights = [
   {
-    title: 'Droit d\'accès',
-    description: 'Demander une copie de toutes vos données personnelles',
+    title: "Droit d'accès",
+    description: "Demander une copie de toutes vos données personnelles",
     icon: EyeIcon,
-    action: 'Télécharger mes données',
+    action: "Télécharger mes données",
   },
   {
-    title: 'Droit de rectification',
-    description: 'Corriger ou mettre à jour vos informations personnelles',
+    title: "Droit de rectification",
+    description: "Corriger ou mettre à jour vos informations personnelles",
     icon: DocumentTextIcon,
-    action: 'Modifier mes données',
+    action: "Modifier mes données",
   },
   {
-    title: 'Droit à l\'effacement',
-    description: 'Supprimer vos données (sauf obligations légales)',
+    title: "Droit à l&apos;effacement",
+    description: "Supprimer vos données (sauf obligations légales)",
     icon: TrashIcon,
-    action: 'Supprimer mon compte',
+    action: "Supprimer mon compte",
   },
   {
-    title: 'Droit à la portabilité',
-    description: 'Récupérer vos données dans un format lisible',
+    title: "Droit à la portabilité",
+    description: "Récupérer vos données dans un format lisible",
     icon: ArrowDownTrayIcon,
-    action: 'Exporter mes données',
+    action: "Exporter mes données",
   },
 ];
 
@@ -88,9 +102,10 @@ export default function PrivacyPage() {
             Politique de confidentialité
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-            Comment nous collectons, utilisons et protégeons vos données personnelles
+            Comment nous collectons, utilisons et protégeons vos données
+            personnelles
           </p>
-          
+
           <div className="flex items-center justify-center space-x-6 text-sm text-muted-foreground">
             <Badge variant="secondary" className="bg-green-100 text-green-800">
               Conforme RGPD
@@ -110,13 +125,16 @@ export default function PrivacyPage() {
             <CardContent className="p-8">
               <h2 className="text-2xl font-semibold mb-4">Notre engagement</h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Chez CashTrade, la protection de vos données personnelles est notre priorité absolue. 
-                Cette politique explique comment nous collectons, utilisons, stockons et protégeons vos informations 
-                en conformité avec le Règlement Général sur la Protection des Données (RGPD) et les lois françaises.
+                Chez CashTrade, la protection de vos données personnelles est
+                notre priorité absolue. Cette politique explique comment nous
+                collectons, utilisons, stockons et protégeons vos informations
+                en conformité avec le Règlement Général sur la Protection des
+                Données (RGPD) et les lois françaises.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Nous appliquons le principe de minimisation des données : nous ne collectons que les informations 
-                strictement nécessaires au fonctionnement de notre service et à nos obligations légales.
+                Nous appliquons le principe de minimisation des données : nous
+                ne collectons que les informations strictement nécessaires au
+                fonctionnement de notre service et à nos obligations légales.
               </p>
             </CardContent>
           </Card>
@@ -129,7 +147,9 @@ export default function PrivacyPage() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mb-12"
         >
-          <h2 className="text-2xl font-semibold mb-6">Types de données collectées</h2>
+          <h2 className="text-2xl font-semibold mb-6">
+            Types de données collectées
+          </h2>
           <div className="grid md:grid-cols-2 gap-6">
             {dataTypes.map((type, index) => (
               <Card key={index} className="h-full">
@@ -150,11 +170,15 @@ export default function PrivacyPage() {
                   </div>
                   <div>
                     <h4 className="font-medium mb-1">Finalité :</h4>
-                    <p className="text-sm text-muted-foreground">{type.purpose}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {type.purpose}
+                    </p>
                   </div>
                   <div>
                     <h4 className="font-medium mb-1">Conservation :</h4>
-                    <Badge variant="outline" className="text-xs">{type.retention}</Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {type.retention}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -223,7 +247,9 @@ export default function PrivacyPage() {
                     <right.icon className="w-6 h-6 text-orange-600 flex-shrink-0 mt-1" />
                     <div className="flex-1">
                       <h3 className="font-semibold mb-2">{right.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-4">{right.description}</p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {right.description}
+                      </p>
                       <Button variant="outline" size="sm">
                         {right.action}
                       </Button>
@@ -251,7 +277,8 @@ export default function PrivacyPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground leading-relaxed">
-                Nous mettons en œuvre des mesures de sécurité strictes pour protéger vos données :
+                Nous mettons en œuvre des mesures de sécurité strictes pour
+                protéger vos données :
               </p>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-3">
@@ -290,25 +317,29 @@ export default function PrivacyPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                Nous ne vendons jamais vos données personnelles. Nous pouvons les partager uniquement dans les cas suivants :
+                Nous ne vendons jamais vos données personnelles. Nous pouvons
+                les partager uniquement dans les cas suivants :
               </p>
               <div className="space-y-4">
                 <div className="border-l-4 border-orange-500 pl-4">
                   <h4 className="font-medium">Prestataires de services</h4>
                   <p className="text-sm text-muted-foreground">
-                    Qonto (paiements SEPA), prestataire KYC, hébergeur cloud - sous contrat de confidentialité strict
+                    Qonto (paiements SEPA), prestataire KYC, hébergeur cloud -
+                    sous contrat de confidentialité strict
                   </p>
                 </div>
                 <div className="border-l-4 border-blue-500 pl-4">
                   <h4 className="font-medium">Obligations légales</h4>
                   <p className="text-sm text-muted-foreground">
-                    Autorités fiscales, TRACFIN (lutte anti-blanchiment), autorités judiciaires sur réquisition
+                    Autorités fiscales, TRACFIN (lutte anti-blanchiment),
+                    autorités judiciaires sur réquisition
                   </p>
                 </div>
                 <div className="border-l-4 border-green-500 pl-4">
                   <h4 className="font-medium">Votre consentement</h4>
                   <p className="text-sm text-muted-foreground">
-                    Avec votre accord explicite pour des services additionnels (partenariats, etc.)
+                    Avec votre accord explicite pour des services additionnels
+                    (partenariats, etc.)
                   </p>
                 </div>
               </div>
@@ -324,10 +355,12 @@ export default function PrivacyPage() {
         >
           <Card className="bg-muted/50">
             <CardContent className="p-8 text-center">
-              <h3 className="text-xl font-semibold mb-4">Contact Délégué à la Protection des Données</h3>
+              <h3 className="text-xl font-semibold mb-4">
+                Contact Délégué à la Protection des Données
+              </h3>
               <p className="text-muted-foreground mb-6">
-                Pour toute question concernant vos données personnelles ou pour exercer vos droits,
-                contactez notre DPO.
+                Pour toute question concernant vos données personnelles ou pour
+                exercer vos droits, contactez notre DPO.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Badge variant="outline" className="px-4 py-2">
@@ -338,7 +371,8 @@ export default function PrivacyPage() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground mt-4">
-                Vous avez également le droit de déposer une plainte auprès de la CNIL en cas de manquement.
+                Vous avez également le droit de déposer une plainte auprès de la
+                CNIL en cas de manquement.
               </p>
             </CardContent>
           </Card>

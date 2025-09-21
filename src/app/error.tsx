@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { useEffect } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   ExclamationTriangleIcon,
   ArrowPathIcon,
   HomeIcon,
   ChatBubbleLeftRightIcon,
-} from '@heroicons/react/24/outline';
-import Link from 'next/link';
+} from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -20,7 +20,7 @@ interface ErrorProps {
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
     // Log l'erreur pour le monitoring
-    console.error('Application error:', error);
+    console.error("Application error:", error);
   }, [error]);
 
   return (
@@ -51,16 +51,17 @@ export default function Error({ error, reset }: ErrorProps) {
             className="mb-8"
           >
             <h1 className="text-3xl font-bold mb-4">
-              Oops ! Quelque chose s'est mal passé
+              Oops ! Quelque chose s&apos;est mal passé
             </h1>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              Une erreur inattendue s'est produite. Ne vous inquiétez pas, nos équipes ont été automatiquement notifiées 
-              et travaillent déjà sur une solution.
+              Une erreur inattendue s&apos;est produite. Ne vous inquiétez pas, nos
+              équipes ont été automatiquement notifiées et travaillent déjà sur
+              une solution.
             </p>
           </motion.div>
 
           {/* Error Details (en mode développement) */}
-          {process.env.NODE_ENV === 'development' && (
+          {process.env.NODE_ENV === "development" && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -103,7 +104,7 @@ export default function Error({ error, reset }: ErrorProps) {
               <Button variant="outline" asChild>
                 <Link href="/">
                   <HomeIcon className="w-4 h-4 mr-2" />
-                  Retour à l'accueil
+                  Retour à l&apos;accueil
                 </Link>
               </Button>
               <Button variant="outline" asChild>
@@ -136,10 +137,10 @@ export default function Error({ error, reset }: ErrorProps) {
             className="mt-12"
           >
             <p className="text-sm text-muted-foreground">
-              Vérifiez le statut de nos services sur{' '}
-              <a 
-                href="https://status.cashtrade.gg" 
-                target="_blank" 
+              Vérifiez le statut de nos services sur{" "}
+              <a
+                href="https://status.cashtrade.gg"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-orange-600 hover:underline"
               >

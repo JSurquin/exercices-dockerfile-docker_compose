@@ -153,7 +153,7 @@ export default function SupportPage() {
         priority: 'normal',
         message: '',
       });
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la création du ticket');
     } finally {
       setIsSubmitting(false);

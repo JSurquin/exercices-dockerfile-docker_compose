@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,18 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/components/providers/auth-provider';
-import { useLocale } from '@/components/providers/locale-provider';
-import { mockTrades, mockUser, mockVolumeData, mockTradeStatusData } from '@/lib/mock-data';
+import { mockTrades, mockVolumeData, mockTradeStatusData } from '@/lib/mock-data';
 import {
   CurrencyDollarIcon,
   ChartBarIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
   TrophyIcon,
   TicketIcon,
   StarIcon,
-  ArrowTrendingUpIcon,
   BanknotesIcon,
 } from '@heroicons/react/24/outline';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -58,8 +52,6 @@ const getStatusText = (status: string) => {
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { messages } = useLocale();
-  const [selectedPeriod, setSelectedPeriod] = useState('7d');
 
   if (!user) {
     return (

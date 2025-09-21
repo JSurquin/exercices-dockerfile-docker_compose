@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
 export default function Loading() {
   return (
@@ -17,7 +17,7 @@ export default function Loading() {
             <div className="h-16 w-16 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mx-auto">
               <span className="text-white font-bold text-xl">CS</span>
             </div>
-            
+
             {/* Animation de rotation */}
             <motion.div
               className="absolute inset-0 border-4 border-orange-500/30 rounded-lg"
@@ -47,9 +47,13 @@ export default function Loading() {
           <div className="h-1 bg-muted rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-gradient-to-r from-orange-500 to-red-600 rounded-full"
-              animate={{ x: ['-100%', '100%'] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-              style={{ width: '30%' }}
+              animate={{ x: ["-100%", "100%"] }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              style={{ width: "30%" }}
             />
           </div>
         </motion.div>

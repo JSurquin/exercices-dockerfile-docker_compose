@@ -4,11 +4,9 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/components/providers/auth-provider';
 import {
@@ -106,7 +104,7 @@ export default function KYCPage() {
       }
       
       toast.success('Dossier KYC soumis avec succès ! Vous recevrez une réponse sous 24-48h.');
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la soumission du dossier KYC');
     }
   };
@@ -274,12 +272,14 @@ export default function KYCPage() {
         >
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                {steps.find(s => s.id === currentStep)?.icon && (
-                  <steps.find(s => s.id === currentStep)!.icon className="w-5 h-5" />
-                )}
-                <span>{steps.find(s => s.id === currentStep)?.title}</span>
-              </CardTitle>
+            <CardTitle className="flex items-center space-x-2">
+              {(() => {
+                const step = steps.find(s => s.id === currentStep);
+                const IconComponent = step?.icon;
+                return IconComponent ? <IconComponent className="w-5 h-5" /> : null;
+              })()}
+              <span>{steps.find(s => s.id === currentStep)?.title}</span>
+            </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Info Step */}
@@ -403,7 +403,7 @@ export default function KYCPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="id_card">Carte d'identité</SelectItem>
+                        <SelectItem value="id_card">Carte d&apos;identité</SelectItem>
                         <SelectItem value="passport">Passeport</SelectItem>
                         <SelectItem value="driving_license">Permis de conduire</SelectItem>
                       </SelectContent>
@@ -412,7 +412,7 @@ export default function KYCPage() {
 
                   <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
                     <DocumentTextIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <h4 className="font-semibold mb-2">Télécharger votre pièce d'identité</h4>
+                    <h4 className="font-semibold mb-2">Télécharger votre pièce d&apos;identité</h4>
                     <p className="text-muted-foreground mb-4">
                       Assurez-vous que le document est lisible et que toutes les informations sont visibles
                     </p>
@@ -595,7 +595,7 @@ export default function KYCPage() {
                       {uploadedFiles.identity && (
                         <div className="flex items-center space-x-2">
                           <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                          <span>Pièce d'identité: {uploadedFiles.identity.name}</span>
+                          <span>Pièce d&apos;identité: {uploadedFiles.identity.name}</span>
                         </div>
                       )}
                       {uploadedFiles.selfie && (

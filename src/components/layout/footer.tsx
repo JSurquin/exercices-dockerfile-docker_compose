@@ -1,10 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useLocale } from '@/components/providers/locale-provider';
 
 export function Footer() {
-  const { messages } = useLocale();
 
   const links = {
     company: [

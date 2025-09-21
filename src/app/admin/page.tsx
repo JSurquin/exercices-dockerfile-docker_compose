@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -18,13 +17,13 @@ import {
   CurrencyDollarIcon,
   DocumentArrowDownIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
   EyeIcon,
   PencilIcon,
   TrashIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClockIcon,
+  XCircleIcon,
 } from '@heroicons/react/24/outline';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import CountUp from 'react-countup';
@@ -130,7 +129,6 @@ const mockPayouts = [
 export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [dateRange, setDateRange] = useState('7d');
 
   // Check admin access (simplified)
   const isAdmin = mockUser.steamId64 === '76561198012345678'; // Mock admin check
@@ -143,10 +141,10 @@ export default function AdminPage() {
             <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-red-500" />
             <h2 className="text-xl font-semibold mb-2">Accès refusé</h2>
             <p className="text-muted-foreground mb-6">
-              Vous n'avez pas les permissions nécessaires pour accéder à cette page.
+              Vous n&apos;avez pas les permissions nécessaires pour accéder à cette page.
             </p>
             <Button onClick={() => window.location.href = '/'}>
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </Button>
           </CardContent>
         </Card>

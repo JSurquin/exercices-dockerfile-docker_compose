@@ -176,7 +176,7 @@ export function TestimonialsSection() {
 
                   {/* Comment */}
                   <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                    "{testimonial.comment}"
+                    &quot;{testimonial.comment}&quot;
                   </p>
 
                   {/* Items */}

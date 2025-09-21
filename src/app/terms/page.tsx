@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   DocumentTextIcon,
   ShieldCheckIcon,
   ExclamationTriangleIcon,
   CalendarIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 const sections = [
   {
-    id: 'acceptance',
-    title: '1. Acceptation des conditions',
-    content: `En utilisant CashTrade, vous acceptez d'être lié par les présentes conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service.
+    id: "acceptance",
+    title: "1. Acceptation des conditions",
+    content: `En utilisant CashTrade, vous acceptez d'être lié par les présentes conditions d&apos;utilisation. Si vous n&apos;acceptez pas ces conditions, veuillez ne pas utiliser notre service.
 
 Ces conditions peuvent être modifiées à tout moment. Les modifications entreront en vigueur dès leur publication sur notre site. Il est de votre responsabilité de consulter régulièrement ces conditions.`,
   },
   {
-    id: 'eligibility',
-    title: '2. Conditions d\'éligibilité',
+    id: "eligibility",
+    title: "2. Conditions d&apos;éligibilité",
     content: `Pour utiliser CashTrade, vous devez :
 • Être âgé d'au moins 18 ans
 • Avoir la capacité juridique de conclure des contrats
@@ -31,8 +31,8 @@ Ces conditions peuvent être modifiées à tout moment. Les modifications entrer
 Nous nous réservons le droit de refuser ou de suspendre l'accès à tout utilisateur ne respectant pas ces critères.`,
   },
   {
-    id: 'services',
-    title: '3. Description des services',
+    id: "services",
+    title: "3. Description des services",
     content: `CashTrade fournit une plateforme permettant de :
 • Vendre des skins Counter-Strike 2 contre de l'argent réel
 • Recevoir des paiements via SEPA ou cryptomonnaies
@@ -42,8 +42,8 @@ Nous nous réservons le droit de refuser ou de suspendre l'accès à tout utilis
 Nos services sont fournis "en l'état" et nous ne garantissons pas leur disponibilité ininterrompue.`,
   },
   {
-    id: 'trading',
-    title: '4. Processus de trading',
+    id: "trading",
+    title: "4. Processus de trading",
     content: `Le processus de vente comprend :
 • Connexion Steam et ajout du Trade Link
 • Estimation automatique des skins via API Skinplace
@@ -55,8 +55,8 @@ Nos services sont fournis "en l'état" et nous ne garantissons pas leur disponib
 Les prix sont indicatifs et peuvent varier selon les conditions de marché. Une fois le trade accepté sur Steam, la vente est définitive.`,
   },
   {
-    id: 'payments',
-    title: '5. Paiements et frais',
+    id: "payments",
+    title: "5. Paiements et frais",
     content: `Frais applicables :
 • Frais de cashout : 0,5% du montant brut
 • Frais de réseau variables selon la méthode de paiement
@@ -69,23 +69,23 @@ Délais de paiement :
 Tous les montants sont calculés en centimes pour éviter les erreurs d'arrondi.`,
   },
   {
-    id: 'kyc',
-    title: '6. Vérification KYC',
+    id: "kyc",
+    title: "6. Vérification KYC",
     content: `La vérification KYC est obligatoire pour :
 • Effectuer tout paiement
 • Respecter la réglementation anti-blanchiment
 • Assurer la sécurité de la plateforme
 
 Documents requis :
-• Pièce d'identité valide (carte d'identité, passeport)
+• Pièce d&apos;identité valide (carte d&apos;identité, passeport)
 • Selfie de vérification
 • Justificatif de domicile (optionnel)
 
 Vos documents sont traités par un prestataire certifié et nous ne conservons que les références de vérification.`,
   },
   {
-    id: 'security',
-    title: '7. Sécurité et protection',
+    id: "security",
+    title: "7. Sécurité et protection",
     content: `Nous mettons en place :
 • Chiffrement SSL 256-bit pour toutes les communications
 • Authentification à deux facteurs recommandée
@@ -98,21 +98,21 @@ L'utilisateur s'engage à :
 • Ne pas partager son compte avec des tiers`,
   },
   {
-    id: 'restrictions',
-    title: '8. Utilisations interdites',
+    id: "restrictions",
+    title: "8. Utilisations interdites",
     content: `Il est strictement interdit de :
 • Utiliser la plateforme pour blanchir de l'argent
 • Créer plusieurs comptes pour contourner les limites
 • Utiliser des bots ou scripts automatisés
 • Tenter de manipuler les prix ou le système
-• Violer les conditions d'utilisation de Steam
+• Violer les conditions d&apos;utilisation de Steam
 • Effectuer des activités frauduleuses
 
 Toute violation peut entraîner la suspension immédiate du compte.`,
   },
   {
-    id: 'liability',
-    title: '9. Limitation de responsabilité',
+    id: "liability",
+    title: "9. Limitation de responsabilité",
     content: `CashTrade ne peut être tenu responsable :
 • Des fluctuations de prix des skins
 • Des interruptions de service temporaires
@@ -123,8 +123,8 @@ Toute violation peut entraîner la suspension immédiate du compte.`,
 Notre responsabilité est limitée au montant des frais payés pour le service concerné.`,
   },
   {
-    id: 'data',
-    title: '10. Protection des données',
+    id: "data",
+    title: "10. Protection des données",
     content: `Conformément au RGPD, vous avez le droit de :
 • Accéder à vos données personnelles
 • Demander leur rectification ou suppression
@@ -134,8 +134,8 @@ Notre responsabilité est limitée au montant des frais payés pour le service c
 Nous conservons vos données uniquement le temps nécessaire aux obligations légales et réglementaires.`,
   },
   {
-    id: 'termination',
-    title: '11. Résiliation',
+    id: "termination",
+    title: "11. Résiliation",
     content: `Vous pouvez résilier votre compte à tout moment via les paramètres.
 
 Nous pouvons suspendre ou résilier votre compte en cas de :
@@ -147,8 +147,8 @@ Nous pouvons suspendre ou résilier votre compte en cas de :
 En cas de résiliation, les trades en cours seront finalisés selon les conditions acceptées.`,
   },
   {
-    id: 'governing',
-    title: '12. Droit applicable',
+    id: "governing",
+    title: "12. Droit applicable",
     content: `Ces conditions sont régies par le droit français. Tout litige sera soumis à la juridiction exclusive des tribunaux de Paris.
 
 En cas de litige, nous encourageons la résolution amiable via notre service client avant toute action judiciaire.`,
@@ -168,12 +168,12 @@ export default function TermsPage() {
         >
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
             <DocumentTextIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
-            Conditions d'utilisation
+            Conditions d&apos;utilisation
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-            Conditions générales d'utilisation de la plateforme CashTrade
+            Conditions générales d&apos;utilisation de la plateforme CashTrade
           </p>
-          
+
           <div className="flex items-center justify-center space-x-6 text-sm text-muted-foreground">
             <div className="flex items-center space-x-2">
               <CalendarIcon className="w-4 h-4" />
@@ -202,9 +202,11 @@ export default function TermsPage() {
                     Information importante
                   </h3>
                   <p className="text-orange-800 dark:text-orange-200 text-sm leading-relaxed">
-                    Ces conditions d'utilisation constituent un contrat légalement contraignant entre vous et CashTrade. 
-                    En utilisant nos services, vous acceptez d'être lié par l'ensemble de ces conditions. 
-                    Veuillez les lire attentivement avant d'utiliser notre plateforme.
+                    Ces conditions d&apos;utilisation constituent un contrat
+                    légalement contraignant entre vous et CashTrade. En
+                    utilisant nos services, vous acceptez d'être lié par
+                    l'ensemble de ces conditions. Veuillez les lire
+                    attentivement avant d'utiliser notre plateforme.
                   </p>
                 </div>
               </div>
@@ -225,7 +227,7 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-2">
-                {sections.map((section, index) => (
+                {sections.map((section) => (
                   <a
                     key={section.id}
                     href={`#${section.id}`}
@@ -255,8 +257,11 @@ export default function TermsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="prose prose-gray dark:prose-invert max-w-none">
-                    {section.content.split('\n\n').map((paragraph, pIndex) => (
-                      <p key={pIndex} className="mb-4 leading-relaxed whitespace-pre-line">
+                      {section.content.split("\n\n").map((paragraph, pIndex) => (
+                      <p
+                        key={pIndex}
+                        className="mb-4 leading-relaxed whitespace-pre-line"
+                      >
                         {paragraph}
                       </p>
                     ))}
@@ -276,10 +281,12 @@ export default function TermsPage() {
         >
           <Card className="bg-muted/50">
             <CardContent className="p-8 text-center">
-              <h3 className="text-xl font-semibold mb-4">Questions sur ces conditions ?</h3>
+              <h3 className="text-xl font-semibold mb-4">
+                Questions sur ces conditions ?
+              </h3>
               <p className="text-muted-foreground mb-6">
-                Notre équipe légale est disponible pour répondre à toutes vos questions
-                concernant ces conditions d'utilisation.
+                Notre équipe légale est disponible pour répondre à toutes vos
+                questions concernant ces conditions d&apos;utilisation.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Badge variant="outline" className="px-4 py-2">

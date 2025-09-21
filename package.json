@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check": "eslint ; npx tsc --noEmit"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

@@ -76,7 +76,7 @@ export default function SellPage() {
       
       setCurrentStep(1);
       toast.success('Items chargés avec succès !');
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la récupération des items');
     } finally {
       setIsLoading(false);
@@ -93,7 +93,7 @@ export default function SellPage() {
       
       toast.success(`Trade créé ! ID: ${ticketId}`);
       setCurrentStep(2);
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la création du trade');
     } finally {
       setIsLoading(false);
