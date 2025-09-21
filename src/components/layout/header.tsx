@@ -69,8 +69,12 @@ export function Header() {
             <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-400 rounded-full border-2 border-background animate-pulse shadow-sm"></div>
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-xl bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">CashTrade</span>
-            <span className="text-xs text-muted-foreground -mt-1">CS2 Marketplace</span>
+            <span className="text-gaming-title text-xl bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+              CashTrade
+            </span>
+            <span className="text-xs text-gaming-caption text-muted-foreground -mt-1">
+              CS2 Marketplace
+            </span>
           </div>
         </Link>
 
@@ -90,7 +94,6 @@ export function Header() {
             ))}
           </div>
         </nav>
-
 
         {/* Actions Desktop */}
         <div className="hidden md:flex items-center space-x-2">
@@ -118,7 +121,11 @@ export function Header() {
           {/* Language Toggle */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-orange-500/10 hover:text-orange-500">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 hover:bg-orange-500/10 hover:text-orange-500"
+              >
                 <LanguageIcon className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -127,9 +134,11 @@ export function Header() {
                 <DropdownMenuItem
                   key={loc}
                   onClick={() => setLocale(loc as Locale)}
-                  className={locale === loc ? "bg-orange-500/10 text-orange-600" : ""}
+                  className={
+                    locale === loc ? "bg-orange-500/10 text-orange-600" : ""
+                  }
                 >
-                  <span className="mr-2">{loc === 'fr' ? '🇫🇷' : '🇺🇸'}</span>
+                  <span className="mr-2">{loc === "fr" ? "🇫🇷" : "🇺🇸"}</span>
                   {loc.toUpperCase()}
                 </DropdownMenuItem>
               ))}
@@ -177,8 +186,8 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button 
-              onClick={handleLogin} 
+            <Button
+              onClick={handleLogin}
               disabled={isLoading}
               className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
             >
@@ -189,8 +198,12 @@ export function Header() {
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121L8.427 13.97l-2.996-.935c-.65-.204-.658-.65.135-.962l11.708-4.517c.538-.196 1.006.128.82.665z"/>
+                  <svg
+                    className="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121L8.427 13.97l-2.996-.935c-.65-.204-.658-.65.135-.962l11.708-4.517c.538-.196 1.006.128.82.665z" />
                   </svg>
                   <span>Steam Login</span>
                 </div>

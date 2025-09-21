@@ -8,7 +8,13 @@ import { useLocale } from "@/components/providers/locale-provider";
 import { useAuth } from "@/components/providers/auth-provider";
 import { motion } from "framer-motion";
 import CountUp from "react-countup";
-import { CS2Background, AK47Icon, AWPIcon, SecurityShieldIcon, WeaponGradeIndicator } from "@/components/ui/cs2-icons";
+import {
+  CS2Background,
+  AK47Icon,
+  AWPIcon,
+  SecurityShieldIcon,
+  WeaponGradeIndicator,
+} from "@/components/ui/cs2-icons";
 import {
   ShieldCheckIcon,
   ClockIcon,
@@ -76,51 +82,51 @@ export function HeroSection() {
     <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-orange-500/5">
       {/* CS2 Background Pattern */}
       <CS2Background className="opacity-30" />
-      
+
       {/* Animated CS2 Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
-          animate={{ 
+          animate={{
             x: [0, 100, 0],
             y: [0, -50, 0],
-            rotate: [0, 180, 360]
+            rotate: [0, 180, 360],
           }}
-          transition={{ 
+          transition={{
             duration: 20,
             repeat: Infinity,
-            ease: "linear"
+            ease: "linear",
           }}
           className="absolute top-20 left-10 text-orange-500/10"
         >
           <AK47Icon className="h-12 w-12" />
         </motion.div>
-        
+
         <motion.div
-          animate={{ 
+          animate={{
             x: [0, -80, 0],
             y: [0, 100, 0],
-            rotate: [0, -180, -360]
+            rotate: [0, -180, -360],
           }}
-          transition={{ 
+          transition={{
             duration: 25,
             repeat: Infinity,
             ease: "linear",
-            delay: 5
+            delay: 5,
           }}
           className="absolute top-40 right-20 text-orange-500/10"
         >
           <AWPIcon className="h-8 w-8" />
         </motion.div>
-        
+
         <motion.div
-          animate={{ 
+          animate={{
             scale: [1, 1.2, 1],
-            opacity: [0.1, 0.3, 0.1]
+            opacity: [0.1, 0.3, 0.1],
           }}
-          transition={{ 
+          transition={{
             duration: 3,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut",
           }}
           className="absolute bottom-20 left-1/4 text-orange-500"
         >
@@ -156,14 +162,14 @@ export function HeroSection() {
               transition={{ duration: 0.8, delay: 0.3 }}
               className="space-y-3 sm:space-y-4"
             >
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-gaming-title leading-tight">
                 Vendez vos skins{" "}
                 <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
                   CS2
                 </span>{" "}
                 facilement
               </h1>
-              <p className="text-lg sm:text-xl text-muted-foreground max-w-lg leading-relaxed">
+              <p className="text-lg sm:text-xl text-gaming-body text-muted-foreground max-w-lg">
                 {messages.hero.subtitle}
               </p>
             </motion.div>
@@ -178,7 +184,7 @@ export function HeroSection() {
               {features.map((feature, index) => (
                 <div key={index} className="flex items-center space-x-2">
                   <feature.icon className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm font-medium">{feature.title}</span>
+                  <span className="text-sm text-gaming-caption">{feature.title}</span>
                 </div>
               ))}
             </motion.div>
@@ -253,13 +259,16 @@ export function HeroSection() {
 
                 {/* Skin Items */}
                 <div className="space-y-3">
-                  <motion.div 
+                  <motion.div
                     className="flex items-center space-x-3 p-3 bg-gradient-to-r from-red-500/10 to-orange-500/10 rounded-lg border border-red-500/20 hover:border-red-500/40 transition-all duration-300"
                     whileHover={{ scale: 1.02 }}
                   >
                     <div className="relative w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg">
                       <AK47Icon className="h-6 w-6 text-white" />
-                      <WeaponGradeIndicator grade="Classified" className="absolute -top-1 -right-1 h-3 w-3" />
+                      <WeaponGradeIndicator
+                        grade="Classified"
+                        className="absolute -top-1 -right-1 h-3 w-3"
+                      />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
@@ -274,18 +283,23 @@ export function HeroSection() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg text-green-600">127.50€</p>
+                      <p className="font-bold text-lg text-green-600">
+                        127.50€
+                      </p>
                       <p className="text-xs text-muted-foreground">+15% ↗</p>
                     </div>
                   </motion.div>
 
-                  <motion.div 
+                  <motion.div
                     className="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-lg border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300"
                     whileHover={{ scale: 1.02 }}
                   >
                     <div className="relative w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg">
                       <AWPIcon className="h-6 w-6 text-white" />
-                      <WeaponGradeIndicator grade="Covert" className="absolute -top-1 -right-1 h-3 w-3" />
+                      <WeaponGradeIndicator
+                        grade="Covert"
+                        className="absolute -top-1 -right-1 h-3 w-3"
+                      />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
@@ -300,7 +314,9 @@ export function HeroSection() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg text-green-600">2,847.00€</p>
+                      <p className="font-bold text-lg text-green-600">
+                        2,847.00€
+                      </p>
                       <p className="text-xs text-green-500">+8% ↗</p>
                     </div>
                   </motion.div>
@@ -322,7 +338,9 @@ export function HeroSection() {
                   </div>
                   <div className="flex justify-between font-bold text-lg border-t pt-2 text-green-600">
                     <span>Total net</span>
-                    <span className="bg-green-500/10 px-2 py-1 rounded">2,957.13€</span>
+                    <span className="bg-green-500/10 px-2 py-1 rounded">
+                      2,957.13€
+                    </span>
                   </div>
                   <div className="text-xs text-center text-muted-foreground pt-2">
                     💡 Paiement automatique dans 7 jours

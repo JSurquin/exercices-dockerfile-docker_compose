@@ -1,12 +1,12 @@
-import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface CS2CardProps {
   children: React.ReactNode;
   className?: string;
-  variant?: 'default' | 'gaming' | 'weapon' | 'trading';
+  variant?: "default" | "gaming" | "weapon" | "trading";
   hover?: boolean;
   glow?: boolean;
 }
@@ -14,16 +14,19 @@ interface CS2CardProps {
 export const CS2Card: React.FC<CS2CardProps> = ({
   children,
   className,
-  variant = 'default',
+  variant = "default",
   hover = true,
-  glow = false
+  glow = false,
 }) => {
   const getVariantClasses = (variant: string) => {
     const variants = {
-      default: 'bg-card border-border',
-      gaming: 'bg-gradient-to-br from-orange-500/5 via-card to-red-500/5 border-orange-500/20',
-      weapon: 'bg-gradient-to-br from-yellow-500/10 via-card to-orange-500/10 border-yellow-500/30',
-      trading: 'bg-gradient-to-br from-green-500/10 via-card to-blue-500/10 border-green-500/30',
+      default: "bg-card border-border",
+      gaming:
+        "bg-gradient-to-br from-orange-500/5 via-card to-red-500/5 border-orange-500/20",
+      weapon:
+        "bg-gradient-to-br from-yellow-500/10 via-card to-orange-500/10 border-yellow-500/30",
+      trading:
+        "bg-gradient-to-br from-green-500/10 via-card to-blue-500/10 border-green-500/30",
     };
     return variants[variant as keyof typeof variants] || variants.default;
   };
@@ -35,9 +38,9 @@ export const CS2Card: React.FC<CS2CardProps> = ({
     >
       <Card
         className={cn(
-          'relative overflow-hidden transition-all duration-300',
-          'hover:shadow-xl',
-          glow && 'shadow-2xl shadow-orange-500/20',
+          "relative overflow-hidden transition-all duration-300",
+          "hover:shadow-xl",
+          glow && "shadow-2xl shadow-orange-500/20",
           getVariantClasses(variant),
           className
         )}
@@ -65,53 +68,79 @@ interface CS2WeaponCardProps {
   className?: string;
 }
 
-export const CS2WeaponCard: React.FC<CS2WeaponCardProps> = ({ weapon, className }) => {
+export const CS2WeaponCard: React.FC<CS2WeaponCardProps> = ({
+  weapon,
+  className,
+}) => {
   const getRarityColor = (rarity: string) => {
     const colors = {
-      'Consumer Grade': 'from-gray-500 to-gray-600',
-      'Industrial Grade': 'from-blue-500 to-blue-600',
-      'Mil-Spec': 'from-indigo-500 to-indigo-600',
-      'Restricted': 'from-purple-500 to-purple-600',
-      'Classified': 'from-pink-500 to-pink-600',
-      'Covert': 'from-red-500 to-red-600',
-      'Extraordinary': 'from-yellow-500 to-orange-500',
+      "Consumer Grade": "from-gray-500 to-gray-600",
+      "Industrial Grade": "from-blue-500 to-blue-600",
+      "Mil-Spec": "from-indigo-500 to-indigo-600",
+      Restricted: "from-purple-500 to-purple-600",
+      Classified: "from-pink-500 to-pink-600",
+      Covert: "from-red-500 to-red-600",
+      Extraordinary: "from-yellow-500 to-orange-500",
     };
-    return colors[rarity as keyof typeof colors] || colors['Consumer Grade'];
+    return colors[rarity as keyof typeof colors] || colors["Consumer Grade"];
   };
 
   const getConditionStars = (condition: string) => {
     const stars = {
-      'Battle-Scarred': 1,
-      'Well-Worn': 2,
-      'Field-Tested': 3,
-      'Minimal Wear': 4,
-      'Factory New': 5,
+      "Battle-Scarred": 1,
+      "Well-Worn": 2,
+      "Field-Tested": 3,
+      "Minimal Wear": 4,
+      "Factory New": 5,
     };
     return stars[condition as keyof typeof stars] || 3;
   };
 
   return (
-    <CS2Card variant="weapon" hover={true} glow={true} className={cn('p-0', className)}>
-      <div className={`h-1 bg-gradient-to-r ${getRarityColor(weapon.rarity)}`} />
-      
+    <CS2Card
+      variant="weapon"
+      hover={true}
+      glow={true}
+      className={cn("p-0", className)}
+    >
+      <div
+        className={`h-1 bg-gradient-to-r ${getRarityColor(weapon.rarity)}`}
+      />
+
       <CardContent className="p-4">
         <div className="flex items-center space-x-3">
           {/* Weapon Image/Icon placeholder */}
-          <div className={`w-16 h-16 rounded-lg bg-gradient-to-br ${getRarityColor(weapon.rarity)} flex items-center justify-center shadow-lg relative`}>
+          <div
+            className={`w-16 h-16 rounded-lg bg-gradient-to-br ${getRarityColor(
+              weapon.rarity
+            )} flex items-center justify-center shadow-lg relative`}
+          >
             {weapon.image ? (
-              <img src={weapon.image} alt={weapon.name} className="w-full h-full object-cover rounded-lg" />
+              <img
+                src={weapon.image}
+                alt={weapon.name}
+                className="w-full h-full object-cover rounded-lg"
+              />
             ) : (
-              <span className="text-white font-bold text-xs">{weapon.name.split(' ')[0]}</span>
+              <span className="text-white font-bold text-xs">
+                {weapon.name.split(" ")[0]}
+              </span>
             )}
-            
+
             {/* Rarity indicator */}
-            <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full bg-gradient-to-r ${getRarityColor(weapon.rarity)} border-2 border-background`} />
+            <div
+              className={`absolute -top-1 -right-1 w-3 h-3 rounded-full bg-gradient-to-r ${getRarityColor(
+                weapon.rarity
+              )} border-2 border-background`}
+            />
           </div>
 
           <div className="flex-1">
             {/* Weapon name and StatTrak */}
             <div className="flex items-center space-x-2 mb-1">
-              <h3 className="font-semibold text-sm">{weapon.name} | {weapon.skin}</h3>
+              <h3 className="font-semibold text-sm">
+                {weapon.name} | {weapon.skin}
+              </h3>
               {weapon.statTrak && (
                 <div className="px-2 py-0.5 bg-orange-500/20 text-orange-600 text-xs rounded font-mono">
                   StatTrak™
@@ -121,12 +150,18 @@ export const CS2WeaponCard: React.FC<CS2WeaponCardProps> = ({ weapon, className 
 
             {/* Condition and stars */}
             <div className="flex items-center space-x-2 mb-2">
-              <span className="text-xs text-muted-foreground">{weapon.condition}</span>
+              <span className="text-xs text-muted-foreground">
+                {weapon.condition}
+              </span>
               <div className="flex space-x-1">
                 {Array.from({ length: 5 }, (_, i) => (
-                  <span 
+                  <span
                     key={i}
-                    className={`text-xs ${i < getConditionStars(weapon.condition) ? 'text-yellow-500' : 'text-gray-300'}`}
+                    className={`text-xs ${
+                      i < getConditionStars(weapon.condition)
+                        ? "text-yellow-500"
+                        : "text-gray-300"
+                    }`}
                   >
                     ★
                   </span>
@@ -137,9 +172,16 @@ export const CS2WeaponCard: React.FC<CS2WeaponCardProps> = ({ weapon, className 
             {/* Price and change */}
             <div className="flex items-center justify-between">
               <div className="text-right">
-                <p className="font-bold text-lg text-green-600">€{weapon.price.toFixed(2)}</p>
-                <p className={`text-xs ${weapon.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {weapon.change >= 0 ? '+' : ''}{weapon.change}% {weapon.change >= 0 ? '↗' : '↘'}
+                <p className="font-bold text-lg text-green-600">
+                  €{weapon.price.toFixed(2)}
+                </p>
+                <p
+                  className={`text-xs ${
+                    weapon.change >= 0 ? "text-green-500" : "text-red-500"
+                  }`}
+                >
+                  {weapon.change >= 0 ? "+" : ""}
+                  {weapon.change}% {weapon.change >= 0 ? "↗" : "↘"}
                 </p>
               </div>
             </div>
