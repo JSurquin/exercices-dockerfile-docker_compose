@@ -73,7 +73,7 @@ export function Header() {
               CashTrade
             </span>
             <span className="text-xs text-gaming-caption text-muted-foreground -mt-1">
-              CS2 Marketplace
+              {messages.common.marketplace}
             </span>
           </div>
         </Link>
@@ -194,7 +194,7 @@ export function Header() {
               {isLoading ? (
                 <div className="flex items-center space-x-2">
                   <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>Connexion...</span>
+                  <span>{messages.common.connecting}</span>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
@@ -205,7 +205,7 @@ export function Header() {
                   >
                     <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121L8.427 13.97l-2.996-.935c-.65-.204-.658-.65.135-.962l11.708-4.517c.538-.196 1.006.128.82.665z" />
                   </svg>
-                  <span>Steam Login</span>
+                  <span>{messages.common.steamLogin}</span>
                 </div>
               )}
             </Button>

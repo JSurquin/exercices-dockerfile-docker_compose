@@ -15,6 +15,11 @@ import {
   SecurityShieldIcon,
   WeaponGradeIndicator,
 } from "@/components/ui/cs2-icons";
+import { 
+  CS2WeaponImage, 
+  CS2BackgroundImage,
+  usePreloadCS2Images 
+} from "@/components/ui/cs2-images";
 import {
   ShieldCheckIcon,
   ClockIcon,
@@ -73,15 +78,23 @@ export function HeroSection() {
   const { messages } = useLocale();
   const { user } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
+  
+  // Précharger les images CS2 critiques
+  usePreloadCS2Images();
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-orange-500/5">
-      {/* CS2 Background Pattern */}
-      <CS2Background className="opacity-30" />
+    <CS2BackgroundImage 
+      variant="cs2_main" 
+      className="relative overflow-hidden min-h-screen"
+      overlay={true}
+    >
+      <section className="relative">
+        {/* CS2 Background Pattern Overlay */}
+        <CS2Background className="opacity-20" />
 
       {/* Animated CS2 Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -151,7 +164,7 @@ export function HeroSection() {
             >
               <Badge variant="secondary" className="px-4 py-2 text-sm">
                 <CheckCircleIcon className="w-4 h-4 mr-2 text-green-500" />
-                Plateforme certifiée et sécurisée
+                {messages.hero.badge}
               </Badge>
             </motion.div>
 
@@ -163,11 +176,11 @@ export function HeroSection() {
               className="space-y-3 sm:space-y-4"
             >
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-gaming-title leading-tight">
-                Vendez vos skins{" "}
+                {messages.hero.title.split('CS2')[0]}
                 <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
                   CS2
-                </span>{" "}
-                facilement
+                </span>
+                {messages.hero.title.split('CS2')[1] || ''}
               </h1>
               <p className="text-lg sm:text-xl text-gaming-body text-muted-foreground max-w-lg">
                 {messages.hero.subtitle}
@@ -201,13 +214,13 @@ export function HeroSection() {
                 size="lg"
                 className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
               >
-                <Link href={user ? "/sell" : "/login"}>
-                  {user ? "Vendre maintenant" : messages.hero.cta}
-                </Link>
-              </Button>
-              <Button variant="outline" size="lg" asChild>
-                <Link href="#how-it-works">Comment ça marche</Link>
-              </Button>
+                 <Link href={user ? "/sell" : "/login"}>
+                   {user ? messages.hero.cta : messages.hero.cta}
+                 </Link>
+               </Button>
+               <Button variant="outline" size="lg" asChild>
+                 <Link href="#how-it-works">{messages.hero.secondaryCta}</Link>
+               </Button>
             </motion.div>
 
             {/* Stats */}
@@ -250,26 +263,32 @@ export function HeroSection() {
               <div className="space-y-4 sm:space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold">
-                    Estimation instantanée
+                    {messages.trade.estimation}
                   </h3>
                   <Badge variant="secondary" className="text-green-600">
-                    En ligne
+                    {messages.common.online}
                   </Badge>
                 </div>
 
                 {/* Skin Items */}
                 <div className="space-y-3">
-                  <motion.div
-                    className="flex items-center space-x-3 p-3 bg-gradient-to-r from-red-500/10 to-orange-500/10 rounded-lg border border-red-500/20 hover:border-red-500/40 transition-all duration-300"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <div className="relative w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg">
-                      <AK47Icon className="h-6 w-6 text-white" />
-                      <WeaponGradeIndicator
-                        grade="Classified"
-                        className="absolute -top-1 -right-1 h-3 w-3"
-                      />
-                    </div>
+                          <motion.div
+                            className="flex items-center space-x-3 p-3 bg-gradient-to-r from-red-500/10 to-orange-500/10 rounded-lg border border-red-500/20 hover:border-red-500/40 transition-all duration-300"
+                            whileHover={{ scale: 1.02 }}
+                          >
+                            <div className="relative w-16 h-12 rounded-lg overflow-hidden shadow-lg">
+                              <CS2WeaponImage
+                                weapon="AK-47"
+                                skin="Redline"
+                                rarity="Classified"
+                                size="sm"
+                                className="w-full h-full"
+                              />
+                              <WeaponGradeIndicator
+                                grade="Classified"
+                                className="absolute -top-1 -right-1 h-3 w-3"
+                              />
+                            </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
                         <p className="font-medium">AK-47 | Redline</p>
@@ -290,17 +309,23 @@ export function HeroSection() {
                     </div>
                   </motion.div>
 
-                  <motion.div
-                    className="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-lg border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <div className="relative w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg">
-                      <AWPIcon className="h-6 w-6 text-white" />
-                      <WeaponGradeIndicator
-                        grade="Covert"
-                        className="absolute -top-1 -right-1 h-3 w-3"
-                      />
-                    </div>
+                          <motion.div
+                            className="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-lg border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300"
+                            whileHover={{ scale: 1.02 }}
+                          >
+                            <div className="relative w-16 h-12 rounded-lg overflow-hidden shadow-lg">
+                              <CS2WeaponImage
+                                weapon="AWP"
+                                skin="Dragon Lore"
+                                rarity="Covert"
+                                size="sm"
+                                className="w-full h-full"
+                              />
+                              <WeaponGradeIndicator
+                                grade="Covert"
+                                className="absolute -top-1 -right-1 h-3 w-3"
+                              />
+                            </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
                         <p className="font-medium">AWP | Dragon Lore</p>
@@ -343,12 +368,12 @@ export function HeroSection() {
                     </span>
                   </div>
                   <div className="text-xs text-center text-muted-foreground pt-2">
-                    💡 Paiement automatique dans 7 jours
+                    💡 {messages.trade.automaticPayment}
                   </div>
                 </div>
 
                 <Button className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700">
-                  Confirmer la vente
+                  {messages.trade.confirm}
                 </Button>
               </div>
 
@@ -388,6 +413,7 @@ export function HeroSection() {
           </motion.div>
         </div>
       </div>
-    </section>
+      </section>
+    </CS2BackgroundImage>
   );
 }

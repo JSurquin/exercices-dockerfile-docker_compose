@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/components/providers/auth-provider";
+import { useLocale } from "@/components/providers/locale-provider";
 import {
   mockTrades,
   mockVolumeData,
@@ -67,6 +68,7 @@ const getStatusText = (status: string) => {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { messages } = useLocale();
 
   if (!user) {
     return (
@@ -74,12 +76,12 @@ export default function DashboardPage() {
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
             <ChartBarIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">Connexion requise</h2>
+            <h2 className="text-xl font-semibold mb-2">{messages.dashboard.loginRequired}</h2>
             <p className="text-muted-foreground mb-6">
-              Vous devez être connecté pour accéder à votre dashboard.
+              {messages.dashboard.loginSubtitle}
             </p>
             <Button onClick={() => (window.location.href = "/")}>
-              Se connecter avec Steam
+              {messages.common.steamLogin}
             </Button>
           </CardContent>
         </Card>
@@ -113,12 +115,12 @@ export default function DashboardPage() {
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold">
-                Bienvenue, {user.username}
-              </h1>
-              <p className="text-muted-foreground">
-                Voici un aperçu de votre activité
-              </p>
+               <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold">
+                 {messages.dashboard.welcome}, {user.username}
+               </h1>
+               <p className="text-muted-foreground">
+                 {messages.dashboard.subtitle}
+               </p>
             </div>
           </div>
 

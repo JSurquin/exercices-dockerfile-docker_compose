@@ -133,12 +133,12 @@ export default function SellPage() {
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
             <ShieldCheckIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">Connexion requise</h2>
+            <h2 className="text-xl font-semibold mb-2">{messages.trade.loginRequired}</h2>
             <p className="text-muted-foreground mb-6">
-              Vous devez être connecté avec Steam pour vendre vos skins.
+              {messages.trade.loginSubtitle}
             </p>
             <Button onClick={() => (window.location.href = "/")}>
-              Se connecter avec Steam
+              {messages.trade.steamLogin}
             </Button>
           </CardContent>
         </Card>
@@ -160,7 +160,7 @@ export default function SellPage() {
             {messages.trade.title}
           </h1>
           <p className="text-muted-foreground">
-            Vendez vos skins CS2 en quelques étapes simples
+            {messages.trade.subtitle}
           </p>
         </motion.div>
 
