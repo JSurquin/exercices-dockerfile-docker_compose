@@ -132,7 +132,7 @@ export default function SettingsPage() {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Nom d'utilisateur Steam</Label>
+                      <Label>Nom d&apos;utilisateur Steam</Label>
                       <Input value={user.username} disabled />
                       <p className="text-xs text-muted-foreground">
                         Synchronisé automatiquement avec Steam
@@ -434,7 +434,7 @@ export default function SettingsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <CogIcon className="w-5 h-5" />
-                    <span>Préférences d'affichage</span>
+                    <span>Préférences d&apos;affichage</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -461,7 +461,7 @@ export default function SettingsPage() {
                       <div>
                         <h4 className="font-semibold">Thème</h4>
                         <p className="text-sm text-muted-foreground">
-                          Choisissez votre thème d'affichage
+                          Choisissez votre thème d&apos;affichage
                         </p>
                       </div>
                       <Select value={theme} onValueChange={setTheme}>

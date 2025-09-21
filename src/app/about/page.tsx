@@ -184,10 +184,10 @@ export default function AboutPage() {
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
                 <p className="text-lg text-muted-foreground mb-6">
-                 Fondée en 2023 par une équipe de développeurs et de traders
-                 passionnés, CashTrade est née d&apos;un constat simple : le trading
-                 de skins CS était trop complexe, peu sécurisé et souvent
-                 opaque.
+                  Fondée en 2023 par une équipe de développeurs et de traders
+                  passionnés, CashTrade est née d&apos;un constat simple : le
+                  trading de skins CS était trop complexe, peu sécurisé et
+                  souvent opaque.
                 </p>
                 <p className="text-lg text-muted-foreground mb-6">
                   Notre mission est de créer la plateforme de référence pour
@@ -388,9 +388,9 @@ export default function AboutPage() {
             className="text-center"
           >
             <div className="bg-gradient-to-r from-orange-500/10 to-red-600/10 rounded-2xl p-12 border">
-                <h2 className="text-3xl font-bold mb-4">
-                 Rejoignez l&apos;aventure CashTrade
-               </h2>
+              <h2 className="text-3xl font-bold mb-4">
+                Rejoignez l&apos;aventure CashTrade
+              </h2>
               <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
                 Faites partie de la révolution du trading de skins CS2. Une
                 communauté de plus de 15,000 traders vous attend.

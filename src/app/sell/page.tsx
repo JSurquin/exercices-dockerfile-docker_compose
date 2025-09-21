@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Progress } from '@/components/ui/progress';
-import { useAuth } from '@/components/providers/auth-provider';
-import { useLocale } from '@/components/providers/locale-provider';
-import { mockTradeItems } from '@/lib/mock-data';
-import { TradeItem } from '@/lib/types';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/components/providers/auth-provider";
+import { useLocale } from "@/components/providers/locale-provider";
+import { mockTradeItems } from "@/lib/mock-data";
+import { TradeItem } from "@/lib/types";
 import {
   LinkIcon,
   CurrencyDollarIcon,
@@ -21,20 +21,20 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   InformationCircleIcon,
-} from '@heroicons/react/24/outline';
-import { toast } from 'sonner';
+} from "@heroicons/react/24/outline";
+import { toast } from "sonner";
 
 const steps = [
-  { id: 'tradelink', title: 'Trade Link Steam', icon: LinkIcon },
-  { id: 'estimation', title: 'Estimation', icon: CurrencyDollarIcon },
-  { id: 'confirmation', title: 'Confirmation', icon: CheckCircleIcon },
+  { id: "tradelink", title: "Trade Link Steam", icon: LinkIcon },
+  { id: "estimation", title: "Estimation", icon: CurrencyDollarIcon },
+  { id: "confirmation", title: "Confirmation", icon: CheckCircleIcon },
 ];
 
 export default function SellPage() {
   const { user } = useAuth();
   const { messages } = useLocale();
   const [currentStep, setCurrentStep] = useState(0);
-  const [tradeLink, setTradeLink] = useState('');
+  const [tradeLink, setTradeLink] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [items, setItems] = useState<TradeItem[]>([]);
   const [estimation, setEstimation] = useState({
@@ -45,7 +45,10 @@ export default function SellPage() {
   });
 
   const calculateEstimation = (items: TradeItem[]) => {
-    const brutCentimes = items.reduce((sum, item) => sum + item.prixCentimes, 0);
+    const brutCentimes = items.reduce(
+      (sum, item) => sum + item.prixCentimes,
+      0
+    );
     const fraisCashout = Math.round(brutCentimes * 0.005); // 0.5%
     const fraisReseau = 2000; // 20€
     const netCentimes = brutCentimes - fraisCashout - fraisReseau;
@@ -59,25 +62,27 @@ export default function SellPage() {
   };
 
   const handleTradeLinkSubmit = async () => {
-    if (!tradeLink.includes('steamcommunity.com/tradeoffer/new/')) {
-      toast.error('Lien de trade invalide. Veuillez copier le lien depuis Steam.');
+    if (!tradeLink.includes("steamcommunity.com/tradeoffer/new/")) {
+      toast.error(
+        "Lien de trade invalide. Veuillez copier le lien depuis Steam."
+      );
       return;
     }
 
     setIsLoading(true);
     try {
       // Simulation d'appel API pour récupérer les items
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       // Utilisation des données mockées
       setItems(mockTradeItems);
       const newEstimation = calculateEstimation(mockTradeItems);
       setEstimation(newEstimation);
-      
+
       setCurrentStep(1);
-      toast.success('Items chargés avec succès !');
+      toast.success("Items chargés avec succès !");
     } catch {
-      toast.error('Erreur lors de la récupération des items');
+      toast.error("Erreur lors de la récupération des items");
     } finally {
       setIsLoading(false);
     }
@@ -87,34 +92,39 @@ export default function SellPage() {
     setIsLoading(true);
     try {
       // Simulation de création du trade
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const ticketId = `TICK-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 9999).toString().padStart(4, '0')}`;
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      const ticketId = `TICK-${new Date()
+        .toISOString()
+        .slice(0, 10)
+        .replace(/-/g, "")}-${Math.floor(Math.random() * 9999)
+        .toString()
+        .padStart(4, "0")}`;
+
       toast.success(`Trade créé ! ID: ${ticketId}`);
       setCurrentStep(2);
     } catch {
-      toast.error('Erreur lors de la création du trade');
+      toast.error("Erreur lors de la création du trade");
     } finally {
       setIsLoading(false);
     }
   };
 
   const formatPrice = (centimes: number) => {
-    return (centimes / 100).toFixed(2) + '€';
+    return (centimes / 100).toFixed(2) + "€";
   };
 
   const getRarityColor = (rarity: string) => {
     const colors = {
-      'Consumer Grade': 'bg-gray-500',
-      'Industrial Grade': 'bg-blue-500',
-      'Mil-Spec': 'bg-blue-600',
-      'Restricted': 'bg-purple-500',
-      'Classified': 'bg-pink-500',
-      'Covert': 'bg-red-500',
-      'Extraordinary': 'bg-yellow-500',
+      "Consumer Grade": "bg-gray-500",
+      "Industrial Grade": "bg-blue-500",
+      "Mil-Spec": "bg-blue-600",
+      Restricted: "bg-purple-500",
+      Classified: "bg-pink-500",
+      Covert: "bg-red-500",
+      Extraordinary: "bg-yellow-500",
     };
-    return colors[rarity as keyof typeof colors] || 'bg-gray-500';
+    return colors[rarity as keyof typeof colors] || "bg-gray-500";
   };
 
   if (!user) {
@@ -127,7 +137,7 @@ export default function SellPage() {
             <p className="text-muted-foreground mb-6">
               Vous devez être connecté avec Steam pour vendre vos skins.
             </p>
-            <Button onClick={() => window.location.href = '/'}>
+            <Button onClick={() => (window.location.href = "/")}>
               Se connecter avec Steam
             </Button>
           </CardContent>
@@ -162,11 +172,13 @@ export default function SellPage() {
           <div className="flex items-center justify-between mb-4">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                  index <= currentStep 
-                    ? 'bg-orange-500 border-orange-500 text-white' 
-                    : 'border-muted-foreground text-muted-foreground'
-                }`}>
+                <div
+                  className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
+                    index <= currentStep
+                      ? "bg-orange-500 border-orange-500 text-white"
+                      : "border-muted-foreground text-muted-foreground"
+                  }`}
+                >
                   {index < currentStep ? (
                     <CheckCircleIcon className="w-6 h-6" />
                   ) : (
@@ -174,21 +186,30 @@ export default function SellPage() {
                   )}
                 </div>
                 <div className="ml-3 hidden sm:block">
-                  <p className={`text-sm font-medium ${
-                    index <= currentStep ? 'text-foreground' : 'text-muted-foreground'
-                  }`}>
+                  <p
+                    className={`text-sm font-medium ${
+                      index <= currentStep
+                        ? "text-foreground"
+                        : "text-muted-foreground"
+                    }`}
+                  >
                     {step.title}
                   </p>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className={`w-20 h-0.5 ml-6 ${
-                    index < currentStep ? 'bg-orange-500' : 'bg-muted'
-                  }`} />
+                  <div
+                    className={`w-20 h-0.5 ml-6 ${
+                      index < currentStep ? "bg-orange-500" : "bg-muted"
+                    }`}
+                  />
                 )}
               </div>
             ))}
           </div>
-          <Progress value={(currentStep / (steps.length - 1)) * 100} className="h-2" />
+          <Progress
+            value={(currentStep / (steps.length - 1)) * 100}
+            className="h-2"
+          />
         </motion.div>
 
         {/* Step Content */}
@@ -216,7 +237,9 @@ export default function SellPage() {
                       </p>
                       <ol className="list-decimal list-inside space-y-1 text-blue-700 dark:text-blue-300">
                         <li>Ouvrez Steam et allez dans votre inventaire</li>
-                        <li>Cliquez sur &quot;Paramètres de confidentialité&quot;</li>
+                        <li>
+                          Cliquez sur &quot;Paramètres de confidentialité&quot;
+                        </li>
                         <li>Copiez l&apos;URL du Trade Link</li>
                       </ol>
                     </div>
@@ -242,20 +265,23 @@ export default function SellPage() {
                         Important
                       </p>
                       <p className="text-yellow-700 dark:text-yellow-300">
-                        Assurez-vous que votre inventaire Steam est public et que votre Trade Link est valide.
-                        Nous ne pouvons pas accéder à un inventaire privé.
+                        Assurez-vous que votre inventaire Steam est public et
+                        que votre Trade Link est valide. Nous ne pouvons pas
+                        accéder à un inventaire privé.
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <Button 
+                <Button
                   onClick={handleTradeLinkSubmit}
                   disabled={!tradeLink || isLoading}
                   className="w-full"
                   size="lg"
                 >
-                  {isLoading ? 'Chargement des items...' : 'Analyser l\'inventaire'}
+                  {isLoading
+                    ? "Chargement des items..."
+                    : "Analyser l&apos;inventaire"}
                 </Button>
               </CardContent>
             </Card>
@@ -272,33 +298,49 @@ export default function SellPage() {
                   <CardContent>
                     <div className="space-y-3">
                       {items.map((item) => (
-                        <div key={item.id} className="flex items-center space-x-4 p-3 border rounded-lg">
+                        <div
+                          key={item.id}
+                          className="flex items-center space-x-4 p-3 border rounded-lg"
+                        >
                           <img
                             src={item.iconUrl}
                             alt={item.name}
                             className="w-16 h-16 rounded"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.src = '/placeholder-skin.png';
+                              target.src = "/placeholder-skin.png";
                             }}
                           />
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-1">
                               <h3 className="font-semibold">{item.name}</h3>
                               {item.statTrak && (
-                                <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
+                                <Badge
+                                  variant="secondary"
+                                  className="text-xs bg-orange-100 text-orange-800"
+                                >
                                   StatTrak™
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-sm text-muted-foreground">{item.exterior}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {item.exterior}
+                            </p>
                             <div className="flex items-center space-x-2 mt-1">
-                              <div className={`w-2 h-2 rounded-full ${getRarityColor(item.rarity)}`} />
-                              <span className="text-xs text-muted-foreground">{item.rarity}</span>
+                              <div
+                                className={`w-2 h-2 rounded-full ${getRarityColor(
+                                  item.rarity
+                                )}`}
+                              />
+                              <span className="text-xs text-muted-foreground">
+                                {item.rarity}
+                              </span>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="font-bold text-lg">{formatPrice(item.prixCentimes)}</p>
+                            <p className="font-bold text-lg">
+                              {formatPrice(item.prixCentimes)}
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -320,7 +362,9 @@ export default function SellPage() {
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span>Total brut</span>
-                        <span className="font-semibold">{formatPrice(estimation.brutCentimes)}</span>
+                        <span className="font-semibold">
+                          {formatPrice(estimation.brutCentimes)}
+                        </span>
                       </div>
                       <Separator />
                       <div className="flex justify-between text-sm text-muted-foreground">
@@ -334,7 +378,9 @@ export default function SellPage() {
                       <Separator />
                       <div className="flex justify-between text-lg font-bold">
                         <span>Total net</span>
-                        <span className="text-green-600">{formatPrice(estimation.netCentimes)}</span>
+                        <span className="text-green-600">
+                          {formatPrice(estimation.netCentimes)}
+                        </span>
                       </div>
                     </div>
 
@@ -348,8 +394,15 @@ export default function SellPage() {
                       </p>
                     </div>
 
-                    <Button onClick={handleConfirmTrade} disabled={isLoading} className="w-full" size="lg">
-                      {isLoading ? 'Création du trade...' : 'Confirmer la vente'}
+                    <Button
+                      onClick={handleConfirmTrade}
+                      disabled={isLoading}
+                      className="w-full"
+                      size="lg"
+                    >
+                      {isLoading
+                        ? "Création du trade..."
+                        : "Confirmer la vente"}
                     </Button>
                   </CardContent>
                 </Card>
@@ -361,20 +414,29 @@ export default function SellPage() {
             <Card>
               <CardContent className="p-8 text-center">
                 <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-green-500" />
-                <h2 className="text-2xl font-bold mb-2">Trade créé avec succès !</h2>
+                <h2 className="text-2xl font-bold mb-2">
+                  Trade créé avec succès !
+                </h2>
                 <p className="text-muted-foreground mb-6">
-                  Votre trade a été créé et envoyé. Acceptez l&apos;offre sur Steam pour continuer.
+                  Votre trade a été créé et envoyé. Acceptez l&apos;offre sur
+                  Steam pour continuer.
                 </p>
-                
+
                 <div className="bg-muted/50 rounded-lg p-4 mb-6">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-muted-foreground">ID du trade:</span>
+                      <span className="text-muted-foreground">
+                        ID du trade:
+                      </span>
                       <p className="font-mono">TICK-20240921-0001</p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Montant net:</span>
-                      <p className="font-bold text-green-600">{formatPrice(estimation.netCentimes)}</p>
+                      <span className="text-muted-foreground">
+                        Montant net:
+                      </span>
+                      <p className="font-bold text-green-600">
+                        {formatPrice(estimation.netCentimes)}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -386,7 +448,10 @@ export default function SellPage() {
                     </a>
                   </Button>
                   <Button variant="outline" asChild>
-                    <a href="https://steamcommunity.com/my/tradeoffers/" target="_blank">
+                    <a
+                      href="https://steamcommunity.com/my/tradeoffers/"
+                      target="_blank"
+                    >
                       Ouvrir Steam
                     </a>
                   </Button>

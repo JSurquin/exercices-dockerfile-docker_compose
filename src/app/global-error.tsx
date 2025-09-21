@@ -39,8 +39,8 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             {/* Error Message */}
             <h1 className="text-2xl font-bold mb-4">Erreur critique</h1>
             <p className="text-muted-foreground mb-6">
-              Une erreur critique s&apos;est produite. L&apos;application doit être
-              rechargée.
+              Une erreur critique s&apos;est produite. L&apos;application doit
+              être rechargée.
             </p>
 
             {/* Error Details (en mode développement) */}

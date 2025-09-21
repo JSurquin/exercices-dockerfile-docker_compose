@@ -293,7 +293,7 @@ export default function KYCPage() {
                           Pourquoi ces informations ?
                         </p>
                         <p className="text-blue-700 dark:text-blue-300">
-                          Ces informations sont requises par la réglementation européenne pour lutter contre le blanchiment d'argent et garantir la sécurité des transactions.
+                          Ces informations sont requises par la réglementation européenne pour lutter contre le blanchiment d&apos;argent et garantir la sécurité des transactions.
                         </p>
                       </div>
                     </div>
@@ -494,7 +494,7 @@ export default function KYCPage() {
                           <li>Regardez directement la caméra</li>
                           <li>Votre visage doit être entièrement visible</li>
                           <li>Évitez les lunettes de soleil ou chapeaux</li>
-                          <li>L'éclairage doit être naturel et uniforme</li>
+                          <li>L&apos;éclairage doit être naturel et uniforme</li>
                         </ul>
                       </div>
                     </div>
@@ -513,7 +513,7 @@ export default function KYCPage() {
                           Justificatif de domicile (optionnel)
                         </p>
                         <p className="text-blue-700 dark:text-blue-300">
-                          Cette étape est optionnelle mais peut accélérer la vérification. Documents acceptés : facture d'électricité, de gaz, d'eau, relevé bancaire, avis d'imposition (datant de moins de 3 mois).
+                          Cette étape est optionnelle mais peut accélérer la vérification. Documents acceptés : facture d&apos;électricité, de gaz, d&apos;eau, relevé bancaire, avis d&apos;imposition (datant de moins de 3 mois).
                         </p>
                       </div>
                     </div>
