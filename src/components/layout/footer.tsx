@@ -1,33 +1,32 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 
 export function Footer() {
-
   const links = {
     company: [
-      { name: 'À propos', href: '/about' },
-      { name: 'Blog', href: '/blog' },
-      { name: 'Carrières', href: '/careers' },
-      { name: 'Presse', href: '/press' },
+      { name: "À propos", href: "/about" },
+      { name: "Blog", href: "/blog" },
+      { name: "Carrières", href: "/careers" },
+      { name: "Presse", href: "/press" },
     ],
     support: [
-      { name: 'Centre d\'aide', href: '/help' },
-      { name: 'Contact', href: '/contact' },
-      { name: 'Status', href: '/status' },
-      { name: 'API', href: '/api' },
+      { name: "Centre d'aide", href: "/help" },
+      { name: "Contact", href: "/contact" },
+      { name: "Status", href: "/status" },
+      { name: "API", href: "/api" },
     ],
     legal: [
-      { name: 'Conditions d\'utilisation', href: '/terms' },
-      { name: 'Politique de confidentialité', href: '/privacy' },
-      { name: 'Politique KYC', href: '/kyc-policy' },
-      { name: 'Politique anti-blanchiment', href: '/aml-policy' },
+      { name: "Conditions d'utilisation", href: "/terms" },
+      { name: "Politique de confidentialité", href: "/privacy" },
+      { name: "Politique KYC", href: "/kyc-policy" },
+      { name: "Politique anti-blanchiment", href: "/aml-policy" },
     ],
     community: [
-      { name: 'Discord', href: 'https://discord.gg/cashtrade' },
-      { name: 'Twitter', href: 'https://twitter.com/cashtrade' },
-      { name: 'Reddit', href: 'https://reddit.com/r/cashtrade' },
-      { name: 'YouTube', href: 'https://youtube.com/cashtrade' },
+      { name: "Discord", href: "https://discord.gg/cashtrade" },
+      { name: "Twitter", href: "https://twitter.com/cashtrade" },
+      { name: "Reddit", href: "https://reddit.com/r/cashtrade" },
+      { name: "YouTube", href: "https://youtube.com/cashtrade" },
     ],
   };
 
@@ -44,8 +43,9 @@ export function Footer() {
               <span className="font-bold text-xl">CashTrade</span>
             </Link>
             <p className="text-muted-foreground mb-4 max-w-md">
-              La plateforme la plus rapide et sécurisée pour convertir vos skins CS2 en argent réel. 
-              Vendez vos skins en toute confiance avec notre système de paiement sécurisé.
+              La plateforme la plus rapide et sécurisée pour convertir vos skins
+              CS2 en argent réel. Vendez vos skins en toute confiance avec notre
+              système de paiement sécurisé.
             </p>
             <div className="flex space-x-3 sm:space-x-4">
               <div className="text-sm text-muted-foreground">
@@ -122,7 +122,9 @@ export function Footer() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
               <div className="text-2xl font-bold text-orange-600">15,420+</div>
-              <div className="text-sm text-muted-foreground">Utilisateurs actifs</div>
+              <div className="text-sm text-muted-foreground">
+                Utilisateurs actifs
+              </div>
             </div>
             <div>
               <div className="text-2xl font-bold text-orange-600">€2.4M+</div>
@@ -130,11 +132,15 @@ export function Footer() {
             </div>
             <div>
               <div className="text-2xl font-bold text-orange-600">8,967+</div>
-              <div className="text-sm text-muted-foreground">Trades réalisés</div>
+              <div className="text-sm text-muted-foreground">
+                Trades réalisés
+              </div>
             </div>
             <div>
               <div className="text-2xl font-bold text-orange-600">99.8%</div>
-              <div className="text-sm text-muted-foreground">Taux de satisfaction</div>
+              <div className="text-sm text-muted-foreground">
+                Taux de satisfaction
+              </div>
             </div>
           </div>
         </div>
@@ -162,10 +168,12 @@ export function Footer() {
         {/* Disclaimer */}
         <div className="mt-8 p-4 bg-muted rounded-lg">
           <p className="text-xs text-muted-foreground">
-            <strong>Avertissement :</strong> CashTrade n&apos;est pas affilié à Valve Corporation ou Steam. 
-            Counter-Strike et Steam sont des marques déposées de Valve Corporation. 
-            Le trading de skins comporte des risques et les prix peuvent fluctuer. 
-            Veuillez trader de manière responsable et ne jamais investir plus que ce que vous pouvez vous permettre de perdre.
+            <strong>Avertissement :</strong> CashTrade n&apos;est pas affilié à
+            Valve Corporation ou Steam. Counter-Strike et Steam sont des marques
+            déposées de Valve Corporation. Le trading de skins comporte des
+            risques et les prix peuvent fluctuer. Veuillez trader de manière
+            responsable et ne jamais investir plus que ce que vous pouvez vous
+            permettre de perdre.
           </p>
         </div>
       </div>

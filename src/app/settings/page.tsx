@@ -1,19 +1,25 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/components/providers/auth-provider';
-import { useLocale } from '@/components/providers/locale-provider';
-import { useTheme } from 'next-themes';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/components/providers/auth-provider";
+import { useLocale } from "@/components/providers/locale-provider";
+import { useTheme } from "next-themes";
 import {
   UserCircleIcon,
   CogIcon,
@@ -23,8 +29,8 @@ import {
   MoonIcon,
   SunIcon,
   ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline';
-import { toast } from 'sonner';
+} from "@heroicons/react/24/outline";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -38,16 +44,16 @@ export default function SettingsPage() {
     marketingEmails: false,
     twoFactorEnabled: true,
     language: locale,
-    theme: theme || 'dark',
+    theme: theme || "dark",
   });
 
   const handleSaveSettings = async () => {
     try {
       // Simulation de sauvegarde
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Paramètres sauvegardés avec succès');
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      toast.success("Paramètres sauvegardés avec succès");
     } catch {
-      toast.error('Erreur lors de la sauvegarde');
+      toast.error("Erreur lors de la sauvegarde");
     }
   };
 
@@ -61,7 +67,7 @@ export default function SettingsPage() {
             <p className="text-muted-foreground mb-6">
               Vous devez être connecté pour accéder aux paramètres.
             </p>
-            <Button onClick={() => window.location.href = '/'}>
+            <Button onClick={() => (window.location.href = "/")}>
               Se connecter avec Steam
             </Button>
           </CardContent>
@@ -80,7 +86,9 @@ export default function SettingsPage() {
           transition={{ duration: 0.6 }}
           className="mb-6 sm:mb-8"
         >
-          <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Paramètres</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
+            Paramètres
+          </h1>
           <p className="text-muted-foreground">
             Gérez vos préférences et paramètres de compte
           </p>
@@ -114,18 +122,26 @@ export default function SettingsPage() {
                   <div className="flex items-center space-x-6">
                     <Avatar className="w-20 h-20">
                       <AvatarImage src={user.avatar} alt={user.username} />
-                      <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      <AvatarFallback>
+                        {user.username.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="space-y-2">
                       <h3 className="text-lg font-semibold">{user.username}</h3>
-                      <p className="text-sm text-muted-foreground">Steam ID: {user.steamId64}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Steam ID: {user.steamId64}
+                      </p>
                       <div className="flex items-center space-x-2">
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          KYC {user.kycStatus === 'verified' ? 'Vérifié' : 'En attente'}
+                        <Badge
+                          variant="secondary"
+                          className="bg-green-100 text-green-800"
+                        >
+                          KYC{" "}
+                          {user.kycStatus === "verified"
+                            ? "Vérifié"
+                            : "En attente"}
                         </Badge>
-                        <Badge variant="outline">
-                          Niveau {user.level}
-                        </Badge>
+                        <Badge variant="outline">Niveau {user.level}</Badge>
                       </div>
                     </div>
                   </div>
@@ -140,7 +156,10 @@ export default function SettingsPage() {
                     </div>
                     <div className="space-y-2">
                       <Label>Membre depuis</Label>
-                      <Input value={new Date(user.createdAt).toLocaleDateString()} disabled />
+                      <Input
+                        value={new Date(user.createdAt).toLocaleDateString()}
+                        disabled
+                      />
                     </div>
                   </div>
 
@@ -152,15 +171,21 @@ export default function SettingsPage() {
                         <p className="text-sm text-muted-foreground">Niveau</p>
                       </div>
                       <div className="text-center p-4 bg-muted/50 rounded-lg">
-                        <p className="text-2xl font-bold">{user.xp.toLocaleString()}</p>
-                        <p className="text-sm text-muted-foreground">XP Total</p>
+                        <p className="text-2xl font-bold">
+                          {user.xp.toLocaleString()}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          XP Total
+                        </p>
                       </div>
                       <div className="text-center p-4 bg-muted/50 rounded-lg">
                         <p className="text-2xl font-bold">{user.tickets}</p>
                         <p className="text-sm text-muted-foreground">Tickets</p>
                       </div>
                       <div className="text-center p-4 bg-muted/50 rounded-lg">
-                        <p className="text-2xl font-bold">{(user.totalVolume / 100).toFixed(0)}€</p>
+                        <p className="text-2xl font-bold">
+                          {(user.totalVolume / 100).toFixed(0)}€
+                        </p>
                         <p className="text-sm text-muted-foreground">Volume</p>
                       </div>
                     </div>
@@ -182,13 +207,18 @@ export default function SettingsPage() {
                   <CardContent className="space-y-4 sm:space-y-6">
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
-                        <h4 className="font-semibold">Authentification à deux facteurs (2FA)</h4>
+                        <h4 className="font-semibold">
+                          Authentification à deux facteurs (2FA)
+                        </h4>
                         <p className="text-sm text-muted-foreground">
                           Protection supplémentaire de votre compte
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
+                        <Badge
+                          variant="secondary"
+                          className="bg-green-100 text-green-800"
+                        >
                           Activé
                         </Badge>
                         <Button variant="outline" size="sm">
@@ -205,10 +235,15 @@ export default function SettingsPage() {
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          {user.kycStatus === 'verified' ? 'Vérifié' : 'En attente'}
+                        <Badge
+                          variant="secondary"
+                          className="bg-green-100 text-green-800"
+                        >
+                          {user.kycStatus === "verified"
+                            ? "Vérifié"
+                            : "En attente"}
                         </Badge>
-                        {user.kycStatus !== 'verified' && (
+                        {user.kycStatus !== "verified" && (
                           <Button variant="outline" size="sm">
                             Commencer KYC
                           </Button>
@@ -240,13 +275,18 @@ export default function SettingsPage() {
                         Conformité RGPD
                       </h4>
                       <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
-                        Vous avez le droit d'accéder, modifier ou supprimer vos données personnelles.
+                        Vous avez le droit d'accéder, modifier ou supprimer vos
+                        données personnelles.
                       </p>
                       <div className="flex space-x-2">
                         <Button variant="outline" size="sm">
                           Exporter mes données
                         </Button>
-                        <Button variant="outline" size="sm" className="text-red-600">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600"
+                        >
                           Supprimer mon compte
                         </Button>
                       </div>
@@ -269,15 +309,20 @@ export default function SettingsPage() {
                   <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-semibold">Notifications par email</h4>
+                        <h4 className="font-semibold">
+                          Notifications par email
+                        </h4>
                         <p className="text-sm text-muted-foreground">
                           Recevoir des notifications importantes par email
                         </p>
                       </div>
                       <Switch
                         checked={settings.emailNotifications}
-                        onCheckedChange={(checked) => 
-                          setSettings(prev => ({ ...prev, emailNotifications: checked }))
+                        onCheckedChange={(checked) =>
+                          setSettings((prev) => ({
+                            ...prev,
+                            emailNotifications: checked,
+                          }))
                         }
                       />
                     </div>
@@ -286,13 +331,17 @@ export default function SettingsPage() {
                       <div>
                         <h4 className="font-semibold">Alertes de trade</h4>
                         <p className="text-sm text-muted-foreground">
-                          Notifications lors des changements d'état de vos trades
+                          Notifications lors des changements d'état de vos
+                          trades
                         </p>
                       </div>
                       <Switch
                         checked={settings.tradeAlerts}
-                        onCheckedChange={(checked) => 
-                          setSettings(prev => ({ ...prev, tradeAlerts: checked }))
+                        onCheckedChange={(checked) =>
+                          setSettings((prev) => ({
+                            ...prev,
+                            tradeAlerts: checked,
+                          }))
                         }
                       />
                     </div>
@@ -306,8 +355,11 @@ export default function SettingsPage() {
                       </div>
                       <Switch
                         checked={settings.paymentAlerts}
-                        onCheckedChange={(checked) => 
-                          setSettings(prev => ({ ...prev, paymentAlerts: checked }))
+                        onCheckedChange={(checked) =>
+                          setSettings((prev) => ({
+                            ...prev,
+                            paymentAlerts: checked,
+                          }))
                         }
                       />
                     </div>
@@ -321,8 +373,11 @@ export default function SettingsPage() {
                       </div>
                       <Switch
                         checked={settings.pushNotifications}
-                        onCheckedChange={(checked) => 
-                          setSettings(prev => ({ ...prev, pushNotifications: checked }))
+                        onCheckedChange={(checked) =>
+                          setSettings((prev) => ({
+                            ...prev,
+                            pushNotifications: checked,
+                          }))
                         }
                       />
                     </div>
@@ -331,13 +386,17 @@ export default function SettingsPage() {
                       <div>
                         <h4 className="font-semibold">Emails marketing</h4>
                         <p className="text-sm text-muted-foreground">
-                          Recevoir des informations sur les nouveautés et promotions
+                          Recevoir des informations sur les nouveautés et
+                          promotions
                         </p>
                       </div>
                       <Switch
                         checked={settings.marketingEmails}
-                        onCheckedChange={(checked) => 
-                          setSettings(prev => ({ ...prev, marketingEmails: checked }))
+                        onCheckedChange={(checked) =>
+                          setSettings((prev) => ({
+                            ...prev,
+                            marketingEmails: checked,
+                          }))
                         }
                       />
                     </div>
@@ -369,11 +428,16 @@ export default function SettingsPage() {
                           </div>
                           <div>
                             <p className="font-medium">SEPA - Qonto</p>
-                            <p className="text-sm text-muted-foreground">FR76 **** **** **** **89</p>
+                            <p className="text-sm text-muted-foreground">
+                              FR76 **** **** **** **89
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Badge variant="secondary" className="bg-green-100 text-green-800">
+                          <Badge
+                            variant="secondary"
+                            className="bg-green-100 text-green-800"
+                          >
                             Vérifié
                           </Badge>
                           <Badge variant="outline">Par défaut</Badge>
@@ -388,15 +452,22 @@ export default function SettingsPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
-                            <span className="text-orange-600 font-bold text-xs">₿</span>
+                            <span className="text-orange-600 font-bold text-xs">
+                              ₿
+                            </span>
                           </div>
                           <div>
                             <p className="font-medium">Bitcoin</p>
-                            <p className="text-sm text-muted-foreground">1A1z...DivfNa</p>
+                            <p className="text-sm text-muted-foreground">
+                              1A1z...DivfNa
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Badge variant="secondary" className="bg-green-100 text-green-800">
+                          <Badge
+                            variant="secondary"
+                            className="bg-green-100 text-green-800"
+                          >
                             Vérifié
                           </Badge>
                           <Button variant="ghost" size="sm">
@@ -419,7 +490,8 @@ export default function SettingsPage() {
                           Important
                         </p>
                         <p className="text-yellow-700 dark:text-yellow-300">
-                          Tout changement d'IBAN nécessite une nouvelle vérification et un délai de 7 jours.
+                          Tout changement d'IBAN nécessite une nouvelle
+                          vérification et un délai de 7 jours.
                         </p>
                       </div>
                     </div>
@@ -446,7 +518,12 @@ export default function SettingsPage() {
                           Choisissez votre langue préférée
                         </p>
                       </div>
-                      <Select value={locale} onValueChange={(value) => setLocale(value as 'fr' | 'en')}>
+                      <Select
+                        value={locale}
+                        onValueChange={(value) =>
+                          setLocale(value as "fr" | "en")
+                        }
+                      >
                         <SelectTrigger className="w-40">
                           <SelectValue />
                         </SelectTrigger>

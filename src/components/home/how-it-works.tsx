@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   LinkIcon,
   CurrencyDollarIcon,
@@ -10,61 +10,83 @@ import {
   BanknotesIcon,
   ShieldCheckIcon,
   CheckCircleIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 const steps = [
   {
     step: 1,
     icon: LinkIcon,
-    title: 'Ajoutez votre Trade Link',
-    description: 'Connectez-vous avec Steam et ajoutez votre lien de trade sécurisé.',
-    details: ['Connexion Steam OpenID', 'Validation automatique du lien', 'Sécurité maximale'],
+    title: "Ajoutez votre Trade Link",
+    description:
+      "Connectez-vous avec Steam et ajoutez votre lien de trade sécurisé.",
+    details: [
+      "Connexion Steam OpenID",
+      "Validation automatique du lien",
+      "Sécurité maximale",
+    ],
   },
   {
     step: 2,
     icon: CurrencyDollarIcon,
-    title: 'Estimation instantanée',
-    description: 'Notre IA analyse vos skins et vous donne le prix en temps réel.',
-    details: ['Prix basés sur Skinplace API', 'Mise à jour en temps réel', 'Estimation précise'],
+    title: "Estimation instantanée",
+    description:
+      "Notre IA analyse vos skins et vous donne le prix en temps réel.",
+    details: [
+      "Prix basés sur Skinplace API",
+      "Mise à jour en temps réel",
+      "Estimation précise",
+    ],
   },
   {
     step: 3,
     icon: ShieldCheckIcon,
-    title: 'Vérification KYC',
-    description: 'Vérifiez votre identité pour sécuriser les paiements.',
-    details: ['Processus rapide et simple', 'Documents sécurisés', 'Conformité légale'],
+    title: "Vérification KYC",
+    description: "Vérifiez votre identité pour sécuriser les paiements.",
+    details: [
+      "Processus rapide et simple",
+      "Documents sécurisés",
+      "Conformité légale",
+    ],
   },
   {
     step: 4,
     icon: ClockIcon,
-    title: 'Trade Hold Steam (7j)',
-    description: 'Période de sécurité Steam obligatoire de 7 jours.',
-    details: ['Sécurité Steam', 'Suivi en temps réel', 'Notifications automatiques'],
+    title: "Trade Hold Steam (7j)",
+    description: "Période de sécurité Steam obligatoire de 7 jours.",
+    details: [
+      "Sécurité Steam",
+      "Suivi en temps réel",
+      "Notifications automatiques",
+    ],
   },
   {
     step: 5,
     icon: BanknotesIcon,
-    title: 'Paiement automatique',
-    description: 'Recevez votre argent via SEPA ou crypto après la période.',
-    details: ['Paiement SEPA rapide', 'Support crypto multiple', 'Frais transparents'],
+    title: "Paiement automatique",
+    description: "Recevez votre argent via SEPA ou crypto après la période.",
+    details: [
+      "Paiement SEPA rapide",
+      "Support crypto multiple",
+      "Frais transparents",
+    ],
   },
 ];
 
 const benefits = [
   {
     icon: CheckCircleIcon,
-    title: 'Processus entièrement automatisé',
-    description: 'Du trade à la réception de l\'argent, tout est automatique.',
+    title: "Processus entièrement automatisé",
+    description: "Du trade à la réception de l'argent, tout est automatique.",
   },
   {
     icon: ShieldCheckIcon,
-    title: 'Sécurité maximale',
-    description: 'KYC obligatoire, chiffrement SSL, et conformité européenne.',
+    title: "Sécurité maximale",
+    description: "KYC obligatoire, chiffrement SSL, et conformité européenne.",
   },
   {
     icon: CurrencyDollarIcon,
-    title: 'Frais transparents',
-    description: 'Seulement 0,5% de frais de cashout, pas de frais cachés.',
+    title: "Frais transparents",
+    description: "Seulement 0,5% de frais de cashout, pas de frais cachés.",
   },
 ];
 
@@ -84,7 +106,8 @@ export function HowItWorks() {
             Comment ça marche ?
           </h2>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Un processus simple et sécurisé pour vendre vos skins CS2 en quelques étapes
+            Un processus simple et sécurisé pour vendre vos skins CS2 en
+            quelques étapes
           </p>
         </motion.div>
 
@@ -175,10 +198,14 @@ export function HowItWorks() {
           <div className="bg-gradient-to-br from-orange-500/10 to-red-600/10 rounded-2xl p-8 border">
             <h3 className="text-2xl font-bold mb-4">Prêt à commencer ?</h3>
             <p className="text-muted-foreground mb-6">
-              Rejoignez des milliers d'utilisateurs qui ont déjà vendu leurs skins en toute sécurité
+              Rejoignez des milliers d'utilisateurs qui ont déjà vendu leurs
+              skins en toute sécurité
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+              >
                 Commencer maintenant
               </Button>
               <Button variant="outline" size="lg">

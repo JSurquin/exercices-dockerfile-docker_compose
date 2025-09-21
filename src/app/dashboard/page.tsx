@@ -1,14 +1,18 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/components/providers/auth-provider';
-import { mockTrades, mockVolumeData, mockTradeStatusData } from '@/lib/mock-data';
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/components/providers/auth-provider";
+import {
+  mockTrades,
+  mockVolumeData,
+  mockTradeStatusData,
+} from "@/lib/mock-data";
 import {
   CurrencyDollarIcon,
   ChartBarIcon,
@@ -16,36 +20,47 @@ import {
   TicketIcon,
   StarIcon,
   BanknotesIcon,
-} from '@heroicons/react/24/outline';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import CountUp from 'react-countup';
+} from "@heroicons/react/24/outline";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import CountUp from "react-countup";
 
 const formatPrice = (centimes: number) => {
-  return (centimes / 100).toFixed(2) + '€';
+  return (centimes / 100).toFixed(2) + "€";
 };
 
 const getStatusColor = (status: string) => {
   const colors = {
-    'créé': 'bg-blue-500',
-    'accepté_par_bot': 'bg-indigo-500',
-    'en_trade_hold': 'bg-yellow-500',
-    'disponible': 'bg-green-500',
-    'paiement_en_cours': 'bg-orange-500',
-    'payé': 'bg-emerald-500',
-    'échoué': 'bg-red-500',
+    créé: "bg-blue-500",
+    accepté_par_bot: "bg-indigo-500",
+    en_trade_hold: "bg-yellow-500",
+    disponible: "bg-green-500",
+    paiement_en_cours: "bg-orange-500",
+    payé: "bg-emerald-500",
+    échoué: "bg-red-500",
   };
-  return colors[status as keyof typeof colors] || 'bg-gray-500';
+  return colors[status as keyof typeof colors] || "bg-gray-500";
 };
 
 const getStatusText = (status: string) => {
   const texts = {
-    'créé': 'Créé',
-    'accepté_par_bot': 'Accepté',
-    'en_trade_hold': 'Trade Hold (7j)',
-    'disponible': 'Prêt à payer',
-    'paiement_en_cours': 'Paiement en cours',
-    'payé': 'Payé',
-    'échoué': 'Échec',
+    créé: "Créé",
+    accepté_par_bot: "Accepté",
+    en_trade_hold: "Trade Hold (7j)",
+    disponible: "Prêt à payer",
+    paiement_en_cours: "Paiement en cours",
+    payé: "Payé",
+    échoué: "Échec",
   };
   return texts[status as keyof typeof texts] || status;
 };
@@ -63,7 +78,7 @@ export default function DashboardPage() {
             <p className="text-muted-foreground mb-6">
               Vous devez être connecté pour accéder à votre dashboard.
             </p>
-            <Button onClick={() => window.location.href = '/'}>
+            <Button onClick={() => (window.location.href = "/")}>
               Se connecter avec Steam
             </Button>
           </CardContent>
@@ -76,7 +91,9 @@ export default function DashboardPage() {
   const nextLevel = currentLevel + 1;
   const xpForCurrentLevel = currentLevel * 1000;
   const xpForNextLevel = nextLevel * 1000;
-  const xpProgress = ((user.xp - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel)) * 100;
+  const xpProgress =
+    ((user.xp - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel)) *
+    100;
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -91,11 +108,17 @@ export default function DashboardPage() {
           <div className="flex items-center space-x-3 sm:space-x-4 mb-6">
             <Avatar className="w-16 h-16">
               <AvatarImage src={user.avatar} alt={user.username} />
-              <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>
+                {user.username.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold">Bienvenue, {user.username}</h1>
-              <p className="text-muted-foreground">Voici un aperçu de votre activité</p>
+              <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold">
+                Bienvenue, {user.username}
+              </h1>
+              <p className="text-muted-foreground">
+                Voici un aperçu de votre activité
+              </p>
             </div>
           </div>
 
@@ -108,12 +131,15 @@ export default function DashboardPage() {
                   <div>
                     <h3 className="font-semibold">Niveau {currentLevel}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {user.xp - xpForCurrentLevel} / {xpForNextLevel - xpForCurrentLevel} XP
+                      {user.xp - xpForCurrentLevel} /{" "}
+                      {xpForNextLevel - xpForCurrentLevel} XP
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold">{user.xp.toLocaleString()} XP</p>
+                  <p className="text-2xl font-bold">
+                    {user.xp.toLocaleString()} XP
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {xpForNextLevel - user.xp} XP pour le niveau {nextLevel}
                   </p>
@@ -137,7 +163,12 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Volume total</p>
                   <p className="text-2xl font-bold">
-                    <CountUp end={user.totalVolume / 100} duration={2} decimals={2} suffix="€" />
+                    <CountUp
+                      end={user.totalVolume / 100}
+                      duration={2}
+                      decimals={2}
+                      suffix="€"
+                    />
                   </p>
                 </div>
                 <CurrencyDollarIcon className="w-8 h-8 text-green-500" />
@@ -210,7 +241,12 @@ export default function DashboardPage() {
                       <div key={trade.id} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center space-x-3">
-                            <Badge variant="secondary" className={`${getStatusColor(trade.status)} text-white`}>
+                            <Badge
+                              variant="secondary"
+                              className={`${getStatusColor(
+                                trade.status
+                              )} text-white`}
+                            >
                               {getStatusText(trade.status)}
                             </Badge>
                             <span className="font-mono text-sm text-muted-foreground">
@@ -218,7 +254,9 @@ export default function DashboardPage() {
                             </span>
                           </div>
                           <div className="text-right">
-                            <p className="font-bold text-lg">{formatPrice(trade.netCentimes)}</p>
+                            <p className="font-bold text-lg">
+                              {formatPrice(trade.netCentimes)}
+                            </p>
                             <p className="text-sm text-muted-foreground">
                               {new Date(trade.créédLe).toLocaleDateString()}
                             </p>
@@ -227,28 +265,48 @@ export default function DashboardPage() {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                           <div>
-                            <span className="text-muted-foreground">Items ({trade.items.length}):</span>
+                            <span className="text-muted-foreground">
+                              Items ({trade.items.length}):
+                            </span>
                             <div className="mt-1">
                               {trade.items.slice(0, 2).map((item, index) => (
-                                <p key={index} className="truncate">{item.name}</p>
+                                <p key={index} className="truncate">
+                                  {item.name}
+                                </p>
                               ))}
                               {trade.items.length > 2 && (
-                                <p className="text-muted-foreground">+{trade.items.length - 2} autres</p>
+                                <p className="text-muted-foreground">
+                                  +{trade.items.length - 2} autres
+                                </p>
                               )}
                             </div>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Frais:</span>
+                            <span className="text-muted-foreground">
+                              Frais:
+                            </span>
                             <p>Cashout: {formatPrice(trade.frais.cashout)}</p>
                             <p>Réseau: {formatPrice(trade.frais.réseau)}</p>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Timeline:</span>
+                            <span className="text-muted-foreground">
+                              Timeline:
+                            </span>
                             {trade.tradeAcceptéLe && (
-                              <p>Accepté: {new Date(trade.tradeAcceptéLe).toLocaleDateString()}</p>
+                              <p>
+                                Accepté:{" "}
+                                {new Date(
+                                  trade.tradeAcceptéLe
+                                ).toLocaleDateString()}
+                              </p>
                             )}
                             {trade.disponibleLe && (
-                              <p>Disponible: {new Date(trade.disponibleLe).toLocaleDateString()}</p>
+                              <p>
+                                Disponible:{" "}
+                                {new Date(
+                                  trade.disponibleLe
+                                ).toLocaleDateString()}
+                              </p>
                             )}
                           </div>
                         </div>
@@ -272,13 +330,18 @@ export default function DashboardPage() {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="date" />
                         <YAxis />
-                        <Tooltip formatter={(value) => [formatPrice(value as number), 'Volume']} />
-                        <Line 
-                          type="monotone" 
-                          dataKey="volume" 
-                          stroke="#f97316" 
+                        <Tooltip
+                          formatter={(value) => [
+                            formatPrice(value as number),
+                            "Volume",
+                          ]}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="volume"
+                          stroke="#f97316"
                           strokeWidth={2}
-                          dot={{ fill: '#f97316' }}
+                          dot={{ fill: "#f97316" }}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -299,7 +362,9 @@ export default function DashboardPage() {
                           outerRadius={80}
                           fill="#8884d8"
                           dataKey="count"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }) =>
+                            `${name} ${(percent * 100).toFixed(0)}%`
+                          }
                         >
                           {mockTradeStatusData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
@@ -332,11 +397,16 @@ export default function DashboardPage() {
                           </div>
                           <div>
                             <p className="font-medium">SEPA - Qonto</p>
-                            <p className="text-sm text-muted-foreground">FR76 **** **** **** **89</p>
+                            <p className="text-sm text-muted-foreground">
+                              FR76 **** **** **** **89
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Badge variant="secondary" className="bg-green-100 text-green-800">
+                          <Badge
+                            variant="secondary"
+                            className="bg-green-100 text-green-800"
+                          >
                             Vérifié
                           </Badge>
                           <Badge variant="outline">Par défaut</Badge>
@@ -348,14 +418,21 @@ export default function DashboardPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
-                            <span className="text-orange-600 font-bold text-xs">₿</span>
+                            <span className="text-orange-600 font-bold text-xs">
+                              ₿
+                            </span>
                           </div>
                           <div>
                             <p className="font-medium">Bitcoin</p>
-                            <p className="text-sm text-muted-foreground">1A1z...DivfNa</p>
+                            <p className="text-sm text-muted-foreground">
+                              1A1z...DivfNa
+                            </p>
                           </div>
                         </div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
+                        <Badge
+                          variant="secondary"
+                          className="bg-green-100 text-green-800"
+                        >
                           Vérifié
                         </Badge>
                       </div>
@@ -380,13 +457,20 @@ export default function DashboardPage() {
                     <div className="flex items-center space-x-3 sm:space-x-4">
                       <Avatar className="w-16 h-16">
                         <AvatarImage src={user.avatar} alt={user.username} />
-                        <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        <AvatarFallback>
+                          {user.username.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
                         <h3 className="font-semibold">{user.username}</h3>
-                        <p className="text-sm text-muted-foreground">Steam ID: {user.steamId64}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Steam ID: {user.steamId64}
+                        </p>
                         <Badge variant="secondary" className="mt-1">
-                          KYC {user.kycStatus === 'verified' ? 'Vérifié' : 'En attente'}
+                          KYC{" "}
+                          {user.kycStatus === "verified"
+                            ? "Vérifié"
+                            : "En attente"}
                         </Badge>
                       </div>
                     </div>
@@ -401,18 +485,28 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">Authentification 2FA</p>
-                        <p className="text-sm text-muted-foreground">Protection supplémentaire</p>
+                        <p className="text-sm text-muted-foreground">
+                          Protection supplémentaire
+                        </p>
                       </div>
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      <Badge
+                        variant="secondary"
+                        className="bg-green-100 text-green-800"
+                      >
                         Activé
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">Notifications Email</p>
-                        <p className="text-sm text-muted-foreground">Alertes de trading</p>
+                        <p className="text-sm text-muted-foreground">
+                          Alertes de trading
+                        </p>
                       </div>
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      <Badge
+                        variant="secondary"
+                        className="bg-green-100 text-green-800"
+                      >
                         Activé
                       </Badge>
                     </div>

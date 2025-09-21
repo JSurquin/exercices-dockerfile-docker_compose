@@ -156,7 +156,9 @@ export default function SellPage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-6 sm:mb-6 sm:mb-8"
         >
-          <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">{messages.trade.title}</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
+            {messages.trade.title}
+          </h1>
           <p className="text-muted-foreground">
             Vendez vos skins CS2 en quelques étapes simples
           </p>

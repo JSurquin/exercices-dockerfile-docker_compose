@@ -1,64 +1,65 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useLocale } from '@/components/providers/locale-provider';
-import { useAuth } from '@/components/providers/auth-provider';
-import { motion } from 'framer-motion';
-import CountUp from 'react-countup';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useLocale } from "@/components/providers/locale-provider";
+import { useAuth } from "@/components/providers/auth-provider";
+import { motion } from "framer-motion";
+import CountUp from "react-countup";
+import { CS2Background, AK47Icon, AWPIcon, SecurityShieldIcon, WeaponGradeIndicator } from "@/components/ui/cs2-icons";
 import {
   ShieldCheckIcon,
   ClockIcon,
   CurrencyDollarIcon,
   CheckCircleIcon,
   StarIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 const stats = [
-  { value: 15420, label: 'Utilisateurs actifs', prefix: '', suffix: '+' },
-  { value: 2.4, label: 'Millions d\'€ traités', prefix: '€', suffix: 'M+' },
-  { value: 8967, label: 'Trades réalisés', prefix: '', suffix: '+' },
-  { value: 99.8, label: 'Taux de satisfaction', prefix: '', suffix: '%' },
+  { value: 15420, label: "Utilisateurs actifs", prefix: "", suffix: "+" },
+  { value: 2.4, label: "Millions d'€ traités", prefix: "€", suffix: "M+" },
+  { value: 8967, label: "Trades réalisés", prefix: "", suffix: "+" },
+  { value: 99.8, label: "Taux de satisfaction", prefix: "", suffix: "%" },
 ];
 
 const features = [
   {
     icon: ClockIcon,
-    title: 'Estimation instantanée',
-    description: 'Prix en temps réel via notre API Skinplace intégrée',
+    title: "Estimation instantanée",
+    description: "Prix en temps réel via notre API Skinplace intégrée",
   },
   {
     icon: ShieldCheckIcon,
-    title: 'Paiements sécurisés',
-    description: 'SEPA, crypto, et KYC obligatoire pour votre sécurité',
+    title: "Paiements sécurisés",
+    description: "SEPA, crypto, et KYC obligatoire pour votre sécurité",
   },
   {
     icon: CurrencyDollarIcon,
-    title: 'Frais transparents',
-    description: 'Seulement 0,5% de frais de cashout, pas de frais cachés',
+    title: "Frais transparents",
+    description: "Seulement 0,5% de frais de cashout, pas de frais cachés",
   },
 ];
 
 const testimonials = [
   {
-    name: 'ProGamer2024',
+    name: "ProGamer2024",
     rating: 5,
-    comment: 'Super rapide, j\'ai reçu mon paiement en 2 jours !',
-    amount: '1,234€',
+    comment: "Super rapide, j'ai reçu mon paiement en 2 jours !",
+    amount: "1,234€",
   },
   {
-    name: 'SkinMaster',
+    name: "SkinMaster",
     rating: 5,
-    comment: 'Interface très claire, processus simple et sécurisé.',
-    amount: '987€',
+    comment: "Interface très claire, processus simple et sécurisé.",
+    amount: "987€",
   },
   {
-    name: 'CSGOKing',
+    name: "CSGOKing",
     rating: 5,
-    comment: 'Meilleur site pour vendre ses skins, je recommande !',
-    amount: '2,156€',
+    comment: "Meilleur site pour vendre ses skins, je recommande !",
+    amount: "2,156€",
   },
 ];
 
@@ -72,10 +73,59 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-background to-muted/20">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZjU3MjIiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSI0Ii8+PC9nPjwvZz48L3N2Zz4=')] bg-repeat" />
+    <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-orange-500/5">
+      {/* CS2 Background Pattern */}
+      <CS2Background className="opacity-30" />
+      
+      {/* Animated CS2 Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{ 
+            x: [0, 100, 0],
+            y: [0, -50, 0],
+            rotate: [0, 180, 360]
+          }}
+          transition={{ 
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+          className="absolute top-20 left-10 text-orange-500/10"
+        >
+          <AK47Icon className="h-12 w-12" />
+        </motion.div>
+        
+        <motion.div
+          animate={{ 
+            x: [0, -80, 0],
+            y: [0, 100, 0],
+            rotate: [0, -180, -360]
+          }}
+          transition={{ 
+            duration: 25,
+            repeat: Infinity,
+            ease: "linear",
+            delay: 5
+          }}
+          className="absolute top-40 right-20 text-orange-500/10"
+        >
+          <AWPIcon className="h-8 w-8" />
+        </motion.div>
+        
+        <motion.div
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.1, 0.3, 0.1]
+          }}
+          transition={{ 
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute bottom-20 left-1/4 text-orange-500"
+        >
+          <SecurityShieldIcon className="h-16 w-16" />
+        </motion.div>
       </div>
 
       <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
@@ -107,10 +157,10 @@ export function HeroSection() {
               className="space-y-3 sm:space-y-4"
             >
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                Vendez vos skins{' '}
+                Vendez vos skins{" "}
                 <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
                   CS2
-                </span>{' '}
+                </span>{" "}
                 facilement
               </h1>
               <p className="text-lg sm:text-xl text-muted-foreground max-w-lg leading-relaxed">
@@ -140,15 +190,17 @@ export function HeroSection() {
               transition={{ duration: 0.6, delay: 0.6 }}
               className="flex flex-col sm:flex-row gap-4"
             >
-              <Button asChild size="lg" className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
-                <Link href={user ? '/sell' : '/login'}>
-                  {user ? 'Vendre maintenant' : messages.hero.cta}
+              <Button
+                asChild
+                size="lg"
+                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+              >
+                <Link href={user ? "/sell" : "/login"}>
+                  {user ? "Vendre maintenant" : messages.hero.cta}
                 </Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <Link href="#how-it-works">
-                  Comment ça marche
-                </Link>
+                <Link href="#how-it-works">Comment ça marche</Link>
               </Button>
             </motion.div>
 
@@ -171,7 +223,9 @@ export function HeroSection() {
                     />
                     {stat.suffix}
                   </div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {stat.label}
+                  </div>
                 </div>
               ))}
             </motion.div>
@@ -189,7 +243,9 @@ export function HeroSection() {
               {/* Fake Trade Interface */}
               <div className="space-y-4 sm:space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">Estimation instantanée</h3>
+                  <h3 className="text-lg font-semibold">
+                    Estimation instantanée
+                  </h3>
                   <Badge variant="secondary" className="text-green-600">
                     En ligne
                   </Badge>
@@ -197,50 +253,79 @@ export function HeroSection() {
 
                 {/* Skin Items */}
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">AK</span>
+                  <motion.div 
+                    className="flex items-center space-x-3 p-3 bg-gradient-to-r from-red-500/10 to-orange-500/10 rounded-lg border border-red-500/20 hover:border-red-500/40 transition-all duration-300"
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    <div className="relative w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg">
+                      <AK47Icon className="h-6 w-6 text-white" />
+                      <WeaponGradeIndicator grade="Classified" className="absolute -top-1 -right-1 h-3 w-3" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium">AK-47 | Redline</p>
-                      <p className="text-sm text-muted-foreground">Field-Tested</p>
+                      <div className="flex items-center space-x-2">
+                        <p className="font-medium">AK-47 | Redline</p>
+                        <div className="px-2 py-0.5 bg-orange-500/20 text-orange-600 text-xs rounded font-mono">
+                          StatTrak™
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground flex items-center space-x-1">
+                        <span>Field-Tested</span>
+                        <span className="text-yellow-500">★★★</span>
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold">85.00€</p>
+                      <p className="font-bold text-lg text-green-600">127.50€</p>
+                      <p className="text-xs text-muted-foreground">+15% ↗</p>
                     </div>
-                  </div>
+                  </motion.div>
 
-                  <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-                    <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">AWP</span>
+                  <motion.div 
+                    className="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-lg border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300"
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    <div className="relative w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg">
+                      <AWPIcon className="h-6 w-6 text-white" />
+                      <WeaponGradeIndicator grade="Covert" className="absolute -top-1 -right-1 h-3 w-3" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium">AWP | Dragon Lore</p>
-                      <p className="text-sm text-muted-foreground">Factory New</p>
+                      <div className="flex items-center space-x-2">
+                        <p className="font-medium">AWP | Dragon Lore</p>
+                        <div className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-600 text-xs rounded">
+                          ★
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground flex items-center space-x-1">
+                        <span>Factory New</span>
+                        <span className="text-green-500">★★★★★</span>
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold">1,250.00€</p>
+                      <p className="font-bold text-lg text-green-600">2,847.00€</p>
+                      <p className="text-xs text-green-500">+8% ↗</p>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
 
                 {/* Summary */}
-                <div className="border-t pt-4 space-y-2">
+                <div className="border-t pt-4 space-y-2 bg-muted/30 rounded-lg p-3">
                   <div className="flex justify-between text-sm">
                     <span>Total brut</span>
-                    <span>1,335.00€</span>
+                    <span className="font-medium">2,974.50€</span>
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Frais de cashout (0.5%)</span>
-                    <span>-6.68€</span>
+                    <span>-14.87€</span>
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Frais réseau</span>
-                    <span>-20.00€</span>
+                    <span>Frais réseau SEPA</span>
+                    <span>-2.50€</span>
                   </div>
-                  <div className="flex justify-between font-bold text-lg border-t pt-2">
+                  <div className="flex justify-between font-bold text-lg border-t pt-2 text-green-600">
                     <span>Total net</span>
-                    <span className="text-green-600">1,308.32€</span>
+                    <span className="bg-green-500/10 px-2 py-1 rounded">2,957.13€</span>
+                  </div>
+                  <div className="text-xs text-center text-muted-foreground pt-2">
+                    💡 Paiement automatique dans 7 jours
                   </div>
                 </div>
 
@@ -264,14 +349,21 @@ export function HeroSection() {
                 <div className="flex-1">
                   <div className="flex items-center space-x-1">
                     {[...Array(5)].map((_, i) => (
-                      <StarIcon key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <StarIcon
+                        key={i}
+                        className="w-4 h-4 fill-yellow-400 text-yellow-400"
+                      />
                     ))}
                   </div>
                   <p className="text-sm font-medium">{testimonials[0].name}</p>
-                  <p className="text-xs text-muted-foreground">{testimonials[0].comment}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {testimonials[0].comment}
+                  </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-green-600">{testimonials[0].amount}</p>
+                  <p className="text-sm font-bold text-green-600">
+                    {testimonials[0].amount}
+                  </p>
                 </div>
               </div>
             </div>
