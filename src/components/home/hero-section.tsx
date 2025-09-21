@@ -15,6 +15,10 @@ import {
   SecurityShieldIcon,
   WeaponGradeIndicator,
 } from "@/components/ui/cs2-icons";
+import { 
+  CS2HeroBackground, 
+  usePreloadCS2Backgrounds 
+} from "@/components/ui/cs2-header-background";
 import {
   ShieldCheckIcon,
   ClockIcon,
@@ -73,15 +77,18 @@ export function HeroSection() {
   const { messages } = useLocale();
   const { user } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
+  
+  // Précharger les vraies images CS2
+  usePreloadCS2Backgrounds();
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-orange-500/5">
-      {/* CS2 Background Pattern */}
-      <CS2Background className="opacity-30" />
+    <CS2HeroBackground className="relative overflow-hidden">
+      {/* CS2 Background Pattern Overlay pour plus de texture */}
+      <CS2Background className="opacity-20" />
 
       {/* Animated CS2 Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -134,22 +141,25 @@ export function HeroSection() {
         </motion.div>
       </div>
 
-        <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-32">
-          <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
-            {/* Left Column - Hero Content */}
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: isVisible ? 1 : 0, x: isVisible ? 0 : -50 }}
-              transition={{ duration: 0.8 }}
-              className="space-y-6 sm:space-y-8"
-            >
+      <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-32">
+        <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
+          {/* Left Column - Hero Content */}
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: isVisible ? 1 : 0, x: isVisible ? 0 : -50 }}
+            transition={{ duration: 0.8 }}
+            className="space-y-6 sm:space-y-8"
+          >
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-                <Badge variant="secondary" className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm">
+              <Badge
+                variant="secondary"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm"
+              >
                 <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-green-500" />
                 {messages.hero.badge}
               </Badge>
@@ -182,7 +192,10 @@ export function HeroSection() {
               className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4"
             >
               {features.map((feature, index) => (
-                <div key={index} className="flex items-center space-x-1.5 sm:space-x-2">
+                <div
+                  key={index}
+                  className="flex items-center space-x-1.5 sm:space-x-2"
+                >
                   <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-xs sm:text-sm text-gaming-caption">
                     {feature.title}
@@ -206,8 +219,8 @@ export function HeroSection() {
                   {user ? messages.hero.cta : messages.hero.cta}
                 </Link>
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 asChild
                 className="w-full sm:w-auto h-12 sm:h-11 px-6 sm:px-8 text-sm sm:text-base"
               >
@@ -257,7 +270,10 @@ export function HeroSection() {
                   <h3 className="text-base sm:text-lg font-semibold">
                     {messages.trade.estimation}
                   </h3>
-                  <Badge variant="secondary" className="text-green-600 text-xs sm:text-sm">
+                  <Badge
+                    variant="secondary"
+                    className="text-green-600 text-xs sm:text-sm"
+                  >
                     {messages.common.online}
                   </Badge>
                 </div>
@@ -277,7 +293,9 @@ export function HeroSection() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-1 sm:space-x-2">
-                        <p className="font-medium text-sm sm:text-base truncate">AK-47 | Redline</p>
+                        <p className="font-medium text-sm sm:text-base truncate">
+                          AK-47 | Redline
+                        </p>
                         <div className="px-1.5 sm:px-2 py-0.5 bg-orange-500/20 text-orange-600 text-xs rounded font-mono flex-shrink-0">
                           StatTrak™
                         </div>
@@ -308,7 +326,9 @@ export function HeroSection() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-1 sm:space-x-2">
-                        <p className="font-medium text-sm sm:text-base truncate">AWP | Dragon Lore</p>
+                        <p className="font-medium text-sm sm:text-base truncate">
+                          AWP | Dragon Lore
+                        </p>
                         <div className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-600 text-xs rounded flex-shrink-0">
                           ★
                         </div>
@@ -392,7 +412,7 @@ export function HeroSection() {
             </div>
           </motion.div>
         </div>
-      </div>
-    </section>
+        </div>
+    </CS2HeroBackground>
   );
 }
