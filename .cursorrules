@@ -1,0 +1,212 @@
+# Objet du fichier :
+
+# Définir les conventions, contraintes, règles de sécurité, attentes UX et contrats API
+
+# pour le projet CashTrade (CTF / MoonSkin), version V1 (intégrations Skinplace, SEPA & crypto).
+
+#
+
+# Utilisation :
+
+# - Placer ce fichier sous `.cursor/rules/ctf.md` ou `.cursorrules` à la racine du dépôt.
+
+# - Les règles courtes sont en haut, les exemples et patrons plus bas.
+
+# - Lors de demandes à l’IA, préciser : "Suivre les .cursor rules : ctf.md".
+
+#
+
+# Version : 1.0 (FR)
+
+# Responsable : Équipe CTF Engineering
+
+# Date : 21/09/2025
+
+--- RÉSUMÉ
+
+- Authentification unique : Steam OpenID.
+- Paiement SEPA (via Qonto) → nécessite une étape de sécurité renforcée (OTP email/SMS ou micro-virement) lors du premier payout et à chaque changement d’IBAN.
+- Paiement crypto (Binance) → pas d’étape renforcée, mais KYC obligatoire.
+- KYC obligatoire pour tout payout.
+- Processus de vente : validation immédiate → trade hold Steam (7 jours) → paiement automatique.
+- Intégrations : Skinplace API (estimation/revente), Qonto API (SEPA), Binance API (crypto), Stripe (optionnel stablecoin).
+- Gamification : XP proportionnel au volume, tickets, niveaux. Tickets utilisés dans les Giveaways.
+
+--- RÈGLES PRINCIPALES
+
+1. **Authentification**
+
+   - Utilisateur identifié uniquement par `steamid64` après login Steam.
+   - Aucun autre mode de connexion ne doit être implémenté sans demande explicite.
+   - Chaque compte doit être lié à l’acceptation des CGV (`accepted_terms_at` en base).
+
+2. **Paiements SEPA (Qonto)**
+
+   - Vérification renforcée obligatoire :
+     - Premier paiement.
+     - Changement d’IBAN.
+   - Méthodes autorisées :
+     1. OTP par email ou SMS.
+     2. Micro-virement avec code dans le libellé.
+   - Machine à états des paiements :  
+     `en_attente -> vérification_requise -> vérifié -> planifié -> exécuté -> payé`.
+
+3. **KYC**
+
+   - KYC doit être validé avant tout paiement (SEPA ou crypto).
+   - Pièces demandées : carte d’identité, selfie, justificatif de domicile (si requis).
+   - Stocker uniquement des références/ID fournis par le prestataire KYC, pas de documents bruts.
+   - Journaliser tout changement d’état KYC.
+
+4. **Flux de vente (CashTrade)**
+
+   - Étapes côté client :
+     - Ajout du Trade Link Steam (validation format + appartenance).
+     - Estimation via API Skinplace.
+     - Affichage : prix brut, frais cashout (0,5 %), frais réseau, montant net, délai (7 jours).
+     - Confirmation → création d’un ticket avec ID unique.
+     - Bot (Skinplace API) prend le trade en charge.
+   - États de suivi : `créé`, `accepté_par_bot`, `en_trade_hold`, `disponible`, `paiement_en_cours`, `payé`, `échoué`.
+
+5. **Calcul financier**
+
+   - Toujours calculer en centimes (pas de flottants).
+   - Stocker en `numeric` (Postgres).
+   - Exemple :
+     ```
+     brut = somme(items)
+     frais_cashout = arrondi(brut * 0,005)
+     frais_réseau = valeur API ou fixe
+     net = brut - frais_cashout - frais_réseau
+     ```
+   - Toujours afficher le détail au client + à l’admin.
+
+6. **Sécurité / Anti-fraude**
+
+   - Limiter :
+     - Nombre de trades par jour et par compte.
+     - Demandes de paiement par IBAN / par IP.
+   - Détecter pics d’activité suspects (ex : > 3× volume moyen).
+   - Journaliser : connexions, changement d’IBAN, exécution de paiements, OTP échoués.
+   - Cooldown 7 jours après changement d’IBAN sauf si micro-vérification validée.
+
+7. **Intégrations**
+
+   - Skinplace API V1 : appel côté serveur uniquement, cache max 5 minutes.
+   - Qonto : utiliser clés d’idempotence, enregistrer TXID.
+   - Binance : valider confirmations blockchain avant marquer `payé`.
+   - Tous les appels externes doivent être encapsulés avec retries + backoff.
+
+8. **Base de données**
+
+   - Postgres = source de vérité (transactions obligatoires).
+   - Redis utilisé uniquement pour files/états temporaires.
+   - Tables essentielles : `utilisateurs`, `trades`, `payouts`, `kyc`, `affiliations`, `giveaways`.
+
+9. **API & Réponses**
+
+   - API REST/GraphQL, documentée en OpenAPI.
+   - Les réponses liées à l’argent doivent toujours inclure :  
+     `id`, `user_id`, `statut`, `brut_centimes`, `frais`, `net_centimes`, `created_at`, `disponible_le`, `reference_paiement`.
+
+10. **Tests / Qualité**
+
+    - Tester : calculs, transitions d’état, gating KYC, timeline.
+    - Tests e2e : trade complet jusqu’au paiement.
+    - CI obligatoire avec lint, formatage et migrations vérifiées.
+
+11. **Style de code**
+
+    - Node/NestJS : Prisma + DTOs stricts, erreurs typées.
+    - Laravel : Eloquent, FormRequest pour validation, Events pour side effects.
+    - Chaque fonction exportée/documentée.
+    - Changelog maintenu.
+
+12. **UX / UI**
+
+    - Steam Login comme point d’entrée unique.
+    - Page vente : estimation instantanée + timeline claire.
+    - Page suivi : état courant, date dispo, preuves de paiement.
+    - Gamification : XP, tickets, badges.
+    - Multilingue FR/EN/CN via système i18n.
+
+13. **Affiliation**
+
+    - ID d’affilié unique, suivi via cookie + paramètre URL.
+    - Commission par défaut : 2 % sur volume brut.
+    - Paiement commissions : mensuel, soumis à KYC.
+    - Historique complet visible par l’affilié.
+
+14. **Giveaways**
+
+    - Tickets = jetons non transférables gagnés via XP.
+    - Dépense ticket → entrée enregistrée.
+    - Tirages = RNG déterministe avec seed loggué.
+    - Résultats publics + exportables.
+
+15. **Backoffice**
+
+    - Filtres avancés (date, statut, utilisateur, IBAN haché).
+    - Export CSV/Excel pour ventes, paiements, affiliations, giveaways.
+    - RBAC strict + audit logs accessibles aux admins.
+
+16. **Conformité RGPD**
+    - Endpoint d’export et suppression de données (sauf données financières légales).
+    - Conservation minimale légale (X années, selon règlement).
+    - Accès PII journalisé.
+
+--- EXEMPLES
+
+**État de paiement**
+
+créé
+-> accepté_par_bot
+-> en_trade_hold
+-> disponible
+-> paiement_en_cours
+-> payé
+-> échoué
+
+**Réponse API (exemple)**
+
+```json
+{
+  "id": "trade_01",
+  "user_id": "user_123",
+  "statut": "en_trade_hold",
+  "brut_centimes": 123456,
+  "frais": { "cashout": 617, "réseau": 2000 },
+  "net_centimes": 120839,
+  "ticket_id": "TICK-20250921-0001",
+  "trade_accepté_le": "2025-09-14T12:00:00Z",
+  "disponible_le": "2025-09-21T12:00:00Z"
+}
+
+— CHECKLIST SÉCURITÉ (PR impactant paiements/KYC)
+	•	Calcul en centimes, pas de flottants
+	•	Transactions DB pour mises à jour soldes
+	•	Clés d’idempotence pour paiements externes
+	•	Journalisation activée
+	•	Tests ajoutés (cas limites)
+	•	Validation conformité/ légal
+
+— CONTACTS (fictifs)
+	•	sécurité@ctf.interne
+	•	infra@ctf.interne
+	•	conformité@ctf.interne
+
+
+---
+
+
+
+On est sous next 15 , tailwind css , shadcn , tout les composants sont dans le dossier components
+
+on a 2 themes : dark et light
+
+on a 2 langues : fr et en
+```
+
+site beau comme https://andromed.fr !
+
+mais attention c'est bien un site basé sur counter strike en soit
