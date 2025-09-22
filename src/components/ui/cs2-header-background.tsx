@@ -21,7 +21,7 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  
+
   const background = headerBackgrounds[variant];
   const fallbackSrc = generateCS2Fallback();
 
@@ -77,7 +77,7 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
 
       {/* Overlay avec gradient */}
       {overlay && (
-        <div 
+        <div
           className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/50 to-orange-900/40"
           style={{ opacity: overlayOpacity }}
         />
@@ -107,11 +107,7 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-60" />
 
       {/* Contenu */}
-      {children && (
-        <div className="relative z-10 h-full">
-          {children}
-        </div>
-      )}
+      {children && <div className="relative z-10 h-full">{children}</div>}
     </div>
   );
 };
@@ -121,14 +117,17 @@ export const CS2HeroBackground: React.FC<{
   className?: string;
   children?: React.ReactNode;
 }> = ({ className = "", children }) => {
-  const [currentBackground, setCurrentBackground] = useState<keyof typeof headerBackgrounds>("cs2_main");
-  
-  const backgrounds = Object.keys(headerBackgrounds) as Array<keyof typeof headerBackgrounds>;
+  const [currentBackground, setCurrentBackground] =
+    useState<keyof typeof headerBackgrounds>("cs2_main");
+
+  const backgrounds = Object.keys(headerBackgrounds) as Array<
+    keyof typeof headerBackgrounds
+  >;
 
   useEffect(() => {
     // Changer de fond toutes les 10 secondes
     const interval = setInterval(() => {
-      setCurrentBackground(prev => {
+      setCurrentBackground((prev) => {
         const currentIndex = backgrounds.indexOf(prev);
         const nextIndex = (currentIndex + 1) % backgrounds.length;
         return backgrounds[nextIndex];
@@ -148,7 +147,7 @@ export const CS2HeroBackground: React.FC<{
     >
       {/* Pattern overlay pour plus de texture */}
       <div className="absolute inset-0 opacity-10">
-        <div 
+        <div
           className="w-full h-full"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ff6b35' fill-opacity='0.4'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -165,8 +164,8 @@ export const CS2HeroBackground: React.FC<{
               onClick={() => setCurrentBackground(bg)}
               className={cn(
                 "w-2 h-2 rounded-full transition-all duration-300",
-                currentBackground === bg 
-                  ? "bg-orange-500 scale-125" 
+                currentBackground === bg
+                  ? "bg-orange-500 scale-125"
                   : "bg-white/30 hover:bg-white/50"
               )}
               aria-label={`Switch to ${headerBackgrounds[bg].name} background`}
@@ -183,7 +182,7 @@ export const CS2HeroBackground: React.FC<{
 // Hook pour précharger les images de fond
 export const usePreloadCS2Backgrounds = () => {
   useEffect(() => {
-    Object.values(headerBackgrounds).forEach(background => {
+    Object.values(headerBackgrounds).forEach((background) => {
       if (background.url) {
         const img = new Image();
         img.src = background.url;

@@ -15,9 +15,9 @@ import {
   SecurityShieldIcon,
   WeaponGradeIndicator,
 } from "@/components/ui/cs2-icons";
-import { 
-  CS2HeroBackground, 
-  usePreloadCS2Backgrounds 
+import {
+  CS2HeroBackground,
+  usePreloadCS2Backgrounds,
 } from "@/components/ui/cs2-header-background";
 import {
   ShieldCheckIcon,
@@ -77,7 +77,7 @@ export function HeroSection() {
   const { messages } = useLocale();
   const { user } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
-  
+
   // Précharger les vraies images CS2
   usePreloadCS2Backgrounds();
 
@@ -412,7 +412,7 @@ export function HeroSection() {
             </div>
           </motion.div>
         </div>
-        </div>
+      </div>
     </CS2HeroBackground>
   );
 }
