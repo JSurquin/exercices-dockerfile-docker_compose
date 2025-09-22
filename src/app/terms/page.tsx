@@ -204,9 +204,9 @@ export default function TermsPage() {
                   <p className="text-orange-800 dark:text-orange-200 text-sm leading-relaxed">
                     Ces conditions d&apos;utilisation constituent un contrat
                     légalement contraignant entre vous et CashTrade. En
-                    utilisant nos services, vous acceptez d'être lié par
-                    l'ensemble de ces conditions. Veuillez les lire
-                    attentivement avant d'utiliser notre plateforme.
+                    utilisant nos services, vous acceptez d&apos;être lié par
+                    l&apos;ensemble de ces conditions. Veuillez les lire
+                    attentivement avant d&apos;utiliser notre plateforme.
                   </p>
                 </div>
               </div>

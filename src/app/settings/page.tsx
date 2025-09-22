@@ -275,7 +275,7 @@ export default function SettingsPage() {
                         Conformité RGPD
                       </h4>
                       <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
-                        Vous avez le droit d'accéder, modifier ou supprimer vos
+                        Vous avez le droit d&apos;accéder, modifier ou supprimer vos
                         données personnelles.
                       </p>
                       <div className="flex space-x-2">
@@ -331,7 +331,7 @@ export default function SettingsPage() {
                       <div>
                         <h4 className="font-semibold">Alertes de trade</h4>
                         <p className="text-sm text-muted-foreground">
-                          Notifications lors des changements d'état de vos
+                          Notifications lors des changements d&apos;état de vos
                           trades
                         </p>
                       </div>
@@ -490,7 +490,7 @@ export default function SettingsPage() {
                           Important
                         </p>
                         <p className="text-yellow-700 dark:text-yellow-300">
-                          Tout changement d'IBAN nécessite une nouvelle
+                          Tout changement d&apos;IBAN nécessite une nouvelle
                           vérification et un délai de 7 jours.
                         </p>
                       </div>

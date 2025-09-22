@@ -172,7 +172,7 @@ export default function SupportPage() {
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             <QuestionMarkCircleIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
-            Centre d'aide
+            Centre d&apos;aide
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Trouvez des réponses à vos questions ou contactez notre équipe support
@@ -419,7 +419,7 @@ export default function SupportPage() {
                     </div>
 
                     <div>
-                      <h4 className="font-medium">Heures d'ouverture</h4>
+                      <h4 className="font-medium">Heures d&apos;ouverture</h4>
                       <div className="text-sm text-muted-foreground space-y-1">
                         <p>Lun-Ven: 9h-18h (CET)</p>
                         <p>Sam-Dim: 10h-16h (CET)</p>

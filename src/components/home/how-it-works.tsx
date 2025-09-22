@@ -198,7 +198,7 @@ export function HowItWorks() {
           <div className="bg-gradient-to-br from-orange-500/10 to-red-600/10 rounded-2xl p-8 border">
             <h3 className="text-2xl font-bold mb-4">Prêt à commencer ?</h3>
             <p className="text-muted-foreground mb-6">
-              Rejoignez des milliers d'utilisateurs qui ont déjà vendu leurs
+              Rejoignez des milliers d&apos;utilisateurs qui ont déjà vendu leurs
               skins en toute sécurité
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
