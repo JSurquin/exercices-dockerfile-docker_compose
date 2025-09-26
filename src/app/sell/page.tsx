@@ -80,9 +80,9 @@ export default function SellPage() {
       setEstimation(newEstimation);
 
       setCurrentStep(1);
-      toast.success("Items chargés avec succès !");
+      toast.success(messages.toast.itemsLoadedSuccess);
     } catch {
-      toast.error("Erreur lors de la récupération des items");
+      toast.error(messages.toast.itemsLoadError);
     } finally {
       setIsLoading(false);
     }
@@ -101,10 +101,10 @@ export default function SellPage() {
         .toString()
         .padStart(4, "0")}`;
 
-      toast.success(`Trade créé ! ID: ${ticketId}`);
+      toast.success(`${messages.toast.tradeCreatedSuccess} ID: ${ticketId}`);
       setCurrentStep(2);
     } catch {
-      toast.error("Erreur lors de la création du trade");
+      toast.error(messages.toast.tradeCreationError);
     } finally {
       setIsLoading(false);
     }

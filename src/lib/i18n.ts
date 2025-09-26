@@ -12,6 +12,14 @@ export interface Messages {
     support: string;
     login: string;
     logout: string;
+    settings: string;
+    language: string;
+    lightMode: string;
+    darkMode: string;
+  };
+  user: {
+    level: string;
+    xp: string;
   };
   hero: {
     title: string;
@@ -266,6 +274,13 @@ export interface Messages {
     confirmed: string;
     marketplace: string;
   };
+  toast: {
+    itemsLoadedSuccess: string;
+    itemsLoadError: string;
+    tradeCreatedSuccess: string;
+    tradeCreationError: string;
+    settingsSavedSuccess: string;
+  };
   footer: {
     description: string;
     securedBy: string;
@@ -313,6 +328,14 @@ export const messages: Record<Locale, Messages> = {
       support: "Support",
       login: "Connexion Steam",
       logout: "Déconnexion",
+      settings: "Paramètres",
+      language: "Langue",
+      lightMode: "Mode Clair",
+      darkMode: "Mode Sombre",
+    },
+    user: {
+      level: "Niveau",
+      xp: "XP",
     },
     hero: {
       title: "Vendez vos skins CS2 facilement",
@@ -580,6 +603,13 @@ export const messages: Record<Locale, Messages> = {
       confirmed: "Confirmé",
       marketplace: "CS2 Marketplace",
     },
+    toast: {
+      itemsLoadedSuccess: "Items chargés avec succès !",
+      itemsLoadError: "Erreur lors de la récupération des items",
+      tradeCreatedSuccess: "Trade créé avec succès !",
+      tradeCreationError: "Erreur lors de la création du trade",
+      settingsSavedSuccess: "Paramètres sauvegardés avec succès",
+    },
     footer: {
       description: "La plateforme la plus rapide et sécurisée pour convertir vos skins CS2 en argent réel. Vendez vos skins en toute confiance avec notre système de paiement sécurisé.",
       securedBy: "Sécurisé par :",
@@ -625,6 +655,14 @@ export const messages: Record<Locale, Messages> = {
       support: "Support",
       login: "Steam Login",
       logout: "Logout",
+      settings: "Settings",
+      language: "Language",
+      lightMode: "Light Mode",
+      darkMode: "Dark Mode",
+    },
+    user: {
+      level: "Level",
+      xp: "XP",
     },
     hero: {
       title: "Sell your CS2 skins easily",
@@ -890,6 +928,13 @@ export const messages: Record<Locale, Messages> = {
       steamLogin: "Steam Login",
       confirmed: "Confirmed",
       marketplace: "CS2 Marketplace",
+    },
+    toast: {
+      itemsLoadedSuccess: "Items loaded successfully!",
+      itemsLoadError: "Error loading items",
+      tradeCreatedSuccess: "Trade created successfully!",
+      tradeCreationError: "Error creating trade",
+      settingsSavedSuccess: "Settings saved successfully",
     },
     footer: {
       description: "The fastest and most secure platform to convert your CS2 skins into real money. Sell your skins with confidence using our secure payment system.",

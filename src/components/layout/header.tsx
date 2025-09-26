@@ -168,7 +168,7 @@ export function Header() {
                       {user.username}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      Niveau {user.level} • {user.xp} XP
+                      {messages.user.level} {user.level} • {user.xp} {messages.user.xp}
                     </p>
                   </div>
                 </DropdownMenuLabel>
@@ -177,7 +177,7 @@ export function Header() {
                   <Link href="/dashboard">Dashboard</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/settings">Paramètres</Link>
+                  <Link href="/settings">{messages.nav.settings}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout} className="text-red-600">
@@ -234,7 +234,7 @@ export function Header() {
                     <div>
                       <p className="font-medium">{user.username}</p>
                       <p className="text-sm text-muted-foreground">
-                        Niveau {user.level} • {user.xp} XP
+                        {messages.user.level} {user.level} • {user.xp} {messages.user.xp}
                       </p>
                     </div>
                   </div>
@@ -278,14 +278,14 @@ export function Header() {
                     ) : (
                       <MoonIcon className="mr-3 h-5 w-5" />
                     )}
-                    {theme === "dark" ? "Mode Clair" : "Mode Sombre"}
+                    {theme === "dark" ? messages.nav.lightMode : messages.nav.darkMode}
                   </Button>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="w-full justify-start">
                         <LanguageIcon className="mr-3 h-5 w-5" />
-                        Langue ({locale.toUpperCase()})
+                        {messages.nav.language} ({locale.toUpperCase()})
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">

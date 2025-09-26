@@ -34,7 +34,7 @@ import { toast } from "sonner";
 
 export default function SettingsPage() {
   const { user } = useAuth();
-  const { locale, setLocale } = useLocale();
+  const { locale, setLocale, messages } = useLocale();
   const { theme, setTheme } = useTheme();
   const [settings, setSettings] = useState({
     emailNotifications: true,
@@ -51,7 +51,7 @@ export default function SettingsPage() {
     try {
       // Simulation de sauvegarde
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success("Paramètres sauvegardés avec succès");
+      toast.success(messages.toast.settingsSavedSuccess);
     } catch {
       toast.error("Erreur lors de la sauvegarde");
     }
