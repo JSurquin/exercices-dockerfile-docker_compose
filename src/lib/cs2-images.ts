@@ -6,17 +6,17 @@ export const CS2ImageURLs = {
   backgrounds: {
     // Images de cartes emblématiques CS2
     dust2:
-      "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/backgrounds/dust2_1920x1080.jpg",
+      "https://dmarket.com/blog/best-csgo-wallpapers/tercsgo_hu_d02018a53a81a818.jpg",
     mirage:
-      "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/backgrounds/mirage_1920x1080.jpg",
+      "https://4kwallpapers.com/images/wallpapers/counter-strike-1920x1080-9192.png",
     inferno:
-      "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/backgrounds/inferno_1920x1080.jpg",
-    nuke: "https://cdn.cloudflare.steamstatic.com/apps/csgo/images/backgrounds/nuke_1920x1080.jpg",
+      "https://preview.redd.it/inferno-wallpaper-isnt-the-map-beautiful-v0-ee83avzsv8dc1.jpeg?auto=webp&s=c8b71e000e27b83c7bb95f1da84fcb6e7a699134",
+    nuke: "https://prosettings.net/cdn-cgi/image/dpr=1%2Cf=auto%2Cfit=cover%2Ch=675%2Cq=95%2Cw=1200/wp-content/uploads/nuke-in-cs2-18.jpg",
 
     // Wallpapers CS2 alternatifs
     steam_bg_1:
-      "https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg",
-    community_1: "https://wallpaperaccess.com/full/5531097.jpg",
+      "https://4kwallpapers.com/images/walls/thumbs_2t/11129.png",
+    community_1: "https://images3.alphacoders.com/132/1320531.jpeg",
     community_2: "https://wallpaperaccess.com/full/5531098.jpg",
     trading_bg: "https://wallpaperaccess.com/full/5531099.jpg",
   },
