@@ -1,32 +1,35 @@
 "use client";
 
 import Link from "next/link";
+import { useLocale } from "@/components/providers/locale-provider";
 
 export function Footer() {
+  const { messages } = useLocale();
+
   const links = {
     company: [
-      { name: "À propos", href: "/about" },
-      { name: "Blog", href: "/blog" },
-      { name: "Carrières", href: "/careers" },
-      { name: "Presse", href: "/press" },
+      { name: messages.footer.links.about, href: "/about" },
+      { name: messages.footer.links.blog, href: "/blog" },
+      { name: messages.footer.links.careers, href: "/careers" },
+      { name: messages.footer.links.press, href: "/press" },
     ],
     support: [
-      { name: "Centre d'aide", href: "/help" },
-      { name: "Contact", href: "/contact" },
-      { name: "Status", href: "/status" },
-      { name: "API", href: "/api" },
+      { name: messages.footer.links.helpCenter, href: "/help" },
+      { name: messages.footer.links.contact, href: "/contact" },
+      { name: messages.footer.links.status, href: "/status" },
+      { name: messages.footer.links.api, href: "/api" },
     ],
     legal: [
-      { name: "Conditions d'utilisation", href: "/terms" },
-      { name: "Politique de confidentialité", href: "/privacy" },
-      { name: "Politique KYC", href: "/kyc-policy" },
-      { name: "Politique anti-blanchiment", href: "/aml-policy" },
+      { name: messages.footer.links.terms, href: "/terms" },
+      { name: messages.footer.links.privacy, href: "/privacy" },
+      { name: messages.footer.links.kycPolicy, href: "/kyc-policy" },
+      { name: messages.footer.links.amlPolicy, href: "/aml-policy" },
     ],
     community: [
-      { name: "Discord", href: "https://discord.gg/cashtrade" },
-      { name: "Twitter", href: "https://twitter.com/cashtrade" },
-      { name: "Reddit", href: "https://reddit.com/r/cashtrade" },
-      { name: "YouTube", href: "https://youtube.com/cashtrade" },
+      { name: messages.footer.socialLinks.discord, href: "https://discord.gg/cashtrade" },
+      { name: messages.footer.socialLinks.twitter, href: "https://twitter.com/cashtrade" },
+      { name: messages.footer.socialLinks.reddit, href: "https://reddit.com/r/cashtrade" },
+      { name: messages.footer.socialLinks.youtube, href: "https://youtube.com/cashtrade" },
     ],
   };
 
@@ -43,13 +46,11 @@ export function Footer() {
               <span className="font-bold text-xl">CashTrade</span>
             </Link>
             <p className="text-muted-foreground mb-4 max-w-md">
-              La plateforme la plus rapide et sécurisée pour convertir vos skins
-              CS2 en argent réel. Vendez vos skins en toute confiance avec notre
-              système de paiement sécurisé.
+              {messages.footer.description}
             </p>
             <div className="flex space-x-3 sm:space-x-4">
               <div className="text-sm text-muted-foreground">
-                <p className="font-medium">Sécurisé par :</p>
+                <p className="font-medium">{messages.footer.securedBy}</p>
                 <div className="flex items-center space-x-2 mt-1">
                   <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-xs">
                     SSL
@@ -67,7 +68,7 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h3 className="font-semibold mb-4">Entreprise</h3>
+            <h3 className="font-semibold mb-4">{messages.footer.company}</h3>
             <ul className="space-y-2">
               {links.company.map((link) => (
                 <li key={link.name}>
@@ -84,7 +85,7 @@ export function Footer() {
 
           {/* Support */}
           <div>
-            <h3 className="font-semibold mb-4">Support</h3>
+            <h3 className="font-semibold mb-4">{messages.footer.support}</h3>
             <ul className="space-y-2">
               {links.support.map((link) => (
                 <li key={link.name}>
@@ -101,7 +102,7 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold mb-4">Légal</h3>
+            <h3 className="font-semibold mb-4">{messages.footer.legal}</h3>
             <ul className="space-y-2">
               {links.legal.map((link) => (
                 <li key={link.name}>
@@ -123,23 +124,23 @@ export function Footer() {
             <div>
               <div className="text-2xl font-bold text-orange-600">15,420+</div>
               <div className="text-sm text-muted-foreground">
-                Utilisateurs actifs
+                {messages.footer.stats.activeUsers}
               </div>
             </div>
             <div>
               <div className="text-2xl font-bold text-orange-600">€2.4M+</div>
-              <div className="text-sm text-muted-foreground">Volume traité</div>
+              <div className="text-sm text-muted-foreground">{messages.footer.stats.volumeProcessed}</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-orange-600">8,967+</div>
               <div className="text-sm text-muted-foreground">
-                Trades réalisés
+                {messages.footer.stats.tradesCompleted}
               </div>
             </div>
             <div>
               <div className="text-2xl font-bold text-orange-600">99.8%</div>
               <div className="text-sm text-muted-foreground">
-                Taux de satisfaction
+                {messages.footer.stats.satisfactionRate}
               </div>
             </div>
           </div>
@@ -148,7 +149,7 @@ export function Footer() {
         {/* Bottom Section */}
         <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="text-sm text-muted-foreground mb-4 md:mb-0">
-            © 2024 CashTrade. Tous droits réservés. | Licence EU: CT-2024-001
+            {messages.footer.copyright}
           </div>
           <div className="flex space-x-6">
             {links.community.map((link) => (
@@ -168,12 +169,7 @@ export function Footer() {
         {/* Disclaimer */}
         <div className="mt-8 p-4 bg-muted rounded-lg">
           <p className="text-xs text-muted-foreground">
-            <strong>Avertissement :</strong> CashTrade n&apos;est pas affilié à
-            Valve Corporation ou Steam. Counter-Strike et Steam sont des marques
-            déposées de Valve Corporation. Le trading de skins comporte des
-            risques et les prix peuvent fluctuer. Veuillez trader de manière
-            responsable et ne jamais investir plus que ce que vous pouvez vous
-            permettre de perdre.
+            {messages.footer.disclaimer}
           </p>
         </div>
       </div>

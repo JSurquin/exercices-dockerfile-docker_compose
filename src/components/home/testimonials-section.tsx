@@ -5,81 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
-
-const testimonials = [
-  {
-    id: 1,
-    name: 'ProGamer2024',
-    username: '@progamer2024',
-    avatar: 'https://avatars.steamstatic.com/c5d56249ee5d28a07db4ac9f7f60af961fab5426_full.jpg',
-    rating: 5,
-    comment: 'Super rapide ! J\'ai vendu mes skins et reçu mon paiement en seulement 2 jours après le trade hold Steam. Interface très claire et support réactif.',
-    amount: '1,234€',
-    items: 'AK-47 Redline + AWP Asiimov',
-    date: 'Il y a 2 jours',
-    verified: true,
-  },
-  {
-    id: 2,
-    name: 'SkinMaster',
-    username: '@skinmaster',
-    avatar: 'https://avatars.steamstatic.com/185f21c3f1e8e55b1ff2f5dc1e8d3d2f5c6e7f8a_full.jpg',
-    rating: 5,
-    comment: 'Meilleur site pour vendre ses skins ! Processus simple, estimation précise, et paiement SEPA ultra rapide. Je recommande à 100%.',
-    amount: '987€',
-    items: 'Glock Fade StatTrak™',
-    date: 'Il y a 5 jours',
-    verified: true,
-  },
-  {
-    id: 3,
-    name: 'CSGOKing',
-    username: '@csgoking',
-    avatar: 'https://avatars.steamstatic.com/8f3d5c1e9a2b4f6d8e7c9a1b2f4e6d8c7a9b1e2f_full.jpg',
-    rating: 5,
-    comment: 'Interface magnifique et très professionnelle. J\'ai pu suivre mon trade en temps réel et les notifications m\'ont tenu informé. Top !',
-    amount: '2,156€',
-    items: 'Karambit Fade + M4A4 Howl',
-    date: 'Il y a 1 semaine',
-    verified: true,
-  },
-  {
-    id: 4,
-    name: 'FrenchTrader',
-    username: '@frenchtrader',
-    avatar: 'https://avatars.steamstatic.com/2f4e6d8c7a9b1e2f4e6d8c7a9b1e2f4e6d8c7a9b_full.jpg',
-    rating: 5,
-    comment: 'Parfait pour les français ! Support en français, paiement SEPA, et conformité européenne. Enfin une plateforme sérieuse.',
-    amount: '675€',
-    items: 'USP-S Kill Confirmed',
-    date: 'Il y a 1 semaine',
-    verified: true,
-  },
-  {
-    id: 5,
-    name: 'TechSavvy',
-    username: '@techsavvy',
-    avatar: 'https://avatars.steamstatic.com/4e6d8c7a9b1e2f4e6d8c7a9b1e2f4e6d8c7a9b1e_full.jpg',
-    rating: 5,
-    comment: 'J\'adore le système de gamification ! Gagner de l\'XP et des tickets à chaque trade, c\'est génial. En plus les giveaways sont top.',
-    amount: '445€',
-    items: 'AK-47 Vulcan',
-    date: 'Il y a 2 semaines',
-    verified: true,
-  },
-  {
-    id: 6,
-    name: 'CryptoFan',
-    username: '@cryptofan',
-    avatar: 'https://avatars.steamstatic.com/6d8c7a9b1e2f4e6d8c7a9b1e2f4e6d8c7a9b1e2f4_full.jpg',
-    rating: 5,
-    comment: 'Support crypto excellent ! Bitcoin, Ethereum, USDT... tout y est. Frais transparents et pas de mauvaises surprises.',
-    amount: '1,789€',
-    items: 'Dragon Lore Factory New',
-    date: 'Il y a 2 semaines',
-    verified: true,
-  },
-];
+import { useLocale } from '@/components/providers/locale-provider';
 
 const RatingStars = ({ rating }: { rating: number }) => {
   return (
@@ -96,6 +22,83 @@ const RatingStars = ({ rating }: { rating: number }) => {
 };
 
 export function TestimonialsSection() {
+  const { messages } = useLocale();
+  
+  const testimonials = [
+    {
+      id: 1,
+      name: messages.testimonials.items.name[0],
+      username: `@${messages.testimonials.items.name[0].toLowerCase()}`,
+      avatar: 'https://avatars.steamstatic.com/c5d56249ee5d28a07db4ac9f7f60af961fab5426_full.jpg',
+      rating: 5,
+      comment: messages.testimonials.items.comment[0],
+      amount: messages.testimonials.items.amount[0],
+      items: messages.testimonials.items.items[0],
+      date: messages.testimonials.items.date[0],
+      verified: true,
+    },
+    {
+      id: 2,
+      name: messages.testimonials.items.name[1],
+      username: `@${messages.testimonials.items.name[1].toLowerCase()}`,
+      avatar: 'https://avatars.steamstatic.com/185f21c3f1e8e55b1ff2f5dc1e8d3d2f5c6e7f8a_full.jpg',
+      rating: 5,
+      comment: messages.testimonials.items.comment[1],
+      amount: messages.testimonials.items.amount[1],
+      items: messages.testimonials.items.items[1],
+      date: messages.testimonials.items.date[1],
+      verified: true,
+    },
+    {
+      id: 3,
+      name: messages.testimonials.items.name[2],
+      username: `@${messages.testimonials.items.name[2].toLowerCase()}`,
+      avatar: 'https://avatars.steamstatic.com/8f3d5c1e9a2b4f6d8e7c9a1b2f4e6d8c7a9b1e2f_full.jpg',
+      rating: 5,
+      comment: messages.testimonials.items.comment[2],
+      amount: messages.testimonials.items.amount[2],
+      items: messages.testimonials.items.items[2],
+      date: messages.testimonials.items.date[2],
+      verified: true,
+    },
+    {
+      id: 4,
+      name: messages.testimonials.items.name[3],
+      username: `@${messages.testimonials.items.name[3].toLowerCase()}`,
+      avatar: 'https://avatars.steamstatic.com/2f4e6d8c7a9b1e2f4e6d8c7a9b1e2f4e6d8c7a9b_full.jpg',
+      rating: 5,
+      comment: messages.testimonials.items.comment[3],
+      amount: messages.testimonials.items.amount[3],
+      items: messages.testimonials.items.items[3],
+      date: messages.testimonials.items.date[3],
+      verified: true,
+    },
+    {
+      id: 5,
+      name: messages.testimonials.items.name[4],
+      username: `@${messages.testimonials.items.name[4].toLowerCase()}`,
+      avatar: 'https://avatars.steamstatic.com/4e6d8c7a9b1e2f4e6d8c7a9b1e2f4e6d8c7a9b1e_full.jpg',
+      rating: 5,
+      comment: messages.testimonials.items.comment[4],
+      amount: messages.testimonials.items.amount[4],
+      items: messages.testimonials.items.items[4],
+      date: messages.testimonials.items.date[4],
+      verified: true,
+    },
+    {
+      id: 6,
+      name: messages.testimonials.items.name[5],
+      username: `@${messages.testimonials.items.name[5].toLowerCase()}`,
+      avatar: 'https://avatars.steamstatic.com/6d8c7a9b1e2f4e6d8c7a9b1e2f4e6d8c7a9b1e2f4_full.jpg',
+      rating: 5,
+      comment: messages.testimonials.items.comment[5],
+      amount: messages.testimonials.items.amount[5],
+      items: messages.testimonials.items.items[5],
+      date: messages.testimonials.items.date[5],
+      verified: true,
+    },
+  ];
+
   return (
     <section className="py-24 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -108,22 +111,22 @@ export function TestimonialsSection() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ce que disent nos utilisateurs
+            {messages.testimonials.title}
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Plus de 15,000 utilisateurs nous font confiance pour vendre leurs skins
+            {messages.testimonials.subtitle}
           </p>
           
           {/* Rating Summary */}
           <div className="flex items-center justify-center space-x-3 sm:space-x-4 mt-8">
             <div className="flex items-center space-x-2">
               <RatingStars rating={5} />
-              <span className="text-2xl font-bold">4.9</span>
+              <span className="text-2xl font-bold">{messages.testimonials.rating}</span>
               <span className="text-muted-foreground">/5</span>
             </div>
             <div className="h-6 w-px bg-border" />
             <div className="text-muted-foreground">
-              Basé sur <strong>3,247</strong> avis
+              {messages.testimonials.basedOn} <strong>3,247</strong> {messages.testimonials.reviews}
             </div>
           </div>
         </motion.div>
@@ -199,19 +202,19 @@ export function TestimonialsSection() {
         >
           <div>
             <div className="text-3xl font-bold text-orange-600 mb-2">99.8%</div>
-            <div className="text-sm text-muted-foreground">Taux de satisfaction</div>
+            <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.satisfaction}</div>
           </div>
           <div>
             <div className="text-3xl font-bold text-orange-600 mb-2">15,420+</div>
-            <div className="text-sm text-muted-foreground">Utilisateurs actifs</div>
+            <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.users}</div>
           </div>
           <div>
             <div className="text-3xl font-bold text-orange-600 mb-2">€2.4M+</div>
-            <div className="text-sm text-muted-foreground">Volume traité</div>
+            <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.volume}</div>
           </div>
           <div>
             <div className="text-3xl font-bold text-orange-600 mb-2">24/7</div>
-            <div className="text-sm text-muted-foreground">Support disponible</div>
+            <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.support}</div>
           </div>
         </motion.div>
       </div>

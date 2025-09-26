@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useLocale } from "@/components/providers/locale-provider";
 import {
   LinkIcon,
   CurrencyDollarIcon,
@@ -12,85 +13,65 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 
-const steps = [
-  {
-    step: 1,
-    icon: LinkIcon,
-    title: "Ajoutez votre Trade Link",
-    description:
-      "Connectez-vous avec Steam et ajoutez votre lien de trade sécurisé.",
-    details: [
-      "Connexion Steam OpenID",
-      "Validation automatique du lien",
-      "Sécurité maximale",
-    ],
-  },
-  {
-    step: 2,
-    icon: CurrencyDollarIcon,
-    title: "Estimation instantanée",
-    description:
-      "Notre IA analyse vos skins et vous donne le prix en temps réel.",
-    details: [
-      "Prix basés sur Skinplace API",
-      "Mise à jour en temps réel",
-      "Estimation précise",
-    ],
-  },
-  {
-    step: 3,
-    icon: ShieldCheckIcon,
-    title: "Vérification KYC",
-    description: "Vérifiez votre identité pour sécuriser les paiements.",
-    details: [
-      "Processus rapide et simple",
-      "Documents sécurisés",
-      "Conformité légale",
-    ],
-  },
-  {
-    step: 4,
-    icon: ClockIcon,
-    title: "Trade Hold Steam (7j)",
-    description: "Période de sécurité Steam obligatoire de 7 jours.",
-    details: [
-      "Sécurité Steam",
-      "Suivi en temps réel",
-      "Notifications automatiques",
-    ],
-  },
-  {
-    step: 5,
-    icon: BanknotesIcon,
-    title: "Paiement automatique",
-    description: "Recevez votre argent via SEPA ou crypto après la période.",
-    details: [
-      "Paiement SEPA rapide",
-      "Support crypto multiple",
-      "Frais transparents",
-    ],
-  },
-];
-
-const benefits = [
-  {
-    icon: CheckCircleIcon,
-    title: "Processus entièrement automatisé",
-    description: "Du trade à la réception de l'argent, tout est automatique.",
-  },
-  {
-    icon: ShieldCheckIcon,
-    title: "Sécurité maximale",
-    description: "KYC obligatoire, chiffrement SSL, et conformité européenne.",
-  },
-  {
-    icon: CurrencyDollarIcon,
-    title: "Frais transparents",
-    description: "Seulement 0,5% de frais de cashout, pas de frais cachés.",
-  },
-];
-
 export function HowItWorks() {
+  const { messages } = useLocale();
+
+  const steps = [
+    {
+      step: 1,
+      icon: LinkIcon,
+      title: messages.howItWorks.steps.addTradeLink.title,
+      description: messages.howItWorks.steps.addTradeLink.description,
+      details: messages.howItWorks.steps.addTradeLink.details,
+    },
+    {
+      step: 2,
+      icon: CurrencyDollarIcon,
+      title: messages.howItWorks.steps.estimation.title,
+      description: messages.howItWorks.steps.estimation.description,
+      details: messages.howItWorks.steps.estimation.details,
+    },
+    {
+      step: 3,
+      icon: ShieldCheckIcon,
+      title: messages.howItWorks.steps.kyc.title,
+      description: messages.howItWorks.steps.kyc.description,
+      details: messages.howItWorks.steps.kyc.details,
+    },
+    {
+      step: 4,
+      icon: ClockIcon,
+      title: messages.howItWorks.steps.tradeHold.title,
+      description: messages.howItWorks.steps.tradeHold.description,
+      details: messages.howItWorks.steps.tradeHold.details,
+    },
+    {
+      step: 5,
+      icon: BanknotesIcon,
+      title: messages.howItWorks.steps.payment.title,
+      description: messages.howItWorks.steps.payment.description,
+      details: messages.howItWorks.steps.payment.details,
+    },
+  ];
+
+  const benefits = [
+    {
+      icon: CheckCircleIcon,
+      title: messages.howItWorks.benefits.automated.title,
+      description: messages.howItWorks.benefits.automated.description,
+    },
+    {
+      icon: ShieldCheckIcon,
+      title: messages.howItWorks.benefits.security.title,
+      description: messages.howItWorks.benefits.security.description,
+    },
+    {
+      icon: CurrencyDollarIcon,
+      title: messages.howItWorks.benefits.transparent.title,
+      description: messages.howItWorks.benefits.transparent.description,
+    },
+  ];
+
   return (
     <section id="how-it-works" className="py-16 sm:py-20 lg:py-24 bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -103,11 +84,10 @@ export function HowItWorks() {
           className="text-center mb-16"
         >
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-            Comment ça marche ?
+            {messages.howItWorks.title}
           </h2>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Un processus simple et sécurisé pour vendre vos skins CS2 en
-            quelques étapes
+            {messages.howItWorks.subtitle}
           </p>
         </motion.div>
 
@@ -196,20 +176,19 @@ export function HowItWorks() {
           className="text-center"
         >
           <div className="bg-gradient-to-br from-orange-500/10 to-red-600/10 rounded-2xl p-8 border">
-            <h3 className="text-2xl font-bold mb-4">Prêt à commencer ?</h3>
+            <h3 className="text-2xl font-bold mb-4">{messages.howItWorks.cta.title}</h3>
             <p className="text-muted-foreground mb-6">
-              Rejoignez des milliers d&apos;utilisateurs qui ont déjà vendu leurs
-              skins en toute sécurité
+              {messages.howItWorks.cta.description}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
                 className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
               >
-                Commencer maintenant
+                {messages.howItWorks.cta.primary}
               </Button>
               <Button variant="outline" size="lg">
-                Voir nos tarifs
+                {messages.howItWorks.cta.secondary}
               </Button>
             </div>
           </div>

@@ -27,51 +27,6 @@ import {
   StarIcon,
 } from "@heroicons/react/24/outline";
 
-const stats = [
-  { value: 15420, label: "Utilisateurs actifs", prefix: "", suffix: "+" },
-  { value: 2.4, label: "Millions d'€ traités", prefix: "€", suffix: "M+" },
-  { value: 8967, label: "Trades réalisés", prefix: "", suffix: "+" },
-  { value: 99.8, label: "Taux de satisfaction", prefix: "", suffix: "%" },
-];
-
-const features = [
-  {
-    icon: ClockIcon,
-    title: "Estimation instantanée",
-    description: "Prix en temps réel via notre API Skinplace intégrée",
-  },
-  {
-    icon: ShieldCheckIcon,
-    title: "Paiements sécurisés",
-    description: "SEPA, crypto, et KYC obligatoire pour votre sécurité",
-  },
-  {
-    icon: CurrencyDollarIcon,
-    title: "Frais transparents",
-    description: "Seulement 0,5% de frais de cashout, pas de frais cachés",
-  },
-];
-
-const testimonials = [
-  {
-    name: "ProGamer2024",
-    rating: 5,
-    comment: "Super rapide, j'ai reçu mon paiement en 2 jours !",
-    amount: "1,234€",
-  },
-  {
-    name: "SkinMaster",
-    rating: 5,
-    comment: "Interface très claire, processus simple et sécurisé.",
-    amount: "987€",
-  },
-  {
-    name: "CSGOKing",
-    rating: 5,
-    comment: "Meilleur site pour vendre ses skins, je recommande !",
-    amount: "2,156€",
-  },
-];
 
 export function HeroSection() {
   const { messages } = useLocale();
@@ -84,6 +39,53 @@ export function HeroSection() {
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  // Données traduites
+  const stats = [
+    { value: 15420, label: messages.hero.stats.users, prefix: "", suffix: "+" },
+    { value: 2.4, label: messages.hero.stats.volume, prefix: "€", suffix: "M+" },
+    { value: 8967, label: messages.hero.stats.trades, prefix: "", suffix: "+" },
+    { value: 99.8, label: messages.hero.stats.satisfaction, prefix: "", suffix: "%" },
+  ];
+
+  const features = [
+    {
+      icon: ClockIcon,
+      title: messages.hero.features.instant,
+      description: messages.hero.features.instantDesc,
+    },
+    {
+      icon: ShieldCheckIcon,
+      title: messages.hero.features.secure,
+      description: messages.hero.features.secureDesc,
+    },
+    {
+      icon: CurrencyDollarIcon,
+      title: messages.hero.features.transparent,
+      description: messages.hero.features.transparentDesc,
+    },
+  ];
+
+  const testimonials = [
+    {
+      name: messages.hero.testimonials.name[0],
+      rating: 5,
+      comment: messages.hero.testimonials.comment[0],
+      amount: messages.hero.testimonials.amount[0],
+    },
+    {
+      name: messages.hero.testimonials.name[1],
+      rating: 5,
+      comment: messages.hero.testimonials.comment[1],
+      amount: messages.hero.testimonials.amount[1],
+    },
+    {
+      name: messages.hero.testimonials.name[2],
+      rating: 5,
+      comment: messages.hero.testimonials.comment[2],
+      amount: messages.hero.testimonials.amount[2],
+    },
+  ];
 
   return (
     <CS2HeroBackground className="relative overflow-hidden">
@@ -350,19 +352,19 @@ export function HeroSection() {
                 {/* Summary */}
                 <div className="border-t pt-4 space-y-2 bg-muted/30 rounded-lg p-3">
                   <div className="flex justify-between text-sm">
-                    <span>Total brut</span>
+                    <span>{messages.hero.tradeInterface.totalBrut}</span>
                     <span className="font-medium">2,974.50€</span>
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Frais de cashout (0.5%)</span>
+                    <span>{messages.hero.tradeInterface.cashoutFees}</span>
                     <span>-14.87€</span>
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Frais réseau SEPA</span>
+                    <span>{messages.hero.tradeInterface.sepafees}</span>
                     <span>-2.50€</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg border-t pt-2 text-green-600">
-                    <span>Total net</span>
+                    <span>{messages.hero.tradeInterface.totalNet}</span>
                     <span className="bg-green-500/10 px-2 py-1 rounded">
                       2,957.13€
                     </span>

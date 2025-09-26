@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useLocale } from '@/components/providers/locale-provider';
 import {
   ShieldCheckIcon,
   CurrencyDollarIcon,
@@ -14,81 +15,6 @@ import {
   UserGroupIcon,
   BanknotesIcon,
 } from '@heroicons/react/24/outline';
-
-const features = [
-  {
-    category: 'Sécurité',
-    icon: ShieldCheckIcon,
-    title: 'Sécurité renforcée',
-    description: 'KYC obligatoire, chiffrement SSL 256-bit, et conformité RGPD européenne.',
-    highlights: ['KYC obligatoire', 'SSL 256-bit', 'Conformité RGPD'],
-    badge: 'Certifié',
-  },
-  {
-    category: 'Paiements',
-    icon: BanknotesIcon,
-    title: 'Paiements multiples',
-    description: 'SEPA instantané, Bitcoin, Ethereum, USDT, et autres cryptomonnaies supportées.',
-    highlights: ['SEPA instantané', 'Bitcoin, ETH, USDT', 'Paiements rapides'],
-    badge: 'Populaire',
-  },
-  {
-    category: 'Estimation',
-    icon: CurrencyDollarIcon,
-    title: 'Prix en temps réel',
-    description: 'API Skinplace intégrée pour des estimations précises et mises à jour en continu.',
-    highlights: ['API Skinplace', 'Temps réel', 'Estimation précise'],
-    badge: 'Nouveau',
-  },
-  {
-    category: 'Support',
-    icon: ChatBubbleLeftRightIcon,
-    title: 'Support 24/7',
-    description: 'Équipe dédiée disponible 24h/24 et 7j/7 pour répondre à toutes vos questions.',
-    highlights: ['24h/24 - 7j/7', 'Équipe dédiée', 'Réponse rapide'],
-    badge: 'Premium',
-  },
-  {
-    category: 'Rapidité',
-    icon: ClockIcon,
-    title: 'Processus rapide',
-    description: 'Trade hold Steam de 7 jours puis paiement automatique immédiat.',
-    highlights: ['7 jours Steam', 'Paiement auto', 'Processus optimisé'],
-    badge: 'Efficace',
-  },
-  {
-    category: 'International',
-    icon: GlobeEuropeAfricaIcon,
-    title: 'Support multilingue',
-    description: 'Interface disponible en français, anglais, et chinois pour tous nos utilisateurs.',
-    highlights: ['Français', 'English', '中文'],
-    badge: 'Global',
-  },
-  {
-    category: 'Gamification',
-    icon: GiftIcon,
-    title: 'Système XP & Tickets',
-    description: 'Gagnez de l\'XP à chaque trade et des tickets pour participer aux giveaways.',
-    highlights: ['XP par trade', 'Système de niveaux', 'Giveaways'],
-    badge: 'Fun',
-  },
-  {
-    category: 'Affiliation',
-    icon: UserGroupIcon,
-    title: 'Programme d\'affiliation',
-    description: 'Gagnez 2% de commission sur chaque utilisateur que vous parrainez.',
-    highlights: ['2% commission', 'Paiements mensuels', 'Suivi détaillé'],
-    badge: 'Lucratif',
-  },
-  {
-    category: 'Analytics',
-    icon: ChartBarIcon,
-    title: 'Dashboard complet',
-    description: 'Suivez vos trades, vos gains, et vos statistiques avec des graphiques détaillés.',
-    highlights: ['Graphiques détaillés', 'Historique complet', 'Export CSV'],
-    badge: 'Pro',
-  },
-];
 
 const badgeVariants = {
   'Certifié': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
@@ -103,6 +29,83 @@ const badgeVariants = {
 };
 
 export function FeaturesSection() {
+  const { messages } = useLocale();
+  
+  const features = [
+    {
+      category: messages.features.items.security.category,
+      icon: ShieldCheckIcon,
+      title: messages.features.items.security.title,
+      description: messages.features.items.security.description,
+      highlights: messages.features.items.security.highlights,
+      badge: messages.features.items.security.badge,
+    },
+    {
+      category: messages.features.items.payments.category,
+      icon: BanknotesIcon,
+      title: messages.features.items.payments.title,
+      description: messages.features.items.payments.description,
+      highlights: messages.features.items.payments.highlights,
+      badge: messages.features.items.payments.badge,
+    },
+    {
+      category: messages.features.items.estimation.category,
+      icon: CurrencyDollarIcon,
+      title: messages.features.items.estimation.title,
+      description: messages.features.items.estimation.description,
+      highlights: messages.features.items.estimation.highlights,
+      badge: messages.features.items.estimation.badge,
+    },
+    {
+      category: messages.features.items.support.category,
+      icon: ChatBubbleLeftRightIcon,
+      title: messages.features.items.support.title,
+      description: messages.features.items.support.description,
+      highlights: messages.features.items.support.highlights,
+      badge: messages.features.items.support.badge,
+    },
+    {
+      category: messages.features.items.speed.category,
+      icon: ClockIcon,
+      title: messages.features.items.speed.title,
+      description: messages.features.items.speed.description,
+      highlights: messages.features.items.speed.highlights,
+      badge: messages.features.items.speed.badge,
+    },
+    {
+      category: messages.features.items.international.category,
+      icon: GlobeEuropeAfricaIcon,
+      title: messages.features.items.international.title,
+      description: messages.features.items.international.description,
+      highlights: messages.features.items.international.highlights,
+      badge: messages.features.items.international.badge,
+    },
+    {
+      category: messages.features.items.gamification.category,
+      icon: GiftIcon,
+      title: messages.features.items.gamification.title,
+      description: messages.features.items.gamification.description,
+      highlights: messages.features.items.gamification.highlights,
+      badge: messages.features.items.gamification.badge,
+    },
+    {
+      category: messages.features.items.affiliation.category,
+      icon: UserGroupIcon,
+      title: messages.features.items.affiliation.title,
+      description: messages.features.items.affiliation.description,
+      highlights: messages.features.items.affiliation.highlights,
+      badge: messages.features.items.affiliation.badge,
+    },
+    {
+      category: messages.features.items.analytics.category,
+      icon: ChartBarIcon,
+      title: messages.features.items.analytics.title,
+      description: messages.features.items.analytics.description,
+      highlights: messages.features.items.analytics.highlights,
+      badge: messages.features.items.analytics.badge,
+    },
+  ];
+
   return (
     <section className="py-24">
       <div className="container mx-auto px-4">
@@ -115,14 +118,14 @@ export function FeaturesSection() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Pourquoi choisir{' '}
+            {messages.features.title.split('CashTrade')[0]}
             <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
               CashTrade
-            </span>{' '}
-            ?
+            </span>
+            {messages.features.title.split('CashTrade')[1] || ''}
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Une plateforme complète avec toutes les fonctionnalités dont vous avez besoin
+            {messages.features.subtitle}
           </p>
         </motion.div>
 
@@ -190,7 +193,7 @@ export function FeaturesSection() {
           <div className="inline-flex items-center space-x-2 bg-muted/50 px-6 py-3 rounded-full">
             <ShieldCheckIcon className="w-5 h-5 text-green-500" />
             <span className="text-sm font-medium">
-              Plus de 15,000 utilisateurs nous font confiance
+              {messages.features.trustIndicators}
             </span>
           </div>
         </motion.div>
