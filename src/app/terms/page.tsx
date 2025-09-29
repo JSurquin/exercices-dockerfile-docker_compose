@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useLocale } from "@/components/providers/locale-provider";
 import {
   DocumentTextIcon,
   ShieldCheckIcon,
@@ -156,6 +157,8 @@ En cas de litige, nous encourageons la résolution amiable via notre service cli
 ];
 
 export default function TermsPage() {
+  const { messages } = useLocale();
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-4xl mx-auto">
@@ -168,20 +171,20 @@ export default function TermsPage() {
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             <DocumentTextIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
-            Conditions d&apos;utilisation
+            {messages.terms.title}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-            Conditions générales d&apos;utilisation de la plateforme CashTrade
+            {messages.terms.subtitle}
           </p>
 
           <div className="flex items-center justify-center space-x-6 text-sm text-muted-foreground">
             <div className="flex items-center space-x-2">
               <CalendarIcon className="w-4 h-4" />
-              <span>Dernière mise à jour : 21 septembre 2024</span>
+              <span>{messages.terms.lastUpdated}</span>
             </div>
             <div className="flex items-center space-x-2">
               <ShieldCheckIcon className="w-4 h-4" />
-              <span>Version 1.2</span>
+              <span>{messages.terms.version}</span>
             </div>
           </div>
         </motion.div>

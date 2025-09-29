@@ -22,21 +22,21 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CashTrade - Vendez vos skins CS2 facilement",
-  description: "La plateforme la plus rapide et sécurisée pour convertir vos skins Counter-Strike 2 en argent réel. Paiements SEPA et crypto disponibles.",
+  title: "CashTrade - Sell your CS2 skins easily",
+  description: "The fastest and most secure platform to convert your Counter-Strike 2 skins into real money. SEPA and crypto payments available.",
   keywords: ["CS2", "Counter-Strike", "skins", "trading", "cashout", "SEPA", "crypto"],
   authors: [{ name: "CashTrade Team" }],
   openGraph: {
-    title: "CashTrade - Vendez vos skins CS2 facilement",
-    description: "La plateforme la plus rapide et sécurisée pour convertir vos skins Counter-Strike 2 en argent réel.",
+    title: "CashTrade - Sell your CS2 skins easily",
+    description: "The fastest and most secure platform to convert your Counter-Strike 2 skins into real money.",
     type: "website",
     url: "https://cashtrade.gg",
     siteName: "CashTrade",
   },
   twitter: {
     card: "summary_large_image",
-    title: "CashTrade - Vendez vos skins CS2 facilement",
-    description: "La plateforme la plus rapide et sécurisée pour convertir vos skins Counter-Strike 2 en argent réel.",
+    title: "CashTrade - Sell your CS2 skins easily",
+    description: "The fastest and most secure platform to convert your Counter-Strike 2 skins into real money.",
     creator: "@cashtrade",
   },
 };
@@ -47,7 +47,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${poppins.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen flex flex-col`}
       >

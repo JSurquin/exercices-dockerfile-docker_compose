@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/components/providers/auth-provider';
+import { useLocale } from '@/components/providers/locale-provider';
 import {
   ShieldCheckIcon,
   DocumentTextIcon,
@@ -21,16 +22,17 @@ import {
   XCircleIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import { Messages } from '@/lib/i18n';
 
 type KYCStep = 'info' | 'documents' | 'selfie' | 'address' | 'review';
 type DocumentType = 'id_card' | 'passport' | 'driving_license';
 
-const steps = [
-  { id: 'info', title: 'Informations personnelles', icon: DocumentTextIcon },
-  { id: 'documents', title: 'Pièce d\'identité', icon: DocumentTextIcon },
-  { id: 'selfie', title: 'Selfie de vérification', icon: CameraIcon },
-  { id: 'address', title: 'Justificatif de domicile', icon: HomeIcon },
-  { id: 'review', title: 'Vérification', icon: CheckCircleIcon },
+const getSteps = (messages: Messages) => [
+  { id: 'info', title: messages.kycPage.steps.info, icon: DocumentTextIcon },
+  { id: 'documents', title: messages.kycPage.steps.documents, icon: DocumentTextIcon },
+  { id: 'selfie', title: messages.kycPage.steps.selfie, icon: CameraIcon },
+  { id: 'address', title: messages.kycPage.steps.address, icon: HomeIcon },
+  { id: 'review', title: messages.kycPage.steps.review, icon: CheckCircleIcon },
 ];
 
 interface PersonalInfo {
@@ -46,6 +48,7 @@ interface PersonalInfo {
 
 export default function KYCPage() {
   const { user, updateUser } = useAuth();
+  const { messages } = useLocale();
   const [currentStep, setCurrentStep] = useState<KYCStep>('info');
   const [isLoading, setIsLoading] = useState(false);
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
@@ -60,10 +63,11 @@ export default function KYCPage() {
   });
   const [documentType, setDocumentType] = useState<DocumentType>('id_card');
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({});
+  const steps = getSteps(messages);
 
   const handleFileUpload = (type: string, file: File) => {
     setUploadedFiles(prev => ({ ...prev, [type]: file }));
-    toast.success(`${file.name} téléchargé avec succès`);
+    toast.success(`${file.name} ${messages.kycPage.toasts.uploaded}`);
   };
 
   const handleNextStep = async () => {
@@ -103,9 +107,9 @@ export default function KYCPage() {
         await updateUser({ kycStatus: 'in_progress' });
       }
       
-      toast.success('Dossier KYC soumis avec succès ! Vous recevrez une réponse sous 24-48h.');
+      toast.success(messages.toast.kycSubmitted);
     } catch {
-      toast.error('Erreur lors de la soumission du dossier KYC');
+      toast.error(messages.kycPage.toasts.error);
     }
   };
 
@@ -218,9 +222,9 @@ export default function KYCPage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-6 sm:mb-8"
         >
-          <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Vérification KYC</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">{messages.kycPage.title}</h1>
           <p className="text-muted-foreground">
-            Vérifiez votre identité pour accéder aux paiements sécurisés
+            {messages.kycPage.subtitle}
           </p>
         </motion.div>
 
@@ -331,7 +335,7 @@ export default function KYCPage() {
                       <Label htmlFor="nationality">Nationalité *</Label>
                       <Select value={personalInfo.nationality} onValueChange={(value) => setPersonalInfo(prev => ({ ...prev, nationality: value }))}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner" />
+                          <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="FR">France</SelectItem>

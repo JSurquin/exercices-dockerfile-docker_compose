@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { mockTrades, mockUser, mockStats, mockVolumeData } from '@/lib/mock-data';
+import { useLocale } from '@/components/providers/locale-provider';
 import {
   ChartBarIcon,
   UsersIcon,
@@ -127,6 +128,7 @@ const mockPayouts = [
 ];
 
 export default function AdminPage() {
+  const { messages } = useLocale();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -139,12 +141,12 @@ export default function AdminPage() {
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
             <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-red-500" />
-            <h2 className="text-xl font-semibold mb-2">Accès refusé</h2>
+            <h2 className="text-xl font-semibold mb-2">{messages.admin.accessDenied.title}</h2>
             <p className="text-muted-foreground mb-6">
-              Vous n&apos;avez pas les permissions nécessaires pour accéder à cette page.
+              {messages.admin.accessDenied.description}
             </p>
             <Button onClick={() => window.location.href = '/'}>
-              Retour à l&apos;accueil
+              {messages.admin.accessDenied.home}
             </Button>
           </CardContent>
         </Card>
@@ -179,21 +181,21 @@ export default function AdminPage() {
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold">Administration CashTrade</h1>
-              <p className="text-muted-foreground">Gestion et supervision de la plateforme</p>
+              <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold">{messages.admin.title}</h1>
+              <p className="text-muted-foreground">{messages.admin.subtitle}</p>
             </div>
             <div className="flex space-x-2">
               <Button variant="outline" onClick={() => exportData('users')}>
                 <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
-                Export Utilisateurs
+{messages.admin.export.users}
               </Button>
               <Button variant="outline" onClick={() => exportData('trades')}>
                 <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
-                Export Trades
+{messages.admin.export.trades}
               </Button>
               <Button variant="outline" onClick={() => exportData('payouts')}>
                 <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
-                Export Paiements
+{messages.admin.export.payouts}
               </Button>
             </div>
           </div>
@@ -210,11 +212,11 @@ export default function AdminPage() {
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Utilisateurs totaux</p>
+                  <p className="text-sm text-muted-foreground">{messages.admin.stats.totalUsers}</p>
                   <p className="text-2xl font-bold">
                     <CountUp end={mockStats.totalUsers} duration={2} />
                   </p>
-                  <p className="text-sm text-green-600">+12% ce mois</p>
+                  <p className="text-sm text-green-600">+12% {messages.admin.stats.monthly}</p>
                 </div>
                 <UsersIcon className="w-8 h-8 text-blue-500" />
               </div>
@@ -225,11 +227,11 @@ export default function AdminPage() {
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Volume total</p>
+                  <p className="text-sm text-muted-foreground">{messages.admin.stats.totalVolume}</p>
                   <p className="text-2xl font-bold">
                     <CountUp end={mockStats.totalVolume / 100} duration={2} decimals={0} suffix="€" />
                   </p>
-                  <p className="text-sm text-green-600">+8% ce mois</p>
+                  <p className="text-sm text-green-600">+8% {messages.admin.stats.monthly}</p>
                 </div>
                 <CurrencyDollarIcon className="w-8 h-8 text-green-500" />
               </div>
@@ -240,11 +242,11 @@ export default function AdminPage() {
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Trades totaux</p>
+                  <p className="text-sm text-muted-foreground">{messages.admin.stats.totalTrades}</p>
                   <p className="text-2xl font-bold">
                     <CountUp end={mockStats.totalTrades} duration={2} />
                   </p>
-                  <p className="text-sm text-green-600">+15% ce mois</p>
+                  <p className="text-sm text-green-600">+15% {messages.admin.stats.monthly}</p>
                 </div>
                 <ChartBarIcon className="w-8 h-8 text-purple-500" />
               </div>
@@ -350,10 +352,10 @@ export default function AdminPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">Tous les statuts</SelectItem>
-                          <SelectItem value="verified">Vérifié</SelectItem>
-                          <SelectItem value="pending">En attente</SelectItem>
-                          <SelectItem value="rejected">Rejeté</SelectItem>
+                          <SelectItem value="all">{messages.admin.users.allStatuses}</SelectItem>
+                          <SelectItem value="verified">{messages.admin.users.verified}</SelectItem>
+                          <SelectItem value="pending">{messages.admin.users.pending}</SelectItem>
+                          <SelectItem value="rejected">{messages.admin.users.rejected}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -363,13 +365,13 @@ export default function AdminPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Utilisateur</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>KYC</TableHead>
-                        <TableHead>Volume</TableHead>
-                        <TableHead>Trades</TableHead>
-                        <TableHead>Dernière connexion</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead>{messages.admin.users.user}</TableHead>
+                        <TableHead>{messages.admin.users.email}</TableHead>
+                        <TableHead>{messages.admin.users.kyc}</TableHead>
+                        <TableHead>{messages.admin.users.volume}</TableHead>
+                        <TableHead>{messages.admin.users.trades}</TableHead>
+                        <TableHead>{messages.admin.users.lastLogin}</TableHead>
+                        <TableHead>{messages.admin.users.actions}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -395,7 +397,7 @@ export default function AdminPage() {
                             >
                               <span className="flex items-center space-x-1">
                                 {getStatusIcon(user.kycStatus)}
-                                <span>{user.kycStatus === 'verified' ? 'Vérifié' : user.kycStatus === 'pending' ? 'En attente' : 'Rejeté'}</span>
+                                <span>{user.kycStatus === 'verified' ? messages.admin.users.verified : user.kycStatus === 'pending' ? messages.admin.users.pending : messages.admin.users.rejected}</span>
                               </span>
                             </Badge>
                           </TableCell>
