@@ -154,9 +154,9 @@ const GiveawayCard = ({ giveaway, onParticipate, messages }: { giveaway: Giveawa
                 {messages.giveaways.card.participate}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Vous avez {mockUser.tickets} {messages.giveaways.card.ticketsAvailable}
-            </p>
+              <p className="text-xs text-muted-foreground">
+                {messages.giveaways.youHave} {mockUser.tickets} {messages.giveaways.card.ticketsAvailable}
+              </p>
           </div>
         )}
       </CardContent>

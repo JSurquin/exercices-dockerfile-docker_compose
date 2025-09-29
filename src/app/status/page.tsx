@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useLocale } from "@/components/providers/locale-provider";
+import { Messages } from "@/lib/i18n";
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
@@ -64,20 +66,20 @@ const getStatusIcon = (status: ServiceStatus) => {
   }
 };
 
-const getStatusText = (status: ServiceStatus) => {
+const getStatusText = (status: ServiceStatus, messages: Messages) => {
   switch (status) {
     case "operational":
-      return "Opérationnel";
+      return messages.status.overall.operational;
     case "degraded":
-      return "Dégradé";
+      return messages.status.overall.degraded;
     case "partial_outage":
-      return "Panne partielle";
+      return messages.status.overall.partialOutage;
     case "major_outage":
-      return "Panne majeure";
+      return messages.status.overall.majorOutage;
     case "maintenance":
-      return "Maintenance";
+      return messages.status.overall.maintenance;
     default:
-      return "Inconnu";
+      return "Unknown";
   }
 };
 
@@ -99,51 +101,52 @@ const getStatusColor = (status: ServiceStatus) => {
 };
 
 export default function StatusPage() {
+  const { messages } = useLocale();
   const [services] = useState<Service[]>([
     {
-      name: "Site Web",
+      name: messages.status.services.website.name,
       status: "operational",
-      description: "Interface utilisateur principale",
+      description: messages.status.services.website.description,
       icon: GlobeAltIcon,
       uptime: 99.95,
       responseTime: 245,
     },
     {
-      name: "API CashTrade",
+      name: messages.status.services.api.name,
       status: "operational",
-      description: "API principal pour les trades",
+      description: messages.status.services.api.description,
       icon: CpuChipIcon,
       uptime: 99.99,
       responseTime: 120,
     },
     {
-      name: "Base de données",
+      name: messages.status.services.database.name,
       status: "operational",
-      description: "Stockage des données utilisateur",
+      description: messages.status.services.database.description,
       icon: CircleStackIcon,
       uptime: 99.98,
       responseTime: 15,
     },
     {
-      name: "Paiements SEPA",
+      name: messages.status.services.sepaPayments.name,
       status: "operational",
-      description: "Traitement des virements bancaires",
+      description: messages.status.services.sepaPayments.description,
       icon: CreditCardIcon,
       uptime: 99.92,
       responseTime: 2500,
     },
     {
-      name: "Paiements Crypto",
+      name: messages.status.services.cryptoPayments.name,
       status: "operational",
-      description: "Traitement des cryptomonnaies",
+      description: messages.status.services.cryptoPayments.description,
       icon: CreditCardIcon,
       uptime: 99.89,
       responseTime: 8000,
     },
     {
-      name: "API Steam",
+      name: messages.status.services.steamApi.name,
       status: "degraded",
-      description: "Intégration avec Steam",
+      description: messages.status.services.steamApi.description,
       icon: GlobeAltIcon,
       uptime: 98.5,
       responseTime: 1800,
@@ -216,10 +219,10 @@ export default function StatusPage() {
           className="text-center mb-8 sm:mb-12"
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-            Statut des services CashTrade
+            {messages.status.title}
           </h1>
           <p className="text-xl text-muted-foreground mb-6">
-            Surveillez en temps réel la disponibilité de nos services
+            {messages.status.subtitle}
           </p>
 
           {/* Overall Status */}
@@ -233,12 +236,12 @@ export default function StatusPage() {
                 <div className="flex items-center justify-center space-x-3">
                   {getStatusIcon(overallStatus)}
                   <div>
-                    <p className="font-semibold">Statut global</p>
+                    <p className="font-semibold">{messages.status.overall.title}</p>
                     <Badge
                       variant="secondary"
                       className={getStatusColor(overallStatus)}
                     >
-                      {getStatusText(overallStatus)}
+                      {getStatusText(overallStatus, messages)}
                     </Badge>
                   </div>
                 </div>
@@ -292,7 +295,7 @@ export default function StatusPage() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mb-8 sm:mb-12"
         >
-          <h2 className="text-2xl font-semibold mb-6">Services</h2>
+          <h2 className="text-2xl font-semibold mb-6">{messages.status.services.title}</h2>
           <div className="space-y-3 sm:space-y-4">
             {services.map((service, index) => (
               <motion.div
@@ -320,7 +323,7 @@ export default function StatusPage() {
                             variant="secondary"
                             className={getStatusColor(service.status)}
                           >
-                            {getStatusText(service.status)}
+                            {getStatusText(service.status, messages)}
                           </Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">
@@ -353,7 +356,7 @@ export default function StatusPage() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="mb-8 sm:mb-12"
           >
-            <h2 className="text-2xl font-semibold mb-6">Incidents récents</h2>
+            <h2 className="text-2xl font-semibold mb-6">{messages.status.incidents.title}</h2>
             <div className="space-y-4 sm:space-y-6">
               {incidents.map((incident, index) => (
                 <motion.div
@@ -452,11 +455,10 @@ export default function StatusPage() {
           <Card className="bg-muted/50">
             <CardContent className="p-4 sm:p-6">
               <p className="text-sm text-muted-foreground mb-2">
-                Cette page est mise à jour automatiquement toutes les 30
-                secondes
+                {messages.status.footer.updateFrequency}
               </p>
               <p className="text-xs text-muted-foreground">
-                Dernière mise à jour : {new Date().toLocaleString("fr-FR")}
+                {messages.status.footer.lastUpdate} {new Date().toLocaleString()}
               </p>
               <div className="mt-4">
                 <Badge variant="outline" className="mr-2">

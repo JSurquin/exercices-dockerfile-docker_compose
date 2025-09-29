@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
+import { Messages } from "@/lib/i18n";
 import {
   mockTrades,
   mockVolumeData,
@@ -53,17 +54,8 @@ const getStatusColor = (status: string) => {
   return colors[status as keyof typeof colors] || "bg-gray-500";
 };
 
-const getStatusText = (status: string) => {
-  const texts = {
-    créé: "Créé",
-    accepté_par_bot: "Accepté",
-    en_trade_hold: "Trade Hold (7j)",
-    disponible: "Prêt à payer",
-    paiement_en_cours: "Paiement en cours",
-    payé: "Payé",
-    échoué: "Échec",
-  };
-  return texts[status as keyof typeof texts] || status;
+const getStatusText = (status: string, messages: Messages) => {
+  return messages.trade.status[status as keyof typeof messages.trade.status] || status;
 };
 
 export default function DashboardPage() {
@@ -251,7 +243,7 @@ export default function DashboardPage() {
                                 trade.status
                               )} text-white`}
                             >
-                              {getStatusText(trade.status)}
+                              {getStatusText(trade.status, messages)}
                             </Badge>
                             <span className="font-mono text-sm text-muted-foreground">
                               {trade.ticketId}

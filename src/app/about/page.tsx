@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useLocale } from "@/components/providers/locale-provider";
+import { Messages } from "@/lib/i18n";
 import {
   ShieldCheckIcon,
   CurrencyDollarIcon,
@@ -15,115 +17,111 @@ import {
   RocketLaunchIcon,
 } from "@heroicons/react/24/outline";
 
-const stats = [
-  { label: "Utilisateurs actifs", value: "15,420+", icon: UserGroupIcon },
-  { label: "Volume traité", value: "€2.4M+", icon: CurrencyDollarIcon },
-  { label: "Trades réalisés", value: "8,967+", icon: ChartBarIcon },
-  { label: "Pays supportés", value: "25+", icon: GlobeEuropeAfricaIcon },
+const getStats = (messages: Messages) => [
+  { label: messages.about.stats.users, value: "15,420+", icon: UserGroupIcon },
+  { label: messages.about.stats.volume, value: "€2.4M+", icon: CurrencyDollarIcon },
+  { label: messages.about.stats.trades, value: "8,967+", icon: ChartBarIcon },
+  { label: messages.about.stats.countries, value: "25+", icon: GlobeEuropeAfricaIcon },
 ];
 
-const team = [
+const getTeam = (messages: Messages) => [
   {
-    name: "Alexandre Martin",
-    role: "CEO & Fondateur",
-    bio: "Ex-ingénieur Steam, passionné de CS depuis 2003. Vision : démocratiser le trading de skins.",
+    name: messages.about.team.members.ceo.name,
+    role: messages.about.team.members.ceo.role,
+    bio: messages.about.team.members.ceo.bio,
     avatar:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
     skills: ["Leadership", "Trading", "Blockchain"],
   },
   {
-    name: "Sophie Chen",
-    role: "CTO",
-    bio: "Experte sécurité blockchain, ex-Binance. Garantit la sécurité de chaque transaction.",
+    name: messages.about.team.members.cto.name,
+    role: messages.about.team.members.cto.role,
+    bio: messages.about.team.members.cto.bio,
     avatar:
       "https://images.unsplash.com/photo-1494790108755-2616b612d451?w=150&h=150&fit=crop&crop=face",
-    skills: ["Blockchain", "Sécurité", "Architecture"],
+    skills: ["Blockchain", "Security", "Architecture"],
   },
   {
-    name: "Thomas Dubois",
-    role: "Head of Product",
-    bio: "Designer UX/UI passionné. Créateur des interfaces les plus intuitives du gaming.",
+    name: messages.about.team.members.product.name,
+    role: messages.about.team.members.product.role,
+    bio: messages.about.team.members.product.bio,
     avatar:
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
     skills: ["UX/UI", "Product", "Gaming"],
   },
   {
-    name: "Marie Leroy",
-    role: "Head of Compliance",
-    bio: "Ex-juriste fintech, spécialiste réglementation européenne. Assure la conformité légale.",
+    name: messages.about.team.members.compliance.name,
+    role: messages.about.team.members.compliance.role,
+    bio: messages.about.team.members.compliance.bio,
     avatar:
       "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face",
-    skills: ["Compliance", "Legal", "RGPD"],
+    skills: ["Compliance", "Legal", "GDPR"],
   },
 ];
 
-const values = [
+const getValues = (messages: Messages) => [
   {
     icon: ShieldCheckIcon,
-    title: "Sécurité avant tout",
-    description:
-      "Chaque transaction est protégée par les plus hauts standards de sécurité. KYC obligatoire, chiffrement SSL, et conformité européenne.",
+    title: messages.about.values.security.title,
+    description: messages.about.values.security.description,
   },
   {
     icon: HeartIcon,
-    title: "Communauté first",
-    description:
-      "Notre communauté de gamers est au cœur de tout ce que nous faisons. Support 24/7, écoute active, et amélioration continue.",
+    title: messages.about.values.community.title,
+    description: messages.about.values.community.description,
   },
   {
     icon: LightBulbIcon,
-    title: "Innovation continue",
-    description:
-      "Nous repoussons constamment les limites de ce qui est possible dans le trading de skins avec les dernières technologies.",
+    title: messages.about.values.innovation.title,
+    description: messages.about.values.innovation.description,
   },
   {
     icon: RocketLaunchIcon,
-    title: "Simplicité",
-    description:
-      "Rendre le trading de skins accessible à tous, du débutant au trader expérimenté, avec une interface intuitive.",
+    title: messages.about.values.simplicity.title,
+    description: messages.about.values.simplicity.description,
   },
 ];
 
-const timeline = [
+const getTimeline = (messages: Messages) => [
   {
-    year: "2023",
-    title: "Fondation de CashTrade",
-    description:
-      "Lancement de la startup avec une vision claire : révolutionner le trading de skins CS.",
+    year: messages.about.timeline.events.founding.year,
+    title: messages.about.timeline.events.founding.title,
+    description: messages.about.timeline.events.founding.description,
   },
   {
-    year: "2024 Q1",
-    title: "Première version",
-    description:
-      "Lancement de la plateforme MVP avec support SEPA et premiers 1000 utilisateurs.",
+    year: messages.about.timeline.events.mvp.year,
+    title: messages.about.timeline.events.mvp.title,
+    description: messages.about.timeline.events.mvp.description,
   },
   {
-    year: "2024 Q2",
-    title: "Expansion crypto",
-    description:
-      "Ajout du support Bitcoin, Ethereum et stablecoins. Partenariat avec Binance.",
+    year: messages.about.timeline.events.crypto.year,
+    title: messages.about.timeline.events.crypto.title,
+    description: messages.about.timeline.events.crypto.description,
   },
   {
-    year: "2024 Q3",
-    title: "Gamification",
-    description:
-      "Lancement du système XP, tickets et giveaways. Engagement utilisateur +300%.",
+    year: messages.about.timeline.events.gamification.year,
+    title: messages.about.timeline.events.gamification.title,
+    description: messages.about.timeline.events.gamification.description,
   },
   {
-    year: "2024 Q4",
-    title: "International",
-    description:
-      "Expansion européenne, support multilingue, conformité RGPD complète.",
+    year: messages.about.timeline.events.international.year,
+    title: messages.about.timeline.events.international.title,
+    description: messages.about.timeline.events.international.description,
   },
   {
-    year: "2025",
-    title: "Vision future",
-    description:
-      "Application mobile, API publique, support multi-jeux (Dota 2, TF2).",
+    year: messages.about.timeline.events.future.year,
+    title: messages.about.timeline.events.future.title,
+    description: messages.about.timeline.events.future.description,
   },
 ];
 
 export default function AboutPage() {
+  const { messages } = useLocale();
+  const stats = getStats(messages);
+  const team = getTeam(messages);
+  const values = getValues(messages);
+  const timeline = getTimeline(messages);
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -136,16 +134,13 @@ export default function AboutPage() {
             className="text-center max-w-3xl mx-auto"
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              À propos de{" "}
+              {messages.about.title}{" "}
               <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
                 CashTrade
               </span>
             </h1>
             <p className="text-xl text-muted-foreground mb-6 sm:mb-8">
-              Nous révolutionnons la façon dont les joueurs de Counter-Strike 2
-              transforment leurs skins en argent réel. Une plateforme sécurisée,
-              transparente et innovante créée par des passionnés pour des
-              passionnés.
+              {messages.about.subtitle}
             </p>
 
             {/* Stats */}
@@ -179,26 +174,18 @@ export default function AboutPage() {
             className="max-w-4xl mx-auto"
           >
             <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-6 sm:mb-8">
-              Notre Mission
+              {messages.about.mission.title}
             </h2>
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
                 <p className="text-lg text-muted-foreground mb-6">
-                  Fondée en 2023 par une équipe de développeurs et de traders
-                  passionnés, CashTrade est née d&apos;un constat simple : le
-                  trading de skins CS était trop complexe, peu sécurisé et
-                  souvent opaque.
+                  {messages.about.mission.description1}
                 </p>
                 <p className="text-lg text-muted-foreground mb-6">
-                  Notre mission est de créer la plateforme de référence pour
-                  convertir vos skins en argent réel, en alliant sécurité
-                  maximale, transparence totale et expérience utilisateur
-                  exceptionnelle.
+                  {messages.about.mission.description2}
                 </p>
                 <p className="text-lg text-muted-foreground">
-                  Nous croyons que chaque joueur devrait pouvoir monétiser
-                  facilement ses items virtuels, sans compromis sur la sécurité
-                  ou la simplicité.
+                  {messages.about.mission.description3}
                 </p>
               </div>
               <div className="relative">
@@ -222,9 +209,9 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="text-center mb-8 sm:mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">Nos Valeurs</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">{messages.about.values.title}</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Les principes qui guident chacune de nos décisions et innovations
+              {messages.about.values.subtitle}
             </p>
           </motion.div>
 
@@ -262,10 +249,9 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="text-center mb-8 sm:mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">Notre Équipe</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">{messages.about.team.title}</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Des experts passionnés qui travaillent chaque jour pour améliorer
-              votre expérience
+              {messages.about.team.subtitle}
             </p>
           </motion.div>
 
@@ -325,9 +311,9 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="text-center mb-8 sm:mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">Notre Histoire</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">{messages.about.timeline.title}</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              De l&apos;idée initiale aux perspectives d&apos;avenir
+              {messages.about.timeline.subtitle}
             </p>
           </motion.div>
 
@@ -389,18 +375,17 @@ export default function AboutPage() {
           >
             <div className="bg-gradient-to-r from-orange-500/10 to-red-600/10 rounded-2xl p-12 border">
               <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-                Rejoignez l&apos;aventure CashTrade
+                {messages.about.cta.title}
               </h2>
               <p className="text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto">
-                Faites partie de la révolution du trading de skins CS2. Une
-                communauté de plus de 15,000 traders vous attend.
+                {messages.about.cta.description}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg font-medium hover:from-orange-600 hover:to-red-700 transition-all">
-                  Commencer à trader
+                  {messages.about.cta.start}
                 </button>
                 <button className="px-8 py-3 border border-muted-foreground rounded-lg font-medium hover:bg-muted transition-colors">
-                  Rejoindre Discord
+                  {messages.about.cta.discord}
                 </button>
               </div>
             </div>
