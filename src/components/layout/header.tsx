@@ -138,8 +138,10 @@ export function Header() {
                     locale === loc ? "bg-orange-500/10 text-orange-600" : ""
                   }
                 >
-                  <span className="mr-2">{loc === "fr" ? "🇫🇷" : "🇺🇸"}</span>
-                  {loc.toUpperCase()}
+                  <span className="mr-2">
+                    {loc === "fr" ? "🇫🇷" : loc === "en" ? "🇺🇸" : "🇨🇳"}
+                  </span>
+                  {loc === "fr" ? "Français" : loc === "en" ? "English" : "中文"}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -295,7 +297,10 @@ export function Header() {
                           onClick={() => setLocale(loc as Locale)}
                           className={locale === loc ? "bg-accent" : ""}
                         >
-                          {loc.toUpperCase()}
+                          <span className="mr-2">
+                            {loc === "fr" ? "🇫🇷" : loc === "en" ? "🇺🇸" : "🇨🇳"}
+                          </span>
+                          {loc === "fr" ? "Français" : loc === "en" ? "English" : "中文"}
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>

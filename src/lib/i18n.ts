@@ -1,4 +1,4 @@
-export const locales = ["fr", "en"] as const;
+export const locales = ["fr", "en", "cn"] as const;
 export type Locale = (typeof locales)[number];
 
 export const defaultLocale: Locale = "fr";
@@ -3702,6 +3702,577 @@ export const messages: Record<Locale, Messages> = {
         inProgress: "In progress",
         lost: "Lost"
       }
+    },
+  },
+  cn: {
+    nav: {
+      home: "首页",
+      sell: "出售",
+      dashboard: "控制台",
+      giveaways: "抽奖",
+      support: "客服",
+      login: "Steam 登录",
+      logout: "登出",
+      settings: "设置",
+      language: "语言",
+      lightMode: "浅色模式",
+      darkMode: "深色模式",
+    },
+    user: {
+      level: "等级",
+      xp: "经验",
+    },
+    hero: {
+      title: "轻松出售你的CS2皮肤",
+      subtitle:
+        "最快速、最安全的平台，将您的反恐精英2皮肤转换为真钱",
+      cta: "立即出售",
+      secondaryCta: "了解详情",
+      badge: "认证安全平台",
+      features: {
+        instant: "即时估价",
+        secure: "安全支付",
+        transparent: "透明费用",
+        instantDesc: "通过集成的Skinplace API实时定价",
+        secureDesc: "SEPA、加密货币和强制KYC保障您的安全",
+        transparentDesc: "仅收取0.5%提现费，无隐藏费用",
+      },
+      stats: {
+        users: "活跃用户",
+        volume: "百万欧元交易量",
+        trades: "完成交易",
+        satisfaction: "满意度",
+      },
+      tradeInterface: {
+        estimation: "即时估价",
+        totalBrut: "总额",
+        cashoutFees: "提现费 (0.5%)",
+        sepafees: "SEPA网络费",
+        totalNet: "净额",
+      },
+      testimonials: {
+        name: ["职业玩家2024", "皮肤大师", "CSGO之王"],
+        comment: ["超级快！我出售了皮肤，在Steam交易锁定后仅2天就收到了付款。界面非常清晰，客服响应迅速。", "出售皮肤的最佳网站！流程简单，估价准确，SEPA付款超快。100%推荐。", "界面精美且非常专业。我能够实时跟踪交易，通知让我随时了解情况。太棒了！"],
+        amount: ["1,234€", "987€", "2,156€"]
+      },
+    },
+    features: {
+      title: "为什么选择CashTrade？",
+      subtitle: "拥有您所需全部功能的完整平台",
+      items: {
+        security: {
+          category: "安全",
+          title: "增强安全性",
+          description: "强制KYC认证、256位SSL加密和欧盟GDPR合规。",
+          highlights: ["强制KYC", "256位SSL", "GDPR合规"],
+          badge: "认证"
+        },
+        payments: {
+          category: "支付",
+          title: "多种支付方式",
+          description: "即时SEPA、比特币、以太坊、USDT和其他支持的加密货币。",
+          highlights: ["即时SEPA", "比特币、ETH、USDT", "快速支付"],
+          badge: "热门"
+        },
+        estimation: {
+          category: "估价",
+          title: "实时定价",
+          description: "集成Skinplace API，提供准确估价和持续更新。",
+          highlights: ["Skinplace API", "实时", "准确估价"],
+          badge: "新功能"
+        },
+        support: {
+          category: "客服",
+          title: "24/7客服",
+          description: "专业团队全天候为您解答所有问题。",
+          highlights: ["24/7", "专业团队", "快速响应"],
+          badge: "高级"
+        },
+        speed: {
+          category: "速度",
+          title: "快速流程",
+          description: "7天Steam交易锁定后立即自动付款。",
+          highlights: ["7天Steam", "自动付款", "优化流程"],
+          badge: "高效"
+        },
+        international: {
+          category: "国际化",
+          title: "多语言支持",
+          description: "为所有用户提供法语、英语和中文界面。",
+          highlights: ["法语", "English", "中文"],
+          badge: "全球"
+        },
+        gamification: {
+          category: "游戏化",
+          title: "经验值与票券系统",
+          description: "每次交易获得经验值和票券，参与抽奖活动。",
+          highlights: ["每次交易获得经验", "等级系统", "抽奖"],
+          badge: "有趣"
+        },
+        affiliation: {
+          category: "推广",
+          title: "推广计划",
+          description: "推荐每个用户获得2%佣金。",
+          highlights: ["2%佣金", "每月付款", "详细跟踪"],
+          badge: "有利可图"
+        },
+        analytics: {
+          category: "分析",
+          title: "完整控制台",
+          description: "通过详细图表跟踪您的交易、收益和统计数据。",
+          highlights: ["详细图表", "完整历史", "CSV导出"],
+          badge: "专业"
+        }
+      },
+      trustIndicators: "超过15,000名用户信任我们"
+    },
+    howItWorks: {
+      title: "如何使用？",
+      subtitle: "通过几个简单步骤安全出售您的CS2皮肤",
+      steps: {
+        addTradeLink: {
+          title: "添加您的交易链接",
+          description: "使用Steam连接并添加您的安全交易链接。",
+          details: ["Steam OpenID连接", "自动链接验证", "最高安全性"]
+        },
+        estimation: {
+          title: "即时估价",
+          description: "我们的AI分析您的皮肤并实时给出价格。",
+          details: ["基于Skinplace API的价格", "实时更新", "准确估价"]
+        },
+        kyc: {
+          title: "KYC验证",
+          description: "验证您的身份以确保支付安全。",
+          details: ["快速简单的流程", "安全文档", "法律合规"]
+        },
+        tradeHold: {
+          title: "Steam交易锁定 (7天)",
+          description: "Steam强制的7天安全期。",
+          details: ["Steam安全", "实时跟踪", "自动通知"]
+        },
+        payment: {
+          title: "自动付款",
+          description: "期限结束后通过SEPA或加密货币接收您的资金。",
+          details: ["快速SEPA付款", "多种加密货币支持", "透明费用"]
+        }
+      },
+      benefits: {
+        automated: {
+          title: "完全自动化流程",
+          description: "从交易到收款，一切都是自动的。"
+        },
+        security: {
+          title: "最高安全性",
+          description: "强制KYC、SSL加密和欧洲合规。"
+        },
+        transparent: {
+          title: "透明费用",
+          description: "仅收取0.5%提现费，无隐藏费用。"
+        }
+      },
+      cta: {
+        title: "准备开始了吗？",
+        description: "加入数千名已安全出售皮肤的用户",
+        primary: "立即开始",
+        secondary: "查看我们的定价"
+      }
+    },
+    testimonials: {
+      title: "用户评价",
+      subtitle: "超过15,000名用户信任我们出售他们的皮肤",
+      rating: "4.9",
+      basedOn: "基于",
+      reviews: "评价",
+      items: {
+        name: ["职业玩家2024", "皮肤大师", "CSGO之王", "法国交易员", "技术达人", "加密粉丝"],
+        comment: [
+          "超级快！我出售了皮肤，在Steam交易锁定后仅2天就收到了付款。界面非常清晰，客服响应迅速。",
+          "出售皮肤的最佳网站！流程简单，估价准确，SEPA付款超快。100%推荐。",
+          "界面精美且非常专业。我能够实时跟踪交易，通知让我随时了解情况。太棒了！",
+          "对法国人来说很完美！法语客服、SEPA付款和欧洲合规。终于有了一个认真的平台。",
+          "我喜欢游戏化系统！每次交易获得经验值和票券，太棒了。而且抽奖也很不错。",
+          "出色的加密货币支持！比特币、以太坊、USDT...应有尽有。费用透明，没有意外。"
+        ],
+        amount: ["1,234€", "987€", "2,156€", "675€", "445€", "1,789€"],
+        items: ["AK-47 红线 + AWP 亚洲二元", "格洛克 渐变 StatTrak™", "卡拉曼比特 渐变 + M4A4 怒吼", "USP-S 死亡确认", "AK-47 火神", "Dragon Lore 崭新出厂"],
+        date: ["2天前", "5天前", "1周前", "1周前", "2周前", "2周前"]
+      },
+      trustStats: {
+        satisfaction: "满意度",
+        users: "活跃用户",
+        volume: "处理量",
+        support: "客服可用"
+      }
+    },
+    trade: {
+      title: "出售我的皮肤",
+      subtitle: "通过几个简单步骤出售您的CS2皮肤",
+      tradeLink: "Steam交易链接",
+      estimation: "即时估价",
+      fees: "费用",
+      cashoutFee: "提现费 (0.5%)",
+      networkFee: "SEPA网络费",
+      total: "净总额",
+      confirm: "确认出售",
+      timeline: "流程 (7天)",
+      loginRequired: "需要登录",
+      loginSubtitle: "您必须使用Steam登录才能出售皮肤。",
+      steamLogin: "使用Steam登录",
+      analyzing: "加载物品中...",
+      confirming: "创建交易中...",
+      created: "交易创建成功！",
+      accepted: "您的交易已创建并发送。在Steam上接受报价以继续。",
+      tradeLinkPlaceholder: "https://steamcommunity.com/tradeoffer/new/?partner=...",
+      tradeLinkHelp: "如何获取我的交易链接？",
+      tradeLinkInfo: '打开Steam并进入您的库存。点击"隐私设置"。复制交易链接URL',
+      tradeLinkWarning: "确保您的Steam库存是公开的，交易链接是有效的。我们无法访问私人库存。",
+      automaticPayment: "7天后自动付款",
+      steps: {
+        tradelink: "Steam交易链接",
+        estimation: "估价",
+        confirmation: "确认",
+      },
+      tradelink: {
+        title: "Steam交易链接",
+        helpTitle: "如何找到您的交易链接？",
+        helpSteps: [
+          "打开Steam并进入您的库存",
+          "点击\"隐私设置\"",
+          "复制交易链接URL"
+        ],
+        placeholder: "https://steamcommunity.com/tradeoffer/new/?partner=...",
+        important: "重要",
+        importantText: "确保您的Steam库存是公开的，交易链接是有效的。我们无法访问私人库存。",
+        analyzeButton: "分析库存",
+        analyzingButton: "加载物品中...",
+      },
+      items: {
+        selected: "选定物品",
+        totalBrut: "总额",
+        cashoutFees: "提现费 (0.5%)",
+        networkFees: "网络费",
+        totalNet: "净额",
+        timeline: "时间线",
+        timelineText: "Steam交易锁定7天后自动付款",
+        confirmButton: "确认出售",
+        creatingButton: "创建交易中...",
+      },
+      success: {
+        title: "交易创建成功！",
+        subtitle: "您的交易已创建并发送。在Steam上接受报价以继续。",
+        tradeId: "交易ID：",
+        netAmount: "净金额：",
+        followTrade: "跟踪交易",
+        openSteam: "打开Steam",
+      },
+      status: {
+        créé: "已创建",
+        accepté_par_bot: "已接受",
+        en_trade_hold: "交易锁定 (7天)",
+        disponible: "准备付款",
+        paiement_en_cours: "付款处理中",
+        payé: "已付款",
+        échoué: "失败",
+      },
+    },
+    dashboard: {
+      title: "我的控制台",
+      subtitle: "这是您活动的概览",
+      welcome: "欢迎",
+      stats: "统计",
+      volume: "总交易量",
+      trades: "交易",
+      xp: "经验值",
+      level: "等级",
+      tickets: "票券",
+      history: "历史",
+      loginRequired: "需要登录",
+      loginSubtitle: "您必须登录才能访问控制台。",
+      currentLevel: "等级",
+      nextLevel: "至等级",
+      totalXp: "经验值",
+      xpForNext: "经验值至等级",
+      tabs: {
+        trades: "我的交易",
+        analytics: "分析",
+        payments: "支付",
+        settings: "设置",
+      },
+      tradeHistory: {
+        title: "交易历史",
+        items: "物品",
+        fees: "费用：",
+        timeline: "时间线：",
+        cashout: "提现：",
+        network: "网络：",
+        accepted: "已接受：",
+        available: "可用：",
+        others: "其他",
+      },
+      analytics: {
+        tradingVolume: "交易量",
+        tradeStatus: "交易状态",
+      },
+      payments: {
+        title: "支付方式",
+        methods: "支付方式",
+        verified: "已验证",
+        default: "默认",
+        addMethod: "添加支付方式",
+      },
+      settings: {
+        profile: "资料",
+        security: "安全",
+        twoFactor: "双因素认证",
+        twoFactorDesc: "额外保护",
+        emailNotifications: "邮件通知",
+        emailNotificationsDesc: "交易提醒",
+        enabled: "已启用",
+      },
+    },
+    kyc: {
+      title: "KYC验证",
+      required: "支付需要验证",
+      upload: "上传文档",
+      pending: "等待验证",
+      approved: "已验证",
+      rejected: "已拒绝",
+    },
+    payments: {
+      sepa: "SEPA转账",
+      crypto: "加密货币",
+      addMethod: "添加支付方式",
+      verify: "验证",
+      otp: "OTP验证码",
+    },
+    common: {
+      loading: "加载中...",
+      error: "错误",
+      success: "成功",
+      cancel: "取消",
+      continue: "继续",
+      back: "返回",
+      connecting: "连接中...",
+      online: "在线",
+      steamLogin: "Steam登录",
+      confirmed: "已确认",
+      marketplace: "CS2市场",
+    },
+    toast: {
+      itemsLoadedSuccess: "物品加载成功！",
+      itemsLoadError: "加载物品时出错",
+      tradeCreatedSuccess: "交易创建成功！",
+      tradeCreationError: "创建交易时出错",
+      settingsSavedSuccess: "设置保存成功",
+      invalidTradeLink: "无效的交易链接。请从Steam复制链接。",
+    },
+    footer: {
+      description: "最快速、最安全的平台，将您的CS2皮肤转换为真钱。使用我们的安全支付系统放心出售您的皮肤。",
+      securedBy: "安全保障：",
+      company: "公司",
+      support: "客服",
+      legal: "法律",
+      links: {
+        about: "关于我们",
+        blog: "博客",
+        careers: "招聘",
+        press: "新闻",
+        helpCenter: "帮助中心",
+        contact: "联系我们",
+        status: "状态",
+        api: "API",
+        terms: "服务条款",
+        privacy: "隐私政策",
+        kycPolicy: "KYC政策",
+        amlPolicy: "反洗钱政策",
+      },
+      stats: {
+        activeUsers: "活跃用户",
+        volumeProcessed: "处理量",
+        tradesCompleted: "完成交易",
+        satisfactionRate: "满意度",
+      },
+      disclaimer: "免责声明：CashTrade与Valve Corporation或Steam无关。反恐精英和Steam是Valve Corporation的注册商标。皮肤交易存在风险，价格可能波动。请负责任地交易，永远不要投资超过您承受损失能力的资金。",
+      copyright: "© 2024 CashTrade. 保留所有权利。| 欧盟许可证：CT-2024-001",
+      socialLinks: {
+        discord: "Discord",
+        twitter: "Twitter",
+        reddit: "Reddit",
+        youtube: "YouTube",
+      },
+    },
+    support: {
+      title: "帮助中心",
+      subtitle: "找到问题答案或联系我们的客服团队",
+      stats: {
+        responseTime: "平均响应时间",
+        resolutionRate: "解决率",
+        supportAvailable: "客服可用",
+        languagesSupported: "支持语言",
+      },
+      faq: {
+        title: "常见问题",
+        categories: {
+          general: "一般问题",
+          security: "安全与KYC",
+          payments: "支付",
+          trading: "交易与皮肤",
+        },
+        questions: {
+          howItWorks: "CashTrade如何工作？",
+          howItWorksAnswer: "CashTrade是一个允许您将CS2皮肤出售换取真钱的平台。您连接Steam账户，添加交易链接，我们通过Skinplace API实时估价您的皮肤，然后创建交易。在7天Steam交易锁定后，您会自动收到付款。",
+          fees: "费用是多少？",
+          feesAnswer: "我们仅对您出售的总金额收取0.5%的提现费。根据您的支付方式可能会产生网络费（SEPA约20€，加密货币费用可变）。无隐藏费用！",
+          processTime: "整个流程需要多长时间？",
+          processTimeAnswer: "完整流程需要大约7-9天：即时估价，创建交易（几分钟），强制Steam交易锁定（7天），然后自动付款（24-48小时）。您可以在控制台实时跟踪状态。",
+          priceCalculation: "皮肤价格如何计算？",
+          priceCalculationAnswer: "我们的价格基于Skinplace API，该API汇总实时市场数据。价格每5分钟更新一次以反映市场波动。我们使用最近销售价格的平均值。",
+          whyKyc: "为什么我需要进行KYC？",
+          whyKycAnswer: "根据欧洲法规，KYC（了解您的客户）是打击洗钱的强制要求。它允许我们验证您的身份并确保所有付款的安全。流程简单，通常需要24-48小时。",
+          dataSecurity: "我的数据安全吗？",
+          dataSecurityAnswer: "绝对安全。我们对所有通信使用256位SSL加密。您的KYC文档安全存储，我们只保留KYC提供商提供的参考ID。我们符合GDPR。",
+          kycRejected: "如果我的KYC被拒绝怎么办？",
+          kycRejectedAnswer: "如果您的KYC被拒绝，您将收到一封包含拒绝原因的邮件。然后您可以纠正问题并重新提交文档。常见原因是：文档不清晰、信息不一致或文档过期。",
+          fraudProtection: "您如何防范欺诈？",
+          fraudProtectionAnswer: "我们有多个保护系统：每日交易限制、可疑活动峰值检测、交易链接验证、IBAN更改后的冷却期，以及新账户的增强验证系统。",
+          paymentMethods: "您接受哪些支付方式？",
+          paymentMethodsAnswer: "我们支持SEPA转账（通过Qonto）和加密货币（比特币、以太坊、USDT、USDC）。SEPA付款在首次付款或IBAN更改时需要增强验证（OTP或微转账）。",
+          paymentTime: "付款需要多长时间？",
+          paymentTimeAnswer: "SEPA转账需要24-48个工作小时。加密货币付款通常在区块链确认验证后几小时内处理。一旦付款启动，您会收到通知。",
+          changePaymentMethod: "我可以更改我的支付方式吗？",
+          changePaymentMethodAnswer: "是的，您可以在控制台中添加和修改支付方式。对于SEPA，新的IBAN更改需要新的验证和7天冷却期（除非微验证已验证）。",
+          minimumAmount: "有最低金额吗？",
+          minimumAmountAnswer: "付款的最低金额是净20€（扣除费用后）。这涵盖了处理和网络费用。您可以在请求付款前累积多次交易。",
+          acceptedSkins: "您接受哪些皮肤？",
+          acceptedSkinsAnswer: "我们接受所有可交易的CS2皮肤（非账户绑定）。皮肤必须在您的Steam库存中，您的库存必须是公开的。也接受StatTrak™皮肤和带贴纸的皮肤。",
+          steamRefusesTrade: "如果Steam拒绝交易怎么办？",
+          steamRefusesTradeAnswer: "如果Steam拒绝交易（私人库存、无效交易链接、不可交易皮肤），我们会自动取消请求并通知您。然后您可以纠正问题并重新开始流程。",
+          cancelTrade: "我可以取消进行中的交易吗？",
+          cancelTradeAnswer: "只要交易没有在Steam上被接受，您就可以取消交易。一旦交易被接受并处于交易锁定状态，根据Steam规则就无法取消了。如果您有紧急问题，请联系客服。",
+          xpSystem: "经验值和票券系统如何工作？",
+          xpSystemAnswer: "您在每次交易中根据交易量获得经验值（1经验值=1€交易量）。每个等级会给您票券，您可以在我们的抽奖中使用这些票券赢得免费皮肤。交易越多，等级越高！",
+        },
+      },
+      quickActions: {
+        title: "快速操作",
+        checkTradeStatus: "检查我的交易状态",
+        paymentProblem: "付款问题",
+        kycQuestions: "KYC问题",
+        technicalIssue: "报告技术问题",
+      },
+      contactForm: {
+        title: "联系客服",
+        connectedAs: "连接为：",
+        subject: "主题",
+        subjectPlaceholder: "简要描述您的问题",
+        category: "类别",
+        categoryPlaceholder: "选择类别",
+        categories: {
+          trading: "交易问题",
+          payment: "付款问题",
+          kyc: "KYC问题",
+          technical: "技术问题",
+          account: "用户账户",
+          other: "其他",
+        },
+        priority: "优先级",
+        priorities: {
+          low: "低",
+          normal: "正常",
+          high: "高",
+          urgent: "紧急",
+        },
+        message: "消息",
+        messagePlaceholder: "详细描述您的问题...",
+        submit: "发送工单",
+        submitting: "发送中...",
+        success: "客服工单创建成功！您将在2小时内收到回复。",
+        error: "创建工单时出错",
+      },
+      otherContact: {
+        title: "其他联系方式",
+        discord: {
+          title: "Discord社区",
+          description: "加入我们的Discord服务器获得快速帮助",
+          button: "加入Discord",
+        },
+        email: {
+          title: "直接邮件",
+          address: "support@cashtrade.gg",
+          responseTime: "24小时内回复",
+        },
+        hours: {
+          title: "营业时间",
+          weekdays: "周一至周五：9点-18点 (CET)",
+          weekend: "周六至周日：10点-16点 (CET)",
+          emergency: "紧急情况24/7客服",
+        },
+      },
+    },
+    giveaways: {
+      title: "抽奖",
+      subtitle: "使用您的票券参与抽奖，赢取exceptional皮肤",
+      userTickets: {
+        level: "等级",
+        tickets: "票券",
+        description: "通过出售皮肤获得更多票券！",
+      },
+      howTicketsWork: {
+        title: "票券如何工作？",
+        earn: {
+          title: "获得票券",
+          description: "根据交易量在每次交易中获得票券",
+        },
+        participate: {
+          title: "参与抽奖",
+          description: "使用您的票券参与抽奖",
+        },
+        win: {
+          title: "赢取奖品",
+          description: "赢得exceptional皮肤和独家奖励",
+        },
+      },
+      tabs: {
+        active: "进行中",
+        ended: "已结束",
+        myEntries: "我的参与",
+      },
+      card: {
+        status: {
+          active: "进行中",
+          ended: "已结束",
+          cancelled: "已取消",
+        },
+        prize: "奖品",
+        price: "价格：",
+        participants: "参与者",
+        timeRemaining: "剩余时间",
+        endDate: "结束日期",
+        ticketsSold: "已售票券",
+        winner: "获胜者：",
+        ticketsToUse: "使用票券数量：",
+        participate: "参与",
+        ticketsAvailable: "票券可用",
+      },
+      empty: {
+        noActive: "没有进行中的抽奖",
+        noActiveDescription: "请稍后回来发现新的抽奖！",
+        loginRequired: "需要登录",
+        loginRequiredDescription: "登录查看您的参与",
+        loginButton: "使用Steam登录",
+      },
+      myEntries: {
+        title: "我的参与",
+        entries: {
+          inProgress: "进行中",
+          lost: "失败",
+        },
+      },
+      participation: {
+        success: "参与已记录！",
+        notEnoughTickets: "您没有足够的票券",
+        loginRequired: "您必须登录才能参与",
+      },
     },
   },
 };
