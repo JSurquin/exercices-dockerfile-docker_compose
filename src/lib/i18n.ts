@@ -4065,6 +4065,9 @@ export const messages: Record<Locale, Messages> = {
       tradeCreationError: "创建交易时出错",
       settingsSavedSuccess: "设置保存成功",
       invalidTradeLink: "无效的交易链接。请从Steam复制链接。",
+      uploaded: "上传成功",
+      kycSubmitted: "KYC文件提交成功！您将在24-48小时内收到回复。",
+      saveError: "保存时出错",
     },
     footer: {
       description: "最快速、最安全的平台，将您的CS2皮肤转换为真钱。使用我们的安全支付系统放心出售您的皮肤。",
@@ -4273,6 +4276,94 @@ export const messages: Record<Locale, Messages> = {
         notEnoughTickets: "您没有足够的票券",
         loginRequired: "您必须登录才能参与",
       },
+      youHave: "您有",
+    },
+    about: {
+      title: "关于我们",
+      subtitle: "我们革命性地改变了反恐精英2玩家将皮肤转换为真钱的方式。",
+      mission: { title: "我们的使命", description1: "", description2: "", description3: "" },
+      values: { title: "我们的价值观", subtitle: "", security: { title: "安全第一", description: "" }, community: { title: "社区第一", description: "" }, innovation: { title: "持续创新", description: "" }, simplicity: { title: "简单", description: "" } },
+      team: { title: "我们的团队", subtitle: "", members: { ceo: { name: "", role: "", bio: "" }, cto: { name: "", role: "", bio: "" }, product: { name: "", role: "", bio: "" }, compliance: { name: "", role: "", bio: "" } } },
+      timeline: { title: "我们的历史", subtitle: "", events: { founding: { year: "", title: "", description: "" }, mvp: { year: "", title: "", description: "" }, crypto: { year: "", title: "", description: "" }, gamification: { year: "", title: "", description: "" }, international: { year: "", title: "", description: "" }, future: { year: "", title: "", description: "" } } },
+      cta: { title: "", description: "", start: "", discord: "" },
+      stats: { users: "", volume: "", trades: "", countries: "" }
+    },
+    terms: {
+      title: "服务条款",
+      subtitle: "CashTrade平台的一般使用条款",
+      lastUpdated: "最后更新：2024年9月21日",
+      version: "版本1.2",
+      importantNotice: { title: "重要信息", content: "" },
+      tableOfContents: "目录",
+      sections: { acceptance: { title: "", content: "" }, eligibility: { title: "", content: "" }, services: { title: "", content: "" }, trading: { title: "", content: "" }, payments: { title: "", content: "" }, kycSection: { title: "", content: "" }, security: { title: "", content: "" }, restrictions: { title: "", content: "" }, liability: { title: "", content: "" }, data: { title: "", content: "" }, termination: { title: "", content: "" }, governing: { title: "", content: "" } },
+      contactInfo: { title: "", description: "", email: "", phone: "", support: "" }
+    },
+    privacy: {
+      title: "隐私政策",
+      subtitle: "我们如何收集、使用和保护您的个人数据",
+      lastUpdated: "最后更新：2024年9月21日",
+      gdprCompliant: "GDPR合规",
+      commitment: { title: "", description1: "", description2: "" },
+      dataTypes: { title: "", identity: { category: "", data: [], purpose: "", retention: "" }, kyc: { category: "", data: [], purpose: "", retention: "" }, financial: { category: "", data: [], purpose: "", retention: "" }, usage: { category: "", data: [], purpose: "", retention: "" } },
+      legalBasis: { title: "", contract: { title: "", description: "" }, legal: { title: "", description: "" }, legitimate: { title: "", description: "" } },
+      rights: { title: "", access: { title: "", description: "", action: "" }, rectification: { title: "", description: "", action: "" }, erasure: { title: "", description: "", action: "" }, portability: { title: "", description: "", action: "" } },
+      security: { title: "", description: "", technical: { title: "", measures: [] }, organizational: { title: "", measures: [] } },
+      sharing: { title: "", description: "", providers: { title: "", description: "" }, legal: { title: "", description: "" }, consent: { title: "", description: "" } },
+      contact: { title: "", description: "", email: "", address: "", cnil: "" }
+    },
+    status: {
+      title: "CashTrade服务状态",
+      subtitle: "实时监控我们的服务可用性",
+      overall: { title: "", operational: "", degraded: "", partialOutage: "", majorOutage: "", maintenance: "" },
+      stats: { uptime: "", operational: "", incidents: "" },
+      services: { title: "", website: { name: "", description: "" }, api: { name: "", description: "" }, database: { name: "", description: "" }, sepaPayments: { name: "", description: "" }, cryptoPayments: { name: "", description: "" }, steamApi: { name: "", description: "" } },
+      incidents: { title: "", impact: { low: "", medium: "", high: "" }, status: { investigating: "", identified: "", monitoring: "", resolved: "" }, updates: "" },
+      footer: { updateFrequency: "", lastUpdate: "", emailAlerts: "", apiStatus: "" }
+    },
+    settings: {
+      title: "设置",
+      subtitle: "管理您的偏好和账户设置",
+      profile: { title: "", steamUsername: "", steamSync: "", memberSince: "", statistics: "", level: "", totalXp: "", tickets: "", volume: "" },
+      security: { title: "", twoFactor: { title: "", description: "", enabled: "", configure: "" }, kyc: { title: "", description: "", verified: "", pending: "", start: "" }, sessions: { title: "", description: "", view: "" }, gdpr: { title: "", description: "", export: "", delete: "" } },
+      notifications: { title: "", email: { title: "", description: "" }, trades: { title: "", description: "" }, payments: { title: "", description: "" }, push: { title: "", description: "" }, marketing: { title: "", description: "" }, save: "" },
+      payments: { title: "", sepa: "", bitcoin: "", verified: "", default: "", modify: "", add: "", important: "", ibanWarning: "" },
+      preferences: { title: "", language: { title: "", description: "", french: "", english: "" }, theme: { title: "", description: "", light: "", dark: "", system: "" }, save: "" },
+      loginRequired: { title: "", description: "", login: "" },
+      saveError: ""
+    },
+    admin: {
+      title: "CashTrade管理",
+      subtitle: "平台管理和监督",
+      accessDenied: { title: "", description: "", home: "" },
+      export: { users: "", trades: "", payouts: "" },
+      stats: { totalUsers: "", totalVolume: "", totalTrades: "", revenue: "", monthly: "" },
+      charts: { volume: "", newUsers: "" },
+      users: { title: "", user: "", search: "", email: "", kyc: "", volume: "", trades: "", lastLogin: "", actions: "", allStatuses: "", verified: "", pending: "", rejected: "" },
+      trades: { title: "", id: "", user: "", status: "", items: "", amount: "", date: "", actions: "" },
+      payouts: { title: "", id: "", user: "", amount: "", method: "", status: "", date: "", actions: "" },
+      kyc: { title: "", user: "", documents: "", status: "", submission: "", actions: "", pending: "", verified: "", rejected: "", id: "", selfie: "", address: "" }
+    },
+    kycPage: {
+      title: "KYC验证",
+      subtitle: "验证您的身份以获得安全支付",
+      steps: { info: "", documents: "", selfie: "", address: "", review: "" },
+      info: { title: "", description: "", firstName: "", lastName: "", dateOfBirth: "", nationality: "", address: "", city: "", postalCode: "", country: "", firstNamePlaceholder: "", lastNamePlaceholder: "", addressPlaceholder: "", cityPlaceholder: "", postalCodePlaceholder: "", countries: { france: "", belgium: "", switzerland: "", canada: "", usa: "" } },
+      documents: { type: "", upload: "", description: "", tips: { title: "", lighting: "", readable: "", reflection: "", complete: "" }, types: { id: "", passport: "", license: "" }, uploaded: "" },
+      selfie: { title: "", description: "", uploaded: "", instructions: { title: "", camera: "", visible: "", accessories: "", lighting: "" } },
+      addressDoc: { title: "", optional: "", description: "", uploaded: "", skip: "" },
+      review: { complete: "", description: "", personalInfo: "", documents: "", identity: "", selfie: "", addressDocument: "", delay: { title: "", description: "" }, fullName: "", nationality: "", address: "" },
+      navigation: { previous: "", next: "", submit: "", loading: "" },
+      status: { verified: { title: "", description: "", dashboard: "" }, inProgress: { title: "", description: "", dashboard: "" }, rejected: { title: "", description: "", restart: "" }, loginRequired: { title: "", description: "", login: "" } },
+      toasts: { uploaded: "", submitted: "", error: "" }
+    },
+    sellPage: {
+      helpSteps: [],
+      successMessages: { tradeCreated: "", followInstructions: "" }
+    },
+    giveawaysPage: {
+      participationSuccess: "",
+      available: "",
+      myEntries: { title: "", inProgress: "", lost: "" }
     },
   },
 };

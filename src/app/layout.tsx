@@ -6,6 +6,7 @@ import { LocaleProvider } from "@/components/providers/locale-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { ChatWidget } from "@/components/ui/chat-widget";
 import { Toaster } from "@/components/ui/sonner";
 
 const poppins = Poppins({
@@ -64,6 +65,7 @@ export default function RootLayout({
                 {children}
               </main>
               <Footer />
+              <ChatWidget />
               <Toaster />
             </AuthProvider>
           </LocaleProvider>
