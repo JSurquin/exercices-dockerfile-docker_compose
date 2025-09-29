@@ -13,6 +13,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
 import { mockTradeItems } from "@/lib/mock-data";
 import { TradeItem } from "@/lib/types";
+import { Messages } from "@/lib/i18n";
 import {
   LinkIcon,
   CurrencyDollarIcon,
@@ -24,16 +25,17 @@ import {
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
-const steps = [
-  { id: "tradelink", title: "Trade Link Steam", icon: LinkIcon },
-  { id: "estimation", title: "Estimation", icon: CurrencyDollarIcon },
-  { id: "confirmation", title: "Confirmation", icon: CheckCircleIcon },
+const getSteps = (messages: Messages) => [
+  { id: "tradelink", title: messages.trade.steps.tradelink, icon: LinkIcon },
+  { id: "estimation", title: messages.trade.steps.estimation, icon: CurrencyDollarIcon },
+  { id: "confirmation", title: messages.trade.steps.confirmation, icon: CheckCircleIcon },
 ];
 
 export default function SellPage() {
   const { user } = useAuth();
   const { messages } = useLocale();
   const [currentStep, setCurrentStep] = useState(0);
+  const steps = getSteps(messages);
   const [tradeLink, setTradeLink] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [items, setItems] = useState<TradeItem[]>([]);
@@ -64,7 +66,7 @@ export default function SellPage() {
   const handleTradeLinkSubmit = async () => {
     if (!tradeLink.includes("steamcommunity.com/tradeoffer/new/")) {
       toast.error(
-        "Lien de trade invalide. Veuillez copier le lien depuis Steam."
+        messages.toast.invalidTradeLink
       );
       return;
     }
@@ -226,7 +228,7 @@ export default function SellPage() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <LinkIcon className="w-5 h-5" />
-                  <span>Lien de Trade Steam</span>
+                  <span>{messages.trade.tradelink.title}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 sm:space-y-6">
@@ -235,24 +237,22 @@ export default function SellPage() {
                     <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                     <div className="text-sm">
                       <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
-                        Comment trouver votre Trade Link ?
+                        {messages.trade.tradelink.helpTitle}
                       </p>
                       <ol className="list-decimal list-inside space-y-1 text-blue-700 dark:text-blue-300">
-                        <li>Ouvrez Steam et allez dans votre inventaire</li>
-                        <li>
-                          Cliquez sur &quot;Paramètres de confidentialité&quot;
-                        </li>
-                        <li>Copiez l&apos;URL du Trade Link</li>
+                        {messages.trade.tradelink.helpSteps.map((step, index) => (
+                          <li key={index}>{step}</li>
+                        ))}
                       </ol>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="tradelink">URL du Trade Link Steam</Label>
+                  <Label htmlFor="tradelink">{messages.trade.tradeLink}</Label>
                   <Input
                     id="tradelink"
-                    placeholder="https://steamcommunity.com/tradeoffer/new/?partner=..."
+                    placeholder={messages.trade.tradelink.placeholder}
                     value={tradeLink}
                     onChange={(e) => setTradeLink(e.target.value)}
                     className="font-mono text-sm"
@@ -264,12 +264,10 @@ export default function SellPage() {
                     <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
                     <div className="text-sm">
                       <p className="font-medium text-yellow-900 dark:text-yellow-100 mb-1">
-                        Important
+                        {messages.trade.tradelink.important}
                       </p>
                       <p className="text-yellow-700 dark:text-yellow-300">
-                        Assurez-vous que votre inventaire Steam est public et
-                        que votre Trade Link est valide. Nous ne pouvons pas
-                        accéder à un inventaire privé.
+                        {messages.trade.tradelink.importantText}
                       </p>
                     </div>
                   </div>
@@ -282,8 +280,8 @@ export default function SellPage() {
                   size="lg"
                 >
                   {isLoading
-                    ? "Chargement des items..."
-                    : "Analyser l&apos;inventaire"}
+                    ? messages.trade.tradelink.analyzingButton
+                    : messages.trade.tradelink.analyzeButton}
                 </Button>
               </CardContent>
             </Card>
@@ -295,7 +293,7 @@ export default function SellPage() {
               <div className="lg:col-span-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Items sélectionnés ({items.length})</CardTitle>
+                    <CardTitle>{messages.trade.items.selected} ({items.length})</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
@@ -357,29 +355,29 @@ export default function SellPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <CurrencyDollarIcon className="w-5 h-5" />
-                      <span>Estimation</span>
+                      <span>{messages.trade.estimation}</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 sm:space-y-4">
                     <div className="space-y-3">
                       <div className="flex justify-between">
-                        <span>Total brut</span>
+                        <span>{messages.trade.items.totalBrut}</span>
                         <span className="font-semibold">
                           {formatPrice(estimation.brutCentimes)}
                         </span>
                       </div>
                       <Separator />
                       <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>Frais de cashout (0,5%)</span>
+                        <span>{messages.trade.items.cashoutFees}</span>
                         <span>-{formatPrice(estimation.fraisCashout)}</span>
                       </div>
                       <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>Frais réseau</span>
+                        <span>{messages.trade.items.networkFees}</span>
                         <span>-{formatPrice(estimation.fraisReseau)}</span>
                       </div>
                       <Separator />
                       <div className="flex justify-between text-lg font-bold">
-                        <span>Total net</span>
+                        <span>{messages.trade.items.totalNet}</span>
                         <span className="text-green-600">
                           {formatPrice(estimation.netCentimes)}
                         </span>
@@ -389,10 +387,10 @@ export default function SellPage() {
                     <div className="bg-muted/50 rounded-lg p-3">
                       <div className="flex items-center space-x-2 mb-2">
                         <ClockIcon className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Timeline</span>
+                        <span className="text-sm font-medium">{messages.trade.items.timeline}</span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Trade hold Steam de 7 jours puis paiement automatique
+                        {messages.trade.items.timelineText}
                       </p>
                     </div>
 
@@ -403,8 +401,8 @@ export default function SellPage() {
                       size="lg"
                     >
                       {isLoading
-                        ? "Création du trade..."
-                        : "Confirmer la vente"}
+                        ? messages.trade.items.creatingButton
+                        : messages.trade.items.confirmButton}
                     </Button>
                   </CardContent>
                 </Card>
@@ -417,24 +415,23 @@ export default function SellPage() {
               <CardContent className="p-8 text-center">
                 <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-green-500" />
                 <h2 className="text-2xl font-bold mb-2">
-                  Trade créé avec succès !
+                  {messages.trade.success.title}
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  Votre trade a été créé et envoyé. Acceptez l&apos;offre sur
-                  Steam pour continuer.
+                  {messages.trade.success.subtitle}
                 </p>
 
                 <div className="bg-muted/50 rounded-lg p-4 mb-6">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">
-                        ID du trade:
+                        {messages.trade.success.tradeId}
                       </span>
                       <p className="font-mono">TICK-20240921-0001</p>
                     </div>
                     <div>
                       <span className="text-muted-foreground">
-                        Montant net:
+                        {messages.trade.success.netAmount}
                       </span>
                       <p className="font-bold text-green-600">
                         {formatPrice(estimation.netCentimes)}
@@ -446,7 +443,7 @@ export default function SellPage() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button asChild>
                     <a href="/dashboard" target="_blank">
-                      Suivre le trade
+                      {messages.trade.success.followTrade}
                     </a>
                   </Button>
                   <Button variant="outline" asChild>
@@ -454,7 +451,7 @@ export default function SellPage() {
                       href="https://steamcommunity.com/my/tradeoffers/"
                       target="_blank"
                     >
-                      Ouvrir Steam
+                      {messages.trade.success.openSteam}
                     </a>
                   </Button>
                 </div>

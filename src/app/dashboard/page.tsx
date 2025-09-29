@@ -133,19 +133,19 @@ export default function DashboardPage() {
                 <div className="flex items-center space-x-3">
                   <TrophyIcon className="w-6 h-6 text-yellow-500" />
                   <div>
-                    <h3 className="font-semibold">Niveau {currentLevel}</h3>
+                    <h3 className="font-semibold">{messages.dashboard.currentLevel} {currentLevel}</h3>
                     <p className="text-sm text-muted-foreground">
                       {user.xp - xpForCurrentLevel} /{" "}
-                      {xpForNextLevel - xpForCurrentLevel} XP
+                      {xpForNextLevel - xpForCurrentLevel} {messages.dashboard.xp}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold">
-                    {user.xp.toLocaleString()} XP
+                    {user.xp.toLocaleString()} {messages.dashboard.xp}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {xpForNextLevel - user.xp} XP pour le niveau {nextLevel}
+                    {xpForNextLevel - user.xp} {messages.dashboard.xpForNext} {nextLevel}
                   </p>
                 </div>
               </div>
@@ -165,7 +165,7 @@ export default function DashboardPage() {
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Volume total</p>
+                  <p className="text-sm text-muted-foreground">{messages.dashboard.volume}</p>
                   <p className="text-2xl font-bold">
                     <CountUp
                       end={user.totalVolume / 100}
@@ -184,7 +184,7 @@ export default function DashboardPage() {
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Trades</p>
+                  <p className="text-sm text-muted-foreground">{messages.dashboard.trades}</p>
                   <p className="text-2xl font-bold">
                     <CountUp end={mockTrades.length} duration={2} />
                   </p>
@@ -198,7 +198,7 @@ export default function DashboardPage() {
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Niveau</p>
+                  <p className="text-sm text-muted-foreground">{messages.dashboard.level}</p>
                   <p className="text-2xl font-bold">{user.level}</p>
                 </div>
                 <StarIcon className="w-8 h-8 text-yellow-500" />
@@ -210,7 +210,7 @@ export default function DashboardPage() {
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Tickets</p>
+                  <p className="text-sm text-muted-foreground">{messages.dashboard.tickets}</p>
                   <p className="text-2xl font-bold">{user.tickets}</p>
                 </div>
                 <TicketIcon className="w-8 h-8 text-purple-500" />
@@ -227,17 +227,17 @@ export default function DashboardPage() {
         >
           <Tabs defaultValue="trades" className="space-y-4 sm:space-y-6">
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="trades">Mes Trades</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="payments">Paiements</TabsTrigger>
-              <TabsTrigger value="settings">Paramètres</TabsTrigger>
+              <TabsTrigger value="trades">{messages.dashboard.tabs.trades}</TabsTrigger>
+              <TabsTrigger value="analytics">{messages.dashboard.tabs.analytics}</TabsTrigger>
+              <TabsTrigger value="payments">{messages.dashboard.tabs.payments}</TabsTrigger>
+              <TabsTrigger value="settings">{messages.dashboard.tabs.settings}</TabsTrigger>
             </TabsList>
 
             {/* Trades Tab */}
             <TabsContent value="trades" className="space-y-4 sm:space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Historique des trades</CardTitle>
+                  <CardTitle>{messages.dashboard.tradeHistory.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 sm:space-y-4">
@@ -270,7 +270,7 @@ export default function DashboardPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                           <div>
                             <span className="text-muted-foreground">
-                              Items ({trade.items.length}):
+                              {messages.dashboard.tradeHistory.items} ({trade.items.length}):
                             </span>
                             <div className="mt-1">
                               {trade.items.slice(0, 2).map((item, index) => (
@@ -280,25 +280,25 @@ export default function DashboardPage() {
                               ))}
                               {trade.items.length > 2 && (
                                 <p className="text-muted-foreground">
-                                  +{trade.items.length - 2} autres
+                                  +{trade.items.length - 2} {messages.dashboard.tradeHistory.others}
                                 </p>
                               )}
                             </div>
                           </div>
                           <div>
                             <span className="text-muted-foreground">
-                              Frais:
+                              {messages.dashboard.tradeHistory.fees}
                             </span>
-                            <p>Cashout: {formatPrice(trade.frais.cashout)}</p>
-                            <p>Réseau: {formatPrice(trade.frais.réseau)}</p>
+                            <p>{messages.dashboard.tradeHistory.cashout} {formatPrice(trade.frais.cashout)}</p>
+                            <p>{messages.dashboard.tradeHistory.network} {formatPrice(trade.frais.réseau)}</p>
                           </div>
                           <div>
                             <span className="text-muted-foreground">
-                              Timeline:
+                              {messages.dashboard.tradeHistory.timeline}
                             </span>
                             {trade.tradeAcceptéLe && (
                               <p>
-                                Accepté:{" "}
+                                {messages.dashboard.tradeHistory.accepted}{" "}
                                 {new Date(
                                   trade.tradeAcceptéLe
                                 ).toLocaleDateString()}
@@ -306,7 +306,7 @@ export default function DashboardPage() {
                             )}
                             {trade.disponibleLe && (
                               <p>
-                                Disponible:{" "}
+                                {messages.dashboard.tradeHistory.available}{" "}
                                 {new Date(
                                   trade.disponibleLe
                                 ).toLocaleDateString()}
@@ -326,7 +326,7 @@ export default function DashboardPage() {
               <div className="grid lg:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Volume de trading</CardTitle>
+                    <CardTitle>{messages.dashboard.analytics.tradingVolume}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={300}>
@@ -354,7 +354,7 @@ export default function DashboardPage() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Statut des trades</CardTitle>
+                    <CardTitle>{messages.dashboard.analytics.tradeStatus}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={300}>
@@ -388,7 +388,7 @@ export default function DashboardPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <BanknotesIcon className="w-5 h-5" />
-                    <span>Méthodes de paiement</span>
+                    <span>{messages.dashboard.payments.title}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -411,9 +411,9 @@ export default function DashboardPage() {
                             variant="secondary"
                             className="bg-green-100 text-green-800"
                           >
-                            Vérifié
+                            {messages.dashboard.payments.verified}
                           </Badge>
-                          <Badge variant="outline">Par défaut</Badge>
+                          <Badge variant="outline">{messages.dashboard.payments.default}</Badge>
                         </div>
                       </div>
                     </div>
@@ -437,13 +437,13 @@ export default function DashboardPage() {
                           variant="secondary"
                           className="bg-green-100 text-green-800"
                         >
-                          Vérifié
+                          {messages.dashboard.payments.verified}
                         </Badge>
                       </div>
                     </div>
 
                     <Button variant="outline" className="w-full">
-                      Ajouter une méthode de paiement
+                      {messages.dashboard.payments.addMethod}
                     </Button>
                   </div>
                 </CardContent>
@@ -455,7 +455,7 @@ export default function DashboardPage() {
               <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Profil</CardTitle>
+                    <CardTitle>{messages.dashboard.settings.profile}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 sm:space-y-4">
                     <div className="flex items-center space-x-3 sm:space-x-4">
@@ -473,8 +473,8 @@ export default function DashboardPage() {
                         <Badge variant="secondary" className="mt-1">
                           KYC{" "}
                           {user.kycStatus === "verified"
-                            ? "Vérifié"
-                            : "En attente"}
+                            ? messages.kyc.approved
+                            : messages.kyc.pending}
                         </Badge>
                       </div>
                     </div>
@@ -483,35 +483,35 @@ export default function DashboardPage() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Sécurité</CardTitle>
+                    <CardTitle>{messages.dashboard.settings.security}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 sm:space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Authentification 2FA</p>
+                        <p className="font-medium">{messages.dashboard.settings.twoFactor}</p>
                         <p className="text-sm text-muted-foreground">
-                          Protection supplémentaire
+                          {messages.dashboard.settings.twoFactorDesc}
                         </p>
                       </div>
                       <Badge
                         variant="secondary"
                         className="bg-green-100 text-green-800"
                       >
-                        Activé
+                        {messages.dashboard.settings.enabled}
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Notifications Email</p>
+                        <p className="font-medium">{messages.dashboard.settings.emailNotifications}</p>
                         <p className="text-sm text-muted-foreground">
-                          Alertes de trading
+                          {messages.dashboard.settings.emailNotificationsDesc}
                         </p>
                       </div>
                       <Badge
                         variant="secondary"
                         className="bg-green-100 text-green-800"
                       >
-                        Activé
+                        {messages.dashboard.settings.enabled}
                       </Badge>
                     </div>
                   </CardContent>

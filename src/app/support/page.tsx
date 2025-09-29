@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/components/providers/auth-provider';
+import { useLocale } from '@/components/providers/locale-provider';
+import { Messages } from '@/lib/i18n';
 import {
   QuestionMarkCircleIcon,
   ChatBubbleLeftRightIcon,
@@ -25,110 +27,111 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 
-const faqCategories = [
+const getFaqCategories = (messages: Messages) => [
   {
     id: 'general',
-    title: 'Questions générales',
+    title: messages.support.faq.categories.general,
     icon: QuestionMarkCircleIcon,
     questions: [
       {
-        question: 'Comment fonctionne CashTrade ?',
-        answer: 'CashTrade est une plateforme qui vous permet de vendre vos skins CS2 contre de l\'argent réel. Vous connectez votre compte Steam, ajoutez votre Trade Link, nous estimons vos skins en temps réel via l\'API Skinplace, puis nous créons un trade. Après le trade hold Steam de 7 jours, vous recevez automatiquement votre paiement.',
+        question: messages.support.faq.questions.howItWorks,
+        answer: messages.support.faq.questions.howItWorksAnswer,
       },
       {
-        question: 'Quels sont les frais ?',
-        answer: 'Nous appliquons seulement 0,5% de frais de cashout sur le montant brut de votre vente. Des frais de réseau peuvent s\'appliquer selon votre méthode de paiement (environ 20€ pour SEPA, variable pour les cryptomonnaies). Aucun frais caché !',
+        question: messages.support.faq.questions.fees,
+        answer: messages.support.faq.questions.feesAnswer,
       },
       {
-        question: 'Combien de temps prend le processus ?',
-        answer: 'Le processus complet prend environ 7-9 jours : estimation instantanée, création du trade (quelques minutes), trade hold Steam obligatoire (7 jours), puis paiement automatique (24-48h). Vous pouvez suivre l\'état en temps réel sur votre dashboard.',
+        question: messages.support.faq.questions.processTime,
+        answer: messages.support.faq.questions.processTimeAnswer,
       },
       {
-        question: 'Comment sont calculés les prix des skins ?',
-        answer: 'Nos prix sont basés sur l\'API Skinplace qui agrège les données de marché en temps réel. Les prix sont mis à jour toutes les 5 minutes pour refléter les fluctuations du marché. Nous utilisons la moyenne des prix de vente récents.',
+        question: messages.support.faq.questions.priceCalculation,
+        answer: messages.support.faq.questions.priceCalculationAnswer,
       },
     ],
   },
   {
     id: 'security',
-    title: 'Sécurité & KYC',
+    title: messages.support.faq.categories.security,
     icon: ShieldCheckIcon,
     questions: [
       {
-        question: 'Pourquoi dois-je faire un KYC ?',
-        answer: 'Le KYC (Know Your Customer) est obligatoire selon la réglementation européenne pour lutter contre le blanchiment d\'argent. Il nous permet de vérifier votre identité et de sécuriser tous les paiements. Le processus est simple et prend généralement 24-48h.',
+        question: messages.support.faq.questions.whyKyc,
+        answer: messages.support.faq.questions.whyKycAnswer,
       },
       {
-        question: 'Mes données sont-elles sécurisées ?',
-        answer: 'Absolument. Nous utilisons un chiffrement SSL 256-bit pour toutes les communications. Vos documents KYC sont stockés de manière sécurisée et nous ne conservons que les références ID fournies par notre prestataire KYC. Nous sommes conformes RGPD.',
+        question: messages.support.faq.questions.dataSecurity,
+        answer: messages.support.faq.questions.dataSecurityAnswer,
       },
       {
-        question: 'Que faire si mon KYC est rejeté ?',
-        answer: 'Si votre KYC est rejeté, vous recevrez un email avec les raisons du rejet. Vous pourrez alors corriger les problèmes et soumettre à nouveau vos documents. Les raisons courantes sont : documents illisibles, informations incohérentes, ou documents expirés.',
+        question: messages.support.faq.questions.kycRejected,
+        answer: messages.support.faq.questions.kycRejectedAnswer,
       },
       {
-        question: 'Comment protégez-vous contre la fraude ?',
-        answer: 'Nous avons plusieurs systèmes de protection : limitation du nombre de trades par jour, détection des pics d\'activité suspects, vérification des Trade Links, cooldown après changement d\'IBAN, et système de vérification renforcée pour les nouveaux comptes.',
+        question: messages.support.faq.questions.fraudProtection,
+        answer: messages.support.faq.questions.fraudProtectionAnswer,
       },
     ],
   },
   {
     id: 'payments',
-    title: 'Paiements',
+    title: messages.support.faq.categories.payments,
     icon: CurrencyDollarIcon,
     questions: [
       {
-        question: 'Quelles méthodes de paiement acceptez-vous ?',
-        answer: 'Nous supportons les virements SEPA (via Qonto) et les cryptomonnaies (Bitcoin, Ethereum, USDT, USDC). Les paiements SEPA nécessitent une vérification renforcée (OTP ou micro-virement) lors du premier paiement ou changement d\'IBAN.',
+        question: messages.support.faq.questions.paymentMethods,
+        answer: messages.support.faq.questions.paymentMethodsAnswer,
       },
       {
-        question: 'Combien de temps prend un paiement ?',
-        answer: 'Les virements SEPA prennent 24-48h ouvrées. Les paiements crypto sont généralement traités en quelques heures une fois les confirmations blockchain validées. Vous recevez une notification dès que le paiement est initié.',
+        question: messages.support.faq.questions.paymentTime,
+        answer: messages.support.faq.questions.paymentTimeAnswer,
       },
       {
-        question: 'Puis-je changer ma méthode de paiement ?',
-        answer: 'Oui, vous pouvez ajouter et modifier vos méthodes de paiement dans votre dashboard. Pour SEPA, un nouveau changement d\'IBAN nécessite une nouvelle vérification et un cooldown de 7 jours (sauf si micro-vérification validée).',
+        question: messages.support.faq.questions.changePaymentMethod,
+        answer: messages.support.faq.questions.changePaymentMethodAnswer,
       },
       {
-        question: 'Y a-t-il un montant minimum ?',
-        answer: 'Le montant minimum pour un paiement est de 20€ nets (après déduction des frais). Cela permet de couvrir les frais de traitement et de réseau. Vous pouvez accumuler plusieurs trades avant de demander un paiement.',
+        question: messages.support.faq.questions.minimumAmount,
+        answer: messages.support.faq.questions.minimumAmountAnswer,
       },
     ],
   },
   {
     id: 'trading',
-    title: 'Trading & Skins',
+    title: messages.support.faq.categories.trading,
     icon: CreditCardIcon,
     questions: [
       {
-        question: 'Quels skins acceptez-vous ?',
-        answer: 'Nous acceptons tous les skins CS2 tradables (non liés au compte). Les skins doivent être dans votre inventaire Steam et votre inventaire doit être public. Les skins StatTrak™ et avec stickers sont également acceptés.',
+        question: messages.support.faq.questions.acceptedSkins,
+        answer: messages.support.faq.questions.acceptedSkinsAnswer,
       },
       {
-        question: 'Que se passe-t-il si Steam refuse le trade ?',
-        answer: 'Si Steam refuse le trade (inventaire privé, Trade Link invalide, skins non tradables), nous annulons automatiquement la demande et vous en informons. Vous pouvez alors corriger le problème et relancer le processus.',
+        question: messages.support.faq.questions.steamRefusesTrade,
+        answer: messages.support.faq.questions.steamRefusesTradeAnswer,
       },
       {
-        question: 'Puis-je annuler un trade en cours ?',
-        answer: 'Vous pouvez annuler un trade tant qu\'il n\'a pas été accepté sur Steam. Une fois le trade accepté et en trade hold, l\'annulation n\'est plus possible selon les règles de Steam. Contactez le support si vous avez un problème urgent.',
+        question: messages.support.faq.questions.cancelTrade,
+        answer: messages.support.faq.questions.cancelTradeAnswer,
       },
       {
-        question: 'Comment fonctionne le système XP et tickets ?',
-        answer: 'Vous gagnez de l\'XP à chaque trade en fonction du volume (1 XP = 1€ de volume). Chaque niveau vous donne des tickets que vous pouvez utiliser dans nos giveaways pour gagner des skins gratuits. Plus vous tradez, plus vous montez de niveau !',
+        question: messages.support.faq.questions.xpSystem,
+        answer: messages.support.faq.questions.xpSystemAnswer,
       },
     ],
   },
 ];
 
-const supportStats = [
-  { label: 'Temps de réponse moyen', value: '< 2h', icon: ClockIcon },
-  { label: 'Taux de résolution', value: '98.5%', icon: CheckCircleIcon },
-  { label: 'Support disponible', value: '24/7', icon: ChatBubbleLeftRightIcon },
-  { label: 'Langues supportées', value: 'FR, EN, CN', icon: DocumentTextIcon },
+const getSupportStats = (messages: Messages) => [
+  { label: messages.support.stats.responseTime, value: '< 2h', icon: ClockIcon },
+  { label: messages.support.stats.resolutionRate, value: '98.5%', icon: CheckCircleIcon },
+  { label: messages.support.stats.supportAvailable, value: '24/7', icon: ChatBubbleLeftRightIcon },
+  { label: messages.support.stats.languagesSupported, value: 'FR, EN, CN', icon: DocumentTextIcon },
 ];
 
 export default function SupportPage() {
   const { user } = useAuth();
+  const { messages } = useLocale();
   const [selectedCategory, setSelectedCategory] = useState('general');
   const [contactForm, setContactForm] = useState({
     subject: '',
@@ -138,6 +141,9 @@ export default function SupportPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const faqCategories = getFaqCategories(messages);
+  const supportStats = getSupportStats(messages);
+
   const handleSubmitTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -146,7 +152,7 @@ export default function SupportPage() {
       // Simulation d'envoi du ticket
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      toast.success('Ticket de support créé avec succès ! Vous recevrez une réponse sous 2h.');
+      toast.success(messages.support.contactForm.success);
       setContactForm({
         subject: '',
         category: '',
@@ -154,7 +160,7 @@ export default function SupportPage() {
         message: '',
       });
     } catch {
-      toast.error('Erreur lors de la création du ticket');
+      toast.error(messages.support.contactForm.error);
     } finally {
       setIsSubmitting(false);
     }
@@ -172,10 +178,10 @@ export default function SupportPage() {
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             <QuestionMarkCircleIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
-            Centre d&apos;aide
+            {messages.support.title}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Trouvez des réponses à vos questions ou contactez notre équipe support
+            {messages.support.subtitle}
           </p>
         </motion.div>
 
@@ -209,7 +215,7 @@ export default function SupportPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <DocumentTextIcon className="w-5 h-5" />
-                    <span>Questions fréquentes</span>
+                    <span>{messages.support.faq.title}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -271,25 +277,25 @@ export default function SupportPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                    <span>Actions rapides</span>
+                    <span>{messages.support.quickActions.title}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button variant="outline" className="w-full justify-start">
                     <CheckCircleIcon className="w-4 h-4 mr-2" />
-                    Vérifier le statut de mon trade
+                    {messages.support.quickActions.checkTradeStatus}
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
                     <CurrencyDollarIcon className="w-4 h-4 mr-2" />
-                    Problème de paiement
+                    {messages.support.quickActions.paymentProblem}
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
                     <ShieldCheckIcon className="w-4 h-4 mr-2" />
-                    Questions KYC
+                    {messages.support.quickActions.kycQuestions}
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
                     <ExclamationTriangleIcon className="w-4 h-4 mr-2" />
-                    Signaler un problème technique
+                    {messages.support.quickActions.technicalIssue}
                   </Button>
                 </CardContent>
               </Card>
@@ -297,7 +303,7 @@ export default function SupportPage() {
               {/* Contact Form */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Contacter le support</CardTitle>
+                  <CardTitle>{messages.support.contactForm.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmitTicket} className="space-y-3 sm:space-y-4">
@@ -305,17 +311,17 @@ export default function SupportPage() {
                       <div className="bg-muted/50 rounded-lg p-3">
                         <div className="flex items-center space-x-2 text-sm">
                           <UserCircleIcon className="w-4 h-4" />
-                          <span>Connecté en tant que:</span>
+                          <span>{messages.support.contactForm.connectedAs}</span>
                           <span className="font-medium">{user.username}</span>
                         </div>
                       </div>
                     )}
 
                     <div className="space-y-2">
-                      <Label htmlFor="subject">Sujet *</Label>
+                      <Label htmlFor="subject">{messages.support.contactForm.subject} *</Label>
                       <Input
                         id="subject"
-                        placeholder="Décrivez brièvement votre problème"
+                        placeholder={messages.support.contactForm.subjectPlaceholder}
                         value={contactForm.subject}
                         onChange={(e) => setContactForm(prev => ({ ...prev, subject: e.target.value }))}
                         required
@@ -323,24 +329,24 @@ export default function SupportPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="category">Catégorie *</Label>
+                      <Label htmlFor="category">{messages.support.contactForm.category} *</Label>
                       <Select value={contactForm.category} onValueChange={(value) => setContactForm(prev => ({ ...prev, category: value }))}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Sélectionnez une catégorie" />
+                          <SelectValue placeholder={messages.support.contactForm.categoryPlaceholder} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="trading">Problème de trade</SelectItem>
-                          <SelectItem value="payment">Problème de paiement</SelectItem>
-                          <SelectItem value="kyc">Question KYC</SelectItem>
-                          <SelectItem value="technical">Problème technique</SelectItem>
-                          <SelectItem value="account">Compte utilisateur</SelectItem>
-                          <SelectItem value="other">Autre</SelectItem>
+                          <SelectItem value="trading">{messages.support.contactForm.categories.trading}</SelectItem>
+                          <SelectItem value="payment">{messages.support.contactForm.categories.payment}</SelectItem>
+                          <SelectItem value="kyc">{messages.support.contactForm.categories.kyc}</SelectItem>
+                          <SelectItem value="technical">{messages.support.contactForm.categories.technical}</SelectItem>
+                          <SelectItem value="account">{messages.support.contactForm.categories.account}</SelectItem>
+                          <SelectItem value="other">{messages.support.contactForm.categories.other}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="priority">Priorité</Label>
+                      <Label htmlFor="priority">{messages.support.contactForm.priority}</Label>
                       <Select value={contactForm.priority} onValueChange={(value) => setContactForm(prev => ({ ...prev, priority: value }))}>
                         <SelectTrigger>
                           <SelectValue />
@@ -349,25 +355,25 @@ export default function SupportPage() {
                           <SelectItem value="low">
                             <div className="flex items-center space-x-2">
                               <div className="w-2 h-2 bg-green-500 rounded-full" />
-                              <span>Faible</span>
+                              <span>{messages.support.contactForm.priorities.low}</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="normal">
                             <div className="flex items-center space-x-2">
                               <div className="w-2 h-2 bg-yellow-500 rounded-full" />
-                              <span>Normal</span>
+                              <span>{messages.support.contactForm.priorities.normal}</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="high">
                             <div className="flex items-center space-x-2">
                               <div className="w-2 h-2 bg-orange-500 rounded-full" />
-                              <span>Élevée</span>
+                              <span>{messages.support.contactForm.priorities.high}</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="urgent">
                             <div className="flex items-center space-x-2">
                               <div className="w-2 h-2 bg-red-500 rounded-full" />
-                              <span>Urgente</span>
+                              <span>{messages.support.contactForm.priorities.urgent}</span>
                             </div>
                           </SelectItem>
                         </SelectContent>
@@ -375,10 +381,10 @@ export default function SupportPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="message">Message *</Label>
+                      <Label htmlFor="message">{messages.support.contactForm.message} *</Label>
                       <Textarea
                         id="message"
-                        placeholder="Décrivez votre problème en détail..."
+                        placeholder={messages.support.contactForm.messagePlaceholder}
                         value={contactForm.message}
                         onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
                         rows={6}
@@ -391,7 +397,7 @@ export default function SupportPage() {
                       className="w-full" 
                       disabled={isSubmitting || !contactForm.subject || !contactForm.category || !contactForm.message}
                     >
-                      {isSubmitting ? 'Envoi en cours...' : 'Envoyer le ticket'}
+                      {isSubmitting ? messages.support.contactForm.submitting : messages.support.contactForm.submit}
                     </Button>
                   </form>
                 </CardContent>
@@ -400,31 +406,31 @@ export default function SupportPage() {
               {/* Alternative Contact */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Autres moyens de contact</CardTitle>
+                  <CardTitle>{messages.support.otherContact.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
                   <div className="space-y-3">
                     <div>
-                      <h4 className="font-medium">Discord Community</h4>
-                      <p className="text-sm text-muted-foreground">Rejoignez notre serveur Discord pour une aide rapide</p>
+                      <h4 className="font-medium">{messages.support.otherContact.discord.title}</h4>
+                      <p className="text-sm text-muted-foreground">{messages.support.otherContact.discord.description}</p>
                       <Button variant="outline" size="sm" className="mt-2">
-                        Rejoindre Discord
+                        {messages.support.otherContact.discord.button}
                       </Button>
                     </div>
                     
                     <div>
-                      <h4 className="font-medium">Email Direct</h4>
-                      <p className="text-sm text-muted-foreground">support@cashtrade.gg</p>
-                      <p className="text-xs text-muted-foreground">Réponse sous 24h</p>
+                      <h4 className="font-medium">{messages.support.otherContact.email.title}</h4>
+                      <p className="text-sm text-muted-foreground">{messages.support.otherContact.email.address}</p>
+                      <p className="text-xs text-muted-foreground">{messages.support.otherContact.email.responseTime}</p>
                     </div>
 
                     <div>
-                      <h4 className="font-medium">Heures d&apos;ouverture</h4>
+                      <h4 className="font-medium">{messages.support.otherContact.hours.title}</h4>
                       <div className="text-sm text-muted-foreground space-y-1">
-                        <p>Lun-Ven: 9h-18h (CET)</p>
-                        <p>Sam-Dim: 10h-16h (CET)</p>
+                        <p>{messages.support.otherContact.hours.weekdays}</p>
+                        <p>{messages.support.otherContact.hours.weekend}</p>
                         <Badge variant="secondary" className="bg-green-100 text-green-800 mt-1">
-                          Support 24/7 pour urgences
+                          {messages.support.otherContact.hours.emergency}
                         </Badge>
                       </div>
                     </div>

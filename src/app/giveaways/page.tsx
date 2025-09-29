@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/components/providers/auth-provider';
+import { useLocale } from '@/components/providers/locale-provider';
+import { Messages } from '@/lib/i18n';
 import { mockGiveaways, mockUser } from '@/lib/mock-data';
 import { Giveaway } from '@/lib/types';
 import {
@@ -39,8 +41,8 @@ const getTimeRemaining = (endDate: Date) => {
   return { days, hours, minutes, seconds, expired: false };
 };
 
-const formatTimeRemaining = (timeRemaining: ReturnType<typeof getTimeRemaining>) => {
-  if (timeRemaining.expired) return 'Terminé';
+const formatTimeRemaining = (timeRemaining: ReturnType<typeof getTimeRemaining>, messages: Messages) => {
+  if (timeRemaining.expired) return messages.giveaways.card.status.ended;
   
   if (timeRemaining.days > 0) {
     return `${timeRemaining.days}j ${timeRemaining.hours}h`;
@@ -51,7 +53,7 @@ const formatTimeRemaining = (timeRemaining: ReturnType<typeof getTimeRemaining>)
   }
 };
 
-const GiveawayCard = ({ giveaway, onParticipate }: { giveaway: Giveaway; onParticipate: (giveaway: Giveaway, tickets: number) => void }) => {
+const GiveawayCard = ({ giveaway, onParticipate, messages }: { giveaway: Giveaway; onParticipate: (giveaway: Giveaway, tickets: number) => void; messages: Messages }) => {
   const [ticketsToUse, setTicketsToUse] = useState(1);
   const timeRemaining = getTimeRemaining(new Date(giveaway.endDate));
   const progress = (giveaway.soldTickets / giveaway.maxTickets) * 100;
@@ -68,7 +70,7 @@ const GiveawayCard = ({ giveaway, onParticipate }: { giveaway: Giveaway; onParti
             variant={giveaway.status === 'active' ? 'default' : 'secondary'}
             className={giveaway.status === 'active' ? 'bg-green-500' : ''}
           >
-            {giveaway.status === 'active' ? 'En cours' : giveaway.status === 'ended' ? 'Terminé' : 'Annulé'}
+            {giveaway.status === 'active' ? messages.giveaways.card.status.active : giveaway.status === 'ended' ? messages.giveaways.card.status.ended : messages.giveaways.card.status.cancelled}
           </Badge>
         </div>
       </CardHeader>
@@ -79,7 +81,7 @@ const GiveawayCard = ({ giveaway, onParticipate }: { giveaway: Giveaway; onParti
           <div className="flex items-center space-x-3">
             <TrophyIcon className="w-8 h-8 text-orange-600" />
             <div>
-              <h4 className="font-semibold text-orange-800 dark:text-orange-200">Prix à gagner</h4>
+              <h4 className="font-semibold text-orange-800 dark:text-orange-200">{messages.giveaways.card.prize}</h4>
               <p className="text-orange-700 dark:text-orange-300">{giveaway.prize}</p>
             </div>
           </div>
@@ -89,7 +91,7 @@ const GiveawayCard = ({ giveaway, onParticipate }: { giveaway: Giveaway; onParti
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center space-x-2">
             <TicketIcon className="w-4 h-4 text-muted-foreground" />
-            <span>Prix: {giveaway.ticketPrice} tickets</span>
+            <span>{messages.giveaways.card.price} {giveaway.ticketPrice} {messages.giveaways.userTickets.tickets}</span>
           </div>
           <div className="flex items-center space-x-2">
             <UserGroupIcon className="w-4 h-4 text-muted-foreground" />
@@ -97,7 +99,7 @@ const GiveawayCard = ({ giveaway, onParticipate }: { giveaway: Giveaway; onParti
           </div>
           <div className="flex items-center space-x-2">
             <ClockIcon className="w-4 h-4 text-muted-foreground" />
-            <span>{formatTimeRemaining(timeRemaining)}</span>
+            <span>{formatTimeRemaining(timeRemaining, messages)}</span>
           </div>
           <div className="flex items-center space-x-2">
             <CalendarIcon className="w-4 h-4 text-muted-foreground" />
@@ -108,7 +110,7 @@ const GiveawayCard = ({ giveaway, onParticipate }: { giveaway: Giveaway; onParti
         {/* Progress */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span>Tickets vendus</span>
+            <span>{messages.giveaways.card.ticketsSold}</span>
             <span>{progress.toFixed(1)}%</span>
           </div>
           <Progress value={progress} className="h-2" />
@@ -120,7 +122,7 @@ const GiveawayCard = ({ giveaway, onParticipate }: { giveaway: Giveaway; onParti
             <div className="flex items-center space-x-2">
               <StarIcon className="w-5 h-5 text-green-600" />
               <span className="text-sm font-medium text-green-800 dark:text-green-200">
-                Gagnant: {giveaway.winnerId}
+                {messages.giveaways.card.winner} {giveaway.winnerId}
               </span>
             </div>
           </div>
@@ -131,7 +133,7 @@ const GiveawayCard = ({ giveaway, onParticipate }: { giveaway: Giveaway; onParti
           <div className="border-t pt-4 space-y-3">
             <div className="flex items-center space-x-2">
               <Label htmlFor={`tickets-${giveaway.id}`} className="text-sm">
-                Nombre de tickets à utiliser:
+                {messages.giveaways.card.ticketsToUse}
               </Label>
             </div>
             <div className="flex space-x-2">
@@ -149,11 +151,11 @@ const GiveawayCard = ({ giveaway, onParticipate }: { giveaway: Giveaway; onParti
                 disabled={mockUser.tickets < ticketsToUse || ticketsToUse > (giveaway.maxTickets - giveaway.soldTickets)}
                 className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
               >
-                Participer
+                {messages.giveaways.card.participate}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Vous avez {mockUser.tickets} tickets disponibles
+              Vous avez {mockUser.tickets} {messages.giveaways.card.ticketsAvailable}
             </p>
           </div>
         )}
@@ -164,21 +166,22 @@ const GiveawayCard = ({ giveaway, onParticipate }: { giveaway: Giveaway; onParti
 
 export default function GiveawaysPage() {
   const { user } = useAuth();
+  const { messages } = useLocale();
   const [selectedTab, setSelectedTab] = useState('active');
 
   const handleParticipate = (giveaway: Giveaway, tickets: number) => {
     if (!user) {
-      toast.error('Vous devez être connecté pour participer');
+      toast.error(messages.giveaways.participation.loginRequired);
       return;
     }
 
     if (user.tickets < tickets) {
-      toast.error('Vous n\'avez pas assez de tickets');
+      toast.error(messages.giveaways.participation.notEnoughTickets);
       return;
     }
 
     // Simulation de participation
-    toast.success(`Participation enregistrée ! ${tickets} ticket(s) utilisé(s) pour ${giveaway.title}`);
+    toast.success(`${messages.giveaways.participation.success} ${tickets} ticket(s) utilisé(s) pour ${giveaway.title}`);
   };
 
   const activeGiveaways = mockGiveaways.filter(g => g.status === 'active');
@@ -196,10 +199,10 @@ export default function GiveawaysPage() {
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             <GiftIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
-            Giveaways
+            {messages.giveaways.title}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Utilisez vos tickets pour participer aux giveaways et gagner des skins exceptionnels
+            {messages.giveaways.subtitle}
           </p>
         </motion.div>
 
@@ -221,17 +224,17 @@ export default function GiveawaysPage() {
                     </Avatar>
                     <div>
                       <h3 className="font-semibold">{user.username}</h3>
-                      <p className="text-sm text-muted-foreground">Niveau {user.level}</p>
+                      <p className="text-sm text-muted-foreground">{messages.giveaways.userTickets.level} {user.level}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="flex items-center space-x-2 mb-1">
                       <TicketIcon className="w-5 h-5 text-purple-500" />
                       <span className="text-2xl font-bold">{user.tickets}</span>
-                      <span className="text-muted-foreground">tickets</span>
+                      <span className="text-muted-foreground">{messages.giveaways.userTickets.tickets}</span>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Gagnez plus de tickets en vendant vos skins !
+                      {messages.giveaways.userTickets.description}
                     </p>
                   </div>
                 </div>
@@ -251,7 +254,7 @@ export default function GiveawaysPage() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <TicketIcon className="w-5 h-5 text-purple-500" />
-                <span>Comment fonctionnent les tickets ?</span>
+                <span>{messages.giveaways.howTicketsWork.title}</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -260,27 +263,27 @@ export default function GiveawaysPage() {
                   <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mx-auto mb-3">
                     <CurrencyDollarIcon className="w-6 h-6 text-orange-600" />
                   </div>
-                  <h4 className="font-semibold mb-2">Gagnez des tickets</h4>
+                  <h4 className="font-semibold mb-2">{messages.giveaways.howTicketsWork.earn.title}</h4>
                   <p className="text-sm text-muted-foreground">
-                    Recevez des tickets à chaque trade en fonction du volume
+                    {messages.giveaways.howTicketsWork.earn.description}
                   </p>
                 </div>
                 <div className="text-center">
                   <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-3">
                     <GiftIcon className="w-6 h-6 text-purple-600" />
                   </div>
-                  <h4 className="font-semibold mb-2">Participez aux giveaways</h4>
+                  <h4 className="font-semibold mb-2">{messages.giveaways.howTicketsWork.participate.title}</h4>
                   <p className="text-sm text-muted-foreground">
-                    Utilisez vos tickets pour participer aux tirages au sort
+                    {messages.giveaways.howTicketsWork.participate.description}
                   </p>
                 </div>
                 <div className="text-center">
                   <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-3">
                     <TrophyIcon className="w-6 h-6 text-green-600" />
                   </div>
-                  <h4 className="font-semibold mb-2">Remportez des prix</h4>
+                  <h4 className="font-semibold mb-2">{messages.giveaways.howTicketsWork.win.title}</h4>
                   <p className="text-sm text-muted-foreground">
-                    Gagnez des skins exceptionnels et des récompenses exclusives
+                    {messages.giveaways.howTicketsWork.win.description}
                   </p>
                 </div>
               </div>
@@ -297,13 +300,13 @@ export default function GiveawaysPage() {
           <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4 sm:space-y-6">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="active">
-                En cours ({activeGiveaways.length})
+                {messages.giveaways.tabs.active} ({activeGiveaways.length})
               </TabsTrigger>
               <TabsTrigger value="ended">
-                Terminés ({endedGiveaways.length})
+                {messages.giveaways.tabs.ended} ({endedGiveaways.length})
               </TabsTrigger>
               <TabsTrigger value="my-entries">
-                Mes participations
+                {messages.giveaways.tabs.myEntries}
               </TabsTrigger>
             </TabsList>
 
@@ -317,7 +320,7 @@ export default function GiveawaysPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                   >
-                    <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} />
+                    <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} />
                   </motion.div>
                 ))}
               </div>
@@ -325,9 +328,9 @@ export default function GiveawaysPage() {
                 <Card>
                   <CardContent className="p-8 text-center">
                     <GiftIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-xl font-semibold mb-2">Aucun giveaway actif</h3>
+                    <h3 className="text-xl font-semibold mb-2">{messages.giveaways.empty.noActive}</h3>
                     <p className="text-muted-foreground">
-                      Revenez bientôt pour découvrir de nouveaux giveaways !
+                      {messages.giveaways.empty.noActiveDescription}
                     </p>
                   </CardContent>
                 </Card>
@@ -344,7 +347,7 @@ export default function GiveawaysPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                   >
-                    <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} />
+                    <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} />
                   </motion.div>
                 ))}
               </div>
@@ -355,7 +358,7 @@ export default function GiveawaysPage() {
               {user ? (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Mes participations</CardTitle>
+                    <CardTitle>{messages.giveaways.myEntries.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3 sm:space-y-4">
@@ -367,7 +370,7 @@ export default function GiveawaysPage() {
                             <p className="text-sm text-muted-foreground">5 tickets utilisés</p>
                           </div>
                           <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                            En cours
+                            {messages.giveaways.myEntries.entries.inProgress}
                           </Badge>
                         </div>
                       </div>
@@ -379,7 +382,7 @@ export default function GiveawaysPage() {
                             <p className="text-sm text-muted-foreground">3 tickets utilisés</p>
                           </div>
                           <Badge variant="secondary" className="bg-red-100 text-red-800">
-                            Perdu
+                            {messages.giveaways.myEntries.entries.lost}
                           </Badge>
                         </div>
                       </div>
@@ -390,12 +393,12 @@ export default function GiveawaysPage() {
                 <Card>
                   <CardContent className="p-8 text-center">
                     <UserGroupIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-xl font-semibold mb-2">Connexion requise</h3>
+                    <h3 className="text-xl font-semibold mb-2">{messages.giveaways.empty.loginRequired}</h3>
                     <p className="text-muted-foreground mb-6">
-                      Connectez-vous pour voir vos participations
+                      {messages.giveaways.empty.loginRequiredDescription}
                     </p>
                     <Button onClick={() => window.location.href = '/'}>
-                      Se connecter avec Steam
+                      {messages.giveaways.empty.loginButton}
                     </Button>
                   </CardContent>
                 </Card>

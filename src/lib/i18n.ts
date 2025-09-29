@@ -77,6 +77,40 @@ export interface Messages {
     tradeLinkInfo: string;
     tradeLinkWarning: string;
     automaticPayment: string;
+    steps: {
+      tradelink: string;
+      estimation: string;
+      confirmation: string;
+    };
+    tradelink: {
+      title: string;
+      helpTitle: string;
+      helpSteps: string[];
+      placeholder: string;
+      important: string;
+      importantText: string;
+      analyzeButton: string;
+      analyzingButton: string;
+    };
+    items: {
+      selected: string;
+      totalBrut: string;
+      cashoutFees: string;
+      networkFees: string;
+      totalNet: string;
+      timeline: string;
+      timelineText: string;
+      confirmButton: string;
+      creatingButton: string;
+    };
+    success: {
+      title: string;
+      subtitle: string;
+      tradeId: string;
+      netAmount: string;
+      followTrade: string;
+      openSteam: string;
+    };
     status: {
       créé: string;
       accepté_par_bot: string;
@@ -228,24 +262,61 @@ export interface Messages {
       support: string;
     };
   };
-  dashboard: {
-    title: string;
-    subtitle: string;
-    welcome: string;
-    stats: string;
-    volume: string;
-    trades: string;
-    xp: string;
-    level: string;
-    tickets: string;
-    history: string;
-    loginRequired: string;
-    loginSubtitle: string;
-    currentLevel: string;
-    nextLevel: string;
-    totalXp: string;
-    xpForNext: string;
-  };
+    dashboard: {
+      title: string;
+      subtitle: string;
+      welcome: string;
+      stats: string;
+      volume: string;
+      trades: string;
+      xp: string;
+      level: string;
+      tickets: string;
+      history: string;
+      loginRequired: string;
+      loginSubtitle: string;
+      currentLevel: string;
+      nextLevel: string;
+      totalXp: string;
+      xpForNext: string;
+      tabs: {
+        trades: string;
+        analytics: string;
+        payments: string;
+        settings: string;
+      };
+      tradeHistory: {
+        title: string;
+        items: string;
+        fees: string;
+        timeline: string;
+        cashout: string;
+        network: string;
+        accepted: string;
+        available: string;
+        others: string;
+      };
+      analytics: {
+        tradingVolume: string;
+        tradeStatus: string;
+      };
+      payments: {
+        title: string;
+        methods: string;
+        verified: string;
+        default: string;
+        addMethod: string;
+      };
+      settings: {
+        profile: string;
+        security: string;
+        twoFactor: string;
+        twoFactorDesc: string;
+        emailNotifications: string;
+        emailNotificationsDesc: string;
+        enabled: string;
+      };
+    };
   kyc: {
     title: string;
     required: string;
@@ -280,6 +351,7 @@ export interface Messages {
     tradeCreatedSuccess: string;
     tradeCreationError: string;
     settingsSavedSuccess: string;
+    invalidTradeLink: string;
   };
   footer: {
     description: string;
@@ -314,6 +386,179 @@ export interface Messages {
       twitter: string;
       reddit: string;
       youtube: string;
+    };
+  };
+  support: {
+    title: string;
+    subtitle: string;
+    stats: {
+      responseTime: string;
+      resolutionRate: string;
+      supportAvailable: string;
+      languagesSupported: string;
+    };
+    faq: {
+      title: string;
+      categories: {
+        general: string;
+        security: string;
+        payments: string;
+        trading: string;
+      };
+      questions: {
+        howItWorks: string;
+        howItWorksAnswer: string;
+        fees: string;
+        feesAnswer: string;
+        processTime: string;
+        processTimeAnswer: string;
+        priceCalculation: string;
+        priceCalculationAnswer: string;
+        whyKyc: string;
+        whyKycAnswer: string;
+        dataSecurity: string;
+        dataSecurityAnswer: string;
+        kycRejected: string;
+        kycRejectedAnswer: string;
+        fraudProtection: string;
+        fraudProtectionAnswer: string;
+        paymentMethods: string;
+        paymentMethodsAnswer: string;
+        paymentTime: string;
+        paymentTimeAnswer: string;
+        changePaymentMethod: string;
+        changePaymentMethodAnswer: string;
+        minimumAmount: string;
+        minimumAmountAnswer: string;
+        acceptedSkins: string;
+        acceptedSkinsAnswer: string;
+        steamRefusesTrade: string;
+        steamRefusesTradeAnswer: string;
+        cancelTrade: string;
+        cancelTradeAnswer: string;
+        xpSystem: string;
+        xpSystemAnswer: string;
+      };
+    };
+    quickActions: {
+      title: string;
+      checkTradeStatus: string;
+      paymentProblem: string;
+      kycQuestions: string;
+      technicalIssue: string;
+    };
+    contactForm: {
+      title: string;
+      connectedAs: string;
+      subject: string;
+      subjectPlaceholder: string;
+      category: string;
+      categoryPlaceholder: string;
+      categories: {
+        trading: string;
+        payment: string;
+        kyc: string;
+        technical: string;
+        account: string;
+        other: string;
+      };
+      priority: string;
+      priorities: {
+        low: string;
+        normal: string;
+        high: string;
+        urgent: string;
+      };
+      message: string;
+      messagePlaceholder: string;
+      submit: string;
+      submitting: string;
+      success: string;
+      error: string;
+    };
+    otherContact: {
+      title: string;
+      discord: {
+        title: string;
+        description: string;
+        button: string;
+      };
+      email: {
+        title: string;
+        address: string;
+        responseTime: string;
+      };
+      hours: {
+        title: string;
+        weekdays: string;
+        weekend: string;
+        emergency: string;
+      };
+    };
+  };
+  giveaways: {
+    title: string;
+    subtitle: string;
+    userTickets: {
+      level: string;
+      tickets: string;
+      description: string;
+    };
+    howTicketsWork: {
+      title: string;
+      earn: {
+        title: string;
+        description: string;
+      };
+      participate: {
+        title: string;
+        description: string;
+      };
+      win: {
+        title: string;
+        description: string;
+      };
+    };
+    tabs: {
+      active: string;
+      ended: string;
+      myEntries: string;
+    };
+    card: {
+      status: {
+        active: string;
+        ended: string;
+        cancelled: string;
+      };
+      prize: string;
+      price: string;
+      participants: string;
+      timeRemaining: string;
+      endDate: string;
+      ticketsSold: string;
+      winner: string;
+      ticketsToUse: string;
+      participate: string;
+      ticketsAvailable: string;
+    };
+    empty: {
+      noActive: string;
+      noActiveDescription: string;
+      loginRequired: string;
+      loginRequiredDescription: string;
+      loginButton: string;
+    };
+    myEntries: {
+      title: string;
+      entries: {
+        inProgress: string;
+        lost: string;
+      };
+    };
+    participation: {
+      success: string;
+      notEnoughTickets: string;
+      loginRequired: string;
     };
   };
 }
@@ -547,6 +792,44 @@ export const messages: Record<Locale, Messages> = {
       tradeLinkWarning:
         "Assurez-vous que votre inventaire Steam est public et que votre Trade Link est valide. Nous ne pouvons pas accéder à un inventaire privé.",
       automaticPayment: "Paiement automatique dans 7 jours",
+      steps: {
+        tradelink: "Trade Link Steam",
+        estimation: "Estimation",
+        confirmation: "Confirmation",
+      },
+      tradelink: {
+        title: "Lien de Trade Steam",
+        helpTitle: "Comment trouver votre Trade Link ?",
+        helpSteps: [
+          "Ouvrez Steam et allez dans votre inventaire",
+          "Cliquez sur \"Paramètres de confidentialité\"",
+          "Copiez l'URL du Trade Link"
+        ],
+        placeholder: "https://steamcommunity.com/tradeoffer/new/?partner=...",
+        important: "Important",
+        importantText: "Assurez-vous que votre inventaire Steam est public et que votre Trade Link est valide. Nous ne pouvons pas accéder à un inventaire privé.",
+        analyzeButton: "Analyser l'inventaire",
+        analyzingButton: "Chargement des items...",
+      },
+      items: {
+        selected: "Items sélectionnés",
+        totalBrut: "Total brut",
+        cashoutFees: "Frais de cashout (0,5%)",
+        networkFees: "Frais réseau",
+        totalNet: "Total net",
+        timeline: "Timeline",
+        timelineText: "Trade hold Steam de 7 jours puis paiement automatique",
+        confirmButton: "Confirmer la vente",
+        creatingButton: "Création du trade...",
+      },
+      success: {
+        title: "Trade créé avec succès !",
+        subtitle: "Votre trade a été créé et envoyé. Acceptez l'offre sur Steam pour continuer.",
+        tradeId: "ID du trade:",
+        netAmount: "Montant net:",
+        followTrade: "Suivre le trade",
+        openSteam: "Ouvrir Steam",
+      },
       status: {
         créé: "Créé",
         accepté_par_bot: "Accepté",
@@ -574,6 +857,43 @@ export const messages: Record<Locale, Messages> = {
       nextLevel: "pour le niveau",
       totalXp: "XP",
       xpForNext: "XP pour le niveau",
+      tabs: {
+        trades: "Mes Trades",
+        analytics: "Analytics",
+        payments: "Paiements",
+        settings: "Paramètres",
+      },
+      tradeHistory: {
+        title: "Historique des trades",
+        items: "Items",
+        fees: "Frais:",
+        timeline: "Timeline:",
+        cashout: "Cashout:",
+        network: "Réseau:",
+        accepted: "Accepté:",
+        available: "Disponible:",
+        others: "autres",
+      },
+      analytics: {
+        tradingVolume: "Volume de trading",
+        tradeStatus: "Statut des trades",
+      },
+      payments: {
+        title: "Méthodes de paiement",
+        methods: "Méthodes de paiement",
+        verified: "Vérifié",
+        default: "Par défaut",
+        addMethod: "Ajouter une méthode de paiement",
+      },
+      settings: {
+        profile: "Profil",
+        security: "Sécurité",
+        twoFactor: "Authentification 2FA",
+        twoFactorDesc: "Protection supplémentaire",
+        emailNotifications: "Notifications Email",
+        emailNotificationsDesc: "Alertes de trading",
+        enabled: "Activé",
+      },
     },
     kyc: {
       title: "Vérification KYC",
@@ -609,6 +929,7 @@ export const messages: Record<Locale, Messages> = {
       tradeCreatedSuccess: "Trade créé avec succès !",
       tradeCreationError: "Erreur lors de la création du trade",
       settingsSavedSuccess: "Paramètres sauvegardés avec succès",
+      invalidTradeLink: "Lien de trade invalide. Veuillez copier le lien depuis Steam.",
     },
     footer: {
       description: "La plateforme la plus rapide et sécurisée pour convertir vos skins CS2 en argent réel. Vendez vos skins en toute confiance avec notre système de paiement sécurisé.",
@@ -643,6 +964,179 @@ export const messages: Record<Locale, Messages> = {
         twitter: "Twitter",
         reddit: "Reddit",
         youtube: "YouTube",
+      },
+    },
+    support: {
+      title: "Centre d'aide",
+      subtitle: "Trouvez des réponses à vos questions ou contactez notre équipe support",
+      stats: {
+        responseTime: "Temps de réponse moyen",
+        resolutionRate: "Taux de résolution",
+        supportAvailable: "Support disponible",
+        languagesSupported: "Langues supportées",
+      },
+      faq: {
+        title: "Questions fréquentes",
+        categories: {
+          general: "Questions générales",
+          security: "Sécurité & KYC",
+          payments: "Paiements",
+          trading: "Trading & Skins",
+        },
+        questions: {
+          howItWorks: "Comment fonctionne CashTrade ?",
+          howItWorksAnswer: "CashTrade est une plateforme qui vous permet de vendre vos skins CS2 contre de l'argent réel. Vous connectez votre compte Steam, ajoutez votre Trade Link, nous estimons vos skins en temps réel via l'API Skinplace, puis nous créons un trade. Après le trade hold Steam de 7 jours, vous recevez automatiquement votre paiement.",
+          fees: "Quels sont les frais ?",
+          feesAnswer: "Nous appliquons seulement 0,5% de frais de cashout sur le montant brut de votre vente. Des frais de réseau peuvent s'appliquer selon votre méthode de paiement (environ 20€ pour SEPA, variable pour les cryptomonnaies). Aucun frais caché !",
+          processTime: "Combien de temps prend le processus ?",
+          processTimeAnswer: "Le processus complet prend environ 7-9 jours : estimation instantanée, création du trade (quelques minutes), trade hold Steam obligatoire (7 jours), puis paiement automatique (24-48h). Vous pouvez suivre l'état en temps réel sur votre dashboard.",
+          priceCalculation: "Comment sont calculés les prix des skins ?",
+          priceCalculationAnswer: "Nos prix sont basés sur l'API Skinplace qui agrège les données de marché en temps réel. Les prix sont mis à jour toutes les 5 minutes pour refléter les fluctuations du marché. Nous utilisons la moyenne des prix de vente récents.",
+          whyKyc: "Pourquoi dois-je faire un KYC ?",
+          whyKycAnswer: "Le KYC (Know Your Customer) est obligatoire selon la réglementation européenne pour lutter contre le blanchiment d'argent. Il nous permet de vérifier votre identité et de sécuriser tous les paiements. Le processus est simple et prend généralement 24-48h.",
+          dataSecurity: "Mes données sont-elles sécurisées ?",
+          dataSecurityAnswer: "Absolument. Nous utilisons un chiffrement SSL 256-bit pour toutes les communications. Vos documents KYC sont stockés de manière sécurisée et nous ne conservons que les références ID fournies par notre prestataire KYC. Nous sommes conformes RGPD.",
+          kycRejected: "Que faire si mon KYC est rejeté ?",
+          kycRejectedAnswer: "Si votre KYC est rejeté, vous recevrez un email avec les raisons du rejet. Vous pourrez alors corriger les problèmes et soumettre à nouveau vos documents. Les raisons courantes sont : documents illisibles, informations incohérentes, ou documents expirés.",
+          fraudProtection: "Comment protégez-vous contre la fraude ?",
+          fraudProtectionAnswer: "Nous avons plusieurs systèmes de protection : limitation du nombre de trades par jour, détection des pics d'activité suspects, vérification des Trade Links, cooldown après changement d'IBAN, et système de vérification renforcée pour les nouveaux comptes.",
+          paymentMethods: "Quelles méthodes de paiement acceptez-vous ?",
+          paymentMethodsAnswer: "Nous supportons les virements SEPA (via Qonto) et les cryptomonnaies (Bitcoin, Ethereum, USDT, USDC). Les paiements SEPA nécessitent une vérification renforcée (OTP ou micro-virement) lors du premier paiement ou changement d'IBAN.",
+          paymentTime: "Combien de temps prend un paiement ?",
+          paymentTimeAnswer: "Les virements SEPA prennent 24-48h ouvrées. Les paiements crypto sont généralement traités en quelques heures une fois les confirmations blockchain validées. Vous recevez une notification dès que le paiement est initié.",
+          changePaymentMethod: "Puis-je changer ma méthode de paiement ?",
+          changePaymentMethodAnswer: "Oui, vous pouvez ajouter et modifier vos méthodes de paiement dans votre dashboard. Pour SEPA, un nouveau changement d'IBAN nécessite une nouvelle vérification et un cooldown de 7 jours (sauf si micro-vérification validée).",
+          minimumAmount: "Y a-t-il un montant minimum ?",
+          minimumAmountAnswer: "Le montant minimum pour un paiement est de 20€ nets (après déduction des frais). Cela permet de couvrir les frais de traitement et de réseau. Vous pouvez accumuler plusieurs trades avant de demander un paiement.",
+          acceptedSkins: "Quels skins acceptez-vous ?",
+          acceptedSkinsAnswer: "Nous acceptons tous les skins CS2 tradables (non liés au compte). Les skins doivent être dans votre inventaire Steam et votre inventaire doit être public. Les skins StatTrak™ et avec stickers sont également acceptés.",
+          steamRefusesTrade: "Que se passe-t-il si Steam refuse le trade ?",
+          steamRefusesTradeAnswer: "Si Steam refuse le trade (inventaire privé, Trade Link invalide, skins non tradables), nous annulons automatiquement la demande et vous en informons. Vous pouvez alors corriger le problème et relancer le processus.",
+          cancelTrade: "Puis-je annuler un trade en cours ?",
+          cancelTradeAnswer: "Vous pouvez annuler un trade tant qu'il n'a pas été accepté sur Steam. Une fois le trade accepté et en trade hold, l'annulation n'est plus possible selon les règles de Steam. Contactez le support si vous avez un problème urgent.",
+          xpSystem: "Comment fonctionne le système XP et tickets ?",
+          xpSystemAnswer: "Vous gagnez de l'XP à chaque trade en fonction du volume (1 XP = 1€ de volume). Chaque niveau vous donne des tickets que vous pouvez utiliser dans nos giveaways pour gagner des skins gratuits. Plus vous tradez, plus vous montez de niveau !",
+        },
+      },
+      quickActions: {
+        title: "Actions rapides",
+        checkTradeStatus: "Vérifier le statut de mon trade",
+        paymentProblem: "Problème de paiement",
+        kycQuestions: "Questions KYC",
+        technicalIssue: "Signaler un problème technique",
+      },
+      contactForm: {
+        title: "Contacter le support",
+        connectedAs: "Connecté en tant que:",
+        subject: "Sujet",
+        subjectPlaceholder: "Décrivez brièvement votre problème",
+        category: "Catégorie",
+        categoryPlaceholder: "Sélectionnez une catégorie",
+        categories: {
+          trading: "Problème de trade",
+          payment: "Problème de paiement",
+          kyc: "Question KYC",
+          technical: "Problème technique",
+          account: "Compte utilisateur",
+          other: "Autre",
+        },
+        priority: "Priorité",
+        priorities: {
+          low: "Faible",
+          normal: "Normal",
+          high: "Élevée",
+          urgent: "Urgente",
+        },
+        message: "Message",
+        messagePlaceholder: "Décrivez votre problème en détail...",
+        submit: "Envoyer le ticket",
+        submitting: "Envoi en cours...",
+        success: "Ticket de support créé avec succès ! Vous recevrez une réponse sous 2h.",
+        error: "Erreur lors de la création du ticket",
+      },
+      otherContact: {
+        title: "Autres moyens de contact",
+        discord: {
+          title: "Discord Community",
+          description: "Rejoignez notre serveur Discord pour une aide rapide",
+          button: "Rejoindre Discord",
+        },
+        email: {
+          title: "Email Direct",
+          address: "support@cashtrade.gg",
+          responseTime: "Réponse sous 24h",
+        },
+        hours: {
+          title: "Heures d'ouverture",
+          weekdays: "Lun-Ven: 9h-18h (CET)",
+          weekend: "Sam-Dim: 10h-16h (CET)",
+          emergency: "Support 24/7 pour urgences",
+        },
+      },
+    },
+    giveaways: {
+      title: "Giveaways",
+      subtitle: "Utilisez vos tickets pour participer aux giveaways et gagner des skins exceptionnels",
+      userTickets: {
+        level: "Niveau",
+        tickets: "tickets",
+        description: "Gagnez plus de tickets en vendant vos skins !",
+      },
+      howTicketsWork: {
+        title: "Comment fonctionnent les tickets ?",
+        earn: {
+          title: "Gagnez des tickets",
+          description: "Recevez des tickets à chaque trade en fonction du volume",
+        },
+        participate: {
+          title: "Participez aux giveaways",
+          description: "Utilisez vos tickets pour participer aux tirages au sort",
+        },
+        win: {
+          title: "Remportez des prix",
+          description: "Gagnez des skins exceptionnels et des récompenses exclusives",
+        },
+      },
+      tabs: {
+        active: "En cours",
+        ended: "Terminés",
+        myEntries: "Mes participations",
+      },
+      card: {
+        status: {
+          active: "En cours",
+          ended: "Terminé",
+          cancelled: "Annulé",
+        },
+        prize: "Prix à gagner",
+        price: "Prix:",
+        participants: "participants",
+        timeRemaining: "Temps restant",
+        endDate: "Date de fin",
+        ticketsSold: "Tickets vendus",
+        winner: "Gagnant:",
+        ticketsToUse: "Nombre de tickets à utiliser:",
+        participate: "Participer",
+        ticketsAvailable: "tickets disponibles",
+      },
+      empty: {
+        noActive: "Aucun giveaway actif",
+        noActiveDescription: "Revenez bientôt pour découvrir de nouveaux giveaways !",
+        loginRequired: "Connexion requise",
+        loginRequiredDescription: "Connectez-vous pour voir vos participations",
+        loginButton: "Se connecter avec Steam",
+      },
+      myEntries: {
+        title: "Mes participations",
+        entries: {
+          inProgress: "En cours",
+          lost: "Perdu",
+        },
+      },
+      participation: {
+        success: "Participation enregistrée !",
+        notEnoughTickets: "Vous n'avez pas assez de tickets",
+        loginRequired: "Vous devez être connecté pour participer",
       },
     },
   },
@@ -873,6 +1367,44 @@ export const messages: Record<Locale, Messages> = {
       tradeLinkWarning:
         "Make sure your Steam inventory is public and your Trade Link is valid. We cannot access a private inventory.",
       automaticPayment: "Automatic payment in 7 days",
+      steps: {
+        tradelink: "Steam Trade Link",
+        estimation: "Estimation",
+        confirmation: "Confirmation",
+      },
+      tradelink: {
+        title: "Steam Trade Link",
+        helpTitle: "How to find your Trade Link?",
+        helpSteps: [
+          "Open Steam and go to your inventory",
+          "Click on \"Privacy settings\"",
+          "Copy the Trade Link URL"
+        ],
+        placeholder: "https://steamcommunity.com/tradeoffer/new/?partner=...",
+        important: "Important",
+        importantText: "Make sure your Steam inventory is public and your Trade Link is valid. We cannot access a private inventory.",
+        analyzeButton: "Analyze inventory",
+        analyzingButton: "Loading items...",
+      },
+      items: {
+        selected: "Selected items",
+        totalBrut: "Gross total",
+        cashoutFees: "Cashout fees (0.5%)",
+        networkFees: "Network fees",
+        totalNet: "Net total",
+        timeline: "Timeline",
+        timelineText: "Steam trade hold of 7 days then automatic payment",
+        confirmButton: "Confirm sale",
+        creatingButton: "Creating trade...",
+      },
+      success: {
+        title: "Trade created successfully!",
+        subtitle: "Your trade has been created and sent. Accept the offer on Steam to continue.",
+        tradeId: "Trade ID:",
+        netAmount: "Net amount:",
+        followTrade: "Follow trade",
+        openSteam: "Open Steam",
+      },
       status: {
         créé: "Created",
         accepté_par_bot: "Accepted",
@@ -900,6 +1432,43 @@ export const messages: Record<Locale, Messages> = {
       nextLevel: "to level",
       totalXp: "XP",
       xpForNext: "XP to level",
+      tabs: {
+        trades: "My Trades",
+        analytics: "Analytics",
+        payments: "Payments",
+        settings: "Settings",
+      },
+      tradeHistory: {
+        title: "Trade History",
+        items: "Items",
+        fees: "Fees:",
+        timeline: "Timeline:",
+        cashout: "Cashout:",
+        network: "Network:",
+        accepted: "Accepted:",
+        available: "Available:",
+        others: "others",
+      },
+      analytics: {
+        tradingVolume: "Trading Volume",
+        tradeStatus: "Trade Status",
+      },
+      payments: {
+        title: "Payment Methods",
+        methods: "Payment Methods",
+        verified: "Verified",
+        default: "Default",
+        addMethod: "Add payment method",
+      },
+      settings: {
+        profile: "Profile",
+        security: "Security",
+        twoFactor: "2FA Authentication",
+        twoFactorDesc: "Additional protection",
+        emailNotifications: "Email Notifications",
+        emailNotificationsDesc: "Trading alerts",
+        enabled: "Enabled",
+      },
     },
     kyc: {
       title: "KYC Verification",
@@ -935,6 +1504,7 @@ export const messages: Record<Locale, Messages> = {
       tradeCreatedSuccess: "Trade created successfully!",
       tradeCreationError: "Error creating trade",
       settingsSavedSuccess: "Settings saved successfully",
+      invalidTradeLink: "Invalid trade link. Please copy the link from Steam.",
     },
     footer: {
       description: "The fastest and most secure platform to convert your CS2 skins into real money. Sell your skins with confidence using our secure payment system.",
@@ -969,6 +1539,179 @@ export const messages: Record<Locale, Messages> = {
         twitter: "Twitter",
         reddit: "Reddit",
         youtube: "YouTube",
+      },
+    },
+    support: {
+      title: "Help Center",
+      subtitle: "Find answers to your questions or contact our support team",
+      stats: {
+        responseTime: "Average response time",
+        resolutionRate: "Resolution rate",
+        supportAvailable: "Support available",
+        languagesSupported: "Supported languages",
+      },
+      faq: {
+        title: "Frequently Asked Questions",
+        categories: {
+          general: "General Questions",
+          security: "Security & KYC",
+          payments: "Payments",
+          trading: "Trading & Skins",
+        },
+        questions: {
+          howItWorks: "How does CashTrade work?",
+          howItWorksAnswer: "CashTrade is a platform that allows you to sell your CS2 skins for real money. You connect your Steam account, add your Trade Link, we estimate your skins in real time via the Skinplace API, then we create a trade. After the 7-day Steam trade hold, you automatically receive your payment.",
+          fees: "What are the fees?",
+          feesAnswer: "We only apply 0.5% cashout fees on the gross amount of your sale. Network fees may apply depending on your payment method (around €20 for SEPA, variable for cryptocurrencies). No hidden fees!",
+          processTime: "How long does the process take?",
+          processTimeAnswer: "The complete process takes about 7-9 days: instant estimation, trade creation (a few minutes), mandatory Steam trade hold (7 days), then automatic payment (24-48h). You can track the status in real time on your dashboard.",
+          priceCalculation: "How are skin prices calculated?",
+          priceCalculationAnswer: "Our prices are based on the Skinplace API which aggregates real-time market data. Prices are updated every 5 minutes to reflect market fluctuations. We use the average of recent sale prices.",
+          whyKyc: "Why do I need to do KYC?",
+          whyKycAnswer: "KYC (Know Your Customer) is mandatory under European regulations to combat money laundering. It allows us to verify your identity and secure all payments. The process is simple and usually takes 24-48h.",
+          dataSecurity: "Is my data secure?",
+          dataSecurityAnswer: "Absolutely. We use 256-bit SSL encryption for all communications. Your KYC documents are stored securely and we only keep reference IDs provided by our KYC provider. We are GDPR compliant.",
+          kycRejected: "What if my KYC is rejected?",
+          kycRejectedAnswer: "If your KYC is rejected, you will receive an email with the reasons for rejection. You can then correct the issues and resubmit your documents. Common reasons are: unreadable documents, inconsistent information, or expired documents.",
+          fraudProtection: "How do you protect against fraud?",
+          fraudProtectionAnswer: "We have several protection systems: daily trade limits, suspicious activity spike detection, Trade Link verification, cooldown after IBAN changes, and enhanced verification system for new accounts.",
+          paymentMethods: "What payment methods do you accept?",
+          paymentMethodsAnswer: "We support SEPA transfers (via Qonto) and cryptocurrencies (Bitcoin, Ethereum, USDT, USDC). SEPA payments require enhanced verification (OTP or micro-transfer) for first payment or IBAN changes.",
+          paymentTime: "How long does a payment take?",
+          paymentTimeAnswer: "SEPA transfers take 24-48 business hours. Crypto payments are usually processed within a few hours once blockchain confirmations are validated. You receive a notification as soon as payment is initiated.",
+          changePaymentMethod: "Can I change my payment method?",
+          changePaymentMethodAnswer: "Yes, you can add and modify your payment methods in your dashboard. For SEPA, a new IBAN change requires new verification and a 7-day cooldown (unless micro-verification is validated).",
+          minimumAmount: "Is there a minimum amount?",
+          minimumAmountAnswer: "The minimum amount for a payment is €20 net (after deducting fees). This covers processing and network fees. You can accumulate multiple trades before requesting a payment.",
+          acceptedSkins: "What skins do you accept?",
+          acceptedSkinsAnswer: "We accept all tradable CS2 skins (not account-bound). Skins must be in your Steam inventory and your inventory must be public. StatTrak™ skins and those with stickers are also accepted.",
+          steamRefusesTrade: "What happens if Steam refuses the trade?",
+          steamRefusesTradeAnswer: "If Steam refuses the trade (private inventory, invalid Trade Link, non-tradable skins), we automatically cancel the request and inform you. You can then correct the problem and restart the process.",
+          cancelTrade: "Can I cancel a trade in progress?",
+          cancelTradeAnswer: "You can cancel a trade as long as it hasn't been accepted on Steam. Once the trade is accepted and in trade hold, cancellation is no longer possible according to Steam rules. Contact support if you have an urgent problem.",
+          xpSystem: "How does the XP and tickets system work?",
+          xpSystemAnswer: "You earn XP with each trade based on volume (1 XP = €1 volume). Each level gives you tickets that you can use in our giveaways to win free skins. The more you trade, the more you level up!",
+        },
+      },
+      quickActions: {
+        title: "Quick Actions",
+        checkTradeStatus: "Check my trade status",
+        paymentProblem: "Payment problem",
+        kycQuestions: "KYC questions",
+        technicalIssue: "Report a technical issue",
+      },
+      contactForm: {
+        title: "Contact Support",
+        connectedAs: "Connected as:",
+        subject: "Subject",
+        subjectPlaceholder: "Briefly describe your problem",
+        category: "Category",
+        categoryPlaceholder: "Select a category",
+        categories: {
+          trading: "Trading problem",
+          payment: "Payment problem",
+          kyc: "KYC question",
+          technical: "Technical problem",
+          account: "User account",
+          other: "Other",
+        },
+        priority: "Priority",
+        priorities: {
+          low: "Low",
+          normal: "Normal",
+          high: "High",
+          urgent: "Urgent",
+        },
+        message: "Message",
+        messagePlaceholder: "Describe your problem in detail...",
+        submit: "Send ticket",
+        submitting: "Sending...",
+        success: "Support ticket created successfully! You will receive a response within 2 hours.",
+        error: "Error creating ticket",
+      },
+      otherContact: {
+        title: "Other ways to contact",
+        discord: {
+          title: "Discord Community",
+          description: "Join our Discord server for quick help",
+          button: "Join Discord",
+        },
+        email: {
+          title: "Direct Email",
+          address: "support@cashtrade.gg",
+          responseTime: "Response within 24h",
+        },
+        hours: {
+          title: "Opening hours",
+          weekdays: "Mon-Fri: 9am-6pm (CET)",
+          weekend: "Sat-Sun: 10am-4pm (CET)",
+          emergency: "24/7 support for emergencies",
+        },
+      },
+    },
+    giveaways: {
+      title: "Giveaways",
+      subtitle: "Use your tickets to participate in giveaways and win exceptional skins",
+      userTickets: {
+        level: "Level",
+        tickets: "tickets",
+        description: "Earn more tickets by selling your skins!",
+      },
+      howTicketsWork: {
+        title: "How do tickets work?",
+        earn: {
+          title: "Earn tickets",
+          description: "Receive tickets with each trade based on volume",
+        },
+        participate: {
+          title: "Participate in giveaways",
+          description: "Use your tickets to participate in raffles",
+        },
+        win: {
+          title: "Win prizes",
+          description: "Win exceptional skins and exclusive rewards",
+        },
+      },
+      tabs: {
+        active: "Active",
+        ended: "Ended",
+        myEntries: "My entries",
+      },
+      card: {
+        status: {
+          active: "Active",
+          ended: "Ended",
+          cancelled: "Cancelled",
+        },
+        prize: "Prize to win",
+        price: "Price:",
+        participants: "participants",
+        timeRemaining: "Time remaining",
+        endDate: "End date",
+        ticketsSold: "Tickets sold",
+        winner: "Winner:",
+        ticketsToUse: "Number of tickets to use:",
+        participate: "Participate",
+        ticketsAvailable: "tickets available",
+      },
+      empty: {
+        noActive: "No active giveaways",
+        noActiveDescription: "Come back soon to discover new giveaways!",
+        loginRequired: "Login required",
+        loginRequiredDescription: "Log in to see your entries",
+        loginButton: "Login with Steam",
+      },
+      myEntries: {
+        title: "My entries",
+        entries: {
+          inProgress: "In progress",
+          lost: "Lost",
+        },
+      },
+      participation: {
+        success: "Entry registered!",
+        notEnoughTickets: "You don't have enough tickets",
+        loginRequired: "You must be logged in to participate",
       },
     },
   },
