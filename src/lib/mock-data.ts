@@ -1,6 +1,7 @@
 import { User, Trade, TradeItem, PaymentMethod, Giveaway, AffiliateStats } from './types';
 
 export const mockUser: User = {
+  id: 'user_76561198012345678',
   steamId64: '76561198012345678',
   username: 'ProGamer2024',
   avatar: 'https://avatars.steamstatic.com/c5d56249ee5d28a07db4ac9f7f60af961fab5426_full.jpg',
@@ -10,7 +11,7 @@ export const mockUser: User = {
   xp: 15800,
   level: 12,
   tickets: 45,
-  createdAt: new Date('2024-01-15'),
+  joinedAt: new Date('2024-01-15'),
 };
 
 export const mockTradeItems: TradeItem[] = [
