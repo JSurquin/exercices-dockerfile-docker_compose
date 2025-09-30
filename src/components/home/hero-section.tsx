@@ -174,14 +174,14 @@ export function HeroSection() {
               transition={{ duration: 0.8, delay: 0.3 }}
               className="space-y-3 sm:space-y-4"
             >
-              <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-gaming-title leading-tight">
+              <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white text-gaming-title leading-tight">
                 {messages.hero.title.split("CS2")[0]}
                 <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
                   CS2
                 </span>
                 {messages.hero.title.split("CS2")[1] || ""}
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-gaming-body text-muted-foreground max-w-lg">
+              <p className="text-base sm:text-lg md:text-xl text-gaming-body text-muted-foreground text-white dark:text-gray-300 max-w-lg">
                 {messages.hero.subtitle}
               </p>
             </motion.div>

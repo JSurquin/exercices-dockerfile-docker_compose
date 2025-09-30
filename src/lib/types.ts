@@ -213,3 +213,174 @@ export interface AdminFilters {
   page?: number;
   limit?: number;
 }
+
+// Types Skinplace API
+export interface SkinplaceInventoryItem {
+  id: string;
+  name: string;
+  market_hash_name: string;
+  price: number; // en centimes
+  icon_url: string;
+  exterior?: string;
+  stat_trak: boolean;
+  rarity: string;
+  wear?: number;
+  stickers?: SkinplaceSticker[];
+  float_value?: number;
+  pattern_index?: number;
+  trade_lock?: Date;
+}
+
+export interface SkinplaceSticker {
+  id: string;
+  name: string;
+  icon_url: string;
+  wear: number;
+  position: number;
+}
+
+export interface SkinplaceInventoryResponse {
+  success: boolean;
+  data: {
+    items: SkinplaceInventoryItem[];
+    total_items: number;
+    total_value: number; // en centimes
+  };
+  error?: string;
+}
+
+export interface SkinplaceMultipleInventoryResponse {
+  success: boolean;
+  data: {
+    [steamId: string]: {
+      items: SkinplaceInventoryItem[];
+      total_items: number;
+      total_value: number;
+    };
+  };
+  error?: string;
+}
+
+export interface SkinplaceTradeResponse {
+  success: boolean;
+  data: {
+    trade_id: string;
+    token: string;
+    status: 'pending' | 'accepted' | 'declined' | 'expired';
+    expires_at: Date;
+    items: SkinplaceInventoryItem[];
+    total_value: number;
+  };
+  error?: string;
+}
+
+export interface SkinplacePurchaseRequest {
+  items: string[]; // IDs des items
+  payment_method: 'balance' | 'stripe' | 'crypto';
+  trade_token?: string;
+}
+
+export interface SkinplacePurchaseResponse {
+  success: boolean;
+  data: {
+    purchase_id: string;
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    items: SkinplaceInventoryItem[];
+    total_price: number;
+    payment_intent_id?: string;
+  };
+  error?: string;
+}
+
+export interface SkinplaceBalanceResponse {
+  success: boolean;
+  data: {
+    balance: number; // en centimes
+    currency: string;
+    available_balance: number;
+    pending_balance: number;
+  };
+  error?: string;
+}
+
+export interface SkinplaceHistoryItem {
+  id: string;
+  type: 'purchase' | 'sale' | 'trade' | 'refund';
+  status: 'pending' | 'completed' | 'failed' | 'cancelled';
+  amount: number; // en centimes
+  items: SkinplaceInventoryItem[];
+  created_at: Date;
+  completed_at?: Date;
+  reference_id?: string;
+}
+
+export interface SkinplaceHistoryResponse {
+  success: boolean;
+  data: {
+    items: SkinplaceHistoryItem[];
+    total_items: number;
+    page: number;
+    limit: number;
+    has_more: boolean;
+  };
+  error?: string;
+}
+
+export interface SkinplaceHoldOrder {
+  id: string;
+  items: SkinplaceInventoryItem[];
+  total_value: number;
+  hold_duration: number; // en heures
+  created_at: Date;
+  expires_at: Date;
+  status: 'active' | 'expired' | 'withdrawn';
+}
+
+export interface SkinplaceHoldResponse {
+  success: boolean;
+  data: {
+    orders: SkinplaceHoldOrder[];
+    total_orders: number;
+    total_value: number;
+  };
+  error?: string;
+}
+
+export interface SkinplaceItemListing {
+  id: string;
+  name: string;
+  market_hash_name: string;
+  price: number;
+  icon_url: string;
+  exterior?: string;
+  stat_trak: boolean;
+  rarity: string;
+  seller: {
+    id: string;
+    username: string;
+    reputation: number;
+  };
+  created_at: Date;
+  expires_at: Date;
+  status: 'active' | 'sold' | 'expired' | 'cancelled';
+}
+
+export interface SkinplaceListingsResponse {
+  success: boolean;
+  data: {
+    items: SkinplaceItemListing[];
+    total_items: number;
+    page: number;
+    limit: number;
+    has_more: boolean;
+  };
+  error?: string;
+}
+
+// Types pour les erreurs Skinplace
+export interface SkinplaceError {
+  success: false;
+  error: string;
+  code?: string;
+  details?: Record<string, unknown>;
+}

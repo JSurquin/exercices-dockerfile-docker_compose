@@ -2,7 +2,7 @@
 
 ![CashTrade Logo](public/logo.svg)
 
-CashTrade est une plateforme moderne et sécurisée qui permet aux joueurs de Counter-Strike 2 de vendre leurs skins contre de l'argent réel. Construite avec Next.js 15, elle offre une expérience utilisateur exceptionnelle avec des paiements SEPA et crypto.
+CashTrade est une plateforme moderne et sécurisée qui permet aux joueurs de Counter-Strike 2 de vendre leurs skins contre de l'argent réel. Construite avec Next.js 15 et intégrée à l'API Skinplace, elle offre une expérience utilisateur exceptionnelle avec des paiements SEPA et crypto.
 
 ## 🚀 Fonctionnalités
 
@@ -13,10 +13,11 @@ CashTrade est une plateforme moderne et sécurisée qui permet aux joueurs de Co
 - **Conformité RGPD** - Respect des réglementations européennes
 
 ### 💰 Système de Trading
-- **Estimation en temps réel** - Prix basés sur l'API Skinplace
+- **Estimation en temps réel** - Prix basés sur l'API Skinplace v3
 - **Trade automatisé** - Gestion complète du processus Steam
 - **Timeline transparente** - Suivi en temps réel de vos trades
 - **Support tous skins** - CS2 tradables, StatTrak™, avec stickers
+- **Proxy API intelligent** - Cache, retry et gestion d'erreurs
 
 ### 💳 Paiements Sécurisés
 - **SEPA instantané** - Via Qonto avec vérification renforcée
@@ -38,15 +39,24 @@ CashTrade est une plateforme moderne et sécurisée qui permet aux joueurs de Co
 
 ## 🛠️ Technologies
 
+### Frontend
 - **Framework**: Next.js 15 (App Router)
 - **UI**: TailwindCSS + shadcn/ui
 - **Animations**: Framer Motion
 - **Graphiques**: Recharts
-- **Icons**: Heroicons
+- **Icons**: Heroicons + Lucide React
 - **Themes**: next-themes
 - **Notifications**: Sonner
 - **Internationalisation**: next-intl
 - **TypeScript**: Support complet
+
+### Backend & APIs
+- **Auth**: Better Auth avec Steam OpenID
+- **Database**: Prisma ORM
+- **Payment**: Stripe (cartes, SEPA)
+- **Trading**: Skinplace API v3 (proxy intelligent)
+- **Cache**: Redis (production) / Memory (dev)
+- **Validation**: Zod schemas
 
 ## 📦 Installation
 
@@ -58,18 +68,18 @@ cd counter-strike-skin
 
 2. **Installer les dépendances**
 ```bash
-npm install
+pnpm install
 ```
 
 3. **Configurer les variables d'environnement**
 ```bash
-cp .env.example .env.local
-# Éditer .env.local avec vos clés API
+cp env.example env.local
+# Éditer env.local avec vos clés API
 ```
 
 4. **Démarrer le serveur de développement**
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 L'application sera disponible sur `http://localhost:3000`
@@ -77,36 +87,32 @@ L'application sera disponible sur `http://localhost:3000`
 ## 🌐 Variables d'environnement
 
 ```env
+# Better Auth Configuration
+BETTER_AUTH_SECRET=your-secret-key-here
+BETTER_AUTH_URL=http://localhost:3000
+
+# Discord OAuth (optionnel pour test)
+DISCORD_CLIENT_ID=your-discord-client-id
+DISCORD_CLIENT_SECRET=your-discord-client-secret
+
 # Steam API
-STEAM_API_KEY=your_steam_api_key
-STEAM_RETURN_URL=http://localhost:3000/auth/steam/return
+STEAM_API_KEY=your-steam-api-key
 
-# Skinplace API
-SKINPLACE_API_KEY=your_skinplace_api_key
-SKINPLACE_API_URL=https://api.skinplace.com/v1
-
-# Qonto API (SEPA)
-QONTO_API_KEY=your_qonto_api_key
-QONTO_API_URL=https://api.qonto.com/v1
-
-# Binance API (Crypto)
-BINANCE_API_KEY=your_binance_api_key
-BINANCE_SECRET_KEY=your_binance_secret
-
-# KYC Provider
-KYC_PROVIDER_API_KEY=your_kyc_api_key
+# App Configuration
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/cashtrade
+DATABASE_URL=postgresql://username:password@localhost:5432/cashtrade_dev
 
-# Redis
-REDIS_URL=redis://localhost:6379
+# Stripe
+STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
+STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-publishable-key
+STRIPE_WEBHOOK_SECRET=whsec_your-stripe-webhook-secret
+STRIPE_WEBHOOK_ENDPOINT_SECRET=whsec_your-webhook-endpoint-secret
 
-# Email
-SMTP_HOST=smtp.your-provider.com
-SMTP_PORT=587
-SMTP_USER=your_email
-SMTP_PASS=your_password
+# Skinplace API
+SKINPLACE_API_KEY=your-skinplace-api-key
+SKINPLACE_API_URL=https://api.skinplace.com
 ```
 
 ## 📁 Structure du projet
@@ -115,6 +121,11 @@ SMTP_PASS=your_password
 src/
 ├── app/                    # Pages Next.js (App Router)
 │   ├── admin/             # Interface d'administration
+│   ├── api/               # Routes API
+│   │   ├── admin/         # APIs d'administration
+│   │   ├── auth/          # Authentification Steam
+│   │   ├── skinplace/     # Proxy API Skinplace
+│   │   └── stripe/        # Paiements Stripe
 │   ├── dashboard/         # Dashboard utilisateur
 │   ├── giveaways/         # Page des concours
 │   ├── kyc/               # Processus KYC
@@ -122,15 +133,20 @@ src/
 │   ├── settings/          # Paramètres utilisateur
 │   └── support/           # Centre d'aide
 ├── components/            # Composants React
+│   ├── admin/             # Composants d'administration
 │   ├── home/              # Composants page d'accueil
 │   ├── layout/            # Layout et navigation
 │   ├── providers/         # Context providers
+│   ├── skinplace/         # Composants Skinplace
 │   └── ui/                # Composants UI (shadcn)
 ├── hooks/                 # Custom React hooks
+│   └── use-skinplace.ts   # Hook pour API Skinplace
 └── lib/                   # Utilitaires et types
     ├── auth.ts            # Gestion authentification
     ├── i18n.ts            # Internationalisation
     ├── mock-data.ts       # Données de test
+    ├── skinplace.ts       # Service API Skinplace
+    ├── stripe.ts          # Configuration Stripe
     ├── types.ts           # Types TypeScript
     └── utils.ts           # Fonctions utilitaires
 ```
@@ -139,20 +155,21 @@ src/
 
 ```bash
 # Développement
-npm run dev          # Démarrer le serveur de développement
-npm run build        # Build de production
-npm run start        # Démarrer le serveur de production
-npm run lint         # Linter le code
-
-# Tests
-npm run test         # Lancer les tests
-npm run test:watch   # Tests en mode watch
-npm run test:e2e     # Tests end-to-end
+pnpm run dev         # Démarrer le serveur de développement
+pnpm run build       # Build de production
+pnpm run start       # Démarrer le serveur de production
+pnpm run lint        # Linter le code
+pnpm check           # Vérifier TypeScript + Lint
 
 # Base de données
-npm run db:migrate   # Appliquer les migrations
-npm run db:seed      # Peupler la base de données
-npm run db:studio    # Interface Prisma Studio
+pnpm run db:generate # Générer le client Prisma
+pnpm run db:push     # Pousser le schéma vers la DB
+pnpm run db:migrate  # Appliquer les migrations
+pnpm run db:seed     # Peupler la base de données
+pnpm run db:studio   # Interface Prisma Studio
+
+# Deployment
+pnpm run type-check  # Vérifier les types TypeScript
 ```
 
 ## 🚦 Roadmap
@@ -165,22 +182,25 @@ npm run db:studio    # Interface Prisma Studio
 - [x] Interface utilisateur
 
 ### Phase 2 - Fonctionnalités avancées ✅
-- [x] Support crypto
+- [x] Support crypto (Stripe)
 - [x] Système de gamification
-- [x] Interface admin
+- [x] Interface admin complète
 - [x] Support multilingue
 - [x] Mobile responsive
+- [x] Intégration Skinplace API v3
 
-### Phase 3 - Optimisations 🔄
-- [ ] API externes réelles
-- [ ] Base de données PostgreSQL
-- [ ] Redis pour le cache
-- [ ] Tests automatisés
-- [ ] CI/CD Pipeline
+### Phase 3 - Optimisations ✅
+- [x] Proxy API Skinplace intelligent
+- [x] Base de données PostgreSQL
+- [x] Cache intelligent (Memory/Redis)
+- [x] TypeScript strict mode
+- [x] Build optimisé Next.js 15
 
 ### Phase 4 - Extensions 📋
-- [ ] Application mobile
-- [ ] API publique
+- [ ] Tests automatisés (Jest, Playwright)
+- [ ] CI/CD Pipeline (GitHub Actions)
+- [ ] Application mobile (React Native)
+- [ ] API publique (OpenAPI)
 - [ ] Programme d'affiliation étendu
 - [ ] Support autres jeux (Dota 2, TF2)
 
@@ -199,6 +219,28 @@ npm run db:studio    # Interface Prisma Studio
 - **AML** - Lutte contre le blanchiment d'argent
 - **KYC** - Know Your Customer obligatoire
 - **PCI DSS** - Standards de sécurité pour les paiements
+
+## 🔧 API Skinplace
+
+### Endpoints disponibles
+```
+GET    /api/skinplace/inventory                    # Inventaire Steam
+POST   /api/skinplace/inventory/multiple          # Inventaires multiples
+POST   /api/skinplace/trade                       # Créer un trade
+GET    /api/skinplace/trade/{token}               # Statut du trade
+POST   /api/skinplace/purchase                    # Acheter des items
+GET    /api/skinplace/purchase/history            # Historique achats
+GET    /api/skinplace/balance                     # Solde utilisateur
+GET    /api/skinplace/hold                        # Hold orders
+GET    /api/skinplace/items/listing               # Items en vente
+```
+
+### Fonctionnalités
+- **Cache intelligent** - 5 minutes TTL
+- **Retry automatique** - 3 tentatives avec backoff
+- **Gestion d'erreurs** - Types TypeScript stricts
+- **Rate limiting** - Protection anti-abuse
+- **Validation** - Paramètres et authentification
 
 ## 📊 Analytics & Monitoring
 

@@ -2,131 +2,47 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/components/providers/auth-provider";
-import { useLocale } from "@/components/providers/locale-provider";
-import { mockTradeItems } from "@/lib/mock-data";
-import { TradeItem } from "@/lib/types";
-import { Messages } from "@/lib/i18n";
+import { InventoryViewer } from "@/components/skinplace/inventory-viewer";
+import { TradeCreator } from "@/components/skinplace/trade-creator";
+import { SkinplaceInventoryItem } from "@/lib/types";
 import {
   LinkIcon,
   CurrencyDollarIcon,
-  ClockIcon,
   ShieldCheckIcon,
-  ExclamationTriangleIcon,
   CheckCircleIcon,
-  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
-const getSteps = (messages: Messages) => [
-  { id: "tradelink", title: messages.trade.steps.tradelink, icon: LinkIcon },
-  { id: "estimation", title: messages.trade.steps.estimation, icon: CurrencyDollarIcon },
-  { id: "confirmation", title: messages.trade.steps.confirmation, icon: CheckCircleIcon },
+const getSteps = () => [
+  { id: "inventory", title: "Sélection des items", icon: LinkIcon },
+  { id: "trade", title: "Création du trade", icon: CurrencyDollarIcon },
+  { id: "confirmation", title: "Confirmation", icon: CheckCircleIcon },
 ];
 
 export default function SellPage() {
   const { user } = useAuth();
-  const { messages } = useLocale();
   const [currentStep, setCurrentStep] = useState(0);
-  const steps = getSteps(messages);
-  const [tradeLink, setTradeLink] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [items, setItems] = useState<TradeItem[]>([]);
-  const [estimation, setEstimation] = useState({
-    brutCentimes: 0,
-    fraisCashout: 0,
-    fraisReseau: 2000, // 20€ de frais réseau
-    netCentimes: 0,
-  });
+  const steps = getSteps();
+  const [selectedItems, setSelectedItems] = useState<SkinplaceInventoryItem[]>([]);
+  const [tradeData, setTradeData] = useState<{ trade_id: string; token: string; status: string; total_value: number; expires_at: Date } | null>(null);
 
-  const calculateEstimation = (items: TradeItem[]) => {
-    const brutCentimes = items.reduce(
-      (sum, item) => sum + item.prixCentimes,
-      0
-    );
-    const fraisCashout = Math.round(brutCentimes * 0.005); // 0.5%
-    const fraisReseau = 2000; // 20€
-    const netCentimes = brutCentimes - fraisCashout - fraisReseau;
-
-    return {
-      brutCentimes,
-      fraisCashout,
-      fraisReseau,
-      netCentimes,
-    };
+  const handleItemSelect = (item: SkinplaceInventoryItem) => {
+    setSelectedItems([item]);
+    setCurrentStep(1);
   };
 
-  const handleTradeLinkSubmit = async () => {
-    if (!tradeLink.includes("steamcommunity.com/tradeoffer/new/")) {
-      toast.error(
-        messages.toast.invalidTradeLink
-      );
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // Simulation d'appel API pour récupérer les items
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Utilisation des données mockées
-      setItems(mockTradeItems);
-      const newEstimation = calculateEstimation(mockTradeItems);
-      setEstimation(newEstimation);
-
-      setCurrentStep(1);
-      toast.success(messages.toast.itemsLoadedSuccess);
-    } catch {
-      toast.error(messages.toast.itemsLoadError);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleConfirmTrade = async () => {
-    setIsLoading(true);
-    try {
-      // Simulation de création du trade
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      const ticketId = `TICK-${new Date()
-        .toISOString()
-        .slice(0, 10)
-        .replace(/-/g, "")}-${Math.floor(Math.random() * 9999)
-        .toString()
-        .padStart(4, "0")}`;
-
-      toast.success(`${messages.toast.tradeCreatedSuccess} ID: ${ticketId}`);
-      setCurrentStep(2);
-    } catch {
-      toast.error(messages.toast.tradeCreationError);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleTradeCreated = (trade: { trade_id: string; token: string; status: string; total_value: number; expires_at: Date }) => {
+    setTradeData(trade);
+    setCurrentStep(2);
+    toast.success("Trade créé avec succès !");
   };
 
   const formatPrice = (centimes: number) => {
     return (centimes / 100).toFixed(2) + "€";
-  };
-
-  const getRarityColor = (rarity: string) => {
-    const colors = {
-      "Consumer Grade": "bg-gray-500",
-      "Industrial Grade": "bg-blue-500",
-      "Mil-Spec": "bg-blue-600",
-      Restricted: "bg-purple-500",
-      Classified: "bg-pink-500",
-      Covert: "bg-red-500",
-      Extraordinary: "bg-yellow-500",
-    };
-    return colors[rarity as keyof typeof colors] || "bg-gray-500";
   };
 
   if (!user) {
@@ -136,13 +52,13 @@ export default function SellPage() {
           <CardContent className="p-6 sm:p-8">
             <ShieldCheckIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
             <h2 className="text-xl font-semibold mb-2">
-              {messages.trade.loginRequired}
+              Connexion requise
             </h2>
             <p className="text-muted-foreground mb-6">
-              {messages.trade.loginSubtitle}
+              Vous devez être connecté avec Steam pour vendre vos skins.
             </p>
             <Button onClick={() => (window.location.href = "/")}>
-              {messages.trade.steamLogin}
+              Se connecter avec Steam
             </Button>
           </CardContent>
         </Card>
@@ -161,9 +77,9 @@ export default function SellPage() {
           className="text-center mb-6 sm:mb-6 sm:mb-8"
         >
           <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
-            {messages.trade.title}
+            Vendre vos skins CS2
           </h1>
-          <p className="text-muted-foreground">{messages.trade.subtitle}</p>
+          <p className="text-muted-foreground">Vendez vos skins Counter-Strike 2 instantanément et recevez votre argent rapidement</p>
         </motion.div>
 
         {/* Progress Stepper */}
@@ -224,217 +140,46 @@ export default function SellPage() {
           transition={{ duration: 0.4 }}
         >
           {currentStep === 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <LinkIcon className="w-5 h-5" />
-                  <span>{messages.trade.tradelink.title}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 sm:space-y-6">
-                <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                  <div className="flex items-start space-x-3">
-                    <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm">
-                      <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
-                        {messages.trade.tradelink.helpTitle}
-                      </p>
-                      <ol className="list-decimal list-inside space-y-1 text-blue-700 dark:text-blue-300">
-                        {messages.trade.tradelink.helpSteps.map((step, index) => (
-                          <li key={index}>{step}</li>
-                        ))}
-                      </ol>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="tradelink">{messages.trade.tradeLink}</Label>
-                  <Input
-                    id="tradelink"
-                    placeholder={messages.trade.tradelink.placeholder}
-                    value={tradeLink}
-                    onChange={(e) => setTradeLink(e.target.value)}
-                    className="font-mono text-sm"
-                  />
-                </div>
-
-                <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                  <div className="flex items-start space-x-3">
-                    <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm">
-                      <p className="font-medium text-yellow-900 dark:text-yellow-100 mb-1">
-                        {messages.trade.tradelink.important}
-                      </p>
-                      <p className="text-yellow-700 dark:text-yellow-300">
-                        {messages.trade.tradelink.importantText}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={handleTradeLinkSubmit}
-                  disabled={!tradeLink || isLoading}
-                  className="w-full"
-                  size="lg"
-                >
-                  {isLoading
-                    ? messages.trade.tradelink.analyzingButton
-                    : messages.trade.tradelink.analyzeButton}
-                </Button>
-              </CardContent>
-            </Card>
+            <InventoryViewer
+              steamId={user.steamId64}
+              onItemSelect={handleItemSelect}
+              selectable={true}
+            />
           )}
 
           {currentStep === 1 && (
-            <div className="grid lg:grid-cols-3 gap-6">
-              {/* Items List */}
-              <div className="lg:col-span-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{messages.trade.items.selected} ({items.length})</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {items.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center space-x-3 sm:space-x-4 p-3 border rounded-lg"
-                        >
-                          <img
-                            src={item.iconUrl}
-                            alt={item.name}
-                            className="w-16 h-16 rounded"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = "/placeholder-skin.png";
-                            }}
-                          />
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <h3 className="font-semibold">{item.name}</h3>
-                              {item.statTrak && (
-                                <Badge
-                                  variant="secondary"
-                                  className="text-xs bg-orange-100 text-orange-800"
-                                >
-                                  StatTrak™
-                                </Badge>
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              {item.exterior}
-                            </p>
-                            <div className="flex items-center space-x-2 mt-1">
-                              <div
-                                className={`w-2 h-2 rounded-full ${getRarityColor(
-                                  item.rarity
-                                )}`}
-                              />
-                              <span className="text-xs text-muted-foreground">
-                                {item.rarity}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-bold text-lg">
-                              {formatPrice(item.prixCentimes)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Estimation Summary */}
-              <div>
-                <Card className="sticky top-4">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <CurrencyDollarIcon className="w-5 h-5" />
-                      <span>{messages.trade.estimation}</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 sm:space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span>{messages.trade.items.totalBrut}</span>
-                        <span className="font-semibold">
-                          {formatPrice(estimation.brutCentimes)}
-                        </span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>{messages.trade.items.cashoutFees}</span>
-                        <span>-{formatPrice(estimation.fraisCashout)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>{messages.trade.items.networkFees}</span>
-                        <span>-{formatPrice(estimation.fraisReseau)}</span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between text-lg font-bold">
-                        <span>{messages.trade.items.totalNet}</span>
-                        <span className="text-green-600">
-                          {formatPrice(estimation.netCentimes)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="bg-muted/50 rounded-lg p-3">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <ClockIcon className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">{messages.trade.items.timeline}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {messages.trade.items.timelineText}
-                      </p>
-                    </div>
-
-                    <Button
-                      onClick={handleConfirmTrade}
-                      disabled={isLoading}
-                      className="w-full"
-                      size="lg"
-                    >
-                      {isLoading
-                        ? messages.trade.items.creatingButton
-                        : messages.trade.items.confirmButton}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+            <TradeCreator
+              steamId={user.steamId64}
+              selectedItems={selectedItems}
+              onTradeCreated={handleTradeCreated}
+            />
           )}
 
-          {currentStep === 2 && (
+          {currentStep === 2 && tradeData && (
             <Card>
               <CardContent className="p-8 text-center">
                 <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-green-500" />
                 <h2 className="text-2xl font-bold mb-2">
-                  {messages.trade.success.title}
+                  Trade créé avec succès !
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  {messages.trade.success.subtitle}
+                  Votre trade a été créé et est en attente d&apos;acceptation.
                 </p>
 
                 <div className="bg-muted/50 rounded-lg p-4 mb-6">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">
-                        {messages.trade.success.tradeId}
+                        ID du trade:
                       </span>
-                      <p className="font-mono">TICK-20240921-0001</p>
+                      <p className="font-mono">{tradeData.trade_id}</p>
                     </div>
                     <div>
                       <span className="text-muted-foreground">
-                        {messages.trade.success.netAmount}
+                        Valeur totale:
                       </span>
                       <p className="font-bold text-green-600">
-                        {formatPrice(estimation.netCentimes)}
+                        {formatPrice(tradeData.total_value)}
                       </p>
                     </div>
                   </div>
@@ -443,7 +188,7 @@ export default function SellPage() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button asChild>
                     <a href="/dashboard" target="_blank">
-                      {messages.trade.success.followTrade}
+                      Suivre le trade
                     </a>
                   </Button>
                   <Button variant="outline" asChild>
@@ -451,7 +196,7 @@ export default function SellPage() {
                       href="https://steamcommunity.com/my/tradeoffers/"
                       target="_blank"
                     >
-                      {messages.trade.success.openSteam}
+                      Ouvrir Steam
                     </a>
                   </Button>
                 </div>

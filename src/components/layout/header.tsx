@@ -80,9 +80,6 @@ export function Header() {
             <span className="text-gaming-title text-xl bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
               CashTrade
             </span>
-            <span className="text-xs text-gaming-caption text-muted-foreground -mt-1">
-              {messages.common.marketplace}
-            </span>
           </div>
         </Link>
 
