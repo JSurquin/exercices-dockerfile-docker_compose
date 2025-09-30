@@ -47,7 +47,7 @@ export function ChatWidget() {
   };
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
+  const [chatMessages, setChatMessages] = useState<Message[]>([
     {
       id: "1",
       content: "Salut ! 👋 Je suis Alex de l'équipe CashTrade. Comment puis-je vous aider aujourd'hui ?",
@@ -58,7 +58,7 @@ export function ChatWidget() {
   ]);
   const [unreadCount, setUnreadCount] = useState(1);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { messages: t } = useLocale();
+  const { messages } = useLocale();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -100,7 +100,7 @@ export function ChatWidget() {
       timestamp: new Date(),
       status: "sent",
     };
-    setMessages((prev) => [...prev, newMessage]);
+    setChatMessages((prev) => [...prev, newMessage]);
     
     // Simulate typing and response
     setIsTyping(true);
@@ -113,7 +113,7 @@ export function ChatWidget() {
         timestamp: new Date(),
         status: "read",
       };
-      setMessages((prev) => [...prev, response]);
+      setChatMessages((prev) => [...prev, response]);
     }, 2000);
   };
 
@@ -128,7 +128,7 @@ export function ChatWidget() {
       status: "sent",
     };
 
-    setMessages((prev) => [...prev, newMessage]);
+    setChatMessages((prev) => [...prev, newMessage]);
     setMessage("");
 
     // Simulate typing and response
@@ -142,7 +142,7 @@ export function ChatWidget() {
         timestamp: new Date(),
         status: "read",
       };
-      setMessages((prev) => [...prev, response]);
+      setChatMessages((prev) => [...prev, response]);
     }, 1500);
   };
 
@@ -218,7 +218,7 @@ export function ChatWidget() {
           {/* Messages */}
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
-              {messages.map((msg) => (
+              {chatMessages.map((msg) => (
                 <div
                   key={msg.id}
                   className={`flex ${msg.isUser ? "justify-end" : "justify-start"} message-slide-in`}
