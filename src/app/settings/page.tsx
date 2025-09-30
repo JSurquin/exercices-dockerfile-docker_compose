@@ -53,7 +53,7 @@ export default function SettingsPage() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success(messages.toast.settingsSavedSuccess);
     } catch {
-      toast.error(messages.settings.saveError);
+      toast.error("Erreur lors de la sauvegarde");
     }
   };
 
@@ -63,12 +63,12 @@ export default function SettingsPage() {
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
             <UserCircleIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">{messages.settings.loginRequired.title}</h2>
+            <h2 className="text-xl font-semibold mb-2">Connexion requise</h2>
             <p className="text-muted-foreground mb-6">
-              {messages.settings.loginRequired.description}
+              Vous devez être connecté pour accéder aux paramètres.
             </p>
             <Button onClick={() => (window.location.href = "/")}>
-              {messages.settings.loginRequired.login}
+              Se connecter avec Steam
             </Button>
           </CardContent>
         </Card>
@@ -87,10 +87,10 @@ export default function SettingsPage() {
           className="mb-6 sm:mb-8"
         >
           <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
-            {messages.settings.title}
+            Paramètres
           </h1>
           <p className="text-muted-foreground">
-            {messages.settings.subtitle}
+            Gérez vos préférences et paramètres de compte
           </p>
         </motion.div>
 
@@ -102,11 +102,11 @@ export default function SettingsPage() {
         >
           <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
             <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="profile">{messages.dashboard.settings.profile}</TabsTrigger>
-              <TabsTrigger value="security">{messages.dashboard.settings.security}</TabsTrigger>
-              <TabsTrigger value="notifications">{messages.settings.notifications.title}</TabsTrigger>
-              <TabsTrigger value="payments">{messages.settings.payments.title}</TabsTrigger>
-              <TabsTrigger value="preferences">{messages.settings.preferences.title}</TabsTrigger>
+              <TabsTrigger value="profile">Profil</TabsTrigger>
+              <TabsTrigger value="security">Sécurité</TabsTrigger>
+              <TabsTrigger value="notifications">Notifications</TabsTrigger>
+              <TabsTrigger value="payments">Paiements</TabsTrigger>
+              <TabsTrigger value="preferences">Préférences</TabsTrigger>
             </TabsList>
 
             {/* Profile Tab */}
@@ -138,8 +138,8 @@ export default function SettingsPage() {
                         >
                           KYC{" "}
                           {user.kycStatus === "verified"
-                            ? messages.settings.security.kyc.verified
-                            : messages.settings.security.kyc.pending}
+                            ? "Vérifié"
+                            : "En attente"}
                         </Badge>
                         <Badge variant="outline">Niveau {user.level}</Badge>
                       </div>
@@ -157,7 +157,7 @@ export default function SettingsPage() {
                     <div className="space-y-2">
                       <Label>Membre depuis</Label>
                       <Input
-                        value={new Date(user.createdAt).toLocaleDateString()}
+                        value={new Date(user.joinedAt).toLocaleDateString()}
                         disabled
                       />
                     </div>
@@ -240,12 +240,12 @@ export default function SettingsPage() {
                           className="bg-green-100 text-green-800"
                         >
                           {user.kycStatus === "verified"
-                            ? messages.settings.security.kyc.verified
-                            : messages.settings.security.kyc.pending}
+                            ? "Vérifié"
+                            : "En attente"}
                         </Badge>
                         {user.kycStatus !== "verified" && (
                           <Button variant="outline" size="sm">
-                            {messages.settings.security.kyc.start}
+                            Commencer KYC
                           </Button>
                         )}
                       </div>
@@ -399,7 +399,7 @@ export default function SettingsPage() {
                           }))
                         }
                       />
-                    </div>
+                    </div>p
                   </div>
 
                   <Button onClick={handleSaveSettings}>
