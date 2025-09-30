@@ -2,12 +2,14 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/lib/types';
-import { AuthService } from '@/lib/auth';
+import { AuthService } from '@/lib/auth-service';
+import { signInWithDiscord, signOut, getSession } from '@/lib/auth-client';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: () => Promise<User>;
+  loginWithSteam: () => Promise<User>;
+  loginWithDiscord: () => Promise<void>;
   logout: () => void;
   updateUser: (updates: Partial<User>) => Promise<User>;
 }
@@ -20,23 +22,79 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Vérifier si l'utilisateur est connecté au montage
-    const currentUser = AuthService.getCurrentUser();
-    setUser(currentUser);
-    setIsLoading(false);
+    const checkSession = async () => {
+      try {
+        // Vérifier Better Auth session
+        const sessionData = await getSession();
+        if (sessionData?.data?.user) {
+          // Convertir Better Auth user vers notre type User
+          const betterAuthUser = sessionData.data.user;
+          const convertedUser: User = {
+            id: betterAuthUser.id,
+            steamId64: '', // Sera rempli lors de la liaison Steam
+            username: betterAuthUser.name || 'Discord User',
+            avatar: betterAuthUser.image || '',
+            level: 1, // Valeurs par défaut pour les nouveaux utilisateurs
+            xp: 0,
+            tickets: 0,
+            totalVolume: 0,
+            kycStatus: 'pending',
+            acceptedTermsAt: new Date(),
+            joinedAt: betterAuthUser.createdAt,
+          };
+          setUser(convertedUser);
+        } else {
+          // Fallback vers l'ancien système Steam (mock)
+          const currentUser = AuthService.getCurrentUser();
+          setUser(currentUser);
+        }
+      } catch (error) {
+        console.error('Session check error:', error);
+        // Fallback vers l'ancien système
+        const currentUser = AuthService.getCurrentUser();
+        setUser(currentUser);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkSession();
   }, []);
 
-  const login = async (): Promise<User> => {
+  const loginWithSteam = async (): Promise<User> => {
     setIsLoading(true);
     try {
-      const user = await AuthService.loginWithSteam();
-      setUser(user);
-      return user;
+      // Rediriger vers l'authentification Steam
+      window.location.href = '/api/auth/steam/login';
+      // Ce code ne sera jamais atteint car on redirige
+      return {} as User;
+    } catch (error) {
+      setIsLoading(false);
+      throw error;
+    }
+  };
+
+  const loginWithDiscord = async (): Promise<void> => {
+    setIsLoading(true);
+    try {
+      await signInWithDiscord();
+      // Better Auth gère la redirection automatiquement
+    } catch (error) {
+      console.error('Discord login error:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    
+    // Fallback vers l'ancien système
     AuthService.logout();
     setUser(null);
   };
@@ -48,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, isLoading, loginWithSteam, loginWithDiscord, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
