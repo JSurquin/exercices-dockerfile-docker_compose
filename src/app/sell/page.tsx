@@ -6,9 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/components/providers/auth-provider";
-import { InventoryViewer } from "@/components/skinplace/inventory-viewer";
-import { TradeCreator } from "@/components/skinplace/trade-creator";
-import { SkinplaceInventoryItem } from "@/lib/types";
+import { SteamInventoryViewer } from "@/components/steam/steam-inventory-viewer";
+import { SteamTradeCreator } from "@/components/steam/steam-trade-creator";
+import { SteamInventoryItem } from "@/hooks/use-steam-inventory";
 import {
   LinkIcon,
   CurrencyDollarIcon,
@@ -27,18 +27,34 @@ export default function SellPage() {
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const steps = getSteps();
-  const [selectedItems, setSelectedItems] = useState<SkinplaceInventoryItem[]>([]);
-  const [tradeData, setTradeData] = useState<{ trade_id: string; token: string; status: string; total_value: number; expires_at: Date } | null>(null);
+  const [selectedItems, setSelectedItems] = useState<SteamInventoryItem[]>([]);
+  const [tradeData, setTradeData] = useState<{ 
+    trade_id: string; 
+    token: string; 
+    status: string; 
+    total_value: number; 
+    net_value: number;
+    fees: { cashout_fee: number; network_fee: number };
+    expires_at: Date;
+  } | null>(null);
 
-  const handleItemSelect = (item: SkinplaceInventoryItem) => {
+  const handleItemSelect = (item: SteamInventoryItem) => {
     setSelectedItems([item]);
     setCurrentStep(1);
   };
 
-  const handleTradeCreated = (trade: { trade_id: string; token: string; status: string; total_value: number; expires_at: Date }) => {
+  const handleTradeCreated = (trade: { 
+    trade_id: string; 
+    token: string; 
+    status: string; 
+    total_value: number; 
+    net_value: number;
+    fees: { cashout_fee: number; network_fee: number };
+    expires_at: Date;
+  }) => {
     setTradeData(trade);
     setCurrentStep(2);
-    toast.success("Trade créé avec succès !");
+    toast.success("Vente créée avec succès !");
   };
 
   const formatPrice = (centimes: number) => {
@@ -74,9 +90,9 @@ export default function SellPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-6 sm:mb-6 sm:mb-8"
+          className="text-center mb-6 sm:mb-8"
         >
-          <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
             Vendre vos skins CS2
           </h1>
           <p className="text-muted-foreground">Vendez vos skins Counter-Strike 2 instantanément et recevez votre argent rapidement</p>
@@ -140,16 +156,16 @@ export default function SellPage() {
           transition={{ duration: 0.4 }}
         >
           {currentStep === 0 && (
-            <InventoryViewer
-              steamId={user.steamId64}
+            <SteamInventoryViewer
+              steamId64={user.steamId64}
               onItemSelect={handleItemSelect}
               selectable={true}
             />
           )}
 
           {currentStep === 1 && (
-            <TradeCreator
-              steamId={user.steamId64}
+            <SteamTradeCreator
+              steamId64={user.steamId64}
               selectedItems={selectedItems}
               onTradeCreated={handleTradeCreated}
             />
@@ -170,16 +186,32 @@ export default function SellPage() {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">
-                        ID du trade:
+                        ID de la vente:
                       </span>
                       <p className="font-mono">{tradeData.trade_id}</p>
                     </div>
                     <div>
                       <span className="text-muted-foreground">
-                        Valeur totale:
+                        Valeur brute:
+                      </span>
+                      <p className="font-medium">
+                        {formatPrice(tradeData.total_value)}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">
+                        Frais totaux:
+                      </span>
+                      <p className="font-medium text-orange-600">
+                        -{formatPrice(tradeData.fees.cashout_fee + tradeData.fees.network_fee)}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">
+                        Vous recevrez:
                       </span>
                       <p className="font-bold text-green-600">
-                        {formatPrice(tradeData.total_value)}
+                        {formatPrice(tradeData.net_value)}
                       </p>
                     </div>
                   </div>

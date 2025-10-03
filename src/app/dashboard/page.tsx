@@ -7,9 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuth } from "@/components/providers/auth-provider";
+// import { useAuth } from "@/components/providers/auth-provider";
+import { useSession } from "@/lib/auth-client";
 import { useLocale } from "@/components/providers/locale-provider";
 import { Messages } from "@/lib/i18n";
+import { User } from "~/utils/types";
 import {
   mockTrades,
   mockVolumeData,
@@ -59,10 +61,16 @@ const getStatusText = (status: string, messages: Messages) => {
 };
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { data, isPending, error } = useSession();
+  console.log("useSession data:", data);
+  console.log("useSession isPending:", isPending);
+  console.log("useSession error:", error);
+  
   const { messages } = useLocale();
 
-  if (!user) {
+  const user = data?.user as User;
+
+  if (!data || !user) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
@@ -83,12 +91,12 @@ export default function DashboardPage() {
     );
   }
 
-  const currentLevel = user.level;
+  const currentLevel = user?.level || 0;
   const nextLevel = currentLevel + 1;
   const xpForCurrentLevel = currentLevel * 1000;
   const xpForNextLevel = nextLevel * 1000;
   const xpProgress =
-    ((user.xp - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel)) *
+    ((user?.xp || 0 - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel)) *
     100;
 
   return (
@@ -103,14 +111,14 @@ export default function DashboardPage() {
         >
           <div className="flex items-center space-x-3 sm:space-x-4 mb-6">
             <Avatar className="w-16 h-16">
-              <AvatarImage src={user.avatar} alt={user.username} />
+              <AvatarImage src={user?.image} alt={user?.name} />
               <AvatarFallback>
-                {user.username.slice(0, 2).toUpperCase()}
+                {user?.name?.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold">
-                {messages.dashboard.welcome}, {user.username}
+                {messages.dashboard.welcome}, {user?.name}
               </h1>
               <p className="text-muted-foreground">
                 {messages.dashboard.subtitle}
@@ -127,17 +135,17 @@ export default function DashboardPage() {
                   <div>
                     <h3 className="font-semibold">{messages.dashboard.currentLevel} {currentLevel}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {user.xp - xpForCurrentLevel} /{" "}
+                      {user?.xp || 0 - xpForCurrentLevel} /{" "}
                       {xpForNextLevel - xpForCurrentLevel} {messages.dashboard.xp}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold">
-                    {user.xp.toLocaleString()} {messages.dashboard.xp}
+                    {user?.xp?.toLocaleString()} {messages.dashboard.xp}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {xpForNextLevel - user.xp} {messages.dashboard.xpForNext} {nextLevel}
+                    {xpForNextLevel - (user?.xp || 0)} {messages.dashboard.xpForNext} {nextLevel}
                   </p>
                 </div>
               </div>
@@ -160,7 +168,7 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">{messages.dashboard.volume}</p>
                   <p className="text-2xl font-bold">
                     <CountUp
-                      end={user.totalVolume / 100}
+                      end={user?.totalVolumeCents || 0 / 100}
                       duration={2}
                       decimals={2}
                       suffix="€"
@@ -191,7 +199,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{messages.dashboard.level}</p>
-                  <p className="text-2xl font-bold">{user.level}</p>
+                  <p className="text-2xl font-bold">{user?.level || 0}</p>
                 </div>
                 <StarIcon className="w-8 h-8 text-yellow-500" />
               </div>
@@ -203,7 +211,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{messages.dashboard.tickets}</p>
-                  <p className="text-2xl font-bold">{user.tickets}</p>
+                  <p className="text-2xl font-bold">{user?.tickets || 0}</p>
                 </div>
                 <TicketIcon className="w-8 h-8 text-purple-500" />
               </div>
@@ -452,19 +460,19 @@ export default function DashboardPage() {
                   <CardContent className="space-y-3 sm:space-y-4">
                     <div className="flex items-center space-x-3 sm:space-x-4">
                       <Avatar className="w-16 h-16">
-                        <AvatarImage src={user.avatar} alt={user.username} />
+                        <AvatarImage src={user?.image || ""} alt={user?.name || ""} />
                         <AvatarFallback>
-                          {user.username.slice(0, 2).toUpperCase()}
+                          {user?.name?.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <h3 className="font-semibold">{user.username}</h3>
+                        <h3 className="font-semibold">{user?.name}</h3>
                         <p className="text-sm text-muted-foreground">
-                          Steam ID: {user.steamId64}
+                          Steam ID: {user?.steamId}
                         </p>
                         <Badge variant="secondary" className="mt-1">
                           KYC{" "}
-                          {user.kycStatus === "verified"
+                          {user?.kycStatus === "APPROVED"
                             ? messages.kyc.approved
                             : messages.kyc.pending}
                         </Badge>

@@ -1,7 +1,12 @@
-import { createAuthClient } from "better-auth/client";
+"use client";
+
+import { createAuthClient } from "better-auth/react";
+import { inferAdditionalFields } from "better-auth/client/plugins";
+import type { auth } from "./auth";
 
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+  plugins: [inferAdditionalFields<typeof auth>()],
 });
 
 // Helper functions pour l'authentification
@@ -17,21 +22,6 @@ export const signInWithDiscord = async () => {
   }
 };
 
-export const signOut = async () => {
-  try {
-    await authClient.signOut();
-  } catch (error) {
-    console.error("Sign-out error:", error);
-    throw error;
-  }
-};
 
-export const getSession = async () => {
-  try {
-    const session = await authClient.getSession();
-    return session;
-  } catch (error) {
-    console.error("Get session error:", error);
-    return null;
-  }
-};
+export const { signIn, signUp, signOut, useSession, getSession } = authClient;
+

@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/lib/types';
-import { AuthService } from '@/lib/auth-service';
 import { signInWithDiscord, signOut, getSession } from '@/lib/auth-client';
 
 interface AuthContextType {
@@ -27,32 +26,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Vérifier Better Auth session
         const sessionData = await getSession();
         if (sessionData?.data?.user) {
-          // Convertir Better Auth user vers notre type User
-          const betterAuthUser = sessionData.data.user;
-          const convertedUser: User = {
-            id: betterAuthUser.id,
-            steamId64: '', // Sera rempli lors de la liaison Steam
-            username: betterAuthUser.name || 'Discord User',
-            avatar: betterAuthUser.image || '',
-            level: 1, // Valeurs par défaut pour les nouveaux utilisateurs
-            xp: 0,
-            tickets: 0,
-            totalVolume: 0,
-            kycStatus: 'pending',
-            acceptedTermsAt: new Date(),
-            joinedAt: betterAuthUser.createdAt,
-          };
-          setUser(convertedUser);
-        } else {
-          // Fallback vers l'ancien système Steam (mock)
-          const currentUser = AuthService.getCurrentUser();
-          setUser(currentUser);
+          // Récupérer les données complètes de l'utilisateur depuis notre API
+          const response = await fetch('/api/user/profile');
+          if (response.ok) {
+            const userData = await response.json();
+            setUser(userData);
+          } else {
+            // Fallback avec les données de base de Better Auth
+            const betterAuthUser = sessionData.data.user;
+            const convertedUser: User = {
+              id: betterAuthUser.id,
+              steamId64: '', // Sera rempli par l'API
+              username: betterAuthUser.name || 'User',
+              avatar: betterAuthUser.image || '',
+              level: 1,
+              xp: 0,
+              tickets: 0,
+              totalVolume: 0,
+              kycStatus: 'pending',
+              acceptedTermsAt: new Date(),
+              joinedAt: betterAuthUser.createdAt,
+            };
+            setUser(convertedUser);
+          }
         }
       } catch (error) {
         console.error('Session check error:', error);
-        // Fallback vers l'ancien système
-        const currentUser = AuthService.getCurrentUser();
-        setUser(currentUser);
       } finally {
         setIsLoading(false);
       }
@@ -90,19 +89,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await signOut();
+      setUser(null);
     } catch (error) {
       console.error('Logout error:', error);
+      // En cas d'erreur, forcer la déconnexion côté client
+      setUser(null);
     }
-    
-    // Fallback vers l'ancien système
-    AuthService.logout();
-    setUser(null);
   };
 
   const updateUser = async (updates: Partial<User>): Promise<User> => {
-    const updatedUser = await AuthService.updateUser(updates);
-    setUser(updatedUser);
-    return updatedUser;
+    if (!user) throw new Error('No user to update');
+    
+    try {
+      // Mettre à jour via l'API Better Auth ou directement en base
+      const response = await fetch('/api/user/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      
+      if (!response.ok) throw new Error('Failed to update user');
+      
+      const updatedUser = await response.json();
+      setUser(updatedUser);
+      return updatedUser;
+    } catch (error) {
+      console.error('Update user error:', error);
+      throw error;
+    }
   };
 
   return (

@@ -4,80 +4,209 @@ import { motion } from "framer-motion";
 
 export default function Loading() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        {/* Logo animé */}
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="text-center relative max-w-md mx-auto px-6">
+        
+        {/* Logo principal avec animation */}
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
+          initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="mb-12"
         >
           <div className="relative">
-            <div className="h-16 w-16 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mx-auto">
-              <span className="text-white font-bold text-xl">CS</span>
+            {/* Logo CashTrade */}
+            <div className="relative bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl p-6 shadow-2xl">
+              <div className="text-white font-bold text-3xl tracking-wider">
+                CASH<span className="text-yellow-300">TRADE</span>
+              </div>
+              
+              {/* Effet de brillance */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-2xl"
+                animate={{ x: ["-100%", "200%"] }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatDelay: 1,
+                  ease: "easeInOut"
+                }}
+              />
             </div>
 
-            {/* Animation de rotation */}
+            {/* Particules flottantes */}
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-2 h-2 bg-orange-400 rounded-full"
+                style={{
+                  left: `${20 + i * 15}%`,
+                  top: `${10 + (i % 2) * 80}%`,
+                }}
+                animate={{
+                  y: [0, -20, 0],
+                  opacity: [0.3, 1, 0.3],
+                  scale: [0.5, 1, 0.5]
+                }}
+                transition={{
+                  duration: 2 + i * 0.3,
+                  repeat: Infinity,
+                  delay: i * 0.4,
+                }}
+              />
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Animation CS Style - Crosshair rotatif */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mb-8 relative"
+        >
+          <div className="w-20 h-20 mx-auto relative">
+            {/* Crosshair principal */}
             <motion.div
-              className="absolute inset-0 border-4 border-orange-500/30 rounded-lg"
+              className="absolute inset-0 flex items-center justify-center"
               animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            >
+              {/* Lignes du crosshair */}
+              <div className="absolute w-8 h-0.5 bg-orange-500 rounded-full" />
+              <div className="absolute w-0.5 h-8 bg-orange-500 rounded-full" />
+              
+              {/* Points aux extrémités */}
+              <div className="absolute w-1 h-1 bg-orange-500 rounded-full" style={{ top: '20%', left: '50%', transform: 'translateX(-50%)' }} />
+              <div className="absolute w-1 h-1 bg-orange-500 rounded-full" style={{ bottom: '20%', left: '50%', transform: 'translateX(-50%)' }} />
+              <div className="absolute w-1 h-1 bg-orange-500 rounded-full" style={{ left: '20%', top: '50%', transform: 'translateY(-50%)' }} />
+              <div className="absolute w-1 h-1 bg-orange-500 rounded-full" style={{ right: '20%', top: '50%', transform: 'translateY(-50%)' }} />
+            </motion.div>
+
+            {/* Cercle extérieur */}
+            <motion.div
+              className="absolute inset-0 border-2 border-orange-500/30 rounded-full"
+              animate={{ 
+                scale: [1, 1.2, 1],
+                opacity: [0.3, 0.8, 0.3]
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+              }}
             />
+
+            {/* Point central */}
+            <div className="absolute top-1/2 left-1/2 w-1 h-1 bg-orange-500 rounded-full transform -translate-x-1/2 -translate-y-1/2" />
           </div>
         </motion.div>
 
         {/* Texte de chargement */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="mb-8"
         >
-          <h2 className="text-xl font-semibold mb-2">CashTrade</h2>
-          <p className="text-muted-foreground">Chargement en cours...</p>
+          <motion.h2 
+            className="text-xl font-semibold mb-2 text-foreground"
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            Chargement en cours
+          </motion.h2>
+          <p className="text-muted-foreground text-sm">
+            Préparation de votre inventaire...
+          </p>
         </motion.div>
 
-        {/* Barre de progression animée */}
+        {/* Barre de progression moderne */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-8 w-48 mx-auto"
+          initial={{ opacity: 0, scaleX: 0 }}
+          animate={{ opacity: 1, scaleX: 1 }}
+          transition={{ duration: 1, delay: 0.8 }}
+          className="w-full max-w-xs mx-auto"
         >
-          <div className="h-1 bg-muted rounded-full overflow-hidden">
+          <div className="h-2 bg-muted rounded-full overflow-hidden relative">
             <motion.div
-              className="h-full bg-gradient-to-r from-orange-500 to-red-600 rounded-full"
-              animate={{ x: ["-100%", "100%"] }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeInOut",
+              className="h-full bg-gradient-to-r from-orange-500 to-red-600 rounded-full relative"
+              animate={{ 
+                width: ["0%", "100%", "0%"]
               }}
-              style={{ width: "30%" }}
-            />
+              transition={{
+                duration: 2.5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              {/* Effet de brillance sur la barre */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                animate={{ x: ["-100%", "100%"] }}
+                transition={{
+                  duration: 1,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+              />
+            </motion.div>
           </div>
         </motion.div>
 
-        {/* Points animés */}
+        {/* Indicateurs de statut */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="flex justify-center space-x-1 mt-6"
+          transition={{ delay: 1 }}
+          className="mt-8 flex justify-center space-x-6 text-sm text-muted-foreground"
         >
-          {[0, 1, 2].map((i) => (
+          {[
+            { label: "Steam", delay: 0 },
+            { label: "Inventaire", delay: 0.5 },
+            { label: "Skins", delay: 1 }
+          ].map((item, i) => (
+            <motion.div
+              key={item.label}
+              className="flex items-center space-x-2"
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                delay: item.delay
+              }}
+            >
+              <div className="w-2 h-2 bg-green-500 rounded-full" />
+              <span>{item.label}</span>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Animation de fond subtile */}
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          {[...Array(3)].map((_, i) => (
             <motion.div
               key={i}
-              className="w-2 h-2 bg-orange-500 rounded-full"
-              animate={{ scale: [1, 1.2, 1] }}
+              className="absolute w-32 h-32 border border-orange-500/10 rounded-full"
+              style={{
+                left: `${20 + i * 30}%`,
+                top: `${30 + i * 20}%`,
+              }}
+              animate={{
+                scale: [1, 1.5, 1],
+                opacity: [0.1, 0.3, 0.1]
+              }}
               transition={{
-                duration: 0.8,
+                duration: 4 + i,
                 repeat: Infinity,
-                delay: i * 0.2,
+                delay: i * 1.5,
               }}
             />
           ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   );
