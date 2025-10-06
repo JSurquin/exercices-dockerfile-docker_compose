@@ -111,6 +111,7 @@ export async function GET(request: NextRequest) {
 
     // Créer la réponse avec redirection
     const redirectUrl = new URL('/dashboard', request.url);
+    redirectUrl.searchParams.set('steam_login', 'success');
     const response = NextResponse.redirect(redirectUrl.toString());
 
     // Copier TOUS les cookies de la réponse Better Auth

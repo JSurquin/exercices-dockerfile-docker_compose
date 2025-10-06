@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -32,13 +33,25 @@ export default function AdminLoginPage() {
 
       if (result.error) {
         setError(result.error.message || 'Erreur de connexion');
+        toast.error('Échec de la connexion', {
+          description: result.error.message || 'Vérifiez vos identifiants',
+        });
         return;
       }
+
+      // Succès de la connexion
+      toast.success('Connexion réussie !', {
+        description: 'Bienvenue dans le panel d\'administration',
+      });
 
       // Rediriger vers le dashboard admin
       router.push('/admin/dashboard');
     } catch (err) {
-      setError('Erreur de connexion. Vérifiez vos identifiants.');
+      const errorMessage = 'Erreur de connexion. Vérifiez vos identifiants.';
+      setError(errorMessage);
+      toast.error('Erreur de connexion', {
+        description: errorMessage,
+      });
     } finally {
       setLoading(false);
     }

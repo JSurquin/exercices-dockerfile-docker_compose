@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/lib/types';
 import { signInWithDiscord, signOut, getSession } from '@/lib/auth-client';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   user: User | null;
@@ -63,12 +64,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithSteam = async (): Promise<User> => {
     setIsLoading(true);
     try {
+      toast.loading('Connexion Steam en cours...', {
+        description: 'Redirection vers Steam',
+      });
+      
       // Rediriger vers l'authentification Steam
       window.location.href = '/api/auth/steam/login';
       // Ce code ne sera jamais atteint car on redirige
       return {} as User;
     } catch (error) {
       setIsLoading(false);
+      toast.error('Erreur de connexion Steam', {
+        description: 'Impossible de se connecter avec Steam',
+      });
       throw error;
     }
   };
@@ -76,10 +84,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithDiscord = async (): Promise<void> => {
     setIsLoading(true);
     try {
+      toast.loading('Connexion Discord en cours...', {
+        description: 'Redirection vers Discord',
+      });
+      
       await signInWithDiscord();
       // Better Auth gère la redirection automatiquement
+      
+      toast.success('Connexion Discord réussie !', {
+        description: 'Bienvenue sur CashTrade',
+      });
     } catch (error) {
       console.error('Discord login error:', error);
+      toast.error('Erreur de connexion Discord', {
+        description: 'Impossible de se connecter avec Discord',
+      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -90,10 +109,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await signOut();
       setUser(null);
+      toast.success('Déconnexion réussie', {
+        description: 'À bientôt sur CashTrade !',
+      });
     } catch (error) {
       console.error('Logout error:', error);
       // En cas d'erreur, forcer la déconnexion côté client
       setUser(null);
+      toast.error('Erreur lors de la déconnexion', {
+        description: 'Vous avez été déconnecté',
+      });
     }
   };
 

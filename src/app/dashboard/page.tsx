@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +14,7 @@ import { useSession } from "@/lib/auth-client";
 import { useLocale } from "@/components/providers/locale-provider";
 import { Messages } from "@/lib/i18n";
 import { User } from "~/utils/types";
+import { toast } from "sonner";
 import {
   mockTrades,
   mockVolumeData,
@@ -62,9 +65,26 @@ const getStatusText = (status: string, messages: Messages) => {
 
 export default function DashboardPage() {
   const { data, isPending, error } = useSession();
+  const searchParams = useSearchParams();
+  
   console.log("useSession data:", data);
   console.log("useSession isPending:", isPending);
   console.log("useSession error:", error);
+
+  // Vérifier si c'est une connexion Steam réussie
+  useEffect(() => {
+    if (searchParams.get('steam_login') === 'success') {
+      toast.success('Connexion Steam réussie !', {
+        description: `Bienvenue ${data?.user?.name || 'sur CashTrade'} !`,
+        duration: 4000,
+      });
+      
+      // Nettoyer l'URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete('steam_login');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams, data?.user?.name]);
   
   const { messages } = useLocale();
 
