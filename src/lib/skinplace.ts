@@ -10,6 +10,7 @@ import {
   SkinplaceListingsResponse,
   SkinplaceError
 } from './types';
+import { logger } from './logger';
 
 // Configuration Skinplace
 const SKINPLACE_BASE_URL = process.env.SKINPLACE_API_URL || 'https://api.skin.place';
@@ -54,6 +55,7 @@ class SkinplaceService {
     if (useCache) {
       const cached = cache.get(cacheKey) as { data: T; timestamp: number } | undefined;
       if (cached && Date.now() - cached.timestamp < SKINPLACE_CACHE_TTL) {
+        logger.debug(`Cache hit for ${endpoint}`);
         return cached.data;
       }
     }
@@ -68,6 +70,12 @@ class SkinplaceService {
 
     let lastError: Error | null = null;
 
+    // Log de la requête
+    logger.api(options.method || 'GET', endpoint);
+    if (options.body) {
+      logger.debug('Request body:', JSON.parse(options.body as string));
+    }
+
     for (let attempt = 1; attempt <= this.config.retryAttempts; attempt++) {
       try {
         const controller = new AbortController();
@@ -81,8 +89,12 @@ class SkinplaceService {
 
         clearTimeout(timeoutId);
 
+        // Log de la réponse
+        logger.api(options.method || 'GET', endpoint, response.status);
+
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
+          logger.error(`Skinplace API error (${response.status})`, errorData);
           throw new Error(
             `Skinplace API Error: ${response.status} ${response.statusText} - ${errorData.message || 'Unknown error'}`
           );
@@ -90,9 +102,13 @@ class SkinplaceService {
 
         const data = await response.json();
 
+        // Log de la réponse réussie avec les données
+        logger.api(options.method || 'GET', endpoint, response.status, data);
+
         // Mettre en cache si demandé
         if (useCache && (data as { success?: boolean }).success !== false) {
           cache.set(cacheKey, { data: data as unknown, timestamp: Date.now() });
+          logger.debug(`Cached response for ${endpoint}`);
         }
 
         return data as T;
@@ -100,8 +116,10 @@ class SkinplaceService {
         lastError = error as Error;
         
         if (attempt < this.config.retryAttempts) {
-          console.warn(`Tentative ${attempt} échouée pour ${endpoint}:`, error);
+          logger.warn(`Attempt ${attempt} failed for ${endpoint}, retrying in ${this.config.retryDelay * attempt}ms...`, lastError.message);
           await new Promise(resolve => setTimeout(resolve, this.config.retryDelay * attempt));
+        } else {
+          logger.error(`All ${this.config.retryAttempts} attempts failed for ${endpoint}`, lastError);
         }
       }
     }

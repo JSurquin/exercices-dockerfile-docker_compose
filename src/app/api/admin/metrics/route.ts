@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '../../../../../prisma/prisma';
 import { skinplaceService } from '@/lib/skinplace';
+import { logger } from '@/lib/logger';
 import { subHours, subDays } from 'date-fns';
 
 export async function GET(request: NextRequest) {
@@ -159,6 +160,7 @@ export async function GET(request: NextRequest) {
     // Statistiques Skinplace en temps réel
     let skinplaceMetrics = null;
     try {
+      logger.info('Fetching Skinplace metrics...');
       const [balance, recentHistory] = await Promise.all([
         skinplaceService.getBalance(),
         skinplaceService.getInstantHistory(1, 5)
@@ -171,9 +173,13 @@ export async function GET(request: NextRequest) {
           lastUpdated: new Date().toISOString(), // Utiliser timestamp actuel
           recentTransactions: recentHistory.success ? (recentHistory.data?.items?.length || 0) : 0
         };
+        logger.success('Skinplace metrics fetched successfully', { 
+          balance: balance.data.balance, 
+          transactions: skinplaceMetrics.recentTransactions 
+        });
       }
     } catch (error) {
-      console.warn('Erreur Skinplace metrics:', error);
+      logger.error('Error fetching Skinplace metrics', error);
     }
 
     // Alertes système

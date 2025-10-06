@@ -2,20 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '../../../../../prisma/prisma';
 import { skinplaceService } from '@/lib/skinplace';
+import { logger } from '@/lib/logger';
 import { startOfDay, endOfDay, subDays, format } from 'date-fns';
 
 export async function GET(request: NextRequest) {
   try {
+    logger.info('Analytics API called');
+    
     const session = await auth.api.getSession({
       headers: request.headers,
     });
 
     if (!session?.user || session.user.role !== 'ADMIN') {
+      logger.warn('Unauthorized analytics access attempt');
       return NextResponse.json(
         { success: false, error: 'Accès refusé' },
         { status: 403 }
       );
     }
+
+    logger.info('Admin analytics access granted', { userId: session.user.id });
 
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || '30'; // Période en jours
@@ -89,12 +95,12 @@ export async function GET(request: NextRequest) {
       trades: bigint;
     }>>`
       SELECT 
-        DATE(created_at) as date,
-        COALESCE(SUM(gross_cents), 0) as volume,
+        DATE("createdAt") as date,
+        COALESCE(SUM("grossCents"), 0) as volume,
         COUNT(*) as trades
       FROM "Trade"
-      WHERE created_at >= ${startDate} AND created_at <= ${endDate}
-      GROUP BY DATE(created_at)
+      WHERE "createdAt" >= ${startDate} AND "createdAt" <= ${endDate}
+      GROUP BY DATE("createdAt")
       ORDER BY date ASC
     `;
 
@@ -104,11 +110,11 @@ export async function GET(request: NextRequest) {
       users: bigint;
     }>>`
       SELECT 
-        DATE(created_at) as date,
+        DATE("createdAt") as date,
         COUNT(*) as users
       FROM "user"
-      WHERE created_at >= ${startDate} AND created_at <= ${endDate}
-      GROUP BY DATE(created_at)
+      WHERE "createdAt" >= ${startDate} AND "createdAt" <= ${endDate}
+      GROUP BY DATE("createdAt")
       ORDER BY date ASC
     `;
 
