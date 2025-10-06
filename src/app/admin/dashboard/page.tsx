@@ -173,10 +173,10 @@ export default function AdminDashboard() {
             <TabsContent value="overview" className="mt-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Graphique des volumes */}
-                <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+                <Card className="bg-slate-800/50 border-2 border-cyan-500/50 backdrop-blur-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all duration-300">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center gap-2">
-                      <ChartBarIcon className="h-5 w-5 text-orange-500" />
+                      <ChartBarIcon className="h-5 w-5 text-cyan-400" />
                       Volume des Trades (7 derniers jours)
                     </CardTitle>
                   </CardHeader>
@@ -206,10 +206,10 @@ export default function AdminDashboard() {
                 </Card>
 
                 {/* Répartition des statuts */}
-                <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+                <Card className="bg-slate-800/50 border-2 border-purple-500/50 backdrop-blur-sm shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 transition-all duration-300">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center gap-2">
-                      <UsersIcon className="h-5 w-5 text-orange-500" />
+                      <UsersIcon className="h-5 w-5 text-purple-400" />
                       Répartition des Trades
                     </CardTitle>
                   </CardHeader>
@@ -239,17 +239,17 @@ export default function AdminDashboard() {
               </div>
 
               {/* Activité récente */}
-              <Card className="mt-6 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <Card className="mt-6 bg-slate-800/50 border-2 border-emerald-500/50 backdrop-blur-sm shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <ClockIcon className="h-5 w-5 text-orange-500" />
+                    <ClockIcon className="h-5 w-5 text-emerald-400" />
                     Activité Récente
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {mockTrades.slice(0, 5).map((trade) => (
-                      <div key={trade.id} className="flex items-center justify-between p-4 bg-slate-900/50 rounded-lg border border-slate-700">
+                      <div key={trade.id} className="flex items-center justify-between p-4 bg-slate-900/50 rounded-lg border border-slate-600/50 hover:border-emerald-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10">
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10">
                             <AvatarImage src={mockUser.avatar} />
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
 
             {/* Trades */}
             <TabsContent value="trades" className="mt-6">
-              <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <Card className="bg-slate-800/50 border-2 border-blue-500/50 backdrop-blur-sm shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="text-white">Gestion des Trades</CardTitle>
                   <div className="text-slate-300">
@@ -290,7 +290,7 @@ export default function AdminDashboard() {
 
             {/* Utilisateurs */}
             <TabsContent value="users" className="mt-6">
-              <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <Card className="bg-slate-800/50 border-2 border-indigo-500/50 backdrop-blur-sm shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="text-white">Gestion des Utilisateurs</CardTitle>
                   <div className="text-slate-300">
@@ -305,7 +305,7 @@ export default function AdminDashboard() {
 
             {/* Paiements */}
             <TabsContent value="payouts" className="mt-6">
-              <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <Card className="bg-slate-800/50 border-2 border-yellow-500/50 backdrop-blur-sm shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/40 transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="text-white">Gestion des Paiements</CardTitle>
                   <div className="text-slate-300">
@@ -320,7 +320,7 @@ export default function AdminDashboard() {
 
             {/* KYC */}
             <TabsContent value="kyc" className="mt-6">
-              <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <Card className="bg-slate-800/50 border-2 border-red-500/50 backdrop-blur-sm shadow-lg shadow-red-500/20 hover:shadow-red-500/40 transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="text-white">Validation KYC</CardTitle>
                   <div className="text-slate-300">
@@ -340,7 +340,7 @@ export default function AdminDashboard() {
 
             {/* Exports */}
             <TabsContent value="exports" className="mt-6">
-              <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <Card className="bg-slate-800/50 border-2 border-pink-500/50 backdrop-blur-sm shadow-lg shadow-pink-500/20 hover:shadow-pink-500/40 transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="text-white">Exports de Données</CardTitle>
                   <div className="text-slate-300">

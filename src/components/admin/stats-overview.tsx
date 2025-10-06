@@ -77,12 +77,12 @@ export function AdminStatsOverview() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {/* Total Utilisateurs */}
-      <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
+      <Card className="bg-slate-800/50 border-2 border-blue-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
             Total Utilisateurs
           </CardTitle>
-          <Users className="h-4 w-4 text-slate-400" />
+          <Users className="h-4 w-4 text-blue-400" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-white">
@@ -95,12 +95,12 @@ export function AdminStatsOverview() {
       </Card>
 
       {/* Total Trades */}
-      <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
+      <Card className="bg-slate-800/50 border-2 border-emerald-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
             Total Trades
           </CardTitle>
-          <ShoppingCart className="h-4 w-4 text-slate-400" />
+          <ShoppingCart className="h-4 w-4 text-emerald-400" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-white">
@@ -115,12 +115,12 @@ export function AdminStatsOverview() {
       </Card>
 
       {/* Volume Total */}
-      <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
+      <Card className="bg-slate-800/50 border-2 border-yellow-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
             Volume Total
           </CardTitle>
-          <Euro className="h-4 w-4 text-slate-400" />
+          <Euro className="h-4 w-4 text-yellow-400" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-white">
@@ -133,12 +133,12 @@ export function AdminStatsOverview() {
       </Card>
 
       {/* Paiements */}
-      <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
+      <Card className="bg-slate-800/50 border-2 border-purple-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
             Paiements
           </CardTitle>
-          <TrendingUp className="h-4 w-4 text-slate-400" />
+          <TrendingUp className="h-4 w-4 text-purple-400" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-white">
@@ -156,12 +156,12 @@ export function AdminStatsOverview() {
       </Card>
 
       {/* KYC Status */}
-      <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
+      <Card className="bg-slate-800/50 border-2 border-red-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-red-500/20 hover:shadow-red-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
             KYC En Attente
           </CardTitle>
-          <Shield className="h-4 w-4 text-slate-400" />
+          <Shield className="h-4 w-4 text-red-400" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-white">
@@ -184,12 +184,12 @@ export function AdminStatsOverview() {
       </Card>
 
       {/* Taux de Réussite */}
-      <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
+      <Card className="bg-slate-800/50 border-2 border-green-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-green-500/20 hover:shadow-green-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
             Taux de Réussite
           </CardTitle>
-          <CheckCircle className="h-4 w-4 text-slate-400" />
+          <CheckCircle className="h-4 w-4 text-green-400" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-white">
@@ -204,12 +204,12 @@ export function AdminStatsOverview() {
       </Card>
 
       {/* Top Utilisateur */}
-      <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
+      <Card className="bg-slate-800/50 border-2 border-orange-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
             Top Utilisateur
           </CardTitle>
-          <Users className="h-4 w-4 text-slate-400" />
+          <Users className="h-4 w-4 text-orange-400" />
         </CardHeader>
         <CardContent>
           <div className="text-lg font-bold text-white truncate">
@@ -222,12 +222,12 @@ export function AdminStatsOverview() {
       </Card>
 
       {/* Trades Récents */}
-      <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
+      <Card className="bg-slate-800/50 border-2 border-cyan-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
             Trades Récents
           </CardTitle>
-          <Clock className="h-4 w-4 text-slate-400" />
+          <Clock className="h-4 w-4 text-cyan-400" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-white">
