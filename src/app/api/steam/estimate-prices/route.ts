@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         try {
           // Simulation d'appel à Skinplace pour l'estimation
           // Remplacez par l'endpoint réel de Skinplace
-          const response = await fetch(`https://api.skinplace.com/v1/items/price?market_hash_name=${encodeURIComponent(marketHashName)}`, {
+          const response = await fetch(`https://api.skin.place/v1/items/price?market_hash_name=${encodeURIComponent(marketHashName)}`, {
             headers: {
               'Authorization': `Bearer ${skinplaceApiKey}`,
               'Content-Type': 'application/json',

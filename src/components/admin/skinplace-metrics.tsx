@@ -20,6 +20,8 @@ interface SkinplaceMetrics {
   balance?: {
     balance: number;
     currency: string;
+    available_balance: number;
+    pending_balance: number;
     last_updated: string;
   };
   recentTransactions: number;
@@ -220,36 +222,55 @@ export function AdminSkinplaceMetrics() {
             {/* Solde */}
             {metrics?.balance && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-slate-900/50 rounded-lg">
-                  <p className="text-sm text-slate-400 mb-1">Solde Disponible</p>
-                  <p className="text-2xl font-bold text-slate-100">
-                    {metrics.balance.balance.toFixed(2)} {metrics.balance.currency}
+                <div className="text-center p-4 bg-slate-900/50 rounded-lg border-l-4 border-green-500">
+                  <p className="text-sm text-slate-400 mb-1">Solde Total</p>
+                  <p className="text-2xl font-bold text-green-400">
+                    {metrics.balance.balance?.toFixed(2) || '0.00'} €
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">Disponible</p>
+                </div>
+
+                <div className="text-center p-4 bg-slate-900/50 rounded-lg border-l-4 border-yellow-500">
+                  <p className="text-sm text-slate-400 mb-1">En Hold</p>
+                  <p className="text-2xl font-bold text-yellow-400">
+                    {metrics.balance.pending_balance?.toFixed(2) || '0.00'} €
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">En attente</p>
+                </div>
+
+                <div className="text-center p-4 bg-slate-900/50 rounded-lg border-l-4 border-blue-500">
+                  <p className="text-sm text-slate-400 mb-1">Dépôts</p>
+                  <p className="text-2xl font-bold text-blue-400">
+                    {metrics.balance.available_balance?.toFixed(2) || '0.00'} €
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
                     MAJ: {new Date(metrics.balance.last_updated).toLocaleString('fr-FR')}
                   </p>
                 </div>
-
-                <div className="text-center p-4 bg-slate-900/50 rounded-lg">
-                  <p className="text-sm text-slate-400 mb-1">Transactions Récentes</p>
-                  <p className="text-2xl font-bold text-slate-100">
-                    {metrics.recentTransactions}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">Dernières 24h</p>
-                </div>
-
-                <div className="text-center p-4 bg-slate-900/50 rounded-lg">
-                  <p className="text-sm text-slate-400 mb-1">Statut API</p>
-                  <div className="flex items-center justify-center gap-2 mt-2">
-                    {getStatusIcon(metrics.apiStatus)}
-                    <span className={`text-sm font-medium ${getStatusColor(metrics.apiStatus)}`}>
-                      {metrics.apiStatus === 'online' ? 'Opérationnel' : 
-                       metrics.apiStatus === 'offline' ? 'Indisponible' : 'Erreur'}
-                    </span>
-                  </div>
-                </div>
               </div>
             )}
+
+            {/* Métriques supplémentaires */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="text-center p-4 bg-slate-900/50 rounded-lg">
+                <p className="text-sm text-slate-400 mb-1">Transactions Récentes</p>
+                <p className="text-2xl font-bold text-slate-100">
+                  {metrics?.recentTransactions || 0}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">Dernières 24h</p>
+              </div>
+
+              <div className="text-center p-4 bg-slate-900/50 rounded-lg">
+                <p className="text-sm text-slate-400 mb-1">Statut API</p>
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  {getStatusIcon(metrics?.apiStatus || 'offline')}
+                  <span className={`text-sm font-medium ${getStatusColor(metrics?.apiStatus || 'offline')}`}>
+                    {metrics?.apiStatus === 'online' ? 'Opérationnel' : 
+                     metrics?.apiStatus === 'offline' ? 'Indisponible' : 'Erreur'}
+                  </span>
+                </div>
+              </div>
+            </div>
 
             {/* Hold Orders */}
             {metrics?.holdOrders && (
@@ -297,7 +318,7 @@ export function AdminSkinplaceMetrics() {
             {/* Liens utiles */}
             <div className="flex gap-2 pt-2">
               <Button variant="outline" size="sm" asChild>
-                <a href="https://skinplace.com" target="_blank" rel="noopener noreferrer">
+                <a href="https://skin.place" target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Dashboard Skinplace
                 </a>

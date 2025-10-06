@@ -166,15 +166,15 @@ export async function GET(request: NextRequest) {
         skinplaceService.getInstantHistory(1, 5)
       ]);
 
-      if (balance.success && balance.data) {
+      if (balance.status === 'success' && balance.data) {
         skinplaceMetrics = {
-          balance: balance.data.balance,
-          currency: balance.data.currency,
+          balance: balance.data.total,
+          currency: 'EUR',
           lastUpdated: new Date().toISOString(), // Utiliser timestamp actuel
-          recentTransactions: recentHistory.success ? (recentHistory.data?.items?.length || 0) : 0
+          recentTransactions: recentHistory.status === 'success' ? (recentHistory.data?.length || 0) : 0
         };
         logger.success('Skinplace metrics fetched successfully', { 
-          balance: balance.data.balance, 
+          balance: balance.data.total, 
           transactions: skinplaceMetrics.recentTransactions 
         });
       }

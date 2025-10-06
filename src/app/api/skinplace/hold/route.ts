@@ -1,48 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { skinplaceService, handleSkinplaceError } from '@/lib/skinplace';
 import { auth } from '@/lib/auth';
+import { skinplaceService } from '@/lib/skinplace';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
-    // Vérifier l'authentification
+    logger.info('Skinplace hold API called');
+    
     const session = await auth.api.getSession({
       headers: request.headers,
     });
 
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Non authentifié' },
-        { status: 401 }
-      );
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      logger.warn('Unauthorized Skinplace hold access attempt');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') || 'orders';
+    logger.info('Admin Skinplace hold access granted', { userId: session.user.id });
 
-    let holdData;
+    // Récupérer les hold orders Skinplace
+    const hold = await skinplaceService.getHoldOrders();
 
-    switch (type) {
-      case 'orders':
-        holdData = await skinplaceService.getHoldOrders();
-        break;
-      case 'grouped':
-        holdData = await skinplaceService.getHoldOrdersGrouped();
-        break;
-      case 'full':
-        holdData = await skinplaceService.getHoldOrdersFull();
-        break;
-      default:
-        return NextResponse.json(
-          { error: 'Type invalide. Utilisez: orders, grouped, ou full' },
-          { status: 400 }
-        );
+    if (hold.status !== 'success') {
+      logger.error('Failed to fetch Skinplace hold orders', hold);
+      return NextResponse.json({
+        success: false,
+        error: 'Impossible de récupérer les hold orders Skinplace'
+      }, { status: 500 });
     }
 
-    return NextResponse.json(holdData);
+    logger.success('Skinplace hold orders fetched successfully', {
+      orders: hold.data?.length || 0
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        orders: hold.data || [],
+        total_value: 0,
+        total_orders: hold.data?.length || 0
+      }
+    });
+
   } catch (error) {
-    console.error('Erreur lors de la récupération des hold orders:', error);
-    
-    const skinplaceError = handleSkinplaceError(error);
-    return NextResponse.json(skinplaceError, { status: 500 });
+    logger.error('Error in Skinplace hold API', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Erreur serveur'
+    }, { status: 500 });
   }
 }

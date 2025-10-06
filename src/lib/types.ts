@@ -293,12 +293,11 @@ export interface SkinplacePurchaseResponse {
 }
 
 export interface SkinplaceBalanceResponse {
-  success: boolean;
+  status: 'success' | 'error';
   data: {
-    balance: number; // en centimes
-    currency: string;
-    available_balance: number;
-    pending_balance: number;
+    total: number; // solde total
+    deposit: number; // dépôts
+    hold: number; // en attente
   };
   error?: string;
 }
@@ -315,14 +314,8 @@ export interface SkinplaceHistoryItem {
 }
 
 export interface SkinplaceHistoryResponse {
-  success: boolean;
-  data: {
-    items: SkinplaceHistoryItem[];
-    total_items: number;
-    page: number;
-    limit: number;
-    has_more: boolean;
-  };
+  status: 'success' | 'error';
+  data: SkinplaceHistoryItem[]; // Array direct, pas d'objet wrapper
   error?: string;
 }
 
@@ -337,12 +330,8 @@ export interface SkinplaceHoldOrder {
 }
 
 export interface SkinplaceHoldResponse {
-  success: boolean;
-  data: {
-    orders: SkinplaceHoldOrder[];
-    total_orders: number;
-    total_value: number;
-  };
+  status: 'success' | 'error';
+  data: SkinplaceHoldOrder[]; // Array direct, pas d'objet wrapper
   error?: string;
 }
 

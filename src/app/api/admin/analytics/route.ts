@@ -160,8 +160,8 @@ export async function GET(request: NextRequest) {
       ]);
 
       skinplaceStats = {
-        balance: balance.success ? balance.data : null,
-        recentTransactions: history.success ? (history.data?.items?.slice(0, 5) || []) : []
+        balance: balance.status === 'success' ? balance.data : null,
+        recentTransactions: history.status === 'success' ? (history.data?.slice(0, 5) || []) : []
       };
     } catch (error) {
       console.warn('Erreur lors de la récupération des stats Skinplace:', error);
