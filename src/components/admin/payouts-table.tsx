@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,11 +31,7 @@ export function AdminPayoutsTable() {
   });
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchPayouts();
-  }, [filters]);
-
-  const fetchPayouts = async () => {
+  const fetchPayouts = useCallback(async () => {
     try {
       setIsLoading(true);
       const params = new URLSearchParams();
@@ -61,7 +57,11 @@ export function AdminPayoutsTable() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filters, searchTerm]);
+
+  useEffect(() => {
+    fetchPayouts();
+  }, [fetchPayouts]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);

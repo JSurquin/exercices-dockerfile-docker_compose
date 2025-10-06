@@ -72,7 +72,24 @@ async function main() {
   
   for (const userData of testUsers) {
     try {
-      // Utiliser upsert pour créer ou mettre à jour l'utilisateur
+      // D'abord créer le compte avec Better Auth
+      const signUpResponse = await fetch('http://localhost:3000/api/auth/sign-up/email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: userData.email,
+          password: userData.password,
+          name: userData.name,
+        }),
+      });
+
+      if (!signUpResponse.ok) {
+        console.log(`⚠️ Utilisateur ${userData.email} existe peut-être déjà, tentative de mise à jour...`);
+      }
+
+      // Ensuite mettre à jour avec les données complètes via Prisma
       const user = await prisma.user.upsert({
         where: { email: userData.email },
         update: {
@@ -87,6 +104,7 @@ async function main() {
           totalVolumeCents: userData.totalVolumeCents,
           kycStatus: userData.kycStatus as KycStatus,
           acceptedTermsAt: userData.acceptedTermsAt,
+          emailVerified: true, // Marquer comme vérifié pour les tests
         },
         create: {
           email: userData.email,
@@ -101,6 +119,7 @@ async function main() {
           totalVolumeCents: userData.totalVolumeCents,
           kycStatus: userData.kycStatus as KycStatus,
           acceptedTermsAt: userData.acceptedTermsAt,
+          emailVerified: true, // Marquer comme vérifié pour les tests
         },
       });
 

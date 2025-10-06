@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,11 +32,7 @@ export function AdminKYCManagement() {
   });
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchKYCDocuments();
-  }, [filters]);
-
-  const fetchKYCDocuments = async () => {
+  const fetchKYCDocuments = useCallback(async () => {
     try {
       setIsLoading(true);
       const params = new URLSearchParams();
@@ -62,7 +58,11 @@ export function AdminKYCManagement() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filters, searchTerm]);
+
+  useEffect(() => {
+    fetchKYCDocuments();
+  }, [fetchKYCDocuments]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);

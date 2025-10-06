@@ -30,12 +30,16 @@ import {
 } from "@heroicons/react/24/outline";
 import { Locale, locales } from "@/lib/i18n";
 import { CS2Logo } from "@/components/ui/cs2-icons";
+import { useSession } from "@/lib/auth-client";
 
 export function Header() {
   const { user, loginWithSteam, loginWithDiscord, logout, isLoading } = useAuth();
   const { locale, setLocale, messages } = useLocale();
   const { theme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const {data: session} = useSession();
+
+  const isAdmin = session?.user?.role === "ADMIN";
 
   const navigation = [
     { name: messages.nav.home, href: "/", icon: HomeIcon },
@@ -181,10 +185,10 @@ export function Header() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard">Dashboard</Link>
+                  <Link href={isAdmin ? "/admin/dashboard" : "/dashboard"}>Dashboard</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/settings">{messages.nav.settings}</Link>
+                  <Link href={isAdmin ? "/admin/settings" : "/settings"}>{messages.nav.settings}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout} className="text-red-600">

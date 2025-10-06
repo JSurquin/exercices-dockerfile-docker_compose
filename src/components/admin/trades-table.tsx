@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,11 +29,7 @@ export function AdminTradesTable() {
   });
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchTrades();
-  }, [filters]);
-
-  const fetchTrades = async () => {
+  const fetchTrades = useCallback(async () => {
     try {
       setIsLoading(true);
       const params = new URLSearchParams();
@@ -59,7 +55,11 @@ export function AdminTradesTable() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filters, searchTerm]);
+
+  useEffect(() => {
+    fetchTrades();
+  }, [fetchTrades]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);

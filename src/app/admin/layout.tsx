@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from '@/lib/auth-client';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,12 +15,22 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const { data: session, isPending } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Si on est sur la page de login, pas de vérification
+  const isLoginPage = pathname === '/admin/login';
 
   useEffect(() => {
-    if (!isPending && (!session?.user || session.user.role !== 'ADMIN')) {
-      router.push('/dashboard');
+    if (!isLoginPage && !isPending && (!session?.user || session.user.role !== 'ADMIN')) {
+      // Rediriger vers la page de connexion admin au lieu du dashboard
+      router.push('/admin/login');
     }
-  }, [session, isPending, router]);
+  }, [session, isPending, router, isLoginPage]);
+
+  // Si on est sur la page de login, afficher directement le contenu
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   // Affichage du loading pendant la vérification
   if (isPending) {
@@ -50,9 +60,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </CardHeader>
           <CardContent className="text-center">
             <Button asChild variant="outline" className="w-full">
-              <Link href="/dashboard" className="flex items-center justify-center gap-2">
+              <Link href="/admin/login" className="flex items-center justify-center gap-2">
                 <ArrowLeft className="w-4 h-4" />
-                Retour au dashboard
+                Connexion Admin
               </Link>
             </Button>
           </CardContent>

@@ -12,7 +12,7 @@ import {
 } from './types';
 
 // Configuration Skinplace
-const SKINPLACE_BASE_URL = process.env.SKINPLACE_API_URL || 'https://api.skinplace.com';
+const SKINPLACE_BASE_URL = process.env.SKINPLACE_API_URL || 'https://api.skin.place';
 const SKINPLACE_API_KEY = process.env.SKINPLACE_API_KEY;
 const SKINPLACE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 

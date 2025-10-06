@@ -13,10 +13,12 @@ import { AdminUsersTable } from '@/components/admin/users-table';
 import { AdminPayoutsTable } from '@/components/admin/payouts-table';
 import { AdminKYCManagement } from '@/components/admin/kyc-management';
 import { AdminExports } from '@/components/admin/exports';
+import { AdminAnalyticsCharts } from '@/components/admin/analytics-charts';
+import { AdminSkinplaceMetrics } from '@/components/admin/skinplace-metrics';
 
 export default function AdminDashboard() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -46,6 +48,11 @@ export default function AdminDashboard() {
         <Suspense fallback={<StatsOverviewSkeleton />}>
           <AdminStatsOverview />
         </Suspense>
+
+        {/* Skinplace Metrics */}
+        <div className="mt-8">
+          <AdminSkinplaceMetrics />
+        </div>
 
         {/* Main Content Tabs */}
         <div className="mt-8">
@@ -136,20 +143,7 @@ export default function AdminDashboard() {
             </TabsContent>
 
             <TabsContent value="analytics" className="mt-6">
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Analytics Avancées</CardTitle>
-                  <CardDescription className="text-slate-300">
-                    Graphiques et analyses détaillées de la plateforme
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-12">
-                    <TrendingUp className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                    <p className="text-slate-300">Analytics en cours de développement...</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <AdminAnalyticsCharts />
             </TabsContent>
 
             <TabsContent value="exports" className="mt-6">

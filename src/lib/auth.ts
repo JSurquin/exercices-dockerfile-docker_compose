@@ -6,16 +6,6 @@ import { prisma } from "../../prisma/prisma";
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
-    // selectUserFields: {
-    //   id: true,
-    //   email: true, 
-    //   name: true,
-    //   emailVerified: true,
-    //   image: true,
-    //   createdAt: true,
-    //   updatedAt: true,
-    //   role: true, // 👈 indispensable pour récupérer après login
-    // },
   }),
    socialProviders: {
      discord: {
@@ -27,22 +17,15 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
    },
-  // Configuration de base pour CashTrade
-  session: {
+   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 jours
     updateAge: 60 * 60 * 24, // 1 jour
-    additionalFields: {
-      role: {
-        type: "string",
-        defaultValue: "USER", // USER, ADMIN
-      },
-    },
-  },
+   },
   user: {
     additionalFields: {
       role: {
         type: "string",
-        defaultValue: "USER", // USER, ADMIN
+        defaultValue: "USER",
       },
       steamId: {
         type: "string",
@@ -81,22 +64,9 @@ export const auth = betterAuth({
         required: false,
       },
     },
+    modelName: "user",
   },
-  // Configuration simplifiée sans champs additionnels pour le moment
   trustedOrigins: [process.env.NEXT_PUBLIC_BASE_URL!],
-
-  selectUserFields: {
-    id: true,
-    email: true, 
-    name: true,
-    emailVerified: true,
-    image: true,
-    createdAt: true,
-    updatedAt: true,
-    role: true, // 👈 indispensable pour récupérer après login
-     },
-
-  // Configuration explicite du secret
   secret: process.env.BETTER_AUTH_SECRET!,
 
   plugins: [nextCookies()],
@@ -109,4 +79,3 @@ export type AuthUser = typeof auth.$Infer.Session.user & {
 export type Session = Omit<typeof auth.$Infer.Session, "user"> & {
   user: AuthUser;
 };
-// export type AuthUser = typeof auth.$Infer.Session.user;
