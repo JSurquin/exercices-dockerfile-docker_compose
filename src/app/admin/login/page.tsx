@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Shield, Eye, EyeOff, Loader2, Mail, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { authClient } from '@/lib/auth-client';
+
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -18,6 +20,9 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,6 +59,36 @@ export default function AdminLoginPage() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotPasswordLoading(true);
+
+    try {
+      const { data, error } = await authClient.requestPasswordReset({
+        email: forgotPasswordEmail,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}password/reset-password`,
+      });
+
+      if (data) {
+        toast.success('Email envoyé !', {
+          description: 'Vérifiez votre boîte mail pour réinitialiser votre mot de passe',
+        });
+        setShowForgotPassword(false);
+        setForgotPasswordEmail('');
+      } else {
+        toast.error('Erreur', {
+          description: error.message || 'Impossible d\'envoyer l\'email',
+        });
+      }
+    } catch (error) {
+      toast.error('Erreur', {
+        description: 'Impossible d\'envoyer l\'email de réinitialisation',
+      });
+    } finally {
+      setForgotPasswordLoading(false);
     }
   };
 
@@ -153,6 +188,19 @@ export default function AdminLoginPage() {
                   </>
                 )}
               </Button>
+
+              {/* Mot de passe oublié */}
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-slate-400 hover:text-slate-300 text-sm"
+                >
+                  Mot de passe oublié ?
+                </Button>
+              </div>
             </form>
 
             {/* Séparateur */}
@@ -198,6 +246,80 @@ export default function AdminLoginPage() {
           </p>
         </div>
       </div>
+
+      {/* Modal Mot de passe oublié */}
+      {showForgotPassword && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-slate-800 border-slate-700">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-orange-500" />
+                  <CardTitle className="text-white">Mot de passe oublié</CardTitle>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowForgotPassword(false)}
+                  className="text-slate-400 hover:text-slate-300"
+                >
+                  ×
+                </Button>
+              </div>
+              <CardDescription className="text-slate-400">
+                Entrez votre adresse email pour recevoir un lien de réinitialisation
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="forgot-email" className="text-slate-300">
+                    Email administrateur
+                  </Label>
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    value={forgotPasswordEmail}
+                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                    placeholder="admin@cashtrade.com"
+                    required
+                    className="bg-slate-900/50 border-slate-600 text-slate-100 placeholder:text-slate-500"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowForgotPassword(false)}
+                    className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Annuler
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={forgotPasswordLoading}
+                    className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
+                  >
+                    {forgotPasswordLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Envoi...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="mr-2 h-4 w-4" />
+                        Envoyer
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

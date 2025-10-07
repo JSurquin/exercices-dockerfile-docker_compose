@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "../../prisma/prisma";
+import { emailService } from "./email";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -16,6 +17,14 @@ export const auth = betterAuth({
    emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
+    sendResetPassword: async ({user, url, token}, request) => {
+      await emailService.sendPasswordResetEmail(user.email, token, user.name || user.email);
+    },
+    onPasswordReset: async ({ user }, request) => {
+      await emailService.sendPasswordSuccessResetEmail(user.email, user.name || user.email);
+    },
+
+    
    },
    session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 jours
@@ -69,7 +78,9 @@ export const auth = betterAuth({
   trustedOrigins: [process.env.NEXT_PUBLIC_BASE_URL!],
   secret: process.env.BETTER_AUTH_SECRET!,
 
-  plugins: [nextCookies()],
+  plugins: [
+    nextCookies(),
+  ],
 });
 
 export type AuthUser = typeof auth.$Infer.Session.user & {
