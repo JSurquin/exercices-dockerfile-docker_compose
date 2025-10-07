@@ -1,5 +1,5 @@
 import { AffiliateService } from '@/lib/affiliate-service';
-import { prisma } from '@/prisma/prisma';
+import { prisma } from '../../prisma/prisma';
 
 /**
  * Service pour gérer les hooks et événements liés aux trades

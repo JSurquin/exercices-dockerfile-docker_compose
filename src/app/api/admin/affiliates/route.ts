@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AffiliateService } from '@/lib/affiliate-service';
-import { prisma } from '@/prisma/prisma';
+import { prisma } from '../../../../../prisma/prisma';
 
 export async function GET(request: NextRequest) {
   try {

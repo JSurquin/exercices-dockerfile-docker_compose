@@ -114,14 +114,22 @@ export interface AffiliateStats {
   userId: string;
   code: string;
   totalReferrals: number;
-  totalVolumeCentimes: number;
-  totalCommissionCentimes: number;
+  totalVolumeCents: number;
+  totalCommissionCents: number;
   commissionRate: number; // 0.02 pour 2%
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
   referrals?: AffiliateReferral[];
   commissions?: AffiliateCommission[];
+  // Propriétés optionnelles pour l'UI
+  metrics?: {
+    totalPendingCommissions: number;
+    totalPaidCommissions: number;
+    conversionRate: number;
+    averageOrderValue: number;
+  };
+  recentReferrals?: AffiliateReferral[];
 }
 
 export interface AffiliateReferral {

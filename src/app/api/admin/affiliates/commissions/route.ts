@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/prisma/prisma';
+import { prisma } from '../../../../../../prisma/prisma';
 
 export async function GET(request: NextRequest) {
   try {
@@ -89,13 +89,13 @@ export async function GET(request: NextRequest) {
           total,
           pages: Math.ceil(total / limit)
         },
-        statusTotals: statusTotals.reduce((acc, item) => {
+        statusTotals: statusTotals.reduce((acc: Record<string, { count: number; total: number }>, item: any) => {
           acc[item.status] = {
             count: item._count.id,
             total: item._sum.amountCents || 0
           };
           return acc;
-        }, {} as Record<string, { count: number; total: number }>)
+        }, {})
       }
     });
     

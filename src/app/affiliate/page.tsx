@@ -33,7 +33,18 @@ export default function AffiliatePage() {
       const data = await response.json();
 
       if (data.success) {
-        setAffiliateData(data.data);
+        // Ajouter les propriétés manquantes pour la compatibilité
+        const affiliateDataWithMetrics = {
+          ...data.data,
+          metrics: data.data.metrics || {
+            totalPendingCommissions: 0,
+            totalPaidCommissions: 0,
+            conversionRate: 0,
+            averageOrderValue: 0
+          },
+          recentReferrals: data.data.recentReferrals || []
+        };
+        setAffiliateData(affiliateDataWithMetrics);
         loadCommissions();
       } else if (response.status === 404) {
         // Pas encore affilié
@@ -276,9 +287,9 @@ export default function AffiliatePage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(affiliateData.totalVolumeCents)}
-            </div>
+                <div className="text-2xl font-bold">
+                  {formatCurrency(affiliateData.totalVolumeCents)}
+                </div>
           </CardContent>
         </Card>
 
@@ -393,7 +404,7 @@ export default function AffiliatePage() {
             <CardContent>
               {affiliateData.recentReferrals?.length ? (
                 <div className="space-y-4">
-                  {affiliateData.recentReferrals.map((referral) => (
+                  {affiliateData.recentReferrals.map((referral: any) => (
                     <div key={referral.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-3">
                         <img 

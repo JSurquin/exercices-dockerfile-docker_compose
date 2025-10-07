@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { prisma } from '@/prisma/prisma';
+import { prisma } from '../../prisma/prisma';
 import { AffiliateStats, AffiliateReferral, AffiliateCommission } from '@/lib/types';
 
 export class AffiliateService {
@@ -54,14 +54,14 @@ export class AffiliateService {
       data: { role: 'AFFILIATE' }
     });
     
-    return affiliateStats as AffiliateStats;
+    return affiliateStats as any;
   }
   
   /**
    * Récupère le code d'affiliation depuis les cookies
    */
-  static getAffiliateRefFromCookies(): string | null {
-    const cookieStore = cookies();
+  static async getAffiliateRefFromCookies(): Promise<string | null> {
+    const cookieStore = await cookies();
     return cookieStore.get('ctf_affiliate_ref')?.value || null;
   }
   
@@ -69,7 +69,7 @@ export class AffiliateService {
    * Associe un utilisateur à un affilié lors de l'inscription
    */
   static async associateUserToAffiliate(userId: string, affiliateCode?: string): Promise<void> {
-    const refCode = affiliateCode || this.getAffiliateRefFromCookies();
+    const refCode = affiliateCode || await this.getAffiliateRefFromCookies();
     
     if (!refCode) return;
     
@@ -215,7 +215,7 @@ export class AffiliateService {
       }
     });
     
-    return stats as AffiliateStats | null;
+    return stats as any;
   }
   
   /**
@@ -242,7 +242,7 @@ export class AffiliateService {
       orderBy: { createdAt: 'desc' }
     });
     
-    return commissions as AffiliateCommission[];
+    return commissions as any;
   }
   
   /**
@@ -290,6 +290,6 @@ export class AffiliateService {
       take: limit
     });
     
-    return affiliates as AffiliateStats[];
+    return affiliates as any;
   }
 }

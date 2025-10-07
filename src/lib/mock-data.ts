@@ -155,10 +155,12 @@ export const mockAffiliateStats: AffiliateStats = {
   userId: mockUser.steamId64,
   code: 'PROGAMER2024',
   totalReferrals: 24,
-  totalVolumeCentimes: 456789, // 4567.89€
-  totalCommissionCentimes: 9135, // 91.35€
+  totalVolumeCents: 456789, // 4567.89€
+  totalCommissionCents: 9135, // 91.35€
   commissionRate: 0.02, // 2%
   isActive: true,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 // Données pour les statistiques du dashboard

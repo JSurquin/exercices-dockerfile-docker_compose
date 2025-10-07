@@ -7,10 +7,6 @@ ALTER TYPE "UserRole" ADD VALUE 'AFFILIATE';
 -- AlterTable
 ALTER TABLE "user" ADD COLUMN "referredByAffiliateId" TEXT;
 
--- AlterTable
-ALTER TABLE "affiliate_stats" ADD COLUMN "referrals" TEXT[],
-ADD COLUMN "commissions" TEXT[];
-
 -- CreateTable
 CREATE TABLE "AffiliateReferral" (
     "id" TEXT NOT NULL,
