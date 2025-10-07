@@ -118,6 +118,35 @@ export interface AffiliateStats {
   totalCommissionCentimes: number;
   commissionRate: number; // 0.02 pour 2%
   isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  referrals?: AffiliateReferral[];
+  commissions?: AffiliateCommission[];
+}
+
+export interface AffiliateReferral {
+  id: string;
+  affiliateId: string;
+  referredUserId: string;
+  tradeId?: string;
+  volumeCents: number;
+  commissionCents: number;
+  createdAt: Date;
+  referredUser?: User;
+  trade?: Trade;
+}
+
+export interface AffiliateCommission {
+  id: string;
+  affiliateId: string;
+  referralId?: string;
+  amountCents: number;
+  status: 'PENDING' | 'APPROVED' | 'PAID' | 'CANCELLED';
+  payoutId?: string;
+  createdAt: Date;
+  paidAt?: Date;
+  referral?: AffiliateReferral;
+  payout?: Payout;
 }
 
 // Types Stripe

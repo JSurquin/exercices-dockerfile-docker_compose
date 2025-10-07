@@ -1,4 +1,4 @@
-export type UserRole = "ADMIN" | "USER";
+export type UserRole = "ADMIN" | "USER" | "AFFILIATE";
 export type KycStatus = "PENDING" | "APPROVED" | "REJECTED";
 export type AffiliateStats = {
   totalReferrals: number;

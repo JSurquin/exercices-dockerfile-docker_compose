@@ -40,12 +40,14 @@ export function Header() {
   const {data: session} = useSession();
 
   const isAdmin = session?.user?.role === "ADMIN";
+  const isAffiliate = session?.user?.role === "AFFILIATE";
 
   const navigation = [
     { name: messages.nav.home, href: "/", icon: HomeIcon },
     { name: messages.nav.sell, href: "/sell", icon: CurrencyDollarIcon },
     { name: messages.nav.dashboard, href: "/dashboard", icon: ChartBarIcon },
     { name: messages.nav.giveaways, href: "/giveaways", icon: GiftIcon },
+    ...(isAffiliate ? [{ name: "Affiliation", href: "/affiliate", icon: UserCircleIcon }] : []),
     {
       name: messages.nav.support,
       href: "/support",

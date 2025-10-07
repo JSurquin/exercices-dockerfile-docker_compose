@@ -38,6 +38,8 @@ import { AdminKYCManagement } from '@/components/admin/kyc-management';
 import { AdminExports } from '@/components/admin/exports';
 import { AdminAnalyticsCharts } from '@/components/admin/analytics-charts';
 import { AdminSkinplaceMetrics } from '@/components/admin/skinplace-metrics';
+import AffiliatesManagement from '@/components/admin/affiliates-management';
+import AffiliateCommissions from '@/components/admin/affiliate-commissions';
 
 const formatPrice = (centimes: number) => {
   return (centimes / 100).toFixed(2) + '€';
@@ -124,7 +126,7 @@ export default function AdminDashboard() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-7 bg-slate-800/50 backdrop-blur-sm border border-slate-700">
+            <TabsList className="grid w-full grid-cols-9 bg-slate-800/50 backdrop-blur-sm border border-slate-700">
               <TabsTrigger 
                 value="overview" 
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
@@ -166,6 +168,18 @@ export default function AdminDashboard() {
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
               >
                 Exports
+              </TabsTrigger>
+              <TabsTrigger 
+                value="affiliates" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
+              >
+                Affiliés
+              </TabsTrigger>
+              <TabsTrigger 
+                value="commissions" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
+              >
+                Commissions
               </TabsTrigger>
             </TabsList>
 
@@ -349,6 +363,36 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <AdminExports />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Affiliés */}
+            <TabsContent value="affiliates" className="mt-6">
+              <Card className="bg-slate-800/50 border-2 border-green-500/50 backdrop-blur-sm shadow-lg shadow-green-500/20 hover:shadow-green-500/40 transition-all duration-300">
+                <CardHeader>
+                  <CardTitle className="text-white">Gestion des Affiliés</CardTitle>
+                  <div className="text-slate-300">
+                    Administration des comptes affiliés et de leurs performances
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <AffiliatesManagement />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Commissions */}
+            <TabsContent value="commissions" className="mt-6">
+              <Card className="bg-slate-800/50 border-2 border-teal-500/50 backdrop-blur-sm shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 transition-all duration-300">
+                <CardHeader>
+                  <CardTitle className="text-white">Commissions d'Affiliation</CardTitle>
+                  <div className="text-slate-300">
+                    Validation et paiement des commissions générées par les affiliés
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <AffiliateCommissions />
                 </CardContent>
               </Card>
             </TabsContent>

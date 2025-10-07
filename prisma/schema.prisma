@@ -9,31 +9,33 @@ datasource db {
 }
 
 model User {
-  id               String          @id @default(cuid())
-  email            String          @unique
-  emailVerified    Boolean         @default(false)
-  name             String?
-  image            String?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  role             UserRole        @default(USER)
-  steamId          String?         @unique
-  steamUsername    String?
-  steamAvatar      String?
-  level            Int             @default(1)
-  xp               Int             @default(0)
-  tickets          Int             @default(0)
-  totalVolumeCents Int             @default(0)
-  kycStatus        KycStatus       @default(PENDING)
-  acceptedTermsAt  DateTime?
-  affiliateStats   AffiliateStats?
-  giveawayEntries  GiveawayEntry[]
-  kycDocuments     KycDocument[]
-  paymentMethods   PaymentMethod[]
-  payouts          Payout[]
-  trades           Trade[]
-  accounts         Account[]
-  sessions         Session[]
+  id                    String               @id @default(cuid())
+  email                 String               @unique
+  emailVerified         Boolean              @default(false)
+  name                  String?
+  image                 String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  role                  UserRole             @default(USER)
+  steamId               String?              @unique
+  steamUsername         String?
+  steamAvatar           String?
+  level                 Int                  @default(1)
+  xp                    Int                  @default(0)
+  tickets               Int                  @default(0)
+  totalVolumeCents      Int                  @default(0)
+  kycStatus             KycStatus            @default(PENDING)
+  acceptedTermsAt       DateTime?
+  referredByAffiliateId String?
+  affiliateStats        AffiliateStats?
+  giveawayEntries       GiveawayEntry[]
+  kycDocuments          KycDocument[]
+  paymentMethods        PaymentMethod[]
+  payouts               Payout[]
+  trades                Trade[]
+  accounts              Account[]
+  sessions              Session[]
+  referrals             AffiliateReferral[]  @relation("AffiliateReferrals")
 
   @@map("user")
 }
@@ -54,24 +56,25 @@ model AuditLog {
 }
 
 model Trade {
-  id              String      @id @default(cuid())
+  id              String              @id @default(cuid())
   userId          String
-  status          TradeStatus @default(CREATED)
+  status          TradeStatus         @default(CREATED)
   grossCents      Int
   cashoutFees     Int
   networkFees     Int
   steamId         String
   netCents        Int
-  ticketId        String      @unique
+  ticketId        String              @unique
   tradeAcceptedAt DateTime?
   tradeUrl        String?
   expiresAt       DateTime?
   availableAt     DateTime?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
   payouts         Payout[]
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   items           TradeItem[]
+  affiliateReferrals AffiliateReferral[]
 
   @@index([userId])
   @@index([status])
@@ -109,20 +112,21 @@ model PaymentMethod {
 }
 
 model Payout {
-  id               String        @id @default(cuid())
-  userId           String
-  tradeId          String?
-  status           PayoutStatus  @default(PENDING)
-  amountCents      Int
-  paymentMethodId  String
-  paymentReference String?
-  txId             String?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  paidAt           DateTime?
-  paymentMethod    PaymentMethod @relation(fields: [paymentMethodId], references: [id])
-  trade            Trade?        @relation(fields: [tradeId], references: [id])
-  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String                @id @default(cuid())
+  userId                String
+  tradeId               String?
+  status                PayoutStatus          @default(PENDING)
+  amountCents           Int
+  paymentMethodId       String
+  paymentReference      String?
+  txId                  String?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  paidAt                DateTime?
+  paymentMethod         PaymentMethod         @relation(fields: [paymentMethodId], references: [id])
+  trade                 Trade?                @relation(fields: [tradeId], references: [id])
+  user                  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  affiliateCommissions  AffiliateCommission[]
 
   @@index([userId])
   @@index([status])
@@ -145,17 +149,59 @@ model KycDocument {
 }
 
 model AffiliateStats {
-  id                   String   @id @default(cuid())
-  userId               String   @unique
-  code                 String   @unique
-  totalReferrals       Int      @default(0)
-  totalVolumeCents     Int      @default(0)
-  totalCommissionCents Int      @default(0)
-  commissionRate       Float    @default(0.02)
-  isActive             Boolean  @default(true)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                   String               @id @default(cuid())
+  userId               String               @unique
+  code                 String               @unique
+  totalReferrals       Int                  @default(0)
+  totalVolumeCents     Int                  @default(0)
+  totalCommissionCents Int                  @default(0)
+  commissionRate       Float                @default(0.02)
+  isActive             Boolean              @default(true)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  referrals            AffiliateReferral[]
+  commissions          AffiliateCommission[]
+
+  @@index([code])
+  @@index([isActive])
+}
+
+model AffiliateReferral {
+  id            String   @id @default(cuid())
+  affiliateId   String
+  referredUserId String
+  tradeId       String?
+  volumeCents   Int      @default(0)
+  commissionCents Int    @default(0)
+  createdAt     DateTime @default(now())
+  
+  affiliate     AffiliateStats @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  referredUser  User           @relation("AffiliateReferrals", fields: [referredUserId], references: [id], onDelete: Cascade)
+  trade         Trade?         @relation(fields: [tradeId], references: [id])
+
+  @@index([affiliateId])
+  @@index([referredUserId])
+  @@index([createdAt])
+}
+
+model AffiliateCommission {
+  id              String              @id @default(cuid())
+  affiliateId     String
+  referralId      String?
+  amountCents     Int
+  status          AffiliateCommissionStatus @default(PENDING)
+  payoutId        String?
+  createdAt       DateTime            @default(now())
+  paidAt          DateTime?
+  
+  affiliate       AffiliateStats      @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  referral        AffiliateReferral?  @relation(fields: [referralId], references: [id])
+  payout          Payout?             @relation(fields: [payoutId], references: [id])
+
+  @@index([affiliateId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model Giveaway {
@@ -283,4 +329,12 @@ enum GiveawayStatus {
 enum UserRole {
   USER
   ADMIN
+  AFFILIATE
+}
+
+enum AffiliateCommissionStatus {
+  PENDING
+  APPROVED
+  PAID
+  CANCELLED
 }
