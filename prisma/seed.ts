@@ -16,7 +16,7 @@ async function main() {
       level: 25,
       xp: 75000,
       tickets: 150,
-      type: 'ADMIN',  // ADMIN, PRO_TRADER, SKIN_MASTER, COLLECTOR
+      type: 'ADMIN',  // ADMIN, PRO_TRADER, SKIN_MASTER, COLLECTOR, AFFILIATE
       totalVolumeCents: 15000000, // 150,000 € en centimes
       kycStatus: 'VERIFIED',
       acceptedTermsAt: new Date('2024-01-01T00:00:00Z'),
@@ -31,7 +31,7 @@ async function main() {
       level: 18,
       xp: 35000,
       tickets: 85,
-      type: 'PRO_TRADER',  // ADMIN, PRO_TRADER, SKIN_MASTER, COLLECTOR
+      type: 'AFFILIATE',  // Affilié actif avec de bonnes stats
       totalVolumeCents: 5500000, // 55,000 € en centimes
       kycStatus: 'VERIFIED',
       acceptedTermsAt: new Date('2024-01-15T00:00:00Z'),
@@ -46,7 +46,7 @@ async function main() {
       level: 16,
       xp: 28000,
       tickets: 72,
-      type: 'SKIN_MASTER',  // ADMIN, PRO_TRADER, SKIN_MASTER, COLLECTOR
+      type: 'AFFILIATE',  // Affilié actif avec stats moyennes
       totalVolumeCents: 4200000, // 42,000 € en centimes
       kycStatus: 'VERIFIED',
       acceptedTermsAt: new Date('2024-02-20T00:00:00Z'),
@@ -61,10 +61,41 @@ async function main() {
       level: 14,
       xp: 22000,
       tickets: 58,
-      type: 'COLLECTOR',  // ADMIN, PRO_TRADER, SKIN_MASTER, COLLECTOR
+      type: 'USER',  // Utilisateur normal (pas affilié)
       totalVolumeCents: 3100000, // 31,000 € en centimes
       kycStatus: 'PENDING',
       acceptedTermsAt: new Date('2024-03-10T00:00:00Z'),
+    },
+    // Nouveaux affiliés dédiés
+    {
+      email: 'topaffiliate@cashtrade.com',
+      password: 'TopAffiliate2024!',
+      name: 'Top Affiliate CS2',
+      steamId: '76561198000000010',
+      steamUsername: 'TopAffiliate_CS2',
+      steamAvatar: 'https://avatars.steamstatic.com/f1dd60a188883caf82d0cbfccfe6aba0af1732d4_full.jpg',
+      level: 22,
+      xp: 55000,
+      tickets: 120,
+      type: 'AFFILIATE',  // Top affilié
+      totalVolumeCents: 8500000, // 85,000 € en centimes
+      kycStatus: 'VERIFIED',
+      acceptedTermsAt: new Date('2024-01-05T00:00:00Z'),
+    },
+    {
+      email: 'newaffiliate@cashtrade.com',
+      password: 'NewAffiliate2024!',
+      name: 'New Affiliate Pro',
+      steamId: '76561198000000011',
+      steamUsername: 'NewAffiliate_Pro',
+      steamAvatar: 'https://avatars.steamstatic.com/b2c8f0c5aa4644a474a2e4972be27ef94e52a299_full.jpg',
+      level: 8,
+      xp: 12000,
+      tickets: 25,
+      type: 'AFFILIATE',  // Nouvel affilié
+      totalVolumeCents: 850000, // 8,500 € en centimes
+      kycStatus: 'VERIFIED',
+      acceptedTermsAt: new Date('2024-11-01T00:00:00Z'),
     },
   ];
 
@@ -94,7 +125,7 @@ async function main() {
         where: { email: userData.email },
         update: {
           name: userData.name,
-          role: userData.type === 'ADMIN' ? 'ADMIN' : 'USER',
+          role: userData.type === 'ADMIN' ? 'ADMIN' : userData.type === 'AFFILIATE' ? 'AFFILIATE' : 'USER',
           steamId: userData.steamId,
           steamUsername: userData.steamUsername,
           steamAvatar: userData.steamAvatar,
@@ -109,7 +140,7 @@ async function main() {
         create: {
           email: userData.email,
           name: userData.name,
-          role: userData.type === 'ADMIN' ? 'ADMIN' : 'USER',
+          role: userData.type === 'ADMIN' ? 'ADMIN' : userData.type === 'AFFILIATE' ? 'AFFILIATE' : 'USER',
           steamId: userData.steamId,
           steamUsername: userData.steamUsername,
           steamAvatar: userData.steamAvatar,
@@ -124,7 +155,8 @@ async function main() {
       });
 
       users.push(user);
-      console.log(`✅ Utilisateur créé/mis à jour: ${userData.name} (${userData.email}) - Rôle: ${userData.type === 'ADMIN' ? 'ADMIN' : 'USER'}`);
+      const role = userData.type === 'ADMIN' ? 'ADMIN' : userData.type === 'AFFILIATE' ? 'AFFILIATE' : 'USER';
+      console.log(`✅ Utilisateur créé/mis à jour: ${userData.name} (${userData.email}) - Rôle: ${role}`);
     } catch (error) {
       console.log(`❌ Erreur lors de la création/mise à jour de l'utilisateur ${userData.email}:`, error instanceof Error ? error.message : String(error));
     }
@@ -354,7 +386,11 @@ async function main() {
   console.log(`✅ ${kycDocuments.length} documents KYC créés`);
 
   // Créer des statistiques d'affiliation (2% commission selon les règles)
+  const affiliateUsers = users.filter(user => user.role === 'AFFILIATE');
+  console.log(`🎯 Création des stats d'affiliation pour ${affiliateUsers.length} affiliés...`);
+  
   const affiliateStats = await Promise.all([
+    // ProTrader (users[1]) - Affilié expérimenté
     prisma.affiliateStats.upsert({
       where: { userId: users[1].id },
       update: {
@@ -374,6 +410,7 @@ async function main() {
         isActive: true,
       },
     }),
+    // SkinMaster (users[2]) - Affilié actif
     prisma.affiliateStats.upsert({
       where: { userId: users[2].id },
       update: {
@@ -393,9 +430,111 @@ async function main() {
         isActive: true,
       },
     }),
+    // TopAffiliate (users[4]) - Top performer
+    prisma.affiliateStats.upsert({
+      where: { userId: users[4].id },
+      update: {
+        totalReferrals: 45,
+        totalVolumeCents: 2250000, // 22,500€ de volume généré
+        totalCommissionCents: 45000, // 450€ de commission (2%)
+        commissionRate: 0.02,
+        isActive: true,
+      },
+      create: {
+        userId: users[4].id,
+        code: 'TOPAFFILIATE',
+        totalReferrals: 45,
+        totalVolumeCents: 2250000, // 22,500€ de volume généré
+        totalCommissionCents: 45000, // 450€ de commission (2%)
+        commissionRate: 0.02,
+        isActive: true,
+      },
+    }),
+    // NewAffiliate (users[5]) - Débutant
+    prisma.affiliateStats.upsert({
+      where: { userId: users[5].id },
+      update: {
+        totalReferrals: 2,
+        totalVolumeCents: 85000, // 850€ de volume généré
+        totalCommissionCents: 1700, // 17€ de commission (2%)
+        commissionRate: 0.02,
+        isActive: true,
+      },
+      create: {
+        userId: users[5].id,
+        code: 'NEWAFFILIATE',
+        totalReferrals: 2,
+        totalVolumeCents: 85000, // 850€ de volume généré
+        totalCommissionCents: 1700, // 17€ de commission (2%)
+        commissionRate: 0.02,
+        isActive: true,
+      },
+    }),
   ]);
 
   console.log(`✅ ${affiliateStats.length} statistiques d'affiliation créées`);
+
+  // Créer quelques référrals d'affiliation pour rendre les données réalistes
+  console.log(`🔗 Création de référrals d'affiliation...`);
+  
+  const affiliateReferrals = await Promise.all([
+    // Référrals pour ProTrader
+    prisma.affiliateReferral.create({
+      data: {
+        affiliateId: affiliateStats[0].id, // ProTrader
+        referredUserId: users[3].id, // Collector référé par ProTrader
+        tradeId: trades[2].id, // Le trade du collector
+        volumeCents: 8500,
+        commissionCents: 170, // 2% de 8500
+      },
+    }),
+    // Référrals pour TopAffiliate
+    prisma.affiliateReferral.create({
+      data: {
+        affiliateId: affiliateStats[2].id, // TopAffiliate
+        referredUserId: users[5].id, // NewAffiliate référé par TopAffiliate (cross-referral)
+        volumeCents: 85000,
+        commissionCents: 1700, // 2% de 85000
+      },
+    }),
+  ]);
+
+  console.log(`✅ ${affiliateReferrals.length} référrals d'affiliation créés`);
+
+  // Créer quelques commissions d'affiliation
+  console.log(`💰 Création de commissions d'affiliation...`);
+  
+  const affiliateCommissions = await Promise.all([
+    // Commission payée pour ProTrader
+    prisma.affiliateCommission.create({
+      data: {
+        affiliateId: affiliateStats[0].id, // ProTrader
+        referralId: affiliateReferrals[0].id,
+        amountCents: 170,
+        status: 'PAID',
+        paidAt: new Date('2024-12-01T16:00:00Z'),
+      },
+    }),
+    // Commission en attente pour TopAffiliate
+    prisma.affiliateCommission.create({
+      data: {
+        affiliateId: affiliateStats[2].id, // TopAffiliate
+        referralId: affiliateReferrals[1].id,
+        amountCents: 1700,
+        status: 'APPROVED',
+      },
+    }),
+    // Commission en attente pour SkinMaster (sans référral spécifique)
+    prisma.affiliateCommission.create({
+      data: {
+        affiliateId: affiliateStats[1].id, // SkinMaster
+        amountCents: 8400,
+        status: 'PENDING',
+      },
+    }),
+  ]);
+
+  console.log(`✅ ${affiliateCommissions.length} commissions d'affiliation créées`);
 
   // Créer des giveaways avec système de tickets
   const giveaways = await Promise.all([
@@ -476,20 +615,30 @@ async function main() {
 🎉 Seeding CashTrade terminé avec succès !
 
 📊 Résumé :
-- ${users.length} utilisateurs créés/mis à jour
+- ${users.length} utilisateurs créés/mis à jour (${affiliateUsers.length} affiliés)
 - ${paymentMethods.length} méthodes de paiement (SEPA + Crypto)
 - ${trades.length} trades avec différents statuts
 - ${payouts.length} paiements
 - ${kycDocuments.length} documents KYC
-- ${affiliateStats.length} comptes d'affiliation
+- ${affiliateStats.length} comptes d'affiliation avec stats
+- ${affiliateReferrals.length} référrals d'affiliation
+- ${affiliateCommissions.length} commissions d'affiliation
 - ${giveaways.length} giveaways actifs
 - ${giveawayEntries.length} entrées de giveaway
 
 🔐 Comptes de test :
 - admin@cashtrade.com (Admin, KYC vérifié)
-- protrader@cashtrade.com (Trader pro, KYC vérifié, paiement effectué)
-- skinmaster@cashtrade.com (Trader, KYC vérifié, paiement crypto en cours)
-- collector@cashtrade.com (Nouveau, KYC en attente)
+- protrader@cashtrade.com (Affilié expérimenté, 15 référrals, 150€ commission)
+- skinmaster@cashtrade.com (Affilié actif, 8 référrals, 84€ commission)
+- collector@cashtrade.com (Utilisateur normal, KYC en attente)
+- topaffiliate@cashtrade.com (Top affilié, 45 référrals, 450€ commission)
+- newaffiliate@cashtrade.com (Nouvel affilié, 2 référrals, 17€ commission)
+
+🎯 Système d'affiliation complet :
+- Codes d'affiliation : PROTRADER, SKINMASTER, TOPAFFILIATE, NEWAFFILIATE
+- Taux de commission : 2% sur le volume brut
+- Statuts des commissions : PENDING, APPROVED, PAID
+- Référrals avec tracking complet
 
 💰 Tous les montants sont en centimes selon les règles CashTrade
 🎫 Système de gamification avec XP et tickets opérationnel

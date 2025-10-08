@@ -5,7 +5,7 @@ CREATE TYPE "AffiliateCommissionStatus" AS ENUM ('PENDING', 'APPROVED', 'PAID', 
 ALTER TYPE "UserRole" ADD VALUE 'AFFILIATE';
 
 -- AlterTable
-ALTER TABLE "user" ADD COLUMN "referredByAffiliateId" TEXT;
+ALTER TABLE "user" ADD COLUMN     "referredByAffiliateId" TEXT;
 
 -- CreateTable
 CREATE TABLE "AffiliateReferral" (
@@ -53,25 +53,25 @@ CREATE INDEX "AffiliateCommission_status_idx" ON "AffiliateCommission"("status")
 CREATE INDEX "AffiliateCommission_createdAt_idx" ON "AffiliateCommission"("createdAt");
 
 -- CreateIndex
-CREATE INDEX "affiliate_stats_code_idx" ON "affiliate_stats"("code");
+CREATE INDEX "AffiliateStats_code_idx" ON "AffiliateStats"("code");
 
 -- CreateIndex
-CREATE INDEX "affiliate_stats_isActive_idx" ON "affiliate_stats"("isActive");
+CREATE INDEX "AffiliateStats_isActive_idx" ON "AffiliateStats"("isActive");
 
 -- AddForeignKey
-ALTER TABLE "AffiliateReferral" ADD CONSTRAINT "AffiliateReferral_affiliateId_fkey" FOREIGN KEY ("affiliateId") REFERENCES "affiliate_stats"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AffiliateReferral" ADD CONSTRAINT "AffiliateReferral_affiliateId_fkey" FOREIGN KEY ("affiliateId") REFERENCES "AffiliateStats"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AffiliateReferral" ADD CONSTRAINT "AffiliateReferral_referredUserId_fkey" FOREIGN KEY ("referredUserId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AffiliateReferral" ADD CONSTRAINT "AffiliateReferral_tradeId_fkey" FOREIGN KEY ("tradeId") REFERENCES "trade"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "AffiliateReferral" ADD CONSTRAINT "AffiliateReferral_tradeId_fkey" FOREIGN KEY ("tradeId") REFERENCES "Trade"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AffiliateCommission" ADD CONSTRAINT "AffiliateCommission_affiliateId_fkey" FOREIGN KEY ("affiliateId") REFERENCES "affiliate_stats"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AffiliateCommission" ADD CONSTRAINT "AffiliateCommission_affiliateId_fkey" FOREIGN KEY ("affiliateId") REFERENCES "AffiliateStats"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AffiliateCommission" ADD CONSTRAINT "AffiliateCommission_referralId_fkey" FOREIGN KEY ("referralId") REFERENCES "AffiliateReferral"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AffiliateCommission" ADD CONSTRAINT "AffiliateCommission_payoutId_fkey" FOREIGN KEY ("payoutId") REFERENCES "payout"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "AffiliateCommission" ADD CONSTRAINT "AffiliateCommission_payoutId_fkey" FOREIGN KEY ("payoutId") REFERENCES "Payout"("id") ON DELETE SET NULL ON UPDATE CASCADE;
