@@ -1,1230 +1,8 @@
 export const locales = ["fr", "en", "cn"] as const;
 export type Locale = (typeof locales)[number];
+import type { Messages } from "~/utils/types";
 
 export const defaultLocale: Locale = "fr";
-
-export interface Messages {
-  nav: {
-    home: string;
-    sell: string;
-    dashboard: string;
-    giveaways: string;
-    support: string;
-    login: string;
-    logout: string;
-    settings: string;
-    language: string;
-    lightMode: string;
-    darkMode: string;
-  };
-  user: {
-    level: string;
-    xp: string;
-  };
-  hero: {
-    title: string;
-    subtitle: string;
-    cta: string;
-    secondaryCta: string;
-    badge: string;
-    features: {
-      instant: string;
-      secure: string;
-      transparent: string;
-      instantDesc: string;
-      secureDesc: string;
-      transparentDesc: string;
-    };
-    stats: {
-      users: string;
-      volume: string;
-      trades: string;
-      satisfaction: string;
-    };
-    tradeInterface: {
-      estimation: string;
-      totalBrut: string;
-      cashoutFees: string;
-      sepafees: string;
-      totalNet: string;
-    };
-    testimonials: {
-      name: string[];
-      comment: string[];
-      amount: string[];
-    };
-  };
-  trade: {
-    title: string;
-    subtitle: string;
-    tradeLink: string;
-    estimation: string;
-    fees: string;
-    cashoutFee: string;
-    networkFee: string;
-    total: string;
-    confirm: string;
-    timeline: string;
-    loginRequired: string;
-    loginSubtitle: string;
-    steamLogin: string;
-    analyzing: string;
-    confirming: string;
-    created: string;
-    accepted: string;
-    tradeLinkPlaceholder: string;
-    tradeLinkHelp: string;
-    tradeLinkInfo: string;
-    tradeLinkWarning: string;
-    automaticPayment: string;
-    steps: {
-      tradelink: string;
-      estimation: string;
-      confirmation: string;
-    };
-    tradelink: {
-      title: string;
-      helpTitle: string;
-      helpSteps: string[];
-      placeholder: string;
-      important: string;
-      importantText: string;
-      analyzeButton: string;
-      analyzingButton: string;
-    };
-    items: {
-      selected: string;
-      totalBrut: string;
-      cashoutFees: string;
-      networkFees: string;
-      totalNet: string;
-      timeline: string;
-      timelineText: string;
-      confirmButton: string;
-      creatingButton: string;
-    };
-    success: {
-      title: string;
-      subtitle: string;
-      tradeId: string;
-      netAmount: string;
-      followTrade: string;
-      openSteam: string;
-    };
-    status: {
-      créé: string;
-      accepté_par_bot: string;
-      en_trade_hold: string;
-      disponible: string;
-      paiement_en_cours: string;
-      payé: string;
-      échoué: string;
-    };
-  };
-  features: {
-    title: string;
-    subtitle: string;
-    items: {
-      security: {
-        category: string;
-        title: string;
-        description: string;
-        highlights: string[];
-        badge: string;
-      };
-      payments: {
-        category: string;
-        title: string;
-        description: string;
-        highlights: string[];
-        badge: string;
-      };
-      estimation: {
-        category: string;
-        title: string;
-        description: string;
-        highlights: string[];
-        badge: string;
-      };
-      support: {
-        category: string;
-        title: string;
-        description: string;
-        highlights: string[];
-        badge: string;
-      };
-      speed: {
-        category: string;
-        title: string;
-        description: string;
-        highlights: string[];
-        badge: string;
-      };
-      international: {
-        category: string;
-        title: string;
-        description: string;
-        highlights: string[];
-        badge: string;
-      };
-      gamification: {
-        category: string;
-        title: string;
-        description: string;
-        highlights: string[];
-        badge: string;
-      };
-      affiliation: {
-        category: string;
-        title: string;
-        description: string;
-        highlights: string[];
-        badge: string;
-      };
-      analytics: {
-        category: string;
-        title: string;
-        description: string;
-        highlights: string[];
-        badge: string;
-      };
-    };
-    trustIndicators: string;
-  };
-  howItWorks: {
-    title: string;
-    subtitle: string;
-    steps: {
-      addTradeLink: {
-        title: string;
-        description: string;
-        details: string[];
-      };
-      estimation: {
-        title: string;
-        description: string;
-        details: string[];
-      };
-      kyc: {
-        title: string;
-        description: string;
-        details: string[];
-      };
-      tradeHold: {
-        title: string;
-        description: string;
-        details: string[];
-      };
-      payment: {
-        title: string;
-        description: string;
-        details: string[];
-      };
-    };
-    benefits: {
-      automated: {
-        title: string;
-        description: string;
-      };
-      security: {
-        title: string;
-        description: string;
-      };
-      transparent: {
-        title: string;
-        description: string;
-      };
-    };
-    cta: {
-      title: string;
-      description: string;
-      primary: string;
-      secondary: string;
-    };
-  };
-  testimonials: {
-    title: string;
-    subtitle: string;
-    rating: string;
-    basedOn: string;
-    reviews: string;
-    items: {
-      name: string[];
-      comment: string[];
-      amount: string[];
-      items: string[];
-      date: string[];
-    };
-    trustStats: {
-      satisfaction: string;
-      users: string;
-      volume: string;
-      support: string;
-    };
-  };
-    dashboard: {
-      title: string;
-      subtitle: string;
-      welcome: string;
-      stats: string;
-      volume: string;
-      trades: string;
-      xp: string;
-      level: string;
-      tickets: string;
-      history: string;
-      loginRequired: string;
-      loginSubtitle: string;
-      currentLevel: string;
-      nextLevel: string;
-      totalXp: string;
-      xpForNext: string;
-      tabs: {
-        trades: string;
-        analytics: string;
-        payments: string;
-        settings: string;
-      };
-      tradeHistory: {
-        title: string;
-        items: string;
-        fees: string;
-        timeline: string;
-        cashout: string;
-        network: string;
-        accepted: string;
-        available: string;
-        others: string;
-      };
-      analytics: {
-        tradingVolume: string;
-        tradeStatus: string;
-      };
-      payments: {
-        title: string;
-        methods: string;
-        verified: string;
-        default: string;
-        addMethod: string;
-      };
-      settings: {
-        profile: string;
-        security: string;
-        twoFactor: string;
-        twoFactorDesc: string;
-        emailNotifications: string;
-        emailNotificationsDesc: string;
-        enabled: string;
-      };
-    };
-  kyc: {
-    title: string;
-    required: string;
-    upload: string;
-    pending: string;
-    approved: string;
-    rejected: string;
-  };
-  payments: {
-    sepa: string;
-    crypto: string;
-    addMethod: string;
-    verify: string;
-    otp: string;
-  };
-  common: {
-    loading: string;
-    error: string;
-    success: string;
-    cancel: string;
-    continue: string;
-    back: string;
-    connecting: string;
-    online: string;
-    steamLogin: string;
-    confirmed: string;
-    marketplace: string;
-  };
-  toast: {
-    itemsLoadedSuccess: string;
-    itemsLoadError: string;
-    tradeCreatedSuccess: string;
-    tradeCreationError: string;
-    settingsSavedSuccess: string;
-    invalidTradeLink: string;
-    uploaded: string;
-    kycSubmitted: string;
-    saveError: string;
-  };
-  footer: {
-    description: string;
-    securedBy: string;
-    company: string;
-    support: string;
-    legal: string;
-    links: {
-      about: string;
-      blog: string;
-      careers: string;
-      press: string;
-      helpCenter: string;
-      contact: string;
-      status: string;
-      api: string;
-      terms: string;
-      privacy: string;
-      kycPolicy: string;
-      amlPolicy: string;
-    };
-    stats: {
-      activeUsers: string;
-      volumeProcessed: string;
-      tradesCompleted: string;
-      satisfactionRate: string;
-    };
-    disclaimer: string;
-    copyright: string;
-    socialLinks: {
-      discord: string;
-      twitter: string;
-      reddit: string;
-      youtube: string;
-    };
-  };
-  about: {
-    title: string;
-    subtitle: string;
-    mission: {
-      title: string;
-      description1: string;
-      description2: string;
-      description3: string;
-    };
-    values: {
-      title: string;
-      subtitle: string;
-      security: {
-        title: string;
-        description: string;
-      };
-      community: {
-        title: string;
-        description: string;
-      };
-      innovation: {
-        title: string;
-        description: string;
-      };
-      simplicity: {
-        title: string;
-        description: string;
-      };
-    };
-    team: {
-      title: string;
-      subtitle: string;
-      members: {
-        ceo: {
-          name: string;
-          role: string;
-          bio: string;
-        };
-        cto: {
-          name: string;
-          role: string;
-          bio: string;
-        };
-        product: {
-          name: string;
-          role: string;
-          bio: string;
-        };
-        compliance: {
-          name: string;
-          role: string;
-          bio: string;
-        };
-      };
-    };
-    timeline: {
-      title: string;
-      subtitle: string;
-      events: {
-        founding: {
-          year: string;
-          title: string;
-          description: string;
-        };
-        mvp: {
-          year: string;
-          title: string;
-          description: string;
-        };
-        crypto: {
-          year: string;
-          title: string;
-          description: string;
-        };
-        gamification: {
-          year: string;
-          title: string;
-          description: string;
-        };
-        international: {
-          year: string;
-          title: string;
-          description: string;
-        };
-        future: {
-          year: string;
-          title: string;
-          description: string;
-        };
-      };
-    };
-    cta: {
-      title: string;
-      description: string;
-      start: string;
-      discord: string;
-    };
-    stats: {
-      users: string;
-      volume: string;
-      trades: string;
-      countries: string;
-    };
-  };
-  terms: {
-    title: string;
-    subtitle: string;
-    lastUpdated: string;
-    version: string;
-    importantNotice: {
-      title: string;
-      content: string;
-    };
-    tableOfContents: string;
-    sections: {
-      acceptance: {
-        title: string;
-        content: string;
-      };
-      eligibility: {
-        title: string;
-        content: string;
-      };
-      services: {
-        title: string;
-        content: string;
-      };
-      trading: {
-        title: string;
-        content: string;
-      };
-      payments: {
-        title: string;
-        content: string;
-      };
-      kycSection: {
-        title: string;
-        content: string;
-      };
-      security: {
-        title: string;
-        content: string;
-      };
-      restrictions: {
-        title: string;
-        content: string;
-      };
-      liability: {
-        title: string;
-        content: string;
-      };
-      data: {
-        title: string;
-        content: string;
-      };
-      termination: {
-        title: string;
-        content: string;
-      };
-      governing: {
-        title: string;
-        content: string;
-      };
-    };
-    contactInfo: {
-      title: string;
-      description: string;
-      email: string;
-      phone: string;
-      support: string;
-    };
-  };
-  privacy: {
-    title: string;
-    subtitle: string;
-    lastUpdated: string;
-    gdprCompliant: string;
-    commitment: {
-      title: string;
-      description1: string;
-      description2: string;
-    };
-    dataTypes: {
-      title: string;
-      identity: {
-        category: string;
-        data: string[];
-        purpose: string;
-        retention: string;
-      };
-      kyc: {
-        category: string;
-        data: string[];
-        purpose: string;
-        retention: string;
-      };
-      financial: {
-        category: string;
-        data: string[];
-        purpose: string;
-        retention: string;
-      };
-      usage: {
-        category: string;
-        data: string[];
-        purpose: string;
-        retention: string;
-      };
-    };
-    legalBasis: {
-      title: string;
-      contract: {
-        title: string;
-        description: string;
-      };
-      legal: {
-        title: string;
-        description: string;
-      };
-      legitimate: {
-        title: string;
-        description: string;
-      };
-    };
-    rights: {
-      title: string;
-      access: {
-        title: string;
-        description: string;
-        action: string;
-      };
-      rectification: {
-        title: string;
-        description: string;
-        action: string;
-      };
-      erasure: {
-        title: string;
-        description: string;
-        action: string;
-      };
-      portability: {
-        title: string;
-        description: string;
-        action: string;
-      };
-    };
-    security: {
-      title: string;
-      description: string;
-      technical: {
-        title: string;
-        measures: string[];
-      };
-      organizational: {
-        title: string;
-        measures: string[];
-      };
-    };
-    sharing: {
-      title: string;
-      description: string;
-      providers: {
-        title: string;
-        description: string;
-      };
-      legal: {
-        title: string;
-        description: string;
-      };
-      consent: {
-        title: string;
-        description: string;
-      };
-    };
-    contact: {
-      title: string;
-      description: string;
-      email: string;
-      address: string;
-      cnil: string;
-    };
-  };
-  status: {
-    title: string;
-    subtitle: string;
-    overall: {
-      title: string;
-      operational: string;
-      degraded: string;
-      partialOutage: string;
-      majorOutage: string;
-      maintenance: string;
-    };
-    stats: {
-      uptime: string;
-      operational: string;
-      incidents: string;
-    };
-    services: {
-      title: string;
-      website: {
-        name: string;
-        description: string;
-      };
-      api: {
-        name: string;
-        description: string;
-      };
-      database: {
-        name: string;
-        description: string;
-      };
-      sepaPayments: {
-        name: string;
-        description: string;
-      };
-      cryptoPayments: {
-        name: string;
-        description: string;
-      };
-      steamApi: {
-        name: string;
-        description: string;
-      };
-    };
-    incidents: {
-      title: string;
-      impact: {
-        low: string;
-        medium: string;
-        high: string;
-      };
-      status: {
-        investigating: string;
-        identified: string;
-        monitoring: string;
-        resolved: string;
-      };
-      updates: string;
-    };
-    footer: {
-      updateFrequency: string;
-      lastUpdate: string;
-      emailAlerts: string;
-      apiStatus: string;
-    };
-  };
-  settings: {
-    title: string;
-    subtitle: string;
-    profile: {
-      title: string;
-      steamUsername: string;
-      steamSync: string;
-      memberSince: string;
-      statistics: string;
-      level: string;
-      totalXp: string;
-      tickets: string;
-      volume: string;
-    };
-    security: {
-      title: string;
-      twoFactor: {
-        title: string;
-        description: string;
-        enabled: string;
-        configure: string;
-      };
-      kyc: {
-        title: string;
-        description: string;
-        verified: string;
-        pending: string;
-        start: string;
-      };
-      sessions: {
-        title: string;
-        description: string;
-        view: string;
-      };
-      gdpr: {
-        title: string;
-        description: string;
-        export: string;
-        delete: string;
-      };
-    };
-    notifications: {
-      title: string;
-      email: {
-        title: string;
-        description: string;
-      };
-      trades: {
-        title: string;
-        description: string;
-      };
-      payments: {
-        title: string;
-        description: string;
-      };
-      push: {
-        title: string;
-        description: string;
-      };
-      marketing: {
-        title: string;
-        description: string;
-      };
-      save: string;
-    };
-    payments: {
-      title: string;
-      sepa: string;
-      bitcoin: string;
-      verified: string;
-      default: string;
-      modify: string;
-      add: string;
-      important: string;
-      ibanWarning: string;
-    };
-    preferences: {
-      title: string;
-      language: {
-        title: string;
-        description: string;
-        french: string;
-        english: string;
-      };
-      theme: {
-        title: string;
-        description: string;
-        light: string;
-        dark: string;
-        system: string;
-      };
-      save: string;
-    };
-    loginRequired: {
-      title: string;
-      description: string;
-      login: string;
-    };
-    saveError: string;
-  };
-  admin: {
-    title: string;
-    subtitle: string;
-    accessDenied: {
-      title: string;
-      description: string;
-      home: string;
-    };
-    export: {
-      users: string;
-      trades: string;
-      payouts: string;
-    };
-    stats: {
-      totalUsers: string;
-      totalVolume: string;
-      totalTrades: string;
-      revenue: string;
-      monthly: string;
-    };
-    charts: {
-      volume: string;
-      newUsers: string;
-    };
-      users: {
-        title: string;
-        user: string;
-        search: string;
-        email: string;
-        kyc: string;
-        volume: string;
-        trades: string;
-        lastLogin: string;
-        actions: string;
-        allStatuses: string;
-        verified: string;
-        pending: string;
-        rejected: string;
-      };
-    trades: {
-      title: string;
-      id: string;
-      user: string;
-      status: string;
-      items: string;
-      amount: string;
-      date: string;
-      actions: string;
-    };
-    payouts: {
-      title: string;
-      id: string;
-      user: string;
-      amount: string;
-      method: string;
-      status: string;
-      date: string;
-      actions: string;
-    };
-    kyc: {
-      title: string;
-      user: string;
-      documents: string;
-      status: string;
-      submission: string;
-      actions: string;
-      pending: string;
-      verified: string;
-      rejected: string;
-      id: string;
-      selfie: string;
-      address: string;
-    };
-  };
-  kycPage: {
-    title: string;
-    subtitle: string;
-    steps: {
-      info: string;
-      documents: string;
-      selfie: string;
-      address: string;
-      review: string;
-    };
-    info: {
-      title: string;
-      description: string;
-      firstName: string;
-      lastName: string;
-      dateOfBirth: string;
-      nationality: string;
-      address: string;
-      city: string;
-      postalCode: string;
-      country: string;
-      firstNamePlaceholder: string;
-      lastNamePlaceholder: string;
-      addressPlaceholder: string;
-      cityPlaceholder: string;
-      postalCodePlaceholder: string;
-      countries: {
-        france: string;
-        belgium: string;
-        switzerland: string;
-        canada: string;
-        usa: string;
-      };
-    };
-    documents: {
-      type: string;
-      upload: string;
-      description: string;
-      tips: {
-        title: string;
-        lighting: string;
-        readable: string;
-        reflection: string;
-        complete: string;
-      };
-      types: {
-        id: string;
-        passport: string;
-        license: string;
-      };
-      uploaded: string;
-    };
-    selfie: {
-      title: string;
-      description: string;
-      uploaded: string;
-      instructions: {
-        title: string;
-        camera: string;
-        visible: string;
-        accessories: string;
-        lighting: string;
-      };
-    };
-    addressDoc: {
-      title: string;
-      optional: string;
-      description: string;
-      uploaded: string;
-      skip: string;
-    };
-    review: {
-      complete: string;
-      description: string;
-      personalInfo: string;
-      documents: string;
-      identity: string;
-      selfie: string;
-      addressDocument: string;
-      delay: {
-        title: string;
-        description: string;
-      };
-      fullName: string;
-      nationality: string;
-      address: string;
-    };
-    navigation: {
-      previous: string;
-      next: string;
-      submit: string;
-      loading: string;
-    };
-    status: {
-      verified: {
-        title: string;
-        description: string;
-        dashboard: string;
-      };
-      inProgress: {
-        title: string;
-        description: string;
-        dashboard: string;
-      };
-      rejected: {
-        title: string;
-        description: string;
-        restart: string;
-      };
-      loginRequired: {
-        title: string;
-        description: string;
-        login: string;
-      };
-    };
-    toasts: {
-      uploaded: string;
-      submitted: string;
-      error: string;
-    };
-  };
-  sellPage: {
-    helpSteps: string[];
-    successMessages: {
-      tradeCreated: string;
-      followInstructions: string;
-    };
-  };
-  giveawaysPage: {
-    participationSuccess: string;
-    available: string;
-    myEntries: {
-      title: string;
-      inProgress: string;
-      lost: string;
-    };
-  };
-  support: {
-    title: string;
-    subtitle: string;
-    stats: {
-      responseTime: string;
-      resolutionRate: string;
-      supportAvailable: string;
-      languagesSupported: string;
-    };
-    faq: {
-      title: string;
-      categories: {
-        general: string;
-        security: string;
-        payments: string;
-        trading: string;
-      };
-      questions: {
-        howItWorks: string;
-        howItWorksAnswer: string;
-        fees: string;
-        feesAnswer: string;
-        processTime: string;
-        processTimeAnswer: string;
-        priceCalculation: string;
-        priceCalculationAnswer: string;
-        whyKyc: string;
-        whyKycAnswer: string;
-        dataSecurity: string;
-        dataSecurityAnswer: string;
-        kycRejected: string;
-        kycRejectedAnswer: string;
-        fraudProtection: string;
-        fraudProtectionAnswer: string;
-        paymentMethods: string;
-        paymentMethodsAnswer: string;
-        paymentTime: string;
-        paymentTimeAnswer: string;
-        changePaymentMethod: string;
-        changePaymentMethodAnswer: string;
-        minimumAmount: string;
-        minimumAmountAnswer: string;
-        acceptedSkins: string;
-        acceptedSkinsAnswer: string;
-        steamRefusesTrade: string;
-        steamRefusesTradeAnswer: string;
-        cancelTrade: string;
-        cancelTradeAnswer: string;
-        xpSystem: string;
-        xpSystemAnswer: string;
-      };
-    };
-    quickActions: {
-      title: string;
-      checkTradeStatus: string;
-      paymentProblem: string;
-      kycQuestions: string;
-      technicalIssue: string;
-    };
-    contactForm: {
-      title: string;
-      connectedAs: string;
-      subject: string;
-      subjectPlaceholder: string;
-      category: string;
-      categoryPlaceholder: string;
-      categories: {
-        trading: string;
-        payment: string;
-        kyc: string;
-        technical: string;
-        account: string;
-        other: string;
-      };
-      priority: string;
-      priorities: {
-        low: string;
-        normal: string;
-        high: string;
-        urgent: string;
-      };
-      message: string;
-      messagePlaceholder: string;
-      submit: string;
-      submitting: string;
-      success: string;
-      error: string;
-    };
-    otherContact: {
-      title: string;
-      discord: {
-        title: string;
-        description: string;
-        button: string;
-      };
-      email: {
-        title: string;
-        address: string;
-        responseTime: string;
-      };
-      hours: {
-        title: string;
-        weekdays: string;
-        weekend: string;
-        emergency: string;
-      };
-    };
-  };
-  giveaways: {
-    title: string;
-    subtitle: string;
-    userTickets: {
-      level: string;
-      tickets: string;
-      description: string;
-    };
-    howTicketsWork: {
-      title: string;
-      earn: {
-        title: string;
-        description: string;
-      };
-      participate: {
-        title: string;
-        description: string;
-      };
-      win: {
-        title: string;
-        description: string;
-      };
-    };
-    tabs: {
-      active: string;
-      ended: string;
-      myEntries: string;
-    };
-    card: {
-      status: {
-        active: string;
-        ended: string;
-        cancelled: string;
-      };
-      prize: string;
-      price: string;
-      participants: string;
-      timeRemaining: string;
-      endDate: string;
-      ticketsSold: string;
-      winner: string;
-      ticketsToUse: string;
-      participate: string;
-      ticketsAvailable: string;
-    };
-    empty: {
-      noActive: string;
-      noActiveDescription: string;
-      loginRequired: string;
-      loginRequiredDescription: string;
-      loginButton: string;
-    };
-    myEntries: {
-      title: string;
-      entries: {
-        inProgress: string;
-        lost: string;
-      };
-    };
-      participation: {
-        success: string;
-        notEnoughTickets: string;
-        loginRequired: string;
-      };
-      youHave: string;
-    };
-}
 
 export const messages: Record<Locale, Messages> = {
   fr: {
@@ -1806,6 +584,885 @@ export const messages: Record<Locale, Messages> = {
       },
       youHave: "Vous avez",
     },
+    chatWidget: {
+      support: "CashTrade Support",
+      online: "En ligne",
+      responseTime: "Répond généralement en moins de 5min",
+      quickActions: "Actions rapides :",
+      tradeProblem: "Problème de trade",
+      urgentSupport: "Support urgent",
+      kycStatus: "Statut KYC",
+      quickMessages: {
+        tradeProblem: "J'ai un problème avec mon trade",
+        urgentHelp: "J'ai besoin d'une aide urgente",
+        kycStatusCheck: "Quel est le statut de ma vérification KYC ?",
+      },
+      responses: {
+        expertResponse: "Merci pour votre message ! Un de nos experts va vous répondre dans quelques instants. 🚀",
+        thankYouMessage: "Merci pour votre message ! Un membre de notre équipe vous répondra rapidement. En attendant, vous pouvez consulter notre FAQ ou nos guides. 😊",
+      },
+      placeholder: "Tapez votre message...",
+      poweredBy: "Propulsé par CashTrade AI",
+      responseTimeInfo: "Nous répondons généralement en moins de 5 minutes",
+      tooltip: "💬 Besoin d'aide ? Chatez avec nous !",
+    },
+    ui: {
+      search: "Rechercher",
+      filter: "Filtrer",
+      refresh: "Actualiser",
+      export: "Exporter",
+      actions: "Actions",
+      view: "Voir",
+      edit: "Modifier",
+      delete: "Supprimer",
+      save: "Sauvegarder",
+      cancel: "Annuler",
+      previous: "Précédent",
+      next: "Suivant",
+      page: "Page",
+      of: "sur",
+      noResults: "Aucun résultat",
+      loading: "Chargement...",
+      error: "Erreur",
+      success: "Succès",
+      info: "Information",
+      all: "Tous",
+      active: "Actif",
+      inactive: "Inactif",
+      approved: "Approuvé",
+      rejected: "Rejeté",
+      pending: "En attente",
+      paid: "Payé",
+      failed: "Échoué",
+      created: "Créé",
+      updated: "Mis à jour",
+      enabled: "Activé",
+      disabled: "Désactivé",
+      yes: "Oui",
+      no: "Non",
+      confirm: "Confirmer",
+      close: "Fermer",
+      open: "Ouvrir",
+      select: "Sélectionner",
+      selectAll: "Tout sélectionner",
+      deselectAll: "Tout désélectionner",
+      copy: "Copier",
+      copied: "Copié",
+      download: "Télécharger",
+      upload: "Téléverser",
+      submit: "Soumettre",
+      reset: "Réinitialiser",
+      clear: "Effacer",
+      apply: "Appliquer",
+      remove: "Supprimer",
+      add: "Ajouter",
+      create: "Créer",
+      update: "Mettre à jour",
+      manage: "Gérer",
+      settings: "Paramètres",
+      tools: "Outils",
+      status: "Statut",
+      date: "Date",
+      time: "Heure",
+      amount: "Montant",
+      total: "Total",
+      subtotal: "Sous-total",
+      fees: "Frais",
+      commission: "Commission",
+      volume: "Volume",
+      count: "Nombre",
+      items: "Articles",
+      users: "Utilisateurs",
+      trades: "Trades",
+      payouts: "Paiements",
+      affiliates: "Affiliés",
+      commissions: "Commissions",
+      documents: "Documents",
+      type: "Type",
+      name: "Nom",
+      email: "Email",
+      username: "Nom d'utilisateur",
+      avatar: "Avatar",
+      profile: "Profil",
+      account: "Compte",
+      security: "Sécurité",
+      privacy: "Confidentialité",
+      notifications: "Notifications",
+      preferences: "Préférences",
+      language: "Langue",
+      theme: "Thème",
+      currency: "Devise",
+      timezone: "Fuseau horaire",
+      country: "Pays",
+      address: "Adresse",
+      phone: "Téléphone",
+      website: "Site web",
+      description: "Description",
+      notes: "Notes",
+      tags: "Tags",
+      categories: "Catégories",
+      priority: "Priorité",
+      urgency: "Urgence",
+      severity: "Gravité",
+      impact: "Impact",
+      resolution: "Résolution",
+      feedback: "Commentaire",
+      rating: "Note",
+      review: "Avis",
+      comment: "Commentaire",
+      message: "Message",
+      subject: "Sujet",
+      content: "Contenu",
+      title: "Titre",
+      subtitle: "Sous-titre",
+      header: "En-tête",
+      footer: "Pied de page",
+      sidebar: "Barre latérale",
+      menu: "Menu",
+      navigation: "Navigation",
+      breadcrumb: "Fil d'Ariane",
+      pagination: "Pagination",
+      table: "Tableau",
+      list: "Liste",
+      card: "Carte",
+      modal: "Modal",
+      dialog: "Dialogue",
+      popup: "Popup",
+      tooltip: "Info-bulle",
+      banner: "Bannière",
+      badge: "Badge",
+      label: "Étiquette",
+      tag: "Tag",
+      chip: "Puce",
+      button: "Bouton",
+      link: "Lien",
+      textarea: "Zone de texte",
+      checkbox: "Case à cocher",
+      radio: "Bouton radio",
+      slider: "Curseur",
+      spinner: "Indicateur de chargement",
+      loader: "Chargeur",
+      skeleton: "Squelette",
+      placeholder: "Espace réservé",
+      empty: "Vide",
+      noData: "Aucune donnée",
+      notFound: "Non trouvé",
+      unauthorized: "Non autorisé",
+      forbidden: "Interdit",
+      serverError: "Erreur serveur",
+      networkError: "Erreur réseau",
+      timeout: "Délai d'attente",
+      maintenance: "Maintenance",
+      comingSoon: "Bientôt disponible",
+      underConstruction: "En construction",
+      beta: "Bêta",
+      alpha: "Alpha",
+      draft: "Brouillon",
+      published: "Publié",
+      archived: "Archivé",
+      restored: "Restauré",
+      backup: "Sauvegarde",
+      restore: "Restaurer",
+      import: "Importer",
+      sync: "Synchroniser",
+      reload: "Recharger",
+      retry: "Réessayer",
+      undo: "Annuler",
+      redo: "Refaire",
+      cut: "Couper",
+      paste: "Coller",
+      duplicate: "Dupliquer",
+      clone: "Cloner",
+      move: "Déplacer",
+      rename: "Renommer",
+      sort: "Trier",
+      find: "Trouver",
+      replace: "Remplacer",
+      match: "Correspondre",
+      compare: "Comparer",
+      merge: "Fusionner",
+      split: "Diviser",
+      join: "Joindre",
+      ungroup: "Dégrouper",
+      expand: "Développer",
+      collapse: "Réduire",
+      show: "Afficher",
+      hide: "Masquer",
+      toggle: "Basculer",
+      maximize: "Maximiser",
+      minimize: "Minimiser",
+      fullscreen: "Plein écran",
+      windowed: "Fenêtré",
+      zoom: "Zoom",
+      pan: "Panoramique",
+      rotate: "Rotation",
+      flip: "Retourner",
+      crop: "Recadrer",
+      resize: "Redimensionner",
+      scale: "Échelle",
+      fit: "Ajuster",
+      fill: "Remplir",
+      stretch: "Étirer",
+      center: "Centrer",
+      left: "Gauche",
+      right: "Droite",
+      top: "Haut",
+      bottom: "Bas",
+      middle: "Milieu",
+      start: "Début",
+      end: "Fin",
+      first: "Premier",
+      last: "Dernier",
+      forward: "Avant",
+      backward: "Arrière",
+      up: "Haut",
+      down: "Bas",
+      ascending: "Croissant",
+      descending: "Décroissant",
+      alphabetical: "Alphabétique",
+      numerical: "Numérique",
+      chronological: "Chronologique",
+      random: "Aléatoire",
+      shuffle: "Mélanger",
+      reverse: "Inverser",
+      invert: "Inverser",
+      mirror: "Miroir",
+      transform: "Transformer",
+      animate: "Animer",
+      transition: "Transition",
+      effect: "Effet",
+      style: "Style",
+      color: "Couleur",
+      background: "Arrière-plan",
+      foreground: "Premier plan",
+      border: "Bordure",
+      shadow: "Ombre",
+      gradient: "Dégradé",
+      pattern: "Motif",
+      texture: "Texture",
+      image: "Image",
+      icon: "Icône",
+      logo: "Logo",
+      thumbnail: "Miniature",
+      gallery: "Galerie",
+      slideshow: "Diaporama",
+      carousel: "Carrousel",
+      tabs: "Onglets",
+      accordion: "Accordéon",
+      dropdown: "Liste déroulante",
+      toolbar: "Barre d'outils",
+      statusbar: "Barre d'état",
+      panel: "Panneau",
+      widget: "Widget",
+      component: "Composant",
+      element: "Élément",
+      container: "Conteneur",
+      wrapper: "Enveloppe",
+      layout: "Mise en page",
+      template: "Modèle",
+      skin: "Apparence",
+      appearance: "Apparence",
+      design: "Design",
+      interaction: "Interaction",
+      behavior: "Comportement",
+      functionality: "Fonctionnalité",
+      feature: "Fonctionnalité",
+      capability: "Capacité",
+      option: "Option",
+      setting: "Paramètre",
+      configuration: "Configuration",
+      parameter: "Paramètre",
+      property: "Propriété",
+      attribute: "Attribut",
+      value: "Valeur",
+      data: "Données",
+      information: "Information",
+      text: "Texte",
+      number: "Nombre",
+      integer: "Entier",
+      decimal: "Décimal",
+      float: "Flottant",
+      boolean: "Booléen",
+      array: "Tableau",
+      object: "Objet",
+      json: "JSON",
+      xml: "XML",
+      html: "HTML",
+      css: "CSS",
+      javascript: "JavaScript",
+      typescript: "TypeScript",
+      react: "React",
+      vue: "Vue",
+      angular: "Angular",
+      express: "Express",
+      database: "Base de données",
+      sql: "SQL",
+      nosql: "NoSQL",
+      mongodb: "MongoDB",
+      postgresql: "PostgreSQL",
+      mysql: "MySQL",
+      sqlite: "SQLite",
+      redis: "Redis",
+      api: "API",
+      rest: "REST",
+      graphql: "GraphQL",
+      websocket: "WebSocket",
+      http: "HTTP",
+      https: "HTTPS",
+      ssl: "SSL",
+      tls: "TLS",
+      auth: "Auth",
+      authentication: "Authentification",
+      authorization: "Autorisation",
+      login: "Connexion",
+      logout: "Déconnexion",
+      signup: "Inscription",
+      signin: "Connexion",
+      register: "S'inscrire",
+      unregister: "Se désinscrire",
+      activate: "Activer",
+      deactivate: "Désactiver",
+      enable: "Activer",
+      disable: "Désactiver",
+      lock: "Verrouiller",
+      unlock: "Déverrouiller",
+      block: "Bloquer",
+      unblock: "Débloquer",
+      ban: "Bannir",
+      unban: "Débannir",
+      suspend: "Suspendre",
+      unsuspend: "Lever la suspension",
+      verify: "Vérifier",
+      unverify: "Annuler la vérification",
+      approve: "Approuver",
+      reject: "Rejeter",
+      accept: "Accepter",
+      decline: "Décliner",
+      deny: "Refuser",
+      allow: "Autoriser",
+      disallow: "Interdire",
+      permit: "Permettre",
+      forbid: "Interdire",
+      grant: "Accorder",
+      revoke: "Révoquer",
+      assign: "Assigner",
+      unassign: "Désassigner",
+      subscribe: "S'abonner",
+      unsubscribe: "Se désabonner",
+      follow: "Suivre",
+      unfollow: "Ne plus suivre",
+      like: "Aimer",
+      unlike: "Ne plus aimer",
+      favorite: "Favori",
+      unfavorite: "Retirer des favoris",
+      bookmark: "Marque-page",
+      unbookmark: "Retirer le marque-page",
+      share: "Partager",
+      unshare: "Arrêter de partager",
+      publish: "Publier",
+      unpublish: "Dépublier",
+      archive: "Archiver",
+      unarchive: "Désarchiver",
+      trash: "Corbeille",
+      untrash: "Sortir de la corbeille",
+      undelete: "Récupérer",
+      insert: "Insérer",
+      append: "Ajouter",
+      prepend: "Préfixer",
+      substitute: "Substituer",
+      swap: "Échanger",
+      exchange: "Échanger",
+      change: "Changer",
+      modify: "Modifier",
+      upgrade: "Mettre à niveau",
+      downgrade: "Rétrograder",
+      migrate: "Migrer",
+      transfer: "Transférer",
+      recover: "Récupérer",
+      repair: "Réparer",
+      fix: "Corriger",
+      debug: "Déboguer",
+      test: "Tester",
+      validate: "Valider",
+      check: "Vérifier",
+      inspect: "Inspecter",
+      audit: "Auditer",
+      analyze: "Analyser",
+      evaluate: "Évaluer",
+      assess: "Évaluer",
+      measure: "Mesurer",
+      calculate: "Calculer",
+      compute: "Calculer",
+      process: "Traiter",
+      execute: "Exécuter",
+      run: "Exécuter",
+      stop: "Arrêter",
+      pause: "Pause",
+      resume: "Reprendre",
+      restart: "Redémarrer",
+      initialize: "Initialiser",
+      setup: "Configuration",
+      configure: "Configurer",
+      install: "Installer",
+      uninstall: "Désinstaller",
+      deploy: "Déployer",
+      undeploy: "Annuler le déploiement",
+      build: "Construire",
+      compile: "Compiler",
+      bundle: "Grouper",
+      package: "Empaqueter",
+      compress: "Compresser",
+      decompress: "Décompresser",
+      zip: "Zipper",
+      unzip: "Dézipper",
+      tar: "Tar",
+      untar: "Détar",
+      encrypt: "Chiffrer",
+      decrypt: "Déchiffrer",
+      hash: "Hacher",
+      sign: "Signer",
+      authenticate: "Authentifier",
+      authorize: "Autoriser",
+      sanitize: "Assainir",
+      escape: "Échapper",
+      unescape: "Déséchapper",
+      encode: "Encoder",
+      decode: "Décoder",
+      serialize: "Sérialiser",
+      deserialize: "Désérialiser",
+      stringify: "Stringifier",
+      parse: "Parser",
+      format: "Formater",
+      normalize: "Normaliser",
+      standardize: "Standardiser",
+      optimize: "Optimiser",
+      improve: "Améliorer",
+      enhance: "Améliorer",
+      patch: "Patch",
+      hotfix: "Correctif urgent",
+      bugfix: "Correction de bug",
+      enhancement: "Amélioration",
+      improvement: "Amélioration",
+      optimization: "Optimisation",
+      performance: "Performance",
+      speed: "Vitesse",
+      efficiency: "Efficacité",
+      reliability: "Fiabilité",
+      stability: "Stabilité",
+      safety: "Sécurité",
+      confidentiality: "Confidentialité",
+      integrity: "Intégrité",
+      availability: "Disponibilité",
+      accessibility: "Accessibilité",
+      usability: "Utilisabilité",
+      compatibility: "Compatibilité",
+      interoperability: "Interopérabilité",
+      portability: "Portabilité",
+      scalability: "Évolutivité",
+      maintainability: "Maintenabilité",
+      extensibility: "Extensibilité",
+      flexibility: "Flexibilité",
+      adaptability: "Adaptabilité",
+      modularity: "Modularité",
+      reusability: "Réutilisabilité",
+      testability: "Testabilité",
+      debuggability: "Déboguabilité",
+      monitorability: "Monitorabilité",
+      observability: "Observabilité",
+      traceability: "Traçabilité",
+      auditability: "Auditabilité",
+      compliance: "Conformité",
+      governance: "Gouvernance",
+      policy: "Politique",
+      workflow: "Flux de travail",
+      pipeline: "Pipeline",
+      automation: "Automatisation",
+      orchestration: "Orchestration",
+      integration: "Intégration",
+      synchronization: "Synchronisation",
+      coordination: "Coordination",
+      collaboration: "Collaboration",
+      communication: "Communication",
+      notification: "Notification",
+      alert: "Alerte",
+      exception: "Exception",
+      failure: "Échec",
+      completion: "Achèvement",
+      progress: "Progrès",
+      state: "État",
+      condition: "Condition",
+      situation: "Situation",
+      context: "Contexte",
+      environment: "Environnement",
+      platform: "Plateforme",
+      system: "Système",
+      application: "Application",
+      service: "Service",
+      module: "Module",
+      library: "Bibliothèque",
+      framework: "Framework",
+      tool: "Outil",
+      utility: "Utilitaire",
+      helper: "Assistant",
+      assistant: "Assistant",
+      guide: "Guide",
+      tutorial: "Tutoriel",
+      documentation: "Documentation",
+      manual: "Manuel",
+      handbook: "Manuel",
+      reference: "Référence",
+      glossary: "Glossaire",
+      encyclopedia: "Encyclopédie",
+      knowledge: "Connaissance",
+      resource: "Ressource",
+      asset: "Actif",
+      file: "Fichier",
+      document: "Document",
+      report: "Rapport",
+      log: "Journal",
+      record: "Enregistrement",
+      entry: "Entrée",
+      item: "Élément",
+      node: "Nœud",
+      entity: "Entité",
+      instance: "Instance",
+      occurrence: "Occurrence",
+      event: "Événement",
+      action: "Action",
+      operation: "Opération",
+      function: "Fonction",
+      method: "Méthode",
+      routine: "Routine",
+      algorithm: "Algorithme",
+      logic: "Logique",
+      rule: "Règle",
+      constraint: "Contrainte",
+      requirement: "Exigence",
+      specification: "Spécification",
+      definition: "Définition",
+      declaration: "Déclaration",
+      implementation: "Implémentation",
+      execution: "Exécution",
+      invocation: "Invocation",
+      call: "Appel",
+      request: "Demande",
+      response: "Réponse",
+      result: "Résultat",
+      output: "Sortie",
+      input: "Entrée",
+      argument: "Argument",
+      variable: "Variable",
+      constant: "Constante",
+      literal: "Littéral",
+      expression: "Expression",
+      statement: "Instruction",
+      instruction: "Instruction",
+      command: "Commande",
+      directive: "Directive",
+      keyword: "Mot-clé",
+      operator: "Opérateur",
+      symbol: "Symbole",
+      token: "Jeton",
+      identifier: "Identifiant",
+      marker: "Marqueur",
+      flag: "Drapeau",
+      indicator: "Indicateur",
+      signal: "Signal",
+      trigger: "Déclencheur",
+      handler: "Gestionnaire",
+      listener: "Écouteur",
+      observer: "Observateur",
+      publisher: "Éditeur",
+      producer: "Producteur",
+      consumer: "Consommateur",
+      client: "Client",
+      server: "Serveur",
+      host: "Hôte",
+      guest: "Invité",
+      user: "Utilisateur",
+      admin: "Admin",
+      moderator: "Modérateur",
+      owner: "Propriétaire",
+      member: "Membre",
+      visitor: "Visiteur",
+      anonymous: "Anonyme",
+      authenticated: "Authentifié",
+      authorized: "Autorisé",
+      verified: "Vérifié",
+      trusted: "Fiable",
+      secure: "Sécurisé",
+      safe: "Sûr",
+      protected: "Protégé",
+      private: "Privé",
+      public: "Public",
+      internal: "Interne",
+      external: "Externe",
+      local: "Local",
+      remote: "Distant",
+      global: "Global",
+      universal: "Universel",
+      general: "Général",
+      specific: "Spécifique",
+      particular: "Particulier",
+      individual: "Individuel",
+      unique: "Unique",
+      common: "Commun",
+      shared: "Partagé",
+      distributed: "Distribué",
+      centralized: "Centralisé",
+      decentralized: "Décentralisé",
+      federated: "Fédéré",
+      clustered: "En cluster",
+      replicated: "Répliqué",
+      mirrored: "Miroir",
+      synchronized: "Synchronisé",
+      asynchronous: "Asynchrone",
+      concurrent: "Concurrent",
+      parallel: "Parallèle",
+      sequential: "Séquentiel",
+      serial: "Série",
+      batch: "Lot",
+      stream: "Flux",
+      queue: "File",
+      stack: "Pile",
+      heap: "Tas",
+      tree: "Arbre",
+      graph: "Graphe",
+      network: "Réseau",
+      mesh: "Maillage",
+      matrix: "Matrice",
+      vector: "Vecteur",
+      set: "Ensemble",
+      map: "Carte",
+      index: "Index",
+      key: "Clé",
+      pair: "Paire",
+      tuple: "Tuple",
+      struct: "Structure",
+      class: "Classe",
+      interface: "Interface",
+      protocol: "Protocole",
+      contract: "Contrat",
+      agreement: "Accord",
+      treaty: "Traité",
+      pact: "Pacte",
+      deal: "Accord",
+      transaction: "Transaction",
+      trade: "Trade",
+      commerce: "Commerce",
+      business: "Affaire",
+      enterprise: "Entreprise",
+      company: "Société",
+      organization: "Organisation",
+      institution: "Institution",
+      agency: "Agence",
+      department: "Département",
+      division: "Division",
+      section: "Section",
+      unit: "Unité",
+      team: "Équipe",
+      squad: "Équipe",
+      crew: "Équipage",
+      staff: "Personnel",
+      personnel: "Personnel",
+      workforce: "Main-d'œuvre",
+      employee: "Employé",
+      worker: "Travailleur",
+      technician: "Technicien",
+      specialist: "Spécialiste",
+      expert: "Expert",
+      professional: "Professionnel",
+      consultant: "Consultant",
+      advisor: "Conseiller",
+      analyst: "Analyste",
+      developer: "Développeur",
+      programmer: "Programmeur",
+      engineer: "Ingénieur",
+      architect: "Architecte",
+      designer: "Designer",
+      artist: "Artiste",
+      creator: "Créateur",
+      author: "Auteur",
+      writer: "Écrivain",
+      editor: "Éditeur",
+      reviewer: "Réviseur",
+      tester: "Testeur",
+      validator: "Validateur",
+      auditor: "Auditeur",
+      inspector: "Inspecteur",
+      supervisor: "Superviseur",
+      manager: "Manager",
+      director: "Directeur",
+      executive: "Cadre",
+      administrator: "Administrateur",
+      coordinator: "Coordinateur",
+      facilitator: "Facilitateur",
+      mediator: "Médiateur",
+      negotiator: "Négociateur",
+      representative: "Représentant",
+      delegate: "Délégué",
+      ambassador: "Ambassadeur",
+      agent: "Agent",
+      broker: "Courtier",
+      dealer: "Revendeur",
+      vendor: "Vendeur",
+      supplier: "Fournisseur",
+      provider: "Fournisseur",
+      distributor: "Distributeur",
+      retailer: "Détaillant",
+      wholesaler: "Grossiste",
+      manufacturer: "Fabricant",
+      inventor: "Inventeur",
+      innovator: "Innovateur",
+      pioneer: "Pionnier",
+      leader: "Leader",
+      follower: "Suiveur",
+      supporter: "Supporter",
+      advocate: "Défenseur",
+      champion: "Champion",
+      defender: "Défenseur",
+      protector: "Protecteur",
+      guardian: "Gardien",
+      custodian: "Gardien",
+      caretaker: "Gardien",
+      maintainer: "Mainteneur",
+      keeper: "Gardien",
+      holder: "Détenteur",
+      possessor: "Possesseur",
+      bearer: "Porteur",
+      carrier: "Transporteur",
+      transporter: "Transporteur",
+      deliverer: "Livreur",
+      messenger: "Messager",
+      courier: "Coursier",
+      dispatcher: "Répartiteur",
+      sender: "Expéditeur",
+      receiver: "Destinataire",
+      recipient: "Destinataire",
+      addressee: "Destinataire",
+      beneficiary: "Bénéficiaire",
+      stakeholder: "Partie prenante",
+      shareholder: "Actionnaire",
+      investor: "Investisseur",
+      sponsor: "Sponsor",
+      patron: "Mécène",
+      donor: "Donateur",
+      contributor: "Contributeur",
+      participant: "Participant",
+      attendee: "Participant",
+      tourist: "Touriste",
+      traveler: "Voyageur",
+      passenger: "Passager",
+      rider: "Cavalier",
+      driver: "Conducteur",
+      pilot: "Pilote",
+      captain: "Capitaine",
+      commander: "Commandant",
+      chief: "Chef",
+      head: "Chef",
+      boss: "Patron",
+      superior: "Supérieur",
+      subordinate: "Subordonné",
+      colleague: "Collègue",
+      peer: "Pair",
+      partner: "Partenaire",
+      associate: "Associé",
+      ally: "Allié",
+      friend: "Ami",
+      enemy: "Ennemi",
+      opponent: "Adversaire",
+      rival: "Rival",
+      competitor: "Concurrent",
+      challenger: "Challenger",
+      contender: "Prétendant",
+      candidate: "Candidat",
+      applicant: "Candidat",
+      nominee: "Nominé",
+      volunteer: "Bénévole",
+      recruit: "Recrue",
+      trainee: "Stagiaire",
+      apprentice: "Apprenti",
+      intern: "Stagiaire",
+      student: "Étudiant",
+      pupil: "Élève",
+      learner: "Apprenant",
+      scholar: "Érudit",
+      researcher: "Chercheur",
+      scientist: "Scientifique",
+      academic: "Académique",
+      professor: "Professeur",
+      teacher: "Enseignant",
+      instructor: "Instructeur",
+      tutor: "Tuteur",
+      mentor: "Mentor",
+      coach: "Coach",
+      trainer: "Formateur",
+      counselor: "Conseiller",
+      therapist: "Thérapeute",
+      healer: "Guérisseur",
+      doctor: "Docteur",
+      physician: "Médecin",
+      surgeon: "Chirurgien",
+      nurse: "Infirmier",
+      medic: "Médecin",
+      paramedic: "Paramédic",
+      authority: "Autorité",
+      master: "Maître",
+      guru: "Gourou",
+      sage: "Sage",
+      wise: "Sage",
+      smart: "Intelligent",
+      intelligent: "Intelligent",
+      clever: "Intelligent",
+      brilliant: "Brillant",
+      genius: "Génie",
+      talented: "Talentueux",
+      skilled: "Compétent",
+      experienced: "Expérimenté",
+      seasoned: "Expérimenté",
+      veteran: "Vétéran",
+      senior: "Senior",
+      junior: "Junior",
+      novice: "Novice",
+      beginner: "Débutant",
+      amateur: "Amateur",
+      hobbyist: "Amateur",
+      enthusiast: "Passionné",
+      fan: "Fan",
+      collaborator: "Collaborateur",
+      teammate: "Coéquipier",
+      coworker: "Collègue",
+      companion: "Compagnon",
+      buddy: "Copain",
+      pal: "Copain",
+      mate: "Copain",
+      comrade: "Camarade",
+      confederate: "Confédéré",
+      accomplice: "Complice",
+      aide: "Aide",
+      backer: "Soutien",
+      benefactor: "Bienfaiteur",
+      proprietor: "Propriétaire",
+      landlord: "Propriétaire",
+      tenant: "Locataire",
+      renter: "Locataire",
+      lessee: "Locataire",
+      lessor: "Bailleur",
+      borrower: "Emprunteur",
+      lender: "Prêteur",
+      creditor: "Créancier",
+      debtor: "Débiteur",
+      buyer: "Acheteur",
+      seller: "Vendeur",
+      customer: "Client",
+      deleted: "Supprimé",
+      preview: "Aperçu",
+      procedure: "Procédure",
+      warning: "Avertissement",
+      grid: "Grille",
+      dictionary: "Dictionnaire",
+      subscriber: "Abonné",
+    },
     about: {
       title: "À propos de",
       subtitle: "Nous révolutionnons la façon dont les joueurs de Counter-Strike 2 transforment leurs skins en argent réel. Une plateforme sécurisée, transparente et innovante créée par des passionnés pour des passionnés.",
@@ -2257,10 +1914,65 @@ export const messages: Record<Locale, Messages> = {
     admin: {
       title: "Administration CashTrade",
       subtitle: "Gestion et supervision de la plateforme",
+      loading: {
+        redirecting: "Redirection vers le dashboard...",
+        verifyingPermissions: "Vérification des permissions...",
+        loading: "Chargement...",
+      },
       accessDenied: {
         title: "Accès refusé",
         description: "Vous n'avez pas les permissions nécessaires pour accéder à cette page.",
-        home: "Retour à l'accueil"
+        home: "Retour à l'accueil",
+        loginAdmin: "Connexion Admin"
+      },
+      login: {
+        title: "Administration",
+        subtitle: "Connexion sécurisée au panel d'administration",
+        adminLogin: "Connexion Admin",
+        adminAccess: "Accès réservé aux administrateurs autorisés",
+        emailLabel: "Email administrateur",
+        passwordLabel: "Mot de passe",
+        emailPlaceholder: "admin@cashtrade.com",
+        passwordPlaceholder: "••••••••",
+        loginButton: "Se connecter",
+        loggingIn: "Connexion...",
+        steamLogin: "Se connecter via Steam",
+        loginProblem: "Problème de connexion ?",
+        contactSupport: "Contactez le support",
+        secureAccess: "Accès sécurisé - Toutes les connexions sont enregistrées",
+        or: "Ou",
+      },
+      dashboard: {
+        title: "Dashboard Admin CashTrade",
+        subtitle: "Gestion complète de la plateforme • CS2 Skin Trading",
+        exportData: "Exporter Données",
+        fullReport: "Rapport Complet",
+        overview: "Vue d'ensemble",
+        trades: "Trades",
+        users: "Utilisateurs",
+        payouts: "Paiements",
+        kyc: "KYC",
+        analytics: "Analytics",
+        exports: "Exports",
+        affiliates: "Affiliés",
+        commissions: "Commissions",
+        volumeChart: "Volume des Trades (7 derniers jours)",
+        tradesDistribution: "Répartition des Trades",
+        recentActivity: "Activité Récente",
+        tradesManagement: "Gestion des Trades",
+        tradesDescription: "Suivi et gestion de tous les trades de la plateforme",
+        usersManagement: "Gestion des Utilisateurs",
+        usersDescription: "Administration des comptes utilisateurs et de leurs données",
+        payoutsManagement: "Gestion des Paiements",
+        payoutsDescription: "Suivi et validation des paiements SEPA et crypto",
+        kycValidation: "Validation KYC",
+        kycDescription: "Gestion des demandes de vérification d'identité",
+        exportConfiguration: "Configuration d'Export",
+        exportDescription: "Sélectionnez le type de données à exporter et configurez les filtres",
+        affiliatesManagement: "Gestion des Affiliés",
+        affiliatesDescription: "Administration des comptes affiliés et de leurs performances",
+        commissionsManagement: "Commissions d'Affiliation",
+        commissionsDescription: "Validation et paiement des commissions générées par les affiliés",
       },
       export: {
         users: "Export Utilisateurs",
@@ -2272,7 +1984,16 @@ export const messages: Record<Locale, Messages> = {
         totalVolume: "Volume total",
         totalTrades: "Trades totaux",
         revenue: "Revenus (frais)",
-        monthly: "ce mois"
+        monthly: "ce mois",
+        thisMonth: "ce mois",
+        kycPending: "KYC En Attente",
+        successRate: "Taux de Réussite",
+        topUser: "Top Utilisateur",
+        recentTrades: "Trades Récents",
+        last24h: "Dernières 24h",
+        toProcess: "À traiter",
+        upToDate: "À jour",
+        tradesSuccessful: "Trades réussis"
       },
       charts: {
         volume: "Volume de trading",
@@ -2282,6 +2003,7 @@ export const messages: Record<Locale, Messages> = {
         title: "Gestion des utilisateurs",
         user: "Utilisateur",
         search: "Rechercher un utilisateur...",
+        searchPlaceholder: "Rechercher par nom d'utilisateur, Steam ID...",
         email: "Email",
         kyc: "KYC",
         volume: "Volume",
@@ -2291,7 +2013,17 @@ export const messages: Record<Locale, Messages> = {
         allStatuses: "Tous les statuts",
         verified: "Vérifié",
         pending: "En attente",
-        rejected: "Rejeté"
+        rejected: "Rejeté",
+        steamId: "Steam ID",
+        level: "Niveau",
+        tickets: "Tickets",
+        joinedAt: "Inscrit le",
+        refresh: "Actualiser",
+        export: "Exporter",
+        noUsers: "Aucun utilisateur trouvé",
+        filterByKyc: "Filtrer par KYC",
+        allKycStatuses: "Tous les statuts KYC",
+        inProgress: "En cours"
       },
       trades: {
         title: "Gestion des trades",
@@ -2301,7 +2033,22 @@ export const messages: Record<Locale, Messages> = {
         items: "Items",
         amount: "Montant",
         date: "Date",
-        actions: "Actions"
+        actions: "Actions",
+        ticketId: "Ticket ID",
+        searchPlaceholder: "Rechercher par ticket ID, utilisateur...",
+        filterByStatus: "Filtrer par statut",
+        allStatuses: "Tous les statuts",
+        created: "Créé",
+        accepted: "Accepté",
+        tradeHold: "Trade Hold",
+        available: "Disponible",
+        paymentProcessing: "Paiement en cours",
+        paid: "Payé",
+        failed: "Échoué",
+        refresh: "Actualiser",
+        export: "Exporter",
+        noTrades: "Aucun trade trouvé",
+        gross: "Brut"
       },
       payouts: {
         title: "Gestion des paiements",
@@ -2311,7 +2058,21 @@ export const messages: Record<Locale, Messages> = {
         method: "Méthode",
         status: "Statut",
         date: "Date",
-        actions: "Actions"
+        actions: "Actions",
+        searchPlaceholder: "Rechercher par ID, utilisateur...",
+        filterByStatus: "Filtrer par statut",
+        allStatuses: "Tous les statuts",
+        pending: "En attente",
+        verificationRequired: "Vérification requise",
+        verified: "Vérifié",
+        scheduled: "Planifié",
+        executed: "Exécuté",
+        paid: "Payé",
+        failed: "Échoué",
+        refresh: "Actualiser",
+        export: "Exporter",
+        noPayouts: "Aucun paiement trouvé",
+        reference: "Référence"
       },
       kyc: {
         title: "Gestion KYC",
@@ -2325,8 +2086,71 @@ export const messages: Record<Locale, Messages> = {
         rejected: "Rejetés",
         id: "ID",
         selfie: "Selfie",
-        address: "Adresse"
-      }
+        address: "Adresse",
+        type: "Type",
+        uploaded: "Téléchargé le",
+        reviewed: "Révisé le",
+        searchPlaceholder: "Rechercher par utilisateur, type de document...",
+        filterByStatus: "Filtrer par statut",
+        allStatuses: "Tous les statuts",
+        approved: "Approuvé",
+        refresh: "Actualiser",
+        export: "Exporter",
+        noDocuments: "Aucun document KYC trouvé",
+        idCard: "Carte d'identité",
+        passport: "Passeport",
+        proofOfAddress: "Justificatif de domicile",
+        nonCompliantDocument: "Document non conforme"
+      },
+      exports: {
+        title: "Exports de données",
+        subtitle: "Exportez et téléchargez les données de la plateforme",
+        configuration: "Configuration",
+        configurationDescription: "Sélectionnez le type de données à exporter et configurez les filtres",
+        dataType: "Type de données",
+        dateFrom: "Date de début",
+        dateTo: "Date de fin",
+        selectDate: "Sélectionner",
+        exportFormat: "Format d'export",
+        csv: "CSV (Comma Separated Values)",
+        excel: "Excel (.xlsx)",
+        exportData: "Exporter les données",
+        exporting: "Export en cours...",
+        history: "Historique des Exports",
+        historyDescription: "Derniers exports effectués",
+        allData: "Toutes les données",
+        tradesExport: "Trades",
+        tradesDescription: "Export de tous les trades avec détails",
+        usersExport: "Utilisateurs",
+        usersDescription: "Export des données utilisateurs",
+        payoutsExport: "Paiements",
+        payoutsDescription: "Export des paiements SEPA et crypto",
+        kycExport: "Documents KYC",
+        kycDescription: "Export des documents de vérification",
+        affiliatesExport: "Affiliés",
+        affiliatesDescription: "Export des données d'affiliation",
+        giveawaysExport: "Giveaways",
+        giveawaysDescription: "Export des giveaways et participations",
+      },
+      affiliates: {
+        title: "Gestion des Affiliés",
+        description: "Administration des comptes affiliés et de leurs performances",
+      },
+      commissions: {
+        title: "Commissions d'Affiliation",
+        description: "Validation et paiement des commissions générées par les affiliés",
+      },
+      errors: {
+        loadingStats: "Erreur lors du chargement des statistiques",
+        loadingTrades: "Erreur lors du chargement des trades",
+        loadingUsers: "Erreur lors du chargement des utilisateurs",
+        loadingPayouts: "Erreur lors du chargement des paiements",
+        loadingKyc: "Erreur lors du chargement des documents KYC",
+        unknown: "Erreur inconnue",
+        approval: "Erreur lors de l'approbation",
+        rejection: "Erreur lors du rejet",
+        export: "Erreur lors de l'export",
+      },
     },
     kycPage: {
       title: "Vérification KYC",
@@ -3495,10 +3319,65 @@ export const messages: Record<Locale, Messages> = {
     admin: {
       title: "CashTrade Administration",
       subtitle: "Platform management and supervision",
+      loading: {
+        redirecting: "Redirecting to dashboard...",
+        verifyingPermissions: "Verifying permissions...",
+        loading: "Loading...",
+      },
       accessDenied: {
         title: "Access denied",
         description: "You don't have the necessary permissions to access this page.",
-        home: "Back to home"
+        home: "Back to home",
+        loginAdmin: "Admin Login"
+      },
+      login: {
+        title: "Administration",
+        subtitle: "Secure login to admin panel",
+        adminLogin: "Admin Login",
+        adminAccess: "Access reserved for authorized administrators",
+        emailLabel: "Administrator email",
+        passwordLabel: "Password",
+        emailPlaceholder: "admin@cashtrade.com",
+        passwordPlaceholder: "••••••••",
+        loginButton: "Login",
+        loggingIn: "Logging in...",
+        steamLogin: "Login via Steam",
+        loginProblem: "Login problem?",
+        contactSupport: "Contact support",
+        secureAccess: "Secure access - All connections are logged",
+        or: "Or",
+      },
+      dashboard: {
+        title: "CashTrade Admin Dashboard",
+        subtitle: "Complete platform management • CS2 Skin Trading",
+        exportData: "Export Data",
+        fullReport: "Full Report",
+        overview: "Overview",
+        trades: "Trades",
+        users: "Users",
+        payouts: "Payouts",
+        kyc: "KYC",
+        analytics: "Analytics",
+        exports: "Exports",
+        affiliates: "Affiliates",
+        commissions: "Commissions",
+        volumeChart: "Trading Volume (Last 7 days)",
+        tradesDistribution: "Trades Distribution",
+        recentActivity: "Recent Activity",
+        tradesManagement: "Trade Management",
+        tradesDescription: "Track and manage all platform trades",
+        usersManagement: "User Management",
+        usersDescription: "Administer user accounts and their data",
+        payoutsManagement: "Payout Management",
+        payoutsDescription: "Track and validate SEPA and crypto payments",
+        kycValidation: "KYC Validation",
+        kycDescription: "Manage identity verification requests",
+        exportConfiguration: "Export Configuration",
+        exportDescription: "Select data type to export and configure filters",
+        affiliatesManagement: "Affiliate Management",
+        affiliatesDescription: "Administer affiliate accounts and their performance",
+        commissionsManagement: "Affiliate Commissions",
+        commissionsDescription: "Validate and pay commissions generated by affiliates",
       },
       export: {
         users: "Export Users",
@@ -3510,7 +3389,16 @@ export const messages: Record<Locale, Messages> = {
         totalVolume: "Total volume",
         totalTrades: "Total trades",
         revenue: "Revenue (fees)",
-        monthly: "this month"
+        monthly: "this month",
+        thisMonth: "this month",
+        kycPending: "KYC Pending",
+        successRate: "Success Rate",
+        topUser: "Top User",
+        recentTrades: "Recent Trades",
+        last24h: "Last 24h",
+        toProcess: "To process",
+        upToDate: "Up to date",
+        tradesSuccessful: "Successful trades"
       },
       charts: {
         volume: "Trading volume",
@@ -3520,6 +3408,7 @@ export const messages: Record<Locale, Messages> = {
         title: "User management",
         user: "User",
         search: "Search user...",
+        searchPlaceholder: "Search by username, Steam ID...",
         email: "Email",
         kyc: "KYC",
         volume: "Volume",
@@ -3529,7 +3418,17 @@ export const messages: Record<Locale, Messages> = {
         allStatuses: "All statuses",
         verified: "Verified",
         pending: "Pending",
-        rejected: "Rejected"
+        rejected: "Rejected",
+        steamId: "Steam ID",
+        level: "Level",
+        tickets: "Tickets",
+        joinedAt: "Joined at",
+        refresh: "Refresh",
+        export: "Export",
+        noUsers: "No users found",
+        filterByKyc: "Filter by KYC",
+        allKycStatuses: "All KYC statuses",
+        inProgress: "In progress"
       },
       trades: {
         title: "Trade management",
@@ -3539,7 +3438,22 @@ export const messages: Record<Locale, Messages> = {
         items: "Items",
         amount: "Amount",
         date: "Date",
-        actions: "Actions"
+        actions: "Actions",
+        ticketId: "Ticket ID",
+        searchPlaceholder: "Search by ticket ID, user...",
+        filterByStatus: "Filter by status",
+        allStatuses: "All statuses",
+        created: "Created",
+        accepted: "Accepted",
+        tradeHold: "Trade Hold",
+        available: "Available",
+        paymentProcessing: "Payment processing",
+        paid: "Paid",
+        failed: "Failed",
+        refresh: "Refresh",
+        export: "Export",
+        noTrades: "No trades found",
+        gross: "Gross"
       },
       payouts: {
         title: "Payout management",
@@ -3549,7 +3463,21 @@ export const messages: Record<Locale, Messages> = {
         method: "Method",
         status: "Status",
         date: "Date",
-        actions: "Actions"
+        actions: "Actions",
+        searchPlaceholder: "Search by ID, user...",
+        filterByStatus: "Filter by status",
+        allStatuses: "All statuses",
+        pending: "Pending",
+        verificationRequired: "Verification required",
+        verified: "Verified",
+        scheduled: "Scheduled",
+        executed: "Executed",
+        paid: "Paid",
+        failed: "Failed",
+        refresh: "Refresh",
+        export: "Export",
+        noPayouts: "No payouts found",
+        reference: "Reference"
       },
       kyc: {
         title: "KYC management",
@@ -3563,7 +3491,70 @@ export const messages: Record<Locale, Messages> = {
         rejected: "Rejected",
         id: "ID",
         selfie: "Selfie",
-        address: "Address"
+        address: "Address",
+        type: "Type",
+        uploaded: "Uploaded on",
+        reviewed: "Reviewed on",
+        searchPlaceholder: "Search by user, document type...",
+        filterByStatus: "Filter by status",
+        allStatuses: "All statuses",
+        approved: "Approved",
+        refresh: "Refresh",
+        export: "Export",
+        noDocuments: "No KYC documents found",
+        idCard: "ID Card",
+        passport: "Passport",
+        proofOfAddress: "Proof of address",
+        nonCompliantDocument: "Non-compliant document"
+      },
+      exports: {
+        title: "Data exports",
+        subtitle: "Export and download platform data",
+        configuration: "Configuration",
+        configurationDescription: "Select data type to export and configure filters",
+        dataType: "Data type",
+        dateFrom: "Start date",
+        dateTo: "End date",
+        selectDate: "Select",
+        exportFormat: "Export format",
+        csv: "CSV (Comma Separated Values)",
+        excel: "Excel (.xlsx)",
+        exportData: "Export data",
+        exporting: "Exporting...",
+        history: "Export History",
+        historyDescription: "Recent exports performed",
+        allData: "All data",
+        tradesExport: "Trades",
+        tradesDescription: "Export all trades with details",
+        usersExport: "Users",
+        usersDescription: "Export user data",
+        payoutsExport: "Payouts",
+        payoutsDescription: "Export SEPA and crypto payments",
+        kycExport: "KYC Documents",
+        kycDescription: "Export verification documents",
+        affiliatesExport: "Affiliates",
+        affiliatesDescription: "Export affiliation data",
+        giveawaysExport: "Giveaways",
+        giveawaysDescription: "Export giveaways and participations",
+      },
+      affiliates: {
+        title: "Affiliate Management",
+        description: "Administer affiliate accounts and their performance",
+      },
+      commissions: {
+        title: "Affiliate Commissions",
+        description: "Validate and pay commissions generated by affiliates",
+      },
+      errors: {
+        loadingStats: "Error loading statistics",
+        loadingTrades: "Error loading trades",
+        loadingUsers: "Error loading users",
+        loadingPayouts: "Error loading payouts",
+        loadingKyc: "Error loading KYC documents",
+        unknown: "Unknown error",
+        approval: "Error during approval",
+        rejection: "Error during rejection",
+        export: "Error during export",
       }
     },
     kycPage: {
@@ -3702,6 +3693,885 @@ export const messages: Record<Locale, Messages> = {
         inProgress: "In progress",
         lost: "Lost"
       }
+    },
+    chatWidget: {
+      support: "CashTrade Support",
+      online: "Online",
+      responseTime: "Usually responds in less than 5min",
+      quickActions: "Quick actions:",
+      tradeProblem: "Trade problem",
+      urgentSupport: "Urgent support",
+      kycStatus: "KYC Status",
+      quickMessages: {
+        tradeProblem: "I have a problem with my trade",
+        urgentHelp: "I need urgent help",
+        kycStatusCheck: "What is the status of my KYC verification?",
+      },
+      responses: {
+        expertResponse: "Thank you for your message! One of our experts will respond in a few moments. 🚀",
+        thankYouMessage: "Thank you for your message! A member of our team will respond quickly. In the meantime, you can check our FAQ or guides. 😊",
+      },
+      placeholder: "Type your message...",
+      poweredBy: "Powered by CashTrade AI",
+      responseTimeInfo: "We usually respond in less than 5 minutes",
+      tooltip: "💬 Need help? Chat with us!",
+    },
+    ui: {
+      search: "Search",
+      filter: "Filter",
+      refresh: "Refresh",
+      export: "Export",
+      actions: "Actions",
+      view: "View",
+      edit: "Edit",
+      delete: "Delete",
+      save: "Save",
+      cancel: "Cancel",
+      previous: "Previous",
+      next: "Next",
+      page: "Page",
+      of: "of",
+      noResults: "No results",
+      loading: "Loading...",
+      error: "Error",
+      success: "Success",
+      info: "Information",
+      all: "All",
+      active: "Active",
+      inactive: "Inactive",
+      approved: "Approved",
+      rejected: "Rejected",
+      pending: "Pending",
+      paid: "Paid",
+      failed: "Failed",
+      created: "Created",
+      updated: "Updated",
+      deleted: "Deleted",
+      enabled: "Enabled",
+      disabled: "Disabled",
+      yes: "Yes",
+      no: "No",
+      confirm: "Confirm",
+      close: "Close",
+      open: "Open",
+      select: "Select",
+      selectAll: "Select all",
+      deselectAll: "Deselect all",
+      copy: "Copy",
+      copied: "Copied",
+      download: "Download",
+      upload: "Upload",
+      submit: "Submit",
+      reset: "Reset",
+      clear: "Clear",
+      apply: "Apply",
+      remove: "Remove",
+      add: "Add",
+      create: "Create",
+      update: "Update",
+      manage: "Manage",
+      settings: "Settings",
+      tools: "Tools",
+      status: "Status",
+      date: "Date",
+      time: "Time",
+      amount: "Amount",
+      total: "Total",
+      subtotal: "Subtotal",
+      fees: "Fees",
+      commission: "Commission",
+      volume: "Volume",
+      count: "Count",
+      items: "Items",
+      users: "Users",
+      trades: "Trades",
+      payouts: "Payouts",
+      affiliates: "Affiliates",
+      commissions: "Commissions",
+      documents: "Documents",
+      type: "Type",
+      name: "Name",
+      email: "Email",
+      username: "Username",
+      avatar: "Avatar",
+      profile: "Profile",
+      account: "Account",
+      security: "Security",
+      privacy: "Privacy",
+      notifications: "Notifications",
+      preferences: "Preferences",
+      language: "Language",
+      theme: "Theme",
+      currency: "Currency",
+      timezone: "Timezone",
+      country: "Country",
+      address: "Address",
+      phone: "Phone",
+      website: "Website",
+      description: "Description",
+      notes: "Notes",
+      tags: "Tags",
+      categories: "Categories",
+      priority: "Priority",
+      urgency: "Urgency",
+      severity: "Severity",
+      impact: "Impact",
+      resolution: "Resolution",
+      feedback: "Feedback",
+      rating: "Rating",
+      review: "Review",
+      comment: "Comment",
+      message: "Message",
+      subject: "Subject",
+      content: "Content",
+      title: "Title",
+      subtitle: "Subtitle",
+      header: "Header",
+      footer: "Footer",
+      sidebar: "Sidebar",
+      menu: "Menu",
+      navigation: "Navigation",
+      breadcrumb: "Breadcrumb",
+      pagination: "Pagination",
+      table: "Table",
+      list: "List",
+      card: "Card",
+      modal: "Modal",
+      dialog: "Dialog",
+      popup: "Popup",
+      tooltip: "Tooltip",
+      banner: "Banner",
+      badge: "Badge",
+      label: "Label",
+      tag: "Tag",
+      chip: "Chip",
+      button: "Button",
+      link: "Link",
+      textarea: "Textarea",
+      checkbox: "Checkbox",
+      radio: "Radio button",
+      slider: "Slider",
+      spinner: "Loading spinner",
+      loader: "Loader",
+      skeleton: "Skeleton",
+      placeholder: "Placeholder",
+      empty: "Empty",
+      noData: "No data",
+      notFound: "Not found",
+      unauthorized: "Unauthorized",
+      forbidden: "Forbidden",
+      serverError: "Server error",
+      networkError: "Network error",
+      timeout: "Timeout",
+      maintenance: "Maintenance",
+      comingSoon: "Coming soon",
+      underConstruction: "Under construction",
+      beta: "Beta",
+      alpha: "Alpha",
+      draft: "Draft",
+      published: "Published",
+      archived: "Archived",
+      restored: "Restored",
+      backup: "Backup",
+      restore: "Restore",
+      import: "Import",
+      sync: "Sync",
+      reload: "Reload",
+      retry: "Retry",
+      undo: "Undo",
+      redo: "Redo",
+      cut: "Cut",
+      paste: "Paste",
+      duplicate: "Duplicate",
+      clone: "Clone",
+      move: "Move",
+      rename: "Rename",
+      sort: "Sort",
+      find: "Find",
+      replace: "Replace",
+      match: "Match",
+      compare: "Compare",
+      merge: "Merge",
+      split: "Split",
+      join: "Join",
+      ungroup: "Ungroup",
+      expand: "Expand",
+      collapse: "Collapse",
+      show: "Show",
+      hide: "Hide",
+      toggle: "Toggle",
+      maximize: "Maximize",
+      minimize: "Minimize",
+      fullscreen: "Fullscreen",
+      windowed: "Windowed",
+      zoom: "Zoom",
+      pan: "Pan",
+      rotate: "Rotate",
+      flip: "Flip",
+      crop: "Crop",
+      resize: "Resize",
+      scale: "Scale",
+      fit: "Fit",
+      fill: "Fill",
+      stretch: "Stretch",
+      center: "Center",
+      left: "Left",
+      right: "Right",
+      top: "Top",
+      bottom: "Bottom",
+      middle: "Middle",
+      start: "Start",
+      end: "End",
+      first: "First",
+      last: "Last",
+      forward: "Forward",
+      backward: "Backward",
+      up: "Up",
+      down: "Down",
+      ascending: "Ascending",
+      descending: "Descending",
+      alphabetical: "Alphabetical",
+      numerical: "Numerical",
+      chronological: "Chronological",
+      random: "Random",
+      shuffle: "Shuffle",
+      reverse: "Reverse",
+      invert: "Invert",
+      mirror: "Mirror",
+      transform: "Transform",
+      animate: "Animate",
+      transition: "Transition",
+      effect: "Effect",
+      style: "Style",
+      color: "Color",
+      background: "Background",
+      foreground: "Foreground",
+      border: "Border",
+      shadow: "Shadow",
+      gradient: "Gradient",
+      pattern: "Pattern",
+      texture: "Texture",
+      image: "Image",
+      icon: "Icon",
+      logo: "Logo",
+      thumbnail: "Thumbnail",
+      preview: "Preview",
+      gallery: "Gallery",
+      slideshow: "Slideshow",
+      carousel: "Carousel",
+      tabs: "Tabs",
+      accordion: "Accordion",
+      dropdown: "Dropdown",
+      toolbar: "Toolbar",
+      statusbar: "Status bar",
+      panel: "Panel",
+      widget: "Widget",
+      component: "Component",
+      element: "Element",
+      container: "Container",
+      wrapper: "Wrapper",
+      layout: "Layout",
+      template: "Template",
+      skin: "Skin",
+      appearance: "Appearance",
+      design: "Design",
+      interaction: "Interaction",
+      behavior: "Behavior",
+      functionality: "Functionality",
+      feature: "Feature",
+      capability: "Capability",
+      option: "Option",
+      setting: "Setting",
+      configuration: "Configuration",
+      parameter: "Parameter",
+      property: "Property",
+      attribute: "Attribute",
+      value: "Value",
+      data: "Data",
+      information: "Information",
+      text: "Text",
+      number: "Number",
+      integer: "Integer",
+      decimal: "Decimal",
+      float: "Float",
+      boolean: "Boolean",
+      array: "Array",
+      object: "Object",
+      json: "JSON",
+      xml: "XML",
+      html: "HTML",
+      css: "CSS",
+      javascript: "JavaScript",
+      typescript: "TypeScript",
+      react: "React",
+      vue: "Vue",
+      angular: "Angular",
+      express: "Express",
+      database: "Database",
+      sql: "SQL",
+      nosql: "NoSQL",
+      mongodb: "MongoDB",
+      postgresql: "PostgreSQL",
+      mysql: "MySQL",
+      sqlite: "SQLite",
+      redis: "Redis",
+      api: "API",
+      rest: "REST",
+      graphql: "GraphQL",
+      websocket: "WebSocket",
+      http: "HTTP",
+      https: "HTTPS",
+      ssl: "SSL",
+      tls: "TLS",
+      auth: "Auth",
+      authentication: "Authentication",
+      authorization: "Authorization",
+      login: "Login",
+      logout: "Logout",
+      signup: "Sign up",
+      signin: "Sign in",
+      register: "Register",
+      unregister: "Unregister",
+      activate: "Activate",
+      deactivate: "Deactivate",
+      enable: "Enable",
+      disable: "Disable",
+      lock: "Lock",
+      unlock: "Unlock",
+      block: "Block",
+      unblock: "Unblock",
+      ban: "Ban",
+      unban: "Unban",
+      suspend: "Suspend",
+      unsuspend: "Unsuspend",
+      verify: "Verify",
+      unverify: "Unverify",
+      approve: "Approve",
+      reject: "Reject",
+      accept: "Accept",
+      decline: "Decline",
+      deny: "Deny",
+      allow: "Allow",
+      disallow: "Disallow",
+      permit: "Permit",
+      forbid: "Forbid",
+      grant: "Grant",
+      revoke: "Revoke",
+      assign: "Assign",
+      unassign: "Unassign",
+      subscribe: "Subscribe",
+      unsubscribe: "Unsubscribe",
+      follow: "Follow",
+      unfollow: "Unfollow",
+      like: "Like",
+      unlike: "Unlike",
+      favorite: "Favorite",
+      unfavorite: "Unfavorite",
+      bookmark: "Bookmark",
+      unbookmark: "Unbookmark",
+      share: "Share",
+      unshare: "Unshare",
+      publish: "Publish",
+      unpublish: "Unpublish",
+      archive: "Archive",
+      unarchive: "Unarchive",
+      trash: "Trash",
+      untrash: "Untrash",
+      undelete: "Undelete",
+      insert: "Insert",
+      append: "Append",
+      prepend: "Prepend",
+      substitute: "Substitute",
+      swap: "Swap",
+      exchange: "Exchange",
+      change: "Change",
+      modify: "Modify",
+      upgrade: "Upgrade",
+      downgrade: "Downgrade",
+      migrate: "Migrate",
+      transfer: "Transfer",
+      recover: "Recover",
+      repair: "Repair",
+      fix: "Fix",
+      debug: "Debug",
+      test: "Test",
+      validate: "Validate",
+      check: "Check",
+      inspect: "Inspect",
+      audit: "Audit",
+      analyze: "Analyze",
+      evaluate: "Evaluate",
+      assess: "Assess",
+      measure: "Measure",
+      calculate: "Calculate",
+      compute: "Compute",
+      process: "Process",
+      execute: "Execute",
+      run: "Run",
+      stop: "Stop",
+      pause: "Pause",
+      resume: "Resume",
+      restart: "Restart",
+      initialize: "Initialize",
+      setup: "Setup",
+      configure: "Configure",
+      install: "Install",
+      uninstall: "Uninstall",
+      deploy: "Deploy",
+      undeploy: "Undeploy",
+      build: "Build",
+      compile: "Compile",
+      bundle: "Bundle",
+      package: "Package",
+      compress: "Compress",
+      decompress: "Decompress",
+      zip: "Zip",
+      unzip: "Unzip",
+      tar: "Tar",
+      untar: "Untar",
+      encrypt: "Encrypt",
+      decrypt: "Decrypt",
+      hash: "Hash",
+      sign: "Sign",
+      authenticate: "Authenticate",
+      authorize: "Authorize",
+      sanitize: "Sanitize",
+      escape: "Escape",
+      unescape: "Unescape",
+      encode: "Encode",
+      decode: "Decode",
+      serialize: "Serialize",
+      deserialize: "Deserialize",
+      stringify: "Stringify",
+      parse: "Parse",
+      format: "Format",
+      normalize: "Normalize",
+      standardize: "Standardize",
+      optimize: "Optimize",
+      improve: "Improve",
+      enhance: "Enhance",
+      patch: "Patch",
+      hotfix: "Hotfix",
+      bugfix: "Bugfix",
+      enhancement: "Enhancement",
+      improvement: "Improvement",
+      optimization: "Optimization",
+      performance: "Performance",
+      speed: "Speed",
+      efficiency: "Efficiency",
+      reliability: "Reliability",
+      stability: "Stability",
+      safety: "Safety",
+      confidentiality: "Confidentiality",
+      integrity: "Integrity",
+      availability: "Availability",
+      accessibility: "Accessibility",
+      usability: "Usability",
+      compatibility: "Compatibility",
+      interoperability: "Interoperability",
+      portability: "Portability",
+      scalability: "Scalability",
+      maintainability: "Maintainability",
+      extensibility: "Extensibility",
+      flexibility: "Flexibility",
+      adaptability: "Adaptability",
+      modularity: "Modularity",
+      reusability: "Reusability",
+      testability: "Testability",
+      debuggability: "Debuggability",
+      monitorability: "Monitorability",
+      observability: "Observability",
+      traceability: "Traceability",
+      auditability: "Auditability",
+      compliance: "Compliance",
+      governance: "Governance",
+      policy: "Policy",
+      procedure: "Procedure",
+      workflow: "Workflow",
+      pipeline: "Pipeline",
+      automation: "Automation",
+      orchestration: "Orchestration",
+      integration: "Integration",
+      synchronization: "Synchronization",
+      coordination: "Coordination",
+      collaboration: "Collaboration",
+      communication: "Communication",
+      notification: "Notification",
+      alert: "Alert",
+      warning: "Warning",
+      exception: "Exception",
+      failure: "Failure",
+      completion: "Completion",
+      progress: "Progress",
+      state: "State",
+      condition: "Condition",
+      situation: "Situation",
+      context: "Context",
+      environment: "Environment",
+      platform: "Platform",
+      system: "System",
+      application: "Application",
+      service: "Service",
+      module: "Module",
+      library: "Library",
+      framework: "Framework",
+      tool: "Tool",
+      utility: "Utility",
+      helper: "Helper",
+      assistant: "Assistant",
+      guide: "Guide",
+      tutorial: "Tutorial",
+      documentation: "Documentation",
+      manual: "Manual",
+      handbook: "Handbook",
+      reference: "Reference",
+      glossary: "Glossary",
+      encyclopedia: "Encyclopedia",
+      knowledge: "Knowledge",
+      resource: "Resource",
+      asset: "Asset",
+      file: "File",
+      document: "Document",
+      report: "Report",
+      log: "Log",
+      record: "Record",
+      entry: "Entry",
+      item: "Item",
+      node: "Node",
+      entity: "Entity",
+      instance: "Instance",
+      occurrence: "Occurrence",
+      event: "Event",
+      action: "Action",
+      operation: "Operation",
+      function: "Function",
+      method: "Method",
+      routine: "Routine",
+      algorithm: "Algorithm",
+      logic: "Logic",
+      rule: "Rule",
+      constraint: "Constraint",
+      requirement: "Requirement",
+      specification: "Specification",
+      definition: "Definition",
+      declaration: "Declaration",
+      implementation: "Implementation",
+      execution: "Execution",
+      invocation: "Invocation",
+      call: "Call",
+      request: "Request",
+      response: "Response",
+      result: "Result",
+      output: "Output",
+      input: "Input",
+      argument: "Argument",
+      variable: "Variable",
+      constant: "Constant",
+      literal: "Literal",
+      expression: "Expression",
+      statement: "Statement",
+      instruction: "Instruction",
+      command: "Command",
+      directive: "Directive",
+      keyword: "Keyword",
+      operator: "Operator",
+      symbol: "Symbol",
+      token: "Token",
+      identifier: "Identifier",
+      marker: "Marker",
+      flag: "Flag",
+      indicator: "Indicator",
+      signal: "Signal",
+      trigger: "Trigger",
+      handler: "Handler",
+      listener: "Listener",
+      observer: "Observer",
+      publisher: "Publisher",
+      producer: "Producer",
+      consumer: "Consumer",
+      client: "Client",
+      server: "Server",
+      host: "Host",
+      guest: "Guest",
+      user: "User",
+      admin: "Admin",
+      moderator: "Moderator",
+      owner: "Owner",
+      member: "Member",
+      visitor: "Visitor",
+      anonymous: "Anonymous",
+      authenticated: "Authenticated",
+      authorized: "Authorized",
+      verified: "Verified",
+      trusted: "Trusted",
+      secure: "Secure",
+      safe: "Safe",
+      protected: "Protected",
+      private: "Private",
+      public: "Public",
+      internal: "Internal",
+      external: "External",
+      local: "Local",
+      remote: "Remote",
+      global: "Global",
+      universal: "Universal",
+      general: "General",
+      specific: "Specific",
+      particular: "Particular",
+      individual: "Individual",
+      unique: "Unique",
+      common: "Common",
+      shared: "Shared",
+      distributed: "Distributed",
+      centralized: "Centralized",
+      decentralized: "Decentralized",
+      federated: "Federated",
+      clustered: "Clustered",
+      replicated: "Replicated",
+      mirrored: "Mirrored",
+      synchronized: "Synchronized",
+      asynchronous: "Asynchronous",
+      concurrent: "Concurrent",
+      parallel: "Parallel",
+      sequential: "Sequential",
+      serial: "Serial",
+      batch: "Batch",
+      stream: "Stream",
+      queue: "Queue",
+      stack: "Stack",
+      heap: "Heap",
+      tree: "Tree",
+      graph: "Graph",
+      network: "Network",
+      mesh: "Mesh",
+      grid: "Grid",
+      matrix: "Matrix",
+      vector: "Vector",
+      set: "Set",
+      map: "Map",
+      dictionary: "Dictionary",
+      index: "Index",
+      key: "Key",
+      pair: "Pair",
+      tuple: "Tuple",
+      struct: "Struct",
+      class: "Class",
+      interface: "Interface",
+      protocol: "Protocol",
+      contract: "Contract",
+      agreement: "Agreement",
+      treaty: "Treaty",
+      pact: "Pact",
+      deal: "Deal",
+      transaction: "Transaction",
+      trade: "Trade",
+      commerce: "Commerce",
+      business: "Business",
+      enterprise: "Enterprise",
+      company: "Company",
+      organization: "Organization",
+      institution: "Institution",
+      agency: "Agency",
+      department: "Department",
+      division: "Division",
+      section: "Section",
+      unit: "Unit",
+      team: "Team",
+      squad: "Squad",
+      crew: "Crew",
+      staff: "Staff",
+      personnel: "Personnel",
+      workforce: "Workforce",
+      employee: "Employee",
+      worker: "Worker",
+      technician: "Technician",
+      specialist: "Specialist",
+      expert: "Expert",
+      professional: "Professional",
+      consultant: "Consultant",
+      advisor: "Advisor",
+      analyst: "Analyst",
+      developer: "Developer",
+      programmer: "Programmer",
+      engineer: "Engineer",
+      architect: "Architect",
+      designer: "Designer",
+      artist: "Artist",
+      creator: "Creator",
+      author: "Author",
+      writer: "Writer",
+      editor: "Editor",
+      reviewer: "Reviewer",
+      tester: "Tester",
+      validator: "Validator",
+      auditor: "Auditor",
+      inspector: "Inspector",
+      supervisor: "Supervisor",
+      manager: "Manager",
+      director: "Director",
+      executive: "Executive",
+      administrator: "Administrator",
+      coordinator: "Coordinator",
+      facilitator: "Facilitator",
+      mediator: "Mediator",
+      negotiator: "Negotiator",
+      representative: "Representative",
+      delegate: "Delegate",
+      ambassador: "Ambassador",
+      agent: "Agent",
+      broker: "Broker",
+      dealer: "Dealer",
+      vendor: "Vendor",
+      supplier: "Supplier",
+      provider: "Provider",
+      distributor: "Distributor",
+      retailer: "Retailer",
+      wholesaler: "Wholesaler",
+      manufacturer: "Manufacturer",
+      inventor: "Inventor",
+      innovator: "Innovator",
+      pioneer: "Pioneer",
+      leader: "Leader",
+      follower: "Follower",
+      supporter: "Supporter",
+      advocate: "Advocate",
+      champion: "Champion",
+      defender: "Defender",
+      protector: "Protector",
+      guardian: "Guardian",
+      custodian: "Custodian",
+      caretaker: "Caretaker",
+      maintainer: "Maintainer",
+      keeper: "Keeper",
+      holder: "Holder",
+      possessor: "Possessor",
+      bearer: "Bearer",
+      carrier: "Carrier",
+      transporter: "Transporter",
+      deliverer: "Deliverer",
+      messenger: "Messenger",
+      courier: "Courier",
+      dispatcher: "Dispatcher",
+      sender: "Sender",
+      receiver: "Receiver",
+      recipient: "Recipient",
+      addressee: "Addressee",
+      beneficiary: "Beneficiary",
+      stakeholder: "Stakeholder",
+      shareholder: "Shareholder",
+      investor: "Investor",
+      sponsor: "Sponsor",
+      patron: "Patron",
+      donor: "Donor",
+      contributor: "Contributor",
+      participant: "Participant",
+      attendee: "Attendee",
+      tourist: "Tourist",
+      traveler: "Traveler",
+      passenger: "Passenger",
+      rider: "Rider",
+      driver: "Driver",
+      pilot: "Pilot",
+      captain: "Captain",
+      commander: "Commander",
+      chief: "Chief",
+      head: "Head",
+      boss: "Boss",
+      superior: "Superior",
+      subordinate: "Subordinate",
+      colleague: "Colleague",
+      peer: "Peer",
+      partner: "Partner",
+      associate: "Associate",
+      ally: "Ally",
+      friend: "Friend",
+      enemy: "Enemy",
+      opponent: "Opponent",
+      rival: "Rival",
+      competitor: "Competitor",
+      challenger: "Challenger",
+      contender: "Contender",
+      candidate: "Candidate",
+      applicant: "Applicant",
+      nominee: "Nominee",
+      volunteer: "Volunteer",
+      recruit: "Recruit",
+      trainee: "Trainee",
+      apprentice: "Apprentice",
+      intern: "Intern",
+      student: "Student",
+      pupil: "Pupil",
+      learner: "Learner",
+      scholar: "Scholar",
+      researcher: "Researcher",
+      scientist: "Scientist",
+      academic: "Academic",
+      professor: "Professor",
+      teacher: "Teacher",
+      instructor: "Instructor",
+      tutor: "Tutor",
+      mentor: "Mentor",
+      coach: "Coach",
+      trainer: "Trainer",
+      counselor: "Counselor",
+      therapist: "Therapist",
+      healer: "Healer",
+      doctor: "Doctor",
+      physician: "Physician",
+      surgeon: "Surgeon",
+      nurse: "Nurse",
+      medic: "Medic",
+      paramedic: "Paramedic",
+      authority: "Authority",
+      master: "Master",
+      guru: "Guru",
+      sage: "Sage",
+      wise: "Wise",
+      smart: "Smart",
+      intelligent: "Intelligent",
+      clever: "Clever",
+      brilliant: "Brilliant",
+      genius: "Genius",
+      talented: "Talented",
+      skilled: "Skilled",
+      experienced: "Experienced",
+      seasoned: "Seasoned",
+      veteran: "Veteran",
+      senior: "Senior",
+      junior: "Junior",
+      novice: "Novice",
+      beginner: "Beginner",
+      amateur: "Amateur",
+      hobbyist: "Hobbyist",
+      enthusiast: "Enthusiast",
+      fan: "Fan",
+      subscriber: "Subscriber",
+      collaborator: "Collaborator",
+      teammate: "Teammate",
+      coworker: "Coworker",
+      companion: "Companion",
+      buddy: "Buddy",
+      pal: "Pal",
+      mate: "Mate",
+      comrade: "Comrade",
+      confederate: "Confederate",
+      accomplice: "Accomplice",
+      aide: "Aide",
+      backer: "Backer",
+      benefactor: "Benefactor",
+      proprietor: "Proprietor",
+      landlord: "Landlord",
+      tenant: "Tenant",
+      renter: "Renter",
+      lessee: "Lessee",
+      lessor: "Lessor",
+      borrower: "Borrower",
+      lender: "Lender",
+      creditor: "Creditor",
+      debtor: "Debtor",
+      buyer: "Buyer",
+      seller: "Seller",
+      customer: "Customer",
     },
   },
   cn: {
@@ -4334,14 +5204,243 @@ export const messages: Record<Locale, Messages> = {
     admin: {
       title: "CashTrade管理",
       subtitle: "平台管理和监督",
-      accessDenied: { title: "", description: "", home: "" },
-      export: { users: "", trades: "", payouts: "" },
-      stats: { totalUsers: "", totalVolume: "", totalTrades: "", revenue: "", monthly: "" },
-      charts: { volume: "", newUsers: "" },
-      users: { title: "", user: "", search: "", email: "", kyc: "", volume: "", trades: "", lastLogin: "", actions: "", allStatuses: "", verified: "", pending: "", rejected: "" },
-      trades: { title: "", id: "", user: "", status: "", items: "", amount: "", date: "", actions: "" },
-      payouts: { title: "", id: "", user: "", amount: "", method: "", status: "", date: "", actions: "" },
-      kyc: { title: "", user: "", documents: "", status: "", submission: "", actions: "", pending: "", verified: "", rejected: "", id: "", selfie: "", address: "" }
+      loading: {
+        redirecting: "重定向到仪表板...",
+        verifyingPermissions: "验证权限...",
+        loading: "加载中...",
+      },
+      accessDenied: {
+        title: "访问被拒绝",
+        description: "您没有访问此页面的必要权限。",
+        home: "返回首页",
+        loginAdmin: "管理员登录"
+      },
+      login: {
+        title: "管理",
+        subtitle: "安全登录管理面板",
+        adminLogin: "管理员登录",
+        adminAccess: "仅限授权管理员访问",
+        emailLabel: "管理员邮箱",
+        passwordLabel: "密码",
+        emailPlaceholder: "admin@cashtrade.com",
+        passwordPlaceholder: "••••••••",
+        loginButton: "登录",
+        loggingIn: "登录中...",
+        steamLogin: "通过Steam登录",
+        loginProblem: "登录问题？",
+        contactSupport: "联系支持",
+        secureAccess: "安全访问 - 所有连接都被记录",
+        or: "或",
+      },
+      dashboard: {
+        title: "CashTrade管理仪表板",
+        subtitle: "完整平台管理 • CS2皮肤交易",
+        exportData: "导出数据",
+        fullReport: "完整报告",
+        overview: "概览",
+        trades: "交易",
+        users: "用户",
+        payouts: "支付",
+        kyc: "KYC",
+        analytics: "分析",
+        exports: "导出",
+        affiliates: "联盟",
+        commissions: "佣金",
+        volumeChart: "交易量（最近7天）",
+        tradesDistribution: "交易分布",
+        recentActivity: "最近活动",
+        tradesManagement: "交易管理",
+        tradesDescription: "跟踪和管理所有平台交易",
+        usersManagement: "用户管理",
+        usersDescription: "管理用户账户及其数据",
+        payoutsManagement: "支付管理",
+        payoutsDescription: "跟踪和验证SEPA和加密货币支付",
+        kycValidation: "KYC验证",
+        kycDescription: "管理身份验证请求",
+        exportConfiguration: "导出配置",
+        exportDescription: "选择要导出的数据类型并配置过滤器",
+        affiliatesManagement: "联盟管理",
+        affiliatesDescription: "管理联盟账户及其表现",
+        commissionsManagement: "联盟佣金",
+        commissionsDescription: "验证和支付联盟产生的佣金",
+      },
+      export: {
+        users: "导出用户",
+        trades: "导出交易",
+        payouts: "导出支付"
+      },
+      stats: {
+        totalUsers: "总用户数",
+        totalVolume: "总交易量",
+        totalTrades: "总交易数",
+        revenue: "收入（费用）",
+        monthly: "本月",
+        thisMonth: "本月",
+        kycPending: "KYC待处理",
+        successRate: "成功率",
+        topUser: "顶级用户",
+        recentTrades: "最近交易",
+        last24h: "最近24小时",
+        toProcess: "待处理",
+        upToDate: "最新",
+        tradesSuccessful: "成功交易"
+      },
+      charts: {
+        volume: "交易量",
+        newUsers: "新用户"
+      },
+      users: {
+        title: "用户管理",
+        user: "用户",
+        search: "搜索用户...",
+        searchPlaceholder: "按用户名、Steam ID搜索...",
+        email: "邮箱",
+        kyc: "KYC",
+        volume: "交易量",
+        trades: "交易",
+        lastLogin: "最后登录",
+        actions: "操作",
+        allStatuses: "所有状态",
+        verified: "已验证",
+        pending: "待处理",
+        rejected: "已拒绝",
+        steamId: "Steam ID",
+        level: "等级",
+        tickets: "票券",
+        joinedAt: "注册时间",
+        refresh: "刷新",
+        export: "导出",
+        noUsers: "未找到用户",
+        filterByKyc: "按KYC筛选",
+        allKycStatuses: "所有KYC状态",
+        inProgress: "进行中"
+      },
+      trades: {
+        title: "交易管理",
+        id: "ID",
+        user: "用户",
+        status: "状态",
+        items: "物品",
+        amount: "金额",
+        date: "日期",
+        actions: "操作",
+        ticketId: "工单ID",
+        searchPlaceholder: "按工单ID、用户搜索...",
+        filterByStatus: "按状态筛选",
+        allStatuses: "所有状态",
+        created: "已创建",
+        accepted: "已接受",
+        tradeHold: "交易暂停",
+        available: "可用",
+        paymentProcessing: "支付处理中",
+        paid: "已支付",
+        failed: "失败",
+        refresh: "刷新",
+        export: "导出",
+        noTrades: "未找到交易",
+        gross: "总额"
+      },
+      payouts: {
+        title: "支付管理",
+        id: "ID",
+        user: "用户",
+        amount: "金额",
+        method: "方式",
+        status: "状态",
+        date: "日期",
+        actions: "操作",
+        searchPlaceholder: "按ID、用户搜索...",
+        filterByStatus: "按状态筛选",
+        allStatuses: "所有状态",
+        pending: "待处理",
+        verificationRequired: "需要验证",
+        verified: "已验证",
+        scheduled: "已安排",
+        executed: "已执行",
+        paid: "已支付",
+        failed: "失败",
+        refresh: "刷新",
+        export: "导出",
+        noPayouts: "未找到支付",
+        reference: "参考"
+      },
+      kyc: {
+        title: "KYC管理",
+        user: "用户",
+        documents: "文档",
+        status: "状态",
+        submission: "提交日期",
+        actions: "操作",
+        pending: "待处理",
+        verified: "已验证",
+        rejected: "已拒绝",
+        id: "ID",
+        selfie: "自拍",
+        address: "地址",
+        type: "类型",
+        uploaded: "上传时间",
+        reviewed: "审核时间",
+        searchPlaceholder: "按用户、文档类型搜索...",
+        filterByStatus: "按状态筛选",
+        allStatuses: "所有状态",
+        approved: "已批准",
+        refresh: "刷新",
+        export: "导出",
+        noDocuments: "未找到KYC文档",
+        idCard: "身份证",
+        passport: "护照",
+        proofOfAddress: "地址证明",
+        nonCompliantDocument: "不合规文档"
+      },
+      exports: {
+        title: "数据导出",
+        subtitle: "导出和下载平台数据",
+        configuration: "配置",
+        configurationDescription: "选择要导出的数据类型并配置过滤器",
+        dataType: "数据类型",
+        dateFrom: "开始日期",
+        dateTo: "结束日期",
+        selectDate: "选择",
+        exportFormat: "导出格式",
+        csv: "CSV（逗号分隔值）",
+        excel: "Excel (.xlsx)",
+        exportData: "导出数据",
+        exporting: "导出中...",
+        history: "导出历史",
+        historyDescription: "最近执行的导出",
+        allData: "所有数据",
+        tradesExport: "交易",
+        tradesDescription: "导出所有交易及详情",
+        usersExport: "用户",
+        usersDescription: "导出用户数据",
+        payoutsExport: "支付",
+        payoutsDescription: "导出SEPA和加密货币支付",
+        kycExport: "KYC文档",
+        kycDescription: "导出验证文档",
+        affiliatesExport: "联盟",
+        affiliatesDescription: "导出联盟数据",
+        giveawaysExport: "赠品",
+        giveawaysDescription: "导出赠品和参与",
+      },
+      affiliates: {
+        title: "联盟管理",
+        description: "管理联盟账户及其表现",
+      },
+      commissions: {
+        title: "联盟佣金",
+        description: "验证和支付联盟产生的佣金",
+      },
+      errors: {
+        loadingStats: "加载统计数据时出错",
+        loadingTrades: "加载交易时出错",
+        loadingUsers: "加载用户时出错",
+        loadingPayouts: "加载支付时出错",
+        loadingKyc: "加载KYC文档时出错",
+        unknown: "未知错误",
+        approval: "批准时出错",
+        rejection: "拒绝时出错",
+        export: "导出时出错",
+      },
     },
     kycPage: {
       title: "KYC验证",
@@ -4361,9 +5460,892 @@ export const messages: Record<Locale, Messages> = {
       successMessages: { tradeCreated: "", followInstructions: "" }
     },
     giveawaysPage: {
-      participationSuccess: "",
-      available: "",
-      myEntries: { title: "", inProgress: "", lost: "" }
+      participationSuccess: "参与成功！",
+      available: "张票券可用",
+      myEntries: {
+        title: "我的参与",
+        inProgress: "进行中",
+        lost: "失败"
+      }
+    },
+    chatWidget: {
+      support: "CashTrade客服",
+      online: "在线",
+      responseTime: "通常5分钟内回复",
+      quickActions: "快速操作：",
+      tradeProblem: "交易问题",
+      urgentSupport: "紧急支持",
+      kycStatus: "KYC状态",
+      quickMessages: {
+        tradeProblem: "我的交易有问题",
+        urgentHelp: "我需要紧急帮助",
+        kycStatusCheck: "我的KYC验证状态如何？",
+      },
+      responses: {
+        expertResponse: "感谢您的消息！我们的专家将在几分钟内回复您。🚀",
+        thankYouMessage: "感谢您的消息！我们的团队成员将快速回复您。同时，您可以查看我们的FAQ或指南。😊",
+      },
+      placeholder: "输入您的消息...",
+      poweredBy: "由CashTrade AI提供支持",
+      responseTimeInfo: "我们通常在5分钟内回复",
+      tooltip: "💬 需要帮助？与我们聊天！",
+    },
+    ui: {
+      search: "搜索",
+      filter: "筛选",
+      refresh: "刷新",
+      export: "导出",
+      actions: "操作",
+      view: "查看",
+      edit: "编辑",
+      delete: "删除",
+      save: "保存",
+      cancel: "取消",
+      previous: "上一页",
+      next: "下一页",
+      page: "页面",
+      of: "共",
+      noResults: "无结果",
+      loading: "加载中...",
+      error: "错误",
+      success: "成功",
+      info: "信息",
+      all: "全部",
+      active: "活跃",
+      inactive: "非活跃",
+      approved: "已批准",
+      rejected: "已拒绝",
+      pending: "待处理",
+      paid: "已支付",
+      failed: "失败",
+      created: "已创建",
+      updated: "已更新",
+      deleted: "已删除",
+      enabled: "已启用",
+      disabled: "已禁用",
+      yes: "是",
+      no: "否",
+      confirm: "确认",
+      close: "关闭",
+      open: "打开",
+      select: "选择",
+      selectAll: "全选",
+      deselectAll: "取消全选",
+      copy: "复制",
+      copied: "已复制",
+      download: "下载",
+      upload: "上传",
+      submit: "提交",
+      reset: "重置",
+      clear: "清除",
+      apply: "应用",
+      remove: "移除",
+      add: "添加",
+      create: "创建",
+      update: "更新",
+      manage: "管理",
+      settings: "设置",
+      tools: "工具",
+      status: "状态",
+      date: "日期",
+      time: "时间",
+      amount: "金额",
+      total: "总计",
+      subtotal: "小计",
+      fees: "费用",
+      commission: "佣金",
+      volume: "交易量",
+      count: "数量",
+      items: "物品",
+      users: "用户",
+      trades: "交易",
+      payouts: "支付",
+      affiliates: "联盟",
+      commissions: "佣金",
+      documents: "文档",
+      type: "类型",
+      name: "名称",
+      email: "邮箱",
+      username: "用户名",
+      avatar: "头像",
+      profile: "个人资料",
+      account: "账户",
+      security: "安全",
+      privacy: "隐私",
+      notifications: "通知",
+      preferences: "偏好",
+      language: "语言",
+      theme: "主题",
+      currency: "货币",
+      timezone: "时区",
+      country: "国家",
+      address: "地址",
+      phone: "电话",
+      website: "网站",
+      description: "描述",
+      notes: "备注",
+      tags: "标签",
+      categories: "分类",
+      priority: "优先级",
+      urgency: "紧急程度",
+      severity: "严重程度",
+      impact: "影响",
+      resolution: "解决方案",
+      feedback: "反馈",
+      rating: "评分",
+      review: "评价",
+      comment: "评论",
+      message: "消息",
+      subject: "主题",
+      content: "内容",
+      title: "标题",
+      subtitle: "副标题",
+      header: "页眉",
+      footer: "页脚",
+      sidebar: "侧边栏",
+      menu: "菜单",
+      navigation: "导航",
+      breadcrumb: "面包屑",
+      pagination: "分页",
+      table: "表格",
+      list: "列表",
+      card: "卡片",
+      modal: "模态框",
+      dialog: "对话框",
+      popup: "弹窗",
+      tooltip: "工具提示",
+      banner: "横幅",
+      badge: "徽章",
+      label: "标签",
+      tag: "标签",
+      chip: "芯片",
+      button: "按钮",
+      link: "链接",
+      textarea: "文本区域",
+      checkbox: "复选框",
+      radio: "单选按钮",
+      slider: "滑块",
+      spinner: "加载指示器",
+      loader: "加载器",
+      skeleton: "骨架屏",
+      placeholder: "占位符",
+      empty: "空",
+      noData: "无数据",
+      notFound: "未找到",
+      unauthorized: "未授权",
+      forbidden: "禁止访问",
+      serverError: "服务器错误",
+      networkError: "网络错误",
+      timeout: "超时",
+      maintenance: "维护中",
+      comingSoon: "即将推出",
+      underConstruction: "建设中",
+      beta: "测试版",
+      alpha: "内测版",
+      draft: "草稿",
+      published: "已发布",
+      archived: "已归档",
+      restored: "已恢复",
+      backup: "备份",
+      restore: "恢复",
+      import: "导入",
+      sync: "同步",
+      reload: "重新加载",
+      retry: "重试",
+      undo: "撤销",
+      redo: "重做",
+      cut: "剪切",
+      paste: "粘贴",
+      duplicate: "复制",
+      clone: "克隆",
+      move: "移动",
+      rename: "重命名",
+      sort: "排序",
+      find: "查找",
+      replace: "替换",
+      match: "匹配",
+      compare: "比较",
+      merge: "合并",
+      split: "分割",
+      join: "加入",
+      ungroup: "取消分组",
+      expand: "展开",
+      collapse: "折叠",
+      show: "显示",
+      hide: "隐藏",
+      toggle: "切换",
+      maximize: "最大化",
+      minimize: "最小化",
+      fullscreen: "全屏",
+      windowed: "窗口模式",
+      zoom: "缩放",
+      pan: "平移",
+      rotate: "旋转",
+      flip: "翻转",
+      crop: "裁剪",
+      resize: "调整大小",
+      scale: "缩放",
+      fit: "适应",
+      fill: "填充",
+      stretch: "拉伸",
+      center: "居中",
+      left: "左",
+      right: "右",
+      top: "顶部",
+      bottom: "底部",
+      middle: "中间",
+      start: "开始",
+      end: "结束",
+      first: "第一个",
+      last: "最后一个",
+      forward: "向前",
+      backward: "向后",
+      up: "向上",
+      down: "向下",
+      ascending: "升序",
+      descending: "降序",
+      alphabetical: "字母顺序",
+      numerical: "数字顺序",
+      chronological: "时间顺序",
+      random: "随机",
+      shuffle: "打乱",
+      reverse: "反转",
+      invert: "反转",
+      mirror: "镜像",
+      transform: "变换",
+      animate: "动画",
+      transition: "过渡",
+      effect: "效果",
+      style: "样式",
+      color: "颜色",
+      background: "背景",
+      foreground: "前景",
+      border: "边框",
+      shadow: "阴影",
+      gradient: "渐变",
+      pattern: "图案",
+      texture: "纹理",
+      image: "图片",
+      icon: "图标",
+      logo: "标志",
+      thumbnail: "缩略图",
+      preview: "预览",
+      gallery: "画廊",
+      slideshow: "幻灯片",
+      carousel: "轮播",
+      tabs: "标签页",
+      accordion: "手风琴",
+      dropdown: "下拉菜单",
+      toolbar: "工具栏",
+      statusbar: "状态栏",
+      panel: "面板",
+      widget: "小部件",
+      component: "组件",
+      element: "元素",
+      container: "容器",
+      wrapper: "包装器",
+      layout: "布局",
+      template: "模板",
+      skin: "皮肤",
+      appearance: "外观",
+      design: "设计",
+      interaction: "交互",
+      behavior: "行为",
+      functionality: "功能",
+      feature: "特性",
+      capability: "能力",
+      option: "选项",
+      setting: "设置",
+      configuration: "配置",
+      parameter: "参数",
+      property: "属性",
+      attribute: "特性",
+      value: "值",
+      data: "数据",
+      information: "信息",
+      text: "文本",
+      number: "数字",
+      integer: "整数",
+      decimal: "小数",
+      float: "浮点数",
+      boolean: "布尔值",
+      array: "数组",
+      object: "对象",
+      json: "JSON",
+      xml: "XML",
+      html: "HTML",
+      css: "CSS",
+      javascript: "JavaScript",
+      typescript: "TypeScript",
+      react: "React",
+      vue: "Vue",
+      angular: "Angular",
+      express: "Express",
+      database: "数据库",
+      sql: "SQL",
+      nosql: "NoSQL",
+      mongodb: "MongoDB",
+      postgresql: "PostgreSQL",
+      mysql: "MySQL",
+      sqlite: "SQLite",
+      redis: "Redis",
+      api: "API",
+      rest: "REST",
+      graphql: "GraphQL",
+      websocket: "WebSocket",
+      http: "HTTP",
+      https: "HTTPS",
+      ssl: "SSL",
+      tls: "TLS",
+      auth: "认证",
+      authentication: "身份验证",
+      authorization: "授权",
+      login: "登录",
+      logout: "登出",
+      signup: "注册",
+      signin: "登录",
+      register: "注册",
+      unregister: "注销",
+      activate: "激活",
+      deactivate: "停用",
+      enable: "启用",
+      disable: "禁用",
+      lock: "锁定",
+      unlock: "解锁",
+      block: "阻止",
+      unblock: "解除阻止",
+      ban: "封禁",
+      unban: "解封",
+      suspend: "暂停",
+      unsuspend: "恢复",
+      verify: "验证",
+      unverify: "取消验证",
+      approve: "批准",
+      reject: "拒绝",
+      accept: "接受",
+      decline: "拒绝",
+      deny: "拒绝",
+      allow: "允许",
+      disallow: "不允许",
+      permit: "许可",
+      forbid: "禁止",
+      grant: "授予",
+      revoke: "撤销",
+      assign: "分配",
+      unassign: "取消分配",
+      subscribe: "订阅",
+      unsubscribe: "取消订阅",
+      follow: "关注",
+      unfollow: "取消关注",
+      like: "喜欢",
+      unlike: "取消喜欢",
+      favorite: "收藏",
+      unfavorite: "取消收藏",
+      bookmark: "书签",
+      unbookmark: "取消书签",
+      share: "分享",
+      unshare: "取消分享",
+      publish: "发布",
+      unpublish: "取消发布",
+      archive: "归档",
+      unarchive: "取消归档",
+      trash: "垃圾箱",
+      untrash: "从垃圾箱恢复",
+      undelete: "恢复删除",
+      insert: "插入",
+      append: "追加",
+      prepend: "前置",
+      substitute: "替换",
+      swap: "交换",
+      exchange: "交换",
+      change: "更改",
+      modify: "修改",
+      upgrade: "升级",
+      downgrade: "降级",
+      migrate: "迁移",
+      transfer: "转移",
+      recover: "恢复",
+      repair: "修复",
+      fix: "修复",
+      debug: "调试",
+      test: "测试",
+      validate: "验证",
+      check: "检查",
+      inspect: "检查",
+      audit: "审计",
+      analyze: "分析",
+      evaluate: "评估",
+      assess: "评估",
+      measure: "测量",
+      calculate: "计算",
+      compute: "计算",
+      process: "处理",
+      execute: "执行",
+      run: "运行",
+      stop: "停止",
+      pause: "暂停",
+      resume: "恢复",
+      restart: "重启",
+      initialize: "初始化",
+      setup: "设置",
+      configure: "配置",
+      install: "安装",
+      uninstall: "卸载",
+      deploy: "部署",
+      undeploy: "取消部署",
+      build: "构建",
+      compile: "编译",
+      bundle: "打包",
+      package: "打包",
+      compress: "压缩",
+      decompress: "解压",
+      zip: "压缩",
+      unzip: "解压",
+      tar: "打包",
+      untar: "解包",
+      encrypt: "加密",
+      decrypt: "解密",
+      hash: "哈希",
+      sign: "签名",
+      authenticate: "认证",
+      authorize: "授权",
+      sanitize: "清理",
+      escape: "转义",
+      unescape: "反转义",
+      encode: "编码",
+      decode: "解码",
+      serialize: "序列化",
+      deserialize: "反序列化",
+      stringify: "字符串化",
+      parse: "解析",
+      format: "格式化",
+      normalize: "标准化",
+      standardize: "标准化",
+      optimize: "优化",
+      improve: "改进",
+      enhance: "增强",
+      patch: "补丁",
+      hotfix: "热修复",
+      bugfix: "错误修复",
+      enhancement: "增强",
+      improvement: "改进",
+      optimization: "优化",
+      performance: "性能",
+      speed: "速度",
+      efficiency: "效率",
+      reliability: "可靠性",
+      stability: "稳定性",
+      safety: "安全性",
+      confidentiality: "机密性",
+      integrity: "完整性",
+      availability: "可用性",
+      accessibility: "可访问性",
+      usability: "可用性",
+      compatibility: "兼容性",
+      interoperability: "互操作性",
+      portability: "可移植性",
+      scalability: "可扩展性",
+      maintainability: "可维护性",
+      extensibility: "可扩展性",
+      flexibility: "灵活性",
+      adaptability: "适应性",
+      modularity: "模块化",
+      reusability: "可重用性",
+      testability: "可测试性",
+      debuggability: "可调试性",
+      monitorability: "可监控性",
+      observability: "可观察性",
+      traceability: "可追溯性",
+      auditability: "可审计性",
+      compliance: "合规性",
+      governance: "治理",
+      policy: "政策",
+      procedure: "程序",
+      workflow: "工作流",
+      pipeline: "管道",
+      automation: "自动化",
+      orchestration: "编排",
+      integration: "集成",
+      synchronization: "同步",
+      coordination: "协调",
+      collaboration: "协作",
+      communication: "通信",
+      notification: "通知",
+      alert: "警报",
+      warning: "警告",
+      exception: "异常",
+      failure: "失败",
+      completion: "完成",
+      progress: "进度",
+      state: "状态",
+      condition: "条件",
+      situation: "情况",
+      context: "上下文",
+      environment: "环境",
+      platform: "平台",
+      system: "系统",
+      application: "应用程序",
+      service: "服务",
+      module: "模块",
+      library: "库",
+      framework: "框架",
+      tool: "工具",
+      utility: "实用程序",
+      helper: "助手",
+      assistant: "助手",
+      guide: "指南",
+      tutorial: "教程",
+      documentation: "文档",
+      manual: "手册",
+      handbook: "手册",
+      reference: "参考",
+      glossary: "词汇表",
+      encyclopedia: "百科全书",
+      knowledge: "知识",
+      resource: "资源",
+      asset: "资产",
+      file: "文件",
+      document: "文档",
+      report: "报告",
+      log: "日志",
+      record: "记录",
+      entry: "条目",
+      item: "项目",
+      node: "节点",
+      entity: "实体",
+      instance: "实例",
+      occurrence: "出现",
+      event: "事件",
+      action: "动作",
+      operation: "操作",
+      function: "函数",
+      method: "方法",
+      routine: "例程",
+      algorithm: "算法",
+      logic: "逻辑",
+      rule: "规则",
+      constraint: "约束",
+      requirement: "需求",
+      specification: "规范",
+      definition: "定义",
+      declaration: "声明",
+      implementation: "实现",
+      execution: "执行",
+      invocation: "调用",
+      call: "调用",
+      request: "请求",
+      response: "响应",
+      result: "结果",
+      output: "输出",
+      input: "输入",
+      argument: "参数",
+      variable: "变量",
+      constant: "常量",
+      literal: "字面量",
+      expression: "表达式",
+      statement: "语句",
+      instruction: "指令",
+      command: "命令",
+      directive: "指令",
+      keyword: "关键字",
+      operator: "操作符",
+      symbol: "符号",
+      token: "令牌",
+      identifier: "标识符",
+      marker: "标记",
+      flag: "标志",
+      indicator: "指示器",
+      signal: "信号",
+      trigger: "触发器",
+      handler: "处理器",
+      listener: "监听器",
+      observer: "观察者",
+      publisher: "发布者",
+      producer: "生产者",
+      consumer: "消费者",
+      client: "客户端",
+      server: "服务器",
+      host: "主机",
+      guest: "客人",
+      user: "用户",
+      admin: "管理员",
+      moderator: "版主",
+      owner: "所有者",
+      member: "成员",
+      visitor: "访客",
+      anonymous: "匿名",
+      authenticated: "已认证",
+      authorized: "已授权",
+      verified: "已验证",
+      trusted: "可信任",
+      secure: "安全",
+      safe: "安全",
+      protected: "受保护",
+      private: "私有",
+      public: "公开",
+      internal: "内部",
+      external: "外部",
+      local: "本地",
+      remote: "远程",
+      global: "全局",
+      universal: "通用",
+      general: "一般",
+      specific: "特定",
+      particular: "特殊",
+      individual: "个人",
+      unique: "唯一",
+      common: "常见",
+      shared: "共享",
+      distributed: "分布式",
+      centralized: "集中式",
+      decentralized: "去中心化",
+      federated: "联邦",
+      clustered: "集群",
+      replicated: "复制",
+      mirrored: "镜像",
+      synchronized: "同步",
+      asynchronous: "异步",
+      concurrent: "并发",
+      parallel: "并行",
+      sequential: "顺序",
+      serial: "串行",
+      batch: "批处理",
+      stream: "流",
+      queue: "队列",
+      stack: "堆栈",
+      heap: "堆",
+      tree: "树",
+      graph: "图",
+      network: "网络",
+      mesh: "网格",
+      grid: "网格",
+      matrix: "矩阵",
+      vector: "向量",
+      set: "集合",
+      map: "映射",
+      dictionary: "字典",
+      index: "索引",
+      key: "键",
+      pair: "对",
+      tuple: "元组",
+      struct: "结构",
+      class: "类",
+      interface: "接口",
+      protocol: "协议",
+      contract: "合约",
+      agreement: "协议",
+      treaty: "条约",
+      pact: "协定",
+      deal: "交易",
+      transaction: "交易",
+      trade: "交易",
+      commerce: "商务",
+      business: "业务",
+      enterprise: "企业",
+      company: "公司",
+      organization: "组织",
+      institution: "机构",
+      agency: "代理",
+      department: "部门",
+      division: "部门",
+      section: "部分",
+      unit: "单位",
+      team: "团队",
+      squad: "小队",
+      crew: "团队",
+      staff: "员工",
+      personnel: "人员",
+      workforce: "劳动力",
+      employee: "员工",
+      worker: "工人",
+      technician: "技术员",
+      specialist: "专家",
+      expert: "专家",
+      professional: "专业人士",
+      consultant: "顾问",
+      advisor: "顾问",
+      analyst: "分析师",
+      developer: "开发者",
+      programmer: "程序员",
+      engineer: "工程师",
+      architect: "架构师",
+      designer: "设计师",
+      artist: "艺术家",
+      creator: "创作者",
+      author: "作者",
+      writer: "作家",
+      editor: "编辑",
+      reviewer: "审阅者",
+      tester: "测试员",
+      validator: "验证者",
+      auditor: "审计员",
+      inspector: "检查员",
+      supervisor: "主管",
+      manager: "经理",
+      director: "总监",
+      executive: "高管",
+      administrator: "管理员",
+      coordinator: "协调员",
+      facilitator: "促进者",
+      mediator: "调解员",
+      negotiator: "谈判者",
+      representative: "代表",
+      delegate: "代表",
+      ambassador: "大使",
+      agent: "代理",
+      broker: "经纪人",
+      dealer: "经销商",
+      vendor: "供应商",
+      supplier: "供应商",
+      provider: "提供商",
+      distributor: "分销商",
+      retailer: "零售商",
+      wholesaler: "批发商",
+      manufacturer: "制造商",
+      inventor: "发明家",
+      innovator: "创新者",
+      pioneer: "先驱",
+      leader: "领导者",
+      follower: "追随者",
+      supporter: "支持者",
+      advocate: "倡导者",
+      champion: "冠军",
+      defender: "捍卫者",
+      protector: "保护者",
+      guardian: "守护者",
+      custodian: "监护人",
+      caretaker: "看护者",
+      maintainer: "维护者",
+      keeper: "保管者",
+      holder: "持有者",
+      possessor: "拥有者",
+      bearer: "持有者",
+      carrier: "承运人",
+      transporter: "运输者",
+      deliverer: "送货员",
+      messenger: "信使",
+      courier: "快递员",
+      dispatcher: "调度员",
+      sender: "发送者",
+      receiver: "接收者",
+      recipient: "收件人",
+      addressee: "收件人",
+      beneficiary: "受益人",
+      stakeholder: "利益相关者",
+      shareholder: "股东",
+      investor: "投资者",
+      sponsor: "赞助商",
+      patron: "赞助人",
+      donor: "捐赠者",
+      contributor: "贡献者",
+      participant: "参与者",
+      attendee: "参会者",
+      tourist: "游客",
+      traveler: "旅行者",
+      passenger: "乘客",
+      rider: "骑手",
+      driver: "司机",
+      pilot: "飞行员",
+      captain: "船长",
+      commander: "指挥官",
+      chief: "首席",
+      head: "负责人",
+      boss: "老板",
+      superior: "上级",
+      subordinate: "下级",
+      colleague: "同事",
+      peer: "同行",
+      partner: "合作伙伴",
+      associate: "合伙人",
+      ally: "盟友",
+      friend: "朋友",
+      enemy: "敌人",
+      opponent: "对手",
+      rival: "竞争对手",
+      competitor: "竞争者",
+      challenger: "挑战者",
+      contender: "竞争者",
+      candidate: "候选人",
+      applicant: "申请人",
+      nominee: "被提名人",
+      volunteer: "志愿者",
+      recruit: "新兵",
+      trainee: "受训者",
+      apprentice: "学徒",
+      intern: "实习生",
+      student: "学生",
+      pupil: "学生",
+      learner: "学习者",
+      scholar: "学者",
+      researcher: "研究员",
+      scientist: "科学家",
+      academic: "学者",
+      professor: "教授",
+      teacher: "老师",
+      instructor: "讲师",
+      tutor: "导师",
+      mentor: "导师",
+      coach: "教练",
+      trainer: "培训师",
+      counselor: "顾问",
+      therapist: "治疗师",
+      healer: "治疗师",
+      doctor: "医生",
+      physician: "医师",
+      surgeon: "外科医生",
+      nurse: "护士",
+      medic: "医务人员",
+      paramedic: "急救医生",
+      authority: "权威",
+      master: "大师",
+      guru: "大师",
+      sage: "圣人",
+      wise: "智慧",
+      smart: "聪明",
+      intelligent: "智能",
+      clever: "聪明",
+      brilliant: "杰出",
+      genius: "天才",
+      talented: "有才华",
+      skilled: "熟练",
+      experienced: "有经验",
+      seasoned: "经验丰富",
+      veteran: "老兵",
+      senior: "高级",
+      junior: "初级",
+      novice: "新手",
+      beginner: "初学者",
+      amateur: "业余",
+      hobbyist: "爱好者",
+      enthusiast: "爱好者",
+      fan: "粉丝",
+      subscriber: "订阅者",
+      collaborator: "合作者",
+      teammate: "队友",
+      coworker: "同事",
+      companion: "伙伴",
+      buddy: "伙伴",
+      pal: "朋友",
+      mate: "伙伴",
+      comrade: "同志",
+      confederate: "同盟",
+      accomplice: "共犯",
+      aide: "助手",
+      backer: "支持者",
+      benefactor: "恩人",
+      proprietor: "业主",
+      landlord: "房东",
+      tenant: "租户",
+      renter: "租户",
+      lessee: "承租人",
+      lessor: "出租人",
+      borrower: "借款人",
+      lender: "放款人",
+      creditor: "债权人",
+      debtor: "债务人",
+      buyer: "买家",
+      seller: "卖家",
+      customer: "客户",
     },
   },
 };
