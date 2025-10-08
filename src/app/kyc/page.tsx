@@ -22,7 +22,7 @@ import {
   XCircleIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
-import { Messages } from '@/lib/i18n';
+import { Messages } from '~/utils/types';
 
 type KYCStep = 'info' | 'documents' | 'selfie' | 'address' | 'review';
 type DocumentType = 'id_card' | 'passport' | 'driving_license';

@@ -412,6 +412,8 @@ export interface Messages {
     tradeCreatedSuccess: string;
     tradeCreationError: string;
     settingsSavedSuccess: string;
+    steamLoginSuccess: string;
+    settingsSaveError: string;
     invalidTradeLink: string;
     uploaded: string;
     kycSubmitted: string;
@@ -803,6 +805,13 @@ export interface Messages {
   settings: {
     title: string;
     subtitle: string;
+    tabs: {
+      profile: string;
+      security: string;
+      notifications: string;
+      payments: string;
+      preferences: string;
+    };
     profile: {
       title: string;
       steamUsername: string;
@@ -898,6 +907,7 @@ export interface Messages {
       description: string;
       login: string;
     };
+    loginDescription: string;
     saveError: string;
   };
   admin: {
@@ -930,6 +940,11 @@ export interface Messages {
       contactSupport: string;
       secureAccess: string;
       or: string;
+      connectionError: string;
+      loginFailed: string;
+      checkCredentials: string;
+      loginSuccess: string;
+      welcomeMessage: string;
     };
     dashboard: {
       title: string;
@@ -1263,6 +1278,24 @@ export interface Messages {
     };
   };
   sellPage: {
+    title: string;
+    subtitle: string;
+    loginDescription: string;
+    steps: {
+      inventory: string;
+      trade: string;
+      confirmation: string;
+    };
+    confirmation: {
+      title: string;
+      description: string;
+      tradeId: string;
+      grossValue: string;
+      totalFees: string;
+      youWillReceive: string;
+      trackTrade: string;
+      openSteam: string;
+    };
     helpSteps: string[];
     successMessages: {
       tradeCreated: string;
@@ -1466,6 +1499,7 @@ export interface Messages {
       kycStatusCheck: string;
     };
     responses: {
+      welcomeMessage: string;
       expertResponse: string;
       thankYouMessage: string;
     };

@@ -12,7 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
-import { Messages } from '@/lib/i18n';
+import { Messages } from '~/utils/types';
 import {
   QuestionMarkCircleIcon,
   ChatBubbleLeftRightIcon,

@@ -370,6 +370,8 @@ export const messages: Record<Locale, Messages> = {
       tradeCreatedSuccess: "Trade créé avec succès !",
       tradeCreationError: "Erreur lors de la création du trade",
       settingsSavedSuccess: "Paramètres sauvegardés avec succès",
+      steamLoginSuccess: "Connexion Steam réussie !",
+      settingsSaveError: "Erreur lors de la sauvegarde des paramètres",
       invalidTradeLink: "Lien de trade invalide. Veuillez copier le lien depuis Steam.",
       uploaded: "téléchargé avec succès",
       kycSubmitted: "Dossier KYC soumis avec succès ! Vous recevrez une réponse sous 24-48h.",
@@ -598,6 +600,7 @@ export const messages: Record<Locale, Messages> = {
         kycStatusCheck: "Quel est le statut de ma vérification KYC ?",
       },
       responses: {
+        welcomeMessage: "Salut ! 👋 Je suis Alex de l'équipe CashTrade. Comment puis-je vous aider aujourd'hui ?",
         expertResponse: "Merci pour votre message ! Un de nos experts va vous répondre dans quelques instants. 🚀",
         thankYouMessage: "Merci pour votre message ! Un membre de notre équipe vous répondra rapidement. En attendant, vous pouvez consulter notre FAQ ou nos guides. 😊",
       },
@@ -1814,6 +1817,13 @@ export const messages: Record<Locale, Messages> = {
     settings: {
       title: "Paramètres",
       subtitle: "Gérez vos préférences et paramètres de compte",
+      tabs: {
+        profile: "Profil",
+        security: "Sécurité",
+        notifications: "Notifications",
+        payments: "Paiements",
+        preferences: "Préférences"
+      },
       profile: {
         title: "Informations du profil",
         steamUsername: "Nom d'utilisateur Steam",
@@ -1909,6 +1919,7 @@ export const messages: Record<Locale, Messages> = {
         description: "Vous devez être connecté pour accéder aux paramètres.",
         login: "Se connecter avec Steam"
       },
+      loginDescription: "Vous devez être connecté pour accéder aux paramètres.",
       saveError: "Erreur lors de la sauvegarde"
     },
     admin: {
@@ -1941,6 +1952,11 @@ export const messages: Record<Locale, Messages> = {
         contactSupport: "Contactez le support",
         secureAccess: "Accès sécurisé - Toutes les connexions sont enregistrées",
         or: "Ou",
+        connectionError: "Erreur de connexion. Vérifiez vos identifiants.",
+        loginFailed: "Échec de la connexion",
+        checkCredentials: "Vérifiez vos identifiants",
+        loginSuccess: "Connexion réussie !",
+        welcomeMessage: "Bienvenue dans le panel d'administration",
       },
       dashboard: {
         title: "Dashboard Admin CashTrade",
@@ -2274,6 +2290,24 @@ export const messages: Record<Locale, Messages> = {
       }
     },
     sellPage: {
+      title: "Vendre vos skins CS2",
+      subtitle: "Vendez vos skins Counter-Strike 2 instantanément et recevez votre argent rapidement",
+      loginDescription: "Vous devez être connecté avec Steam pour vendre vos skins.",
+      steps: {
+        inventory: "Sélection des items",
+        trade: "Création du trade",
+        confirmation: "Confirmation"
+      },
+      confirmation: {
+        title: "Trade créé avec succès !",
+        description: "Votre trade a été créé et est en attente d'acceptation.",
+        tradeId: "ID de la vente",
+        grossValue: "Valeur brute",
+        totalFees: "Frais totaux",
+        youWillReceive: "Vous recevrez",
+        trackTrade: "Suivre le trade",
+        openSteam: "Ouvrir Steam"
+      },
       helpSteps: ["Ouvrez Steam et allez dans votre inventaire", "Cliquez sur \"Paramètres de confidentialité\"", "Copiez l'URL du Trade Link"],
       successMessages: {
         tradeCreated: "Trade créé avec succès !",
@@ -2654,6 +2688,8 @@ export const messages: Record<Locale, Messages> = {
       tradeCreatedSuccess: "Trade created successfully!",
       tradeCreationError: "Error creating trade",
       settingsSavedSuccess: "Settings saved successfully",
+      steamLoginSuccess: "Steam login successful!",
+      settingsSaveError: "Error saving settings",
       invalidTradeLink: "Invalid trade link. Please copy the link from Steam.",
       uploaded: "uploaded successfully",
       kycSubmitted: "KYC file submitted successfully! You will receive a response within 24-48h.",
@@ -3219,6 +3255,13 @@ export const messages: Record<Locale, Messages> = {
     settings: {
       title: "Settings",
       subtitle: "Manage your preferences and account settings",
+      tabs: {
+        profile: "Profile",
+        security: "Security",
+        notifications: "Notifications",
+        payments: "Payments",
+        preferences: "Preferences"
+      },
       profile: {
         title: "Profile information",
         steamUsername: "Steam username",
@@ -3314,6 +3357,7 @@ export const messages: Record<Locale, Messages> = {
         description: "You must be logged in to access settings.",
         login: "Login with Steam"
       },
+      loginDescription: "You must be logged in to access settings.",
       saveError: "Error saving settings"
     },
     admin: {
@@ -3346,6 +3390,11 @@ export const messages: Record<Locale, Messages> = {
         contactSupport: "Contact support",
         secureAccess: "Secure access - All connections are logged",
         or: "Or",
+        connectionError: "Connection error. Check your credentials.",
+        loginFailed: "Login failed",
+        checkCredentials: "Check your credentials",
+        loginSuccess: "Login successful!",
+        welcomeMessage: "Welcome to the admin panel",
       },
       dashboard: {
         title: "CashTrade Admin Dashboard",
@@ -3679,6 +3728,24 @@ export const messages: Record<Locale, Messages> = {
       }
     },
     sellPage: {
+      title: "Sell your CS2 skins",
+      subtitle: "Sell your Counter-Strike 2 skins instantly and receive your money quickly",
+      loginDescription: "You must be logged in with Steam to sell your skins.",
+      steps: {
+        inventory: "Item selection",
+        trade: "Trade creation",
+        confirmation: "Confirmation"
+      },
+      confirmation: {
+        title: "Trade created successfully!",
+        description: "Your trade has been created and is awaiting acceptance.",
+        tradeId: "Sale ID",
+        grossValue: "Gross value",
+        totalFees: "Total fees",
+        youWillReceive: "You will receive",
+        trackTrade: "Track trade",
+        openSteam: "Open Steam"
+      },
       helpSteps: ["Open Steam and go to your inventory", "Click on \"Privacy settings\"", "Copy the Trade Link URL"],
       successMessages: {
         tradeCreated: "Trade created successfully!",
@@ -3708,6 +3775,7 @@ export const messages: Record<Locale, Messages> = {
         kycStatusCheck: "What is the status of my KYC verification?",
       },
       responses: {
+        welcomeMessage: "Hi! 👋 I'm Alex from the CashTrade team. How can I help you today?",
         expertResponse: "Thank you for your message! One of our experts will respond in a few moments. 🚀",
         thankYouMessage: "Thank you for your message! A member of our team will respond quickly. In the meantime, you can check our FAQ or guides. 😊",
       },
@@ -4934,6 +5002,8 @@ export const messages: Record<Locale, Messages> = {
       tradeCreatedSuccess: "交易创建成功！",
       tradeCreationError: "创建交易时出错",
       settingsSavedSuccess: "设置保存成功",
+      steamLoginSuccess: "Steam登录成功！",
+      settingsSaveError: "保存设置时出错",
       invalidTradeLink: "无效的交易链接。请从Steam复制链接。",
       uploaded: "上传成功",
       kycSubmitted: "KYC文件提交成功！您将在24-48小时内收到回复。",
@@ -5193,12 +5263,20 @@ export const messages: Record<Locale, Messages> = {
     settings: {
       title: "设置",
       subtitle: "管理您的偏好和账户设置",
+      tabs: {
+        profile: "资料",
+        security: "安全",
+        notifications: "通知",
+        payments: "支付",
+        preferences: "偏好"
+      },
       profile: { title: "", steamUsername: "", steamSync: "", memberSince: "", statistics: "", level: "", totalXp: "", tickets: "", volume: "" },
       security: { title: "", twoFactor: { title: "", description: "", enabled: "", configure: "" }, kyc: { title: "", description: "", verified: "", pending: "", start: "" }, sessions: { title: "", description: "", view: "" }, gdpr: { title: "", description: "", export: "", delete: "" } },
       notifications: { title: "", email: { title: "", description: "" }, trades: { title: "", description: "" }, payments: { title: "", description: "" }, push: { title: "", description: "" }, marketing: { title: "", description: "" }, save: "" },
       payments: { title: "", sepa: "", bitcoin: "", verified: "", default: "", modify: "", add: "", important: "", ibanWarning: "" },
       preferences: { title: "", language: { title: "", description: "", french: "", english: "" }, theme: { title: "", description: "", light: "", dark: "", system: "" }, save: "" },
       loginRequired: { title: "", description: "", login: "" },
+      loginDescription: "您必须登录才能访问设置。",
       saveError: ""
     },
     admin: {
@@ -5231,6 +5309,11 @@ export const messages: Record<Locale, Messages> = {
         contactSupport: "联系支持",
         secureAccess: "安全访问 - 所有连接都被记录",
         or: "或",
+        connectionError: "连接错误。请检查您的凭据。",
+        loginFailed: "登录失败",
+        checkCredentials: "请检查您的凭据",
+        loginSuccess: "登录成功！",
+        welcomeMessage: "欢迎来到管理面板",
       },
       dashboard: {
         title: "CashTrade管理仪表板",
@@ -5456,8 +5539,26 @@ export const messages: Record<Locale, Messages> = {
       toasts: { uploaded: "", submitted: "", error: "" }
     },
     sellPage: {
+      title: "出售您的CS2皮肤",
+      subtitle: "立即出售您的反恐精英2皮肤并快速收到您的资金",
+      loginDescription: "您必须使用Steam登录才能出售皮肤。",
+      steps: {
+        inventory: "物品选择",
+        trade: "交易创建",
+        confirmation: "确认"
+      },
+      confirmation: {
+        title: "交易创建成功！",
+        description: "您的交易已创建并等待接受。",
+        tradeId: "销售ID",
+        grossValue: "总价值",
+        totalFees: "总费用",
+        youWillReceive: "您将收到",
+        trackTrade: "跟踪交易",
+        openSteam: "打开Steam"
+      },
       helpSteps: [],
-      successMessages: { tradeCreated: "", followInstructions: "" }
+      successMessages: { tradeCreated: "交易创建成功！", followInstructions: "您的交易已创建并发送。在Steam上接受报价以继续。" }
     },
     giveawaysPage: {
       participationSuccess: "参与成功！",
@@ -5482,6 +5583,7 @@ export const messages: Record<Locale, Messages> = {
         kycStatusCheck: "我的KYC验证状态如何？",
       },
       responses: {
+        welcomeMessage: "你好！👋 我是CashTrade团队的Alex。今天我能为您做些什么？",
         expertResponse: "感谢您的消息！我们的专家将在几分钟内回复您。🚀",
         thankYouMessage: "感谢您的消息！我们的团队成员将快速回复您。同时，您可以查看我们的FAQ或指南。😊",
       },

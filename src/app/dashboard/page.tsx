@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // import { useAuth } from "@/components/providers/auth-provider";
 import { useSession } from "@/lib/auth-client";
 import { useLocale } from "@/components/providers/locale-provider";
-import { Messages } from "@/lib/i18n";
+import { Messages } from "~/utils/types";
 import { User } from "~/utils/types";
 import { toast } from "sonner";
 import {
@@ -74,8 +74,8 @@ export default function DashboardPage() {
   // Vérifier si c'est une connexion Steam réussie
   useEffect(() => {
     if (searchParams.get('steam_login') === 'success') {
-      toast.success('Connexion Steam réussie !', {
-        description: `Bienvenue ${data?.user?.name || 'sur CashTrade'} !`,
+      toast.success(messages.toast.steamLoginSuccess || 'Connexion Steam réussie !', {
+        description: `${messages.dashboard.welcome} ${data?.user?.name || 'sur CashTrade'} !`,
         duration: 4000,
       });
       
@@ -137,7 +137,7 @@ export default function DashboardPage() {
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
                 {messages.dashboard.welcome}, {user?.name}
               </h1>
               <p className="text-muted-foreground">

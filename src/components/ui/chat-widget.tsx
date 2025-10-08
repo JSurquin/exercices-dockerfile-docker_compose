@@ -45,12 +45,13 @@ export function ChatWidget() {
       return !prev;
     });
   };
+  const { messages } = useLocale();
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [chatMessages, setChatMessages] = useState<Message[]>([
     {
       id: "1",
-      content: "Salut ! 👋 Je suis Alex de l'équipe CashTrade. Comment puis-je vous aider aujourd'hui ?",
+      content: messages.chatWidget.responses.welcomeMessage,
       isUser: false,
       timestamp: new Date(),
       status: "read",
@@ -58,7 +59,6 @@ export function ChatWidget() {
   ]);
   const [unreadCount, setUnreadCount] = useState(1);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { messages } = useLocale();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -77,18 +77,18 @@ export function ChatWidget() {
   const quickActions: QuickAction[] = [
     {
       icon: ChatBubbleBottomCenterTextIcon,
-      label: "Problème de trade",
-      onClick: () => handleQuickMessage("J'ai un problème avec mon trade"),
+      label: messages.chatWidget.tradeProblem,
+      onClick: () => handleQuickMessage(messages.chatWidget.quickMessages.tradeProblem),
     },
     {
       icon: PhoneIcon,
-      label: "Support urgent",
-      onClick: () => handleQuickMessage("J'ai besoin d'une aide urgente"),
+      label: messages.chatWidget.urgentSupport,
+      onClick: () => handleQuickMessage(messages.chatWidget.quickMessages.urgentHelp),
     },
     {
       icon: CheckIcon,
-      label: "Statut KYC",
-      onClick: () => handleQuickMessage("Quel est le statut de ma vérification KYC ?"),
+      label: messages.chatWidget.kycStatus,
+      onClick: () => handleQuickMessage(messages.chatWidget.quickMessages.kycStatusCheck),
     },
   ];
 
@@ -108,7 +108,7 @@ export function ChatWidget() {
       setIsTyping(false);
       const response: Message = {
         id: (Date.now() + 1).toString(),
-        content: "Merci pour votre message ! Un de nos experts va vous répondre dans quelques instants. 🚀",
+        content: messages.chatWidget.responses.expertResponse,
         isUser: false,
         timestamp: new Date(),
         status: "read",
@@ -137,7 +137,7 @@ export function ChatWidget() {
       setIsTyping(false);
       const response: Message = {
         id: (Date.now() + 1).toString(),
-        content: "Merci pour votre message ! Un membre de notre équipe vous répondra rapidement. En attendant, vous pouvez consulter notre FAQ ou nos guides. 😊",
+        content: messages.chatWidget.responses.thankYouMessage,
         isUser: false,
         timestamp: new Date(),
         status: "read",
@@ -171,9 +171,9 @@ export function ChatWidget() {
                 <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-400 rounded-full border-2 border-white"></div>
               </div>
               <div>
-                <h3 className="font-semibold text-sm">CashTrade Support</h3>
+                <h3 className="font-semibold text-sm">{messages.chatWidget.support}</h3>
                 <p className="text-xs text-white/80">
-                  En ligne • Répond généralement en moins de 5min
+                  {messages.chatWidget.online} • {messages.chatWidget.responseTime}
                 </p>
               </div>
             </div>
@@ -198,7 +198,7 @@ export function ChatWidget() {
 
           {/* Quick Actions */}
           <div className="p-4 bg-muted/30 border-b">
-            <p className="text-xs text-muted-foreground mb-3">Actions rapides :</p>
+            <p className="text-xs text-muted-foreground mb-3">{messages.chatWidget.quickActions}</p>
             <div className="flex flex-wrap gap-2">
               {quickActions.map((action, index) => (
                 <Button
@@ -284,7 +284,7 @@ export function ChatWidget() {
                 <Input
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Tapez votre message..."
+                  placeholder={messages.chatWidget.placeholder}
                   className="pr-20 resize-none"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
@@ -320,7 +320,7 @@ export function ChatWidget() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-2 text-center">
-              Propulsé par CashTrade AI • Nous répondons généralement en moins de 5 minutes
+              {messages.chatWidget.poweredBy} • {messages.chatWidget.responseTimeInfo}
             </p>
           </div>
         </div>
@@ -356,7 +356,7 @@ export function ChatWidget() {
           {!isOpen && (
             <div className="absolute bottom-16 right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
               <div className="bg-gray-900 text-white text-sm px-3 py-2 rounded-lg whitespace-nowrap">
-                💬 Besoin d&apos;aide ? Chatez avec nous !
+                {messages.chatWidget.tooltip}
                 <div className="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-gray-900"></div>
               </div>
             </div>

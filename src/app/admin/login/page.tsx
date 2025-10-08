@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from '@/lib/auth-client';
+import { useLocale } from '@/components/providers/locale-provider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,7 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const { messages } = useLocale();
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const router = useRouter();
@@ -37,24 +39,24 @@ export default function AdminLoginPage() {
       });
 
       if (result.error) {
-        setError(result.error.message || 'Erreur de connexion');
-        toast.error('Échec de la connexion', {
-          description: result.error.message || 'Vérifiez vos identifiants',
+        setError(result.error.message || messages.admin.login.connectionError);
+        toast.error(messages.admin.login.loginFailed, {
+          description: result.error.message || messages.admin.login.checkCredentials,
         });
         return;
       }
 
       // Succès de la connexion
-      toast.success('Connexion réussie !', {
-        description: 'Bienvenue dans le panel d\'administration',
+      toast.success(messages.admin.login.loginSuccess, {
+        description: messages.admin.login.welcomeMessage,
       });
 
       // Rediriger vers le dashboard admin
       router.push('/admin/dashboard');
     } catch (err) {
-      const errorMessage = 'Erreur de connexion. Vérifiez vos identifiants.';
+      const errorMessage = messages.admin.login.connectionError;
       setError(errorMessage);
-      toast.error('Erreur de connexion', {
+      toast.error(messages.admin.login.connectionError, {
         description: errorMessage,
       });
     } finally {
@@ -101,19 +103,19 @@ export default function AdminLoginPage() {
             <Shield className="w-8 h-8 text-orange-500" />
           </div>
           <h1 className="text-3xl font-bold text-slate-100 mb-2">
-            Administration
+            {messages.admin.login.title}
           </h1>
           <p className="text-slate-400">
-            Connexion sécurisée au panel d&apos;administration
+            {messages.admin.login.subtitle}
           </p>
         </div>
 
         {/* Formulaire de connexion */}
         <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="text-slate-100">Connexion Admin</CardTitle>
+            <CardTitle className="text-slate-100">{messages.admin.login.adminLogin}</CardTitle>
             <CardDescription className="text-slate-400">
-              Accès réservé aux administrateurs autorisés
+              {messages.admin.login.adminAccess}
             </CardDescription>
           </CardHeader>
           <CardContent>

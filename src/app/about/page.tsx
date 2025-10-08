@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLocale } from "@/components/providers/locale-provider";
-import { Messages } from "@/lib/i18n";
+import { Messages } from "~/utils/types";
 import {
   ShieldCheckIcon,
   CurrencyDollarIcon,

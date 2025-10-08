@@ -20,8 +20,10 @@ import {
   CreditCard
 } from 'lucide-react';
 import { Payout, AdminFilters } from '@/lib/types';
+import { useLocale } from '@/components/providers/locale-provider';
 
 export function AdminPayoutsTable() {
+  const { messages } = useLocale();
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -53,7 +53,7 @@ export default function SettingsPage() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success(messages.toast.settingsSavedSuccess);
     } catch {
-      toast.error("Erreur lors de la sauvegarde");
+      toast.error(messages.toast.settingsSaveError || "Erreur lors de la sauvegarde");
     }
   };
 
@@ -63,12 +63,12 @@ export default function SettingsPage() {
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
             <UserCircleIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">Connexion requise</h2>
+            <h2 className="text-xl font-semibold mb-2">{messages.dashboard.loginRequired}</h2>
             <p className="text-muted-foreground mb-6">
-              Vous devez être connecté pour accéder aux paramètres.
+              {messages.settings.loginDescription}
             </p>
             <Button onClick={() => (window.location.href = "/")}>
-              Se connecter avec Steam
+              {messages.common.steamLogin}
             </Button>
           </CardContent>
         </Card>
@@ -86,11 +86,11 @@ export default function SettingsPage() {
           transition={{ duration: 0.6 }}
           className="mb-6 sm:mb-8"
         >
-          <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
-            Paramètres
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
+            {messages.settings.title}
           </h1>
           <p className="text-muted-foreground">
-            Gérez vos préférences et paramètres de compte
+            {messages.settings.subtitle}
           </p>
         </motion.div>
 
@@ -102,11 +102,11 @@ export default function SettingsPage() {
         >
           <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
             <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="profile">Profil</TabsTrigger>
-              <TabsTrigger value="security">Sécurité</TabsTrigger>
-              <TabsTrigger value="notifications">Notifications</TabsTrigger>
-              <TabsTrigger value="payments">Paiements</TabsTrigger>
-              <TabsTrigger value="preferences">Préférences</TabsTrigger>
+              <TabsTrigger value="profile">{messages.settings.tabs.profile}</TabsTrigger>
+              <TabsTrigger value="security">{messages.settings.tabs.security}</TabsTrigger>
+              <TabsTrigger value="notifications">{messages.settings.tabs.notifications}</TabsTrigger>
+              <TabsTrigger value="payments">{messages.settings.tabs.payments}</TabsTrigger>
+              <TabsTrigger value="preferences">{messages.settings.tabs.preferences}</TabsTrigger>
             </TabsList>
 
             {/* Profile Tab */}
@@ -115,7 +115,7 @@ export default function SettingsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <UserCircleIcon className="w-5 h-5" />
-                    <span>Informations du profil</span>
+                    <span>{messages.settings.profile.title}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 sm:space-y-6">
@@ -138,24 +138,24 @@ export default function SettingsPage() {
                         >
                           KYC{" "}
                           {user.kycStatus === "verified"
-                            ? "Vérifié"
-                            : "En attente"}
+                            ? messages.settings.security.kyc.verified
+                            : messages.settings.security.kyc.pending}
                         </Badge>
-                        <Badge variant="outline">Niveau {user.level}</Badge>
+                        <Badge variant="outline">{messages.settings.profile.level} {user.level}</Badge>
                       </div>
                     </div>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Nom d&apos;utilisateur Steam</Label>
+                      <Label>{messages.settings.profile.steamUsername}</Label>
                       <Input value={user.username} disabled />
                       <p className="text-xs text-muted-foreground">
-                        Synchronisé automatiquement avec Steam
+                        {messages.settings.profile.steamSync}
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <Label>Membre depuis</Label>
+                      <Label>{messages.settings.profile.memberSince}</Label>
                       <Input
                         value={new Date(user.joinedAt).toLocaleDateString()}
                         disabled
@@ -164,29 +164,29 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-3 sm:space-y-4">
-                    <h4 className="font-semibold">Statistiques</h4>
+                    <h4 className="font-semibold">{messages.settings.profile.statistics}</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="text-center p-4 bg-muted/50 rounded-lg">
                         <p className="text-2xl font-bold">{user.level}</p>
-                        <p className="text-sm text-muted-foreground">Niveau</p>
+                        <p className="text-sm text-muted-foreground">{messages.settings.profile.level}</p>
                       </div>
                       <div className="text-center p-4 bg-muted/50 rounded-lg">
                         <p className="text-2xl font-bold">
                           {user.xp.toLocaleString()}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          XP Total
+                          {messages.settings.profile.totalXp}
                         </p>
                       </div>
                       <div className="text-center p-4 bg-muted/50 rounded-lg">
                         <p className="text-2xl font-bold">{user.tickets}</p>
-                        <p className="text-sm text-muted-foreground">Tickets</p>
+                        <p className="text-sm text-muted-foreground">{messages.settings.profile.tickets}</p>
                       </div>
                       <div className="text-center p-4 bg-muted/50 rounded-lg">
                         <p className="text-2xl font-bold">
                           {(user.totalVolume / 100).toFixed(0)}€
                         </p>
-                        <p className="text-sm text-muted-foreground">Volume</p>
+                        <p className="text-sm text-muted-foreground">{messages.settings.profile.volume}</p>
                       </div>
                     </div>
                   </div>
@@ -201,17 +201,17 @@ export default function SettingsPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <ShieldCheckIcon className="w-5 h-5" />
-                      <span>Sécurité du compte</span>
+                      <span>{messages.settings.security.title}</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4 sm:space-y-6">
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <h4 className="font-semibold">
-                          Authentification à deux facteurs (2FA)
+                          {messages.settings.security.twoFactor.title}
                         </h4>
                         <p className="text-sm text-muted-foreground">
-                          Protection supplémentaire de votre compte
+                          {messages.settings.security.twoFactor.description}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -219,10 +219,10 @@ export default function SettingsPage() {
                           variant="secondary"
                           className="bg-green-100 text-green-800"
                         >
-                          Activé
+                          {messages.settings.security.twoFactor.enabled}
                         </Badge>
                         <Button variant="outline" size="sm">
-                          Configurer
+                          {messages.settings.security.twoFactor.configure}
                         </Button>
                       </div>
                     </div>

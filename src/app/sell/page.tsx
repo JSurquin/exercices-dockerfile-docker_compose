@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/components/providers/auth-provider";
+import { useLocale } from "@/components/providers/locale-provider";
 import { SteamInventoryViewer } from "@/components/steam/steam-inventory-viewer";
 import { SteamTradeCreator } from "@/components/steam/steam-trade-creator";
 import { SteamInventoryItem } from "@/hooks/use-steam-inventory";
@@ -17,16 +18,17 @@ import {
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
-const getSteps = () => [
-  { id: "inventory", title: "Sélection des items", icon: LinkIcon },
-  { id: "trade", title: "Création du trade", icon: CurrencyDollarIcon },
-  { id: "confirmation", title: "Confirmation", icon: CheckCircleIcon },
+const getSteps = (messages: any) => [
+  { id: "inventory", title: messages.sellPage.steps.inventory, icon: LinkIcon },
+  { id: "trade", title: messages.sellPage.steps.trade, icon: CurrencyDollarIcon },
+  { id: "confirmation", title: messages.sellPage.steps.confirmation, icon: CheckCircleIcon },
 ];
 
 export default function SellPage() {
   const { user } = useAuth();
+  const { messages } = useLocale();
   const [currentStep, setCurrentStep] = useState(0);
-  const steps = getSteps();
+  const steps = getSteps(messages);
   const [selectedItems, setSelectedItems] = useState<SteamInventoryItem[]>([]);
   const [tradeData, setTradeData] = useState<{ 
     trade_id: string; 
@@ -54,7 +56,7 @@ export default function SellPage() {
   }) => {
     setTradeData(trade);
     setCurrentStep(2);
-    toast.success("Vente créée avec succès !");
+    toast.success(messages.sellPage.successMessages.tradeCreated);
   };
 
   const formatPrice = (centimes: number) => {
@@ -68,13 +70,13 @@ export default function SellPage() {
           <CardContent className="p-6 sm:p-8">
             <ShieldCheckIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
             <h2 className="text-xl font-semibold mb-2">
-              Connexion requise
+              {messages.dashboard.loginRequired}
             </h2>
             <p className="text-muted-foreground mb-6">
-              Vous devez être connecté avec Steam pour vendre vos skins.
+              {messages.sellPage.loginDescription}
             </p>
             <Button onClick={() => (window.location.href = "/")}>
-              Se connecter avec Steam
+              {messages.common.steamLogin}
             </Button>
           </CardContent>
         </Card>
@@ -93,9 +95,9 @@ export default function SellPage() {
           className="text-center mb-6 sm:mb-8"
         >
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
-            Vendre vos skins CS2
+            {messages.sellPage.title}
           </h1>
-          <p className="text-muted-foreground">Vendez vos skins Counter-Strike 2 instantanément et recevez votre argent rapidement</p>
+          <p className="text-muted-foreground">{messages.sellPage.subtitle}</p>
         </motion.div>
 
         {/* Progress Stepper */}
@@ -176,23 +178,23 @@ export default function SellPage() {
               <CardContent className="p-8 text-center">
                 <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-green-500" />
                 <h2 className="text-2xl font-bold mb-2">
-                  Trade créé avec succès !
+                  {messages.sellPage.confirmation.title}
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  Votre trade a été créé et est en attente d&apos;acceptation.
+                  {messages.sellPage.confirmation.description}
                 </p>
 
                 <div className="bg-muted/50 rounded-lg p-4 mb-6">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">
-                        ID de la vente:
+                        {messages.sellPage.confirmation.tradeId}:
                       </span>
                       <p className="font-mono">{tradeData.trade_id}</p>
                     </div>
                     <div>
                       <span className="text-muted-foreground">
-                        Valeur brute:
+                        {messages.sellPage.confirmation.grossValue}:
                       </span>
                       <p className="font-medium">
                         {formatPrice(tradeData.total_value)}
@@ -200,7 +202,7 @@ export default function SellPage() {
                     </div>
                     <div>
                       <span className="text-muted-foreground">
-                        Frais totaux:
+                        {messages.sellPage.confirmation.totalFees}:
                       </span>
                       <p className="font-medium text-orange-600">
                         -{formatPrice(tradeData.fees.cashout_fee + tradeData.fees.network_fee)}
@@ -208,7 +210,7 @@ export default function SellPage() {
                     </div>
                     <div>
                       <span className="text-muted-foreground">
-                        Vous recevrez:
+                        {messages.sellPage.confirmation.youWillReceive}:
                       </span>
                       <p className="font-bold text-green-600">
                         {formatPrice(tradeData.net_value)}
@@ -220,7 +222,7 @@ export default function SellPage() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button asChild>
                     <a href="/dashboard" target="_blank">
-                      Suivre le trade
+                      {messages.sellPage.confirmation.trackTrade}
                     </a>
                   </Button>
                   <Button variant="outline" asChild>
@@ -228,7 +230,7 @@ export default function SellPage() {
                       href="https://steamcommunity.com/my/tradeoffers/"
                       target="_blank"
                     >
-                      Ouvrir Steam
+                      {messages.sellPage.confirmation.openSteam}
                     </a>
                   </Button>
                 </div>

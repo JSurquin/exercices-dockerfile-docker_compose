@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useLocale } from "@/components/providers/locale-provider";
-import { Messages } from "@/lib/i18n";
+import { Messages } from "~/utils/types";
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,

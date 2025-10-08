@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Activity
 } from 'lucide-react';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface SkinplaceMetrics {
   balance?: {
@@ -35,6 +36,7 @@ interface SkinplaceMetrics {
 }
 
 export function AdminSkinplaceMetrics() {
+  const { messages } = useLocale();
   const [metrics, setMetrics] = useState<SkinplaceMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

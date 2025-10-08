@@ -21,11 +21,13 @@ import {
   FileText
 } from 'lucide-react';
 import { KYCDocument, AdminFilters } from '@/lib/types';
+import { useLocale } from '@/components/providers/locale-provider';
 
 export function AdminKYCManagement() {
   const [kycDocuments, setKycDocuments] = useState<KYCDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { messages } = useLocale();
   const [filters, setFilters] = useState<AdminFilters>({
     page: 1,
     limit: 20,

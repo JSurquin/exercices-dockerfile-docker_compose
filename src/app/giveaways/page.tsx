@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
-import { Messages } from '@/lib/i18n';
+import { Messages } from '~/utils/types';
 import { mockGiveaways, mockUser } from '@/lib/mock-data';
 import { Giveaway } from '@/lib/types';
 import {

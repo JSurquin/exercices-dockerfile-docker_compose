@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useLocale } from '@/components/providers/locale-provider';
 import { 
   Users, 
   ShoppingCart, 
@@ -19,6 +20,7 @@ export function AdminStatsOverview() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { messages } = useLocale();
 
   useEffect(() => {
     fetchStats();
@@ -31,12 +33,12 @@ export function AdminStatsOverview() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors du chargement des statistiques');
+        throw new Error(data.error || messages.admin.errors.loadingStats);
       }
 
       setStats(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      setError(err instanceof Error ? err.message : messages.admin.errors.unknown);
     } finally {
       setIsLoading(false);
     }

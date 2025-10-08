@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface AnalyticsData {
   overview: {
@@ -353,6 +354,7 @@ function DonutChart({
 
 // Composant principal des analytics
 export function AdminAnalyticsCharts() {
+  const { messages } = useLocale();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [metricsData, setMetricsData] = useState<MetricsData | null>(null);
   const [loading, setLoading] = useState(true);

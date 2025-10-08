@@ -19,8 +19,10 @@ import {
 } from 'lucide-react';
 import { format as formatDate } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useLocale } from '@/components/providers/locale-provider';
 
 export function AdminExports() {
+  const { messages } = useLocale();
   const [selectedType, setSelectedType] = useState<string>('');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
