@@ -216,10 +216,10 @@ export default function AffiliatesManagement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            Outils d'Administration
+            Outils d&apos;Administration
           </CardTitle>
           <CardDescription>
-            Outils de maintenance et de recalcul pour le système d'affiliation
+            Outils de maintenance et de recalcul pour le système d&apos;affiliation
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -419,9 +419,9 @@ export default function AffiliatesManagement() {
       <Dialog open={!!selectedAffiliate} onOpenChange={() => setSelectedAffiliate(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Détails de l'affilié</DialogTitle>
+            <DialogTitle>Détails de l&apos;affilié</DialogTitle>
             <DialogDescription>
-              Gérer les paramètres et voir les détails de l'affilié
+              Gérer les paramètres et voir les détails de l&apos;affilié
             </DialogDescription>
           </DialogHeader>
           
@@ -429,7 +429,7 @@ export default function AffiliatesManagement() {
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Nom d'utilisateur</Label>
+                  <Label>Nom d&apos;utilisateur</Label>
                   <p className="font-medium">{selectedAffiliate.user.steamUsername}</p>
                 </div>
                 <div>
@@ -437,7 +437,7 @@ export default function AffiliatesManagement() {
                   <p className="font-medium">{selectedAffiliate.user.email}</p>
                 </div>
                 <div>
-                  <Label>Code d'affiliation</Label>
+                  <Label>Code d&apos;affiliation</Label>
                   <p className="font-mono font-medium">{selectedAffiliate.code}</p>
                 </div>
                 <div>

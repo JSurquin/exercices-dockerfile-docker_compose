@@ -386,7 +386,7 @@ export default function AdminDashboard() {
             <TabsContent value="commissions" className="mt-6">
               <Card className="bg-slate-800/50 border-2 border-teal-500/50 backdrop-blur-sm shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 transition-all duration-300">
                 <CardHeader>
-                  <CardTitle className="text-white">Commissions d'Affiliation</CardTitle>
+                  <CardTitle className="text-white">Commissions d&apos;Affiliation</CardTitle>
                   <div className="text-slate-300">
                     Validation et paiement des commissions générées par les affiliés
                   </div>

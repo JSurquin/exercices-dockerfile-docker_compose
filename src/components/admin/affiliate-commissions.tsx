@@ -260,7 +260,7 @@ export default function AffiliateCommissions() {
       {/* Gestion des commissions */}
       <Card>
         <CardHeader>
-          <CardTitle>Commissions d'Affiliation</CardTitle>
+          <CardTitle>Commissions d&apos;Affiliation</CardTitle>
           <CardDescription>
             Gérez les commissions générées par les affiliés
           </CardDescription>

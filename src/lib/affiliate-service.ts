@@ -17,7 +17,7 @@ export class AffiliateService {
     }
     
     // Générer un code basé sur le nom d'utilisateur Steam ou l'ID
-    let baseCode = user.steamUsername?.toLowerCase().replace(/[^a-z0-9]/g, '') || 
+    const baseCode = user.steamUsername?.toLowerCase().replace(/[^a-z0-9]/g, '') || 
                    user.steamId?.slice(-8) || 
                    userId.slice(-8);
     

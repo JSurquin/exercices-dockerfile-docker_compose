@@ -173,7 +173,7 @@ export default function AffiliatePage() {
               Devenir Affilié CashTrade
             </CardTitle>
             <CardDescription>
-              Rejoignez notre programme d'affiliation et gagnez 2% sur chaque vente générée par vos référrals.
+              Rejoignez notre programme d&apos;affiliation et gagnez 2% sur chaque vente générée par vos référrals.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -250,7 +250,7 @@ export default function AffiliatePage() {
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardContent className="text-center py-8">
-            <p>Aucune donnée d'affiliation trouvée.</p>
+            <p>Aucune donnée d&apos;affiliation trouvée.</p>
           </CardContent>
         </Card>
       </div>
@@ -262,7 +262,7 @@ export default function AffiliatePage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Tableau de bord Affilié</h1>
         <p className="text-muted-foreground">
-          Code d'affiliation : <span className="font-mono font-semibold">{affiliateData.code}</span>
+          Code d&apos;affiliation : <span className="font-mono font-semibold">{affiliateData.code}</span>
           <Badge className="ml-2" variant={affiliateData.isActive ? 'default' : 'secondary'}>
             {affiliateData.isActive ? 'Actif' : 'Inactif'}
           </Badge>
@@ -320,7 +320,7 @@ export default function AffiliatePage() {
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+          <TabsTrigger value="overview">Vue d&apos;ensemble</TabsTrigger>
           <TabsTrigger value="referrals">Référrals</TabsTrigger>
           <TabsTrigger value="commissions">Commissions</TabsTrigger>
           <TabsTrigger value="tools">Outils</TabsTrigger>
@@ -514,7 +514,7 @@ export default function AffiliatePage() {
               <CardContent className="space-y-3">
                 <Button variant="outline" className="w-full justify-start">
                   <ExternalLink className="mr-2 h-4 w-4" />
-                  Guide de l'affilié
+                  Guide de l&apos;affilié
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <ExternalLink className="mr-2 h-4 w-4" />

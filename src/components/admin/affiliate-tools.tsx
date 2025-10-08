@@ -176,10 +176,10 @@ export default function AffiliateTools() {
             <div>
               <h4 className="font-semibold mb-2">Statuts des Commissions</h4>
               <ul className="space-y-1 text-muted-foreground">
-                <li>• PENDING : En attente d'approbation</li>
+                <li>• PENDING : En attente d&apos;approbation</li>
                 <li>• APPROVED : Approuvée, prête au paiement</li>
                 <li>• PAID : Payée via payout</li>
-                <li>• CANCELLED : Annulée par l'admin</li>
+                <li>• CANCELLED : Annulée par l&apos;admin</li>
               </ul>
             </div>
           </div>
