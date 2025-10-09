@@ -36,7 +36,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
       content: (
         <div className="space-y-4">
           <p className="text-muted-foreground">
-            La plateforme #1 pour vendre vos skins CS2 en toute sécurité et obtenir de l'argent réel.
+            La plateforme #1 pour vendre vos skins CS2 en toute sécurité et obtenir de l&apos;argent réel.
           </p>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center space-x-2">
@@ -91,14 +91,14 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
       content: (
         <div className="space-y-4">
           <p className="text-muted-foreground">
-            Pour vendre vos skins, vous devez d'abord configurer votre Trade Link Steam.
+            Pour vendre vos skins, vous devez d&apos;abord configurer votre Trade Link Steam.
           </p>
           <div className="bg-muted p-4 rounded-lg space-y-2">
             <h4 className="font-semibold">Comment obtenir votre Trade Link :</h4>
             <ol className="list-decimal list-inside space-y-1 text-sm">
               <li>Ouvrez Steam et allez dans votre inventaire</li>
-              <li>Cliquez sur "Échanges" puis "Qui peut m'envoyer des offres d'échange ?"</li>
-              <li>Copiez votre URL d'échange</li>
+              <li>Cliquez sur {"Échanges"} puis {"Qui peut m&apos;envoyer des offres d&apos;échange ?"}</li>
+              <li>Copiez votre URL d&apos;échange</li>
               <li>Collez-la dans vos paramètres CashTrade</li>
             </ol>
           </div>
@@ -116,7 +116,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
             <h4 className="font-semibold">How to get your Trade Link:</h4>
             <ol className="list-decimal list-inside space-y-1 text-sm">
               <li>Open Steam and go to your inventory</li>
-              <li>Click "Trade Offers" then "Who can send me Trade Offers?"</li>
+              <li>Click {"Trade Offers"} then {"Who can send me Trade Offers?"}</li>
               <li>Copy your trade URL</li>
               <li>Paste it in your CashTrade settings</li>
             </ol>
@@ -147,8 +147,8 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
             <div className="flex items-start space-x-3">
               <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
               <div>
-                <h4 className="font-semibold">Acceptez l'offre d'échange</h4>
-                <p className="text-sm text-muted-foreground">Notre bot vous enverra une offre d'échange que vous devrez accepter</p>
+                <h4 className="font-semibold">Acceptez l&apos;offre d&apos;échange</h4>
+                <p className="text-sm text-muted-foreground">Notre bot vous enverra une offre d&apos;échange que vous devrez accepter</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
@@ -205,7 +205,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
             <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
               <h4 className="font-semibold text-blue-700 dark:text-blue-300">KYC obligatoire</h4>
               <p className="text-sm text-blue-600 dark:text-blue-400">
-                Vérification d'identité requise pour tous les paiements
+                Vérification d&apos;identité requise pour tous les paiements
               </p>
             </div>
             <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg">
@@ -293,7 +293,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
                 onClick={handleSkip}
                 className="text-muted-foreground hover:text-foreground"
               >
-                Passer l'introduction
+                Passer l&apos;introduction
               </Button>
             </div>
             <Progress value={progress} className="w-full" />
