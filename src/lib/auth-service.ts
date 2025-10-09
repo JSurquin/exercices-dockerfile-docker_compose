@@ -20,16 +20,22 @@ export class AuthService {
   }
 
   static async loginWithSteam(): Promise<User> {
-    // Mock user pour les tests
+    // Vérifier si l'utilisateur existe déjà
+    const existingUser = this.getCurrentUser();
+    if (existingUser) {
+      return existingUser;
+    }
+
+    // Nouveau utilisateur - attribution de 100 tickets initiaux
     const mockUser: User = {
       id: 'steam_76561198000000000',
       steamId64: '76561198000000000',
       username: 'TestUser',
       avatar: 'https://avatars.steamstatic.com/b5bd56c1aa4644a474a2e4972be27ef94e52a288_medium.jpg',
-      level: 5,
-      xp: 2150,
-      tickets: 12,
-      totalVolume: 1250.50,
+      level: 1,
+      xp: 0,
+      tickets: 100, // 100 tickets initiaux pour tous les nouveaux utilisateurs
+      totalVolume: 0,
       kycStatus: 'pending',
       acceptedTermsAt: new Date(),
       joinedAt: new Date(),

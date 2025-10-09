@@ -95,10 +95,12 @@ export interface Giveaway {
   ticketPrice: number;
   maxTickets: number;
   soldTickets: number;
-  endDate: Date;
-  status: 'active' | 'ended' | 'cancelled';
+  endDate: Date | string;
+  status: 'ACTIVE' | 'ENDED' | 'CANCELLED';
   winnerId?: string;
   randomSeed?: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }
 
 export interface GiveawayEntry {

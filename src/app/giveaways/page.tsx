@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,8 +13,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { Messages } from '~/utils/types';
-import { mockGiveaways, mockUser } from '@/lib/mock-data';
-import { Giveaway } from '@/lib/types';
+import { useGiveaways, Giveaway } from '@/hooks/use-giveaways';
+import { AutoDrawScheduler } from '@/lib/auto-draw-scheduler';
+import { GiveawayNotifications } from '@/components/giveaway/giveaway-notifications';
 import {
   GiftIcon,
   TicketIcon,
@@ -26,6 +27,7 @@ import {
   CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 const getTimeRemaining = (endDate: Date) => {
   const now = new Date();
@@ -53,7 +55,7 @@ const formatTimeRemaining = (timeRemaining: ReturnType<typeof getTimeRemaining>,
   }
 };
 
-const GiveawayCard = ({ giveaway, onParticipate, messages }: { giveaway: Giveaway; onParticipate: (giveaway: Giveaway, tickets: number) => void; messages: Messages }) => {
+const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets }: { giveaway: Giveaway; onParticipate: (giveaway: Giveaway, tickets: number) => void; messages: Messages; userTickets: number }) => {
   const [ticketsToUse, setTicketsToUse] = useState(1);
   const timeRemaining = getTimeRemaining(new Date(giveaway.endDate));
   const progress = (giveaway.soldTickets / giveaway.maxTickets) * 100;
@@ -117,13 +119,20 @@ const GiveawayCard = ({ giveaway, onParticipate, messages }: { giveaway: Giveawa
         </div>
 
         {/* Winner (if ended) */}
-        {giveaway.status === 'ended' && giveaway.winnerId && (
+        {giveaway.status === 'ENDED' && giveaway.winnerId && (
           <div className="bg-green-50 dark:bg-green-950/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
-            <div className="flex items-center space-x-2">
-              <StarIcon className="w-5 h-5 text-green-600" />
-              <span className="text-sm font-medium text-green-800 dark:text-green-200">
-                {messages.giveaways.card.winner} {giveaway.winnerId}
-              </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <StarIcon className="w-5 h-5 text-green-600" />
+                <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                  {messages.giveaways.card.winner} {giveaway.winnerId?.slice(-6)}
+                </span>
+              </div>
+              <Link href={`/giveaways/${giveaway.id}`}>
+                <Button variant="outline" size="sm" className="text-xs">
+                  Voir détails
+                </Button>
+              </Link>
             </div>
           </div>
         )}
@@ -141,21 +150,21 @@ const GiveawayCard = ({ giveaway, onParticipate, messages }: { giveaway: Giveawa
                 id={`tickets-${giveaway.id}`}
                 type="number"
                 min="1"
-                max={Math.min(mockUser.tickets, giveaway.maxTickets - giveaway.soldTickets)}
+                max={Math.min(userTickets, giveaway.maxTickets - giveaway.soldTickets)}
                 value={ticketsToUse}
                 onChange={(e) => setTicketsToUse(Math.max(1, parseInt(e.target.value) || 1))}
                 className="flex-1"
               />
               <Button
                 onClick={() => onParticipate(giveaway, ticketsToUse)}
-                disabled={mockUser.tickets < ticketsToUse || ticketsToUse > (giveaway.maxTickets - giveaway.soldTickets)}
+                disabled={userTickets < ticketsToUse || ticketsToUse > (giveaway.maxTickets - giveaway.soldTickets)}
                 className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
               >
                 {messages.giveaways.card.participate}
               </Button>
             </div>
               <p className="text-xs text-muted-foreground">
-                {messages.giveaways.youHave} {mockUser.tickets} {messages.giveaways.card.ticketsAvailable}
+                {messages.giveaways.youHave} {userTickets} {messages.giveaways.card.ticketsAvailable}
               </p>
           </div>
         )}
@@ -168,28 +177,66 @@ export default function GiveawaysPage() {
   const { user } = useAuth();
   const { messages } = useLocale();
   const [selectedTab, setSelectedTab] = useState('active');
+  const { giveaways, loading, participateInGiveaway, refetch } = useGiveaways();
+  const [userTickets, setUserTickets] = useState(0);
 
-  const handleParticipate = (giveaway: Giveaway, tickets: number) => {
+  // Initialiser le premier giveaway au chargement
+  useEffect(() => {
+    const initGiveaway = async () => {
+      try {
+        await fetch('/api/giveaways/init', { method: 'POST' });
+        refetch();
+      } catch (error) {
+        console.error('Erreur lors de l\'initialisation:', error);
+      }
+    };
+
+    initGiveaway();
+    
+    // Démarrer le scheduler de tirage automatique
+    AutoDrawScheduler.start();
+
+    // Nettoyer lors du démontage du composant
+    return () => {
+      AutoDrawScheduler.stop();
+    };
+  }, [refetch]);
+
+  // Mettre à jour les tickets de l'utilisateur
+  useEffect(() => {
+    if (user) {
+      setUserTickets(user.tickets || 0);
+    }
+  }, [user]);
+
+  const handleParticipate = async (giveaway: Giveaway, tickets: number) => {
     if (!user) {
       toast.error(messages.giveaways.participation.loginRequired);
       return;
     }
 
-    if (user.tickets < tickets) {
+    if (userTickets < tickets) {
       toast.error(messages.giveaways.participation.notEnoughTickets);
       return;
     }
 
-    // Simulation de participation
-    toast.success(`${messages.giveaways.participation.success} ${tickets} ticket(s) utilisé(s) pour ${giveaway.title}`);
+    try {
+      await participateInGiveaway(giveaway.id, user.id, tickets);
+      // Mettre à jour les tickets localement
+      setUserTickets(prev => prev - tickets);
+    } catch (error) {
+      console.error('Erreur lors de la participation:', error);
+    }
   };
 
-  const activeGiveaways = mockGiveaways.filter(g => g.status === 'active');
-  const endedGiveaways = mockGiveaways.filter(g => g.status === 'ended');
+  const activeGiveaways = giveaways.filter(g => g.status === 'ACTIVE');
+  const endedGiveaways = giveaways.filter(g => g.status === 'ENDED');
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <div className="max-w-7xl mx-auto">
+    <>
+      <GiveawayNotifications />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -230,7 +277,7 @@ export default function GiveawaysPage() {
                   <div className="text-right">
                     <div className="flex items-center space-x-2 mb-1">
                       <TicketIcon className="w-5 h-5 text-purple-500" />
-                      <span className="text-2xl font-bold">{user.tickets}</span>
+                      <span className="text-2xl font-bold">{userTickets}</span>
                       <span className="text-muted-foreground">{messages.giveaways.userTickets.tickets}</span>
                     </div>
                     <p className="text-sm text-muted-foreground">
@@ -312,18 +359,24 @@ export default function GiveawaysPage() {
 
             {/* Active Giveaways */}
             <TabsContent value="active">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {activeGiveaways.map((giveaway, index) => (
-                  <motion.div
-                    key={giveaway.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                  >
-                    <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} />
-                  </motion.div>
-                ))}
-              </div>
+              {loading ? (
+                <div className="text-center py-8">
+                  <p>Chargement des giveaways...</p>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {activeGiveaways.map((giveaway, index) => (
+                    <motion.div
+                      key={giveaway.id}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: index * 0.1 }}
+                    >
+                      <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} userTickets={userTickets} />
+                    </motion.div>
+                  ))}
+                </div>
+              )}
               {activeGiveaways.length === 0 && (
                 <Card>
                   <CardContent className="p-8 text-center">
@@ -339,18 +392,24 @@ export default function GiveawaysPage() {
 
             {/* Ended Giveaways */}
             <TabsContent value="ended">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {endedGiveaways.map((giveaway, index) => (
-                  <motion.div
-                    key={giveaway.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                  >
-                    <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} />
-                  </motion.div>
-                ))}
-              </div>
+              {loading ? (
+                <div className="text-center py-8">
+                  <p>Chargement des giveaways terminés...</p>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {endedGiveaways.map((giveaway, index) => (
+                    <motion.div
+                      key={giveaway.id}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: index * 0.1 }}
+                    >
+                      <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} userTickets={userTickets} />
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
             {/* My Entries */}
@@ -406,7 +465,8 @@ export default function GiveawaysPage() {
             </TabsContent>
           </Tabs>
         </motion.div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
