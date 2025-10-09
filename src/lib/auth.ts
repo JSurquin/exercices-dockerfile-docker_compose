@@ -72,6 +72,10 @@ export const auth = betterAuth({
         type: "date",
         required: false,
       },
+      isFirstLogin: {
+        type: "boolean",
+        defaultValue: true,
+      },
     },
     modelName: "user",
   },

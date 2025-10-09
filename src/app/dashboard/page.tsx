@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // import { useAuth } from "@/components/providers/auth-provider";
 import { useSession } from "@/lib/auth-client";
 import { useLocale } from "@/components/providers/locale-provider";
+import OnboardingDialog from "@/components/onboarding/onboarding-dialog";
+import { useOnboarding } from "@/hooks/use-onboarding";
 import { Messages } from "~/utils/types";
 import { User } from "~/utils/types";
 import { toast } from "sonner";
@@ -66,6 +68,8 @@ const getStatusText = (status: string, messages: Messages) => {
 export default function DashboardPage() {
   const { data, isPending, error } = useSession();
   const searchParams = useSearchParams();
+  const { isFirstLogin, completeOnboarding } = useOnboarding();
+  const [showOnboarding, setShowOnboarding] = useState(false);
   
   console.log("useSession data:", data);
   console.log("useSession isPending:", isPending);
@@ -85,6 +89,28 @@ export default function DashboardPage() {
       window.history.replaceState({}, '', url.toString());
     }
   }, [searchParams, data?.user?.name]);
+
+  // Gérer l'affichage de l'onboarding
+  useEffect(() => {
+    // Afficher l'onboarding seulement si :
+    // 1. L'utilisateur est connecté
+    // 2. C'est sa première connexion
+    if (data?.user && isFirstLogin) {
+      // Petit délai pour laisser la page se charger
+      const timer = setTimeout(() => {
+        setShowOnboarding(true);
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [data, isFirstLogin]);
+
+  const handleOnboardingComplete = async () => {
+    const success = await completeOnboarding();
+    if (success) {
+      setShowOnboarding(false);
+    }
+  };
   
   const { messages } = useLocale();
 
@@ -541,6 +567,12 @@ export default function DashboardPage() {
           </Tabs>
         </motion.div>
       </div>
+
+      {/* Onboarding Dialog */}
+      <OnboardingDialog 
+        open={showOnboarding}
+        onComplete={handleOnboardingComplete}
+      />
     </div>
   );
 }

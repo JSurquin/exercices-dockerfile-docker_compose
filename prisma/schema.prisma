@@ -26,6 +26,7 @@ model User {
   totalVolumeCents      Int                 @default(0)
   kycStatus             KycStatus           @default(PENDING)
   acceptedTermsAt       DateTime?
+  isFirstLogin          Boolean             @default(true)
   referredByAffiliateId String?
   affiliateStats        AffiliateStats?
   giveawayEntries       GiveawayEntry[]
