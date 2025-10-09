@@ -9,8 +9,6 @@ export function Footer() {
   const links = {
     company: [
       { name: messages.footer.links.about, href: "/about" },
-      { name: messages.footer.links.blog, href: "/blog" },
-      { name: messages.footer.links.careers, href: "/careers" },
       { name: messages.footer.links.press, href: "/press" },
     ],
     support: [
