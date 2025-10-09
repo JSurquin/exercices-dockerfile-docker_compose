@@ -25,8 +25,8 @@ const pressReleases = [
   },
   {
     date: "2024-08-20",
-    title: "Partenariat stratégique avec Skinplace pour l'estimation des skins",
-    description: "CashTrade s'associe à Skinplace pour offrir les estimations les plus précises du marché.",
+    title: "Partenariat stratégique avec Skinplace pour l&apos;estimation des skins",
+    description: "CashTrade s&apos;associe à Skinplace pour offrir les estimations les plus précises du marché.",
     category: "Partenariat",
     link: "/press/partenariat-skinplace",
   },
@@ -71,7 +71,7 @@ const teamMembers = [
   {
     name: "Alexandre Dubois",
     role: "CEO & Co-fondateur",
-    bio: "Ex-développeur chez Ubisoft, passionné d'esport depuis 10 ans",
+    bio: "Ex-développeur chez Ubisoft, passionné d&apos;esport depuis 10 ans",
     image: "/team/alexandre.jpg",
   },
   {
@@ -83,7 +83,7 @@ const teamMembers = [
   {
     name: "Thomas Martin",
     role: "Head of Business Development",
-    bio: "15 ans d'expérience dans l'industrie du gaming et de l'esport",
+    bio: "15 ans d&apos;expérience dans l&apos;industrie du gaming et de l&apos;esport",
     image: "/team/thomas.jpg",
   },
 ];
@@ -182,17 +182,17 @@ export default function PressPage() {
                 <CardContent className="space-y-4">
                   <p className="text-muted-foreground leading-relaxed">
                     CashTrade est la première plateforme française dédiée au trading sécurisé de skins Counter-Strike 2. 
-                    Fondée en 2024, l'entreprise révolutionne l'écosystème du gaming en permettant aux joueurs de 
+                    Fondée en 2024, l&apos;entreprise révolutionne l&apos;écosystème du gaming en permettant aux joueurs de 
                     monétiser facilement leurs inventaires virtuels.
                   </p>
                   <p className="text-muted-foreground leading-relaxed">
-                    Grâce à des partenariats stratégiques avec Skinplace pour l'estimation et Qonto pour les paiements SEPA, 
+                    Grâce à des partenariats stratégiques avec Skinplace pour l&apos;estimation et Qonto pour les paiements SEPA, 
                     CashTrade garantit transparence, sécurité et conformité réglementaire. La plateforme respecte 
                     scrupuleusement les obligations KYC et anti-blanchiment.
                   </p>
                   <div className="grid md:grid-cols-2 gap-4 mt-6">
                     <div>
-                      <h4 className="font-medium mb-2">Secteur d'activité</h4>
+                      <h4 className="font-medium mb-2">Secteur d&apos;activité</h4>
                       <p className="text-sm text-muted-foreground">Gaming, Fintech, Esport</p>
                     </div>
                     <div>

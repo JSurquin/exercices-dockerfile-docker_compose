@@ -18,11 +18,11 @@ import {
 const kycLevels = [
   {
     level: "Niveau 1 - Basique",
-    description: "Vérification d'identité de base",
+    description: "Vérification d&apos;identité de base",
     requirements: [
-      "Pièce d'identité valide (CNI, passeport)",
+      "Pièce d&apos;identité valide (CNI, passeport)",
       "Selfie de vérification",
-      "Confirmation d'email et téléphone"
+      "Confirmation d&apos;email et téléphone"
     ],
     limits: {
       daily: "500€",
@@ -34,7 +34,7 @@ const kycLevels = [
   },
   {
     level: "Niveau 2 - Avancé", 
-    description: "Vérification d'adresse et revenus",
+    description: "Vérification d&apos;adresse et revenus",
     requirements: [
       "Tous les documents du Niveau 1",
       "Justificatif de domicile (< 3 mois)",
@@ -68,10 +68,10 @@ const kycLevels = [
 
 const documents = [
   {
-    category: "Pièces d'identité acceptées",
+    category: "Pièces d&apos;identité acceptées",
     icon: DocumentTextIcon,
     items: [
-      "Carte nationale d'identité française",
+      "Carte nationale d&apos;identité française",
       "Passeport français ou européen",
       "Permis de conduire français",
       "Titre de séjour (pour les résidents)"
@@ -87,16 +87,16 @@ const documents = [
     category: "Justificatifs de domicile",
     icon: LockClosedIcon,
     items: [
-      "Facture d'électricité, gaz ou eau",
+      "Facture d&apos;électricité, gaz ou eau",
       "Facture de téléphone fixe ou internet",
       "Relevé bancaire",
-      "Attestation d'assurance habitation",
+      "Attestation d&apos;assurance habitation",
       "Quittance de loyer"
     ],
     requirements: [
       "Document daté de moins de 3 mois",
       "Nom et adresse clairement visibles",
-      "Correspondance avec l'identité fournie",
+      "Correspondance avec l&apos;identité fournie",
       "Document original (non modifié)"
     ]
   }
@@ -113,7 +113,7 @@ const processSteps = [
   {
     step: 2,
     title: "Vérification automatique",
-    description: "Notre système IA vérifie l'authenticité des documents",
+    description: "Notre système IA vérifie l&apos;authenticité des documents",
     duration: "Instantané",
     icon: EyeIcon,
   },
@@ -146,7 +146,7 @@ const dataProtection = [
   },
   {
     title: "Accès restreint",
-    description: "Seule l'équipe KYC peut consulter vos documents",
+    description: "Seule l&apos;équipe KYC peut consulter vos documents",
     icon: EyeIcon,
   },
   {
@@ -172,7 +172,7 @@ export default function KycPolicyPage() {
             Politique KYC
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-            Processus de vérification d'identité conforme aux réglementations européennes
+            Processus de vérification d&apos;identité conforme aux réglementations européennes
           </p>
           <div className="flex items-center justify-center space-x-4">
             <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
@@ -203,7 +203,7 @@ export default function KycPolicyPage() {
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex items-center space-x-2">
                       <CheckCircleIcon className="w-4 h-4 text-green-600 flex-shrink-0" />
-                      <span>Lutter contre le blanchiment d'argent</span>
+                      <span>Lutter contre le blanchiment d&apos;argent</span>
                     </li>
                     <li className="flex items-center space-x-2">
                       <CheckCircleIcon className="w-4 h-4 text-green-600 flex-shrink-0" />
@@ -228,7 +228,7 @@ export default function KycPolicyPage() {
                     <li>• La vérification KYC est obligatoire avant tout paiement</li>
                     <li>• Vos documents sont traités de manière confidentielle</li>
                     <li>• Le processus est généralement finalisé en 24h</li>
-                    <li>• Aucun paiement n'est effectué sans validation KYC</li>
+                    <li>• Aucun paiement n&apos;est effectué sans validation KYC</li>
                   </ul>
                 </div>
               </div>
@@ -427,7 +427,7 @@ export default function KycPolicyPage() {
                   <div className="space-y-3 text-sm">
                     <div>
                       <h4 className="font-medium mb-1">Combien de temps prend la vérification ?</h4>
-                      <p className="text-muted-foreground">Entre 2 et 24 heures pour le niveau 1, jusqu'à 72h pour les niveaux supérieurs.</p>
+                      <p className="text-muted-foreground">Entre 2 et 24 heures pour le niveau 1, jusqu&apos;à 72h pour les niveaux supérieurs.</p>
                     </div>
                     <hr />
                     <div>
@@ -452,7 +452,7 @@ export default function KycPolicyPage() {
             >
               <Card className="bg-muted/50">
                 <CardContent className="p-6 text-center">
-                  <h3 className="font-semibold mb-2">Besoin d'aide ?</h3>
+                  <h3 className="font-semibold mb-2">Besoin d&apos;aide ?</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     Notre équipe KYC est disponible pour vous accompagner.
                   </p>

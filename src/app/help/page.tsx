@@ -37,7 +37,7 @@ const categories = [
     articles: [
       { title: "Comment vendre mes skins CS2 ?", views: "3.2k", helpful: 94 },
       { title: "Estimation des prix : comment ça marche ?", views: "1.9k", helpful: 88 },
-      { title: "Qu'est-ce que le trade hold Steam ?", views: "2.7k", helpful: 91 },
+      { title: "Qu&apos;est-ce que le trade hold Steam ?", views: "2.7k", helpful: 91 },
       { title: "Frais de transaction et calculs", views: "1.4k", helpful: 87 },
     ]
   },
@@ -131,7 +131,7 @@ export default function HelpPage() {
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             <QuestionMarkCircleIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
-            Centre d'aide
+            Centre d&apos;aide
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             Trouvez rapidement les réponses à vos questions sur CashTrade
@@ -142,7 +142,7 @@ export default function HelpPage() {
             <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Rechercher dans l'aide..."
+              placeholder="Rechercher dans l&apos;aide..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-4 py-3 text-center"
@@ -232,7 +232,7 @@ export default function HelpPage() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mb-8 sm:mb-12"
         >
-          <h2 className="text-2xl font-semibold mb-6">Besoin d'aide personnalisée ?</h2>
+          <h2 className="text-2xl font-semibold mb-6">Besoin d&apos;aide personnalisée ?</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {supportOptions.map((option, index) => (
               <Card key={index} className="text-center hover:shadow-md transition-shadow">

@@ -25,7 +25,7 @@ const riskFactors = [
       "Pays sous sanctions internationales",
       "Juridictions à haut risque (liste GAFI)",
       "Paradis fiscaux non coopératifs",
-      "Zones de conflit ou d'instabilité politique"
+      "Zones de conflit ou d&apos;instabilité politique"
     ]
   },
   {
@@ -68,7 +68,7 @@ const monitoringMeasures = [
     title: "Surveillance en temps réel",
     description: "Monitoring automatisé de toutes les transactions",
     features: [
-      "Algorithmes de détection d'anomalies",
+      "Algorithmes de détection d&apos;anomalies",
       "Alertes automatiques sur seuils",
       "Analyse comportementale avancée",
       "Corrélation avec bases de données externes"
@@ -93,7 +93,7 @@ const monitoringMeasures = [
     description: "Déclarations aux autorités compétentes",
     features: [
       "Déclarations TRACFIN automatiques",
-      "Rapports périodiques à l'ACPR",
+      "Rapports périodiques à l&apos;ACPR",
       "Conservation des preuves 5 ans",
       "Coopération avec les enquêtes"
     ],
@@ -104,14 +104,14 @@ const monitoringMeasures = [
 
 const prohibitedActivities = [
   {
-    activity: "Blanchiment d'argent",
-    description: "Conversion d'argent d'origine illicite en fonds apparemment légaux",
+    activity: "Blanchiment d&apos;argent",
+    description: "Conversion d&apos;argent d&apos;origine illicite en fonds apparemment légaux",
     examples: [
       "Utilisation de skins pour blanchir des cryptomonnaies",
-      "Transactions multiples pour masquer l'origine",
+      "Transactions multiples pour masquer l&apos;origine",
       "Collaboration avec des réseaux criminels"
     ],
-    sanctions: "Jusqu'à 5 ans de prison et 375 000€ d'amende"
+    sanctions: "Jusqu&apos;à 5 ans de prison et 375 000€ d&apos;amende"
   },
   {
     activity: "Financement du terrorisme",
@@ -121,14 +121,14 @@ const prohibitedActivities = [
       "Collecte de fonds pour activités terroristes",
       "Soutien logistique à des groupes interdits"
     ],
-    sanctions: "Jusqu'à 10 ans de prison et 750 000€ d'amende"
+    sanctions: "Jusqu&apos;à 10 ans de prison et 750 000€ d&apos;amende"
   },
   {
     activity: "Contournement de sanctions",
     description: "Évitement des mesures restrictives internationales",
     examples: [
       "Transactions avec des pays sanctionnés",
-      "Utilisation de prête-noms pour masquer l'identité",
+      "Utilisation de prête-noms pour masquer l&apos;identité",
       "Contournement des embargos économiques"
     ],
     sanctions: "Sanctions administratives et pénales selon le cas"
@@ -168,18 +168,18 @@ const reportingProcess = [
 
 const userObligations = [
   {
-    obligation: "Fourniture d'informations exactes",
+    obligation: "Fourniture d&apos;informations exactes",
     description: "Vous devez fournir des informations véridiques lors de votre inscription et les maintenir à jour.",
     consequences: "Suspension de compte en cas de fausses déclarations"
   },
   {
-    obligation: "Justification de l'origine des fonds",
+    obligation: "Justification de l&apos;origine des fonds",
     description: "Vous devez pouvoir justifier la provenance légale de vos skins et cryptomonnaies.",
-    consequences: "Blocage des transactions jusqu'à justification"
+    consequences: "Blocage des transactions jusqu&apos;à justification"
   },
   {
-    obligation: "Signalement d'activités suspectes",
-    description: "Vous devez nous signaler toute tentative d'utilisation frauduleuse de votre compte.",
+    obligation: "Signalement d&apos;activités suspectes",
+    description: "Vous devez nous signaler toute tentative d&apos;utilisation frauduleuse de votre compte.",
     consequences: "Responsabilité partagée en cas de non-signalement"
   },
   {
@@ -205,7 +205,7 @@ export default function AmlPolicyPage() {
             Politique Anti-Blanchiment (AML)
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-            Notre engagement dans la lutte contre le blanchiment d'argent et le financement du terrorisme
+            Notre engagement dans la lutte contre le blanchiment d&apos;argent et le financement du terrorisme
           </p>
           <div className="flex items-center justify-center space-x-4">
             <Badge variant="secondary" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
@@ -230,7 +230,7 @@ export default function AmlPolicyPage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    CashTrade applique une politique de tolérance zéro envers le blanchiment d'argent, 
+                    CashTrade applique une politique de tolérance zéro envers le blanchiment d&apos;argent, 
                     le financement du terrorisme et toute activité illicite. Nous mettons en œuvre des 
                     mesures strictes conformes aux réglementations européennes et françaises.
                   </p>
@@ -245,7 +245,7 @@ export default function AmlPolicyPage() {
                     <span>Avertissement important</span>
                   </h3>
                   <p className="text-sm text-red-700 dark:text-red-300">
-                    Toute tentative de blanchiment d'argent ou de financement d'activités illicites 
+                    Toute tentative de blanchiment d&apos;argent ou de financement d&apos;activités illicites 
                     entraînera la fermeture immédiate du compte, la saisie des fonds et le signalement 
                     aux autorités judiciaires et financières.
                   </p>
@@ -347,7 +347,7 @@ export default function AmlPolicyPage() {
                     <CardContent>
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-medium mb-2">Exemples d'activités concernées :</h4>
+                          <h4 className="font-medium mb-2">Exemples d&apos;activités concernées :</h4>
                           <ul className="space-y-1">
                             {activity.examples.map((example, exampleIndex) => (
                               <li key={exampleIndex} className="flex items-start space-x-2 text-sm">
@@ -488,7 +488,7 @@ export default function AmlPolicyPage() {
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground mt-3">
-                    Ligne d'urgence 24/7 - Confidentialité garantie
+                    Ligne d&apos;urgence 24/7 - Confidentialité garantie
                   </p>
                 </CardContent>
               </Card>

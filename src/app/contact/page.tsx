@@ -68,13 +68,13 @@ const departments = [
   {
     name: "Sécurité & Fraude",
     email: "security@cashtrade.gg",
-    description: "Signalement d'activités suspectes, sécurité",
+    description: "Signalement d&apos;activités suspectes, sécurité",
     icon: ShieldCheckIcon,
   },
   {
     name: "Conformité & KYC",
     email: "compliance@cashtrade.gg",
-    description: "Questions KYC, vérification d'identité",
+    description: "Questions KYC, vérification d&apos;identité",
     icon: DocumentTextIcon,
   },
   {
@@ -238,7 +238,7 @@ export default function ContactPage() {
                     <div className="flex items-start space-x-2">
                       <input type="checkbox" id="privacy" className="mt-1" required />
                       <Label htmlFor="privacy" className="text-sm text-muted-foreground">
-                        J'accepte que mes données soient traitées conformément à notre{" "}
+                        J&apos;accepte que mes données soient traitées conformément à notre{" "}
                         <a href="/privacy" className="text-orange-600 hover:underline">
                           politique de confidentialité
                         </a>
@@ -383,7 +383,7 @@ export default function ContactPage() {
                   <div className="pt-3 border-t">
                     <p className="text-xs text-muted-foreground">
                       Société immatriculée au RCS de Paris. 
-                      Agréée en tant qu'établissement de paiement par l'ACPR.
+                      Agréée en tant qu&apos;établissement de paiement par l&apos;ACPR.
                     </p>
                   </div>
                 </CardContent>

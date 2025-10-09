@@ -232,7 +232,7 @@ const responseExamples = {
   "success": false,
   "error": {
     "code": "INVALID_TRADE_LINK",
-    "message": "Le Trade Link fourni n'est pas valide",
+    "message": "Le Trade Link fourni n&apos;est pas valide",
     "details": {
       "field": "trade_link",
       "expected_format": "https://steamcommunity.com/tradeoffer/new/?partner=..."
@@ -304,7 +304,7 @@ export default function ApiDocsPage() {
                     <CubeIcon className="w-6 h-6 text-green-600" />
                   </div>
                   <h3 className="font-semibold mb-2">3. Intégrer</h3>
-                  <p className="text-sm text-muted-foreground">Utilisez nos SDKs ou appelez directement l'API REST</p>
+                  <p className="text-sm text-muted-foreground">Utilisez nos SDKs ou appelez directement l&apos;API REST</p>
                 </div>
               </div>
             </CardContent>
@@ -330,7 +330,7 @@ export default function ApiDocsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-muted-foreground">
-                    L'API CashTrade utilise des tokens Bearer pour l'authentification. Incluez votre token dans l'en-tête Authorization de chaque requête.
+                    L&apos;API CashTrade utilise des tokens Bearer pour l&apos;authentification. Incluez votre token dans l&apos;en-tête Authorization de chaque requête.
                   </p>
                   <div className="bg-muted rounded-lg p-4">
                     <code className="text-sm">
@@ -604,7 +604,7 @@ export default function ApiDocsPage() {
             >
               <Card className="bg-muted/50">
                 <CardContent className="p-6 text-center">
-                  <h3 className="font-semibold mb-2">Besoin d'aide ?</h3>
+                  <h3 className="font-semibold mb-2">Besoin d&apos;aide ?</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     Notre équipe technique est là pour vous accompagner.
                   </p>
