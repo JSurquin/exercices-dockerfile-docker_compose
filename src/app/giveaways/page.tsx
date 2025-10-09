@@ -245,7 +245,7 @@ export default function GiveawaysPage() {
             {messages.giveaways.subtitle}
           </p>
           <Button 
-            onClick={refetch} 
+            onClick={() => refetch()} 
             variant="outline" 
             disabled={loading}
             className="mb-4"
