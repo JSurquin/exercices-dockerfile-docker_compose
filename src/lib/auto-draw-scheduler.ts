@@ -47,11 +47,11 @@ export class AutoDrawScheduler {
         console.log(`Processed ${result.processedCount} expired giveaways:`, result.results);
         
         // Notifier les résultats
-        result.results.forEach((result: any) => {
-          if (result.status === 'drawn') {
-            console.log(`🎉 Giveaway ${result.giveawayId} drawn! Winner: ${result.winner?.steamUsername || result.winnerId}`);
-          } else if (result.status === 'cancelled') {
-            console.log(`❌ Giveaway ${result.giveawayId} cancelled: ${result.reason}`);
+        result.results.forEach((drawResult: any) => {
+          if (drawResult.status === 'drawn') {
+            console.log(`🎉 Giveaway ${drawResult.giveawayId} drawn! Winner: ${drawResult.winner?.steamUsername || drawResult.winnerId}`);
+          } else if (drawResult.status === 'cancelled') {
+            console.log(`❌ Giveaway ${drawResult.giveawayId} cancelled: ${drawResult.reason}`);
           }
         });
       }

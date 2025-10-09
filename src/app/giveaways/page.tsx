@@ -13,7 +13,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { Messages } from '~/utils/types';
-import { useGiveaways, Giveaway } from '@/hooks/use-giveaways';
+import { useGiveaways, GiveawayWithEntries } from '@/hooks/use-giveaways';
+import { Giveaway } from '@/lib/types';
 import { AutoDrawScheduler } from '@/lib/auto-draw-scheduler';
 import { GiveawayNotifications } from '@/components/giveaway/giveaway-notifications';
 import {
@@ -55,9 +56,10 @@ const formatTimeRemaining = (timeRemaining: ReturnType<typeof getTimeRemaining>,
   }
 };
 
-const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets }: { giveaway: Giveaway; onParticipate: (giveaway: Giveaway, tickets: number) => void; messages: Messages; userTickets: number }) => {
+const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets }: { giveaway: GiveawayWithEntries; onParticipate: (giveaway: GiveawayWithEntries, tickets: number) => void; messages: Messages; userTickets: number }) => {
   const [ticketsToUse, setTicketsToUse] = useState(1);
-  const timeRemaining = getTimeRemaining(new Date(giveaway.endDate));
+  const endDate = typeof giveaway.endDate === 'string' ? new Date(giveaway.endDate) : giveaway.endDate;
+  const timeRemaining = getTimeRemaining(endDate);
   const progress = (giveaway.soldTickets / giveaway.maxTickets) * 100;
   
   return (
@@ -69,10 +71,10 @@ const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets }: { give
             <p className="text-sm text-muted-foreground mb-3">{giveaway.description}</p>
           </div>
           <Badge 
-            variant={giveaway.status === 'active' ? 'default' : 'secondary'}
-            className={giveaway.status === 'active' ? 'bg-green-500' : ''}
+            variant={giveaway.status === 'ACTIVE' ? 'default' : 'secondary'}
+            className={giveaway.status === 'ACTIVE' ? 'bg-green-500' : ''}
           >
-            {giveaway.status === 'active' ? messages.giveaways.card.status.active : giveaway.status === 'ended' ? messages.giveaways.card.status.ended : messages.giveaways.card.status.cancelled}
+            {giveaway.status === 'ACTIVE' ? messages.giveaways.card.status.active : giveaway.status === 'ENDED' ? messages.giveaways.card.status.ended : messages.giveaways.card.status.cancelled}
           </Badge>
         </div>
       </CardHeader>
@@ -105,7 +107,7 @@ const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets }: { give
           </div>
           <div className="flex items-center space-x-2">
             <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-            <span>{new Date(giveaway.endDate).toLocaleDateString()}</span>
+            <span>{endDate.toLocaleDateString()}</span>
           </div>
         </div>
 
@@ -138,7 +140,7 @@ const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets }: { give
         )}
 
         {/* Participation */}
-        {giveaway.status === 'active' && !timeRemaining.expired && (
+        {giveaway.status === 'ACTIVE' && !timeRemaining.expired && (
           <div className="border-t pt-4 space-y-3">
             <div className="flex items-center space-x-2">
               <Label htmlFor={`tickets-${giveaway.id}`} className="text-sm">
@@ -209,7 +211,7 @@ export default function GiveawaysPage() {
     }
   }, [user]);
 
-  const handleParticipate = async (giveaway: Giveaway, tickets: number) => {
+  const handleParticipate = async (giveaway: GiveawayWithEntries, tickets: number) => {
     if (!user) {
       toast.error(messages.giveaways.participation.loginRequired);
       return;

@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLocale } from '@/components/providers/locale-provider';
-import { Giveaway, GiveawayEntry } from '@/hooks/use-giveaways';
+import { Giveaway, GiveawayEntry } from '@/lib/types';
 import {
   GiftIcon,
   TicketIcon,
@@ -205,7 +205,7 @@ export default function GiveawayDetailsPage() {
                     <div className="text-center p-4 bg-muted rounded-lg">
                       <ClockIcon className="w-6 h-6 mx-auto mb-2 text-green-500" />
                       <p className="text-sm text-muted-foreground">Temps restant</p>
-                      <p className="text-lg font-semibold">{getTimeRemaining(giveaway.endDate)}</p>
+                      <p className="text-lg font-semibold">{getTimeRemaining(typeof giveaway.endDate === 'string' ? giveaway.endDate : giveaway.endDate.toString())}</p>
                     </div>
                     <div className="text-center p-4 bg-muted rounded-lg">
                       <CalendarIcon className="w-6 h-6 mx-auto mb-2 text-orange-500" />

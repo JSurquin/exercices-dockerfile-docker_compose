@@ -122,7 +122,7 @@ export const mockGiveaways: Giveaway[] = [
     maxTickets: 1000,
     soldTickets: 756,
     endDate: new Date('2024-09-30T23:59:59Z'),
-    status: 'active',
+    status: 'ACTIVE',
   },
   {
     id: 'giveaway_002',
@@ -133,7 +133,7 @@ export const mockGiveaways: Giveaway[] = [
     maxTickets: 500,
     soldTickets: 234,
     endDate: new Date('2024-10-15T23:59:59Z'),
-    status: 'active',
+    status: 'ACTIVE',
   },
   {
     id: 'giveaway_003',
@@ -144,7 +144,7 @@ export const mockGiveaways: Giveaway[] = [
     maxTickets: 800,
     soldTickets: 800,
     endDate: new Date('2024-09-15T23:59:59Z'),
-    status: 'ended',
+    status: 'ENDED',
     winnerId: '76561198087654321',
     randomSeed: 'abc123def456',
   },

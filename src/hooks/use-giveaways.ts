@@ -1,34 +1,17 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { Giveaway, GiveawayEntry } from '@/lib/types';
 
-export interface Giveaway {
-  id: string;
-  title: string;
-  description: string;
-  prize: string;
-  ticketPrice: number;
-  maxTickets: number;
-  soldTickets: number;
-  endDate: string;
-  status: 'ACTIVE' | 'ENDED' | 'CANCELLED';
-  winnerId?: string;
-  randomSeed?: string;
-  createdAt: string;
-  updatedAt: string;
-  entries?: GiveawayEntry[];
-}
-
-export interface GiveawayEntry {
-  id: string;
-  userId: string;
-  giveawayId: string;
-  ticketsUsed: number;
-  enteredAt: string;
+export interface GiveawayEntryWithUser extends GiveawayEntry {
   user?: {
     id: string;
     steamUsername: string | null;
     steamAvatar: string | null;
   };
+}
+
+export interface GiveawayWithEntries extends Giveaway {
+  entries?: GiveawayEntryWithUser[];
 }
 
 export interface DrawResult {
@@ -44,7 +27,7 @@ export interface DrawResult {
 }
 
 export function useGiveaways() {
-  const [giveaways, setGiveaways] = useState<Giveaway[]>([]);
+  const [giveaways, setGiveaways] = useState<GiveawayWithEntries[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

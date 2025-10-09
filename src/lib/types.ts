@@ -108,7 +108,7 @@ export interface GiveawayEntry {
   userId: string;
   giveawayId: string;
   ticketsUsed: number;
-  enteredAt: Date;
+  enteredAt: Date | string;
 }
 
 export interface AffiliateStats {

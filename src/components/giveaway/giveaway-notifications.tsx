@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrophyIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import { GiveawayWithEntries } from '@/hooks/use-giveaways';
 
 interface DrawNotification {
   id: string;
@@ -29,10 +30,10 @@ export function GiveawayNotifications() {
         // Pour l'instant, on utilise un polling simple
         const response = await fetch('/api/giveaways?status=ENDED');
         if (response.ok) {
-          const giveaways = await response.json();
+          const giveaways: GiveawayWithEntries[] = await response.json();
           
           // Vérifier les nouveaux gagnants
-          giveaways.forEach((giveaway: any) => {
+          giveaways.forEach((giveaway) => {
             if (giveaway.winnerId && giveaway.updatedAt) {
               const drawTime = new Date(giveaway.updatedAt);
               const now = new Date();
@@ -42,8 +43,8 @@ export function GiveawayNotifications() {
               if (timeDiff < 5 * 60 * 1000) {
                 const existingNotification = notifications.find(n => n.id === giveaway.id);
                 if (!existingNotification) {
-                  const winner = giveaway.entries?.find((entry: any) => entry.userId === giveaway.winnerId);
-                  if (winner) {
+                  const winner = giveaway.entries?.find((entry) => entry.userId === giveaway.winnerId);
+                  if (winner && winner.user) {
                     const notification: DrawNotification = {
                       id: giveaway.id,
                       giveawayTitle: giveaway.title,
