@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Appel à l'API Steam publique
-    const steamApiUrl = `https://steamcommunity.com/inventory/${steamId}/440/2`;
+    const steamApiUrl = `https://steamcommunity.com/inventory/${steamId}/730/2`;
     
     const response = await fetch(steamApiUrl, {
       headers: {
@@ -172,18 +172,18 @@ export async function GET(request: NextRequest) {
     // Filtrer uniquement les items CS2 tradables et marketables
     const cs2TradableItems = items.filter(item => 
       item !== null &&
-      item.appid === 440
+      item.appid === 730
       && item.tradable === 1 
-    //   && 
-    //   item.tradable === 1 && 
-    //   item.marketable === 1 &&
-    //   // Exclure les cases, clés, etc.
-    //   !item.market_hash_name.includes('Case') &&
-    //   !item.market_hash_name.includes('Key') &&
-    //   !item.market_hash_name.includes('Sticker') &&
-    //   !item.market_hash_name.includes('Patch') &&
-    //   !item.market_hash_name.includes('Music Kit') &&
-    //   !item.market_hash_name.includes('Graffiti')
+       && 
+       item.marketable === 1 
+       //&&
+       // Exclure les cases, clés, etc.
+      //  !item.market_hash_name.includes('Case') &&
+      //  !item.market_hash_name.includes('Key') &&
+      //  !item.market_hash_name.includes('Sticker') &&
+      //  !item.market_hash_name.includes('Patch') &&
+      //  !item.market_hash_name.includes('Music Kit') &&
+      //  !item.market_hash_name.includes('Graffiti')
     );
 
     const result: SteamInventoryResponse = {
