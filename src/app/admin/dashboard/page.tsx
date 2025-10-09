@@ -41,6 +41,7 @@ import { AdminAnalyticsCharts } from '@/components/admin/analytics-charts';
 import { AdminSkinplaceMetrics } from '@/components/admin/skinplace-metrics';
 import AffiliatesManagement from '@/components/admin/affiliates-management';
 import AffiliateCommissions from '@/components/admin/affiliate-commissions';
+import { GiveawayAdmin } from '@/components/admin/giveaway-admin';
 
 const formatPrice = (centimes: number) => {
   return (centimes / 100).toFixed(2) + '€';
@@ -233,7 +234,7 @@ export default function AdminDashboard() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-9 bg-slate-800/50 backdrop-blur-sm border border-slate-700">
+            <TabsList className="grid w-full grid-cols-10 bg-slate-800/50 backdrop-blur-sm border border-slate-700">
               <TabsTrigger 
                 value="overview" 
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
@@ -287,6 +288,12 @@ export default function AdminDashboard() {
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
               >
                 Commissions
+              </TabsTrigger>
+              <TabsTrigger 
+                value="giveaways" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
+              >
+                Giveaways
               </TabsTrigger>
             </TabsList>
 
@@ -500,6 +507,28 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <AffiliateCommissions />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Giveaways */}
+            <TabsContent value="giveaways" className="mt-6">
+              <Card className="bg-slate-800/50 border-2 border-orange-500/50 backdrop-blur-sm shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 transition-all duration-300">
+                <CardHeader>
+                  <CardTitle className="text-white">Gestion des Giveaways</CardTitle>
+                  <div className="text-slate-300">
+                    Tirage automatique des giveaways expirés
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <GiveawayAdmin />
+                  <div className="mt-6">
+                    <Button asChild className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700">
+                      <a href="/admin/giveaways">
+                        Gestion complète des giveaways →
+                      </a>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

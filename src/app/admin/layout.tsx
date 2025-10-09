@@ -111,7 +111,43 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </div>
       
       <div className="container mx-auto px-4 py-8">
-        {children}
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar Navigation */}
+          <div className="lg:w-64 flex-shrink-0">
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-slate-100">Navigation</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Link 
+                  href="/admin"
+                  className={`block px-3 py-2 rounded-md text-sm transition-colors ${
+                    pathname === '/admin' 
+                      ? 'bg-orange-500/20 text-orange-300' 
+                      : 'text-slate-300 hover:bg-slate-700/50'
+                  }`}
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  href="/admin/giveaways"
+                  className={`block px-3 py-2 rounded-md text-sm transition-colors ${
+                    pathname === '/admin/giveaways' 
+                      ? 'bg-orange-500/20 text-orange-300' 
+                      : 'text-slate-300 hover:bg-slate-700/50'
+                  }`}
+                >
+                  Giveaways
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1">
+            {children}
+          </div>
+        </div>
       </div>
     </div>
   );
