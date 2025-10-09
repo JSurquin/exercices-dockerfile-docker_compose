@@ -17,7 +17,7 @@ export function Footer() {
       { name: messages.footer.links.helpCenter, href: "/help" },
       { name: messages.footer.links.contact, href: "/contact" },
       { name: messages.footer.links.status, href: "/status" },
-      { name: messages.footer.links.api, href: "/api" },
+      { name: messages.footer.links.api, href: "/api-docs" },
     ],
     legal: [
       { name: messages.footer.links.terms, href: "/terms" },
