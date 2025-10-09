@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { mockTrades, mockUser, mockStats, mockVolumeData } from '@/lib/mock-data';
 import { useLocale } from '@/components/providers/locale-provider';
+import { useToast } from '@/hooks/use-toast';
 import {
   ChartBarIcon,
   UsersIcon,
@@ -63,9 +64,106 @@ const getStatusColor = (status: string) => {
 
 export default function AdminDashboard() {
   const { messages } = useLocale();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedTimeframe, setSelectedTimeframe] = useState('7d');
+  const [isExporting, setIsExporting] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+
+  // Fonction pour télécharger l'export des données
+  const handleExportData = async () => {
+    try {
+      setIsExporting(true);
+      
+      const response = await fetch('/api/admin/export-data', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'export des données');
+      }
+
+      // Créer un blob à partir de la réponse
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Créer un lien de téléchargement
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `cashtrade-export-donnees-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Nettoyer
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Export réussi",
+        description: "Les données ont été exportées avec succès.",
+      });
+    } catch (error) {
+      console.error('Erreur lors de l\'export:', error);
+      toast({
+        title: "Erreur d'export",
+        description: "Une erreur est survenue lors de l'export des données.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Fonction pour générer le rapport complet
+  const handleGenerateReport = async () => {
+    try {
+      setIsGeneratingReport(true);
+      
+      const response = await fetch('/api/admin/full-report', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la génération du rapport');
+      }
+
+      // Créer un blob à partir de la réponse
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Créer un lien de téléchargement
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `cashtrade-rapport-complet-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Nettoyer
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Rapport généré",
+        description: "Le rapport complet a été généré avec succès.",
+      });
+    } catch (error) {
+      console.error('Erreur lors de la génération du rapport:', error);
+      toast({
+        title: "Erreur de génération",
+        description: "Une erreur est survenue lors de la génération du rapport.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
 
   return (
     <div>
@@ -79,7 +177,7 @@ export default function AdminDashboard() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
                 Dashboard Admin CashTrade
               </h1>
               <p className="text-slate-300 text-lg">
@@ -87,13 +185,22 @@ export default function AdminDashboard() {
               </p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" className="text-white border-slate-600 hover:bg-slate-800">
+              <Button 
+                variant="outline" 
+                className="text-white border-slate-600 hover:bg-slate-800"
+                onClick={handleExportData}
+                disabled={isExporting}
+              >
                 <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-                Exporter Données
+                {isExporting ? 'Export en cours...' : 'Exporter Données'}
               </Button>
-              <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700">
+              <Button 
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+                onClick={handleGenerateReport}
+                disabled={isGeneratingReport}
+              >
                 <ChartBarIcon className="h-4 w-4 mr-2" />
-                Rapport Complet
+                {isGeneratingReport ? 'Génération...' : 'Rapport Complet'}
               </Button>
             </div>
           </div>

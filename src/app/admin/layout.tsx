@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, ArrowLeft } from 'lucide-react';
+import { Shield, ArrowLeft, Settings, Home } from 'lucide-react';
 import Link from 'next/link';
 
 interface AdminLayoutProps {
@@ -86,12 +86,26 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <p className="text-sm text-slate-400">Panel d&apos;administration CashTrade</p>
               </div>
             </div>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/dashboard" className="flex items-center gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Dashboard
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link href="/admin/dashboard" className="flex items-center gap-2">
+                  <Home className="w-4 h-4" />
+                  Dashboard
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/admin/settings" className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  Paramètres
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/dashboard" className="flex items-center gap-2">
+                  <ArrowLeft className="w-4 h-4" />
+                  Retour Site
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
