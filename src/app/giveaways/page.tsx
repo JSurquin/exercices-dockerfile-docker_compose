@@ -15,7 +15,6 @@ import { useLocale } from '@/components/providers/locale-provider';
 import { Messages } from '~/utils/types';
 import { useGiveaways, GiveawayWithEntries } from '@/hooks/use-giveaways';
 import { Giveaway } from '@/lib/types';
-import { AutoDrawScheduler } from '@/lib/auto-draw-scheduler';
 import { GiveawayNotifications } from '@/components/giveaway/giveaway-notifications';
 import {
   GiftIcon,
@@ -194,15 +193,7 @@ export default function GiveawaysPage() {
     };
 
     initGiveaway();
-    
-    // Démarrer le scheduler de tirage automatique
-    AutoDrawScheduler.start();
-
-    // Nettoyer lors du démontage du composant
-    return () => {
-      AutoDrawScheduler.stop();
-    };
-  }, [refetch]);
+  }, []);
 
   // Mettre à jour les tickets de l'utilisateur
   useEffect(() => {
@@ -250,9 +241,17 @@ export default function GiveawaysPage() {
             <GiftIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
             {messages.giveaways.title}
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-4">
             {messages.giveaways.subtitle}
           </p>
+          <Button 
+            onClick={refetch} 
+            variant="outline" 
+            disabled={loading}
+            className="mb-4"
+          >
+            {loading ? 'Chargement...' : 'Actualiser les giveaways'}
+          </Button>
         </motion.div>
 
         {/* User Tickets */}

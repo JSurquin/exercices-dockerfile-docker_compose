@@ -68,14 +68,13 @@ export function GiveawayNotifications() {
       }
     };
 
-    // Vérifier toutes les 30 secondes
-    const interval = setInterval(checkForDraws, 30000);
-    
-    // Vérification initiale
+    // Vérification initiale seulement (pas d'intervalle pour éviter les boucles)
     checkForDraws();
 
-    return () => clearInterval(interval);
-  }, [notifications]);
+    // TODO: Réactiver avec WebSockets ou une meilleure gestion
+    // const interval = setInterval(checkForDraws, 30000);
+    // return () => clearInterval(interval);
+  }, []); // Pas de dépendances pour éviter les boucles
 
   const removeNotification = (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));

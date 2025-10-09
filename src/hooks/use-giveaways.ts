@@ -143,13 +143,6 @@ export function useGiveaways() {
 
   useEffect(() => {
     fetchGiveaways();
-    
-    // Rafraîchir automatiquement toutes les 30 secondes
-    const interval = setInterval(() => {
-      fetchGiveaways();
-    }, 30000);
-
-    return () => clearInterval(interval);
   }, []);
 
   return {

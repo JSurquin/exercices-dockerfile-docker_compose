@@ -68,15 +68,13 @@ export class AutoDrawScheduler {
   }
 }
 
-// Auto-start si on est côté client
-if (typeof window !== 'undefined') {
-  // Démarrer le scheduler après un délai pour éviter les conflits
-  setTimeout(() => {
-    AutoDrawScheduler.start();
-  }, 5000);
-
-  // Nettoyer lors de la fermeture de la page
-  window.addEventListener('beforeunload', () => {
-    AutoDrawScheduler.stop();
-  });
-}
+// Auto-start désactivé pour éviter les boucles infinies
+// TODO: Réactiver avec une meilleure gestion des intervalles
+// if (typeof window !== 'undefined') {
+//   setTimeout(() => {
+//     AutoDrawScheduler.start();
+//   }, 5000);
+//   window.addEventListener('beforeunload', () => {
+//     AutoDrawScheduler.stop();
+//   });
+// }
