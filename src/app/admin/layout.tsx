@@ -100,7 +100,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm">
-                <Link href="/dashboard" className="flex items-center gap-2">
+                <Link href="/" className="flex items-center gap-2">
                   <ArrowLeft className="w-4 h-4" />
                   Retour Site
                 </Link>
