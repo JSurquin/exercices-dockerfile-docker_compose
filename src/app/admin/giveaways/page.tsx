@@ -419,8 +419,8 @@ export default function AdminGiveawaysPage() {
                     <div>
                       <h4 className="font-semibold mb-2">Fonctionnement automatique :</h4>
                       <ul className="space-y-1 text-muted-foreground">
-                        <li>• Les giveaways se terminent automatiquement à leur date d'expiration</li>
-                        <li>• Utilisez le bouton "Effectuer le tirage automatique" pour traiter les giveaways expirés</li>
+                        <li>• Les giveaways se terminent automatiquement à leur date d&apos;expiration</li>
+                        <li>• Utilisez le bouton {"Effectuer le tirage automatique"} pour traiter les giveaways expirés</li>
                         <li>• Le tirage est basé sur un algorithme pondéré (plus de tickets = plus de chances)</li>
                         <li>• Chaque tirage génère un seed cryptographique pour la transparence</li>
                       </ul>
@@ -429,7 +429,7 @@ export default function AdminGiveawaysPage() {
                     <div>
                       <h4 className="font-semibold mb-2">Gestion manuelle :</h4>
                       <ul className="space-y-1 text-muted-foreground">
-                        <li>• Vous pouvez forcer le tirage d'un giveaway actif depuis la liste</li>
+                        <li>• Vous pouvez forcer le tirage d&apos;un giveaway actif depuis la liste</li>
                         <li>• Les giveaways peuvent être supprimés (attention : action irréversible)</li>
                         <li>• Les participants sont automatiquement notifiés des résultats</li>
                       </ul>
