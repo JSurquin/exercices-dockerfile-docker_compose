@@ -14,6 +14,7 @@ model User {
   emailVerified         Boolean             @default(false)
   name                  String?
   image                 String?
+  tradeLink             String?             @unique
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
   role                  UserRole            @default(USER)

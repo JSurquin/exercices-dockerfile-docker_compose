@@ -16,10 +16,21 @@ export async function POST(request: NextRequest) {
 
     const updates = await request.json();
     
+    // Validation du trade link si fourni
+    if (updates.tradeLink) {
+      const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
+      if (!steamTradeUrlRegex.test(updates.tradeLink)) {
+        return NextResponse.json(
+          { error: 'Format de Trade Link Steam invalide' },
+          { status: 400 }
+        );
+      }
+    }
+    
     // Filtrer les champs autorisés à être mis à jour
     const allowedFields = [
       'name', 'level', 'xp', 'tickets', 'totalVolume', 
-      'kycStatus', 'acceptedTermsAt'
+      'kycStatus', 'acceptedTermsAt', 'tradeLink'
     ];
     
     const filteredUpdates: Record<string, unknown> = {};
@@ -47,6 +58,7 @@ export async function POST(request: NextRequest) {
       totalVolume: updatedUser.totalVolumeCents,
       kycStatus: updatedUser.kycStatus,
       acceptedTermsAt: updatedUser.acceptedTermsAt,
+      tradeLink: updatedUser.tradeLink,
       joinedAt: updatedUser.createdAt,
     };
 

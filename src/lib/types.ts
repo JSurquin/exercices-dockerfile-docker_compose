@@ -3,6 +3,7 @@ export interface User {
   steamId64: string;
   username: string;
   avatar: string;
+  tradeLink?: string;
   acceptedTermsAt?: Date;
   kycStatus: 'pending' | 'in_progress' | 'verified' | 'rejected';
   totalVolume: number; // en centimes

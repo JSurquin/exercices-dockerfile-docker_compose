@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
-import { SteamInventoryViewer } from "@/components/steam/steam-inventory-viewer";
-import { SteamTradeCreator } from "@/components/steam/steam-trade-creator";
-import { SteamInventoryItem } from "@/hooks/use-steam-inventory";
+import { SkinplaceInventoryViewer } from "@/components/skinplace/skinplace-inventory-viewer";
+import { SkinplaceTradeCreator } from "@/components/skinplace/skinplace-trade-creator";
+import { NormalizedInventoryItem } from "@/hooks/use-skinplace-inventory";
 import {
   LinkIcon,
   CurrencyDollarIcon,
@@ -29,7 +29,7 @@ export default function SellPage() {
   const { messages } = useLocale();
   const [currentStep, setCurrentStep] = useState(0);
   const steps = getSteps(messages);
-  const [selectedItems, setSelectedItems] = useState<SteamInventoryItem[]>([]);
+  const [selectedItems, setSelectedItems] = useState<NormalizedInventoryItem[]>([]);
   const [tradeData, setTradeData] = useState<{ 
     trade_id: string; 
     token: string; 
@@ -40,8 +40,8 @@ export default function SellPage() {
     expires_at: Date;
   } | null>(null);
 
-  const handleItemSelect = (item: SteamInventoryItem) => {
-    setSelectedItems([item]);
+  const handleItemSelect = (items: NormalizedInventoryItem[]) => {
+    setSelectedItems(items);
     setCurrentStep(1);
   };
 
@@ -158,7 +158,7 @@ export default function SellPage() {
           transition={{ duration: 0.4 }}
         >
           {currentStep === 0 && (
-            <SteamInventoryViewer
+            <SkinplaceInventoryViewer
               steamId64={user.steamId64}
               onItemSelect={handleItemSelect}
               selectable={true}
@@ -166,7 +166,7 @@ export default function SellPage() {
           )}
 
           {currentStep === 1 && (
-            <SteamTradeCreator
+            <SkinplaceTradeCreator
               steamId64={user.steamId64}
               selectedItems={selectedItems}
               onTradeCreated={handleTradeCreated}
@@ -174,68 +174,135 @@ export default function SellPage() {
           )}
 
           {currentStep === 2 && tradeData && (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-green-500" />
-                <h2 className="text-2xl font-bold mb-2">
-                  {messages.sellPage.confirmation.title}
-                </h2>
-                <p className="text-muted-foreground mb-6">
-                  {messages.sellPage.confirmation.description}
-                </p>
+            <div className="space-y-6">
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-green-500" />
+                  <h2 className="text-2xl font-bold mb-2">
+                    🎉 Trade créé avec succès !
+                  </h2>
+                  <p className="text-muted-foreground mb-6">
+                    Votre trade a été accepté par notre bot. Acceptez l&apos;offre sur Steam pour continuer.
+                  </p>
 
-                <div className="bg-muted/50 rounded-lg p-4 mb-6">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">
-                        {messages.sellPage.confirmation.tradeId}:
-                      </span>
-                      <p className="font-mono">{tradeData.trade_id}</p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">
-                        {messages.sellPage.confirmation.grossValue}:
-                      </span>
-                      <p className="font-medium">
-                        {formatPrice(tradeData.total_value)}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">
-                        {messages.sellPage.confirmation.totalFees}:
-                      </span>
-                      <p className="font-medium text-orange-600">
-                        -{formatPrice(tradeData.fees.cashout_fee + tradeData.fees.network_fee)}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">
-                        {messages.sellPage.confirmation.youWillReceive}:
-                      </span>
-                      <p className="font-bold text-green-600">
-                        {formatPrice(tradeData.net_value)}
-                      </p>
+                  <div className="bg-muted/50 rounded-lg p-4 mb-6">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">
+                          Trade ID Steam:
+                        </span>
+                        <p className="font-mono">{tradeData.trade_id}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">
+                          Valeur brute:
+                        </span>
+                        <p className="font-medium">
+                          {formatPrice(tradeData.total_value)}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">
+                          Frais totaux:
+                        </span>
+                        <p className="font-medium text-orange-600">
+                          -{formatPrice(tradeData.fees.cashout_fee + tradeData.fees.network_fee)}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">
+                          Vous recevrez:
+                        </span>
+                        <p className="font-bold text-green-600">
+                          {formatPrice(tradeData.net_value)}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button asChild>
-                    <a href="/dashboard" target="_blank">
-                      {messages.sellPage.confirmation.trackTrade}
-                    </a>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <a
-                      href="https://steamcommunity.com/my/tradeoffers/"
-                      target="_blank"
-                    >
-                      {messages.sellPage.confirmation.openSteam}
-                    </a>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button asChild className="bg-orange-500 hover:bg-orange-600">
+                      <a
+                        href="https://steamcommunity.com/my/tradeoffers/"
+                        target="_blank"
+                      >
+                        Accepter le trade sur Steam
+                      </a>
+                    </Button>
+                    <Button variant="outline" asChild>
+                      <a href="/dashboard">
+                        Suivre mes trades
+                      </a>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Processus de paiement */}
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    💰 Comment ça marche après ?
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center text-orange-600 font-bold text-sm">
+                        1
+                      </div>
+                      <div>
+                        <p className="font-medium">Acceptez le trade sur Steam</p>
+                        <p className="text-sm text-muted-foreground">
+                          Allez sur Steam et acceptez l&apos;offre de trade de notre bot
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center text-blue-600 font-bold text-sm">
+                        2
+                      </div>
+                      <div>
+                        <p className="font-medium">Trade Hold Steam (7 jours)</p>
+                        <p className="text-sm text-muted-foreground">
+                          Steam impose un délai de 7 jours avant que le trade soit finalisé
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center text-purple-600 font-bold text-sm">
+                        3
+                      </div>
+                      <div>
+                        <p className="font-medium">Configurez votre paiement</p>
+                        <p className="text-sm text-muted-foreground">
+                          Pendant ces 7 jours, configurez votre méthode de paiement (SEPA ou crypto) dans votre dashboard
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center text-green-600 font-bold text-sm">
+                        4
+                      </div>
+                      <div>
+                        <p className="font-medium">Paiement automatique</p>
+                        <p className="text-sm text-muted-foreground">
+                          Après 7 jours, vous recevrez automatiquement {formatPrice(tradeData.net_value)} sur votre compte
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                      💡 <strong>Astuce :</strong> Configurez dès maintenant votre méthode de paiement dans votre dashboard pour recevoir votre argent automatiquement !
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           )}
         </motion.div>
       </div>

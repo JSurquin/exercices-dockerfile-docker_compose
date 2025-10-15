@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   Gamepad2, 
   ArrowRight, 
@@ -15,9 +18,12 @@ import {
   Shield, 
   CheckCircle,
   ExternalLink,
-  Coins
+  Coins,
+  AlertTriangle
 } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
+import { useAuth } from "@/components/providers/auth-provider";
+import { toast } from "sonner";
 
 interface OnboardingDialogProps {
   open: boolean;
@@ -26,7 +32,11 @@ interface OnboardingDialogProps {
 
 const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [tradeUrl, setTradeUrl] = useState('');
+  const [isValidUrl, setIsValidUrl] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(false);
   const { locale, messages } = useLocale();
+  const { updateUser } = useAuth();
 
   const steps = [
     {
@@ -124,6 +134,103 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
           <Badge variant="outline" className="text-orange-500 border-orange-500">
             ⚠️ Keep your Trade Link private and secure
           </Badge>
+        </div>
+      )
+    },
+    {
+      title: "Saisissez votre Trade Link",
+      titleEn: "Enter your Trade Link",
+      icon: <Link className="w-12 h-12 text-green-500" />,
+      content: (
+        <div className="space-y-4">
+          <p className="text-muted-foreground">
+            Configurez maintenant votre Trade Link Steam pour pouvoir vendre vos skins.
+          </p>
+          <div className="space-y-2">
+            <Label htmlFor="trade-url">URL de Trade Steam</Label>
+            <Input
+              id="trade-url"
+              placeholder="https://steamcommunity.com/tradeoffer/new/?partner=..."
+              value={tradeUrl}
+              onChange={(e) => handleUrlChange(e.target.value)}
+              className={isValidUrl === false ? 'border-red-500' : ''}
+            />
+            {isValidUrl === false && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  URL de trade Steam invalide. 
+                  <a 
+                    href="https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="underline ml-1"
+                  >
+                    Obtenez votre URL ici
+                  </a>
+                </AlertDescription>
+              </Alert>
+            )}
+            {isValidUrl === true && (
+              <Alert>
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription>
+                  URL de trade Steam valide ✓
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
+            <p className="text-sm text-blue-800 dark:text-blue-200">
+              💡 <strong>Astuce :</strong> Vous pourrez modifier cette URL plus tard dans vos paramètres.
+            </p>
+          </div>
+        </div>
+      ),
+      contentEn: (
+        <div className="space-y-4">
+          <p className="text-muted-foreground">
+            Set up your Steam Trade Link now to be able to sell your skins.
+          </p>
+          <div className="space-y-2">
+            <Label htmlFor="trade-url">Steam Trade URL</Label>
+            <Input
+              id="trade-url"
+              placeholder="https://steamcommunity.com/tradeoffer/new/?partner=..."
+              value={tradeUrl}
+              onChange={(e) => handleUrlChange(e.target.value)}
+              className={isValidUrl === false ? 'border-red-500' : ''}
+            />
+            {isValidUrl === false && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Invalid Steam trade URL. 
+                  <a 
+                    href="https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="underline ml-1"
+                  >
+                    Get your URL here
+                  </a>
+                </AlertDescription>
+              </Alert>
+            )}
+            {isValidUrl === true && (
+              <Alert>
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Valid Steam trade URL ✓
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
+            <p className="text-sm text-blue-800 dark:text-blue-200">
+              💡 <strong>Tip:</strong> You can change this URL later in your settings.
+            </p>
+          </div>
         </div>
       )
     },
@@ -257,7 +364,37 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
   const isLastStep = currentStep === steps.length - 1;
   const progress = ((currentStep + 1) / steps.length) * 100;
 
-  const handleNext = () => {
+  const validateTradeUrl = (url: string) => {
+    const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
+    return steamTradeUrlRegex.test(url);
+  };
+
+  const handleUrlChange = (url: string) => {
+    setTradeUrl(url);
+    setIsValidUrl(url ? validateTradeUrl(url) : null);
+  };
+
+  const handleNext = async () => {
+    // Si on est sur l'étape de saisie du trade link (étape 2, index 1)
+    if (currentStep === 2) {
+      if (!isValidUrl || !tradeUrl) {
+        toast.error('Veuillez saisir un Trade Link Steam valide');
+        return;
+      }
+
+      setLoading(true);
+      try {
+        await updateUser({ tradeLink: tradeUrl });
+        toast.success('Trade Link sauvegardé avec succès !');
+      } catch (error) {
+        console.error('Erreur lors de la sauvegarde du Trade Link:', error);
+        toast.error('Erreur lors de la sauvegarde du Trade Link');
+        setLoading(false);
+        return;
+      }
+      setLoading(false);
+    }
+
     if (isLastStep) {
       onComplete();
     } else {
@@ -343,10 +480,13 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
 
             <Button
               onClick={handleNext}
+              disabled={loading || (currentStep === 2 && (!isValidUrl || !tradeUrl))}
               className="flex items-center space-x-2"
             >
-              <span>{isLastStep ? 'Commencer' : 'Suivant'}</span>
-              {!isLastStep && <ArrowRight className="w-4 h-4" />}
+              <span>
+                {loading ? 'Sauvegarde...' : (isLastStep ? 'Commencer' : 'Suivant')}
+              </span>
+              {!isLastStep && !loading && <ArrowRight className="w-4 h-4" />}
             </Button>
           </div>
         </div>
