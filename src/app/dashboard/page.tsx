@@ -29,7 +29,9 @@ import {
   TicketIcon,
   StarIcon,
   BanknotesIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
+import { StripeIcon, QontoIcon, BinanceIcon } from "@/components/ui/payment-icons";
 import {
   LineChart,
   Line,
@@ -70,6 +72,7 @@ export default function DashboardPage() {
   const searchParams = useSearchParams();
   const { isFirstLogin, completeOnboarding } = useOnboarding();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [preferredPaymentMethod, setPreferredPaymentMethod] = useState<'stripe' | 'qonto' | 'binance' | null>('qonto');
   const { data: tradesData, loading: tradesLoading, error: tradesError } = useUserTrades();
   
   console.log("useSession data:", data);
@@ -447,11 +450,109 @@ export default function DashboardPage() {
 
             {/* Payments Tab */}
             <TabsContent value="payments" className="space-y-4 sm:space-y-6">
+              {/* Preferred Payment Method Section */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <BanknotesIcon className="w-5 h-5" />
-                    <span>{messages.dashboard.payments.title}</span>
+                    <span>{messages.dashboard.payments.preferredMethod}</span>
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {messages.dashboard.payments.selectPreferred}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Stripe Option */}
+                    <div 
+                      className={`relative border-2 rounded-lg p-6 cursor-pointer transition-all hover:shadow-md ${
+                        preferredPaymentMethod === 'stripe' 
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-950' 
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                      }`}
+                      onClick={() => setPreferredPaymentMethod('stripe')}
+                    >
+                      {preferredPaymentMethod === 'stripe' && (
+                        <div className="absolute top-3 right-3">
+                          <CheckIcon className="w-5 h-5 text-blue-500" />
+                        </div>
+                      )}
+                      <div className="flex flex-col items-center text-center space-y-3">
+                        <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center shadow-sm">
+                          <StripeIcon className="w-8 h-8" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{messages.dashboard.payments.stripe}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Cartes bancaires
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Qonto Option */}
+                    <div 
+                      className={`relative border-2 rounded-lg p-6 cursor-pointer transition-all hover:shadow-md ${
+                        preferredPaymentMethod === 'qonto' 
+                          ? 'border-orange-500 bg-orange-50 dark:bg-orange-950' 
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                      }`}
+                      onClick={() => setPreferredPaymentMethod('qonto')}
+                    >
+                      {preferredPaymentMethod === 'qonto' && (
+                        <div className="absolute top-3 right-3">
+                          <CheckIcon className="w-5 h-5 text-orange-500" />
+                        </div>
+                      )}
+                      <div className="flex flex-col items-center text-center space-y-3">
+                        <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center shadow-sm">
+                          <QontoIcon className="w-8 h-8" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{messages.dashboard.payments.qonto}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Virement bancaire
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Binance Option */}
+                    <div 
+                      className={`relative border-2 rounded-lg p-6 cursor-pointer transition-all hover:shadow-md ${
+                        preferredPaymentMethod === 'binance' 
+                          ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950' 
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                      }`}
+                      onClick={() => setPreferredPaymentMethod('binance')}
+                    >
+                      {preferredPaymentMethod === 'binance' && (
+                        <div className="absolute top-3 right-3">
+                          <CheckIcon className="w-5 h-5 text-yellow-500" />
+                        </div>
+                      )}
+                      <div className="flex flex-col items-center text-center space-y-3">
+                        <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center shadow-sm">
+                          <BinanceIcon className="w-8 h-8" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{messages.dashboard.payments.binance}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Cryptomonnaies
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Existing Payment Methods Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <BanknotesIcon className="w-5 h-5" />
+                    <span>{messages.dashboard.payments.methods}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
