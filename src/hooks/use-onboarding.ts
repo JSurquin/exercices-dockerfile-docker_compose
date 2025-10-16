@@ -5,10 +5,9 @@ import { useSession } from '@/lib/auth-client';
 import { useToast } from '@/hooks/use-toast';
 
 export const useOnboarding = () => {
-  const { data: session } = useSession();
+  const { data: session, refetch } = useSession();
   const { toast } = useToast(); 
   const [isCompleting, setIsCompleting] = useState(false);
-  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
 
   const completeOnboarding = async () => {
     if (!session?.user?.id) {
@@ -36,8 +35,8 @@ export const useOnboarding = () => {
         throw new Error(data.error || 'Erreur lors de la completion de l\'onboarding');
       }
 
-      // Marquer l'onboarding comme terminé localement
-      setOnboardingCompleted(true);
+      // Rafraîchir la session pour récupérer isFirstLogin mis à jour
+      await refetch();
 
       toast({
         title: "Bienvenue !",
@@ -59,7 +58,7 @@ export const useOnboarding = () => {
   };
 
   return {
-    isFirstLogin: (session?.user?.isFirstLogin ?? false) && !onboardingCompleted,
+    isFirstLogin: session?.user?.isFirstLogin ?? false,
     isCompleting,
     completeOnboarding
   };
