@@ -340,3 +340,72 @@ enum AffiliateCommissionStatus {
   PAID
   CANCELLED
 }
+
+model NewsletterSubscriber {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  isActive    Boolean  @default(true)
+  subscribedAt DateTime @default(now())
+  unsubscribedAt DateTime?
+  unsubscribeToken String @unique @default(cuid())
+  
+  @@index([email])
+  @@index([isActive])
+  @@map("newsletter_subscriber")
+}
+
+model NewsletterCampaign {
+  id          String               @id @default(cuid())
+  title       String
+  subject     String
+  content     String
+  htmlContent String?
+  status      NewsletterStatus     @default(DRAFT)
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  createdBy   String
+  
+  sends       NewsletterSend[]
+  
+  @@index([status])
+  @@index([scheduledAt])
+  @@map("newsletter_campaign")
+}
+
+model NewsletterSend {
+  id           String            @id @default(cuid())
+  campaignId   String
+  email        String
+  status       NewsletterSendStatus @default(PENDING)
+  sentAt       DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  errorMessage String?
+  
+  campaign     NewsletterCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  
+  @@index([campaignId])
+  @@index([email])
+  @@index([status])
+  @@map("newsletter_send")
+}
+
+enum NewsletterStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  CANCELLED
+}
+
+enum NewsletterSendStatus {
+  PENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  BOUNCED
+  FAILED
+}

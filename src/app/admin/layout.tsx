@@ -139,6 +139,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 >
                   Giveaways
                 </Link>
+                <Link 
+                  href="/admin/newsletter"
+                  className={`block px-3 py-2 rounded-md text-sm transition-colors ${
+                    pathname === '/admin/newsletter' 
+                      ? 'bg-orange-500/20 text-orange-300' 
+                      : 'text-slate-300 hover:bg-slate-700/50'
+                  }`}
+                >
+                  Newsletter
+                </Link>
               </CardContent>
             </Card>
           </div>

@@ -234,7 +234,7 @@ export default function AdminDashboard() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-10 bg-slate-800/50 backdrop-blur-sm border border-slate-700">
+            <TabsList className="grid w-full grid-cols-11 bg-slate-800/50 backdrop-blur-sm border border-slate-700">
               <TabsTrigger 
                 value="overview" 
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
@@ -294,6 +294,12 @@ export default function AdminDashboard() {
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
               >
                 Giveaways
+              </TabsTrigger>
+              <TabsTrigger 
+                value="newsletter" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
+              >
+                Newsletter
               </TabsTrigger>
             </TabsList>
 
@@ -526,6 +532,40 @@ export default function AdminDashboard() {
                     <Button asChild className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700">
                       <a href="/admin/giveaways">
                         Gestion complète des giveaways →
+                      </a>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Newsletter */}
+            <TabsContent value="newsletter" className="mt-6">
+              <Card className="bg-slate-800/50 border-2 border-blue-500/50 backdrop-blur-sm shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-300">
+                <CardHeader>
+                  <CardTitle className="text-white">Gestion Newsletter</CardTitle>
+                  <div className="text-slate-300">
+                    Administration des abonnés et campagnes d'emailing
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <div className="flex items-center justify-center mb-4">
+                      <div className="p-3 rounded-full bg-blue-500/20">
+                        <svg className="h-8 w-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <h3 className="text-lg font-medium text-white mb-2">
+                      Système Newsletter
+                    </h3>
+                    <p className="text-slate-400 mb-4">
+                      Accédez à la gestion complète des abonnés et campagnes
+                    </p>
+                    <Button asChild className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700">
+                      <a href="/admin/newsletter">
+                        Gérer la Newsletter →
                       </a>
                     </Button>
                   </div>
