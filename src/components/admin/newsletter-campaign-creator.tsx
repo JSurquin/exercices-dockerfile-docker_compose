@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Send, 
   Save, 
@@ -16,11 +17,16 @@ import {
   Eye, 
   Users,
   Clock,
-  Mail
+  Mail,
+  FileText,
+  Palette,
+  Code
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { WysiwygEditor } from './wysiwyg-editor';
+import { EmailTemplateSelector, EmailTemplate } from './email-template-selector';
 
 interface NewsletterCampaignCreatorProps {
   onCampaignCreated?: () => void;
@@ -30,13 +36,40 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
   const [content, setContent] = useState('');
+  const [htmlContent, setHtmlContent] = useState('');
   const [scheduledDate, setScheduledDate] = useState<Date>();
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
+  const [contentMode, setContentMode] = useState<'template' | 'wysiwyg' | 'text'>('template');
+
+  const handleTemplateSelect = (template: EmailTemplate) => {
+    setSelectedTemplate(template);
+    setHtmlContent(template.htmlContent);
+    setContentMode('template');
+    // Pré-remplir le sujet si vide
+    if (!subject) {
+      setSubject(template.name);
+    }
+  };
+
+  const getContentForSave = () => {
+    switch (contentMode) {
+      case 'template':
+        return selectedTemplate ? selectedTemplate.htmlContent : htmlContent;
+      case 'wysiwyg':
+        return htmlContent;
+      case 'text':
+        return content;
+      default:
+        return content;
+    }
+  };
 
   const handleSaveDraft = async () => {
-    if (!title || !subject || !content) {
+    const contentToSave = getContentForSave();
+    if (!title || !subject || !contentToSave) {
       toast.error('Veuillez remplir tous les champs obligatoires');
       return;
     }
@@ -52,7 +85,9 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
         body: JSON.stringify({
           title,
           subject,
-          content,
+          content: contentToSave,
+          contentType: contentMode === 'text' ? 'text' : 'html',
+          templateId: selectedTemplate?.id,
           scheduledAt: scheduledDate?.toISOString(),
         }),
       });
@@ -75,7 +110,8 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
   };
 
   const handleSendNow = async () => {
-    if (!title || !subject || !content) {
+    const contentToSave = getContentForSave();
+    if (!title || !subject || !contentToSave) {
       toast.error('Veuillez remplir tous les champs obligatoires');
       return;
     }
@@ -96,7 +132,9 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
         body: JSON.stringify({
           title,
           subject,
-          content,
+          content: contentToSave,
+          contentType: contentMode === 'text' ? 'text' : 'html',
+          templateId: selectedTemplate?.id,
         }),
       });
 
@@ -138,15 +176,24 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
     setTitle('');
     setSubject('');
     setContent('');
+    setHtmlContent('');
     setScheduledDate(undefined);
     setPreviewMode(false);
+    setSelectedTemplate(null);
+    setContentMode('template');
   };
 
   const getPreviewHtml = () => {
-    return content
-      .split('\n\n')
-      .map(paragraph => `<p style="margin-bottom: 16px; line-height: 1.6;">${paragraph.replace(/\n/g, '<br>')}</p>`)
-      .join('');
+    const contentToPreview = getContentForSave();
+    
+    if (contentMode === 'text') {
+      return contentToPreview
+        .split('\n\n')
+        .map(paragraph => `<p style="margin-bottom: 16px; line-height: 1.6;">${paragraph.replace(/\n/g, '<br>')}</p>`)
+        .join('');
+    }
+    
+    return contentToPreview;
   };
 
   if (previewMode) {
@@ -233,21 +280,72 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
         </div>
 
         {/* Contenu */}
-        <div className="space-y-2">
-          <Label htmlFor="content" className="text-slate-300">
+        <div className="space-y-4">
+          <Label className="text-slate-300">
             Contenu de l&apos;email *
           </Label>
-          <Textarea
-            id="content"
-            placeholder="Rédigez le contenu de votre newsletter..."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={12}
-            className="bg-slate-700 border-slate-600 text-white resize-none"
-          />
-          <p className="text-xs text-slate-400">
-            Utilisez des doubles retours à la ligne pour séparer les paragraphes.
-          </p>
+          
+          <Tabs value={contentMode} onValueChange={(value) => setContentMode(value as 'template' | 'wysiwyg' | 'text')}>
+            <TabsList className="bg-slate-800 border-slate-700">
+              <TabsTrigger value="template" className="data-[state=active]:bg-orange-500">
+                <Palette className="h-4 w-4 mr-2" />
+                Templates
+              </TabsTrigger>
+              <TabsTrigger value="wysiwyg" className="data-[state=active]:bg-orange-500">
+                <FileText className="h-4 w-4 mr-2" />
+                Éditeur Visuel
+              </TabsTrigger>
+              <TabsTrigger value="text" className="data-[state=active]:bg-orange-500">
+                <Code className="h-4 w-4 mr-2" />
+                Texte Simple
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="template" className="space-y-4">
+              <EmailTemplateSelector
+                selectedTemplate={selectedTemplate}
+                onTemplateSelect={handleTemplateSelect}
+              />
+              {selectedTemplate && (
+                <div className="space-y-2">
+                  <Label className="text-slate-300">
+                    Personnaliser le template (optionnel)
+                  </Label>
+                  <WysiwygEditor
+                    value={htmlContent}
+                    onChange={setHtmlContent}
+                    placeholder="Modifiez le template sélectionné..."
+                    height="400px"
+                  />
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="wysiwyg" className="space-y-2">
+              <WysiwygEditor
+                value={htmlContent}
+                onChange={setHtmlContent}
+                placeholder="Rédigez votre contenu avec l'éditeur visuel..."
+                height="500px"
+              />
+              <p className="text-xs text-slate-400">
+                Utilisez l&apos;éditeur visuel pour créer un contenu riche avec mise en forme, images et liens.
+              </p>
+            </TabsContent>
+
+            <TabsContent value="text" className="space-y-2">
+              <Textarea
+                placeholder="Rédigez le contenu de votre newsletter en texte simple..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={12}
+                className="bg-slate-700 border-slate-600 text-white resize-none"
+              />
+              <p className="text-xs text-slate-400">
+                Utilisez des doubles retours à la ligne pour séparer les paragraphes.
+              </p>
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Planification (optionnelle) */}
@@ -288,7 +386,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
             variant="outline"
             onClick={() => setPreviewMode(true)}
             className="border-slate-600 text-slate-300 hover:bg-slate-700"
-            disabled={!title || !subject || !content}
+            disabled={!title || !subject || !getContentForSave()}
           >
             <Eye className="h-4 w-4 mr-2" />
             Aperçu
@@ -297,7 +395,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
           <Button
             variant="outline"
             onClick={handleSaveDraft}
-            disabled={isLoading || !title || !subject || !content}
+            disabled={isLoading || !title || !subject || !getContentForSave()}
             className="border-slate-600 text-slate-300 hover:bg-slate-700"
           >
             {isLoading ? (
@@ -315,7 +413,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
 
           <Button
             onClick={handleSendNow}
-            disabled={isSending || !title || !subject || !content}
+            disabled={isSending || !title || !subject || !getContentForSave()}
             className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 flex-1"
           >
             {isSending ? (

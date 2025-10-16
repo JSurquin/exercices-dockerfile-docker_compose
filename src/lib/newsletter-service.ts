@@ -41,7 +41,7 @@ export class NewsletterService {
   async sendEmail(to: string, template: EmailTemplate, unsubscribeToken?: string) {
     try {
       const unsubscribeUrl = unsubscribeToken 
-        ? `${process.env.NEXT_PUBLIC_APP_URL}/api/newsletter/unsubscribe?token=${unsubscribeToken}`
+        ? `${process.env.NEXT_PUBLIC_APP_URL}api/newsletter/unsubscribe?token=${unsubscribeToken}`
         : null;
 
       let htmlContent = template.html || this.textToHtml(template.text);
