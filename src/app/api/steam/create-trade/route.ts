@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '~/prisma/prisma';
+import { newsletterService } from '@/lib/newsletter-service';
+import { TradeHooks } from '@/lib/trade-hooks';
 
 interface CreateTradeRequest {
   steam_id: string;
@@ -169,6 +171,30 @@ export async function POST(request: NextRequest) {
                    'unknown',
       },
     });
+
+    // Appeler les hooks de trade
+    await TradeHooks.onTradeCreated(user.id, trade.id);
+
+    // Envoyer l'email de confirmation de trade (en arrière-plan)
+    if (user.email) {
+      try {
+        await newsletterService.sendTradeCreatedEmail(
+          user.email,
+          user.name || user.email,
+          {
+            tradeId: trade.id,
+            itemsCount: body.items.length,
+            grossValue: body.gross_value,
+            netValue: body.net_value,
+            availableAt: trade.availableAt?.toISOString() || new Date().toISOString(),
+          }
+        );
+        console.log(`✅ Email de confirmation de trade envoyé à ${user.email}`);
+      } catch (emailError) {
+        console.error('❌ Erreur envoi email trade:', emailError);
+        // Ne pas faire échouer la création du trade si l'email échoue
+      }
+    }
 
     return NextResponse.json({
       success: true,

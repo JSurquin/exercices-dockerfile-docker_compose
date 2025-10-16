@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
+import { prisma } from '~/prisma/prisma';
 import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
+import { TradeHooks } from '@/lib/trade-hooks';
+import { newsletterService } from '@/lib/newsletter-service';
 
 interface CreateTradeRequest {
   steam_id: string;
@@ -182,36 +185,139 @@ export async function POST(request: NextRequest) {
     console.log('  - Prix total Skinplace:', steamTrade?.price, '€');
     console.log('  - Status:', steamTrade?.status);
 
-    // TODO: Enregistrer le trade en base de données selon les règles CTF
-    // - Créer l'entrée dans la table `trades`
-    // - Enregistrer les items associés
-    // - Calculer et enregistrer les frais
-    // - Définir le statut initial ('accepté_par_bot')
-    // - Programmer le paiement automatique après 7 jours
+    // Récupérer l'utilisateur depuis la base de données
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
 
-    // Date de disponibilité (7 jours de trade hold Steam)
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Utilisateur non trouvé' },
+        { status: 404 }
+      );
+    }
+
+    // Vérifier les limites de trade (selon les règles CTF)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const tradesCountToday = await prisma.trade.count({
+      where: {
+        userId: user.id,
+        createdAt: {
+          gte: today,
+        },
+      },
+    });
+
+    // Limite de 5 trades par jour par utilisateur
+    if (tradesCountToday >= 5) {
+      return NextResponse.json(
+        { success: false, error: 'Limite de trades quotidienne atteinte (5 max)' },
+        { status: 429 }
+      );
+    }
+
+    // Générer un ID unique pour le trade
+    const tradeId = `TRADE-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+    // Date d'expiration (7 jours selon les règles Steam)
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    // Date de disponibilité (7 jours de trade hold)
     const availableAt = new Date();
     availableAt.setDate(availableAt.getDate() + 7);
 
-    const tradeData = {
-      trade_id: tradeOfferId || `TRADE_${Date.now()}`,
-      token: skinplaceToken || '',
-      status: 'accepté_par_bot', // Le bot a accepté le trade
-      expires_at: availableAt.toISOString(),
-      gross_value_centimes: body.gross_value_centimes,
-      net_value_centimes: body.net_value_centimes,
-      fees: body.fees,
-      items: body.items,
-      skinplace_data: {
-        token: skinplaceToken,
-        trade_offer_id: tradeOfferId,
-        bot_steamid: steamTrade?.bot?.steamid,
-        bot_name: steamTrade?.bot?.name,
-        price_skinplace: Math.round((steamTrade?.price || 0) * 100), // Convertir en centimes
+    // Enregistrer le trade en base de données selon les règles CTF
+    const trade = await prisma.trade.create({
+      data: {
+        id: tradeId,
+        userId: user.id,
+        steamId: body.steam_id,
+        tradeUrl: body.trade_url,
+        status: 'ACCEPTED_BY_BOT', // États: CREATED -> ACCEPTED_BY_BOT -> IN_TRADE_HOLD -> AVAILABLE -> PAYMENT_IN_PROGRESS -> PAID -> FAILED
+        grossCents: body.gross_value_centimes,
+        cashoutFees: body.fees.cashout_fee,
+        networkFees: body.fees.network_fee,
+        netCents: body.net_value_centimes,
+        availableAt: availableAt,
+        expiresAt: expiresAt,
+        ticketId: token,
+        items: {
+          create: body.items.map((item) => ({
+            name: item.market_hash_name,
+            marketHashName: item.market_hash_name,
+            priceCents: item.price_centimes,
+            iconUrl: item.icon_url,
+            rarity: item.rarity,
+            exterior: item.exterior || '',
+            statTrak: item.is_stattrak,
+          })),
+        },
       },
+      include: {
+        items: true,
+      },
+    });
+
+    // Journaliser l'action
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        action: 'TRADE_CREATED',
+        details: {
+          tradeId: trade.id,
+          itemsCount: body.items.length,
+          grossValue: body.gross_value_centimes,
+          netValue: body.net_value_centimes,
+        },
+        ipAddress: request.headers.get('x-forwarded-for') || 
+                   request.headers.get('x-real-ip') || 
+                   'unknown',
+      },
+    });
+
+    // Appeler les hooks de trade
+    await TradeHooks.onTradeCreated(user.id, trade.id);
+
+    // Envoyer l'email de confirmation de trade (en arrière-plan)
+    if (user.email) {
+      try {
+        await newsletterService.sendTradeCreatedEmail(
+          user.email,
+          user.name || user.email,
+          {
+            tradeId: trade.id,
+            itemsCount: body.items.length,
+            grossValue: body.gross_value_centimes,
+            netValue: body.net_value_centimes,
+            availableAt: trade.availableAt?.toISOString() || new Date().toISOString(),
+          }
+        );
+        console.log(`✅ Email de confirmation de trade envoyé à ${user.email}`);
+      } catch (emailError) {
+        console.error('❌ Erreur envoi email trade:', emailError);
+        // Ne pas faire échouer la création du trade si l'email échoue
+      }
+    }
+
+    const tradeData = {
+      trade_id: trade.id,
+      token: trade.ticketId,
+      status: trade.status,
+      expires_at: trade.expiresAt?.toISOString() || null,
+      gross_value_centimes: trade.grossCents,
+      net_value_centimes: trade.netCents,
+      fees: {
+        cashout_fee: trade.cashoutFees,
+        network_fee: trade.networkFees,
+      },
+      items_count: trade.items?.length || 0,
     };
 
-    console.log('Trade créé avec succès:', tradeData.trade_id);
+    console.log('✅ Trade créé et sauvegardé avec succès:', trade.id);
 
     return NextResponse.json({
       success: true,

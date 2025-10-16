@@ -18,10 +18,10 @@ import { Messages } from "~/utils/types";
 import { User } from "~/utils/types";
 import { toast } from "sonner";
 import {
-  mockTrades,
   mockVolumeData,
   mockTradeStatusData,
 } from "@/lib/mock-data";
+import { useUserTrades } from "@/hooks/use-user-trades";
 import {
   CurrencyDollarIcon,
   ChartBarIcon,
@@ -70,6 +70,7 @@ export default function DashboardPage() {
   const searchParams = useSearchParams();
   const { isFirstLogin, completeOnboarding } = useOnboarding();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const { data: tradesData, loading: tradesLoading, error: tradesError } = useUserTrades();
   
   console.log("useSession data:", data);
   console.log("useSession isPending:", isPending);
@@ -214,7 +215,7 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">{messages.dashboard.volume}</p>
                   <p className="text-2xl font-bold">
                     <CountUp
-                      end={user?.totalVolumeCents || 0 / 100}
+                      end={(tradesData?.totalVolume || 0) / 100}
                       duration={2}
                       decimals={2}
                       suffix="€"
@@ -232,7 +233,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">{messages.dashboard.trades}</p>
                   <p className="text-2xl font-bold">
-                    <CountUp end={mockTrades.length} duration={2} />
+                    <CountUp end={tradesData?.totalTrades || 0} duration={2} />
                   </p>
                 </div>
                 <ChartBarIcon className="w-8 h-8 text-blue-500" />
@@ -286,8 +287,23 @@ export default function DashboardPage() {
                   <CardTitle>{messages.dashboard.tradeHistory.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3 sm:space-y-4">
-                    {mockTrades.map((trade) => (
+                  {tradesLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                    </div>
+                  ) : tradesError ? (
+                    <div className="text-center py-8 text-red-500">
+                      <p>Erreur lors du chargement des trades: {tradesError}</p>
+                    </div>
+                  ) : !tradesData?.trades || tradesData.trades.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <ChartBarIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <p>Aucun trade trouvé</p>
+                      <p className="text-sm">Commencez par vendre vos skins CS2 !</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 sm:space-y-4">
+                      {tradesData.trades.map((trade) => (
                       <div key={trade.id} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center space-x-3">
@@ -361,8 +377,9 @@ export default function DashboardPage() {
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
