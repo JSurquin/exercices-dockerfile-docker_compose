@@ -44,13 +44,13 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'VALIDATION_ERROR', message: error.errors[0].message },
+        { error: 'VALIDATION_ERROR', message: error.issues[0].message },
         { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { error: 'INTERNAL_ERROR', message: error.message || 'Une erreur interne est survenue.' },
+      { error: 'INTERNAL_ERROR', message: error instanceof Error ? error.message : 'Une erreur interne est survenue.' },
       { status: 500 }
     );
   }

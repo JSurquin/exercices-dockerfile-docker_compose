@@ -545,7 +545,7 @@ export default function AdminDashboard() {
                 <CardHeader>
                   <CardTitle className="text-white">Gestion Newsletter</CardTitle>
                   <div className="text-slate-300">
-                    Administration des abonnés et campagnes d'emailing
+                    Administration des abonnés et campagnes d&apos;emailing
                   </div>
                 </CardHeader>
                 <CardContent>

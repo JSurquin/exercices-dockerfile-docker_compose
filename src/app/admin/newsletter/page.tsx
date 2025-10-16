@@ -167,7 +167,7 @@ export default function NewsletterAdminPage() {
               Gestion Newsletter
             </h1>
             <p className="text-slate-400 mt-2">
-              Gérez vos abonnés et campagnes d'emailing
+              Gérez vos abonnés et campagnes d&apos;emailing
             </p>
           </div>
         </div>
@@ -277,7 +277,7 @@ export default function NewsletterAdminPage() {
                       <TableRow className="border-slate-700">
                         <TableHead className="text-slate-300">Email</TableHead>
                         <TableHead className="text-slate-300">Statut</TableHead>
-                        <TableHead className="text-slate-300">Date d'inscription</TableHead>
+                        <TableHead className="text-slate-300">Date d&apos;inscription</TableHead>
                         <TableHead className="text-slate-300">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -332,7 +332,7 @@ export default function NewsletterAdminPage() {
                 <CardHeader>
                   <CardTitle className="text-white">Campagnes existantes</CardTitle>
                   <CardDescription>
-                    Historique de vos campagnes d'emailing
+                    Historique de vos campagnes d&apos;emailing
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

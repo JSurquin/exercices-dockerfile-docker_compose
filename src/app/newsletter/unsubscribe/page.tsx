@@ -136,7 +136,7 @@ export default function UnsubscribePage() {
                     Vous ne recevrez plus nos emails de newsletter.
                   </p>
                   <p className="text-xs text-slate-500">
-                    Si vous changez d'avis, vous pourrez vous réabonner à tout moment sur notre site.
+                    Si vous changez d&apos;avis, vous pourrez vous réabonner à tout moment sur notre site.
                   </p>
                 </div>
               </div>
@@ -161,7 +161,7 @@ export default function UnsubscribePage() {
               <Button asChild className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
                 <Link href="/">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Retour à l'accueil
+                  Retour à l&apos;accueil
                 </Link>
               </Button>
               

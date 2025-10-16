@@ -160,7 +160,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
                 Aperçu de la campagne
               </CardTitle>
               <CardDescription>
-                Prévisualisation de l'email qui sera envoyé
+                Prévisualisation de l&apos;email qui sera envoyé
               </CardDescription>
             </div>
             <Button 
@@ -168,7 +168,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
               onClick={() => setPreviewMode(false)}
               className="border-slate-600 text-slate-300"
             >
-              Retour à l'édition
+              Retour à l&apos;édition
             </Button>
           </div>
         </CardHeader>
@@ -200,7 +200,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
           Créer une campagne newsletter
         </CardTitle>
         <CardDescription>
-          Créez et envoyez une nouvelle campagne d'emailing
+          Créez et envoyez une nouvelle campagne d&apos;emailing
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -221,7 +221,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
         {/* Sujet de l'email */}
         <div className="space-y-2">
           <Label htmlFor="subject" className="text-slate-300">
-            Sujet de l'email *
+            Sujet de l&apos;email *
           </Label>
           <Input
             id="subject"
@@ -235,7 +235,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
         {/* Contenu */}
         <div className="space-y-2">
           <Label htmlFor="content" className="text-slate-300">
-            Contenu de l'email *
+            Contenu de l&apos;email *
           </Label>
           <Textarea
             id="content"

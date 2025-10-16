@@ -133,7 +133,7 @@ export function NewsletterSection() {
                 ) : (
                   <div className="flex items-center">
                     <Send className="h-4 w-4 mr-2" />
-                    S'abonner à la newsletter
+                    S&apos;abonner à la newsletter
                   </div>
                 )}
               </Button>
