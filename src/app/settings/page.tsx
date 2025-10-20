@@ -240,12 +240,12 @@ export default function SettingsPage() {
                           className="bg-green-100 text-green-800"
                         >
                           {user.kycStatus === "verified"
-                            ? "Vérifié"
-                            : "En attente"}
+                            ? messages.common.verified
+                            : messages.common.pending}
                         </Badge>
                         {user.kycStatus !== "verified" && (
                           <Button variant="outline" size="sm">
-                            Commencer KYC
+{messages.common.startKyc}
                           </Button>
                         )}
                       </div>

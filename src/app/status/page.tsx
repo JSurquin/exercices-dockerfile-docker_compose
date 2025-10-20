@@ -156,7 +156,7 @@ export default function StatusPage() {
   const [incidents] = useState<Incident[]>([
     {
       id: "inc_001",
-      title: "Lenteurs API Steam",
+      title: "Lenteurs API Steam", // TODO: translate
       status: "monitoring",
       impact: "low",
       createdAt: new Date("2024-09-21T10:30:00Z"),
@@ -263,7 +263,7 @@ export default function StatusPage() {
                 {averageUptime.toFixed(2)}%
               </p>
               <p className="text-sm text-muted-foreground">
-                Disponibilité moyenne (30j)
+                {messages.status.stats.uptime}
               </p>
             </CardContent>
           </Card>
@@ -274,7 +274,7 @@ export default function StatusPage() {
                 {services.length}
               </p>
               <p className="text-sm text-muted-foreground">
-                Services opérationnels
+                {messages.status.stats.operational}
               </p>
             </CardContent>
           </Card>
@@ -283,7 +283,7 @@ export default function StatusPage() {
               <p className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold text-orange-600">
                 {incidents.filter((i) => i.status !== "resolved").length}
               </p>
-              <p className="text-sm text-muted-foreground">Incidents actifs</p>
+              <p className="text-sm text-muted-foreground">{messages.status.stats.incidents}</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -336,7 +336,7 @@ export default function StatusPage() {
                     {/* Uptime bar */}
                     <div className="mt-4">
                       <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                        <span>Disponibilité (30 jours)</span>
+                        <span>Disponibilité (30 jours)</span> {/* TODO: translate */}
                         <span>{service.uptime}%</span>
                       </div>
                       <Progress value={service.uptime} className="h-2" />
@@ -384,10 +384,10 @@ export default function StatusPage() {
                           >
                             Impact{" "}
                             {incident.impact === "low"
-                              ? "faible"
+                              ? messages.status.incidents.impact.low
                               : incident.impact === "medium"
-                              ? "moyen"
-                              : "élevé"}
+                              ? messages.status.incidents.impact.medium
+                              : messages.status.incidents.impact.high}
                           </Badge>
                           <Badge
                             variant="secondary"
@@ -400,12 +400,12 @@ export default function StatusPage() {
                             }
                           >
                             {incident.status === "investigating"
-                              ? "Enquête"
+                              ? messages.status.incidents.status.investigating
                               : incident.status === "identified"
-                              ? "Identifié"
+                              ? messages.status.incidents.status.identified
                               : incident.status === "monitoring"
-                              ? "Surveillance"
-                              : "Résolu"}
+                              ? messages.status.incidents.status.monitoring
+                              : messages.status.incidents.status.resolved}
                           </Badge>
                         </div>
                       </div>
@@ -417,7 +417,7 @@ export default function StatusPage() {
 
                       {/* Updates */}
                       <div className="space-y-3">
-                        <h4 className="font-medium text-sm">Mises à jour :</h4>
+                        <h4 className="font-medium text-sm">{messages.status.incidents.updates}</h4>
                         {incident.updates.map((update, updateIndex) => (
                           <div
                             key={updateIndex}
@@ -462,9 +462,9 @@ export default function StatusPage() {
               </p>
               <div className="mt-4">
                 <Badge variant="outline" className="mr-2">
-                  📧 Alertes email disponibles
+                  📧 {messages.status.footer.emailAlerts}
                 </Badge>
-                <Badge variant="outline">📱 API Status disponible</Badge>
+                <Badge variant="outline">📱 {messages.status.footer.apiStatus}</Badge>
               </div>
             </CardContent>
           </Card>

@@ -17,6 +17,7 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import { useLocale } from "@/components/providers/locale-provider";
 
 const categories = [
   {
@@ -118,6 +119,65 @@ const supportOptions = [
 
 export default function HelpPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { messages } = useLocale();
+
+  const getCategories = () => [
+    {
+      title: messages.help.categories.gettingStarted,
+      icon: CheckCircleIcon,
+      color: "text-green-600",
+      articles: [
+        { title: "Comment créer un compte ?", views: "2.3k", helpful: 95 },
+        { title: "Connexion Steam et Trade Link", views: "1.8k", helpful: 92 },
+        { title: "Vérification KYC étape par étape", views: "1.5k", helpful: 89 },
+        { title: "Premier trade : guide complet", views: "2.1k", helpful: 96 },
+      ]
+    },
+    {
+      title: messages.help.categories.trading,
+      icon: CurrencyEuroIcon,
+      color: "text-orange-600",
+      articles: [
+        { title: "Comment vendre mes skins CS2 ?", views: "3.2k", helpful: 94 },
+        { title: "Estimation des prix : comment ça marche ?", views: "1.9k", helpful: 88 },
+        { title: "Qu'est-ce que le trade hold Steam ?", views: "2.7k", helpful: 91 },
+        { title: "Frais de transaction et calculs", views: "1.4k", helpful: 87 },
+      ]
+    },
+    {
+      title: messages.help.categories.payments,
+      icon: ShieldCheckIcon,
+      color: "text-blue-600",
+      articles: [
+        { title: "Méthodes de paiement disponibles", views: "2.8k", helpful: 93 },
+        { title: "Délais de paiement SEPA vs Crypto", views: "2.1k", helpful: 90 },
+        { title: "Vérification IBAN et sécurité", views: "1.7k", helpful: 85 },
+        { title: "Problème de paiement : que faire ?", views: "1.2k", helpful: 82 },
+      ]
+    },
+    {
+      title: messages.help.categories.security,
+      icon: ExclamationTriangleIcon,
+      color: "text-red-600",
+      articles: [
+        { title: "Sécuriser mon compte CashTrade", views: "1.9k", helpful: 97 },
+        { title: "Que faire si mon compte est suspendu ?", views: "0.8k", helpful: 79 },
+        { title: "Signaler une activité suspecte", views: "0.6k", helpful: 84 },
+        { title: "Récupération de compte perdu", views: "0.9k", helpful: 81 },
+      ]
+    },
+    {
+      title: messages.help.categories.technical,
+      icon: DocumentTextIcon,
+      color: "text-purple-600",
+      articles: [
+        { title: "Le site ne se charge pas", views: "1.1k", helpful: 76 },
+        { title: "Erreur lors du trade Steam", views: "1.9k", helpful: 83 },
+        { title: "Problème de connexion Steam", views: "1.4k", helpful: 79 },
+        { title: "Interface qui bug : solutions", views: "0.9k", helpful: 72 },
+      ]
+    }
+  ];
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -131,10 +191,10 @@ export default function HelpPage() {
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             <QuestionMarkCircleIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
-            Centre d&apos;aide
+            {messages.help.title}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Trouvez rapidement les réponses à vos questions sur CashTrade
+            {messages.help.subtitle}
           </p>
 
           {/* Search Bar */}
@@ -142,7 +202,7 @@ export default function HelpPage() {
             <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Rechercher dans l&apos;aide..."
+              placeholder={messages.help.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-4 py-3 text-center"
@@ -157,7 +217,7 @@ export default function HelpPage() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="mb-8 sm:mb-12"
         >
-          <h2 className="text-2xl font-semibold mb-6">Articles populaires</h2>
+          <h2 className="text-2xl font-semibold mb-6">{messages.help.popularArticles}</h2>
           <div className="grid md:grid-cols-3 gap-4">
             {popularArticles.map((article, index) => (
               <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
@@ -168,10 +228,10 @@ export default function HelpPage() {
                   </div>
                   <h3 className="font-semibold mb-3 line-clamp-2">{article.title}</h3>
                   <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>{article.views} vues</span>
+                    <span>{article.views} {messages.help.views}</span>
                     <div className="flex items-center space-x-1">
                       <CheckCircleIcon className="w-4 h-4 text-green-600" />
-                      <span>{article.helpful}% utile</span>
+                      <span>{article.helpful}% {messages.help.helpful}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -189,7 +249,7 @@ export default function HelpPage() {
         >
           <h2 className="text-2xl font-semibold mb-6">Parcourir par catégorie</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            {categories.map((category, index) => (
+            {getCategories().map((category, index) => (
               <Card key={index} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-3">
@@ -204,10 +264,10 @@ export default function HelpPage() {
                         <div className="flex-1">
                           <h4 className="font-medium text-sm mb-1">{article.title}</h4>
                           <div className="flex items-center space-x-3 text-xs text-muted-foreground">
-                            <span>{article.views} vues</span>
+                            <span>{article.views} {messages.help.views}</span>
                             <div className="flex items-center space-x-1">
                               <CheckCircleIcon className="w-3 h-3 text-green-600" />
-                              <span>{article.helpful}% utile</span>
+                              <span>{article.helpful}% {messages.help.helpful}</span>
                             </div>
                           </div>
                         </div>
@@ -232,7 +292,7 @@ export default function HelpPage() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mb-8 sm:mb-12"
         >
-          <h2 className="text-2xl font-semibold mb-6">Besoin d&apos;aide personnalisée ?</h2>
+          <h2 className="text-2xl font-semibold mb-6">{messages.help.stillNeedHelp}</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {supportOptions.map((option, index) => (
               <Card key={index} className="text-center hover:shadow-md transition-shadow">

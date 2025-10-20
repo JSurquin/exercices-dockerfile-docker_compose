@@ -15,104 +15,105 @@ import {
   CheckCircleIcon,
   CubeIcon,
 } from "@heroicons/react/24/outline";
+import { useLocale } from "@/components/providers/locale-provider";
 
-const endpoints = [
+const getEndpoints = (messages: any) => [
   {
-    category: "Authentification",
+    category: messages.apiDocs.categories.authentication,
     color: "text-blue-600",
     endpoints: [
       {
         method: "POST",
         path: "/api/auth/steam",
-        description: "Authentification via Steam OpenID",
+        description: messages.apiDocs.endpoints.steamAuth,
         auth: false,
         rateLimit: "10/min",
       },
       {
         method: "POST",
         path: "/api/auth/logout",
-        description: "Déconnexion utilisateur",
+        description: messages.apiDocs.endpoints.logout,
         auth: true,
         rateLimit: "5/min",
       },
     ]
   },
   {
-    category: "Utilisateur",
+    category: messages.apiDocs.categories.user,
     color: "text-green-600",
     endpoints: [
       {
         method: "GET",
         path: "/api/user/profile",
-        description: "Récupérer le profil utilisateur",
+        description: messages.apiDocs.endpoints.getProfile,
         auth: true,
         rateLimit: "60/min",
       },
       {
         method: "PUT",
         path: "/api/user/profile",
-        description: "Mettre à jour le profil",
+        description: messages.apiDocs.endpoints.updateProfile,
         auth: true,
         rateLimit: "10/min",
       },
       {
         method: "GET",
         path: "/api/user/trades",
-        description: "Historique des trades",
+        description: messages.apiDocs.endpoints.getTradeHistory,
         auth: true,
         rateLimit: "30/min",
       },
     ]
   },
   {
-    category: "Trading",
+    category: messages.apiDocs.categories.trading,
     color: "text-orange-600",
     endpoints: [
       {
         method: "POST",
         path: "/api/steam/estimate-prices",
-        description: "Estimation des prix de skins",
+        description: messages.apiDocs.endpoints.estimatePrices,
         auth: true,
         rateLimit: "20/min",
       },
       {
         method: "POST",
         path: "/api/steam/create-trade",
-        description: "Créer un trade de vente",
+        description: messages.apiDocs.endpoints.createTrade,
         auth: true,
         rateLimit: "5/min",
       },
       {
         method: "GET",
         path: "/api/steam/inventory",
-        description: "Inventaire Steam utilisateur",
+        description: messages.apiDocs.endpoints.getInventory,
         auth: true,
         rateLimit: "10/min",
       },
     ]
   },
   {
-    category: "Skinplace",
+    category: messages.apiDocs.categories.skinplace,
     color: "text-purple-600",
     endpoints: [
       {
         method: "GET",
         path: "/api/skinplace/items",
-        description: "Liste des items disponibles",
+        description: messages.apiDocs.endpoints.getItems,
         auth: true,
         rateLimit: "30/min",
       },
       {
         method: "GET",
         path: "/api/skinplace/balance",
-        description: "Solde Skinplace",
+        description: messages.apiDocs.endpoints.getBalance,
         auth: true,
         rateLimit: "10/min",
       },
       {
         method: "POST",
         path: "/api/skinplace/purchase",
-        description: "Acheter des items",
+        description: messages.apiDocs.endpoints.purchaseItems,
         auth: true,
         rateLimit: "5/min",
       },
@@ -242,6 +243,9 @@ const responseExamples = {
 };
 
 export default function ApiDocsPage() {
+  const { messages } = useLocale();
+  const endpoints = getEndpoints(messages);
+  
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-6xl mx-auto">
@@ -254,10 +258,10 @@ export default function ApiDocsPage() {
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             <CodeBracketIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
-            Documentation API
+            {messages.apiDocs.title}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-            Intégrez CashTrade dans vos applications avec notre API REST sécurisée
+            {messages.apiDocs.subtitle}
           </p>
           <div className="flex items-center justify-center space-x-4">
             <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
@@ -280,7 +284,7 @@ export default function ApiDocsPage() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <CheckCircleIcon className="w-5 h-5 text-green-600" />
-                <span>Démarrage rapide</span>
+                <span>{messages.apiDocs.quickStart}</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -289,22 +293,22 @@ export default function ApiDocsPage() {
                   <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <KeyIcon className="w-6 h-6 text-blue-600" />
                   </div>
-                  <h3 className="font-semibold mb-2">1. Obtenir une clé API</h3>
-                  <p className="text-sm text-muted-foreground">Créez un compte développeur et générez votre clé API</p>
+                  <h3 className="font-semibold mb-2">{messages.apiDocs.getApiKey}</h3>
+                  <p className="text-sm text-muted-foreground">{messages.apiDocs.getApiKeyDesc}</p>
                 </div>
                 <div className="text-center">
                   <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <CodeBracketIcon className="w-6 h-6 text-orange-600" />
                   </div>
-                  <h3 className="font-semibold mb-2">2. Faire un appel</h3>
-                  <p className="text-sm text-muted-foreground">Utilisez votre clé pour authentifier vos requêtes</p>
+                  <h3 className="font-semibold mb-2">{messages.apiDocs.makeCall}</h3>
+                  <p className="text-sm text-muted-foreground">{messages.apiDocs.makeCallDesc}</p>
                 </div>
                 <div className="text-center">
                   <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <CubeIcon className="w-6 h-6 text-green-600" />
                   </div>
-                  <h3 className="font-semibold mb-2">3. Intégrer</h3>
-                  <p className="text-sm text-muted-foreground">Utilisez nos SDKs ou appelez directement l&apos;API REST</p>
+                  <h3 className="font-semibold mb-2">{messages.apiDocs.integrate}</h3>
+                  <p className="text-sm text-muted-foreground">{messages.apiDocs.integrateDesc}</p>
                 </div>
               </div>
             </CardContent>
@@ -325,12 +329,12 @@ export default function ApiDocsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <ShieldCheckIcon className="w-5 h-5" />
-                    <span>Authentification</span>
+                    <span>{messages.apiDocs.authentication}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-muted-foreground">
-                    L&apos;API CashTrade utilise des tokens Bearer pour l&apos;authentification. Incluez votre token dans l&apos;en-tête Authorization de chaque requête.
+                    {messages.apiDocs.authDescription}
                   </p>
                   <div className="bg-muted rounded-lg p-4">
                     <code className="text-sm">
@@ -340,9 +344,9 @@ export default function ApiDocsPage() {
                   <div className="flex items-start space-x-2 p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
                     <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                     <div className="text-sm">
-                      <p className="font-medium text-yellow-800 dark:text-yellow-200">Important</p>
+                      <p className="font-medium text-yellow-800 dark:text-yellow-200">{messages.apiDocs.important}</p>
                       <p className="text-yellow-700 dark:text-yellow-300">
-                        Ne partagez jamais votre clé API et utilisez HTTPS pour toutes les requêtes.
+                        {messages.apiDocs.securityWarning}
                       </p>
                     </div>
                   </div>
@@ -357,7 +361,7 @@ export default function ApiDocsPage() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="mb-8"
             >
-              <h2 className="text-2xl font-semibold mb-6">Endpoints disponibles</h2>
+              <h2 className="text-2xl font-semibold mb-6">{messages.apiDocs.availableEndpoints}</h2>
               <div className="space-y-6">
                 {endpoints.map((category, index) => (
                   <Card key={index}>
@@ -404,7 +408,7 @@ export default function ApiDocsPage() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>Exemples de code</CardTitle>
+                  <CardTitle>{messages.apiDocs.codeExamples}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="javascript" className="w-full">
@@ -447,14 +451,14 @@ export default function ApiDocsPage() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>Exemples de réponses</CardTitle>
+                  <CardTitle>{messages.apiDocs.responseExamples}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="estimate" className="w-full">
                     <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="estimate">Estimation</TabsTrigger>
-                      <TabsTrigger value="trade">Trade</TabsTrigger>
-                      <TabsTrigger value="error">Erreur</TabsTrigger>
+                      <TabsTrigger value="estimate">{messages.apiDocs.tabLabels.estimate}</TabsTrigger>
+                      <TabsTrigger value="trade">{messages.apiDocs.tabLabels.trade}</TabsTrigger>
+                      <TabsTrigger value="error">{messages.apiDocs.tabLabels.error}</TabsTrigger>
                     </TabsList>
                     <TabsContent value="estimate" className="mt-4">
                       <div className="bg-muted rounded-lg p-4">
@@ -495,31 +499,31 @@ export default function ApiDocsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <ClockIcon className="w-5 h-5" />
-                    <span>Limites de taux</span>
+                    <span>{messages.apiDocs.rateLimits}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="text-sm space-y-2">
                     <div className="flex justify-between">
-                      <span>Par défaut</span>
+                      <span>{messages.apiDocs.rateLimitLabels.default}</span>
                       <Badge variant="outline">100/min</Badge>
                     </div>
                     <div className="flex justify-between">
-                      <span>Authentification</span>
+                      <span>{messages.apiDocs.rateLimitLabels.authentication}</span>
                       <Badge variant="outline">10/min</Badge>
                     </div>
                     <div className="flex justify-between">
-                      <span>Trading</span>
+                      <span>{messages.apiDocs.rateLimitLabels.trading}</span>
                       <Badge variant="outline">20/min</Badge>
                     </div>
                     <div className="flex justify-between">
-                      <span>Estimation</span>
+                      <span>{messages.apiDocs.rateLimitLabels.estimation}</span>
                       <Badge variant="outline">30/min</Badge>
                     </div>
                   </div>
                   <div className="pt-3 border-t">
                     <p className="text-xs text-muted-foreground">
-                      Les limites sont par clé API et se réinitialisent chaque minute.
+                      {messages.apiDocs.rateLimitsDesc}
                     </p>
                   </div>
                 </CardContent>
@@ -534,29 +538,29 @@ export default function ApiDocsPage() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>Codes de statut</CardTitle>
+                  <CardTitle>{messages.apiDocs.statusCodes}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="text-sm space-y-2">
                     <div className="flex items-center justify-between">
                       <span>200</span>
-                      <span className="text-green-600">Succès</span>
+                      <span className="text-green-600">{messages.apiDocs.statusCodesLabels.success}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>400</span>
-                      <span className="text-red-600">Requête invalide</span>
+                      <span className="text-red-600">{messages.apiDocs.statusCodesLabels.badRequest}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>401</span>
-                      <span className="text-red-600">Non autorisé</span>
+                      <span className="text-red-600">{messages.apiDocs.statusCodesLabels.unauthorized}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>429</span>
-                      <span className="text-orange-600">Trop de requêtes</span>
+                      <span className="text-orange-600">{messages.apiDocs.statusCodesLabels.tooManyRequests}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>500</span>
-                      <span className="text-red-600">Erreur serveur</span>
+                      <span className="text-red-600">{messages.apiDocs.statusCodesLabels.serverError}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -571,7 +575,7 @@ export default function ApiDocsPage() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>SDKs officiels</CardTitle>
+                  <CardTitle>{messages.apiDocs.officialSdks}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="space-y-2">
@@ -604,9 +608,9 @@ export default function ApiDocsPage() {
             >
               <Card className="bg-muted/50">
                 <CardContent className="p-6 text-center">
-                  <h3 className="font-semibold mb-2">Besoin d&apos;aide ?</h3>
+                  <h3 className="font-semibold mb-2">{messages.apiDocs.needHelp}</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Notre équipe technique est là pour vous accompagner.
+                    {messages.apiDocs.supportDesc}
                   </p>
                   <div className="space-y-2">
                     <Button variant="outline" size="sm" className="w-full">

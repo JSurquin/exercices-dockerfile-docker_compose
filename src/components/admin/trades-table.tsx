@@ -177,13 +177,13 @@ export function AdminTradesTable() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tous les statuts</SelectItem>
-            <SelectItem value="créé">Créé</SelectItem>
-            <SelectItem value="accepté_par_bot">Accepté</SelectItem>
+            <SelectItem value="créé">{messages.components.admin.trades.created}</SelectItem>
+            <SelectItem value="accepté_par_bot">{messages.components.admin.trades.accepted}</SelectItem>
             <SelectItem value="en_trade_hold">Trade Hold</SelectItem>
             <SelectItem value="disponible">Disponible</SelectItem>
             <SelectItem value="paiement_en_cours">Paiement</SelectItem>
-            <SelectItem value="payé">Payé</SelectItem>
-            <SelectItem value="échoué">Échoué</SelectItem>
+            <SelectItem value="payé">{messages.components.admin.trades.paid}</SelectItem>
+            <SelectItem value="échoué">{messages.components.admin.trades.failed}</SelectItem>
           </SelectContent>
         </Select>
 

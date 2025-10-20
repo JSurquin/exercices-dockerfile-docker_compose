@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GiveawayAdmin } from '@/components/admin/giveaway-admin';
 import { useGiveaways, GiveawayWithEntries } from '@/hooks/use-giveaways';
+import { useLocale } from '@/components/providers/locale-provider';
 import {
   GiftIcon,
   PlusIcon,
@@ -34,6 +35,7 @@ interface CreateGiveawayForm {
 
 export default function AdminGiveawaysPage() {
   const { giveaways, loading, createGiveaway, drawGiveaway, refetch } = useGiveaways();
+  const { messages } = useLocale();
   const [isCreating, setIsCreating] = useState(false);
   const [selectedTab, setSelectedTab] = useState('list');
   const [form, setForm] = useState<CreateGiveawayForm>({
@@ -381,7 +383,7 @@ export default function AdminGiveawaysPage() {
                       id="description"
                       value={form.description}
                       onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Décrivez le giveaway et le prix à gagner..."
+                      placeholder={messages.admin?.giveaways?.descriptionPlaceholder || "Décrivez le giveaway et le prix à gagner..."}
                       rows={4}
                       required
                     />

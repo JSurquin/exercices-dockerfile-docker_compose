@@ -104,14 +104,14 @@ export default function AdminDashboard() {
       window.URL.revokeObjectURL(url);
 
       toast({
-        title: "Export réussi",
-        description: "Les données ont été exportées avec succès.",
+        title: messages.admin.toast.exportSuccess.title,
+        description: messages.admin.toast.exportSuccess.description,
       });
     } catch (error) {
       console.error('Erreur lors de l\'export:', error);
       toast({
-        title: "Erreur d'export",
-        description: "Une erreur est survenue lors de l'export des données.",
+        title: messages.admin.toast.exportError.title,
+        description: messages.admin.toast.exportError.description,
         variant: "destructive",
       });
     } finally {
@@ -151,14 +151,14 @@ export default function AdminDashboard() {
       window.URL.revokeObjectURL(url);
 
       toast({
-        title: "Rapport généré",
-        description: "Le rapport complet a été généré avec succès.",
+        title: messages.admin.toast.reportSuccess.title,
+        description: messages.admin.toast.reportSuccess.description,
       });
     } catch (error) {
       console.error('Erreur lors de la génération du rapport:', error);
       toast({
-        title: "Erreur de génération",
-        description: "Une erreur est survenue lors de la génération du rapport.",
+        title: messages.admin.toast.reportError.title,
+        description: messages.admin.toast.reportError.description,
         variant: "destructive",
       });
     } finally {

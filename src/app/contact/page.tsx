@@ -27,6 +27,7 @@ import {
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import { useLocale } from "@/components/providers/locale-provider";
 
 const contactMethods = [
   {
@@ -98,6 +99,7 @@ const officeHours = [
 ];
 
 export default function ContactPage() {
+  const { messages } = useLocale();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -129,10 +131,10 @@ export default function ContactPage() {
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             <EnvelopeIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
-            Nous contacter
+            {messages.contact.title}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-            Notre équipe est là pour vous aider. Choisissez le moyen de contact qui vous convient le mieux.
+            {messages.contact.subtitle}
           </p>
           <div className="flex items-center justify-center space-x-2">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>

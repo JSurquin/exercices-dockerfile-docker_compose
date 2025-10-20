@@ -27,12 +27,14 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { WysiwygEditor } from './wysiwyg-editor';
 import { EmailTemplateSelector, EmailTemplate } from './email-template-selector';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface NewsletterCampaignCreatorProps {
   onCampaignCreated?: () => void;
 }
 
 export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampaignCreatorProps) {
+  const { messages } = useLocale();
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
   const [content, setContent] = useState('');
@@ -314,7 +316,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
                   <WysiwygEditor
                     value={htmlContent}
                     onChange={setHtmlContent}
-                    placeholder="Modifiez le template sélectionné..."
+                    placeholder={messages.components.newsletter.templatePlaceholder}
                     height="400px"
                   />
                 </div>
@@ -325,7 +327,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
               <WysiwygEditor
                 value={htmlContent}
                 onChange={setHtmlContent}
-                placeholder="Rédigez votre contenu avec l'éditeur visuel..."
+                placeholder={messages.components.newsletter.visualEditorPlaceholder}
                 height="500px"
               />
               <p className="text-xs text-slate-400">
@@ -335,7 +337,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
 
             <TabsContent value="text" className="space-y-2">
               <Textarea
-                placeholder="Rédigez le contenu de votre newsletter en texte simple..."
+                placeholder={messages.components.newsletter.textEditorPlaceholder}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 rows={12}

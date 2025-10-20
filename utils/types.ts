@@ -410,6 +410,9 @@ export interface Messages {
     steamLogin: string;
     confirmed: string;
     marketplace: string;
+    verified: string;
+    pending: string;
+    startKyc: string;
   };
   toast: {
     itemsLoadedSuccess: string;
@@ -820,6 +823,7 @@ export interface Messages {
     profile: {
       title: string;
       steamUsername: string;
+      steamId: string;
       steamSync: string;
       memberSince: string;
       statistics: string;
@@ -1159,6 +1163,27 @@ export interface Messages {
       approval: string;
       rejection: string;
       export: string;
+    };
+    toast: {
+      exportSuccess: {
+        title: string;
+        description: string;
+      };
+      exportError: {
+        title: string;
+        description: string;
+      };
+      reportSuccess: {
+        title: string;
+        description: string;
+      };
+      reportError: {
+        title: string;
+        description: string;
+      };
+    };
+    giveaways: {
+      descriptionPlaceholder: string;
     };
   };
   kycPage: {
@@ -2369,5 +2394,251 @@ export interface Messages {
     buyer: string;
     seller: string;
     customer: string;
+  };
+  // Nouvelles propriétés ajoutées
+  affiliate: {
+    title: string;
+    subtitle: string;
+    notAffiliate: string;
+    applyNow: string;
+    yourStats: string;
+    totalEarnings: string;
+    pendingCommissions: string;
+    paidCommissions: string;
+    referrals: string;
+    conversionRate: string;
+    averageOrderValue: string;
+    affiliateLink: string;
+    copyLink: string;
+    linkCopied: string;
+    shareOnSocial: string;
+    recentReferrals: string;
+    commissionHistory: string;
+    marketingMaterials: string;
+    banners: string;
+    textAds: string;
+    emailTemplates: string;
+    application: {
+      title: string;
+      description: string;
+      fullName: string;
+      email: string;
+      website: string;
+      socialMedia: string;
+      experience: string;
+      motivation: string;
+      submit: string;
+      submitting: string;
+      success: string;
+      error: string;
+    };
+  };
+  help: {
+    title: string;
+    subtitle: string;
+    searchPlaceholder: string;
+    categories: {
+      gettingStarted: string;
+      trading: string;
+      payments: string;
+      security: string;
+      technical: string;
+    };
+    popularArticles: string;
+    recentlyUpdated: string;
+    stillNeedHelp: string;
+    contactSupport: string;
+    communityForum: string;
+    views: string;
+    helpful: string;
+  };
+  contact: {
+    title: string;
+    subtitle: string;
+    form: {
+      name: string;
+      email: string;
+      subject: string;
+      message: string;
+      send: string;
+      sending: string;
+      success: string;
+      error: string;
+    };
+    info: {
+      title: string;
+      email: string;
+      response: string;
+      hours: string;
+      support: string;
+      business: string;
+    };
+  };
+  press: {
+    title: string;
+    subtitle: string;
+    lastUpdate: string;
+    statsTitle: string;
+    pressReleases: string;
+    readRelease: string;
+    aboutTitle: string;
+    aboutDescription1: string;
+    aboutDescription2: string;
+    sector: string;
+    sectorValue: string;
+    founded: string;
+    foundedValue: string;
+    employees: string;
+    employeesValue: string;
+    funding: string;
+    fundingValue: string;
+    mediaKit: string;
+    download: string;
+    managementTeam: string;
+    pressContact: string;
+    contactPress: string;
+    workingHours: string;
+    stats: {
+      activeUsers: string;
+      volumeProcessed: string;
+      completedTrades: string;
+      satisfactionRate: string;
+    };
+    mediaKitItems: {
+      logos: {
+        title: string;
+        description: string;
+      };
+      screenshots: {
+        title: string;
+        description: string;
+      };
+      factsheet: {
+        title: string;
+        description: string;
+      };
+    };
+  };
+  apiDocs: {
+    title: string;
+    subtitle: string;
+    quickStart: string;
+    getApiKey: string;
+    getApiKeyDesc: string;
+    makeCall: string;
+    makeCallDesc: string;
+    integrate: string;
+    integrateDesc: string;
+    authentication: string;
+    authDescription: string;
+    important: string;
+    securityWarning: string;
+    availableEndpoints: string;
+    codeExamples: string;
+    responseExamples: string;
+    rateLimits: string;
+    rateLimitsDesc: string;
+    statusCodes: string;
+    officialSdks: string;
+    needHelp: string;
+    supportDesc: string;
+    categories: {
+      authentication: string;
+      user: string;
+      trading: string;
+      skinplace: string;
+    };
+    endpoints: {
+      steamAuth: string;
+      logout: string;
+      getProfile: string;
+      updateProfile: string;
+      getTradeHistory: string;
+      estimatePrices: string;
+      createTrade: string;
+      getInventory: string;
+      getItems: string;
+      getBalance: string;
+      purchaseItems: string;
+    };
+    statusCodesLabels: {
+      success: string;
+      badRequest: string;
+      unauthorized: string;
+      tooManyRequests: string;
+      serverError: string;
+    };
+    rateLimitLabels: {
+      default: string;
+      authentication: string;
+      trading: string;
+      estimation: string;
+    };
+    tabLabels: {
+      estimate: string;
+      trade: string;
+      error: string;
+    };
+  };
+  policies: {
+    kyc: {
+      title: string;
+      subtitle: string;
+    };
+    aml: {
+      title: string;
+      subtitle: string;
+    };
+    privacy: {
+      title: string;
+      subtitle: string;
+    };
+    terms: {
+      title: string;
+      subtitle: string;
+    };
+  };
+  components: {
+    wysiwyg: {
+      placeholder: string;
+      loading: string;
+      imageUrl: string;
+      linkUrl: string;
+    };
+    newsletter: {
+      templatePlaceholder: string;
+      visualEditorPlaceholder: string;
+      textEditorPlaceholder: string;
+    };
+    skinplace: {
+      allRarities: string;
+    };
+    onboarding: {
+      step2: string;
+      sellTitle: string;
+      securityTitle: string;
+    };
+    header: {
+      french: string;
+      english: string;
+      chinese: string;
+    };
+    admin: {
+      trades: {
+        created: string;
+        accepted: string;
+        paid: string;
+        failed: string;
+      };
+      payouts: {
+        searchPlaceholder: string;
+        verificationRequired: string;
+        verified: string;
+        scheduled: string;
+        executed: string;
+        paid: string;
+        failed: string;
+      };
+    };
   };
 }

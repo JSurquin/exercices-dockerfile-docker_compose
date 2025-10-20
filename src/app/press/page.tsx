@@ -14,6 +14,7 @@ import {
   TrophyIcon,
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
+import { useLocale } from "@/components/providers/locale-provider";
 
 const pressReleases = [
   {
@@ -39,32 +40,32 @@ const pressReleases = [
   },
 ];
 
-const mediaKit = [
+const getMediaKit = (messages: any) => [
   {
-    title: "Logo & Identité visuelle",
-    description: "Logos haute résolution, couleurs officielles, guidelines",
+    title: messages.press.mediaKitItems.logos.title,
+    description: messages.press.mediaKitItems.logos.description,
     icon: PhotoIcon,
     downloadLink: "/media-kit/logos.zip",
   },
   {
-    title: "Screenshots & Captures",
-    description: "Interface utilisateur, fonctionnalités, dashboard",
+    title: messages.press.mediaKitItems.screenshots.title,
+    description: messages.press.mediaKitItems.screenshots.description,
     icon: DocumentTextIcon,
     downloadLink: "/media-kit/screenshots.zip",
   },
   {
-    title: "Fact Sheet",
-    description: "Données clés, statistiques, informations entreprise",
+    title: messages.press.mediaKitItems.factsheet.title,
+    description: messages.press.mediaKitItems.factsheet.description,
     icon: ChartBarIcon,
     downloadLink: "/media-kit/factsheet.pdf",
   },
 ];
 
-const stats = [
-  { label: "Utilisateurs actifs", value: "15,420+", icon: UserGroupIcon },
-  { label: "Volume traité", value: "€2.4M+", icon: TrophyIcon },
-  { label: "Trades complétés", value: "8,967+", icon: ChartBarIcon },
-  { label: "Taux de satisfaction", value: "99.8%", icon: TrophyIcon },
+const getStats = (messages: any) => [
+  { label: messages.press.stats.activeUsers, value: "15,420+", icon: UserGroupIcon },
+  { label: messages.press.stats.volumeProcessed, value: "€2.4M+", icon: TrophyIcon },
+  { label: messages.press.stats.completedTrades, value: "8,967+", icon: ChartBarIcon },
+  { label: messages.press.stats.satisfactionRate, value: "99.8%", icon: TrophyIcon },
 ];
 
 const teamMembers = [
@@ -89,6 +90,10 @@ const teamMembers = [
 ];
 
 export default function PressPage() {
+  const { messages } = useLocale();
+  const stats = getStats(messages);
+  const mediaKit = getMediaKit(messages);
+  
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-6xl mx-auto">
@@ -101,13 +106,13 @@ export default function PressPage() {
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             <NewspaperIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
-            Espace Presse
+            {messages.press.title}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-            Ressources médias, communiqués de presse et informations sur CashTrade
+            {messages.press.subtitle}
           </p>
           <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-            Dernière mise à jour : 15 septembre 2024
+            {messages.press.lastUpdate} 15 septembre 2024
           </Badge>
         </motion.div>
 
@@ -120,7 +125,7 @@ export default function PressPage() {
         >
           <Card>
             <CardHeader>
-              <CardTitle>CashTrade en chiffres</CardTitle>
+              <CardTitle>{messages.press.statsTitle}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -145,7 +150,7 @@ export default function PressPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="mb-8"
             >
-              <h2 className="text-2xl font-semibold mb-6">Communiqués de presse</h2>
+              <h2 className="text-2xl font-semibold mb-6">{messages.press.pressReleases}</h2>
               <div className="space-y-4">
                 {pressReleases.map((release, index) => (
                   <Card key={index} className="hover:shadow-md transition-shadow">
@@ -161,7 +166,7 @@ export default function PressPage() {
                       <p className="text-muted-foreground mb-4">{release.description}</p>
                       <Button variant="outline" size="sm">
                         <LinkIcon className="w-4 h-4 mr-2" />
-                        Lire le communiqué
+                        {messages.press.readRelease}
                       </Button>
                     </CardContent>
                   </Card>
@@ -177,35 +182,31 @@ export default function PressPage() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>À propos de CashTrade</CardTitle>
+                  <CardTitle>{messages.press.aboutTitle}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-muted-foreground leading-relaxed">
-                    CashTrade est la première plateforme française dédiée au trading sécurisé de skins Counter-Strike 2. 
-                    Fondée en 2024, l&apos;entreprise révolutionne l&apos;écosystème du gaming en permettant aux joueurs de 
-                    monétiser facilement leurs inventaires virtuels.
+                    {messages.press.aboutDescription1}
                   </p>
                   <p className="text-muted-foreground leading-relaxed">
-                    Grâce à des partenariats stratégiques avec Skinplace pour l&apos;estimation et Qonto pour les paiements SEPA, 
-                    CashTrade garantit transparence, sécurité et conformité réglementaire. La plateforme respecte 
-                    scrupuleusement les obligations KYC et anti-blanchiment.
+                    {messages.press.aboutDescription2}
                   </p>
                   <div className="grid md:grid-cols-2 gap-4 mt-6">
                     <div>
-                      <h4 className="font-medium mb-2">Secteur d&apos;activité</h4>
-                      <p className="text-sm text-muted-foreground">Gaming, Fintech, Esport</p>
+                      <h4 className="font-medium mb-2">{messages.press.sector}</h4>
+                      <p className="text-sm text-muted-foreground">{messages.press.sectorValue}</p>
                     </div>
                     <div>
-                      <h4 className="font-medium mb-2">Fondation</h4>
-                      <p className="text-sm text-muted-foreground">2024, Paris, France</p>
+                      <h4 className="font-medium mb-2">{messages.press.founded}</h4>
+                      <p className="text-sm text-muted-foreground">{messages.press.foundedValue}</p>
                     </div>
                     <div>
-                      <h4 className="font-medium mb-2">Employés</h4>
-                      <p className="text-sm text-muted-foreground">12 personnes</p>
+                      <h4 className="font-medium mb-2">{messages.press.employees}</h4>
+                      <p className="text-sm text-muted-foreground">{messages.press.employeesValue}</p>
                     </div>
                     <div>
-                      <h4 className="font-medium mb-2">Financement</h4>
-                      <p className="text-sm text-muted-foreground">2M€ (Série A)</p>
+                      <h4 className="font-medium mb-2">{messages.press.funding}</h4>
+                      <p className="text-sm text-muted-foreground">{messages.press.fundingValue}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -223,7 +224,7 @@ export default function PressPage() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>Kit Média</CardTitle>
+                  <CardTitle>{messages.press.mediaKit}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {mediaKit.map((item, index) => (
@@ -233,7 +234,7 @@ export default function PressPage() {
                         <h4 className="font-medium text-sm">{item.title}</h4>
                         <p className="text-xs text-muted-foreground mb-2">{item.description}</p>
                         <Button variant="outline" size="sm" className="text-xs">
-                          Télécharger
+                          {messages.press.download}
                         </Button>
                       </div>
                     </div>
@@ -250,7 +251,7 @@ export default function PressPage() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>Équipe dirigeante</CardTitle>
+                  <CardTitle>{messages.press.managementTeam}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {teamMembers.map((member, index) => (
@@ -275,7 +276,7 @@ export default function PressPage() {
             >
               <Card className="bg-muted/50">
                 <CardHeader>
-                  <CardTitle>Contact Presse</CardTitle>
+                  <CardTitle>{messages.press.pressContact}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
@@ -293,11 +294,11 @@ export default function PressPage() {
                     </div>
                     <div className="flex items-center space-x-2">
                       <span>🕐</span>
-                      <span>Lun-Ven 9h-18h</span>
+                      <span>{messages.press.workingHours}</span>
                     </div>
                   </div>
                   <Button className="w-full mt-4">
-                    Contacter la presse
+                    {messages.press.contactPress}
                   </Button>
                 </CardContent>
               </Card>

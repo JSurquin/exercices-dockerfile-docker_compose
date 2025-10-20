@@ -326,10 +326,6 @@ export const messages: Record<Locale, Messages> = {
         default: "Par défaut",
         addMethod: "Ajouter une méthode de paiement",
         preferredMethod: "Moyen de paiement préféré",
-        selectPreferred: "Sélectionnez votre moyen de paiement préféré",
-        stripe: "Stripe",
-        qonto: "Qonto (SEPA)",
-        binance: "Binance (Crypto)",
       },
       settings: {
         profile: "Profil",
@@ -368,6 +364,9 @@ export const messages: Record<Locale, Messages> = {
       steamLogin: "Steam Login",
       confirmed: "Confirmé",
       marketplace: "CS2 Marketplace",
+      verified: "Vérifié",
+      pending: "En attente",
+      startKyc: "Commencer KYC",
     },
     toast: {
       itemsLoadedSuccess: "Items chargés avec succès !",
@@ -1832,6 +1831,7 @@ export const messages: Record<Locale, Messages> = {
       profile: {
         title: "Informations du profil",
         steamUsername: "Nom d'utilisateur Steam",
+        steamId: "ID Steam",
         steamSync: "Synchronisé automatiquement avec Steam",
         memberSince: "Membre depuis",
         statistics: "Statistiques",
@@ -2172,6 +2172,24 @@ export const messages: Record<Locale, Messages> = {
         rejection: "Erreur lors du rejet",
         export: "Erreur lors de l'export",
       },
+      toast: {
+        exportSuccess: {
+          title: "Export réussi",
+          description: "Les données ont été exportées avec succès.",
+        },
+        exportError: {
+          title: "Erreur d'export",
+          description: "Une erreur est survenue lors de l'export des données.",
+        },
+        reportSuccess: {
+          title: "Rapport généré",
+          description: "Le rapport complet a été généré avec succès.",
+        },
+        reportError: {
+          title: "Erreur de génération",
+          description: "Une erreur est survenue lors de la génération du rapport.",
+        },
+      },
     },
     kycPage: {
       title: "Vérification KYC",
@@ -2328,6 +2346,252 @@ export const messages: Record<Locale, Messages> = {
         lost: "Perdu"
       }
     },
+    // Pages avec traductions manquantes
+    affiliate: {
+      title: "Programme d'Affiliation CashTrade",
+      subtitle: "Gagnez des commissions en recommandant notre plateforme",
+      notAffiliate: "Vous n'êtes pas encore affilié",
+      applyNow: "Postuler maintenant",
+      yourStats: "Vos Statistiques",
+      totalEarnings: "Gains totaux",
+      pendingCommissions: "Commissions en attente",
+      paidCommissions: "Commissions payées",
+      referrals: "Parrainages",
+      conversionRate: "Taux de conversion",
+      averageOrderValue: "Valeur moyenne des commandes",
+      affiliateLink: "Votre lien d'affiliation",
+      copyLink: "Copier le lien",
+      linkCopied: "Lien copié !",
+      shareOnSocial: "Partager sur les réseaux sociaux",
+      recentReferrals: "Parrainages récents",
+      commissionHistory: "Historique des commissions",
+      marketingMaterials: "Matériel marketing",
+      banners: "Bannières",
+      textAds: "Annonces texte",
+      emailTemplates: "Modèles d'email",
+      application: {
+        title: "Candidature d'affiliation",
+        description: "Remplissez ce formulaire pour rejoindre notre programme d'affiliation",
+        fullName: "Nom complet",
+        email: "Email",
+        website: "Site web (optionnel)",
+        socialMedia: "Réseaux sociaux",
+        experience: "Expérience en affiliation",
+        motivation: "Pourquoi voulez-vous devenir affilié ?",
+        submit: "Soumettre la candidature",
+        submitting: "Envoi en cours...",
+        success: "Candidature envoyée avec succès !",
+        error: "Erreur lors de l'envoi de la candidature"
+      }
+    },
+    help: {
+      title: "Centre d'aide",
+      subtitle: "Trouvez des réponses à vos questions",
+      searchPlaceholder: "Rechercher dans l'aide...",
+      categories: {
+        gettingStarted: "Premiers pas",
+        trading: "Trading & Ventes",
+        payments: "Paiements",
+        security: "Sécurité & KYC",
+        technical: "Problèmes techniques"
+      },
+      popularArticles: "Articles populaires",
+      recentlyUpdated: "Récemment mis à jour",
+      stillNeedHelp: "Vous avez encore besoin d'aide ?",
+      contactSupport: "Contacter le support",
+      communityForum: "Forum communautaire",
+      views: "vues",
+      helpful: "utile"
+    },
+    contact: {
+      title: "Nous contacter",
+      subtitle: "Notre équipe est là pour vous aider",
+      form: {
+        name: "Nom complet",
+        email: "Adresse email",
+        subject: "Sujet",
+        message: "Message",
+        send: "Envoyer le message",
+        sending: "Envoi en cours...",
+        success: "Message envoyé avec succès !",
+        error: "Erreur lors de l'envoi du message"
+      },
+      info: {
+        title: "Informations de contact",
+        email: "Email",
+        response: "Temps de réponse moyen",
+        hours: "Heures d'ouverture",
+        support: "Support technique",
+        business: "Partenariats"
+      }
+    },
+    press: {
+      title: "Espace Presse",
+      subtitle: "Ressources et actualités pour les médias",
+      lastUpdate: "Dernière mise à jour :",
+      statsTitle: "CashTrade en chiffres",
+      pressReleases: "Communiqués de presse",
+      readRelease: "Lire le communiqué",
+      aboutTitle: "À propos de CashTrade",
+      aboutDescription1: "CashTrade est la première plateforme française dédiée au trading sécurisé de skins Counter-Strike 2. Fondée en 2024, l'entreprise révolutionne l'écosystème du gaming en permettant aux joueurs de monétiser facilement leurs inventaires virtuels.",
+      aboutDescription2: "Grâce à des partenariats stratégiques avec Skinplace pour l'estimation et Qonto pour les paiements SEPA, CashTrade garantit transparence, sécurité et conformité réglementaire. La plateforme respecte scrupuleusement les obligations KYC et anti-blanchiment.",
+      sector: "Secteur d'activité",
+      sectorValue: "Gaming, Fintech, Esport",
+      founded: "Fondation",
+      foundedValue: "2024, Paris, France",
+      employees: "Employés",
+      employeesValue: "12 personnes",
+      funding: "Financement",
+      fundingValue: "2M€ (Série A)",
+      mediaKit: "Kit Média",
+      download: "Télécharger",
+      managementTeam: "Équipe dirigeante",
+      pressContact: "Contact Presse",
+      contactPress: "Contacter la presse",
+      workingHours: "Lun-Ven 9h-18h",
+      stats: {
+        activeUsers: "Utilisateurs actifs",
+        volumeProcessed: "Volume traité",
+        completedTrades: "Trades complétés",
+        satisfactionRate: "Taux de satisfaction"
+      },
+      mediaKitItems: {
+        logos: {
+          title: "Logo & Identité visuelle",
+          description: "Logos haute résolution, couleurs officielles, guidelines"
+        },
+        screenshots: {
+          title: "Screenshots & Captures",
+          description: "Interface utilisateur, fonctionnalités, dashboard"
+        },
+        factsheet: {
+          title: "Fact Sheet",
+          description: "Données clés, statistiques, informations entreprise"
+        }
+      }
+    },
+    apiDocs: {
+      title: "Documentation API",
+      subtitle: "Guide complet pour intégrer notre API",
+      quickStart: "Démarrage rapide",
+      getApiKey: "1. Obtenir une clé API",
+      getApiKeyDesc: "Créez un compte développeur et générez votre clé API",
+      makeCall: "2. Faire un appel",
+      makeCallDesc: "Utilisez votre clé pour authentifier vos requêtes",
+      integrate: "3. Intégrer",
+      integrateDesc: "Utilisez nos SDKs ou appelez directement l'API REST",
+      authentication: "Authentification",
+      authDescription: "L'API CashTrade utilise des tokens Bearer pour l'authentification. Incluez votre token dans l'en-tête Authorization de chaque requête.",
+      important: "Important",
+      securityWarning: "Ne partagez jamais votre clé API et utilisez HTTPS pour toutes les requêtes.",
+      availableEndpoints: "Endpoints disponibles",
+      codeExamples: "Exemples de code",
+      responseExamples: "Exemples de réponses",
+      rateLimits: "Limites de taux",
+      rateLimitsDesc: "Les limites sont par clé API et se réinitialisent chaque minute.",
+      statusCodes: "Codes de statut",
+      officialSdks: "SDKs officiels",
+      needHelp: "Besoin d'aide ?",
+      supportDesc: "Notre équipe technique est là pour vous accompagner.",
+      categories: {
+        authentication: "Authentification",
+        user: "Utilisateur",
+        trading: "Trading",
+        skinplace: "Skinplace"
+      },
+      endpoints: {
+        steamAuth: "Authentification via Steam OpenID",
+        logout: "Déconnexion utilisateur",
+        getProfile: "Récupérer le profil utilisateur",
+        updateProfile: "Mettre à jour le profil",
+        getTradeHistory: "Historique des trades",
+        estimatePrices: "Estimation des prix de skins",
+        createTrade: "Créer un trade de vente",
+        getInventory: "Inventaire Steam utilisateur",
+        getItems: "Liste des items disponibles",
+        getBalance: "Solde Skinplace",
+        purchaseItems: "Acheter des items"
+      },
+      statusCodesLabels: {
+        success: "Succès",
+        badRequest: "Requête invalide",
+        unauthorized: "Non autorisé",
+        tooManyRequests: "Trop de requêtes",
+        serverError: "Erreur serveur"
+      },
+      rateLimitLabels: {
+        default: "Par défaut",
+        authentication: "Authentification",
+        trading: "Trading",
+        estimation: "Estimation"
+      },
+      tabLabels: {
+        estimate: "Estimation",
+        trade: "Trade",
+        error: "Erreur"
+      }
+    },
+    policies: {
+      kyc: {
+        title: "Politique KYC",
+        subtitle: "Notre politique de vérification d'identité"
+      },
+      aml: {
+        title: "Politique Anti-Blanchiment",
+        subtitle: "Notre engagement contre le blanchiment d'argent"
+      },
+      privacy: {
+        title: "Politique de Confidentialité",
+        subtitle: "Comment nous protégeons vos données"
+      },
+      terms: {
+        title: "Conditions d'Utilisation",
+        subtitle: "Nos conditions générales d'utilisation"
+      }
+    },
+    components: {
+      wysiwyg: {
+        placeholder: "Rédigez votre contenu...",
+        loading: "Chargement de l'éditeur...",
+        imageUrl: "URL de l'image",
+        linkUrl: "URL du lien",
+      },
+      newsletter: {
+        templatePlaceholder: "Modifiez le template sélectionné...",
+        visualEditorPlaceholder: "Rédigez votre contenu avec l'éditeur visuel...",
+        textEditorPlaceholder: "Rédigez le contenu de votre newsletter en texte simple...",
+      },
+      skinplace: {
+        allRarities: "Toutes les raretés",
+      },
+      onboarding: {
+        step2: "Cliquez sur \"Échanges\" puis \"Qui peut m'envoyer des offres d'échange ?\"",
+        sellTitle: "Vendez vos skins en 3 étapes",
+        securityTitle: "Sécurité et KYC",
+      },
+      header: {
+        french: "Français",
+        english: "English",
+        chinese: "中文",
+      },
+      admin: {
+        trades: {
+          created: "Créé",
+          accepted: "Accepté",
+          paid: "Payé",
+          failed: "Échoué",
+        },
+        payouts: {
+          searchPlaceholder: "Rechercher par ID, utilisateur, référence...",
+          verificationRequired: "Vérification requise",
+          verified: "Vérifié",
+          scheduled: "Planifié",
+          executed: "Exécuté",
+          paid: "Payé",
+          failed: "Échoué",
+        },
+      },
+    }
   },
   en: {
     nav: {
@@ -2649,10 +2913,6 @@ export const messages: Record<Locale, Messages> = {
         default: "Default",
         addMethod: "Add payment method",
         preferredMethod: "Preferred Payment Method",
-        selectPreferred: "Select your preferred payment method",
-        stripe: "Stripe",
-        qonto: "Qonto (SEPA)",
-        binance: "Binance (Crypto)",
       },
       settings: {
         profile: "Profile",
@@ -2691,6 +2951,9 @@ export const messages: Record<Locale, Messages> = {
       steamLogin: "Steam Login",
       confirmed: "Confirmed",
       marketplace: "CS2 Marketplace",
+      verified: "Verified",
+      pending: "Pending",
+      startKyc: "Start KYC",
     },
     toast: {
       itemsLoadedSuccess: "Items loaded successfully!",
@@ -3262,114 +3525,6 @@ export const messages: Record<Locale, Messages> = {
         apiStatus: "API Status available"
       }
     },
-    settings: {
-      title: "Settings",
-      subtitle: "Manage your preferences and account settings",
-      tabs: {
-        profile: "Profile",
-        security: "Security",
-        notifications: "Notifications",
-        payments: "Payments",
-        preferences: "Preferences"
-      },
-      profile: {
-        title: "Profile information",
-        steamUsername: "Steam username",
-        steamSync: "Automatically synced with Steam",
-        memberSince: "Member since",
-        statistics: "Statistics",
-        level: "Level",
-        totalXp: "Total XP",
-        tickets: "Tickets",
-        volume: "Volume"
-      },
-      security: {
-        title: "Account security",
-        twoFactor: {
-          title: "Two-factor authentication (2FA)",
-          description: "Additional protection for your account",
-          enabled: "Enabled",
-          configure: "Configure"
-        },
-        kyc: {
-          title: "KYC verification",
-          description: "Your identity verification status",
-          verified: "Verified",
-          pending: "Pending",
-          start: "Start KYC"
-        },
-        sessions: {
-          title: "Active sessions",
-          description: "Manage your active connections",
-          view: "View sessions"
-        },
-        gdpr: {
-          title: "GDPR compliance",
-          description: "You have the right to access, modify or delete your personal data.",
-          export: "Export my data",
-          delete: "Delete my account"
-        }
-      },
-      notifications: {
-        title: "Notification preferences",
-        email: {
-          title: "Email notifications",
-          description: "Receive important notifications by email"
-        },
-        trades: {
-          title: "Trade alerts",
-          description: "Notifications when your trades status changes"
-        },
-        payments: {
-          title: "Payment alerts",
-          description: "Notifications for payments and transactions"
-        },
-        push: {
-          title: "Push notifications",
-          description: "Browser push notifications"
-        },
-        marketing: {
-          title: "Marketing emails",
-          description: "Receive news and promotions information"
-        },
-        save: "Save preferences"
-      },
-      payments: {
-        title: "Payment methods",
-        sepa: "SEPA - Qonto",
-        bitcoin: "Bitcoin",
-        verified: "Verified",
-        default: "Default",
-        modify: "Modify",
-        add: "Add payment method",
-        important: "Important",
-        ibanWarning: "Any IBAN change requires new verification and a 7-day delay."
-      },
-      preferences: {
-        title: "Display preferences",
-        language: {
-          title: "Language",
-          description: "Choose your preferred language",
-          french: "🇫🇷 Français",
-          english: "🇺🇸 English"
-        },
-        theme: {
-          title: "Theme",
-          description: "Choose your display theme",
-          light: "Light",
-          dark: "Dark",
-          system: "System"
-        },
-        save: "Save preferences"
-      },
-      loginRequired: {
-        title: "Login required",
-        description: "You must be logged in to access settings.",
-        login: "Login with Steam"
-      },
-      loginDescription: "You must be logged in to access settings.",
-      saveError: "Error saving settings"
-    },
     admin: {
       title: "CashTrade Administration",
       subtitle: "Platform management and supervision",
@@ -3614,7 +3769,25 @@ export const messages: Record<Locale, Messages> = {
         approval: "Error during approval",
         rejection: "Error during rejection",
         export: "Error during export",
-      }
+      },
+      toast: {
+        exportSuccess: {
+          title: "Export successful",
+          description: "Data has been exported successfully.",
+        },
+        exportError: {
+          title: "Export error",
+          description: "An error occurred while exporting data.",
+        },
+        reportSuccess: {
+          title: "Report generated",
+          description: "The complete report has been generated successfully.",
+        },
+        reportError: {
+          title: "Generation error",
+          description: "An error occurred while generating the report.",
+        },
+      },
     },
     kycPage: {
       title: "KYC Verification",
@@ -4651,6 +4824,361 @@ export const messages: Record<Locale, Messages> = {
       seller: "Seller",
       customer: "Customer",
     },
+    // Pages with missing translations
+    affiliate: {
+      title: "CashTrade Affiliate Program",
+      subtitle: "Earn commissions by recommending our platform",
+      notAffiliate: "You are not yet an affiliate",
+      applyNow: "Apply now",
+      yourStats: "Your Statistics",
+      totalEarnings: "Total earnings",
+      pendingCommissions: "Pending commissions",
+      paidCommissions: "Paid commissions",
+      referrals: "Referrals",
+      conversionRate: "Conversion rate",
+      averageOrderValue: "Average order value",
+      affiliateLink: "Your affiliate link",
+      copyLink: "Copy link",
+      linkCopied: "Link copied!",
+      shareOnSocial: "Share on social media",
+      recentReferrals: "Recent referrals",
+      commissionHistory: "Commission history",
+      marketingMaterials: "Marketing materials",
+      banners: "Banners",
+      textAds: "Text ads",
+      emailTemplates: "Email templates",
+      application: {
+        title: "Affiliate application",
+        description: "Fill out this form to join our affiliate program",
+        fullName: "Full name",
+        email: "Email",
+        website: "Website (optional)",
+        socialMedia: "Social media",
+        experience: "Affiliate experience",
+        motivation: "Why do you want to become an affiliate?",
+        submit: "Submit application",
+        submitting: "Submitting...",
+        success: "Application submitted successfully!",
+        error: "Error submitting application"
+      }
+    },
+    settings: {
+      title: "Settings",
+      subtitle: "Manage your account preferences and settings",
+      tabs: {
+        profile: "Profile",
+        security: "Security",
+        notifications: "Notifications",
+        payments: "Payments",
+        preferences: "Preferences"
+      },
+      profile: {
+        title: "Profile information",
+        steamUsername: "Steam username",
+        steamId: "Steam ID",
+        steamSync: "Automatically synced with Steam",
+        memberSince: "Member since",
+        statistics: "Statistics",
+        level: "Level",
+        totalXp: "Total XP",
+        tickets: "Tickets",
+        volume: "Volume"
+      },
+      security: {
+        title: "Account security",
+        twoFactor: {
+          title: "Two-factor authentication (2FA)",
+          description: "Additional protection for your account",
+          enabled: "Enabled",
+          configure: "Configure"
+        },
+        kyc: {
+          title: "KYC verification",
+          description: "Your identity verification status",
+          verified: "Verified",
+          pending: "Pending",
+          start: "Start KYC"
+        },
+        sessions: {
+          title: "Active sessions",
+          description: "Manage your active connections",
+          view: "View sessions"
+        },
+        gdpr: {
+          title: "GDPR compliance",
+          description: "You have the right to access, modify or delete your personal data.",
+          export: "Export my data",
+          delete: "Delete my account"
+        }
+      },
+      notifications: {
+        title: "Notification preferences",
+        email: {
+          title: "Email notifications",
+          description: "Receive important notifications by email"
+        },
+        trades: {
+          title: "Trade alerts",
+          description: "Notifications when your trades status changes"
+        },
+        payments: {
+          title: "Payment alerts",
+          description: "Notifications for payments and transactions"
+        },
+        push: {
+          title: "Push notifications",
+          description: "Browser push notifications"
+        },
+        marketing: {
+          title: "Marketing emails",
+          description: "Receive news and promotions information"
+        },
+        save: "Save preferences"
+      },
+      preferences: {
+        title: "Display preferences",
+        language: {
+          title: "Language",
+          description: "Choose your preferred language",
+          french: "🇫🇷 Français",
+          english: "🇺🇸 English"
+        },
+        theme: {
+          title: "Theme",
+          description: "Choose your display theme",
+          light: "Light",
+          dark: "Dark",
+          system: "System"
+        },
+        save: "Save preferences"
+      },
+      payments: {
+        title: "Payment methods",
+        sepa: "SEPA - Qonto",
+        bitcoin: "Bitcoin",
+        verified: "Verified",
+        default: "Default",
+        modify: "Modify",
+        add: "Add payment method",
+        important: "Important",
+        ibanWarning: "Any IBAN change requires new verification and a 7-day delay."
+      },
+      loginRequired: {
+        title: "Login required",
+        description: "You must be logged in to access settings.",
+        login: "Login with Steam"
+      },
+      loginDescription: "You must be logged in to access settings.",
+      saveError: "Error saving settings"
+    },
+    help: {
+      title: "Help Center",
+      subtitle: "Find answers to your questions",
+      searchPlaceholder: "Search help...",
+      categories: {
+        gettingStarted: "Getting Started",
+        trading: "Trading & Sales",
+        payments: "Payments",
+        security: "Security & KYC",
+        technical: "Technical Issues"
+      },
+      popularArticles: "Popular articles",
+      recentlyUpdated: "Recently updated",
+      stillNeedHelp: "Still need help?",
+      contactSupport: "Contact support",
+      communityForum: "Community forum",
+      views: "views",
+      helpful: "helpful"
+    },
+    contact: {
+      title: "Contact Us",
+      subtitle: "Our team is here to help you",
+      form: {
+        name: "Full name",
+        email: "Email address",
+        subject: "Subject",
+        message: "Message",
+        send: "Send message",
+        sending: "Sending...",
+        success: "Message sent successfully!",
+        error: "Error sending message"
+      },
+      info: {
+        title: "Contact information",
+        email: "Email",
+        response: "Average response time",
+        hours: "Business hours",
+        support: "Technical support",
+        business: "Partnerships"
+      }
+    },
+    press: {
+      title: "Press Room",
+      subtitle: "Media resources and news",
+      lastUpdate: "Last update:",
+      statsTitle: "CashTrade in numbers",
+      pressReleases: "Press releases",
+      readRelease: "Read release",
+      aboutTitle: "About CashTrade",
+      aboutDescription1: "CashTrade is the first French platform dedicated to secure Counter-Strike 2 skin trading. Founded in 2024, the company revolutionizes the gaming ecosystem by allowing players to easily monetize their virtual inventories.",
+      aboutDescription2: "Through strategic partnerships with Skinplace for estimation and Qonto for SEPA payments, CashTrade guarantees transparency, security and regulatory compliance. The platform strictly respects KYC and anti-money laundering obligations.",
+      sector: "Industry",
+      sectorValue: "Gaming, Fintech, Esport",
+      founded: "Founded",
+      foundedValue: "2024, Paris, France",
+      employees: "Employees",
+      employeesValue: "12 people",
+      funding: "Funding",
+      fundingValue: "€2M (Series A)",
+      mediaKit: "Media Kit",
+      download: "Download",
+      managementTeam: "Management Team",
+      pressContact: "Press Contact",
+      contactPress: "Contact press",
+      workingHours: "Mon-Fri 9am-6pm",
+      stats: {
+        activeUsers: "Active users",
+        volumeProcessed: "Volume processed",
+        completedTrades: "Completed trades",
+        satisfactionRate: "Satisfaction rate"
+      },
+      mediaKitItems: {
+        logos: {
+          title: "Logo & Visual identity",
+          description: "High resolution logos, official colors, guidelines"
+        },
+        screenshots: {
+          title: "Screenshots & Captures",
+          description: "User interface, features, dashboard"
+        },
+        factsheet: {
+          title: "Fact Sheet",
+          description: "Key data, statistics, company information"
+        }
+      }
+    },
+    apiDocs: {
+      title: "API Documentation",
+      subtitle: "Complete guide to integrate our API",
+      quickStart: "Quick Start",
+      getApiKey: "1. Get an API Key",
+      getApiKeyDesc: "Create a developer account and generate your API key",
+      makeCall: "2. Make a Call",
+      makeCallDesc: "Use your key to authenticate your requests",
+      integrate: "3. Integrate",
+      integrateDesc: "Use our SDKs or call the REST API directly",
+      authentication: "Authentication",
+      authDescription: "The CashTrade API uses Bearer tokens for authentication. Include your token in the Authorization header of each request.",
+      important: "Important",
+      securityWarning: "Never share your API key and use HTTPS for all requests.",
+      availableEndpoints: "Available endpoints",
+      codeExamples: "Code examples",
+      responseExamples: "Response examples",
+      rateLimits: "Rate limits",
+      rateLimitsDesc: "Limits are per API key and reset every minute.",
+      statusCodes: "Status codes",
+      officialSdks: "Official SDKs",
+      needHelp: "Need help?",
+      supportDesc: "Our technical team is here to support you.",
+      categories: {
+        authentication: "Authentication",
+        user: "User",
+        trading: "Trading",
+        skinplace: "Skinplace"
+      },
+      endpoints: {
+        steamAuth: "Steam OpenID authentication",
+        logout: "User logout",
+        getProfile: "Get user profile",
+        updateProfile: "Update profile",
+        getTradeHistory: "Trade history",
+        estimatePrices: "Skin price estimation",
+        createTrade: "Create sell trade",
+        getInventory: "Steam user inventory",
+        getItems: "List of available items",
+        getBalance: "Skinplace balance",
+        purchaseItems: "Purchase items"
+      },
+      statusCodesLabels: {
+        success: "Success",
+        badRequest: "Bad request",
+        unauthorized: "Unauthorized",
+        tooManyRequests: "Too many requests",
+        serverError: "Server error"
+      },
+      rateLimitLabels: {
+        default: "Default",
+        authentication: "Authentication",
+        trading: "Trading",
+        estimation: "Estimation"
+      },
+      tabLabels: {
+        estimate: "Estimate",
+        trade: "Trade",
+        error: "Error"
+      }
+    },
+    policies: {
+      kyc: {
+        title: "KYC Policy",
+        subtitle: "Our identity verification policy"
+      },
+      aml: {
+        title: "Anti-Money Laundering Policy",
+        subtitle: "Our commitment against money laundering"
+      },
+      privacy: {
+        title: "Privacy Policy",
+        subtitle: "How we protect your data"
+      },
+      terms: {
+        title: "Terms of Service",
+        subtitle: "Our general terms and conditions"
+      }
+    },
+    components: {
+      wysiwyg: {
+        placeholder: "Write your content...",
+        loading: "Loading editor...",
+        imageUrl: "Image URL",
+        linkUrl: "Link URL",
+      },
+      newsletter: {
+        templatePlaceholder: "Modify the selected template...",
+        visualEditorPlaceholder: "Write your content with the visual editor...",
+        textEditorPlaceholder: "Write your newsletter content in plain text...",
+      },
+      skinplace: {
+        allRarities: "All rarities",
+      },
+      onboarding: {
+        step2: "Click on \"Trades\" then \"Who can send me trade offers?\"",
+        sellTitle: "Sell your skins in 3 steps",
+        securityTitle: "Security and KYC",
+      },
+      header: {
+        french: "Français",
+        english: "English",
+        chinese: "中文",
+      },
+      admin: {
+        trades: {
+          created: "Created",
+          accepted: "Accepted",
+          paid: "Paid",
+          failed: "Failed",
+        },
+        payouts: {
+          searchPlaceholder: "Search by ID, user, reference...",
+          verificationRequired: "Verification required",
+          verified: "Verified",
+          scheduled: "Scheduled",
+          executed: "Executed",
+          paid: "Paid",
+          failed: "Failed",
+        },
+      },
+    }
   },
   cn: {
     nav: {
@@ -4968,10 +5496,6 @@ export const messages: Record<Locale, Messages> = {
         default: "默认",
         addMethod: "添加支付方式",
         preferredMethod: "首选支付方式",
-        selectPreferred: "选择您的首选支付方式",
-        stripe: "Stripe",
-        qonto: "Qonto (SEPA)",
-        binance: "Binance (加密货币)",
       },
       settings: {
         profile: "资料",
@@ -5010,6 +5534,9 @@ export const messages: Record<Locale, Messages> = {
       steamLogin: "Steam登录",
       confirmed: "已确认",
       marketplace: "CS2市场",
+      verified: "已验证",
+      pending: "待处理",
+      startKyc: "开始KYC",
     },
     toast: {
       itemsLoadedSuccess: "物品加载成功！",
@@ -5269,30 +5796,67 @@ export const messages: Record<Locale, Messages> = {
     status: {
       title: "CashTrade服务状态",
       subtitle: "实时监控我们的服务可用性",
-      overall: { title: "", operational: "", degraded: "", partialOutage: "", majorOutage: "", maintenance: "" },
-      stats: { uptime: "", operational: "", incidents: "" },
-      services: { title: "", website: { name: "", description: "" }, api: { name: "", description: "" }, database: { name: "", description: "" }, sepaPayments: { name: "", description: "" }, cryptoPayments: { name: "", description: "" }, steamApi: { name: "", description: "" } },
-      incidents: { title: "", impact: { low: "", medium: "", high: "" }, status: { investigating: "", identified: "", monitoring: "", resolved: "" }, updates: "" },
-      footer: { updateFrequency: "", lastUpdate: "", emailAlerts: "", apiStatus: "" }
-    },
-    settings: {
-      title: "设置",
-      subtitle: "管理您的偏好和账户设置",
-      tabs: {
-        profile: "资料",
-        security: "安全",
-        notifications: "通知",
-        payments: "支付",
-        preferences: "偏好"
+      overall: {
+        title: "整体状态",
+        operational: "正常运行",
+        degraded: "性能下降",
+        partialOutage: "部分中断",
+        majorOutage: "重大中断",
+        maintenance: "维护中"
       },
-      profile: { title: "", steamUsername: "", steamSync: "", memberSince: "", statistics: "", level: "", totalXp: "", tickets: "", volume: "" },
-      security: { title: "", twoFactor: { title: "", description: "", enabled: "", configure: "" }, kyc: { title: "", description: "", verified: "", pending: "", start: "" }, sessions: { title: "", description: "", view: "" }, gdpr: { title: "", description: "", export: "", delete: "" } },
-      notifications: { title: "", email: { title: "", description: "" }, trades: { title: "", description: "" }, payments: { title: "", description: "" }, push: { title: "", description: "" }, marketing: { title: "", description: "" }, save: "" },
-      payments: { title: "", sepa: "", bitcoin: "", verified: "", default: "", modify: "", add: "", important: "", ibanWarning: "" },
-      preferences: { title: "", language: { title: "", description: "", french: "", english: "" }, theme: { title: "", description: "", light: "", dark: "", system: "" }, save: "" },
-      loginRequired: { title: "", description: "", login: "" },
-      loginDescription: "您必须登录才能访问设置。",
-      saveError: ""
+      stats: {
+        uptime: "平均正常运行时间 (30天)",
+        operational: "正常运行的服务",
+        incidents: "活跃事件"
+      },
+      services: {
+        title: "服务",
+        website: {
+          name: "网站",
+          description: "主要用户界面"
+        },
+        api: {
+          name: "CashTrade API",
+          description: "交易主要API"
+        },
+        database: {
+          name: "数据库",
+          description: "用户数据存储"
+        },
+        sepaPayments: {
+          name: "SEPA 支付",
+          description: "欧洲银行转账"
+        },
+        cryptoPayments: {
+          name: "加密货币支付",
+          description: "比特币和加密货币"
+        },
+        steamApi: {
+          name: "Steam API",
+          description: "Steam 集成服务"
+        }
+      },
+      incidents: {
+        title: "事件",
+        impact: {
+          low: "低",
+          medium: "中",
+          high: "高"
+        },
+        status: {
+          investigating: "调查中",
+          identified: "已识别",
+          monitoring: "监控中",
+          resolved: "已解决"
+        },
+        updates: "更新："
+      },
+      footer: {
+        updateFrequency: "此页面每30秒自动更新",
+        lastUpdate: "最后更新：",
+        emailAlerts: "邮件警报可用",
+        apiStatus: "API状态可用"
+      }
     },
     admin: {
       title: "CashTrade管理",
@@ -5538,6 +6102,24 @@ export const messages: Record<Locale, Messages> = {
         approval: "批准时出错",
         rejection: "拒绝时出错",
         export: "导出时出错",
+      },
+      toast: {
+        exportSuccess: {
+          title: "导出成功",
+          description: "数据已成功导出。",
+        },
+        exportError: {
+          title: "导出错误",
+          description: "导出数据时发生错误。",
+        },
+        reportSuccess: {
+          title: "报告已生成",
+          description: "完整报告已成功生成。",
+        },
+        reportError: {
+          title: "生成错误",
+          description: "生成报告时发生错误。",
+        },
       },
     },
     kycPage: {
@@ -6464,6 +7046,361 @@ export const messages: Record<Locale, Messages> = {
       seller: "卖家",
       customer: "客户",
     },
+    // Pages with missing translations
+    affiliate: {
+      title: "CashTrade 联盟计划",
+      subtitle: "通过推荐我们的平台赚取佣金",
+      notAffiliate: "您还不是联盟会员",
+      applyNow: "立即申请",
+      yourStats: "您的统计数据",
+      totalEarnings: "总收入",
+      pendingCommissions: "待付佣金",
+      paidCommissions: "已付佣金",
+      referrals: "推荐人数",
+      conversionRate: "转化率",
+      averageOrderValue: "平均订单价值",
+      affiliateLink: "您的联盟链接",
+      copyLink: "复制链接",
+      linkCopied: "链接已复制！",
+      shareOnSocial: "在社交媒体上分享",
+      recentReferrals: "最近推荐",
+      commissionHistory: "佣金历史",
+      marketingMaterials: "营销材料",
+      banners: "横幅",
+      textAds: "文字广告",
+      emailTemplates: "邮件模板",
+      application: {
+        title: "联盟申请",
+        description: "填写此表格加入我们的联盟计划",
+        fullName: "全名",
+        email: "邮箱",
+        website: "网站（可选）",
+        socialMedia: "社交媒体",
+        experience: "联盟经验",
+        motivation: "为什么想成为联盟会员？",
+        submit: "提交申请",
+        submitting: "提交中...",
+        success: "申请提交成功！",
+        error: "提交申请时出错"
+      }
+    },
+    settings: {
+      title: "设置",
+      subtitle: "管理您的账户偏好和设置",
+      tabs: {
+        profile: "个人资料",
+        security: "安全",
+        notifications: "通知",
+        payments: "支付",
+        preferences: "偏好"
+      },
+      profile: {
+        title: "个人资料信息",
+        steamUsername: "Steam 用户名",
+        steamId: "Steam ID",
+        steamSync: "与 Steam 自动同步",
+        memberSince: "注册时间",
+        statistics: "统计数据",
+        level: "等级",
+        totalXp: "总经验值",
+        tickets: "票券",
+        volume: "交易量"
+      },
+      security: {
+        title: "账户安全",
+        twoFactor: {
+          title: "双因素认证 (2FA)",
+          description: "为您的账户提供额外保护",
+          enabled: "已启用",
+          configure: "配置"
+        },
+        kyc: {
+          title: "KYC 验证",
+          description: "您的身份验证状态",
+          verified: "已验证",
+          pending: "待处理",
+          start: "开始 KYC"
+        },
+        sessions: {
+          title: "活跃会话",
+          description: "管理您的活跃连接",
+          view: "查看会话"
+        },
+        gdpr: {
+          title: "GDPR 合规",
+          description: "您有权访问、修改或删除您的个人数据。",
+          export: "导出我的数据",
+          delete: "删除我的账户"
+        }
+      },
+      notifications: {
+        title: "通知偏好",
+        email: {
+          title: "邮件通知",
+          description: "通过邮件接收重要通知"
+        },
+        trades: {
+          title: "交易警报",
+          description: "当您的交易状态发生变化时通知您"
+        },
+        payments: {
+          title: "支付警报",
+          description: "支付和交易的通知"
+        },
+        push: {
+          title: "推送通知",
+          description: "浏览器推送通知"
+        },
+        marketing: {
+          title: "营销邮件",
+          description: "接收新闻和促销信息"
+        },
+        save: "保存偏好"
+      },
+      preferences: {
+        title: "显示偏好",
+        language: {
+          title: "语言",
+          description: "选择您的首选语言",
+          french: "🇫🇷 Français",
+          english: "🇺🇸 English"
+        },
+        theme: {
+          title: "主题",
+          description: "选择您的显示主题",
+          light: "浅色",
+          dark: "深色",
+          system: "系统"
+        },
+        save: "保存偏好"
+      },
+      payments: {
+        title: "支付方式",
+        sepa: "SEPA - Qonto",
+        bitcoin: "比特币",
+        verified: "已验证",
+        default: "默认",
+        modify: "修改",
+        add: "添加支付方式",
+        important: "重要",
+        ibanWarning: "任何 IBAN 更改都需要重新验证并有 7 天延迟。"
+      },
+      loginRequired: {
+        title: "需要登录",
+        description: "您必须登录才能访问设置。",
+        login: "使用 Steam 登录"
+      },
+      loginDescription: "您必须登录才能访问设置。",
+      saveError: "保存设置时出错"
+    },
+    help: {
+      title: "帮助中心",
+      subtitle: "找到您问题的答案",
+      searchPlaceholder: "搜索帮助...",
+      categories: {
+        gettingStarted: "入门指南",
+        trading: "交易与销售",
+        payments: "付款",
+        security: "安全与 KYC",
+        technical: "技术问题"
+      },
+      popularArticles: "热门文章",
+      recentlyUpdated: "最近更新",
+      stillNeedHelp: "仍需要帮助？",
+      contactSupport: "联系支持",
+      communityForum: "社区论坛",
+      views: "浏览",
+      helpful: "有用"
+    },
+    contact: {
+      title: "联系我们",
+      subtitle: "我们的团队在这里为您提供帮助",
+      form: {
+        name: "全名",
+        email: "邮箱地址",
+        subject: "主题",
+        message: "消息",
+        send: "发送消息",
+        sending: "发送中...",
+        success: "消息发送成功！",
+        error: "发送消息时出错"
+      },
+      info: {
+        title: "联系信息",
+        email: "邮箱",
+        response: "平均响应时间",
+        hours: "营业时间",
+        support: "技术支持",
+        business: "合作伙伴关系"
+      }
+    },
+    press: {
+      title: "新闻室",
+      subtitle: "媒体资源和新闻",
+      lastUpdate: "最后更新：",
+      statsTitle: "CashTrade 数据",
+      pressReleases: "新闻稿",
+      readRelease: "阅读新闻稿",
+      aboutTitle: "关于 CashTrade",
+      aboutDescription1: "CashTrade 是首个专注于安全 Counter-Strike 2 皮肤交易的法国平台。成立于 2024 年，该公司通过让玩家轻松变现虚拟库存来革命化游戏生态系统。",
+      aboutDescription2: "通过与 Skinplace 的估价战略合作伙伴关系和 Qonto 的 SEPA 支付，CashTrade 保证透明度、安全性和监管合规性。该平台严格遵守 KYC 和反洗钱义务。",
+      sector: "行业",
+      sectorValue: "游戏、金融科技、电竞",
+      founded: "成立",
+      foundedValue: "2024年，巴黎，法国",
+      employees: "员工",
+      employeesValue: "12人",
+      funding: "融资",
+      fundingValue: "200万欧元（A轮）",
+      mediaKit: "媒体工具包",
+      download: "下载",
+      managementTeam: "管理团队",
+      pressContact: "新闻联系",
+      contactPress: "联系新闻",
+      workingHours: "周一至周五 9:00-18:00",
+      stats: {
+        activeUsers: "活跃用户",
+        volumeProcessed: "处理量",
+        completedTrades: "完成交易",
+        satisfactionRate: "满意度"
+      },
+      mediaKitItems: {
+        logos: {
+          title: "徽标和视觉识别",
+          description: "高分辨率徽标、官方颜色、指南"
+        },
+        screenshots: {
+          title: "截图和捕获",
+          description: "用户界面、功能、仪表板"
+        },
+        factsheet: {
+          title: "事实表",
+          description: "关键数据、统计信息、公司信息"
+        }
+      }
+    },
+    apiDocs: {
+      title: "API 文档",
+      subtitle: "集成我们 API 的完整指南",
+      quickStart: "快速开始",
+      getApiKey: "1. 获取 API 密钥",
+      getApiKeyDesc: "创建开发者账户并生成您的 API 密钥",
+      makeCall: "2. 发起调用",
+      makeCallDesc: "使用您的密钥来验证您的请求",
+      integrate: "3. 集成",
+      integrateDesc: "使用我们的 SDK 或直接调用 REST API",
+      authentication: "身份验证",
+      authDescription: "CashTrade API 使用 Bearer 令牌进行身份验证。在每个请求的 Authorization 头中包含您的令牌。",
+      important: "重要",
+      securityWarning: "永远不要分享您的 API 密钥，并对所有请求使用 HTTPS。",
+      availableEndpoints: "可用端点",
+      codeExamples: "代码示例",
+      responseExamples: "响应示例",
+      rateLimits: "速率限制",
+      rateLimitsDesc: "限制按 API 密钥计算，每分钟重置。",
+      statusCodes: "状态码",
+      officialSdks: "官方 SDK",
+      needHelp: "需要帮助？",
+      supportDesc: "我们的技术团队随时为您提供支持。",
+      categories: {
+        authentication: "身份验证",
+        user: "用户",
+        trading: "交易",
+        skinplace: "Skinplace"
+      },
+      endpoints: {
+        steamAuth: "Steam OpenID 身份验证",
+        logout: "用户登出",
+        getProfile: "获取用户资料",
+        updateProfile: "更新资料",
+        getTradeHistory: "交易历史",
+        estimatePrices: "皮肤价格估算",
+        createTrade: "创建出售交易",
+        getInventory: "Steam 用户库存",
+        getItems: "可用物品列表",
+        getBalance: "Skinplace 余额",
+        purchaseItems: "购买物品"
+      },
+      statusCodesLabels: {
+        success: "成功",
+        badRequest: "请求无效",
+        unauthorized: "未授权",
+        tooManyRequests: "请求过多",
+        serverError: "服务器错误"
+      },
+      rateLimitLabels: {
+        default: "默认",
+        authentication: "身份验证",
+        trading: "交易",
+        estimation: "估算"
+      },
+      tabLabels: {
+        estimate: "估算",
+        trade: "交易",
+        error: "错误"
+      }
+    },
+    policies: {
+      kyc: {
+        title: "KYC 政策",
+        subtitle: "我们的身份验证政策"
+      },
+      aml: {
+        title: "反洗钱政策",
+        subtitle: "我们对反洗钱的承诺"
+      },
+      privacy: {
+        title: "隐私政策",
+        subtitle: "我们如何保护您的数据"
+      },
+      terms: {
+        title: "服务条款",
+        subtitle: "我们的一般条款和条件"
+      }
+    },
+    components: {
+      wysiwyg: {
+        placeholder: "编写您的内容...",
+        loading: "加载编辑器...",
+        imageUrl: "图片URL",
+        linkUrl: "链接URL",
+      },
+      newsletter: {
+        templatePlaceholder: "修改选定的模板...",
+        visualEditorPlaceholder: "使用可视化编辑器编写内容...",
+        textEditorPlaceholder: "以纯文本编写您的新闻稿内容...",
+      },
+      skinplace: {
+        allRarities: "所有稀有度",
+      },
+      onboarding: {
+        step2: "点击\"交易\"然后\"谁可以向我发送交易报价？\"",
+        sellTitle: "3步出售您的皮肤",
+        securityTitle: "安全和KYC",
+      },
+      header: {
+        french: "Français",
+        english: "English",
+        chinese: "中文",
+      },
+      admin: {
+        trades: {
+          created: "已创建",
+          accepted: "已接受",
+          paid: "已支付",
+          failed: "失败",
+        },
+        payouts: {
+          searchPlaceholder: "按ID、用户、参考搜索...",
+          verificationRequired: "需要验证",
+          verified: "已验证",
+          scheduled: "已安排",
+          executed: "已执行",
+          paid: "已支付",
+          failed: "失败",
+        },
+      },
+    }
   },
 };
 

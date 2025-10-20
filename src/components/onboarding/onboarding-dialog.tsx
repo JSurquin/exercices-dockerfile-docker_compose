@@ -107,7 +107,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
             <h4 className="font-semibold">Comment obtenir votre Trade Link :</h4>
             <ol className="list-decimal list-inside space-y-1 text-sm">
               <li>Ouvrez Steam et allez dans votre inventaire</li>
-              <li>Cliquez sur {"Échanges"} puis {"Qui peut m&apos;envoyer des offres d&apos;échange ?"}</li>
+              <li>{messages.components.onboarding.step2}</li>
               <li>Copiez votre URL d&apos;échange</li>
               <li>Collez-la dans vos paramètres CashTrade</li>
             </ol>
@@ -235,7 +235,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
       )
     },
     {
-      title: "Vendez vos skins en 3 étapes",
+      title: messages.components.onboarding.sellTitle,
       titleEn: "Sell your skins in 3 steps",
       icon: <DollarSign className="w-12 h-12 text-green-500" />,
       content: (
@@ -300,7 +300,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
       )
     },
     {
-      title: "Sécurité et KYC",
+      title: messages.components.onboarding.securityTitle,
       titleEn: "Security and KYC",
       icon: <Shield className="w-12 h-12 text-purple-500" />,
       content: (

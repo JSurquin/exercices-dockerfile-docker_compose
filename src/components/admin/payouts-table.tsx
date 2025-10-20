@@ -177,7 +177,7 @@ export function AdminPayoutsTable() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
-            placeholder="Rechercher par ID, utilisateur, référence..."
+            placeholder={messages.components.admin.payouts.searchPlaceholder}
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
             className="pl-10 bg-slate-700 border-slate-600 text-white"
@@ -191,12 +191,12 @@ export function AdminPayoutsTable() {
           <SelectContent>
             <SelectItem value="all">Tous les statuts</SelectItem>
             <SelectItem value="en_attente">En attente</SelectItem>
-            <SelectItem value="vérification_requise">Vérification requise</SelectItem>
-            <SelectItem value="vérifié">Vérifié</SelectItem>
-            <SelectItem value="planifié">Planifié</SelectItem>
-            <SelectItem value="exécuté">Exécuté</SelectItem>
-            <SelectItem value="payé">Payé</SelectItem>
-            <SelectItem value="échoué">Échoué</SelectItem>
+            <SelectItem value="vérification_requise">{messages.components.admin.payouts.verificationRequired}</SelectItem>
+            <SelectItem value="vérifié">{messages.components.admin.payouts.verified}</SelectItem>
+            <SelectItem value="planifié">{messages.components.admin.payouts.scheduled}</SelectItem>
+            <SelectItem value="exécuté">{messages.components.admin.payouts.executed}</SelectItem>
+            <SelectItem value="payé">{messages.components.admin.payouts.paid}</SelectItem>
+            <SelectItem value="échoué">{messages.components.admin.payouts.failed}</SelectItem>
           </SelectContent>
         </Select>
 

@@ -324,10 +324,10 @@ export function SkinplaceInventoryViewer({
                 <Label>Rareté</Label>
                 <Select value={selectedRarity} onValueChange={setSelectedRarity}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Toutes les raretés" />
+                    <SelectValue placeholder={messages.components.skinplace.allRarities} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Toutes les raretés</SelectItem>
+                    <SelectItem value="">{messages.components.skinplace.allRarities}</SelectItem>
                     {availableRarities.map(rarity => (
                       <SelectItem key={rarity} value={rarity}>
                         <div className="flex items-center gap-2">

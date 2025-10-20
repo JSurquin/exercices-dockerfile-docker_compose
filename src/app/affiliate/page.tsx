@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Copy, ExternalLink, Users, TrendingUp, DollarSign, Clock } from 'lucide-react';
 import { AffiliateStats, AffiliateCommission } from '@/lib/types';
+import { useLocale } from '@/components/providers/locale-provider';
 
 export default function AffiliatePage() {
   const [affiliateData, setAffiliateData] = useState<AffiliateStats | null>(null);
@@ -19,6 +20,7 @@ export default function AffiliatePage() {
   const [applying, setApplying] = useState(false);
   const [showApplication, setShowApplication] = useState(false);
   const { toast } = useToast();
+  const { messages } = useLocale();
 
   // Mock user ID - À remplacer par l'auth réelle
   const userId = 'user_123';
@@ -97,15 +99,15 @@ export default function AffiliatePage() {
 
       if (data.success) {
         toast({
-          title: 'Candidature envoyée !',
-          description: 'Votre demande d\'affiliation a été soumise avec succès.'
+          title: messages.affiliate.application.success,
+          description: messages.affiliate.application.success
         });
         setShowApplication(false);
         loadAffiliateData();
       } else {
         toast({
           title: 'Erreur',
-          description: data.error || 'Erreur lors de la candidature',
+          description: data.error || messages.affiliate.application.error,
           variant: 'destructive'
         });
       }
@@ -133,7 +135,7 @@ export default function AffiliatePage() {
       if (data.success) {
         await navigator.clipboard.writeText(data.data.link);
         toast({
-          title: 'Lien copié !',
+          title: messages.affiliate.linkCopied,
           description: 'Le lien d\'affiliation a été copié dans le presse-papiers.'
         });
       }
@@ -170,20 +172,20 @@ export default function AffiliatePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-6 w-6" />
-              Devenir Affilié CashTrade
+              {messages.affiliate.application.title}
             </CardTitle>
             <CardDescription>
-              Rejoignez notre programme d&apos;affiliation et gagnez 2% sur chaque vente générée par vos référrals.
+              {messages.affiliate.application.description}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form action={handleApplyAffiliate} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="motivation">Motivation *</Label>
+                <Label htmlFor="motivation">{messages.affiliate.application.motivation} *</Label>
                 <Textarea
                   id="motivation"
                   name="motivation"
-                  placeholder="Parlez-nous de votre audience, votre contenu et pourquoi vous souhaitez devenir affilié..."
+                  placeholder={messages.affiliate.application.motivation}
                   required
                   rows={4}
                 />
@@ -236,7 +238,7 @@ export default function AffiliatePage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={applying}>
-                {applying ? 'Envoi en cours...' : 'Postuler comme Affilié'}
+                {applying ? messages.affiliate.application.submitting : messages.affiliate.application.submit}
               </Button>
             </form>
           </CardContent>
@@ -260,7 +262,7 @@ export default function AffiliatePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Tableau de bord Affilié</h1>
+        <h1 className="text-3xl font-bold mb-2">{messages.affiliate.title}</h1>
         <p className="text-muted-foreground">
           Code d&apos;affiliation : <span className="font-mono font-semibold">{affiliateData.code}</span>
           <Badge className="ml-2" variant={affiliateData.isActive ? 'default' : 'secondary'}>
@@ -273,7 +275,7 @@ export default function AffiliatePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Référrals Total</CardTitle>
+            <CardTitle className="text-sm font-medium">{messages.affiliate.referrals}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -295,7 +297,7 @@ export default function AffiliatePage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Commissions Totales</CardTitle>
+            <CardTitle className="text-sm font-medium">{messages.affiliate.totalEarnings}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -307,7 +309,7 @@ export default function AffiliatePage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En Attente</CardTitle>
+            <CardTitle className="text-sm font-medium">{messages.affiliate.pendingCommissions}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -321,8 +323,8 @@ export default function AffiliatePage() {
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
           <TabsTrigger value="overview">Vue d&apos;ensemble</TabsTrigger>
-          <TabsTrigger value="referrals">Référrals</TabsTrigger>
-          <TabsTrigger value="commissions">Commissions</TabsTrigger>
+          <TabsTrigger value="referrals">{messages.affiliate.referrals}</TabsTrigger>
+          <TabsTrigger value="commissions">{messages.affiliate.commissionHistory}</TabsTrigger>
           <TabsTrigger value="tools">Outils</TabsTrigger>
         </TabsList>
 
@@ -335,7 +337,7 @@ export default function AffiliatePage() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex justify-between">
-                    <span>Taux de conversion</span>
+                    <span>{messages.affiliate.conversionRate}</span>
                     <span className="font-semibold">
                       {affiliateData.metrics?.conversionRate 
                         ? `${(affiliateData.metrics.conversionRate * 100).toFixed(1)}%`
@@ -344,7 +346,7 @@ export default function AffiliatePage() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Panier moyen</span>
+                    <span>{messages.affiliate.averageOrderValue}</span>
                     <span className="font-semibold">
                       {formatCurrency(affiliateData.metrics?.averageOrderValue || 0)}
                     </span>

@@ -7,6 +7,7 @@ import { Color } from '@tiptap/extension-color';
 import { TextAlign } from '@tiptap/extension-text-align';
 import { Link } from '@tiptap/extension-link';
 import { Image } from '@tiptap/extension-image';
+import { useLocale } from '@/components/providers/locale-provider';
 import { 
   Bold, 
   Italic, 
@@ -37,9 +38,11 @@ interface WysiwygEditorProps {
 export function WysiwygEditor({ 
   value, 
   onChange, 
-  placeholder = "Rédigez votre contenu...",
+  placeholder,
   height = "300px"
 }: WysiwygEditorProps) {
+  const { messages } = useLocale();
+  const defaultPlaceholder = placeholder || messages.components.wysiwyg.placeholder;
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -68,13 +71,13 @@ export function WysiwygEditor({
   if (!editor) {
     return (
       <div className="w-full h-64 bg-slate-700 border border-slate-600 rounded-md flex items-center justify-center">
-        <div className="text-slate-400">Chargement de l&apos;éditeur...</div>
+        <div className="text-slate-400">{messages.components.wysiwyg.loading}</div>
       </div>
     );
   }
 
   const addImage = () => {
-    const url = window.prompt('URL de l\'image');
+    const url = window.prompt(messages.components.wysiwyg.imageUrl);
     if (url) {
       editor.chain().focus().setImage({ src: url }).run();
     }
@@ -82,7 +85,7 @@ export function WysiwygEditor({
 
   const setLink = () => {
     const previousUrl = editor.getAttributes('link').href;
-    const url = window.prompt('URL du lien', previousUrl);
+    const url = window.prompt(messages.components.wysiwyg.linkUrl, previousUrl);
 
     if (url === null) {
       return;
