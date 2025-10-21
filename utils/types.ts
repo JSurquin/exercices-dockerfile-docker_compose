@@ -367,6 +367,11 @@ export interface Messages {
         verified: string;
         default: string;
         addMethod: string;
+        preferredMethod: string;
+        selectPreferred: string;
+        stripe: string;
+        qonto: string;
+        binance: string;
       };
       settings: {
         profile: string;
