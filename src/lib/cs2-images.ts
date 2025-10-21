@@ -1,8 +1,9 @@
 import React from "react";
+import { useTheme } from "next-themes";
 
-// Collection d'images CS2 authentiques avec URLs réelles
+// Collection d'images CS2 pour le thème DARK (actuelles)
 export const CS2ImageURLs = {
-  // Arrière-plans CS2 officiels et de haute qualité
+  // Arrière-plans CS2 officiels et de haute qualité (thème sombre)
   backgrounds: {
     // Images de cartes emblématiques CS2
     dust2:
@@ -20,8 +21,28 @@ export const CS2ImageURLs = {
     community_2: "https://wallpaperaccess.com/full/5531098.jpg",
     trading_bg: "https://wallpaperaccess.com/full/5531099.jpg",
   },
+};
 
-  // Armes iconiques CS2
+// Collection d'images CS2 pour le thème LIGHT (plus claires, moins contrastées)
+export const CS2ImageURLsLight = {
+  // Arrière-plans CS2 optimisés pour le thème clair
+  backgrounds: {
+    // Images de cartes avec des tons plus clairs - tu peux remplacer ces URLs par tes propres images
+    dust2: "/images/cs2/backgrounds/light/3.png", 
+    mirage: "/images/cs2/backgrounds/light/1.png", 
+    inferno: "/images/cs2/backgrounds/light/2.png", 
+    nuke: "/images/cs2/backgrounds/light/3.png", 
+
+    // Wallpapers CS2 alternatifs pour le thème clair
+    steam_bg_1: "/images/cs2/backgrounds/light/1.png", 
+    community_1: "/images/cs2/backgrounds/light/1.png", 
+    community_2: "/images/cs2/backgrounds/light/1.png", 
+    trading_bg: "/images/cs2/backgrounds/light/1.png", 
+  },
+};
+
+// Armes iconiques CS2 (identiques pour les deux thèmes)
+export const CS2WeaponURLs = {
   weapons: {
     ak47_redline:
       "https://steamcommunity-a.akamaihd.net/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXH5ApeO4YmlhxYQknCRvCo04DEVlxkKgpot7HxfDhjxszJemkV09-5lpKKqPrxN7LEmyUEsJVz3-uX9I-t0VWx_BBvYz-gLYKVdgI3Y13S_gK3xb_s1JC7uZTO1zI97QjKlsn7/512fx384f",
@@ -34,19 +55,21 @@ export const CS2ImageURLs = {
   },
 };
 
-// Fonction pour générer des images de fallback optimisées
-export const generateCS2Fallback = (width = 1920, height = 1080) => {
+// Fonction pour générer des images de fallback optimisées selon le thème
+export const generateCS2Fallback = (width = 1920, height = 1080, theme: 'dark' | 'light' = 'dark') => {
+  const isDark = theme === 'dark';
+  
   const svg = `
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#1a1a2e" />
-          <stop offset="50%" stop-color="#16213e" />
-          <stop offset="100%" stop-color="#FF6B35" />
+          <stop offset="0%" stop-color="${isDark ? '#1a1a2e' : '#f8fafc'}" />
+          <stop offset="50%" stop-color="${isDark ? '#16213e' : '#e2e8f0'}" />
+          <stop offset="100%" stop-color="${isDark ? '#FF6B35' : '#3b82f6'}" />
         </linearGradient>
         
         <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-          <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(255,107,53,0.1)" stroke-width="1"/>
+          <path d="M 60 0 L 0 0 0 60" fill="none" stroke="${isDark ? 'rgba(255,107,53,0.1)' : 'rgba(59,130,246,0.1)'}" stroke-width="1"/>
         </pattern>
       </defs>
       
@@ -54,8 +77,8 @@ export const generateCS2Fallback = (width = 1920, height = 1080) => {
       <rect width="100%" height="100%" fill="url(#grid)"/>
       
       <g transform="translate(${width / 2}, ${height / 2})" opacity="0.1">
-        <circle r="100" fill="none" stroke="#FF6B35" stroke-width="2"/>
-        <text y="20" text-anchor="middle" font-family="Arial" font-size="48" font-weight="bold" fill="#FF6B35">CS2</text>
+        <circle r="100" fill="none" stroke="${isDark ? '#FF6B35' : '#3b82f6'}" stroke-width="2"/>
+        <text y="20" text-anchor="middle" font-family="Arial" font-size="48" font-weight="bold" fill="${isDark ? '#FF6B35' : '#3b82f6'}">CS2</text>
       </g>
     </svg>
   `;
@@ -87,33 +110,70 @@ export const useImageAvailability = (url: string) => {
   return isAvailable;
 };
 
-// Collection d'images optimisées pour le header
-export const headerBackgrounds = {
-  dust2: {
-    url: CS2ImageURLs.backgrounds.dust2,
-    fallback: "dust2",
-    name: "Dust2",
-  },
-  mirage: {
-    url: CS2ImageURLs.backgrounds.mirage,
-    fallback: "mirage",
-    name: "Mirage",
-  },
-  inferno: {
-    url: CS2ImageURLs.backgrounds.inferno,
-    fallback: "inferno",
-    name: "Inferno",
-  },
-  community: {
-    url: CS2ImageURLs.backgrounds.community_1,
-    fallback: "default",
-    name: "Community",
-  },
-  cs2_main: {
-    url: CS2ImageURLs.backgrounds.steam_bg_1,
-    fallback: "default",
-    name: "CS2 Main",
-  },
-} as const;
+// Hook principal pour obtenir les images selon le thème
+export const useThemeAwareImages = () => {
+  const { theme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Éviter l'hydration mismatch
+  if (!mounted) {
+    return {
+      backgrounds: CS2ImageURLs.backgrounds,
+      weapons: CS2WeaponURLs.weapons,
+      isLight: false,
+      currentTheme: 'dark' as const,
+    };
+  }
+
+  const isLight = resolvedTheme === 'light';
+  const currentImages = isLight ? CS2ImageURLsLight : CS2ImageURLs;
+
+  return {
+    backgrounds: currentImages.backgrounds,
+    weapons: CS2WeaponURLs.weapons,
+    isLight,
+    currentTheme: (resolvedTheme || theme || 'dark') as 'dark' | 'light',
+  };
+};
+
+// Collection d'images optimisées pour le header (sera dynamique selon le thème)
+export const getHeaderBackgrounds = (theme: 'dark' | 'light' = 'dark') => {
+  const images = theme === 'light' ? CS2ImageURLsLight : CS2ImageURLs;
+  
+  return {
+    dust2: {
+      url: images.backgrounds.dust2,
+      fallback: "dust2",
+      name: "Dust2",
+    },
+    mirage: {
+      url: images.backgrounds.mirage,
+      fallback: "mirage",
+      name: "Mirage",
+    },
+    inferno: {
+      url: images.backgrounds.inferno,
+      fallback: "inferno",
+      name: "Inferno",
+    },
+    community: {
+      url: images.backgrounds.community_1,
+      fallback: "default",
+      name: "Community",
+    },
+    cs2_main: {
+      url: images.backgrounds.steam_bg_1,
+      fallback: "default",
+      name: "CS2 Main",
+    },
+  } as const;
+};
+
+// Rétrocompatibilité - utilise le thème sombre par défaut
+export const headerBackgrounds = getHeaderBackgrounds('dark');
 
 export default CS2ImageURLs;

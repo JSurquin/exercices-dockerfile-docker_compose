@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { headerBackgrounds, generateCS2Fallback } from "@/lib/cs2-images";
+import { getHeaderBackgrounds, generateCS2Fallback, useThemeAwareImages } from "@/lib/cs2-images";
 
 interface CS2HeaderBackgroundProps {
-  variant?: keyof typeof headerBackgrounds;
+  variant?: 'dust2' | 'mirage' | 'inferno' | 'community' | 'cs2_main';
   className?: string;
   children?: React.ReactNode;
   overlay?: boolean;
@@ -21,9 +21,19 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-
+  
+  // Utiliser le hook pour obtenir les images selon le thème
+  const { currentTheme } = useThemeAwareImages();
+  const headerBackgrounds = getHeaderBackgrounds(currentTheme);
+  
   const background = headerBackgrounds[variant];
-  const fallbackSrc = generateCS2Fallback();
+  const fallbackSrc = generateCS2Fallback(1920, 1080, currentTheme);
+
+  // Réinitialiser l'état quand le thème change
+  useEffect(() => {
+    setImageLoaded(false);
+    setImageError(false);
+  }, [currentTheme]);
 
   useEffect(() => {
     if (!background.url) {
@@ -118,7 +128,11 @@ export const CS2HeroBackground: React.FC<{
   children?: React.ReactNode;
 }> = ({ className = "", children }) => {
   const [currentBackground, setCurrentBackground] =
-    useState<keyof typeof headerBackgrounds>("cs2_main");
+    useState<'dust2' | 'mirage' | 'inferno' | 'community' | 'cs2_main'>("cs2_main");
+
+  // Utiliser le hook pour obtenir les images selon le thème
+  const { currentTheme } = useThemeAwareImages();
+  const headerBackgrounds = getHeaderBackgrounds(currentTheme);
 
   const backgrounds = Object.keys(headerBackgrounds) as Array<
     keyof typeof headerBackgrounds
@@ -181,14 +195,17 @@ export const CS2HeroBackground: React.FC<{
 
 // Hook pour précharger les images de fond
 export const usePreloadCS2Backgrounds = () => {
+  const { currentTheme } = useThemeAwareImages();
+  
   useEffect(() => {
-    Object.values(headerBackgrounds).forEach((background) => {
+    const backgrounds = getHeaderBackgrounds(currentTheme);
+    Object.values(backgrounds).forEach((background) => {
       if (background.url) {
         const img = new Image();
         img.src = background.url;
       }
     });
-  }, []);
+  }, [currentTheme]);
 };
 
 export default CS2HeaderBackground;

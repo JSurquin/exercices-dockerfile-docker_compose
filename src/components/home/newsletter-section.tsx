@@ -97,15 +97,15 @@ export function NewsletterSection() {
               <Mail className="h-8 w-8 text-orange-400" />
             </div>
           </div>
-          <h2 className="text-3xl font-bold text-white mb-4">
+          <h2 className="text-3xl font-bold dark:text-white text-black mb-4">
             {messages.components.newsletter.title}
           </h2>
-          <p className="text-slate-300 text-lg max-w-2xl mx-auto">
+          <p className="text-black dark:text-white text-lg max-w-2xl mx-auto">
             {messages.components.newsletter.description}
           </p>
         </div>
 
-        <Card className="max-w-md mx-auto border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
+        <Card className="max-w-md mx-auto border-slate-700/50 bg-slate-900 dark:bg-slate-800/50 backdrop-blur-sm">
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -138,7 +138,7 @@ export function NewsletterSection() {
               </Button>
             </form>
 
-            <div className="mt-4 flex items-center justify-center text-xs text-slate-400">
+            <div className="mt-4 flex items-center justify-center text-xs text-white">
               <AlertCircle className="h-3 w-3 mr-1" />
               {messages.components.newsletter.noSpamText}
             </div>
@@ -147,16 +147,16 @@ export function NewsletterSection() {
 
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
           <div className="flex items-center justify-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-            <span className="text-sm">{messages.components.newsletter.feature1}</span>
+            <div className="w-2 h-2 bg-orange-500 rounded-full "></div>
+            <span className="text-sm text-black dark:text-gray-300">{messages.components.newsletter.feature1}</span>
           </div>
           <div className="flex items-center justify-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-            <span className="text-sm">{messages.components.newsletter.feature2}</span>
+            <div className="w-2 h-2 bg-orange-500 rounded-full "></div>
+            <span className="text-sm text-black dark:text-gray-300">{messages.components.newsletter.feature2}</span>
           </div>
           <div className="flex items-center justify-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-            <span className="text-sm">{messages.components.newsletter.feature3}</span>
+            <div className="w-2 h-2 bg-orange-500 rounded-full "></div>
+            <span className="text-sm text-black dark:text-gray-300">{messages.components.newsletter.feature3}</span>
           </div>
         </div>
       </div>

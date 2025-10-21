@@ -199,7 +199,7 @@ export function HeroSection() {
                   className="flex items-center space-x-1.5 sm:space-x-2"
                 >
                   <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm text-gaming-caption">
+                  <span className="text-xs sm:text-sm text-gaming-caption text-white dark:text-gray-300">
                     {feature.title}
                   </span>
                 </div>
