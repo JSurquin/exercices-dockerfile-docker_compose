@@ -1,0 +1,491 @@
+/**
+ * Service de sécurité et anti-fraude
+ * Conforme aux règles CTF : limites, cooldowns, détection de fraude
+ */
+
+import { prisma } from '~/prisma/prisma';
+import { logger } from '@/lib/logger';
+
+export interface AuditLogRecord {
+  id: string;
+  createdAt: Date;
+  userId: string;
+  details: {
+    type: string;
+    severity: string;
+    details: Record<string, any>;
+    triggeredAt: string;
+  };
+  ipAddress: string | null;
+  action: string;
+}
+
+export interface SecurityLimits {
+  maxTradesPerDay: number;
+  maxPayoutsPerDay: number;
+  maxPayoutAmountPerDay: number; // en centimes
+  maxPayoutsPerIban: number;
+  maxPayoutsPerIp: number;
+  cooldownAfterIbanChange: number; // en heures
+}
+
+export interface SecurityCheck {
+  allowed: boolean;
+  reason?: string;
+  cooldownUntil?: Date;
+  currentUsage?: {
+    tradesCount: number;
+    payoutsCount: number;
+    payoutAmount: number;
+  };
+}
+
+export interface FraudAlert {
+  userId: string;
+  type: 'VOLUME_SPIKE' | 'RAPID_SUCCESSION' | 'SUSPICIOUS_IP' | 'MULTIPLE_IBANS' | 'HIGH_FREQUENCY';
+  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  details: Record<string, any>;
+  triggeredAt: Date;
+}
+
+export class SecurityService {
+  private readonly limits: SecurityLimits = {
+    maxTradesPerDay: 5,
+    maxPayoutsPerDay: 3,
+    maxPayoutAmountPerDay: 500000, // 5000€
+    maxPayoutsPerIban: 10,
+    maxPayoutsPerIp: 5,
+    cooldownAfterIbanChange: 168, // 7 jours
+  };
+
+  /**
+   * Vérifie si un utilisateur peut créer un nouveau trade
+   */
+  async checkTradeEligibility(userId: string, ipAddress?: string): Promise<SecurityCheck> {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      // Compte les trades du jour
+      const todayTrades = await prisma.trade.count({
+        where: {
+          userId,
+          createdAt: {
+            gte: today,
+            lt: tomorrow,
+          },
+        },
+      });
+
+      if (todayTrades >= this.limits.maxTradesPerDay) {
+        return {
+          allowed: false,
+          reason: `Limite de ${this.limits.maxTradesPerDay} trades par jour atteinte`,
+          currentUsage: { tradesCount: todayTrades, payoutsCount: 0, payoutAmount: 0 },
+        };
+      }
+
+      // Détection de pics d'activité suspects
+      const recentTrades = await prisma.trade.count({
+        where: {
+          userId,
+          createdAt: {
+            gte: new Date(Date.now() - 60 * 60 * 1000), // Dernière heure
+          },
+        },
+      });
+
+      if (recentTrades >= 3) {
+        await this.createFraudAlert({
+          userId,
+          type: 'RAPID_SUCCESSION',
+          severity: 'MEDIUM',
+          details: { tradesInLastHour: recentTrades, ipAddress },
+          triggeredAt: new Date(),
+        });
+
+        return {
+          allowed: false,
+          reason: 'Activité suspecte détectée - veuillez patienter',
+        };
+      }
+
+      return { allowed: true };
+    } catch (error) {
+      logger.error('Erreur lors de la vérification d\'éligibilité trade', { error, userId });
+      return { allowed: false, reason: 'Erreur de vérification de sécurité' };
+    }
+  }
+
+  /**
+   * Vérifie si un utilisateur peut créer un nouveau payout
+   */
+  async checkPayoutEligibility(
+    userId: string, 
+    amountCents: number, 
+    paymentMethodId: string,
+    ipAddress?: string
+  ): Promise<SecurityCheck> {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      // Récupère la méthode de paiement
+      const paymentMethod = await prisma.paymentMethod.findUnique({
+        where: { id: paymentMethodId },
+      });
+
+      if (!paymentMethod) {
+        return { allowed: false, reason: 'Méthode de paiement non trouvée' };
+      }
+
+      // Compte les payouts du jour
+      const todayPayouts = await prisma.payout.findMany({
+        where: {
+          userId,
+          createdAt: {
+            gte: today,
+            lt: tomorrow,
+          },
+        },
+      });
+
+      const payoutsCount = todayPayouts.length;
+      const payoutAmount = todayPayouts.reduce((sum, p) => sum + p.amountCents, 0);
+
+      // Vérification des limites quotidiennes
+      if (payoutsCount >= this.limits.maxPayoutsPerDay) {
+        return {
+          allowed: false,
+          reason: `Limite de ${this.limits.maxPayoutsPerDay} payouts par jour atteinte`,
+          currentUsage: { tradesCount: 0, payoutsCount, payoutAmount },
+        };
+      }
+
+      if (payoutAmount + amountCents > this.limits.maxPayoutAmountPerDay) {
+        return {
+          allowed: false,
+          reason: `Limite de montant quotidien atteinte (${this.limits.maxPayoutAmountPerDay / 100}€)`,
+          currentUsage: { tradesCount: 0, payoutsCount, payoutAmount },
+        };
+      }
+
+      // Vérification du cooldown après changement d'IBAN
+      if (paymentMethod.type === 'SEPA') {
+        const ibanCooldown = await this.checkIbanCooldown(userId, paymentMethodId);
+        if (!ibanCooldown.allowed) {
+          return ibanCooldown;
+        }
+      }
+
+      // Vérification des limites par IBAN/IP
+      if (paymentMethod.type === 'SEPA') {
+        const ibanCheck = await this.checkIbanLimits(paymentMethodId);
+        if (!ibanCheck.allowed) {
+          return ibanCheck;
+        }
+      }
+
+      if (ipAddress) {
+        const ipCheck = await this.checkIpLimits(ipAddress);
+        if (!ipCheck.allowed) {
+          return ipCheck;
+        }
+      }
+
+      // Détection de pics de volume
+      const avgAmount = await this.getUserAveragePayoutAmount(userId);
+      if (avgAmount > 0 && amountCents > avgAmount * 3) {
+        await this.createFraudAlert({
+          userId,
+          type: 'VOLUME_SPIKE',
+          severity: 'HIGH',
+          details: { 
+            requestedAmount: amountCents, 
+            averageAmount: avgAmount,
+            ratio: amountCents / avgAmount,
+            ipAddress 
+          },
+          triggeredAt: new Date(),
+        });
+
+        return {
+          allowed: false,
+          reason: 'Montant inhabituel détecté - vérification manuelle requise',
+        };
+      }
+
+      return { 
+        allowed: true,
+        currentUsage: { tradesCount: 0, payoutsCount, payoutAmount },
+      };
+    } catch (error) {
+      logger.error('Erreur lors de la vérification d\'éligibilité payout', { error, userId });
+      return { allowed: false, reason: 'Erreur de vérification de sécurité' };
+    }
+  }
+
+  /**
+   * Vérifie le cooldown après changement d'IBAN
+   */
+  private async checkIbanCooldown(userId: string, paymentMethodId: string): Promise<SecurityCheck> {
+    const paymentMethod = await prisma.paymentMethod.findUnique({
+      where: { id: paymentMethodId },
+    });
+
+    if (!paymentMethod) {
+      return { allowed: false, reason: 'Méthode de paiement non trouvée' };
+    }
+
+    // Vérifie s'il y a eu un changement d'IBAN récent
+    const recentPayouts = await prisma.payout.findMany({
+      where: {
+        userId,
+        paymentMethod: { type: 'SEPA' },
+        status: { in: ['PAID', 'PROCESSING'] },
+      },
+      include: { paymentMethod: true },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    });
+
+    const currentIban = (paymentMethod.details as any).iban;
+    const lastDifferentIban = recentPayouts.find(p => {
+      const iban = (p.paymentMethod.details as any).iban;
+      return iban !== currentIban;
+    });
+
+    if (lastDifferentIban) {
+      const cooldownEnd = new Date(lastDifferentIban.createdAt);
+      cooldownEnd.setHours(cooldownEnd.getHours() + this.limits.cooldownAfterIbanChange);
+
+      if (new Date() < cooldownEnd) {
+        return {
+          allowed: false,
+          reason: `Cooldown actif après changement d'IBAN`,
+          cooldownUntil: cooldownEnd,
+        };
+      }
+    }
+
+    return { allowed: true };
+  }
+
+  /**
+   * Vérifie les limites par IBAN
+   */
+  private async checkIbanLimits(paymentMethodId: string): Promise<SecurityCheck> {
+    const paymentMethod = await prisma.paymentMethod.findUnique({
+      where: { id: paymentMethodId },
+    });
+
+    if (!paymentMethod) {
+      return { allowed: false, reason: 'Méthode de paiement non trouvée' };
+    }
+
+    const iban = (paymentMethod.details as any).iban;
+    
+    // Compte les payouts vers cet IBAN dans les 24h
+    const recentPayouts = await prisma.payout.count({
+      where: {
+        paymentMethod: {
+          type: 'SEPA',
+          details: { path: ['iban'], equals: iban },
+        },
+        createdAt: {
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        },
+      },
+    });
+
+    if (recentPayouts >= this.limits.maxPayoutsPerIban) {
+      return {
+        allowed: false,
+        reason: `Limite de payouts par IBAN atteinte (${this.limits.maxPayoutsPerIban}/24h)`,
+      };
+    }
+
+    return { allowed: true };
+  }
+
+  /**
+   * Vérifie les limites par IP
+   */
+  private async checkIpLimits(ipAddress: string): Promise<SecurityCheck> {
+    // Compte les payouts depuis cette IP dans les 24h
+    const recentPayouts = await prisma.auditLog.count({
+      where: {
+        action: 'PAYOUT_CREATED',
+        ipAddress,
+        createdAt: {
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        },
+      },
+    });
+
+    if (recentPayouts >= this.limits.maxPayoutsPerIp) {
+      return {
+        allowed: false,
+        reason: `Limite de payouts par IP atteinte (${this.limits.maxPayoutsPerIp}/24h)`,
+      };
+    }
+
+    return { allowed: true };
+  }
+
+  /**
+   * Calcule le montant moyen des payouts d'un utilisateur
+   */
+  private async getUserAveragePayoutAmount(userId: string): Promise<number> {
+    const payouts = await prisma.payout.findMany({
+      where: {
+        userId,
+        status: 'PAID',
+      },
+      select: { amountCents: true },
+      take: 10, // Derniers 10 payouts
+    });
+
+    if (payouts.length === 0) return 0;
+
+    const total = payouts.reduce((sum, p) => sum + p.amountCents, 0);
+    return Math.round(total / payouts.length);
+  }
+
+  /**
+   * Crée une alerte de fraude
+   */
+  async createFraudAlert(alert: FraudAlert): Promise<void> {
+    try {
+      await prisma.auditLog.create({
+        data: {
+          userId: alert.userId,
+          action: 'FRAUD_ALERT',
+          details: {
+            type: alert.type,
+            severity: alert.severity,
+            details: alert.details,
+            triggeredAt: alert.triggeredAt,
+          },
+        },
+      });
+
+      logger.warn('Alerte de fraude créée', {
+        userId: alert.userId,
+        type: alert.type,
+        severity: alert.severity,
+        details: alert.details,
+      });
+
+      // En production, on pourrait envoyer une notification aux admins
+      if (alert.severity === 'HIGH') {
+        logger.error('Alerte de fraude critique', alert);
+      }
+    } catch (error) {
+      logger.error('Erreur lors de la création d\'alerte de fraude', { error, alert });
+    }
+  }
+
+  /**
+   * Récupère les alertes de fraude récentes
+   */
+  async getRecentFraudAlerts(limit: number = 50): Promise<FraudAlert[]> {
+    try {
+      const alerts = await prisma.auditLog.findMany({
+        where: { action: 'FRAUD_ALERT' },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      });
+
+      return alerts.map((alert) => {
+        const auditRecord = alert as AuditLogRecord;
+        return {
+          userId: auditRecord.userId,
+          type: auditRecord.details.type as FraudAlert['type'],
+          severity: auditRecord.details.severity as FraudAlert['severity'],
+          details: auditRecord.details.details,
+          triggeredAt: new Date(auditRecord.details.triggeredAt),
+        };
+      });
+    } catch (error) {
+      logger.error('Erreur lors de la récupération des alertes de fraude', { error });
+      return [];
+    }
+  }
+
+  /**
+   * Journalise une action sensible
+   */
+  async logSecurityEvent(
+    userId: string,
+    action: string,
+    details: Record<string, any>,
+    ipAddress?: string
+  ): Promise<void> {
+    try {
+      await prisma.auditLog.create({
+        data: {
+          userId,
+          action: `SECURITY_${action}`,
+          details: {
+            ...details,
+            timestamp: new Date(),
+            ipAddress,
+          },
+          ipAddress,
+        },
+      });
+
+      logger.info('Événement de sécurité journalisé', {
+        userId,
+        action,
+        ipAddress,
+      });
+    } catch (error) {
+      logger.error('Erreur lors de la journalisation de sécurité', { error });
+    }
+  }
+
+  /**
+   * Vérifie si un utilisateur est en cooldown
+   */
+  async getUserCooldownStatus(userId: string): Promise<{
+    inCooldown: boolean;
+    reason?: string;
+    endsAt?: Date;
+  }> {
+    try {
+      // Vérifie les cooldowns actifs
+      const recentFailedAttempts = await prisma.auditLog.count({
+        where: {
+          userId,
+          action: { in: ['PAYOUT_VERIFICATION_FAILED', 'FRAUD_ALERT'] },
+          createdAt: {
+            gte: new Date(Date.now() - 60 * 60 * 1000), // Dernière heure
+          },
+        },
+      });
+
+      if (recentFailedAttempts >= 3) {
+        const cooldownEnd = new Date(Date.now() + 60 * 60 * 1000); // 1 heure
+        return {
+          inCooldown: true,
+          reason: 'Trop de tentatives échouées',
+          endsAt: cooldownEnd,
+        };
+      }
+
+      return { inCooldown: false };
+    } catch (error) {
+      logger.error('Erreur lors de la vérification du cooldown', { error, userId });
+      return { inCooldown: false };
+    }
+  }
+}
+
+export const securityService = new SecurityService();
+
