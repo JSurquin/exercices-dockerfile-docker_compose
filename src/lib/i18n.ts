@@ -326,6 +326,10 @@ export const messages: Record<Locale, Messages> = {
         default: "Par défaut",
         addMethod: "Ajouter une méthode de paiement",
         preferredMethod: "Moyen de paiement préféré",
+        selectPreferred: "Sélectionner le moyen préféré",
+        stripe: "Stripe",
+        qonto: "Qonto",
+        binance: "Binance",
       },
       settings: {
         profile: "Profil",
@@ -2172,6 +2176,9 @@ export const messages: Record<Locale, Messages> = {
         rejection: "Erreur lors du rejet",
         export: "Erreur lors de l'export",
       },
+      giveaways: {
+        descriptionPlaceholder: "Description du giveaway...",
+      },
       toast: {
         exportSuccess: {
           title: "Export réussi",
@@ -2913,6 +2920,10 @@ export const messages: Record<Locale, Messages> = {
         default: "Default",
         addMethod: "Add payment method",
         preferredMethod: "Preferred Payment Method",
+        selectPreferred: "Select preferred method",
+        stripe: "Stripe",
+        qonto: "Qonto",
+        binance: "Binance",
       },
       settings: {
         profile: "Profile",
@@ -3769,6 +3780,9 @@ export const messages: Record<Locale, Messages> = {
         approval: "Error during approval",
         rejection: "Error during rejection",
         export: "Error during export",
+      },
+      giveaways: {
+        descriptionPlaceholder: "Giveaway description...",
       },
       toast: {
         exportSuccess: {
@@ -5496,6 +5510,10 @@ export const messages: Record<Locale, Messages> = {
         default: "默认",
         addMethod: "添加支付方式",
         preferredMethod: "首选支付方式",
+        selectPreferred: "选择首选方式",
+        stripe: "Stripe",
+        qonto: "Qonto",
+        binance: "Binance",
       },
       settings: {
         profile: "资料",
@@ -6102,6 +6120,9 @@ export const messages: Record<Locale, Messages> = {
         approval: "批准时出错",
         rejection: "拒绝时出错",
         export: "导出时出错",
+      },
+      giveaways: {
+        descriptionPlaceholder: "赠品描述...",
       },
       toast: {
         exportSuccess: {
