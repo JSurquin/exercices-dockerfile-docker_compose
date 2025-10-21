@@ -19,6 +19,11 @@ export {
   CooldownType 
 } from './cooldown-manager';
 
+// Imports pour utilisation dans cette classe
+import { AuditLogger } from './audit-logger';
+import { CooldownManager } from './cooldown-manager';
+import { cleanupRateLimitStore } from './rate-limiter';
+
 // Types utiles
 export interface SecurityEvent {
   userId?: string;
@@ -79,7 +84,7 @@ export class SecurityManager {
    */
   static async performMaintenance(): Promise<void> {
     // Nettoyer les rate limits expirés
-    await cleanupRateLimitStore();
+    cleanupRateLimitStore();
 
     // Nettoyer les anciens logs d'audit
     await AuditLogger.cleanupOldLogs();

@@ -17,7 +17,7 @@ async function handleSecurityMaintenance(req: NextRequest): Promise<NextResponse
     
     if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
       logger.warn('Unauthorized cron access attempt', {
-        ip: req.headers.get('x-forwarded-for') || req.ip,
+        ip: req.headers.get('x-forwarded-for') || "Unknown",
         userAgent: req.headers.get('user-agent'),
       });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
