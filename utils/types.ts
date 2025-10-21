@@ -2609,6 +2609,30 @@ export interface Messages {
       templatePlaceholder: string;
       visualEditorPlaceholder: string;
       textEditorPlaceholder: string;
+      // Section publique
+      title: string;
+      description: string;
+      emailPlaceholder: string;
+      subscribeButton: string;
+      subscribingButton: string;
+      successTitle: string;
+      successDescription: string;
+      successBadge: string;
+      noSpamText: string;
+      feature1: string;
+      feature2: string;
+      feature3: string;
+      // Messages d'erreur et de succès
+      errors: {
+        emailRequired: string;
+        emailInvalid: string;
+        subscriptionError: string;
+        generalError: string;
+      };
+      messages: {
+        subscriptionSuccess: string;
+        alreadySubscribed: string;
+      };
     };
     skinplace: {
       allRarities: string;

@@ -2567,6 +2567,30 @@ export const messages: Record<Locale, Messages> = {
         templatePlaceholder: "Modifiez le template sélectionné...",
         visualEditorPlaceholder: "Rédigez votre contenu avec l'éditeur visuel...",
         textEditorPlaceholder: "Rédigez le contenu de votre newsletter en texte simple...",
+        // Section publique
+        title: "Restez informé des dernières actualités",
+        description: "Recevez en exclusivité nos meilleures offres, les nouveautés CS2, et les annonces importantes directement dans votre boîte mail.",
+        emailPlaceholder: "votre@email.com",
+        subscribeButton: "S'abonner à la newsletter",
+        subscribingButton: "Inscription en cours...",
+        successTitle: "Inscription confirmée !",
+        successDescription: "Vous recevrez bientôt nos dernières actualités et offres exclusives.",
+        successBadge: "Abonné avec succès",
+        noSpamText: "Pas de spam, désinscription facile à tout moment",
+        feature1: "Offres exclusives",
+        feature2: "Actualités CS2",
+        feature3: "Nouveaux giveaways",
+        // Messages d'erreur et de succès
+        errors: {
+          emailRequired: "Veuillez entrer votre adresse email",
+          emailInvalid: "Veuillez entrer une adresse email valide",
+          subscriptionError: "Une erreur est survenue lors de l'inscription.",
+          generalError: "Une erreur est survenue. Veuillez réessayer.",
+        },
+        messages: {
+          subscriptionSuccess: "Inscription réussie ! Merci de vous être abonné à notre newsletter.",
+          alreadySubscribed: "Cette adresse email est déjà abonnée à notre newsletter.",
+        },
       },
       skinplace: {
         allRarities: "Toutes les raretés",
@@ -5161,6 +5185,30 @@ export const messages: Record<Locale, Messages> = {
         templatePlaceholder: "Modify the selected template...",
         visualEditorPlaceholder: "Write your content with the visual editor...",
         textEditorPlaceholder: "Write your newsletter content in plain text...",
+        // Public section
+        title: "Stay informed with the latest news",
+        description: "Receive exclusive offers, CS2 updates, and important announcements directly in your inbox.",
+        emailPlaceholder: "your@email.com",
+        subscribeButton: "Subscribe to newsletter",
+        subscribingButton: "Subscribing...",
+        successTitle: "Subscription confirmed!",
+        successDescription: "You will soon receive our latest news and exclusive offers.",
+        successBadge: "Successfully subscribed",
+        noSpamText: "No spam, easy unsubscribe anytime",
+        feature1: "Exclusive offers",
+        feature2: "CS2 news",
+        feature3: "New giveaways",
+        // Error and success messages
+        errors: {
+          emailRequired: "Please enter your email address",
+          emailInvalid: "Please enter a valid email address",
+          subscriptionError: "An error occurred during subscription.",
+          generalError: "An error occurred. Please try again.",
+        },
+        messages: {
+          subscriptionSuccess: "Subscription successful! Thank you for subscribing to our newsletter.",
+          alreadySubscribed: "This email address is already subscribed to our newsletter.",
+        },
       },
       skinplace: {
         allRarities: "All rarities",
@@ -7390,6 +7438,30 @@ export const messages: Record<Locale, Messages> = {
         templatePlaceholder: "修改选定的模板...",
         visualEditorPlaceholder: "使用可视化编辑器编写内容...",
         textEditorPlaceholder: "以纯文本编写您的新闻稿内容...",
+        // 公共部分
+        title: "获取最新资讯",
+        description: "独家接收我们的最佳优惠、CS2更新和重要公告，直接发送到您的邮箱。",
+        emailPlaceholder: "您的@邮箱.com",
+        subscribeButton: "订阅新闻稿",
+        subscribingButton: "订阅中...",
+        successTitle: "订阅确认！",
+        successDescription: "您将很快收到我们的最新资讯和独家优惠。",
+        successBadge: "订阅成功",
+        noSpamText: "无垃圾邮件，随时轻松取消订阅",
+        feature1: "独家优惠",
+        feature2: "CS2资讯",
+        feature3: "新赠品活动",
+        // 错误和成功消息
+        errors: {
+          emailRequired: "请输入您的邮箱地址",
+          emailInvalid: "请输入有效的邮箱地址",
+          subscriptionError: "订阅过程中发生错误。",
+          generalError: "发生错误，请重试。",
+        },
+        messages: {
+          subscriptionSuccess: "订阅成功！感谢您订阅我们的新闻稿。",
+          alreadySubscribed: "此邮箱地址已订阅我们的新闻稿。",
+        },
       },
       skinplace: {
         allRarities: "所有稀有度",

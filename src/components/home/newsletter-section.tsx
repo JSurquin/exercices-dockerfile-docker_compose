@@ -19,14 +19,14 @@ export function NewsletterSection() {
     e.preventDefault();
     
     if (!email) {
-      toast.error('Veuillez entrer votre adresse email');
+      toast.error(messages.components.newsletter.errors.emailRequired);
       return;
     }
 
     // Validation email basique
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast.error('Veuillez entrer une adresse email valide');
+      toast.error(messages.components.newsletter.errors.emailInvalid);
       return;
     }
 
@@ -46,17 +46,17 @@ export function NewsletterSection() {
       if (response.ok) {
         setIsSubscribed(true);
         setEmail('');
-        toast.success('Inscription réussie ! Merci de vous être abonné à notre newsletter.');
+        toast.success(messages.components.newsletter.messages.subscriptionSuccess);
       } else {
         if (data.error === 'ALREADY_SUBSCRIBED') {
-          toast.info('Cette adresse email est déjà abonnée à notre newsletter.');
+          toast.info(messages.components.newsletter.messages.alreadySubscribed);
         } else {
-          toast.error(data.error || 'Une erreur est survenue lors de l\'inscription.');
+          toast.error(data.error || messages.components.newsletter.errors.subscriptionError);
         }
       }
     } catch (error) {
       console.error('Newsletter subscription error:', error);
-      toast.error('Une erreur est survenue. Veuillez réessayer.');
+      toast.error(messages.components.newsletter.errors.generalError);
     } finally {
       setIsLoading(false);
     }
@@ -72,14 +72,14 @@ export function NewsletterSection() {
                 <CheckCircle className="h-12 w-12 text-green-500" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">
-                Inscription confirmée !
+                {messages.components.newsletter.successTitle}
               </h2>
               <p className="text-slate-300 mb-4">
-                Vous recevrez bientôt nos dernières actualités et offres exclusives.
+                {messages.components.newsletter.successDescription}
               </p>
               <Badge variant="outline" className="border-green-500/50 text-green-400">
                 <Mail className="h-4 w-4 mr-1" />
-                Abonné avec succès
+                {messages.components.newsletter.successBadge}
               </Badge>
             </CardContent>
           </Card>
@@ -98,11 +98,10 @@ export function NewsletterSection() {
             </div>
           </div>
           <h2 className="text-3xl font-bold text-white mb-4">
-            Restez informé des dernières actualités
+            {messages.components.newsletter.title}
           </h2>
           <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-            Recevez en exclusivité nos meilleures offres, les nouveautés CS2, 
-            et les annonces importantes directement dans votre boîte mail.
+            {messages.components.newsletter.description}
           </p>
         </div>
 
@@ -112,7 +111,7 @@ export function NewsletterSection() {
               <div className="space-y-2">
                 <Input
                   type="email"
-                  placeholder="votre@email.com"
+                  placeholder={messages.components.newsletter.emailPlaceholder}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-orange-500"
@@ -128,12 +127,12 @@ export function NewsletterSection() {
                 {isLoading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Inscription en cours...
+                    {messages.components.newsletter.subscribingButton}
                   </div>
                 ) : (
                   <div className="flex items-center">
                     <Send className="h-4 w-4 mr-2" />
-                    S&apos;abonner à la newsletter
+                    {messages.components.newsletter.subscribeButton}
                   </div>
                 )}
               </Button>
@@ -141,7 +140,7 @@ export function NewsletterSection() {
 
             <div className="mt-4 flex items-center justify-center text-xs text-slate-400">
               <AlertCircle className="h-3 w-3 mr-1" />
-              Pas de spam, désinscription facile à tout moment
+              {messages.components.newsletter.noSpamText}
             </div>
           </CardContent>
         </Card>
@@ -149,15 +148,15 @@ export function NewsletterSection() {
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
           <div className="flex items-center justify-center space-x-2 text-slate-300">
             <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-            <span className="text-sm">Offres exclusives</span>
+            <span className="text-sm">{messages.components.newsletter.feature1}</span>
           </div>
           <div className="flex items-center justify-center space-x-2 text-slate-300">
             <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-            <span className="text-sm">Actualités CS2</span>
+            <span className="text-sm">{messages.components.newsletter.feature2}</span>
           </div>
           <div className="flex items-center justify-center space-x-2 text-slate-300">
             <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-            <span className="text-sm">Nouveaux giveaways</span>
+            <span className="text-sm">{messages.components.newsletter.feature3}</span>
           </div>
         </div>
       </div>
