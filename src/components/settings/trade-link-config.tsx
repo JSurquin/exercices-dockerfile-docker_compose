@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,19 @@ export default function TradeLinkConfig() {
   );
   const [loading, setLoading] = useState(false);
   const [showInstructions, setShowInstructions] = useState(!user?.tradeLink);
+
+  // Synchroniser avec les données utilisateur
+  useEffect(() => {
+    if (user?.tradeLink) {
+      setTradeUrl(user.tradeLink);
+      setIsValidUrl(validateTradeUrl(user.tradeLink));
+      setShowInstructions(false);
+    } else {
+      setTradeUrl('');
+      setIsValidUrl(null);
+      setShowInstructions(true);
+    }
+  }, [user?.tradeLink]);
 
   function validateTradeUrl(url: string): boolean {
     const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/\?partner=\d+&token=[a-zA-Z0-9_-]+$/;

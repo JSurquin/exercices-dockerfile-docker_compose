@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,19 @@ export default function SteamIdConfig() {
   );
   const [loading, setLoading] = useState(false);
   const [showInstructions, setShowInstructions] = useState(!user?.steamId64);
+
+  // Synchroniser avec les données utilisateur
+  useEffect(() => {
+    if (user?.steamId64) {
+      setSteamId(user.steamId64);
+      setIsValidId(validateSteamId64(user.steamId64));
+      setShowInstructions(false);
+    } else {
+      setSteamId('');
+      setIsValidId(null);
+      setShowInstructions(true);
+    }
+  }, [user?.steamId64]);
 
   function validateSteamId64(id: string): boolean {
     const steamId64Regex = /^7656119[0-9]{10}$/;
