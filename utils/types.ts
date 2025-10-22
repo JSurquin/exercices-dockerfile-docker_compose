@@ -2636,6 +2636,34 @@ export interface Messages {
     };
     skinplace: {
       allRarities: string;
+      loadingInventory: string;
+      tradableItems: string;
+      totalValue: string;
+      averageValue: string;
+      statTrak: string;
+      yourInventory: string;
+      filters: string;
+      search: string;
+      searchPlaceholder: string;
+      sortBy: string;
+      priceDescending: string;
+      rarity: string;
+      name: string;
+      allExteriors: string;
+      statTrakOnly: string;
+      resetFilters: string;
+      noItemsFiltered: string;
+      noTradableItems: string;
+      scrollForMore: string;
+      selected: string;
+      itemsSelected: string;
+      totalValueLabel: string;
+      deselectAll: string;
+      continueWithSelection: string;
+      inventoryPrivate: string;
+      makePublic: string;
+      error: string;
+      items: string;
     };
     onboarding: {
       step2: string;

@@ -70,7 +70,7 @@ export function SkinplaceInventoryViewer({
   } = useSkinplaceInventory({
     onError: (err) => {
       console.error('Erreur Skinplace Inventory:', err);
-      toast.error(`Erreur: ${err}`);
+      toast.error(`${messages.components.skinplace.error} ${err}`);
     },
   });
 
@@ -184,7 +184,7 @@ export function SkinplaceInventoryViewer({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <RefreshCw className="h-5 w-5 animate-spin" />
-            Chargement de votre inventaire...
+            {messages.components.skinplace.loadingInventory}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -205,18 +205,18 @@ export function SkinplaceInventoryViewer({
         <AlertDescription>
           {error === 'Inventaire privé ou inaccessible' ? (
             <>
-              Votre inventaire Steam est privé. 
+              {messages.components.skinplace.inventoryPrivate} 
               <a 
                 href="https://steamcommunity.com/my/edit/settings" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="underline ml-1"
               >
-                Rendez-le public pour continuer
+                {messages.components.skinplace.makePublic}
               </a>
             </>
           ) : (
-            `Erreur: ${error}`
+            `${messages.components.skinplace.error} ${error}`
           )}
         </AlertDescription>
       </Alert>
@@ -233,7 +233,7 @@ export function SkinplaceInventoryViewer({
             <div className="flex items-center gap-2">
               <Package className="h-5 w-5 text-blue-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Items tradables</p>
+                <p className="text-sm text-muted-foreground">{messages.components.skinplace.tradableItems}</p>
                 <p className="text-2xl font-bold">{stats.tradableItems}</p>
               </div>
             </div>
@@ -245,7 +245,7 @@ export function SkinplaceInventoryViewer({
             <div className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-green-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Valeur totale</p>
+                <p className="text-sm text-muted-foreground">{messages.components.skinplace.totalValue}</p>
                 <ConvertedPrice 
                   usdCents={stats.totalValueCentimes}
                   className="text-2xl font-bold text-green-600"
@@ -260,7 +260,7 @@ export function SkinplaceInventoryViewer({
             <div className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-orange-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Valeur moyenne</p>
+                <p className="text-sm text-muted-foreground">{messages.components.skinplace.averageValue}</p>
                 <ConvertedPrice 
                   usdCents={stats.averageValueCentimes}
                   className="text-2xl font-bold"
@@ -275,7 +275,7 @@ export function SkinplaceInventoryViewer({
             <div className="flex items-center gap-2">
               <Star className="h-5 w-5 text-purple-500" />
               <div>
-                <p className="text-sm text-muted-foreground">StatTrak™</p>
+                <p className="text-sm text-muted-foreground">{messages.components.skinplace.statTrak}</p>
                 <p className="text-2xl font-bold">{stats.statTrakCount}</p>
               </div>
             </div>
@@ -289,8 +289,8 @@ export function SkinplaceInventoryViewer({
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Package className="h-5 w-5" />
-              Votre inventaire CS2
-              <Badge variant="secondary">{filteredItems.length} items</Badge>
+              {messages.components.skinplace.yourInventory}
+              <Badge variant="secondary">{filteredItems.length} {messages.components.skinplace.items}</Badge>
             </CardTitle>
             <div className="flex items-center gap-2">
               <Button
@@ -299,7 +299,7 @@ export function SkinplaceInventoryViewer({
                 onClick={() => setShowFilters(!showFilters)}
               >
                 <Filter className="h-4 w-4 mr-2" />
-                Filtres
+                {messages.components.skinplace.filters}
               </Button>
               <Button
                 variant="outline"
@@ -317,12 +317,12 @@ export function SkinplaceInventoryViewer({
           {/* Barre de recherche */}
           <div className="flex items-center gap-4">
             <div className="flex-1">
-              <Label htmlFor="search">Rechercher</Label>
+              <Label htmlFor="search">{messages.components.skinplace.search}</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="search"
-                  placeholder="Rechercher un skin..."
+                  placeholder={messages.components.skinplace.searchPlaceholder}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -331,15 +331,15 @@ export function SkinplaceInventoryViewer({
             </div>
             
             <div className="w-48">
-              <Label>Trier par</Label>
+              <Label>{messages.components.skinplace.sortBy}</Label>
               <Select value={sortBy} onValueChange={(value: 'value' | 'rarity' | 'name') => setSortBy(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="value">Prix (décroissant)</SelectItem>
-                  <SelectItem value="rarity">Rareté</SelectItem>
-                  <SelectItem value="name">Nom</SelectItem>
+                  <SelectItem value="value">{messages.components.skinplace.priceDescending}</SelectItem>
+                  <SelectItem value="rarity">{messages.components.skinplace.rarity}</SelectItem>
+                  <SelectItem value="name">{messages.components.skinplace.name}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -349,7 +349,7 @@ export function SkinplaceInventoryViewer({
           {showFilters && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
               <div>
-                <Label>Rareté</Label>
+                <Label>{messages.components.skinplace.rarity}</Label>
                 <Select value={selectedRarity} onValueChange={setSelectedRarity}>
                   <SelectTrigger>
                     <SelectValue placeholder={messages.components.skinplace.allRarities} />
@@ -375,10 +375,10 @@ export function SkinplaceInventoryViewer({
                 <Label>Exterior</Label>
                 <Select value={selectedExterior} onValueChange={setSelectedExterior}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Tous les exteriors" />
+                    <SelectValue placeholder={messages.components.skinplace.allExteriors} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tous les exteriors</SelectItem>
+                    <SelectItem value="">{messages.components.skinplace.allExteriors}</SelectItem>
                     {availableExteriors.map(exterior => (
                       <SelectItem key={exterior} value={exterior}>
                         {exterior}
@@ -394,12 +394,12 @@ export function SkinplaceInventoryViewer({
                   checked={statTrakOnly}
                   onCheckedChange={(checked) => setStatTrakOnly(checked === true)}
                 />
-                <Label htmlFor="stattrak">StatTrak™ uniquement</Label>
+                <Label htmlFor="stattrak">{messages.components.skinplace.statTrakOnly}</Label>
               </div>
               
               <div className="md:col-span-3 flex justify-end">
                 <Button variant="outline" onClick={clearFilters}>
-                  Réinitialiser les filtres
+                  {messages.components.skinplace.resetFilters}
                 </Button>
               </div>
             </div>
@@ -413,8 +413,8 @@ export function SkinplaceInventoryViewer({
           {filteredItems.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               {searchTerm || selectedRarity || selectedExterior || statTrakOnly ? 
-                'Aucun item ne correspond aux filtres' : 
-                'Aucun item CS2 tradable dans votre inventaire'
+                messages.components.skinplace.noItemsFiltered : 
+                messages.components.skinplace.noTradableItems
               }
             </div>
           ) : (
@@ -478,7 +478,7 @@ export function SkinplaceInventoryViewer({
                             </Badge>
                             {item.is_stattrak && (
                               <Badge variant="outline" className="text-xs">
-                                StatTrak™
+                                {messages.components.skinplace.statTrak}
                               </Badge>
                             )}
                             {item.exterior && (
@@ -497,7 +497,7 @@ export function SkinplaceInventoryViewer({
                             />
                             {selectable && isSelected && (
                               <Badge className="bg-orange-500 text-white">
-                                Sélectionné
+                                {messages.components.skinplace.selected}
                               </Badge>
                             )}
                           </div>
@@ -513,7 +513,7 @@ export function SkinplaceInventoryViewer({
               {filteredItems.length > 8 && (
                 <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none flex items-end justify-center pb-1">
                   <div className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded-full">
-                    Scrollez pour voir plus d&apos;items
+                    {messages.components.skinplace.scrollForMore}
                   </div>
                 </div>
               )}
@@ -529,10 +529,10 @@ export function SkinplaceInventoryViewer({
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex-1">
                 <h3 className="font-medium text-lg">
-                  {selectedItems.length} item(s) sélectionné(s)
+                  {selectedItems.length} {messages.components.skinplace.itemsSelected}
                 </h3>
                 <p className="text-muted-foreground">
-                  Valeur totale: <span className="font-bold text-green-600">{convertedSelectedValue}</span>
+                  {messages.components.skinplace.totalValueLabel} <span className="font-bold text-green-600">{convertedSelectedValue}</span>
                 </p>
               </div>
               <div className="flex gap-2 w-full sm:w-auto">
@@ -541,7 +541,7 @@ export function SkinplaceInventoryViewer({
                   onClick={() => setSelectedItems([])}
                   className="flex-1 sm:flex-none"
                 >
-                  Tout désélectionner
+                  {messages.components.skinplace.deselectAll}
                 </Button>
                 <Button
                   onClick={() => {
@@ -552,7 +552,7 @@ export function SkinplaceInventoryViewer({
                   disabled={selectedItems.length === 0}
                   className="bg-orange-500 hover:bg-orange-600 flex-1 sm:flex-none"
                 >
-                  Continuer avec la sélection
+                  {messages.components.skinplace.continueWithSelection}
                 </Button>
               </div>
             </div>
