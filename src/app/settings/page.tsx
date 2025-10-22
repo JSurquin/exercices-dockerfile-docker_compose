@@ -31,6 +31,7 @@ import {
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
+import TradeLinkConfig from "@/components/settings/trade-link-config";
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -192,6 +193,11 @@ export default function SettingsPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Trade Link Configuration */}
+              <div className="mt-4">
+              <TradeLinkConfig />
+              </div>
             </TabsContent>
 
             {/* Security Tab */}
