@@ -16,6 +16,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTheme } from "next-themes";
+import { CurrencySelector } from "@/components/ui/currency-selector";
 import {
   HomeIcon,
   CurrencyDollarIcon,
@@ -108,6 +109,9 @@ export function Header() {
 
         {/* Actions Desktop */}
         <div className="hidden md:flex items-center space-x-2">
+          {/* Currency Selector */}
+          <CurrencySelector variant="ghost" size="sm" showFlag={true} />
+          
           {/* Stats Badge */}
           <div className="hidden lg:flex items-center space-x-4 mr-4 px-3 py-1.5 bg-muted/50 rounded-lg border">
             <div className="flex items-center space-x-1 text-xs">

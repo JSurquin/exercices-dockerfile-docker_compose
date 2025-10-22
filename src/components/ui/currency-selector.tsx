@@ -1,0 +1,76 @@
+'use client';
+
+import { Button } from '@/components/ui/button';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { ChevronDown, DollarSign } from 'lucide-react';
+import { useCurrency } from '@/components/providers/currency-provider';
+import { SupportedCurrency } from '@/lib/currency-converter';
+
+interface CurrencySelectorProps {
+  variant?: 'default' | 'outline' | 'ghost';
+  size?: 'default' | 'sm' | 'lg';
+  showFlag?: boolean;
+  showName?: boolean;
+  className?: string;
+}
+
+export function CurrencySelector({ 
+  variant = 'outline',
+  size = 'default',
+  showFlag = true,
+  showName = false,
+  className = ''
+}: CurrencySelectorProps) {
+  const { selectedCurrency, setSelectedCurrency, supportedCurrencies } = useCurrency();
+  
+  const currentCurrency = supportedCurrencies[selectedCurrency];
+
+  const handleCurrencyChange = (currency: SupportedCurrency) => {
+    setSelectedCurrency(currency);
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant={variant} size={size} className={`gap-2 ${className}`}>
+          <DollarSign className="h-4 w-4" />
+          {showFlag && <span>{currentCurrency.flag}</span>}
+          <span className="font-mono font-bold">{currentCurrency.code}</span>
+          {showName && <span className="hidden sm:inline">{currentCurrency.name}</span>}
+          <ChevronDown className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        {Object.values(supportedCurrencies).map((currency) => (
+          <DropdownMenuItem
+            key={currency.code}
+            onClick={() => handleCurrencyChange(currency.code)}
+            className="flex items-center gap-3 cursor-pointer"
+          >
+            <span className="text-lg">{currency.flag}</span>
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <span className="font-mono font-bold">{currency.code}</span>
+                <span className="text-lg">{currency.symbol}</span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {currency.name}
+              </div>
+            </div>
+            {selectedCurrency === currency.code && (
+              <Badge variant="default" className="text-xs">
+                Actuel
+              </Badge>
+            )}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

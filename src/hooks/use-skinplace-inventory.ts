@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { NormalizedInventoryResponse, NormalizedInventoryItem } from '@/app/api/skinplace/inventory-with-prices/route';
+import { currencyConverter } from '@/lib/currency-converter';
 
 interface UseSkinplaceInventoryOptions {
   onError?: (error: string) => void;
@@ -137,8 +138,14 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
     };
   }, [filterTradableItems]);
 
-  // Formater le prix en euros
-  const formatPrice = useCallback((centimes: number): string => {
+  // Formater le prix en euros (conversion USD -> EUR)
+  const formatPrice = useCallback(async (usdCentimes: number): Promise<string> => {
+    const eurCentimes = await currencyConverter.convertUsdCentsToEurCents(usdCentimes);
+    return currencyConverter.formatEurPrice(eurCentimes);
+  }, []);
+
+  // Formater le prix en euros de manière synchrone (pour compatibilité)
+  const formatPriceSync = useCallback((centimes: number): string => {
     return (centimes / 100).toFixed(2) + '€';
   }, []);
 
@@ -169,6 +176,7 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
     filterByStatTrak,
     calculateInventoryStats,
     formatPrice,
+    formatPriceSync,
     getRarityColor,
   };
 }

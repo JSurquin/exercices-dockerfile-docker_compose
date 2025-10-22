@@ -23,6 +23,9 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLocale } from '@/components/providers/locale-provider';
+import { ConvertedPrice } from '@/components/ui/converted-price';
+import { useCurrency } from '@/components/providers/currency-provider';
+import { currencyConverter } from '@/lib/currency-converter';
 
 interface SkinplaceInventoryViewerProps {
   steamId64: string;
@@ -36,10 +39,12 @@ export function SkinplaceInventoryViewer({
   selectable = false 
 }: SkinplaceInventoryViewerProps) {
   const { messages } = useLocale();
+  const { selectedCurrency } = useCurrency();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [inventory, setInventory] = useState<NormalizedInventoryItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<NormalizedInventoryItem[]>([]);
+  const [convertedSelectedValue, setConvertedSelectedValue] = useState<string>('');
   
   // Filtres
   const [selectedRarity, setSelectedRarity] = useState<string>('');
@@ -60,7 +65,7 @@ export function SkinplaceInventoryViewer({
     filterByExterior,
     filterByStatTrak,
     calculateInventoryStats,
-    formatPrice,
+    formatPriceSync,
     getRarityColor,
   } = useSkinplaceInventory({
     onError: (err) => {
@@ -131,6 +136,26 @@ export function SkinplaceInventoryViewer({
   const selectedItemsData = inventory.filter(item => selectedItems.includes(item.id));
   const selectedValue = selectedItemsData.reduce((sum, item) => sum + item.price_centimes, 0);
 
+  // Convertir la valeur sélectionnée dans la devise choisie
+  useEffect(() => {
+    const convertSelectedValue = async () => {
+      if (selectedValue > 0) {
+        try {
+          const convertedCents = await currencyConverter.convertCents(selectedValue, 'USD', selectedCurrency);
+          const formatted = currencyConverter.formatPrice(convertedCents, selectedCurrency);
+          setConvertedSelectedValue(formatted);
+        } catch (error) {
+          console.error('Erreur conversion valeur sélectionnée:', error);
+          setConvertedSelectedValue(formatPriceSync(selectedValue));
+        }
+      } else {
+        setConvertedSelectedValue(currencyConverter.formatPrice(0, selectedCurrency));
+      }
+    };
+
+    convertSelectedValue();
+  }, [selectedValue, selectedCurrency, formatPriceSync]);
+
   // Obtenir les options de filtre uniques
   const availableRarities = Array.from(new Set(tradableItems.map(item => item.rarity))).sort();
   const availableExteriors = Array.from(new Set(tradableItems.map(item => item.exterior).filter(Boolean))).sort();
@@ -199,7 +224,8 @@ export function SkinplaceInventoryViewer({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
+
       {/* Statistiques de l'inventaire */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -220,9 +246,10 @@ export function SkinplaceInventoryViewer({
               <DollarSign className="h-5 w-5 text-green-500" />
               <div>
                 <p className="text-sm text-muted-foreground">Valeur totale</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {formatPrice(stats.totalValueCentimes)}
-                </p>
+                <ConvertedPrice 
+                  usdCents={stats.totalValueCentimes}
+                  className="text-2xl font-bold text-green-600"
+                />
               </div>
             </div>
           </CardContent>
@@ -234,9 +261,10 @@ export function SkinplaceInventoryViewer({
               <TrendingUp className="h-5 w-5 text-orange-500" />
               <div>
                 <p className="text-sm text-muted-foreground">Valeur moyenne</p>
-                <p className="text-2xl font-bold">
-                  {formatPrice(stats.averageValueCentimes)}
-                </p>
+                <ConvertedPrice 
+                  usdCents={stats.averageValueCentimes}
+                  className="text-2xl font-bold"
+                />
               </div>
             </div>
           </CardContent>
@@ -379,7 +407,7 @@ export function SkinplaceInventoryViewer({
         </CardContent>
       </Card>
 
-      {/* Grille des items */}
+      {/* Grille des items avec scroll */}
       <Card>
         <CardContent className="p-6">
           {filteredItems.length === 0 ? (
@@ -390,119 +418,143 @@ export function SkinplaceInventoryViewer({
               }
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filteredItems.map((item) => {
-                const isSelected = selectedItems.includes(item.id);
-                
-                return (
-                  <Card
-                    key={item.id}
-                    className={`transition-all hover:shadow-lg ${
-                      selectable ? 'cursor-pointer' : ''
-                    } ${
-                      selectable && isSelected
-                        ? 'ring-2 ring-orange-500 bg-orange-50 dark:bg-orange-950'
-                        : ''
-                    }`}
-                    onClick={() => handleItemClick(item)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        {/* Image et badges */}
-                        <div className="relative">
-                          <img
-                            src={item.icon_url}
-                            alt={item.name}
-                            className="w-full h-24 object-contain mx-auto"
-                          />
-                          {item.skip_reason && (
-                            <div className="absolute top-0 right-0">
-                              <Badge variant="destructive" className="text-xs">
-                                {item.skip_reason}
+            <div className="relative">
+              <div className="max-h-[600px] overflow-y-auto pr-2 -mr-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
+                {filteredItems.map((item) => {
+                  const isSelected = selectedItems.includes(item.id);
+                  
+                  return (
+                    <Card
+                      key={item.id}
+                      className={`transition-all hover:shadow-lg ${
+                        selectable ? 'cursor-pointer' : ''
+                      } ${
+                        selectable && isSelected
+                          ? 'ring-2 ring-orange-500 bg-orange-50 dark:bg-orange-950'
+                          : ''
+                      }`}
+                      onClick={() => handleItemClick(item)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          {/* Image et badges */}
+                          <div className="relative">
+                            <img
+                              src={item.icon_url}
+                              alt={item.name}
+                              className="w-full h-24 object-contain mx-auto"
+                            />
+                            {item.skip_reason && (
+                              <div className="absolute top-0 right-0">
+                                <Badge variant="destructive" className="text-xs">
+                                  {item.skip_reason}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Nom */}
+                          <div>
+                            <h3 className="font-medium text-sm truncate" title={item.name}>
+                              {item.name}
+                            </h3>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {item.steam_short_name}
+                            </p>
+                          </div>
+                          
+                          {/* Badges de propriétés */}
+                          <div className="flex flex-wrap gap-1">
+                            <Badge 
+                              variant="secondary" 
+                              className="text-xs"
+                              style={{ 
+                                backgroundColor: getRarityColor(item.rarity),
+                                color: 'white'
+                              }}
+                            >
+                              {item.rarity}
+                            </Badge>
+                            {item.is_stattrak && (
+                              <Badge variant="outline" className="text-xs">
+                                StatTrak™
                               </Badge>
-                            </div>
-                          )}
+                            )}
+                            {item.exterior && (
+                              <Badge variant="outline" className="text-xs">
+                                {item.shorten_exterior}
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          {/* Prix */}
+                          <div className="flex items-center justify-between">
+                            <ConvertedPrice 
+                              usdCents={item.price_centimes}
+                              className="text-lg font-bold text-green-600"
+                              showOriginal={false}
+                            />
+                            {selectable && isSelected && (
+                              <Badge className="bg-orange-500 text-white">
+                                Sélectionné
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                        
-                        {/* Nom */}
-                        <div>
-                          <h3 className="font-medium text-sm truncate" title={item.name}>
-                            {item.name}
-                          </h3>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {item.steam_short_name}
-                          </p>
-                        </div>
-                        
-                        {/* Badges de propriétés */}
-                        <div className="flex flex-wrap gap-1">
-                          <Badge 
-                            variant="secondary" 
-                            className="text-xs"
-                            style={{ 
-                              backgroundColor: getRarityColor(item.rarity),
-                              color: 'white'
-                            }}
-                          >
-                            {item.rarity}
-                          </Badge>
-                          {item.is_stattrak && (
-                            <Badge variant="outline" className="text-xs">
-                              StatTrak™
-                            </Badge>
-                          )}
-                          {item.exterior && (
-                            <Badge variant="outline" className="text-xs">
-                              {item.shorten_exterior}
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        {/* Prix */}
-                        <div className="flex items-center justify-between">
-                          <span className="text-lg font-bold text-green-600">
-                            {formatPrice(item.price_centimes)}
-                          </span>
-                          {selectable && isSelected && (
-                            <Badge className="bg-orange-500 text-white">
-                              Sélectionné
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+                </div>
+              </div>
+              
+              {/* Indicateur de scroll si nécessaire */}
+              {filteredItems.length > 8 && (
+                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none flex items-end justify-center pb-1">
+                  <div className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded-full">
+                    Scrollez pour voir plus d&apos;items
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Résumé de sélection */}
+      {/* Résumé de sélection - Fixe en bas */}
       {selectable && selectedItems.length > 0 && (
-        <Card className="bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
+        <Card className="bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800 sticky bottom-4 z-10 shadow-lg">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex-1">
                 <h3 className="font-medium text-lg">
                   {selectedItems.length} item(s) sélectionné(s)
                 </h3>
                 <p className="text-muted-foreground">
-                  Valeur totale: <span className="font-bold text-green-600">{formatPrice(selectedValue)}</span>
+                  Valeur totale: <span className="font-bold text-green-600">{convertedSelectedValue}</span>
                 </p>
               </div>
-              <Button
-                onClick={() => {
-                  if (selectedItemsData.length > 0 && onItemSelect) {
-                    onItemSelect(selectedItemsData); // Passer tous les items sélectionnés
-                  }
-                }}
-                disabled={selectedItems.length === 0}
-                className="bg-orange-500 hover:bg-orange-600"
-              >
-                Continuer avec la sélection
-              </Button>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedItems([])}
+                  className="flex-1 sm:flex-none"
+                >
+                  Tout désélectionner
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (selectedItemsData.length > 0 && onItemSelect) {
+                      onItemSelect(selectedItemsData); // Passer tous les items sélectionnés
+                    }
+                  }}
+                  disabled={selectedItems.length === 0}
+                  className="bg-orange-500 hover:bg-orange-600 flex-1 sm:flex-none"
+                >
+                  Continuer avec la sélection
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
