@@ -113,13 +113,13 @@ export function Header() {
           <CurrencySelector variant="ghost" size="sm" showFlag={true} />
           
           {/* Stats Badge */}
-          <div className="hidden lg:flex items-center space-x-4 mr-4 px-3 py-1.5 bg-muted/50 rounded-lg border">
+          {/* <div className="hidden lg:flex items-center space-x-4 mr-4 px-3 py-1.5 bg-muted/50 rounded-lg border">
             <div className="flex items-center space-x-1 text-xs">
               <div className="h-2 w-2 bg-green-400 rounded-full animate-pulse"></div>
               <span className="text-muted-foreground">15.4k users</span>
             </div>
             <div className="text-xs text-muted-foreground">€2.4M traded</div>
-          </div>
+          </div> */}
 
           {/* Theme Toggle */}
           <Button
