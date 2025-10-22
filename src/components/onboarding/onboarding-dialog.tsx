@@ -40,117 +40,70 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
 
   const steps = [
     {
-      title: "Bienvenue sur CashTrade !",
-      titleEn: "Welcome to CashTrade!",
+      title: messages.components.onboarding.welcome.title,
       icon: <Gamepad2 className="w-12 h-12 text-orange-500" />,
       content: (
         <div className="space-y-4">
           <p className="text-muted-foreground">
-            La plateforme #1 pour vendre vos skins CS2 en toute sécurité et obtenir de l&apos;argent réel.
+            {messages.components.onboarding.welcome.description}
           </p>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center space-x-2">
               <Shield className="w-5 h-5 text-green-500" />
-              <span className="text-sm">100% Sécurisé</span>
+              <span className="text-sm">{messages.components.onboarding.welcome.features.secure}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Coins className="w-5 h-5 text-yellow-500" />
-              <span className="text-sm">Meilleurs prix</span>
+              <span className="text-sm">{messages.components.onboarding.welcome.features.bestPrices}</span>
             </div>
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-5 h-5 text-blue-500" />
-              <span className="text-sm">Paiement rapide</span>
+              <span className="text-sm">{messages.components.onboarding.welcome.features.fastPayment}</span>
             </div>
             <div className="flex items-center space-x-2">
               <ExternalLink className="w-5 h-5 text-purple-500" />
-              <span className="text-sm">Support 24/7</span>
-            </div>
-          </div>
-        </div>
-      ),
-      contentEn: (
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
-            The #1 platform to sell your CS2 skins safely and get real money.
-          </p>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center space-x-2">
-              <Shield className="w-5 h-5 text-green-500" />
-              <span className="text-sm">100% Secure</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Coins className="w-5 h-5 text-yellow-500" />
-              <span className="text-sm">Best prices</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-5 h-5 text-blue-500" />
-              <span className="text-sm">Fast payment</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <ExternalLink className="w-5 h-5 text-purple-500" />
-              <span className="text-sm">24/7 Support</span>
+              <span className="text-sm">{messages.components.onboarding.welcome.features.support}</span>
             </div>
           </div>
         </div>
       )
     },
     {
-      title: "Configurez votre Trade Link Steam",
-      titleEn: "Set up your Steam Trade Link",
+      title: messages.components.onboarding.tradeLink.title,
       icon: <Link className="w-12 h-12 text-blue-500" />,
       content: (
         <div className="space-y-4">
           <p className="text-muted-foreground">
-            Pour vendre vos skins, vous devez d&apos;abord configurer votre Trade Link Steam.
+            {messages.components.onboarding.tradeLink.description}
           </p>
           <div className="bg-muted p-4 rounded-lg space-y-2">
-            <h4 className="font-semibold">Comment obtenir votre Trade Link :</h4>
+            <h4 className="font-semibold">{messages.components.onboarding.tradeLink.howTo.title}</h4>
             <ol className="list-decimal list-inside space-y-1 text-sm">
-              <li>Ouvrez Steam et allez dans votre inventaire</li>
+              <li>{messages.components.onboarding.tradeLink.howTo.step1}</li>
               <li>{messages.components.onboarding.step2}</li>
-              <li>Copiez votre URL d&apos;échange</li>
-              <li>Collez-la dans vos paramètres CashTrade</li>
+              <li>{messages.components.onboarding.tradeLink.howTo.step3}</li>
+              <li>{messages.components.onboarding.tradeLink.howTo.step4}</li>
             </ol>
           </div>
           <Badge variant="outline" className="text-orange-500 border-orange-500">
-            ⚠️ Gardez votre Trade Link privé et sécurisé
-          </Badge>
-        </div>
-      ),
-      contentEn: (
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
-            To sell your skins, you first need to set up your Steam Trade Link.
-          </p>
-          <div className="bg-muted p-4 rounded-lg space-y-2">
-            <h4 className="font-semibold">How to get your Trade Link:</h4>
-            <ol className="list-decimal list-inside space-y-1 text-sm">
-              <li>Open Steam and go to your inventory</li>
-              <li>Click {"Trade Offers"} then {"Who can send me Trade Offers?"}</li>
-              <li>Copy your trade URL</li>
-              <li>Paste it in your CashTrade settings</li>
-            </ol>
-          </div>
-          <Badge variant="outline" className="text-orange-500 border-orange-500">
-            ⚠️ Keep your Trade Link private and secure
+            {messages.components.onboarding.tradeLink.warning}
           </Badge>
         </div>
       )
     },
     {
-      title: "Saisissez votre Trade Link",
-      titleEn: "Enter your Trade Link",
+      title: messages.components.onboarding.enterTradeLink.title,
       icon: <Link className="w-12 h-12 text-green-500" />,
       content: (
         <div className="space-y-4">
           <p className="text-muted-foreground">
-            Configurez maintenant votre Trade Link Steam pour pouvoir vendre vos skins.
+            {messages.components.onboarding.enterTradeLink.description}
           </p>
           <div className="space-y-2">
-            <Label htmlFor="trade-url">URL de Trade Steam</Label>
+            <Label htmlFor="trade-url">{messages.components.onboarding.enterTradeLink.label}</Label>
             <Input
               id="trade-url"
-              placeholder="https://steamcommunity.com/tradeoffer/new/?partner=..."
+              placeholder={messages.components.onboarding.enterTradeLink.placeholder}
               value={tradeUrl}
               onChange={(e) => handleUrlChange(e.target.value)}
               className={isValidUrl === false ? 'border-red-500' : ''}
@@ -159,14 +112,14 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  URL de trade Steam invalide. 
+                  {messages.components.onboarding.enterTradeLink.invalidUrl}
                   <a 
                     href="https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="underline ml-1"
                   >
-                    Obtenez votre URL ici
+                    {messages.components.onboarding.enterTradeLink.getUrlHere}
                   </a>
                 </AlertDescription>
               </Alert>
@@ -175,124 +128,47 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               <Alert>
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>
-                  URL de trade Steam valide ✓
+                  {messages.components.onboarding.enterTradeLink.validUrl}
                 </AlertDescription>
               </Alert>
             )}
           </div>
           <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
             <p className="text-sm text-blue-800 dark:text-blue-200">
-              💡 <strong>Astuce :</strong> Vous pourrez modifier cette URL plus tard dans vos paramètres.
-            </p>
-          </div>
-        </div>
-      ),
-      contentEn: (
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
-            Set up your Steam Trade Link now to be able to sell your skins.
-          </p>
-          <div className="space-y-2">
-            <Label htmlFor="trade-url">Steam Trade URL</Label>
-            <Input
-              id="trade-url"
-              placeholder="https://steamcommunity.com/tradeoffer/new/?partner=..."
-              value={tradeUrl}
-              onChange={(e) => handleUrlChange(e.target.value)}
-              className={isValidUrl === false ? 'border-red-500' : ''}
-            />
-            {isValidUrl === false && (
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  Invalid Steam trade URL. 
-                  <a 
-                    href="https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="underline ml-1"
-                  >
-                    Get your URL here
-                  </a>
-                </AlertDescription>
-              </Alert>
-            )}
-            {isValidUrl === true && (
-              <Alert>
-                <CheckCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Valid Steam trade URL ✓
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-            <p className="text-sm text-blue-800 dark:text-blue-200">
-              💡 <strong>Tip:</strong> You can change this URL later in your settings.
+              {messages.components.onboarding.enterTradeLink.tip}
             </p>
           </div>
         </div>
       )
     },
     {
-      title: messages.components.onboarding.sellTitle,
-      titleEn: "Sell your skins in 3 steps",
+      title: messages.components.onboarding.sellProcess.title,
       icon: <DollarSign className="w-12 h-12 text-green-500" />,
       content: (
         <div className="space-y-4">
           <p className="text-muted-foreground">
-            Le processus de vente est simple et sécurisé :
+            {messages.components.onboarding.sellProcess.description}
           </p>
           <div className="space-y-3">
             <div className="flex items-start space-x-3">
               <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
               <div>
-                <h4 className="font-semibold">Sélectionnez vos skins</h4>
-                <p className="text-sm text-muted-foreground">Choisissez les skins que vous voulez vendre depuis votre inventaire Steam</p>
+                <h4 className="font-semibold">{messages.components.onboarding.sellProcess.steps.select.title}</h4>
+                <p className="text-sm text-muted-foreground">{messages.components.onboarding.sellProcess.steps.select.description}</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
               <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
               <div>
-                <h4 className="font-semibold">Acceptez l&apos;offre d&apos;échange</h4>
-                <p className="text-sm text-muted-foreground">Notre bot vous enverra une offre d&apos;échange que vous devrez accepter</p>
+                <h4 className="font-semibold">{messages.components.onboarding.sellProcess.steps.accept.title}</h4>
+                <p className="text-sm text-muted-foreground">{messages.components.onboarding.sellProcess.steps.accept.description}</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
               <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
               <div>
-                <h4 className="font-semibold">Recevez votre paiement</h4>
-                <p className="text-sm text-muted-foreground">Après 7 jours (Trade Hold Steam), recevez votre argent par SEPA ou crypto</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      ),
-      contentEn: (
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
-            The selling process is simple and secure:
-          </p>
-          <div className="space-y-3">
-            <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
-              <div>
-                <h4 className="font-semibold">Select your skins</h4>
-                <p className="text-sm text-muted-foreground">Choose the skins you want to sell from your Steam inventory</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
-              <div>
-                <h4 className="font-semibold">Accept the trade offer</h4>
-                <p className="text-sm text-muted-foreground">Our bot will send you a trade offer that you need to accept</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
-              <div>
-                <h4 className="font-semibold">Receive your payment</h4>
-                <p className="text-sm text-muted-foreground">After 7 days (Steam Trade Hold), receive your money via SEPA or crypto</p>
+                <h4 className="font-semibold">{messages.components.onboarding.sellProcess.steps.receive.title}</h4>
+                <p className="text-sm text-muted-foreground">{messages.components.onboarding.sellProcess.steps.receive.description}</p>
               </div>
             </div>
           </div>
@@ -300,58 +176,30 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
       )
     },
     {
-      title: messages.components.onboarding.securityTitle,
-      titleEn: "Security and KYC",
+      title: messages.components.onboarding.security.title,
       icon: <Shield className="w-12 h-12 text-purple-500" />,
       content: (
         <div className="space-y-4">
           <p className="text-muted-foreground">
-            Pour votre sécurité et la conformité légale, nous appliquons des mesures strictes :
+            {messages.components.onboarding.security.description}
           </p>
           <div className="space-y-3">
             <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
-              <h4 className="font-semibold text-blue-700 dark:text-blue-300">KYC obligatoire</h4>
+              <h4 className="font-semibold text-blue-700 dark:text-blue-300">{messages.components.onboarding.security.kyc.title}</h4>
               <p className="text-sm text-blue-600 dark:text-blue-400">
-                Vérification d&apos;identité requise pour tous les paiements
+                {messages.components.onboarding.security.kyc.description}
               </p>
             </div>
             <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg">
-              <h4 className="font-semibold text-green-700 dark:text-green-300">Paiements sécurisés</h4>
+              <h4 className="font-semibold text-green-700 dark:text-green-300">{messages.components.onboarding.security.payments.title}</h4>
               <p className="text-sm text-green-600 dark:text-green-400">
-                SEPA avec vérification renforcée, crypto avec KYC
+                {messages.components.onboarding.security.payments.description}
               </p>
             </div>
             <div className="bg-orange-50 dark:bg-orange-950 p-3 rounded-lg">
-              <h4 className="font-semibold text-orange-700 dark:text-orange-300">Trade Hold Steam</h4>
+              <h4 className="font-semibold text-orange-700 dark:text-orange-300">{messages.components.onboarding.security.tradeHold.title}</h4>
               <p className="text-sm text-orange-600 dark:text-orange-400">
-                Délai de sécurité de 7 jours imposé par Steam
-              </p>
-            </div>
-          </div>
-        </div>
-      ),
-      contentEn: (
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
-            For your security and legal compliance, we apply strict measures:
-          </p>
-          <div className="space-y-3">
-            <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
-              <h4 className="font-semibold text-blue-700 dark:text-blue-300">Mandatory KYC</h4>
-              <p className="text-sm text-blue-600 dark:text-blue-400">
-                Identity verification required for all payments
-              </p>
-            </div>
-            <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg">
-              <h4 className="font-semibold text-green-700 dark:text-green-300">Secure payments</h4>
-              <p className="text-sm text-green-600 dark:text-green-400">
-                SEPA with enhanced verification, crypto with KYC
-              </p>
-            </div>
-            <div className="bg-orange-50 dark:bg-orange-950 p-3 rounded-lg">
-              <h4 className="font-semibold text-orange-700 dark:text-orange-300">Steam Trade Hold</h4>
-              <p className="text-sm text-orange-600 dark:text-orange-400">
-                7-day security delay imposed by Steam
+                {messages.components.onboarding.security.tradeHold.description}
               </p>
             </div>
           </div>
@@ -378,17 +226,17 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
     // Si on est sur l'étape de saisie du trade link (étape 2, index 1)
     if (currentStep === 2) {
       if (!isValidUrl || !tradeUrl) {
-        toast.error('Veuillez saisir un Trade Link Steam valide');
+        toast.error(messages.components.onboarding.errors.invalidTradeLink);
         return;
       }
 
       setLoading(true);
       try {
         await updateUser({ tradeLink: tradeUrl });
-        toast.success('Trade Link sauvegardé avec succès !');
+        toast.success(messages.components.onboarding.success.tradeLinkSaved);
       } catch (error) {
         console.error('Erreur lors de la sauvegarde du Trade Link:', error);
-        toast.error('Erreur lors de la sauvegarde du Trade Link');
+        toast.error(messages.components.onboarding.errors.saveError);
         setLoading(false);
         return;
       }
@@ -421,7 +269,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Badge variant="secondary">
-                  Étape {currentStep + 1} sur {steps.length}
+                  {messages.components.onboarding.navigation.step} {currentStep + 1} {messages.components.onboarding.navigation.of} {steps.length}
                 </Badge>
               </div>
               <Button 
@@ -430,7 +278,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
                 onClick={handleSkip}
                 className="text-muted-foreground hover:text-foreground"
               >
-                Passer l&apos;introduction
+                {messages.components.onboarding.navigation.skip}
               </Button>
             </div>
             <Progress value={progress} className="w-full" />
@@ -443,11 +291,11 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
                 {currentStepData.icon}
               </div>
               <CardTitle className="text-2xl">
-                {locale === 'fr' ? currentStepData.title : currentStepData.titleEn}
+                {currentStepData.title}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {locale === 'fr' ? currentStepData.content : currentStepData.contentEn}
+              {currentStepData.content}
             </CardContent>
           </Card>
 
@@ -460,7 +308,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               className="flex items-center space-x-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Précédent</span>
+              <span>{messages.components.onboarding.navigation.previous}</span>
             </Button>
 
             <div className="flex space-x-1">
@@ -484,7 +332,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               className="flex items-center space-x-2"
             >
               <span>
-                {loading ? 'Sauvegarde...' : (isLastStep ? 'Commencer' : 'Suivant')}
+                {loading ? messages.components.onboarding.navigation.saving : (isLastStep ? messages.components.onboarding.navigation.start : messages.components.onboarding.navigation.next)}
               </span>
               {!isLastStep && !loading && <ArrowRight className="w-4 h-4" />}
             </Button>

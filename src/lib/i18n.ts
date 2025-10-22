@@ -2599,6 +2599,87 @@ export const messages: Record<Locale, Messages> = {
         step2: "Cliquez sur \"Échanges\" puis \"Qui peut m'envoyer des offres d'échange ?\"",
         sellTitle: "Vendez vos skins en 3 étapes",
         securityTitle: "Sécurité et KYC",
+        welcome: {
+          title: "Bienvenue sur CashTrade !",
+          description: "La plateforme #1 pour vendre vos skins CS2 en toute sécurité et obtenir de l'argent réel.",
+          features: {
+            secure: "100% Sécurisé",
+            bestPrices: "Meilleurs prix",
+            fastPayment: "Paiement rapide",
+            support: "Support 24/7"
+          }
+        },
+        tradeLink: {
+          title: "Configurez votre Trade Link Steam",
+          description: "Pour vendre vos skins, vous devez d'abord configurer votre Trade Link Steam.",
+          howTo: {
+            title: "Comment obtenir votre Trade Link :",
+            step1: "Ouvrez Steam et allez dans votre inventaire",
+            step3: "Copiez votre URL d'échange",
+            step4: "Collez-la dans vos paramètres CashTrade"
+          },
+          warning: "⚠️ Gardez votre Trade Link privé et sécurisé"
+        },
+        enterTradeLink: {
+          title: "Saisissez votre Trade Link",
+          description: "Configurez maintenant votre Trade Link Steam pour pouvoir vendre vos skins.",
+          label: "URL de Trade Steam",
+          placeholder: "https://steamcommunity.com/tradeoffer/new/?partner=...",
+          invalidUrl: "URL de trade Steam invalide.",
+          getUrlHere: "Obtenez votre URL ici",
+          validUrl: "URL de trade Steam valide ✓",
+          tip: "💡 Astuce : Vous pourrez modifier cette URL plus tard dans vos paramètres."
+        },
+        sellProcess: {
+          title: "Vendez vos skins en 3 étapes",
+          description: "Le processus de vente est simple et sécurisé :",
+          steps: {
+            select: {
+              title: "Sélectionnez vos skins",
+              description: "Choisissez les skins que vous voulez vendre depuis votre inventaire Steam"
+            },
+            accept: {
+              title: "Acceptez l'offre d'échange",
+              description: "Notre bot vous enverra une offre d'échange que vous devrez accepter"
+            },
+            receive: {
+              title: "Recevez votre paiement",
+              description: "Après 7 jours (Trade Hold Steam), recevez votre argent par SEPA ou crypto"
+            }
+          }
+        },
+        security: {
+          title: "Sécurité et KYC",
+          description: "Pour votre sécurité et la conformité légale, nous appliquons des mesures strictes :",
+          kyc: {
+            title: "KYC obligatoire",
+            description: "Vérification d'identité requise pour tous les paiements"
+          },
+          payments: {
+            title: "Paiements sécurisés",
+            description: "SEPA avec vérification renforcée, crypto avec KYC"
+          },
+          tradeHold: {
+            title: "Trade Hold Steam",
+            description: "Délai de sécurité de 7 jours imposé par Steam"
+          }
+        },
+        navigation: {
+          step: "Étape",
+          of: "sur",
+          skip: "Passer l'introduction",
+          previous: "Précédent",
+          next: "Suivant",
+          start: "Commencer",
+          saving: "Sauvegarde..."
+        },
+        errors: {
+          invalidTradeLink: "Veuillez saisir un Trade Link Steam valide",
+          saveError: "Erreur lors de la sauvegarde du Trade Link"
+        },
+        success: {
+          tradeLinkSaved: "Trade Link sauvegardé avec succès !"
+        }
       },
       header: {
         french: "Français",
@@ -5217,6 +5298,87 @@ export const messages: Record<Locale, Messages> = {
         step2: "Click on \"Trades\" then \"Who can send me trade offers?\"",
         sellTitle: "Sell your skins in 3 steps",
         securityTitle: "Security and KYC",
+        welcome: {
+          title: "Welcome to CashTrade!",
+          description: "The #1 platform to sell your CS2 skins safely and get real money.",
+          features: {
+            secure: "100% Secure",
+            bestPrices: "Best prices",
+            fastPayment: "Fast payment",
+            support: "24/7 Support"
+          }
+        },
+        tradeLink: {
+          title: "Set up your Steam Trade Link",
+          description: "To sell your skins, you first need to set up your Steam Trade Link.",
+          howTo: {
+            title: "How to get your Trade Link:",
+            step1: "Open Steam and go to your inventory",
+            step3: "Copy your trade URL",
+            step4: "Paste it in your CashTrade settings"
+          },
+          warning: "⚠️ Keep your Trade Link private and secure"
+        },
+        enterTradeLink: {
+          title: "Enter your Trade Link",
+          description: "Set up your Steam Trade Link now to be able to sell your skins.",
+          label: "Steam Trade URL",
+          placeholder: "https://steamcommunity.com/tradeoffer/new/?partner=...",
+          invalidUrl: "Invalid Steam trade URL.",
+          getUrlHere: "Get your URL here",
+          validUrl: "Valid Steam trade URL ✓",
+          tip: "💡 Tip: You can change this URL later in your settings."
+        },
+        sellProcess: {
+          title: "Sell your skins in 3 steps",
+          description: "The selling process is simple and secure:",
+          steps: {
+            select: {
+              title: "Select your skins",
+              description: "Choose the skins you want to sell from your Steam inventory"
+            },
+            accept: {
+              title: "Accept the trade offer",
+              description: "Our bot will send you a trade offer that you need to accept"
+            },
+            receive: {
+              title: "Receive your payment",
+              description: "After 7 days (Steam Trade Hold), receive your money via SEPA or crypto"
+            }
+          }
+        },
+        security: {
+          title: "Security and KYC",
+          description: "For your security and legal compliance, we apply strict measures:",
+          kyc: {
+            title: "Mandatory KYC",
+            description: "Identity verification required for all payments"
+          },
+          payments: {
+            title: "Secure payments",
+            description: "SEPA with enhanced verification, crypto with KYC"
+          },
+          tradeHold: {
+            title: "Steam Trade Hold",
+            description: "7-day security delay imposed by Steam"
+          }
+        },
+        navigation: {
+          step: "Step",
+          of: "of",
+          skip: "Skip introduction",
+          previous: "Previous",
+          next: "Next",
+          start: "Start",
+          saving: "Saving..."
+        },
+        errors: {
+          invalidTradeLink: "Please enter a valid Steam Trade Link",
+          saveError: "Error saving Trade Link"
+        },
+        success: {
+          tradeLinkSaved: "Trade Link saved successfully!"
+        }
       },
       header: {
         french: "Français",
@@ -7470,6 +7632,87 @@ export const messages: Record<Locale, Messages> = {
         step2: "点击\"交易\"然后\"谁可以向我发送交易报价？\"",
         sellTitle: "3步出售您的皮肤",
         securityTitle: "安全和KYC",
+        welcome: {
+          title: "欢迎来到CashTrade！",
+          description: "安全出售CS2皮肤并获得真实货币的第一平台。",
+          features: {
+            secure: "100%安全",
+            bestPrices: "最佳价格",
+            fastPayment: "快速付款",
+            support: "24/7支持"
+          }
+        },
+        tradeLink: {
+          title: "设置您的Steam交易链接",
+          description: "要出售您的皮肤，您首先需要设置您的Steam交易链接。",
+          howTo: {
+            title: "如何获取您的交易链接：",
+            step1: "打开Steam并进入您的库存",
+            step3: "复制您的交易URL",
+            step4: "将其粘贴到您的CashTrade设置中"
+          },
+          warning: "⚠️ 保持您的交易链接私密和安全"
+        },
+        enterTradeLink: {
+          title: "输入您的交易链接",
+          description: "现在设置您的Steam交易链接以便能够出售您的皮肤。",
+          label: "Steam交易URL",
+          placeholder: "https://steamcommunity.com/tradeoffer/new/?partner=...",
+          invalidUrl: "无效的Steam交易URL。",
+          getUrlHere: "在此获取您的URL",
+          validUrl: "有效的Steam交易URL ✓",
+          tip: "💡 提示：您可以稍后在设置中更改此URL。"
+        },
+        sellProcess: {
+          title: "3步出售您的皮肤",
+          description: "出售过程简单且安全：",
+          steps: {
+            select: {
+              title: "选择您的皮肤",
+              description: "从您的Steam库存中选择要出售的皮肤"
+            },
+            accept: {
+              title: "接受交易报价",
+              description: "我们的机器人将向您发送需要接受的交易报价"
+            },
+            receive: {
+              title: "接收您的付款",
+              description: "7天后（Steam交易锁定），通过SEPA或加密货币接收您的资金"
+            }
+          }
+        },
+        security: {
+          title: "安全和KYC",
+          description: "为了您的安全和法律合规，我们采用严格的措施：",
+          kyc: {
+            title: "强制KYC",
+            description: "所有付款都需要身份验证"
+          },
+          payments: {
+            title: "安全付款",
+            description: "SEPA增强验证，加密货币KYC"
+          },
+          tradeHold: {
+            title: "Steam交易锁定",
+            description: "Steam强制的7天安全延迟"
+          }
+        },
+        navigation: {
+          step: "步骤",
+          of: "共",
+          skip: "跳过介绍",
+          previous: "上一步",
+          next: "下一步",
+          start: "开始",
+          saving: "保存中..."
+        },
+        errors: {
+          invalidTradeLink: "请输入有效的Steam交易链接",
+          saveError: "保存交易链接时出错"
+        },
+        success: {
+          tradeLinkSaved: "交易链接保存成功！"
+        }
       },
       header: {
         french: "Français",

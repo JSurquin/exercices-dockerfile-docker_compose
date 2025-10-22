@@ -2641,6 +2641,87 @@ export interface Messages {
       step2: string;
       sellTitle: string;
       securityTitle: string;
+      welcome: {
+        title: string;
+        description: string;
+        features: {
+          secure: string;
+          bestPrices: string;
+          fastPayment: string;
+          support: string;
+        };
+      };
+      tradeLink: {
+        title: string;
+        description: string;
+        howTo: {
+          title: string;
+          step1: string;
+          step3: string;
+          step4: string;
+        };
+        warning: string;
+      };
+      enterTradeLink: {
+        title: string;
+        description: string;
+        label: string;
+        placeholder: string;
+        invalidUrl: string;
+        getUrlHere: string;
+        validUrl: string;
+        tip: string;
+      };
+      sellProcess: {
+        title: string;
+        description: string;
+        steps: {
+          select: {
+            title: string;
+            description: string;
+          };
+          accept: {
+            title: string;
+            description: string;
+          };
+          receive: {
+            title: string;
+            description: string;
+          };
+        };
+      };
+      security: {
+        title: string;
+        description: string;
+        kyc: {
+          title: string;
+          description: string;
+        };
+        payments: {
+          title: string;
+          description: string;
+        };
+        tradeHold: {
+          title: string;
+          description: string;
+        };
+      };
+      navigation: {
+        step: string;
+        of: string;
+        skip: string;
+        previous: string;
+        next: string;
+        start: string;
+        saving: string;
+      };
+      errors: {
+        invalidTradeLink: string;
+        saveError: string;
+      };
+      success: {
+        tradeLinkSaved: string;
+      };
     };
     header: {
       french: string;
