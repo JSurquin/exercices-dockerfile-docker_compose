@@ -32,6 +32,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 import TradeLinkConfig from "@/components/settings/trade-link-config";
+import SteamIdConfig from "@/components/settings/steam-id-config";
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -194,9 +195,14 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
 
+              {/* Steam ID Configuration */}
+              <div className="mt-4">
+                <SteamIdConfig />
+              </div>
+
               {/* Trade Link Configuration */}
               <div className="mt-4">
-              <TradeLinkConfig />
+                <TradeLinkConfig />
               </div>
             </TabsContent>
 

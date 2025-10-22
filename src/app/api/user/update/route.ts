@@ -27,10 +27,21 @@ export async function POST(request: NextRequest) {
       }
     }
     
+    // Validation du Steam ID si fourni
+    if (updates.steamId64) {
+      const steamId64Regex = /^7656119[0-9]{10}$/;
+      if (!steamId64Regex.test(updates.steamId64)) {
+        return NextResponse.json(
+          { error: 'Format de Steam ID64 invalide' },
+          { status: 400 }
+        );
+      }
+    }
+    
     // Filtrer les champs autorisés à être mis à jour
     const allowedFields = [
       'name', 'level', 'xp', 'tickets', 'totalVolume', 
-      'kycStatus', 'acceptedTermsAt', 'tradeLink'
+      'kycStatus', 'acceptedTermsAt', 'tradeLink', 'steamId64'
     ];
     
     const filteredUpdates: Record<string, unknown> = {};
@@ -40,10 +51,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Mapper les champs pour Prisma
+    const prismaUpdates: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(filteredUpdates)) {
+      if (key === 'steamId64') {
+        prismaUpdates.steamId = value;
+      } else {
+        prismaUpdates[key] = value;
+      }
+    }
+
     // Mettre à jour l'utilisateur
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
-      data: filteredUpdates,
+      data: prismaUpdates,
     });
 
     // Convertir vers le format attendu par le frontend
