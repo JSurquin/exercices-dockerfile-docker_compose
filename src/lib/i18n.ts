@@ -2622,6 +2622,17 @@ export const messages: Record<Locale, Messages> = {
         makePublic: "Rendez-le public pour continuer",
         error: "Erreur:",
         items: "items",
+        skipReasons: {
+          over_stock: "Stock saturé",
+          low_demand: "Demande faible",
+          price_too_low: "Prix trop bas",
+          restricted_item: "Item restreint",
+          market_banned: "Banni du marché",
+          trade_banned: "Banni des échanges",
+          untradable: "Non échangeable",
+          unknown: "Raison inconnue"
+        },
+        unavailable: "Non disponible",
       },
       onboarding: {
         step2: "Cliquez sur \"Échanges\" puis \"Qui peut m'envoyer des offres d'échange ?\"",
@@ -5349,6 +5360,17 @@ export const messages: Record<Locale, Messages> = {
         makePublic: "Make it public to continue",
         error: "Error:",
         items: "items",
+        skipReasons: {
+          over_stock: "Overstocked",
+          low_demand: "Low demand",
+          price_too_low: "Price too low",
+          restricted_item: "Restricted item",
+          market_banned: "Market banned",
+          trade_banned: "Trade banned",
+          untradable: "Untradable",
+          unknown: "Unknown reason"
+        },
+        unavailable: "Unavailable",
       },
       onboarding: {
         step2: "Click on \"Trades\" then \"Who can send me trade offers?\"",
@@ -7711,6 +7733,17 @@ export const messages: Record<Locale, Messages> = {
         makePublic: "将其设为公开以继续",
         error: "错误：",
         items: "物品",
+        skipReasons: {
+          over_stock: "库存过多",
+          low_demand: "需求量低",
+          price_too_low: "价格过低",
+          restricted_item: "受限物品",
+          market_banned: "市场禁止",
+          trade_banned: "交易禁止",
+          untradable: "不可交易",
+          unknown: "未知原因"
+        },
+        unavailable: "不可用",
       },
       onboarding: {
         step2: "点击\"交易\"然后\"谁可以向我发送交易报价？\"",

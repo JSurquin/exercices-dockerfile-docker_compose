@@ -67,6 +67,7 @@ export function SkinplaceInventoryViewer({
     calculateInventoryStats,
     formatPriceSync,
     getRarityColor,
+    translateSkipReason,
   } = useSkinplaceInventory({
     onError: (err) => {
       console.error('Erreur Skinplace Inventory:', err);
@@ -161,7 +162,7 @@ export function SkinplaceInventoryViewer({
   const availableExteriors = Array.from(new Set(tradableItems.map(item => item.exterior).filter(Boolean))).sort();
 
   const handleItemClick = (item: NormalizedInventoryItem) => {
-    if (!selectable || !item.tradable) return;
+    if (!selectable || !item.tradable || item.skip_reason) return;
 
     if (selectedItems.includes(item.id)) {
       setSelectedItems(prev => prev.filter(id => id !== item.id));
@@ -423,16 +424,21 @@ export function SkinplaceInventoryViewer({
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
                 {filteredItems.map((item) => {
                   const isSelected = selectedItems.includes(item.id);
+                  const isDisabled = !!item.skip_reason;
                   
                   return (
                     <Card
                       key={item.id}
-                      className={`transition-all hover:shadow-lg ${
-                        selectable ? 'cursor-pointer' : ''
+                      className={`transition-all ${
+                        !isDisabled ? 'hover:shadow-lg' : ''
+                      } ${
+                        selectable && !isDisabled ? 'cursor-pointer' : isDisabled ? 'cursor-not-allowed' : ''
                       } ${
                         selectable && isSelected
                           ? 'ring-2 ring-orange-500 bg-orange-50 dark:bg-orange-950'
                           : ''
+                      } ${
+                        isDisabled ? 'opacity-60 bg-muted/50' : ''
                       }`}
                       onClick={() => handleItemClick(item)}
                     >
@@ -443,13 +449,20 @@ export function SkinplaceInventoryViewer({
                             <img
                               src={item.icon_url}
                               alt={item.name}
-                              className="w-full h-24 object-contain mx-auto"
+                              className={`w-full h-24 object-contain mx-auto ${
+                                isDisabled ? 'grayscale' : ''
+                              }`}
                             />
                             {item.skip_reason && (
                               <div className="absolute top-0 right-0">
                                 <Badge variant="destructive" className="text-xs">
-                                  {item.skip_reason}
+                                  {translateSkipReason(item.skip_reason)}
                                 </Badge>
+                              </div>
+                            )}
+                            {isDisabled && (
+                              <div className="absolute inset-0 bg-black/20 flex items-center justify-center rounded">
+                                <AlertCircle className="h-6 w-6 text-muted-foreground" />
                               </div>
                             )}
                           </div>
@@ -492,12 +505,19 @@ export function SkinplaceInventoryViewer({
                           <div className="flex items-center justify-between">
                             <ConvertedPrice 
                               usdCents={item.price_centimes}
-                              className="text-lg font-bold text-green-600"
+                              className={`text-lg font-bold ${
+                                isDisabled ? 'text-muted-foreground' : 'text-green-600'
+                              }`}
                               showOriginal={false}
                             />
                             {selectable && isSelected && (
                               <Badge className="bg-orange-500 text-white">
                                 {messages.components.skinplace.selected}
+                              </Badge>
+                            )}
+                            {isDisabled && (
+                              <Badge variant="secondary" className="text-xs">
+                                {messages.components.skinplace.unavailable}
                               </Badge>
                             )}
                           </div>

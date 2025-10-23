@@ -2664,6 +2664,17 @@ export interface Messages {
       makePublic: string;
       error: string;
       items: string;
+      skipReasons: {
+        over_stock: string;
+        low_demand: string;
+        price_too_low: string;
+        restricted_item: string;
+        market_banned: string;
+        trade_banned: string;
+        untradable: string;
+        unknown: string;
+      };
+      unavailable: string;
     };
     onboarding: {
       step2: string;

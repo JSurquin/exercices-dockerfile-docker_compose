@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { NormalizedInventoryResponse, NormalizedInventoryItem } from '@/app/api/skinplace/inventory-with-prices/route';
 import { currencyConverter } from '@/lib/currency-converter';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface UseSkinplaceInventoryOptions {
   onError?: (error: string) => void;
@@ -10,6 +11,7 @@ interface UseSkinplaceInventoryOptions {
 export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { messages } = useLocale();
 
   const handleRequest = useCallback(async <T>(
     requestFn: () => Promise<T>
@@ -51,7 +53,7 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
 
   // Utilitaires pour filtrer et trier les items
   const filterTradableItems = useCallback((items: NormalizedInventoryItem[]): NormalizedInventoryItem[] => {
-    return items.filter(item => item.tradable && !item.skip_reason);
+    return items.filter(item => item.tradable);
   }, []);
 
   const sortItemsByValue = useCallback((items: NormalizedInventoryItem[], ascending = false): NormalizedInventoryItem[] => {
@@ -163,6 +165,30 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
     return colors[rarity] || '#b0c3d9';
   }, []);
 
+  // Traduire les skip_reason
+  const translateSkipReason = useCallback((skipReason?: string): string => {
+    if (!skipReason) return '';
+    
+    const skipReasons = messages.components?.skinplace?.skipReasons;
+    if (!skipReasons) return skipReason;
+    
+    // Mapper les skip_reason connus vers les traductions
+    const reasonMap: Record<string, keyof typeof skipReasons> = {
+      'over_stock': 'over_stock',
+      'overstocked': 'over_stock',
+      'low_demand': 'low_demand',
+      'price_too_low': 'price_too_low',
+      'restricted_item': 'restricted_item',
+      'market_banned': 'market_banned',
+      'trade_banned': 'trade_banned',
+      'untradable': 'untradable',
+      'not_tradable': 'untradable',
+    };
+    
+    const mappedReason = reasonMap[skipReason.toLowerCase()];
+    return mappedReason ? skipReasons[mappedReason] : skipReasons.unknown;
+  }, [messages]);
+
   return {
     loading,
     error,
@@ -178,6 +204,7 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
     formatPrice,
     formatPriceSync,
     getRarityColor,
+    translateSkipReason,
   };
 }
 

@@ -299,8 +299,8 @@ export async function GET(request: NextRequest) {
       price_real_centimes: Math.round(item.price_real * 100),
       
       // Statut (les items de Skin.place sont généralement tradables sauf si skip_reason)
-      tradable: !item.skip_reason && !item.untouchable,
-      marketable: !item.skip_reason && !item.untouchable,
+      tradable: true,
+      marketable: true,
       skip_reason: item.skip_reason,
       
       // Données supplémentaires
@@ -313,7 +313,7 @@ export async function GET(request: NextRequest) {
     }));
 
     // Filtrer les items tradables et calculer les statistiques
-    const tradableItems = normalizedItems.filter(item => item.tradable && !item.skip_reason);
+    const tradableItems = normalizedItems.filter(item => item.tradable);
     const totalValue = tradableItems.reduce((sum, item) => sum + item.price_centimes, 0);
 
     const result: NormalizedInventoryResponse = {
