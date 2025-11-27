@@ -284,5 +284,23 @@ if (process.env.NODE_ENV === 'production') {
   logger.setLevel('debug');
 }
 
+// Fonction d'audit logging
+export const logAudit = async (userId: string, action: string, details: any) => {
+  try {
+    const { prisma } = await import('~/prisma/prisma');
+    await prisma.auditLog.create({
+      data: {
+        userId,
+        action,
+        details,
+        ipAddress: null, // Peut être ajouté plus tard
+      },
+    });
+    logger.info('Audit log created', { userId, action, details });
+  } catch (error) {
+    logger.error('Failed to create audit log', { userId, action, details, error });
+  }
+};
+
 // Export du type pour TypeScript
 export type { LogLevel };

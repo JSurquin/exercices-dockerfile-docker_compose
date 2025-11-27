@@ -1,6 +1,7 @@
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl", "rhel-openssl-3.0.x"]
+  // output        = "../src/generated/prisma"
 }
 
 datasource db {
@@ -38,6 +39,9 @@ model User {
   accounts              Account[]
   sessions              Session[]
   referrals             AffiliateReferral[] @relation("AffiliateReferrals")
+  conversations         Conversation[]
+  assignedConversations Conversation[] @relation("AssignedConversations")
+  chatMessages          ChatMessage[]
 
   @@map("user")
 }
@@ -121,6 +125,8 @@ model Payout {
   paymentMethodId      String
   paymentReference     String?
   txId                 String?
+  gateFiOrderId        String?               @unique
+  gateFiWidgetUrl      String?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   paidAt               DateTime?
@@ -132,6 +138,7 @@ model Payout {
   @@index([userId])
   @@index([status])
   @@index([createdAt])
+  @@index([gateFiOrderId])
 }
 
 model KycDocument {
@@ -306,7 +313,6 @@ enum PayoutStatus {
 enum PaymentMethodType {
   SEPA
   CRYPTO
-  STRIPE
 }
 
 enum KycStatus {
@@ -332,6 +338,7 @@ enum UserRole {
   USER
   ADMIN
   AFFILIATE
+  MODERATOR
 }
 
 enum AffiliateCommissionStatus {
@@ -392,6 +399,49 @@ model NewsletterSend {
   @@map("newsletter_send")
 }
 
+model Conversation {
+  id          String   @id @default(cuid())
+  userId      String?  // Nullable pour les invités
+  status      ConversationStatus @default(ACTIVE)
+  subject     String?
+  category    String?
+  priority    ConversationPriority @default(NORMAL)
+  assignedTo  String?  // ID du modérateur assigné
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  closedAt    DateTime?
+  
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  assignedModerator User? @relation("AssignedConversations", fields: [assignedTo], references: [id], onDelete: SetNull)
+  messages    ChatMessage[]
+  
+  @@index([userId])
+  @@index([status])
+  @@index([assignedTo])
+  @@index([createdAt])
+  @@map("conversation")
+}
+
+model ChatMessage {
+  id             String      @id @default(cuid())
+  conversationId String
+  userId         String?     // Nullable pour les messages système
+  content        String
+  senderType     SenderType
+  isRead         Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([conversationId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([senderType])
+  @@map("chat_message")
+}
+
 enum NewsletterStatus {
   DRAFT
   SCHEDULED
@@ -408,4 +458,24 @@ enum NewsletterSendStatus {
   CLICKED
   BOUNCED
   FAILED
+}
+
+enum ConversationStatus {
+  ACTIVE
+  CLOSED
+  ARCHIVED
+}
+
+enum ConversationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum SenderType {
+  USER
+  BOT
+  MODERATOR
+  SYSTEM
 }

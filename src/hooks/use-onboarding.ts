@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { useSession } from '@/lib/auth-client';
+import { useSession } from '~/lib/auth-client';
 import { useToast } from '@/hooks/use-toast';
 
 export const useOnboarding = () => {

@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import { auth } from '../src/lib/auth';
+import { auth } from '../lib/auth';
 import { KycStatus } from '@prisma/client';
 async function main() {
   console.log('🌱 Début du seeding de la base de données CashTrade...');
@@ -16,10 +16,25 @@ async function main() {
       level: 25,
       xp: 75000,
       tickets: 150,
-      type: 'ADMIN',  // ADMIN, PRO_TRADER, SKIN_MASTER, COLLECTOR, AFFILIATE
+      type: 'ADMIN',  // ADMIN, MODERATOR, PRO_TRADER, SKIN_MASTER, COLLECTOR, AFFILIATE
       totalVolumeCents: 15000000, // 150,000 € en centimes
       kycStatus: 'VERIFIED',
       acceptedTermsAt: new Date('2024-01-01T00:00:00Z'),
+    },
+    {
+      email: 'moderator@cashtrade.com',
+      password: 'Moderator2024!',
+      name: 'Modérateur Support',
+      steamId: '76561198000000020',
+      steamUsername: 'Moderator_CTF',
+      steamAvatar: 'https://avatars.steamstatic.com/c5d56249ee5d28a07db4ac9f7f60af961fab5427_full.jpg',
+      level: 12,
+      xp: 18000,
+      tickets: 45,
+      type: 'MODERATOR',  // Modérateur pour gérer les conversations
+      totalVolumeCents: 0, // Les modérateurs ne tradent pas
+      kycStatus: 'VERIFIED',
+      acceptedTermsAt: new Date('2024-01-10T00:00:00Z'),
     },
     {
       email: 'protrader@cashtrade.com',
@@ -125,7 +140,7 @@ async function main() {
         where: { email: userData.email },
         update: {
           name: userData.name,
-          role: userData.type === 'ADMIN' ? 'ADMIN' : userData.type === 'AFFILIATE' ? 'AFFILIATE' : 'USER',
+          role: userData.type === 'ADMIN' ? 'ADMIN' : userData.type === 'MODERATOR' ? 'MODERATOR' : userData.type === 'AFFILIATE' ? 'AFFILIATE' : 'USER',
           steamId: userData.steamId,
           steamUsername: userData.steamUsername,
           steamAvatar: userData.steamAvatar,
@@ -140,7 +155,7 @@ async function main() {
         create: {
           email: userData.email,
           name: userData.name,
-          role: userData.type === 'ADMIN' ? 'ADMIN' : userData.type === 'AFFILIATE' ? 'AFFILIATE' : 'USER',
+          role: userData.type === 'ADMIN' ? 'ADMIN' : userData.type === 'MODERATOR' ? 'MODERATOR' : userData.type === 'AFFILIATE' ? 'AFFILIATE' : 'USER',
           steamId: userData.steamId,
           steamUsername: userData.steamUsername,
           steamAvatar: userData.steamAvatar,
@@ -155,7 +170,7 @@ async function main() {
       });
 
       users.push(user);
-      const role = userData.type === 'ADMIN' ? 'ADMIN' : userData.type === 'AFFILIATE' ? 'AFFILIATE' : 'USER';
+      const role = userData.type === 'ADMIN' ? 'ADMIN' : userData.type === 'MODERATOR' ? 'MODERATOR' : userData.type === 'AFFILIATE' ? 'AFFILIATE' : 'USER';
       console.log(`✅ Utilisateur créé/mis à jour: ${userData.name} (${userData.email}) - Rôle: ${role}`);
     } catch (error) {
       console.log(`❌ Erreur lors de la création/mise à jour de l'utilisateur ${userData.email}:`, error instanceof Error ? error.message : String(error));
@@ -385,22 +400,24 @@ async function main() {
 
   console.log(`✅ ${kycDocuments.length} documents KYC créés`);
 
+  // Nettoyer les anciennes stats d'affiliation pour éviter les conflits de code
+  console.log('🧹 Nettoyage des anciennes statistiques d\'affiliation...');
+  await prisma.affiliateStats.deleteMany({
+    where: {
+      userId: {
+        in: users.map(u => u.id)
+      }
+    }
+  });
+
   // Créer des statistiques d'affiliation (2% commission selon les règles)
   const affiliateUsers = users.filter(user => user.role === 'AFFILIATE');
   console.log(`🎯 Création des stats d'affiliation pour ${affiliateUsers.length} affiliés...`);
   
   const affiliateStats = await Promise.all([
     // ProTrader (users[1]) - Affilié expérimenté
-    prisma.affiliateStats.upsert({
-      where: { userId: users[1].id },
-      update: {
-        totalReferrals: 15,
-        totalVolumeCents: 750000, // 7,500€ de volume généré
-        totalCommissionCents: 15000, // 150€ de commission (2%)
-        commissionRate: 0.02,
-        isActive: true,
-      },
-      create: {
+    prisma.affiliateStats.create({
+      data: {
         userId: users[1].id,
         code: 'PROTRADER',
         totalReferrals: 15,
@@ -411,16 +428,8 @@ async function main() {
       },
     }),
     // SkinMaster (users[2]) - Affilié actif
-    prisma.affiliateStats.upsert({
-      where: { userId: users[2].id },
-      update: {
-        totalReferrals: 8,
-        totalVolumeCents: 420000, // 4,200€ de volume généré
-        totalCommissionCents: 8400, // 84€ de commission (2%)
-        commissionRate: 0.02,
-        isActive: true,
-      },
-      create: {
+    prisma.affiliateStats.create({
+      data: {
         userId: users[2].id,
         code: 'SKINMASTER',
         totalReferrals: 8,
@@ -431,16 +440,8 @@ async function main() {
       },
     }),
     // TopAffiliate (users[4]) - Top performer
-    prisma.affiliateStats.upsert({
-      where: { userId: users[4].id },
-      update: {
-        totalReferrals: 45,
-        totalVolumeCents: 2250000, // 22,500€ de volume généré
-        totalCommissionCents: 45000, // 450€ de commission (2%)
-        commissionRate: 0.02,
-        isActive: true,
-      },
-      create: {
+    prisma.affiliateStats.create({
+      data: {
         userId: users[4].id,
         code: 'TOPAFFILIATE',
         totalReferrals: 45,
@@ -451,16 +452,8 @@ async function main() {
       },
     }),
     // NewAffiliate (users[5]) - Débutant
-    prisma.affiliateStats.upsert({
-      where: { userId: users[5].id },
-      update: {
-        totalReferrals: 2,
-        totalVolumeCents: 85000, // 850€ de volume généré
-        totalCommissionCents: 1700, // 17€ de commission (2%)
-        commissionRate: 0.02,
-        isActive: true,
-      },
-      create: {
+    prisma.affiliateStats.create({
+      data: {
         userId: users[5].id,
         code: 'NEWAFFILIATE',
         totalReferrals: 2,
@@ -627,7 +620,8 @@ async function main() {
 - ${giveawayEntries.length} entrées de giveaway
 
 🔐 Comptes de test :
-- admin@cashtrade.com (Admin, KYC vérifié)
+- admin@cashtrade.com (Admin, accès complet)
+- moderator@cashtrade.com (Modérateur, gestion conversations - URL: /moderation)
 - protrader@cashtrade.com (Affilié expérimenté, 15 référrals, 150€ commission)
 - skinmaster@cashtrade.com (Affilié actif, 8 référrals, 84€ commission)
 - collector@cashtrade.com (Utilisateur normal, KYC en attente)

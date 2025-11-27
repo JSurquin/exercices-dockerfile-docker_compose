@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
 import { TradeHooks } from '@/lib/trade-hooks';

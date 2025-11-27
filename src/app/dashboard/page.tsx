@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // import { useAuth } from "@/components/providers/auth-provider";
-import { useSession } from "@/lib/auth-client";
+import { useSession } from "~/lib/auth-client";
 import { useLocale } from "@/components/providers/locale-provider";
 import OnboardingDialog from "@/components/onboarding/onboarding-dialog";
 import { useOnboarding } from "@/hooks/use-onboarding";

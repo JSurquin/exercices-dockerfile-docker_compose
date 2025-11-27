@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { auth } from '~/lib/auth';
 import { generateSkinplaceSignature, validateSkinplaceParams } from '@/utils/skinplace-signature';
 
 // Interface pour la réponse de l'API Skin.place

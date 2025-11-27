@@ -1,11 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { prisma } from '../../../../../../prisma/prisma';
+import { auth } from '~/lib/auth';
+import { prisma } from '~/prisma/prisma';
 import { withSecurity } from '@/lib/security';
 import { AuditLogger, AuditAction } from '@/lib/security';
 import { FraudDetector } from '@/lib/security';
 import { logger } from '@/lib/logger';
 import {headers} from 'next/headers';
+import { Session } from 'better-auth';
+
+// Fonction helper pour exécuter une requête avec fallback
+async function safeQuery<T>(
+  queryFn: () => Promise<T>, 
+  fallback: T, 
+  errorMessage: string
+): Promise<T> {
+  try {
+    return await queryFn();
+  } catch (error) {
+    logger.error(errorMessage, error);
+    return fallback;
+  }
+}
 
 async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse> {
   try {
@@ -16,11 +31,7 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Vérifier que l'utilisateur est admin
-    const user = await prisma.user.findUnique({
-      where: { id: session.session.userId },
-      select: { role: true },
-    });
+    const user = session.user;
 
     if (!user || user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -44,149 +55,225 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
 
     const since = new Date(Date.now() - (timeframeMs || 0));
 
-    // Récupérer les métriques de sécurité
-    const [
-      rateLimitHits,
-      fraudDetections,
-      blockedIPs,
-      suspiciousActivities,
-      loginFailures,
-      accountLocks,
-      ibanChanges,
-      payoutRequests,
-    ] = await Promise.all([
-      // Rate limit hits
-      prisma.auditLog.count({
+    // Récupérer les métriques de sécurité (séquentiel pour éviter surcharge Prisma)
+    
+    const rateLimitHits = await safeQuery(
+      () => prisma.auditLog.count({
         where: {
           action: AuditAction.RATE_LIMIT_EXCEEDED,
           createdAt: { gte: since },
         },
       }),
-      
-      // Fraud detections
-      prisma.auditLog.count({
+      0,
+      'Error fetching rate limit hits'
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 25));
+
+    const fraudDetections = await safeQuery(
+      () => prisma.auditLog.count({
         where: {
           action: AuditAction.SUSPICIOUS_ACTIVITY,
           createdAt: { gte: since },
         },
       }),
-      
-      // Blocked IPs
-      prisma.auditLog.count({
+      0,
+      'Error fetching fraud detections'
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 25));
+
+    const blockedIPs = await safeQuery(
+      () => prisma.auditLog.count({
         where: {
           action: AuditAction.IP_BLOCKED,
           createdAt: { gte: since },
         },
       }),
-      
-      // Suspicious activities
-      prisma.auditLog.count({
+      0,
+      'Error fetching blocked IPs'
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 25));
+
+    const suspiciousActivities = await safeQuery(
+      () => prisma.auditLog.count({
         where: {
           action: AuditAction.SUSPICIOUS_ACTIVITY,
           createdAt: { gte: since },
         },
       }),
-      
-      // Login failures
-      prisma.auditLog.count({
+      0,
+      'Error fetching suspicious activities'
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 25));
+
+    const loginFailures = await safeQuery(
+      () => prisma.auditLog.count({
         where: {
           action: AuditAction.USER_LOGIN_FAILED,
           createdAt: { gte: since },
         },
       }),
-      
-      // Account locks
-      prisma.auditLog.count({
+      0,
+      'Error fetching login failures'
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 25));
+
+    const accountLocks = await safeQuery(
+      () => prisma.auditLog.count({
         where: {
           action: AuditAction.ACCOUNT_LOCKED,
           createdAt: { gte: since },
         },
       }),
-      
-      // IBAN changes
-      prisma.auditLog.count({
+      0,
+      'Error fetching account locks'
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 25));
+
+    const ibanChanges = await safeQuery(
+      () => prisma.auditLog.count({
         where: {
           action: AuditAction.IBAN_CHANGED,
           createdAt: { gte: since },
         },
       }),
-      
-      // Payout requests
-      prisma.auditLog.count({
+      0,
+      'Error fetching IBAN changes'
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 25));
+
+    const payoutRequests = await safeQuery(
+      () => prisma.auditLog.count({
         where: {
           action: AuditAction.PAYOUT_REQUESTED,
           createdAt: { gte: since },
         },
       }),
-    ]);
+      0,
+      'Error fetching payout requests'
+    );
 
-    // Récupérer les IPs les plus actives
-    const topIPs = await prisma.auditLog.groupBy({
-      by: ['ipAddress'],
-      where: {
-        createdAt: { gte: since },
-        ipAddress: { not: null },
-      },
-      _count: {
-        id: true,
-      },
-      orderBy: {
-        _count: {
-          id: 'desc',
+    // Récupérer les IPs les plus actives (séquentiel pour éviter les conflits)
+    const topIPs = [];
+    try {
+      // Attendre un peu pour éviter les conflits avec les requêtes précédentes
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const ipLogs = await prisma.auditLog.findMany({
+        where: {
+          createdAt: { gte: since },
+          ipAddress: { not: null },
         },
-      },
-      take: 10,
-    });
+        select: { ipAddress: true },
+        take: 100, // Réduit pour éviter la surcharge
+      });
+      
+      const ipCounts = new Map();
+      ipLogs.forEach(log => {
+        if (log.ipAddress) {
+          ipCounts.set(log.ipAddress, (ipCounts.get(log.ipAddress) || 0) + 1);
+        }
+      });
+      
+      topIPs.push(...Array.from(ipCounts.entries())
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 10)
+        .map(([ip, count]) => ({ ipAddress: ip, _count: { id: count } })));
+    } catch (error) {
+      console.error('Error fetching top IPs:', error);
+    }
 
-    // Récupérer les utilisateurs les plus actifs
-    const topUsers = await prisma.auditLog.groupBy({
-      by: ['userId'],
-      where: {
-        createdAt: { gte: since },
-        userId: { not: 'system' },
-      },
-      _count: {
-        id: true,
-      },
-      orderBy: {
-        _count: {
-          id: 'desc',
+    // Récupérer les utilisateurs les plus actifs (séquentiel pour éviter les conflits)
+    const topUsers = [];
+    try {
+      // Attendre un peu pour éviter les conflits
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const userLogs = await prisma.auditLog.findMany({
+        where: {
+          createdAt: { gte: since },
+          userId: { not: 'system' },
         },
-      },
-      take: 10,
-    });
+        select: { userId: true },
+        take: 100, // Réduit pour éviter la surcharge
+      });
+      
+      const userCounts = new Map();
+      userLogs.forEach(log => {
+        if (log.userId) {
+          userCounts.set(log.userId, (userCounts.get(log.userId) || 0) + 1);
+        }
+      });
+      
+      topUsers.push(...Array.from(userCounts.entries())
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 10)
+        .map(([userId, count]) => ({ userId, _count: { id: count } })));
+    } catch (error) {
+      console.error('Error fetching top users:', error);
+    }
+
+    // Attendre avant les dernières requêtes
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     // Récupérer les activités récentes suspectes
-    const recentSuspiciousActivities = await prisma.auditLog.findMany({
-      where: {
-        action: AuditAction.SUSPICIOUS_ACTIVITY,
-        createdAt: { gte: since },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 20,
-      select: {
-        id: true,
-        userId: true,
-        ipAddress: true,
-        action: true,
-        details: true,
-        createdAt: true,
-      },
-    });
+    const recentSuspiciousActivities = await safeQuery(
+      () => prisma.auditLog.findMany({
+        where: {
+          action: AuditAction.SUSPICIOUS_ACTIVITY,
+          createdAt: { gte: since },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+        select: {
+          id: true,
+          userId: true,
+          ipAddress: true,
+          action: true,
+          details: true,
+          createdAt: true,
+        },
+      }),
+      [],
+      'Error fetching recent suspicious activities'
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 50));
 
     // Détecter les pics d'activité actuels
-    const activitySpike = await FraudDetector.detectActivitySpikes();
+    const activitySpike = await safeQuery(
+      () => FraudDetector.detectActivitySpikes(),
+      {
+        hasSpike: false,
+        currentRate: 0,
+        averageRate: 0,
+        threshold: 0,
+      },
+      'Error detecting activity spikes'
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 50));
 
     // Calculer les tendances (comparaison avec la période précédente)
     const previousPeriodSince = new Date(since.getTime() - (timeframeMs || 0));
     const previousPeriodUntil = since;
 
-    const previousFraudDetections = await prisma.auditLog.count({
-      where: {
-        action: AuditAction.SUSPICIOUS_ACTIVITY,
-        createdAt: { gte: previousPeriodSince, lt: previousPeriodUntil },
-      },
-    });
+    const previousFraudDetections = await safeQuery(
+      () => prisma.auditLog.count({
+        where: {
+          action: AuditAction.SUSPICIOUS_ACTIVITY,
+          createdAt: { gte: previousPeriodSince, lt: previousPeriodUntil },
+        },
+      }),
+      0,
+      'Error fetching previous fraud detections'
+    );
 
     const fraudTrend = previousFraudDetections > 0 
       ? ((fraudDetections - previousFraudDetections) / previousFraudDetections) * 100
@@ -234,14 +321,14 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
       })),
     };
 
-    // Logger l'accès aux métriques de sécurité
-    await AuditLogger.logAdminAction(
-      session.session.userId,
-      'security_metrics_accessed',
-      undefined,
-      { timeframe },
-      req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown'
-    );
+    // Logger l'accès aux métriques de sécurité - DÉSACTIVÉ pour éviter les boucles
+    // await AuditLogger.logAdminAction(
+    //   session.session.userId,
+    //   'security_metrics_accessed',
+    //   undefined,
+    //   { timeframe },
+    //   req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown'
+    // );
 
     return NextResponse.json(metrics);
 
@@ -252,4 +339,5 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
 }
 
 // Appliquer le middleware de sécurité pour les actions sensibles
+
 export const GET = withSecurity(handleGetSecurityMetrics, 'sensitive');

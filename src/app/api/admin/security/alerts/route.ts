@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { auth } from '~/lib/auth';
 import { securityService } from '@/lib/security-service';
 import { logger } from '@/lib/logger';
 

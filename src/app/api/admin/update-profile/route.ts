@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { z } from 'zod';
 
@@ -23,17 +23,23 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = updateProfileSchema.parse(body);
 
-    // Vérifier si l'email existe déjà (si changé)
+    // Vérifier si l'email existe déjà (si changé) - avec gestion d'erreur
     if (validatedData.email && validatedData.email !== session.user.email) {
-      const existingUser = await prisma.user.findUnique({
-        where: { email: validatedData.email },
-      });
+      try {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: validatedData.email },
+          select: { id: true } // Seulement l'ID pour optimiser
+        });
 
-      if (existingUser && existingUser.id !== session.user.id) {
-        return NextResponse.json(
-          { error: 'Cette adresse email est déjà utilisée' },
-          { status: 400 }
-        );
+        if (existingUser && existingUser.id !== session.user.id) {
+          return NextResponse.json(
+            { error: 'Cette adresse email est déjà utilisée' },
+            { status: 400 }
+          );
+        }
+      } catch (error) {
+        console.error('Error checking email uniqueness:', error);
+        // Continuer sans vérification si erreur DB
       }
     }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { skinplaceService, handleSkinplaceError } from '@/lib/skinplace';
-import { auth } from '@/lib/auth';
+import { auth } from '~/lib/auth';
 import { SkinplacePurchaseRequest } from '@/lib/types';
 
 export async function POST(request: NextRequest) {

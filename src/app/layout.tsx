@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LocaleProvider } from "@/components/providers/locale-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { CurrencyProvider } from "@/components/providers/currency-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ChatWidget } from "@/components/ui/chat-widget";
@@ -61,6 +62,7 @@ export default function RootLayout({
         >
           <LocaleProvider>
             <CurrencyProvider>
+          <QueryProvider>
               <AuthProvider>
                 <Header />
                 <main className="flex-1">
@@ -70,6 +72,7 @@ export default function RootLayout({
                 <ChatWidget />
                 <Toaster />
               </AuthProvider>
+          </QueryProvider>
             </CurrencyProvider>
           </LocaleProvider>
         </ThemeProvider>

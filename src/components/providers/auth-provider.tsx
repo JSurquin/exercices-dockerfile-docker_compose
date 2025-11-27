@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/lib/types';
-import { signInWithDiscord, signOut, getSession } from '@/lib/auth-client';
+import { signInWithDiscord, signOut, getSession } from '~/lib/auth-client';
 import { toast } from 'sonner';
 
 interface AuthContextType {

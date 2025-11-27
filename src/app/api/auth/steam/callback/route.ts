@@ -1,15 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySteamOpenID, getSteamUserInfo } from '@/lib/steam-auth';
 import { prisma } from '~/prisma/prisma';
-import { auth } from '@/lib/auth';
+import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
+import { 
+  getRequestContext, 
+  logUserAction, 
+  logSystemError 
+} from '@/lib/security/audit-helpers';
+import { AuditAction } from '@/lib/security';
 
 export async function GET(request: NextRequest) {
+  const context = getRequestContext(request);
+  
   try {
     // Vérifier la réponse OpenID de Steam
     const steamId = await verifySteamOpenID(request);
 
     if (!steamId) {
+      // Log d'échec de vérification Steam
+      await logUserAction(
+        context,
+        AuditAction.USER_LOGIN_FAILED,
+        {
+          type: 'steam_verification_failed',
+          reason: 'Invalid Steam OpenID response',
+          timestamp: new Date().toISOString(),
+        },
+        'medium'
+      );
+
       const errorUrl = new URL('/', request.url);
       errorUrl.searchParams.set('error', 'steam_verification_failed');
       return NextResponse.redirect(errorUrl.toString());
@@ -19,6 +39,19 @@ export async function GET(request: NextRequest) {
     const steamUser = await getSteamUserInfo(steamId);
 
     if (!steamUser) {
+      // Log d'échec de récupération du profil Steam
+      await logUserAction(
+        context,
+        AuditAction.USER_LOGIN_FAILED,
+        {
+          type: 'steam_profile_fetch_failed',
+          steamId,
+          reason: 'Failed to fetch Steam profile',
+          timestamp: new Date().toISOString(),
+        },
+        'medium'
+      );
+
       const errorUrl = new URL('/', request.url);
       errorUrl.searchParams.set('error', 'steam_profile_fetch_failed');
       return NextResponse.redirect(errorUrl.toString());
@@ -33,6 +66,20 @@ export async function GET(request: NextRequest) {
     const password = 'steam-auth-' + steamUser.steamid;
 
     if (!user) {
+      // Log de création d'un nouvel utilisateur
+      await logUserAction(
+        context,
+        AuditAction.USER_LOGIN,
+        {
+          type: 'new_user_registration',
+          steamId: steamUser.steamid,
+          steamUsername: steamUser.personaname,
+          method: 'steam',
+          timestamp: new Date().toISOString(),
+        },
+        'medium'
+      );
+
       // Créer un nouvel utilisateur avec Better Auth
       console.log('Création nouvel utilisateur Steam:', steamUser.personaname);
       
@@ -41,7 +88,8 @@ export async function GET(request: NextRequest) {
           email: email,
           password: password,
           name: steamUser.personaname,
-          image: steamUser.avatarfull || steamUser.avatar,
+          // temporary remove
+          //image: steamUser.avatarfull || steamUser.avatar,
         },
       });
 
@@ -66,6 +114,21 @@ export async function GET(request: NextRequest) {
         }
       });
     } else {
+      // Log de connexion utilisateur existant
+      context.userId = user.id;
+      await logUserAction(
+        context,
+        AuditAction.USER_LOGIN,
+        {
+          type: 'existing_user_login',
+          steamId: steamUser.steamid,
+          steamUsername: steamUser.personaname,
+          method: 'steam',
+          timestamp: new Date().toISOString(),
+        },
+        'low'
+      );
+
       // Mettre à jour les informations Steam si elles ont changé
       console.log('Mise à jour utilisateur existant:', user.name);
       user = await prisma.user.update({
@@ -109,6 +172,21 @@ export async function GET(request: NextRequest) {
 
     console.log('Connexion réussie, redirection vers dashboard');
 
+    // Log de connexion réussie
+    context.userId = user.id;
+    await logUserAction(
+      context,
+      AuditAction.USER_LOGIN,
+      {
+        type: 'steam_login_success',
+        userId: user.id,
+        steamId: steamUser.steamid,
+        steamUsername: steamUser.personaname,
+        timestamp: new Date().toISOString(),
+      },
+      'low'
+    );
+
     // Créer la réponse avec redirection
     const redirectUrl = new URL('/dashboard', request.url);
     redirectUrl.searchParams.set('steam_login', 'success');
@@ -124,6 +202,10 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Steam callback error:', error);
+    
+    // Log de l'erreur système
+    await logSystemError(context, error, 'steam_callback');
+    
     const errorUrl = new URL('/', request.url);
     errorUrl.searchParams.set('error', 'steam_callback_error');
     return NextResponse.redirect(errorUrl.toString());

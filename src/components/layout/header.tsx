@@ -28,10 +28,11 @@ import {
   SunIcon,
   LanguageIcon,
   UserCircleIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { Locale, locales } from "@/lib/i18n";
 import { CS2Logo } from "@/components/ui/cs2-icons";
-import { useSession } from "@/lib/auth-client";
+import { useSession } from "~/lib/auth-client";
 
 export function Header() {
   const { user, loginWithSteam, loginWithDiscord, logout, isLoading } = useAuth();
@@ -42,6 +43,7 @@ export function Header() {
 
   const isAdmin = session?.user?.role === "ADMIN";
   const isAffiliate = session?.user?.role === "AFFILIATE";
+  const isModerator = session?.user?.role === "MODERATOR";
 
   const navigation = [
     { name: messages.nav.home, href: "/", icon: HomeIcon },
@@ -49,6 +51,7 @@ export function Header() {
     { name: messages.nav.dashboard, href: "/dashboard", icon: ChartBarIcon },
     { name: messages.nav.giveaways, href: "/giveaways", icon: GiftIcon },
     ...(isAffiliate ? [{ name: "Affiliation", href: "/affiliate", icon: UserCircleIcon }] : []),
+    ...(isModerator || isAdmin ? [{ name: "Modération", href: "/moderation", icon: ChatBubbleLeftRightIcon }] : []),
     {
       name: messages.nav.support,
       href: "/support",

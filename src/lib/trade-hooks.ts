@@ -102,6 +102,11 @@ export class TradeHooks {
     try {
       console.log(`[TradeHooks] Trade ${tradeId} status changed from ${oldStatus} to ${newStatus}`);
       
+      // Si le trade devient AVAILABLE après le hold, créer le payout
+      if (newStatus === 'AVAILABLE' && oldStatus === 'IN_TRADE_HOLD') {
+        await this.onTradeAvailable(tradeId);
+      }
+      
       // Si le trade passe à "PAID", calculer les commissions
       if (newStatus === 'PAID' && oldStatus !== 'PAID') {
         await this.onTradePaid(tradeId);
@@ -122,6 +127,91 @@ export class TradeHooks {
       
     } catch (error) {
       console.error(`[TradeHooks] Error processing status change for trade ${tradeId}:`, error);
+    }
+  }
+  
+  /**
+   * Hook appelé quand un trade devient disponible après le hold
+   * Crée automatiquement un payout en attente
+   */
+  static async onTradeAvailable(tradeId: string): Promise<void> {
+    try {
+      console.log(`[TradeHooks] Trade ${tradeId} is now available for payout`);
+      
+      const trade = await prisma.trade.findUnique({
+        where: { id: tradeId },
+        include: { user: true }
+      });
+      
+      if (!trade) {
+        throw new Error('Trade not found');
+      }
+      
+      // Vérifier si un payout existe déjà pour ce trade
+      const existingPayout = await prisma.payout.findFirst({
+        where: { tradeId }
+      });
+      
+      if (existingPayout) {
+        console.log(`[TradeHooks] Payout already exists for trade ${tradeId}`);
+        return;
+      }
+      
+      // Créer une méthode de paiement par défaut si l'utilisateur n'en a pas
+      let paymentMethod = await prisma.paymentMethod.findFirst({
+        where: {
+          userId: trade.userId,
+          isDefault: true
+        }
+      });
+      
+      if (!paymentMethod) {
+        // Créer une méthode de paiement SEPA par défaut
+        paymentMethod = await prisma.paymentMethod.create({
+          data: {
+            userId: trade.userId,
+            type: 'SEPA',
+            details: {},
+            isDefault: true,
+            isVerified: false
+          }
+        });
+      }
+      
+      // Créer le payout
+      await prisma.payout.create({
+        data: {
+          userId: trade.userId,
+          tradeId: trade.id,
+          amountCents: trade.netCents,
+          paymentMethodId: paymentMethod.id,
+          status: 'PENDING'
+        }
+      });
+      
+      // Mettre à jour le statut du trade
+      await prisma.trade.update({
+        where: { id: tradeId },
+        data: { status: 'PAYOUT_PENDING' }
+      });
+      
+      // Log de l'audit
+      await prisma.auditLog.create({
+        data: {
+          userId: trade.userId,
+          action: 'PAYOUT_CREATED',
+          details: {
+            tradeId,
+            amountCents: trade.netCents,
+            paymentMethodId: paymentMethod.id
+          }
+        }
+      });
+      
+      console.log(`[TradeHooks] Created payout for trade ${tradeId}`);
+    } catch (error) {
+      console.error(`[TradeHooks] Error creating payout for trade ${tradeId}:`, error);
+      throw error;
     }
   }
   

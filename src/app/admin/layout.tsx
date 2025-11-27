@@ -1,11 +1,11 @@
 'use client';
 
-import { useSession } from '@/lib/auth-client';
+import { useSession } from '~/lib/auth-client';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, ArrowLeft, Settings, Home } from 'lucide-react';
+import { Shield, ArrowLeft, Settings, Home, Activity, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 
 interface AdminLayoutProps {
@@ -148,6 +148,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   }`}
                 >
                   Newsletter
+                </Link>
+                <Link 
+                  href="/admin/chat"
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
+                    pathname === '/admin/chat' 
+                      ? 'bg-orange-500/20 text-orange-300' 
+                      : 'text-slate-300 hover:bg-slate-700/50'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Gestion Chat
+                </Link>
+                <Link 
+                  href="/admin/audit"
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
+                    pathname === '/admin/audit' 
+                      ? 'bg-orange-500/20 text-orange-300' 
+                      : 'text-slate-300 hover:bg-slate-700/50'
+                  }`}
+                >
+                  <Activity className="w-4 h-4" />
+                  Audit & Sécurité
                 </Link>
               </CardContent>
             </Card>

@@ -1185,6 +1185,88 @@ export interface Messages {
     giveaways: {
       descriptionPlaceholder: string;
     };
+    audit: {
+      title: string;
+      subtitle: string;
+      loading: string;
+      refresh: string;
+      export: string;
+      metrics: {
+        totalLogs: string;
+        criticalAlerts: string;
+        suspiciousActivities: string;
+        failedLogins: string;
+        last24h: string;
+        needsAttention: string;
+        detectedAutomatically: string;
+        failedAttempts: string;
+      };
+      tabs: {
+        logs: string;
+        analytics: string;
+        alerts: string;
+      };
+      filters: {
+        title: string;
+        action: string;
+        severity: string;
+        user: string;
+        period: string;
+        allActions: string;
+        allSeverities: string;
+        userIdPlaceholder: string;
+        lastHour: string;
+        last24h: string;
+        last7days: string;
+        last30days: string;
+      };
+      table: {
+        date: string;
+        user: string;
+        action: string;
+        severity: string;
+        ip: string;
+        details: string;
+        system: string;
+        entriesFound: string;
+      };
+      analytics: {
+        title: string;
+        subtitle: string;
+        topIPs: string;
+        activeUsers: string;
+        fraudTrend: string;
+        activitySpike: string;
+        currentActivity: string;
+        threshold: string;
+        requests: string;
+        actions: string;
+        vsPreviousPeriod: string;
+      };
+      alerts: {
+        title: string;
+        subtitle: string;
+        inDevelopment: string;
+      };
+      actions: {
+        "user.login": string;
+        "user.logout": string;
+        "user.login_failed": string;
+        "trade.created": string;
+        "trade.completed": string;
+        "payout.requested": string;
+        "payout.processed": string;
+        "admin.action": string;
+        "security.suspicious_activity": string;
+        "security.rate_limit_exceeded": string;
+      };
+      severity: {
+        low: string;
+        medium: string;
+        high: string;
+        critical: string;
+      };
+    };
   };
   kycPage: {
     title: string;

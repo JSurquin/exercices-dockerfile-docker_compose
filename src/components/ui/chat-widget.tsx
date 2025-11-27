@@ -7,6 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLocale } from "@/components/providers/locale-provider";
+import { useAuth } from "@/components/providers/auth-provider";
+import { useChat } from "@/hooks/use-chat";
+import { SenderType } from "@prisma/client";
 import {
   ChatBubbleBottomCenterTextIcon,
   XMarkIcon,
@@ -21,14 +24,6 @@ import {
   CheckIcon,
 } from "@heroicons/react/24/solid";
 
-interface Message {
-  id: string;
-  content: string;
-  isUser: boolean;
-  timestamp: Date;
-  status?: "sent" | "delivered" | "read";
-}
-
 interface QuickAction {
   icon: React.ElementType;
   label: string;
@@ -37,28 +32,22 @@ interface QuickAction {
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const { messages } = useLocale();
+  const { user } = useAuth();
+  const { 
+    currentConversation, 
+    sendMessage, 
+    getUnreadCount, 
+    isLoading
+  } = useChat();
+  
+  const [message, setMessage] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const handleToggleChat = () => {
-    console.log("🔥 CHAT CLICKED! Current state:", isOpen);
-    setIsOpen(prev => {
-      console.log("🔥 Changing from", prev, "to", !prev);
-      return !prev;
-    });
+    setIsOpen(prev => !prev);
+    // Les conversations sont automatiquement mises à jour par React Query (polling toutes les 5s)
   };
-  const { messages } = useLocale();
-  const [message, setMessage] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [chatMessages, setChatMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content: messages.chatWidget.responses.welcomeMessage,
-      isUser: false,
-      timestamp: new Date(),
-      status: "read",
-    },
-  ]);
-  const [unreadCount, setUnreadCount] = useState(1);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -66,13 +55,7 @@ export function ChatWidget() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
-
-  useEffect(() => {
-    if (isOpen) {
-      setUnreadCount(0);
-    }
-  }, [isOpen]);
+  }, [currentConversation?.messages]);
 
   const quickActions: QuickAction[] = [
     {
@@ -92,58 +75,16 @@ export function ChatWidget() {
     },
   ];
 
-  const handleQuickMessage = (quickMessage: string) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      content: quickMessage,
-      isUser: true,
-      timestamp: new Date(),
-      status: "sent",
-    };
-    setChatMessages((prev) => [...prev, newMessage]);
-    
-    // Simulate typing and response
-    setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-      const response: Message = {
-        id: (Date.now() + 1).toString(),
-        content: messages.chatWidget.responses.expertResponse,
-        isUser: false,
-        timestamp: new Date(),
-        status: "read",
-      };
-      setChatMessages((prev) => [...prev, response]);
-    }, 2000);
+  const handleQuickMessage = async (quickMessage: string) => {
+    await sendMessage(quickMessage);
   };
 
-  const handleSendMessage = () => {
-    if (!message.trim()) return;
+  const handleSendMessage = async () => {
+    if (!message.trim() || isLoading) return;
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      content: message,
-      isUser: true,
-      timestamp: new Date(),
-      status: "sent",
-    };
-
-    setChatMessages((prev) => [...prev, newMessage]);
+    const messageContent = message;
     setMessage("");
-
-    // Simulate typing and response
-    setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-      const response: Message = {
-        id: (Date.now() + 1).toString(),
-        content: messages.chatWidget.responses.thankYouMessage,
-        isUser: false,
-        timestamp: new Date(),
-        status: "read",
-      };
-      setChatMessages((prev) => [...prev, response]);
-    }, 1500);
+    await sendMessage(messageContent);
   };
 
   const formatTime = (date: Date) => {
@@ -218,57 +159,80 @@ export function ChatWidget() {
           {/* Messages */}
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
-              {chatMessages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${msg.isUser ? "justify-end" : "justify-start"} message-slide-in`}
-                >
+              {/* Message de bienvenue si pas de conversation */}
+              {!currentConversation && (
+                <div className="flex justify-start message-slide-in">
+                  <div className="max-w-[280px] rounded-2xl px-4 py-2 bg-muted border">
+                    <p className="text-sm">{messages.chatWidget.responses.welcomeMessage}</p>
+                    <div className="flex items-center justify-between mt-1 gap-2 text-muted-foreground">
+                      <span className="text-xs">{formatTime(new Date())}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Messages de la conversation */}
+              {currentConversation?.messages.map((msg) => {
+                const isUserMessage = msg.senderType === 'USER' && msg.userId === user?.id;
+                const isBotOrModerator = msg.senderType === 'BOT' || msg.senderType === 'MODERATOR' || msg.senderType === 'SYSTEM';
+                
+                return (
                   <div
-                    className={`max-w-[280px] rounded-2xl px-4 py-2 ${
-                      msg.isUser
-                        ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
-                        : "bg-muted border"
-                    }`}
+                    key={msg.id}
+                    className={`flex ${isUserMessage ? "justify-end" : "justify-start"} message-slide-in`}
                   >
-                    <p className="text-sm">{msg.content}</p>
                     <div
-                      className={`flex items-center justify-between mt-1 gap-2 ${
-                        msg.isUser ? "text-white/70" : "text-muted-foreground"
+                      className={`max-w-[280px] rounded-2xl px-4 py-2 ${
+                        isUserMessage
+                          ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
+                          : isBotOrModerator
+                          ? msg.senderType === 'MODERATOR'
+                            ? "bg-blue-100 border border-blue-200 text-blue-900"
+                            : "bg-muted border"
+                          : "bg-muted border"
                       }`}
                     >
-                      <span className="text-xs">{formatTime(msg.timestamp)}</span>
-                      {msg.isUser && (
-                        <div className="flex items-center">
-                          {msg.status === "sent" && (
-                            <CheckIcon className="h-3 w-3" />
-                          )}
-                          {msg.status === "delivered" && (
-                            <div className="flex">
-                              <CheckIcon className="h-3 w-3" />
-                              <CheckIcon className="h-3 w-3 -ml-1" />
-                            </div>
-                          )}
-                          {msg.status === "read" && (
+                      {/* Indicateur du type d'expéditeur pour les messages non-utilisateur */}
+                      {!isUserMessage && msg.senderType === 'MODERATOR' && (
+                        <div className="text-xs text-blue-600 font-medium mb-1">
+                          👨‍💼 Modérateur
+                        </div>
+                      )}
+                      {!isUserMessage && msg.senderType === 'SYSTEM' && (
+                        <div className="text-xs text-gray-600 font-medium mb-1">
+                          ⚙️ Système
+                        </div>
+                      )}
+                      
+                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      <div
+                        className={`flex items-center justify-between mt-1 gap-2 ${
+                          isUserMessage ? "text-white/70" : "text-muted-foreground"
+                        }`}
+                      >
+                        <span className="text-xs">{formatTime(new Date(msg.createdAt))}</span>
+                        {isUserMessage && (
+                          <div className="flex items-center">
                             <div className="flex text-green-300">
                               <CheckIcon className="h-3 w-3" />
                               <CheckIcon className="h-3 w-3 -ml-1" />
                             </div>
-                          )}
-                        </div>
-                      )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
-              {/* Typing Indicator */}
-              {isTyping && (
-                <div className="flex justify-start">
-                  <div className="bg-muted border rounded-2xl px-4 py-3 max-w-[280px]">
+              {/* Indicateur de chargement */}
+              {isLoading && (
+                <div className="flex justify-center">
+                  <div className="bg-muted border rounded-2xl px-4 py-3">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-muted-foreground/40 rounded-full typing-dot"></div>
-                      <div className="w-2 h-2 bg-muted-foreground/40 rounded-full typing-dot"></div>
-                      <div className="w-2 h-2 bg-muted-foreground/40 rounded-full typing-dot"></div>
+                      <div className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-pulse"></div>
+                      <div className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -286,6 +250,7 @@ export function ChatWidget() {
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={messages.chatWidget.placeholder}
                   className="pr-20 resize-none"
+                  disabled={isLoading}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -314,9 +279,13 @@ export function ChatWidget() {
                 size="icon"
                 className="h-10 w-10 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
                 onClick={handleSendMessage}
-                disabled={!message.trim()}
+                disabled={!message.trim() || isLoading}
               >
-                <PaperAirplaneIcon className="h-4 w-4" />
+                {isLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                ) : (
+                  <PaperAirplaneIcon className="h-4 w-4" />
+                )}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-2 text-center">
@@ -330,9 +299,9 @@ export function ChatWidget() {
       <div className="fixed bottom-6 right-6 !z-[99999] pointer-events-auto">
         <div className="relative">
           {/* Unread Badge */}
-          {unreadCount > 0 && !isOpen && (
+          {getUnreadCount() > 0 && !isOpen && (
             <Badge className="absolute -top-2 -left-2 h-6 w-6 rounded-full bg-red-500 hover:bg-red-500 text-white text-xs flex items-center justify-center animate-pulse">
-              {unreadCount}
+              {getUnreadCount()}
             </Badge>
           )}
           

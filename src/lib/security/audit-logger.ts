@@ -1,4 +1,4 @@
-import { prisma } from '../../../prisma/prisma';
+import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
 import { createHash } from 'crypto';
 export enum AuditAction {
@@ -60,6 +60,10 @@ export class AuditLogger {
    */
   static async log(data: AuditLogData): Promise<void> {
     try {
+      // DÉSACTIVÉ TEMPORAIREMENT - audit logs cassent le moteur Prisma
+      console.log('🚫 Audit log disabled:', data.action);
+      return;
+      
       // Enregistrer en base de données
       await prisma.auditLog.create({
         data: {

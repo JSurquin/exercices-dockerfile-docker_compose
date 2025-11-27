@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from '@/lib/auth-client';
+import { signIn } from '~/lib/auth-client';
 import { useLocale } from '@/components/providers/locale-provider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, Eye, EyeOff, Loader2, Mail, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { authClient } from '@/lib/auth-client';
+import { authClient } from '~/lib/auth-client';
 
 
 export default function AdminLoginPage() {

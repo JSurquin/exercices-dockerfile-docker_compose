@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, Eye, EyeOff, Loader2, CheckCircle, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { authClient } from '@/lib/auth-client';
+import { authClient } from '~/lib/auth-client';
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');

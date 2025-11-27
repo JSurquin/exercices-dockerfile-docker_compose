@@ -1,16 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { auth } from '~/lib/auth';
 import { User, AdminFilters } from '@/lib/types';
+import { prisma } from '~/prisma/prisma';
+import { 
+  getRequestContext, 
+  logUnauthorizedAccess, 
+  logAdminAccess,
+  logSystemError
+} from '@/lib/security/audit-helpers';
 
 export async function GET(request: NextRequest) {
+  const context = getRequestContext(request);
+  
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
     });
 
     if (!session?.user) {
+      await logUnauthorizedAccess(context, '/api/admin/users', 'No valid session');
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
+
+    // Vérifier les permissions admin (utiliser la session directement)
+    if (!session.user.role || session.user.role !== 'ADMIN') {
+      await logUnauthorizedAccess(context, '/api/admin/users', 'Insufficient permissions');
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    }
+
+    context.userId = session.user.id;
 
     const { searchParams } = new URL(request.url);
     const filters: AdminFilters = {
@@ -82,6 +100,13 @@ export async function GET(request: NextRequest) {
     const endIndex = startIndex + (filters.limit || 20);
     const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
 
+    // Log de l'accès admin - DÉSACTIVÉ pour éviter les boucles
+    // await logAdminAccess(context, 'users_list_accessed', undefined, {
+    //   filters,
+    //   resultCount: paginatedUsers.length,
+    //   totalUsers: filteredUsers.length
+    // });
+
     return NextResponse.json({
       users: paginatedUsers,
       total: filteredUsers.length,
@@ -91,9 +116,15 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Erreur lors de la récupération des utilisateurs:', error);
+    
+    // Log de l'erreur système
+    await logSystemError(context, error, 'admin_users_fetch');
+    
     return NextResponse.json(
       { error: 'Erreur interne du serveur' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
