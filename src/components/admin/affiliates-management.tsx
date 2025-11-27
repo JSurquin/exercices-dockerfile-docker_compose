@@ -212,13 +212,13 @@ export default function AffiliatesManagement() {
   return (
     <div className="space-y-6">
       {/* Outils d'administration */}
-      <Card>
+      <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-white">
             <Settings className="h-5 w-5" />
             Outils d&apos;Administration
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-slate-400">
             Outils de maintenance et de recalcul pour le système d&apos;affiliation
           </CardDescription>
         </CardHeader>
@@ -229,45 +229,45 @@ export default function AffiliatesManagement() {
 
       {/* Métriques globales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
+        <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Affiliés Actifs</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-slate-300">Affiliés Actifs</CardTitle>
+            <UserCheck className="h-4 w-4 text-slate-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{globalStats.totalAffiliates}</div>
+            <div className="text-2xl font-bold text-white">{globalStats.totalAffiliates}</div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Référrals Total</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-slate-300">Référrals Total</CardTitle>
+            <Users className="h-4 w-4 text-slate-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{globalStats.totalReferrals}</div>
+            <div className="text-2xl font-bold text-white">{globalStats.totalReferrals}</div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Volume Généré</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-slate-300">Volume Généré</CardTitle>
+            <TrendingUp className="h-4 w-4 text-slate-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-white">
               {formatCurrency(globalStats.totalVolume)}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Commissions Totales</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-slate-300">Commissions Totales</CardTitle>
+            <DollarSign className="h-4 w-4 text-slate-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-white">
               {formatCurrency(globalStats.totalCommissions)}
             </div>
           </CardContent>
@@ -275,10 +275,10 @@ export default function AffiliatesManagement() {
       </div>
 
       {/* Filtres et recherche */}
-      <Card>
+      <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader>
-          <CardTitle>Gestion des Affiliés</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-white">Gestion des Affiliés</CardTitle>
+          <CardDescription className="text-slate-400">
             Gérez les comptes affiliés, leurs commissions et leurs performances
           </CardDescription>
         </CardHeader>
@@ -417,10 +417,10 @@ export default function AffiliatesManagement() {
 
       {/* Dialog de détails d'affilié */}
       <Dialog open={!!selectedAffiliate} onOpenChange={() => setSelectedAffiliate(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
           <DialogHeader>
-            <DialogTitle>Détails de l&apos;affilié</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-white">Détails de l&apos;affilié</DialogTitle>
+            <DialogDescription className="text-slate-400">
               Gérer les paramètres et voir les détails de l&apos;affilié
             </DialogDescription>
           </DialogHeader>

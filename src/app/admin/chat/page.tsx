@@ -174,11 +174,11 @@ export default function AdminChatPage() {
   if (!user || (user as any).role !== 'ADMIN') {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Card>
+        <Card className="bg-slate-800/50 border-slate-700">
           <CardContent className="p-8 text-center">
             <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-orange-500" />
-            <h2 className="text-2xl font-bold mb-2">Accès refusé</h2>
-            <p className="text-muted-foreground">
+            <h2 className="text-2xl font-bold mb-2 text-white">Accès refusé</h2>
+            <p className="text-slate-400">
               Vous devez être administrateur pour accéder à cette page.
             </p>
           </CardContent>
@@ -196,11 +196,11 @@ export default function AdminChatPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold mb-2 flex items-center">
-            <ChatBubbleLeftRightIcon className="w-8 h-8 mr-3 text-orange-600" />
+          <h1 className="text-3xl font-bold mb-2 flex items-center text-white">
+            <ChatBubbleLeftRightIcon className="w-8 h-8 mr-3 text-orange-500" />
             Gestion du Chat
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-slate-400">
             Gérez les conversations, modérateurs et statistiques du système de chat
           </p>
         </motion.div>
@@ -213,43 +213,43 @@ export default function AdminChatPage() {
             transition={{ delay: 0.1 }}
             className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
           >
-            <Card>
+            <Card className="bg-slate-800/50 border-slate-700">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total conversations</p>
-                    <p className="text-2xl font-bold">{chatStats.totalConversations}</p>
+                    <p className="text-sm text-slate-400">Total conversations</p>
+                    <p className="text-2xl font-bold text-white">{chatStats.totalConversations}</p>
                   </div>
-                  <ChatBubbleLeftRightIcon className="w-8 h-8 text-blue-600" />
+                  <ChatBubbleLeftRightIcon className="w-8 h-8 text-blue-400" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-slate-800/50 border-slate-700">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Conversations actives</p>
-                    <p className="text-2xl font-bold">{chatStats.activeConversations}</p>
+                    <p className="text-sm text-slate-400">Conversations actives</p>
+                    <p className="text-2xl font-bold text-white">{chatStats.activeConversations}</p>
                   </div>
-                  <CheckCircleIcon className="w-8 h-8 text-green-600" />
+                  <CheckCircleIcon className="w-8 h-8 text-green-400" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-slate-800/50 border-slate-700">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Non assignées</p>
-                    <p className="text-2xl font-bold">{chatStats.unassignedConversations}</p>
+                    <p className="text-sm text-slate-400">Non assignées</p>
+                    <p className="text-2xl font-bold text-white">{chatStats.unassignedConversations}</p>
                   </div>
-                  <ExclamationTriangleIcon className="w-8 h-8 text-orange-600" />
+                  <ExclamationTriangleIcon className="w-8 h-8 text-orange-400" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-slate-800/50 border-slate-700">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -272,9 +272,9 @@ export default function AdminChatPage() {
 
           {/* Onglet Conversations */}
           <TabsContent value="conversations">
-            <Card>
+            <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle>Conversations récentes ({conversations.length})</CardTitle>
+                <CardTitle className="text-white">Conversations récentes ({conversations.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 {loading ? (
@@ -342,9 +342,9 @@ export default function AdminChatPage() {
           <TabsContent value="moderators">
             <div className="space-y-6">
               {/* Ajouter un modérateur */}
-              <Card>
+              <Card className="bg-slate-800/50 border-slate-700">
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
+                  <CardTitle className="flex items-center justify-between text-white">
                     <span>Gestion des modérateurs</span>
                     <Dialog>
                       <DialogTrigger asChild>
@@ -464,9 +464,9 @@ export default function AdminChatPage() {
           <TabsContent value="stats">
             <div className="space-y-6">
               {/* Statistiques des modérateurs */}
-              <Card>
+              <Card className="bg-slate-800/50 border-slate-700">
                 <CardHeader>
-                  <CardTitle>Performance des modérateurs</CardTitle>
+                  <CardTitle className="text-white">Performance des modérateurs</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {moderatorStats.length === 0 ? (
@@ -513,9 +513,9 @@ export default function AdminChatPage() {
               {/* Statistiques par catégorie et priorité */}
               {chatStats && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card>
+                  <Card className="bg-slate-800/50 border-slate-700">
                     <CardHeader>
-                      <CardTitle>Conversations par priorité</CardTitle>
+                      <CardTitle className="text-white">Conversations par priorité</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
@@ -536,9 +536,9 @@ export default function AdminChatPage() {
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card className="bg-slate-800/50 border-slate-700">
                     <CardHeader>
-                      <CardTitle>Conversations par catégorie</CardTitle>
+                      <CardTitle className="text-white">Conversations par catégorie</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">

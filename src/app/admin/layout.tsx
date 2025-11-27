@@ -5,8 +5,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, ArrowLeft, Settings, Home, Activity, MessageSquare } from 'lucide-react';
+import { Shield, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { AdminSidebar } from '@/components/admin/admin-sidebar';
+import { AdminMobileNav } from '@/components/admin/admin-mobile-nav';
+import { AdminHeader } from '@/components/admin/admin-header';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -71,114 +74,30 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
 
-  // Affichage normal pour les admins
+  // Affichage normal pour les admins avec nouveau layout
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
-      <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-orange-500/10 rounded-lg flex items-center justify-center">
-                <Shield className="w-4 h-4 text-orange-500" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-slate-100">Administration</h1>
-                <p className="text-sm text-slate-400">Panel d&apos;administration CashTrade</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button asChild variant="outline" size="sm">
-                <Link href="/admin/dashboard" className="flex items-center gap-2">
-                  <Home className="w-4 h-4" />
-                  Dashboard
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="sm">
-                <Link href="/admin/settings" className="flex items-center gap-2">
-                  <Settings className="w-4 h-4" />
-                  Paramètres
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="sm">
-                <Link href="/" className="flex items-center gap-2">
-                  <ArrowLeft className="w-4 h-4" />
-                  Retour Site
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar Navigation */}
-          <div className="lg:w-64 flex-shrink-0">
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardHeader>
-                <CardTitle className="text-slate-100">Navigation</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Link 
-                  href="/admin"
-                  className={`block px-3 py-2 rounded-md text-sm transition-colors ${
-                    pathname === '/admin' 
-                      ? 'bg-orange-500/20 text-orange-300' 
-                      : 'text-slate-300 hover:bg-slate-700/50'
-                  }`}
-                >
-                  Dashboard
-                </Link>
-                <Link 
-                  href="/admin/giveaways"
-                  className={`block px-3 py-2 rounded-md text-sm transition-colors ${
-                    pathname === '/admin/giveaways' 
-                      ? 'bg-orange-500/20 text-orange-300' 
-                      : 'text-slate-300 hover:bg-slate-700/50'
-                  }`}
-                >
-                  Giveaways
-                </Link>
-                <Link 
-                  href="/admin/newsletter"
-                  className={`block px-3 py-2 rounded-md text-sm transition-colors ${
-                    pathname === '/admin/newsletter' 
-                      ? 'bg-orange-500/20 text-orange-300' 
-                      : 'text-slate-300 hover:bg-slate-700/50'
-                  }`}
-                >
-                  Newsletter
-                </Link>
-                <Link 
-                  href="/admin/chat"
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
-                    pathname === '/admin/chat' 
-                      ? 'bg-orange-500/20 text-orange-300' 
-                      : 'text-slate-300 hover:bg-slate-700/50'
-                  }`}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Gestion Chat
-                </Link>
-                <Link 
-                  href="/admin/audit"
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
-                    pathname === '/admin/audit' 
-                      ? 'bg-orange-500/20 text-orange-300' 
-                      : 'text-slate-300 hover:bg-slate-700/50'
-                  }`}
-                >
-                  <Activity className="w-4 h-4" />
-                  Audit & Sécurité
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
+    <div className="dark min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Mobile Navigation */}
+      <AdminMobileNav />
 
-          {/* Main Content */}
-          <div className="flex-1">
-            {children}
-          </div>
+      {/* Desktop Layout */}
+      <div className="flex h-screen overflow-hidden">
+        {/* Sidebar - Hidden on mobile */}
+        <div className="hidden lg:block">
+          <AdminSidebar />
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {/* Header */}
+          <AdminHeader />
+
+          {/* Page Content */}
+          <main className="flex-1 overflow-y-auto">
+            <div className="container mx-auto px-4 py-6 md:px-6 lg:px-8">
+              {children}
+            </div>
+          </main>
         </div>
       </div>
     </div>

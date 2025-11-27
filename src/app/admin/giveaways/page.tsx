@@ -132,54 +132,54 @@ export default function AdminGiveawaysPage() {
           transition={{ duration: 0.6 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold mb-4">
-            <GiftIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
+          <h1 className="text-3xl font-bold mb-4 text-white">
+            <GiftIcon className="w-8 h-8 inline-block mr-2 text-orange-500" />
             Administration des Giveaways
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-slate-400">
             Gérez les giveaways, créez de nouveaux concours et effectuez les tirages.
           </p>
         </motion.div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
+          <Card className="bg-slate-800/50 border-slate-700">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
-                <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                  <TrophyIcon className="w-6 h-6 text-green-600" />
+                <div className="p-2 bg-green-500/20 rounded-lg">
+                  <TrophyIcon className="w-6 h-6 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Giveaways Actifs</p>
-                  <p className="text-2xl font-bold">{activeGiveaways.length}</p>
+                  <p className="text-sm text-slate-400">Giveaways Actifs</p>
+                  <p className="text-2xl font-bold text-white">{activeGiveaways.length}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-slate-800/50 border-slate-700">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                  <GiftIcon className="w-6 h-6 text-blue-600" />
+                <div className="p-2 bg-blue-500/20 rounded-lg">
+                  <GiftIcon className="w-6 h-6 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Giveaways Terminés</p>
-                  <p className="text-2xl font-bold">{endedGiveaways.length}</p>
+                  <p className="text-sm text-slate-400">Giveaways Terminés</p>
+                  <p className="text-2xl font-bold text-white">{endedGiveaways.length}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-slate-800/50 border-slate-700">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
-                <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                  <UserGroupIcon className="w-6 h-6 text-purple-600" />
+                <div className="p-2 bg-purple-500/20 rounded-lg">
+                  <UserGroupIcon className="w-6 h-6 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Participants</p>
-                  <p className="text-2xl font-bold">
+                  <p className="text-sm text-slate-400">Total Participants</p>
+                  <p className="text-2xl font-bold text-white">
                     {giveaways.reduce((total, g) => total + (g.entries?.length || 0), 0)}
                   </p>
                 </div>
@@ -190,32 +190,38 @@ export default function AdminGiveawaysPage() {
 
         {/* Main Content */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="list">Liste des Giveaways</TabsTrigger>
-            <TabsTrigger value="create">Créer un Giveaway</TabsTrigger>
-            <TabsTrigger value="manage">Gestion Automatique</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border-slate-700">
+            <TabsTrigger value="list" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+              Liste des Giveaways
+            </TabsTrigger>
+            <TabsTrigger value="create" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+              Créer un Giveaway
+            </TabsTrigger>
+            <TabsTrigger value="manage" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+              Gestion Automatique
+            </TabsTrigger>
           </TabsList>
 
           {/* Liste des Giveaways */}
           <TabsContent value="list">
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">Tous les Giveaways</h2>
+                <h2 className="text-xl font-semibold text-white">Tous les Giveaways</h2>
                 <Button onClick={() => refetch()} disabled={loading}>
                   {loading ? 'Chargement...' : 'Actualiser'}
                 </Button>
               </div>
 
               {loading ? (
-                <Card>
+                <Card className="bg-slate-800/50 border-slate-700">
                   <CardContent className="p-8 text-center">
-                    <p>Chargement des giveaways...</p>
+                    <p className="text-slate-300">Chargement des giveaways...</p>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="space-y-4">
                   {giveaways.map((giveaway) => (
-                    <Card key={giveaway.id}>
+                    <Card key={giveaway.id} className="bg-slate-800/50 border-slate-700">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -286,11 +292,11 @@ export default function AdminGiveawaysPage() {
                   ))}
 
                   {giveaways.length === 0 && (
-                    <Card>
+                    <Card className="bg-slate-800/50 border-slate-700">
                       <CardContent className="p-8 text-center">
-                        <GiftIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                        <h3 className="text-xl font-semibold mb-2">Aucun giveaway</h3>
-                        <p className="text-muted-foreground mb-6">
+                        <GiftIcon className="w-16 h-16 mx-auto mb-4 text-slate-400" />
+                        <h3 className="text-xl font-semibold mb-2 text-white">Aucun giveaway</h3>
+                        <p className="text-slate-400 mb-6">
                           Créez votre premier giveaway pour commencer.
                         </p>
                         <Button onClick={() => setSelectedTab('create')}>
@@ -307,9 +313,9 @@ export default function AdminGiveawaysPage() {
 
           {/* Créer un Giveaway */}
           <TabsContent value="create">
-            <Card>
+            <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle>Créer un nouveau Giveaway</CardTitle>
+                <CardTitle className="text-white">Créer un nouveau Giveaway</CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleCreateGiveaway} className="space-y-6">
@@ -412,9 +418,9 @@ export default function AdminGiveawaysPage() {
             <div className="space-y-6">
               <GiveawayAdmin />
               
-              <Card>
+              <Card className="bg-slate-800/50 border-slate-700">
                 <CardHeader>
-                  <CardTitle>Informations</CardTitle>
+                  <CardTitle className="text-white">Informations</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4 text-sm">

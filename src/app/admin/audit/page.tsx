@@ -52,10 +52,10 @@ interface DashboardResponse {
 }
 
 const severityColors = {
-  low: 'bg-green-100 text-green-800',
-  medium: 'bg-yellow-100 text-yellow-800',
-  high: 'bg-orange-100 text-orange-800',
-  critical: 'bg-red-100 text-red-800',
+  low: 'bg-green-500/20 text-green-400 border-green-500/50',
+  medium: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50',
+  high: 'bg-orange-500/20 text-orange-400 border-orange-500/50',
+  critical: 'bg-red-500/20 text-red-400 border-red-500/50',
 };
 
 export default function AuditPage() {
@@ -176,7 +176,7 @@ export default function AuditPage() {
     const severity = details.severity || 'low';
     const translatedSeverity = auditMessages.severity[severity as keyof typeof auditMessages.severity] || severity.toUpperCase();
     return (
-      <Badge className={severityColors[severity as keyof typeof severityColors]}>
+      <Badge variant="outline" className={severityColors[severity as keyof typeof severityColors]}>
         {translatedSeverity}
       </Badge>
     );
@@ -255,17 +255,17 @@ export default function AuditPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">{auditMessages.title}</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold text-white">{auditMessages.title}</h1>
+          <p className="text-slate-400">
             {auditMessages.subtitle}
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button onClick={() => window.location.reload()} variant="outline">
+          <Button onClick={() => window.location.reload()} variant="outline" className="border-slate-600 text-white hover:bg-slate-800">
             <RefreshCw className="h-4 w-4 mr-2" />
             {auditMessages.refresh}
           </Button>
-          <Button onClick={exportLogs} variant="outline">
+          <Button onClick={exportLogs} variant="outline" className="border-slate-600 text-white hover:bg-slate-800">
             <Download className="h-4 w-4 mr-2" />
             {auditMessages.export}
           </Button>
@@ -274,53 +274,53 @@ export default function AuditPage() {
 
       {/* Métriques de sécurité */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{auditMessages.metrics.totalLogs}</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-slate-300">{auditMessages.metrics.totalLogs}</CardTitle>
+            <Activity className="h-4 w-4 text-slate-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics?.totalLogs || 0}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold text-white">{metrics?.totalLogs || 0}</div>
+            <p className="text-xs text-slate-400">
               {auditMessages.metrics.last24h}
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{auditMessages.metrics.criticalAlerts}</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-500" />
+            <CardTitle className="text-sm font-medium text-slate-300">{auditMessages.metrics.criticalAlerts}</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-red-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{metrics?.criticalAlerts || 0}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold text-red-400">{metrics?.criticalAlerts || 0}</div>
+            <p className="text-xs text-slate-400">
               {auditMessages.metrics.needsAttention}
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{auditMessages.metrics.suspiciousActivities}</CardTitle>
-            <Shield className="h-4 w-4 text-orange-500" />
+            <CardTitle className="text-sm font-medium text-slate-300">{auditMessages.metrics.suspiciousActivities}</CardTitle>
+            <Shield className="h-4 w-4 text-orange-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{metrics?.suspiciousActivities || 0}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold text-orange-400">{metrics?.suspiciousActivities || 0}</div>
+            <p className="text-xs text-slate-400">
               {auditMessages.metrics.detectedAutomatically}
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{auditMessages.metrics.failedLogins}</CardTitle>
-            <Users className="h-4 w-4 text-yellow-500" />
+            <CardTitle className="text-sm font-medium text-slate-300">{auditMessages.metrics.failedLogins}</CardTitle>
+            <Users className="h-4 w-4 text-yellow-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{metrics?.failedLogins || 0}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold text-yellow-400">{metrics?.failedLogins || 0}</div>
+            <p className="text-xs text-slate-400">
               {auditMessages.metrics.failedAttempts}
             </p>
           </CardContent>
@@ -328,17 +328,23 @@ export default function AuditPage() {
       </div>
 
       <Tabs defaultValue="logs" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="logs">{auditMessages.tabs.logs}</TabsTrigger>
-          <TabsTrigger value="analytics">{auditMessages.tabs.analytics}</TabsTrigger>
-          <TabsTrigger value="alerts">{auditMessages.tabs.alerts}</TabsTrigger>
+        <TabsList className="bg-slate-800/50 border-slate-700">
+          <TabsTrigger value="logs" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            {auditMessages.tabs.logs}
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            {auditMessages.tabs.analytics}
+          </TabsTrigger>
+          <TabsTrigger value="alerts" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            {auditMessages.tabs.alerts}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="logs" className="space-y-4">
           {/* Filtres */}
-          <Card>
+          <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
-              <CardTitle className="flex items-center">
+              <CardTitle className="flex items-center text-white">
                 <Filter className="h-4 w-4 mr-2" />
                 {auditMessages.filters.title}
               </CardTitle>
@@ -346,7 +352,7 @@ export default function AuditPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="text-sm font-medium">{auditMessages.filters.action}</label>
+                  <label className="text-sm font-medium text-slate-300">{auditMessages.filters.action}</label>
                   <Select value={filters.action} onValueChange={(value) => setFilters({...filters, action: value})}>
                     <SelectTrigger>
                       <SelectValue placeholder={auditMessages.filters.allActions} />
@@ -363,7 +369,7 @@ export default function AuditPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">{auditMessages.filters.severity}</label>
+                  <label className="text-sm font-medium text-slate-300">{auditMessages.filters.severity}</label>
                   <Select value={filters.severity} onValueChange={(value) => setFilters({...filters, severity: value})}>
                     <SelectTrigger>
                       <SelectValue placeholder={auditMessages.filters.allSeverities} />
@@ -379,7 +385,7 @@ export default function AuditPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">{auditMessages.filters.user}</label>
+                  <label className="text-sm font-medium text-slate-300">{auditMessages.filters.user}</label>
                   <Input
                     placeholder={auditMessages.filters.userIdPlaceholder}
                     value={filters.userId}
@@ -388,7 +394,7 @@ export default function AuditPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">{auditMessages.filters.period}</label>
+                  <label className="text-sm font-medium text-slate-300">{auditMessages.filters.period}</label>
                   <Select value={filters.timeframe} onValueChange={(value) => setFilters({...filters, timeframe: value})}>
                     <SelectTrigger>
                       <SelectValue />
@@ -406,10 +412,10 @@ export default function AuditPage() {
           </Card>
 
           {/* Table des logs */}
-          <Card>
+          <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
-              <CardTitle>{auditMessages.tabs.logs}</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-white">{auditMessages.tabs.logs}</CardTitle>
+              <CardDescription className="text-slate-400">
                 {logs.length} {auditMessages.table.entriesFound}
               </CardDescription>
             </CardHeader>
@@ -473,10 +479,10 @@ export default function AuditPage() {
         </TabsContent>
 
         <TabsContent value="analytics">
-          <Card>
+          <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
-              <CardTitle>{auditMessages.analytics.title}</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-white">{auditMessages.analytics.title}</CardTitle>
+              <CardDescription className="text-slate-400">
                 {auditMessages.analytics.subtitle}
               </CardDescription>
             </CardHeader>
@@ -484,9 +490,9 @@ export default function AuditPage() {
               {metrics && (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {/* Top IPs Card */}
-                  <Card>
+                  <Card className="bg-slate-900/50 border-slate-700">
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-base">{auditMessages.analytics.topIPs}</CardTitle>
+                      <CardTitle className="text-base text-white">{auditMessages.analytics.topIPs}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       {metrics.topIPs?.slice(0, 5).map((item) => (
@@ -503,9 +509,9 @@ export default function AuditPage() {
                   </Card>
 
                   {/* Top Users Card */}
-                  <Card>
+                  <Card className="bg-slate-900/50 border-slate-700">
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-base">{auditMessages.analytics.activeUsers}</CardTitle>
+                      <CardTitle className="text-base text-white">{auditMessages.analytics.activeUsers}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       {metrics.topUsers?.slice(0, 5).map((item) => (
@@ -522,16 +528,16 @@ export default function AuditPage() {
                   </Card>
 
                   {/* Fraud Trend Card */}
-                  <Card>
+                  <Card className="bg-slate-900/50 border-slate-700">
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-base">{auditMessages.analytics.fraudTrend}</CardTitle>
+                      <CardTitle className="text-base text-white">{auditMessages.analytics.fraudTrend}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className={`p-3 rounded-lg ${metrics.fraudTrend > 0 ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'}`}>
-                        <span className={`font-medium text-lg ${metrics.fraudTrend > 0 ? 'text-red-800' : 'text-green-800'}`}>
+                      <div className={`p-3 rounded-lg ${metrics.fraudTrend > 0 ? 'bg-red-500/20 border border-red-500/50' : 'bg-green-500/20 border border-green-500/50'}`}>
+                        <span className={`font-medium text-lg ${metrics.fraudTrend > 0 ? 'text-red-400' : 'text-green-400'}`}>
                           {metrics.fraudTrend > 0 ? '+' : ''}{metrics.fraudTrend.toFixed(1)}%
                         </span>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-slate-400 mt-1">
                           {auditMessages.analytics.vsPreviousPeriod}
                         </p>
                       </div>
@@ -540,18 +546,18 @@ export default function AuditPage() {
 
                   {/* Activity Spikes Card - Prend toute la largeur si détecté */}
                   {metrics.activitySpikes?.isSpike && (
-                    <Card className="md:col-span-2 xl:col-span-3">
+                    <Card className="md:col-span-2 xl:col-span-3 bg-slate-900/50 border-slate-700">
                       <CardHeader className="pb-3">
-                        <CardTitle className="text-base flex items-center">
-                          <AlertTriangle className="h-4 w-4 text-orange-500 mr-2" />
+                        <CardTitle className="text-base flex items-center text-white">
+                          <AlertTriangle className="h-4 w-4 text-orange-400 mr-2" />
                           {auditMessages.analytics.activitySpike}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                          <p className="text-sm text-orange-700">
+                        <div className="p-4 bg-orange-500/20 border border-orange-500/50 rounded-lg">
+                          <p className="text-sm text-orange-300">
                             <strong>{auditMessages.analytics.currentActivity}:</strong> {metrics.activitySpikes.currentActivity} 
-                            <span className="ml-2 text-muted-foreground">
+                            <span className="ml-2 text-slate-400">
                               ({auditMessages.analytics.threshold}: {metrics.activitySpikes.threshold})
                             </span>
                           </p>
@@ -566,15 +572,15 @@ export default function AuditPage() {
         </TabsContent>
 
         <TabsContent value="alerts">
-          <Card>
+          <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
-              <CardTitle>{auditMessages.alerts.title}</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-white">{auditMessages.alerts.title}</CardTitle>
+              <CardDescription className="text-slate-400">
                 {auditMessages.alerts.subtitle}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-slate-400">
                 <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>{auditMessages.alerts.inDevelopment}</p>
               </div>

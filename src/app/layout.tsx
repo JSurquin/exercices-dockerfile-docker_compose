@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+'use client';
+
 import { Poppins, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -10,6 +11,8 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ChatWidget } from "@/components/ui/chat-widget";
 import { Toaster } from "@/components/ui/sonner";
+import type { Metadata } from "next";
+import { usePathname } from "next/navigation";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -24,33 +27,42 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "CashTrade - Sell your CS2 skins easily",
-  description: "The fastest and most secure platform to convert your Counter-Strike 2 skins into real money. SEPA and crypto payments available.",
-  keywords: ["CS2", "Counter-Strike", "skins", "trading", "cashout", "SEPA", "crypto"],
-  authors: [{ name: "CashTrade Team" }],
-  openGraph: {
-    title: "CashTrade - Sell your CS2 skins easily",
-    description: "The fastest and most secure platform to convert your Counter-Strike 2 skins into real money.",
-    type: "website",
-    url: "https://cashtrade.gg",
-    siteName: "CashTrade",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "CashTrade - Sell your CS2 skins easily",
-    description: "The fastest and most secure platform to convert your Counter-Strike 2 skins into real money.",
-    creator: "@cashtrade",
-  },
-};
+// export const metadata: Metadata = {
+//   title: "CashTrade - Sell your CS2 skins easily",
+//   description: "The fastest and most secure platform to convert your Counter-Strike 2 skins into real money. SEPA and crypto payments available.",
+//   keywords: ["CS2", "Counter-Strike", "skins", "trading", "cashout", "SEPA", "crypto"],
+//   authors: [{ name: "CashTrade Team" }],
+//   openGraph: {
+//     title: "CashTrade - Sell your CS2 skins easily",
+//     description: "The fastest and most secure platform to convert your Counter-Strike 2 skins into real money.",
+//     type: "website",
+//     url: "https://cashtrade.gg",
+//     siteName: "CashTrade",
+//   },
+//   twitter: {
+//     card: "summary_large_image",
+//     title: "CashTrade - Sell your CS2 skins easily",
+//     description: "The fastest and most secure platform to convert your Counter-Strike 2 skins into real money.",
+//     creator: "@cashtrade",
+//   },
+// };
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  
+  // Déterminer si on est sur une route admin
+  const isAdminRoute = pathname?.startsWith('/admin');
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <title>CashTrade - Sell your CS2 skins easily</title>
+        <meta name="description" content="The fastest and most secure platform to convert your Counter-Strike 2 skins into real money. SEPA and crypto payments available." />
+      </head>
       <body
         className={`${poppins.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
@@ -62,17 +74,21 @@ export default function RootLayout({
         >
           <LocaleProvider>
             <CurrencyProvider>
-          <QueryProvider>
-              <AuthProvider>
-                <Header />
-                <main className="flex-1">
-                  {children}
-                </main>
-                <Footer />
-                <ChatWidget />
-                <Toaster />
-              </AuthProvider>
-          </QueryProvider>
+              <QueryProvider>
+                <AuthProvider>
+                  {/* Header, Footer et ChatWidget uniquement pour le site public */}
+                  {!isAdminRoute && <Header />}
+                  
+                  <main className={isAdminRoute ? "" : "flex-1"}>
+                    {children}
+                  </main>
+                  
+                  {!isAdminRoute && <Footer />}
+                  {!isAdminRoute && <ChatWidget />}
+                  
+                  <Toaster />
+                </AuthProvider>
+              </QueryProvider>
             </CurrencyProvider>
           </LocaleProvider>
         </ThemeProvider>
