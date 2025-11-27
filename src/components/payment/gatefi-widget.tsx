@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface GateFiWidgetProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export function GateFiWidget({
   onSuccess,
   onError,
 }: GateFiWidgetProps) {
+  const { messages } = useLocale();
   const router = useRouter();
 
   useEffect(() => {

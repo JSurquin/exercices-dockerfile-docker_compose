@@ -51,7 +51,7 @@ export default function AdminGiveawaysPage() {
     e.preventDefault();
     
     if (!form.title || !form.description || !form.prize) {
-      toast.error('Veuillez remplir tous les champs obligatoires');
+      toast.error(messages.admin.giveaways.create.errorRequired);
       return;
     }
 

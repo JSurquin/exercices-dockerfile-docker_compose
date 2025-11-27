@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Info, Euro } from 'lucide-react';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface SepaPaymentFormProps {
   payoutId: string;
@@ -19,6 +20,7 @@ export function SepaPaymentForm({
   onSuccess,
   onError,
 }: SepaPaymentFormProps) {
+  const { messages } = useLocale();
   const [isLoading, setIsLoading] = useState(false);
   const [quote, setQuote] = useState<any>(null);
   const [isLoadingQuote, setIsLoadingQuote] = useState(false);
@@ -38,14 +40,14 @@ export function SepaPaymentForm({
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la récupération du devis');
+        throw new Error(messages.common.error || 'Erreur lors de la récupération du devis');
       }
 
       const data = await response.json();
       setQuote(data.quote);
     } catch (error) {
       console.error('Erreur devis:', error);
-      onError(error instanceof Error ? error.message : 'Erreur inconnue');
+      onError(error instanceof Error ? error.message : messages.common.error || 'Erreur inconnue');
     } finally {
       setIsLoadingQuote(false);
     }
@@ -54,7 +56,7 @@ export function SepaPaymentForm({
   // Initier le paiement SEPA
   const handleInitiatePayment = async () => {
     if (!quote) {
-      onError('Veuillez d\'abord obtenir un devis');
+      onError(messages.common.error || 'Veuillez d\'abord obtenir un devis');
       return;
     }
 
@@ -74,7 +76,7 @@ export function SepaPaymentForm({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de l\'initiation du paiement');
+        throw new Error(errorData.error || messages.common.error || 'Erreur lors de l\'initiation du paiement');
       }
 
       const data = await response.json();

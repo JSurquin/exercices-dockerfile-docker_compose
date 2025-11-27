@@ -1153,6 +1153,156 @@ export interface Messages {
       title: string;
       description: string;
     };
+    settings: {
+      title: string;
+      subtitle: string;
+      badge: string;
+      accountVerified: string;
+      notLinked: string;
+      tabs: {
+        personal: string;
+        security: string;
+        notifications: string;
+        preferences: string;
+      };
+      personal: {
+        title: string;
+        fullName: string;
+        fullNamePlaceholder: string;
+        email: string;
+        emailPlaceholder: string;
+        steamUsername: string;
+        steamUsernamePlaceholder: string;
+        steamSync: string;
+        saving: string;
+        save: string;
+        success: string;
+        error: string;
+      };
+      passwordChange: {
+        title: string;
+        warning: string;
+        currentPassword: string;
+        currentPasswordPlaceholder: string;
+        newPassword: string;
+        newPasswordPlaceholder: string;
+        confirmPassword: string;
+        confirmPasswordPlaceholder: string;
+        changing: string;
+        change: string;
+        success: string;
+        error: string;
+        passwordMismatch: string;
+        passwordTooShort: string;
+      };
+      securitySettings: {
+        title: string;
+        twoFactor: string;
+        twoFactorDesc: string;
+        sessionTimeout: string;
+        "15min": string;
+        "30min": string;
+        "1hour": string;
+        "2hours": string;
+        "8hours": string;
+      };
+      notificationPrefs: {
+        title: string;
+        emailNotifications: string;
+        emailNotificationsDesc: string;
+        tradeAlerts: string;
+        tradeAlertsDesc: string;
+        securityAlerts: string;
+        securityAlertsDesc: string;
+        weeklyReports: string;
+        weeklyReportsDesc: string;
+        save: string;
+        success: string;
+        error: string;
+      };
+      interfacePrefs: {
+        title: string;
+        theme: string;
+        themeLight: string;
+        themeDark: string;
+        themeAuto: string;
+        language: string;
+        french: string;
+        english: string;
+        timezone: string;
+        parisCET: string;
+        londonGMT: string;
+        newYorkEST: string;
+        tokyoJST: string;
+        dashboardLayout: string;
+        layoutGrid: string;
+        layoutList: string;
+        layoutCompact: string;
+        save: string;
+        success: string;
+        error: string;
+      };
+    };
+    chat: {
+      title: string;
+      subtitle: string;
+      accessDenied: string;
+      accessDeniedDesc: string;
+      stats: {
+        totalConversations: string;
+        activeConversations: string;
+        unassigned: string;
+        responseTime: string;
+      };
+      tabs: {
+        conversations: string;
+        moderators: string;
+        stats: string;
+      };
+      conversations: {
+        title: string;
+        loading: string;
+        noConversations: string;
+        noSubject: string;
+        anonymousUser: string;
+        assignedTo: string;
+        createdOn: string;
+        messages: string;
+        view: string;
+      };
+      moderators: {
+        title: string;
+        addModerator: string;
+        promotUser: string;
+        searchPlaceholder: string;
+        noName: string;
+        promote: string;
+        promoting: string;
+        noModerators: string;
+        conversations: string;
+        successPromote: string;
+        errorPromote: string;
+        successDemote: string;
+        errorDemote: string;
+        errorLoading: string;
+        errorLoadingData: string;
+        errorSearch: string;
+      };
+      performance: {
+        title: string;
+        noStats: string;
+        assigned: string;
+        closed: string;
+        messages: string;
+        avgTime: string;
+      };
+      priority: {
+        title: string;
+      };
+      category: {
+        title: string;
+      };
+    };
     errors: {
       loadingStats: string;
       loadingTrades: string;
@@ -1184,6 +1334,154 @@ export interface Messages {
     };
     giveaways: {
       descriptionPlaceholder: string;
+      title: string;
+      subtitle: string;
+      stats: {
+        active: string;
+        ended: string;
+        totalParticipants: string;
+      };
+      tabs: {
+        list: string;
+        create: string;
+        manage: string;
+      };
+      list: {
+        title: string;
+        refresh: string;
+        loading: string;
+        price: string;
+        ticketPrice: string;
+        tickets: string;
+        participants: string;
+        ticketsSold: string;
+        winner: string;
+        drawNow: string;
+        delete: string;
+        noGiveaways: string;
+        noGiveawaysDesc: string;
+        createGiveaway: string;
+      };
+      create: {
+        title: string;
+        titleLabel: string;
+        titlePlaceholder: string;
+        prizeLabel: string;
+        prizePlaceholder: string;
+        ticketPriceLabel: string;
+        maxTicketsLabel: string;
+        durationLabel: string;
+        durationHelp: string;
+        descriptionLabel: string;
+        cancel: string;
+        creating: string;
+        create: string;
+        errorRequired: string;
+      };
+      info: {
+        title: string;
+        autoTitle: string;
+        autoPoint1: string;
+        autoPoint2: string;
+        autoPoint3: string;
+        autoPoint4: string;
+        manualTitle: string;
+        manualPoint1: string;
+        manualPoint2: string;
+        manualPoint3: string;
+      };
+    };
+    newsletter: {
+      title: string;
+      subtitle: string;
+      loading: string;
+      stats: {
+        total: string;
+        active: string;
+        unsubscribed: string;
+      };
+      tabs: {
+        subscribers: string;
+        campaigns: string;
+      };
+      subscribers: {
+        title: string;
+        subtitle: string;
+        exportCSV: string;
+        searchPlaceholder: string;
+        allStatuses: string;
+        active: string;
+        inactive: string;
+        email: string;
+        status: string;
+        subscriptionDate: string;
+        actions: string;
+        statusActive: string;
+        statusInactive: string;
+        noSubscribers: string;
+        deleteConfirm: string;
+        deleteSuccess: string;
+        deleteError: string;
+        loadError: string;
+        exportSuccess: string;
+        exportError: string;
+      };
+      campaigns: {
+        title: string;
+        subtitle: string;
+        createdOn: string;
+        statusSent: string;
+        statusScheduled: string;
+        statusDraft: string;
+      };
+    };
+    exports2: {
+      error: string;
+      success: string;
+      successDesc: string;
+      errorDesc: string;
+      reportGenerated: string;
+      reportGeneratedDesc: string;
+      reportError: string;
+    };
+    sidebar: {
+      overview: string;
+      management: string;
+      affiliation: string;
+      engagement: string;
+      support: string;
+      system: string;
+      dashboard: string;
+      analytics: string;
+      users: string;
+      trades: string;
+      payouts: string;
+      kyc: string;
+      affiliates: string;
+      commissions: string;
+      performances: string;
+      giveaways: string;
+      newsletter: string;
+      chat: string;
+      audit: string;
+      exports: string;
+      settings: string;
+      overviewGroup: string;
+      managementGroup: string;
+      affiliateGroup: string;
+      marketingGroup: string;
+      supportGroup: string;
+      systemGroup: string;
+      collapse: string;
+    };
+    exportMessages: {
+      error: string;
+      success: string;
+      successDesc: string;
+      errorDesc: string;
+      reportGenerated: string;
+      reportGeneratedDesc: string;
+      reportError: string;
     };
     audit: {
       title: string;

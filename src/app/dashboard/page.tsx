@@ -30,6 +30,7 @@ import {
   StarIcon,
   BanknotesIcon,
   CheckIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import { StripeIcon, QontoIcon, BinanceIcon } from "@/components/ui/payment-icons";
 import {
@@ -51,7 +52,17 @@ const formatPrice = (centimes: number) => {
 };
 
 const getStatusColor = (status: string) => {
-  const colors = {
+  // Mapper les statuts Prisma vers les couleurs
+  const colors: Record<string, string> = {
+    // Statuts Prisma
+    CREATED: "bg-blue-500",
+    ACCEPTED_BY_BOT: "bg-indigo-500",
+    IN_TRADE_HOLD: "bg-yellow-500",
+    AVAILABLE: "bg-green-500",
+    PAYOUT_PENDING: "bg-orange-500",
+    PAID: "bg-emerald-500",
+    FAILED: "bg-red-500",
+    // Anciens statuts français (pour compatibilité)
     créé: "bg-blue-500",
     accepté_par_bot: "bg-indigo-500",
     en_trade_hold: "bg-yellow-500",
@@ -60,11 +71,23 @@ const getStatusColor = (status: string) => {
     payé: "bg-emerald-500",
     échoué: "bg-red-500",
   };
-  return colors[status as keyof typeof colors] || "bg-gray-500";
+  return colors[status] || "bg-gray-500";
 };
 
 const getStatusText = (status: string, messages: Messages) => {
-  return messages.trade.status[status as keyof typeof messages.trade.status] || status;
+  // Mapper les statuts Prisma vers les clés de traduction
+  const statusKeyMap: Record<string, string> = {
+    CREATED: "créé",
+    ACCEPTED_BY_BOT: "accepté_par_bot",
+    IN_TRADE_HOLD: "en_trade_hold",
+    AVAILABLE: "disponible",
+    PAYOUT_PENDING: "paiement_en_cours",
+    PAID: "payé",
+    FAILED: "échoué",
+  };
+  
+  const statusKey = statusKeyMap[status] || status;
+  return messages.trade.status[statusKey as keyof typeof messages.trade.status] || status;
 };
 
 export default function DashboardPage() {
@@ -73,7 +96,8 @@ export default function DashboardPage() {
   const { isFirstLogin, completeOnboarding } = useOnboarding();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [preferredPaymentMethod, setPreferredPaymentMethod] = useState<'stripe' | 'qonto' | 'binance' | null>('qonto');
-  const { data: tradesData, loading: tradesLoading, error: tradesError } = useUserTrades();
+  const { data: tradesData, loading: tradesLoading, error: tradesError, refetch: refetchTrades } = useUserTrades();
+  const [refreshingTradeId, setRefreshingTradeId] = useState<string | null>(null);
   
   console.log("useSession data:", data);
   console.log("useSession isPending:", isPending);
@@ -113,6 +137,38 @@ export default function DashboardPage() {
     const success = await completeOnboarding();
     if (success) {
       setShowOnboarding(false);
+    }
+  };
+
+  // Rafraîchir le statut d'un trade manuellement
+  const handleRefreshTradeStatus = async (tradeId: string) => {
+    setRefreshingTradeId(tradeId);
+    try {
+      const response = await fetch(`/api/skinplace/trade/status/${tradeId}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('Statut mis à jour', {
+          description: result.trade.message || 'Le statut du trade a été vérifié',
+        });
+        // Recharger la liste des trades
+        refetchTrades();
+      } else {
+        toast.error('Erreur', {
+          description: result.error || 'Impossible de vérifier le statut',
+        });
+      }
+    } catch (error) {
+      console.error('Erreur refresh trade:', error);
+      toast.error('Erreur', {
+        description: 'Impossible de vérifier le statut du trade',
+      });
+    } finally {
+      setRefreshingTradeId(null);
     }
   };
   
@@ -321,6 +377,20 @@ export default function DashboardPage() {
                             <span className="font-mono text-sm text-muted-foreground">
                               {trade.ticketId}
                             </span>
+                            {/* Bouton pour rafraîchir le statut - uniquement pour les trades en attente */}
+                            {(trade.status === 'CREATED' || trade.status === 'ACCEPTED_BY_BOT' || trade.status === 'IN_TRADE_HOLD') && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRefreshTradeStatus(trade.id)}
+                                disabled={refreshingTradeId === trade.id}
+                                className="h-7 px-2"
+                              >
+                                <ArrowPathIcon 
+                                  className={`w-4 h-4 ${refreshingTradeId === trade.id ? 'animate-spin' : ''}`} 
+                                />
+                              </Button>
+                            )}
                           </div>
                           <div className="text-right">
                             <p className="font-bold text-lg">

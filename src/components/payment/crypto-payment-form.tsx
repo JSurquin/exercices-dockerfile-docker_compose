@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Loader2, Info, Wallet } from 'lucide-react';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface CryptoPaymentFormProps {
   payoutId: string;
@@ -35,6 +36,7 @@ export function CryptoPaymentForm({
   onSuccess,
   onError,
 }: CryptoPaymentFormProps) {
+  const { messages } = useLocale();
   const [crypto, setCrypto] = useState('USDT');
   const [walletAddress, setWalletAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -56,14 +58,14 @@ export function CryptoPaymentForm({
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la récupération du devis');
+        throw new Error(messages.common.error || 'Erreur lors de la récupération du devis');
       }
 
       const data = await response.json();
       setQuote(data.quote);
     } catch (error) {
       console.error('Erreur devis:', error);
-      onError(error instanceof Error ? error.message : 'Erreur inconnue');
+      onError(error instanceof Error ? error.message : messages.common.error || 'Erreur inconnue');
     } finally {
       setIsLoadingQuote(false);
     }
@@ -72,12 +74,12 @@ export function CryptoPaymentForm({
   // Initier le paiement crypto
   const handleInitiatePayment = async () => {
     if (!walletAddress) {
-      onError('Veuillez saisir une adresse de wallet valide');
+      onError(messages.common.error || 'Veuillez saisir une adresse de wallet valide');
       return;
     }
 
     if (!quote) {
-      onError('Veuillez d\'abord obtenir un devis');
+      onError(messages.common.error || 'Veuillez d\'abord obtenir un devis');
       return;
     }
 
@@ -97,7 +99,7 @@ export function CryptoPaymentForm({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de l\'initiation du paiement');
+        throw new Error(errorData.error || messages.common.error || 'Erreur lors de l\'initiation du paiement');
       }
 
       const data = await response.json();

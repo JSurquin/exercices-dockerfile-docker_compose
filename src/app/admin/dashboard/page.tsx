@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { useLocale } from '@/components/providers/locale-provider';
 import {
   ChartBarIcon,
   DocumentArrowDownIcon,
@@ -29,13 +30,14 @@ import { DashboardOverview } from '@/components/admin/dashboard-overview';
 function DashboardContent() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { messages } = useLocale();
   const tab = searchParams.get('tab') || 'overview';
 
   // Quick actions handlers
   const handleExportData = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/export-data');
-      if (!response.ok) throw new Error('Erreur lors de l\'export');
+      if (!response.ok) throw new Error(messages.admin.exportMessages.error);
       
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -48,22 +50,22 @@ function DashboardContent() {
       window.URL.revokeObjectURL(url);
 
       toast({
-        title: 'Export réussi',
-        description: 'Les données ont été exportées avec succès.',
+        title: messages.admin.exportMessages.success,
+        description: messages.admin.exportMessages.successDesc,
       });
     } catch (error) {
       toast({
-        title: 'Erreur',
-        description: 'Impossible d\'exporter les données.',
+        title: messages.common.error || 'Error',
+        description: messages.admin.exportMessages.errorDesc,
         variant: 'destructive',
       });
     }
-  }, [toast]);
+  }, [toast, messages]);
 
   const handleGenerateReport = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/full-report');
-      if (!response.ok) throw new Error('Erreur lors de la génération');
+      if (!response.ok) throw new Error(messages.admin.exportMessages.reportError);
       
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -76,17 +78,17 @@ function DashboardContent() {
       window.URL.revokeObjectURL(url);
 
       toast({
-        title: 'Rapport généré',
-        description: 'Le rapport complet a été généré avec succès.',
+        title: messages.admin.exportMessages.reportGenerated,
+        description: messages.admin.exportMessages.reportGeneratedDesc,
       });
     } catch (error) {
       toast({
-        title: 'Erreur',
-        description: 'Impossible de générer le rapport.',
+        title: messages.common.error || 'Error',
+        description: messages.admin.exportMessages.reportError,
         variant: 'destructive',
       });
     }
-  }, [toast]);
+  }, [toast, messages]);
 
   // Quick Actions pour le header
   const quickActions = useMemo(() => (
@@ -98,7 +100,7 @@ function DashboardContent() {
         onClick={handleExportData}
       >
         <DocumentArrowDownIcon className="h-4 w-4 md:mr-2" />
-        <span className="hidden md:inline">Exporter</span>
+        <span className="hidden md:inline">{messages.admin.dashboard.exportData}</span>
       </Button>
       <Button 
         size="sm"
@@ -106,7 +108,7 @@ function DashboardContent() {
         onClick={handleGenerateReport}
       >
         <ChartBarIcon className="h-4 w-4 md:mr-2" />
-        <span className="hidden md:inline">Rapport</span>
+        <span className="hidden md:inline">{messages.admin.dashboard.fullReport}</span>
       </Button>
     </div>
   ), [handleExportData, handleGenerateReport]);
@@ -137,9 +139,9 @@ function DashboardContent() {
           >
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">Gestion des Utilisateurs</CardTitle>
+                <CardTitle className="text-white">{messages.admin.dashboard.usersManagement}</CardTitle>
                 <p className="text-sm text-slate-400">
-                  Administration des comptes utilisateurs et de leurs données
+                  {messages.admin.dashboard.usersDescription}
                 </p>
               </CardHeader>
               <CardContent>
@@ -158,9 +160,9 @@ function DashboardContent() {
           >
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">Gestion des Trades</CardTitle>
+                <CardTitle className="text-white">{messages.admin.dashboard.tradesManagement}</CardTitle>
                 <p className="text-sm text-slate-400">
-                  Suivi et gestion de tous les trades de la plateforme
+                  {messages.admin.dashboard.tradesDescription}
                 </p>
               </CardHeader>
               <CardContent>
@@ -179,9 +181,9 @@ function DashboardContent() {
           >
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">Gestion des Paiements</CardTitle>
+                <CardTitle className="text-white">{messages.admin.dashboard.payoutsManagement}</CardTitle>
                 <p className="text-sm text-slate-400">
-                  Suivi et validation des paiements SEPA et crypto
+                  {messages.admin.dashboard.payoutsDescription}
                 </p>
               </CardHeader>
               <CardContent>
@@ -200,9 +202,9 @@ function DashboardContent() {
           >
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">Validation KYC</CardTitle>
+                <CardTitle className="text-white">{messages.admin.dashboard.kycValidation}</CardTitle>
                 <p className="text-sm text-slate-400">
-                  Gestion des demandes de vérification d&apos;identité
+                  {messages.admin.dashboard.kycDescription}
                 </p>
               </CardHeader>
               <CardContent>
@@ -221,9 +223,9 @@ function DashboardContent() {
           >
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">Gestion des Affiliés</CardTitle>
+                <CardTitle className="text-white">{messages.admin.dashboard.affiliatesManagement}</CardTitle>
                 <p className="text-sm text-slate-400">
-                  Administration des comptes affiliés et de leurs performances
+                  {messages.admin.dashboard.affiliatesDescription}
                 </p>
               </CardHeader>
               <CardContent>
@@ -242,9 +244,9 @@ function DashboardContent() {
           >
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">Commissions d&apos;Affiliation</CardTitle>
+                <CardTitle className="text-white">{messages.admin.dashboard.commissionsManagement}</CardTitle>
                 <p className="text-sm text-slate-400">
-                  Validation et paiement des commissions générées par les affiliés
+                  {messages.admin.dashboard.commissionsDescription}
                 </p>
               </CardHeader>
               <CardContent>
@@ -263,9 +265,9 @@ function DashboardContent() {
           >
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">Performance des Affiliés</CardTitle>
+                <CardTitle className="text-white">{messages.admin.chat.performance.title}</CardTitle>
                 <p className="text-sm text-slate-400">
-                  Statistiques détaillées et analytics des affiliés
+                  {messages.admin.dashboard.affiliatesDescription}
                 </p>
               </CardHeader>
               <CardContent>
@@ -286,9 +288,9 @@ function DashboardContent() {
           >
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">Exports de Données</CardTitle>
+                <CardTitle className="text-white">{messages.admin.dashboard.exportConfiguration}</CardTitle>
                 <p className="text-sm text-slate-400">
-                  Export des données pour la comptabilité et la conformité
+                  {messages.admin.dashboard.exportDescription}
                 </p>
               </CardHeader>
               <CardContent>
@@ -314,10 +316,10 @@ function DashboardContent() {
       >
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent md:text-4xl">
-            Dashboard Admin
+            {messages.admin.dashboard.title}
           </h1>
           <p className="mt-1 text-sm text-slate-400 md:text-base">
-            Gestion complète de la plateforme • CS2 Skin Trading
+            {messages.admin.dashboard.subtitle}
           </p>
         </div>
         {quickActions}

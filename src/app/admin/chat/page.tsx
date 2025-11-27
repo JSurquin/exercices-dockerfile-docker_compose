@@ -24,6 +24,7 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface Moderator {
   id: string;
@@ -51,6 +52,7 @@ interface User {
 export default function AdminChatPage() {
   const { data: session, isPending } = useSession();
   const user = session?.user;
+  const { messages } = useLocale();
   const [conversations, setConversations] = useState<ConversationWithMessages[]>([]);
   const [moderators, setModerators] = useState<Moderator[]>([]);
   const [moderatorStats, setModeratorStats] = useState<ModeratorStats[]>([]);
@@ -150,10 +152,10 @@ export default function AdminChatPage() {
         throw new Error(error.error || 'Erreur lors de la rétrogradation');
       }
 
-      toast.success('Modérateur rétrogradé avec succès');
+      toast.success(messages.admin.chat.moderators.successDemote);
       await fetchData();
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message || messages.admin.chat.moderators.errorDemote);
       console.error(error);
     }
   };
@@ -177,9 +179,9 @@ export default function AdminChatPage() {
         <Card className="bg-slate-800/50 border-slate-700">
           <CardContent className="p-8 text-center">
             <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-orange-500" />
-            <h2 className="text-2xl font-bold mb-2 text-white">Accès refusé</h2>
+            <h2 className="text-2xl font-bold mb-2 text-white">{messages.admin.chat.accessDenied}</h2>
             <p className="text-slate-400">
-              Vous devez être administrateur pour accéder à cette page.
+              {messages.admin.chat.accessDeniedDesc}
             </p>
           </CardContent>
         </Card>
@@ -198,10 +200,10 @@ export default function AdminChatPage() {
         >
           <h1 className="text-3xl font-bold mb-2 flex items-center text-white">
             <ChatBubbleLeftRightIcon className="w-8 h-8 mr-3 text-orange-500" />
-            Gestion du Chat
+            {messages.admin.chat.title}
           </h1>
           <p className="text-slate-400">
-            Gérez les conversations, modérateurs et statistiques du système de chat
+            {messages.admin.chat.subtitle}
           </p>
         </motion.div>
 
@@ -217,7 +219,7 @@ export default function AdminChatPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-400">Total conversations</p>
+                    <p className="text-sm text-slate-400">{messages.admin.chat.stats.totalConversations}</p>
                     <p className="text-2xl font-bold text-white">{chatStats.totalConversations}</p>
                   </div>
                   <ChatBubbleLeftRightIcon className="w-8 h-8 text-blue-400" />
@@ -229,7 +231,7 @@ export default function AdminChatPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-400">Conversations actives</p>
+                    <p className="text-sm text-slate-400">{messages.admin.chat.stats.activeConversations}</p>
                     <p className="text-2xl font-bold text-white">{chatStats.activeConversations}</p>
                   </div>
                   <CheckCircleIcon className="w-8 h-8 text-green-400" />
@@ -241,7 +243,7 @@ export default function AdminChatPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-400">Non assignées</p>
+                    <p className="text-sm text-slate-400">{messages.admin.chat.stats.unassigned}</p>
                     <p className="text-2xl font-bold text-white">{chatStats.unassignedConversations}</p>
                   </div>
                   <ExclamationTriangleIcon className="w-8 h-8 text-orange-400" />
@@ -264,23 +266,23 @@ export default function AdminChatPage() {
         )}
 
         <Tabs defaultValue="conversations" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="conversations">Conversations</TabsTrigger>
-            <TabsTrigger value="moderators">Modérateurs</TabsTrigger>
-            <TabsTrigger value="stats">Statistiques</TabsTrigger>
-          </TabsList>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="conversations">{messages.admin.chat.tabs.conversations}</TabsTrigger>
+          <TabsTrigger value="moderators">{messages.admin.chat.tabs.moderators}</TabsTrigger>
+          <TabsTrigger value="stats">{messages.admin.chat.tabs.stats}</TabsTrigger>
+        </TabsList>
 
           {/* Onglet Conversations */}
           <TabsContent value="conversations">
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">Conversations récentes ({conversations.length})</CardTitle>
+                <CardTitle className="text-white">{messages.admin.chat.conversations.title} ({conversations.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 {loading ? (
                   <div className="text-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-                    <p className="mt-2 text-muted-foreground">Chargement...</p>
+                    <p className="mt-2 text-muted-foreground">{messages.admin.chat.conversations.loading}</p>
                   </div>
                 ) : conversations.length === 0 ? (
                   <div className="text-center py-8">

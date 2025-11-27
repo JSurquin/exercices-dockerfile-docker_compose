@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { CreditCard, Wallet } from 'lucide-react';
+import { useLocale } from '@/components/providers/locale-provider';
 
 export type PaymentMethodType = 'SEPA' | 'CRYPTO';
 
@@ -20,6 +21,7 @@ export function PaymentMethodSelector({
   selectedMethod,
   disabled = false,
 }: PaymentMethodSelectorProps) {
+  const { messages } = useLocale();
   const [selected, setSelected] = useState<PaymentMethodType>(selectedMethod || 'SEPA');
 
   const handleSelect = (value: string) => {

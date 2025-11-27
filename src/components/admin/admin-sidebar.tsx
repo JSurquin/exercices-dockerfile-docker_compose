@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useLocale } from '@/components/providers/locale-provider';
 import {
   LayoutDashboard,
   Users,
@@ -45,43 +46,44 @@ interface NavGroup {
 }
 
 const navigationGroups: NavGroup[] = [
+  // NOTE: Cette structure est statique, elle sera remplacée dynamiquement dans le composant
   {
-    title: 'Vue d\'ensemble',
+    title: 'overview',
     items: [
       {
-        title: 'Dashboard',
+        title: 'dashboard',
         href: '/admin/dashboard',
         icon: LayoutDashboard,
       },
       {
-        title: 'Analytics',
+        title: 'analytics',
         href: '/admin/dashboard?tab=analytics',
         icon: BarChart3,
       },
     ],
   },
   {
-    title: 'Gestion',
+    title: 'management',
     items: [
       {
-        title: 'Utilisateurs',
+        title: 'users',
         href: '/admin/dashboard?tab=users',
         icon: Users,
       },
       {
-        title: 'Trades',
+        title: 'trades',
         href: '/admin/dashboard?tab=trades',
         icon: ShoppingCart,
       },
       {
-        title: 'Paiements',
+        title: 'payouts',
         href: '/admin/dashboard?tab=payouts',
         icon: CreditCard,
         badge: 5,
         badgeVariant: 'destructive',
       },
       {
-        title: 'KYC',
+        title: 'kyc',
         href: '/admin/dashboard?tab=kyc',
         icon: Shield,
         badge: 3,
@@ -137,20 +139,20 @@ const navigationGroups: NavGroup[] = [
     ],
   },
   {
-    title: 'Système',
+    title: 'system',
     items: [
       {
-        title: 'Audit & Sécurité',
+        title: 'audit',
         href: '/admin/audit',
         icon: Activity,
       },
       {
-        title: 'Exports',
+        title: 'exports',
         href: '/admin/dashboard?tab=exports',
         icon: FileDown,
       },
       {
-        title: 'Paramètres',
+        title: 'settings',
         href: '/admin/settings',
         icon: Settings,
       },

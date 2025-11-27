@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
+import { TradeStatus } from '@prisma/client';
 import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
 import { TradeHooks } from '@/lib/trade-hooks';
 import { newsletterService } from '@/lib/newsletter-service';
@@ -35,6 +36,38 @@ interface SkinplaceTradeResponse {
   expires_at?: string;
   error?: string;
   message?: string;
+}
+
+/**
+ * Mapper les statuts Skinplace/Steam vers nos statuts TradeStatus
+ */
+function mapSkinplaceStatusToTradeStatus(skinplaceStatus: string): TradeStatus {
+  const statusMap: Record<string, TradeStatus> = {
+    // Offre créée, en attente d'acceptation
+    'pending': 'CREATED',
+    'sent': 'CREATED',
+    'created': 'CREATED',
+    
+    // Offre acceptée par l'utilisateur
+    'accepted': 'ACCEPTED_BY_BOT',
+    
+    // En période de trade hold Steam (7 jours)
+    'active': 'IN_TRADE_HOLD',
+    'trade_hold': 'IN_TRADE_HOLD',
+    
+    // Items reçus, disponibles pour paiement
+    'completed': 'AVAILABLE',
+    'done': 'AVAILABLE',
+    
+    // Échecs
+    'declined': 'FAILED',
+    'rejected': 'FAILED',
+    'expired': 'FAILED',
+    'cancelled': 'FAILED',
+    'failed': 'FAILED',
+  };
+
+  return statusMap[skinplaceStatus.toLowerCase()] || 'CREATED';
 }
 
 export async function POST(request: NextRequest) {
@@ -178,12 +211,17 @@ export async function POST(request: NextRequest) {
     const steamTrade = skinplaceData.steamtrade;
     const tradeOfferId = steamTrade?.tradeofferid;
     const skinplaceToken = skinplaceData.token;
+    const skinplaceStatus = steamTrade?.status || skinplaceData.status || 'pending';
     
     console.log('✅ Trade créé avec succès:');
     console.log('  - Trade Offer ID Steam:', tradeOfferId);
     console.log('  - Token Skinplace:', skinplaceToken);
     console.log('  - Prix total Skinplace:', steamTrade?.price, '€');
-    console.log('  - Status:', steamTrade?.status);
+    console.log('  - Status Skinplace:', skinplaceStatus);
+    
+    // Mapper le statut Skinplace vers notre enum TradeStatus
+    const tradeStatus = mapSkinplaceStatusToTradeStatus(skinplaceStatus);
+    console.log('  - Status mappé:', tradeStatus);
 
     // Récupérer l'utilisateur depuis la base de données
     const user = await prisma.user.findUnique({
@@ -226,24 +264,37 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    // Date de disponibilité (7 jours de trade hold)
+    // Date de disponibilité (dépend du statut)
     const availableAt = new Date();
-    availableAt.setDate(availableAt.getDate() + 7);
+    if (tradeStatus === 'ACCEPTED_BY_BOT' || tradeStatus === 'IN_TRADE_HOLD') {
+      // 7 jours de trade hold si accepté
+      availableAt.setDate(availableAt.getDate() + 7);
+    } else if (tradeStatus === 'AVAILABLE') {
+      // Disponible immédiatement si déjà complété
+      // (cas rare mais possible)
+    }
+
+    // Date d'acceptation du trade (si accepté)
+    const tradeAcceptedAt = (tradeStatus === 'ACCEPTED_BY_BOT' || tradeStatus === 'IN_TRADE_HOLD' || tradeStatus === 'AVAILABLE') 
+      ? new Date() 
+      : undefined;
 
     // Enregistrer le trade en base de données selon les règles CTF
+    // Le statut est maintenant basé sur la réponse réelle de Skinplace
     const trade = await prisma.trade.create({
       data: {
         id: tradeId,
         userId: user.id,
         steamId: body.steam_id,
         tradeUrl: body.trade_url,
-        status: 'ACCEPTED_BY_BOT', // États: CREATED -> ACCEPTED_BY_BOT -> IN_TRADE_HOLD -> AVAILABLE -> PAYMENT_IN_PROGRESS -> PAID -> FAILED
+        status: tradeStatus, // États: CREATED -> ACCEPTED_BY_BOT -> IN_TRADE_HOLD -> AVAILABLE -> PAYOUT_PENDING -> PAID -> FAILED
         grossCents: body.gross_value_centimes,
         cashoutFees: body.fees.cashout_fee,
         networkFees: body.fees.network_fee,
         netCents: body.net_value_centimes,
-        availableAt: availableAt,
+        availableAt: tradeStatus !== 'FAILED' ? availableAt : undefined,
         expiresAt: expiresAt,
+        tradeAcceptedAt,
         ticketId: token,
         items: {
           create: body.items.map((item) => ({
@@ -272,6 +323,9 @@ export async function POST(request: NextRequest) {
           itemsCount: body.items.length,
           grossValue: body.gross_value_centimes,
           netValue: body.net_value_centimes,
+          initialStatus: tradeStatus,
+          skinplaceStatus,
+          tradeOfferId,
         },
         ipAddress: request.headers.get('x-forwarded-for') || 
                    request.headers.get('x-real-ip') || 

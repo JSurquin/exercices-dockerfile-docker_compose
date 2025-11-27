@@ -122,13 +122,13 @@ export default function AdminSettingsPage() {
       });
 
       if (response.ok) {
-        toast.success('Informations personnelles mises à jour avec succès');
+        toast.success(messages.admin.settings.personal.success);
       } else {
-        throw new Error('Erreur lors de la mise à jour');
+        throw new Error(messages.admin.settings.personal.error);
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Erreur lors de la mise à jour des informations');
+      toast.error(messages.admin.settings.personal.error);
     } finally {
       setSaving(false);
     }
@@ -136,12 +136,12 @@ export default function AdminSettingsPage() {
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
-      toast.error('Les mots de passe ne correspondent pas');
+      toast.error(messages.admin.settings.passwordChange.passwordMismatch);
       return;
     }
 
     if (newPassword.length < 8) {
-      toast.error('Le mot de passe doit contenir au moins 8 caractères');
+      toast.error(messages.admin.settings.passwordChange.passwordTooShort);
       return;
     }
 
@@ -159,17 +159,17 @@ export default function AdminSettingsPage() {
       });
 
       if (response.ok) {
-        toast.success('Mot de passe modifié avec succès');
+        toast.success(messages.admin.settings.passwordChange.success);
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
       } else {
         const data = await response.json();
-        throw new Error(data.error || 'Erreur lors du changement de mot de passe');
+        throw new Error(data.error || messages.admin.settings.passwordChange.error);
       }
     } catch (error: any) {
       console.error('Error changing password:', error);
-      toast.error(error.message || 'Erreur lors du changement de mot de passe');
+      toast.error(error.message || messages.admin.settings.passwordChange.error);
     } finally {
       setSaving(false);
     }
@@ -187,13 +187,13 @@ export default function AdminSettingsPage() {
       });
 
       if (response.ok) {
-        toast.success('Préférences de notifications mises à jour');
+        toast.success(messages.admin.settings.notificationPrefs.success);
       } else {
-        throw new Error('Erreur lors de la mise à jour');
+        throw new Error(messages.admin.settings.notificationPrefs.error);
       }
     } catch (error) {
       console.error('Error updating notifications:', error);
-      toast.error('Erreur lors de la mise à jour des notifications');
+      toast.error(messages.admin.settings.notificationPrefs.error);
     } finally {
       setSaving(false);
     }
@@ -211,13 +211,13 @@ export default function AdminSettingsPage() {
       });
 
       if (response.ok) {
-        toast.success('Préférences mises à jour');
+        toast.success(messages.admin.settings.interfacePrefs.success);
       } else {
-        throw new Error('Erreur lors de la mise à jour');
+        throw new Error(messages.admin.settings.interfacePrefs.error);
       }
     } catch (error) {
       console.error('Error updating preferences:', error);
-      toast.error('Erreur lors de la mise à jour des préférences');
+      toast.error(messages.admin.settings.interfacePrefs.error);
     } finally {
       setSaving(false);
     }
@@ -242,15 +242,15 @@ export default function AdminSettingsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-              Paramètres Administrateur
+              {messages.admin.settings.title}
             </h1>
             <p className="text-slate-300">
-              Gérez vos informations personnelles et préférences d&apos;administration
+              {messages.admin.settings.subtitle}
             </p>
           </div>
           <Badge variant="outline" className="bg-orange-500/10 border-orange-500/50 text-orange-400">
             <ShieldCheckIcon className="w-4 h-4 mr-1" />
-            Administrateur
+            {messages.admin.settings.badge}
           </Badge>
         </div>
       </motion.div>
@@ -278,10 +278,10 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center gap-4 mt-2">
                   <Badge variant="outline" className="bg-green-500/10 border-green-500/50 text-green-400">
                     <CheckCircleIcon className="w-4 h-4 mr-1" />
-                    Compte Vérifié
+                    {messages.admin.settings.accountVerified}
                   </Badge>
                   <Badge variant="outline" className="bg-blue-500/10 border-blue-500/50 text-blue-400">
-                    Steam: {settings.personalInfo.steamUsername || 'Non lié'}
+                    Steam: {settings.personalInfo.steamUsername || messages.admin.settings.notLinked}
                   </Badge>
                 </div>
               </div>
@@ -303,28 +303,28 @@ export default function AdminSettingsPage() {
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
             >
               <UserIcon className="w-4 h-4 mr-2" />
-              Personnel
+              {messages.admin.settings.tabs.personal}
             </TabsTrigger>
             <TabsTrigger 
               value="security" 
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
             >
               <ShieldCheckIcon className="w-4 h-4 mr-2" />
-              Sécurité
+              {messages.admin.settings.tabs.security}
             </TabsTrigger>
             <TabsTrigger 
               value="notifications" 
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
             >
               <BellIcon className="w-4 h-4 mr-2" />
-              Notifications
+              {messages.admin.settings.tabs.notifications}
             </TabsTrigger>
             <TabsTrigger 
               value="preferences" 
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
             >
               <CogIcon className="w-4 h-4 mr-2" />
-              Préférences
+              {messages.admin.settings.tabs.preferences}
             </TabsTrigger>
           </TabsList>
 
@@ -334,13 +334,13 @@ export default function AdminSettingsPage() {
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <UserIcon className="w-5 h-5 text-orange-400" />
-                  Informations Personnelles
+                  {messages.admin.settings.personal.title}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-slate-200">Nom complet</Label>
+                    <Label htmlFor="name" className="text-slate-200">{messages.admin.settings.personal.fullName}</Label>
                     <Input
                       id="name"
                       value={settings.personalInfo.name}
@@ -349,11 +349,11 @@ export default function AdminSettingsPage() {
                         personalInfo: { ...prev.personalInfo, name: e.target.value }
                       }))}
                       className="bg-slate-900/50 border-slate-600 text-white"
-                      placeholder="Votre nom complet"
+                      placeholder={messages.admin.settings.personal.fullNamePlaceholder}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-slate-200">Adresse email</Label>
+                    <Label htmlFor="email" className="text-slate-200">{messages.admin.settings.personal.email}</Label>
                     <Input
                       id="email"
                       type="email"
@@ -363,13 +363,13 @@ export default function AdminSettingsPage() {
                         personalInfo: { ...prev.personalInfo, email: e.target.value }
                       }))}
                       className="bg-slate-900/50 border-slate-600 text-white"
-                      placeholder="votre@email.com"
+                      placeholder={messages.admin.settings.personal.emailPlaceholder}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="steamUsername" className="text-slate-200">Nom d&apos;utilisateur Steam</Label>
+                  <Label htmlFor="steamUsername" className="text-slate-200">{messages.admin.settings.personal.steamUsername}</Label>
                   <Input
                     id="steamUsername"
                     value={settings.personalInfo.steamUsername}
@@ -378,11 +378,11 @@ export default function AdminSettingsPage() {
                       personalInfo: { ...prev.personalInfo, steamUsername: e.target.value }
                     }))}
                     className="bg-slate-900/50 border-slate-600 text-white"
-                    placeholder="Votre nom Steam"
+                    placeholder={messages.admin.settings.personal.steamUsernamePlaceholder}
                     disabled
                   />
                   <p className="text-sm text-slate-400">
-                    Le nom d&apos;utilisateur Steam est synchronisé automatiquement
+                    {messages.admin.settings.personal.steamSync}
                   </p>
                 </div>
 
@@ -394,7 +394,7 @@ export default function AdminSettingsPage() {
                     disabled={saving}
                     className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
                   >
-                    {saving ? 'Sauvegarde...' : 'Sauvegarder les modifications'}
+                    {saving ? messages.admin.settings.personal.saving : messages.admin.settings.personal.save}
                   </Button>
                 </div>
               </CardContent>
@@ -409,20 +409,20 @@ export default function AdminSettingsPage() {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <KeyIcon className="w-5 h-5 text-red-400" />
-                    Changement de mot de passe
+                    {messages.admin.settings.passwordChange.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Alert className="border-yellow-500/50 bg-yellow-500/10">
                     <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500" />
                     <AlertDescription className="text-yellow-200">
-                      Utilisez un mot de passe fort avec au moins 8 caractères, incluant des majuscules, minuscules, chiffres et symboles.
+                      {messages.admin.settings.passwordChange.warning}
                     </AlertDescription>
                   </Alert>
 
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="currentPassword" className="text-slate-200">Mot de passe actuel</Label>
+                      <Label htmlFor="currentPassword" className="text-slate-200">{messages.admin.settings.passwordChange.currentPassword}</Label>
                       <div className="relative">
                         <Input
                           id="currentPassword"
@@ -430,7 +430,7 @@ export default function AdminSettingsPage() {
                           value={currentPassword}
                           onChange={(e) => setCurrentPassword(e.target.value)}
                           className="bg-slate-900/50 border-slate-600 text-white pr-10"
-                          placeholder="Votre mot de passe actuel"
+                          placeholder={messages.admin.settings.passwordChange.currentPasswordPlaceholder}
                         />
                         <Button
                           type="button"
@@ -450,25 +450,25 @@ export default function AdminSettingsPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="newPassword" className="text-slate-200">Nouveau mot de passe</Label>
+                        <Label htmlFor="newPassword" className="text-slate-200">{messages.admin.settings.passwordChange.newPassword}</Label>
                         <Input
                           id="newPassword"
                           type={showPassword ? "text" : "password"}
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           className="bg-slate-900/50 border-slate-600 text-white"
-                          placeholder="Nouveau mot de passe"
+                          placeholder={messages.admin.settings.passwordChange.newPasswordPlaceholder}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="confirmPassword" className="text-slate-200">Confirmer le mot de passe</Label>
+                        <Label htmlFor="confirmPassword" className="text-slate-200">{messages.admin.settings.passwordChange.confirmPassword}</Label>
                         <Input
                           id="confirmPassword"
                           type={showPassword ? "text" : "password"}
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           className="bg-slate-900/50 border-slate-600 text-white"
-                          placeholder="Confirmer le mot de passe"
+                          placeholder={messages.admin.settings.passwordChange.confirmPasswordPlaceholder}
                         />
                       </div>
                     </div>
@@ -480,7 +480,7 @@ export default function AdminSettingsPage() {
                       disabled={saving || !currentPassword || !newPassword || !confirmPassword}
                       className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
                     >
-                      {saving ? 'Modification...' : 'Changer le mot de passe'}
+                      {saving ? messages.admin.settings.passwordChange.changing : messages.admin.settings.passwordChange.change}
                     </Button>
                   </div>
                 </CardContent>
@@ -491,15 +491,15 @@ export default function AdminSettingsPage() {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <ShieldCheckIcon className="w-5 h-5 text-green-400" />
-                    Paramètres de sécurité
+                    {messages.admin.settings.securitySettings.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <Label className="text-slate-200">Authentification à deux facteurs</Label>
+                      <Label className="text-slate-200">{messages.admin.settings.securitySettings.twoFactor}</Label>
                       <p className="text-sm text-slate-400">
-                        Ajouter une couche de sécurité supplémentaire à votre compte
+                        {messages.admin.settings.securitySettings.twoFactorDesc}
                       </p>
                     </div>
                     <Switch
@@ -514,7 +514,7 @@ export default function AdminSettingsPage() {
                   <Separator className="bg-slate-600" />
 
                   <div className="space-y-2">
-                    <Label className="text-slate-200">Délai d&apos;expiration de session (minutes)</Label>
+                    <Label className="text-slate-200">{messages.admin.settings.securitySettings.sessionTimeout}</Label>
                     <Select
                       value={settings.security.sessionTimeout.toString()}
                       onValueChange={(value) => setSettings(prev => ({
@@ -526,11 +526,11 @@ export default function AdminSettingsPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-800 border-slate-600">
-                        <SelectItem value="15">15 minutes</SelectItem>
-                        <SelectItem value="30">30 minutes</SelectItem>
-                        <SelectItem value="60">1 heure</SelectItem>
-                        <SelectItem value="120">2 heures</SelectItem>
-                        <SelectItem value="480">8 heures</SelectItem>
+                        <SelectItem value="15">{messages.admin.settings.securitySettings["15min"]}</SelectItem>
+                        <SelectItem value="30">{messages.admin.settings.securitySettings["30min"]}</SelectItem>
+                        <SelectItem value="60">{messages.admin.settings.securitySettings["1hour"]}</SelectItem>
+                        <SelectItem value="120">{messages.admin.settings.securitySettings["2hours"]}</SelectItem>
+                        <SelectItem value="480">{messages.admin.settings.securitySettings["8hours"]}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -545,16 +545,16 @@ export default function AdminSettingsPage() {
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <BellIcon className="w-5 h-5 text-blue-400" />
-                  Préférences de notifications
+                  {messages.admin.settings.notificationPrefs.title}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <Label className="text-slate-200">Notifications par email</Label>
+                      <Label className="text-slate-200">{messages.admin.settings.notificationPrefs.emailNotifications}</Label>
                       <p className="text-sm text-slate-400">
-                        Recevoir les notifications importantes par email
+                        {messages.admin.settings.notificationPrefs.emailNotificationsDesc}
                       </p>
                     </div>
                     <Switch
@@ -568,9 +568,9 @@ export default function AdminSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <Label className="text-slate-200">Alertes de trades</Label>
+                      <Label className="text-slate-200">{messages.admin.settings.notificationPrefs.tradeAlerts}</Label>
                       <p className="text-sm text-slate-400">
-                        Notifications pour les nouveaux trades et changements de statut
+                        {messages.admin.settings.notificationPrefs.tradeAlertsDesc}
                       </p>
                     </div>
                     <Switch
@@ -584,9 +584,9 @@ export default function AdminSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <Label className="text-slate-200">Alertes de sécurité</Label>
+                      <Label className="text-slate-200">{messages.admin.settings.notificationPrefs.securityAlerts}</Label>
                       <p className="text-sm text-slate-400">
-                        Notifications pour les connexions suspectes et activités de sécurité
+                        {messages.admin.settings.notificationPrefs.securityAlertsDesc}
                       </p>
                     </div>
                     <Switch
@@ -600,9 +600,9 @@ export default function AdminSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <Label className="text-slate-200">Rapports hebdomadaires</Label>
+                      <Label className="text-slate-200">{messages.admin.settings.notificationPrefs.weeklyReports}</Label>
                       <p className="text-sm text-slate-400">
-                        Recevoir un résumé hebdomadaire des activités de la plateforme
+                        {messages.admin.settings.notificationPrefs.weeklyReportsDesc}
                       </p>
                     </div>
                     <Switch
@@ -623,7 +623,7 @@ export default function AdminSettingsPage() {
                     disabled={saving}
                     className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
                   >
-                    {saving ? 'Sauvegarde...' : 'Sauvegarder les notifications'}
+                    {saving ? messages.admin.settings.personal.saving : messages.admin.settings.notificationPrefs.save}
                   </Button>
                 </div>
               </CardContent>
@@ -636,13 +636,13 @@ export default function AdminSettingsPage() {
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <CogIcon className="w-5 h-5 text-purple-400" />
-                  Préférences d&apos;interface
+                  {messages.admin.settings.interfacePrefs.title}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-slate-200">Thème</Label>
+                    <Label className="text-slate-200">{messages.admin.settings.interfacePrefs.theme}</Label>
                     <Select
                       value={settings.preferences.theme}
                       onValueChange={(value) => setSettings(prev => ({
@@ -654,15 +654,15 @@ export default function AdminSettingsPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-800 border-slate-600">
-                        <SelectItem value="dark">Sombre</SelectItem>
-                        <SelectItem value="light">Clair</SelectItem>
-                        <SelectItem value="auto">Automatique</SelectItem>
+                        <SelectItem value="dark">{messages.admin.settings.interfacePrefs.themeDark}</SelectItem>
+                        <SelectItem value="light">{messages.admin.settings.interfacePrefs.themeLight}</SelectItem>
+                        <SelectItem value="auto">{messages.admin.settings.interfacePrefs.themeAuto}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-slate-200">Langue</Label>
+                    <Label className="text-slate-200">{messages.admin.settings.interfacePrefs.language}</Label>
                     <Select
                       value={settings.preferences.language}
                       onValueChange={(value) => setSettings(prev => ({
@@ -674,14 +674,14 @@ export default function AdminSettingsPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-800 border-slate-600">
-                        <SelectItem value="fr">Français</SelectItem>
-                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="fr">{messages.admin.settings.interfacePrefs.french}</SelectItem>
+                        <SelectItem value="en">{messages.admin.settings.interfacePrefs.english}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-slate-200">Fuseau horaire</Label>
+                    <Label className="text-slate-200">{messages.admin.settings.interfacePrefs.timezone}</Label>
                     <Select
                       value={settings.preferences.timezone}
                       onValueChange={(value) => setSettings(prev => ({
@@ -693,16 +693,16 @@ export default function AdminSettingsPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-800 border-slate-600">
-                        <SelectItem value="Europe/Paris">Europe/Paris (CET)</SelectItem>
-                        <SelectItem value="Europe/London">Europe/London (GMT)</SelectItem>
-                        <SelectItem value="America/New_York">America/New_York (EST)</SelectItem>
-                        <SelectItem value="Asia/Tokyo">Asia/Tokyo (JST)</SelectItem>
+                        <SelectItem value="Europe/Paris">{messages.admin.settings.interfacePrefs.parisCET}</SelectItem>
+                        <SelectItem value="Europe/London">{messages.admin.settings.interfacePrefs.londonGMT}</SelectItem>
+                        <SelectItem value="America/New_York">{messages.admin.settings.interfacePrefs.newYorkEST}</SelectItem>
+                        <SelectItem value="Asia/Tokyo">{messages.admin.settings.interfacePrefs.tokyoJST}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-slate-200">Disposition du dashboard</Label>
+                    <Label className="text-slate-200">{messages.admin.settings.interfacePrefs.dashboardLayout}</Label>
                     <Select
                       value={settings.preferences.dashboardLayout}
                       onValueChange={(value) => setSettings(prev => ({
@@ -714,9 +714,9 @@ export default function AdminSettingsPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-800 border-slate-600">
-                        <SelectItem value="grid">Grille</SelectItem>
-                        <SelectItem value="list">Liste</SelectItem>
-                        <SelectItem value="compact">Compact</SelectItem>
+                        <SelectItem value="grid">{messages.admin.settings.interfacePrefs.layoutGrid}</SelectItem>
+                        <SelectItem value="list">{messages.admin.settings.interfacePrefs.layoutList}</SelectItem>
+                        <SelectItem value="compact">{messages.admin.settings.interfacePrefs.layoutCompact}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -730,7 +730,7 @@ export default function AdminSettingsPage() {
                     disabled={saving}
                     className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700"
                   >
-                    {saving ? 'Sauvegarde...' : 'Sauvegarder les préférences'}
+                    {saving ? messages.admin.settings.personal.saving : messages.admin.settings.interfacePrefs.save}
                   </Button>
                 </div>
               </CardContent>

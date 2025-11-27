@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, Circle, Clock, XCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface PayoutStatusTrackerProps {
   payoutId: string;
@@ -39,6 +40,7 @@ export function PayoutStatusTracker({
   autoRefresh = false,
   refreshInterval = 30000,
 }: PayoutStatusTrackerProps) {
+  const { messages } = useLocale();
   const [status, setStatus] = useState(currentStatus);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [orderDetails, setOrderDetails] = useState<any>(null);

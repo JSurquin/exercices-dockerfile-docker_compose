@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Shield, CheckCircle2, XCircle, AlertTriangle, Loader2 } from 'lucide-react';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface KycVerificationProps {
   onVerificationComplete?: () => void;
@@ -14,6 +15,7 @@ interface KycVerificationProps {
 type KycStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
 
 export function KycVerification({ onVerificationComplete }: KycVerificationProps) {
+  const { messages } = useLocale();
   const [kycStatus, setKycStatus] = useState<KycStatus>('PENDING');
   const [isLoading, setIsLoading] = useState(true);
   const [isInitiating, setIsInitiating] = useState(false);

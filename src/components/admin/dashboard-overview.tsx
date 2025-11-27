@@ -29,6 +29,7 @@ const getStatusColor = (status: string) => {
 };
 
 export function DashboardOverview() {
+  // Removed useLocale() as it's not being used and was causing errors
   return (
     <div className="space-y-6">
       {/* Graphiques */}
