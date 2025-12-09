@@ -584,6 +584,7 @@ export const messages: Record<Locale, Messages> = {
         title: "Mes participations",
         entries: {
           inProgress: "En cours",
+          won: "Gagné",
           lost: "Perdu",
         },
       },
@@ -2768,7 +2769,13 @@ export const messages: Record<Locale, Messages> = {
         submit: "Soumettre la candidature",
         submitting: "Envoi en cours...",
         success: "Candidature envoyée avec succès !",
-        error: "Erreur lors de l'envoi de la candidature"
+        error: "Erreur lors de l'envoi de la candidature",
+        pending: "Demande en cours d'examen",
+        pendingDescription: "Votre demande a été soumise et est actuellement en cours de révision par notre équipe",
+        rejected: "Demande rejetée",
+        rejectedDescription: "Malheureusement, votre demande a été rejetée",
+        reason: "Raison",
+        reapply: "Soumettre une nouvelle demande"
       }
     },
     help: {
@@ -3703,6 +3710,7 @@ export const messages: Record<Locale, Messages> = {
         title: "My entries",
         entries: {
           inProgress: "In progress",
+          won: "Won",
           lost: "Lost",
         },
       },
@@ -5778,7 +5786,13 @@ export const messages: Record<Locale, Messages> = {
         submit: "Submit application",
         submitting: "Submitting...",
         success: "Application submitted successfully!",
-        error: "Error submitting application"
+        error: "Error submitting application",
+        pending: "Application under review",
+        pendingDescription: "Your application has been submitted and is currently being reviewed by our team",
+        rejected: "Application rejected",
+        rejectedDescription: "Unfortunately, your application has been rejected",
+        reason: "Reason",
+        reapply: "Submit a new application"
       }
     },
     settings: {
@@ -6817,6 +6831,7 @@ export const messages: Record<Locale, Messages> = {
         title: "我的参与",
         entries: {
           inProgress: "进行中",
+          won: "获胜",
           lost: "失败",
         },
       },
@@ -8531,7 +8546,13 @@ export const messages: Record<Locale, Messages> = {
         submit: "提交申请",
         submitting: "提交中...",
         success: "申请提交成功！",
-        error: "提交申请时出错"
+        error: "提交申请时出错",
+        pending: "申请审核中",
+        pendingDescription: "您的申请已提交，目前正在由我们的团队审核",
+        rejected: "申请被拒绝",
+        rejectedDescription: "很遗憾，您的申请已被拒绝",
+        reason: "原因",
+        reapply: "提交新申请"
       }
     },
     settings: {

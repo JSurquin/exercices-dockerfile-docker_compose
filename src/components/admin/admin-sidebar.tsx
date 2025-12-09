@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/components/providers/locale-provider';
+import { useAffiliateApplications } from '@/hooks/use-affiliate-applications';
 import {
   LayoutDashboard,
   Users,
@@ -95,6 +96,13 @@ const navigationGroups: NavGroup[] = [
     title: 'Affiliation',
     items: [
       {
+        title: 'Demandes',
+        href: '/admin/affiliate-applications',
+        icon: FileDown,
+        badge: 0, // Sera mis à jour dynamiquement
+        badgeVariant: 'destructive',
+      },
+      {
         title: 'Affiliés',
         href: '/admin/dashboard?tab=affiliates',
         icon: UserCheck,
@@ -167,6 +175,7 @@ interface AdminSidebarProps {
 export function AdminSidebar({ className }: AdminSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const { pendingCount } = useAffiliateApplications();
 
   const isActive = (href: string) => {
     if (href.includes('?tab=')) {
@@ -246,6 +255,11 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
                   const Icon = item.icon;
                   const active = isActive(item.href);
                   
+                  // Badge dynamique pour les demandes d'affiliation
+                  const itemBadge = item.href === '/admin/affiliate-applications' && pendingCount > 0
+                    ? pendingCount
+                    : item.badge;
+                  
                   return (
                     <Link key={itemIndex} href={item.href}>
                       <motion.div
@@ -274,12 +288,12 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
                               className="flex flex-1 items-center justify-between overflow-hidden"
                             >
                               <span className="text-sm font-medium">{item.title}</span>
-                              {item.badge && (
+                              {itemBadge && (typeof itemBadge === 'number' ? itemBadge > 0 : itemBadge) && (
                                 <Badge
                                   variant={item.badgeVariant || 'default'}
                                   className="ml-auto h-5 px-1.5 text-xs"
                                 >
-                                  {item.badge}
+                                  {itemBadge}
                                 </Badge>
                               )}
                             </motion.div>

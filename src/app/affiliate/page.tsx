@@ -16,6 +16,7 @@ import { useLocale } from '@/components/providers/locale-provider';
 export default function AffiliatePage() {
   const [affiliateData, setAffiliateData] = useState<AffiliateStats | null>(null);
   const [commissions, setCommissions] = useState<AffiliateCommission[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [showApplication, setShowApplication] = useState(false);
@@ -31,26 +32,34 @@ export default function AffiliatePage() {
 
   const loadAffiliateData = async () => {
     try {
-      const response = await fetch(`/api/affiliate/stats?userId=${userId}`);
-      const data = await response.json();
+      // Charger les stats d'affilié
+      const statsResponse = await fetch(`/api/affiliate/stats?userId=${userId}`);
+      const statsData = await statsResponse.json();
 
-      if (data.success) {
+      if (statsData.success) {
         // Ajouter les propriétés manquantes pour la compatibilité
         const affiliateDataWithMetrics = {
-          ...data.data,
-          metrics: data.data.metrics || {
+          ...statsData.data,
+          metrics: statsData.data.metrics || {
             totalPendingCommissions: 0,
             totalPaidCommissions: 0,
             conversionRate: 0,
             averageOrderValue: 0
           },
-          recentReferrals: data.data.recentReferrals || []
+          recentReferrals: statsData.data.recentReferrals || []
         };
         setAffiliateData(affiliateDataWithMetrics);
         loadCommissions();
-      } else if (response.status === 404) {
-        // Pas encore affilié
-        setShowApplication(true);
+      } else if (statsResponse.status === 404) {
+        // Pas encore affilié, vérifier s'il y a une demande en cours
+        const applyResponse = await fetch(`/api/affiliate/apply?userId=${userId}`);
+        const applyData = await applyResponse.json();
+        
+        if (applyData.success && applyData.data.length > 0) {
+          setApplications(applyData.data);
+        } else {
+          setShowApplication(true);
+        }
       }
     } catch (error) {
       console.error('Erreur chargement données affilié:', error);
@@ -161,6 +170,102 @@ export default function AffiliatePage() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
+      </div>
+    );
+  }
+
+  // Afficher l'état des demandes si elles existent
+  if (applications.length > 0 && !affiliateData) {
+    const latestApp = applications[0];
+    
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-6 w-6" />
+              {messages.affiliate.application.title}
+            </CardTitle>
+            <CardDescription>
+              Statut de votre demande d&apos;affiliation
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {latestApp.status === 'PENDING' && (
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                <div className="flex items-start">
+                  <Clock className="h-5 w-5 text-yellow-600 mr-3 mt-0.5" />
+                  <div>
+                    <h3 className="font-semibold text-yellow-900 dark:text-yellow-200 mb-1">
+                      Demande en cours d&apos;examen
+                    </h3>
+                    <p className="text-sm text-yellow-800 dark:text-yellow-300">
+                      Votre demande d&apos;affiliation a été soumise le {new Date(latestApp.createdAt).toLocaleDateString('fr-FR')} 
+                      et est actuellement en cours de révision par notre équipe. Vous serez notifié dès qu&apos;une décision sera prise.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {latestApp.status === 'REJECTED' && (
+              <div className="space-y-4">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-red-900 dark:text-red-200 mb-1">
+                        Demande rejetée
+                      </h3>
+                      <p className="text-sm text-red-800 dark:text-red-300 mb-2">
+                        Malheureusement, votre demande a été rejetée le {new Date(latestApp.reviewedAt).toLocaleDateString('fr-FR')}.
+                      </p>
+                      {latestApp.rejectionReason && (
+                        <div className="mt-3 p-3 bg-red-100 dark:bg-red-900/30 rounded border border-red-300 dark:border-red-700">
+                          <p className="text-sm font-medium text-red-900 dark:text-red-200">Raison :</p>
+                          <p className="text-sm text-red-800 dark:text-red-300 mt-1">
+                            {latestApp.rejectionReason}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <Button 
+                  onClick={() => {
+                    setApplications([]);
+                    setShowApplication(true);
+                  }}
+                  className="w-full"
+                >
+                  Soumettre une nouvelle demande
+                </Button>
+              </div>
+            )}
+
+            <div className="border-t pt-4">
+              <h4 className="font-semibold mb-2">Détails de la demande</h4>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Date de soumission :</span>
+                  <p className="font-medium">{new Date(latestApp.createdAt).toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Motivation :</span>
+                  <p className="font-medium mt-1 p-3 bg-muted rounded-lg whitespace-pre-wrap">
+                    {latestApp.motivation}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }

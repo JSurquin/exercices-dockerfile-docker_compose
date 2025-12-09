@@ -180,6 +180,8 @@ export default function GiveawaysPage() {
   const [selectedTab, setSelectedTab] = useState('active');
   const { giveaways, loading, participateInGiveaway, refetch } = useGiveaways();
   const [userTickets, setUserTickets] = useState(0);
+  const [myEntries, setMyEntries] = useState<any[]>([]);
+  const [loadingEntries, setLoadingEntries] = useState(false);
 
   // Initialiser le premier giveaway au chargement
   useEffect(() => {
@@ -199,8 +201,27 @@ export default function GiveawaysPage() {
   useEffect(() => {
     if (user) {
       setUserTickets(user.tickets || 0);
+      loadMyEntries();
     }
   }, [user]);
+
+  const loadMyEntries = async () => {
+    if (!user) return;
+    
+    setLoadingEntries(true);
+    try {
+      const response = await fetch(`/api/giveaways/my-entries?userId=${user.id}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setMyEntries(data.data);
+      }
+    } catch (error) {
+      console.error('Erreur chargement participations:', error);
+    } finally {
+      setLoadingEntries(false);
+    }
+  };
 
   const handleParticipate = async (giveaway: GiveawayWithEntries, tickets: number) => {
     if (!user) {
@@ -217,8 +238,29 @@ export default function GiveawaysPage() {
       await participateInGiveaway(giveaway.id, user.id, tickets);
       // Mettre à jour les tickets localement
       setUserTickets(prev => prev - tickets);
+      // Recharger les participations
+      loadMyEntries();
     } catch (error) {
       console.error('Erreur lors de la participation:', error);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'in_progress':
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+          {messages.giveaways.myEntries.entries.inProgress}
+        </Badge>;
+      case 'won':
+        return <Badge variant="secondary" className="bg-green-100 text-green-800">
+          {messages.giveaways.myEntries.entries.won}
+        </Badge>;
+      case 'lost':
+        return <Badge variant="secondary" className="bg-red-100 text-red-800">
+          {messages.giveaways.myEntries.entries.lost}
+        </Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
@@ -421,32 +463,56 @@ export default function GiveawaysPage() {
                     <CardTitle>{messages.giveaways.myEntries.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3 sm:space-y-4">
-                      {/* Mock entries */}
-                      <div className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-semibold">AK-47 | Redline Giveaway</h4>
-                            <p className="text-sm text-muted-foreground">5 tickets utilisés</p>
-                          </div>
-                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                            {messages.giveaways.myEntries.entries.inProgress}
-                          </Badge>
-                        </div>
+                    {loadingEntries ? (
+                      <div className="text-center py-8">
+                        <p>Chargement de vos participations...</p>
                       </div>
-                      
-                      <div className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-semibold">Knife Collection</h4>
-                            <p className="text-sm text-muted-foreground">3 tickets utilisés</p>
+                    ) : myEntries.length > 0 ? (
+                      <div className="space-y-3 sm:space-y-4">
+                        {myEntries.map((entry) => (
+                          <div key={entry.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <Link href={`/giveaways/${entry.giveaway.id}`}>
+                                  <h4 className="font-semibold hover:text-orange-600 transition-colors cursor-pointer">
+                                    {entry.giveaway.title}
+                                  </h4>
+                                </Link>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  {entry.ticketsUsed} {entry.ticketsUsed > 1 ? 'tickets utilisés' : 'ticket utilisé'}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Participé le {new Date(entry.enteredAt).toLocaleDateString('fr-FR', {
+                                    day: '2-digit',
+                                    month: 'long',
+                                    year: 'numeric'
+                                  })}
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-end gap-2">
+                                {getStatusBadge(entry.participationStatus)}
+                                {entry.giveaway.status === 'ENDED' && (
+                                  <p className="text-xs text-muted-foreground">
+                                    Terminé le {new Date(entry.giveaway.endDate).toLocaleDateString('fr-FR')}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <Badge variant="secondary" className="bg-red-100 text-red-800">
-                            {messages.giveaways.myEntries.entries.lost}
-                          </Badge>
-                        </div>
+                        ))}
                       </div>
-                    </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <GiftIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                        <h3 className="text-xl font-semibold mb-2">Aucune participation</h3>
+                        <p className="text-muted-foreground mb-6">
+                          Vous n&apos;avez pas encore participé à des giveaways
+                        </p>
+                        <Button onClick={() => setSelectedTab('active')}>
+                          Voir les giveaways actifs
+                        </Button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ) : (

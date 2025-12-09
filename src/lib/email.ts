@@ -405,6 +405,215 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
       return false;
     }
   }
+  // ========== NOTIFICATIONS AFFILIATION ==========
+
+  /**
+   * Notifie l'admin qu'une nouvelle demande d'affiliation a été soumise
+   */
+  async sendNewAffiliateApplicationToAdmin(application: {
+    id: string;
+    user: {
+      email: string;
+      steamUsername: string | null;
+    };
+    motivation: string;
+    createdAt: Date;
+  }): Promise<boolean> {
+    const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+    if (!adminEmail) {
+      logger.error('ADMIN_EMAIL not configured');
+      return false;
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Nouvelle demande d'affiliation</title>
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+          <h1 style="margin: 0; font-size: 28px;">🎯 Nouvelle Demande d'Affiliation</h1>
+        </div>
+        
+        <div style="background: #f7fafc; padding: 30px; border-radius: 0 0 10px 10px;">
+          <p style="font-size: 16px; margin-bottom: 20px;">
+            Une nouvelle demande d'affiliation vient d'être soumise et nécessite votre attention.
+          </p>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
+            <h3 style="margin-top: 0; color: #667eea;">Informations du candidat</h3>
+            <p><strong>Steam:</strong> ${application.user.steamUsername || 'N/A'}</p>
+            <p><strong>Email:</strong> ${application.user.email}</p>
+            <p><strong>Date:</strong> ${new Date(application.createdAt).toLocaleDateString('fr-FR', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}</p>
+          </div>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+            <h3 style="margin-top: 0; color: #667eea;">Motivation</h3>
+            <p style="white-space: pre-wrap;">${application.motivation}</p>
+          </div>
+          
+          <div style="text-align: center;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/affiliate-applications" 
+               style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 16px;">
+              Examiner la demande
+            </a>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; color: #718096; font-size: 12px;">
+          <p>CashTrade Admin - Gestion des affiliations</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return this.sendEmail({
+      to: adminEmail,
+      subject: '🎯 Nouvelle demande d\'affiliation - CashTrade',
+      html,
+    });
+  }
+
+  /**
+   * Notifie l'utilisateur que sa demande d'affiliation a été approuvée
+   */
+  async sendAffiliateApplicationApproved(user: {
+    email: string;
+    steamUsername: string | null;
+  }, affiliateCode: string): Promise<boolean> {
+    const html = `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Demande approuvée</title>
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+          <h1 style="margin: 0; font-size: 28px;">🎉 Félicitations ${user.steamUsername || ''} !</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px;">Votre demande d'affiliation a été approuvée</p>
+        </div>
+        
+        <div style="background: #f7fafc; padding: 30px; border-radius: 0 0 10px 10px;">
+          <p style="font-size: 16px; margin-bottom: 20px;">
+            Excellente nouvelle ! Votre demande d'affiliation a été approuvée par notre équipe. 
+            Vous faites désormais partie du programme d'affiliation CashTrade ! 🚀
+          </p>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 2px solid #48bb78;">
+            <h3 style="margin-top: 0; color: #48bb78; text-align: center;">Votre code d'affiliation</h3>
+            <div style="background: #f0fff4; padding: 15px; border-radius: 8px; text-align: center; font-family: monospace; font-size: 24px; font-weight: bold; color: #2f855a;">
+              ${affiliateCode}
+            </div>
+          </div>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+            <h3 style="margin-top: 0; color: #667eea;">Prochaines étapes</h3>
+            <ul style="padding-left: 20px;">
+              <li>Connectez-vous à votre tableau de bord affilié</li>
+              <li>Récupérez vos liens d'affiliation personnalisés</li>
+              <li>Commencez à partager et gagnez 2% de commission</li>
+              <li>Suivez vos performances en temps réel</li>
+            </ul>
+          </div>
+          
+          <div style="text-align: center;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/affiliate" 
+               style="display: inline-block; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 16px;">
+              Accéder à mon dashboard
+            </a>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; color: #718096; font-size: 12px;">
+          <p>Bienvenue dans le programme CashTrade Affiliates!</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return this.sendEmail({
+      to: user.email,
+      subject: '🎉 Votre demande d\'affiliation a été approuvée - CashTrade',
+      html,
+    });
+  }
+
+  /**
+   * Notifie l'utilisateur que sa demande d'affiliation a été rejetée
+   */
+  async sendAffiliateApplicationRejected(user: {
+    email: string;
+    steamUsername: string | null;
+  }, reason: string): Promise<boolean> {
+    const html = `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Demande rejetée</title>
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #fc8181 0%, #f56565 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+          <h1 style="margin: 0; font-size: 28px;">Demande d'affiliation</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px;">Réponse à votre candidature</p>
+        </div>
+        
+        <div style="background: #f7fafc; padding: 30px; border-radius: 0 0 10px 10px;">
+          <p style="font-size: 16px; margin-bottom: 20px;">
+            Bonjour ${user.steamUsername || ''},
+          </p>
+          
+          <p style="font-size: 16px; margin-bottom: 20px;">
+            Nous avons examiné votre demande d'affiliation avec attention. Malheureusement, 
+            nous ne pouvons pas l'accepter pour le moment.
+          </p>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #fc8181;">
+            <h3 style="margin-top: 0; color: #fc8181;">Raison du rejet</h3>
+            <p style="white-space: pre-wrap;">${reason}</p>
+          </div>
+          
+          <div style="background: #edf2f7; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+            <h3 style="margin-top: 0; color: #2d3748;">💡 Que faire maintenant ?</h3>
+            <p>
+              Vous pouvez soumettre une nouvelle demande après avoir pris en compte les remarques ci-dessus. 
+              Nous serons ravis de réexaminer votre candidature !
+            </p>
+          </div>
+          
+          <div style="text-align: center;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/affiliate" 
+               style="display: inline-block; background: #667eea; color: white; padding: 15px 40px; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 16px;">
+              Soumettre une nouvelle demande
+            </a>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; color: #718096; font-size: 12px;">
+          <p>Merci de votre intérêt pour CashTrade Affiliates</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return this.sendEmail({
+      to: user.email,
+      subject: 'Réponse à votre demande d\'affiliation - CashTrade',
+      html,
+    });
+  }
 }
 
 export const emailService = new EmailService();

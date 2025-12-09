@@ -1885,6 +1885,7 @@ export interface Messages {
       title: string;
       entries: {
         inProgress: string;
+        won: string;
         lost: string;
       };
     };
@@ -2811,6 +2812,12 @@ export interface Messages {
       submitting: string;
       success: string;
       error: string;
+      pending: string;
+      pendingDescription: string;
+      rejected: string;
+      rejectedDescription: string;
+      reason: string;
+      reapply: string;
     };
   };
   help: {

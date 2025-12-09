@@ -31,6 +31,8 @@ model User {
   isFirstLogin          Boolean             @default(true)
   referredByAffiliateId String?
   affiliateStats        AffiliateStats?
+  affiliateApplications AffiliateApplication[]
+  reviewedApplications  AffiliateApplication[] @relation("AffiliateApplicationReviewer")
   giveawayEntries       GiveawayEntry[]
   kycDocuments          KycDocument[]
   paymentMethods        PaymentMethod[]
@@ -213,6 +215,25 @@ model AffiliateCommission {
   @@index([createdAt])
 }
 
+model AffiliateApplication {
+  id            String                      @id @default(cuid())
+  userId        String
+  motivation    String
+  socialLinks   Json?
+  status        AffiliateApplicationStatus  @default(PENDING)
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  rejectionReason String?
+  createdAt     DateTime                    @default(now())
+  updatedAt     DateTime                    @updatedAt
+  user          User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewer      User?                       @relation("AffiliateApplicationReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
 model Giveaway {
   id          String          @id @default(cuid())
   title       String
@@ -346,6 +367,12 @@ enum AffiliateCommissionStatus {
   APPROVED
   PAID
   CANCELLED
+}
+
+enum AffiliateApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model NewsletterSubscriber {
