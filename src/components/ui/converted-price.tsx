@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { currencyConverter, SupportedCurrency } from '@/lib/currency-converter';
 import { useCurrency } from '@/components/providers/currency-provider';
+import { useLocale } from '@/components/providers/locale-provider';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface ConvertedPriceProps {
@@ -21,6 +22,7 @@ export function ConvertedPrice({
   fromCurrency = 'USD'
 }: ConvertedPriceProps) {
   const { selectedCurrency } = useCurrency();
+  const { messages } = useLocale();
   const [convertedPrice, setConvertedPrice] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export function ConvertedPrice({
         }
       } catch (err) {
         if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Erreur de conversion');
+          setError(err instanceof Error ? err.message : messages.common.conversionError);
           // Fallback: afficher le prix dans la devise source
           setConvertedPrice(currencyConverter.formatPrice(usdCents, fromCurrency));
         }
@@ -67,7 +69,7 @@ export function ConvertedPrice({
     return () => {
       isMounted = false;
     };
-  }, [usdCents, fromCurrency, selectedCurrency]);
+  }, [usdCents, fromCurrency, selectedCurrency, messages.common.conversionError]);
 
   if (loading || isLoading) {
     return <Skeleton className={`h-5 w-16 ${className}`} />;
@@ -75,7 +77,7 @@ export function ConvertedPrice({
 
   if (error) {
     return (
-      <span className={`text-red-500 ${className}`} title={`Erreur: ${error}`}>
+      <span className={`text-red-500 ${className}`} title={`${messages.common.error}: ${error}`}>
         {currencyConverter.formatPrice(usdCents, fromCurrency)}
       </span>
     );

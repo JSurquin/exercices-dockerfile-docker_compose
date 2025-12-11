@@ -54,17 +54,17 @@ export default function TradeLinkConfig() {
 
   const handleSave = async () => {
     if (!isValidUrl || !tradeUrl) {
-      toast.error("Format de Trade Link Steam invalide");
+      toast.error(messages.settings.tradeLink.invalidFormat);
       return;
     }
 
     setLoading(true);
     try {
       await updateUser({ tradeLink: tradeUrl });
-      toast.success("Trade Link Steam mis à jour avec succès");
+      toast.success(messages.settings.tradeLink.savedSuccess);
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du Trade Link:', error);
-      toast.error("Erreur lors de la sauvegarde");
+      toast.error(messages.settings.tradeLink.saveError);
     } finally {
       setLoading(false);
     }
@@ -78,7 +78,7 @@ export default function TradeLinkConfig() {
   const copyExampleUrl = () => {
     const exampleUrl = "https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh";
     navigator.clipboard.writeText(exampleUrl);
-    toast.success("Exemple copié dans le presse-papiers");
+    toast.success(messages.settings.tradeLink.copiedToClipboard);
   };
 
   return (
@@ -86,11 +86,11 @@ export default function TradeLinkConfig() {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Link className="w-5 h-5" />
-          <span>Trade Link Steam</span>
+          <span>{messages.settings.tradeLink.title}</span>
           {user?.tradeLink && (
             <Badge variant="secondary" className="bg-green-100 text-green-800">
               <CheckCircle className="w-3 h-3 mr-1" />
-              Configuré
+              {messages.settings.tradeLink.configured}
             </Badge>
           )}
         </CardTitle>
@@ -103,13 +103,12 @@ export default function TradeLinkConfig() {
               <Link className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
               <div className="space-y-3">
                 <h4 className="font-semibold text-blue-900 dark:text-blue-100">
-                  Comment obtenir votre Trade Link Steam ?
+                  {messages.settings.tradeLink.howToGetTitle}
                 </h4>
                 <ol className="list-decimal list-inside space-y-1 text-sm text-blue-700 dark:text-blue-300">
-                  <li>Connectez-vous à Steam dans votre navigateur</li>
-                  <li>Allez dans votre inventaire Steam</li>
-                  <li>Cliquez sur Paramètres de confidentialité</li>
-                  <li>Dans la section {"Qui peut m'envoyer des offres d'échange"}, copiez l&apos;URL</li>
+                  {messages.settings.tradeLink.instructions.map((instruction, index) => (
+                    <li key={index}>{instruction}</li>
+                  ))}
                 </ol>
                 <div className="flex items-center space-x-2">
                   <Button
@@ -118,7 +117,7 @@ export default function TradeLinkConfig() {
                     onClick={() => window.open('https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url', '_blank')}
                   >
                     <ExternalLink className="w-4 h-4 mr-2" />
-                    Ouvrir Steam
+                    {messages.settings.tradeLink.openSteam}
                   </Button>
                   <Button
                     variant="ghost"
@@ -126,7 +125,7 @@ export default function TradeLinkConfig() {
                     onClick={copyExampleUrl}
                   >
                     <Copy className="w-4 h-4 mr-2" />
-                    Copier exemple
+                    {messages.settings.tradeLink.copyExample}
                   </Button>
                 </div>
               </div>
@@ -137,13 +136,13 @@ export default function TradeLinkConfig() {
         {/* Configuration du Trade Link */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label htmlFor="trade-url">URL de Trade Link Steam</Label>
+            <Label htmlFor="trade-url">{messages.settings.tradeLink.urlLabel}</Label>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowInstructions(!showInstructions)}
             >
-              {showInstructions ? "Masquer les instructions" : "Voir les instructions"}
+              {showInstructions ? messages.settings.tradeLink.hideInstructions : messages.settings.tradeLink.showInstructions}
             </Button>
           </div>
           
@@ -160,7 +159,7 @@ export default function TradeLinkConfig() {
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                Format de Trade Link invalide. Assurez-vous de copier l&apos;URL complète depuis Steam.
+                {messages.settings.tradeLink.invalidFormatDesc}
               </AlertDescription>
             </Alert>
           )}
@@ -169,7 +168,7 @@ export default function TradeLinkConfig() {
             <Alert>
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>
-                Trade Link valide ! Vous pouvez maintenant vendre vos skins CS2.
+                {messages.settings.tradeLink.validFormat}
               </AlertDescription>
             </Alert>
           )}
@@ -177,7 +176,7 @@ export default function TradeLinkConfig() {
           {/* Current Trade Link */}
           {user?.tradeLink && user.tradeLink !== tradeUrl && (
             <div className="bg-muted p-3 rounded-lg">
-              <p className="text-sm font-medium mb-1">Trade Link actuel :</p>
+              <p className="text-sm font-medium mb-1">{messages.settings.tradeLink.currentTradeLink}</p>
               <p className="text-xs text-muted-foreground break-all">
                 {user.tradeLink}
               </p>
@@ -193,7 +192,7 @@ export default function TradeLinkConfig() {
             className="flex items-center space-x-2"
           >
             {loading && <RefreshCw className="w-4 h-4 animate-spin" />}
-            <span>{loading ? "Sauvegarde..." : "Sauvegarder"}</span>
+            <span>{loading ? messages.settings.tradeLink.saving : messages.settings.tradeLink.save}</span>
           </Button>
           
           {tradeUrl && (
@@ -202,7 +201,7 @@ export default function TradeLinkConfig() {
               onClick={handleClear}
               disabled={loading}
             >
-              Effacer
+              {messages.settings.tradeLink.clear}
             </Button>
           )}
         </div>
@@ -211,8 +210,7 @@ export default function TradeLinkConfig() {
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <strong>Important :</strong> Votre Trade Link Steam est nécessaire pour recevoir les offres d&apos;échange automatiques. 
-            Sans Trade Link valide, vous ne pourrez pas vendre vos skins.
+            <strong>{messages.settings.tradeLink.warningTitle}</strong> {messages.settings.tradeLink.warningText}
           </AlertDescription>
         </Alert>
       </CardContent>

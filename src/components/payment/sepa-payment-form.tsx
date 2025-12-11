@@ -96,19 +96,21 @@ export function SepaPaymentForm({
     }).format(cents / 100);
   };
 
+  const t = messages.paymentComponents.sepaForm;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Paiement SEPA</CardTitle>
+        <CardTitle>{t.title}</CardTitle>
         <CardDescription>
-          Recevez votre paiement directement sur votre compte bancaire
+          {t.description}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Informations sur le montant */}
         <div className="space-y-2">
           <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-            <span className="text-sm text-muted-foreground">Montant à recevoir</span>
+            <span className="text-sm text-muted-foreground">{t.amountToReceive}</span>
             <span className="text-xl font-bold">{formatCurrency(amountCents)}</span>
           </div>
         </div>
@@ -122,32 +124,32 @@ export function SepaPaymentForm({
             variant="outline"
           >
             {isLoadingQuote && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Obtenir un devis
+            {t.getQuote}
           </Button>
         )}
 
         {quote && (
           <div className="space-y-4">
             <div className="p-4 bg-muted rounded-lg space-y-2">
-              <h4 className="font-semibold text-sm">Détails du devis</h4>
+              <h4 className="font-semibold text-sm">{t.quoteDetails}</h4>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Montant brut</span>
+                  <span className="text-muted-foreground">{t.grossAmount}</span>
                   <span>{formatCurrency(amountCents)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Frais de traitement</span>
+                  <span className="text-muted-foreground">{t.processingFees}</span>
                   <span>-{parseFloat(quote.processingFee).toFixed(2)} €</span>
                 </div>
                 {quote.networkFee && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Frais réseau</span>
+                    <span className="text-muted-foreground">{t.networkFees}</span>
                     <span>-{parseFloat(quote.networkFee).toFixed(2)} €</span>
                   </div>
                 )}
                 <div className="border-t pt-1 mt-2">
                   <div className="flex justify-between font-semibold">
-                    <span>Montant net</span>
+                    <span>{t.netAmount}</span>
                     <span>{quote.amountOut} €</span>
                   </div>
                 </div>
@@ -157,8 +159,7 @@ export function SepaPaymentForm({
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                Vous serez redirigé vers une page sécurisée pour compléter vos informations
-                bancaires. Le virement sera effectué sous 1 à 3 jours ouvrés.
+                {t.redirectInfo}
               </AlertDescription>
             </Alert>
 
@@ -169,7 +170,7 @@ export function SepaPaymentForm({
               size="lg"
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Continuer vers le paiement
+              {t.continuePayment}
             </Button>
           </div>
         )}

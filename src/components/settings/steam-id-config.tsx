@@ -55,17 +55,17 @@ export default function SteamIdConfig() {
 
   const handleSave = async () => {
     if (!isValidId || !steamId) {
-      toast.error("Format de Steam ID64 invalide");
+      toast.error(messages.settings.steamId.invalidFormat);
       return;
     }
 
     setLoading(true);
     try {
       await updateUser({ steamId64: steamId });
-      toast.success("Steam ID mis à jour avec succès");
+      toast.success(messages.settings.steamId.savedSuccess);
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du Steam ID:', error);
-      toast.error("Erreur lors de la sauvegarde");
+      toast.error(messages.settings.steamId.saveError);
     } finally {
       setLoading(false);
     }
@@ -79,7 +79,7 @@ export default function SteamIdConfig() {
   const copyExampleId = () => {
     const exampleId = "76561198123456789";
     navigator.clipboard.writeText(exampleId);
-    toast.success("Exemple copié dans le presse-papiers");
+    toast.success(messages.settings.steamId.copiedToClipboard);
   };
 
   const openSteamIdFinder = () => {
@@ -91,11 +91,11 @@ export default function SteamIdConfig() {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <User className="w-5 h-5" />
-          <span>Steam ID64</span>
+          <span>{messages.settings.steamId.title}</span>
           {user?.steamId64 && (
             <Badge variant="secondary" className="bg-green-100 text-green-800">
               <CheckCircle className="w-3 h-3 mr-1" />
-              Configuré
+              {messages.settings.steamId.configured}
             </Badge>
           )}
         </CardTitle>
@@ -108,17 +108,17 @@ export default function SteamIdConfig() {
               <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
               <div className="space-y-3">
                 <h4 className="font-semibold text-blue-900 dark:text-blue-100">
-                  Comment trouver votre Steam ID64 ?
+                  {messages.settings.steamId.howToGetTitle}
                 </h4>
                 <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
-                  <p><strong>Méthode 1 - Via Steam :</strong></p>
+                  <p><strong>{messages.settings.steamId.method1Title}</strong></p>
                   <ol className="list-decimal list-inside space-y-1 ml-4">
-                    <li>Ouvrez Steam et allez dans votre profil</li>
-                    <li>Cliquez sur &quot;Modifier le profil&quot;</li>
-                    <li>Dans l&apos;URL, votre Steam ID64 apparaît après /profiles/</li>
+                    {messages.settings.steamId.method1Steps.map((step, index) => (
+                      <li key={index}>{step}</li>
+                    ))}
                   </ol>
-                  <p><strong>Méthode 2 - Via un outil en ligne :</strong></p>
-                  <p>Utilisez votre nom d&apos;utilisateur Steam ou l&apos;URL de votre profil</p>
+                  <p><strong>{messages.settings.steamId.method2Title}</strong></p>
+                  <p>{messages.settings.steamId.method2Desc}</p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
@@ -127,7 +127,7 @@ export default function SteamIdConfig() {
                     onClick={openSteamIdFinder}
                   >
                     <ExternalLink className="w-4 h-4 mr-2" />
-                    Trouver mon Steam ID
+                    {messages.settings.steamId.findSteamId}
                   </Button>
                   <Button
                     variant="ghost"
@@ -135,7 +135,7 @@ export default function SteamIdConfig() {
                     onClick={copyExampleId}
                   >
                     <Copy className="w-4 h-4 mr-2" />
-                    Copier exemple
+                    {messages.settings.steamId.copyExample}
                   </Button>
                 </div>
               </div>
@@ -146,13 +146,13 @@ export default function SteamIdConfig() {
         {/* Configuration du Steam ID */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label htmlFor="steam-id">Steam ID64</Label>
+            <Label htmlFor="steam-id">{messages.settings.steamId.label}</Label>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowInstructions(!showInstructions)}
             >
-              {showInstructions ? "Masquer les instructions" : "Voir les instructions"}
+              {showInstructions ? messages.settings.steamId.hideInstructions : messages.settings.steamId.showInstructions}
             </Button>
           </div>
           
@@ -169,7 +169,7 @@ export default function SteamIdConfig() {
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                Format de Steam ID64 invalide. Le Steam ID64 doit commencer par 7656119 et contenir 17 chiffres au total.
+                {messages.settings.steamId.invalidFormatDesc}
               </AlertDescription>
             </Alert>
           )}
@@ -178,7 +178,7 @@ export default function SteamIdConfig() {
             <Alert>
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>
-                Steam ID64 valide ! Vous pouvez maintenant utiliser toutes les fonctionnalités liées à Steam.
+                {messages.settings.steamId.validFormat}
               </AlertDescription>
             </Alert>
           )}
@@ -186,7 +186,7 @@ export default function SteamIdConfig() {
           {/* Current Steam ID */}
           {user?.steamId64 && user.steamId64 !== steamId && (
             <div className="bg-muted p-3 rounded-lg">
-              <p className="text-sm font-medium mb-1">Steam ID64 actuel :</p>
+              <p className="text-sm font-medium mb-1">{messages.settings.steamId.currentSteamId}</p>
               <p className="text-xs text-muted-foreground font-mono">
                 {user.steamId64}
               </p>
@@ -202,7 +202,7 @@ export default function SteamIdConfig() {
             className="flex items-center space-x-2"
           >
             {loading && <RefreshCw className="w-4 h-4 animate-spin" />}
-            <span>{loading ? "Sauvegarde..." : "Sauvegarder"}</span>
+            <span>{loading ? messages.settings.steamId.saving : messages.settings.steamId.save}</span>
           </Button>
           
           {steamId && (
@@ -211,7 +211,7 @@ export default function SteamIdConfig() {
               onClick={handleClear}
               disabled={loading}
             >
-              Effacer
+              {messages.settings.steamId.clear}
             </Button>
           )}
         </div>
@@ -220,8 +220,7 @@ export default function SteamIdConfig() {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            <strong>Pourquoi le Steam ID64 ?</strong> Il est nécessaire pour accéder à votre inventaire Steam 
-            et effectuer des transactions. Si vous vous connectez via Discord, vous devez le saisir manuellement.
+            <strong>{messages.settings.steamId.whyTitle}</strong> {messages.settings.steamId.whyText}
           </AlertDescription>
         </Alert>
       </CardContent>

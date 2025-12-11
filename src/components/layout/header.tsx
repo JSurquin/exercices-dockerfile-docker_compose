@@ -50,8 +50,8 @@ export function Header() {
     { name: messages.nav.sell, href: "/sell", icon: CurrencyDollarIcon },
     { name: messages.nav.dashboard, href: "/dashboard", icon: ChartBarIcon },
     { name: messages.nav.giveaways, href: "/giveaways", icon: GiftIcon },
-    ...(isAffiliate ? [{ name: "Affiliation", href: "/affiliate", icon: UserCircleIcon }] : []),
-    ...(isModerator || isAdmin ? [{ name: "Modération", href: "/moderation", icon: ChatBubbleLeftRightIcon }] : []),
+    ...(isAffiliate ? [{ name: messages.nav.affiliation, href: "/affiliate", icon: UserCircleIcon }] : []),
+    ...(isModerator || isAdmin ? [{ name: messages.nav.moderation, href: "/moderation", icon: ChatBubbleLeftRightIcon }] : []),
     {
       name: messages.nav.support,
       href: "/support",

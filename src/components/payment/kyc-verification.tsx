@@ -91,15 +91,17 @@ export function KycVerification({ onVerificationComplete }: KycVerificationProps
     }
   };
 
+  const t = messages.paymentComponents.kyc;
+
   const getStatusBadge = () => {
     switch (kycStatus) {
       case 'VERIFIED':
-        return <Badge variant="default">Vérifié</Badge>;
+        return <Badge variant="default">{t.status.verified}</Badge>;
       case 'REJECTED':
-        return <Badge variant="destructive">Rejeté</Badge>;
+        return <Badge variant="destructive">{t.status.rejected}</Badge>;
       case 'PENDING':
       default:
-        return <Badge variant="secondary">En attente</Badge>;
+        return <Badge variant="secondary">{t.status.pending}</Badge>;
     }
   };
 
@@ -120,9 +122,9 @@ export function KycVerification({ onVerificationComplete }: KycVerificationProps
           <div className="flex items-center gap-3">
             <Shield className="h-6 w-6 text-primary" />
             <div>
-              <CardTitle>Vérification d&apos;identité (KYC)</CardTitle>
+              <CardTitle>{t.title}</CardTitle>
               <CardDescription>
-                La vérification KYC est obligatoire pour effectuer des retraits
+                {t.description}
               </CardDescription>
             </div>
           </div>
@@ -137,11 +139,10 @@ export function KycVerification({ onVerificationComplete }: KycVerificationProps
             {kycStatus === 'VERIFIED' && (
               <>
                 <h3 className="font-semibold text-green-700 dark:text-green-400">
-                  Identité vérifiée
+                  {t.identityVerified}
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Votre identité a été vérifiée avec succès. Vous pouvez maintenant effectuer
-                  des retraits.
+                  {t.identityVerifiedDesc}
                 </p>
               </>
             )}
@@ -149,21 +150,19 @@ export function KycVerification({ onVerificationComplete }: KycVerificationProps
             {kycStatus === 'PENDING' && (
               <>
                 <h3 className="font-semibold text-yellow-700 dark:text-yellow-400">
-                  Vérification en attente
+                  {t.verificationPending}
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Votre demande de vérification est en cours de traitement. Cela peut prendre
-                  quelques minutes à quelques heures.
+                  {t.verificationPendingDesc}
                 </p>
               </>
             )}
 
             {kycStatus === 'REJECTED' && (
               <>
-                <h3 className="font-semibold text-destructive">Vérification rejetée</h3>
+                <h3 className="font-semibold text-destructive">{t.verificationRejected}</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Votre demande de vérification a été rejetée. Veuillez réessayer en fournissant
-                  des documents valides.
+                  {t.verificationRejectedDesc}
                 </p>
               </>
             )}
@@ -173,20 +172,19 @@ export function KycVerification({ onVerificationComplete }: KycVerificationProps
         {/* Informations */}
         <Alert>
           <Shield className="h-4 w-4" />
-          <AlertTitle>Pourquoi la vérification KYC ?</AlertTitle>
+          <AlertTitle>{t.whyKyc}</AlertTitle>
           <AlertDescription>
-            La vérification KYC (Know Your Customer) est une exigence légale pour prévenir
-            le blanchiment d&apos;argent et garantir la sécurité de tous les utilisateurs.
+            {t.whyKycDesc}
           </AlertDescription>
         </Alert>
 
         {/* Documents requis */}
         <div className="space-y-2">
-          <h4 className="font-semibold text-sm">Documents requis</h4>
+          <h4 className="font-semibold text-sm">{t.requiredDocuments}</h4>
           <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-            <li>Pièce d&apos;identité valide (carte d&apos;identité ou passeport)</li>
-            <li>Photo selfie avec votre pièce d&apos;identité</li>
-            <li>Justificatif de domicile de moins de 3 mois (si requis)</li>
+            <li>{t.document1}</li>
+            <li>{t.document2}</li>
+            <li>{t.document3}</li>
           </ul>
         </div>
 
@@ -200,8 +198,8 @@ export function KycVerification({ onVerificationComplete }: KycVerificationProps
           >
             {isInitiating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {kycStatus === 'REJECTED'
-              ? 'Recommencer la vérification'
-              : 'Démarrer la vérification'}
+              ? t.restartVerification
+              : t.startVerification}
           </Button>
         )}
 
@@ -211,7 +209,7 @@ export function KycVerification({ onVerificationComplete }: KycVerificationProps
             variant="outline"
             className="w-full"
           >
-            Actualiser le statut
+            {t.refreshStatus}
           </Button>
         )}
       </CardContent>

@@ -506,3 +506,85 @@ enum SenderType {
   MODERATOR
   SYSTEM
 }
+
+// ==========================================
+// PAGES LÉGALES DYNAMIQUES
+// ==========================================
+
+model LegalPage {
+  id          String   @id @default(cuid())
+  slug        String   @unique // ex: "terms", "privacy", "kyc-policy", "aml-policy", "about", "press"
+  
+  // Contenu FR
+  titleFr     String
+  subtitleFr  String?
+  contentFr   String   @db.Text
+  
+  // Contenu EN
+  titleEn     String
+  subtitleEn  String?
+  contentEn   String   @db.Text
+  
+  // Contenu CN (Chinois)
+  titleCn     String?
+  subtitleCn  String?
+  contentCn   String?  @db.Text
+  
+  // Métadonnées
+  version     String   @default("1.0")
+  isPublished Boolean  @default(true)
+  
+  // Informations de contact (optionnel, affiché en bas de page)
+  contactEmail String?
+  contactPhone String?
+  
+  // Audit
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?  // ID de l'admin qui a fait la dernière modification
+  
+  @@index([slug])
+  @@index([isPublished])
+  @@map("legal_page")
+}
+
+// Historique des modifications pour traçabilité
+model LegalPageHistory {
+  id            String   @id @default(cuid())
+  legalPageId   String
+  legalPageSlug String
+  
+  // Snapshot du contenu
+  titleFr       String
+  titleEn       String
+  titleCn       String?
+  contentFr     String   @db.Text
+  contentEn     String   @db.Text
+  contentCn     String?  @db.Text
+  version       String
+  
+  // Audit
+  changedBy     String
+  changedAt     DateTime @default(now())
+  changeReason  String?
+  
+  @@index([legalPageId])
+  @@index([changedAt])
+  @@map("legal_page_history")
+}
+
+// Configuration du site (paramètres globaux modifiables par l'admin)
+model SiteSettings {
+  id                String   @id @default(cuid())
+  key               String   @unique
+  valueFr           String?  @db.Text
+  valueEn           String?  @db.Text
+  valueJson         Json?    // Pour les données structurées (ex: liens sociaux)
+  description       String?
+  
+  updatedAt         DateTime @updatedAt
+  updatedBy         String?
+  
+  @@index([key])
+  @@map("site_settings")
+}

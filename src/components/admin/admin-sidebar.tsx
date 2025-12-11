@@ -27,6 +27,7 @@ import {
   TrendingUp,
   Eye,
   DollarSign,
+  FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -46,127 +47,7 @@ interface NavGroup {
   items: NavItem[];
 }
 
-const navigationGroups: NavGroup[] = [
-  // NOTE: Cette structure est statique, elle sera remplacée dynamiquement dans le composant
-  {
-    title: 'overview',
-    items: [
-      {
-        title: 'dashboard',
-        href: '/admin/dashboard',
-        icon: LayoutDashboard,
-      },
-      {
-        title: 'analytics',
-        href: '/admin/dashboard?tab=analytics',
-        icon: BarChart3,
-      },
-    ],
-  },
-  {
-    title: 'management',
-    items: [
-      {
-        title: 'users',
-        href: '/admin/dashboard?tab=users',
-        icon: Users,
-      },
-      {
-        title: 'trades',
-        href: '/admin/dashboard?tab=trades',
-        icon: ShoppingCart,
-      },
-      {
-        title: 'payouts',
-        href: '/admin/dashboard?tab=payouts',
-        icon: CreditCard,
-        badge: 5,
-        badgeVariant: 'destructive',
-      },
-      {
-        title: 'kyc',
-        href: '/admin/dashboard?tab=kyc',
-        icon: Shield,
-        badge: 3,
-        badgeVariant: 'destructive',
-      },
-    ],
-  },
-  {
-    title: 'Affiliation',
-    items: [
-      {
-        title: 'Demandes',
-        href: '/admin/affiliate-applications',
-        icon: FileDown,
-        badge: 0, // Sera mis à jour dynamiquement
-        badgeVariant: 'destructive',
-      },
-      {
-        title: 'Affiliés',
-        href: '/admin/dashboard?tab=affiliates',
-        icon: UserCheck,
-      },
-      {
-        title: 'Commissions',
-        href: '/admin/dashboard?tab=commissions',
-        icon: Percent,
-      },
-      {
-        title: 'Performances',
-        href: '/admin/dashboard?tab=affiliate-performance',
-        icon: TrendingUp,
-      },
-    ],
-  },
-  {
-    title: 'Marketing',
-    items: [
-      {
-        title: 'Giveaways',
-        href: '/admin/giveaways',
-        icon: Gift,
-      },
-      {
-        title: 'Newsletter',
-        href: '/admin/newsletter',
-        icon: Mail,
-      },
-    ],
-  },
-  {
-    title: 'Communication',
-    items: [
-      {
-        title: 'Chat Support',
-        href: '/admin/chat',
-        icon: MessageSquare,
-        badge: 'NEW',
-        badgeVariant: 'secondary',
-      },
-    ],
-  },
-  {
-    title: 'system',
-    items: [
-      {
-        title: 'audit',
-        href: '/admin/audit',
-        icon: Activity,
-      },
-      {
-        title: 'exports',
-        href: '/admin/dashboard?tab=exports',
-        icon: FileDown,
-      },
-      {
-        title: 'settings',
-        href: '/admin/settings',
-        icon: Settings,
-      },
-    ],
-  },
-];
+// Navigation structure - titles are keys that will be translated dynamically
 
 interface AdminSidebarProps {
   className?: string;
@@ -176,6 +57,63 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const { pendingCount } = useAffiliateApplications();
+  const { messages } = useLocale();
+  const t = messages.adminNav;
+
+  const navigationGroups: NavGroup[] = [
+    {
+      title: t.groups.overview,
+      items: [
+        { title: t.items.dashboard, href: '/admin/dashboard', icon: LayoutDashboard },
+        { title: t.items.analytics, href: '/admin/dashboard?tab=analytics', icon: BarChart3 },
+      ],
+    },
+    {
+      title: t.groups.management,
+      items: [
+        { title: t.items.users, href: '/admin/dashboard?tab=users', icon: Users },
+        { title: t.items.trades, href: '/admin/dashboard?tab=trades', icon: ShoppingCart },
+        { title: t.items.payouts, href: '/admin/dashboard?tab=payouts', icon: CreditCard, badge: 5, badgeVariant: 'destructive' as const },
+        { title: t.items.kyc, href: '/admin/dashboard?tab=kyc', icon: Shield, badge: 3, badgeVariant: 'destructive' as const },
+      ],
+    },
+    {
+      title: t.groups.affiliation,
+      items: [
+        { title: t.items.applications, href: '/admin/affiliate-applications', icon: FileDown, badge: 0, badgeVariant: 'destructive' as const },
+        { title: t.items.affiliates, href: '/admin/dashboard?tab=affiliates', icon: UserCheck },
+        { title: t.items.commissions, href: '/admin/dashboard?tab=commissions', icon: Percent },
+        { title: t.items.performance, href: '/admin/dashboard?tab=affiliate-performance', icon: TrendingUp },
+      ],
+    },
+    {
+      title: t.groups.marketing,
+      items: [
+        { title: t.items.giveaways, href: '/admin/giveaways', icon: Gift },
+        { title: t.items.newsletter, href: '/admin/newsletter', icon: Mail },
+      ],
+    },
+    {
+      title: t.groups.communication,
+      items: [
+        { title: t.items.chatSupport, href: '/admin/chat', icon: MessageSquare, badge: 'NEW', badgeVariant: 'secondary' as const },
+      ],
+    },
+    {
+      title: t.groups.content,
+      items: [
+        { title: t.items.legalPages, href: '/admin/legal-pages', icon: FileText },
+      ],
+    },
+    {
+      title: t.groups.system,
+      items: [
+        { title: t.items.audit, href: '/admin/audit', icon: Activity },
+        { title: t.items.exports, href: '/admin/dashboard?tab=exports', icon: FileDown },
+        { title: t.items.settings, href: '/admin/settings', icon: Settings },
+      ],
+    },
+  ];
 
   const isActive = (href: string) => {
     if (href.includes('?tab=')) {
@@ -213,7 +151,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
               </div>
               <div>
                 <h2 className="text-sm font-bold text-white">CashTrade</h2>
-                <p className="text-xs text-slate-400">Admin Panel</p>
+                <p className="text-xs text-slate-400">{t.header.adminPanel}</p>
               </div>
             </motion.div>
           )}
@@ -331,14 +269,14 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
           >
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Statut Système</span>
+                <span className="text-slate-400">{t.footer.systemStatus}</span>
                 <Badge variant="secondary" className="h-5 text-xs">
                   <div className="mr-1 h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
-                  En ligne
+                  {t.footer.online}
                 </Badge>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Uptime</span>
+                <span className="text-slate-400">{t.footer.uptime}</span>
                 <span className="font-medium text-white">99.9%</span>
               </div>
             </div>

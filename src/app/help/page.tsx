@@ -19,107 +19,13 @@ import {
 import { useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
 
-const categories = [
-  {
-    title: "Premiers pas",
-    icon: CheckCircleIcon,
-    color: "text-green-600",
-    articles: [
-      { title: "Comment créer un compte ?", views: "2.3k", helpful: 95 },
-      { title: "Connexion Steam et Trade Link", views: "1.8k", helpful: 92 },
-      { title: "Vérification KYC étape par étape", views: "1.5k", helpful: 89 },
-      { title: "Premier trade : guide complet", views: "2.1k", helpful: 96 },
-    ]
-  },
-  {
-    title: "Trading & Ventes",
-    icon: CurrencyEuroIcon,
-    color: "text-orange-600",
-    articles: [
-      { title: "Comment vendre mes skins CS2 ?", views: "3.2k", helpful: 94 },
-      { title: "Estimation des prix : comment ça marche ?", views: "1.9k", helpful: 88 },
-      { title: "Qu&apos;est-ce que le trade hold Steam ?", views: "2.7k", helpful: 91 },
-      { title: "Frais de transaction et calculs", views: "1.4k", helpful: 87 },
-    ]
-  },
-  {
-    title: "Paiements",
-    icon: ShieldCheckIcon,
-    color: "text-blue-600",
-    articles: [
-      { title: "Méthodes de paiement disponibles", views: "2.8k", helpful: 93 },
-      { title: "Délais de paiement SEPA vs Crypto", views: "2.1k", helpful: 90 },
-      { title: "Vérification IBAN et sécurité", views: "1.7k", helpful: 85 },
-      { title: "Problème de paiement : que faire ?", views: "1.2k", helpful: 82 },
-    ]
-  },
-  {
-    title: "Sécurité & Compte",
-    icon: ExclamationTriangleIcon,
-    color: "text-red-600",
-    articles: [
-      { title: "Sécuriser mon compte CashTrade", views: "1.9k", helpful: 97 },
-      { title: "Que faire si mon compte est suspendu ?", views: "0.8k", helpful: 79 },
-      { title: "Signaler une activité suspecte", views: "0.6k", helpful: 84 },
-      { title: "Récupération de compte perdu", views: "0.9k", helpful: 81 },
-    ]
-  },
-];
-
-const popularArticles = [
-  {
-    title: "Guide complet : Vendre ses skins CS2 en 5 étapes",
-    category: "Trading",
-    readTime: "5 min",
-    views: "5.2k",
-    helpful: 96,
-  },
-  {
-    title: "KYC : Pourquoi et comment valider son identité ?",
-    category: "Sécurité",
-    readTime: "3 min",
-    views: "4.1k",
-    helpful: 94,
-  },
-  {
-    title: "Comprendre les frais et délais de paiement",
-    category: "Paiements",
-    readTime: "4 min",
-    views: "3.8k",
-    helpful: 91,
-  },
-];
-
-const supportOptions = [
-  {
-    title: "Chat en direct",
-    description: "Support instantané avec notre équipe",
-    availability: "24/7",
-    responseTime: "< 2 min",
-    icon: ChatBubbleLeftRightIcon,
-    color: "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400",
-  },
-  {
-    title: "Ticket de support",
-    description: "Pour les questions complexes nécessitant un suivi",
-    availability: "24/7",
-    responseTime: "< 2h",
-    icon: DocumentTextIcon,
-    color: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400",
-  },
-  {
-    title: "Support téléphonique",
-    description: "Assistance vocale pour les cas urgents",
-    availability: "Lun-Ven 9h-18h",
-    responseTime: "Immédiat",
-    icon: ClockIcon,
-    color: "bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400",
-  },
-];
+// Categories and articles are defined in the component using translations
 
 export default function HelpPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const { messages } = useLocale();
+
+  const t = messages.helpPage;
 
   const getCategories = () => [
     {
@@ -127,10 +33,10 @@ export default function HelpPage() {
       icon: CheckCircleIcon,
       color: "text-green-600",
       articles: [
-        { title: "Comment créer un compte ?", views: "2.3k", helpful: 95 },
-        { title: "Connexion Steam et Trade Link", views: "1.8k", helpful: 92 },
-        { title: "Vérification KYC étape par étape", views: "1.5k", helpful: 89 },
-        { title: "Premier trade : guide complet", views: "2.1k", helpful: 96 },
+        { title: t.articles.gettingStarted.createAccount, views: "2.3k", helpful: 95 },
+        { title: t.articles.gettingStarted.steamConnection, views: "1.8k", helpful: 92 },
+        { title: t.articles.gettingStarted.kycStepByStep, views: "1.5k", helpful: 89 },
+        { title: t.articles.gettingStarted.firstTrade, views: "2.1k", helpful: 96 },
       ]
     },
     {
@@ -138,10 +44,10 @@ export default function HelpPage() {
       icon: CurrencyEuroIcon,
       color: "text-orange-600",
       articles: [
-        { title: "Comment vendre mes skins CS2 ?", views: "3.2k", helpful: 94 },
-        { title: "Estimation des prix : comment ça marche ?", views: "1.9k", helpful: 88 },
-        { title: "Qu'est-ce que le trade hold Steam ?", views: "2.7k", helpful: 91 },
-        { title: "Frais de transaction et calculs", views: "1.4k", helpful: 87 },
+        { title: t.articles.trading.howToSell, views: "3.2k", helpful: 94 },
+        { title: t.articles.trading.priceEstimation, views: "1.9k", helpful: 88 },
+        { title: t.articles.trading.tradeHold, views: "2.7k", helpful: 91 },
+        { title: t.articles.trading.fees, views: "1.4k", helpful: 87 },
       ]
     },
     {
@@ -149,10 +55,10 @@ export default function HelpPage() {
       icon: ShieldCheckIcon,
       color: "text-blue-600",
       articles: [
-        { title: "Méthodes de paiement disponibles", views: "2.8k", helpful: 93 },
-        { title: "Délais de paiement SEPA vs Crypto", views: "2.1k", helpful: 90 },
-        { title: "Vérification IBAN et sécurité", views: "1.7k", helpful: 85 },
-        { title: "Problème de paiement : que faire ?", views: "1.2k", helpful: 82 },
+        { title: t.articles.payments.methods, views: "2.8k", helpful: 93 },
+        { title: t.articles.payments.delays, views: "2.1k", helpful: 90 },
+        { title: t.articles.payments.ibanVerification, views: "1.7k", helpful: 85 },
+        { title: t.articles.payments.paymentIssue, views: "1.2k", helpful: 82 },
       ]
     },
     {
@@ -160,10 +66,10 @@ export default function HelpPage() {
       icon: ExclamationTriangleIcon,
       color: "text-red-600",
       articles: [
-        { title: "Sécuriser mon compte CashTrade", views: "1.9k", helpful: 97 },
-        { title: "Que faire si mon compte est suspendu ?", views: "0.8k", helpful: 79 },
-        { title: "Signaler une activité suspecte", views: "0.6k", helpful: 84 },
-        { title: "Récupération de compte perdu", views: "0.9k", helpful: 81 },
+        { title: t.articles.security.secureAccount, views: "1.9k", helpful: 97 },
+        { title: t.articles.security.accountSuspended, views: "0.8k", helpful: 79 },
+        { title: t.articles.security.reportSuspicious, views: "0.6k", helpful: 84 },
+        { title: t.articles.security.accountRecovery, views: "0.9k", helpful: 81 },
       ]
     },
     {
@@ -171,12 +77,63 @@ export default function HelpPage() {
       icon: DocumentTextIcon,
       color: "text-purple-600",
       articles: [
-        { title: "Le site ne se charge pas", views: "1.1k", helpful: 76 },
-        { title: "Erreur lors du trade Steam", views: "1.9k", helpful: 83 },
-        { title: "Problème de connexion Steam", views: "1.4k", helpful: 79 },
-        { title: "Interface qui bug : solutions", views: "0.9k", helpful: 72 },
+        { title: t.articles.technical.siteNotLoading, views: "1.1k", helpful: 76 },
+        { title: t.articles.technical.steamTradeError, views: "1.9k", helpful: 83 },
+        { title: t.articles.technical.steamConnectionIssue, views: "1.4k", helpful: 79 },
+        { title: t.articles.technical.buggyInterface, views: "0.9k", helpful: 72 },
       ]
     }
+  ];
+
+  const getSupportOptions = () => [
+    {
+      title: t.supportOptions.liveChat.title,
+      description: t.supportOptions.liveChat.description,
+      availability: t.supportOptions.liveChat.availability,
+      responseTime: t.supportOptions.liveChat.responseTime,
+      icon: ChatBubbleLeftRightIcon,
+      color: "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400",
+    },
+    {
+      title: t.supportOptions.ticket.title,
+      description: t.supportOptions.ticket.description,
+      availability: t.supportOptions.ticket.availability,
+      responseTime: t.supportOptions.ticket.responseTime,
+      icon: DocumentTextIcon,
+      color: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400",
+    },
+    {
+      title: t.supportOptions.phone.title,
+      description: t.supportOptions.phone.description,
+      availability: t.supportOptions.phone.availability,
+      responseTime: t.supportOptions.phone.responseTime,
+      icon: ClockIcon,
+      color: "bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400",
+    },
+  ];
+
+  const getPopularArticles = () => [
+    {
+      title: t.popularArticles.sellGuide,
+      category: "Trading",
+      readTime: "5 min",
+      views: "5.2k",
+      helpful: 96,
+    },
+    {
+      title: t.popularArticles.kycGuide,
+      category: messages.help.categories.security,
+      readTime: "3 min",
+      views: "4.1k",
+      helpful: 94,
+    },
+    {
+      title: t.popularArticles.feesGuide,
+      category: messages.help.categories.payments,
+      readTime: "4 min",
+      views: "3.8k",
+      helpful: 91,
+    },
   ];
 
   return (
@@ -219,7 +176,7 @@ export default function HelpPage() {
         >
           <h2 className="text-2xl font-semibold mb-6">{messages.help.popularArticles}</h2>
           <div className="grid md:grid-cols-3 gap-4">
-            {popularArticles.map((article, index) => (
+            {getPopularArticles().map((article, index) => (
               <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-3">
@@ -247,7 +204,7 @@ export default function HelpPage() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mb-8 sm:mb-12"
         >
-          <h2 className="text-2xl font-semibold mb-6">Parcourir par catégorie</h2>
+          <h2 className="text-2xl font-semibold mb-6">{t.browseByCategory}</h2>
           <div className="grid md:grid-cols-2 gap-6">
             {getCategories().map((category, index) => (
               <Card key={index} className="hover:shadow-md transition-shadow">
@@ -294,7 +251,7 @@ export default function HelpPage() {
         >
           <h2 className="text-2xl font-semibold mb-6">{messages.help.stillNeedHelp}</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {supportOptions.map((option, index) => (
+            {getSupportOptions().map((option, index) => (
               <Card key={index} className="text-center hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className={`w-12 h-12 rounded-lg ${option.color} flex items-center justify-center mx-auto mb-4`}>
@@ -309,11 +266,11 @@ export default function HelpPage() {
                     </div>
                     <div className="flex items-center justify-center space-x-2">
                       <CheckCircleIcon className="w-3 h-3 text-green-600" />
-                      <span>Réponse {option.responseTime}</span>
+                      <span>{t.response} {option.responseTime}</span>
                     </div>
                   </div>
                   <Button className="w-full">
-                    Contacter le support
+                    {t.contactSupport}
                   </Button>
                 </CardContent>
               </Card>
@@ -330,27 +287,27 @@ export default function HelpPage() {
           <Card className="bg-muted/50">
             <CardContent className="p-8 text-center">
               <h3 className="text-xl font-semibold mb-4">
-                Vous ne trouvez pas votre réponse ?
+                {t.cantFindAnswer}
               </h3>
               <p className="text-muted-foreground mb-6">
-                Notre équipe support est disponible 24/7 pour vous aider avec toutes vos questions.
+                {t.teamAvailable247}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
                 <Button className="flex-1">
                   <ChatBubbleLeftRightIcon className="w-4 h-4 mr-2" />
-                  Chat en direct
+                  {t.liveChat}
                 </Button>
                 <Button variant="outline" className="flex-1">
                   <DocumentTextIcon className="w-4 h-4 mr-2" />
-                  Créer un ticket
+                  {t.createTicket}
                 </Button>
               </div>
               <div className="flex items-center justify-center space-x-6 mt-6 text-sm text-muted-foreground">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Support en ligne</span>
+                  <span>{t.supportOnline}</span>
                 </div>
-                <span>Temps de réponse moyen : 1.5 min</span>
+                <span>{t.avgResponseTime}</span>
               </div>
             </CardContent>
           </Card>

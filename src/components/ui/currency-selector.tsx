@@ -10,6 +10,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, DollarSign } from 'lucide-react';
 import { useCurrency } from '@/components/providers/currency-provider';
+import { useLocale } from '@/components/providers/locale-provider';
 import { SupportedCurrency } from '@/lib/currency-converter';
 
 interface CurrencySelectorProps {
@@ -28,11 +29,17 @@ export function CurrencySelector({
   className = ''
 }: CurrencySelectorProps) {
   const { selectedCurrency, setSelectedCurrency, supportedCurrencies } = useCurrency();
+  const { messages } = useLocale();
   
   const currentCurrency = supportedCurrencies[selectedCurrency];
 
   const handleCurrencyChange = (currency: SupportedCurrency) => {
     setSelectedCurrency(currency);
+  };
+
+  // Helper pour obtenir le nom traduit de la devise
+  const getCurrencyName = (nameKey: 'usd' | 'eur' | 'cny') => {
+    return messages.currencies[nameKey];
   };
 
   return (
@@ -42,7 +49,7 @@ export function CurrencySelector({
           <DollarSign className="h-4 w-4" />
           {showFlag && <span>{currentCurrency.flag}</span>}
           <span className="font-mono font-bold">{currentCurrency.code}</span>
-          {showName && <span className="hidden sm:inline">{currentCurrency.name}</span>}
+          {showName && <span className="hidden sm:inline">{getCurrencyName(currentCurrency.nameKey)}</span>}
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -60,12 +67,12 @@ export function CurrencySelector({
                 <span className="text-lg">{currency.symbol}</span>
               </div>
               <div className="text-xs text-muted-foreground">
-                {currency.name}
+                {getCurrencyName(currency.nameKey)}
               </div>
             </div>
             {selectedCurrency === currency.code && (
               <Badge variant="default" className="text-xs">
-                Actuel
+                {messages.common.current}
               </Badge>
             )}
           </DropdownMenuItem>

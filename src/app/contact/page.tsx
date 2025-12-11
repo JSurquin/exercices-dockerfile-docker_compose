@@ -29,74 +29,7 @@ import {
 import { useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
 
-const contactMethods = [
-  {
-    title: "Chat en direct",
-    description: "Support instantané pour vos questions urgentes",
-    icon: ChatBubbleLeftRightIcon,
-    availability: "24/7",
-    responseTime: "< 2 minutes",
-    color: "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400",
-    action: "Démarrer le chat",
-  },
-  {
-    title: "Email Support",
-    description: "Pour les questions détaillées nécessitant un suivi",
-    icon: EnvelopeIcon,
-    availability: "24/7",
-    responseTime: "< 2 heures",
-    color: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400",
-    action: "support@cashtrade.gg",
-  },
-  {
-    title: "Téléphone",
-    description: "Assistance vocale pour les cas complexes",
-    icon: PhoneIcon,
-    availability: "Lun-Ven 9h-18h",
-    responseTime: "Immédiat",
-    color: "bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400",
-    action: "+33 1 23 45 67 89",
-  },
-];
-
-const departments = [
-  {
-    name: "Support technique",
-    email: "support@cashtrade.gg",
-    description: "Problèmes de compte, trading, paiements",
-    icon: QuestionMarkCircleIcon,
-  },
-  {
-    name: "Sécurité & Fraude",
-    email: "security@cashtrade.gg",
-    description: "Signalement d&apos;activités suspectes, sécurité",
-    icon: ShieldCheckIcon,
-  },
-  {
-    name: "Conformité & KYC",
-    email: "compliance@cashtrade.gg",
-    description: "Questions KYC, vérification d&apos;identité",
-    icon: DocumentTextIcon,
-  },
-  {
-    name: "Partenariats",
-    email: "business@cashtrade.gg",
-    description: "Collaborations, intégrations, API",
-    icon: CurrencyEuroIcon,
-  },
-  {
-    name: "Presse & Médias",
-    email: "press@cashtrade.gg",
-    description: "Relations presse, communiqués, interviews",
-    icon: DocumentTextIcon,
-  },
-];
-
-const officeHours = [
-  { day: "Lundi - Vendredi", hours: "9h00 - 18h00", type: "Support téléphonique" },
-  { day: "Samedi - Dimanche", hours: "10h00 - 16h00", type: "Chat & Email uniquement" },
-  { day: "24/7", hours: "Toujours disponible", type: "Chat en direct & Email" },
-];
+// Contact data is defined dynamically in the component using translations
 
 export default function ContactPage() {
   const { messages } = useLocale();
@@ -108,6 +41,77 @@ export default function ContactPage() {
     priority: "",
     message: "",
   });
+
+  const t = messages.contactPage;
+
+  const getContactMethods = () => [
+    {
+      title: t.methods.liveChat.title,
+      description: t.methods.liveChat.description,
+      icon: ChatBubbleLeftRightIcon,
+      availability: t.methods.liveChat.availability,
+      responseTime: t.methods.liveChat.responseTime,
+      color: "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400",
+      action: t.methods.liveChat.action,
+    },
+    {
+      title: t.methods.email.title,
+      description: t.methods.email.description,
+      icon: EnvelopeIcon,
+      availability: t.methods.email.availability,
+      responseTime: t.methods.email.responseTime,
+      color: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400",
+      action: "support@cashtrade.gg",
+    },
+    {
+      title: t.methods.phone.title,
+      description: t.methods.phone.description,
+      icon: PhoneIcon,
+      availability: t.methods.phone.availability,
+      responseTime: t.methods.phone.responseTime,
+      color: "bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400",
+      action: "+33 1 23 45 67 89",
+    },
+  ];
+
+  const getDepartments = () => [
+    {
+      name: t.departmentsList.technical.name,
+      email: "support@cashtrade.gg",
+      description: t.departmentsList.technical.description,
+      icon: QuestionMarkCircleIcon,
+    },
+    {
+      name: t.departmentsList.security.name,
+      email: "security@cashtrade.gg",
+      description: t.departmentsList.security.description,
+      icon: ShieldCheckIcon,
+    },
+    {
+      name: t.departmentsList.compliance.name,
+      email: "compliance@cashtrade.gg",
+      description: t.departmentsList.compliance.description,
+      icon: DocumentTextIcon,
+    },
+    {
+      name: t.departmentsList.partnerships.name,
+      email: "business@cashtrade.gg",
+      description: t.departmentsList.partnerships.description,
+      icon: CurrencyEuroIcon,
+    },
+    {
+      name: t.departmentsList.press.name,
+      email: "press@cashtrade.gg",
+      description: t.departmentsList.press.description,
+      icon: DocumentTextIcon,
+    },
+  ];
+
+  const getOfficeHours = () => [
+    t.schedule.weekdays,
+    t.schedule.weekends,
+    t.schedule.always,
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,7 +142,7 @@ export default function ContactPage() {
           </p>
           <div className="flex items-center justify-center space-x-2">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-sm text-muted-foreground">Support en ligne - Temps de réponse moyen : 1.5 min</span>
+            <span className="text-sm text-muted-foreground">{t.onlineStatus}</span>
           </div>
         </motion.div>
 
@@ -152,30 +156,30 @@ export default function ContactPage() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>Envoyer un message</CardTitle>
+                  <CardTitle>{t.sendMessage}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="name">Nom complet *</Label>
+                        <Label htmlFor="name">{t.fullName}</Label>
                         <Input
                           id="name"
                           type="text"
                           value={formData.name}
                           onChange={(e) => handleInputChange("name", e.target.value)}
-                          placeholder="Votre nom et prénom"
+                          placeholder={t.fullNamePlaceholder}
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email">Email *</Label>
+                        <Label htmlFor="email">{t.email}</Label>
                         <Input
                           id="email"
                           type="email"
                           value={formData.email}
                           onChange={(e) => handleInputChange("email", e.target.value)}
-                          placeholder="votre@email.com"
+                          placeholder={t.emailPlaceholder}
                           required
                         />
                       </div>
@@ -183,13 +187,13 @@ export default function ContactPage() {
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="department">Département</Label>
+                        <Label htmlFor="department">{t.department}</Label>
                         <Select value={formData.department} onValueChange={(value) => handleInputChange("department", value)}>
                           <SelectTrigger>
-                            <SelectValue placeholder="Choisir un département" />
+                            <SelectValue placeholder={t.departmentPlaceholder} />
                           </SelectTrigger>
                           <SelectContent>
-                            {departments.map((dept, index) => (
+                            {getDepartments().map((dept, index) => (
                               <SelectItem key={index} value={dept.name}>
                                 {dept.name}
                               </SelectItem>
@@ -198,40 +202,40 @@ export default function ContactPage() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="priority">Priorité</Label>
+                        <Label htmlFor="priority">{t.priority}</Label>
                         <Select value={formData.priority} onValueChange={(value) => handleInputChange("priority", value)}>
                           <SelectTrigger>
-                            <SelectValue placeholder="Niveau de priorité" />
+                            <SelectValue placeholder={t.priorityPlaceholder} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="low">Faible</SelectItem>
-                            <SelectItem value="medium">Moyenne</SelectItem>
-                            <SelectItem value="high">Élevée</SelectItem>
-                            <SelectItem value="urgent">Urgente</SelectItem>
+                            <SelectItem value="low">{t.priorities.low}</SelectItem>
+                            <SelectItem value="medium">{t.priorities.medium}</SelectItem>
+                            <SelectItem value="high">{t.priorities.high}</SelectItem>
+                            <SelectItem value="urgent">{t.priorities.urgent}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="subject">Sujet *</Label>
+                      <Label htmlFor="subject">{t.subject}</Label>
                       <Input
                         id="subject"
                         type="text"
                         value={formData.subject}
                         onChange={(e) => handleInputChange("subject", e.target.value)}
-                        placeholder="Résumé de votre demande"
+                        placeholder={t.subjectPlaceholder}
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="message">Message *</Label>
+                      <Label htmlFor="message">{t.message}</Label>
                       <Textarea
                         id="message"
                         value={formData.message}
                         onChange={(e) => handleInputChange("message", e.target.value)}
-                        placeholder="Décrivez votre demande en détail..."
+                        placeholder={t.messagePlaceholder}
                         rows={6}
                         required
                       />
@@ -240,16 +244,16 @@ export default function ContactPage() {
                     <div className="flex items-start space-x-2">
                       <input type="checkbox" id="privacy" className="mt-1" required />
                       <Label htmlFor="privacy" className="text-sm text-muted-foreground">
-                        J&apos;accepte que mes données soient traitées conformément à notre{" "}
+                        {t.privacyConsent}{" "}
                         <a href="/privacy" className="text-orange-600 hover:underline">
-                          politique de confidentialité
+                          {t.privacyPolicy}
                         </a>
                       </Label>
                     </div>
 
                     <Button type="submit" className="w-full">
                       <EnvelopeIcon className="w-4 h-4 mr-2" />
-                      Envoyer le message
+                      {t.sendButton}
                     </Button>
                   </form>
                 </CardContent>
@@ -267,10 +271,10 @@ export default function ContactPage() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>Moyens de contact</CardTitle>
+                  <CardTitle>{t.contactMethods}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {contactMethods.map((method, index) => (
+                  {getContactMethods().map((method, index) => (
                     <div key={index} className="space-y-3">
                       <div className="flex items-start space-x-3">
                         <div className={`w-10 h-10 rounded-lg ${method.color} flex items-center justify-center flex-shrink-0`}>
@@ -286,7 +290,7 @@ export default function ContactPage() {
                             </div>
                             <div className="flex items-center space-x-2">
                               <ExclamationTriangleIcon className="w-3 h-3" />
-                              <span>Réponse {method.responseTime}</span>
+                              <span>{t.response} {method.responseTime}</span>
                             </div>
                           </div>
                         </div>
@@ -294,7 +298,7 @@ export default function ContactPage() {
                       <Button variant="outline" size="sm" className="w-full">
                         {method.action}
                       </Button>
-                      {index < contactMethods.length - 1 && <hr />}
+                      {index < getContactMethods().length - 1 && <hr />}
                     </div>
                   ))}
                 </CardContent>
@@ -309,10 +313,10 @@ export default function ContactPage() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>Départements spécialisés</CardTitle>
+                  <CardTitle>{t.departments}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {departments.map((dept, index) => (
+                  {getDepartments().map((dept, index) => (
                     <div key={index} className="space-y-2">
                       <div className="flex items-start space-x-3">
                         <dept.icon className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
@@ -324,7 +328,7 @@ export default function ContactPage() {
                           </Badge>
                         </div>
                       </div>
-                      {index < departments.length - 1 && <hr />}
+                      {index < getDepartments().length - 1 && <hr />}
                     </div>
                   ))}
                 </CardContent>
@@ -341,11 +345,11 @@ export default function ContactPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <ClockIcon className="w-5 h-5" />
-                    <span>Horaires de support</span>
+                    <span>{t.supportHours}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {officeHours.map((schedule, index) => (
+                  {getOfficeHours().map((schedule, index) => (
                     <div key={index} className="flex justify-between items-start">
                       <div>
                         <div className="font-medium text-sm">{schedule.day}</div>
@@ -370,7 +374,7 @@ export default function ContactPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <MapPinIcon className="w-5 h-5" />
-                    <span>Nos bureaux</span>
+                    <span>{t.offices}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -384,8 +388,7 @@ export default function ContactPage() {
                   </div>
                   <div className="pt-3 border-t">
                     <p className="text-xs text-muted-foreground">
-                      Société immatriculée au RCS de Paris. 
-                      Agréée en tant qu&apos;établissement de paiement par l&apos;ACPR.
+                      {t.companyInfo}
                     </p>
                   </div>
                 </CardContent>

@@ -76,7 +76,7 @@ export function GateFiWidget({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl h-[80vh] p-0">
         <DialogHeader className="p-6 pb-0">
-          <DialogTitle>Finalisation du paiement</DialogTitle>
+          <DialogTitle>{messages.paymentComponents.gatefiWidget.title}</DialogTitle>
         </DialogHeader>
         <div className="flex-1 w-full h-full p-6 pt-0">
           {widgetUrl ? (

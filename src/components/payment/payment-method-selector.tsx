@@ -30,12 +30,14 @@ export function PaymentMethodSelector({
     onSelect(method);
   };
 
+  const t = messages.paymentComponents.methodSelector;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Choisissez votre mode de paiement</CardTitle>
+        <CardTitle>{t.title}</CardTitle>
         <CardDescription>
-          Sélectionnez comment vous souhaitez recevoir votre paiement
+          {t.description}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -55,15 +57,15 @@ export function PaymentMethodSelector({
             <RadioGroupItem value="SEPA" id="sepa" className="sr-only" />
             <CreditCard className="h-12 w-12 text-primary" />
             <div className="text-center space-y-1">
-              <h3 className="font-semibold text-lg">Virement SEPA</h3>
+              <h3 className="font-semibold text-lg">{t.sepa.title}</h3>
               <p className="text-sm text-muted-foreground">
-                Recevez votre paiement directement sur votre compte bancaire
+                {t.sepa.description}
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>Délai: 1-3 jours</span>
+              <span>{t.sepa.delay}</span>
               <span>•</span>
-              <span>Frais: ~0.5%</span>
+              <span>{t.sepa.fees}</span>
             </div>
           </Label>
 
@@ -77,15 +79,15 @@ export function PaymentMethodSelector({
             <RadioGroupItem value="CRYPTO" id="crypto" className="sr-only" />
             <Wallet className="h-12 w-12 text-primary" />
             <div className="text-center space-y-1">
-              <h3 className="font-semibold text-lg">Crypto-monnaie</h3>
+              <h3 className="font-semibold text-lg">{t.crypto.title}</h3>
               <p className="text-sm text-muted-foreground">
-                Recevez votre paiement en crypto sur votre wallet
+                {t.crypto.description}
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>Délai: Instantané</span>
+              <span>{t.crypto.delay}</span>
               <span>•</span>
-              <span>Frais réseau variables</span>
+              <span>{t.crypto.fees}</span>
             </div>
           </Label>
         </RadioGroup>

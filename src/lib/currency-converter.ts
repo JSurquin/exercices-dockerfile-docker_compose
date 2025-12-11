@@ -8,14 +8,14 @@ export type SupportedCurrency = 'USD' | 'EUR' | 'CNY';
 export interface CurrencyInfo {
   code: SupportedCurrency;
   symbol: string;
-  name: string;
+  nameKey: 'usd' | 'eur' | 'cny';
   flag: string;
 }
 
 export const SUPPORTED_CURRENCIES: Record<SupportedCurrency, CurrencyInfo> = {
-  USD: { code: 'USD', symbol: '$', name: 'Dollar américain', flag: '🇺🇸' },
-  EUR: { code: 'EUR', symbol: '€', name: 'Euro', flag: '🇪🇺' },
-  CNY: { code: 'CNY', symbol: '¥', name: 'Yuan chinois', flag: '🇨🇳' },
+  USD: { code: 'USD', symbol: '$', nameKey: 'usd', flag: '🇺🇸' },
+  EUR: { code: 'EUR', symbol: '€', nameKey: 'eur', flag: '🇪🇺' },
+  CNY: { code: 'CNY', symbol: '¥', nameKey: 'cny', flag: '🇨🇳' },
 };
 
 interface ExchangeRateResponse {

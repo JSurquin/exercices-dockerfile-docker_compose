@@ -241,9 +241,9 @@ export default function SettingsPage() {
 
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
-                        <h4 className="font-semibold">Vérification KYC</h4>
+                        <h4 className="font-semibold">{messages.settings.security.kyc.title}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Statut de vérification de votre identité
+                          {messages.settings.security.kyc.description}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -252,12 +252,12 @@ export default function SettingsPage() {
                           className="bg-green-100 text-green-800"
                         >
                           {user.kycStatus === "verified"
-                            ? messages.common.verified
-                            : messages.common.pending}
+                            ? messages.settings.security.kyc.verified
+                            : messages.settings.security.kyc.pending}
                         </Badge>
                         {user.kycStatus !== "verified" && (
                           <Button variant="outline" size="sm">
-{messages.common.startKyc}
+                            {messages.settings.security.kyc.start}
                           </Button>
                         )}
                       </div>
@@ -265,13 +265,13 @@ export default function SettingsPage() {
 
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
-                        <h4 className="font-semibold">Sessions actives</h4>
+                        <h4 className="font-semibold">{messages.settings.security.sessions.title}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Gérez vos connexions actives
+                          {messages.settings.security.sessions.description}
                         </p>
                       </div>
                       <Button variant="outline" size="sm">
-                        Voir les sessions
+                        {messages.settings.security.sessions.view}
                       </Button>
                     </div>
                   </CardContent>
@@ -279,27 +279,26 @@ export default function SettingsPage() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Données personnelles</CardTitle>
+                    <CardTitle>{messages.common.personalData}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 sm:space-y-4">
                     <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                       <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                        Conformité RGPD
+                        {messages.settings.security.gdpr.title}
                       </h4>
                       <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
-                        Vous avez le droit d&apos;accéder, modifier ou supprimer vos
-                        données personnelles.
+                        {messages.settings.security.gdpr.description}
                       </p>
                       <div className="flex space-x-2">
                         <Button variant="outline" size="sm">
-                          Exporter mes données
+                          {messages.settings.security.gdpr.export}
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
                           className="text-red-600"
                         >
-                          Supprimer mon compte
+                          {messages.settings.security.gdpr.delete}
                         </Button>
                       </div>
                     </div>
@@ -314,7 +313,7 @@ export default function SettingsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <BellIcon className="w-5 h-5" />
-                    <span>Préférences de notification</span>
+                    <span>{messages.settings.notifications.title}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 sm:space-y-6">
@@ -322,10 +321,10 @@ export default function SettingsPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="font-semibold">
-                          Notifications par email
+                          {messages.settings.notifications.email.title}
                         </h4>
                         <p className="text-sm text-muted-foreground">
-                          Recevoir des notifications importantes par email
+                          {messages.settings.notifications.email.description}
                         </p>
                       </div>
                       <Switch
@@ -341,10 +340,9 @@ export default function SettingsPage() {
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-semibold">Alertes de trade</h4>
+                        <h4 className="font-semibold">{messages.settings.notifications.trades.title}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Notifications lors des changements d&apos;état de vos
-                          trades
+                          {messages.settings.notifications.trades.description}
                         </p>
                       </div>
                       <Switch
@@ -360,9 +358,9 @@ export default function SettingsPage() {
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-semibold">Alertes de paiement</h4>
+                        <h4 className="font-semibold">{messages.settings.notifications.payments.title}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Notifications lors des paiements et transactions
+                          {messages.settings.notifications.payments.description}
                         </p>
                       </div>
                       <Switch
@@ -378,9 +376,9 @@ export default function SettingsPage() {
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-semibold">Notifications push</h4>
+                        <h4 className="font-semibold">{messages.settings.notifications.push.title}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Notifications push dans le navigateur
+                          {messages.settings.notifications.push.description}
                         </p>
                       </div>
                       <Switch
@@ -396,10 +394,9 @@ export default function SettingsPage() {
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-semibold">Emails marketing</h4>
+                        <h4 className="font-semibold">{messages.settings.notifications.marketing.title}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Recevoir des informations sur les nouveautés et
-                          promotions
+                          {messages.settings.notifications.marketing.description}
                         </p>
                       </div>
                       <Switch
@@ -411,11 +408,11 @@ export default function SettingsPage() {
                           }))
                         }
                       />
-                    </div>p
+                    </div>
                   </div>
 
                   <Button onClick={handleSaveSettings}>
-                    Sauvegarder les préférences
+                    {messages.settings.notifications.save}
                   </Button>
                 </CardContent>
               </Card>
@@ -427,7 +424,7 @@ export default function SettingsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <CreditCardIcon className="w-5 h-5" />
-                    <span>Méthodes de paiement</span>
+                    <span>{messages.settings.payments.title}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
@@ -439,7 +436,7 @@ export default function SettingsPage() {
                             <CreditCardIcon className="w-5 h-5 text-blue-600" />
                           </div>
                           <div>
-                            <p className="font-medium">SEPA - Qonto</p>
+                            <p className="font-medium">{messages.settings.payments.sepa}</p>
                             <p className="text-sm text-muted-foreground">
                               FR76 **** **** **** **89
                             </p>
@@ -450,11 +447,11 @@ export default function SettingsPage() {
                             variant="secondary"
                             className="bg-green-100 text-green-800"
                           >
-                            Vérifié
+                            {messages.settings.payments.verified}
                           </Badge>
-                          <Badge variant="outline">Par défaut</Badge>
+                          <Badge variant="outline">{messages.settings.payments.default}</Badge>
                           <Button variant="ghost" size="sm">
-                            Modifier
+                            {messages.settings.payments.modify}
                           </Button>
                         </div>
                       </div>
@@ -469,7 +466,7 @@ export default function SettingsPage() {
                             </span>
                           </div>
                           <div>
-                            <p className="font-medium">Bitcoin</p>
+                            <p className="font-medium">{messages.settings.payments.bitcoin}</p>
                             <p className="text-sm text-muted-foreground">
                               1A1z...DivfNa
                             </p>
@@ -480,10 +477,10 @@ export default function SettingsPage() {
                             variant="secondary"
                             className="bg-green-100 text-green-800"
                           >
-                            Vérifié
+                            {messages.settings.payments.verified}
                           </Badge>
                           <Button variant="ghost" size="sm">
-                            Modifier
+                            {messages.settings.payments.modify}
                           </Button>
                         </div>
                       </div>
@@ -491,7 +488,7 @@ export default function SettingsPage() {
                   </div>
 
                   <Button variant="outline" className="w-full">
-                    Ajouter une méthode de paiement
+                    {messages.settings.payments.add}
                   </Button>
 
                   <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
@@ -499,11 +496,10 @@ export default function SettingsPage() {
                       <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
                       <div className="text-sm">
                         <p className="font-medium text-yellow-900 dark:text-yellow-100 mb-1">
-                          Important
+                          {messages.settings.payments.important}
                         </p>
                         <p className="text-yellow-700 dark:text-yellow-300">
-                          Tout changement d&apos;IBAN nécessite une nouvelle
-                          vérification et un délai de 7 jours.
+                          {messages.settings.payments.ibanWarning}
                         </p>
                       </div>
                     </div>
@@ -518,16 +514,16 @@ export default function SettingsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <CogIcon className="w-5 h-5" />
-                    <span>Préférences d&apos;affichage</span>
+                    <span>{messages.settings.preferences.title}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 sm:space-y-6">
                   <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-semibold">Langue</h4>
+                        <h4 className="font-semibold">{messages.settings.preferences.language.title}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Choisissez votre langue préférée
+                          {messages.settings.preferences.language.description}
                         </p>
                       </div>
                       <Select
@@ -540,17 +536,17 @@ export default function SettingsPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="fr">🇫🇷 Français</SelectItem>
-                          <SelectItem value="en">🇺🇸 English</SelectItem>
+                          <SelectItem value="fr">{messages.settings.preferences.language.french}</SelectItem>
+                          <SelectItem value="en">{messages.settings.preferences.language.english}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-semibold">Thème</h4>
+                        <h4 className="font-semibold">{messages.settings.preferences.theme.title}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Choisissez votre thème d&apos;affichage
+                          {messages.settings.preferences.theme.description}
                         </p>
                       </div>
                       <Select value={theme} onValueChange={setTheme}>
@@ -561,19 +557,19 @@ export default function SettingsPage() {
                           <SelectItem value="light">
                             <div className="flex items-center space-x-2">
                               <SunIcon className="w-4 h-4" />
-                              <span>Clair</span>
+                              <span>{messages.settings.preferences.theme.light}</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="dark">
                             <div className="flex items-center space-x-2">
                               <MoonIcon className="w-4 h-4" />
-                              <span>Sombre</span>
+                              <span>{messages.settings.preferences.theme.dark}</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="system">
                             <div className="flex items-center space-x-2">
                               <CogIcon className="w-4 h-4" />
-                              <span>Système</span>
+                              <span>{messages.settings.preferences.theme.system}</span>
                             </div>
                           </SelectItem>
                         </SelectContent>
@@ -582,7 +578,7 @@ export default function SettingsPage() {
                   </div>
 
                   <Button onClick={handleSaveSettings}>
-                    Sauvegarder les préférences
+                    {messages.settings.preferences.save}
                   </Button>
                 </CardContent>
               </Card>

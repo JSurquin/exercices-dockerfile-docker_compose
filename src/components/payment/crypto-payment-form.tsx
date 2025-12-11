@@ -121,21 +121,23 @@ export function CryptoPaymentForm({
 
   const selectedCryptoInfo = SUPPORTED_CRYPTOS.find((c) => c.value === crypto);
 
+  const t = messages.paymentComponents.cryptoForm;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Paiement Crypto</CardTitle>
+        <CardTitle>{t.title}</CardTitle>
         <CardDescription>
-          Recevez votre paiement en crypto-monnaie sur votre wallet personnel
+          {t.description}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Sélection de la crypto */}
         <div className="space-y-2">
-          <Label htmlFor="crypto">Crypto-monnaie</Label>
+          <Label htmlFor="crypto">{t.selectCrypto}</Label>
           <Select value={crypto} onValueChange={setCrypto}>
             <SelectTrigger id="crypto">
-              <SelectValue placeholder="Sélectionnez une crypto" />
+              <SelectValue placeholder={t.selectCryptoPlaceholder} />
             </SelectTrigger>
             <SelectContent>
               {SUPPORTED_CRYPTOS.map((c) => (
@@ -149,7 +151,7 @@ export function CryptoPaymentForm({
 
         {/* Adresse du wallet */}
         <div className="space-y-2">
-          <Label htmlFor="wallet">Adresse de votre wallet</Label>
+          <Label htmlFor="wallet">{t.walletAddress}</Label>
           <div className="relative">
             <Wallet className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
@@ -166,14 +168,14 @@ export function CryptoPaymentForm({
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            Assurez-vous que l&apos;adresse est correcte. Les transactions crypto sont irréversibles.
+            {t.walletWarning}
           </p>
         </div>
 
         {/* Montant */}
         <div className="space-y-2">
           <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-            <span className="text-sm text-muted-foreground">Montant équivalent</span>
+            <span className="text-sm text-muted-foreground">{t.equivalentAmount}</span>
             <span className="text-xl font-bold">{formatCurrency(amountCents)}</span>
           </div>
         </div>
@@ -187,7 +189,7 @@ export function CryptoPaymentForm({
             variant="outline"
           >
             {isLoadingQuote && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Obtenir un devis
+            {t.getQuote}
           </Button>
         )}
 
@@ -195,25 +197,25 @@ export function CryptoPaymentForm({
         {quote && (
           <div className="space-y-4">
             <div className="p-4 bg-muted rounded-lg space-y-2">
-              <h4 className="font-semibold text-sm">Détails du devis</h4>
+              <h4 className="font-semibold text-sm">{t.quoteDetails}</h4>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Montant en EUR</span>
+                  <span className="text-muted-foreground">{t.amountEur}</span>
                   <span>{formatCurrency(amountCents)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Taux de change</span>
+                  <span className="text-muted-foreground">{t.exchangeRate}</span>
                   <span>{parseFloat(quote.rate).toFixed(6)}</span>
                 </div>
                 {quote.networkFee && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Frais réseau</span>
+                    <span className="text-muted-foreground">{t.networkFees}</span>
                     <span>{quote.networkFee} {crypto}</span>
                   </div>
                 )}
                 <div className="border-t pt-1 mt-2">
                   <div className="flex justify-between font-semibold">
-                    <span>Vous recevrez</span>
+                    <span>{t.youWillReceive}</span>
                     <span>{quote.amountOut} {crypto}</span>
                   </div>
                 </div>
@@ -223,8 +225,7 @@ export function CryptoPaymentForm({
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                Le transfert sera effectué sur votre wallet une fois le processus complété.
-                Le délai peut varier selon la blockchain ({selectedCryptoInfo?.network}).
+                {t.transferInfo} ({selectedCryptoInfo?.network}).
               </AlertDescription>
             </Alert>
 
@@ -235,7 +236,7 @@ export function CryptoPaymentForm({
               size="lg"
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Continuer vers le paiement
+              {t.continuePayment}
             </Button>
           </div>
         )}

@@ -16,21 +16,7 @@ interface PayoutStatusTrackerProps {
   refreshInterval?: number;
 }
 
-const STATUS_STEPS = {
-  SEPA: [
-    { key: 'PENDING', label: 'En attente', description: 'Votre demande est enregistrée' },
-    { key: 'VERIFICATION_REQUIRED', label: 'Vérification', description: 'Vérification en cours' },
-    { key: 'VERIFIED', label: 'Vérifié', description: 'Vérification terminée' },
-    { key: 'PROCESSING', label: 'En traitement', description: 'Paiement en cours' },
-    { key: 'PAID', label: 'Payé', description: 'Virement effectué' },
-  ],
-  CRYPTO: [
-    { key: 'PENDING', label: 'En attente', description: 'Votre demande est enregistrée' },
-    { key: 'VERIFICATION_REQUIRED', label: 'Vérification', description: 'Vérification en cours' },
-    { key: 'PROCESSING', label: 'En traitement', description: 'Transaction en cours' },
-    { key: 'PAID', label: 'Envoyé', description: 'Crypto envoyée sur votre wallet' },
-  ],
-};
+// STATUS_STEPS will be generated dynamically based on translations
 
 export function PayoutStatusTracker({
   payoutId,
@@ -44,6 +30,24 @@ export function PayoutStatusTracker({
   const [status, setStatus] = useState(currentStatus);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [orderDetails, setOrderDetails] = useState<any>(null);
+
+  const t = messages.paymentComponents.statusTracker;
+
+  const STATUS_STEPS = {
+    SEPA: [
+      { key: 'PENDING', label: t.steps.pending.label, description: t.steps.pending.description },
+      { key: 'VERIFICATION_REQUIRED', label: t.steps.verificationRequired.label, description: t.steps.verificationRequired.description },
+      { key: 'VERIFIED', label: t.steps.verified.label, description: t.steps.verified.description },
+      { key: 'PROCESSING', label: t.steps.processing.label, description: t.steps.processing.description },
+      { key: 'PAID', label: t.steps.paid.label, description: t.steps.paid.description },
+    ],
+    CRYPTO: [
+      { key: 'PENDING', label: t.steps.pending.label, description: t.steps.pending.description },
+      { key: 'VERIFICATION_REQUIRED', label: t.steps.verificationRequired.label, description: t.steps.verificationRequired.description },
+      { key: 'PROCESSING', label: t.steps.processing.label, description: t.steps.processing.description },
+      { key: 'PAID', label: t.steps.sent.label, description: t.steps.sent.description },
+    ],
+  };
 
   const steps = STATUS_STEPS[orderType];
   const currentStepIndex = steps.findIndex((step) => step.key === status);
@@ -126,9 +130,9 @@ export function PayoutStatusTracker({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Suivi de paiement</CardTitle>
+            <CardTitle>{t.title}</CardTitle>
             <CardDescription>
-              {orderType === 'SEPA' ? 'Virement SEPA' : 'Paiement Crypto'}
+              {orderType === 'SEPA' ? t.sepaTransfer : t.cryptoPayment}
             </CardDescription>
           </div>
           <Badge
@@ -141,10 +145,10 @@ export function PayoutStatusTracker({
             }
           >
             {status === 'PAID'
-              ? 'Terminé'
+              ? t.status.completed
               : status === 'FAILED'
-                ? 'Échoué'
-                : 'En cours'}
+                ? t.status.failed
+                : t.status.inProgress}
           </Badge>
         </div>
       </CardHeader>
@@ -190,7 +194,7 @@ export function PayoutStatusTracker({
                     </p>
                     {isCurrent && isRefreshing && (
                       <p className="text-xs text-muted-foreground mt-1">
-                        Actualisation...
+                        {t.refreshing}
                       </p>
                     )}
                   </div>
@@ -202,11 +206,11 @@ export function PayoutStatusTracker({
           {/* Détails de la commande */}
           {orderDetails && (
             <div className="mt-6 p-4 bg-muted rounded-lg space-y-2 text-sm">
-              <h4 className="font-semibold">Détails de la transaction</h4>
+              <h4 className="font-semibold">{t.transactionDetails}</h4>
               <div className="space-y-1">
                 {orderDetails.cryptoAmount && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Montant crypto</span>
+                    <span className="text-muted-foreground">{t.cryptoAmount}</span>
                     <span>
                       {orderDetails.cryptoAmount} {orderDetails.crypto}
                     </span>
@@ -214,7 +218,7 @@ export function PayoutStatusTracker({
                 )}
                 {orderDetails.fiatAmount && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Montant fiat</span>
+                    <span className="text-muted-foreground">{t.fiatAmount}</span>
                     <span>
                       {orderDetails.fiatAmount} {orderDetails.fiat}
                     </span>
@@ -222,7 +226,7 @@ export function PayoutStatusTracker({
                 )}
                 {orderDetails.txHash && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Transaction</span>
+                    <span className="text-muted-foreground">{t.transaction}</span>
                     <span className="font-mono text-xs truncate max-w-[200px]">
                       {orderDetails.txHash}
                     </span>

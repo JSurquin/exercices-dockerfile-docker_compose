@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useLocale } from '@/components/providers/locale-provider';
 import {
   Menu,
   X,
@@ -25,6 +26,7 @@ import {
   TrendingUp,
   Home,
   LogOut,
+  FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,124 +46,68 @@ interface NavGroup {
   items: NavItem[];
 }
 
-const navigationGroups: NavGroup[] = [
-  {
-    title: 'Vue d\'ensemble',
-    items: [
-      {
-        title: 'Dashboard',
-        href: '/admin/dashboard',
-        icon: LayoutDashboard,
-      },
-      {
-        title: 'Analytics',
-        href: '/admin/dashboard?tab=analytics',
-        icon: BarChart3,
-      },
-    ],
-  },
-  {
-    title: 'Gestion',
-    items: [
-      {
-        title: 'Utilisateurs',
-        href: '/admin/dashboard?tab=users',
-        icon: Users,
-      },
-      {
-        title: 'Trades',
-        href: '/admin/dashboard?tab=trades',
-        icon: ShoppingCart,
-      },
-      {
-        title: 'Paiements',
-        href: '/admin/dashboard?tab=payouts',
-        icon: CreditCard,
-        badge: 5,
-        badgeVariant: 'destructive',
-      },
-      {
-        title: 'KYC',
-        href: '/admin/dashboard?tab=kyc',
-        icon: Shield,
-        badge: 3,
-        badgeVariant: 'destructive',
-      },
-    ],
-  },
-  {
-    title: 'Affiliation',
-    items: [
-      {
-        title: 'Affiliés',
-        href: '/admin/dashboard?tab=affiliates',
-        icon: UserCheck,
-      },
-      {
-        title: 'Commissions',
-        href: '/admin/dashboard?tab=commissions',
-        icon: Percent,
-      },
-      {
-        title: 'Performances',
-        href: '/admin/dashboard?tab=affiliate-performance',
-        icon: TrendingUp,
-      },
-    ],
-  },
-  {
-    title: 'Marketing',
-    items: [
-      {
-        title: 'Giveaways',
-        href: '/admin/giveaways',
-        icon: Gift,
-      },
-      {
-        title: 'Newsletter',
-        href: '/admin/newsletter',
-        icon: Mail,
-      },
-    ],
-  },
-  {
-    title: 'Communication',
-    items: [
-      {
-        title: 'Chat Support',
-        href: '/admin/chat',
-        icon: MessageSquare,
-        badge: 'NEW',
-        badgeVariant: 'secondary',
-      },
-    ],
-  },
-  {
-    title: 'Système',
-    items: [
-      {
-        title: 'Audit & Sécurité',
-        href: '/admin/audit',
-        icon: Activity,
-      },
-      {
-        title: 'Exports',
-        href: '/admin/dashboard?tab=exports',
-        icon: FileDown,
-      },
-      {
-        title: 'Paramètres',
-        href: '/admin/settings',
-        icon: Settings,
-      },
-    ],
-  },
-];
+// Navigation is generated dynamically from translations
 
 export function AdminMobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { messages } = useLocale();
+  const t = messages.adminNav;
+
+  const navigationGroups: NavGroup[] = [
+    {
+      title: t.groups.overview,
+      items: [
+        { title: t.items.dashboard, href: '/admin/dashboard', icon: LayoutDashboard },
+        { title: t.items.analytics, href: '/admin/dashboard?tab=analytics', icon: BarChart3 },
+      ],
+    },
+    {
+      title: t.groups.management,
+      items: [
+        { title: t.items.users, href: '/admin/dashboard?tab=users', icon: Users },
+        { title: t.items.trades, href: '/admin/dashboard?tab=trades', icon: ShoppingCart },
+        { title: t.items.payouts, href: '/admin/dashboard?tab=payouts', icon: CreditCard, badge: 5, badgeVariant: 'destructive' as const },
+        { title: t.items.kyc, href: '/admin/dashboard?tab=kyc', icon: Shield, badge: 3, badgeVariant: 'destructive' as const },
+      ],
+    },
+    {
+      title: t.groups.affiliation,
+      items: [
+        { title: t.items.affiliates, href: '/admin/dashboard?tab=affiliates', icon: UserCheck },
+        { title: t.items.commissions, href: '/admin/dashboard?tab=commissions', icon: Percent },
+        { title: t.items.performance, href: '/admin/dashboard?tab=affiliate-performance', icon: TrendingUp },
+      ],
+    },
+    {
+      title: t.groups.marketing,
+      items: [
+        { title: t.items.giveaways, href: '/admin/giveaways', icon: Gift },
+        { title: t.items.newsletter, href: '/admin/newsletter', icon: Mail },
+      ],
+    },
+    {
+      title: t.groups.communication,
+      items: [
+        { title: t.items.chatSupport, href: '/admin/chat', icon: MessageSquare, badge: 'NEW', badgeVariant: 'secondary' as const },
+      ],
+    },
+    {
+      title: t.groups.content,
+      items: [
+        { title: t.items.legalPages, href: '/admin/legal-pages', icon: FileText },
+      ],
+    },
+    {
+      title: t.groups.system,
+      items: [
+        { title: t.items.audit, href: '/admin/audit', icon: Activity },
+        { title: t.items.exports, href: '/admin/dashboard?tab=exports', icon: FileDown },
+        { title: t.items.settings, href: '/admin/settings', icon: Settings },
+      ],
+    },
+  ];
 
   const isActive = (href: string) => {
     if (href.includes('?tab=')) {
@@ -220,7 +166,7 @@ export function AdminMobileNav() {
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-white">CashTrade</h2>
-                  <p className="text-xs text-slate-400">Admin Panel</p>
+                  <p className="text-xs text-slate-400">{t.header.adminPanel}</p>
                 </div>
               </div>
               <Button
@@ -315,7 +261,7 @@ export function AdminMobileNav() {
                 <Link href="/" onClick={closeMenu}>
                   <Button variant="outline" className="w-full justify-start gap-2 border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white">
                     <Home className="h-4 w-4" />
-                    Retour au Site
+                    {t.footer.backToSite}
                   </Button>
                 </Link>
                 <Button
@@ -327,17 +273,17 @@ export function AdminMobileNav() {
                   }}
                 >
                   <LogOut className="h-4 w-4" />
-                  Déconnexion
+                  {t.footer.logout}
                 </Button>
               </div>
               
               {/* Status */}
               <div className="mt-4 rounded-lg border border-slate-700 bg-slate-800/50 p-3">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Système</span>
+                  <span className="text-slate-400">{t.footer.system}</span>
                   <Badge variant="secondary" className="h-5 text-xs">
                     <div className="mr-1 h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
-                    En ligne
+                    {t.footer.online}
                   </Badge>
                 </div>
               </div>

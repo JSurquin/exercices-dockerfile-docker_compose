@@ -77,6 +77,8 @@ export interface Messages {
     language: string;
     lightMode: string;
     darkMode: string;
+    affiliation: string;
+    moderation: string;
   };
   user: {
     level: string;
@@ -413,6 +415,14 @@ export interface Messages {
     verified: string;
     pending: string;
     startKyc: string;
+    current: string;
+    conversionError: string;
+    personalData: string;
+  };
+  currencies: {
+    usd: string;
+    eur: string;
+    cny: string;
   };
   toast: {
     itemsLoadedSuccess: string;
@@ -421,6 +431,20 @@ export interface Messages {
     tradeCreationError: string;
     settingsSavedSuccess: string;
     steamLoginSuccess: string;
+    steamLoginInProgress: string;
+    steamLoginInProgressDesc: string;
+    steamLoginError: string;
+    steamLoginErrorDesc: string;
+    discordLoginSuccess: string;
+    discordLoginSuccessDesc: string;
+    discordLoginInProgress: string;
+    discordLoginInProgressDesc: string;
+    discordLoginError: string;
+    discordLoginErrorDesc: string;
+    logoutSuccess: string;
+    logoutSuccessDesc: string;
+    logoutError: string;
+    logoutErrorDesc: string;
     settingsSaveError: string;
     invalidTradeLink: string;
     uploaded: string;
@@ -576,6 +600,7 @@ export interface Messages {
       content: string;
     };
     tableOfContents: string;
+    warningText: string;
     sections: {
       acceptance: {
         title: string;
@@ -918,6 +943,55 @@ export interface Messages {
     };
     loginDescription: string;
     saveError: string;
+    tradeLink: {
+      title: string;
+      configured: string;
+      howToGetTitle: string;
+      instructions: string[];
+      openSteam: string;
+      copyExample: string;
+      urlLabel: string;
+      hideInstructions: string;
+      showInstructions: string;
+      invalidFormat: string;
+      invalidFormatDesc: string;
+      validFormat: string;
+      currentTradeLink: string;
+      saving: string;
+      save: string;
+      clear: string;
+      savedSuccess: string;
+      saveError: string;
+      copiedToClipboard: string;
+      warningTitle: string;
+      warningText: string;
+    };
+    steamId: {
+      title: string;
+      configured: string;
+      howToGetTitle: string;
+      method1Title: string;
+      method1Steps: string[];
+      method2Title: string;
+      method2Desc: string;
+      findSteamId: string;
+      copyExample: string;
+      label: string;
+      hideInstructions: string;
+      showInstructions: string;
+      invalidFormat: string;
+      invalidFormatDesc: string;
+      validFormat: string;
+      currentSteamId: string;
+      saving: string;
+      save: string;
+      clear: string;
+      savedSuccess: string;
+      saveError: string;
+      copiedToClipboard: string;
+      whyTitle: string;
+      whyText: string;
+    };
   };
   admin: {
     title: string;
@@ -3172,4 +3246,298 @@ export interface Messages {
       };
     };
   };
+  paymentComponents: {
+      methodSelector: {
+        title: string;
+        description: string;
+        sepa: {
+          title: string;
+          description: string;
+          delay: string;
+          fees: string;
+        };
+        crypto: {
+          title: string;
+          description: string;
+          delay: string;
+          fees: string;
+        };
+      };
+      kyc: {
+        title: string;
+        description: string;
+        status: {
+          verified: string;
+          rejected: string;
+          pending: string;
+        };
+        identityVerified: string;
+        identityVerifiedDesc: string;
+        verificationPending: string;
+        verificationPendingDesc: string;
+        verificationRejected: string;
+        verificationRejectedDesc: string;
+        whyKyc: string;
+        whyKycDesc: string;
+        requiredDocuments: string;
+        document1: string;
+        document2: string;
+        document3: string;
+        restartVerification: string;
+        startVerification: string;
+        refreshStatus: string;
+      };
+      sepaForm: {
+        title: string;
+        description: string;
+        amountToReceive: string;
+        getQuote: string;
+        quoteDetails: string;
+        grossAmount: string;
+        processingFees: string;
+        networkFees: string;
+        netAmount: string;
+        redirectInfo: string;
+        continuePayment: string;
+      };
+      cryptoForm: {
+        title: string;
+        description: string;
+        selectCrypto: string;
+        selectCryptoPlaceholder: string;
+        walletAddress: string;
+        walletWarning: string;
+        equivalentAmount: string;
+        getQuote: string;
+        quoteDetails: string;
+        amountEur: string;
+        exchangeRate: string;
+        networkFees: string;
+        youWillReceive: string;
+        transferInfo: string;
+        continuePayment: string;
+      };
+      statusTracker: {
+        title: string;
+        sepaTransfer: string;
+        cryptoPayment: string;
+        status: {
+          completed: string;
+          failed: string;
+          inProgress: string;
+        };
+        steps: {
+          pending: { label: string; description: string };
+          verificationRequired: { label: string; description: string };
+          verified: { label: string; description: string };
+          processing: { label: string; description: string };
+          paid: { label: string; description: string };
+          sent: { label: string; description: string };
+        };
+        refreshing: string;
+        transactionDetails: string;
+        cryptoAmount: string;
+        fiatAmount: string;
+        transaction: string;
+      };
+      gatefiWidget: {
+        title: string;
+      };
+    };
+    legalPage: {
+      pageNotAvailable: string;
+      pageNotAvailableDesc: string;
+      lastUpdated: string;
+      importantNotice: string;
+      questions: string;
+      teamAvailable: string;
+    };
+    helpPage: {
+      browseByCategory: string;
+      supportOptions: {
+        liveChat: {
+          title: string;
+          description: string;
+          availability: string;
+          responseTime: string;
+        };
+        ticket: {
+          title: string;
+          description: string;
+          availability: string;
+          responseTime: string;
+        };
+        phone: {
+          title: string;
+          description: string;
+          availability: string;
+          responseTime: string;
+        };
+      };
+      response: string;
+      contactSupport: string;
+      cantFindAnswer: string;
+      teamAvailable247: string;
+      liveChat: string;
+      createTicket: string;
+      supportOnline: string;
+      avgResponseTime: string;
+      articles: {
+        gettingStarted: {
+          createAccount: string;
+          steamConnection: string;
+          kycStepByStep: string;
+          firstTrade: string;
+        };
+        trading: {
+          howToSell: string;
+          priceEstimation: string;
+          tradeHold: string;
+          fees: string;
+        };
+        payments: {
+          methods: string;
+          delays: string;
+          ibanVerification: string;
+          paymentIssue: string;
+        };
+        security: {
+          secureAccount: string;
+          accountSuspended: string;
+          reportSuspicious: string;
+          accountRecovery: string;
+        };
+        technical: {
+          siteNotLoading: string;
+          steamTradeError: string;
+          steamConnectionIssue: string;
+          buggyInterface: string;
+        };
+      };
+      popularArticles: {
+        sellGuide: string;
+        kycGuide: string;
+        feesGuide: string;
+      };
+    };
+    contactPage: {
+      sendMessage: string;
+      fullName: string;
+      fullNamePlaceholder: string;
+      email: string;
+      emailPlaceholder: string;
+      department: string;
+      departmentPlaceholder: string;
+      priority: string;
+      priorityPlaceholder: string;
+      priorities: {
+        low: string;
+        medium: string;
+        high: string;
+        urgent: string;
+      };
+      subject: string;
+      subjectPlaceholder: string;
+      message: string;
+      messagePlaceholder: string;
+      privacyConsent: string;
+      privacyPolicy: string;
+      sendButton: string;
+      contactMethods: string;
+      response: string;
+      departments: string;
+      supportHours: string;
+      offices: string;
+      companyInfo: string;
+      onlineStatus: string;
+      methods: {
+        liveChat: {
+          title: string;
+          description: string;
+          availability: string;
+          responseTime: string;
+          action: string;
+        };
+        email: {
+          title: string;
+          description: string;
+          availability: string;
+          responseTime: string;
+        };
+        phone: {
+          title: string;
+          description: string;
+          availability: string;
+          responseTime: string;
+        };
+      };
+      departmentsList: {
+        technical: {
+          name: string;
+          description: string;
+        };
+        security: {
+          name: string;
+          description: string;
+        };
+        compliance: {
+          name: string;
+          description: string;
+        };
+        partnerships: {
+          name: string;
+          description: string;
+        };
+        press: {
+          name: string;
+          description: string;
+        };
+      };
+      schedule: {
+        weekdays: { day: string; hours: string; type: string };
+        weekends: { day: string; hours: string; type: string };
+        always: { day: string; hours: string; type: string };
+      };
+    };
+    adminNav: {
+      groups: {
+        overview: string;
+        management: string;
+        affiliation: string;
+        marketing: string;
+        communication: string;
+        content: string;
+        system: string;
+      };
+      items: {
+        dashboard: string;
+        analytics: string;
+        users: string;
+        trades: string;
+        payouts: string;
+        kyc: string;
+        applications: string;
+        affiliates: string;
+        commissions: string;
+        performance: string;
+        giveaways: string;
+        newsletter: string;
+        chatSupport: string;
+        legalPages: string;
+        audit: string;
+        exports: string;
+        settings: string;
+      };
+      header: {
+        adminPanel: string;
+      };
+      footer: {
+        backToSite: string;
+        logout: string;
+        systemStatus: string;
+        system: string;
+        online: string;
+        uptime: string;
+      };
+    };
 }
