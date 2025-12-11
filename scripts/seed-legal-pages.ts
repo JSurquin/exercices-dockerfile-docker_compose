@@ -775,15 +775,28 @@ Avoidance of international restrictive measures.
   },
 ];
 
-async function seedLegalPages() {
+async function seedLegalPages(forceReset: boolean = false) {
   console.log('🌱 Seeding legal pages...');
+  
+  if (forceReset) {
+    console.log('  🔄 Force reset enabled - deleting existing pages...');
+    // Supprimer toutes les pages existantes (l'historique est conservé)
+    await prisma.legalPage.deleteMany({
+      where: {
+        slug: {
+          in: defaultLegalPages.map(p => p.slug)
+        }
+      }
+    });
+    console.log('  🗑️  Existing pages deleted');
+  }
 
   for (const page of defaultLegalPages) {
     const existing = await prisma.legalPage.findUnique({
       where: { slug: page.slug },
     });
 
-    if (existing) {
+    if (existing && !forceReset) {
       console.log(`  ⏭️  Page "${page.slug}" already exists, skipping...`);
       continue;
     }
@@ -804,11 +817,13 @@ async function seedLegalPages() {
           legalPageSlug: createdPage.slug,
           titleFr: createdPage.titleFr,
           titleEn: createdPage.titleEn,
+          titleCn: createdPage.titleCn,
           contentFr: createdPage.contentFr,
           contentEn: createdPage.contentEn,
+          contentCn: createdPage.contentCn,
           version: createdPage.version,
           changedBy: 'system',
-          changeReason: 'Création initiale (seed)',
+          changeReason: forceReset ? 'Reset (seed --force)' : 'Création initiale (seed)',
         },
       });
     }
@@ -819,7 +834,15 @@ async function seedLegalPages() {
   console.log('✨ Legal pages seeding completed!');
 }
 
-seedLegalPages()
+// Vérifier les arguments de ligne de commande
+const args = process.argv.slice(2);
+const forceReset = args.includes('--force') || args.includes('-f');
+
+if (forceReset) {
+  console.log('⚠️  Running with --force flag: existing pages will be reset!');
+}
+
+seedLegalPages(forceReset)
   .catch((e) => {
     console.error('❌ Error seeding legal pages:', e);
     process.exit(1);
