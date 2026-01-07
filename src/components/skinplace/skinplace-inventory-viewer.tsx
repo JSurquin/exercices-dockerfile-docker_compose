@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useSkinplaceInventory, NormalizedInventoryItem } from '@/hooks/use-skinplace-inventory';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -19,7 +19,10 @@ import {
   AlertCircle, 
   Filter,
   TrendingUp,
-  Star
+  Star,
+  ExternalLink,
+  User,
+  Edit
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLocale } from '@/components/providers/locale-provider';
@@ -31,12 +34,16 @@ interface SkinplaceInventoryViewerProps {
   steamId64: string;
   onItemSelect?: (items: NormalizedInventoryItem[]) => void;
   selectable?: boolean;
+  allowSteamIdChange?: boolean;
+  onSteamIdChange?: (newSteamId: string) => void;
 }
 
 export function SkinplaceInventoryViewer({ 
   steamId64, 
   onItemSelect, 
-  selectable = false 
+  selectable = false,
+  allowSteamIdChange = false,
+  onSteamIdChange
 }: SkinplaceInventoryViewerProps) {
   const { messages } = useLocale();
   const { selectedCurrency } = useCurrency();
@@ -45,6 +52,11 @@ export function SkinplaceInventoryViewer({
   const [inventory, setInventory] = useState<NormalizedInventoryItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<NormalizedInventoryItem[]>([]);
   const [convertedSelectedValue, setConvertedSelectedValue] = useState<string>('');
+  
+  // Steam ID change functionality
+  const [showSteamIdInput, setShowSteamIdInput] = useState(false);
+  const [customSteamId, setCustomSteamId] = useState(steamId64);
+  const [currentSteamId, setCurrentSteamId] = useState(steamId64);
   
   // Filtres
   const [selectedRarity, setSelectedRarity] = useState<string>('');
@@ -75,14 +87,45 @@ export function SkinplaceInventoryViewer({
     },
   });
 
-  const loadInventory = async () => {
-    console.log('Chargement inventaire Skin.place pour:', steamId64);
-    const result = await getSkinplaceInventory(steamId64);
+  const loadInventory = async (steamIdToLoad?: string) => {
+    const idToUse = steamIdToLoad || currentSteamId;
+    console.log('Chargement inventaire Skin.place pour:', idToUse);
+    const result = await getSkinplaceInventory(idToUse);
     
     if (result?.success && result.items) {
       setInventory(result.items);
       console.log(`Inventaire chargé: ${result.items.length} items, ${result.tradable_count} tradables`);
     }
+  };
+
+  // Validate Steam ID format
+  const validateSteamId64 = (id: string): boolean => {
+    const steamId64Regex = /^7656119[0-9]{10}$/;
+    return steamId64Regex.test(id);
+  };
+
+  // Handle Steam ID change
+  const handleSteamIdChange = () => {
+    if (!validateSteamId64(customSteamId)) {
+      toast.error(messages.settings?.steamId?.invalidFormat || 'Format Steam ID invalide');
+      return;
+    }
+    
+    setCurrentSteamId(customSteamId);
+    setShowSteamIdInput(false);
+    setSelectedItems([]); // Reset selection when changing Steam ID
+    onSteamIdChange?.(customSteamId);
+    loadInventory(customSteamId);
+  };
+
+  // Reset to original Steam ID
+  const handleResetSteamId = () => {
+    setCustomSteamId(steamId64);
+    setCurrentSteamId(steamId64);
+    setShowSteamIdInput(false);
+    setSelectedItems([]);
+    onSteamIdChange?.(steamId64);
+    loadInventory(steamId64);
   };
 
   // Appliquer les filtres
@@ -127,9 +170,19 @@ export function SkinplaceInventoryViewer({
   }, [inventory, searchTerm, selectedRarity, selectedExterior, statTrakOnly, sortBy, filterBySearch, filterByRarity, filterByExterior, filterByStatTrak, filterTradableItems, sortItemsByValue, sortItemsByRarity]);
 
   useEffect(() => {
-    if (steamId64) {
-      loadInventory();
+    if (currentSteamId) {
+      loadInventory(currentSteamId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSteamId]);
+
+  // Sync when steamId64 prop changes
+  useEffect(() => {
+    if (steamId64 !== currentSteamId && !showSteamIdInput) {
+      setCurrentSteamId(steamId64);
+      setCustomSteamId(steamId64);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [steamId64]);
 
   const stats = calculateInventoryStats(inventory);
@@ -200,32 +253,204 @@ export function SkinplaceInventoryViewer({
   }
 
   if (error) {
+    const isPrivateError = error === 'Inventaire privé ou inaccessible';
+    const isNotFoundError = error.includes('introuvable') || error.includes('not found');
+    
     return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          {error === 'Inventaire privé ou inaccessible' ? (
-            <>
-              {messages.components.skinplace.inventoryPrivate} 
-              <a 
-                href="https://steamcommunity.com/my/edit/settings" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="underline ml-1"
+      <Card className="border-destructive/50 bg-destructive/5">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-full bg-destructive/10">
+              <AlertCircle className="h-6 w-6 text-destructive" />
+            </div>
+            <div>
+              <CardTitle className="text-lg text-destructive">
+                {isPrivateError 
+                  ? (messages.components?.skinplace?.inventoryPrivate || 'Inventaire privé') 
+                  : isNotFoundError 
+                    ? 'Steam ID introuvable'
+                    : (messages.components?.skinplace?.error || 'Erreur')}
+              </CardTitle>
+              <CardDescription className="text-destructive/80">
+                {isPrivateError 
+                  ? 'Votre inventaire Steam doit être public pour être chargé'
+                  : isNotFoundError
+                    ? 'Le Steam ID spécifié ne correspond à aucun compte'
+                    : error}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Solutions proposées */}
+          <div className="space-y-3">
+            {isPrivateError && (
+              <div className="bg-background rounded-lg p-4 border">
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">1</span>
+                  Rendez votre inventaire public
+                </h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Allez dans les paramètres de confidentialité Steam et définissez votre inventaire comme &quot;Public&quot;.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open('https://steamcommunity.com/my/edit/settings', '_blank')}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Ouvrir les paramètres Steam
+                </Button>
+              </div>
+            )}
+            
+            {(isPrivateError || isNotFoundError) && allowSteamIdChange && (
+              <div className="bg-background rounded-lg p-4 border">
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
+                    {isPrivateError ? '2' : '1'}
+                  </span>
+                  Essayer un autre Steam ID
+                </h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Si vous avez plusieurs comptes Steam, vous pouvez charger l&apos;inventaire d&apos;un autre compte.
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="76561198123456789"
+                    value={customSteamId}
+                    onChange={(e) => setCustomSteamId(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={handleSteamIdChange}
+                    disabled={!customSteamId || customSteamId === currentSteamId}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Charger
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            <div className="bg-background rounded-lg p-4 border">
+              <h4 className="font-medium mb-2 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
+                  {isPrivateError && allowSteamIdChange ? '3' : isNotFoundError && allowSteamIdChange ? '2' : '1'}
+                </span>
+                Réessayer
+              </h4>
+              <p className="text-sm text-muted-foreground mb-3">
+                Parfois Steam peut être temporairement indisponible. Essayez de recharger.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => loadInventory(currentSteamId)}
+                disabled={loading}
               >
-                {messages.components.skinplace.makePublic}
-              </a>
-            </>
-          ) : (
-            `${messages.components.skinplace.error} ${error}`
-          )}
-        </AlertDescription>
-      </Alert>
+                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                {loading ? 'Chargement...' : 'Réessayer'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Info Steam ID actuel */}
+          <div className="flex items-center gap-2 pt-2 border-t text-sm text-muted-foreground">
+            <User className="h-4 w-4" />
+            <span>Steam ID utilisé: <code className="bg-muted px-1 rounded">{currentSteamId}</code></span>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
     <div className="space-y-6 pb-24">
+
+      {/* Header avec option de changer le Steam ID */}
+      {allowSteamIdChange && (
+        <Card className="bg-muted/30">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-primary/10">
+                  <User className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Inventaire chargé pour</p>
+                  <p className="font-mono text-sm font-medium">{currentSteamId}</p>
+                </div>
+                {currentSteamId !== steamId64 && (
+                  <Badge variant="secondary" className="ml-2">
+                    Compte secondaire
+                  </Badge>
+                )}
+              </div>
+              
+              {!showSteamIdInput ? (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowSteamIdInput(true)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Changer de compte
+                  </Button>
+                  {currentSteamId !== steamId64 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleResetSteamId}
+                    >
+                      Réinitialiser
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="flex gap-2 items-center w-full sm:w-auto">
+                  <Input
+                    placeholder="76561198123456789"
+                    value={customSteamId}
+                    onChange={(e) => setCustomSteamId(e.target.value)}
+                    className={`flex-1 sm:w-64 ${
+                      customSteamId && !validateSteamId64(customSteamId) 
+                        ? 'border-destructive focus-visible:ring-destructive' 
+                        : customSteamId && validateSteamId64(customSteamId)
+                          ? 'border-green-500 focus-visible:ring-green-500'
+                          : ''
+                    }`}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleSteamIdChange}
+                    disabled={!customSteamId || !validateSteamId64(customSteamId)}
+                  >
+                    Charger
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowSteamIdInput(false);
+                      setCustomSteamId(currentSteamId);
+                    }}
+                  >
+                    Annuler
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            {showSteamIdInput && customSteamId && !validateSteamId64(customSteamId) && (
+              <p className="text-xs text-destructive mt-2">
+                Le Steam ID doit être au format 64-bit (commence par 7656119 suivi de 10 chiffres)
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Statistiques de l'inventaire */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -305,7 +530,7 @@ export function SkinplaceInventoryViewer({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={loadInventory}
+                onClick={() => loadInventory(currentSteamId)}
                 disabled={loading}
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
