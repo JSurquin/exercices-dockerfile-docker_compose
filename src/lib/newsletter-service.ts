@@ -1,5 +1,15 @@
 import nodemailer from 'nodemailer';
 import { PrismaClient } from '@prisma/client';
+import {
+  EmailTemplateConfig,
+  EmailTemplateVariables,
+  renderTemplate,
+  renderSubject,
+  getTemplateById,
+  platformWelcomeTemplate,
+  tradeCreatedTemplate,
+  newsletterWelcomeTemplate,
+} from './email-templates';
 
 const prisma = new PrismaClient();
 
@@ -21,6 +31,15 @@ export interface EmailTemplate {
   text: string;
   html?: string;
 }
+
+// Re-export template utilities for convenience
+export { 
+  getTemplateById, 
+  renderTemplate, 
+  renderSubject,
+  type EmailTemplateConfig,
+  type EmailTemplateVariables 
+} from './email-templates';
 
 export class NewsletterService {
   private transporter;
@@ -202,89 +221,17 @@ export class NewsletterService {
 
   // Envoyer un email de bienvenue pour l'inscription à la plateforme
   async sendPlatformWelcomeEmail(email: string, username: string, steamUsername?: string) {
+    const variables: EmailTemplateVariables = {
+      username,
+      email,
+      steamUsername: steamUsername || username,
+      baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://cashtrade.com',
+    };
+
     const template: EmailTemplate = {
-      subject: '🎮 Bienvenue sur CashTrade - Votre compte est créé !',
-      text: `
-Bienvenue sur CashTrade, ${username} !
-
-Félicitations ! Votre compte a été créé avec succès sur notre plateforme de trading CS2.
-
-🎯 Prochaines étapes :
-1. Connectez votre compte Steam pour accéder à votre inventaire
-2. Explorez nos fonctionnalités de trading
-3. Découvrez nos giveaways exclusifs
-4. Participez à notre programme d'affiliation
-
-🔒 Sécurité :
-- Votre compte est protégé par notre système de sécurité avancé
-- Nous ne demandons jamais vos mots de passe Steam
-- Toutes les transactions sont sécurisées
-
-💰 Avantages :
-- Estimations en temps réel de vos skins
-- Paiements rapides et sécurisés
-- Support client 24/7
-- Commissions compétitives
-
-Merci de nous faire confiance pour vos trades CS2 !
-
-L'équipe CashTrade
-      `,
-      html: `
-        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-          <div style="background: linear-gradient(135deg, #f97316 0%, #dc2626 100%); padding: 40px; text-align: center; color: white;">
-            <h1 style="margin: 0; font-size: 28px;">🎮 Bienvenue sur CashTrade !</h1>
-            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Votre compte ${steamUsername ? `(${steamUsername})` : ''} est créé</p>
-          </div>
-          
-          <div style="padding: 40px; background: #f8fafc;">
-            <h2 style="color: #1e293b; margin-bottom: 20px;">Félicitations ${username} ! 🎉</h2>
-            
-            <p style="color: #475569; line-height: 1.6; margin-bottom: 20px;">
-              Votre compte a été créé avec succès sur notre plateforme de trading CS2.
-            </p>
-            
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-              <h3 style="color: #f97316; margin-bottom: 15px;">🎯 Prochaines étapes :</h3>
-              <ul style="color: #475569; line-height: 1.8; margin: 0; padding-left: 20px;">
-                <li>Connectez votre compte Steam pour accéder à votre inventaire</li>
-                <li>Explorez nos fonctionnalités de trading</li>
-                <li>Découvrez nos giveaways exclusifs</li>
-                <li>Participez à notre programme d'affiliation</li>
-              </ul>
-            </div>
-            
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-              <h3 style="color: #10b981; margin-bottom: 15px;">🔒 Sécurité :</h3>
-              <ul style="color: #475569; line-height: 1.8; margin: 0; padding-left: 20px;">
-                <li>Votre compte est protégé par notre système de sécurité avancé</li>
-                <li>Nous ne demandons jamais vos mots de passe Steam</li>
-                <li>Toutes les transactions sont sécurisées</li>
-              </ul>
-            </div>
-            
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-              <h3 style="color: #3b82f6; margin-bottom: 15px;">💰 Avantages :</h3>
-              <ul style="color: #475569; line-height: 1.8; margin: 0; padding-left: 20px;">
-                <li>Estimations en temps réel de vos skins</li>
-                <li>Paiements rapides et sécurisés</li>
-                <li>Support client 24/7</li>
-                <li>Commissions compétitives</li>
-              </ul>
-            </div>
-            
-            <div style="background: linear-gradient(135deg, #1e293b, #334155); color: white; padding: 20px; border-radius: 8px; text-align: center;">
-              <p style="margin: 0; font-weight: 600;">
-                Merci de nous faire confiance pour vos trades CS2 ! 🚀
-              </p>
-            </div>
-            
-            <p style="color: #64748b; margin-top: 30px; text-align: center;">
-              L'équipe CashTrade
-            </p>
-          </div>
-        </div>
-      `
+      subject: renderSubject(platformWelcomeTemplate, variables),
+      text: renderTemplate(platformWelcomeTemplate, variables, 'text'),
+      html: renderTemplate(platformWelcomeTemplate, variables, 'html'),
     };
 
     return this.sendEmail(email, template);
@@ -309,103 +256,20 @@ L'équipe CashTrade
       minute: '2-digit'
     });
 
+    const variables: EmailTemplateVariables = {
+      username,
+      tradeId: tradeData.tradeId,
+      itemsCount: tradeData.itemsCount,
+      grossValue: grossEuros,
+      netValue: netEuros,
+      availableDate,
+      baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://cashtrade.com',
+    };
+
     const template: EmailTemplate = {
-      subject: `🎯 Trade créé avec succès - ${tradeData.tradeId}`,
-      text: `
-Bonjour ${username},
-
-Votre trade a été créé avec succès !
-
-📋 Détails du trade :
-- ID du trade : ${tradeData.tradeId}
-- Nombre d'items : ${tradeData.itemsCount}
-- Valeur brute : ${grossEuros}€
-- Valeur nette : ${netEuros}€
-- Disponible le : ${availableDate}
-
-⏳ Prochaines étapes :
-1. Notre bot va accepter votre trade automatiquement
-2. Période de trade hold Steam (7 jours)
-3. Paiement automatique dès que les items sont disponibles
-
-🔍 Suivi :
-Vous pouvez suivre l'état de votre trade en temps réel sur votre dashboard.
-
-Merci de votre confiance !
-
-L'équipe CashTrade
-      `,
-      html: `
-        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px; text-align: center; color: white;">
-            <h1 style="margin: 0; font-size: 28px;">🎯 Trade créé avec succès !</h1>
-            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">${tradeData.tradeId}</p>
-          </div>
-          
-          <div style="padding: 40px; background: #f8fafc;">
-            <h2 style="color: #1e293b; margin-bottom: 20px;">Bonjour ${username} ! 👋</h2>
-            
-            <p style="color: #475569; line-height: 1.6; margin-bottom: 30px;">
-              Votre trade a été créé avec succès et est maintenant en cours de traitement.
-            </p>
-            
-            <div style="background: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 4px solid #10b981;">
-              <h3 style="color: #10b981; margin-bottom: 20px; margin-top: 0;">📋 Détails du trade</h3>
-              <div style="display: grid; gap: 10px;">
-                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
-                  <span style="color: #6b7280; font-weight: 500;">ID du trade :</span>
-                  <span style="color: #1f2937; font-weight: 600; font-family: monospace;">${tradeData.tradeId}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
-                  <span style="color: #6b7280; font-weight: 500;">Nombre d'items :</span>
-                  <span style="color: #1f2937; font-weight: 600;">${tradeData.itemsCount}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
-                  <span style="color: #6b7280; font-weight: 500;">Valeur brute :</span>
-                  <span style="color: #1f2937; font-weight: 600;">${grossEuros}€</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
-                  <span style="color: #6b7280; font-weight: 500;">Valeur nette :</span>
-                  <span style="color: #10b981; font-weight: 700; font-size: 18px;">${netEuros}€</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-                  <span style="color: #6b7280; font-weight: 500;">Disponible le :</span>
-                  <span style="color: #1f2937; font-weight: 600;">${availableDate}</span>
-                </div>
-              </div>
-            </div>
-            
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
-              <h3 style="color: #f97316; margin-bottom: 15px; margin-top: 0;">⏳ Prochaines étapes :</h3>
-              <div style="color: #475569; line-height: 1.8;">
-                <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                  <span style="background: #10b981; color: white; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 12px; font-weight: bold;">1</span>
-                  Notre bot va accepter votre trade automatiquement
-                </div>
-                <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                  <span style="background: #f97316; color: white; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 12px; font-weight: bold;">2</span>
-                  Période de trade hold Steam (7 jours)
-                </div>
-                <div style="display: flex; align-items: center;">
-                  <span style="background: #3b82f6; color: white; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 12px; font-weight: bold;">3</span>
-                  Paiement automatique dès que les items sont disponibles
-                </div>
-              </div>
-            </div>
-            
-            <div style="background: #dbeafe; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 30px;">
-              <p style="margin: 0; color: #1e40af; font-weight: 600;">
-                🔍 Vous pouvez suivre l'état de votre trade en temps réel sur votre dashboard.
-              </p>
-            </div>
-            
-            <div style="text-align: center;">
-              <p style="color: #64748b; margin-bottom: 10px;">Merci de votre confiance !</p>
-              <p style="color: #1f2937; font-weight: 600;">L'équipe CashTrade</p>
-            </div>
-          </div>
-        </div>
-      `
+      subject: renderSubject(tradeCreatedTemplate, variables),
+      text: renderTemplate(tradeCreatedTemplate, variables, 'text'),
+      html: renderTemplate(tradeCreatedTemplate, variables, 'html'),
     };
 
     return this.sendEmail(email, template);
@@ -413,54 +277,36 @@ L'équipe CashTrade
 
   // Envoyer un email de bienvenue newsletter
   async sendWelcomeEmail(email: string, unsubscribeToken: string) {
+    const variables: EmailTemplateVariables = {
+      baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://cashtrade.com',
+    };
+
     const template: EmailTemplate = {
-      subject: '🎮 Bienvenue sur CashTrade - Votre inscription est confirmée !',
-      text: `
-Bienvenue sur CashTrade !
+      subject: renderSubject(newsletterWelcomeTemplate, variables),
+      text: renderTemplate(newsletterWelcomeTemplate, variables, 'text'),
+      html: renderTemplate(newsletterWelcomeTemplate, variables, 'html'),
+    };
 
-Merci de vous être abonné à notre newsletter. Vous recevrez désormais :
-- Les dernières actualités CS2
-- Nos offres exclusives
-- Les annonces de nouveaux giveaways
-- Les mises à jour importantes de la plateforme
+    return this.sendEmail(email, template, unsubscribeToken);
+  }
 
-Nous sommes ravis de vous compter parmi notre communauté !
+  // Envoyer un email avec un template personnalisé
+  async sendTemplatedEmail(
+    email: string, 
+    templateId: string, 
+    variables: EmailTemplateVariables,
+    unsubscribeToken?: string
+  ) {
+    const templateConfig = getTemplateById(templateId);
+    
+    if (!templateConfig) {
+      throw new Error(`Template not found: ${templateId}`);
+    }
 
-L'équipe CashTrade
-      `,
-      html: `
-        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-          <div style="background: linear-gradient(135deg, #f97316 0%, #dc2626 100%); padding: 40px; text-align: center; color: white;">
-            <h1 style="margin: 0; font-size: 28px;">🎮 Bienvenue sur CashTrade !</h1>
-            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Votre inscription est confirmée</p>
-          </div>
-          
-          <div style="padding: 40px; background: #f8fafc;">
-            <h2 style="color: #1e293b; margin-bottom: 20px;">Merci de vous être abonné !</h2>
-            
-            <p style="color: #475569; line-height: 1.6; margin-bottom: 20px;">
-              Vous recevrez désormais en exclusivité :
-            </p>
-            
-            <ul style="color: #475569; line-height: 1.8; margin-bottom: 30px;">
-              <li>🎯 Les dernières actualités CS2</li>
-              <li>💰 Nos offres exclusives</li>
-              <li>🎁 Les annonces de nouveaux giveaways</li>
-              <li>📢 Les mises à jour importantes de la plateforme</li>
-            </ul>
-            
-            <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #f97316;">
-              <p style="margin: 0; color: #1e293b; font-weight: 600;">
-                Nous sommes ravis de vous compter parmi notre communauté !
-              </p>
-            </div>
-            
-            <p style="color: #64748b; margin-top: 30px; text-align: center;">
-              L'équipe CashTrade
-            </p>
-          </div>
-        </div>
-      `,
+    const template: EmailTemplate = {
+      subject: renderSubject(templateConfig, variables),
+      text: renderTemplate(templateConfig, variables, 'text'),
+      html: renderTemplate(templateConfig, variables, 'html'),
     };
 
     return this.sendEmail(email, template, unsubscribeToken);

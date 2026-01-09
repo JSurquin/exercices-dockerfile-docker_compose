@@ -39,6 +39,7 @@ export default function SellPage() {
     fees: { cashout_fee: number; network_fee: number };
     expires_at: Date;
   } | null>(null);
+  const [activeSteamId, setActiveSteamId] = useState(user?.steamId64 || '');
 
   const handleItemSelect = (items: NormalizedInventoryItem[]) => {
     setSelectedItems(items);
@@ -162,12 +163,14 @@ export default function SellPage() {
               steamId64={user.steamId64}
               onItemSelect={handleItemSelect}
               selectable={true}
+              allowSteamIdChange={true}
+              onSteamIdChange={(newId) => setActiveSteamId(newId)}
             />
           )}
 
           {currentStep === 1 && (
             <SkinplaceTradeCreator
-              steamId64={user.steamId64}
+              steamId64={activeSteamId || user.steamId64}
               selectedItems={selectedItems}
               onTradeCreated={handleTradeCreated}
             />
