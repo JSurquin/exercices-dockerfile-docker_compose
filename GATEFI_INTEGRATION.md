@@ -449,7 +449,7 @@ Pour toute question ou problème :
 
 - **Documentation GateFi** : https://docs.gatefi.com
 - **Documentation Sumsub** : https://developers.sumsub.com
-- **Support technique** : tech@cashtrade.com
+- **Support technique** : tech@moonskin.com
 
 ---
 

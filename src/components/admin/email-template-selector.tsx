@@ -186,7 +186,7 @@ export function EmailTemplateSelector({ selectedTemplate, onTemplateSelect }: Em
                               .replace(/\{\{topGainers\}\}/g, '<p>• AK-47 Redline: +15%<br>• M4A4 Howl: +12%</p>')
                               .replace(/\{\{topLosers\}\}/g, '<p>• Karambit Fade: -8%<br>• Butterfly Knife: -5%</p>')
                               .replace(/\{\{marketAnalysis\}\}/g, 'Le marché montre une tendance haussière cette semaine...')
-                              .replace(/\{\{baseUrl\}\}/g, 'https://cashtrade.com')
+                              .replace(/\{\{baseUrl\}\}/g, 'https://moonskin.com')
                           }} 
                         />
                       </div>

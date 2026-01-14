@@ -106,7 +106,7 @@ SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 SMTP_FROM_NAME=CashTrade
-SMTP_FROM_EMAIL=noreply@cashtrade.com
+SMTP_FROM_EMAIL=noreply@moonskin.com
 ```
 
 ### Configuration Gmail

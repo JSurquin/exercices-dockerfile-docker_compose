@@ -220,7 +220,7 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
                 <div className="flex flex-col">
                   <span className="text-white">{session?.user?.name || 'Admin'}</span>
                   <span className="text-xs font-normal text-slate-400">
-                    {session?.user?.email || 'admin@cashtrade.fr'}
+                    {session?.user?.email || 'admin@moonskin.fr'}
                   </span>
                 </div>
               </DropdownMenuLabel>

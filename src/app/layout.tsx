@@ -36,14 +36,14 @@ const jetbrainsMono = JetBrains_Mono({
 //     title: "CashTrade - Sell your CS2 skins easily",
 //     description: "The fastest and most secure platform to convert your Counter-Strike 2 skins into real money.",
 //     type: "website",
-//     url: "https://cashtrade.gg",
+//     url: "https://moonskin.gg",
 //     siteName: "CashTrade",
 //   },
 //   twitter: {
 //     card: "summary_large_image",
 //     title: "CashTrade - Sell your CS2 skins easily",
 //     description: "The fastest and most secure platform to convert your Counter-Strike 2 skins into real money.",
-//     creator: "@cashtrade",
+//     creator: "@moonskin",
 //   },
 // };
 

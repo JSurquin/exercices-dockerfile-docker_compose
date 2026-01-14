@@ -268,7 +268,7 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="cashtrade-rapport-complet-${new Date().toISOString().split('T')[0]}.pdf"`,
+        'Content-Disposition': `attachment; filename="moonskin-rapport-complet-${new Date().toISOString().split('T')[0]}.pdf"`,
         'Content-Length': pdfBuffer.length.toString()
       }
     });

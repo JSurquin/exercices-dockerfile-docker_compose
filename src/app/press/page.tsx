@@ -22,7 +22,7 @@ const pressReleases = [
     title: "CashTrade lève 2M€ pour révolutionner le trading de skins CS2",
     description: "La startup française annonce une levée de fonds pour accélérer son développement international et renforcer sa sécurité.",
     category: "Financement",
-    link: "/press/cashtrade-leve-2m-euros",
+    link: "/press/moonskin-leve-2m-euros",
   },
   {
     date: "2024-08-20",
@@ -286,7 +286,7 @@ export default function PressPage() {
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center space-x-2">
                       <span>📧</span>
-                      <span>press@cashtrade.gg</span>
+                      <span>press@moonskin.gg</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span>📞</span>

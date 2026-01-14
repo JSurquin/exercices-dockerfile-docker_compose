@@ -83,10 +83,10 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               <p className="text-xs text-muted-foreground">
                 {messages.globalError.supportDesc}{" "}
                 <a
-                  href="mailto:support@cashtrade.gg"
+                  href="mailto:support@moonskin.gg"
                   className="text-orange-600 hover:underline"
                 >
-                  support@cashtrade.gg
+                  support@moonskin.gg
                 </a>
               </p>
             </div>

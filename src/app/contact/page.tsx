@@ -61,7 +61,7 @@ export default function ContactPage() {
       availability: t.methods.email.availability,
       responseTime: t.methods.email.responseTime,
       color: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400",
-      action: "support@cashtrade.gg",
+      action: "support@moonskin.gg",
     },
     {
       title: t.methods.phone.title,
@@ -77,31 +77,31 @@ export default function ContactPage() {
   const getDepartments = () => [
     {
       name: t.departmentsList.technical.name,
-      email: "support@cashtrade.gg",
+      email: "support@moonskin.gg",
       description: t.departmentsList.technical.description,
       icon: QuestionMarkCircleIcon,
     },
     {
       name: t.departmentsList.security.name,
-      email: "security@cashtrade.gg",
+      email: "security@moonskin.gg",
       description: t.departmentsList.security.description,
       icon: ShieldCheckIcon,
     },
     {
       name: t.departmentsList.compliance.name,
-      email: "compliance@cashtrade.gg",
+      email: "compliance@moonskin.gg",
       description: t.departmentsList.compliance.description,
       icon: DocumentTextIcon,
     },
     {
       name: t.departmentsList.partnerships.name,
-      email: "business@cashtrade.gg",
+      email: "business@moonskin.gg",
       description: t.departmentsList.partnerships.description,
       icon: CurrencyEuroIcon,
     },
     {
       name: t.departmentsList.press.name,
-      email: "press@cashtrade.gg",
+      email: "press@moonskin.gg",
       description: t.departmentsList.press.description,
       icon: DocumentTextIcon,
     },

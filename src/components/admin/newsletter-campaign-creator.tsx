@@ -225,7 +225,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
           <div className="bg-white p-6 rounded-lg text-black">
             <div className="border-b pb-4 mb-4">
               <h1 className="text-2xl font-bold text-gray-800">{subject}</h1>
-              <p className="text-sm text-gray-600 mt-1">De: CashTrade &lt;noreply@cashtrade.com&gt;</p>
+              <p className="text-sm text-gray-600 mt-1">De: CashTrade &lt;noreply@moonskin.com&gt;</p>
             </div>
             <div 
               className="prose max-w-none"

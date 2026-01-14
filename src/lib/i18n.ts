@@ -558,7 +558,7 @@ export const messages: Record<Locale, Messages> = {
         },
         email: {
           title: "Email Direct",
-          address: "support@cashtrade.gg",
+          address: "support@moonskin.gg",
           responseTime: "Réponse sous 24h",
         },
         hours: {
@@ -1684,7 +1684,7 @@ export const messages: Record<Locale, Messages> = {
       contactInfo: {
         title: "Questions sur ces conditions ?",
         description: "Notre équipe légale est disponible pour répondre à toutes vos questions concernant ces conditions d'utilisation.",
-        email: "legal@cashtrade.gg",
+        email: "legal@moonskin.gg",
         phone: "+33 1 23 45 67 89",
         support: "Support 24/7"
       }
@@ -1796,7 +1796,7 @@ export const messages: Record<Locale, Messages> = {
       contact: {
         title: "Contact Délégué à la Protection des Données",
         description: "Pour toute question concernant vos données personnelles ou pour exercer vos droits, contactez notre DPO.",
-        email: "dpo@cashtrade.gg",
+        email: "dpo@moonskin.gg",
         address: "CashTrade - DPO, 123 Rue de la Tech, 75001 Paris",
         cnil: "Vous avez également le droit de déposer une plainte auprès de la CNIL en cas de manquement."
       }
@@ -2437,7 +2437,7 @@ export const messages: Record<Locale, Messages> = {
         adminAccess: "Accès réservé aux administrateurs autorisés",
         emailLabel: "Email administrateur",
         passwordLabel: "Mot de passe",
-        emailPlaceholder: "admin@cashtrade.com",
+        emailPlaceholder: "admin@moonskin.com",
         passwordPlaceholder: "••••••••",
         loginButton: "Se connecter",
         loggingIn: "Connexion...",
@@ -4327,7 +4327,7 @@ export const messages: Record<Locale, Messages> = {
         },
         email: {
           title: "Direct Email",
-          address: "support@cashtrade.gg",
+          address: "support@moonskin.gg",
           responseTime: "Response within 24h",
         },
         hours: {
@@ -4573,7 +4573,7 @@ export const messages: Record<Locale, Messages> = {
       contactInfo: {
         title: "Questions about these terms?",
         description: "Our legal team is available to answer all your questions regarding these terms of use.",
-        email: "legal@cashtrade.gg",
+        email: "legal@moonskin.gg",
         phone: "+33 1 23 45 67 89",
         support: "24/7 Support"
       }
@@ -4685,7 +4685,7 @@ export const messages: Record<Locale, Messages> = {
       contact: {
         title: "Data Protection Officer Contact",
         description: "For any questions regarding your personal data or to exercise your rights, contact our DPO.",
-        email: "dpo@cashtrade.gg",
+        email: "dpo@moonskin.gg",
         address: "CashTrade - DPO, 123 Rue de la Tech, 75001 Paris",
         cnil: "You also have the right to file a complaint with the CNIL in case of breach."
       }
@@ -5150,7 +5150,7 @@ export const messages: Record<Locale, Messages> = {
         adminAccess: "Access reserved for authorized administrators",
         emailLabel: "Administrator email",
         passwordLabel: "Password",
-        emailPlaceholder: "admin@cashtrade.com",
+        emailPlaceholder: "admin@moonskin.com",
         passwordPlaceholder: "••••••••",
         loginButton: "Login",
         loggingIn: "Logging in...",
@@ -8092,7 +8092,7 @@ export const messages: Record<Locale, Messages> = {
         },
         email: {
           title: "直接邮件",
-          address: "support@cashtrade.gg",
+          address: "support@moonskin.gg",
           responseTime: "24小时内回复",
         },
         hours: {
@@ -8704,7 +8704,7 @@ export const messages: Record<Locale, Messages> = {
         adminAccess: "仅限授权管理员访问",
         emailLabel: "管理员邮箱",
         passwordLabel: "密码",
-        emailPlaceholder: "admin@cashtrade.com",
+        emailPlaceholder: "admin@moonskin.com",
         passwordPlaceholder: "••••••••",
         loginButton: "登录",
         loggingIn: "登录中...",

@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       where: { steamId: steamUser.steamid }
     });
 
-    const email = `steam_${steamUser.steamid}@cashtrade.local`;
+    const email = `steam_${steamUser.steamid}@moonskin.local`;
     const password = 'steam-auth-' + steamUser.steamid;
 
     if (!user) {

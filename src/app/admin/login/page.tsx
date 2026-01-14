@@ -137,7 +137,7 @@ export default function AdminLoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@cashtrade.com"
+                  placeholder="admin@moonskin.com"
                   required
                   className="bg-slate-900/50 border-slate-600 text-slate-100 placeholder:text-slate-500"
                 />
@@ -283,7 +283,7 @@ export default function AdminLoginPage() {
                     type="email"
                     value={forgotPasswordEmail}
                     onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                    placeholder="admin@cashtrade.com"
+                    placeholder="admin@moonskin.com"
                     required
                     className="bg-slate-900/50 border-slate-600 text-slate-100 placeholder:text-slate-500"
                   />

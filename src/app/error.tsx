@@ -139,12 +139,12 @@ export default function Error({ error, reset }: ErrorProps) {
             <p className="text-sm text-muted-foreground">
               Vérifiez le statut de nos services sur{" "}
               <a
-                href="https://status.cashtrade.gg"
+                href="https://status.moonskin.gg"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-orange-600 hover:underline"
               >
-                status.cashtrade.gg
+                status.moonskin.gg
               </a>
             </p>
           </motion.div>

@@ -273,7 +273,7 @@ In case of termination, ongoing trades will be finalized according to accepted c
 These terms are governed by French law. Any dispute will be subject to the exclusive jurisdiction of the Paris courts.
 
 In case of dispute, we encourage amicable resolution through our customer service before any legal action.`,
-    contactEmail: 'legal@cashtrade.gg',
+    contactEmail: 'legal@moonskin.gg',
     contactPhone: '+33 1 23 45 67 89',
     isPublished: true,
   },
@@ -435,7 +435,7 @@ We never sell your personal data. We may share it only in the following cases:
 - **Service providers**: Qonto (SEPA payments), KYC provider, cloud host - under strict confidentiality contract
 - **Legal obligations**: Tax authorities, TRACFIN (anti-money laundering), judicial authorities upon request
 - **Your consent**: With your explicit agreement for additional services`,
-    contactEmail: 'dpo@cashtrade.gg',
+    contactEmail: 'dpo@moonskin.gg',
     contactPhone: '+33 1 23 45 67 89',
     isPublished: true,
   },
@@ -597,7 +597,7 @@ The KYC (Know Your Customer) process is a legal requirement for all financial se
 - **Secure storage**: Hosted in France, GDPR compliant
 - **Restricted access**: Only the KYC team can view your documents
 - **Automatic deletion**: Documents deleted after validation (except legal obligations)`,
-    contactEmail: 'kyc@cashtrade.gg',
+    contactEmail: 'kyc@moonskin.gg',
     contactPhone: '+33 1 23 45 67 89',
     isPublished: true,
   },
@@ -769,7 +769,7 @@ Avoidance of international restrictive measures.
 - **French Monetary Code**: Articles L561-1 to L561-55
 - **Supervisory Authority**: ACPR - Bank of France
 - **Intelligence Unit**: TRACFIN - Ministry of Finance`,
-    contactEmail: 'compliance@cashtrade.gg',
+    contactEmail: 'compliance@moonskin.gg',
     contactPhone: '+33 1 23 45 67 89',
     isPublished: true,
   },

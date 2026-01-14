@@ -196,7 +196,7 @@ SMTP_HOST=smtp.example.com
 SMTP_PORT=587
 SMTP_USER=your_email
 SMTP_PASS=your_password
-ADMIN_EMAIL=admin@cashtrade.com
+ADMIN_EMAIL=admin@moonskin.com
 ```
 
 ### Dépendances NPM (si nécessaire):

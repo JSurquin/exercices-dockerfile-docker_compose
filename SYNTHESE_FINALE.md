@@ -60,7 +60,7 @@ Sidebar Admin:
 
 **1. Nouvelle Demande → Admin**
 ```
-À: admin@cashtrade.com
+À: admin@moonskin.com
 Sujet: 🎯 Nouvelle demande d'affiliation
 
 [Gradient violet professionnel]
@@ -286,7 +286,7 @@ Actions loggées:
 # Dans Vercel Dashboard → Settings → Environment Variables
 
 CRON_SECRET=generate-random-secure-key-here
-ADMIN_EMAIL=admin@cashtrade.com
+ADMIN_EMAIL=admin@moonskin.com
 
 # Vérifier que ces vars existent déjà:
 SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS
@@ -318,7 +318,7 @@ Deployments → Latest → Functions → /api/cron/giveaway-draw
 
 **B. Test Emails**:
 1. Soumettre demande affiliation
-2. Check inbox admin@cashtrade.com
+2. Check inbox admin@moonskin.com
 3. Approuver demande
 4. Check inbox user
 
@@ -551,7 +551,7 @@ Vous avez maintenant un système professionnel complet pour:
 ```bash
 # 1. Ajouter les variables Vercel
 CRON_SECRET=...
-ADMIN_EMAIL=admin@cashtrade.com
+ADMIN_EMAIL=admin@moonskin.com
 
 # 2. Deploy
 git push

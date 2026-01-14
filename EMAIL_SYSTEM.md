@@ -17,7 +17,7 @@ SMTP_PASSWORD=your-ethereal-password
 SMTP_FROM=your-ethereal-email@ethereal.email
 SMTP_FROM_NAME=CashTrade
 SMTP_SECURE=false
-ALERT_EMAIL_TO=admin@cashtrade.com
+ALERT_EMAIL_TO=admin@moonskin.com
 ```
 
 ## Types d'emails automatiques

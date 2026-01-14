@@ -123,10 +123,10 @@ const getEndpoints = (messages: any) => [
 
 const sdkExamples = {
   javascript: `// Installation
-npm install @cashtrade/sdk
+npm install @moonskin/sdk
 
 // Utilisation
-import CashTrade from '@cashtrade/sdk';
+import CashTrade from '@moonskin/sdk';
 
 const client = new CashTrade({
   apiKey: 'your_api_key',
@@ -145,10 +145,10 @@ const trade = await client.createTrade({
 });`,
 
   python: `# Installation
-pip install cashtrade-sdk
+pip install moonskin-sdk
 
 # Utilisation
-from cashtrade import CashTrade
+from moonskin import CashTrade
 
 client = CashTrade(
     api_key='your_api_key',
@@ -167,12 +167,12 @@ trade = client.create_trade({
 })`,
 
   curl: `# Authentification
-curl -X POST https://api.cashtrade.gg/auth/steam \\
+curl -X POST https://api.moonskin.gg/auth/steam \\
   -H "Content-Type: application/json" \\
   -d '{"return_url": "https://yourapp.com/callback"}'
 
 # Estimation de prix
-curl -X POST https://api.cashtrade.gg/steam/estimate-prices \\
+curl -X POST https://api.moonskin.gg/steam/estimate-prices \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -182,7 +182,7 @@ curl -X POST https://api.cashtrade.gg/steam/estimate-prices \\
   }'
 
 # Créer un trade
-curl -X POST https://api.cashtrade.gg/steam/create-trade \\
+curl -X POST https://api.moonskin.gg/steam/create-trade \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -268,7 +268,7 @@ export default function ApiDocsPage() {
               Version 1.0
             </Badge>
             <Badge variant="outline">
-              Base URL: https://api.cashtrade.gg
+              Base URL: https://api.moonskin.gg
             </Badge>
           </div>
         </motion.div>
@@ -614,7 +614,7 @@ export default function ApiDocsPage() {
                   </p>
                   <div className="space-y-2">
                     <Button variant="outline" size="sm" className="w-full">
-                      📧 api-support@cashtrade.gg
+                      📧 api-support@moonskin.gg
                     </Button>
                     <Button variant="outline" size="sm" className="w-full">
                       💬 Discord développeurs

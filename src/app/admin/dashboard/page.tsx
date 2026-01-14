@@ -43,7 +43,7 @@ function DashboardContent() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `cashtrade-export-${new Date().toISOString().split('T')[0]}.pdf`;
+      link.download = `moonskin-export-${new Date().toISOString().split('T')[0]}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -71,7 +71,7 @@ function DashboardContent() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `cashtrade-rapport-${new Date().toISOString().split('T')[0]}.pdf`;
+      link.download = `moonskin-rapport-${new Date().toISOString().split('T')[0]}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

@@ -256,7 +256,7 @@ application: {
 ### Scénario 1: Nouvelle Affiliation
 ```
 1. Jimmy soumet demande (motivation + liens)
-2. Email envoyé à admin@cashtrade.com
+2. Email envoyé à admin@moonskin.com
 3. Badge [🔴 1] apparaît dans sidebar admin (<30s)
 4. Admin clique sur "Demandes" dans sidebar
 5. Admin lit motivation et liens sociaux

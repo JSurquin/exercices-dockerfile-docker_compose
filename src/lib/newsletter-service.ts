@@ -225,7 +225,7 @@ export class NewsletterService {
       username,
       email,
       steamUsername: steamUsername || username,
-      baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://cashtrade.com',
+      baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://moonskin.com',
     };
 
     const template: EmailTemplate = {
@@ -263,7 +263,7 @@ export class NewsletterService {
       grossValue: grossEuros,
       netValue: netEuros,
       availableDate,
-      baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://cashtrade.com',
+      baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://moonskin.com',
     };
 
     const template: EmailTemplate = {
@@ -278,7 +278,7 @@ export class NewsletterService {
   // Envoyer un email de bienvenue newsletter
   async sendWelcomeEmail(email: string, unsubscribeToken: string) {
     const variables: EmailTemplateVariables = {
-      baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://cashtrade.com',
+      baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://moonskin.com',
     };
 
     const template: EmailTemplate = {

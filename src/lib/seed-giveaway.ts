@@ -16,7 +16,7 @@ export async function seedGiveawayData() {
         steamId: '76561198000000001',
         steamUsername: 'TestPlayer',
         steamAvatar: 'https://avatars.steamstatic.com/b5bd56c1aa4644a474a2e4972be27ef94e52a288_medium.jpg',
-        email: 'testplayer@cashtrade.fr',
+        email: 'testplayer@moonskin.fr',
         tickets: 100,
         level: 1,
         xp: 0,

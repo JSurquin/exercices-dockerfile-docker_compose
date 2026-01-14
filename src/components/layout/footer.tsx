@@ -24,10 +24,10 @@ export function Footer() {
       { name: messages.footer.links.amlPolicy, href: "/aml-policy" },
     ],
     community: [
-      { name: messages.footer.socialLinks.discord, href: "https://discord.gg/cashtrade" },
-      { name: messages.footer.socialLinks.twitter, href: "https://twitter.com/cashtrade" },
-      { name: messages.footer.socialLinks.reddit, href: "https://reddit.com/r/cashtrade" },
-      { name: messages.footer.socialLinks.youtube, href: "https://youtube.com/cashtrade" },
+      { name: messages.footer.socialLinks.discord, href: "https://discord.gg/moonskin" },
+      { name: messages.footer.socialLinks.twitter, href: "https://twitter.com/moonskin" },
+      { name: messages.footer.socialLinks.reddit, href: "https://reddit.com/r/moonskin" },
+      { name: messages.footer.socialLinks.youtube, href: "https://youtube.com/moonskin" },
     ],
   };
 

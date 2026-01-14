@@ -72,8 +72,8 @@ Actions disponibles:
 
 1. **Admin Notification** (nouvelle demande)
    ```
-   De: noreply@cashtrade.com
-   À: admin@cashtrade.com
+   De: noreply@moonskin.com
+   À: admin@moonskin.com
    Objet: 🎯 Nouvelle demande d'affiliation
    
    [Gradient violet]
@@ -87,7 +87,7 @@ Actions disponibles:
 
 2. **User Approved** (demande acceptée)
    ```
-   De: noreply@cashtrade.com
+   De: noreply@moonskin.com
    À: jimmy@email.com
    Objet: 🎉 Demande approuvée!
    
@@ -106,7 +106,7 @@ Actions disponibles:
 
 3. **User Rejected** (demande refusée)
    ```
-   De: noreply@cashtrade.com
+   De: noreply@moonskin.com
    À: jimmy@email.com
    Objet: Réponse à votre demande
    
@@ -274,7 +274,7 @@ $ npx prisma migrate dev --name add_affiliate_application
 CRON_SECRET=votre-clé-secrète-aléatoire-ici
 
 # Admin Notifications
-ADMIN_EMAIL=admin@cashtrade.com
+ADMIN_EMAIL=admin@moonskin.com
 ```
 
 **Déjà configurées**:

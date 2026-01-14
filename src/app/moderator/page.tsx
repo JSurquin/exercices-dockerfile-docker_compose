@@ -81,7 +81,7 @@ export default function ModeratorLoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="moderator@cashtrade.com"
+                placeholder="moderator@moonskin.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -117,7 +117,7 @@ export default function ModeratorLoginPage() {
             <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
               <p className="font-medium">💡 Compte de test :</p>
               <p className="text-muted-foreground">
-                <span className="font-mono">moderator@cashtrade.com</span><br />
+                <span className="font-mono">moderator@moonskin.com</span><br />
                 <span className="font-mono">Moderator2024!</span>
               </p>
             </div>

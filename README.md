@@ -62,7 +62,7 @@ CashTrade est une plateforme moderne et sécurisée qui permet aux joueurs de Co
 
 1. **Cloner le repository**
 ```bash
-git clone https://github.com/cashtrade/counter-strike-skin.git
+git clone https://github.com/moonskin/counter-strike-skin.git
 cd counter-strike-skin
 ```
 
@@ -281,10 +281,10 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 
 ## 📞 Support
 
-- **Email**: support@cashtrade.gg
-- **Discord**: [discord.gg/cashtrade](https://discord.gg/cashtrade)
-- **Documentation**: [docs.cashtrade.gg](https://docs.cashtrade.gg)
-- **Status**: [status.cashtrade.gg](https://status.cashtrade.gg)
+- **Email**: support@moonskin.gg
+- **Discord**: [discord.gg/moonskin](https://discord.gg/moonskin)
+- **Documentation**: [docs.moonskin.gg](https://docs.moonskin.gg)
+- **Status**: [status.moonskin.gg](https://status.moonskin.gg)
 
 ## 📈 Statistiques
 

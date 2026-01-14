@@ -164,7 +164,7 @@ await TradeHooks.recalculateAffiliateCommissions(affiliateId);
 
 ### Variables d'Environnement
 ```env
-NEXT_PUBLIC_APP_URL=https://cashtrade.fr  # URL de base pour les liens d'affiliation
+NEXT_PUBLIC_APP_URL=https://moonskin.fr  # URL de base pour les liens d'affiliation
 ```
 
 ### Paramètres par Défaut
@@ -198,7 +198,7 @@ NEXT_PUBLIC_APP_URL=https://cashtrade.fr  # URL de base pour les liens d'affilia
 4. Activation du compte affilié
 
 ### 2. Référer un Utilisateur
-1. Affilié partage son lien `https://cashtrade.fr?ref=CODE`
+1. Affilié partage son lien `https://moonskin.fr?ref=CODE`
 2. Utilisateur clique et le code est stocké en cookie
 3. Utilisateur s'inscrit/se connecte via Steam
 4. Association automatique à l'affilié
@@ -287,4 +287,4 @@ psql -d database < prisma/migrations/20251007000000_add_affiliate_system/migrati
 Pour toute question sur le système d'affiliation :
 - Documentation technique : Ce fichier
 - API Documentation : OpenAPI/Swagger
-- Support technique : support@cashtrade.fr
+- Support technique : support@moonskin.fr

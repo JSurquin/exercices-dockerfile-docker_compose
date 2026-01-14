@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       data: {
         link: affiliateLink,
         code: affiliate.code,
-        shortLink: `${process.env.NEXT_PUBLIC_APP_URL || 'https://cashtrade.fr'}?ref=${affiliate.code}`
+        shortLink: `${process.env.NEXT_PUBLIC_APP_URL || 'https://moonskin.fr'}?ref=${affiliate.code}`
       }
     });
     

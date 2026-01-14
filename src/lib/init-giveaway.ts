@@ -53,7 +53,7 @@ export async function ensureUserWithTickets(steamId: string, userData: {
           steamId,
           steamUsername: userData.steamUsername || `User_${steamId.slice(-6)}`,
           steamAvatar: userData.steamAvatar,
-          email: userData.email || `${steamId}@temp.cashtrade.fr`,
+          email: userData.email || `${steamId}@temp.moonskin.fr`,
           tickets: 100, // 100 tickets initiaux
           level: 1,
           xp: 0,

@@ -608,7 +608,7 @@ export default function AdminLegalPagesPage() {
                   type="email"
                   value={form.contactEmail}
                   onChange={(e) => setForm(prev => ({ ...prev, contactEmail: e.target.value }))}
-                  placeholder="legal@cashtrade.gg"
+                  placeholder="legal@moonskin.gg"
                   className="bg-slate-800 border-slate-600 text-white"
                 />
               </div>

@@ -265,7 +265,7 @@ export class AffiliateService {
    * Génère un lien d'affiliation
    */
   static generateAffiliateLink(code: string, path: string = ''): string {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cashtrade.fr';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://moonskin.fr';
     const url = new URL(path, baseUrl);
     url.searchParams.set('ref', code);
     return url.toString();

@@ -7,7 +7,7 @@ async function main() {
   // Créer des utilisateurs de test avec Better Auth API
   const testUsers = [
     {
-      email: 'admin@cashtrade.com',
+      email: 'admin@moonskin.com',
       password: 'CashTrade2024!',
       name: 'Admin CashTrade',
       steamId: '76561198000000000',
@@ -22,7 +22,7 @@ async function main() {
       acceptedTermsAt: new Date('2024-01-01T00:00:00Z'),
     },
     {
-      email: 'moderator@cashtrade.com',
+      email: 'moderator@moonskin.com',
       password: 'Moderator2024!',
       name: 'Modérateur Support',
       steamId: '76561198000000020',
@@ -37,7 +37,7 @@ async function main() {
       acceptedTermsAt: new Date('2024-01-10T00:00:00Z'),
     },
     {
-      email: 'protrader@cashtrade.com',
+      email: 'protrader@moonskin.com',
       password: 'ProTrader2024!',
       name: 'ProTrader CS2',
       steamId: '76561198000000001',
@@ -52,7 +52,7 @@ async function main() {
       acceptedTermsAt: new Date('2024-01-15T00:00:00Z'),
     },
     {
-      email: 'skinmaster@cashtrade.com',
+      email: 'skinmaster@moonskin.com',
       password: 'SkinMaster2024!',
       name: 'SkinMaster Elite',
       steamId: '76561198000000002',
@@ -67,7 +67,7 @@ async function main() {
       acceptedTermsAt: new Date('2024-02-20T00:00:00Z'),
     },
     {
-      email: 'collector@cashtrade.com',
+      email: 'collector@moonskin.com',
       password: 'Collector2024!',
       name: 'CS2 Collector Pro',
       steamId: '76561198000000003',
@@ -83,7 +83,7 @@ async function main() {
     },
     // Nouveaux affiliés dédiés
     {
-      email: 'topaffiliate@cashtrade.com',
+      email: 'topaffiliate@moonskin.com',
       password: 'TopAffiliate2024!',
       name: 'Top Affiliate CS2',
       steamId: '76561198000000010',
@@ -98,7 +98,7 @@ async function main() {
       acceptedTermsAt: new Date('2024-01-05T00:00:00Z'),
     },
     {
-      email: 'newaffiliate@cashtrade.com',
+      email: 'newaffiliate@moonskin.com',
       password: 'NewAffiliate2024!',
       name: 'New Affiliate Pro',
       steamId: '76561198000000011',
@@ -620,13 +620,13 @@ async function main() {
 - ${giveawayEntries.length} entrées de giveaway
 
 🔐 Comptes de test :
-- admin@cashtrade.com (Admin, accès complet)
-- moderator@cashtrade.com (Modérateur, gestion conversations - URL: /moderation)
-- protrader@cashtrade.com (Affilié expérimenté, 15 référrals, 150€ commission)
-- skinmaster@cashtrade.com (Affilié actif, 8 référrals, 84€ commission)
-- collector@cashtrade.com (Utilisateur normal, KYC en attente)
-- topaffiliate@cashtrade.com (Top affilié, 45 référrals, 450€ commission)
-- newaffiliate@cashtrade.com (Nouvel affilié, 2 référrals, 17€ commission)
+- admin@moonskin.com (Admin, accès complet)
+- moderator@moonskin.com (Modérateur, gestion conversations - URL: /moderation)
+- protrader@moonskin.com (Affilié expérimenté, 15 référrals, 150€ commission)
+- skinmaster@moonskin.com (Affilié actif, 8 référrals, 84€ commission)
+- collector@moonskin.com (Utilisateur normal, KYC en attente)
+- topaffiliate@moonskin.com (Top affilié, 45 référrals, 450€ commission)
+- newaffiliate@moonskin.com (Nouvel affilié, 2 référrals, 17€ commission)
 
 🎯 Système d'affiliation complet :
 - Codes d'affiliation : PROTRADER, SKINMASTER, TOPAFFILIATE, NEWAFFILIATE

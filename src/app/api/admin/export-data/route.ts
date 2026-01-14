@@ -198,7 +198,7 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="cashtrade-export-donnees-${new Date().toISOString().split('T')[0]}.pdf"`,
+        'Content-Disposition': `attachment; filename="moonskin-export-donnees-${new Date().toISOString().split('T')[0]}.pdf"`,
         'Content-Length': pdfBuffer.length.toString()
       }
     });
