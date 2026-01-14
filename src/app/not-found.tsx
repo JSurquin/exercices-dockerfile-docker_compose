@@ -12,51 +12,9 @@ import {
 import Link from "next/link";
 import { useLocale } from "@/components/providers/locale-provider";
 
-const translations = {
-  fr: {
-    pageNotFound: "Page non trouvée",
-    title: "Oops ! Cette page semble avoir disparu",
-    description: "La page que vous recherchez n'existe pas ou a été déplacée. Peut-être qu'elle s'est vendue sur CashTrade ? 😄",
-    backHome: "Retour à l'accueil",
-    previousPage: "Page précédente",
-    usefulLinks: "Liens utiles",
-    sellSkins: "Vendre mes skins",
-    myDashboard: "Mon Dashboard",
-    giveaways: "Giveaways",
-    support: "Support",
-    randomStats: "Pendant que vous étiez là, {count} skins ont été vendus sur CashTrade !",
-  },
-  en: {
-    pageNotFound: "Page not found",
-    title: "Oops! This page seems to have disappeared",
-    description: "The page you are looking for doesn't exist or has been moved. Maybe it was sold on CashTrade? 😄",
-    backHome: "Back to home",
-    previousPage: "Previous page",
-    usefulLinks: "Useful links",
-    sellSkins: "Sell my skins",
-    myDashboard: "My Dashboard",
-    giveaways: "Giveaways",
-    support: "Support",
-    randomStats: "While you were here, {count} skins were sold on CashTrade!",
-  },
-  cn: {
-    pageNotFound: "页面未找到",
-    title: "哎呀！此页面似乎已消失",
-    description: "您正在查找的页面不存在或已被移动。也许它在CashTrade上卖掉了？😄",
-    backHome: "返回首页",
-    previousPage: "上一页",
-    usefulLinks: "有用的链接",
-    sellSkins: "出售我的皮肤",
-    myDashboard: "我的仪表板",
-    giveaways: "抽奖活动",
-    support: "支持",
-    randomStats: "在您访问期间，已有{count}个皮肤在CashTrade上售出！",
-  }
-};
-
 export default function NotFound() {
-  const { locale } = useLocale();
-  const t = translations[locale] || translations.en;
+  const { messages } = useLocale();
+  const t = messages.notFound;
   const randomCount = Math.floor(Math.random() * 5) + 1;
 
   return (

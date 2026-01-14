@@ -3641,10 +3641,20 @@ export interface Messages {
   };
   notFound: {
     code: string;
+    pageNotFound: string;
     title: string;
+    description: string;
     message: string;
+    backHome: string;
     home: string;
+    previousPage: string;
     explore: string;
+    usefulLinks: string;
+    sellSkins: string;
+    myDashboard: string;
+    giveaways: string;
+    support: string;
+    randomStats: string;
     quickLinks: {
       title: string;
       sell: string;
@@ -3735,25 +3745,26 @@ export interface Messages {
       request: string;
       history: string;
     };
-    request: {
-      title: string;
-      availableBalance: string;
-      selectMethod: string;
-      amountLabel: string;
-      amountPlaceholder: string;
-      feesInfo: string;
-      processingFee: string;
-      networkFee: string;
-      youReceive: string;
-      submitButton: string;
-      submitting: string;
-      minAmount: string;
-      security: {
+      request: {
         title: string;
-        sepaInfo: string;
-        cryptoInfo: string;
+        availableBalance: string;
+        selectMethod: string;
+        amountLabel: string;
+        amountPlaceholder: string;
+        feesInfo: string;
+        processingFee: string;
+        networkFee: string;
+        youReceive: string;
+        getQuoteButton: string;
+        submitButton: string;
+        submitting: string;
+        minAmount: string;
+        security: {
+          title: string;
+          sepaInfo: string;
+          cryptoInfo: string;
+        };
       };
-    };
     history: {
       title: string;
       noPayout: string;

@@ -422,7 +422,7 @@ export default function PayoutPage() {
                         {text.request.submitting}
                       </>
                     ) : (
-                      "Obtenir un devis"
+                      text.request.getQuoteButton
                     )}
                   </Button>
                 )}
