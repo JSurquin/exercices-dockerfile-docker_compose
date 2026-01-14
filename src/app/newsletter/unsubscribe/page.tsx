@@ -9,57 +9,12 @@ import { CheckCircle, XCircle, Mail, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale } from '@/components/providers/locale-provider';
 
-const translations = {
-  fr: {
-    loading: 'Désabonnement en cours...',
-    success: 'Désabonnement réussi',
-    error: 'Erreur de désabonnement',
-    alreadyUnsubscribed: 'Déjà désabonné',
-    missingToken: 'Token de désabonnement manquant.',
-    unexpectedError: 'Une erreur est survenue lors du désabonnement.',
-    defaultError: 'Une erreur est survenue.',
-    title: 'CashTrade Newsletter',
-    confirmed: 'Désabonnement confirmé',
-    noMoreEmails: 'Vous ne recevrez plus nos emails de newsletter.',
-    canResubscribe: 'Si vous changez d\'avis, vous pourrez vous réabonner à tout moment sur notre site.',
-    backHome: 'Retour à l\'accueil',
-  },
-  en: {
-    loading: 'Unsubscribing...',
-    success: 'Successfully Unsubscribed',
-    error: 'Unsubscribe Error',
-    alreadyUnsubscribed: 'Already Unsubscribed',
-    missingToken: 'Unsubscribe token missing.',
-    unexpectedError: 'An error occurred during unsubscription.',
-    defaultError: 'An error occurred.',
-    title: 'CashTrade Newsletter',
-    confirmed: 'Unsubscription confirmed',
-    noMoreEmails: 'You will no longer receive our newsletter emails.',
-    canResubscribe: 'If you change your mind, you can resubscribe anytime on our website.',
-    backHome: 'Back to home',
-  },
-  cn: {
-    loading: '取消订阅中...',
-    success: '取消订阅成功',
-    error: '取消订阅错误',
-    alreadyUnsubscribed: '已取消订阅',
-    missingToken: '缺少取消订阅令牌。',
-    unexpectedError: '取消订阅时发生错误。',
-    defaultError: '发生错误。',
-    title: 'CashTrade 新闻通讯',
-    confirmed: '取消订阅已确认',
-    noMoreEmails: '您将不再收到我们的新闻通讯电子邮件。',
-    canResubscribe: '如果您改变主意，可以随时在我们的网站上重新订阅。',
-    backHome: '返回首页',
-  }
-};
-
 export default function UnsubscribePage() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-  const { locale } = useLocale();
+  const { messages } = useLocale();
   
-  const t = translations[locale] || translations.en;
+  const t = messages.components.newsletter.unsubscribe;
   
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'already_unsubscribed'>('loading');
   const [email, setEmail] = useState<string>('');
@@ -194,14 +149,14 @@ export default function UnsubscribePage() {
             {status === 'already_unsubscribed' && (
               <Badge variant="outline" className="border-blue-500/50 text-blue-400">
                 <Mail className="h-3 w-3 mr-1" />
-                Déjà désabonné
+                {t.alreadyUnsubscribed}
               </Badge>
             )}
 
             {status === 'error' && (
               <div className="bg-red-500/10 p-4 rounded-lg border border-red-500/20">
                 <p className="text-sm text-red-300">
-                  Si le problème persiste, contactez notre support.
+                  {t.errorDesc}
                 </p>
               </div>
             )}
@@ -217,7 +172,7 @@ export default function UnsubscribePage() {
               {status === 'success' || status === 'already_unsubscribed' ? (
                 <Button asChild variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-700">
                   <Link href="/#newsletter">
-                    Se réabonner
+                    {t.resubscribe}
                   </Link>
                 </Button>
               ) : null}
@@ -227,14 +182,14 @@ export default function UnsubscribePage() {
 
         {/* Footer */}
         <div className="text-center text-xs text-slate-500">
-          <p>CashTrade - Plateforme de trading CS2</p>
+          <p>CashTrade - {messages.nav.platform}</p>
           <p className="mt-1">
             <Link href="/contact" className="hover:text-slate-400 transition-colors">
-              Contactez-nous
+              {messages.contact.title}
             </Link>
             {' • '}
             <Link href="/privacy" className="hover:text-slate-400 transition-colors">
-              Politique de confidentialité
+              {messages.privacy.title}
             </Link>
           </p>
         </div>

@@ -20,6 +20,7 @@ export const messages: Record<Locale, Messages> = {
       darkMode: "Mode Sombre",
       affiliation: "Affiliation",
       moderation: "Modération",
+      platform: "Plateforme de trading CS2"
     },
     user: {
       level: "Niveau",
@@ -3191,17 +3192,24 @@ export const messages: Record<Locale, Messages> = {
           alreadySubscribed: "Cette adresse email est déjà abonnée à notre newsletter.",
         },
         unsubscribe: {
-          title: "Désinscription de la newsletter",
+          title: "CashTrade Newsletter",
+          loading: "Désabonnement en cours...",
           processing: "Traitement en cours...",
-          success: "Désinscription réussie",
+          success: "Désabonnement réussi",
           successDesc: "Vous ne recevrez plus nos newsletters",
-          alreadyUnsubscribed: "Déjà désinscrit",
+          alreadyUnsubscribed: "Déjà désabonné",
           alreadyUnsubscribedDesc: "Vous êtes déjà désinscrit de notre newsletter",
-          error: "Erreur",
+          error: "Erreur de désabonnement",
           errorDesc: "Une erreur est survenue lors de la désinscription",
+          confirmed: "Désabonnement confirmé",
+          noMoreEmails: "Vous ne recevrez plus nos emails de newsletter.",
+          canResubscribe: "Si vous changez d'avis, vous pourrez vous réabonner à tout moment sur notre site.",
           home: "Retour à l'accueil",
+          backHome: "Retour à l'accueil",
           resubscribe: "Se réabonner",
-          missingToken: "Token manquant"
+          missingToken: "Token de désabonnement manquant.",
+          unexpectedError: "Une erreur est survenue lors du désabonnement.",
+          defaultError: "Une erreur est survenue."
         }
       },
       skinplace: {
@@ -3771,6 +3779,7 @@ export const messages: Record<Locale, Messages> = {
       darkMode: "Dark Mode",
       affiliation: "Affiliate",
       moderation: "Moderation",
+      platform: "CS2 Trading Platform"
     },
     user: {
       level: "Level",
@@ -6941,17 +6950,24 @@ export const messages: Record<Locale, Messages> = {
           alreadySubscribed: "This email address is already subscribed to our newsletter.",
         },
         unsubscribe: {
-          title: "Newsletter unsubscription",
+          title: "CashTrade Newsletter",
+          loading: "Unsubscribing...",
           processing: "Processing...",
-          success: "Successfully unsubscribed",
+          success: "Successfully Unsubscribed",
           successDesc: "You will no longer receive our newsletters",
-          alreadyUnsubscribed: "Already unsubscribed",
+          alreadyUnsubscribed: "Already Unsubscribed",
           alreadyUnsubscribedDesc: "You are already unsubscribed from our newsletter",
-          error: "Error",
+          error: "Unsubscribe Error",
           errorDesc: "An error occurred during unsubscription",
+          confirmed: "Unsubscription confirmed",
+          noMoreEmails: "You will no longer receive our newsletter emails.",
+          canResubscribe: "If you change your mind, you can resubscribe anytime on our website.",
           home: "Back to home",
+          backHome: "Back to home",
           resubscribe: "Resubscribe",
-          missingToken: "Missing token"
+          missingToken: "Unsubscribe token missing.",
+          unexpectedError: "An error occurred during unsubscription.",
+          defaultError: "An error occurred."
         }
       },
       skinplace: {
@@ -7521,6 +7537,7 @@ export const messages: Record<Locale, Messages> = {
       darkMode: "深色模式",
       affiliation: "推广联盟",
       moderation: "管理审核",
+      platform: "CS2交易平台"
     },
     user: {
       level: "等级",
@@ -10326,17 +10343,24 @@ export const messages: Record<Locale, Messages> = {
           alreadySubscribed: "此邮箱地址已订阅我们的新闻稿。",
         },
         unsubscribe: {
-          title: "取消订阅新闻稿",
+          title: "CashTrade 新闻通讯",
+          loading: "取消订阅中...",
           processing: "处理中...",
-          success: "成功取消订阅",
+          success: "取消订阅成功",
           successDesc: "您将不再收到我们的新闻稿",
           alreadyUnsubscribed: "已取消订阅",
           alreadyUnsubscribedDesc: "您已取消订阅我们的新闻稿",
-          error: "错误",
+          error: "取消订阅错误",
           errorDesc: "取消订阅时发生错误",
+          confirmed: "取消订阅已确认",
+          noMoreEmails: "您将不再收到我们的新闻通讯电子邮件。",
+          canResubscribe: "如果您改变主意，可以随时在我们的网站上重新订阅。",
           home: "返回首页",
+          backHome: "返回首页",
           resubscribe: "重新订阅",
-          missingToken: "缺少令牌"
+          missingToken: "缺少取消订阅令牌。",
+          unexpectedError: "取消订阅时发生错误。",
+          defaultError: "发生错误。"
         }
       },
       skinplace: {

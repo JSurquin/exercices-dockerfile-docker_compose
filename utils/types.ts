@@ -79,6 +79,7 @@ export interface Messages {
     darkMode: string;
     affiliation: string;
     moderation: string;
+    platform: string;
   };
   user: {
     level: string;
@@ -3144,6 +3145,7 @@ export interface Messages {
       };
       unsubscribe: {
         title: string;
+        loading: string;
         processing: string;
         success: string;
         successDesc: string;
@@ -3151,9 +3153,15 @@ export interface Messages {
         alreadyUnsubscribedDesc: string;
         error: string;
         errorDesc: string;
+        confirmed: string;
+        noMoreEmails: string;
+        canResubscribe: string;
         home: string;
+        backHome: string;
         resubscribe: string;
         missingToken: string;
+        unexpectedError: string;
+        defaultError: string;
       };
     };
     skinplace: {
