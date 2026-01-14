@@ -292,7 +292,7 @@ export default function GiveawaysPage() {
             disabled={loading}
             className="mb-4"
           >
-            {loading ? 'Chargement...' : 'Actualiser les giveaways'}
+            {loading ? messages.giveawaysPage.loading : messages.giveawaysPage.refreshGiveaways}
           </Button>
         </motion.div>
 
@@ -404,7 +404,7 @@ export default function GiveawaysPage() {
             <TabsContent value="active">
               {loading ? (
                 <div className="text-center py-8">
-                  <p>Chargement des giveaways...</p>
+                  <p>{messages.giveawaysPage.loadingGiveaways}</p>
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -437,7 +437,7 @@ export default function GiveawaysPage() {
             <TabsContent value="ended">
               {loading ? (
                 <div className="text-center py-8">
-                  <p>Chargement des giveaways terminés...</p>
+                  <p>{messages.giveawaysPage.loadingEndedGiveaways}</p>
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -465,7 +465,7 @@ export default function GiveawaysPage() {
                   <CardContent>
                     {loadingEntries ? (
                       <div className="text-center py-8">
-                        <p>Chargement de vos participations...</p>
+                        <p>{messages.giveawaysPage.loadingParticipations}</p>
                       </div>
                     ) : myEntries.length > 0 ? (
                       <div className="space-y-3 sm:space-y-4">
@@ -479,10 +479,10 @@ export default function GiveawaysPage() {
                                   </h4>
                                 </Link>
                                 <p className="text-sm text-muted-foreground mt-1">
-                                  {entry.ticketsUsed} {entry.ticketsUsed > 1 ? 'tickets utilisés' : 'ticket utilisé'}
+                                  {entry.ticketsUsed} {entry.ticketsUsed > 1 ? messages.giveawaysPage.ticketsUsed : messages.giveawaysPage.ticketUsed}
                                 </p>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                  Participé le {new Date(entry.enteredAt).toLocaleDateString('fr-FR', {
+                                  {messages.giveawaysPage.participatedOn} {new Date(entry.enteredAt).toLocaleDateString('fr-FR', {
                                     day: '2-digit',
                                     month: 'long',
                                     year: 'numeric'
@@ -493,7 +493,7 @@ export default function GiveawaysPage() {
                                 {getStatusBadge(entry.participationStatus)}
                                 {entry.giveaway.status === 'ENDED' && (
                                   <p className="text-xs text-muted-foreground">
-                                    Terminé le {new Date(entry.giveaway.endDate).toLocaleDateString('fr-FR')}
+                                    {messages.giveawaysPage.endedOn} {new Date(entry.giveaway.endDate).toLocaleDateString('fr-FR')}
                                   </p>
                                 )}
                               </div>
@@ -504,12 +504,12 @@ export default function GiveawaysPage() {
                     ) : (
                       <div className="text-center py-8">
                         <GiftIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                        <h3 className="text-xl font-semibold mb-2">Aucune participation</h3>
+                        <h3 className="text-xl font-semibold mb-2">{messages.giveawaysPage.noEntries}</h3>
                         <p className="text-muted-foreground mb-6">
-                          Vous n&apos;avez pas encore participé à des giveaways
+                          {messages.giveawaysPage.noEntriesDescription}
                         </p>
                         <Button onClick={() => setSelectedTab('active')}>
-                          Voir les giveaways actifs
+                          {messages.giveawaysPage.viewActive}
                         </Button>
                       </div>
                     )}

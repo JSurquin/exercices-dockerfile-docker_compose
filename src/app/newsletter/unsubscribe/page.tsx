@@ -7,10 +7,59 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, Mail, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useLocale } from '@/components/providers/locale-provider';
+
+const translations = {
+  fr: {
+    loading: 'Désabonnement en cours...',
+    success: 'Désabonnement réussi',
+    error: 'Erreur de désabonnement',
+    alreadyUnsubscribed: 'Déjà désabonné',
+    missingToken: 'Token de désabonnement manquant.',
+    unexpectedError: 'Une erreur est survenue lors du désabonnement.',
+    defaultError: 'Une erreur est survenue.',
+    title: 'CashTrade Newsletter',
+    confirmed: 'Désabonnement confirmé',
+    noMoreEmails: 'Vous ne recevrez plus nos emails de newsletter.',
+    canResubscribe: 'Si vous changez d\'avis, vous pourrez vous réabonner à tout moment sur notre site.',
+    backHome: 'Retour à l\'accueil',
+  },
+  en: {
+    loading: 'Unsubscribing...',
+    success: 'Successfully Unsubscribed',
+    error: 'Unsubscribe Error',
+    alreadyUnsubscribed: 'Already Unsubscribed',
+    missingToken: 'Unsubscribe token missing.',
+    unexpectedError: 'An error occurred during unsubscription.',
+    defaultError: 'An error occurred.',
+    title: 'CashTrade Newsletter',
+    confirmed: 'Unsubscription confirmed',
+    noMoreEmails: 'You will no longer receive our newsletter emails.',
+    canResubscribe: 'If you change your mind, you can resubscribe anytime on our website.',
+    backHome: 'Back to home',
+  },
+  cn: {
+    loading: '取消订阅中...',
+    success: '取消订阅成功',
+    error: '取消订阅错误',
+    alreadyUnsubscribed: '已取消订阅',
+    missingToken: '缺少取消订阅令牌。',
+    unexpectedError: '取消订阅时发生错误。',
+    defaultError: '发生错误。',
+    title: 'CashTrade 新闻通讯',
+    confirmed: '取消订阅已确认',
+    noMoreEmails: '您将不再收到我们的新闻通讯电子邮件。',
+    canResubscribe: '如果您改变主意，可以随时在我们的网站上重新订阅。',
+    backHome: '返回首页',
+  }
+};
 
 export default function UnsubscribePage() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
+  const { locale } = useLocale();
+  
+  const t = translations[locale] || translations.en;
   
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'already_unsubscribed'>('loading');
   const [email, setEmail] = useState<string>('');
@@ -19,7 +68,7 @@ export default function UnsubscribePage() {
   useEffect(() => {
     if (!token) {
       setStatus('error');
-      setMessage('Token de désabonnement manquant.');
+      setMessage(t.missingToken);
       return;
     }
 
@@ -80,13 +129,13 @@ export default function UnsubscribePage() {
   const getTitle = () => {
     switch (status) {
       case 'loading':
-        return 'Désabonnement en cours...';
+        return t.loading;
       case 'success':
-        return 'Désabonnement réussi';
+        return t.success;
       case 'already_unsubscribed':
-        return 'Déjà désabonné';
+        return t.alreadyUnsubscribed;
       case 'error':
-        return 'Erreur de désabonnement';
+        return t.error;
     }
   };
 
@@ -100,7 +149,7 @@ export default function UnsubscribePage() {
               <Mail className="h-8 w-8 text-orange-400" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-white">CashTrade Newsletter</h1>
+          <h1 className="text-2xl font-bold text-white">{t.title}</h1>
         </div>
 
         {/* Status Card */}
@@ -128,15 +177,15 @@ export default function UnsubscribePage() {
               <div className="space-y-4">
                 <Badge variant="outline" className="border-green-500/50 text-green-400">
                   <CheckCircle className="h-3 w-3 mr-1" />
-                  Désabonnement confirmé
+                  {t.confirmed}
                 </Badge>
                 
                 <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
                   <p className="text-sm text-slate-400 mb-2">
-                    Vous ne recevrez plus nos emails de newsletter.
+                    {t.noMoreEmails}
                   </p>
                   <p className="text-xs text-slate-500">
-                    Si vous changez d&apos;avis, vous pourrez vous réabonner à tout moment sur notre site.
+                    {t.canResubscribe}
                   </p>
                 </div>
               </div>
@@ -160,8 +209,8 @@ export default function UnsubscribePage() {
             <div className="pt-4 space-y-2">
               <Button asChild className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
                 <Link href="/">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Retour à l&apos;accueil
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              {t.backHome}
                 </Link>
               </Button>
               

@@ -257,3 +257,38 @@ export const currencyConverter = CurrencyConverter.getInstance();
 
 // Export des types pour TypeScript
 export type { ExchangeRateResponse, CachedRate, CachedRates };
+
+// =============================================================================
+// HELPER FUNCTIONS (pour compatibilité avec les pages)
+// =============================================================================
+
+/**
+ * Convertit des centimes en montant formaté avec symbole de devise
+ * @param cents - Montant en centimes
+ * @param currency - Code devise (EUR, USD, CNY)
+ * @returns Chaîne formatée (ex: "12.34€")
+ */
+export function formatCentsToCurrency(cents: number, currency: SupportedCurrency | string = 'EUR'): string {
+  const validCurrency = (currency as SupportedCurrency) in SUPPORTED_CURRENCIES 
+    ? (currency as SupportedCurrency) 
+    : 'EUR';
+  return currencyConverter.formatPrice(cents, validCurrency);
+}
+
+/**
+ * Convertit un montant en euros vers des centimes
+ * @param amount - Montant en euros (ou autre devise)
+ * @returns Montant en centimes
+ */
+export function toCents(amount: number): number {
+  return Math.round(amount * 100);
+}
+
+/**
+ * Convertit des centimes vers un montant décimal
+ * @param cents - Montant en centimes
+ * @returns Montant décimal
+ */
+export function fromCents(cents: number): number {
+  return cents / 100;
+}

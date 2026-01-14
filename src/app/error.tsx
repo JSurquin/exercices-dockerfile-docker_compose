@@ -11,6 +11,7 @@ import {
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { useLocale } from "@/components/providers/locale-provider";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -18,6 +19,7 @@ interface ErrorProps {
 }
 
 export default function Error({ error, reset }: ErrorProps) {
+  const { messages } = useLocale();
   useEffect(() => {
     // Log l&apos;erreur pour le monitoring
     console.error("Application error:", error);
@@ -51,12 +53,10 @@ export default function Error({ error, reset }: ErrorProps) {
             className="mb-8"
           >
             <h1 className="text-3xl font-bold mb-4">
-              Oops ! Quelque chose s&apos;est mal passé
+              {messages.error.title}
             </h1>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              Une erreur inattendue s&apos;est produite. Ne vous inquiétez pas, nos
-              équipes ont été automatiquement notifiées et travaillent déjà sur
-              une solution.
+              {messages.error.message}
             </p>
           </motion.div>
 
@@ -71,7 +71,7 @@ export default function Error({ error, reset }: ErrorProps) {
               <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20">
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-red-900 dark:text-red-100 mb-2">
-                    Détails de l&apos;erreur (mode développement)
+                    {messages.error.errorDetails}
                   </h3>
                   <pre className="text-xs text-red-700 dark:text-red-300 overflow-auto bg-red-100 dark:bg-red-900/20 p-2 rounded">
                     {error.message}
@@ -99,18 +99,18 @@ export default function Error({ error, reset }: ErrorProps) {
                 className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
               >
                 <ArrowPathIcon className="w-4 h-4 mr-2" />
-                Réessayer
+                {messages.error.retry}
               </Button>
               <Button variant="outline" asChild>
                 <Link href="/">
                   <HomeIcon className="w-4 h-4 mr-2" />
-                  Retour à l&apos;accueil
+                  {messages.error.home}
                 </Link>
               </Button>
               <Button variant="outline" asChild>
                 <Link href="/support">
                   <ChatBubbleLeftRightIcon className="w-4 h-4 mr-2" />
-                  Contacter le support
+                  {messages.error.contactSupport}
                 </Link>
               </Button>
             </div>
@@ -118,12 +118,12 @@ export default function Error({ error, reset }: ErrorProps) {
             {/* Quick Tips */}
             <Card className="mt-8">
               <CardContent className="p-4 sm:p-6">
-                <h3 className="font-semibold mb-4">Quelques suggestions :</h3>
+                <h3 className="font-semibold mb-4">{messages.error.suggestions}</h3>
                 <ul className="text-sm text-muted-foreground space-y-2 text-left">
-                  <li>• Actualisez la page (F5 ou Ctrl+R)</li>
-                  <li>• Vérifiez votre connexion internet</li>
-                  <li>• Essayez de vider le cache de votre navigateur</li>
-                  <li>• Si le problème persiste, contactez notre support</li>
+                  <li>• {messages.error.tip1}</li>
+                  <li>• {messages.error.tip2}</li>
+                  <li>• {messages.error.tip3}</li>
+                  <li>• {messages.error.tip4}</li>
                 </ul>
               </CardContent>
             </Card>

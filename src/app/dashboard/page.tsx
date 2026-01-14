@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -152,20 +153,20 @@ export default function DashboardPage() {
       const result = await response.json();
 
       if (result.success) {
-        toast.success('Statut mis à jour', {
-          description: result.trade.message || 'Le statut du trade a été vérifié',
+        toast.success(messages.dashboard.toasts.statusUpdated, {
+          description: result.trade.message || messages.dashboard.toasts.statusVerified,
         });
         // Recharger la liste des trades
         refetchTrades();
       } else {
-        toast.error('Erreur', {
-          description: result.error || 'Impossible de vérifier le statut',
+        toast.error(messages.dashboard.toasts.error, {
+          description: result.error || messages.dashboard.toasts.statusCheckFailed,
         });
       }
     } catch (error) {
       console.error('Erreur refresh trade:', error);
-      toast.error('Erreur', {
-        description: 'Impossible de vérifier le statut du trade',
+      toast.error(messages.dashboard.toasts.error, {
+        description: messages.dashboard.toasts.statusCheckError,
       });
     } finally {
       setRefreshingTradeId(null);
@@ -352,13 +353,13 @@ export default function DashboardPage() {
                     </div>
                   ) : tradesError ? (
                     <div className="text-center py-8 text-red-500">
-                      <p>Erreur lors du chargement des trades: {tradesError}</p>
+                      <p>{messages.dashboard.tradeHistory.loadingError} {tradesError}</p>
                     </div>
                   ) : !tradesData?.trades || tradesData.trades.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <ChartBarIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                      <p>Aucun trade trouvé</p>
-                      <p className="text-sm">Commencez par vendre vos skins CS2 !</p>
+                      <p>{messages.dashboard.tradeHistory.noTrades}</p>
+                      <p className="text-sm">{messages.dashboard.tradeHistory.noTradesDescription}</p>
                     </div>
                   ) : (
                     <div className="space-y-3 sm:space-y-4">
@@ -520,6 +521,77 @@ export default function DashboardPage() {
 
             {/* Payments Tab */}
             <TabsContent value="payments" className="space-y-4 sm:space-y-6">
+              {/* Quick Actions - Payout & KYC */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* KYC Status Card */}
+                <Card className={`border-2 ${
+                  data?.user?.kycStatus === 'verified' || data?.user?.kycStatus === 'VERIFIED'
+                    ? 'border-green-500/50 bg-green-500/5'
+                    : data?.user?.kycStatus === 'in_progress'
+                    ? 'border-yellow-500/50 bg-yellow-500/5'
+                    : 'border-orange-500/50 bg-orange-500/5'
+                }`}>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                          data?.user?.kycStatus === 'verified' || data?.user?.kycStatus === 'VERIFIED'
+                            ? 'bg-green-500/20'
+                            : data?.user?.kycStatus === 'in_progress'
+                            ? 'bg-yellow-500/20'
+                            : 'bg-orange-500/20'
+                        }`}>
+                          {data?.user?.kycStatus === 'verified' || data?.user?.kycStatus === 'VERIFIED' ? (
+                            <CheckIcon className="w-6 h-6 text-green-500" />
+                          ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-orange-500">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                            </svg>
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{messages.dashboard.kycVerification}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {data?.user?.kycStatus === 'verified' || data?.user?.kycStatus === 'VERIFIED'
+                              ? messages.dashboard.kycVerified
+                              : data?.user?.kycStatus === 'in_progress'
+                              ? messages.dashboard.kycInProgress
+                              : messages.dashboard.kycRequired}
+                          </p>
+                        </div>
+                      </div>
+                      {(data?.user?.kycStatus !== 'verified' && data?.user?.kycStatus !== 'VERIFIED') && (
+                        <Button asChild className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
+                          <Link href="/kyc">Vérifier</Link>
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Payout Card */}
+                <Card className="border-2 border-green-500/50 bg-green-500/5">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                          <BanknotesIcon className="w-6 h-6 text-green-500" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{messages.dashboard.withdrawFunds}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {messages.dashboard.sepaOrCard}
+                          </p>
+                        </div>
+                      </div>
+                      <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700">
+                        <Link href="/payout">Retirer</Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
               {/* Preferred Payment Method Section */}
               <Card>
                 <CardHeader>

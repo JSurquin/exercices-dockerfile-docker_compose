@@ -27,6 +27,7 @@ model User {
   tickets               Int                 @default(0)
   totalVolumeCents      Int                 @default(0)
   kycStatus             KycStatus           @default(PENDING)
+  kycaidApplicantId     String?             @unique // KYCAID applicant ID
   acceptedTermsAt       DateTime?
   isFirstLogin          Boolean             @default(true)
   referredByAffiliateId String?
@@ -127,8 +128,12 @@ model Payout {
   paymentMethodId      String
   paymentReference     String?
   txId                 String?
-  gateFiOrderId        String?               @unique
+  gateFiOrderId        String?               @unique // Réutilisé pour Flexify orderId
   gateFiWidgetUrl      String?
+  flexifyPayoutId      String?               @unique // ID Flexify du payout
+  processingFeeCents   Int?                  // Frais de traitement
+  networkFeeCents      Int?                  // Frais réseau
+  errorMessage         String?               // Message d'erreur si échec
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   paidAt               DateTime?
@@ -141,6 +146,7 @@ model Payout {
   @@index([status])
   @@index([createdAt])
   @@index([gateFiOrderId])
+  @@index([flexifyPayoutId])
 }
 
 model KycDocument {
@@ -148,14 +154,18 @@ model KycDocument {
   userId          String
   type            KycDocumentType
   status          KycStatus       @default(PENDING)
-  providerId      String
+  providerId      String          // KYCAID applicant_id
+  verificationId  String?         // KYCAID verification_id
   uploadedAt      DateTime        @default(now())
   reviewedAt      DateTime?
   rejectionReason String?
+  metadata        Json?           // Données supplémentaires de KYCAID
   user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
+  @@index([providerId])
+  @@index([verificationId])
 }
 
 model AffiliateStats {
@@ -329,17 +339,31 @@ enum PayoutStatus {
   PROCESSING
   PAID
   FAILED
+  // Flexify specific statuses
+  FLEXIFY_PENDING
+  FLEXIFY_PROCESSING
+  FLEXIFY_PAID
+  FLEXIFY_FAILED
 }
 
 enum PaymentMethodType {
   SEPA
+  CARD
   CRYPTO
+  // Flexify specific types
+  FLEXIFY_SEPA
+  FLEXIFY_CARD
 }
 
 enum KycStatus {
   PENDING
   VERIFIED
   REJECTED
+  IN_PROGRESS
+  // KYCAID specific statuses
+  KYCAID_PENDING
+  KYCAID_VERIFIED
+  KYCAID_REJECTED
 }
 
 enum KycDocumentType {

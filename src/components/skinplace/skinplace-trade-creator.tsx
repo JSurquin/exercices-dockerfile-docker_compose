@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/providers/auth-provider';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface SkinplaceTradeCreatorProps {
   steamId64: string;
@@ -46,6 +47,7 @@ export function SkinplaceTradeCreator({
   onTradeCreated 
 }: SkinplaceTradeCreatorProps) {
   const { user, updateUser } = useAuth();
+  const { messages } = useLocale();
   const [tradeUrl, setTradeUrl] = useState(user?.tradeLink || '');
   const [isValidUrl, setIsValidUrl] = useState<boolean | null>(user?.tradeLink ? true : null);
   const [loading, setLoading] = useState(false);
@@ -64,7 +66,7 @@ export function SkinplaceTradeCreator({
 
   const handleSaveTradeLink = async () => {
     if (!isValidUrl || !tradeUrl) {
-      toast.error('Veuillez saisir un Trade Link Steam valide');
+      toast.error(messages.tradeCreator.invalidTradeLink);
       return;
     }
 
@@ -72,10 +74,10 @@ export function SkinplaceTradeCreator({
     try {
       await updateUser({ tradeLink: tradeUrl });
       setIsEditingTradeLink(false);
-      toast.success('Trade Link sauvegardé avec succès !');
+      toast.success(messages.tradeCreator.tradeLinkSaved);
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du Trade Link:', error);
-      toast.error('Erreur lors de la sauvegarde du Trade Link');
+      toast.error(messages.tradeCreator.tradeLinkError);
     } finally {
       setLoading(false);
     }
@@ -120,7 +122,7 @@ export function SkinplaceTradeCreator({
       const realNetValueCentimes = grossValueCentimes - realFees.total_fees;
 
       if (netValueCentimes <= 0) {
-        toast.error('La valeur nette après frais doit être positive');
+        toast.error(messages.tradeCreator.negativeNetValue);
         return;
       }
 
@@ -169,15 +171,15 @@ export function SkinplaceTradeCreator({
         };
         
         onTradeCreated?.(tradeData);
-        toast.success('Trade créé avec succès !');
+        toast.success(messages.tradeCreator.tradeCreatedSuccess);
       } else {
-        throw new Error(result.error || 'Erreur lors de la création du trade');
+        throw new Error(result.error || messages.tradeCreator.tradeCreationError);
       }
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error(errorMessage || messages.tradeCreator.tradeCreationError);
     } finally {
       setLoading(false);
     }

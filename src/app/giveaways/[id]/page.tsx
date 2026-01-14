@@ -73,7 +73,7 @@ export default function GiveawayDetailsPage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
-            <p className="text-lg">Chargement du giveaway...</p>
+            <p className="text-lg">{messages.giveawaysPage.loading}</p>
           </div>
         </div>
       </div>
@@ -87,9 +87,9 @@ export default function GiveawayDetailsPage() {
           <Card>
             <CardContent className="p-8 text-center">
               <GiftIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-xl font-semibold mb-2">Giveaway introuvable</h3>
+              <h3 className="text-xl font-semibold mb-2">{messages.giveawaysPage.giveawayNotFound}</h3>
               <p className="text-muted-foreground mb-6">
-                {error || 'Ce giveaway n\'existe pas ou a été supprimé.'}
+                {error || messages.giveawaysPage.giveawayNotFoundDesc}
               </p>
               <Link href="/giveaways">
                 <Button>
@@ -333,21 +333,21 @@ export default function GiveawayDetailsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Total des tickets vendus</span>
+                    <span className="text-sm text-muted-foreground">{messages.giveawaysPage.totalTicketsSold}</span>
                     <span className="font-semibold">{totalTickets}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Nombre de participants</span>
+                    <span className="text-sm text-muted-foreground">{messages.giveawaysPage.participantCount}</span>
                     <span className="font-semibold">{giveaway.entries.length}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Tickets moyens par participant</span>
+                    <span className="text-sm text-muted-foreground">{messages.giveawaysPage.avgTicketsPerParticipant}</span>
                     <span className="font-semibold">
                       {giveaway.entries.length > 0 ? (totalTickets / giveaway.entries.length).toFixed(1) : '0'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Taux de remplissage</span>
+                    <span className="text-sm text-muted-foreground">{messages.giveawaysPage.fillRate}</span>
                     <span className="font-semibold">{progress.toFixed(1)}%</span>
                   </div>
                   {giveaway.status === 'ENDED' && giveaway.randomSeed && (

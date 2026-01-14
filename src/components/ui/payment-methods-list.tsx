@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CreditCard, Plus, CheckCircle } from 'lucide-react';
 import { StripePaymentMethod } from '@/lib/types';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface PaymentMethodsListProps {
   onAddNew: () => void;
@@ -21,6 +22,7 @@ export function PaymentMethodsList({
   selectedId,
   className,
 }: PaymentMethodsListProps) {
+  const { messages } = useLocale();
   const [paymentMethods, setPaymentMethods] = useState<StripePaymentMethod[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,12 +38,12 @@ export function PaymentMethodsList({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors du chargement des méthodes de paiement');
+        throw new Error(data.error || messages.paymentMethodsList.loadingError);
       }
 
       setPaymentMethods(data.paymentMethods || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      setError(err instanceof Error ? err.message : messages.paymentMethodsList.unknownError);
     } finally {
       setIsLoading(false);
     }
@@ -65,12 +67,12 @@ export function PaymentMethodsList({
     if (pm.type === 'sepa_debit' && pm.sepa_debit) {
       return `**** ${pm.sepa_debit.last4}`;
     }
-    return 'Méthode de paiement';
+    return messages.paymentMethodsList.paymentMethod;
   };
 
   const getPaymentMethodDescription = (pm: StripePaymentMethod) => {
     if (pm.type === 'card' && pm.card) {
-      return `${pm.card.brand.toUpperCase()} • Expire ${pm.card.expMonth}/${pm.card.expYear}`;
+      return `${pm.card.brand.toUpperCase()} • ${messages.paymentMethodsList.expire} ${pm.card.expMonth}/${pm.card.expYear}`;
     }
     if (pm.type === 'sepa_debit' && pm.sepa_debit) {
       return `SEPA • ${pm.sepa_debit.country.toUpperCase()}`;
@@ -82,7 +84,7 @@ export function PaymentMethodsList({
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-6 w-6 animate-spin" />
-        <span className="ml-2">Chargement des méthodes de paiement...</span>
+        <span className="ml-2">{messages.paymentMethodsList.loading}</span>
       </div>
     );
   }
@@ -98,10 +100,10 @@ export function PaymentMethodsList({
   return (
     <div className={className}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Méthodes de paiement</h3>
+        <h3 className="text-lg font-semibold">{messages.paymentMethodsList.title}</h3>
         <Button onClick={onAddNew} size="sm">
           <Plus className="h-4 w-4 mr-2" />
-          Ajouter
+          {messages.paymentMethodsList.add}
         </Button>
       </div>
 
@@ -110,11 +112,11 @@ export function PaymentMethodsList({
           <CardContent className="flex flex-col items-center justify-center py-8">
             <CreditCard className="h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground text-center mb-4">
-              Aucune méthode de paiement sauvegardée
+              {messages.paymentMethodsList.noMethods}
             </p>
             <Button onClick={onAddNew}>
               <Plus className="h-4 w-4 mr-2" />
-              Ajouter une méthode de paiement
+              {messages.paymentMethodsList.addMethod}
             </Button>
           </CardContent>
         </Card>
@@ -145,7 +147,7 @@ export function PaymentMethodsList({
                       <CheckCircle className="h-5 w-5 text-primary" />
                     )}
                     <Badge variant="secondary">
-                      {pm.type === 'card' ? 'Carte' : 'SEPA'}
+                      {pm.type === 'card' ? messages.paymentMethodsList.card : messages.paymentMethodsList.sepa}
                     </Badge>
                   </div>
                 </div>

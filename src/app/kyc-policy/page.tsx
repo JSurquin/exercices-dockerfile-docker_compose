@@ -7,22 +7,35 @@ import { useLocale } from "@/components/providers/locale-provider";
 export default function KycPolicyPage() {
   const { locale, messages } = useLocale();
 
+  const translations = {
+    fr: {
+      title: "Politique KYC",
+      subtitle: "Processus de vérification d'identité conforme aux réglementations européennes",
+      comingSoon: "Cette page sera bientôt disponible avec du contenu dynamique.",
+      warning: "La vérification KYC est obligatoire avant tout paiement selon la réglementation européenne."
+    },
+    en: {
+      title: "KYC Policy",
+      subtitle: "Identity verification process compliant with European regulations",
+      comingSoon: "This page will soon be available with dynamic content.",
+      warning: "KYC verification is mandatory before any payment according to European regulations."
+    },
+    cn: {
+      title: "KYC政策",
+      subtitle: "符合欧洲法规的身份验证流程",
+      comingSoon: "此页面即将提供动态内容。",
+      warning: "根据欧洲法规，KYC验证是任何付款前的强制要求。"
+    }
+  };
+
+  const t = translations[locale] || translations.en;
+
   const fallbackContent = {
-    title: locale === 'fr' ? "Politique KYC" : locale === 'cn' ? "KYC政策" : "KYC Policy",
-    subtitle: locale === 'fr' 
-      ? "Processus de vérification d'identité conforme aux réglementations européennes"
-      : locale === 'cn'
-      ? "符合欧洲法规的身份验证流程"
-      : "Identity verification process compliant with European regulations",
+    title: t.title,
+    subtitle: t.subtitle,
     content: (
       <div className="space-y-6 text-muted-foreground">
-        <p>
-          {locale === 'fr' 
-            ? "Cette page sera bientôt disponible avec du contenu dynamique."
-            : locale === 'cn'
-            ? "此页面即将提供动态内容。"
-            : "This page will soon be available with dynamic content."}
-        </p>
+        <p>{t.comingSoon}</p>
       </div>
     ),
   };
@@ -33,13 +46,7 @@ export default function KycPolicyPage() {
       fallbackContent={fallbackContent}
       icon={ShieldCheckIcon}
       showWarning={true}
-      warningText={
-        locale === 'fr'
-          ? "La vérification KYC est obligatoire avant tout paiement selon la réglementation européenne."
-          : locale === 'cn'
-          ? "根据欧洲法规，KYC验证是任何付款前的强制要求。"
-          : "KYC verification is mandatory before any payment according to European regulations."
-      }
+      warningText={t.warning}
     />
   );
 }

@@ -358,6 +358,9 @@ export interface Messages {
         accepted: string;
         available: string;
         others: string;
+        noTrades: string;
+        loadingError: string;
+        noTradesDescription: string;
       };
       analytics: {
         tradingVolume: string;
@@ -384,6 +387,19 @@ export interface Messages {
         emailNotificationsDesc: string;
         enabled: string;
       };
+      toasts: {
+        statusUpdated: string;
+        statusVerified: string;
+        error: string;
+        statusCheckFailed: string;
+        statusCheckError: string;
+      };
+      kycVerification: string;
+      kycVerified: string;
+      kycInProgress: string;
+      kycRequired: string;
+      withdrawFunds: string;
+      sepaOrCard: string;
     };
   kyc: {
     title: string;
@@ -664,6 +680,7 @@ export interface Messages {
     subtitle: string;
     lastUpdated: string;
     gdprCompliant: string;
+    intro: string;
     commitment: {
       title: string;
       description1: string;
@@ -1774,11 +1791,21 @@ export interface Messages {
       title: string;
       description: string;
       tradeId: string;
+      tradeIdSteam: string;
       grossValue: string;
       totalFees: string;
       youWillReceive: string;
       trackTrade: string;
       openSteam: string;
+      acceptTrade: string;
+      howItWorksTitle: string;
+      steps: {
+        step1: string;
+        step2: string;
+        step3: string;
+        step4: string;
+      };
+      tip: string;
     };
     helpSteps: string[];
     successMessages: {
@@ -1789,10 +1816,29 @@ export interface Messages {
   giveawaysPage: {
     participationSuccess: string;
     available: string;
+    loading: string;
+    refreshGiveaways: string;
+    loadingGiveaways: string;
+    loadingEndedGiveaways: string;
+    loadingParticipations: string;
+    ticketsUsed: string;
+    ticketUsed: string;
+    participatedOn: string;
+    endedOn: string;
+    noEntries: string;
+    noEntriesDescription: string;
+    viewActive: string;
+    giveawayNotFound: string;
+    giveawayNotFoundDesc: string;
+    totalTicketsSold: string;
+    participantCount: string;
+    avgTicketsPerParticipant: string;
+    fillRate: string;
     myEntries: {
       title: string;
       inProgress: string;
       lost: string;
+      won: string;
     };
   };
   support: {
@@ -2892,6 +2938,8 @@ export interface Messages {
       rejectedDescription: string;
       reason: string;
       reapply: string;
+      applicationDetails: string;
+      commissionRate: string;
     };
   };
   help: {
@@ -3093,6 +3141,19 @@ export interface Messages {
       messages: {
         subscriptionSuccess: string;
         alreadySubscribed: string;
+      };
+      unsubscribe: {
+        title: string;
+        processing: string;
+        success: string;
+        successDesc: string;
+        alreadyUnsubscribed: string;
+        alreadyUnsubscribedDesc: string;
+        error: string;
+        errorDesc: string;
+        home: string;
+        resubscribe: string;
+        missingToken: string;
       };
     };
     skinplace: {
@@ -3540,4 +3601,191 @@ export interface Messages {
         uptime: string;
       };
     };
+  error: {
+    title: string;
+    message: string;
+    errorDetails: string;
+    retry: string;
+    home: string;
+    contactSupport: string;
+    suggestions: string;
+    tip1: string;
+    tip2: string;
+    tip3: string;
+    tip4: string;
+  };
+  globalError: {
+    title: string;
+    message: string;
+    errorDetails: string;
+    reload: string;
+    home: string;
+    support: string;
+    supportTitle: string;
+    supportDesc: string;
+  };
+  loading: {
+    title: string;
+    subtitle: string;
+    steam: string;
+    inventory: string;
+    skins: string;
+  };
+  notFound: {
+    code: string;
+    title: string;
+    message: string;
+    home: string;
+    explore: string;
+    quickLinks: {
+      title: string;
+      sell: string;
+      dashboard: string;
+      giveaways: string;
+      support: string;
+    };
+  };
+  resetPassword: {
+    tokenMissing: string;
+    passwordTooShort: string;
+    passwordMismatch: string;
+    resetError: string;
+    resetSuccess: string;
+    resetSuccessTitle: string;
+    resetSuccessMessage: string;
+    resetSuccessRedirect: string;
+    loginNow: string;
+    newPassword: string;
+    newPasswordSubtitle: string;
+    accountLabel: string;
+    resetPasswordTitle: string;
+    resetPasswordDesc: string;
+    confirmPassword: string;
+    strength: string;
+    strengthTooShort: string;
+    strengthWeak: string;
+    strengthMedium: string;
+    strengthStrong: string;
+    strengthVeryStrong: string;
+    cancel: string;
+    updating: string;
+    reset: string;
+  };
+  authProvider: {
+    steamLoginInProgress: string;
+    steamLoginRedirect: string;
+    steamLoginError: string;
+    steamLoginErrorDesc: string;
+    discordLoginInProgress: string;
+    discordLoginRedirect: string;
+    discordLoginSuccess: string;
+    discordLoginSuccessDesc: string;
+    discordLoginError: string;
+    discordLoginErrorDesc: string;
+    logoutSuccess: string;
+    logoutSuccessDesc: string;
+    logoutError: string;
+    logoutErrorDesc: string;
+  };
+  tradeCreator: {
+    invalidTradeLink: string;
+    tradeLinkSaved: string;
+    tradeLinkError: string;
+    negativeNetValue: string;
+    tradeCreatedSuccess: string;
+    tradeCreationError: string;
+  };
+  paymentMethodsList: {
+    loadingError: string;
+    unknownError: string;
+    loading: string;
+    title: string;
+    add: string;
+    noMethods: string;
+    addMethod: string;
+    card: string;
+    sepa: string;
+    paymentMethod: string;
+    sepaPrefix: string;
+    expire: string;
+  };
+  payoutPage: {
+    title: string;
+    subtitle: string;
+    loginRequired: {
+      title: string;
+      description: string;
+      login: string;
+    };
+    kyc: {
+      title: string;
+      required: string;
+      description: string;
+      startKyc: string;
+    };
+    tabs: {
+      request: string;
+      history: string;
+    };
+    request: {
+      title: string;
+      availableBalance: string;
+      selectMethod: string;
+      amountLabel: string;
+      amountPlaceholder: string;
+      feesInfo: string;
+      processingFee: string;
+      networkFee: string;
+      youReceive: string;
+      submitButton: string;
+      submitting: string;
+      minAmount: string;
+      security: {
+        title: string;
+        sepaInfo: string;
+        cryptoInfo: string;
+      };
+    };
+    history: {
+      title: string;
+      noPayout: string;
+      noPayoutDesc: string;
+      requestPayout: string;
+      columns: {
+        date: string;
+        amount: string;
+        method: string;
+        status: string;
+        reference: string;
+      };
+      status: {
+        pending: string;
+        verificationRequired: string;
+        verified: string;
+        scheduled: string;
+        executed: string;
+        paid: string;
+        failed: string;
+      };
+    };
+    toast: {
+      amountTooLow: string;
+      insufficientBalance: string;
+      payoutCreated: string;
+      payoutCreatedDesc: string;
+      payoutError: string;
+    };
+  };
+  kycPolicy: {
+    title: string;
+    subtitle: string;
+    content: string;
+    warningText: string;
+  };
+  amlPolicy: {
+    title: string;
+    subtitle: string;
+    content: string;
+    warningText: string;
+  };
 }

@@ -1,8 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useLocale } from "@/components/providers/locale-provider";
 
 export default function Loading() {
+  const { messages } = useLocale();
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center relative max-w-md mx-auto px-6">
@@ -117,10 +119,10 @@ export default function Loading() {
             animate={{ opacity: [0.7, 1, 0.7] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            Chargement en cours
+            {messages.loading.title}
           </motion.h2>
           <p className="text-muted-foreground text-sm">
-            Préparation de votre inventaire...
+            {messages.loading.subtitle}
           </p>
         </motion.div>
 
@@ -165,9 +167,9 @@ export default function Loading() {
           className="mt-8 flex justify-center space-x-6 text-sm text-muted-foreground"
         >
           {[
-            { label: "Steam", delay: 0 },
-            { label: "Inventaire", delay: 0.5 },
-            { label: "Skins", delay: 1 }
+            { label: messages.loading.steam, delay: 0 },
+            { label: messages.loading.inventory, delay: 0.5 },
+            { label: messages.loading.skins, delay: 1 }
           ].map((item, i) => (
             <motion.div
               key={item.label}

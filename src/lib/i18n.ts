@@ -316,6 +316,9 @@ export const messages: Record<Locale, Messages> = {
         accepted: "Accepté:",
         available: "Disponible:",
         others: "autres",
+        noTrades: "Aucun trade trouvé",
+        noTradesDescription: "Commencez par vendre vos skins CS2 !",
+        loadingError: "Erreur lors du chargement des trades:",
       },
       analytics: {
         tradingVolume: "Volume de trading",
@@ -342,6 +345,19 @@ export const messages: Record<Locale, Messages> = {
         emailNotificationsDesc: "Alertes de trading",
         enabled: "Activé",
       },
+      toasts: {
+        statusUpdated: "Statut mis à jour",
+        statusVerified: "Le statut du trade a été vérifié",
+        error: "Erreur",
+        statusCheckFailed: "Impossible de vérifier le statut",
+        statusCheckError: "Impossible de vérifier le statut du trade",
+      },
+      kycVerification: "Vérification KYC",
+      kycVerified: "Identité vérifiée ✓",
+      kycInProgress: "En cours de vérification...",
+      kycRequired: "Requis pour les retraits",
+      withdrawFunds: "Retirer vos fonds",
+      sepaOrCard: "SEPA ou Carte bancaire",
     },
     kyc: {
       title: "Vérification KYC",
@@ -1677,6 +1693,7 @@ export const messages: Record<Locale, Messages> = {
       subtitle: "Comment nous collectons, utilisons et protégeons vos données personnelles",
       lastUpdated: "Dernière mise à jour : 21 septembre 2024",
       gdprCompliant: "Conforme RGPD",
+      intro: "CashTrade s'engage à protéger votre vie privée et vos données personnelles conformément au RGPD.",
       commitment: {
         title: "Notre engagement",
         description1: "Chez CashTrade, la protection de vos données personnelles est notre priorité absolue. Cette politique explique comment nous collectons, utilisons, stockons et protégeons vos informations en conformité avec le Règlement Général sur la Protection des Données (RGPD) et les lois françaises.",
@@ -2793,14 +2810,24 @@ export const messages: Record<Locale, Messages> = {
         confirmation: "Confirmation"
       },
       confirmation: {
-        title: "Trade créé avec succès !",
-        description: "Votre trade a été créé et est en attente d'acceptation.",
-        tradeId: "ID de la vente",
-        grossValue: "Valeur brute",
-        totalFees: "Frais totaux",
-        youWillReceive: "Vous recevrez",
-        trackTrade: "Suivre le trade",
-        openSteam: "Ouvrir Steam"
+        title: "🎉 Trade créé avec succès !",
+        description: "Votre trade a été accepté par notre bot. Acceptez l'offre sur Steam pour continuer.",
+        tradeId: "ID du trade:",
+        tradeIdSteam: "Trade ID Steam:",
+        grossValue: "Valeur brute:",
+        totalFees: "Frais totaux:",
+        youWillReceive: "Vous recevrez:",
+        trackTrade: "Suivre mes trades",
+        acceptTrade: "Accepter le trade sur Steam",
+        openSteam: "Ouvrir Steam",
+        howItWorksTitle: "💰 Comment ça marche après ?",
+        steps: {
+          step1: "Acceptez le trade sur Steam et laissez notre bot récupérer vos skins",
+          step2: "Trade Hold Steam de 7 jours - un délai de sécurité imposé par Steam",
+          step3: "Configurez votre méthode de paiement (SEPA ou crypto) dans votre dashboard pendant cette période",
+          step4: "Après 7 jours, recevez automatiquement {amount} sur votre compte"
+        },
+        tip: "💡 Astuce : Configurez dès maintenant votre méthode de paiement dans votre dashboard pour recevoir votre argent automatiquement !"
       },
       helpSteps: ["Ouvrez Steam et allez dans votre inventaire", "Cliquez sur \"Paramètres de confidentialité\"", "Copiez l'URL du Trade Link"],
       successMessages: {
@@ -2811,11 +2838,111 @@ export const messages: Record<Locale, Messages> = {
     giveawaysPage: {
       participationSuccess: "Participation enregistrée !",
       available: "tickets disponibles",
+      loading: "Chargement...",
+      refreshGiveaways: "Actualiser les giveaways",
+      noEntries: "Aucune participation",
+      noEntriesDescription: "Vous n'avez pas encore participé à des giveaways",
+      viewActive: "Voir les giveaways actifs",
+      loadingGiveaways: "Chargement des giveaways...",
+      loadingEndedGiveaways: "Chargement des giveaways terminés...",
+      loadingParticipations: "Chargement de vos participations...",
+      ticketsUsed: "tickets utilisés",
+      ticketUsed: "ticket utilisé",
+      participatedOn: "Participé le",
+      endedOn: "Terminé le",
       myEntries: {
         title: "Mes participations",
         inProgress: "En cours",
-        lost: "Perdu"
+        lost: "Perdu",
+        won: "Gagné"
+      },
+      giveawayNotFound: "Giveaway introuvable",
+      giveawayNotFoundDesc: "Ce giveaway n'existe pas ou a été supprimé.",
+      totalTicketsSold: "Total des tickets vendus",
+      participantCount: "Nombre de participants",
+      avgTicketsPerParticipant: "Tickets moyens par participant",
+      fillRate: "Taux de remplissage",
+    },
+    payoutPage: {
+      title: 'Retirer vos fonds',
+      subtitle: 'Choisissez votre méthode de paiement préférée',
+      loginRequired: {
+        title: 'Connexion requise',
+        description: 'Vous devez être connecté pour accéder à cette page.',
+        login: 'Se connecter'
+      },
+      kyc: {
+        title: 'Vérification d\'identité',
+        required: 'Vérification d\'identité requise',
+        description: 'Vous devez compléter la vérification KYC avant de pouvoir effectuer des retraits.',
+        startKyc: 'Commencer la vérification'
+      },
+      tabs: {
+        request: 'Demander un retrait',
+        history: 'Historique'
+      },
+      request: {
+        title: 'Demander un retrait',
+        availableBalance: 'Solde disponible',
+        selectMethod: 'Méthode de paiement',
+        amountLabel: 'Montant à retirer',
+        amountPlaceholder: 'Entrez le montant',
+        feesInfo: 'Frais inclus',
+        processingFee: 'Frais de traitement',
+        networkFee: 'Frais réseau',
+        youReceive: 'Vous recevrez',
+        submitButton: 'Effectuer le retrait',
+        submitting: 'Traitement en cours...',
+        minAmount: 'Montant minimum: 10€',
+        security: {
+          title: 'Sécurité',
+          sepaInfo: 'Virement bancaire en 1-3 jours ouvrés',
+          cryptoInfo: 'Instant sur crypto'
+        }
+      },
+      history: {
+        title: 'Historique des retraits',
+        noPayout: 'Aucun retrait',
+        noPayoutDesc: 'Aucun retrait effectué',
+        requestPayout: 'Demander un retrait',
+        columns: {
+          date: 'Date',
+          amount: 'Montant',
+          method: 'Méthode',
+          status: 'Statut',
+          reference: 'Référence'
+        },
+        status: {
+          pending: 'En attente',
+          verificationRequired: 'Vérification requise',
+          verified: 'Vérifié',
+          scheduled: 'Planifié',
+          executed: 'Exécuté',
+          paid: 'Payé',
+          failed: 'Échoué'
+        }
+      },
+      toast: {
+        amountTooLow: 'Montant trop faible',
+        insufficientBalance: 'Solde insuffisant',
+        payoutCreated: 'Demande de retrait créée',
+        payoutCreatedDesc: 'Votre demande de retrait a été créée avec succès',
+        payoutError: 'Erreur lors de la création du retrait'
       }
+    },
+    paymentMethodsList: {
+      title: 'Méthodes de paiement',
+      add: 'Ajouter',
+      addMethod: 'Ajouter une méthode de paiement',
+      loading: 'Chargement des méthodes de paiement...',
+      loadingError: 'Erreur lors du chargement des méthodes de paiement',
+      unknownError: 'Erreur inconnue',
+      noMethods: 'Aucune méthode de paiement sauvegardée',
+      paymentMethod: 'Méthode de paiement',
+      card: 'Carte',
+      sepa: 'SEPA',
+      sepaPrefix: 'IBAN',
+      expire: 'Expire',
     },
     // Pages avec traductions manquantes
     affiliate: {
@@ -2858,7 +2985,9 @@ export const messages: Record<Locale, Messages> = {
         rejected: "Demande rejetée",
         rejectedDescription: "Malheureusement, votre demande a été rejetée",
         reason: "Raison",
-        reapply: "Soumettre une nouvelle demande"
+        reapply: "Soumettre une nouvelle demande",
+        applicationDetails: "Détails de la demande",
+        commissionRate: "Taux de commission"
       }
     },
     help: {
@@ -3061,6 +3190,19 @@ export const messages: Record<Locale, Messages> = {
           subscriptionSuccess: "Inscription réussie ! Merci de vous être abonné à notre newsletter.",
           alreadySubscribed: "Cette adresse email est déjà abonnée à notre newsletter.",
         },
+        unsubscribe: {
+          title: "Désinscription de la newsletter",
+          processing: "Traitement en cours...",
+          success: "Désinscription réussie",
+          successDesc: "Vous ne recevrez plus nos newsletters",
+          alreadyUnsubscribed: "Déjà désinscrit",
+          alreadyUnsubscribedDesc: "Vous êtes déjà désinscrit de notre newsletter",
+          error: "Erreur",
+          errorDesc: "Une erreur est survenue lors de la désinscription",
+          home: "Retour à l'accueil",
+          resubscribe: "Se réabonner",
+          missingToken: "Token manquant"
+        }
       },
       skinplace: {
         allRarities: "Toutes les raretés",
@@ -3507,6 +3649,112 @@ export const messages: Record<Locale, Messages> = {
         uptime: "Uptime",
       },
     },
+    loading: {
+      title: "Chargement en cours",
+      subtitle: "Préparation de votre inventaire...",
+      steam: "Steam",
+      inventory: "Inventaire",
+      skins: "Skins",
+    },
+    error: {
+      title: "Oops ! Quelque chose s'est mal passé",
+      message: "Une erreur inattendue s'est produite. Ne vous inquiétez pas, nos équipes ont été automatiquement notifiées et travaillent déjà sur une solution.",
+      errorDetails: "Détails de l'erreur (mode développement)",
+      retry: "Réessayer",
+      home: "Retour à l'accueil",
+      contactSupport: "Contacter le support",
+      suggestions: "Quelques suggestions :",
+      tip1: "Actualisez la page (F5 ou Ctrl+R)",
+      tip2: "Vérifiez votre connexion internet",
+      tip3: "Essayez de vider le cache de votre navigateur",
+      tip4: "Si le problème persiste, contactez notre support",
+    },
+    globalError: {
+      title: "Erreur critique",
+      message: "Une erreur critique s'est produite. L'application doit être rechargée.",
+      errorDetails: "Détails de l'erreur :",
+      reload: "Recharger l'application",
+      home: "Retour à l'accueil",
+      support: "Contacter le support",
+      supportTitle: "Besoin d'aide ?",
+      supportDesc: "Si ce problème persiste, contactez notre support",
+    },
+    resetPassword: {
+      tokenMissing: "Token manquant",
+      passwordTooShort: "Le mot de passe doit contenir au moins 8 caractères",
+      passwordMismatch: "Les mots de passe ne correspondent pas",
+      resetError: "Erreur lors de la réinitialisation du mot de passe",
+      resetSuccess: "Mot de passe réinitialisé avec succès",
+      resetSuccessTitle: "Mot de passe réinitialisé !",
+      resetSuccessMessage: "Votre mot de passe a été mis à jour avec succès",
+      resetSuccessRedirect: "Redirection automatique vers la page de connexion...",
+      newPassword: "Nouveau mot de passe",
+      newPasswordSubtitle: "Choisissez un nouveau mot de passe sécurisé",
+      accountLabel: "Compte",
+      resetPasswordTitle: "Réinitialiser votre mot de passe",
+      resetPasswordDesc: "Choisissez un nouveau mot de passe pour votre compte",
+      confirmPassword: "Confirmer le mot de passe",
+      strength: "Force du mot de passe",
+      strengthTooShort: "Trop court",
+      strengthWeak: "Faible",
+      strengthMedium: "Moyen",
+      strengthStrong: "Fort",
+      strengthVeryStrong: "Très fort",
+      cancel: "Annuler",
+      updating: "Mise à jour...",
+      reset: "Réinitialiser",
+      loginNow: "Se connecter maintenant",
+    },
+    authProvider: {
+      steamLoginInProgress: "Connexion Steam en cours...",
+      steamLoginRedirect: "Redirection vers Steam",
+      steamLoginError: "Erreur de connexion Steam",
+      steamLoginErrorDesc: "Impossible de se connecter avec Steam",
+      discordLoginInProgress: "Connexion Discord en cours...",
+      discordLoginRedirect: "Redirection vers Discord",
+      discordLoginSuccess: "Connexion Discord réussie !",
+      discordLoginSuccessDesc: "Bienvenue sur CashTrade",
+      discordLoginError: "Erreur de connexion Discord",
+      discordLoginErrorDesc: "Impossible de se connecter avec Discord",
+      logoutSuccess: "Déconnexion réussie",
+      logoutSuccessDesc: "À bientôt sur CashTrade !",
+      logoutError: "Erreur lors de la déconnexion",
+      logoutErrorDesc: "Vous avez été déconnecté",
+    },
+    tradeCreator: {
+      invalidTradeLink: "Veuillez saisir un Trade Link Steam valide",
+      tradeLinkSaved: "Trade Link sauvegardé avec succès !",
+      tradeLinkError: "Erreur lors de la sauvegarde du Trade Link",
+      negativeNetValue: "La valeur nette après frais doit être positive",
+      tradeCreatedSuccess: "Trade créé avec succès !",
+      tradeCreationError: "Erreur lors de la création du trade",
+    },
+    notFound: {
+      code: "404",
+      title: "Page introuvable",
+      message: "Désolé, la page que vous recherchez n'existe pas ou a été déplacée.",
+      home: "Retour à l'accueil",
+      explore: "Explorer",
+      quickLinks: {
+        title: "Liens rapides",
+        sell: "Vendre mes skins",
+        giveaways: "Giveaways",
+        support: "Support",
+        dashboard: "Dashboard"
+      }
+    },
+    kycPolicy: {
+      title: "Politique KYC",
+      subtitle: "Know Your Customer - Vérification d'identité",
+      content: "Nous sommes tenus par la loi de vérifier l'identité de nos utilisateurs avant de permettre certaines transactions. Cette procédure de vérification KYC (Know Your Customer) nous permet de nous conformer aux réglementations en vigueur et de protéger nos utilisateurs contre la fraude.",
+      warningText: "Vos données personnelles sont stockées de manière sécurisée et ne sont jamais partagées avec des tiers sans votre consentement."
+    },
+    amlPolicy: {
+      title: "Politique AML",
+      subtitle: "Anti-Money Laundering - Lutte contre le blanchiment d'argent",
+      content: "Notre politique AML (Anti-Money Laundering) vise à prévenir et détecter toute activité suspecte liée au blanchiment d'argent ou au financement du terrorisme. Nous surveillons activement les transactions et coopérons avec les autorités compétentes lorsque cela est nécessaire.",
+      warningText: "Toute activité suspecte sera signalée aux autorités compétentes conformément à la loi."
+    }
   },
   en: {
     nav: {
@@ -3818,6 +4066,9 @@ export const messages: Record<Locale, Messages> = {
         accepted: "Accepted:",
         available: "Available:",
         others: "others",
+        noTrades: "No trades found",
+        noTradesDescription: "Start by selling your CS2 skins!",
+        loadingError: "Error loading trades:",
       },
       analytics: {
         tradingVolume: "Trading Volume",
@@ -3844,6 +4095,19 @@ export const messages: Record<Locale, Messages> = {
         emailNotificationsDesc: "Trading alerts",
         enabled: "Enabled",
       },
+      toasts: {
+        statusUpdated: "Status updated",
+        statusVerified: "Trade status has been verified",
+        error: "Error",
+        statusCheckFailed: "Unable to verify status",
+        statusCheckError: "Unable to verify trade status",
+      },
+      kycVerification: "KYC Verification",
+      kycVerified: "Identity verified ✓",
+      kycInProgress: "Verification in progress...",
+      kycRequired: "Required for withdrawals",
+      withdrawFunds: "Withdraw your funds",
+      sepaOrCard: "SEPA or Bank card",
     },
     kyc: {
       title: "KYC Verification",
@@ -4299,6 +4563,7 @@ export const messages: Record<Locale, Messages> = {
       subtitle: "How we collect, use and protect your personal data",
       lastUpdated: "Last updated: September 21, 2024",
       gdprCompliant: "GDPR Compliant",
+      intro: "CashTrade is committed to protecting your privacy and personal data in accordance with GDPR.",
       commitment: {
         title: "Our commitment",
         description1: "At CashTrade, protecting your personal data is our absolute priority. This policy explains how we collect, use, store and protect your information in compliance with the General Data Protection Regulation (GDPR) and French laws.",
@@ -5248,14 +5513,24 @@ export const messages: Record<Locale, Messages> = {
         confirmation: "Confirmation"
       },
       confirmation: {
-        title: "Trade created successfully!",
-        description: "Your trade has been created and is awaiting acceptance.",
-        tradeId: "Sale ID",
-        grossValue: "Gross value",
-        totalFees: "Total fees",
-        youWillReceive: "You will receive",
-        trackTrade: "Track trade",
-        openSteam: "Open Steam"
+        title: "🎉 Trade created successfully!",
+        description: "Your trade has been accepted by our bot. Accept the offer on Steam to continue.",
+        tradeId: "Trade ID:",
+        tradeIdSteam: "Steam Trade ID:",
+        grossValue: "Gross value:",
+        totalFees: "Total fees:",
+        youWillReceive: "You will receive:",
+        trackTrade: "Track my trades",
+        acceptTrade: "Accept trade on Steam",
+        openSteam: "Open Steam",
+        howItWorksTitle: "💰 What happens next?",
+        steps: {
+          step1: "Accept the trade on Steam and let our bot collect your skins",
+          step2: "Steam Trade Hold of 7 days - a security delay imposed by Steam",
+          step3: "Set up your payment method (SEPA or crypto) in your dashboard during this period",
+          step4: "After 7 days, automatically receive {amount} in your account"
+        },
+        tip: "💡 Tip: Set up your payment method now in your dashboard to receive your money automatically!"
       },
       helpSteps: ["Open Steam and go to your inventory", "Click on \"Privacy settings\"", "Copy the Trade Link URL"],
       successMessages: {
@@ -5266,11 +5541,111 @@ export const messages: Record<Locale, Messages> = {
     giveawaysPage: {
       participationSuccess: "Entry registered!",
       available: "tickets available",
+      loading: "Loading...",
+      refreshGiveaways: "Refresh giveaways",
+      noEntries: "No entries",
+      noEntriesDescription: "You haven't participated in any giveaways yet",
+      viewActive: "View active giveaways",
+      loadingGiveaways: "Loading giveaways...",
+      loadingEndedGiveaways: "Loading ended giveaways...",
+      loadingParticipations: "Loading your entries...",
+      ticketsUsed: "tickets used",
+      ticketUsed: "ticket used",
+      participatedOn: "Participated on",
+      endedOn: "Ended on",
       myEntries: {
         title: "My entries",
         inProgress: "In progress",
-        lost: "Lost"
+        lost: "Lost",
+        won: "Won"
+      },
+      giveawayNotFound: "Giveaway not found",
+      giveawayNotFoundDesc: "This giveaway does not exist or has been deleted.",
+      totalTicketsSold: "Total tickets sold",
+      participantCount: "Number of participants",
+      avgTicketsPerParticipant: "Average tickets per participant",
+      fillRate: "Fill rate",
+    },
+    payoutPage: {
+      title: 'Withdraw your funds',
+      subtitle: 'Choose your preferred payment method',
+      loginRequired: {
+        title: 'Login required',
+        description: 'You must be logged in to access this page.',
+        login: 'Login'
+      },
+      kyc: {
+        title: 'Identity verification',
+        required: 'Identity verification required',
+        description: 'You must complete KYC verification before making withdrawals.',
+        startKyc: 'Start verification'
+      },
+      tabs: {
+        request: 'Request withdrawal',
+        history: 'History'
+      },
+      request: {
+        title: 'Request withdrawal',
+        availableBalance: 'Available balance',
+        selectMethod: 'Payment method',
+        amountLabel: 'Amount to withdraw',
+        amountPlaceholder: 'Enter amount',
+        feesInfo: 'Fees included',
+        processingFee: 'Processing fee',
+        networkFee: 'Network fee',
+        youReceive: 'You will receive',
+        submitButton: 'Withdraw',
+        submitting: 'Processing...',
+        minAmount: 'Minimum amount: €10',
+        security: {
+          title: 'Security',
+          sepaInfo: 'Bank transfer in 1-3 business days',
+          cryptoInfo: 'Instant on crypto'
+        }
+      },
+      history: {
+        title: 'Withdrawal history',
+        noPayout: 'No withdrawals',
+        noPayoutDesc: 'No withdrawals made',
+        requestPayout: 'Request withdrawal',
+        columns: {
+          date: 'Date',
+          amount: 'Amount',
+          method: 'Method',
+          status: 'Status',
+          reference: 'Reference'
+        },
+        status: {
+          pending: 'Pending',
+          verificationRequired: 'Verification required',
+          verified: 'Verified',
+          scheduled: 'Scheduled',
+          executed: 'Executed',
+          paid: 'Paid',
+          failed: 'Failed'
+        }
+      },
+      toast: {
+        amountTooLow: 'Amount too low',
+        insufficientBalance: 'Insufficient balance',
+        payoutCreated: 'Withdrawal request created',
+        payoutCreatedDesc: 'Your withdrawal request has been created successfully',
+        payoutError: 'Error creating withdrawal'
       }
+    },
+    paymentMethodsList: {
+      title: 'Payment methods',
+      add: 'Add',
+      addMethod: 'Add a payment method',
+      loading: 'Loading payment methods...',
+      loadingError: 'Error loading payment methods',
+      unknownError: 'Unknown error',
+      noMethods: 'No saved payment methods',
+      paymentMethod: 'Payment method',
+      card: 'Card',
+      sepa: 'SEPA',
+      sepaPrefix: 'IBAN',
+      expire: 'Expires',
     },
     chatWidget: {
       support: "CashTrade Support",
@@ -6193,7 +6568,9 @@ export const messages: Record<Locale, Messages> = {
         rejected: "Application rejected",
         rejectedDescription: "Unfortunately, your application has been rejected",
         reason: "Reason",
-        reapply: "Submit a new application"
+        reapply: "Submit a new application",
+        applicationDetails: "Application details",
+        commissionRate: "Commission rate"
       }
     },
     settings: {
@@ -6563,6 +6940,19 @@ export const messages: Record<Locale, Messages> = {
           subscriptionSuccess: "Subscription successful! Thank you for subscribing to our newsletter.",
           alreadySubscribed: "This email address is already subscribed to our newsletter.",
         },
+        unsubscribe: {
+          title: "Newsletter unsubscription",
+          processing: "Processing...",
+          success: "Successfully unsubscribed",
+          successDesc: "You will no longer receive our newsletters",
+          alreadyUnsubscribed: "Already unsubscribed",
+          alreadyUnsubscribedDesc: "You are already unsubscribed from our newsletter",
+          error: "Error",
+          errorDesc: "An error occurred during unsubscription",
+          home: "Back to home",
+          resubscribe: "Resubscribe",
+          missingToken: "Missing token"
+        }
       },
       skinplace: {
         allRarities: "All rarities",
@@ -7009,6 +7399,112 @@ export const messages: Record<Locale, Messages> = {
         uptime: "Uptime",
       },
     },
+    loading: {
+      title: "Loading",
+      subtitle: "Preparing your inventory...",
+      steam: "Steam",
+      inventory: "Inventory",
+      skins: "Skins",
+    },
+    error: {
+      title: "Oops! Something went wrong",
+      message: "An unexpected error occurred. Don't worry, our teams have been automatically notified and are already working on a solution.",
+      errorDetails: "Error details (development mode)",
+      retry: "Retry",
+      home: "Back to home",
+      contactSupport: "Contact support",
+      suggestions: "Some suggestions:",
+      tip1: "Refresh the page (F5 or Ctrl+R)",
+      tip2: "Check your internet connection",
+      tip3: "Try clearing your browser cache",
+      tip4: "If the problem persists, contact our support",
+    },
+    globalError: {
+      title: "Critical error",
+      message: "A critical error occurred. The application needs to be reloaded.",
+      errorDetails: "Error details:",
+      reload: "Reload application",
+      home: "Back to home",
+      support: "Contact support",
+      supportTitle: "Need help?",
+      supportDesc: "If this problem persists, contact our support",
+    },
+    resetPassword: {
+      tokenMissing: "Missing token",
+      passwordTooShort: "Password must contain at least 8 characters",
+      passwordMismatch: "Passwords do not match",
+      resetError: "Error resetting password",
+      resetSuccess: "Password reset successfully",
+      resetSuccessTitle: "Password reset!",
+      resetSuccessMessage: "Your password has been updated successfully",
+      resetSuccessRedirect: "Automatically redirecting to login page...",
+      newPassword: "New password",
+      newPasswordSubtitle: "Choose a new secure password",
+      accountLabel: "Account",
+      resetPasswordTitle: "Reset your password",
+      resetPasswordDesc: "Choose a new password for your account",
+      confirmPassword: "Confirm password",
+      strength: "Password strength",
+      strengthTooShort: "Too short",
+      strengthWeak: "Weak",
+      strengthMedium: "Medium",
+      strengthStrong: "Strong",
+      strengthVeryStrong: "Very strong",
+      cancel: "Cancel",
+      updating: "Updating...",
+      reset: "Reset",
+      loginNow: "Login now",
+    },
+    authProvider: {
+      steamLoginInProgress: "Steam login in progress...",
+      steamLoginRedirect: "Redirecting to Steam",
+      steamLoginError: "Steam connection error",
+      steamLoginErrorDesc: "Unable to connect with Steam",
+      discordLoginInProgress: "Discord login in progress...",
+      discordLoginRedirect: "Redirecting to Discord",
+      discordLoginSuccess: "Discord connection successful!",
+      discordLoginSuccessDesc: "Welcome to CashTrade",
+      discordLoginError: "Discord connection error",
+      discordLoginErrorDesc: "Unable to connect with Discord",
+      logoutSuccess: "Logout successful",
+      logoutSuccessDesc: "See you soon on CashTrade!",
+      logoutError: "Error during logout",
+      logoutErrorDesc: "You have been logged out",
+    },
+    tradeCreator: {
+      invalidTradeLink: "Please enter a valid Steam Trade Link",
+      tradeLinkSaved: "Trade Link saved successfully!",
+      tradeLinkError: "Error saving Trade Link",
+      negativeNetValue: "Net value after fees must be positive",
+      tradeCreatedSuccess: "Trade created successfully!",
+      tradeCreationError: "Error creating trade",
+    },
+    notFound: {
+      code: "404",
+      title: "Page not found",
+      message: "Sorry, the page you are looking for does not exist or has been moved.",
+      home: "Back to home",
+      explore: "Explore",
+      quickLinks: {
+        title: "Quick links",
+        sell: "Sell my skins",
+        giveaways: "Giveaways",
+        support: "Support",
+        dashboard: "Dashboard"
+      }
+    },
+    kycPolicy: {
+      title: "KYC Policy",
+      subtitle: "Know Your Customer - Identity Verification",
+      content: "We are required by law to verify the identity of our users before allowing certain transactions. This KYC (Know Your Customer) verification procedure allows us to comply with applicable regulations and protect our users against fraud.",
+      warningText: "Your personal data is stored securely and is never shared with third parties without your consent."
+    },
+    amlPolicy: {
+      title: "AML Policy",
+      subtitle: "Anti-Money Laundering",
+      content: "Our AML (Anti-Money Laundering) policy aims to prevent and detect any suspicious activity related to money laundering or terrorist financing. We actively monitor transactions and cooperate with relevant authorities when necessary.",
+      warningText: "Any suspicious activity will be reported to the relevant authorities in accordance with the law."
+    }
   },
   cn: {
     nav: {
@@ -7316,6 +7812,9 @@ export const messages: Record<Locale, Messages> = {
         accepted: "已接受：",
         available: "可用：",
         others: "其他",
+        noTrades: "未找到交易",
+        noTradesDescription: "开始出售您的CS2皮肤！",
+        loadingError: "加载交易时出错：",
       },
       analytics: {
         tradingVolume: "交易量",
@@ -7342,6 +7841,19 @@ export const messages: Record<Locale, Messages> = {
         emailNotificationsDesc: "交易提醒",
         enabled: "已启用",
       },
+      toasts: {
+        statusUpdated: "状态已更新",
+        statusVerified: "交易状态已验证",
+        error: "错误",
+        statusCheckFailed: "无法验证状态",
+        statusCheckError: "无法验证交易状态",
+      },
+      kycVerification: "KYC 验证",
+      kycVerified: "身份已验证 ✓",
+      kycInProgress: "验证进行中...",
+      kycRequired: "提款所需",
+      withdrawFunds: "提取资金",
+      sepaOrCard: "SEPA 或银行卡",
     },
     kyc: {
       title: "KYC验证",
@@ -7645,7 +8157,8 @@ export const messages: Record<Locale, Messages> = {
       subtitle: "我们如何收集、使用和保护您的个人数据",
       lastUpdated: "最后更新：2024年9月21日",
       gdprCompliant: "GDPR合规",
-      commitment: { title: "", description1: "", description2: "" },
+      intro: "CashTrade致力于按照GDPR保护您的隐私和个人数据。",
+      commitment: { title: "我们的承诺", description1: "在CashTrade，保护您的个人数据是我们的首要任务。", description2: "我们应用数据最小化原则。" },
       dataTypes: { title: "", identity: { category: "", data: [], purpose: "", retention: "" }, kyc: { category: "", data: [], purpose: "", retention: "" }, financial: { category: "", data: [], purpose: "", retention: "" }, usage: { category: "", data: [], purpose: "", retention: "" } },
       legalBasis: { title: "", contract: { title: "", description: "" }, legal: { title: "", description: "" }, legitimate: { title: "", description: "" } },
       rights: { title: "", access: { title: "", description: "", action: "" }, rectification: { title: "", description: "", action: "" }, erasure: { title: "", description: "", action: "" }, portability: { title: "", description: "", action: "" } },
@@ -8388,26 +8901,136 @@ export const messages: Record<Locale, Messages> = {
         confirmation: "确认"
       },
       confirmation: {
-        title: "交易创建成功！",
-        description: "您的交易已创建并等待接受。",
-        tradeId: "销售ID",
-        grossValue: "总价值",
-        totalFees: "总费用",
-        youWillReceive: "您将收到",
-        trackTrade: "跟踪交易",
-        openSteam: "打开Steam"
+        title: "🎉 交易创建成功！",
+        description: "您的交易已被我们的机器人接受。在Steam上接受报价以继续。",
+        tradeId: "交易ID：",
+        tradeIdSteam: "Steam交易ID：",
+        grossValue: "总价值：",
+        totalFees: "总费用：",
+        youWillReceive: "您将收到：",
+        trackTrade: "跟踪我的交易",
+        acceptTrade: "在Steam上接受交易",
+        openSteam: "打开Steam",
+        howItWorksTitle: "💰 接下来会发生什么？",
+        steps: {
+          step1: "在Steam上接受交易，让我们的机器人收集您的皮肤",
+          step2: "Steam交易冻结7天 - 这是Steam强制执行的安全延迟",
+          step3: "在此期间，在您的仪表板中设置支付方式（SEPA或加密货币）",
+          step4: "7天后，自动收到{amount}到您的账户"
+        },
+        tip: "💡 提示：立即在您的仪表板中设置支付方式，以自动收到您的资金！"
       },
-      helpSteps: [],
+      helpSteps: ["打开Steam并前往您的库存", "点击\"隐私设置\"", "复制交易链接URL"],
       successMessages: { tradeCreated: "交易创建成功！", followInstructions: "您的交易已创建并发送。在Steam上接受报价以继续。" }
     },
     giveawaysPage: {
       participationSuccess: "参与成功！",
       available: "张票券可用",
+      loading: "加载中...",
+      refreshGiveaways: "刷新抽奖",
+      noEntries: "没有参与记录",
+      noEntriesDescription: "您还没有参加任何抽奖活动",
+      viewActive: "查看活跃抽奖",
+      loadingGiveaways: "加载抽奖中...",
+      loadingEndedGiveaways: "加载已结束抽奖...",
+      loadingParticipations: "加载您的参与记录...",
+      ticketsUsed: "张票券已使用",
+      ticketUsed: "张票券已使用",
+      participatedOn: "参与于",
+      endedOn: "结束于",
       myEntries: {
         title: "我的参与",
         inProgress: "进行中",
-        lost: "失败"
+        lost: "失败",
+        won: "获胜"
+      },
+      giveawayNotFound: "未找到抽奖",
+      giveawayNotFoundDesc: "此抽奖不存在或已被删除。",
+      totalTicketsSold: "已售票券总数",
+      participantCount: "参与者数量",
+      avgTicketsPerParticipant: "平均每位参与者的票券",
+      fillRate: "填充率",
+    },
+    payoutPage: {
+      title: '提取资金',
+      subtitle: '选择您喜欢的付款方式',
+      loginRequired: {
+        title: '需要登录',
+        description: '您必须登录才能访问此页面。',
+        login: '登录'
+      },
+      kyc: {
+        title: '身份验证',
+        required: '需要身份验证',
+        description: '您必须完成KYC验证才能提取资金。',
+        startKyc: '开始验证'
+      },
+      tabs: {
+        request: '申请提取',
+        history: '历史记录'
+      },
+      request: {
+        title: '申请提取',
+        availableBalance: '可用余额',
+        selectMethod: '支付方式',
+        amountLabel: '提取金额',
+        amountPlaceholder: '输入金额',
+        feesInfo: '含费用',
+        processingFee: '处理费',
+        networkFee: '网络费',
+        youReceive: '您将收到',
+        submitButton: '提取',
+        submitting: '处理中...',
+        minAmount: '最低金额：10€',
+        security: {
+          title: '安全',
+          sepaInfo: '1-3个工作日内到账',
+          cryptoInfo: '加密货币即时到账'
+        }
+      },
+      history: {
+        title: '提取历史',
+        noPayout: '暂无提取',
+        noPayoutDesc: '暂无提取记录',
+        requestPayout: '申请提取',
+        columns: {
+          date: '日期',
+          amount: '金额',
+          method: '方式',
+          status: '状态',
+          reference: '参考号'
+        },
+        status: {
+          pending: '待处理',
+          verificationRequired: '需要验证',
+          verified: '已验证',
+          scheduled: '已计划',
+          executed: '已执行',
+          paid: '已支付',
+          failed: '失败'
+        }
+      },
+      toast: {
+        amountTooLow: '金额过低',
+        insufficientBalance: '余额不足',
+        payoutCreated: '提取请求已创建',
+        payoutCreatedDesc: '您的提取请求已成功创建',
+        payoutError: '创建提取时出错'
       }
+    },
+    paymentMethodsList: {
+      title: '支付方式',
+      add: '添加',
+      addMethod: '添加支付方式',
+      loading: '正在加载支付方式...',
+      loadingError: '加载支付方式时出错',
+      unknownError: '未知错误',
+      noMethods: '暂无保存的支付方式',
+      paymentMethod: '支付方式',
+      card: '卡',
+      sepa: 'SEPA',
+      sepaPrefix: 'IBAN',
+      expire: '过期',
     },
     chatWidget: {
       support: "CashTrade客服",
@@ -9330,7 +9953,9 @@ export const messages: Record<Locale, Messages> = {
         rejected: "申请被拒绝",
         rejectedDescription: "很遗憾，您的申请已被拒绝",
         reason: "原因",
-        reapply: "提交新申请"
+        reapply: "提交新申请",
+        applicationDetails: "申请 详情",
+        commissionRate: "佣金率"
       }
     },
     settings: {
@@ -9700,6 +10325,19 @@ export const messages: Record<Locale, Messages> = {
           subscriptionSuccess: "订阅成功！感谢您订阅我们的新闻稿。",
           alreadySubscribed: "此邮箱地址已订阅我们的新闻稿。",
         },
+        unsubscribe: {
+          title: "取消订阅新闻稿",
+          processing: "处理中...",
+          success: "成功取消订阅",
+          successDesc: "您将不再收到我们的新闻稿",
+          alreadyUnsubscribed: "已取消订阅",
+          alreadyUnsubscribedDesc: "您已取消订阅我们的新闻稿",
+          error: "错误",
+          errorDesc: "取消订阅时发生错误",
+          home: "返回首页",
+          resubscribe: "重新订阅",
+          missingToken: "缺少令牌"
+        }
       },
       skinplace: {
         allRarities: "所有稀有度",
@@ -10146,6 +10784,112 @@ export const messages: Record<Locale, Messages> = {
         uptime: "正常运行时间",
       },
     },
+    loading: {
+      title: "加载中",
+      subtitle: "正在准备您的库存...",
+      steam: "Steam",
+      inventory: "库存",
+      skins: "皮肤",
+    },
+    error: {
+      title: "哎呀！出错了",
+      message: "发生了意外错误。别担心，我们的团队已自动收到通知并正在解决问题。",
+      errorDetails: "错误详情（开发模式）",
+      retry: "重试",
+      home: "返回首页",
+      contactSupport: "联系客服",
+      suggestions: "一些建议：",
+      tip1: "刷新页面（F5 或 Ctrl+R）",
+      tip2: "检查您的网络连接",
+      tip3: "尝试清除浏览器缓存",
+      tip4: "如果问题仍然存在，请联系我们的客服",
+    },
+    globalError: {
+      title: "严重错误",
+      message: "发生了严重错误。需要重新加载应用程序。",
+      errorDetails: "错误详情：",
+      reload: "重新加载应用",
+      home: "返回首页",
+      support: "联系客服",
+      supportTitle: "需要帮助？",
+      supportDesc: "如果此问题仍然存在，请联系我们的客服",
+    },
+    resetPassword: {
+      tokenMissing: "缺少令牌",
+      passwordTooShort: "密码必须至少包含 8 个字符",
+      passwordMismatch: "密码不匹配",
+      resetError: "重置密码时出错",
+      resetSuccess: "密码重置成功",
+      resetSuccessTitle: "密码已重置！",
+      resetSuccessMessage: "您的密码已成功更新",
+      resetSuccessRedirect: "自动重定向到登录页面...",
+      newPassword: "新密码",
+      newPasswordSubtitle: "选择一个新的安全密码",
+      accountLabel: "账户",
+      resetPasswordTitle: "重置您的密码",
+      resetPasswordDesc: "为您的账户选择新密码",
+      confirmPassword: "确认密码",
+      strength: "密码强度",
+      strengthTooShort: "太短",
+      strengthWeak: "弱",
+      strengthMedium: "中等",
+      strengthStrong: "强",
+      strengthVeryStrong: "很强",
+      cancel: "取消",
+      updating: "更新中...",
+      reset: "重置",
+      loginNow: "立即登录",
+    },
+    authProvider: {
+      steamLoginInProgress: "Steam 登录进行中...",
+      steamLoginRedirect: "重定向到 Steam",
+      steamLoginError: "Steam 连接错误",
+      steamLoginErrorDesc: "无法与 Steam 连接",
+      discordLoginInProgress: "Discord 登录进行中...",
+      discordLoginRedirect: "重定向到 Discord",
+      discordLoginSuccess: "Discord 连接成功！",
+      discordLoginSuccessDesc: "欢迎来到 CashTrade",
+      discordLoginError: "Discord 连接错误",
+      discordLoginErrorDesc: "无法与 Discord 连接",
+      logoutSuccess: "注销成功",
+      logoutSuccessDesc: "期待您再次回到 CashTrade！",
+      logoutError: "注销时出错",
+      logoutErrorDesc: "您已被注销",
+    },
+    tradeCreator: {
+      invalidTradeLink: "请输入有效的 Steam 交易链接",
+      tradeLinkSaved: "交易链接保存成功！",
+      tradeLinkError: "保存交易链接时出错",
+      negativeNetValue: "扣除费用后的净值必须为正",
+      tradeCreatedSuccess: "交易创建成功！",
+      tradeCreationError: "创建交易时出错",
+    },
+    notFound: {
+      code: "404",
+      title: "页面未找到",
+      message: "抱歉，您查找的页面不存在或已被移动。",
+      home: "返回首页",
+      explore: "探索",
+      quickLinks: {
+        title: "快速链接",
+        sell: "出售我的皮肤",
+        giveaways: "抽奖",
+        support: "支持",
+        dashboard: "控制台"
+      }
+    },
+    kycPolicy: {
+      title: "KYC政策",
+      subtitle: "了解您的客户 - 身份验证",
+      content: "法律要求我们在允许某些交易之前验证用户的身份。此KYC（了解您的客户）验证程序使我们能够遵守适用的法规并保护我们的用户免受欺诈。",
+      warningText: "您的个人数据被安全存储，未经您的同意，绝不会与第三方共享。"
+    },
+    amlPolicy: {
+      title: "AML政策",
+      subtitle: "反洗钱",
+      content: "我们的AML（反洗钱）政策旨在防止和检测与洗钱或恐怖主义融资相关的任何可疑活动。我们积极监控交易，并在必要时与相关当局合作。",
+      warningText: "任何可疑活动都将根据法律向相关当局报告。"
+    }
   },
 };
 

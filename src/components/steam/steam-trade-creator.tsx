@@ -21,6 +21,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface SteamTradeCreatorProps {
   steamId64: string;
@@ -44,6 +45,7 @@ export function SteamTradeCreator({
   selectedItems, 
   onTradeCreated 
 }: SteamTradeCreatorProps) {
+  const { messages } = useLocale();
   const [tradeUrl, setTradeUrl] = useState('');
   const [isValidUrl, setIsValidUrl] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
@@ -85,7 +87,7 @@ export function SteamTradeCreator({
       const netValue = grossValue - fees.total_fees;
 
       if (netValue <= 0) {
-        toast.error('La valeur nette après frais doit être positive');
+        toast.error(messages.tradeCreator.negativeNetValue);
         return;
       }
 
@@ -133,15 +135,15 @@ export function SteamTradeCreator({
         };
         
         onTradeCreated?.(tradeData);
-        toast.success('Trade créé avec succès !');
+        toast.success(messages.tradeCreator.tradeCreatedSuccess);
       } else {
-        throw new Error(result.error || 'Erreur lors de la création du trade');
+        throw new Error(result.error || messages.tradeCreator.tradeCreationError);
       }
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error(errorMessage || messages.tradeCreator.tradeCreationError);
     } finally {
       setLoading(false);
     }

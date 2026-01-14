@@ -139,12 +139,12 @@ export default function KYCPage() {
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
             <ShieldCheckIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">Connexion requise</h2>
+            <h2 className="text-xl font-semibold mb-2">{messages.kycPage.status.loginRequired.title}</h2>
             <p className="text-muted-foreground mb-6">
-              Vous devez être connecté pour accéder au processus KYC.
+              {messages.kycPage.status.loginRequired.description}
             </p>
             <Button onClick={() => window.location.href = '/'}>
-              Se connecter avec Steam
+              {messages.kycPage.status.loginRequired.login}
             </Button>
           </CardContent>
         </Card>
@@ -159,12 +159,12 @@ export default function KYCPage() {
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
             <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-green-500" />
-            <h2 className="text-xl font-semibold mb-2">KYC Vérifié</h2>
+            <h2 className="text-xl font-semibold mb-2">{messages.kycPage.status.verified.title}</h2>
             <p className="text-muted-foreground mb-6">
-              Votre identité a été vérifiée avec succès. Vous pouvez maintenant effectuer des paiements.
+              {messages.kycPage.status.verified.description}
             </p>
             <Button asChild>
-              <a href="/dashboard">Retour au dashboard</a>
+              <a href="/dashboard">{messages.kycPage.status.verified.dashboard}</a>
             </Button>
           </CardContent>
         </Card>
@@ -179,12 +179,12 @@ export default function KYCPage() {
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
             <ClockIcon className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
-            <h2 className="text-xl font-semibold mb-2">KYC en cours de vérification</h2>
+            <h2 className="text-xl font-semibold mb-2">{messages.kycPage.status.inProgress.title}</h2>
             <p className="text-muted-foreground mb-6">
-              Votre dossier KYC est en cours de vérification. Vous recevrez une réponse sous 24-48h.
+              {messages.kycPage.status.inProgress.description}
             </p>
             <Button asChild variant="outline">
-              <a href="/dashboard">Retour au dashboard</a>
+              <a href="/dashboard">{messages.kycPage.status.inProgress.dashboard}</a>
             </Button>
           </CardContent>
         </Card>
@@ -199,12 +199,12 @@ export default function KYCPage() {
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
             <XCircleIcon className="w-16 h-16 mx-auto mb-4 text-red-500" />
-            <h2 className="text-xl font-semibold mb-2">KYC Rejeté</h2>
+            <h2 className="text-xl font-semibold mb-2">{messages.kycPage.status.rejected.title}</h2>
             <p className="text-muted-foreground mb-6">
-              Votre dossier KYC a été rejeté. Veuillez recommencer le processus avec des documents valides.
+              {messages.kycPage.status.rejected.description}
             </p>
             <Button onClick={() => setCurrentStep('info')}>
-              Recommencer le KYC
+              {messages.kycPage.status.rejected.restart}
             </Button>
           </CardContent>
         </Card>
@@ -294,10 +294,10 @@ export default function KYCPage() {
                       <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                       <div className="text-sm">
                         <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
-                          Pourquoi ces informations ?
+                          {messages.kycPage.info.title}
                         </p>
                         <p className="text-blue-700 dark:text-blue-300">
-                          Ces informations sont requises par la réglementation européenne pour lutter contre le blanchiment d&apos;argent et garantir la sécurité des transactions.
+                          {messages.kycPage.info.description}
                         </p>
                       </div>
                     </div>
@@ -305,25 +305,25 @@ export default function KYCPage() {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">Prénom *</Label>
+                      <Label htmlFor="firstName">{messages.kycPage.info.firstName} *</Label>
                       <Input
                         id="firstName"
                         value={personalInfo.firstName}
                         onChange={(e) => setPersonalInfo(prev => ({ ...prev, firstName: e.target.value }))}
-                        placeholder="Jean"
+                        placeholder={messages.kycPage.info.firstNamePlaceholder}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">Nom de famille *</Label>
+                      <Label htmlFor="lastName">{messages.kycPage.info.lastName} *</Label>
                       <Input
                         id="lastName"
                         value={personalInfo.lastName}
                         onChange={(e) => setPersonalInfo(prev => ({ ...prev, lastName: e.target.value }))}
-                        placeholder="Dupont"
+                        placeholder={messages.kycPage.info.lastNamePlaceholder}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="dateOfBirth">Date de naissance *</Label>
+                      <Label htmlFor="dateOfBirth">{messages.kycPage.info.dateOfBirth} *</Label>
                       <Input
                         id="dateOfBirth"
                         type="date"
@@ -332,63 +332,63 @@ export default function KYCPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="nationality">Nationalité *</Label>
+                      <Label htmlFor="nationality">{messages.kycPage.info.nationality} *</Label>
                       <Select value={personalInfo.nationality} onValueChange={(value) => setPersonalInfo(prev => ({ ...prev, nationality: value }))}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="FR">France</SelectItem>
-                          <SelectItem value="BE">Belgique</SelectItem>
-                          <SelectItem value="CH">Suisse</SelectItem>
-                          <SelectItem value="CA">Canada</SelectItem>
-                          <SelectItem value="US">États-Unis</SelectItem>
+                          <SelectItem value="FR">{messages.kycPage.info.countries.france}</SelectItem>
+                          <SelectItem value="BE">{messages.kycPage.info.countries.belgium}</SelectItem>
+                          <SelectItem value="CH">{messages.kycPage.info.countries.switzerland}</SelectItem>
+                          <SelectItem value="CA">{messages.kycPage.info.countries.canada}</SelectItem>
+                          <SelectItem value="US">{messages.kycPage.info.countries.usa}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
 
                   <div className="space-y-3 sm:space-y-4">
-                    <h3 className="font-semibold">Adresse</h3>
+                    <h3 className="font-semibold">{messages.kycPage.info.address}</h3>
                     <div className="space-y-2">
-                      <Label htmlFor="address">Adresse complète</Label>
+                      <Label htmlFor="address">{messages.kycPage.info.address}</Label>
                       <Input
                         id="address"
                         value={personalInfo.address}
                         onChange={(e) => setPersonalInfo(prev => ({ ...prev, address: e.target.value }))}
-                        placeholder="123 Rue de la Paix"
+                        placeholder={messages.kycPage.info.addressPlaceholder}
                       />
                     </div>
                     <div className="grid md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="city">Ville</Label>
+                        <Label htmlFor="city">{messages.kycPage.info.city}</Label>
                         <Input
                           id="city"
                           value={personalInfo.city}
                           onChange={(e) => setPersonalInfo(prev => ({ ...prev, city: e.target.value }))}
-                          placeholder="Paris"
+                          placeholder={messages.kycPage.info.cityPlaceholder}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="postalCode">Code postal</Label>
+                        <Label htmlFor="postalCode">{messages.kycPage.info.postalCode}</Label>
                         <Input
                           id="postalCode"
                           value={personalInfo.postalCode}
                           onChange={(e) => setPersonalInfo(prev => ({ ...prev, postalCode: e.target.value }))}
-                          placeholder="75001"
+                          placeholder={messages.kycPage.info.postalCodePlaceholder}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="country">Pays</Label>
+                        <Label htmlFor="country">{messages.kycPage.info.country}</Label>
                         <Select value={personalInfo.country} onValueChange={(value) => setPersonalInfo(prev => ({ ...prev, country: value }))}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="FR">France</SelectItem>
-                            <SelectItem value="BE">Belgique</SelectItem>
-                            <SelectItem value="CH">Suisse</SelectItem>
-                            <SelectItem value="CA">Canada</SelectItem>
+                            <SelectItem value="FR">{messages.kycPage.info.countries.france}</SelectItem>
+                            <SelectItem value="BE">{messages.kycPage.info.countries.belgium}</SelectItem>
+                            <SelectItem value="CH">{messages.kycPage.info.countries.switzerland}</SelectItem>
+                            <SelectItem value="CA">{messages.kycPage.info.countries.canada}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -401,24 +401,24 @@ export default function KYCPage() {
               {currentStep === 'documents' && (
                 <div className="space-y-3 sm:space-y-4">
                   <div className="space-y-2">
-                    <Label>Type de document *</Label>
+                    <Label>{messages.kycPage.documents.type} *</Label>
                     <Select value={documentType} onValueChange={(value) => setDocumentType(value as DocumentType)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="id_card">Carte d&apos;identité</SelectItem>
-                        <SelectItem value="passport">Passeport</SelectItem>
-                        <SelectItem value="driving_license">Permis de conduire</SelectItem>
+                        <SelectItem value="id_card">{messages.kycPage.documents.types.id}</SelectItem>
+                        <SelectItem value="passport">{messages.kycPage.documents.types.passport}</SelectItem>
+                        <SelectItem value="driving_license">{messages.kycPage.documents.types.license}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
                     <DocumentTextIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <h4 className="font-semibold mb-2">Télécharger votre pièce d&apos;identité</h4>
+                    <h4 className="font-semibold mb-2">{messages.kycPage.documents.upload}</h4>
                     <p className="text-muted-foreground mb-4">
-                      Assurez-vous que le document est lisible et que toutes les informations sont visibles
+                      {messages.kycPage.documents.description}
                     </p>
                     <Input
                       type="file"
@@ -433,7 +433,7 @@ export default function KYCPage() {
                       <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
                         <CheckCircleIcon className="w-5 h-5 text-green-500 inline-block mr-2" />
                         <span className="text-green-700 dark:text-green-300">
-                          {uploadedFiles.identity.name} téléchargé
+                          {uploadedFiles.identity.name} {messages.kycPage.documents.uploaded}
                         </span>
                       </div>
                     )}
@@ -444,13 +444,13 @@ export default function KYCPage() {
                       <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
                       <div className="text-sm">
                         <p className="font-medium text-yellow-900 dark:text-yellow-100 mb-1">
-                          Conseils pour une photo de qualité
+                          {messages.kycPage.documents.tips.title}
                         </p>
                         <ul className="text-yellow-700 dark:text-yellow-300 list-disc list-inside space-y-1">
-                          <li>Prenez la photo dans un endroit bien éclairé</li>
-                          <li>Assurez-vous que tous les textes sont lisibles</li>
-                          <li>Évitez les reflets et les ombres</li>
-                          <li>Le document doit être entièrement visible</li>
+                          <li>{messages.kycPage.documents.tips.lighting}</li>
+                          <li>{messages.kycPage.documents.tips.readable}</li>
+                          <li>{messages.kycPage.documents.tips.reflection}</li>
+                          <li>{messages.kycPage.documents.tips.complete}</li>
                         </ul>
                       </div>
                     </div>
@@ -463,9 +463,9 @@ export default function KYCPage() {
                 <div className="space-y-3 sm:space-y-4">
                   <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
                     <CameraIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <h4 className="font-semibold mb-2">Selfie de vérification</h4>
+                    <h4 className="font-semibold mb-2">{messages.kycPage.selfie.title}</h4>
                     <p className="text-muted-foreground mb-4">
-                      Prenez un selfie clair de votre visage pour vérifier votre identité
+                      {messages.kycPage.selfie.description}
                     </p>
                     <Input
                       type="file"
@@ -481,7 +481,7 @@ export default function KYCPage() {
                       <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
                         <CheckCircleIcon className="w-5 h-5 text-green-500 inline-block mr-2" />
                         <span className="text-green-700 dark:text-green-300">
-                          Selfie téléchargé
+                          {messages.kycPage.selfie.uploaded}
                         </span>
                       </div>
                     )}
@@ -492,13 +492,13 @@ export default function KYCPage() {
                       <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                       <div className="text-sm">
                         <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
-                          Instructions pour le selfie
+                          {messages.kycPage.selfie.instructions.title}
                         </p>
                         <ul className="text-blue-700 dark:text-blue-300 list-disc list-inside space-y-1">
-                          <li>Regardez directement la caméra</li>
-                          <li>Votre visage doit être entièrement visible</li>
-                          <li>Évitez les lunettes de soleil ou chapeaux</li>
-                          <li>L&apos;éclairage doit être naturel et uniforme</li>
+                          <li>{messages.kycPage.selfie.instructions.camera}</li>
+                          <li>{messages.kycPage.selfie.instructions.visible}</li>
+                          <li>{messages.kycPage.selfie.instructions.accessories}</li>
+                          <li>{messages.kycPage.selfie.instructions.lighting}</li>
                         </ul>
                       </div>
                     </div>
@@ -514,10 +514,10 @@ export default function KYCPage() {
                       <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                       <div className="text-sm">
                         <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
-                          Justificatif de domicile (optionnel)
+                          {messages.kycPage.addressDoc.optional}
                         </p>
                         <p className="text-blue-700 dark:text-blue-300">
-                          Cette étape est optionnelle mais peut accélérer la vérification. Documents acceptés : facture d&apos;électricité, de gaz, d&apos;eau, relevé bancaire, avis d&apos;imposition (datant de moins de 3 mois).
+                          {messages.kycPage.addressDoc.description}
                         </p>
                       </div>
                     </div>
@@ -525,9 +525,9 @@ export default function KYCPage() {
 
                   <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
                     <HomeIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <h4 className="font-semibold mb-2">Justificatif de domicile</h4>
+                    <h4 className="font-semibold mb-2">{messages.kycPage.addressDoc.title}</h4>
                     <p className="text-muted-foreground mb-4">
-                      Document officiel datant de moins de 3 mois
+                      {messages.kycPage.addressDoc.description.split('.')[1]}
                     </p>
                     <Input
                       type="file"
@@ -542,14 +542,14 @@ export default function KYCPage() {
                       <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
                         <CheckCircleIcon className="w-5 h-5 text-green-500 inline-block mr-2" />
                         <span className="text-green-700 dark:text-green-300">
-                          {uploadedFiles.address.name} téléchargé
+                          {uploadedFiles.address.name} {messages.kycPage.addressDoc.uploaded}
                         </span>
                       </div>
                     )}
                   </div>
 
                   <Button variant="outline" className="w-full" onClick={handleNextStep}>
-                    Passer cette étape
+                    {messages.kycPage.addressDoc.skip}
                   </Button>
                 </div>
               )}
@@ -562,56 +562,56 @@ export default function KYCPage() {
                       <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                       <div className="text-sm">
                         <p className="font-medium text-green-900 dark:text-green-100 mb-1">
-                          Dossier complet
+                          {messages.kycPage.review.complete}
                         </p>
                         <p className="text-green-700 dark:text-green-300">
-                          Vérifiez vos informations avant de soumettre votre dossier KYC.
+                          {messages.kycPage.review.description}
                         </p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-3 sm:space-y-4">
-                    <h3 className="font-semibold">Informations personnelles</h3>
+                    <h3 className="font-semibold">{messages.kycPage.review.personalInfo}</h3>
                     <div className="grid md:grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="text-muted-foreground">Nom complet:</span>
+                        <span className="text-muted-foreground">{messages.kycPage.review.fullName}</span>
                         <p className="font-medium">{personalInfo.firstName} {personalInfo.lastName}</p>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Date de naissance:</span>
+                        <span className="text-muted-foreground">{messages.kycPage.info.dateOfBirth}:</span>
                         <p className="font-medium">{personalInfo.dateOfBirth}</p>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Nationalité:</span>
+                        <span className="text-muted-foreground">{messages.kycPage.review.nationality}</span>
                         <p className="font-medium">{personalInfo.nationality}</p>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Adresse:</span>
+                        <span className="text-muted-foreground">{messages.kycPage.review.address}</span>
                         <p className="font-medium">{personalInfo.address}, {personalInfo.city} {personalInfo.postalCode}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-3 sm:space-y-4">
-                    <h3 className="font-semibold">Documents téléchargés</h3>
+                    <h3 className="font-semibold">{messages.kycPage.review.documents}</h3>
                     <div className="space-y-2">
                       {uploadedFiles.identity && (
                         <div className="flex items-center space-x-2">
                           <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                          <span>Pièce d&apos;identité: {uploadedFiles.identity.name}</span>
+                          <span>{messages.kycPage.review.identity} {uploadedFiles.identity.name}</span>
                         </div>
                       )}
                       {uploadedFiles.selfie && (
                         <div className="flex items-center space-x-2">
                           <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                          <span>Selfie de vérification</span>
+                          <span>{messages.kycPage.review.selfie}</span>
                         </div>
                       )}
                       {uploadedFiles.address && (
                         <div className="flex items-center space-x-2">
                           <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                          <span>Justificatif de domicile: {uploadedFiles.address.name}</span>
+                          <span>{messages.kycPage.review.addressDocument} {uploadedFiles.address.name}</span>
                         </div>
                       )}
                     </div>
@@ -622,10 +622,10 @@ export default function KYCPage() {
                       <ClockIcon className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
                       <div className="text-sm">
                         <p className="font-medium text-yellow-900 dark:text-yellow-100 mb-1">
-                          Délai de vérification
+                          {messages.kycPage.review.delay.title}
                         </p>
                         <p className="text-yellow-700 dark:text-yellow-300">
-                          Votre dossier sera vérifié sous 24-48h ouvrées. Vous recevrez une notification par email une fois la vérification terminée.
+                          {messages.kycPage.review.delay.description}
                         </p>
                       </div>
                     </div>
@@ -640,14 +640,14 @@ export default function KYCPage() {
                   onClick={handlePrevStep}
                   disabled={currentStep === 'info'}
                 >
-                  Précédent
+                  {messages.kycPage.navigation.previous}
                 </Button>
                 <Button
                   onClick={handleNextStep}
                   disabled={!isStepValid() || isLoading}
                   className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
                 >
-                  {isLoading ? 'Chargement...' : currentStep === 'review' ? 'Soumettre le dossier' : 'Suivant'}
+                  {isLoading ? messages.kycPage.navigation.loading : currentStep === 'review' ? messages.kycPage.navigation.submit : messages.kycPage.navigation.next}
                 </Button>
               </div>
             </CardContent>

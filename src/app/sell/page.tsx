@@ -182,23 +182,23 @@ export default function SellPage() {
                 <CardContent className="p-8 text-center">
                   <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-green-500" />
                   <h2 className="text-2xl font-bold mb-2">
-                    🎉 Trade créé avec succès !
+                    {messages.sellPage.confirmation.title}
                   </h2>
                   <p className="text-muted-foreground mb-6">
-                    Votre trade a été accepté par notre bot. Acceptez l&apos;offre sur Steam pour continuer.
+                    {messages.sellPage.confirmation.description}
                   </p>
 
                   <div className="bg-muted/50 rounded-lg p-4 mb-6">
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-muted-foreground">
-                          Trade ID Steam:
+                          {messages.sellPage.confirmation.tradeIdSteam}
                         </span>
                         <p className="font-mono">{tradeData.trade_id}</p>
                       </div>
                       <div>
                         <span className="text-muted-foreground">
-                          Valeur brute:
+                          {messages.sellPage.confirmation.grossValue}
                         </span>
                         <p className="font-medium">
                           {formatPrice(tradeData.total_value)}
@@ -206,7 +206,7 @@ export default function SellPage() {
                       </div>
                       <div>
                         <span className="text-muted-foreground">
-                          Frais totaux:
+                          {messages.sellPage.confirmation.totalFees}
                         </span>
                         <p className="font-medium text-orange-600">
                           -{formatPrice(tradeData.fees.cashout_fee + tradeData.fees.network_fee)}
@@ -214,7 +214,7 @@ export default function SellPage() {
                       </div>
                       <div>
                         <span className="text-muted-foreground">
-                          Vous recevrez:
+                          {messages.sellPage.confirmation.youWillReceive}
                         </span>
                         <p className="font-bold text-green-600">
                           {formatPrice(tradeData.net_value)}
@@ -229,12 +229,12 @@ export default function SellPage() {
                         href="https://steamcommunity.com/my/tradeoffers/"
                         target="_blank"
                       >
-                        Accepter le trade sur Steam
+                        {messages.sellPage.confirmation.acceptTrade}
                       </a>
                     </Button>
                     <Button variant="outline" asChild>
                       <a href="/dashboard">
-                        Suivre mes trades
+                        {messages.sellPage.confirmation.trackTrade}
                       </a>
                     </Button>
                   </div>
@@ -245,7 +245,7 @@ export default function SellPage() {
               <Card>
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    💰 Comment ça marche après ?
+                    {messages.sellPage.confirmation.howItWorksTitle}
                   </h3>
                   
                   <div className="space-y-4">
@@ -300,7 +300,7 @@ export default function SellPage() {
 
                   <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
                     <p className="text-sm text-blue-800 dark:text-blue-200">
-                      💡 <strong>Astuce :</strong> Configurez dès maintenant votre méthode de paiement dans votre dashboard pour recevoir votre argent automatiquement !
+                      {messages.sellPage.confirmation.tip}
                     </p>
                   </div>
                 </CardContent>

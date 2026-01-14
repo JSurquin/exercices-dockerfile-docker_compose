@@ -29,6 +29,8 @@ import {
   LanguageIcon,
   UserCircleIcon,
   ChatBubbleLeftRightIcon,
+  BanknotesIcon,
+  ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import { Locale, locales } from "@/lib/i18n";
 import { CS2Logo } from "@/components/ui/cs2-icons";
@@ -195,6 +197,18 @@ export function Header() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href={isAdmin ? "/admin/dashboard" : "/dashboard"}>Dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/payout" className="flex items-center">
+                    <BanknotesIcon className="h-4 w-4 mr-2" />
+                    Retirer mes fonds
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/kyc" className="flex items-center">
+                    <ShieldCheckIcon className="h-4 w-4 mr-2" />
+                    Vérification KYC
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href={isAdmin ? "/admin/settings" : "/settings"}>{messages.nav.settings}</Link>

@@ -4,44 +4,36 @@ import { DynamicLegalPage } from "@/components/legal/dynamic-legal-page";
 import { ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { useLocale } from "@/components/providers/locale-provider";
 
-// Contenu de fallback si la page n'existe pas encore en base
-const fallbackSections = [
-  {
-    title: "Notre engagement",
-    content: `Chez CashTrade, la protection de vos données personnelles est notre priorité absolue. Cette politique explique comment nous collectons, utilisons, stockons et protégeons vos informations en conformité avec le Règlement Général sur la Protection des Données (RGPD) et les lois françaises.`,
-  },
-  {
-    title: "Types de données collectées",
-    content: `**Données d'identification** : Nom, prénom, date de naissance, adresse email, Steam ID, adresse IP
-**Données KYC** : Pièce d'identité, selfie de vérification, justificatif de domicile
-**Données financières** : IBAN (haché), adresses crypto, historique transactions
-**Données d'usage** : Logs de connexion, activité de trading, préférences utilisateur`,
-  },
-  {
-    title: "Vos droits RGPD",
-    content: `Conformément au RGPD, vous avez le droit de :
-• Accéder à vos données personnelles
-• Demander leur rectification ou suppression
-• Vous opposer à leur traitement
-• Demander la portabilité de vos données`,
-  },
-];
-
 export default function PrivacyPage() {
   const { messages, locale } = useLocale();
 
+  const fallbackSections = [
+    {
+      title: messages.privacy.commitment.title,
+      content: `${messages.privacy.commitment.description1}\n\n${messages.privacy.commitment.description2 || ''}`,
+    },
+    {
+      title: messages.privacy.dataTypes.title,
+      content: messages.privacy.dataTypes.identity 
+        ? `**${messages.privacy.dataTypes.identity.category}** : ${messages.privacy.dataTypes.identity.data.join(', ')}\n**${messages.privacy.dataTypes.kyc.category}** : ${messages.privacy.dataTypes.kyc.data.join(', ')}\n**${messages.privacy.dataTypes.financial.category}** : ${messages.privacy.dataTypes.financial.data.join(', ')}\n**${messages.privacy.dataTypes.usage.category}** : ${messages.privacy.dataTypes.usage.data.join(', ')}`
+        : '',
+    },
+    {
+      title: messages.privacy.rights?.title || 'Vos droits RGPD',
+      content: 'Conformément au RGPD, vous avez le droit de :\n• Accéder à vos données personnelles\n• Demander leur rectification ou suppression\n• Vous opposer à leur traitement\n• Demander la portabilité de vos données',
+    },
+  ];
+
   const fallbackContent = {
-    title: locale === 'fr' ? "Politique de confidentialité" : "Privacy Policy",
-    subtitle: locale === 'fr' 
-      ? "Comment nous collectons, utilisons et protégeons vos données personnelles"
-      : "How we collect, use and protect your personal data",
+    title: messages.privacy.title,
+    subtitle: messages.privacy.subtitle,
     content: (
       <div className="space-y-8">
         {fallbackSections.map((section, index) => (
           <div key={index}>
             <h2 className="text-xl font-semibold mb-4">{section.title}</h2>
             <div className="prose prose-gray dark:prose-invert max-w-none">
-              {section.content.split("\n\n").map((paragraph, pIndex) => (
+                  {section.content.split("\n\n").map((paragraph: string, pIndex: number) => (
                 <p key={pIndex} className="mb-4 leading-relaxed whitespace-pre-line">
                   {paragraph}
                 </p>

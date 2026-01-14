@@ -10,8 +10,55 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { useLocale } from "@/components/providers/locale-provider";
+
+const translations = {
+  fr: {
+    pageNotFound: "Page non trouvée",
+    title: "Oops ! Cette page semble avoir disparu",
+    description: "La page que vous recherchez n'existe pas ou a été déplacée. Peut-être qu'elle s'est vendue sur CashTrade ? 😄",
+    backHome: "Retour à l'accueil",
+    previousPage: "Page précédente",
+    usefulLinks: "Liens utiles",
+    sellSkins: "Vendre mes skins",
+    myDashboard: "Mon Dashboard",
+    giveaways: "Giveaways",
+    support: "Support",
+    randomStats: "Pendant que vous étiez là, {count} skins ont été vendus sur CashTrade !",
+  },
+  en: {
+    pageNotFound: "Page not found",
+    title: "Oops! This page seems to have disappeared",
+    description: "The page you are looking for doesn't exist or has been moved. Maybe it was sold on CashTrade? 😄",
+    backHome: "Back to home",
+    previousPage: "Previous page",
+    usefulLinks: "Useful links",
+    sellSkins: "Sell my skins",
+    myDashboard: "My Dashboard",
+    giveaways: "Giveaways",
+    support: "Support",
+    randomStats: "While you were here, {count} skins were sold on CashTrade!",
+  },
+  cn: {
+    pageNotFound: "页面未找到",
+    title: "哎呀！此页面似乎已消失",
+    description: "您正在查找的页面不存在或已被移动。也许它在CashTrade上卖掉了？😄",
+    backHome: "返回首页",
+    previousPage: "上一页",
+    usefulLinks: "有用的链接",
+    sellSkins: "出售我的皮肤",
+    myDashboard: "我的仪表板",
+    giveaways: "抽奖活动",
+    support: "支持",
+    randomStats: "在您访问期间，已有{count}个皮肤在CashTrade上售出！",
+  }
+};
 
 export default function NotFound() {
+  const { locale } = useLocale();
+  const t = translations[locale] || translations.en;
+  const randomCount = Math.floor(Math.random() * 5) + 1;
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8">
       <div className="max-w-2xl mx-auto text-center">
@@ -26,7 +73,7 @@ export default function NotFound() {
               404
             </div>
             <div className="text-2xl md:text-3xl font-semibold text-muted-foreground mt-2">
-              Page non trouvée
+              {t.pageNotFound}
             </div>
           </div>
 
@@ -50,11 +97,10 @@ export default function NotFound() {
             className="mb-8"
           >
             <h1 className="text-2xl font-bold mb-4">
-              Oops ! Cette page semble avoir disparu
+              {t.title}
             </h1>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              La page que vous recherchez n&apos;existe pas ou a été déplacée.
-              Peut-être qu&apos;elle s&apos;est vendue sur CashTrade ? 😄
+              {t.description}
             </p>
           </motion.div>
 
@@ -72,12 +118,12 @@ export default function NotFound() {
               >
                 <Link href="/">
                   <HomeIcon className="w-4 h-4 mr-2" />
-                  Retour à l&apos;accueil
+                  {t.backHome}
                 </Link>
               </Button>
               <Button variant="outline" onClick={() => window.history.back()}>
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
-                Page précédente
+                {t.previousPage}
               </Button>
             </div>
 
@@ -86,32 +132,32 @@ export default function NotFound() {
               <CardContent className="p-4 sm:p-6">
                 <h3 className="font-semibold mb-4 flex items-center justify-center">
                   <MagnifyingGlassIcon className="w-5 h-5 mr-2" />
-                  Liens utiles
+                  {t.usefulLinks}
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <Link
                     href="/sell"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Vendre mes skins
+                    {t.sellSkins}
                   </Link>
                   <Link
                     href="/dashboard"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Mon Dashboard
+                    {t.myDashboard}
                   </Link>
                   <Link
                     href="/giveaways"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Giveaways
+                    {t.giveaways}
                   </Link>
                   <Link
                     href="/support"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Support
+                    {t.support}
                   </Link>
                 </div>
               </CardContent>
@@ -126,8 +172,7 @@ export default function NotFound() {
             className="mt-12 text-center"
           >
             <p className="text-sm text-muted-foreground">
-              Pendant que vous étiez là, {Math.floor(Math.random() * 5) + 1}{" "}
-              skins ont été vendus sur CashTrade !
+              {t.randomStats.replace('{count}', randomCount.toString())}
             </p>
           </motion.div>
         </motion.div>

@@ -244,7 +244,7 @@ export default function AffiliatePage() {
             )}
 
             <div className="border-t pt-4">
-              <h4 className="font-semibold mb-2">Détails de la demande</h4>
+              <h4 className="font-semibold mb-2">{messages.affiliate.application.applicationDetails}</h4>
               <div className="space-y-2 text-sm">
                 <div>
                   <span className="text-muted-foreground">Date de soumission :</span>
@@ -457,7 +457,7 @@ export default function AffiliatePage() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Taux de commission</span>
+                    <span>{messages.affiliate.application.commissionRate}</span>
                     <span className="font-semibold">
                       {(affiliateData.commissionRate * 100).toFixed(1)}%
                     </span>

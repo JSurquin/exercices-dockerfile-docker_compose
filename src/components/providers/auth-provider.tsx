@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { User } from '@/lib/types';
 import { signInWithDiscord, signOut, getSession } from '~/lib/auth-client';
 import { toast } from 'sonner';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface AuthContextType {
   user: User | null;
@@ -17,6 +18,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { messages } = useLocale();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -64,8 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithSteam = async (): Promise<User> => {
     setIsLoading(true);
     try {
-      toast.loading('Connexion Steam en cours...', {
-        description: 'Redirection vers Steam',
+      toast.loading(messages.authProvider.steamLoginInProgress, {
+        description: messages.authProvider.steamLoginRedirect,
       });
       
       // Rediriger vers l'authentification Steam
@@ -74,8 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return {} as User;
     } catch (error) {
       setIsLoading(false);
-      toast.error('Erreur de connexion Steam', {
-        description: 'Impossible de se connecter avec Steam',
+      toast.error(messages.authProvider.steamLoginError, {
+        description: messages.authProvider.steamLoginErrorDesc,
       });
       throw error;
     }
@@ -84,20 +86,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithDiscord = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      toast.loading('Connexion Discord en cours...', {
-        description: 'Redirection vers Discord',
+      toast.loading(messages.authProvider.discordLoginInProgress, {
+        description: messages.authProvider.discordLoginRedirect,
       });
       
       await signInWithDiscord();
       // Better Auth gère la redirection automatiquement
       
-      toast.success('Connexion Discord réussie !', {
-        description: 'Bienvenue sur CashTrade',
+      toast.success(messages.authProvider.discordLoginSuccess, {
+        description: messages.authProvider.discordLoginSuccessDesc,
       });
     } catch (error) {
       console.error('Discord login error:', error);
-      toast.error('Erreur de connexion Discord', {
-        description: 'Impossible de se connecter avec Discord',
+      toast.error(messages.authProvider.discordLoginError, {
+        description: messages.authProvider.discordLoginErrorDesc,
       });
       throw error;
     } finally {
@@ -109,15 +111,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await signOut();
       setUser(null);
-      toast.success('Déconnexion réussie', {
-        description: 'À bientôt sur CashTrade !',
+      toast.success(messages.authProvider.logoutSuccess, {
+        description: messages.authProvider.logoutSuccessDesc,
       });
     } catch (error) {
       console.error('Logout error:', error);
       // En cas d'erreur, forcer la déconnexion côté client
       setUser(null);
-      toast.error('Erreur lors de la déconnexion', {
-        description: 'Vous avez été déconnecté',
+      toast.error(messages.authProvider.logoutError, {
+        description: messages.authProvider.logoutErrorDesc,
       });
     }
   };

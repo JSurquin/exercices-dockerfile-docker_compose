@@ -11,8 +11,10 @@ import { Shield, Eye, EyeOff, Loader2, CheckCircle, AlertTriangle, ArrowLeft } f
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { authClient } from '~/lib/auth-client';
+import { useLocale } from '@/components/providers/locale-provider';
 
 export default function ResetPasswordPage() {
+  const { messages } = useLocale();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -28,7 +30,7 @@ export default function ResetPasswordPage() {
   const token = searchParams.get("token");
    
   if (!token) {
-    return <div>Token manquant</div>;
+    return <div>{messages.resetPassword.tokenMissing}</div>;
   }
 
 
@@ -39,13 +41,13 @@ export default function ResetPasswordPage() {
 
     // Validations côté client
     if (password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caractères');
+      setError(messages.resetPassword.passwordTooShort);
       setLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas');
+      setError(messages.resetPassword.passwordMismatch);
       setLoading(false);
       return;
     }
@@ -57,17 +59,17 @@ export default function ResetPasswordPage() {
       });
 
       if (error) {
-        setError(error.message as string | undefined || 'Erreur lors de la réinitialisation du mot de passe');
+        setError(error.message as string | undefined || messages.resetPassword.resetError);
       } else {
         setResetSuccess(true);
       }
 
       if (data) {
         setResetSuccess(true);
-        toast.success('Mot de passe réinitialisé avec succès');
+        toast.success(messages.resetPassword.resetSuccess);
       }
     } catch (error) {
-      setError('Erreur lors de la réinitialisation du mot de passe');
+      setError(messages.resetPassword.resetError);
     }
   };
 
@@ -79,19 +81,19 @@ export default function ResetPasswordPage() {
             <div className="mx-auto w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center mb-4">
               <CheckCircle className="w-6 h-6 text-green-500" />
             </div>
-            <CardTitle className="text-slate-100">Mot de passe réinitialisé !</CardTitle>
+            <CardTitle className="text-slate-100">{messages.resetPassword.resetSuccessTitle}</CardTitle>
             <CardDescription className="text-slate-400">
-              Votre mot de passe a été mis à jour avec succès
+              {messages.resetPassword.resetSuccessMessage}
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <p className="text-slate-300 text-sm">
-              Redirection automatique vers la page de connexion...
+              {messages.resetPassword.resetSuccessRedirect}
             </p>
             <Button asChild className="w-full bg-orange-600 hover:bg-orange-700 text-white">
               <Link href="/admin/login" className="flex items-center justify-center gap-2">
                 <Shield className="w-4 h-4" />
-                Se connecter maintenant
+                {messages.resetPassword.loginNow}
               </Link>
             </Button>
           </CardContent>
@@ -109,10 +111,10 @@ export default function ResetPasswordPage() {
             <Shield className="w-8 h-8 text-orange-500" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            Nouveau mot de passe
+            {messages.resetPassword.resetPasswordTitle}
           </h1>
           <p className="text-slate-400">
-            Définissez un nouveau mot de passe pour votre compte administrateur
+            {messages.resetPassword.resetPasswordDesc}
           </p>
           {userEmail && (
             <p className="text-sm text-slate-500 mt-2">
@@ -124,10 +126,10 @@ export default function ResetPasswordPage() {
         <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-white text-center">
-              Réinitialisation du mot de passe
+              {messages.resetPassword.resetPasswordTitle}
             </CardTitle>
             <CardDescription className="text-slate-400 text-center">
-              Choisissez un mot de passe sécurisé d&apos;au moins 8 caractères
+              {messages.resetPassword.resetPasswordDesc}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -142,7 +144,7 @@ export default function ResetPasswordPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-slate-300">
-                  Nouveau mot de passe
+                  {messages.resetPassword.newPassword}
                 </Label>
                 <div className="relative">
                   <Input
@@ -173,7 +175,7 @@ export default function ResetPasswordPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-slate-300">
-                  Confirmer le mot de passe
+                  {messages.resetPassword.confirmPassword}
                 </Label>
                 <div className="relative">
                   <Input
@@ -242,12 +244,12 @@ export default function ResetPasswordPage() {
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Mise à jour...
+                      {messages.resetPassword.updating}
                     </>
                   ) : (
                     <>
                       <Shield className="mr-2 h-4 w-4" />
-                      Réinitialiser
+                      {messages.resetPassword.reset}
                     </>
                   )}
                 </Button>
