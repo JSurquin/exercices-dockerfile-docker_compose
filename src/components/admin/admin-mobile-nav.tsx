@@ -165,7 +165,7 @@ export function AdminMobileNav() {
                   <Shield className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-white">CashTrade</h2>
+                  <h2 className="text-base font-bold text-white">MoonSkin</h2>
                   <p className="text-xs text-slate-400">{t.header.adminPanel}</p>
                 </div>
               </div>

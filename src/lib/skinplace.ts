@@ -64,7 +64,7 @@ class SkinplaceService {
     const headers = {
       'Authorization': `Bearer ${this.config.apiKey}`,
       'Content-Type': 'application/json',
-      'User-Agent': 'CashTrade/1.0',
+      'User-Agent': 'MoonSkin/1.0',
       ...options.headers,
     };
 

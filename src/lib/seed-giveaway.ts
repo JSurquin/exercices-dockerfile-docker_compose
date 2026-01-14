@@ -36,8 +36,8 @@ export async function seedGiveawayData() {
 
       const giveaway = await prisma.giveaway.create({
         data: {
-          title: 'Premier Giveaway CashTrade !',
-          description: 'Bienvenue sur CashTrade ! Participez à notre premier giveaway pour tenter de gagner un magnifique AK-47 Redline !',
+          title: 'Premier Giveaway MoonSkin !',
+          description: 'Bienvenue sur MoonSkin ! Participez à notre premier giveaway pour tenter de gagner un magnifique AK-47 Redline !',
           prize: 'AK-47 | Redline (Field-Tested)',
           ticketPrice: 5,
           maxTickets: 100,

@@ -1,6 +1,6 @@
 # Intégration GateFi (Unlimit Crypto)
 
-Ce document décrit l'intégration de GateFi pour les paiements SEPA et crypto sur la plateforme CashTrade.
+Ce document décrit l'intégration de GateFi pour les paiements SEPA et crypto sur la plateforme MoonSkin.
 
 ## 📋 Table des matières
 

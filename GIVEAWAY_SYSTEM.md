@@ -1,8 +1,8 @@
-# Système de Giveaways Dynamique - CashTrade
+# Système de Giveaways Dynamique - MoonSkin
 
 ## Vue d'ensemble
 
-Le système de giveaways de CashTrade permet aux utilisateurs de participer à des concours en utilisant des tickets. Chaque nouvel utilisateur reçoit automatiquement 100 tickets lors de sa première connexion.
+Le système de giveaways de MoonSkin permet aux utilisateurs de participer à des concours en utilisant des tickets. Chaque nouvel utilisateur reçoit automatiquement 100 tickets lors de sa première connexion.
 
 ## Fonctionnalités Principales
 
@@ -256,4 +256,4 @@ curl -X POST http://localhost:3000/api/giveaways/init
 
 ---
 
-*Système développé conformément aux règles CashTrade v1.0 - Gamification et sécurité*
+*Système développé conformément aux règles MoonSkin v1.0 - Gamification et sécurité*

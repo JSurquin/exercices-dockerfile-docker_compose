@@ -126,9 +126,9 @@ const sdkExamples = {
 npm install @moonskin/sdk
 
 // Utilisation
-import CashTrade from '@moonskin/sdk';
+import MoonSkin from '@moonskin/sdk';
 
-const client = new CashTrade({
+const client = new MoonSkin({
   apiKey: 'your_api_key',
   environment: 'production' // ou 'sandbox'
 });
@@ -148,9 +148,9 @@ const trade = await client.createTrade({
 pip install moonskin-sdk
 
 # Utilisation
-from moonskin import CashTrade
+from moonskin import MoonSkin
 
-client = CashTrade(
+client = MoonSkin(
     api_key='your_api_key',
     environment='production'  # ou 'sandbox'
 )

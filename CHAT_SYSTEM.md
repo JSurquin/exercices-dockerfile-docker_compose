@@ -1,4 +1,4 @@
-# Système de Chat Dynamique - CashTrade
+# Système de Chat Dynamique - MoonSkin
 
 ## 📋 Vue d'ensemble
 

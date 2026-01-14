@@ -399,7 +399,7 @@ Toute la page contient du contenu en français hardcodé :
 - "Problème avec un trade ?" (messages.chatWidget.tradeProblem)
 - "Besoin d'aide urgente ?" (messages.chatWidget.urgentSupport)
 - "Statut KYC ?" (messages.chatWidget.kycStatus)
-- "Support CashTrade" (ligne 115)
+- "Support MoonSkin" (ligne 115)
 - "En ligne • Répond en ~2min" (ligne 117)
 - "Actions rapides" (ligne 142)
 - "Écrivez votre message..." (ligne 176)

@@ -1,4 +1,4 @@
-# Travail d'Internationalisation Effectué - CashTrade
+# Travail d'Internationalisation Effectué - MoonSkin
 
 ## 📊 Résumé Global
 

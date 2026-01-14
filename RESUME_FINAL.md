@@ -1,8 +1,8 @@
-# 🎉 Internationalisation CashTrade - Résumé Final
+# 🎉 Internationalisation MoonSkin - Résumé Final
 
 ## ✅ MISSION ACCOMPLIE !
 
-L'internationalisation de la plateforme CashTrade est **terminée à 85%** avec tous les éléments critiques fonctionnels.
+L'internationalisation de la plateforme MoonSkin est **terminée à 85%** avec tous les éléments critiques fonctionnels.
 
 ---
 
@@ -342,5 +342,5 @@ Pour toute question sur l'internationalisation :
 
 ---
 
-Made with ❤️ by the CashTrade Engineering Team
+Made with ❤️ by the MoonSkin Engineering Team
 

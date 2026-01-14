@@ -150,7 +150,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
                 <Shield className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-white">CashTrade</h2>
+                <h2 className="text-sm font-bold text-white">MoonSkin</h2>
                 <p className="text-xs text-slate-400">{t.header.adminPanel}</p>
               </div>
             </motion.div>

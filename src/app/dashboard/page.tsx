@@ -108,7 +108,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (searchParams.get('steam_login') === 'success') {
       toast.success(messages.toast.steamLoginSuccess || 'Connexion Steam réussie !', {
-        description: `${messages.dashboard.welcome} ${data?.user?.name || 'sur CashTrade'} !`,
+        description: `${messages.dashboard.welcome} ${data?.user?.name || 'sur MoonSkin'} !`,
         duration: 4000,
       });
       

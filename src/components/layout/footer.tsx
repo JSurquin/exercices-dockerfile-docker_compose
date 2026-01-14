@@ -41,7 +41,7 @@ export function Footer() {
               <div className="h-8 w-8 rounded bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
                 <span className="text-white font-bold text-sm">CS</span>
               </div>
-              <span className="font-bold text-xl">CashTrade</span>
+              <span className="font-bold text-xl">MoonSkin</span>
             </Link>
             <p className="text-muted-foreground mb-4 max-w-md">
               {messages.footer.description}

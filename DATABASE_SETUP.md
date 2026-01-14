@@ -1,4 +1,4 @@
-# Configuration Base de Données - CashTrade
+# Configuration Base de Données - MoonSkin
 
 ## Prérequis
 
@@ -78,12 +78,12 @@ pnpm db:seed
 ## Structure de la Base de Données
 
 ### Tables Better Auth
-- **User** : Utilisateurs avec champs personnalisés CashTrade
+- **User** : Utilisateurs avec champs personnalisés MoonSkin
 - **Account** : Comptes OAuth (Steam, Discord)
 - **Session** : Sessions utilisateur
 - **VerificationToken** : Tokens de vérification
 
-### Tables CashTrade
+### Tables MoonSkin
 - **Trade** : Trades de skins
 - **TradeItem** : Items dans chaque trade
 - **PaymentMethod** : Méthodes de paiement (SEPA, crypto, Stripe)

@@ -80,7 +80,7 @@ async function updateTradeStatus(trade: {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': 'CashTrade/1.0',
+          'User-Agent': 'MoonSkin/1.0',
           'Accept': 'application/json',
         },
         signal: AbortSignal.timeout(5000),

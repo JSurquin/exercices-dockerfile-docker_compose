@@ -28,20 +28,20 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 // export const metadata: Metadata = {
-//   title: "CashTrade - Sell your CS2 skins easily",
+//   title: "MoonSkin - Sell your CS2 skins easily",
 //   description: "The fastest and most secure platform to convert your Counter-Strike 2 skins into real money. SEPA and crypto payments available.",
 //   keywords: ["CS2", "Counter-Strike", "skins", "trading", "cashout", "SEPA", "crypto"],
-//   authors: [{ name: "CashTrade Team" }],
+//   authors: [{ name: "MoonSkin Team" }],
 //   openGraph: {
-//     title: "CashTrade - Sell your CS2 skins easily",
+//     title: "MoonSkin - Sell your CS2 skins easily",
 //     description: "The fastest and most secure platform to convert your Counter-Strike 2 skins into real money.",
 //     type: "website",
 //     url: "https://moonskin.gg",
-//     siteName: "CashTrade",
+//     siteName: "MoonSkin",
 //   },
 //   twitter: {
 //     card: "summary_large_image",
-//     title: "CashTrade - Sell your CS2 skins easily",
+//     title: "MoonSkin - Sell your CS2 skins easily",
 //     description: "The fastest and most secure platform to convert your Counter-Strike 2 skins into real money.",
 //     creator: "@moonskin",
 //   },
@@ -60,7 +60,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <title>CashTrade - Sell your CS2 skins easily</title>
+        <title>MoonSkin - Sell your CS2 skins easily</title>
         <meta name="description" content="The fastest and most secure platform to convert your Counter-Strike 2 skins into real money. SEPA and crypto payments available." />
       </head>
       <body

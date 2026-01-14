@@ -1,8 +1,8 @@
-# Système d'Affiliation CashTrade
+# Système d'Affiliation MoonSkin
 
 ## Vue d'ensemble
 
-Le système d'affiliation permet aux créateurs de contenu de gagner des commissions en référant de nouveaux utilisateurs à la plateforme CashTrade. Les affiliés reçoivent 2% du volume brut généré par leurs référrals.
+Le système d'affiliation permet aux créateurs de contenu de gagner des commissions en référant de nouveaux utilisateurs à la plateforme MoonSkin. Les affiliés reçoivent 2% du volume brut généré par leurs référrals.
 
 ## Architecture
 

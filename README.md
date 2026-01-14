@@ -1,8 +1,8 @@
-# CashTrade - Plateforme de vente de skins CS2
+# MoonSkin - Plateforme de vente de skins CS2
 
-![CashTrade Logo](public/logo.svg)
+![MoonSkin Logo](public/logo.svg)
 
-CashTrade est une plateforme moderne et sécurisée qui permet aux joueurs de Counter-Strike 2 de vendre leurs skins contre de l'argent réel. Construite avec Next.js 15 et intégrée à l'API Skinplace, elle offre une expérience utilisateur exceptionnelle avec des paiements SEPA et crypto.
+MoonSkin est une plateforme moderne et sécurisée qui permet aux joueurs de Counter-Strike 2 de vendre leurs skins contre de l'argent réel. Construite avec Next.js 15 et intégrée à l'API Skinplace, elle offre une expérience utilisateur exceptionnelle avec des paiements SEPA et crypto.
 
 ## 🚀 Fonctionnalités
 
@@ -295,6 +295,6 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 
 ---
 
-**Développé avec ❤️ par l'équipe CashTrade**
+**Développé avec ❤️ par l'équipe MoonSkin**
 
 *Vendez vos skins CS2 en toute sécurité et simplicité !*

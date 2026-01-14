@@ -1,8 +1,8 @@
-# Système d'Emails CashTrade
+# Système d'Emails MoonSkin
 
 ## Vue d'ensemble
 
-Le système d'emails de CashTrade est intégré avec Better Auth et gère automatiquement l'envoi d'emails pour différents événements de la plateforme.
+Le système d'emails de MoonSkin est intégré avec Better Auth et gère automatiquement l'envoi d'emails pour différents événements de la plateforme.
 
 ## Configuration
 
@@ -15,7 +15,7 @@ SMTP_PORT=587
 SMTP_USER=your-ethereal-email@ethereal.email
 SMTP_PASSWORD=your-ethereal-password
 SMTP_FROM=your-ethereal-email@ethereal.email
-SMTP_FROM_NAME=CashTrade
+SMTP_FROM_NAME=MoonSkin
 SMTP_SECURE=false
 ALERT_EMAIL_TO=admin@moonskin.com
 ```

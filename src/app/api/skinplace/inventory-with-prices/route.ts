@@ -212,7 +212,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(finalUrl, {
       method: 'GET',
       headers: {
-        'User-Agent': 'CashTrade/1.0',
+        'User-Agent': 'MoonSkin/1.0',
         'Accept': 'application/json',
       },
       // Timeout de 15 secondes

@@ -1,4 +1,4 @@
-# 📱 Améliorations Responsive - CashTrade
+# 📱 Améliorations Responsive - MoonSkin
 
 ## ✅ Améliorations Appliquées
 

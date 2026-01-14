@@ -1,6 +1,6 @@
 # Intégration Skinplace API
 
-Ce document décrit l'intégration complète de l'API Skinplace dans le projet CashTrade.
+Ce document décrit l'intégration complète de l'API Skinplace dans le projet MoonSkin.
 
 ## Architecture
 

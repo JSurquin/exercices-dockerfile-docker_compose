@@ -90,7 +90,7 @@ export function Header() {
           </div>
           <div className="flex flex-col">
             <span className="text-gaming-title text-xl bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
-              CashTrade
+              MoonSkin
             </span>
           </div>
         </Link>

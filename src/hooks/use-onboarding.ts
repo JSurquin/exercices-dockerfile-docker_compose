@@ -40,7 +40,7 @@ export const useOnboarding = () => {
 
       toast({
         title: "Bienvenue !",
-        description: "Votre onboarding est terminé. Vous pouvez maintenant utiliser toutes les fonctionnalités de CashTrade.",
+        description: "Votre onboarding est terminé. Vous pouvez maintenant utiliser toutes les fonctionnalités de MoonSkin.",
       });
 
       return true;

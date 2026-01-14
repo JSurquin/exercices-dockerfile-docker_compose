@@ -230,7 +230,7 @@ export default function HomePage() {
     <main>
       {/* Hero section */}
       <section className="container mx-auto py-20">
-        <h1>Bienvenue sur CashTrade</h1>
+        <h1>Bienvenue sur MoonSkin</h1>
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
           <VisitorCounter locale="fr" variant="default" />
@@ -273,7 +273,7 @@ export function Footer() {
   return (
     <footer className="border-t py-8">
       <div className="container mx-auto flex justify-between">
-        <div>© 2025 CashTrade</div>
+        <div>© 2025 MoonSkin</div>
         <VisitorCounter locale="fr" variant="minimal" />
       </div>
     </footer>

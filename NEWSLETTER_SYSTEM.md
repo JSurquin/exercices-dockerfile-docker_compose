@@ -1,8 +1,8 @@
-# Système de Newsletter CashTrade
+# Système de Newsletter MoonSkin
 
 ## Vue d'ensemble
 
-Le système de newsletter permet aux utilisateurs de s'abonner aux actualités de CashTrade et aux administrateurs de gérer les abonnés et d'envoyer des campagnes d'emailing.
+Le système de newsletter permet aux utilisateurs de s'abonner aux actualités de MoonSkin et aux administrateurs de gérer les abonnés et d'envoyer des campagnes d'emailing.
 
 ## Fonctionnalités
 
@@ -105,7 +105,7 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
-SMTP_FROM_NAME=CashTrade
+SMTP_FROM_NAME=MoonSkin
 SMTP_FROM_EMAIL=noreply@moonskin.com
 ```
 
@@ -117,7 +117,7 @@ Pour utiliser Gmail comme serveur SMTP :
 2. Générez un mot de passe d'application :
    - Allez dans Paramètres Google > Sécurité
    - Mots de passe d'application
-   - Sélectionnez "Autre" et nommez-le "CashTrade Newsletter"
+   - Sélectionnez "Autre" et nommez-le "MoonSkin Newsletter"
    - Utilisez le mot de passe généré dans `SMTP_PASS`
 
 ### Autres fournisseurs SMTP
@@ -212,4 +212,4 @@ Pour toute question ou problème :
 
 ---
 
-*Système développé pour CashTrade - Plateforme de trading CS2*
+*Système développé pour MoonSkin - Plateforme de trading CS2*

@@ -1,5 +1,5 @@
 /**
- * Email Templates - Centralized email template system for CashTrade
+ * Email Templates - Centralized email template system for MoonSkin
  * 
  * This file contains all email templates used across the platform.
  * Templates are organized by category and support variable interpolation.
@@ -49,7 +49,7 @@ const createEmailWrapper = (content: string, previewText?: string): string => {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>CashTrade</title>
+  <title>MoonSkin</title>
   ${previewText ? `<!--[if !mso]><!--><meta name="x-apple-disable-message-reformatting"><!--<![endif]--><span style="display:none!important;visibility:hidden;mso-hide:all;font-size:1px;color:#fff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">${previewText}</span>` : ''}
 </head>
 <body style="margin: 0; padding: 0; background-color: #f4f4f5;">
@@ -75,11 +75,11 @@ export const platformWelcomeTemplate: EmailTemplateConfig = {
   description: 'Email envoyé lors de la création d\'un nouveau compte utilisateur',
   descriptionEn: 'Email sent when a new user account is created',
   category: 'welcome',
-  subject: '🎮 Bienvenue sur CashTrade - Votre compte est créé !',
-  subjectEn: '🎮 Welcome to CashTrade - Your account is created!',
+  subject: '🎮 Bienvenue sur MoonSkin - Votre compte est créé !',
+  subjectEn: '🎮 Welcome to MoonSkin - Your account is created!',
   variables: ['{{username}}', '{{email}}', '{{steamUsername}}', '{{baseUrl}}'],
   textContent: `
-Bienvenue sur CashTrade, {{username}} !
+Bienvenue sur MoonSkin, {{username}} !
 
 Félicitations ! Votre compte a été créé avec succès sur notre plateforme de trading CS2.
 
@@ -102,12 +102,12 @@ Félicitations ! Votre compte a été créé avec succès sur notre plateforme d
 
 Merci de nous faire confiance pour vos trades CS2 !
 
-L'équipe CashTrade
+L'équipe MoonSkin
   `,
   htmlContent: createEmailWrapper(`
     <div style="${baseStyles.container}">
       <div style="${baseStyles.headerGradient}">
-        <h1 style="${baseStyles.headerTitle}">🎮 Bienvenue sur CashTrade !</h1>
+        <h1 style="${baseStyles.headerTitle}">🎮 Bienvenue sur MoonSkin !</h1>
         <p style="${baseStyles.headerSubtitle}">Votre compte {{steamUsername}} est créé</p>
       </div>
       
@@ -160,11 +160,11 @@ L'équipe CashTrade
         </div>
         
         <p style="${baseStyles.footer}">
-          L'équipe CashTrade
+          L'équipe MoonSkin
         </p>
       </div>
     </div>
-  `, 'Bienvenue sur CashTrade ! Votre compte a été créé avec succès.')
+  `, 'Bienvenue sur MoonSkin ! Votre compte a été créé avec succès.')
 };
 
 export const tradeCreatedTemplate: EmailTemplateConfig = {
@@ -199,7 +199,7 @@ Vous pouvez suivre l'état de votre trade en temps réel sur votre dashboard.
 
 Merci de votre confiance !
 
-L'équipe CashTrade
+L'équipe MoonSkin
   `,
   htmlContent: createEmailWrapper(`
     <div style="${baseStyles.container}">
@@ -273,7 +273,7 @@ L'équipe CashTrade
         
         <p style="${baseStyles.footer}">
           Merci de votre confiance !<br/>
-          <strong>L'équipe CashTrade</strong>
+          <strong>L'équipe MoonSkin</strong>
         </p>
       </div>
     </div>
@@ -287,11 +287,11 @@ export const newsletterWelcomeTemplate: EmailTemplateConfig = {
   description: 'Email envoyé lors de l\'inscription à la newsletter',
   descriptionEn: 'Email sent when subscribing to the newsletter',
   category: 'welcome',
-  subject: '🎮 Bienvenue sur CashTrade - Votre inscription est confirmée !',
-  subjectEn: '🎮 Welcome to CashTrade - Your subscription is confirmed!',
+  subject: '🎮 Bienvenue sur MoonSkin - Votre inscription est confirmée !',
+  subjectEn: '🎮 Welcome to MoonSkin - Your subscription is confirmed!',
   variables: ['{{baseUrl}}'],
   textContent: `
-Bienvenue sur CashTrade !
+Bienvenue sur MoonSkin !
 
 Merci de vous être abonné à notre newsletter. Vous recevrez désormais :
 - Les dernières actualités CS2
@@ -301,12 +301,12 @@ Merci de vous être abonné à notre newsletter. Vous recevrez désormais :
 
 Nous sommes ravis de vous compter parmi notre communauté !
 
-L'équipe CashTrade
+L'équipe MoonSkin
   `,
   htmlContent: createEmailWrapper(`
     <div style="${baseStyles.container}">
       <div style="${baseStyles.headerGradient}">
-        <h1 style="${baseStyles.headerTitle}">🎮 Bienvenue sur CashTrade !</h1>
+        <h1 style="${baseStyles.headerTitle}">🎮 Bienvenue sur MoonSkin !</h1>
         <p style="${baseStyles.headerSubtitle}">Votre inscription est confirmée</p>
       </div>
       
@@ -331,7 +331,7 @@ L'équipe CashTrade
         </div>
         
         <p style="${baseStyles.footer}">
-          L'équipe CashTrade
+          L'équipe MoonSkin
         </p>
       </div>
     </div>
@@ -364,7 +364,7 @@ OFFRE LIMITÉE - DÉPÊCHEZ-VOUS !
 
 Profitez-en maintenant sur {{baseUrl}}/sell
 
-L'équipe CashTrade
+L'équipe MoonSkin
   `,
   htmlContent: createEmailWrapper(`
     <div style="${baseStyles.container}; background: #000;">
@@ -433,7 +433,7 @@ Participez maintenant sur {{baseUrl}}/giveaways
 
 Bonne chance ! 🍀
 
-L'équipe CashTrade
+L'équipe MoonSkin
   `,
   htmlContent: createEmailWrapper(`
     <div style="${baseStyles.container}; background: radial-gradient(circle, #4c1d95, #1e1b4b);">
@@ -491,11 +491,11 @@ export const weeklyNewsletterTemplate: EmailTemplateConfig = {
   description: 'Template pour la newsletter hebdomadaire avec actualités et stats',
   descriptionEn: 'Template for weekly newsletter with news and stats',
   category: 'newsletter',
-  subject: '📊 CashTrade Weekly - Semaine {{weekNumber}}',
-  subjectEn: '📊 CashTrade Weekly - Week {{weekNumber}}',
+  subject: '📊 MoonSkin Weekly - Semaine {{weekNumber}}',
+  subjectEn: '📊 MoonSkin Weekly - Week {{weekNumber}}',
   variables: ['{{weekNumber}}', '{{topSkin}}', '{{marketTrend}}', '{{newsItems}}', '{{baseUrl}}'],
   textContent: `
-📊 CashTrade Weekly
+📊 MoonSkin Weekly
 Semaine {{weekNumber}} • Votre résumé hebdomadaire
 
 🔥 Skin de la semaine: {{topSkin}}
@@ -506,12 +506,12 @@ Hausse de {{marketTrend}}%
 
 Voir plus sur {{baseUrl}}/dashboard
 
-L'équipe CashTrade
+L'équipe MoonSkin
   `,
   htmlContent: createEmailWrapper(`
     <div style="${baseStyles.container}; background: #f8fafc;">
       <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; padding: 25px; text-align: center;">
-        <h1 style="margin: 0; font-size: 26px;">📊 CashTrade Weekly</h1>
+        <h1 style="margin: 0; font-size: 26px;">📊 MoonSkin Weekly</h1>
         <p style="margin: 10px 0 0 0; opacity: 0.9;">Semaine {{weekNumber}} • Votre résumé hebdomadaire</p>
       </div>
       
@@ -542,7 +542,7 @@ L'équipe CashTrade
         </div>
       </div>
     </div>
-  `, 'Votre résumé hebdomadaire CashTrade')
+  `, 'Votre résumé hebdomadaire MoonSkin')
 };
 
 export const marketUpdateTemplate: EmailTemplateConfig = {
@@ -570,7 +570,7 @@ export const marketUpdateTemplate: EmailTemplateConfig = {
 
 Prêt à trader ? {{baseUrl}}/sell
 
-L'équipe CashTrade
+L'équipe MoonSkin
   `,
   htmlContent: createEmailWrapper(`
     <div style="${baseStyles.container}; background: #ffffff;">

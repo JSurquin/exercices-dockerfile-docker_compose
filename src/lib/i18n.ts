@@ -61,7 +61,7 @@ export const messages: Record<Locale, Messages> = {
       },
     },
     features: {
-      title: "Pourquoi choisir CashTrade ?",
+      title: "Pourquoi choisir MoonSkin ?",
       subtitle: "Une plateforme complète avec toutes les fonctionnalités dont vous avez besoin",
       items: {
         security: {
@@ -411,13 +411,13 @@ export const messages: Record<Locale, Messages> = {
       steamLoginError: "Erreur de connexion Steam",
       steamLoginErrorDesc: "Impossible de se connecter avec Steam",
       discordLoginSuccess: "Connexion Discord réussie !",
-      discordLoginSuccessDesc: "Bienvenue sur CashTrade",
+      discordLoginSuccessDesc: "Bienvenue sur MoonSkin",
       discordLoginInProgress: "Connexion Discord en cours...",
       discordLoginInProgressDesc: "Redirection vers Discord",
       discordLoginError: "Erreur de connexion Discord",
       discordLoginErrorDesc: "Impossible de se connecter avec Discord",
       logoutSuccess: "Déconnexion réussie",
-      logoutSuccessDesc: "À bientôt sur CashTrade !",
+      logoutSuccessDesc: "À bientôt sur MoonSkin !",
       logoutError: "Erreur lors de la déconnexion",
       logoutErrorDesc: "Vous avez été déconnecté",
       settingsSaveError: "Erreur lors de la sauvegarde des paramètres",
@@ -452,8 +452,8 @@ export const messages: Record<Locale, Messages> = {
         tradesCompleted: "Trades réalisés",
         satisfactionRate: "Taux de satisfaction",
       },
-      disclaimer: "Avertissement : CashTrade n'est pas affilié à Valve Corporation ou Steam. Counter-Strike et Steam sont des marques déposées de Valve Corporation. Le trading de skins comporte des risques et les prix peuvent fluctuer. Veuillez trader de manière responsable et ne jamais investir plus que ce que vous pouvez vous permettre de perdre.",
-      copyright: "© 2024 CashTrade. Tous droits réservés. | Licence EU: CT-2024-001",
+      disclaimer: "Avertissement : MoonSkin n'est pas affilié à Valve Corporation ou Steam. Counter-Strike et Steam sont des marques déposées de Valve Corporation. Le trading de skins comporte des risques et les prix peuvent fluctuer. Veuillez trader de manière responsable et ne jamais investir plus que ce que vous pouvez vous permettre de perdre.",
+      copyright: "© 2024 MoonSkin. Tous droits réservés. | Licence EU: CT-2024-001",
       socialLinks: {
         discord: "Discord",
         twitter: "Twitter",
@@ -479,8 +479,8 @@ export const messages: Record<Locale, Messages> = {
           trading: "Trading & Skins",
         },
         questions: {
-          howItWorks: "Comment fonctionne CashTrade ?",
-          howItWorksAnswer: "CashTrade est une plateforme qui vous permet de vendre vos skins CS2 contre de l'argent réel. Vous connectez votre compte Steam, ajoutez votre Trade Link, nous estimons vos skins en temps réel via l'API Skinplace, puis nous créons un trade. Après le trade hold Steam de 7 jours, vous recevez automatiquement votre paiement.",
+          howItWorks: "Comment fonctionne MoonSkin ?",
+          howItWorksAnswer: "MoonSkin est une plateforme qui vous permet de vendre vos skins CS2 contre de l'argent réel. Vous connectez votre compte Steam, ajoutez votre Trade Link, nous estimons vos skins en temps réel via l'API Skinplace, puis nous créons un trade. Après le trade hold Steam de 7 jours, vous recevez automatiquement votre paiement.",
           fees: "Quels sont les frais ?",
           feesAnswer: "Nous appliquons seulement 0,5% de frais de cashout sur le montant brut de votre vente. Des frais de réseau peuvent s'appliquer selon votre méthode de paiement (environ 20€ pour SEPA, variable pour les cryptomonnaies). Aucun frais caché !",
           processTime: "Combien de temps prend le processus ?",
@@ -637,7 +637,7 @@ export const messages: Record<Locale, Messages> = {
       youHave: "Vous avez",
     },
     chatWidget: {
-      support: "CashTrade Support",
+      support: "MoonSkin Support",
       online: "En ligne",
       responseTime: "Répond généralement en moins de 5min",
       quickActions: "Actions rapides :",
@@ -650,12 +650,12 @@ export const messages: Record<Locale, Messages> = {
         kycStatusCheck: "Quel est le statut de ma vérification KYC ?",
       },
       responses: {
-        welcomeMessage: "Salut ! 👋 Je suis Alex de l'équipe CashTrade. Comment puis-je vous aider aujourd'hui ?",
+        welcomeMessage: "Salut ! 👋 Je suis Alex de l'équipe MoonSkin. Comment puis-je vous aider aujourd'hui ?",
         expertResponse: "Merci pour votre message ! Un de nos experts va vous répondre dans quelques instants. 🚀",
         thankYouMessage: "Merci pour votre message ! Un membre de notre équipe vous répondra rapidement. En attendant, vous pouvez consulter notre FAQ ou nos guides. 😊",
       },
       placeholder: "Tapez votre message...",
-      poweredBy: "Propulsé par CashTrade AI",
+      poweredBy: "Propulsé par MoonSkin AI",
       responseTimeInfo: "Nous répondons généralement en moins de 5 minutes",
       tooltip: "💬 Besoin d'aide ? Chatez avec nous !",
     },
@@ -1521,7 +1521,7 @@ export const messages: Record<Locale, Messages> = {
       subtitle: "Nous révolutionnons la façon dont les joueurs de Counter-Strike 2 transforment leurs skins en argent réel. Une plateforme sécurisée, transparente et innovante créée par des passionnés pour des passionnés.",
       mission: {
         title: "Notre Mission",
-        description1: "Fondée en 2023 par une équipe de développeurs et de traders passionnés, CashTrade est née d'un constat simple : le trading de skins CS était trop complexe, peu sécurisé et souvent opaque.",
+        description1: "Fondée en 2023 par une équipe de développeurs et de traders passionnés, MoonSkin est née d'un constat simple : le trading de skins CS était trop complexe, peu sécurisé et souvent opaque.",
         description2: "Notre mission est de créer la plateforme de référence pour convertir vos skins en argent réel, en alliant sécurité maximale, transparence totale et expérience utilisateur exceptionnelle.",
         description3: "Nous croyons que chaque joueur devrait pouvoir monétiser facilement ses items virtuels, sans compromis sur la sécurité ou la simplicité."
       },
@@ -1577,7 +1577,7 @@ export const messages: Record<Locale, Messages> = {
         events: {
           founding: {
             year: "2023",
-            title: "Fondation de CashTrade",
+            title: "Fondation de MoonSkin",
             description: "Lancement de la startup avec une vision claire : révolutionner le trading de skins CS."
           },
           mvp: {
@@ -1608,7 +1608,7 @@ export const messages: Record<Locale, Messages> = {
         }
       },
       cta: {
-        title: "Rejoignez l'aventure CashTrade",
+        title: "Rejoignez l'aventure MoonSkin",
         description: "Faites partie de la révolution du trading de skins CS2. Une communauté de plus de 15,000 traders vous attend.",
         start: "Commencer à trader",
         discord: "Rejoindre Discord"
@@ -1622,27 +1622,27 @@ export const messages: Record<Locale, Messages> = {
     },
     terms: {
       title: "Conditions d'utilisation",
-      subtitle: "Conditions générales d'utilisation de la plateforme CashTrade",
+      subtitle: "Conditions générales d'utilisation de la plateforme MoonSkin",
       lastUpdated: "Dernière mise à jour : 21 septembre 2024",
       version: "Version 1.2",
       importantNotice: {
         title: "Information importante",
-        content: "Ces conditions d'utilisation constituent un contrat légalement contraignant entre vous et CashTrade. En utilisant nos services, vous acceptez d'être lié par l'ensemble de ces conditions. Veuillez les lire attentivement avant d'utiliser notre plateforme."
+        content: "Ces conditions d'utilisation constituent un contrat légalement contraignant entre vous et MoonSkin. En utilisant nos services, vous acceptez d'être lié par l'ensemble de ces conditions. Veuillez les lire attentivement avant d'utiliser notre plateforme."
       },
       tableOfContents: "Table des matières",
-      warningText: "Ces conditions d'utilisation constituent un contrat légalement contraignant entre vous et CashTrade. En utilisant nos services, vous acceptez d'être lié par l'ensemble de ces conditions.",
+      warningText: "Ces conditions d'utilisation constituent un contrat légalement contraignant entre vous et MoonSkin. En utilisant nos services, vous acceptez d'être lié par l'ensemble de ces conditions.",
       sections: {
         acceptance: {
           title: "1. Acceptation des conditions",
-          content: "En utilisant CashTrade, vous acceptez d'être lié par les présentes conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service.\n\nCes conditions peuvent être modifiées à tout moment. Les modifications entreront en vigueur dès leur publication sur notre site. Il est de votre responsabilité de consulter régulièrement ces conditions."
+          content: "En utilisant MoonSkin, vous acceptez d'être lié par les présentes conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service.\n\nCes conditions peuvent être modifiées à tout moment. Les modifications entreront en vigueur dès leur publication sur notre site. Il est de votre responsabilité de consulter régulièrement ces conditions."
         },
         eligibility: {
           title: "2. Conditions d'éligibilité",
-          content: "Pour utiliser CashTrade, vous devez :\n• Être âgé d'au moins 18 ans\n• Avoir la capacité juridique de conclure des contrats\n• Résider dans un pays où nos services sont légalement disponibles\n• Posséder un compte Steam en règle\n• Compléter avec succès notre processus KYC (Know Your Customer)\n\nNous nous réservons le droit de refuser ou de suspendre l'accès à tout utilisateur ne respectant pas ces critères."
+          content: "Pour utiliser MoonSkin, vous devez :\n• Être âgé d'au moins 18 ans\n• Avoir la capacité juridique de conclure des contrats\n• Résider dans un pays où nos services sont légalement disponibles\n• Posséder un compte Steam en règle\n• Compléter avec succès notre processus KYC (Know Your Customer)\n\nNous nous réservons le droit de refuser ou de suspendre l'accès à tout utilisateur ne respectant pas ces critères."
         },
         services: {
           title: "3. Description des services",
-          content: "CashTrade fournit une plateforme permettant de :\n• Vendre des skins Counter-Strike 2 contre de l'argent réel\n• Recevoir des paiements via SEPA ou cryptomonnaies\n• Participer à des giveaways et concours\n• Accéder à des statistiques de trading\n\nNos services sont fournis \"en l'état\" et nous ne garantissons pas leur disponibilité ininterrompue."
+          content: "MoonSkin fournit une plateforme permettant de :\n• Vendre des skins Counter-Strike 2 contre de l'argent réel\n• Recevoir des paiements via SEPA ou cryptomonnaies\n• Participer à des giveaways et concours\n• Accéder à des statistiques de trading\n\nNos services sont fournis \"en l'état\" et nous ne garantissons pas leur disponibilité ininterrompue."
         },
         trading: {
           title: "4. Processus de trading",
@@ -1666,7 +1666,7 @@ export const messages: Record<Locale, Messages> = {
         },
         liability: {
           title: "9. Limitation de responsabilité",
-          content: "CashTrade ne peut être tenu responsable :\n• Des fluctuations de prix des skins\n• Des interruptions de service temporaires\n• Des décisions de Steam concernant les trades\n• Des pertes indirectes ou consécutives\n• Des erreurs d'estimation dues aux conditions de marché\n\nNotre responsabilité est limitée au montant des frais payés pour le service concerné."
+          content: "MoonSkin ne peut être tenu responsable :\n• Des fluctuations de prix des skins\n• Des interruptions de service temporaires\n• Des décisions de Steam concernant les trades\n• Des pertes indirectes ou consécutives\n• Des erreurs d'estimation dues aux conditions de marché\n\nNotre responsabilité est limitée au montant des frais payés pour le service concerné."
         },
         data: {
           title: "10. Protection des données",
@@ -1694,10 +1694,10 @@ export const messages: Record<Locale, Messages> = {
       subtitle: "Comment nous collectons, utilisons et protégeons vos données personnelles",
       lastUpdated: "Dernière mise à jour : 21 septembre 2024",
       gdprCompliant: "Conforme RGPD",
-      intro: "CashTrade s'engage à protéger votre vie privée et vos données personnelles conformément au RGPD.",
+      intro: "MoonSkin s'engage à protéger votre vie privée et vos données personnelles conformément au RGPD.",
       commitment: {
         title: "Notre engagement",
-        description1: "Chez CashTrade, la protection de vos données personnelles est notre priorité absolue. Cette politique explique comment nous collectons, utilisons, stockons et protégeons vos informations en conformité avec le Règlement Général sur la Protection des Données (RGPD) et les lois françaises.",
+        description1: "Chez MoonSkin, la protection de vos données personnelles est notre priorité absolue. Cette politique explique comment nous collectons, utilisons, stockons et protégeons vos informations en conformité avec le Règlement Général sur la Protection des Données (RGPD) et les lois françaises.",
         description2: "Nous appliquons le principe de minimisation des données : nous ne collectons que les informations strictement nécessaires au fonctionnement de notre service et à nos obligations légales."
       },
       dataTypes: {
@@ -1797,12 +1797,12 @@ export const messages: Record<Locale, Messages> = {
         title: "Contact Délégué à la Protection des Données",
         description: "Pour toute question concernant vos données personnelles ou pour exercer vos droits, contactez notre DPO.",
         email: "dpo@moonskin.gg",
-        address: "CashTrade - DPO, 123 Rue de la Tech, 75001 Paris",
+        address: "MoonSkin - DPO, 123 Rue de la Tech, 75001 Paris",
         cnil: "Vous avez également le droit de déposer une plainte auprès de la CNIL en cas de manquement."
       }
     },
     status: {
-      title: "Statut des services CashTrade",
+      title: "Statut des services MoonSkin",
       subtitle: "Surveillez en temps réel la disponibilité de nos services",
       overall: {
         title: "Statut global",
@@ -1824,7 +1824,7 @@ export const messages: Record<Locale, Messages> = {
           description: "Interface utilisateur principale"
         },
         api: {
-          name: "API CashTrade",
+          name: "API MoonSkin",
           description: "API principal pour les trades"
         },
         database: {
@@ -2034,7 +2034,7 @@ export const messages: Record<Locale, Messages> = {
       }
     },
     admin: {
-      title: "Administration CashTrade",
+      title: "Administration MoonSkin",
       subtitle: "Gestion et supervision de la plateforme",
       audit: {
         title: "Audit & Sécurité",
@@ -2453,7 +2453,7 @@ export const messages: Record<Locale, Messages> = {
         welcomeMessage: "Bienvenue dans le panel d'administration",
       },
       dashboard: {
-        title: "Dashboard Admin CashTrade",
+        title: "Dashboard Admin MoonSkin",
         subtitle: "Gestion complète de la plateforme • CS2 Skin Trading",
         exportData: "Exporter Données",
         fullReport: "Rapport Complet",
@@ -2948,7 +2948,7 @@ export const messages: Record<Locale, Messages> = {
     },
     // Pages avec traductions manquantes
     affiliate: {
-      title: "Programme d'Affiliation CashTrade",
+      title: "Programme d'Affiliation MoonSkin",
       subtitle: "Gagnez des commissions en recommandant notre plateforme",
       notAffiliate: "Vous n'êtes pas encore affilié",
       applyNow: "Postuler maintenant",
@@ -3037,12 +3037,12 @@ export const messages: Record<Locale, Messages> = {
       title: "Espace Presse",
       subtitle: "Ressources et actualités pour les médias",
       lastUpdate: "Dernière mise à jour :",
-      statsTitle: "CashTrade en chiffres",
+      statsTitle: "MoonSkin en chiffres",
       pressReleases: "Communiqués de presse",
       readRelease: "Lire le communiqué",
-      aboutTitle: "À propos de CashTrade",
-      aboutDescription1: "CashTrade est la première plateforme française dédiée au trading sécurisé de skins Counter-Strike 2. Fondée en 2024, l'entreprise révolutionne l'écosystème du gaming en permettant aux joueurs de monétiser facilement leurs inventaires virtuels.",
-      aboutDescription2: "Grâce à des partenariats stratégiques avec Skinplace pour l'estimation et Qonto pour les paiements SEPA, CashTrade garantit transparence, sécurité et conformité réglementaire. La plateforme respecte scrupuleusement les obligations KYC et anti-blanchiment.",
+      aboutTitle: "À propos de MoonSkin",
+      aboutDescription1: "MoonSkin est la première plateforme française dédiée au trading sécurisé de skins Counter-Strike 2. Fondée en 2024, l'entreprise révolutionne l'écosystème du gaming en permettant aux joueurs de monétiser facilement leurs inventaires virtuels.",
+      aboutDescription2: "Grâce à des partenariats stratégiques avec Skinplace pour l'estimation et Qonto pour les paiements SEPA, MoonSkin garantit transparence, sécurité et conformité réglementaire. La plateforme respecte scrupuleusement les obligations KYC et anti-blanchiment.",
       sector: "Secteur d'activité",
       sectorValue: "Gaming, Fintech, Esport",
       founded: "Fondation",
@@ -3089,7 +3089,7 @@ export const messages: Record<Locale, Messages> = {
       integrate: "3. Intégrer",
       integrateDesc: "Utilisez nos SDKs ou appelez directement l'API REST",
       authentication: "Authentification",
-      authDescription: "L'API CashTrade utilise des tokens Bearer pour l'authentification. Incluez votre token dans l'en-tête Authorization de chaque requête.",
+      authDescription: "L'API MoonSkin utilise des tokens Bearer pour l'authentification. Incluez votre token dans l'en-tête Authorization de chaque requête.",
       important: "Important",
       securityWarning: "Ne partagez jamais votre clé API et utilisez HTTPS pour toutes les requêtes.",
       availableEndpoints: "Endpoints disponibles",
@@ -3193,7 +3193,7 @@ export const messages: Record<Locale, Messages> = {
           alreadySubscribed: "Cette adresse email est déjà abonnée à notre newsletter.",
         },
         unsubscribe: {
-          title: "CashTrade Newsletter",
+          title: "MoonSkin Newsletter",
           loading: "Désabonnement en cours...",
           processing: "Traitement en cours...",
           success: "Désabonnement réussi",
@@ -3260,7 +3260,7 @@ export const messages: Record<Locale, Messages> = {
         sellTitle: "Vendez vos skins en 3 étapes",
         securityTitle: "Sécurité et KYC",
         welcome: {
-          title: "Bienvenue sur CashTrade !",
+          title: "Bienvenue sur MoonSkin !",
           description: "La plateforme #1 pour vendre vos skins CS2 en toute sécurité et obtenir de l'argent réel.",
           features: {
             secure: "100% Sécurisé",
@@ -3276,7 +3276,7 @@ export const messages: Record<Locale, Messages> = {
             title: "Comment obtenir votre Trade Link :",
             step1: "Ouvrez Steam et allez dans votre inventaire",
             step3: "Copiez votre URL d'échange",
-            step4: "Collez-la dans vos paramètres CashTrade"
+            step4: "Collez-la dans vos paramètres MoonSkin"
           },
           warning: "⚠️ Gardez votre Trade Link privé et sécurisé"
         },
@@ -3520,7 +3520,7 @@ export const messages: Record<Locale, Messages> = {
             paymentIssue: "Problème de paiement : que faire ?",
           },
           security: {
-            secureAccount: "Sécuriser mon compte CashTrade",
+            secureAccount: "Sécuriser mon compte MoonSkin",
             accountSuspended: "Que faire si mon compte est suspendu ?",
             reportSuspicious: "Signaler une activité suspecte",
             accountRecovery: "Récupération de compte perdu",
@@ -3722,11 +3722,11 @@ export const messages: Record<Locale, Messages> = {
       discordLoginInProgress: "Connexion Discord en cours...",
       discordLoginRedirect: "Redirection vers Discord",
       discordLoginSuccess: "Connexion Discord réussie !",
-      discordLoginSuccessDesc: "Bienvenue sur CashTrade",
+      discordLoginSuccessDesc: "Bienvenue sur MoonSkin",
       discordLoginError: "Erreur de connexion Discord",
       discordLoginErrorDesc: "Impossible de se connecter avec Discord",
       logoutSuccess: "Déconnexion réussie",
-      logoutSuccessDesc: "À bientôt sur CashTrade !",
+      logoutSuccessDesc: "À bientôt sur MoonSkin !",
       logoutError: "Erreur lors de la déconnexion",
       logoutErrorDesc: "Vous avez été déconnecté",
     },
@@ -3742,7 +3742,7 @@ export const messages: Record<Locale, Messages> = {
       code: "404",
       pageNotFound: "Page non trouvée",
       title: "Oops ! Cette page semble avoir disparu",
-      description: "La page que vous recherchez n'existe pas ou a été déplacée. Peut-être qu'elle s'est vendue sur CashTrade ? 😄",
+      description: "La page que vous recherchez n'existe pas ou a été déplacée. Peut-être qu'elle s'est vendue sur MoonSkin ? 😄",
       message: "Désolé, la page que vous recherchez n'existe pas ou a été déplacée.",
       backHome: "Retour à l'accueil",
       home: "Retour à l'accueil",
@@ -3753,7 +3753,7 @@ export const messages: Record<Locale, Messages> = {
       myDashboard: "Mon Dashboard",
       giveaways: "Giveaways",
       support: "Support",
-      randomStats: "Pendant que vous étiez là, {count} skins ont été vendus sur CashTrade !",
+      randomStats: "Pendant que vous étiez là, {count} skins ont été vendus sur MoonSkin !",
       quickLinks: {
         title: "Liens rapides",
         sell: "Vendre mes skins",
@@ -3831,7 +3831,7 @@ export const messages: Record<Locale, Messages> = {
       },
     },
     features: {
-      title: "Why choose CashTrade?",
+      title: "Why choose MoonSkin?",
       subtitle: "A complete platform with all the features you need",
       items: {
         security: {
@@ -4180,13 +4180,13 @@ export const messages: Record<Locale, Messages> = {
       steamLoginError: "Steam login error",
       steamLoginErrorDesc: "Unable to login with Steam",
       discordLoginSuccess: "Discord login successful!",
-      discordLoginSuccessDesc: "Welcome to CashTrade",
+      discordLoginSuccessDesc: "Welcome to MoonSkin",
       discordLoginInProgress: "Discord login in progress...",
       discordLoginInProgressDesc: "Redirecting to Discord",
       discordLoginError: "Discord login error",
       discordLoginErrorDesc: "Unable to login with Discord",
       logoutSuccess: "Logout successful",
-      logoutSuccessDesc: "See you soon on CashTrade!",
+      logoutSuccessDesc: "See you soon on MoonSkin!",
       logoutError: "Logout error",
       logoutErrorDesc: "You have been logged out",
       settingsSaveError: "Error saving settings",
@@ -4221,8 +4221,8 @@ export const messages: Record<Locale, Messages> = {
         tradesCompleted: "Trades completed",
         satisfactionRate: "Satisfaction rate",
       },
-      disclaimer: "Disclaimer: CashTrade is not affiliated with Valve Corporation or Steam. Counter-Strike and Steam are registered trademarks of Valve Corporation. Skin trading involves risks and prices may fluctuate. Please trade responsibly and never invest more than you can afford to lose.",
-      copyright: "© 2024 CashTrade. All rights reserved. | EU License: CT-2024-001",
+      disclaimer: "Disclaimer: MoonSkin is not affiliated with Valve Corporation or Steam. Counter-Strike and Steam are registered trademarks of Valve Corporation. Skin trading involves risks and prices may fluctuate. Please trade responsibly and never invest more than you can afford to lose.",
+      copyright: "© 2024 MoonSkin. All rights reserved. | EU License: CT-2024-001",
       socialLinks: {
         discord: "Discord",
         twitter: "Twitter",
@@ -4248,8 +4248,8 @@ export const messages: Record<Locale, Messages> = {
           trading: "Trading & Skins",
         },
         questions: {
-          howItWorks: "How does CashTrade work?",
-          howItWorksAnswer: "CashTrade is a platform that allows you to sell your CS2 skins for real money. You connect your Steam account, add your Trade Link, we estimate your skins in real time via the Skinplace API, then we create a trade. After the 7-day Steam trade hold, you automatically receive your payment.",
+          howItWorks: "How does MoonSkin work?",
+          howItWorksAnswer: "MoonSkin is a platform that allows you to sell your CS2 skins for real money. You connect your Steam account, add your Trade Link, we estimate your skins in real time via the Skinplace API, then we create a trade. After the 7-day Steam trade hold, you automatically receive your payment.",
           fees: "What are the fees?",
           feesAnswer: "We only apply 0.5% cashout fees on the gross amount of your sale. Network fees may apply depending on your payment method (around €20 for SEPA, variable for cryptocurrencies). No hidden fees!",
           processTime: "How long does the process take?",
@@ -4410,7 +4410,7 @@ export const messages: Record<Locale, Messages> = {
       subtitle: "We revolutionize the way Counter-Strike 2 players turn their skins into real money. A secure, transparent and innovative platform created by enthusiasts for enthusiasts.",
       mission: {
         title: "Our Mission",
-        description1: "Founded in 2023 by a team of passionate developers and traders, CashTrade was born from a simple observation: CS skin trading was too complex, not secure enough and often opaque.",
+        description1: "Founded in 2023 by a team of passionate developers and traders, MoonSkin was born from a simple observation: CS skin trading was too complex, not secure enough and often opaque.",
         description2: "Our mission is to create the reference platform to convert your skins into real money, combining maximum security, total transparency and exceptional user experience.",
         description3: "We believe that every player should be able to easily monetize their virtual items, without compromising on security or simplicity."
       },
@@ -4466,7 +4466,7 @@ export const messages: Record<Locale, Messages> = {
         events: {
           founding: {
             year: "2023",
-            title: "CashTrade Foundation",
+            title: "MoonSkin Foundation",
             description: "Startup launch with a clear vision: revolutionize CS skin trading."
           },
           mvp: {
@@ -4497,7 +4497,7 @@ export const messages: Record<Locale, Messages> = {
         }
       },
       cta: {
-        title: "Join the CashTrade adventure",
+        title: "Join the MoonSkin adventure",
         description: "Be part of the CS2 skin trading revolution. A community of over 15,000 traders awaits you.",
         start: "Start trading",
         discord: "Join Discord"
@@ -4511,27 +4511,27 @@ export const messages: Record<Locale, Messages> = {
     },
     terms: {
       title: "Terms of Service",
-      subtitle: "General terms of use for the CashTrade platform",
+      subtitle: "General terms of use for the MoonSkin platform",
       lastUpdated: "Last updated: September 21, 2024",
       version: "Version 1.2",
       importantNotice: {
         title: "Important information",
-        content: "These terms of use constitute a legally binding contract between you and CashTrade. By using our services, you agree to be bound by all of these terms. Please read them carefully before using our platform."
+        content: "These terms of use constitute a legally binding contract between you and MoonSkin. By using our services, you agree to be bound by all of these terms. Please read them carefully before using our platform."
       },
       tableOfContents: "Table of Contents",
-      warningText: "These terms of use constitute a legally binding contract between you and CashTrade. By using our services, you agree to be bound by all of these terms.",
+      warningText: "These terms of use constitute a legally binding contract between you and MoonSkin. By using our services, you agree to be bound by all of these terms.",
       sections: {
         acceptance: {
           title: "1. Acceptance of terms",
-          content: "By using CashTrade, you agree to be bound by these terms of use. If you do not accept these terms, please do not use our service.\n\nThese terms may be modified at any time. Changes will take effect upon publication on our site. It is your responsibility to regularly review these terms."
+          content: "By using MoonSkin, you agree to be bound by these terms of use. If you do not accept these terms, please do not use our service.\n\nThese terms may be modified at any time. Changes will take effect upon publication on our site. It is your responsibility to regularly review these terms."
         },
         eligibility: {
           title: "2. Eligibility conditions",
-          content: "To use CashTrade, you must:\n• Be at least 18 years old\n• Have the legal capacity to enter into contracts\n• Reside in a country where our services are legally available\n• Own a valid Steam account\n• Successfully complete our KYC (Know Your Customer) process\n\nWe reserve the right to refuse or suspend access to any user who does not meet these criteria."
+          content: "To use MoonSkin, you must:\n• Be at least 18 years old\n• Have the legal capacity to enter into contracts\n• Reside in a country where our services are legally available\n• Own a valid Steam account\n• Successfully complete our KYC (Know Your Customer) process\n\nWe reserve the right to refuse or suspend access to any user who does not meet these criteria."
         },
         services: {
           title: "3. Description of services",
-          content: "CashTrade provides a platform that allows you to:\n• Sell Counter-Strike 2 skins for real money\n• Receive payments via SEPA or cryptocurrencies\n• Participate in giveaways and contests\n• Access trading statistics\n\nOur services are provided \"as is\" and we do not guarantee their uninterrupted availability."
+          content: "MoonSkin provides a platform that allows you to:\n• Sell Counter-Strike 2 skins for real money\n• Receive payments via SEPA or cryptocurrencies\n• Participate in giveaways and contests\n• Access trading statistics\n\nOur services are provided \"as is\" and we do not guarantee their uninterrupted availability."
         },
         trading: {
           title: "4. Trading process",
@@ -4555,7 +4555,7 @@ export const messages: Record<Locale, Messages> = {
         },
         liability: {
           title: "9. Limitation of liability",
-          content: "CashTrade cannot be held responsible for:\n• Skin price fluctuations\n• Temporary service interruptions\n• Steam decisions regarding trades\n• Indirect or consequential losses\n• Estimation errors due to market conditions\n\nOur liability is limited to the amount of fees paid for the service concerned."
+          content: "MoonSkin cannot be held responsible for:\n• Skin price fluctuations\n• Temporary service interruptions\n• Steam decisions regarding trades\n• Indirect or consequential losses\n• Estimation errors due to market conditions\n\nOur liability is limited to the amount of fees paid for the service concerned."
         },
         data: {
           title: "10. Data protection",
@@ -4583,10 +4583,10 @@ export const messages: Record<Locale, Messages> = {
       subtitle: "How we collect, use and protect your personal data",
       lastUpdated: "Last updated: September 21, 2024",
       gdprCompliant: "GDPR Compliant",
-      intro: "CashTrade is committed to protecting your privacy and personal data in accordance with GDPR.",
+      intro: "MoonSkin is committed to protecting your privacy and personal data in accordance with GDPR.",
       commitment: {
         title: "Our commitment",
-        description1: "At CashTrade, protecting your personal data is our absolute priority. This policy explains how we collect, use, store and protect your information in compliance with the General Data Protection Regulation (GDPR) and French laws.",
+        description1: "At MoonSkin, protecting your personal data is our absolute priority. This policy explains how we collect, use, store and protect your information in compliance with the General Data Protection Regulation (GDPR) and French laws.",
         description2: "We apply the principle of data minimization: we only collect information strictly necessary for the operation of our service and our legal obligations."
       },
       dataTypes: {
@@ -4686,12 +4686,12 @@ export const messages: Record<Locale, Messages> = {
         title: "Data Protection Officer Contact",
         description: "For any questions regarding your personal data or to exercise your rights, contact our DPO.",
         email: "dpo@moonskin.gg",
-        address: "CashTrade - DPO, 123 Rue de la Tech, 75001 Paris",
+        address: "MoonSkin - DPO, 123 Rue de la Tech, 75001 Paris",
         cnil: "You also have the right to file a complaint with the CNIL in case of breach."
       }
     },
     status: {
-      title: "CashTrade Service Status",
+      title: "MoonSkin Service Status",
       subtitle: "Monitor our services availability in real-time",
       overall: {
         title: "Overall Status",
@@ -4713,7 +4713,7 @@ export const messages: Record<Locale, Messages> = {
           description: "Main user interface"
         },
         api: {
-          name: "CashTrade API",
+          name: "MoonSkin API",
           description: "Main API for trades"
         },
         database: {
@@ -4756,7 +4756,7 @@ export const messages: Record<Locale, Messages> = {
       }
     },
     admin: {
-      title: "CashTrade Administration",
+      title: "MoonSkin Administration",
       subtitle: "Platform management and supervision",
       audit: {
         title: "Audit & Security",
@@ -5166,7 +5166,7 @@ export const messages: Record<Locale, Messages> = {
         welcomeMessage: "Welcome to the admin panel",
       },
       dashboard: {
-        title: "CashTrade Admin Dashboard",
+        title: "MoonSkin Admin Dashboard",
         subtitle: "Complete platform management • CS2 Skin Trading",
         exportData: "Export Data",
         fullReport: "Full Report",
@@ -5669,7 +5669,7 @@ export const messages: Record<Locale, Messages> = {
       expire: 'Expires',
     },
     chatWidget: {
-      support: "CashTrade Support",
+      support: "MoonSkin Support",
       online: "Online",
       responseTime: "Usually responds in less than 5min",
       quickActions: "Quick actions:",
@@ -5682,12 +5682,12 @@ export const messages: Record<Locale, Messages> = {
         kycStatusCheck: "What is the status of my KYC verification?",
       },
       responses: {
-        welcomeMessage: "Hi! 👋 I'm Alex from the CashTrade team. How can I help you today?",
+        welcomeMessage: "Hi! 👋 I'm Alex from the MoonSkin team. How can I help you today?",
         expertResponse: "Thank you for your message! One of our experts will respond in a few moments. 🚀",
         thankYouMessage: "Thank you for your message! A member of our team will respond quickly. In the meantime, you can check our FAQ or guides. 😊",
       },
       placeholder: "Type your message...",
-      poweredBy: "Powered by CashTrade AI",
+      poweredBy: "Powered by MoonSkin AI",
       responseTimeInfo: "We usually respond in less than 5 minutes",
       tooltip: "💬 Need help? Chat with us!",
     },
@@ -6550,7 +6550,7 @@ export const messages: Record<Locale, Messages> = {
     },
     // Pages with missing translations
     affiliate: {
-      title: "CashTrade Affiliate Program",
+      title: "MoonSkin Affiliate Program",
       subtitle: "Earn commissions by recommending our platform",
       notAffiliate: "You are not yet an affiliate",
       applyNow: "Apply now",
@@ -6806,12 +6806,12 @@ export const messages: Record<Locale, Messages> = {
       title: "Press Room",
       subtitle: "Media resources and news",
       lastUpdate: "Last update:",
-      statsTitle: "CashTrade in numbers",
+      statsTitle: "MoonSkin in numbers",
       pressReleases: "Press releases",
       readRelease: "Read release",
-      aboutTitle: "About CashTrade",
-      aboutDescription1: "CashTrade is the first French platform dedicated to secure Counter-Strike 2 skin trading. Founded in 2024, the company revolutionizes the gaming ecosystem by allowing players to easily monetize their virtual inventories.",
-      aboutDescription2: "Through strategic partnerships with Skinplace for estimation and Qonto for SEPA payments, CashTrade guarantees transparency, security and regulatory compliance. The platform strictly respects KYC and anti-money laundering obligations.",
+      aboutTitle: "About MoonSkin",
+      aboutDescription1: "MoonSkin is the first French platform dedicated to secure Counter-Strike 2 skin trading. Founded in 2024, the company revolutionizes the gaming ecosystem by allowing players to easily monetize their virtual inventories.",
+      aboutDescription2: "Through strategic partnerships with Skinplace for estimation and Qonto for SEPA payments, MoonSkin guarantees transparency, security and regulatory compliance. The platform strictly respects KYC and anti-money laundering obligations.",
       sector: "Industry",
       sectorValue: "Gaming, Fintech, Esport",
       founded: "Founded",
@@ -6858,7 +6858,7 @@ export const messages: Record<Locale, Messages> = {
       integrate: "3. Integrate",
       integrateDesc: "Use our SDKs or call the REST API directly",
       authentication: "Authentication",
-      authDescription: "The CashTrade API uses Bearer tokens for authentication. Include your token in the Authorization header of each request.",
+      authDescription: "The MoonSkin API uses Bearer tokens for authentication. Include your token in the Authorization header of each request.",
       important: "Important",
       securityWarning: "Never share your API key and use HTTPS for all requests.",
       availableEndpoints: "Available endpoints",
@@ -6962,7 +6962,7 @@ export const messages: Record<Locale, Messages> = {
           alreadySubscribed: "This email address is already subscribed to our newsletter.",
         },
         unsubscribe: {
-          title: "CashTrade Newsletter",
+          title: "MoonSkin Newsletter",
           loading: "Unsubscribing...",
           processing: "Processing...",
           success: "Successfully Unsubscribed",
@@ -7029,7 +7029,7 @@ export const messages: Record<Locale, Messages> = {
         sellTitle: "Sell your skins in 3 steps",
         securityTitle: "Security and KYC",
         welcome: {
-          title: "Welcome to CashTrade!",
+          title: "Welcome to MoonSkin!",
           description: "The #1 platform to sell your CS2 skins safely and get real money.",
           features: {
             secure: "100% Secure",
@@ -7045,7 +7045,7 @@ export const messages: Record<Locale, Messages> = {
             title: "How to get your Trade Link:",
             step1: "Open Steam and go to your inventory",
             step3: "Copy your trade URL",
-            step4: "Paste it in your CashTrade settings"
+            step4: "Paste it in your MoonSkin settings"
           },
           warning: "⚠️ Keep your Trade Link private and secure"
         },
@@ -7289,7 +7289,7 @@ export const messages: Record<Locale, Messages> = {
             paymentIssue: "Payment problem: what to do?",
           },
           security: {
-            secureAccount: "Secure my CashTrade account",
+            secureAccount: "Secure my MoonSkin account",
             accountSuspended: "What to do if my account is suspended?",
             reportSuspicious: "Report suspicious activity",
             accountRecovery: "Lost account recovery",
@@ -7491,11 +7491,11 @@ export const messages: Record<Locale, Messages> = {
       discordLoginInProgress: "Discord login in progress...",
       discordLoginRedirect: "Redirecting to Discord",
       discordLoginSuccess: "Discord connection successful!",
-      discordLoginSuccessDesc: "Welcome to CashTrade",
+      discordLoginSuccessDesc: "Welcome to MoonSkin",
       discordLoginError: "Discord connection error",
       discordLoginErrorDesc: "Unable to connect with Discord",
       logoutSuccess: "Logout successful",
-      logoutSuccessDesc: "See you soon on CashTrade!",
+      logoutSuccessDesc: "See you soon on MoonSkin!",
       logoutError: "Error during logout",
       logoutErrorDesc: "You have been logged out",
     },
@@ -7511,7 +7511,7 @@ export const messages: Record<Locale, Messages> = {
       code: "404",
       pageNotFound: "Page not found",
       title: "Oops! This page seems to have disappeared",
-      description: "The page you are looking for doesn't exist or has been moved. Maybe it was sold on CashTrade? 😄",
+      description: "The page you are looking for doesn't exist or has been moved. Maybe it was sold on MoonSkin? 😄",
       message: "Sorry, the page you are looking for does not exist or has been moved.",
       backHome: "Back to home",
       home: "Back to home",
@@ -7522,7 +7522,7 @@ export const messages: Record<Locale, Messages> = {
       myDashboard: "My Dashboard",
       giveaways: "Giveaways",
       support: "Support",
-      randomStats: "While you were here, {count} skins were sold on CashTrade!",
+      randomStats: "While you were here, {count} skins were sold on MoonSkin!",
       quickLinks: {
         title: "Quick links",
         sell: "Sell my skins",
@@ -7987,7 +7987,7 @@ export const messages: Record<Locale, Messages> = {
         satisfactionRate: "满意度",
       },
       disclaimer: "免责声明：CashTrade与Valve Corporation或Steam无关。反恐精英和Steam是Valve Corporation的注册商标。皮肤交易存在风险，价格可能波动。请负责任地交易，永远不要投资超过您承受损失能力的资金。",
-      copyright: "© 2024 CashTrade. 保留所有权利。| 欧盟许可证：CT-2024-001",
+      copyright: "© 2024 MoonSkin. 保留所有权利。| 欧盟许可证：CT-2024-001",
       socialLinks: {
         discord: "Discord",
         twitter: "Twitter",
@@ -8228,7 +8228,7 @@ export const messages: Record<Locale, Messages> = {
           description: "主要用户界面"
         },
         api: {
-          name: "CashTrade API",
+          name: "MoonSkin API",
           description: "交易主要API"
         },
         database: {
@@ -9954,7 +9954,7 @@ export const messages: Record<Locale, Messages> = {
     },
     // Pages with missing translations
     affiliate: {
-      title: "CashTrade 联盟计划",
+      title: "MoonSkin 联盟计划",
       subtitle: "通过推荐我们的平台赚取佣金",
       notAffiliate: "您还不是联盟会员",
       applyNow: "立即申请",
@@ -10210,11 +10210,11 @@ export const messages: Record<Locale, Messages> = {
       title: "新闻室",
       subtitle: "媒体资源和新闻",
       lastUpdate: "最后更新：",
-      statsTitle: "CashTrade 数据",
+      statsTitle: "MoonSkin 数据",
       pressReleases: "新闻稿",
       readRelease: "阅读新闻稿",
-      aboutTitle: "关于 CashTrade",
-      aboutDescription1: "CashTrade 是首个专注于安全 Counter-Strike 2 皮肤交易的法国平台。成立于 2024 年，该公司通过让玩家轻松变现虚拟库存来革命化游戏生态系统。",
+      aboutTitle: "关于 MoonSkin",
+      aboutDescription1: "MoonSkin 是首个专注于安全 Counter-Strike 2 皮肤交易的法国平台。成立于 2024 年，该公司通过让玩家轻松变现虚拟库存来革命化游戏生态系统。",
       aboutDescription2: "通过与 Skinplace 的估价战略合作伙伴关系和 Qonto 的 SEPA 支付，CashTrade 保证透明度、安全性和监管合规性。该平台严格遵守 KYC 和反洗钱义务。",
       sector: "行业",
       sectorValue: "游戏、金融科技、电竞",
@@ -10262,7 +10262,7 @@ export const messages: Record<Locale, Messages> = {
       integrate: "3. 集成",
       integrateDesc: "使用我们的 SDK 或直接调用 REST API",
       authentication: "身份验证",
-      authDescription: "CashTrade API 使用 Bearer 令牌进行身份验证。在每个请求的 Authorization 头中包含您的令牌。",
+      authDescription: "MoonSkin API 使用 Bearer 令牌进行身份验证。在每个请求的 Authorization 头中包含您的令牌。",
       important: "重要",
       securityWarning: "永远不要分享您的 API 密钥，并对所有请求使用 HTTPS。",
       availableEndpoints: "可用端点",
@@ -10366,7 +10366,7 @@ export const messages: Record<Locale, Messages> = {
           alreadySubscribed: "此邮箱地址已订阅我们的新闻稿。",
         },
         unsubscribe: {
-          title: "CashTrade 新闻通讯",
+          title: "MoonSkin 新闻通讯",
           loading: "取消订阅中...",
           processing: "处理中...",
           success: "取消订阅成功",
@@ -10895,7 +10895,7 @@ export const messages: Record<Locale, Messages> = {
       discordLoginInProgress: "Discord 登录进行中...",
       discordLoginRedirect: "重定向到 Discord",
       discordLoginSuccess: "Discord 连接成功！",
-      discordLoginSuccessDesc: "欢迎来到 CashTrade",
+      discordLoginSuccessDesc: "欢迎来到 MoonSkin",
       discordLoginError: "Discord 连接错误",
       discordLoginErrorDesc: "无法与 Discord 连接",
       logoutSuccess: "注销成功",

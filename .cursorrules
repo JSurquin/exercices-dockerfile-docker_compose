@@ -2,7 +2,7 @@
 
 # Définir les conventions, contraintes, règles de sécurité, attentes UX et contrats API
 
-# pour le projet CashTrade (CTF / MoonSkin), version V1 (intégrations Skinplace, SEPA & crypto).
+# pour le projet MoonSkin (CTF / MoonSkin), version V1 (intégrations Skinplace, SEPA & crypto).
 
 #
 
@@ -58,7 +58,7 @@
    - Stocker uniquement des références/ID fournis par le prestataire KYC, pas de documents bruts.
    - Journaliser tout changement d’état KYC.
 
-4. **Flux de vente (CashTrade)**
+4. **Flux de vente (MoonSkin)**
 
    - Étapes côté client :
      - Ajout du Trade Link Steam (validation format + appartenance).

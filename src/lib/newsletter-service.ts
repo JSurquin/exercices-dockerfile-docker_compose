@@ -76,7 +76,7 @@ export class NewsletterService {
       }
 
       const mailOptions = {
-        from: `"${process.env.SMTP_FROM_NAME || 'CashTrade'}" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+        from: `"${process.env.SMTP_FROM_NAME || 'MoonSkin'}" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
         to,
         subject: template.subject,
         text: template.text,

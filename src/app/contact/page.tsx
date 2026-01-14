@@ -379,7 +379,7 @@ export default function ContactPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <h4 className="font-medium">CashTrade SAS</h4>
+                    <h4 className="font-medium">MoonSkin SAS</h4>
                     <div className="text-sm text-muted-foreground space-y-1">
                       <p>123 Rue de la Tech</p>
                       <p>75001 Paris, France</p>

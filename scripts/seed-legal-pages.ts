@@ -17,13 +17,13 @@ const defaultLegalPages = [
     subtitleEn: 'Please read these terms carefully before using our services',
     contentFr: `# 1. Acceptation des conditions
 
-En utilisant CashTrade, vous acceptez d'être lié par les présentes conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service.
+En utilisant MoonSkin, vous acceptez d'être lié par les présentes conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service.
 
 Ces conditions peuvent être modifiées à tout moment. Les modifications entreront en vigueur dès leur publication sur notre site. Il est de votre responsabilité de consulter régulièrement ces conditions.
 
 # 2. Conditions d'éligibilité
 
-Pour utiliser CashTrade, vous devez :
+Pour utiliser MoonSkin, vous devez :
 - Être âgé d'au moins 18 ans
 - Avoir la capacité juridique de conclure des contrats
 - Résider dans un pays où nos services sont légalement disponibles
@@ -34,7 +34,7 @@ Nous nous réservons le droit de refuser ou de suspendre l'accès à tout utilis
 
 # 3. Description des services
 
-CashTrade fournit une plateforme permettant de :
+MoonSkin fournit une plateforme permettant de :
 - Vendre des skins Counter-Strike 2 contre de l'argent réel
 - Recevoir des paiements via SEPA ou cryptomonnaies
 - Participer à des giveaways et concours
@@ -108,7 +108,7 @@ Toute violation peut entraîner la suspension immédiate du compte.
 
 # 9. Limitation de responsabilité
 
-CashTrade ne peut être tenu responsable :
+MoonSkin ne peut être tenu responsable :
 - Des fluctuations de prix des skins
 - Des interruptions de service temporaires
 - Des décisions de Steam concernant les trades
@@ -146,13 +146,13 @@ Ces conditions sont régies par le droit français. Tout litige sera soumis à l
 En cas de litige, nous encourageons la résolution amiable via notre service client avant toute action judiciaire.`,
     contentEn: `# 1. Acceptance of Terms
 
-By using CashTrade, you agree to be bound by these terms of service. If you do not accept these terms, please do not use our service.
+By using MoonSkin, you agree to be bound by these terms of service. If you do not accept these terms, please do not use our service.
 
 These terms may be modified at any time. Changes will take effect upon publication on our site. It is your responsibility to regularly review these terms.
 
 # 2. Eligibility Requirements
 
-To use CashTrade, you must:
+To use MoonSkin, you must:
 - Be at least 18 years old
 - Have legal capacity to enter into contracts
 - Reside in a country where our services are legally available
@@ -163,7 +163,7 @@ We reserve the right to refuse or suspend access to any user who does not meet t
 
 # 3. Service Description
 
-CashTrade provides a platform to:
+MoonSkin provides a platform to:
 - Sell Counter-Strike 2 skins for real money
 - Receive payments via SEPA or cryptocurrencies
 - Participate in giveaways and contests
@@ -237,7 +237,7 @@ Any violation may result in immediate account suspension.
 
 # 9. Limitation of Liability
 
-CashTrade cannot be held responsible for:
+MoonSkin cannot be held responsible for:
 - Skin price fluctuations
 - Temporary service interruptions
 - Steam's decisions regarding trades
@@ -285,7 +285,7 @@ In case of dispute, we encourage amicable resolution through our customer servic
     subtitleEn: 'How we collect, use and protect your personal data',
     contentFr: `# Notre engagement
 
-Chez CashTrade, la protection de vos données personnelles est notre priorité absolue. Cette politique explique comment nous collectons, utilisons, stockons et protégeons vos informations en conformité avec le Règlement Général sur la Protection des Données (RGPD) et les lois françaises.
+Chez MoonSkin, la protection de vos données personnelles est notre priorité absolue. Cette politique explique comment nous collectons, utilisons, stockons et protégeons vos informations en conformité avec le Règlement Général sur la Protection des Données (RGPD) et les lois françaises.
 
 Nous appliquons le principe de minimisation des données : nous ne collectons que les informations strictement nécessaires au fonctionnement de notre service et à nos obligations légales.
 
@@ -361,7 +361,7 @@ Nous ne vendons jamais vos données personnelles. Nous pouvons les partager uniq
 - **Votre consentement** : Avec votre accord explicite pour des services additionnels`,
     contentEn: `# Our Commitment
 
-At CashTrade, protecting your personal data is our absolute priority. This policy explains how we collect, use, store and protect your information in compliance with the General Data Protection Regulation (GDPR) and French laws.
+At MoonSkin, protecting your personal data is our absolute priority. This policy explains how we collect, use, store and protect your information in compliance with the General Data Protection Regulation (GDPR) and French laws.
 
 We apply the principle of data minimization: we only collect information strictly necessary for the operation of our service and our legal obligations.
 
@@ -609,7 +609,7 @@ The KYC (Know Your Customer) process is a legal requirement for all financial se
     subtitleEn: 'Our commitment to fighting money laundering and terrorist financing',
     contentFr: `# Notre engagement
 
-CashTrade applique une politique de tolérance zéro envers le blanchiment d'argent, le financement du terrorisme et toute activité illicite. Nous mettons en œuvre des mesures strictes conformes aux réglementations européennes et françaises.
+MoonSkin applique une politique de tolérance zéro envers le blanchiment d'argent, le financement du terrorisme et toute activité illicite. Nous mettons en œuvre des mesures strictes conformes aux réglementations européennes et françaises.
 
 Notre approche repose sur la prévention, la détection et le signalement de toute activité suspecte, en collaboration étroite avec les autorités compétentes.
 
@@ -690,7 +690,7 @@ Fourniture de fonds ou ressources à des organisations terroristes.
 - **Cellule de renseignement** : TRACFIN - Ministère des Finances`,
     contentEn: `# Our Commitment
 
-CashTrade applies a zero-tolerance policy towards money laundering, terrorist financing and any illicit activity. We implement strict measures in accordance with European and French regulations.
+MoonSkin applies a zero-tolerance policy towards money laundering, terrorist financing and any illicit activity. We implement strict measures in accordance with European and French regulations.
 
 Our approach is based on the prevention, detection and reporting of any suspicious activity, in close collaboration with the competent authorities.
 

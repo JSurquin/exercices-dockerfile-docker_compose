@@ -569,5 +569,5 @@ git push
 
 ---
 
-**Made with ❤️ for CashTrade**
+**Made with ❤️ for MoonSkin**
 

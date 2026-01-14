@@ -125,11 +125,11 @@ export function FeaturesSection() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            {messages.features.title.split('CashTrade')[0]}
+            {messages.features.title.split('MoonSkin')[0]}
             <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
-              CashTrade
+              MoonSkin
             </span>
-            {messages.features.title.split('CashTrade')[1] || ''}
+            {messages.features.title.split('MoonSkin')[1] || ''}
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             {messages.features.subtitle}

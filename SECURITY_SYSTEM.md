@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-Ce document décrit l'implémentation complète du système de sécurité et anti-fraude pour l'application CashTrade, conforme aux règles définies dans `.cursorrules`.
+Ce document décrit l'implémentation complète du système de sécurité et anti-fraude pour l'application MoonSkin, conforme aux règles définies dans `.cursorrules`.
 
 ## Architecture
 

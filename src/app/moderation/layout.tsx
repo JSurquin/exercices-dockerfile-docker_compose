@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Modération - CashTrade',
+  title: 'Modération - MoonSkin',
   description: 'Interface de modération pour gérer les conversations utilisateurs',
 };
 

@@ -50,7 +50,7 @@ export default function TermsPage() {
       fallbackContent={fallbackContent}
       icon={DocumentTextIcon}
       showWarning={true}
-      warningText={messages.terms.warningText || "Ces conditions d'utilisation constituent un contrat légalement contraignant entre vous et CashTrade. En utilisant nos services, vous acceptez d'être lié par l'ensemble de ces conditions."}
+      warningText={messages.terms.warningText || "Ces conditions d'utilisation constituent un contrat légalement contraignant entre vous et MoonSkin. En utilisant nos services, vous acceptez d'être lié par l'ensemble de ces conditions."}
     />
   );
 }

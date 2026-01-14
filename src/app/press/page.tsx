@@ -19,7 +19,7 @@ import { useLocale } from "@/components/providers/locale-provider";
 const pressReleases = [
   {
     date: "2024-09-15",
-    title: "CashTrade lève 2M€ pour révolutionner le trading de skins CS2",
+    title: "MoonSkin lève 2M€ pour révolutionner le trading de skins CS2",
     description: "La startup française annonce une levée de fonds pour accélérer son développement international et renforcer sa sécurité.",
     category: "Financement",
     link: "/press/moonskin-leve-2m-euros",
@@ -27,13 +27,13 @@ const pressReleases = [
   {
     date: "2024-08-20",
     title: "Partenariat stratégique avec Skinplace pour l&apos;estimation des skins",
-    description: "CashTrade s&apos;associe à Skinplace pour offrir les estimations les plus précises du marché.",
+    description: "MoonSkin s&apos;associe à Skinplace pour offrir les estimations les plus précises du marché.",
     category: "Partenariat",
     link: "/press/partenariat-skinplace",
   },
   {
     date: "2024-07-10",
-    title: "CashTrade atteint 15 000 utilisateurs actifs",
+    title: "MoonSkin atteint 15 000 utilisateurs actifs",
     description: "La plateforme française de trading de skins franchit un nouveau cap avec plus de 2,4M€ de volume traité.",
     category: "Croissance",
     link: "/press/15k-utilisateurs",

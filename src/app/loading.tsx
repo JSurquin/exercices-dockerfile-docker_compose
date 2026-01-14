@@ -17,7 +17,7 @@ export default function Loading() {
           className="mb-12"
         >
           <div className="relative">
-            {/* Logo CashTrade */}
+            {/* Logo MoonSkin */}
             <div className="relative bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl p-6 shadow-2xl">
               <div className="text-white font-bold text-3xl tracking-wider">
                 CASH<span className="text-yellow-300">TRADE</span>

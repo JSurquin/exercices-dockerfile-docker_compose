@@ -78,7 +78,7 @@ class EmailService {
     const text = this.generatePasswordSuccessResetText(username || email);
     return this.sendEmail({
       to: email,
-      subject: '🔐 Mot de passe réinitialisé avec succès - CashTrade Admin',
+      subject: '🔐 Mot de passe réinitialisé avec succès - MoonSkin Admin',
       html,
       text,
     });
@@ -172,7 +172,7 @@ class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <div class="logo">🎮 CashTrade</div>
+            <div class="logo">🎮 MoonSkin</div>
             <h1 class="title">Mot de passe réinitialisé avec succès</h1>
             <p class="subtitle">Panel d'administration CS2 Skin Trading</p>
           </div>
@@ -185,7 +185,7 @@ class EmailService {
 
           <div class="footer">
             <p>
-              <strong>CashTrade - CS2 Skin Trading Platform</strong><br>
+              <strong>MoonSkin - CS2 Skin Trading Platform</strong><br>
               Panel d'administration sécurisé
             </p>
             <p style="font-size: 12px; color: #9ca3af;">
@@ -200,7 +200,7 @@ class EmailService {
 
   private generatePasswordSuccessResetText(username: string): string {
     return `
-      CashTrade - Mot de passe réinitialisé avec succès
+      MoonSkin - Mot de passe réinitialisé avec succès
       
       Bonjour ${username},
 
@@ -225,7 +225,7 @@ class EmailService {
 
     return this.sendEmail({
       to: email,
-      subject: '🔐 Réinitialisation de votre mot de passe - CashTrade Admin',
+      subject: '🔐 Réinitialisation de votre mot de passe - MoonSkin Admin',
       html,
       text,
     });
@@ -319,7 +319,7 @@ class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <div class="logo">🎮 CashTrade</div>
+            <div class="logo">🎮 MoonSkin</div>
             <h1 class="title">Réinitialisation de mot de passe</h1>
             <p class="subtitle">Panel d'administration CS2 Skin Trading</p>
           </div>
@@ -327,7 +327,7 @@ class EmailService {
           <div class="content">
             <p>Bonjour <strong>${username}</strong>,</p>
             
-            <p>Vous avez demandé la réinitialisation de votre mot de passe pour accéder au panel d'administration CashTrade.</p>
+            <p>Vous avez demandé la réinitialisation de votre mot de passe pour accéder au panel d'administration MoonSkin.</p>
             
             <div class="cs2-theme">
               <p style="margin: 0; text-align: center;">
@@ -358,7 +358,7 @@ class EmailService {
 
           <div class="footer">
             <p>
-              <strong>CashTrade - CS2 Skin Trading Platform</strong><br>
+              <strong>MoonSkin - CS2 Skin Trading Platform</strong><br>
               Panel d'administration sécurisé
             </p>
             <p style="font-size: 12px; color: #9ca3af;">
@@ -373,11 +373,11 @@ class EmailService {
 
   private generatePasswordResetText(resetUrl: string, username: string): string {
     return `
-CashTrade - Réinitialisation de mot de passe
+MoonSkin - Réinitialisation de mot de passe
 
 Bonjour ${username},
 
-Vous avez demandé la réinitialisation de votre mot de passe pour accéder au panel d'administration CashTrade.
+Vous avez demandé la réinitialisation de votre mot de passe pour accéder au panel d'administration MoonSkin.
 
 Cliquez sur ce lien pour définir un nouveau mot de passe :
 ${resetUrl}
@@ -388,7 +388,7 @@ IMPORTANT :
 - Ne partagez jamais ce lien avec qui que ce soit
 
 ---
-CashTrade - CS2 Skin Trading Platform
+MoonSkin - CS2 Skin Trading Platform
 Panel d'administration sécurisé
 
 Cet email a été envoyé automatiquement, merci de ne pas y répondre.
@@ -470,7 +470,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
         </div>
         
         <div style="text-align: center; margin-top: 20px; color: #718096; font-size: 12px;">
-          <p>CashTrade Admin - Gestion des affiliations</p>
+          <p>MoonSkin Admin - Gestion des affiliations</p>
         </div>
       </body>
       </html>
@@ -478,7 +478,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
 
     return this.sendEmail({
       to: adminEmail,
-      subject: '🎯 Nouvelle demande d\'affiliation - CashTrade',
+      subject: '🎯 Nouvelle demande d\'affiliation - MoonSkin',
       html,
     });
   }
@@ -507,7 +507,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
         <div style="background: #f7fafc; padding: 30px; border-radius: 0 0 10px 10px;">
           <p style="font-size: 16px; margin-bottom: 20px;">
             Excellente nouvelle ! Votre demande d'affiliation a été approuvée par notre équipe. 
-            Vous faites désormais partie du programme d'affiliation CashTrade ! 🚀
+            Vous faites désormais partie du programme d'affiliation MoonSkin ! 🚀
           </p>
           
           <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 2px solid #48bb78;">
@@ -536,7 +536,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
         </div>
         
         <div style="text-align: center; margin-top: 20px; color: #718096; font-size: 12px;">
-          <p>Bienvenue dans le programme CashTrade Affiliates!</p>
+          <p>Bienvenue dans le programme MoonSkin Affiliates!</p>
         </div>
       </body>
       </html>
@@ -544,7 +544,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
 
     return this.sendEmail({
       to: user.email,
-      subject: '🎉 Votre demande d\'affiliation a été approuvée - CashTrade',
+      subject: '🎉 Votre demande d\'affiliation a été approuvée - MoonSkin',
       html,
     });
   }
@@ -602,7 +602,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
         </div>
         
         <div style="text-align: center; margin-top: 20px; color: #718096; font-size: 12px;">
-          <p>Merci de votre intérêt pour CashTrade Affiliates</p>
+          <p>Merci de votre intérêt pour MoonSkin Affiliates</p>
         </div>
       </body>
       </html>
@@ -610,7 +610,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
 
     return this.sendEmail({
       to: user.email,
-      subject: 'Réponse à votre demande d\'affiliation - CashTrade',
+      subject: 'Réponse à votre demande d\'affiliation - MoonSkin',
       html,
     });
   }

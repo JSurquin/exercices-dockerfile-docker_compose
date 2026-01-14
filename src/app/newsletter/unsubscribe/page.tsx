@@ -182,7 +182,7 @@ export default function UnsubscribePage() {
 
         {/* Footer */}
         <div className="text-center text-xs text-slate-500">
-          <p>CashTrade - {messages.nav.platform}</p>
+          <p>MoonSkin - {messages.nav.platform}</p>
           <p className="mt-1">
             <Link href="/contact" className="hover:text-slate-400 transition-colors">
               {messages.contact.title}

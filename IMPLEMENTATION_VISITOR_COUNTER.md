@@ -236,7 +236,7 @@ export async function POST(request: Request) {
 
 ## 🎯 Conformité avec les règles du projet
 
-### ✅ Respect des conventions CashTrade
+### ✅ Respect des conventions MoonSkin
 
 - [x] Next.js 15
 - [x] TailwindCSS v4 (bg-linear-to-r)
@@ -362,7 +362,7 @@ Le système de compteur de visiteurs est **prêt à l'emploi** avec :
 ---
 
 **Implémenté le**: 2 décembre 2025
-**Projet**: CashTrade - CS2 Skin Trading Platform
+**Projet**: MoonSkin - CS2 Skin Trading Platform
 **Tech Stack**: Next.js 15, Redis, TailwindCSS, Shadcn, TypeScript
 
 

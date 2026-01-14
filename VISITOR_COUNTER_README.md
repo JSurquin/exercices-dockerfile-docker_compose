@@ -62,7 +62,7 @@ import { VisitorCounter } from "@/components/stats";
 export default function HomePage() {
   return (
     <div>
-      <h1>Bienvenue sur CashTrade</h1>
+      <h1>Bienvenue sur MoonSkin</h1>
       <VisitorCounter locale="fr" variant="default" />
     </div>
   );
@@ -184,7 +184,7 @@ export function Footer() {
   return (
     <footer className="border-t py-8">
       <div className="container mx-auto flex justify-between items-center">
-        <div>© 2025 CashTrade</div>
+        <div>© 2025 MoonSkin</div>
         <VisitorCounter locale="fr" variant="minimal" />
       </div>
     </footer>
@@ -364,7 +364,7 @@ from-blue-500 to-purple-500
 
 ---
 
-**Créé avec ❤️ pour CashTrade - Projet CS2 Skin Trading**
+**Créé avec ❤️ pour MoonSkin - Projet CS2 Skin Trading**
 
 
 

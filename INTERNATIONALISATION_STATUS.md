@@ -1,4 +1,4 @@
-# Statut de l'Internationalisation - CashTrade
+# Statut de l'Internationalisation - MoonSkin
 
 ## ✅ Travail Accompli
 

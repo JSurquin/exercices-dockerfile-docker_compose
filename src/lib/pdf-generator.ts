@@ -151,7 +151,7 @@ export class PDFGenerator {
         displayHeaderFooter: true,
         headerTemplate: `
           <div style="font-size: 10px; margin: 0 auto; color: #666; width: 100%; text-align: center;">
-            <span>CashTrade - Rapport Admin</span>
+            <span>MoonSkin - Rapport Admin</span>
           </div>
         `,
         footerTemplate: `
@@ -171,7 +171,7 @@ export class PDFGenerator {
         <html>
         <head>
           <meta charset="utf-8">
-          <title>Rapport CashTrade</title>
+          <title>Rapport MoonSkin</title>
           <style>
             * {
               margin: 0;
@@ -405,7 +405,7 @@ export class PDFGenerator {
 
     return `
       <div class="header">
-        <h1>Export des Données CashTrade</h1>
+        <h1>Export des Données MoonSkin</h1>
         <p>Données complètes de la plateforme • CS2 Skin Trading</p>
       </div>
 
@@ -556,13 +556,13 @@ export class PDFGenerator {
 
     return `
       <div class="header">
-        <h1>Rapport Complet CashTrade</h1>
+        <h1>Rapport Complet MoonSkin</h1>
         <p>Analyse détaillée de la plateforme • CS2 Skin Trading</p>
       </div>
 
       <div class="summary-box">
         <h4>Résumé Exécutif</h4>
-        <p>Ce rapport présente une vue d'ensemble complète de l'activité de la plateforme CashTrade pour la période analysée. 
+        <p>Ce rapport présente une vue d'ensemble complète de l'activité de la plateforme MoonSkin pour la période analysée. 
         Il inclut les métriques clés, l'analyse des performances et les recommandations stratégiques.</p>
       </div>
 
