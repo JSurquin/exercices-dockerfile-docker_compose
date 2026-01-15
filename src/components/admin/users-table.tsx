@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { User as UserType, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
+import { CreateUserDialog } from './create-user-dialog';
 
 export function AdminUsersTable() {
   const [users, setUsers] = useState<UserType[]>([]);
@@ -193,6 +194,8 @@ export function AdminUsersTable() {
           <Download className="h-4 w-4 mr-2" />
           Exporter
         </Button>
+
+        <CreateUserDialog onUserCreated={fetchUsers} />
       </div>
 
       {/* Table */}

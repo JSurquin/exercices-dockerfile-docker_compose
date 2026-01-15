@@ -318,9 +318,6 @@ function DashboardContent() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent md:text-4xl">
             {messages.admin.dashboard.title}
           </h1>
-          <p className="mt-1 text-sm text-slate-400 md:text-base">
-            {messages.admin.dashboard.subtitle}
-          </p>
         </div>
         {quickActions}
       </motion.div>

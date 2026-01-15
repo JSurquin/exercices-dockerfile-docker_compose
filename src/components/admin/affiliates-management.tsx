@@ -24,6 +24,7 @@ import {
   Settings
 } from 'lucide-react';
 import AffiliateTools from './affiliate-tools';
+import { CreateAffiliateDialog } from './create-affiliate-dialog';
 
 interface AffiliateData {
   id: string;
@@ -306,6 +307,7 @@ export default function AffiliatesManagement() {
                 <SelectItem value="inactive">Inactifs</SelectItem>
               </SelectContent>
             </Select>
+            <CreateAffiliateDialog onAffiliateCreated={loadAffiliates} />
           </div>
 
           {/* Tableau des affiliés */}

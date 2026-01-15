@@ -37,6 +37,8 @@ export enum AuditAction {
   ADMIN_LOGIN = 'admin.login',
   ADMIN_ACTION = 'admin.action',
   USER_IMPERSONATION = 'admin.user_impersonation',
+  USER_CREATED_BY_ADMIN = 'user.created_by_admin',
+  AFFILIATE_CREATED_BY_ADMIN = 'affiliate.created_by_admin',
   
   // Affiliation
   AFFILIATE_APPLIED = 'affiliate.applied',

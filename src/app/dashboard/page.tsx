@@ -18,10 +18,6 @@ import { useOnboarding } from "@/hooks/use-onboarding";
 import { Messages } from "~/utils/types";
 import { User } from "~/utils/types";
 import { toast } from "sonner";
-import {
-  mockVolumeData,
-  mockTradeStatusData,
-} from "@/lib/mock-data";
 import { useUserTrades } from "@/hooks/use-user-trades";
 import {
   CurrencyDollarIcon,
@@ -99,10 +95,33 @@ export default function DashboardPage() {
   const [preferredPaymentMethod, setPreferredPaymentMethod] = useState<'stripe' | 'qonto' | 'binance' | null>('qonto');
   const { data: tradesData, loading: tradesLoading, error: tradesError, refetch: refetchTrades } = useUserTrades();
   const [refreshingTradeId, setRefreshingTradeId] = useState<string | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<{ volumeData: any[]; tradeStatusData: any[] } | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
   
   console.log("useSession data:", data);
   console.log("useSession isPending:", isPending);
   console.log("useSession error:", error);
+
+  // Charger les statistiques du dashboard
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        const response = await fetch('/api/user/dashboard-stats');
+        if (response.ok) {
+          const data = await response.json();
+          setDashboardStats(data);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des statistiques:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    if (data?.user) {
+      fetchDashboardStats();
+    }
+  }, [data?.user]);
 
   // Vérifier si c'est une connexion Steam réussie
   useEffect(() => {
@@ -466,26 +485,32 @@ export default function DashboardPage() {
                     <CardTitle>{messages.dashboard.analytics.tradingVolume}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={mockVolumeData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip
-                          formatter={(value) => [
-                            formatPrice(value as number),
-                            "Volume",
-                          ]}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="volume"
-                          stroke="#f97316"
-                          strokeWidth={2}
-                          dot={{ fill: "#f97316" }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
+                    {statsLoading ? (
+                      <div className="flex items-center justify-center h-[300px]">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                      </div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={dashboardStats?.volumeData || []}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip
+                            formatter={(value) => [
+                              formatPrice(value as number),
+                              "Volume",
+                            ]}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="volume"
+                            stroke="#f97316"
+                            strokeWidth={2}
+                            dot={{ fill: "#f97316" }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -494,26 +519,32 @@ export default function DashboardPage() {
                     <CardTitle>{messages.dashboard.analytics.tradeStatus}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={mockTradeStatusData}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="count"
-                          label={({ name, percent }) =>
-                            `${name} ${(percent * 100).toFixed(0)}%`
-                          }
-                        >
-                          {mockTradeStatusData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    {statsLoading ? (
+                      <div className="flex items-center justify-center h-[300px]">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                      </div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={dashboardStats?.tradeStatusData || []}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="count"
+                            label={({ name, percent }) =>
+                              `${name} ${(percent * 100).toFixed(0)}%`
+                            }
+                          >
+                            {(dashboardStats?.tradeStatusData || []).map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    )}
                   </CardContent>
                 </Card>
               </div>

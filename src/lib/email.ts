@@ -614,6 +614,335 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
       html,
     });
   }
+
+  // ========== CRÉATION DE COMPTES PAR ADMIN ==========
+
+  /**
+   * Envoie un email de bienvenue avec lien de définition de mot de passe pour un utilisateur créé par admin
+   */
+  async sendWelcomeEmailWithPasswordReset(
+    email: string,
+    resetToken: string,
+    username?: string,
+    createdByAdmin: boolean = true
+  ): Promise<boolean> {
+    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/password/reset-password?token=${resetToken}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Bienvenue sur MoonSkin</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+          }
+          .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #f97316;
+            margin-bottom: 10px;
+          }
+          .title {
+            color: #1f2937;
+            font-size: 28px;
+            margin-bottom: 10px;
+          }
+          .subtitle {
+            color: #6b7280;
+            font-size: 16px;
+          }
+          .content {
+            margin: 30px 0;
+          }
+          .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            padding: 16px 32px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            transition: transform 0.2s;
+          }
+          .button:hover {
+            transform: translateY(-2px);
+          }
+          .info-box {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+          }
+          .warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 14px;
+          }
+          .cs2-theme {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">🎮 MoonSkin</div>
+            <h1 class="title">Bienvenue sur MoonSkin !</h1>
+            <p class="subtitle">Votre compte a été créé</p>
+          </div>
+
+          <div class="content">
+            <p>Bonjour <strong>${username || email}</strong>,</p>
+            
+            ${createdByAdmin ? `
+            <div class="info-box">
+              <p style="margin: 0;">
+                <strong>ℹ️ Information :</strong> Votre compte MoonSkin a été créé par un administrateur. 
+                Vous êtes maintenant membre de notre plateforme de trading de skins CS2 !
+              </p>
+            </div>
+            ` : ''}
+            
+            <p>Pour commencer à utiliser votre compte, vous devez définir votre mot de passe.</p>
+            
+            <div class="cs2-theme">
+              <p style="margin: 0; text-align: center;">
+                <strong>🔑 Cliquez sur le bouton ci-dessous pour créer votre mot de passe :</strong>
+              </p>
+            </div>
+
+            <div style="text-align: center;">
+              <a href="${resetUrl}" class="button">
+                🔐 Définir mon mot de passe
+              </a>
+            </div>
+
+            <div class="warning">
+              <strong>⚠️ Important :</strong>
+              <ul style="margin: 10px 0;">
+                <li>Ce lien est valide pendant <strong>1 heure</strong> seulement</li>
+                <li>Après avoir défini votre mot de passe, vous pourrez vous connecter</li>
+                <li>Ne partagez jamais ce lien avec qui que ce soit</li>
+              </ul>
+            </div>
+
+            <p>Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :</p>
+            <p style="word-break: break-all; background: #f3f4f6; padding: 10px; border-radius: 4px; font-family: monospace;">
+              ${resetUrl}
+            </p>
+          </div>
+
+          <div class="footer">
+            <p>
+              <strong>MoonSkin - CS2 Skin Trading Platform</strong><br>
+              Plateforme sécurisée de trading de skins Counter-Strike 2
+            </p>
+            <p style="font-size: 12px; color: #9ca3af;">
+              Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+MoonSkin - Bienvenue !
+
+Bonjour ${username || email},
+
+${createdByAdmin ? 'Votre compte MoonSkin a été créé par un administrateur.' : 'Bienvenue sur MoonSkin !'}
+
+Pour commencer à utiliser votre compte, vous devez définir votre mot de passe.
+
+Cliquez sur ce lien pour créer votre mot de passe :
+${resetUrl}
+
+IMPORTANT :
+- Ce lien est valide pendant 1 heure seulement
+- Après avoir défini votre mot de passe, vous pourrez vous connecter
+- Ne partagez jamais ce lien avec qui que ce soit
+
+---
+MoonSkin - CS2 Skin Trading Platform
+
+Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+    `;
+
+    return this.sendEmail({
+      to: email,
+      subject: '🎮 Bienvenue sur MoonSkin - Définissez votre mot de passe',
+      html,
+      text,
+    });
+  }
+
+  /**
+   * Envoie un email de bienvenue pour un affilié créé par admin
+   */
+  async sendAffiliateWelcomeEmail(
+    email: string,
+    resetToken: string,
+    affiliateCode: string,
+    username?: string,
+    commissionRate: number = 0.02
+  ): Promise<boolean> {
+    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/password/reset-password?token=${resetToken}`;
+    const commissionPercent = (commissionRate * 100).toFixed(1);
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Bienvenue dans le programme d'affiliation MoonSkin</title>
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+          <h1 style="margin: 0; font-size: 28px;">🎉 Bienvenue ${username || ''} !</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px;">Vous êtes maintenant affilié MoonSkin</p>
+        </div>
+        
+        <div style="background: #f7fafc; padding: 30px; border-radius: 0 0 10px 10px;">
+          <p style="font-size: 16px; margin-bottom: 20px;">
+            Félicitations ! Votre compte affilié a été créé par notre équipe. 
+            Vous faites maintenant partie du programme d'affiliation MoonSkin ! 🚀
+          </p>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 2px solid #48bb78;">
+            <h3 style="margin-top: 0; color: #48bb78; text-align: center;">Votre code d'affiliation</h3>
+            <div style="background: #f0fff4; padding: 15px; border-radius: 8px; text-align: center; font-family: monospace; font-size: 24px; font-weight: bold; color: #2f855a;">
+              ${affiliateCode}
+            </div>
+            <p style="text-align: center; margin: 10px 0 0 0; color: #666; font-size: 14px;">
+              Taux de commission : <strong>${commissionPercent}%</strong>
+            </p>
+          </div>
+
+          <div style="background: #e0f2fe; padding: 20px; border-radius: 8px; border-left: 4px solid #0ea5e9; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; color: #0369a1;">🔐 Première étape : Définir votre mot de passe</h3>
+            <p style="margin: 0;">
+              Avant de pouvoir accéder à votre dashboard affilié, vous devez définir votre mot de passe.
+            </p>
+          </div>
+
+          <div style="text-align: center; margin: 25px 0;">
+            <a href="${resetUrl}" 
+               style="display: inline-block; background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 16px;">
+              🔐 Définir mon mot de passe
+            </a>
+          </div>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+            <h3 style="margin-top: 0; color: #667eea;">Prochaines étapes</h3>
+            <ul style="padding-left: 20px;">
+              <li>Définissez votre mot de passe (lien ci-dessus)</li>
+              <li>Connectez-vous à votre tableau de bord affilié</li>
+              <li>Récupérez vos liens d'affiliation personnalisés</li>
+              <li>Commencez à partager et gagnez ${commissionPercent}% de commission</li>
+              <li>Suivez vos performances en temps réel</li>
+            </ul>
+          </div>
+
+          <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 16px; margin: 20px 0;">
+            <strong>⚠️ Important :</strong>
+            <ul style="margin: 10px 0;">
+              <li>Le lien de définition de mot de passe est valide pendant <strong>1 heure</strong></li>
+              <li>Après avoir défini votre mot de passe, vous pourrez accéder à votre dashboard</li>
+              <li>Ne partagez jamais ce lien avec qui que ce soit</li>
+            </ul>
+          </div>
+
+          <p>Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :</p>
+          <p style="word-break: break-all; background: #f3f4f6; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px;">
+            ${resetUrl}
+          </p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; color: #718096; font-size: 12px;">
+          <p>Bienvenue dans le programme MoonSkin Affiliates!</p>
+          <p>Dashboard affilié : ${process.env.NEXT_PUBLIC_APP_URL}/affiliate</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+MoonSkin - Bienvenue dans le programme d'affiliation !
+
+Bonjour ${username || email},
+
+Félicitations ! Votre compte affilié a été créé par notre équipe.
+
+Votre code d'affiliation : ${affiliateCode}
+Taux de commission : ${commissionPercent}%
+
+PREMIÈRE ÉTAPE : Définir votre mot de passe
+${resetUrl}
+
+Prochaines étapes :
+- Définissez votre mot de passe
+- Connectez-vous à votre tableau de bord affilié
+- Récupérez vos liens d'affiliation personnalisés
+- Commencez à partager et gagnez ${commissionPercent}% de commission
+- Suivez vos performances en temps réel
+
+IMPORTANT :
+- Le lien est valide pendant 1 heure
+- Ne partagez jamais ce lien avec qui que ce soit
+
+Dashboard affilié : ${process.env.NEXT_PUBLIC_APP_URL}/affiliate
+
+---
+Bienvenue dans MoonSkin Affiliates!
+
+Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+    `;
+
+    return this.sendEmail({
+      to: email,
+      subject: '🎉 Bienvenue dans le programme d\'affiliation MoonSkin',
+      html,
+      text,
+    });
+  }
 }
 
 export const emailService = new EmailService();

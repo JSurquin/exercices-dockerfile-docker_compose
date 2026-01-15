@@ -33,12 +33,18 @@ interface OnboardingDialogProps {
 const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [tradeUrl, setTradeUrl] = useState('');
+  const [steamId, setSteamId] = useState('');
   const [isValidUrl, setIsValidUrl] = useState<boolean | null>(null);
+  const [isValidSteamId, setIsValidSteamId] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   const { locale, messages } = useLocale();
-  const { updateUser } = useAuth();
+  const { user } = useAuth();
+  
+  // Vérifier si l'utilisateur a déjà un Steam ID
+  const hasSteamId = user?.steamId64;
 
-  const steps = [
+  // Créer les étapes dynamiquement en fonction de si l'utilisateur a un Steam ID
+  const allSteps = [
     {
       title: messages.components.onboarding.welcome.title,
       icon: <Gamepad2 className="w-12 h-12 text-orange-500" />,
@@ -68,6 +74,56 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
         </div>
       )
     },
+    // Étape Steam ID (conditionnelle - seulement si l'utilisateur n'a pas de Steam ID)
+    ...(!hasSteamId ? [{
+      title: "Configurez votre Steam ID",
+      icon: <Gamepad2 className="w-12 h-12 text-orange-500" />,
+      isSteamIdStep: true,
+      content: (
+        <div className="space-y-4">
+          <p className="text-muted-foreground">
+            Pour vendre vos skins CS2, nous avons besoin de votre Steam ID 64.
+          </p>
+          <div className="bg-muted p-3 sm:p-4 rounded-lg space-y-2">
+            <h4 className="font-semibold text-sm sm:text-base">Comment trouver votre Steam ID 64 ?</h4>
+            <ol className="list-decimal list-inside space-y-1 text-xs sm:text-sm">
+              <li>Allez sur <a href="https://steamid.io/" target="_blank" rel="noopener noreferrer" className="text-orange-500 underline break-words">steamid.io</a></li>
+              <li>Entrez votre profil Steam</li>
+              <li>Copiez le steamID64 (17 chiffres)</li>
+            </ol>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="steam-id" className="text-sm sm:text-base">Steam ID 64</Label>
+            <Input
+              id="steam-id"
+              placeholder="76561198XXXXXXXXX"
+              value={steamId}
+              onChange={(e) => handleSteamIdChange(e.target.value)}
+              className={`text-sm sm:text-base ${isValidSteamId === false ? 'border-red-500' : ''}`}
+            />
+            {isValidSteamId === false && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Le Steam ID doit être composé de 17 chiffres et commencer par 7656119.
+                </AlertDescription>
+              </Alert>
+            )}
+            {isValidSteamId === true && (
+              <Alert>
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Steam ID valide !
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+          <Badge variant="outline" className="text-orange-500 border-orange-500 text-xs sm:text-sm">
+            Vous pouvez aussi vous reconnecter avec Steam pour lier automatiquement votre compte
+          </Badge>
+        </div>
+      )
+    }] : []),
     {
       title: messages.components.onboarding.tradeLink.title,
       icon: <Link className="w-12 h-12 text-blue-500" />,
@@ -208,6 +264,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
     }
   ];
 
+  const steps = allSteps;
   const currentStepData = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
   const progress = ((currentStep + 1) / steps.length) * 100;
@@ -217,14 +274,58 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
     return steamTradeUrlRegex.test(url);
   };
 
+  const validateSteamId = (id: string) => {
+    // Steam ID 64 commence par 7656119 et a 17 chiffres au total
+    const steamIdRegex = /^7656119[0-9]{10}$/;
+    return steamIdRegex.test(id);
+  };
+
   const handleUrlChange = (url: string) => {
     setTradeUrl(url);
     setIsValidUrl(url ? validateTradeUrl(url) : null);
   };
 
+  const handleSteamIdChange = (id: string) => {
+    setSteamId(id);
+    setIsValidSteamId(id ? validateSteamId(id) : null);
+  };
+
   const handleNext = async () => {
-    // Si on est sur l'étape de saisie du trade link (étape 2, index 1)
-    if (currentStep === 2) {
+    // Vérifier si c'est l'étape Steam ID (si l'utilisateur n'avait pas de Steam ID)
+    if (!hasSteamId && currentStepData.isSteamIdStep) {
+      if (!isValidSteamId || !steamId) {
+        toast.error("Veuillez entrer un Steam ID valide");
+        return;
+      }
+
+      setLoading(true);
+      try {
+        // Appel direct à l'API au lieu d'utiliser updateUser du contexte
+        const response = await fetch('/api/user/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ steamId64: steamId }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Erreur lors de la sauvegarde');
+        }
+
+        toast.success("Steam ID enregistré avec succès !");
+      } catch (error) {
+        console.error('Erreur lors de la sauvegarde du Steam ID:', error);
+        toast.error(error instanceof Error ? error.message : "Erreur lors de la sauvegarde du Steam ID");
+        setLoading(false);
+        return;
+      }
+      setLoading(false);
+    }
+
+    // Si on est sur l'étape de saisie du trade link
+    // L'index change selon si on a l'étape Steam ID ou pas
+    const tradeLinkStepIndex = hasSteamId ? 2 : 3;
+    if (currentStep === tradeLinkStepIndex) {
       if (!isValidUrl || !tradeUrl) {
         toast.error(messages.components.onboarding.errors.invalidTradeLink);
         return;
@@ -232,7 +333,18 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
 
       setLoading(true);
       try {
-        await updateUser({ tradeLink: tradeUrl });
+        // Appel direct à l'API
+        const response = await fetch('/api/user/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tradeLink: tradeUrl }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Erreur lors de la sauvegarde');
+        }
+
         toast.success(messages.components.onboarding.success.tradeLinkSaved);
       } catch (error) {
         console.error('Erreur lors de la sauvegarde du Trade Link:', error);
@@ -328,7 +440,11 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
 
             <Button
               onClick={handleNext}
-              disabled={loading || (currentStep === 2 && (!isValidUrl || !tradeUrl))}
+              disabled={
+                loading || 
+                (!hasSteamId && currentStepData.isSteamIdStep && (!isValidSteamId || !steamId)) ||
+                ((hasSteamId ? currentStep === 2 : currentStep === 3) && (!isValidUrl || !tradeUrl))
+              }
               className="flex items-center space-x-2"
             >
               <span>

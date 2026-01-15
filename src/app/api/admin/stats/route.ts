@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { AdminStats } from '@/lib/types';
+import { prisma } from '~/prisma/prisma';
+import { mapTradeStatusFromDb, mapPayoutStatusFromDb, mapPaymentMethodTypeFromDb } from '@/lib/status-mapper';
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,135 +19,212 @@ export async function GET(request: NextRequest) {
     //   return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
     // }
 
-    // Données mockées pour l'instant - à remplacer par de vraies requêtes DB
+    // Statistiques globales
+    const [totalUsers, totalTrades, totalVolumeResult, totalPayoutsResult] = await Promise.all([
+      prisma.user.count(),
+      prisma.trade.count(),
+      prisma.trade.aggregate({ _sum: { grossCents: true } }),
+      prisma.payout.aggregate({ _sum: { amountCents: true } }),
+    ]);
+
+    // Stats actives
+    const [activeTrades, pendingPayouts, kycPending] = await Promise.all([
+      prisma.trade.count({ 
+        where: { 
+          status: { in: ['CREATED', 'ACCEPTED_BY_BOT', 'IN_TRADE_HOLD', 'AVAILABLE'] } 
+        } 
+      }),
+      prisma.payout.count({ where: { status: 'PENDING' } }),
+      prisma.user.count({ where: { kycStatus: 'PENDING' } }),
+    ]);
+
+    // Statistiques mensuelles (6 derniers mois)
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const tradesGrouped = await prisma.trade.groupBy({
+      by: ['createdAt'],
+      where: {
+        createdAt: {
+          gte: sixMonthsAgo,
+        },
+      },
+      _count: { id: true },
+      _sum: { grossCents: true },
+    });
+
+    const payoutsGrouped = await prisma.payout.groupBy({
+      by: ['createdAt'],
+      where: {
+        createdAt: {
+          gte: sixMonthsAgo,
+        },
+      },
+      _sum: { amountCents: true },
+    });
+
+    const usersGrouped = await prisma.user.groupBy({
+      by: ['createdAt'],
+      where: {
+        createdAt: {
+          gte: sixMonthsAgo,
+        },
+      },
+      _count: { id: true },
+    });
+
+    // Créer un map par mois
+    const monthlyStatsMap = new Map<string, {
+      month: string;
+      trades: number;
+      volumeCentimes: number;
+      payoutsCentimes: number;
+      newUsers: number;
+    }>();
+
+    // Initialiser les 6 derniers mois
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      monthlyStatsMap.set(monthKey, {
+        month: monthKey,
+        trades: 0,
+        volumeCentimes: 0,
+        payoutsCentimes: 0,
+        newUsers: 0,
+      });
+    }
+
+    // Remplir les données de trades
+    tradesGrouped.forEach((item) => {
+      const monthKey = `${item.createdAt.getFullYear()}-${String(item.createdAt.getMonth() + 1).padStart(2, '0')}`;
+      const stat = monthlyStatsMap.get(monthKey);
+      if (stat) {
+        stat.trades += item._count.id;
+        stat.volumeCentimes += item._sum.grossCents || 0;
+      }
+    });
+
+    // Remplir les données de payouts
+    payoutsGrouped.forEach((item) => {
+      const monthKey = `${item.createdAt.getFullYear()}-${String(item.createdAt.getMonth() + 1).padStart(2, '0')}`;
+      const stat = monthlyStatsMap.get(monthKey);
+      if (stat) {
+        stat.payoutsCentimes += item._sum.amountCents || 0;
+      }
+    });
+
+    // Remplir les données d'utilisateurs
+    usersGrouped.forEach((item) => {
+      const monthKey = `${item.createdAt.getFullYear()}-${String(item.createdAt.getMonth() + 1).padStart(2, '0')}`;
+      const stat = monthlyStatsMap.get(monthKey);
+      if (stat) {
+        stat.newUsers += item._count.id;
+      }
+    });
+
+    const monthlyStats = Array.from(monthlyStatsMap.values());
+
+    // Top users
+    const topUsersData = await prisma.user.findMany({
+      orderBy: { totalVolumeCents: 'desc' },
+      take: 3,
+      select: {
+        id: true,
+        name: true,
+        steamId: true,
+        totalVolumeCents: true,
+        level: true,
+        xp: true,
+        _count: {
+          select: { trades: true },
+        },
+      },
+    });
+
+    const topUsers = topUsersData.map(user => ({
+      id: user.id,
+      username: user.name || 'Unknown',
+      steamId64: user.steamId || '',
+      totalVolumeCentimes: user.totalVolumeCents,
+      totalTrades: user._count.trades,
+      level: user.level,
+      xp: user.xp,
+    }));
+
+    // Recent trades
+    const recentTradesData = await prisma.trade.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      include: {
+        items: true,
+      },
+    });
+
+    const recentTrades = recentTradesData.map(trade => ({
+      id: trade.id,
+      userId: trade.userId,
+      status: mapTradeStatusFromDb(trade.status),
+      brutCentimes: trade.grossCents,
+      frais: { 
+        cashout: trade.cashoutFees, 
+        réseau: trade.networkFees 
+      },
+      netCentimes: trade.netCents,
+      ticketId: trade.ticketId,
+      créédLe: trade.createdAt,
+      items: trade.items.map(item => ({
+        id: item.id,
+        name: item.name,
+        marketHashName: item.marketHashName,
+        prixCentimes: item.priceCents,
+        iconUrl: item.iconUrl,
+        exterior: item.exterior || undefined,
+        statTrak: item.statTrak,
+        rarity: item.rarity,
+      })),
+    }));
+
+    // Recent payouts
+    const recentPayoutsData = await prisma.payout.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      include: {
+        paymentMethod: true,
+      },
+    });
+
+    const recentPayouts = recentPayoutsData.map(payout => ({
+      id: payout.id,
+      userId: payout.userId,
+      status: mapPayoutStatusFromDb(payout.status),
+      montantCentimes: payout.amountCents,
+      methodePaiement: {
+        id: payout.paymentMethod.id,
+        type: mapPaymentMethodTypeFromDb(payout.paymentMethod.type),
+        details: payout.paymentMethod.details as any,
+        isVerified: payout.paymentMethod.isVerified,
+        isDefault: payout.paymentMethod.isDefault,
+        createdAt: payout.paymentMethod.createdAt,
+      },
+      referencePaiement: payout.paymentReference || undefined,
+      créédLe: payout.createdAt,
+      payéLe: payout.paidAt || undefined,
+    }));
+
     const stats: AdminStats = {
-      totalUsers: 1250,
-      totalTrades: 3420,
-      totalVolumeCentimes: 125000000, // 1,250,000 €
-      totalPayoutsCentimes: 118000000, // 1,180,000 €
-      activeTrades: 45,
-      pendingPayouts: 12,
-      kycPending: 8,
-      monthlyStats: [
-        {
-          month: '2024-01',
-          trades: 280,
-          volumeCentimes: 10500000,
-          payoutsCentimes: 9800000,
-          newUsers: 95,
-        },
-        {
-          month: '2024-02',
-          trades: 320,
-          volumeCentimes: 12000000,
-          payoutsCentimes: 11200000,
-          newUsers: 110,
-        },
-        {
-          month: '2024-03',
-          trades: 380,
-          volumeCentimes: 14500000,
-          payoutsCentimes: 13800000,
-          newUsers: 125,
-        },
-        {
-          month: '2024-04',
-          trades: 420,
-          volumeCentimes: 16800000,
-          payoutsCentimes: 15900000,
-          newUsers: 140,
-        },
-        {
-          month: '2024-05',
-          trades: 450,
-          volumeCentimes: 18500000,
-          payoutsCentimes: 17500000,
-          newUsers: 155,
-        },
-        {
-          month: '2024-06',
-          trades: 480,
-          volumeCentimes: 20200000,
-          payoutsCentimes: 19200000,
-          newUsers: 170,
-        },
-      ],
-      topUsers: [
-        {
-          id: 'user_1',
-          username: 'ProTrader_CS2',
-          steamId64: '76561198000000001',
-          totalVolumeCentimes: 2500000,
-          totalTrades: 45,
-          level: 15,
-          xp: 12500,
-        },
-        {
-          id: 'user_2',
-          username: 'SkinMaster',
-          steamId64: '76561198000000002',
-          totalVolumeCentimes: 2200000,
-          totalTrades: 38,
-          level: 14,
-          xp: 11200,
-        },
-        {
-          id: 'user_3',
-          username: 'CS2Collector',
-          steamId64: '76561198000000003',
-          totalVolumeCentimes: 1950000,
-          totalTrades: 42,
-          level: 13,
-          xp: 9800,
-        },
-      ],
-      recentTrades: [
-        {
-          id: 'trade_1',
-          userId: 'user_1',
-          status: 'payé',
-          brutCentimes: 15000,
-          frais: { cashout: 75, réseau: 200 },
-          netCentimes: 14725,
-          ticketId: 'TICK-20241201-0001',
-          créédLe: new Date('2024-12-01T10:30:00Z'),
-          items: [],
-        },
-        {
-          id: 'trade_2',
-          userId: 'user_2',
-          status: 'paiement_en_cours',
-          brutCentimes: 25000,
-          frais: { cashout: 125, réseau: 300 },
-          netCentimes: 24575,
-          ticketId: 'TICK-20241201-0002',
-          créédLe: new Date('2024-12-01T11:15:00Z'),
-          items: [],
-        },
-      ],
-      recentPayouts: [
-        {
-          id: 'payout_1',
-          userId: 'user_1',
-          status: 'payé',
-          montantCentimes: 14725,
-          methodePaiement: {
-            id: 'pm_1',
-            type: 'sepa',
-            details: {
-              iban: 'FR76****1234',
-              accountHolder: 'ProTrader_CS2',
-              bankName: 'Banque Populaire',
-            },
-            isVerified: true,
-            isDefault: true,
-            createdAt: new Date('2024-11-15T00:00:00Z'),
-          },
-          referencePaiement: 'PAY-20241201-001',
-          créédLe: new Date('2024-12-01T10:30:00Z'),
-          payéLe: new Date('2024-12-01T14:30:00Z'),
-        },
-      ],
+      totalUsers,
+      totalTrades,
+      totalVolumeCentimes: totalVolumeResult._sum.grossCents || 0,
+      totalPayoutsCentimes: totalPayoutsResult._sum.amountCents || 0,
+      activeTrades,
+      pendingPayouts,
+      kycPending,
+      monthlyStats,
+      topUsers,
+      recentTrades,
+      recentPayouts,
     };
 
     return NextResponse.json(stats);

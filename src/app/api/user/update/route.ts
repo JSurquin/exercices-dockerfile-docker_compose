@@ -48,12 +48,26 @@ export async function POST(request: NextRequest) {
     }
     
     // Validation du Steam ID si fourni
-    if (updates.steamId64) {
+    if (updates.steamId64 || updates.steamId) {
+      const steamIdValue = updates.steamId64 || updates.steamId;
       const steamId64Regex = /^7656119[0-9]{10}$/;
-      if (!steamId64Regex.test(updates.steamId64)) {
+      if (!steamId64Regex.test(steamIdValue)) {
         return NextResponse.json(
           { error: 'Format de Steam ID64 invalide' },
           { status: 400 }
+        );
+      }
+      
+      // Vérifier si le Steam ID est déjà utilisé par un autre utilisateur
+      const existingUser = await prisma.user.findUnique({
+        where: { steamId: steamIdValue },
+        select: { id: true }
+      });
+      
+      if (existingUser && existingUser.id !== session.user.id) {
+        return NextResponse.json(
+          { error: 'Ce Steam ID est déjà utilisé par un autre compte' },
+          { status: 409 }
         );
       }
     }
@@ -61,13 +75,18 @@ export async function POST(request: NextRequest) {
     // Filtrer les champs autorisés à être mis à jour
     const allowedFields = [
       'name', 'level', 'xp', 'tickets', 'totalVolume', 
-      'kycStatus', 'acceptedTermsAt', 'tradeLink', 'steamId64'
+      'kycStatus', 'acceptedTermsAt', 'tradeLink', 'steamId64', 'steamId'
     ];
     
     const filteredUpdates: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(updates)) {
       if (allowedFields.includes(key)) {
-        filteredUpdates[key] = value;
+        // Normaliser steamId64 vers steamId pour Prisma
+        if (key === 'steamId64') {
+          filteredUpdates['steamId'] = value;
+        } else {
+          filteredUpdates[key] = value;
+        }
       }
     }
 
@@ -88,10 +107,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Mettre à jour l'utilisateur
-    const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
-      data: filteredUpdates,
-    });
+    let updatedUser;
+    try {
+      updatedUser = await prisma.user.update({
+        where: { id: session.user.id },
+        data: filteredUpdates,
+      });
+    } catch (error: any) {
+      // Gérer l'erreur de contrainte unique si elle arrive quand même
+      if (error.code === 'P2002') {
+        const field = error.meta?.target?.[0] || 'champ';
+        return NextResponse.json(
+          { error: `Ce ${field} est déjà utilisé par un autre compte` },
+          { status: 409 }
+        );
+      }
+      throw error;
+    }
 
     // Log de la mise à jour du profil
     await logUserAction(

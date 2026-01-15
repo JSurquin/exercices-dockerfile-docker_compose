@@ -109,24 +109,24 @@ export async function GET(request: NextRequest) {
       users: bigint;
     }>>`
       SELECT 
-        DATE_TRUNC('hour', createdAt) as hour,
+        DATE_TRUNC('hour', "createdAt") as hour,
         COUNT(CASE WHEN 'Trade' = 'Trade' THEN 1 END) as trades,
-        COALESCE(SUM(CASE WHEN 'Trade' = 'Trade' THEN gross_cents END), 0) as volume,
+        COALESCE(SUM(CASE WHEN 'Trade' = 'Trade' THEN "grossCents" END), 0) as volume,
         0 as users
       FROM "Trade"
-      WHERE createdAt >= ${last24h}
-      GROUP BY DATE_TRUNC('hour', createdAt)
+      WHERE "createdAt" >= ${last24h}
+      GROUP BY DATE_TRUNC('hour', "createdAt")
       
       UNION ALL
       
       SELECT 
-        DATE_TRUNC('hour', createdAt) as hour,
+        DATE_TRUNC('hour', "createdAt") as hour,
         0 as trades,
         0 as volume,
         COUNT(*) as users
       FROM "user"
-      WHERE createdAt >= ${last24h}
-      GROUP BY DATE_TRUNC('hour', createdAt)
+      WHERE "createdAt" >= ${last24h}
+      GROUP BY DATE_TRUNC('hour', "createdAt")
       
       ORDER BY hour DESC
     `;

@@ -81,7 +81,7 @@ export interface KYCDocument {
   id: string;
   userId: string;
   type: 'id_card' | 'passport' | 'selfie' | 'proof_of_address';
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'in_progress' | 'approved' | 'rejected';
   providerId: string; // ID du prestataire KYC
   uploadedAt: Date;
   reviewedAt?: Date;

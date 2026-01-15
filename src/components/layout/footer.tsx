@@ -17,6 +17,10 @@ export function Footer() {
       { name: messages.footer.links.status, href: "/status" },
       { name: messages.footer.links.api, href: "/api-docs" },
     ],
+    account: [
+      { name: "Connexion", href: "/login" },
+      { name: "Administration", href: "/admin/login" },
+    ],
     legal: [
       { name: messages.footer.links.terms, href: "/terms" },
       { name: messages.footer.links.privacy, href: "/privacy" },
@@ -34,7 +38,7 @@ export function Footer() {
   return (
     <footer className="bg-muted/50 border-t">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 lg:gap-8">
           {/* Logo & Description */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center space-x-2 mb-4">
@@ -86,6 +90,23 @@ export function Footer() {
             <h3 className="font-semibold mb-4">{messages.footer.support}</h3>
             <ul className="space-y-2">
               {links.support.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Account */}
+          <div>
+            <h3 className="font-semibold mb-4">Compte</h3>
+            <ul className="space-y-2">
+              {links.account.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}

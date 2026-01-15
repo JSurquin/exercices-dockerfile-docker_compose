@@ -18,7 +18,40 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
     sendResetPassword: async ({user, url, token}, request) => {
-      await emailService.sendPasswordResetEmail(user.email, token, user.name || user.email);
+      // Vérifier si c'est un nouveau compte (pas de password dans Account)
+      const account = await prisma.account.findFirst({
+        where: { userId: user.id, providerId: 'credential' }
+      });
+      
+      const isNewAccount = !account || !account.password;
+      
+      // Récupérer le user complet avec le rôle
+      const fullUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        include: { affiliateStats: true }
+      });
+      
+      if (isNewAccount && fullUser?.role === 'AFFILIATE' && fullUser.affiliateStats) {
+        // Nouveau compte affilié créé par admin
+        await emailService.sendAffiliateWelcomeEmail(
+          user.email,
+          token,
+          fullUser.affiliateStats.code,
+          user.name || user.email,
+          fullUser.affiliateStats.commissionRate
+        );
+      } else if (isNewAccount) {
+        // Nouveau compte utilisateur créé par admin
+        await emailService.sendWelcomeEmailWithPasswordReset(
+          user.email,
+          token,
+          user.name || user.email,
+          true
+        );
+      } else {
+        // Reset de mot de passe classique
+        await emailService.sendPasswordResetEmail(user.email, token, user.name || user.email);
+      }
     },
     onPasswordReset: async ({ user }: { user: { email: string; name: string | null } }) => {
       await emailService.sendPasswordSuccessResetEmail(user.email, user.name || user.email);

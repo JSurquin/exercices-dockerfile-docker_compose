@@ -1,5 +1,5 @@
 export type UserRole = "ADMIN" | "USER" | "AFFILIATE";
-export type KycStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type KycStatus = "PENDING" | "APPROVED" | "REJECTED" | "IN_PROGRESS";
 export type AffiliateStats = {
   totalReferrals: number;
   totalEarnings: number;
@@ -1078,6 +1078,53 @@ export interface Messages {
       affiliatesDescription: string;
       commissionsManagement: string;
       commissionsDescription: string;
+    };
+    userCreation: {
+      title: string;
+      description: string;
+      emailLabel: string;
+      emailPlaceholder: string;
+      nameLabel: string;
+      namePlaceholder: string;
+      roleLabel: string;
+      sendEmailLabel: string;
+      createButton: string;
+      creating: string;
+      successTitle: string;
+      successMessage: string;
+      errorTitle: string;
+      errorMessage: string;
+      errorEmailExists: string;
+      roles: {
+        user: string;
+        admin: string;
+        moderator: string;
+        affiliate: string;
+      };
+    };
+    affiliateCreation: {
+      title: string;
+      description: string;
+      emailLabel: string;
+      emailPlaceholder: string;
+      nameLabel: string;
+      namePlaceholder: string;
+      codeLabel: string;
+      codePlaceholder: string;
+      codeHelper: string;
+      commissionRateLabel: string;
+      commissionRatePlaceholder: string;
+      commissionRateHelper: string;
+      sendEmailLabel: string;
+      createButton: string;
+      creating: string;
+      successTitle: string;
+      successMessage: string;
+      errorTitle: string;
+      errorMessage: string;
+      errorEmailExists: string;
+      errorCodeExists: string;
+      errorInvalidRate: string;
     };
     export: {
       users: string;

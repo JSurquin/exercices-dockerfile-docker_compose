@@ -38,81 +38,76 @@ export async function GET(request: NextRequest) {
       limit: parseInt(searchParams.get('limit') || '20'),
     };
 
-    // Données mockées
-    const mockUsers: User[] = [
-      {
-        id: 'user_1',
-        steamId64: '76561198000000001',
-        username: 'ProTrader_CS2',
-        avatar: 'https://avatars.steamstatic.com/avatar.jpg',
-        acceptedTermsAt: new Date('2024-01-15T00:00:00Z'),
-        kycStatus: 'verified',
-        totalVolume: 2500000,
-        xp: 12500,
-        level: 15,
-        tickets: 45,
-        joinedAt: new Date('2024-01-15T00:00:00Z'),
-      },
-      {
-        id: 'user_2',
-        steamId64: '76561198000000002',
-        username: 'SkinMaster',
-        avatar: 'https://avatars.steamstatic.com/avatar.jpg',
-        acceptedTermsAt: new Date('2024-02-20T00:00:00Z'),
-        kycStatus: 'verified',
-        totalVolume: 2200000,
-        xp: 11200,
-        level: 14,
-        tickets: 38,
-        joinedAt: new Date('2024-02-20T00:00:00Z'),
-      },
-      {
-        id: 'user_3',
-        steamId64: '76561198000000003',
-        username: 'CS2Collector',
-        avatar: 'https://avatars.steamstatic.com/avatar.jpg',
-        acceptedTermsAt: new Date('2024-03-10T00:00:00Z'),
-        kycStatus: 'pending',
-        totalVolume: 1950000,
-        xp: 9800,
-        level: 13,
-        tickets: 42,
-        joinedAt: new Date('2024-03-10T00:00:00Z'),
-      },
-    ];
-
-    let filteredUsers = mockUsers;
+    // Construire les conditions de filtrage Prisma
+    const whereConditions: any = {};
 
     if (filters.status) {
-      filteredUsers = filteredUsers.filter(user => user.kycStatus === filters.status);
+      whereConditions.kycStatus = filters.status;
     }
 
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filteredUsers = filteredUsers.filter(user => 
-        user.username.toLowerCase().includes(searchLower) ||
-        user.steamId64.toLowerCase().includes(searchLower) ||
-        user.id.toLowerCase().includes(searchLower)
-      );
+      whereConditions.OR = [
+        { name: { contains: filters.search, mode: 'insensitive' } },
+        { email: { contains: filters.search, mode: 'insensitive' } },
+        { steamId: { contains: filters.search, mode: 'insensitive' } },
+        { id: { contains: filters.search, mode: 'insensitive' } },
+      ];
     }
 
-    const startIndex = ((filters.page || 1) - 1) * (filters.limit || 20);
-    const endIndex = startIndex + (filters.limit || 20);
-    const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+    // Récupérer les utilisateurs de la base de données
+    const [users, totalUsers] = await Promise.all([
+      prisma.user.findMany({
+        where: whereConditions,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          steamId: true,
+          kycStatus: true,
+          level: true,
+          xp: true,
+          tickets: true,
+          totalVolumeCents: true,
+          acceptedTermsAt: true,
+          createdAt: true,
+          role: true,
+        },
+        skip: ((filters.page || 1) - 1) * (filters.limit || 20),
+        take: filters.limit || 20,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.user.count({ where: whereConditions }),
+    ]);
+
+    // Transformer les données pour correspondre au format User
+    const formattedUsers: User[] = users.map(user => ({
+      id: user.id,
+      steamId64: user.steamId || 'N/A',
+      username: user.name || user.email || 'Utilisateur sans nom',
+      avatar: user.image || '',
+      acceptedTermsAt: user.acceptedTermsAt || undefined,
+      kycStatus: user.kycStatus as 'pending' | 'in_progress' | 'verified' | 'rejected',
+      totalVolume: user.totalVolumeCents,
+      xp: user.xp,
+      level: user.level,
+      tickets: user.tickets,
+      joinedAt: user.createdAt,
+    }));
 
     // Log de l'accès admin - DÉSACTIVÉ pour éviter les boucles
     // await logAdminAccess(context, 'users_list_accessed', undefined, {
     //   filters,
-    //   resultCount: paginatedUsers.length,
-    //   totalUsers: filteredUsers.length
+    //   resultCount: formattedUsers.length,
+    //   totalUsers: totalUsers
     // });
 
     return NextResponse.json({
-      users: paginatedUsers,
-      total: filteredUsers.length,
+      users: formattedUsers,
+      total: totalUsers,
       page: filters.page || 1,
       limit: filters.limit || 20,
-      totalPages: Math.ceil(filteredUsers.length / (filters.limit || 20)),
+      totalPages: Math.ceil(totalUsers / (filters.limit || 20)),
     });
   } catch (error) {
     console.error('Erreur lors de la récupération des utilisateurs:', error);

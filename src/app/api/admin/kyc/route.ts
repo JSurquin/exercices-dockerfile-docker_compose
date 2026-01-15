@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { KYCDocument, AdminFilters } from '@/lib/types';
+import { prisma } from '~/prisma/prisma';
+import { mapKycStatusFromDb, mapKycStatusToDb, mapKycDocumentTypeFromDb } from '@/lib/status-mapper';
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,70 +23,68 @@ export async function GET(request: NextRequest) {
       limit: parseInt(searchParams.get('limit') || '20'),
     };
 
-    // Données mockées
-    const mockKYCDocuments: KYCDocument[] = [
-      {
-        id: 'kyc_1',
-        userId: 'user_1',
-        type: 'id_card',
-        status: 'approved',
-        providerId: 'provider_123',
-        uploadedAt: new Date('2024-11-15T10:30:00Z'),
-        reviewedAt: new Date('2024-11-15T14:30:00Z'),
-      },
-      {
-        id: 'kyc_2',
-        userId: 'user_2',
-        type: 'selfie',
-        status: 'pending',
-        providerId: 'provider_124',
-        uploadedAt: new Date('2024-12-01T09:15:00Z'),
-      },
-      {
-        id: 'kyc_3',
-        userId: 'user_3',
-        type: 'proof_of_address',
-        status: 'rejected',
-        providerId: 'provider_125',
-        uploadedAt: new Date('2024-11-30T16:45:00Z'),
-        reviewedAt: new Date('2024-12-01T10:20:00Z'),
-        rejectionReason: 'Document non lisible',
-      },
-      {
-        id: 'kyc_4',
-        userId: 'user_4',
-        type: 'passport',
-        status: 'pending',
-        providerId: 'provider_126',
-        uploadedAt: new Date('2024-12-01T11:30:00Z'),
-      },
-    ];
+    // Construire le where clause pour Prisma
+    const where: any = {};
 
-    let filteredDocuments = mockKYCDocuments;
-
+    // Filtrer par statut
     if (filters.status) {
-      filteredDocuments = filteredDocuments.filter(doc => doc.status === filters.status);
+      where.status = mapKycStatusToDb(filters.status);
     }
 
+    // Filtrer par userId
+    if (filters.userId) {
+      where.userId = filters.userId;
+    }
+
+    // Recherche textuelle
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filteredDocuments = filteredDocuments.filter(doc => 
-        doc.id.toLowerCase().includes(searchLower) ||
-        doc.userId.toLowerCase().includes(searchLower) ||
-        doc.type.toLowerCase().includes(searchLower)
-      );
+      where.OR = [
+        { id: { contains: filters.search, mode: 'insensitive' } },
+        { providerId: { contains: filters.search, mode: 'insensitive' } },
+        { user: { name: { contains: filters.search, mode: 'insensitive' } } },
+        { user: { email: { contains: filters.search, mode: 'insensitive' } } },
+      ];
     }
 
-    const startIndex = ((filters.page || 1) - 1) * (filters.limit || 20);
-    const endIndex = startIndex + (filters.limit || 20);
-    const paginatedDocuments = filteredDocuments.slice(startIndex, endIndex);
+    // Exécuter les requêtes en parallèle
+    const [documentsData, total] = await Promise.all([
+      prisma.kycDocument.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              kycStatus: true,
+            },
+          },
+        },
+        skip: ((filters.page || 1) - 1) * (filters.limit || 20),
+        take: filters.limit || 20,
+        orderBy: { uploadedAt: 'desc' },
+      }),
+      prisma.kycDocument.count({ where }),
+    ]);
+
+    // Transformer les données au format attendu
+    const documents: KYCDocument[] = documentsData.map(doc => ({
+      id: doc.id,
+      userId: doc.userId,
+      type: mapKycDocumentTypeFromDb(doc.type),
+      status: mapKycStatusFromDb(doc.status),
+      providerId: doc.providerId,
+      uploadedAt: doc.uploadedAt,
+      reviewedAt: doc.reviewedAt || undefined,
+      rejectionReason: doc.rejectionReason || undefined,
+    }));
 
     return NextResponse.json({
-      documents: paginatedDocuments,
-      total: filteredDocuments.length,
+      documents,
+      total,
       page: filters.page || 1,
       limit: filters.limit || 20,
-      totalPages: Math.ceil(filteredDocuments.length / (filters.limit || 20)),
+      totalPages: Math.ceil(total / (filters.limit || 20)),
     });
   } catch (error) {
     console.error('Erreur lors de la récupération des documents KYC:', error);
