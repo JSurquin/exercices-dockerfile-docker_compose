@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
       'low'
     );
 
-    const url = new URL(request.url);
-    const returnUrl = `${url.origin}/api/auth/steam/callback`;
+    const url = process.env.NEXT_PUBLIC_APP_URL;
+    const returnUrl = `${url}/api/auth/steam/callback`;
     
     const steamAuthUrl = generateSteamAuthUrl(returnUrl);
     
