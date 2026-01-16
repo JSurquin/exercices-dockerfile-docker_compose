@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/components/providers/auth-provider';
+import { useLocale } from '@/components/providers/locale-provider';
 import { ConversationWithMessages, ChatMessageWithUser } from '@/lib/types/chat';
 import { ConversationStatus, SenderType } from '@prisma/client';
 import { useSession } from '~/lib/auth-client';
@@ -42,6 +43,7 @@ export default function ConversationPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { messages } = useLocale();
   const { data: session, isPending } = useSession();
 
   const [conversation, setConversation] = useState<ConversationWithMessages | null>(null);
@@ -395,7 +397,7 @@ export default function ConversationPage() {
               <div className="border-t p-4">
                 <div className="flex gap-2">
                   <Textarea
-                    placeholder="Tapez votre réponse..."
+                    placeholder={messages.moderation.conversation.typeYourReply}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={(e) => {

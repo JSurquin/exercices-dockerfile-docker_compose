@@ -335,30 +335,30 @@ export default function PayoutPage() {
 
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="iban">IBAN</Label>
+                        <Label htmlFor="iban">{text.request.ibanLabel}</Label>
                         <Input
                           id="iban"
                           value={formData.iban}
                           onChange={(e) => setFormData(prev => ({ ...prev, iban: e.target.value }))}
-                          placeholder="FR76 1234 5678 9012 3456 7890 123"
+                          placeholder={text.request.ibanPlaceholder}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="bic">BIC/SWIFT</Label>
+                        <Label htmlFor="bic">{text.request.bicLabel}</Label>
                         <Input
                           id="bic"
                           value={formData.bic}
                           onChange={(e) => setFormData(prev => ({ ...prev, bic: e.target.value }))}
-                          placeholder="BNPAFRPP"
+                          placeholder={text.request.bicPlaceholder}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="accountHolder">Titulaire du compte</Label>
+                        <Label htmlFor="accountHolder">{text.request.accountHolderLabel}</Label>
                         <Input
                           id="accountHolder"
                           value={formData.accountHolder}
                           onChange={(e) => setFormData(prev => ({ ...prev, accountHolder: e.target.value }))}
-                          placeholder="Jean Dupont"
+                          placeholder={text.request.accountHolderPlaceholder}
                         />
                       </div>
                     </div>
@@ -374,33 +374,33 @@ export default function PayoutPage() {
 
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="cardNumber">Numéro de carte</Label>
+                        <Label htmlFor="cardNumber">{text.request.cardNumberLabel}</Label>
                         <Input
                           id="cardNumber"
                           value={formData.cardNumber}
                           onChange={(e) => setFormData(prev => ({ ...prev, cardNumber: e.target.value }))}
-                          placeholder="4111 1111 1111 1111"
+                          placeholder={text.request.cardNumberPlaceholder}
                           maxLength={19}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="cardExpiry">Date d&apos;expiration</Label>
+                          <Label htmlFor="cardExpiry">{text.request.expiryDateLabel}</Label>
                           <Input
                             id="cardExpiry"
                             value={formData.cardExpiry}
                             onChange={(e) => setFormData(prev => ({ ...prev, cardExpiry: e.target.value }))}
-                            placeholder="MM/YY"
+                            placeholder={text.request.expiryDatePlaceholder}
                             maxLength={5}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="cardHolder">Titulaire</Label>
+                          <Label htmlFor="cardHolder">{text.request.cardHolderLabel}</Label>
                           <Input
                             id="cardHolder"
                             value={formData.cardHolder}
                             onChange={(e) => setFormData(prev => ({ ...prev, cardHolder: e.target.value }))}
-                            placeholder="Jean Dupont"
+                            placeholder={text.request.cardHolderPlaceholder}
                           />
                         </div>
                       </div>

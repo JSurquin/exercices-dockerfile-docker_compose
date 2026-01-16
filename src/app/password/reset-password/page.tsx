@@ -15,6 +15,7 @@ import { useLocale } from '@/components/providers/locale-provider';
 
 export default function ResetPasswordPage() {
   const { messages } = useLocale();
+  const text = messages.resetPassword;
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -152,7 +153,7 @@ export default function ResetPasswordPage() {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder={text.passwordPlaceholder}
                     required
                     minLength={8}
                     className="bg-slate-900/50 border-slate-600 text-slate-100 placeholder:text-slate-500 pr-10"
@@ -183,7 +184,7 @@ export default function ResetPasswordPage() {
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder={text.confirmPasswordPlaceholder}
                     required
                     minLength={8}
                     className="bg-slate-900/50 border-slate-600 text-slate-100 placeholder:text-slate-500 pr-10"

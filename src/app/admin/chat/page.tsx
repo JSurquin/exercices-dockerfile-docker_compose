@@ -362,7 +362,7 @@ export default function AdminChatPage() {
                         <div className="space-y-4">
                           <div className="flex gap-2">
                             <Input
-                              placeholder="Rechercher un utilisateur par email..."
+                              placeholder={messages.admin.chat.moderators.searchPlaceholder}
                               value={searchUser}
                               onChange={(e) => setSearchUser(e.target.value)}
                               onKeyDown={(e) => e.key === 'Enter' && searchUsers()}

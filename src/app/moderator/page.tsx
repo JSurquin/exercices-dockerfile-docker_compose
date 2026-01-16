@@ -10,8 +10,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import { useLocale } from '@/components/providers/locale-provider';
 
 export default function ModeratorLoginPage() {
+  const { messages } = useLocale();
+  const t = messages.moderator;
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,8 +31,8 @@ export default function ModeratorLoginPage() {
       });
 
       if (error) {
-        toast.error('Erreur de connexion', {
-          description: error.message || 'Email ou mot de passe incorrect',
+        toast.error(t.loginError, {
+          description: error.message || t.loginErrorDesc,
         });
         return;
       }
@@ -41,19 +44,19 @@ export default function ModeratorLoginPage() {
         const userData = await userResponse.json();
         
         if (userData.role === 'MODERATOR' || userData.role === 'ADMIN') {
-          toast.success('Connexion réussie !');
+          toast.success(t.loginSuccess);
           router.push('/moderation');
         } else {
-          toast.error('Accès refusé', {
-            description: 'Vous n\'avez pas les permissions nécessaires',
+          toast.error(t.accessDenied, {
+            description: t.accessDeniedDesc,
           });
           await authClient.signOut();
         }
       }
     } catch (error) {
       console.error('Erreur lors de la connexion:', error);
-      toast.error('Erreur de connexion', {
-        description: 'Une erreur est survenue lors de la connexion',
+      toast.error(t.loginError, {
+        description: t.loginErrorDesc,
       });
     } finally {
       setIsLoading(false);
@@ -69,19 +72,19 @@ export default function ModeratorLoginPage() {
               <ShieldCheckIcon className="w-12 h-12 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Espace Modération</CardTitle>
+          <CardTitle className="text-2xl">{t.title}</CardTitle>
           <CardDescription>
-            Connectez-vous pour accéder à l&apos;interface de modération
+            {t.subtitle}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t.emailLabel}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="moderator@moonskin.com"
+                placeholder={t.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -89,11 +92,11 @@ export default function ModeratorLoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
+              <Label htmlFor="password">{t.passwordLabel}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t.passwordPlaceholder}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -105,17 +108,17 @@ export default function ModeratorLoginPage() {
               className="w-full"
               disabled={isLoading}
             >
-              {isLoading ? 'Connexion en cours...' : 'Se connecter'}
+              {isLoading ? t.loggingIn : t.loginButton}
             </Button>
           </form>
 
           <div className="mt-6 pt-6 border-t space-y-4">
             <div className="text-center text-sm text-muted-foreground">
-              <p>Interface réservée aux modérateurs</p>
+              <p>{t.reservedInterface}</p>
             </div>
             
             <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-              <p className="font-medium">💡 Compte de test :</p>
+              <p className="font-medium">{t.testAccount}</p>
               <p className="text-muted-foreground">
                 <span className="font-mono">moderator@moonskin.com</span><br />
                 <span className="font-mono">Moderator2024!</span>

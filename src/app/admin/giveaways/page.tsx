@@ -327,7 +327,7 @@ export default function AdminGiveawaysPage() {
                           id="title"
                           value={form.title}
                           onChange={(e) => setForm(prev => ({ ...prev, title: e.target.value }))}
-                          placeholder="Ex: AK-47 Redline Giveaway"
+                          placeholder={messages.admin.giveaways.create.titlePlaceholder}
                           required
                         />
                       </div>
@@ -338,7 +338,7 @@ export default function AdminGiveawaysPage() {
                           id="prize"
                           value={form.prize}
                           onChange={(e) => setForm(prev => ({ ...prev, prize: e.target.value }))}
-                          placeholder="Ex: AK-47 | Redline (Field-Tested)"
+                          placeholder={messages.admin.giveaways.create.prizePlaceholder}
                           required
                         />
                       </div>

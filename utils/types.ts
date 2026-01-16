@@ -378,6 +378,7 @@ export interface Messages {
         stripe: string;
         qonto: string;
         binance: string;
+        bitcoin: string;
       };
       settings: {
         profile: string;
@@ -415,6 +416,7 @@ export interface Messages {
     crypto: string;
     addMethod: string;
     verify: string;
+    withdraw: string;
     otp: string;
   };
   common: {
@@ -435,6 +437,7 @@ export interface Messages {
     current: string;
     conversionError: string;
     personalData: string;
+    selectPlaceholder: string;
   };
   currencies: {
     usd: string;
@@ -487,6 +490,8 @@ export interface Messages {
       privacy: string;
       kycPolicy: string;
       amlPolicy: string;
+      login: string;
+      admin: string;
     };
     stats: {
       activeUsers: string;
@@ -969,6 +974,7 @@ export interface Messages {
       openSteam: string;
       copyExample: string;
       urlLabel: string;
+      placeholder: string;
       hideInstructions: string;
       showInstructions: string;
       invalidFormat: string;
@@ -995,6 +1001,7 @@ export interface Messages {
       findSteamId: string;
       copyExample: string;
       label: string;
+      placeholder: string;
       hideInstructions: string;
       showInstructions: string;
       invalidFormat: string;
@@ -1848,10 +1855,10 @@ export interface Messages {
       acceptTrade: string;
       howItWorksTitle: string;
       steps: {
-        step1: string;
-        step2: string;
-        step3: string;
-        step4: string;
+        step1: { title: string; description: string; };
+        step2: { title: string; description: string; };
+        step3: { title: string; description: string; };
+        step4: { title: string; description: string; };
       };
       tip: string;
     };
@@ -1887,6 +1894,21 @@ export interface Messages {
       inProgress: string;
       lost: string;
       won: string;
+    };
+    detail: {
+      title: string;
+      status: {
+        active: string;
+        ended: string;
+        cancelled: string;
+      };
+      prizeTitle: string;
+      ticketPrice: string;
+      participants: string;
+      timeRemaining: string;
+      endsOn: string;
+      ticketsSold: string;
+      statistics: string;
     };
   };
   support: {
@@ -2974,6 +2996,11 @@ export interface Messages {
       email: string;
       website: string;
       socialMedia: string;
+      youtubeUrlPlaceholder: string;
+      twitchUsernamePlaceholder: string;
+      twitterUsernamePlaceholder: string;
+      instagramUsernamePlaceholder: string;
+      trackingPixelPlaceholder: string;
       experience: string;
       motivation: string;
       submit: string;
@@ -2988,6 +3015,48 @@ export interface Messages {
       reapply: string;
       applicationDetails: string;
       commissionRate: string;
+    };
+  };
+  moderator: {
+    title: string;
+    subtitle: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    passwordLabel: string;
+    passwordPlaceholder: string;
+    loginButton: string;
+    loggingIn: string;
+    loginSuccess: string;
+    loginError: string;
+    loginErrorDesc: string;
+    accessDenied: string;
+    accessDeniedDesc: string;
+    reservedInterface: string;
+    testAccount: string;
+  };
+  moderation: {
+    title: string;
+    subtitle: string;
+    filters: {
+      statusPlaceholder: string;
+      priorityPlaceholder: string;
+      assignmentPlaceholder: string;
+      searchPlaceholder: string;
+      allStatuses: string;
+      active: string;
+      closed: string;
+      archived: string;
+      allPriorities: string;
+      low: string;
+      normal: string;
+      high: string;
+      urgent: string;
+      all: string;
+      myConversations: string;
+      unassigned: string;
+    };
+    conversation: {
+      typeYourReply: string;
     };
   };
   help: {
@@ -3278,6 +3347,10 @@ export interface Messages {
         };
         warning: string;
       };
+      steamId: {
+        title: string;
+        description: string;
+      };
       enterTradeLink: {
         title: string;
         description: string;
@@ -3334,9 +3407,12 @@ export interface Messages {
       errors: {
         invalidTradeLink: string;
         saveError: string;
+        invalidSteamId: string;
+        steamIdSaveError: string;
       };
       success: {
         tradeLinkSaved: string;
+        steamIdSaved: string;
       };
     };
     header: {
@@ -3726,6 +3802,8 @@ export interface Messages {
     resetPasswordTitle: string;
     resetPasswordDesc: string;
     confirmPassword: string;
+    passwordPlaceholder: string;
+    confirmPasswordPlaceholder: string;
     strength: string;
     strengthTooShort: string;
     strengthWeak: string;
@@ -3806,6 +3884,18 @@ export interface Messages {
         submitButton: string;
         submitting: string;
         minAmount: string;
+        ibanLabel: string;
+        ibanPlaceholder: string;
+        bicLabel: string;
+        bicPlaceholder: string;
+        accountHolderLabel: string;
+        accountHolderPlaceholder: string;
+        cardNumberLabel: string;
+        cardNumberPlaceholder: string;
+        expiryDateLabel: string;
+        expiryDatePlaceholder: string;
+        cardHolderLabel: string;
+        cardHolderPlaceholder: string;
         security: {
           title: string;
           sepaInfo: string;
@@ -3846,12 +3936,16 @@ export interface Messages {
     title: string;
     subtitle: string;
     content: string;
+    comingSoon: string;
+    warning: string;
     warningText: string;
   };
   amlPolicy: {
     title: string;
     subtitle: string;
     content: string;
+    comingSoon: string;
+    warning: string;
     warningText: string;
   };
 }

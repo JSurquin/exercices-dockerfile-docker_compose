@@ -498,7 +498,7 @@ export default function DashboardPage() {
                           <Tooltip
                             formatter={(value) => [
                               formatPrice(value as number),
-                              "Volume",
+                              messages.dashboard.volume,
                             ]}
                           />
                           <Line
@@ -593,7 +593,7 @@ export default function DashboardPage() {
                       </div>
                       {(data?.user?.kycStatus !== 'verified' && data?.user?.kycStatus !== 'VERIFIED') && (
                         <Button asChild className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
-                          <Link href="/kyc">Vérifier</Link>
+                          <Link href="/kyc">{messages.payments.verify}</Link>
                         </Button>
                       )}
                     </div>
@@ -616,7 +616,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700">
-                        <Link href="/payout">Retirer</Link>
+                        <Link href="/payout">{messages.payments.withdraw}</Link>
                       </Button>
                     </div>
                   </CardContent>
@@ -764,7 +764,7 @@ export default function DashboardPage() {
                             </span>
                           </div>
                           <div>
-                            <p className="font-medium">Bitcoin</p>
+                            <p className="font-medium">{messages.dashboard.payments.bitcoin}</p>
                             <p className="text-sm text-muted-foreground">
                               1A1z...DivfNa
                             </p>

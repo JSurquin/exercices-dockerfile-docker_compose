@@ -335,7 +335,7 @@ export default function KYCPage() {
                       <Label htmlFor="nationality">{messages.kycPage.info.nationality} *</Label>
                       <Select value={personalInfo.nationality} onValueChange={(value) => setPersonalInfo(prev => ({ ...prev, nationality: value }))}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select" />
+                          <SelectValue placeholder={messages.common.selectPlaceholder} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="FR">{messages.kycPage.info.countries.france}</SelectItem>

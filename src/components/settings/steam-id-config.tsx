@@ -158,7 +158,7 @@ export default function SteamIdConfig() {
           
           <Input
             id="steam-id"
-            placeholder="76561198123456789"
+            placeholder={messages.settings.steamId.placeholder}
             value={steamId}
             onChange={(e) => handleIdChange(e.target.value)}
             className={isValidId === false ? 'border-red-500' : isValidId === true ? 'border-green-500' : ''}

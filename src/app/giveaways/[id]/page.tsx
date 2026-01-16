@@ -169,12 +169,12 @@ export default function GiveawayDetailsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>Détails du Giveaway</span>
+                    <span>{messages.giveawaysPage.detail.title}</span>
                     <Badge 
                       variant={giveaway.status === 'ACTIVE' ? 'default' : 'secondary'}
                       className={giveaway.status === 'ACTIVE' ? 'bg-green-500' : giveaway.status === 'ENDED' ? 'bg-blue-500' : 'bg-gray-500'}
                     >
-                      {giveaway.status === 'ACTIVE' ? 'Actif' : giveaway.status === 'ENDED' ? 'Terminé' : 'Annulé'}
+                      {giveaway.status === 'ACTIVE' ? messages.giveawaysPage.detail.status.active : giveaway.status === 'ENDED' ? messages.giveawaysPage.detail.status.ended : messages.giveawaysPage.detail.status.cancelled}
                     </Badge>
                   </CardTitle>
                 </CardHeader>
@@ -184,7 +184,7 @@ export default function GiveawayDetailsPage() {
                     <div className="flex items-center space-x-4">
                       <TrophyIcon className="w-12 h-12 text-orange-600" />
                       <div>
-                        <h3 className="text-xl font-semibold text-orange-800 dark:text-orange-200">Prix à gagner</h3>
+                        <h3 className="text-xl font-semibold text-orange-800 dark:text-orange-200">{messages.giveawaysPage.detail.prizeTitle}</h3>
                         <p className="text-lg text-orange-700 dark:text-orange-300">{giveaway.prize}</p>
                       </div>
                     </div>
@@ -194,22 +194,22 @@ export default function GiveawayDetailsPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center p-4 bg-muted rounded-lg">
                       <TicketIcon className="w-6 h-6 mx-auto mb-2 text-purple-500" />
-                      <p className="text-sm text-muted-foreground">Prix par ticket</p>
+                      <p className="text-sm text-muted-foreground">{messages.giveawaysPage.detail.ticketPrice}</p>
                       <p className="text-lg font-semibold">{giveaway.ticketPrice}</p>
                     </div>
                     <div className="text-center p-4 bg-muted rounded-lg">
                       <UserGroupIcon className="w-6 h-6 mx-auto mb-2 text-blue-500" />
-                      <p className="text-sm text-muted-foreground">Participants</p>
+                      <p className="text-sm text-muted-foreground">{messages.giveawaysPage.detail.participants}</p>
                       <p className="text-lg font-semibold">{giveaway.entries.length}</p>
                     </div>
                     <div className="text-center p-4 bg-muted rounded-lg">
                       <ClockIcon className="w-6 h-6 mx-auto mb-2 text-green-500" />
-                      <p className="text-sm text-muted-foreground">Temps restant</p>
+                      <p className="text-sm text-muted-foreground">{messages.giveawaysPage.detail.timeRemaining}</p>
                       <p className="text-lg font-semibold">{getTimeRemaining(typeof giveaway.endDate === 'string' ? giveaway.endDate : giveaway.endDate.toString())}</p>
                     </div>
                     <div className="text-center p-4 bg-muted rounded-lg">
                       <CalendarIcon className="w-6 h-6 mx-auto mb-2 text-orange-500" />
-                      <p className="text-sm text-muted-foreground">Fin le</p>
+                      <p className="text-sm text-muted-foreground">{messages.giveawaysPage.detail.endsOn}</p>
                       <p className="text-lg font-semibold">{new Date(giveaway.endDate).toLocaleDateString()}</p>
                     </div>
                   </div>
@@ -217,7 +217,7 @@ export default function GiveawayDetailsPage() {
                   {/* Progress */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>Tickets vendus</span>
+                      <span>{messages.giveawaysPage.detail.ticketsSold}</span>
                       <span>{giveaway.soldTickets} / {giveaway.maxTickets} ({progress.toFixed(1)}%)</span>
                     </div>
                     <Progress value={progress} className="h-3" />
@@ -329,7 +329,7 @@ export default function GiveawayDetailsPage() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>Statistiques</CardTitle>
+                  <CardTitle>{messages.giveawaysPage.detail.statistics}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between">

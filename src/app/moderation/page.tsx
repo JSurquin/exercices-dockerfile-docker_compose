@@ -246,13 +246,13 @@ export default function ModerationPage() {
                   onValueChange={(value) => setFilters(prev => ({ ...prev, status: value === 'ALL' ? undefined : value as ConversationStatus }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Statut" />
+                    <SelectValue placeholder={messages.moderation.filters.statusPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ALL">Tous les statuts</SelectItem>
-                    <SelectItem value="ACTIVE">Actives</SelectItem>
-                    <SelectItem value="CLOSED">Fermées</SelectItem>
-                    <SelectItem value="ARCHIVED">Archivées</SelectItem>
+                    <SelectItem value="ALL">{messages.moderation.filters.allStatuses}</SelectItem>
+                    <SelectItem value="ACTIVE">{messages.moderation.filters.active}</SelectItem>
+                    <SelectItem value="CLOSED">{messages.moderation.filters.closed}</SelectItem>
+                    <SelectItem value="ARCHIVED">{messages.moderation.filters.archived}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -263,14 +263,14 @@ export default function ModerationPage() {
                   onValueChange={(value) => setFilters(prev => ({ ...prev, priority: value === 'ALL' ? undefined : value as ConversationPriority }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Priorité" />
+                    <SelectValue placeholder={messages.moderation.filters.priorityPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ALL">Toutes les priorités</SelectItem>
-                    <SelectItem value="LOW">Faible</SelectItem>
-                    <SelectItem value="NORMAL">Normale</SelectItem>
-                    <SelectItem value="HIGH">Élevée</SelectItem>
-                    <SelectItem value="URGENT">Urgente</SelectItem>
+                    <SelectItem value="ALL">{messages.moderation.filters.allPriorities}</SelectItem>
+                    <SelectItem value="LOW">{messages.moderation.filters.low}</SelectItem>
+                    <SelectItem value="NORMAL">{messages.moderation.filters.normal}</SelectItem>
+                    <SelectItem value="HIGH">{messages.moderation.filters.high}</SelectItem>
+                    <SelectItem value="URGENT">{messages.moderation.filters.urgent}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -281,12 +281,12 @@ export default function ModerationPage() {
                   onValueChange={(value) => setFilters(prev => ({ ...prev, assignedTo: value === 'ALL' ? undefined : value }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Assignation" />
+                    <SelectValue placeholder={messages.moderation.filters.assignmentPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ALL">Toutes</SelectItem>
-                    <SelectItem value="me">Mes conversations</SelectItem>
-                    <SelectItem value="unassigned">Non assignées</SelectItem>
+                    <SelectItem value="ALL">{messages.moderation.filters.all}</SelectItem>
+                    <SelectItem value="me">{messages.moderation.filters.myConversations}</SelectItem>
+                    <SelectItem value="unassigned">{messages.moderation.filters.unassigned}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -294,7 +294,7 @@ export default function ModerationPage() {
               <div className="relative">
                 <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher..."
+                  placeholder={messages.moderation.filters.searchPlaceholder}
                   className="pl-10"
                   value={filters.search || ''}
                   onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}

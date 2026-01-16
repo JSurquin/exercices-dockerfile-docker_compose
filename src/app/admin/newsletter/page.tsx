@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useLocale } from '@/components/providers/locale-provider';
 import { 
   Mail, 
   Users, 
@@ -50,6 +51,7 @@ interface Stats {
 }
 
 export default function NewsletterAdminPage() {
+  const { messages } = useLocale();
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [stats, setStats] = useState<Stats>({ total: 0, active: 0, inactive: 0 });
@@ -252,7 +254,7 @@ export default function NewsletterAdminPage() {
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                       <Input
-                        placeholder="Rechercher par email..."
+                        placeholder={messages.admin.newsletter.subscribers.searchPlaceholder}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10 bg-slate-700 border-slate-600 text-white"

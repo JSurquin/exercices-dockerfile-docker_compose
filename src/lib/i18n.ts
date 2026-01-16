@@ -336,6 +336,7 @@ export const messages: Record<Locale, Messages> = {
         stripe: "Stripe",
         qonto: "Qonto",
         binance: "Binance",
+        bitcoin: "Bitcoin",
       },
       settings: {
         profile: "Profil",
@@ -373,6 +374,7 @@ export const messages: Record<Locale, Messages> = {
       crypto: "Cryptomonnaie",
       addMethod: "Ajouter un moyen de paiement",
       verify: "Vérifier",
+      withdraw: "Retirer",
       otp: "Code OTP",
     },
     common: {
@@ -393,6 +395,7 @@ export const messages: Record<Locale, Messages> = {
       current: "Actuel",
       conversionError: "Erreur de conversion",
       personalData: "Données personnelles",
+      selectPlaceholder: "Sélectionner",
     },
     currencies: {
       usd: "Dollar américain",
@@ -445,6 +448,8 @@ export const messages: Record<Locale, Messages> = {
         privacy: "Politique de confidentialité",
         kycPolicy: "Politique KYC",
         amlPolicy: "Politique anti-blanchiment",
+        login: "Connexion",
+        admin: "Administration",
       },
       stats: {
         activeUsers: "Utilisateurs actifs",
@@ -1987,6 +1992,7 @@ export const messages: Record<Locale, Messages> = {
         openSteam: "Ouvrir Steam",
         copyExample: "Copier exemple",
         urlLabel: "URL de Trade Link Steam",
+        placeholder: "https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh",
         hideInstructions: "Masquer les instructions",
         showInstructions: "Voir les instructions",
         invalidFormat: "Format de Trade Link Steam invalide",
@@ -2017,6 +2023,7 @@ export const messages: Record<Locale, Messages> = {
         findSteamId: "Trouver mon Steam ID",
         copyExample: "Copier exemple",
         label: "Steam ID64",
+        placeholder: "76561198123456789",
         hideInstructions: "Masquer les instructions",
         showInstructions: "Voir les instructions",
         invalidFormat: "Format de Steam ID64 invalide",
@@ -2870,10 +2877,22 @@ export const messages: Record<Locale, Messages> = {
         openSteam: "Ouvrir Steam",
         howItWorksTitle: "💰 Comment ça marche après ?",
         steps: {
-          step1: "Acceptez le trade sur Steam et laissez notre bot récupérer vos skins",
-          step2: "Trade Hold Steam de 7 jours - un délai de sécurité imposé par Steam",
-          step3: "Configurez votre méthode de paiement (SEPA ou crypto) dans votre dashboard pendant cette période",
-          step4: "Après 7 jours, recevez automatiquement {amount} sur votre compte"
+          step1: {
+            title: "Acceptez le trade sur Steam",
+            description: "Allez sur Steam et acceptez l'offre de trade de notre bot"
+          },
+          step2: {
+            title: "Trade Hold Steam (7 jours)",
+            description: "Steam impose un délai de 7 jours avant que le trade soit finalisé"
+          },
+          step3: {
+            title: "Configurez votre paiement",
+            description: "Pendant ces 7 jours, configurez votre méthode de paiement (SEPA ou crypto) dans votre dashboard"
+          },
+          step4: {
+            title: "Paiement automatique",
+            description: "Après 7 jours, vous recevrez automatiquement votre paiement sur votre compte"
+          }
         },
         tip: "💡 Astuce : Configurez dès maintenant votre méthode de paiement dans votre dashboard pour recevoir votre argent automatiquement !"
       },
@@ -2910,6 +2929,21 @@ export const messages: Record<Locale, Messages> = {
       participantCount: "Nombre de participants",
       avgTicketsPerParticipant: "Tickets moyens par participant",
       fillRate: "Taux de remplissage",
+      detail: {
+        title: "Détails du Giveaway",
+        status: {
+          active: "Actif",
+          ended: "Terminé",
+          cancelled: "Annulé"
+        },
+        prizeTitle: "Prix à gagner",
+        ticketPrice: "Prix par ticket",
+        participants: "Participants",
+        timeRemaining: "Temps restant",
+        endsOn: "Fin le",
+        ticketsSold: "Tickets vendus",
+        statistics: "Statistiques"
+      }
     },
     payoutPage: {
       title: 'Retirer vos fonds',
@@ -2943,6 +2977,18 @@ export const messages: Record<Locale, Messages> = {
         submitButton: 'Effectuer le retrait',
         submitting: 'Traitement en cours...',
         minAmount: 'Montant minimum: 10€',
+        ibanLabel: 'IBAN',
+        ibanPlaceholder: 'FR76 1234 5678 9012 3456 7890 123',
+        bicLabel: 'BIC/SWIFT',
+        bicPlaceholder: 'BNPAFRPP',
+        accountHolderLabel: 'Titulaire du compte',
+        accountHolderPlaceholder: 'Jean Dupont',
+        cardNumberLabel: 'Numéro de carte',
+        cardNumberPlaceholder: '4111 1111 1111 1111',
+        expiryDateLabel: 'Date d\'expiration',
+        expiryDatePlaceholder: 'MM/YY',
+        cardHolderLabel: 'Titulaire de la carte',
+        cardHolderPlaceholder: 'Jean Dupont',
         security: {
           title: 'Sécurité',
           sepaInfo: 'Virement bancaire en 1-3 jours ouvrés',
@@ -3023,6 +3069,11 @@ export const messages: Record<Locale, Messages> = {
         email: "Email",
         website: "Site web (optionnel)",
         socialMedia: "Réseaux sociaux",
+        youtubeUrlPlaceholder: "https://youtube.com/@votre-chaine",
+        twitchUsernamePlaceholder: "https://twitch.tv/votre-pseudo",
+        twitterUsernamePlaceholder: "https://twitter.com/votre-pseudo",
+        instagramUsernamePlaceholder: "https://instagram.com/votre-pseudo",
+        trackingPixelPlaceholder: "/sell, /giveaways, etc.",
         experience: "Expérience en affiliation",
         motivation: "Pourquoi voulez-vous devenir affilié ?",
         submit: "Soumettre la candidature",
@@ -3037,6 +3088,48 @@ export const messages: Record<Locale, Messages> = {
         reapply: "Soumettre une nouvelle demande",
         applicationDetails: "Détails de la demande",
         commissionRate: "Taux de commission"
+      }
+    },
+    moderator: {
+      title: "Espace Modération",
+      subtitle: "Connectez-vous pour accéder à l'interface de modération",
+      emailLabel: "Email",
+      emailPlaceholder: "moderator@moonskin.com",
+      passwordLabel: "Mot de passe",
+      passwordPlaceholder: "••••••••",
+      loginButton: "Se connecter",
+      loggingIn: "Connexion en cours...",
+      loginSuccess: "Connexion réussie !",
+      loginError: "Erreur de connexion",
+      loginErrorDesc: "Email ou mot de passe incorrect",
+      accessDenied: "Accès refusé",
+      accessDeniedDesc: "Vous n'avez pas les permissions nécessaires",
+      reservedInterface: "Interface réservée aux modérateurs",
+      testAccount: "💡 Compte de test :"
+    },
+    moderation: {
+      title: "Modération",
+      subtitle: "Gérez les conversations et demandes d'assistance",
+      filters: {
+        statusPlaceholder: "Statut",
+        priorityPlaceholder: "Priorité",
+        assignmentPlaceholder: "Assignation",
+        searchPlaceholder: "Rechercher...",
+        allStatuses: "Tous les statuts",
+        active: "Actives",
+        closed: "Fermées",
+        archived: "Archivées",
+        allPriorities: "Toutes les priorités",
+        low: "Faible",
+        normal: "Normale",
+        high: "Élevée",
+        urgent: "Urgente",
+        all: "Toutes",
+        myConversations: "Mes conversations",
+        unassigned: "Non assignées"
+      },
+      conversation: {
+        typeYourReply: "Tapez votre réponse..."
       }
     },
     help: {
@@ -3327,6 +3420,10 @@ export const messages: Record<Locale, Messages> = {
           },
           warning: "⚠️ Gardez votre Trade Link privé et sécurisé"
         },
+        steamId: {
+          title: "Configurez votre Steam ID",
+          description: "Pour vendre vos skins CS2, nous avons besoin de votre Steam ID 64."
+        },
         enterTradeLink: {
           title: "Saisissez votre Trade Link",
           description: "Configurez maintenant votre Trade Link Steam pour pouvoir vendre vos skins.",
@@ -3382,10 +3479,13 @@ export const messages: Record<Locale, Messages> = {
         },
         errors: {
           invalidTradeLink: "Veuillez saisir un Trade Link Steam valide",
-          saveError: "Erreur lors de la sauvegarde du Trade Link"
+          saveError: "Erreur lors de la sauvegarde du Trade Link",
+          invalidSteamId: "Veuillez entrer un Steam ID valide",
+          steamIdSaveError: "Erreur lors de la sauvegarde du Steam ID"
         },
         success: {
-          tradeLinkSaved: "Trade Link sauvegardé avec succès !"
+          tradeLinkSaved: "Trade Link sauvegardé avec succès !",
+          steamIdSaved: "Steam ID enregistré avec succès !"
         }
       },
       header: {
@@ -3750,6 +3850,8 @@ export const messages: Record<Locale, Messages> = {
       resetPasswordTitle: "Réinitialiser votre mot de passe",
       resetPasswordDesc: "Choisissez un nouveau mot de passe pour votre compte",
       confirmPassword: "Confirmer le mot de passe",
+      passwordPlaceholder: "••••••••",
+      confirmPasswordPlaceholder: "••••••••",
       strength: "Force du mot de passe",
       strengthTooShort: "Trop court",
       strengthWeak: "Faible",
@@ -3811,14 +3913,18 @@ export const messages: Record<Locale, Messages> = {
     },
     kycPolicy: {
       title: "Politique KYC",
-      subtitle: "Know Your Customer - Vérification d'identité",
+      subtitle: "Processus de vérification d'identité conforme aux réglementations européennes",
       content: "Nous sommes tenus par la loi de vérifier l'identité de nos utilisateurs avant de permettre certaines transactions. Cette procédure de vérification KYC (Know Your Customer) nous permet de nous conformer aux réglementations en vigueur et de protéger nos utilisateurs contre la fraude.",
+      comingSoon: "Cette page sera bientôt disponible avec du contenu dynamique.",
+      warning: "La vérification KYC est obligatoire avant tout paiement selon la réglementation européenne.",
       warningText: "Vos données personnelles sont stockées de manière sécurisée et ne sont jamais partagées avec des tiers sans votre consentement."
     },
     amlPolicy: {
-      title: "Politique AML",
-      subtitle: "Anti-Money Laundering - Lutte contre le blanchiment d'argent",
+      title: "Politique Anti-Blanchiment (AML)",
+      subtitle: "Notre engagement dans la lutte contre le blanchiment d'argent et le financement du terrorisme",
       content: "Notre politique AML (Anti-Money Laundering) vise à prévenir et détecter toute activité suspecte liée au blanchiment d'argent ou au financement du terrorisme. Nous surveillons activement les transactions et coopérons avec les autorités compétentes lorsque cela est nécessaire.",
+      comingSoon: "Cette page sera bientôt disponible avec du contenu dynamique.",
+      warning: "Toute tentative de blanchiment d'argent ou de financement d'activités illicites entraînera la fermeture immédiate du compte et le signalement aux autorités.",
       warningText: "Toute activité suspecte sera signalée aux autorités compétentes conformément à la loi."
     }
   },
@@ -4152,6 +4258,7 @@ export const messages: Record<Locale, Messages> = {
         stripe: "Stripe",
         qonto: "Qonto",
         binance: "Binance",
+        bitcoin: "Bitcoin",
       },
       settings: {
         profile: "Profile",
@@ -4189,6 +4296,7 @@ export const messages: Record<Locale, Messages> = {
       crypto: "Cryptocurrency",
       addMethod: "Add payment method",
       verify: "Verify",
+      withdraw: "Withdraw",
       otp: "OTP Code",
     },
     common: {
@@ -4209,6 +4317,7 @@ export const messages: Record<Locale, Messages> = {
       current: "Current",
       conversionError: "Conversion error",
       personalData: "Personal data",
+      selectPlaceholder: "Select",
     },
     currencies: {
       usd: "US Dollar",
@@ -4261,6 +4370,8 @@ export const messages: Record<Locale, Messages> = {
         privacy: "Privacy Policy",
         kycPolicy: "KYC Policy",
         amlPolicy: "AML Policy",
+        login: "Login",
+        admin: "Administration",
       },
       stats: {
         activeUsers: "Active users",
@@ -5639,10 +5750,22 @@ export const messages: Record<Locale, Messages> = {
         openSteam: "Open Steam",
         howItWorksTitle: "💰 What happens next?",
         steps: {
-          step1: "Accept the trade on Steam and let our bot collect your skins",
-          step2: "Steam Trade Hold of 7 days - a security delay imposed by Steam",
-          step3: "Set up your payment method (SEPA or crypto) in your dashboard during this period",
-          step4: "After 7 days, automatically receive {amount} in your account"
+          step1: {
+            title: "Accept the trade on Steam",
+            description: "Go to Steam and accept the trade offer from our bot"
+          },
+          step2: {
+            title: "Steam Trade Hold (7 days)",
+            description: "Steam imposes a 7-day delay before the trade is finalized"
+          },
+          step3: {
+            title: "Configure your payment",
+            description: "During these 7 days, set up your payment method (SEPA or crypto) in your dashboard"
+          },
+          step4: {
+            title: "Automatic payment",
+            description: "After 7 days, you will automatically receive your payment in your account"
+          }
         },
         tip: "💡 Tip: Set up your payment method now in your dashboard to receive your money automatically!"
       },
@@ -5679,6 +5802,21 @@ export const messages: Record<Locale, Messages> = {
       participantCount: "Number of participants",
       avgTicketsPerParticipant: "Average tickets per participant",
       fillRate: "Fill rate",
+      detail: {
+        title: "Giveaway Details",
+        status: {
+          active: "Active",
+          ended: "Ended",
+          cancelled: "Cancelled"
+        },
+        prizeTitle: "Prize to Win",
+        ticketPrice: "Price per Ticket",
+        participants: "Participants",
+        timeRemaining: "Time Remaining",
+        endsOn: "Ends On",
+        ticketsSold: "Tickets Sold",
+        statistics: "Statistics"
+      }
     },
     payoutPage: {
       title: 'Withdraw your funds',
@@ -5712,6 +5850,18 @@ export const messages: Record<Locale, Messages> = {
         submitButton: 'Withdraw',
         submitting: 'Processing...',
         minAmount: 'Minimum amount: €10',
+        ibanLabel: 'IBAN',
+        ibanPlaceholder: 'FR76 1234 5678 9012 3456 7890 123',
+        bicLabel: 'BIC/SWIFT',
+        bicPlaceholder: 'BNPAFRPP',
+        accountHolderLabel: 'Account holder',
+        accountHolderPlaceholder: 'John Doe',
+        cardNumberLabel: 'Card number',
+        cardNumberPlaceholder: '4111 1111 1111 1111',
+        expiryDateLabel: 'Expiry date',
+        expiryDatePlaceholder: 'MM/YY',
+        cardHolderLabel: 'Cardholder name',
+        cardHolderPlaceholder: 'John Doe',
         security: {
           title: 'Security',
           sepaInfo: 'Bank transfer in 1-3 business days',
@@ -6672,6 +6822,11 @@ export const messages: Record<Locale, Messages> = {
         email: "Email",
         website: "Website (optional)",
         socialMedia: "Social media",
+        youtubeUrlPlaceholder: "https://youtube.com/@your-channel",
+        twitchUsernamePlaceholder: "https://twitch.tv/your-username",
+        twitterUsernamePlaceholder: "https://twitter.com/your-username",
+        instagramUsernamePlaceholder: "https://instagram.com/your-username",
+        trackingPixelPlaceholder: "/sell, /giveaways, etc.",
         experience: "Affiliate experience",
         motivation: "Why do you want to become an affiliate?",
         submit: "Submit application",
@@ -6686,6 +6841,48 @@ export const messages: Record<Locale, Messages> = {
         reapply: "Submit a new application",
         applicationDetails: "Application details",
         commissionRate: "Commission rate"
+      }
+    },
+    moderator: {
+      title: "Moderation Space",
+      subtitle: "Log in to access the moderation interface",
+      emailLabel: "Email",
+      emailPlaceholder: "moderator@moonskin.com",
+      passwordLabel: "Password",
+      passwordPlaceholder: "••••••••",
+      loginButton: "Log in",
+      loggingIn: "Logging in...",
+      loginSuccess: "Login successful!",
+      loginError: "Login error",
+      loginErrorDesc: "Incorrect email or password",
+      accessDenied: "Access denied",
+      accessDeniedDesc: "You do not have the necessary permissions",
+      reservedInterface: "Interface reserved for moderators",
+      testAccount: "💡 Test account:"
+    },
+    moderation: {
+      title: "Moderation",
+      subtitle: "Manage conversations and support requests",
+      filters: {
+        statusPlaceholder: "Status",
+        priorityPlaceholder: "Priority",
+        assignmentPlaceholder: "Assignment",
+        searchPlaceholder: "Search...",
+        allStatuses: "All statuses",
+        active: "Active",
+        closed: "Closed",
+        archived: "Archived",
+        allPriorities: "All priorities",
+        low: "Low",
+        normal: "Normal",
+        high: "High",
+        urgent: "Urgent",
+        all: "All",
+        myConversations: "My conversations",
+        unassigned: "Unassigned"
+      },
+      conversation: {
+        typeYourReply: "Type your reply..."
       }
     },
     settings: {
@@ -6809,6 +7006,7 @@ export const messages: Record<Locale, Messages> = {
         openSteam: "Open Steam",
         copyExample: "Copy example",
         urlLabel: "Steam Trade Link URL",
+        placeholder: "https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh",
         hideInstructions: "Hide instructions",
         showInstructions: "Show instructions",
         invalidFormat: "Invalid Steam Trade Link format",
@@ -6839,6 +7037,7 @@ export const messages: Record<Locale, Messages> = {
         findSteamId: "Find my Steam ID",
         copyExample: "Copy example",
         label: "Steam ID64",
+        placeholder: "76561198123456789",
         hideInstructions: "Hide instructions",
         showInstructions: "Show instructions",
         invalidFormat: "Invalid Steam ID64 format",
@@ -7143,6 +7342,10 @@ export const messages: Record<Locale, Messages> = {
           },
           warning: "⚠️ Keep your Trade Link private and secure"
         },
+        steamId: {
+          title: "Set up your Steam ID",
+          description: "To sell your CS2 skins, we need your Steam ID 64."
+        },
         enterTradeLink: {
           title: "Enter your Trade Link",
           description: "Set up your Steam Trade Link now to be able to sell your skins.",
@@ -7198,10 +7401,13 @@ export const messages: Record<Locale, Messages> = {
         },
         errors: {
           invalidTradeLink: "Please enter a valid Steam Trade Link",
-          saveError: "Error saving Trade Link"
+          saveError: "Error saving Trade Link",
+          invalidSteamId: "Please enter a valid Steam ID",
+          steamIdSaveError: "Error saving Steam ID"
         },
         success: {
-          tradeLinkSaved: "Trade Link saved successfully!"
+          tradeLinkSaved: "Trade Link saved successfully!",
+          steamIdSaved: "Steam ID saved successfully!"
         }
       },
       header: {
@@ -7566,6 +7772,8 @@ export const messages: Record<Locale, Messages> = {
       resetPasswordTitle: "Reset your password",
       resetPasswordDesc: "Choose a new password for your account",
       confirmPassword: "Confirm password",
+      passwordPlaceholder: "••••••••",
+      confirmPasswordPlaceholder: "••••••••",
       strength: "Password strength",
       strengthTooShort: "Too short",
       strengthWeak: "Weak",
@@ -7627,14 +7835,18 @@ export const messages: Record<Locale, Messages> = {
     },
     kycPolicy: {
       title: "KYC Policy",
-      subtitle: "Know Your Customer - Identity Verification",
+      subtitle: "Identity verification process compliant with European regulations",
       content: "We are required by law to verify the identity of our users before allowing certain transactions. This KYC (Know Your Customer) verification procedure allows us to comply with applicable regulations and protect our users against fraud.",
+      comingSoon: "This page will soon be available with dynamic content.",
+      warning: "KYC verification is mandatory before any payment according to European regulations.",
       warningText: "Your personal data is stored securely and is never shared with third parties without your consent."
     },
     amlPolicy: {
-      title: "AML Policy",
-      subtitle: "Anti-Money Laundering",
+      title: "Anti-Money Laundering (AML) Policy",
+      subtitle: "Our commitment to fighting money laundering and terrorist financing",
       content: "Our AML (Anti-Money Laundering) policy aims to prevent and detect any suspicious activity related to money laundering or terrorist financing. We actively monitor transactions and cooperate with relevant authorities when necessary.",
+      comingSoon: "This page will soon be available with dynamic content.",
+      warning: "Any attempt at money laundering or financing of illicit activities will result in immediate account closure and reporting to authorities.",
       warningText: "Any suspicious activity will be reported to the relevant authorities in accordance with the law."
     }
   },
@@ -7964,6 +8176,7 @@ export const messages: Record<Locale, Messages> = {
         stripe: "Stripe",
         qonto: "Qonto",
         binance: "Binance",
+        bitcoin: "Bitcoin",
       },
       settings: {
         profile: "资料",
@@ -8001,6 +8214,7 @@ export const messages: Record<Locale, Messages> = {
       crypto: "加密货币",
       addMethod: "添加支付方式",
       verify: "验证",
+      withdraw: "提款",
       otp: "OTP验证码",
     },
     common: {
@@ -8021,6 +8235,7 @@ export const messages: Record<Locale, Messages> = {
       current: "当前",
       conversionError: "转换错误",
       personalData: "个人数据",
+      selectPlaceholder: "选择",
     },
     currencies: {
       usd: "美元",
@@ -8073,6 +8288,8 @@ export const messages: Record<Locale, Messages> = {
         privacy: "隐私政策",
         kycPolicy: "KYC政策",
         amlPolicy: "反洗钱政策",
+        login: "登录",
+        admin: "管理",
       },
       stats: {
         activeUsers: "活跃用户",
@@ -9093,10 +9310,22 @@ export const messages: Record<Locale, Messages> = {
         openSteam: "打开Steam",
         howItWorksTitle: "💰 接下来会发生什么？",
         steps: {
-          step1: "在Steam上接受交易，让我们的机器人收集您的皮肤",
-          step2: "Steam交易冻结7天 - 这是Steam强制执行的安全延迟",
-          step3: "在此期间，在您的仪表板中设置支付方式（SEPA或加密货币）",
-          step4: "7天后，自动收到{amount}到您的账户"
+          step1: {
+            title: "在Steam上接受交易",
+            description: "前往Steam并接受我们机器人发送的交易报价"
+          },
+          step2: {
+            title: "Steam交易冻结（7天）",
+            description: "Steam在交易完成前强制执行7天延迟"
+          },
+          step3: {
+            title: "配置您的支付方式",
+            description: "在这7天内，在您的仪表板中设置支付方式（SEPA或加密货币）"
+          },
+          step4: {
+            title: "自动支付",
+            description: "7天后，您将自动收到支付到您的账户"
+          }
         },
         tip: "💡 提示：立即在您的仪表板中设置支付方式，以自动收到您的资金！"
       },
@@ -9130,6 +9359,21 @@ export const messages: Record<Locale, Messages> = {
       participantCount: "参与者数量",
       avgTicketsPerParticipant: "平均每位参与者的票券",
       fillRate: "填充率",
+      detail: {
+        title: "抽奖详情",
+        status: {
+          active: "进行中",
+          ended: "已结束",
+          cancelled: "已取消"
+        },
+        prizeTitle: "奖品",
+        ticketPrice: "每张票券价格",
+        participants: "参与者",
+        timeRemaining: "剩余时间",
+        endsOn: "结束于",
+        ticketsSold: "已售票券",
+        statistics: "统计"
+      }
     },
     payoutPage: {
       title: '提取资金',
@@ -9163,6 +9407,18 @@ export const messages: Record<Locale, Messages> = {
         submitButton: '提取',
         submitting: '处理中...',
         minAmount: '最低金额：10€',
+        ibanLabel: 'IBAN',
+        ibanPlaceholder: 'FR76 1234 5678 9012 3456 7890 123',
+        bicLabel: 'BIC/SWIFT',
+        bicPlaceholder: 'BNPAFRPP',
+        accountHolderLabel: '账户持有人',
+        accountHolderPlaceholder: '张三',
+        cardNumberLabel: '卡号',
+        cardNumberPlaceholder: '4111 1111 1111 1111',
+        expiryDateLabel: '有效期',
+        expiryDatePlaceholder: 'MM/YY',
+        cardHolderLabel: '持卡人姓名',
+        cardHolderPlaceholder: '张三',
         security: {
           title: '安全',
           sepaInfo: '1-3个工作日内到账',
@@ -10123,6 +10379,11 @@ export const messages: Record<Locale, Messages> = {
         email: "邮箱",
         website: "网站（可选）",
         socialMedia: "社交媒体",
+        youtubeUrlPlaceholder: "https://youtube.com/@your-channel",
+        twitchUsernamePlaceholder: "https://twitch.tv/your-username",
+        twitterUsernamePlaceholder: "https://twitter.com/your-username",
+        instagramUsernamePlaceholder: "https://instagram.com/your-username",
+        trackingPixelPlaceholder: "/sell, /giveaways, etc.",
         experience: "联盟经验",
         motivation: "为什么想成为联盟会员？",
         submit: "提交申请",
@@ -10137,6 +10398,48 @@ export const messages: Record<Locale, Messages> = {
         reapply: "提交新申请",
         applicationDetails: "申请 详情",
         commissionRate: "佣金率"
+      }
+    },
+    moderator: {
+      title: "管理审核空间",
+      subtitle: "登录以访问审核界面",
+      emailLabel: "邮箱",
+      emailPlaceholder: "moderator@moonskin.com",
+      passwordLabel: "密码",
+      passwordPlaceholder: "••••••••",
+      loginButton: "登录",
+      loggingIn: "登录中...",
+      loginSuccess: "登录成功！",
+      loginError: "登录错误",
+      loginErrorDesc: "邮箱或密码不正确",
+      accessDenied: "拒绝访问",
+      accessDeniedDesc: "您没有必要的权限",
+      reservedInterface: "管理员专用界面",
+      testAccount: "💡 测试账户："
+    },
+    moderation: {
+      title: "审核管理",
+      subtitle: "管理对话和支持请求",
+      filters: {
+        statusPlaceholder: "状态",
+        priorityPlaceholder: "优先级",
+        assignmentPlaceholder: "分配",
+        searchPlaceholder: "搜索...",
+        allStatuses: "所有状态",
+        active: "活跃",
+        closed: "已关闭",
+        archived: "已归档",
+        allPriorities: "所有优先级",
+        low: "低",
+        normal: "正常",
+        high: "高",
+        urgent: "紧急",
+        all: "全部",
+        myConversations: "我的对话",
+        unassigned: "未分配"
+      },
+      conversation: {
+        typeYourReply: "输入您的回复..."
       }
     },
     settings: {
@@ -10260,6 +10563,7 @@ export const messages: Record<Locale, Messages> = {
         openSteam: "打开 Steam",
         copyExample: "复制示例",
         urlLabel: "Steam 交易链接 URL",
+        placeholder: "https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh",
         hideInstructions: "隐藏说明",
         showInstructions: "显示说明",
         invalidFormat: "Steam 交易链接格式无效",
@@ -10290,6 +10594,7 @@ export const messages: Record<Locale, Messages> = {
         findSteamId: "查找我的 Steam ID",
         copyExample: "复制示例",
         label: "Steam ID64",
+        placeholder: "76561198123456789",
         hideInstructions: "隐藏说明",
         showInstructions: "显示说明",
         invalidFormat: "Steam ID64 格式无效",
@@ -10594,6 +10899,10 @@ export const messages: Record<Locale, Messages> = {
           },
           warning: "⚠️ 保持您的交易链接私密和安全"
         },
+        steamId: {
+          title: "设置您的Steam ID",
+          description: "要出售您的CS2皮肤，我们需要您的Steam ID 64。"
+        },
         enterTradeLink: {
           title: "输入您的交易链接",
           description: "现在设置您的Steam交易链接以便能够出售您的皮肤。",
@@ -10649,10 +10958,13 @@ export const messages: Record<Locale, Messages> = {
         },
         errors: {
           invalidTradeLink: "请输入有效的Steam交易链接",
-          saveError: "保存交易链接时出错"
+          saveError: "保存交易链接时出错",
+          invalidSteamId: "请输入有效的Steam ID",
+          steamIdSaveError: "保存Steam ID时出错"
         },
         success: {
-          tradeLinkSaved: "交易链接保存成功！"
+          tradeLinkSaved: "交易链接保存成功！",
+          steamIdSaved: "Steam ID保存成功！"
         }
       },
       header: {
@@ -11017,6 +11329,8 @@ export const messages: Record<Locale, Messages> = {
       resetPasswordTitle: "重置您的密码",
       resetPasswordDesc: "为您的账户选择新密码",
       confirmPassword: "确认密码",
+      passwordPlaceholder: "••••••••",
+      confirmPasswordPlaceholder: "••••••••",
       strength: "密码强度",
       strengthTooShort: "太短",
       strengthWeak: "弱",
@@ -11078,14 +11392,18 @@ export const messages: Record<Locale, Messages> = {
     },
     kycPolicy: {
       title: "KYC政策",
-      subtitle: "了解您的客户 - 身份验证",
+      subtitle: "符合欧洲法规的身份验证流程",
       content: "法律要求我们在允许某些交易之前验证用户的身份。此KYC（了解您的客户）验证程序使我们能够遵守适用的法规并保护我们的用户免受欺诈。",
+      comingSoon: "此页面即将提供动态内容。",
+      warning: "根据欧洲法规，KYC验证是任何付款前的强制要求。",
       warningText: "您的个人数据被安全存储，未经您的同意，绝不会与第三方共享。"
     },
     amlPolicy: {
-      title: "AML政策",
-      subtitle: "反洗钱",
+      title: "反洗钱政策 (AML)",
+      subtitle: "我们在打击洗钱和恐怖融资方面的承诺",
       content: "我们的AML（反洗钱）政策旨在防止和检测与洗钱或恐怖主义融资相关的任何可疑活动。我们积极监控交易，并在必要时与相关当局合作。",
+      comingSoon: "此页面即将提供动态内容。",
+      warning: "任何洗钱或资助非法活动的企图都将导致账户立即关闭并向当局举报。",
       warningText: "任何可疑活动都将根据法律向相关当局报告。"
     }
   },

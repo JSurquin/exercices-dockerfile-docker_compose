@@ -18,8 +18,8 @@ export function Footer() {
       { name: messages.footer.links.api, href: "/api-docs" },
     ],
     account: [
-      { name: "Connexion", href: "/login" },
-      { name: "Administration", href: "/admin/login" },
+      { name: messages.footer.links.login, href: "/login" },
+      { name: messages.footer.links.admin, href: "/admin/login" },
     ],
     legal: [
       { name: messages.footer.links.terms, href: "/terms" },

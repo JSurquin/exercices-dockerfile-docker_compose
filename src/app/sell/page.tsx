@@ -254,9 +254,9 @@ export default function SellPage() {
                         1
                       </div>
                       <div>
-                        <p className="font-medium">Acceptez le trade sur Steam</p>
+                        <p className="font-medium">{messages.sellPage.confirmation.steps.step1.title}</p>
                         <p className="text-sm text-muted-foreground">
-                          Allez sur Steam et acceptez l&apos;offre de trade de notre bot
+                          {messages.sellPage.confirmation.steps.step1.description}
                         </p>
                       </div>
                     </div>
@@ -266,9 +266,9 @@ export default function SellPage() {
                         2
                       </div>
                       <div>
-                        <p className="font-medium">Trade Hold Steam (7 jours)</p>
+                        <p className="font-medium">{messages.sellPage.confirmation.steps.step2.title}</p>
                         <p className="text-sm text-muted-foreground">
-                          Steam impose un délai de 7 jours avant que le trade soit finalisé
+                          {messages.sellPage.confirmation.steps.step2.description}
                         </p>
                       </div>
                     </div>
@@ -278,9 +278,9 @@ export default function SellPage() {
                         3
                       </div>
                       <div>
-                        <p className="font-medium">Configurez votre paiement</p>
+                        <p className="font-medium">{messages.sellPage.confirmation.steps.step3.title}</p>
                         <p className="text-sm text-muted-foreground">
-                          Pendant ces 7 jours, configurez votre méthode de paiement (SEPA ou crypto) dans votre dashboard
+                          {messages.sellPage.confirmation.steps.step3.description}
                         </p>
                       </div>
                     </div>
@@ -290,9 +290,9 @@ export default function SellPage() {
                         4
                       </div>
                       <div>
-                        <p className="font-medium">Paiement automatique</p>
+                        <p className="font-medium">{messages.sellPage.confirmation.steps.step4.title}</p>
                         <p className="text-sm text-muted-foreground">
-                          Après 7 jours, vous recevrez automatiquement {formatPrice(tradeData.net_value)} sur votre compte
+                          {messages.sellPage.confirmation.steps.step4.description}
                         </p>
                       </div>
                     </div>

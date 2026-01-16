@@ -76,13 +76,13 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
     },
     // Étape Steam ID (conditionnelle - seulement si l'utilisateur n'a pas de Steam ID)
     ...(!hasSteamId ? [{
-      title: "Configurez votre Steam ID",
+      title: messages.components.onboarding.steamId.title,
       icon: <Gamepad2 className="w-12 h-12 text-orange-500" />,
       isSteamIdStep: true,
       content: (
         <div className="space-y-4">
           <p className="text-muted-foreground">
-            Pour vendre vos skins CS2, nous avons besoin de votre Steam ID 64.
+            {messages.components.onboarding.steamId.description}
           </p>
           <div className="bg-muted p-3 sm:p-4 rounded-lg space-y-2">
             <h4 className="font-semibold text-sm sm:text-base">Comment trouver votre Steam ID 64 ?</h4>
@@ -294,7 +294,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
     // Vérifier si c'est l'étape Steam ID (si l'utilisateur n'avait pas de Steam ID)
     if (!hasSteamId && currentStepData.isSteamIdStep) {
       if (!isValidSteamId || !steamId) {
-        toast.error("Veuillez entrer un Steam ID valide");
+        toast.error(messages.components.onboarding.errors.invalidSteamId);
         return;
       }
 
@@ -312,10 +312,10 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
           throw new Error(error.error || 'Erreur lors de la sauvegarde');
         }
 
-        toast.success("Steam ID enregistré avec succès !");
+        toast.success(messages.components.onboarding.success.steamIdSaved);
       } catch (error) {
         console.error('Erreur lors de la sauvegarde du Steam ID:', error);
-        toast.error(error instanceof Error ? error.message : "Erreur lors de la sauvegarde du Steam ID");
+        toast.error(error instanceof Error ? error.message : messages.components.onboarding.errors.steamIdSaveError);
         setLoading(false);
         return;
       }

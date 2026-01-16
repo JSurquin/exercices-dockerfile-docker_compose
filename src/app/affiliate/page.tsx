@@ -302,7 +302,7 @@ export default function AffiliatePage() {
                   <Input
                     id="youtube"
                     name="youtube"
-                    placeholder="https://youtube.com/@votre-chaine"
+                    placeholder={messages.affiliate.application.youtubeUrlPlaceholder}
                   />
                 </div>
                 <div className="space-y-2">
@@ -310,7 +310,7 @@ export default function AffiliatePage() {
                   <Input
                     id="twitch"
                     name="twitch"
-                    placeholder="https://twitch.tv/votre-pseudo"
+                    placeholder={messages.affiliate.application.twitchUsernamePlaceholder}
                   />
                 </div>
                 <div className="space-y-2">
@@ -318,7 +318,7 @@ export default function AffiliatePage() {
                   <Input
                     id="twitter"
                     name="twitter"
-                    placeholder="https://twitter.com/votre-pseudo"
+                    placeholder={messages.affiliate.application.twitterUsernamePlaceholder}
                   />
                 </div>
                 <div className="space-y-2">
@@ -326,7 +326,7 @@ export default function AffiliatePage() {
                   <Input
                     id="instagram"
                     name="instagram"
-                    placeholder="https://instagram.com/votre-pseudo"
+                    placeholder={messages.affiliate.application.instagramUsernamePlaceholder}
                   />
                 </div>
               </div>
@@ -598,7 +598,7 @@ export default function AffiliatePage() {
                   <Label htmlFor="custom-path">Page personnalisée (optionnel)</Label>
                   <Input
                     id="custom-path"
-                    placeholder="/sell, /giveaways, etc."
+                    placeholder={messages.affiliate.application.trackingPixelPlaceholder}
                   />
                 </div>
                 <Button 

@@ -148,7 +148,7 @@ export default function TradeLinkConfig() {
           
           <Input
             id="trade-url"
-            placeholder="https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh"
+            placeholder={messages.settings.tradeLink.placeholder}
             value={tradeUrl}
             onChange={(e) => handleUrlChange(e.target.value)}
             className={isValidUrl === false ? 'border-red-500' : isValidUrl === true ? 'border-green-500' : ''}
