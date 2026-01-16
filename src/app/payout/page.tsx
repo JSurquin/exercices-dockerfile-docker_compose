@@ -305,7 +305,7 @@ export default function PayoutPage() {
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>{text.request.minAmount}</span>
-                    <span>Maximum: 10 000€</span>
+                    <span>{text.request.maxAmount}</span>
                   </div>
                 </div>
 
@@ -440,7 +440,7 @@ export default function PayoutPage() {
                     </h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Montant brut</span>
+                        <span className="text-muted-foreground">{text.request.grossAmount}</span>
                         <span>{formatCentsToCurrency(quote.amountCents, 'EUR')}</span>
                       </div>
                       <div className="flex justify-between text-orange-500">
@@ -453,7 +453,7 @@ export default function PayoutPage() {
                         <span className="text-green-500">{formatCentsToCurrency(quote.netCents, 'EUR')}</span>
                       </div>
                       <div className="flex justify-between text-muted-foreground">
-                        <span>Délai estimé</span>
+                        <span>{text.request.estimatedDelay}</span>
                         <span className="flex items-center gap-1">
                           <ClockIcon className="w-4 h-4" />
                           {quote.estimatedDelivery}
@@ -539,7 +539,7 @@ export default function PayoutPage() {
                   <div className="flex items-start space-x-3">
                     <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-medium text-sm">Vérification IBAN</p>
+                      <p className="font-medium text-sm">{text.request.ibanVerificationTitle}</p>
                       <p className="text-xs text-muted-foreground">
                         Un changement d&apos;IBAN peut nécessiter une vérification supplémentaire
                       </p>

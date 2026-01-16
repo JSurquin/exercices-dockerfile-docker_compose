@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, RefreshCw, DollarSign, Package, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface SteamInventoryViewerProps {
   steamId64: string;
@@ -23,6 +24,7 @@ export function SteamInventoryViewer({
   onItemSelect, 
   selectable = false 
 }: SteamInventoryViewerProps) {
+  const { messages } = useLocale();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [inventory, setInventory] = useState<SteamInventoryItem[]>([]);
@@ -186,7 +188,7 @@ export function SteamInventoryViewer({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="search"
-                placeholder="Rechercher un skin..."
+                placeholder={messages.components.steam.searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"

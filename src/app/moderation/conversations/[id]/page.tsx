@@ -57,7 +57,7 @@ export default function ConversationPage() {
       const response = await fetch(`/api/chat/conversations/${params.id}`);
       if (!response.ok) {
         if (response.status === 404) {
-          toast.error('Conversation non trouvée');
+          toast.error(messages.moderation.conversation.notFound.title);
           router.push('/moderation');
           return;
         }
@@ -67,7 +67,7 @@ export default function ConversationPage() {
       const data = await response.json();
       setConversation(data);
     } catch (error) {
-      toast.error('Erreur lors du chargement de la conversation');
+      toast.error(messages.moderation.conversation.messages.loadError);
       console.error(error);
     } finally {
       setLoading(false);
@@ -92,9 +92,9 @@ export default function ConversationPage() {
       
       setMessage('');
       await fetchConversation();
-      toast.success('Message envoyé');
+      toast.success(messages.moderation.conversation.messages.messageSent);
     } catch (error) {
-      toast.error('Erreur lors de l\'envoi du message');
+      toast.error(messages.moderation.conversation.messages.sendError);
       console.error(error);
     } finally {
       setSending(false);
@@ -112,9 +112,9 @@ export default function ConversationPage() {
       if (!response.ok) throw new Error('Erreur lors de la mise à jour');
       
       await fetchConversation();
-      toast.success('Statut mis à jour');
+      toast.success(messages.moderation.conversation.messages.statusUpdated);
     } catch (error) {
-      toast.error('Erreur lors de la mise à jour');
+      toast.error(messages.moderation.conversation.messages.updateError);
       console.error(error);
     }
   };
@@ -130,9 +130,9 @@ export default function ConversationPage() {
       if (!response.ok) throw new Error('Erreur lors de l\'assignation');
       
       await fetchConversation();
-      toast.success('Conversation assignée');
+      toast.success(messages.moderation.conversation.messages.assigned);
     } catch (error) {
-      toast.error('Erreur lors de l\'assignation');
+      toast.error(messages.moderation.conversation.messages.assignError);
       console.error(error);
     }
   };
@@ -198,9 +198,9 @@ export default function ConversationPage() {
         <Card>
           <CardContent className="p-8 text-center">
             <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-orange-500" />
-            <h2 className="text-2xl font-bold mb-2">Conversation non trouvée</h2>
+            <h2 className="text-2xl font-bold mb-2">{messages.moderation.conversation.notFound.title}</h2>
             <Button onClick={() => router.push('/moderation')}>
-              Retour à la modération
+              {messages.moderation.conversation.notFound.backButton}
             </Button>
           </CardContent>
         </Card>
@@ -226,10 +226,10 @@ export default function ConversationPage() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold">
-              {conversation.subject || 'Conversation sans sujet'}
+              {conversation.subject || messages.moderation.conversation.header.noSubject}
             </h1>
             <p className="text-muted-foreground">
-              avec {conversation.user?.name || conversation.user?.email || 'Utilisateur anonyme'}
+              {messages.moderation.conversation.header.withUser} {conversation.user?.name || conversation.user?.email || messages.moderation.conversation.header.anonymousUser}
             </p>
           </div>
         </div>
@@ -249,12 +249,12 @@ export default function ConversationPage() {
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Informations</CardTitle>
+              <CardTitle className="text-lg">{messages.moderation.conversation.info.title}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Utilisateur */}
               <div>
-                <h4 className="font-medium mb-2">Utilisateur</h4>
+                <h4 className="font-medium mb-2">{messages.moderation.conversation.info.userTitle}</h4>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={conversation.user?.steamAvatar || undefined} />
@@ -264,14 +264,14 @@ export default function ConversationPage() {
                   </Avatar>
                   <div>
                     <p className="text-sm font-medium">
-                      {conversation.user?.name || 'Anonyme'}
+                      {conversation.user?.name || messages.moderation.conversation.info.anonymous}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {conversation.user?.email}
                     </p>
                     {conversation.user?.steamUsername && (
                       <p className="text-xs text-muted-foreground">
-                        Steam: {conversation.user.steamUsername}
+                        {messages.moderation.conversation.info.steam} {conversation.user.steamUsername}
                       </p>
                     )}
                   </div>
@@ -280,16 +280,16 @@ export default function ConversationPage() {
 
               {/* Assignation */}
               <div>
-                <h4 className="font-medium mb-2">Assignation</h4>
+                <h4 className="font-medium mb-2">{messages.moderation.conversation.info.assignmentTitle}</h4>
                 {conversation.assignedModerator ? (
                   <p className="text-sm">
                     {conversation.assignedModerator.name || conversation.assignedModerator.email}
                   </p>
                 ) : (
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Non assignée</p>
+                    <p className="text-sm text-muted-foreground mb-2">{messages.moderation.conversation.info.unassigned}</p>
                     <Button size="sm" onClick={assignToMe}>
-                      M&apos;assigner
+                      {messages.moderation.conversation.info.assignToMe}
                     </Button>
                   </div>
                 )}
@@ -297,20 +297,20 @@ export default function ConversationPage() {
 
               {/* Dates */}
               <div>
-                <h4 className="font-medium mb-2">Dates</h4>
+                <h4 className="font-medium mb-2">{messages.moderation.conversation.info.datesTitle}</h4>
                 <div className="space-y-1 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <ClockIcon className="w-3 h-3" />
-                    <span>Créée: {formatDate(conversation.createdAt)}</span>
+                    <span>{messages.moderation.conversation.info.created} {formatDate(conversation.createdAt)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <ClockIcon className="w-3 h-3" />
-                    <span>Mise à jour: {formatDate(conversation.updatedAt)}</span>
+                    <span>{messages.moderation.conversation.info.updated} {formatDate(conversation.updatedAt)}</span>
                   </div>
                   {conversation.closedAt && (
                     <div className="flex items-center gap-2">
                       <CheckIcon className="w-3 h-3" />
-                      <span>Fermée: {formatDate(conversation.closedAt)}</span>
+                      <span>{messages.moderation.conversation.info.closed} {formatDate(conversation.closedAt)}</span>
                     </div>
                   )}
                 </div>
@@ -318,7 +318,7 @@ export default function ConversationPage() {
 
               {/* Actions */}
               <div>
-                <h4 className="font-medium mb-2">Actions</h4>
+                <h4 className="font-medium mb-2">{messages.moderation.conversation.info.actionsTitle}</h4>
                 <div className="space-y-2">
                   {conversation.status === 'ACTIVE' ? (
                     <Button
@@ -327,7 +327,7 @@ export default function ConversationPage() {
                       className="w-full"
                       onClick={() => updateStatus('CLOSED')}
                     >
-                      Fermer la conversation
+                      {messages.moderation.conversation.info.closeConversation}
                     </Button>
                   ) : (
                     <Button
@@ -336,7 +336,7 @@ export default function ConversationPage() {
                       className="w-full"
                       onClick={() => updateStatus('ACTIVE')}
                     >
-                      Rouvrir la conversation
+                      {messages.moderation.conversation.info.reopenConversation}
                     </Button>
                   )}
                 </div>
@@ -350,7 +350,7 @@ export default function ConversationPage() {
           <Card className="h-[600px] flex flex-col">
             <CardHeader>
               <CardTitle className="text-lg">
-                Messages ({conversation.messages.length})
+                {messages.moderation.conversation.messages.title} ({conversation.messages.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col p-0">

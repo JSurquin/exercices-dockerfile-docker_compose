@@ -598,7 +598,7 @@ export function SkinplaceInventoryViewer({
               </div>
               
               <div>
-                <Label>Exterior</Label>
+                <Label>{messages.components.skinplace.exterior}</Label>
                 <Select value={selectedExterior} onValueChange={setSelectedExterior}>
                   <SelectTrigger>
                     <SelectValue placeholder={messages.components.skinplace.allExteriors} />

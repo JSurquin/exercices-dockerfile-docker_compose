@@ -3015,6 +3015,14 @@ export interface Messages {
       reapply: string;
       applicationDetails: string;
       commissionRate: string;
+      benefits: {
+        title: string;
+        commission: string;
+        payments: string;
+        dashboard: string;
+        support: string;
+        marketing: string;
+      };
     };
   };
   moderator: {
@@ -3037,6 +3045,20 @@ export interface Messages {
   moderation: {
     title: string;
     subtitle: string;
+    accessDenied: {
+      title: string;
+      description: string;
+    };
+    stats: {
+      activeConversations: string;
+      unassigned: string;
+      responseTime: string;
+      closed: string;
+    };
+    filtersTitle: string;
+    loading: string;
+    noConversations: string;
+    conversationsCount: string;
     filters: {
       statusPlaceholder: string;
       priorityPlaceholder: string;
@@ -3057,6 +3079,41 @@ export interface Messages {
     };
     conversation: {
       typeYourReply: string;
+      notFound: {
+        title: string;
+        backButton: string;
+      };
+      header: {
+        noSubject: string;
+        withUser: string;
+        anonymousUser: string;
+      };
+      info: {
+        title: string;
+        userTitle: string;
+        anonymous: string;
+        steam: string;
+        assignmentTitle: string;
+        unassigned: string;
+        assignToMe: string;
+        datesTitle: string;
+        created: string;
+        updated: string;
+        closed: string;
+        actionsTitle: string;
+        closeConversation: string;
+        reopenConversation: string;
+      };
+      messages: {
+        title: string;
+        messageSent: string;
+        sendError: string;
+        loadError: string;
+        statusUpdated: string;
+        updateError: string;
+        assigned: string;
+        assignError: string;
+      };
     };
   };
   help: {
@@ -3296,6 +3353,7 @@ export interface Messages {
       rarity: string;
       name: string;
       allExteriors: string;
+      exterior: string;
       statTrakOnly: string;
       resetFilters: string;
       noItemsFiltered: string;
@@ -3321,6 +3379,9 @@ export interface Messages {
         unknown: string;
       };
       unavailable: string;
+    };
+    steam: {
+      searchPlaceholder: string;
     };
     onboarding: {
       step2: string;
@@ -3884,6 +3945,10 @@ export interface Messages {
         submitButton: string;
         submitting: string;
         minAmount: string;
+        maxAmount: string;
+        grossAmount: string;
+        estimatedDelay: string;
+        ibanVerificationTitle: string;
         ibanLabel: string;
         ibanPlaceholder: string;
         bicLabel: string;

@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { useLocale } from "@/components/providers/locale-provider";
 
 interface CS2ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "danger" | "success";
@@ -20,6 +21,7 @@ export const CS2Button: React.FC<CS2ButtonProps> = ({
   isLoading,
   ...props
 }) => {
+  const { messages } = useLocale();
   const getVariantClasses = (variant: string) => {
     const variants = {
       primary:
@@ -64,7 +66,7 @@ export const CS2Button: React.FC<CS2ButtonProps> = ({
         {isLoading ? (
           <div className="flex items-center space-x-2">
             <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-            <span>Chargement...</span>
+            <span>{messages.common.loading}</span>
           </div>
         ) : (
           children

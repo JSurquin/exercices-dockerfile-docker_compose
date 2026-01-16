@@ -332,13 +332,13 @@ export default function AffiliatePage() {
               </div>
 
               <div className="bg-muted p-4 rounded-lg">
-                <h4 className="font-semibold mb-2">Avantages du programme :</h4>
+                <h4 className="font-semibold mb-2">{messages.affiliate.application.benefits.title}</h4>
                 <ul className="space-y-1 text-sm text-muted-foreground">
-                  <li>• Commission de 2% sur le volume brut de vos référrals</li>
-                  <li>• Paiements mensuels via SEPA ou crypto</li>
-                  <li>• Dashboard détaillé avec analytics</li>
-                  <li>• Support dédié pour les affiliés</li>
-                  <li>• Outils marketing et créatifs fournis</li>
+                  <li>• {messages.affiliate.application.benefits.commission}</li>
+                  <li>• {messages.affiliate.application.benefits.payments}</li>
+                  <li>• {messages.affiliate.application.benefits.dashboard}</li>
+                  <li>• {messages.affiliate.application.benefits.support}</li>
+                  <li>• {messages.affiliate.application.benefits.marketing}</li>
                 </ul>
               </div>
 

@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, RefreshCw, DollarSign } from 'lucide-react';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface InventoryViewerProps {
   steamId: string;
@@ -23,6 +24,7 @@ export function InventoryViewer({
   onItemSelect, 
   selectable = false 
 }: InventoryViewerProps) {
+  const { messages } = useLocale();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const { 
@@ -137,7 +139,7 @@ export function InventoryViewer({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="search"
-                placeholder="Rechercher un item..."
+                placeholder={messages.components.skinplace.searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"

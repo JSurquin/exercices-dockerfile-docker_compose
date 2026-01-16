@@ -147,9 +147,9 @@ export default function ModerationPage() {
         <Card>
           <CardContent className="p-8 text-center">
             <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-orange-500" />
-            <h2 className="text-2xl font-bold mb-2">Accès refusé</h2>
+            <h2 className="text-2xl font-bold mb-2">{messages.moderation.accessDenied.title}</h2>
             <p className="text-muted-foreground">
-              Vous devez être modérateur ou administrateur pour accéder à cette page.
+              {messages.moderation.accessDenied.description}
             </p>
           </CardContent>
         </Card>
@@ -168,10 +168,10 @@ export default function ModerationPage() {
         >
           <h1 className="text-3xl font-bold mb-2 flex items-center">
             <ChatBubbleLeftRightIcon className="w-8 h-8 mr-3 text-orange-600" />
-            Interface de Modération
+            {messages.moderation.title}
           </h1>
           <p className="text-muted-foreground">
-            Gérez les conversations et répondez aux utilisateurs
+            {messages.moderation.subtitle}
           </p>
         </motion.div>
 
@@ -187,7 +187,7 @@ export default function ModerationPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Conversations actives</p>
+                    <p className="text-sm text-muted-foreground">{messages.moderation.stats.activeConversations}</p>
                     <p className="text-2xl font-bold">{stats.activeConversations}</p>
                   </div>
                   <ChatBubbleLeftRightIcon className="w-8 h-8 text-green-600" />
@@ -199,7 +199,7 @@ export default function ModerationPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Non assignées</p>
+                    <p className="text-sm text-muted-foreground">{messages.moderation.stats.unassigned}</p>
                     <p className="text-2xl font-bold">{stats.unassignedConversations}</p>
                   </div>
                   <UserIcon className="w-8 h-8 text-orange-600" />
@@ -211,7 +211,7 @@ export default function ModerationPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Temps de réponse</p>
+                    <p className="text-sm text-muted-foreground">{messages.moderation.stats.responseTime}</p>
                     <p className="text-2xl font-bold">{stats.averageResponseTime}min</p>
                   </div>
                   <ClockIcon className="w-8 h-8 text-blue-600" />
@@ -223,7 +223,7 @@ export default function ModerationPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Fermées</p>
+                    <p className="text-sm text-muted-foreground">{messages.moderation.stats.closed}</p>
                     <p className="text-2xl font-bold">{stats.closedConversations}</p>
                   </div>
                   <CheckCircleIcon className="w-8 h-8 text-gray-600" />
@@ -236,7 +236,7 @@ export default function ModerationPage() {
         {/* Filtres */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Filtres</CardTitle>
+            <CardTitle>{messages.moderation.filtersTitle}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -307,18 +307,18 @@ export default function ModerationPage() {
         {/* Liste des conversations */}
         <Card>
           <CardHeader>
-            <CardTitle>Conversations ({conversations.length})</CardTitle>
+            <CardTitle>{messages.moderation.conversationsCount} ({conversations.length})</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-                <p className="mt-2 text-muted-foreground">Chargement...</p>
+                <p className="mt-2 text-muted-foreground">{messages.moderation.loading}</p>
               </div>
             ) : conversations.length === 0 ? (
               <div className="text-center py-8">
                 <ChatBubbleLeftRightIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Aucune conversation trouvée</p>
+                <p className="text-muted-foreground">{messages.moderation.noConversations}</p>
               </div>
             ) : (
               <div className="space-y-4">

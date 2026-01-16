@@ -2977,6 +2977,10 @@ export const messages: Record<Locale, Messages> = {
         submitButton: 'Effectuer le retrait',
         submitting: 'Traitement en cours...',
         minAmount: 'Montant minimum: 10€',
+        maxAmount: 'Maximum: 10 000€',
+        grossAmount: 'Montant brut',
+        estimatedDelay: 'Délai estimé',
+        ibanVerificationTitle: 'Vérification IBAN',
         ibanLabel: 'IBAN',
         ibanPlaceholder: 'FR76 1234 5678 9012 3456 7890 123',
         bicLabel: 'BIC/SWIFT',
@@ -3087,7 +3091,15 @@ export const messages: Record<Locale, Messages> = {
         reason: "Raison",
         reapply: "Soumettre une nouvelle demande",
         applicationDetails: "Détails de la demande",
-        commissionRate: "Taux de commission"
+        commissionRate: "Taux de commission",
+        benefits: {
+          title: "Avantages du programme :",
+          commission: "Commission de 2% sur le volume brut de vos référrals",
+          payments: "Paiements mensuels via SEPA ou crypto",
+          dashboard: "Dashboard détaillé avec analytics",
+          support: "Support dédié pour les affiliés",
+          marketing: "Outils marketing et créatifs fournis"
+        }
       }
     },
     moderator: {
@@ -3110,6 +3122,20 @@ export const messages: Record<Locale, Messages> = {
     moderation: {
       title: "Modération",
       subtitle: "Gérez les conversations et demandes d'assistance",
+      accessDenied: {
+        title: "Accès refusé",
+        description: "Vous devez être modérateur ou administrateur pour accéder à cette page."
+      },
+      stats: {
+        activeConversations: "Conversations actives",
+        unassigned: "Non assignées",
+        responseTime: "Temps de réponse",
+        closed: "Fermées"
+      },
+      filtersTitle: "Filtres",
+      loading: "Chargement...",
+      noConversations: "Aucune conversation trouvée",
+      conversationsCount: "Conversations",
       filters: {
         statusPlaceholder: "Statut",
         priorityPlaceholder: "Priorité",
@@ -3129,7 +3155,42 @@ export const messages: Record<Locale, Messages> = {
         unassigned: "Non assignées"
       },
       conversation: {
-        typeYourReply: "Tapez votre réponse..."
+        typeYourReply: "Tapez votre réponse...",
+        notFound: {
+          title: "Conversation non trouvée",
+          backButton: "Retour à la modération"
+        },
+        header: {
+          noSubject: "Conversation sans sujet",
+          withUser: "avec",
+          anonymousUser: "Utilisateur anonyme"
+        },
+        info: {
+          title: "Informations",
+          userTitle: "Utilisateur",
+          anonymous: "Anonyme",
+          steam: "Steam:",
+          assignmentTitle: "Assignation",
+          unassigned: "Non assignée",
+          assignToMe: "M'assigner",
+          datesTitle: "Dates",
+          created: "Créée:",
+          updated: "Mise à jour:",
+          closed: "Fermée:",
+          actionsTitle: "Actions",
+          closeConversation: "Fermer la conversation",
+          reopenConversation: "Rouvrir la conversation"
+        },
+        messages: {
+          title: "Messages",
+          messageSent: "Message envoyé",
+          sendError: "Erreur lors de l'envoi du message",
+          loadError: "Erreur lors du chargement de la conversation",
+          statusUpdated: "Statut mis à jour",
+          updateError: "Erreur lors de la mise à jour",
+          assigned: "Conversation assignée",
+          assignError: "Erreur lors de l'assignation"
+        }
       }
     },
     help: {
@@ -3369,6 +3430,7 @@ export const messages: Record<Locale, Messages> = {
         rarity: "Rareté",
         name: "Nom",
         allExteriors: "Tous les exteriors",
+        exterior: "Exterior",
         statTrakOnly: "StatTrak™ uniquement",
         resetFilters: "Réinitialiser les filtres",
         noItemsFiltered: "Aucun item ne correspond aux filtres",
@@ -3394,6 +3456,9 @@ export const messages: Record<Locale, Messages> = {
           unknown: "Raison inconnue"
         },
         unavailable: "Non disponible",
+      },
+      steam: {
+        searchPlaceholder: "Rechercher un skin...",
       },
       onboarding: {
         step2: "Cliquez sur \"Échanges\" puis \"Qui peut m'envoyer des offres d'échange ?\"",
@@ -5850,6 +5915,10 @@ export const messages: Record<Locale, Messages> = {
         submitButton: 'Withdraw',
         submitting: 'Processing...',
         minAmount: 'Minimum amount: €10',
+        maxAmount: 'Maximum: €10,000',
+        grossAmount: 'Gross amount',
+        estimatedDelay: 'Estimated delay',
+        ibanVerificationTitle: 'IBAN Verification',
         ibanLabel: 'IBAN',
         ibanPlaceholder: 'FR76 1234 5678 9012 3456 7890 123',
         bicLabel: 'BIC/SWIFT',
@@ -6840,7 +6909,15 @@ export const messages: Record<Locale, Messages> = {
         reason: "Reason",
         reapply: "Submit a new application",
         applicationDetails: "Application details",
-        commissionRate: "Commission rate"
+        commissionRate: "Commission rate",
+        benefits: {
+          title: "Program Benefits:",
+          commission: "2% commission on your referrals' gross volume",
+          payments: "Monthly payments via SEPA or crypto",
+          dashboard: "Detailed dashboard with analytics",
+          support: "Dedicated support for affiliates",
+          marketing: "Marketing tools and creatives provided"
+        }
       }
     },
     moderator: {
@@ -6863,6 +6940,20 @@ export const messages: Record<Locale, Messages> = {
     moderation: {
       title: "Moderation",
       subtitle: "Manage conversations and support requests",
+      accessDenied: {
+        title: "Access Denied",
+        description: "You must be a moderator or administrator to access this page."
+      },
+      stats: {
+        activeConversations: "Active Conversations",
+        unassigned: "Unassigned",
+        responseTime: "Response Time",
+        closed: "Closed"
+      },
+      filtersTitle: "Filters",
+      loading: "Loading...",
+      noConversations: "No conversations found",
+      conversationsCount: "Conversations",
       filters: {
         statusPlaceholder: "Status",
         priorityPlaceholder: "Priority",
@@ -6882,7 +6973,42 @@ export const messages: Record<Locale, Messages> = {
         unassigned: "Unassigned"
       },
       conversation: {
-        typeYourReply: "Type your reply..."
+        typeYourReply: "Type your reply...",
+        notFound: {
+          title: "Conversation not found",
+          backButton: "Back to moderation"
+        },
+        header: {
+          noSubject: "Conversation without subject",
+          withUser: "with",
+          anonymousUser: "Anonymous user"
+        },
+        info: {
+          title: "Information",
+          userTitle: "User",
+          anonymous: "Anonymous",
+          steam: "Steam:",
+          assignmentTitle: "Assignment",
+          unassigned: "Unassigned",
+          assignToMe: "Assign to me",
+          datesTitle: "Dates",
+          created: "Created:",
+          updated: "Updated:",
+          closed: "Closed:",
+          actionsTitle: "Actions",
+          closeConversation: "Close conversation",
+          reopenConversation: "Reopen conversation"
+        },
+        messages: {
+          title: "Messages",
+          messageSent: "Message sent",
+          sendError: "Error sending message",
+          loadError: "Error loading conversation",
+          statusUpdated: "Status updated",
+          updateError: "Error updating",
+          assigned: "Conversation assigned",
+          assignError: "Error assigning"
+        }
       }
     },
     settings: {
@@ -7291,6 +7417,7 @@ export const messages: Record<Locale, Messages> = {
         rarity: "Rarity",
         name: "Name",
         allExteriors: "All exteriors",
+        exterior: "Exterior",
         statTrakOnly: "StatTrak™ only",
         resetFilters: "Reset filters",
         noItemsFiltered: "No items match the filters",
@@ -7316,6 +7443,9 @@ export const messages: Record<Locale, Messages> = {
           unknown: "Unknown reason"
         },
         unavailable: "Unavailable",
+      },
+      steam: {
+        searchPlaceholder: "Search for a skin...",
       },
       onboarding: {
         step2: "Click on \"Trades\" then \"Who can send me trade offers?\"",
@@ -9407,6 +9537,10 @@ export const messages: Record<Locale, Messages> = {
         submitButton: '提取',
         submitting: '处理中...',
         minAmount: '最低金额：10€',
+        maxAmount: '最高：10,000€',
+        grossAmount: '总金额',
+        estimatedDelay: '预计延迟',
+        ibanVerificationTitle: 'IBAN验证',
         ibanLabel: 'IBAN',
         ibanPlaceholder: 'FR76 1234 5678 9012 3456 7890 123',
         bicLabel: 'BIC/SWIFT',
@@ -10397,7 +10531,15 @@ export const messages: Record<Locale, Messages> = {
         reason: "原因",
         reapply: "提交新申请",
         applicationDetails: "申请 详情",
-        commissionRate: "佣金率"
+        commissionRate: "佣金率",
+        benefits: {
+          title: "计划优势：",
+          commission: "您推荐的总交易量 2% 佣金",
+          payments: "通过SEPA或加密货币每月付款",
+          dashboard: "详细的仪表板和分析",
+          support: "专属联盟支持",
+          marketing: "提供营销工具和创意"
+        }
       }
     },
     moderator: {
@@ -10420,6 +10562,20 @@ export const messages: Record<Locale, Messages> = {
     moderation: {
       title: "审核管理",
       subtitle: "管理对话和支持请求",
+      accessDenied: {
+        title: "访问被拒绝",
+        description: "您必须是版主或管理员才能访问此页面。"
+      },
+      stats: {
+        activeConversations: "活跃对话",
+        unassigned: "未分配",
+        responseTime: "响应时间",
+        closed: "已关闭"
+      },
+      filtersTitle: "过滤器",
+      loading: "加载中...",
+      noConversations: "未找到对话",
+      conversationsCount: "对话",
       filters: {
         statusPlaceholder: "状态",
         priorityPlaceholder: "优先级",
@@ -10439,7 +10595,42 @@ export const messages: Record<Locale, Messages> = {
         unassigned: "未分配"
       },
       conversation: {
-        typeYourReply: "输入您的回复..."
+        typeYourReply: "输入您的回复...",
+        notFound: {
+          title: "未找到对话",
+          backButton: "返回管理"
+        },
+        header: {
+          noSubject: "无主题对话",
+          withUser: "与",
+          anonymousUser: "匿名用户"
+        },
+        info: {
+          title: "信息",
+          userTitle: "用户",
+          anonymous: "匿名",
+          steam: "Steam:",
+          assignmentTitle: "分配",
+          unassigned: "未分配",
+          assignToMe: "分配给我",
+          datesTitle: "日期",
+          created: "创建：",
+          updated: "更新：",
+          closed: "关闭：",
+          actionsTitle: "操作",
+          closeConversation: "关闭对话",
+          reopenConversation: "重新打开对话"
+        },
+        messages: {
+          title: "消息",
+          messageSent: "消息已发送",
+          sendError: "发送消息时出错",
+          loadError: "加载对话时出错",
+          statusUpdated: "状态已更新",
+          updateError: "更新时出错",
+          assigned: "对话已分配",
+          assignError: "分配时出错"
+        }
       }
     },
     settings: {
@@ -10848,6 +11039,7 @@ export const messages: Record<Locale, Messages> = {
         rarity: "稀有度",
         name: "名称",
         allExteriors: "所有磨损度",
+        exterior: "磨损度",
         statTrakOnly: "仅StatTrak™",
         resetFilters: "重置筛选器",
         noItemsFiltered: "没有物品符合筛选条件",
@@ -10873,6 +11065,9 @@ export const messages: Record<Locale, Messages> = {
           unknown: "未知原因"
         },
         unavailable: "不可用",
+      },
+      steam: {
+        searchPlaceholder: "搜索皮肤...",
       },
       onboarding: {
         step2: "点击\"交易\"然后\"谁可以向我发送交易报价？\"",
