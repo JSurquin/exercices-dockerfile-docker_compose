@@ -50,25 +50,25 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
       icon: <Gamepad2 className="w-12 h-12 text-orange-500" />,
       content: (
         <div className="space-y-4">
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm sm:text-base">
             {messages.components.onboarding.welcome.description}
           </p>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="flex items-center space-x-2">
-              <Shield className="w-5 h-5 text-green-500" />
-              <span className="text-sm">{messages.components.onboarding.welcome.features.secure}</span>
+              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 shrink-0" />
+              <span className="text-xs sm:text-sm">{messages.components.onboarding.welcome.features.secure}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <Coins className="w-5 h-5 text-yellow-500" />
-              <span className="text-sm">{messages.components.onboarding.welcome.features.bestPrices}</span>
+              <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 shrink-0" />
+              <span className="text-xs sm:text-sm">{messages.components.onboarding.welcome.features.bestPrices}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <CheckCircle className="w-5 h-5 text-blue-500" />
-              <span className="text-sm">{messages.components.onboarding.welcome.features.fastPayment}</span>
+              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 shrink-0" />
+              <span className="text-xs sm:text-sm">{messages.components.onboarding.welcome.features.fastPayment}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <ExternalLink className="w-5 h-5 text-purple-500" />
-              <span className="text-sm">{messages.components.onboarding.welcome.features.support}</span>
+              <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 shrink-0" />
+              <span className="text-xs sm:text-sm">{messages.components.onboarding.welcome.features.support}</span>
             </div>
           </div>
         </div>
@@ -80,16 +80,16 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
       icon: <Gamepad2 className="w-12 h-12 text-orange-500" />,
       isSteamIdStep: true,
       content: (
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
+        <div className="space-y-3 sm:space-y-4">
+          <p className="text-muted-foreground text-sm sm:text-base">
             {messages.components.onboarding.steamId.description}
           </p>
           <div className="bg-muted p-3 sm:p-4 rounded-lg space-y-2">
             <h4 className="font-semibold text-sm sm:text-base">Comment trouver votre Steam ID 64 ?</h4>
-            <ol className="list-decimal list-inside space-y-1 text-xs sm:text-sm">
-              <li>Allez sur <a href="https://steamid.io/" target="_blank" rel="noopener noreferrer" className="text-orange-500 underline break-words">steamid.io</a></li>
-              <li>Entrez votre profil Steam</li>
-              <li>Copiez le steamID64 (17 chiffres)</li>
+            <ol className="list-decimal list-inside space-y-1.5 text-xs sm:text-sm">
+              <li className="wrap-break-word">Allez sur <a href="https://steamid.io/" target="_blank" rel="noopener noreferrer" className="text-orange-500 underline break-all">steamid.io</a></li>
+              <li className="wrap-break-word">Entrez votre profil Steam</li>
+              <li className="wrap-break-word">Copiez le steamID64 (17 chiffres)</li>
             </ol>
           </div>
           <div className="space-y-2">
@@ -99,27 +99,27 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               placeholder="76561198XXXXXXXXX"
               value={steamId}
               onChange={(e) => handleSteamIdChange(e.target.value)}
-              className={`text-sm sm:text-base ${isValidSteamId === false ? 'border-red-500' : ''}`}
+              className={`text-sm sm:text-base w-full ${isValidSteamId === false ? 'border-red-500' : ''}`}
             />
             {isValidSteamId === false && (
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
+              <Alert variant="destructive" className="text-xs sm:text-sm">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <AlertDescription className="wrap-break-word">
                   Le Steam ID doit être composé de 17 chiffres et commencer par 7656119.
                 </AlertDescription>
               </Alert>
             )}
             {isValidSteamId === true && (
-              <Alert>
-                <CheckCircle className="h-4 w-4" />
+              <Alert className="text-xs sm:text-sm">
+                <CheckCircle className="h-4 w-4 shrink-0" />
                 <AlertDescription>
                   Steam ID valide !
                 </AlertDescription>
               </Alert>
             )}
           </div>
-          <Badge variant="outline" className="text-orange-500 border-orange-500 text-xs sm:text-sm">
-            Vous pouvez aussi vous reconnecter avec Steam pour lier automatiquement votre compte
+          <Badge variant="outline" className="text-orange-500 border-orange-500 text-xs sm:text-sm inline-block w-full sm:w-auto">
+            <span className="wrap-break-word">Vous pouvez aussi vous reconnecter avec Steam pour lier automatiquement votre compte</span>
           </Badge>
         </div>
       )
@@ -128,21 +128,21 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
       title: messages.components.onboarding.tradeLink.title,
       icon: <Link className="w-12 h-12 text-blue-500" />,
       content: (
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
+        <div className="space-y-3 sm:space-y-4">
+          <p className="text-muted-foreground text-sm sm:text-base">
             {messages.components.onboarding.tradeLink.description}
           </p>
-          <div className="bg-muted p-4 rounded-lg space-y-2">
-            <h4 className="font-semibold">{messages.components.onboarding.tradeLink.howTo.title}</h4>
-            <ol className="list-decimal list-inside space-y-1 text-sm">
-              <li>{messages.components.onboarding.tradeLink.howTo.step1}</li>
-              <li>{messages.components.onboarding.step2}</li>
-              <li>{messages.components.onboarding.tradeLink.howTo.step3}</li>
-              <li>{messages.components.onboarding.tradeLink.howTo.step4}</li>
+          <div className="bg-muted p-3 sm:p-4 rounded-lg space-y-2">
+            <h4 className="font-semibold text-sm sm:text-base">{messages.components.onboarding.tradeLink.howTo.title}</h4>
+            <ol className="list-decimal list-inside space-y-1.5 text-xs sm:text-sm wrap-break-word">
+              <li className="wrap-break-word">{messages.components.onboarding.tradeLink.howTo.step1}</li>
+              <li className="wrap-break-word">{messages.components.onboarding.step2}</li>
+              <li className="wrap-break-word">{messages.components.onboarding.tradeLink.howTo.step3}</li>
+              <li className="wrap-break-word">{messages.components.onboarding.tradeLink.howTo.step4}</li>
             </ol>
           </div>
-          <Badge variant="outline" className="text-orange-500 border-orange-500">
-            {messages.components.onboarding.tradeLink.warning}
+          <Badge variant="outline" className="text-orange-500 border-orange-500 text-xs sm:text-sm inline-block w-full sm:w-auto">
+            <span className="wrap-break-word">{messages.components.onboarding.tradeLink.warning}</span>
           </Badge>
         </div>
       )
@@ -151,29 +151,29 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
       title: messages.components.onboarding.enterTradeLink.title,
       icon: <Link className="w-12 h-12 text-green-500" />,
       content: (
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
+        <div className="space-y-3 sm:space-y-4">
+          <p className="text-muted-foreground text-sm sm:text-base">
             {messages.components.onboarding.enterTradeLink.description}
           </p>
           <div className="space-y-2">
-            <Label htmlFor="trade-url">{messages.components.onboarding.enterTradeLink.label}</Label>
+            <Label htmlFor="trade-url" className="text-sm sm:text-base">{messages.components.onboarding.enterTradeLink.label}</Label>
             <Input
               id="trade-url"
               placeholder={messages.components.onboarding.enterTradeLink.placeholder}
               value={tradeUrl}
               onChange={(e) => handleUrlChange(e.target.value)}
-              className={isValidUrl === false ? 'border-red-500' : ''}
+              className={`text-sm sm:text-base w-full ${isValidUrl === false ? 'border-red-500' : ''}`}
             />
             {isValidUrl === false && (
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
+              <Alert variant="destructive" className="text-xs sm:text-sm">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <AlertDescription className="wrap-break-word">
                   {messages.components.onboarding.enterTradeLink.invalidUrl}
                   <a 
                     href="https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="underline ml-1"
+                    className="underline ml-1 break-all"
                   >
                     {messages.components.onboarding.enterTradeLink.getUrlHere}
                   </a>
@@ -181,16 +181,16 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               </Alert>
             )}
             {isValidUrl === true && (
-              <Alert>
-                <CheckCircle className="h-4 w-4" />
+              <Alert className="text-xs sm:text-sm">
+                <CheckCircle className="h-4 w-4 shrink-0" />
                 <AlertDescription>
                   {messages.components.onboarding.enterTradeLink.validUrl}
                 </AlertDescription>
               </Alert>
             )}
           </div>
-          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-            <p className="text-sm text-blue-800 dark:text-blue-200">
+          <div className="bg-blue-50 dark:bg-blue-950 p-3 sm:p-4 rounded-lg">
+            <p className="text-xs sm:text-sm text-blue-800 dark:text-blue-200 wrap-break-word">
               {messages.components.onboarding.enterTradeLink.tip}
             </p>
           </div>
@@ -201,30 +201,30 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
       title: messages.components.onboarding.sellProcess.title,
       icon: <DollarSign className="w-12 h-12 text-green-500" />,
       content: (
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
+        <div className="space-y-3 sm:space-y-4">
+          <p className="text-muted-foreground text-sm sm:text-base">
             {messages.components.onboarding.sellProcess.description}
           </p>
           <div className="space-y-3">
-            <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
-              <div>
-                <h4 className="font-semibold">{messages.components.onboarding.sellProcess.steps.select.title}</h4>
-                <p className="text-sm text-muted-foreground">{messages.components.onboarding.sellProcess.steps.select.description}</p>
+            <div className="flex items-start space-x-2 sm:space-x-3">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shrink-0">1</div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-sm sm:text-base wrap-break-word">{messages.components.onboarding.sellProcess.steps.select.title}</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground wrap-break-word">{messages.components.onboarding.sellProcess.steps.select.description}</p>
               </div>
             </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
-              <div>
-                <h4 className="font-semibold">{messages.components.onboarding.sellProcess.steps.accept.title}</h4>
-                <p className="text-sm text-muted-foreground">{messages.components.onboarding.sellProcess.steps.accept.description}</p>
+            <div className="flex items-start space-x-2 sm:space-x-3">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shrink-0">2</div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-sm sm:text-base wrap-break-word">{messages.components.onboarding.sellProcess.steps.accept.title}</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground wrap-break-word">{messages.components.onboarding.sellProcess.steps.accept.description}</p>
               </div>
             </div>
-            <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
-              <div>
-                <h4 className="font-semibold">{messages.components.onboarding.sellProcess.steps.receive.title}</h4>
-                <p className="text-sm text-muted-foreground">{messages.components.onboarding.sellProcess.steps.receive.description}</p>
+            <div className="flex items-start space-x-2 sm:space-x-3">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 bg-green-500 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shrink-0">3</div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-sm sm:text-base wrap-break-word">{messages.components.onboarding.sellProcess.steps.receive.title}</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground wrap-break-word">{messages.components.onboarding.sellProcess.steps.receive.description}</p>
               </div>
             </div>
           </div>
@@ -235,26 +235,26 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
       title: messages.components.onboarding.security.title,
       icon: <Shield className="w-12 h-12 text-purple-500" />,
       content: (
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
+        <div className="space-y-3 sm:space-y-4">
+          <p className="text-muted-foreground text-sm sm:text-base">
             {messages.components.onboarding.security.description}
           </p>
           <div className="space-y-3">
             <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
-              <h4 className="font-semibold text-blue-700 dark:text-blue-300">{messages.components.onboarding.security.kyc.title}</h4>
-              <p className="text-sm text-blue-600 dark:text-blue-400">
+              <h4 className="font-semibold text-sm sm:text-base text-blue-700 dark:text-blue-300 wrap-break-word">{messages.components.onboarding.security.kyc.title}</h4>
+              <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 wrap-break-word">
                 {messages.components.onboarding.security.kyc.description}
               </p>
             </div>
             <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg">
-              <h4 className="font-semibold text-green-700 dark:text-green-300">{messages.components.onboarding.security.payments.title}</h4>
-              <p className="text-sm text-green-600 dark:text-green-400">
+              <h4 className="font-semibold text-sm sm:text-base text-green-700 dark:text-green-300 wrap-break-word">{messages.components.onboarding.security.payments.title}</h4>
+              <p className="text-xs sm:text-sm text-green-600 dark:text-green-400 wrap-break-word">
                 {messages.components.onboarding.security.payments.description}
               </p>
             </div>
             <div className="bg-orange-50 dark:bg-orange-950 p-3 rounded-lg">
-              <h4 className="font-semibold text-orange-700 dark:text-orange-300">{messages.components.onboarding.security.tradeHold.title}</h4>
-              <p className="text-sm text-orange-600 dark:text-orange-400">
+              <h4 className="font-semibold text-sm sm:text-base text-orange-700 dark:text-orange-300 wrap-break-word">{messages.components.onboarding.security.tradeHold.title}</h4>
+              <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 wrap-break-word">
                 {messages.components.onboarding.security.tradeHold.description}
               </p>
             </div>
@@ -374,13 +374,13 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="space-y-6">
+      <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6">
+        <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
           {/* Header avec progression */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-center justify-between gap-2">
               <div className="flex items-center space-x-2">
-                <Badge variant="secondary">
+                <Badge variant="secondary" className="text-xs sm:text-sm">
                   {messages.components.onboarding.navigation.step} {currentStep + 1} {messages.components.onboarding.navigation.of} {steps.length}
                 </Badge>
               </div>
@@ -388,7 +388,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
                 variant="ghost" 
                 size="sm" 
                 onClick={handleSkip}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground text-xs sm:text-sm shrink-0"
               >
                 {messages.components.onboarding.navigation.skip}
               </Button>
@@ -398,36 +398,37 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
 
           {/* Contenu de l'étape */}
           <Card className="border-0 shadow-none">
-            <CardHeader className="text-center pb-4">
-              <div className="flex justify-center mb-4">
+            <CardHeader className="text-center pb-3 sm:pb-4 px-2 sm:px-6">
+              <div className="flex justify-center mb-3 sm:mb-4">
                 {currentStepData.icon}
               </div>
-              <CardTitle className="text-2xl">
+              <CardTitle className="text-lg sm:text-xl lg:text-2xl wrap-break-word">
                 {currentStepData.title}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-2 sm:px-6">
               {currentStepData.content}
             </CardContent>
           </Card>
 
           {/* Navigation */}
-          <div className="flex justify-between items-center pt-4">
+          <div className="flex justify-between items-center pt-3 sm:pt-4 gap-2 sm:gap-4">
             <Button
               variant="outline"
               onClick={handlePrevious}
               disabled={currentStep === 0}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm px-2 sm:px-4"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span>{messages.components.onboarding.navigation.previous}</span>
+              <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">{messages.components.onboarding.navigation.previous}</span>
+              <span className="sm:hidden">Préc.</span>
             </Button>
 
-            <div className="flex space-x-1">
+            <div className="flex space-x-1 shrink-0">
               {steps.map((_, index) => (
                 <div
                   key={index}
-                  className={`w-2 h-2 rounded-full transition-colors ${
+                  className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-colors ${
                     index === currentStep 
                       ? 'bg-primary' 
                       : index < currentStep 
@@ -445,12 +446,12 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
                 (!hasSteamId && currentStepData.isSteamIdStep && (!isValidSteamId || !steamId)) ||
                 ((hasSteamId ? currentStep === 2 : currentStep === 3) && (!isValidUrl || !tradeUrl))
               }
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm px-2 sm:px-4"
             >
-              <span>
+              <span className="truncate">
                 {loading ? messages.components.onboarding.navigation.saving : (isLastStep ? messages.components.onboarding.navigation.start : messages.components.onboarding.navigation.next)}
               </span>
-              {!isLastStep && !loading && <ArrowRight className="w-4 h-4" />}
+              {!isLastStep && !loading && <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />}
             </Button>
           </div>
         </div>
