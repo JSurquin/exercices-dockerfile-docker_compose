@@ -58,14 +58,14 @@ export function CryptoPaymentForm({
       });
 
       if (!response.ok) {
-        throw new Error(messages.common.error || 'Erreur lors de la récupération du devis');
+        throw new Error(messages.paymentComponents.errors.quoteError);
       }
 
       const data = await response.json();
       setQuote(data.quote);
     } catch (error) {
       console.error('Erreur devis:', error);
-      onError(error instanceof Error ? error.message : messages.common.error || 'Erreur inconnue');
+      onError(error instanceof Error ? error.message : messages.paymentComponents.errors.unknownError);
     } finally {
       setIsLoadingQuote(false);
     }
@@ -74,12 +74,12 @@ export function CryptoPaymentForm({
   // Initier le paiement crypto
   const handleInitiatePayment = async () => {
     if (!walletAddress) {
-      onError(messages.common.error || 'Veuillez saisir une adresse de wallet valide');
+      onError(messages.paymentComponents.errors.walletRequired);
       return;
     }
 
     if (!quote) {
-      onError(messages.common.error || 'Veuillez d\'abord obtenir un devis');
+      onError(messages.paymentComponents.errors.quoteRequired);
       return;
     }
 
@@ -99,14 +99,14 @@ export function CryptoPaymentForm({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || messages.common.error || 'Erreur lors de l\'initiation du paiement');
+        throw new Error(errorData.error || messages.paymentComponents.errors.paymentError);
       }
 
       const data = await response.json();
       onSuccess(data.redirectUrl);
     } catch (error) {
       console.error('Erreur paiement:', error);
-      onError(error instanceof Error ? error.message : 'Erreur inconnue');
+      onError(error instanceof Error ? error.message : messages.paymentComponents.errors.unknownError);
     } finally {
       setIsLoading(false);
     }

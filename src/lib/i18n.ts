@@ -3673,6 +3673,13 @@ export const messages: Record<Locale, Messages> = {
         gatefiWidget: {
           title: "Finalisation du paiement",
         },
+        errors: {
+          quoteError: "Erreur lors de la récupération du devis",
+          walletRequired: "Veuillez saisir une adresse de wallet valide",
+          quoteRequired: "Veuillez d'abord obtenir un devis",
+          paymentError: "Erreur lors de l'initiation du paiement",
+          unknownError: "Erreur inconnue",
+        },
       },
       legalPage: {
         pageNotAvailable: "Page non disponible",
@@ -7660,6 +7667,13 @@ export const messages: Record<Locale, Messages> = {
         gatefiWidget: {
           title: "Payment finalization",
         },
+        errors: {
+          quoteError: "Error retrieving quote",
+          walletRequired: "Please enter a valid wallet address",
+          quoteRequired: "Please get a quote first",
+          paymentError: "Error initiating payment",
+          unknownError: "Unknown error",
+        },
       },
       legalPage: {
         pageNotAvailable: "Page not available",
@@ -11281,6 +11295,13 @@ export const messages: Record<Locale, Messages> = {
         },
         gatefiWidget: {
           title: "支付完成",
+        },
+        errors: {
+          quoteError: "检索报价时出错",
+          walletRequired: "请输入有效的钱包地址",
+          quoteRequired: "请先获取报价",
+          paymentError: "启动支付时出错",
+          unknownError: "未知错误",
         },
       },
       legalPage: {

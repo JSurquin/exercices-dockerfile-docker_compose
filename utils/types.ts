@@ -3596,6 +3596,13 @@ export interface Messages {
       gatefiWidget: {
         title: string;
       };
+      errors: {
+        quoteError: string;
+        walletRequired: string;
+        quoteRequired: string;
+        paymentError: string;
+        unknownError: string;
+      };
     };
     legalPage: {
       pageNotAvailable: string;

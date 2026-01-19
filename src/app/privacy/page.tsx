@@ -19,8 +19,8 @@ export default function PrivacyPage() {
         : '',
     },
     {
-      title: messages.privacy.rights?.title || 'Vos droits RGPD',
-      content: 'Conformément au RGPD, vous avez le droit de :\n• Accéder à vos données personnelles\n• Demander leur rectification ou suppression\n• Vous opposer à leur traitement\n• Demander la portabilité de vos données',
+      title: messages.privacy.rights?.title || messages.privacy.rights.title,
+      content: `• ${messages.privacy.rights.access.description}\n• ${messages.privacy.rights.rectification.description}\n• ${messages.privacy.rights.erasure.description}\n• ${messages.privacy.rights.portability.description}`,
     },
   ];
 
