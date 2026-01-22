@@ -943,6 +943,579 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
       text,
     });
   }
+
+  // ========== NOTIFICATIONS KYC ==========
+
+  /**
+   * Envoie un email de confirmation de soumission KYC
+   */
+  async sendKycSubmittedConfirmation(
+    email: string,
+    username: string,
+    submissionDate: string
+  ): Promise<boolean> {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Vérification KYC en cours</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+          }
+          .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin: -40px -40px 30px -40px;
+          }
+          .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+          }
+          .title {
+            font-size: 28px;
+            margin: 10px 0;
+          }
+          .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+          }
+          .content {
+            margin: 30px 0;
+          }
+          .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 16px 32px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            transition: transform 0.2s;
+          }
+          .button:hover {
+            transform: translateY(-2px);
+          }
+          .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            margin: 20px 0;
+          }
+          .info-box {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          .status-badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-block;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 14px;
+          }
+          .cs2-theme {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+          td {
+            padding: 10px 0;
+          }
+          .table-label {
+            color: #6b7280;
+          }
+          .table-value {
+            text-align: right;
+            font-weight: 600;
+          }
+          .divider {
+            border-bottom: 1px solid #e5e7eb;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">🎮 MoonSkin</div>
+            <h1 class="title">✅ Vérification en cours</h1>
+            <p class="subtitle">Votre dossier KYC a été soumis avec succès</p>
+          </div>
+
+          <div class="content">
+            <p>Bonjour <strong>${username}</strong>,</p>
+            
+            <p>Nous avons bien reçu votre demande de vérification d'identité (KYC).</p>
+            
+            <div class="card">
+              <h3 style="color: #3b82f6; margin-top: 0; margin-bottom: 20px;">📋 Détails de votre soumission</h3>
+              <table>
+                <tr class="divider">
+                  <td class="table-label">Date de soumission :</td>
+                  <td class="table-value">${submissionDate}</td>
+                </tr>
+                <tr>
+                  <td class="table-label">Statut :</td>
+                  <td class="table-value">
+                    <span class="status-badge">⏳ En cours de vérification</span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #e5e7eb;">
+              <h3 style="color: #f97316; margin-top: 0; margin-bottom: 15px;">⏳ Prochaines étapes :</h3>
+              <p style="margin: 0 0 15px 0;">
+                Notre équipe va maintenant examiner vos documents. Cette vérification prend généralement entre <strong>24 et 48 heures</strong>.
+              </p>
+              <p style="margin: 0;">
+                Vous recevrez un email dès que votre vérification sera <strong style="color: #10b981;">validée ✓</strong>
+              </p>
+            </div>
+            
+            <div class="info-box">
+              <h3 style="margin-top: 0; color: #1e40af;">🔔 Suivre l'état de ma vérification</h3>
+              <p style="margin: 0 0 15px 0; color: #1e40af;">
+                Vous pouvez consulter l'état de votre vérification à tout moment sur votre dashboard.
+              </p>
+              <div style="text-align: center;">
+                <a href="${baseUrl}/dashboard" class="button">
+                  Voir mon Dashboard
+                </a>
+              </div>
+            </div>
+
+            <div class="cs2-theme">
+              <p style="margin: 0; font-size: 16px; font-weight: 600;">
+                💼 Une fois vérifié, vous pourrez effectuer des retraits sans limite !
+              </p>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>
+              <strong>MoonSkin - CS2 Skin Trading Platform</strong><br>
+              Plateforme sécurisée de trading de skins Counter-Strike 2
+            </p>
+            <p style="font-size: 12px; color: #9ca3af;">
+              Merci de votre confiance !<br/>
+              Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+MoonSkin - Vérification KYC en cours
+
+Bonjour ${username},
+
+Nous avons bien reçu votre demande de vérification d'identité (KYC).
+
+📋 Détails de votre soumission :
+- Date de soumission : ${submissionDate}
+- Statut : En cours de vérification
+
+⏳ Prochaines étapes :
+Notre équipe va maintenant examiner vos documents. Cette vérification prend généralement entre 24 et 48 heures.
+
+Vous recevrez un email dès que votre vérification sera validée.
+
+🔔 Suivre l'état de ma vérification :
+Vous pouvez consulter l'état de votre vérification à tout moment sur votre dashboard : ${baseUrl}/dashboard
+
+💼 Une fois vérifié, vous pourrez effectuer des retraits sans limite !
+
+---
+MoonSkin - CS2 Skin Trading Platform
+
+Merci de votre confiance !
+Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+    `;
+
+    return this.sendEmail({
+      to: email,
+      subject: '✅ Votre vérification d\'identité est en cours - MoonSkin',
+      html,
+      text,
+    });
+  }
+
+  /**
+   * Envoie un email de KYC approuvé
+   */
+  async sendKycApprovedEmail(
+    email: string,
+    username: string
+  ): Promise<boolean> {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>KYC Approuvé</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+          }
+          .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin: -40px -40px 30px -40px;
+          }
+          .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 16px 32px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+          }
+          .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #e5e7eb;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 14px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="margin: 0; font-size: 28px;">🎉 Félicitations !</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px;">Votre vérification d'identité est validée</p>
+          </div>
+
+          <div style="margin: 30px 0;">
+            <p>Bonjour <strong>${username}</strong>,</p>
+            
+            <p>Excellente nouvelle ! Votre vérification d'identité (KYC) a été <strong style="color: #10b981;">approuvée avec succès</strong>.</p>
+            
+            <div style="background: #d1fae5; border: 2px solid #10b981; border-radius: 12px; padding: 25px; margin: 30px 0; text-align: center;">
+              <div style="font-size: 48px; margin-bottom: 15px;">✅</div>
+              <h3 style="margin: 0 0 10px 0; color: #065f46; font-size: 20px;">Votre compte est maintenant entièrement vérifié</h3>
+              <p style="margin: 0; color: #065f46;">
+                Vous avez accès à toutes les fonctionnalités premium de MoonSkin !
+              </p>
+            </div>
+            
+            <div class="card">
+              <h3 style="color: #10b981; margin-top: 0; margin-bottom: 15px;">🎯 Avantages débloqués :</h3>
+              <ul style="margin: 0; padding-left: 20px; color: #475569;">
+                <li style="margin-bottom: 10px;"><strong>Retraits illimités</strong> - Plus de limite sur vos paiements</li>
+                <li style="margin-bottom: 10px;"><strong>Tous les modes de paiement</strong> - SEPA, Crypto, et plus</li>
+                <li style="margin-bottom: 10px;"><strong>Support prioritaire</strong> - Assistance dédiée</li>
+                <li><strong>Sécurité renforcée</strong> - Protection maximale de votre compte</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${baseUrl}/dashboard" class="button">
+                Accéder à mon Dashboard
+              </a>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #1e293b, #334155); color: white; padding: 25px; border-radius: 8px; text-align: center;">
+              <p style="margin: 0; font-size: 18px; font-weight: 600;">
+                💰 Vous pouvez effectuer vos premiers retraits dès maintenant !
+              </p>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>
+              <strong>MoonSkin - CS2 Skin Trading Platform</strong><br>
+              Merci de votre confiance !
+            </p>
+            <p style="font-size: 12px; color: #9ca3af;">
+              Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+MoonSkin - KYC Approuvé
+
+Bonjour ${username},
+
+Félicitations ! Votre vérification d'identité (KYC) a été approuvée avec succès.
+
+✅ Votre compte est maintenant entièrement vérifié
+
+Avantages débloqués :
+- Retraits illimités - Plus de limite sur vos paiements
+- Tous les modes de paiement - SEPA, Crypto, et plus
+- Support prioritaire - Assistance dédiée
+- Sécurité renforcée - Protection maximale
+
+💰 Vous pouvez effectuer vos premiers retraits dès maintenant !
+
+Dashboard : ${baseUrl}/dashboard
+
+---
+Merci de votre confiance !
+MoonSkin - CS2 Skin Trading Platform
+
+Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+    `;
+
+    return this.sendEmail({
+      to: email,
+      subject: '🎉 Votre vérification d\'identité est validée - MoonSkin',
+      html,
+      text,
+    });
+  }
+
+  /**
+   * Envoie un email de KYC rejeté
+   */
+  async sendKycRejectedEmail(
+    email: string,
+    username: string,
+    reason: string
+  ): Promise<boolean> {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>KYC Rejeté</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+          }
+          .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin: -40px -40px 30px -40px;
+          }
+          .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 16px 32px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+          }
+          .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #e5e7eb;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 14px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="margin: 0; font-size: 28px;">⚠️ Vérification requise</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px;">Votre dossier KYC nécessite une attention</p>
+          </div>
+
+          <div style="margin: 30px 0;">
+            <p>Bonjour <strong>${username}</strong>,</p>
+            
+            <p>Nous avons examiné votre demande de vérification d'identité mais nous ne pouvons malheureusement pas la valider pour le moment.</p>
+            
+            <div style="background: #fee2e2; border: 2px solid #ef4444; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h3 style="margin-top: 0; color: #991b1b;">📋 Raison du rejet</h3>
+              <p style="margin: 0; color: #991b1b; font-weight: 500;">${reason}</p>
+            </div>
+
+            <div style="background: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 20px; margin: 30px 0;">
+              <h3 style="margin-top: 0; color: #1e40af;">💡 Que faire maintenant ?</h3>
+              <p style="margin: 0; color: #1e40af;">
+                Vous pouvez soumettre un nouveau dossier en corrigeant les points mentionnés ci-dessus. Notre équipe sera ravie de réexaminer votre demande !
+              </p>
+            </div>
+
+            <div class="card">
+              <h3 style="color: #10b981; margin-top: 0; margin-bottom: 15px;">✓ Conseils pour votre nouvelle soumission :</h3>
+              <ul style="margin: 0; padding-left: 20px; color: #475569;">
+                <li style="margin-bottom: 8px;">Assurez-vous que vos documents sont <strong>clairs et lisibles</strong></li>
+                <li style="margin-bottom: 8px;">Vérifiez que <strong>toutes les informations sont visibles</strong></li>
+                <li style="margin-bottom: 8px;">Utilisez des photos de <strong>bonne qualité</strong> (pas de reflets, pas floues)</li>
+                <li>Vérifiez que vos documents sont <strong>valides et à jour</strong></li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${baseUrl}/kyc" class="button">
+                Soumettre un nouveau dossier
+              </a>
+            </div>
+
+            <div style="background: #f3f4f6; border-radius: 8px; padding: 20px; text-align: center;">
+              <p style="margin: 0; color: #4b5563;">
+                <strong>Besoin d'aide ?</strong><br/>
+                Notre équipe support est là pour vous accompagner
+              </p>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>
+              <strong>MoonSkin - CS2 Skin Trading Platform</strong><br>
+              Merci de votre compréhension
+            </p>
+            <p style="font-size: 12px; color: #9ca3af;">
+              Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+MoonSkin - Vérification KYC
+
+Bonjour ${username},
+
+Nous avons examiné votre demande de vérification d'identité mais nous ne pouvons malheureusement pas la valider pour le moment.
+
+📋 Raison du rejet :
+${reason}
+
+💡 Que faire maintenant ?
+Vous pouvez soumettre un nouveau dossier en corrigeant les points mentionnés ci-dessus. Notre équipe sera ravie de réexaminer votre demande !
+
+✓ Conseils pour votre nouvelle soumission :
+- Assurez-vous que vos documents sont clairs et lisibles
+- Vérifiez que toutes les informations sont visibles
+- Utilisez des photos de bonne qualité (pas de reflets, pas floues)
+- Vérifiez que vos documents sont valides et à jour
+
+Soumettre un nouveau dossier : ${baseUrl}/kyc
+
+Besoin d'aide ?
+Notre équipe support est là pour vous accompagner
+
+---
+Merci de votre compréhension
+MoonSkin - CS2 Skin Trading Platform
+
+Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+    `;
+
+    return this.sendEmail({
+      to: email,
+      subject: '⚠️ Votre vérification d\'identité nécessite une attention - MoonSkin',
+      html,
+      text,
+    });
+  }
 }
 
 export const emailService = new EmailService();

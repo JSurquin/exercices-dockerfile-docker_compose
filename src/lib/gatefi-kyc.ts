@@ -221,9 +221,9 @@ export async function updateUserKycStatus(
 
   // Créer un document KYC si providerId est fourni
   if (providerId) {
-    // Chercher un document existant avec ce providerId
+    // Chercher un document existant avec ce kycaidDocumentId (utilisé pour stocker le providerId GateFi)
     const existingDoc = await prisma.kycDocument.findFirst({
-      where: { providerId },
+      where: { kycaidDocumentId: providerId },
     });
 
     if (existingDoc) {
@@ -238,12 +238,15 @@ export async function updateUserKycStatus(
       });
     } else {
       // Créer un nouveau document
+      // Note: Comme providerId n'existe plus, on utilise kycaidDocumentId pour stocker l'ID externe
+      // et kycaidApplicantId est requis dans le schéma
       await prisma.kycDocument.create({
         data: {
           userId,
-          type: 'ID_CARD', // Type par défaut
+          type: 'ID_CARD', // Type par défaut (utiliser un type de l'enum)
           status,
-          providerId,
+          kycaidDocumentId: providerId, // Stocker le providerId GateFi ici
+          kycaidApplicantId: userId, // Utiliser userId comme fallback
           reviewedAt: new Date(),
           rejectionReason,
         },

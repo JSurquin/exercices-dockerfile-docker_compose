@@ -5,7 +5,7 @@ export interface User {
   avatar: string;
   tradeLink?: string;
   acceptedTermsAt?: Date;
-  kycStatus: 'pending' | 'in_progress' | 'verified' | 'rejected';
+  kycStatus: 'PENDING' | 'IN_PROGRESS' | 'VERIFIED' | 'REJECTED' | 'KYCAID_PENDING' | 'KYCAID_VERIFIED' | 'KYCAID_REJECTED';
   totalVolume: number; // en centimes
   xp: number;
   level: number;
@@ -82,7 +82,7 @@ export interface KYCDocument {
   userId: string;
   type: 'id_card' | 'passport' | 'selfie' | 'proof_of_address';
   status: 'pending' | 'in_progress' | 'approved' | 'rejected';
-  providerId: string; // ID du prestataire KYC
+  providerId?: string; // ID du prestataire KYC (optionnel)
   uploadedAt: Date;
   reviewedAt?: Date;
   rejectionReason?: string;

@@ -24,6 +24,10 @@ export async function POST(request: NextRequest) {
 
     const userId = session.user.id;
 
+    // Récupérer l'adresse du body (optionnel)
+    const body = await request.json().catch(() => ({}));
+    const { address } = body; // { country, city, postalCode, streetName, buildingNumber, unitNumber }
+
     // Vérifier si l'utilisateur est déjà vérifié
     const currentStatus = await checkKycStatus(userId);
     
@@ -40,8 +44,8 @@ export async function POST(request: NextRequest) {
       console.log('[KYCAID] Re-initiating KYC for rejected user:', userId);
     }
 
-    // Initier le KYC
-    const kycResult = await initiateKyc(userId);
+    // Initier le KYC avec l'adresse si fournie
+    const kycResult = await initiateKyc(userId, address);
 
     // Logger l'événement
     await prisma.auditLog.create({

@@ -36,7 +36,7 @@ export class AuthService {
       xp: 0,
       tickets: 100, // 100 tickets initiaux pour tous les nouveaux utilisateurs
       totalVolume: 0,
-      kycStatus: 'pending',
+      kycStatus: 'PENDING',
       acceptedTermsAt: new Date(),
       joinedAt: new Date(),
     };

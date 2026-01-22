@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
       username: user.name || user.email || 'Utilisateur sans nom',
       avatar: user.image || '',
       acceptedTermsAt: user.acceptedTermsAt || undefined,
-      kycStatus: user.kycStatus as 'pending' | 'in_progress' | 'verified' | 'rejected',
+      kycStatus: user.kycStatus as 'PENDING' | 'IN_PROGRESS' | 'VERIFIED' | 'REJECTED' | 'KYCAID_PENDING' | 'KYCAID_VERIFIED' | 'KYCAID_REJECTED',
       totalVolume: user.totalVolumeCents,
       xp: user.xp,
       level: user.level,

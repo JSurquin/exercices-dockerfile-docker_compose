@@ -100,16 +100,70 @@ export default function KYCPage() {
 
   const submitKYC = async () => {
     try {
-      // Simulation de soumission KYC
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log('🚀 [KYC FRONTEND] Début de la soumission du dossier KYC');
+      console.log('📋 [KYC FRONTEND] Informations personnelles:', personalInfo);
+      console.log('📋 [KYC FRONTEND] Type de document:', documentType);
+      console.log('📋 [KYC FRONTEND] Fichiers uploadés:', Object.keys(uploadedFiles));
       
+      // Validation finale
+      if (!uploadedFiles.identity || !uploadedFiles.selfie) {
+        console.error('❌ [KYC FRONTEND] Documents manquants');
+        toast.error(messages.kycPage.toasts.error);
+        return;
+      }
+
+      // Préparer le FormData
+      const formData = new FormData();
+      
+      // Ajouter les informations personnelles
+      formData.append('personalInfo', JSON.stringify(personalInfo));
+      // Le type de document sera mappé côté serveur (id_card → GOVERNMENT_ID)
+      formData.append('documentType', documentType); // id_card, passport, driving_license
+      
+      // Ajouter les fichiers
+      formData.append('identityFile', uploadedFiles.identity);
+      if (uploadedFiles.identityBack) {
+        formData.append('identityBackFile', uploadedFiles.identityBack);
+      }
+      formData.append('selfieFile', uploadedFiles.selfie);
+      if (uploadedFiles.address) {
+        formData.append('addressFile', uploadedFiles.address);
+      }
+
+      console.log('📤 [KYC FRONTEND] Envoi de la requête à /api/kyc/submit');
+
+      // Envoyer à l'API
+      const response = await fetch('/api/kyc/submit', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('❌ [KYC FRONTEND] Erreur de l\'API:', data);
+        throw new Error(data.error || 'Erreur lors de la soumission');
+      }
+
+      console.log('✅ [KYC FRONTEND] Réponse de l\'API:', data);
+      console.log('🎉 [KYC FRONTEND] Dossier KYC soumis avec succès !');
+      
+      // Mettre à jour l'utilisateur
       if (user) {
-        await updateUser({ kycStatus: 'in_progress' });
+        await updateUser({ kycStatus: 'IN_PROGRESS' });
+        console.log('✅ [KYC FRONTEND] Statut utilisateur mis à jour : IN_PROGRESS');
       }
       
       toast.success(messages.toast.kycSubmitted);
-    } catch {
-      toast.error(messages.kycPage.toasts.error);
+      
+      // Optionnel : rediriger vers le dashboard après quelques secondes
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 2000);
+      
+    } catch (error: any) {
+      console.error('💥 [KYC FRONTEND] Erreur lors de la soumission:', error);
+      toast.error(error.message || messages.kycPage.toasts.error);
     }
   };
 
@@ -153,7 +207,7 @@ export default function KYCPage() {
   }
 
   // Si KYC déjà vérifié
-  if (user.kycStatus === 'verified') {
+  if (user.kycStatus === 'VERIFIED') {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
@@ -173,7 +227,7 @@ export default function KYCPage() {
   }
 
   // Si KYC en cours
-  if (user.kycStatus === 'in_progress') {
+  if (user.kycStatus === 'IN_PROGRESS') {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
@@ -193,7 +247,7 @@ export default function KYCPage() {
   }
 
   // Si KYC rejeté
-  if (user.kycStatus === 'rejected') {
+  if (user.kycStatus === 'REJECTED') {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
@@ -414,9 +468,10 @@ export default function KYCPage() {
                     </Select>
                   </div>
 
+                  {/* Recto du document */}
                   <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
                     <DocumentTextIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <h4 className="font-semibold mb-2">{messages.kycPage.documents.upload}</h4>
+                    <h4 className="font-semibold mb-2">{messages.kycPage.documents.upload} (Recto) *</h4>
                     <p className="text-muted-foreground mb-4">
                       {messages.kycPage.documents.description}
                     </p>
@@ -438,6 +493,34 @@ export default function KYCPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* Verso du document (si carte d'identité) */}
+                  {documentType === 'id_card' && (
+                    <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
+                      <DocumentTextIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <h4 className="font-semibold mb-2">Verso de la carte d&apos;identité</h4>
+                      <p className="text-muted-foregro und mb-4">
+                        Upload le verso de votre carte d&apos;identité (optionnel mais recommandé)
+                      </p>
+                      <Input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload('identityBack', file);
+                        }}
+                        className="max-w-xs mx-auto"
+                      />
+                      {uploadedFiles.identityBack && (
+                        <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
+                          <CheckCircleIcon className="w-5 h-5 text-green-500 inline-block mr-2" />
+                          <span className="text-green-700 dark:text-green-300">
+                            {uploadedFiles.identityBack.name} {messages.kycPage.documents.uploaded}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
                     <div className="flex items-start space-x-3">

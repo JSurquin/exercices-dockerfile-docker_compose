@@ -37,7 +37,7 @@ export async function GET() {
             id: true,
             type: true,
             status: true,
-            providerId: true,
+            kycaidDocumentId: true,
             uploadedAt: true,
             reviewedAt: true,
             rejectionReason: true,

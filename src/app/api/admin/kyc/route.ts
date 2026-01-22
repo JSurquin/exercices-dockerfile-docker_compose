@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     if (filters.search) {
       where.OR = [
         { id: { contains: filters.search, mode: 'insensitive' } },
-        { providerId: { contains: filters.search, mode: 'insensitive' } },
+        { kycaidDocumentId: { contains: filters.search, mode: 'insensitive' } },
         { user: { name: { contains: filters.search, mode: 'insensitive' } } },
         { user: { email: { contains: filters.search, mode: 'insensitive' } } },
       ];
@@ -72,8 +72,8 @@ export async function GET(request: NextRequest) {
       id: doc.id,
       userId: doc.userId,
       type: mapKycDocumentTypeFromDb(doc.type),
-      status: mapKycStatusFromDb(doc.status),
-      providerId: doc.providerId,
+      status: mapKycStatusFromDb(doc.status) as any,
+      providerId: doc.kycaidDocumentId || undefined,
       uploadedAt: doc.uploadedAt,
       reviewedAt: doc.reviewedAt || undefined,
       rejectionReason: doc.rejectionReason || undefined,

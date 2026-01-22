@@ -139,7 +139,7 @@ export default function SettingsPage() {
                           className="bg-green-100 text-green-800"
                         >
                           KYC{" "}
-                          {user.kycStatus === "verified"
+                          {user.kycStatus === "VERIFIED" || user.kycStatus === "KYCAID_VERIFIED"
                             ? messages.settings.security.kyc.verified
                             : messages.settings.security.kyc.pending}
                         </Badge>
@@ -251,11 +251,11 @@ export default function SettingsPage() {
                           variant="secondary"
                           className="bg-green-100 text-green-800"
                         >
-                          {user.kycStatus === "verified"
+                          {user.kycStatus === "VERIFIED" || user.kycStatus === "KYCAID_VERIFIED"
                             ? messages.settings.security.kyc.verified
                             : messages.settings.security.kyc.pending}
                         </Badge>
-                        {user.kycStatus !== "verified" && (
+                        {user.kycStatus !== "VERIFIED" && user.kycStatus !== "KYCAID_VERIFIED" && (
                           <Button variant="outline" size="sm">
                             {messages.settings.security.kyc.start}
                           </Button>

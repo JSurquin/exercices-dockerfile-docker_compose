@@ -16,6 +16,18 @@ export const KYCAID_CONFIG = {
   redirectUrl: process.env.KYCAID_REDIRECT_URL || `${process.env.NEXT_PUBLIC_APP_URL}/kyc/complete`,
 };
 
+// Log de la config au démarrage (masquer la clé API)
+if (typeof window === 'undefined') {
+  console.log('');
+  console.log('🔑 [KYCAID CONFIG] Configuration chargée :');
+  console.log(`  - Base URL: ${KYCAID_CONFIG.baseUrl}`);
+  console.log(`  - Sandbox Mode: ${KYCAID_CONFIG.sandboxMode}`);
+  console.log(`  - API Token: ${KYCAID_CONFIG.apiToken ? `${KYCAID_CONFIG.apiToken.substring(0, 10)}...` : '❌ MISSING'}`);
+  console.log(`  - Form ID: ${KYCAID_CONFIG.formId || '❌ MISSING'}`);
+  console.log(`  - Auth Header: API-Key (nouveau format)`);
+  console.log('');
+}
+
 // =============================================================================
 // TYPES
 // =============================================================================
@@ -117,6 +129,76 @@ export interface CreateVerificationParams {
 }
 
 // =============================================================================
+// ADDRESSES
+// =============================================================================
+
+export interface KycaidAddress {
+  address_id: string;
+  applicant_id?: string;
+  affiliated_person_id?: string;
+  type: 'REGISTERED' | 'BUSINESS' | 'ADDITIONAL';
+  country: string;
+  city: string;
+  postal_code: string;
+  street_name: string;
+  building_number: string;
+  unit_number?: string;
+  state_or_province?: string;
+  full_address?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateAddressParams {
+  applicant_id?: string;
+  affiliated_person_id?: string;
+  type: 'REGISTERED' | 'BUSINESS' | 'ADDITIONAL';
+  country: string;
+  city: string;
+  postal_code: string;
+  street_name: string;
+  building_number: string;
+  unit_number?: string;
+  state_or_province?: string;
+}
+
+// =============================================================================
+// FILES
+// =============================================================================
+
+export interface KycaidFile {
+  file_id: string;
+  file_name: string;
+  file_type: string;
+  file_size: number;
+  created_at: string;
+}
+
+// =============================================================================
+// DOCUMENTS
+// =============================================================================
+
+export interface KycaidDocument {
+  document_id: string;
+  applicant_id: string;
+  type: string;
+  front_side_id?: string;
+  back_side_id?: string;
+  status: string;
+  verified: boolean;
+  decline_reasons?: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateDocumentParams {
+  applicant_id: string;
+  type: string;
+  front_side_id: string;
+  back_side_id?: string; // Pour cartes ID recto/verso
+}
+
+// =============================================================================
 // HEADERS & REQUÊTES
 // =============================================================================
 
@@ -126,7 +208,7 @@ export interface CreateVerificationParams {
 function prepareHeaders(): Record<string, string> {
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Token ${KYCAID_CONFIG.apiToken}`,
+    'API-Key': KYCAID_CONFIG.apiToken,
   };
 }
 
@@ -142,6 +224,11 @@ async function kycaidRequest<T>(
   const url = `${KYCAID_CONFIG.baseUrl}${path}`;
   const headers = prepareHeaders();
 
+  console.log(`📡 [KYCAID REQUEST] ${method} ${url}`);
+  if (body) {
+    console.log(`📦 [KYCAID REQUEST] Body:`, JSON.stringify(body, null, 2));
+  }
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const response = await fetch(url, {
@@ -153,14 +240,17 @@ async function kycaidRequest<T>(
       const data = await response.json();
 
       if (!response.ok) {
+        console.error(`❌ [KYCAID REQUEST] Error ${response.status}:`, data);
         throw new Error(
           `KYCAID API error: ${response.status} - ${JSON.stringify(data)}`
         );
       }
 
+      console.log(`✅ [KYCAID REQUEST] Success:`, data);
       return data as T;
     } catch (error) {
       if (attempt === retries) throw error;
+      console.warn(`⚠️  [KYCAID REQUEST] Attempt ${attempt} failed, retrying...`);
       // Backoff exponentiel
       await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
     }
@@ -227,6 +317,185 @@ export async function updateApplicant(
 }
 
 // =============================================================================
+// ADDRESSES
+// =============================================================================
+
+/**
+ * Crée une adresse pour un applicant ou affiliated person
+ */
+export async function createAddress(
+  params: CreateAddressParams
+): Promise<KycaidAddress> {
+  validateConfig();
+  
+  if (!params.applicant_id && !params.affiliated_person_id) {
+    throw new Error('Either applicant_id or affiliated_person_id is required');
+  }
+  
+  logKycTransaction('CREATE_ADDRESS', params.applicant_id || params.affiliated_person_id || '', {
+    type: params.type,
+    country: params.country,
+  });
+  
+  return kycaidRequest<KycaidAddress>('POST', '/addresses', params);
+}
+
+/**
+ * Récupère une adresse par son ID
+ */
+export async function getAddress(addressId: string): Promise<KycaidAddress> {
+  validateConfig();
+  return kycaidRequest<KycaidAddress>('GET', `/addresses/${addressId}`);
+}
+
+/**
+ * Met à jour une adresse existante
+ */
+export async function updateAddress(
+  addressId: string,
+  data: Partial<CreateAddressParams>
+): Promise<KycaidAddress> {
+  validateConfig();
+  return kycaidRequest<KycaidAddress>('PATCH', `/addresses/${addressId}`, data);
+}
+
+/**
+ * Supprime une adresse
+ */
+export async function deleteAddress(addressId: string): Promise<void> {
+  validateConfig();
+  await kycaidRequest<void>('DELETE', `/addresses/${addressId}`);
+}
+
+/**
+ * Liste les adresses d'un applicant
+ */
+export async function listApplicantAddresses(
+  applicantId: string
+): Promise<{ items: KycaidAddress[] }> {
+  validateConfig();
+  return kycaidRequest<{ items: KycaidAddress[] }>(
+    'GET',
+    `/applicants/${applicantId}/addresses`
+  );
+}
+
+// =============================================================================
+// FILES
+// =============================================================================
+
+/**
+ * Upload un fichier vers KYCAID directement
+ * Retourne le file_id créé
+ */
+export async function uploadFile(
+  file: File | Buffer,
+  fileName: string,
+  mimeType: string
+): Promise<{ file_id: string }> {
+  validateConfig();
+  
+  console.log(`📤 [KYCAID] Upload du fichier ${fileName} (${mimeType})`);
+  
+  const formData = new FormData();
+  
+  if (Buffer.isBuffer(file)) {
+    // Si Buffer, créer un Blob en convertissant correctement le buffer
+    const uint8Array = new Uint8Array(file);
+    const blob = new Blob([uint8Array], { type: mimeType });
+    formData.append('file', blob, fileName);
+    console.log(`  → Conversion Buffer → Blob : ${uint8Array.length} bytes`);
+  } else {
+    formData.append('file', file, fileName);
+    console.log(`  → Fichier File direct : ${file.size} bytes`);
+  }
+  
+  const url = `${KYCAID_CONFIG.baseUrl}/files`;
+  
+  console.log(`  → URL: ${url}`);
+  
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'API-Key': KYCAID_CONFIG.apiToken,
+    },
+    body: formData,
+  });
+  
+  if (!response.ok) {
+    const error = await response.text();
+    console.error(`❌ [KYCAID] Erreur upload fichier : ${response.status}`);
+    console.error(`   Response: ${error}`);
+    throw new Error(`File upload failed: ${response.status} - ${error}`);
+  }
+  
+  const data = await response.json();
+  console.log(`✅ [KYCAID] Fichier uploadé avec succès : ${data.file_id}`);
+  
+  logKycTransaction('UPLOAD_FILE', '', { fileId: data.file_id, fileName });
+  
+  return data;
+}
+
+/**
+ * DEPRECATED - Créer un file object vide (ancienne méthode)
+ * Utiliser uploadFile() directement à la place
+ */
+export async function createFile(): Promise<{ file_id: string }> {
+  console.warn('⚠️  [KYCAID] createFile() is deprecated, use uploadFile() directly');
+  throw new Error('createFile() is deprecated - use uploadFile() directly with file content');
+}
+
+/**
+ * Récupère les infos d'un fichier
+ */
+export async function getFile(fileId: string): Promise<KycaidFile> {
+  validateConfig();
+  return kycaidRequest<KycaidFile>('GET', `/files/${fileId}`);
+}
+
+// =============================================================================
+// DOCUMENTS
+// =============================================================================
+
+/**
+ * Crée un document lié à un applicant
+ */
+export async function createDocument(
+  params: CreateDocumentParams
+): Promise<KycaidDocument> {
+  validateConfig();
+  
+  logKycTransaction('CREATE_DOCUMENT', params.applicant_id, {
+    type: params.type,
+    frontSideId: params.front_side_id,
+  });
+  
+  return kycaidRequest<KycaidDocument>('POST', '/documents', params);
+}
+
+/**
+ * Récupère un document par son ID
+ */
+export async function getDocument(documentId: string): Promise<KycaidDocument> {
+  validateConfig();
+  return kycaidRequest<KycaidDocument>('GET', `/documents/${documentId}`);
+}
+
+/**
+ * Liste les documents d'un applicant
+ */
+export async function listApplicantDocuments(
+  applicantId: string
+): Promise<{ items: KycaidDocument[] }> {
+  validateConfig();
+  return kycaidRequest<{ items: KycaidDocument[] }>(
+    'GET',
+    `/applicants/${applicantId}/documents`
+  );
+}
+
+// =============================================================================
 // VERIFICATIONS
 // =============================================================================
 
@@ -279,10 +548,20 @@ export async function listApplicantVerifications(
 // =============================================================================
 
 /**
- * Initie le processus KYC pour un utilisateur
- * Crée un applicant si nécessaire et retourne l'URL du formulaire
+ * Initie le processus KYC COMPLET pour un utilisateur
+ * Flow : Applicant → Address (si fournie) → Verification
  */
-export async function initiateKyc(userId: string): Promise<{
+export async function initiateKyc(
+  userId: string,
+  addressData?: {
+    country: string;
+    city: string;
+    postalCode: string;
+    streetName: string;
+    buildingNumber: string;
+    unitNumber?: string;
+  }
+): Promise<{
   verificationUrl: string;
   verificationId: string;
   applicantId: string;
@@ -292,27 +571,25 @@ export async function initiateKyc(userId: string): Promise<{
   // Récupérer l'utilisateur
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { email: true, name: true, kycStatus: true },
+    select: { 
+      email: true, 
+      name: true, 
+      kycStatus: true,
+      kycaidApplicantId: true, // Champ existant
+    },
   });
 
   if (!user?.email) {
     throw new Error('User email is required for KYC');
   }
 
-  // Vérifier si un document KYC existe déjà
-  const existingDoc = await prisma.kycDocument.findFirst({
-    where: { userId },
-    orderBy: { uploadedAt: 'desc' },
-  });
-
   let applicantId: string;
 
-  if (existingDoc?.providerId) {
-    // Utiliser l'applicant existant
-    applicantId = existingDoc.providerId;
+  // Étape 1 : Créer ou réutiliser l'applicant
+  if (user.kycaidApplicantId) {
+    applicantId = user.kycaidApplicantId;
     logKycTransaction('REUSE_APPLICANT', userId, { applicantId });
   } else {
-    // Créer un nouvel applicant
     const nameParts = user.name?.split(' ') || [];
     const applicant = await createApplicant({
       userId,
@@ -322,21 +599,65 @@ export async function initiateKyc(userId: string): Promise<{
     });
     applicantId = applicant.applicant_id;
 
-    // Sauvegarder le providerId
-    await prisma.kycDocument.create({
-      data: {
-        userId,
-        type: 'ID_CARD',
-        status: 'PENDING',
-        providerId: applicantId,
-      },
+    // Sauvegarder l'applicantId dans User
+    await prisma.user.update({
+      where: { id: userId },
+      data: { kycaidApplicantId: applicantId },
     });
   }
 
-  // Créer une vérification
+  // Étape 2 : Créer une adresse si fournie (PROOF OF ADDRESS)
+  if (addressData) {
+    try {
+      const address = await createAddress({
+        applicant_id: applicantId,
+        type: 'REGISTERED',
+        country: addressData.country,
+        city: addressData.city,
+        postal_code: addressData.postalCode,
+        street_name: addressData.streetName,
+        building_number: addressData.buildingNumber,
+        unit_number: addressData.unitNumber,
+      });
+
+      // Sauvegarder en base
+      await prisma.kycAddress.create({
+        data: {
+          applicantId,
+          type: 'REGISTERED',
+          country: addressData.country,
+          city: addressData.city,
+          postalCode: addressData.postalCode,
+          streetName: addressData.streetName,
+          buildingNumber: addressData.buildingNumber,
+          unitNumber: addressData.unitNumber,
+          kycaidAddressId: address.address_id,
+        },
+      });
+
+      logKycTransaction('ADDRESS_CREATED', userId, { addressId: address.address_id });
+    } catch (error) {
+      console.error('[KYCAID] Address creation failed:', error);
+      // Ne pas bloquer le flow si l'adresse échoue
+    }
+  }
+
+  // Étape 3 : Créer la vérification
   const verification = await createVerification({
     applicantId,
     externalApplicantId: userId,
+  });
+
+  // Étape 4 : Sauvegarder la vérification en base
+  await prisma.kycVerification.create({
+    data: {
+      userId,
+      kycaidVerificationId: verification.verification_id,
+      kycaidApplicantId: applicantId,
+      status: verification.status.toUpperCase() as any,
+      verified: verification.verified,
+      formUrl: verification.form_url,
+    },
   });
 
   logKycTransaction('INITIATE_KYC', userId, {
@@ -379,13 +700,13 @@ export async function checkKycStatus(userId: string): Promise<{
     orderBy: { uploadedAt: 'desc' },
   });
 
-  if (!kycDoc?.providerId) {
+  if (!kycDoc?.kycaidApplicantId) {
     return { status: 'PENDING' };
   }
 
   try {
     // Vérifier le statut via KYCAID
-    const verifications = await listApplicantVerifications(kycDoc.providerId);
+    const verifications = await listApplicantVerifications(kycDoc.kycaidApplicantId);
     const latestVerification = verifications.items[0];
 
     if (!latestVerification) {
@@ -443,19 +764,19 @@ export function validateWebhookSignature(
 }
 
 /**
- * Traite un webhook KYCAID
+ * Traite un webhook KYCAID et met à jour la base de données
  */
 export async function processWebhook(payload: KycaidWebhookPayload): Promise<void> {
   const { type, applicant_id, verification_id, status, verified, decline_reasons } = payload;
 
   logKycTransaction('WEBHOOK_RECEIVED', applicant_id, { type, status, verified });
 
-  // Trouver l'utilisateur via le document KYC
-  const kycDoc = await prisma.kycDocument.findFirst({
-    where: { providerId: applicant_id },
+  // Trouver l'utilisateur via kycaidApplicantId
+  const user = await prisma.user.findFirst({
+    where: { kycaidApplicantId: applicant_id },
   });
 
-  if (!kycDoc) {
+  if (!user) {
     console.warn('[KYCAID Webhook] No user found for applicant:', applicant_id);
     return;
   }
@@ -463,20 +784,54 @@ export async function processWebhook(payload: KycaidWebhookPayload): Promise<voi
   switch (type) {
     case 'VERIFICATION_COMPLETED':
     case 'VERIFICATION_STATUS_CHANGED':
-      if (verified === true) {
-        await updateUserKycStatus(kycDoc.userId, 'VERIFIED', verification_id);
-      } else if (status === 'declined') {
-        await updateUserKycStatus(
-          kycDoc.userId,
-          'REJECTED',
-          verification_id,
-          decline_reasons?.join(', ')
-        );
+      if (verification_id) {
+        // Récupérer les détails complets de la vérification
+        const verificationDetails = await getVerification(verification_id);
+
+        // Mettre à jour KycVerification
+        await prisma.kycVerification.upsert({
+          where: { kycaidVerificationId: verification_id },
+          update: {
+            status: status?.toUpperCase() as any || 'COMPLETED',
+            verified: verified || false,
+            documentStatus: verificationDetails.verifications?.document?.status,
+            documentVerified: verificationDetails.verifications?.document?.verified,
+            facialStatus: verificationDetails.verifications?.facial?.status,
+            facialVerified: verificationDetails.verifications?.facial?.verified,
+            addressStatus: verificationDetails.verifications?.address?.status,
+            addressVerified: verificationDetails.verifications?.address?.verified,
+            amlStatus: verificationDetails.verifications?.aml?.status,
+            amlVerified: verificationDetails.verifications?.aml?.verified,
+            declineReasons: decline_reasons as any,
+            metadata: verificationDetails as any,
+            completedAt: new Date(),
+          },
+          create: {
+            userId: user.id,
+            kycaidVerificationId: verification_id,
+            kycaidApplicantId: applicant_id,
+            status: 'COMPLETED',
+            verified: verified || false,
+            metadata: verificationDetails as any,
+          },
+        });
+
+        // Mettre à jour le statut utilisateur
+        if (verified === true) {
+          await updateUserKycStatus(user.id, 'VERIFIED', verification_id);
+        } else if (status === 'declined') {
+          await updateUserKycStatus(
+            user.id,
+            'REJECTED',
+            verification_id,
+            decline_reasons?.join(', ')
+          );
+        }
       }
       break;
 
     case 'APPLICANT_CREATED':
-      // L'applicant est créé, rien à faire de particulier
+      // Rien de particulier
       break;
   }
 }
@@ -534,6 +889,46 @@ export async function updateUserKycStatus(
   });
 
   console.log(`[KYCAID] User ${userId} KYC status updated to ${status}`);
+
+  // =========================================================================
+  // ENVOYER L'EMAIL DE NOTIFICATION AU CLIENT
+  // =========================================================================
+  try {
+    // Récupérer les infos utilisateur pour l'email
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        email: true,
+        steamUsername: true,
+      },
+    });
+
+    if (user?.email) {
+      const { emailService } = await import('./email');
+      const username = user.steamUsername || 'Utilisateur';
+      
+      if (status === 'VERIFIED') {
+        // Email de félicitations
+        console.log(`📧 [KYCAID] Envoi de l'email d'approbation KYC à ${user.email}`);
+        await emailService.sendKycApprovedEmail(user.email, username);
+        console.log(`✅ [KYCAID] Email d'approbation KYC envoyé avec succès`);
+      } else if (status === 'REJECTED') {
+        // Email de rejet avec raison
+        console.log(`📧 [KYCAID] Envoi de l'email de rejet KYC à ${user.email}`);
+        await emailService.sendKycRejectedEmail(
+          user.email,
+          username,
+          rejectionReason || 'Aucune raison spécifiée'
+        );
+        console.log(`✅ [KYCAID] Email de rejet KYC envoyé avec succès`);
+      }
+    } else {
+      console.warn(`⚠️  [KYCAID] Impossible d'envoyer l'email : email utilisateur non trouvé pour userId ${userId}`);
+    }
+  } catch (emailError: any) {
+    // L'erreur d'email ne doit pas bloquer la mise à jour du statut KYC
+    console.error(`⚠️  [KYCAID] Erreur lors de l'envoi de l'email de notification KYC (non bloquant) :`, emailError.message);
+  }
 }
 
 // =============================================================================

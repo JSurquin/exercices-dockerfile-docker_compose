@@ -556,9 +556,9 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* KYC Status Card */}
                 <Card className={`border-2 ${
-                  data?.user?.kycStatus === 'verified' || data?.user?.kycStatus === 'VERIFIED'
+                  data?.user?.kycStatus === 'VERIFIED' || data?.user?.kycStatus === 'KYCAID_VERIFIED'
                     ? 'border-green-500/50 bg-green-500/5'
-                    : data?.user?.kycStatus === 'in_progress'
+                    : data?.user?.kycStatus === 'IN_PROGRESS'
                     ? 'border-yellow-500/50 bg-yellow-500/5'
                     : 'border-orange-500/50 bg-orange-500/5'
                 }`}>
@@ -566,13 +566,13 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                          data?.user?.kycStatus === 'verified' || data?.user?.kycStatus === 'VERIFIED'
+                          data?.user?.kycStatus === 'VERIFIED' || data?.user?.kycStatus === 'KYCAID_VERIFIED'
                             ? 'bg-green-500/20'
-                            : data?.user?.kycStatus === 'in_progress'
+                            : data?.user?.kycStatus === 'IN_PROGRESS'
                             ? 'bg-yellow-500/20'
                             : 'bg-orange-500/20'
                         }`}>
-                          {data?.user?.kycStatus === 'verified' || data?.user?.kycStatus === 'VERIFIED' ? (
+                          {data?.user?.kycStatus === 'VERIFIED' || data?.user?.kycStatus === 'KYCAID_VERIFIED' ? (
                             <CheckIcon className="w-6 h-6 text-green-500" />
                           ) : (
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-orange-500">
@@ -583,15 +583,15 @@ export default function DashboardPage() {
                         <div>
                           <h3 className="font-semibold">{messages.dashboard.kycVerification}</h3>
                           <p className="text-sm text-muted-foreground">
-                            {data?.user?.kycStatus === 'verified' || data?.user?.kycStatus === 'VERIFIED'
+                            {data?.user?.kycStatus === 'VERIFIED' || data?.user?.kycStatus === 'KYCAID_VERIFIED'
                               ? messages.dashboard.kycVerified
-                              : data?.user?.kycStatus === 'in_progress'
+                              : data?.user?.kycStatus === 'IN_PROGRESS'
                               ? messages.dashboard.kycInProgress
                               : messages.dashboard.kycRequired}
                           </p>
                         </div>
                       </div>
-                      {(data?.user?.kycStatus !== 'verified' && data?.user?.kycStatus !== 'VERIFIED') && (
+                      {(data?.user?.kycStatus !== 'VERIFIED' && data?.user?.kycStatus !== 'KYCAID_VERIFIED') && (
                         <Button asChild className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
                           <Link href="/kyc">{messages.payments.verify}</Link>
                         </Button>

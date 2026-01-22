@@ -65,27 +65,30 @@ export function mapPayoutStatusToDb(displayStatus: string): string {
 }
 
 // Mapping pour les statuts KYC
-type KycStatus = "pending" | "approved" | "rejected" | "in_progress";
+type KycStatus = "PENDING" | "VERIFIED" | "REJECTED" | "IN_PROGRESS" | "KYCAID_PENDING" | "KYCAID_VERIFIED" | "KYCAID_REJECTED";
 
 export function mapKycStatusFromDb(prismaStatus: string): KycStatus {
   const mapping: Record<string, KycStatus> = {
-    'PENDING': 'pending',
-    'VERIFIED': 'approved',
-    'REJECTED': 'rejected',
-    'IN_PROGRESS': 'in_progress',
-    'KYCAID_PENDING': 'pending',
-    'KYCAID_VERIFIED': 'approved',
-    'KYCAID_REJECTED': 'rejected',
+    'PENDING': 'PENDING',
+    'VERIFIED': 'VERIFIED',
+    'REJECTED': 'REJECTED',
+    'IN_PROGRESS': 'IN_PROGRESS',
+    'KYCAID_PENDING': 'KYCAID_PENDING',
+    'KYCAID_VERIFIED': 'KYCAID_VERIFIED',
+    'KYCAID_REJECTED': 'KYCAID_REJECTED',
   };
-  return mapping[prismaStatus] || ('pending' as KycStatus);
+  return mapping[prismaStatus] || ('PENDING' as KycStatus);
 }
 
 export function mapKycStatusToDb(displayStatus: string): string {
   const mapping: Record<string, string> = {
-    'pending': 'PENDING',
-    'approved': 'VERIFIED',
-    'rejected': 'REJECTED',
-    'in_progress': 'IN_PROGRESS',
+    'PENDING': 'PENDING',
+    'VERIFIED': 'VERIFIED',
+    'REJECTED': 'REJECTED',
+    'IN_PROGRESS': 'IN_PROGRESS',
+    'KYCAID_PENDING': 'KYCAID_PENDING',
+    'KYCAID_VERIFIED': 'KYCAID_VERIFIED',
+    'KYCAID_REJECTED': 'KYCAID_REJECTED',
   };
   return mapping[displayStatus] || displayStatus.toUpperCase();
 }

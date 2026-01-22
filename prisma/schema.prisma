@@ -36,6 +36,7 @@ model User {
   reviewedApplications  AffiliateApplication[] @relation("AffiliateApplicationReviewer")
   giveawayEntries       GiveawayEntry[]
   kycDocuments          KycDocument[]
+  kycVerifications      KycVerification[]
   paymentMethods        PaymentMethod[]
   payouts               Payout[]
   trades                Trade[]
@@ -150,22 +151,178 @@ model Payout {
 }
 
 model KycDocument {
-  id              String          @id @default(cuid())
-  userId          String
-  type            KycDocumentType
-  status          KycStatus       @default(PENDING)
-  providerId      String          // KYCAID applicant_id
-  verificationId  String?         // KYCAID verification_id
-  uploadedAt      DateTime        @default(now())
-  reviewedAt      DateTime?
-  rejectionReason String?
-  metadata        Json?           // Données supplémentaires de KYCAID
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id                  String          @id @default(cuid())
+  userId              String
+  type                KycDocumentType
+  status              KycStatus       @default(PENDING)
+  
+  // KYCAID IDs (renommer providerId)
+  kycaidApplicantId   String          // Applicant auquel appartient ce doc
+  kycaidDocumentId    String?         @unique // ID du document côté KYCAID
+  verificationId      String?         // ID de la vérification associée
+  
+  // Fichiers liés (relation)
+  files               KycFile[]
+  
+  // Résultat de vérification
+  isVerified          Boolean         @default(false)
+  verifiedAt          DateTime?
+  rejectionReason     String?
+  
+  // Métadonnées complètes KYCAID
+  metadata            Json?           // Réponse API complète
+  
+  // Audit
+  uploadedAt          DateTime        @default(now())
+  reviewedAt          DateTime?
+  
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   @@index([userId])
   @@index([status])
-  @@index([providerId])
+  @@index([kycaidApplicantId])
+  @@index([kycaidDocumentId])
   @@index([verificationId])
+  @@map("kyc_document")
+}
+
+model KycFile {
+  id              String       @id @default(cuid())
+  
+  // Lien vers le document parent
+  documentId      String
+  document        KycDocument  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  // Métadonnées fichier
+  fileName        String
+  fileType        String       // jpg, png, pdf
+  fileSize        Int
+  side            KycFileSide  // FRONT, BACK, SELFIE
+  
+  // ID KYCAID
+  kycaidFileId    String?      @unique // ID retourné après création
+  uploadedToKycaid Boolean     @default(false)
+  
+  // URLs (si stockage local temporaire)
+  localPath       String?      // Chemin temporaire avant upload
+  
+  // Audit
+  createdAt       DateTime     @default(now())
+  uploadedAt      DateTime?
+  
+  @@index([documentId])
+  @@index([kycaidFileId])
+  @@map("kyc_file")
+}
+
+model KycAddress {
+  id                String   @id @default(cuid())
+  
+  // Rattachement
+  applicantId       String?  // User.kycaidApplicantId
+  affiliatedPersonId String? // Pour KYB (futurs dirigeants)
+  type              KycAddressType
+  
+  // Champs obligatoires KYCAID API
+  country           String   // Code ISO 2 lettres
+  city              String
+  postalCode        String
+  streetName        String
+  buildingNumber    String
+  
+  // Champs optionnels
+  unitNumber        String?
+  stateOrProvince   String?
+  fullAddress       String?
+  
+  // Métadonnées KYCAID
+  kycaidAddressId   String?  @unique // ID retourné par l'API
+  isVerified        Boolean  @default(false)
+  verifiedAt        DateTime?
+  
+  // Audit
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([applicantId])
+  @@index([type])
+  @@index([kycaidAddressId])
+  @@map("kyc_address")
+}
+
+model KycVerification {
+  id                    String   @id @default(cuid())
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // IDs KYCAID
+  kycaidVerificationId  String   @unique
+  kycaidApplicantId     String
+  
+  // État global
+  status                KycaidVerificationStatus
+  verified              Boolean  @default(false)
+  formUrl               String?  // URL du formulaire KYCAID
+  
+  // Résultats par composante
+  documentStatus        String?
+  documentVerified      Boolean?
+  facialStatus          String?
+  facialVerified        Boolean?
+  addressStatus         String?
+  addressVerified       Boolean?
+  amlStatus             String?
+  amlVerified           Boolean?
+  
+  // Raisons de refus
+  declineReasons        Json?
+  
+  // Métadonnées complètes
+  metadata              Json?
+  
+  // Dates
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  completedAt           DateTime?
+  
+  @@index([userId])
+  @@index([kycaidVerificationId])
+  @@index([status])
+  @@index([verified])
+  @@map("kyc_verification")
+}
+
+model KycAffiliatedPerson {
+  id                    String              @id @default(cuid())
+  
+  // Lien vers l'entreprise (applicant parent)
+  companyApplicantId    String
+  
+  // ID KYCAID
+  kycaidAffiliatedId    String              @unique
+  
+  // Identité
+  firstName             String
+  lastName              String
+  email                 String
+  dob                   String              // YYYY-MM-DD
+  nationality           String?
+  residenceCountry      String?
+  
+  // Rôle dans l'entreprise
+  role                  AffiliatedRole
+  sharePercentage       Float?              // Pour UBO (bénéficiaires effectifs)
+  
+  // Adresse personnelle (peut pointer vers KycAddress si nécessaire)
+  addressJson           Json?
+  
+  // Audit
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  
+  @@index([companyApplicantId])
+  @@index([kycaidAffiliatedId])
+  @@map("kyc_affiliated_person")
 }
 
 model AffiliateStats {
@@ -367,10 +524,60 @@ enum KycStatus {
 }
 
 enum KycDocumentType {
+  // Types standards
   ID_CARD
   PASSPORT
   SELFIE
   PROOF_OF_ADDRESS
+  
+  // Types KYCAID
+  GOVERNMENT_ID
+  DRIVERS_LICENSE
+  DOMESTIC_PASSPORT
+  PERMANENT_RESIDENCE_PERMIT
+  REFUGEE_CARD
+  FOREIGN_CITIZEN_PASSPORT
+  SELFIE_IMAGE
+  SELFIE_WITH_DOCUMENT
+  SELFIE_WITH_CREDIT_CARD
+  ADDRESS_DOCUMENT
+  FINANCIAL_DOCUMENT
+  TAX_ID_NUMBER
+  CREDIT_CARD
+  BANK_STATEMENT
+  REGISTRATION_COMPANY
+  COMPANY_LEGAL_ADDRESS
+  AUTHORISED_PERSON
+  COMPANY_OWNERSHIP
+  VIDEO
+}
+
+enum KycFileSide {
+  FRONT    // Recto
+  BACK     // Verso
+  SELFIE   // Photo selfie/liveness
+  PROOF    // Justificatif (adresse, etc.)
+}
+
+enum KycAddressType {
+  REGISTERED   // Adresse principale/officielle
+  BUSINESS     // Adresse d'exploitation (KYB)
+  ADDITIONAL   // Adresse secondaire
+}
+
+enum KycaidVerificationStatus {
+  UNUSED       // Créé mais pas encore utilisé
+  PENDING      // En attente de soumission utilisateur
+  PROCESSING   // En cours de vérification
+  COMPLETED    // Terminé (vérifié ou refusé)
+  DECLINED     // Refusé
+}
+
+enum AffiliatedRole {
+  DIRECTOR          // Dirigeant
+  UBO               // Bénéficiaire effectif (Ultimate Beneficial Owner)
+  LEGAL_REP         // Représentant légal
+  SHAREHOLDER       // Actionnaire
 }
 
 enum GiveawayStatus {

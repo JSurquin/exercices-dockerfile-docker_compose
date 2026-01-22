@@ -6,7 +6,7 @@ export const mockUser: User = {
   username: 'ProGamer2024',
   avatar: 'https://avatars.steamstatic.com/c5d56249ee5d28a07db4ac9f7f60af961fab5426_full.jpg',
   acceptedTermsAt: new Date('2024-01-15'),
-  kycStatus: 'verified',
+  kycStatus: 'VERIFIED',
   totalVolume: 123456, // 1234.56€ en centimes
   xp: 15800,
   level: 12,

@@ -147,7 +147,7 @@ export default function PayoutPage() {
       return;
     }
 
-    if (!user?.kycStatus || user.kycStatus !== 'verified') {
+    if (!user?.kycStatus || (user.kycStatus !== 'VERIFIED' && user.kycStatus !== 'KYCAID_VERIFIED')) {
       toast.error(text.kyc.required);
       return;
     }
@@ -209,7 +209,7 @@ export default function PayoutPage() {
   }
 
   // KYC non vérifié
-  if (!user.kycStatus || user.kycStatus !== 'verified') {
+  if (!user.kycStatus || (user.kycStatus !== 'VERIFIED' && user.kycStatus !== 'KYCAID_VERIFIED')) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">

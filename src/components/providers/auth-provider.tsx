@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               xp: 0,
               tickets: 0,
               totalVolume: 0,
-              kycStatus: 'pending',
+              kycStatus: 'PENDING',
               acceptedTermsAt: new Date(),
               joinedAt: betterAuthUser.createdAt,
             };

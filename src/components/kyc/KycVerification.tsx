@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Shield, CheckCircle, XCircle, Clock, ExternalLink, AlertCircle, User } from 'lucide-react';
+import { AddressForm, type AddressData } from './AddressForm';
 
 interface KycStatus {
   status: 'PENDING' | 'VERIFIED' | 'REJECTED';
@@ -26,6 +27,8 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
   const [initiating, setInitiating] = useState(false);
   const [kycStatus, setKycStatus] = useState<KycStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<'address' | 'verification'>('address');
+  const [addressSubmitted, setAddressSubmitted] = useState(false);
 
   const fetchStatus = async () => {
     try {
@@ -54,6 +57,33 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
     const interval = setInterval(fetchStatusCallback, 30000);
     return () => clearInterval(interval);
   }, [fetchStatusCallback]);
+
+  const handleAddressSubmit = async (address: AddressData) => {
+    setInitiating(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/kycaid/address', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(address),
+      });
+
+      if (response.ok) {
+        setAddressSubmitted(true);
+        setStep('verification');
+        // Initier le KYC après soumission de l'adresse
+        await handleInitiateKyc();
+      } else {
+        const data = await response.json();
+        throw new Error(data.error || 'Erreur lors de l\'enregistrement de l\'adresse');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } finally {
+      setInitiating(false);
+    }
+  };
 
   const handleInitiateKyc = async () => {
     setInitiating(true);
@@ -145,7 +175,13 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
           </Alert>
         )}
 
-        {kycStatus && (
+        {/* Étape 1 : Formulaire d'adresse */}
+        {step === 'address' && !addressSubmitted && (kycStatus?.status === 'PENDING' || kycStatus?.canRetry) && (
+          <AddressForm onSubmit={handleAddressSubmit} isLoading={initiating} />
+        )}
+
+        {/* Étape 2 : Vérification */}
+        {(step === 'verification' || kycStatus?.status === 'VERIFIED' || addressSubmitted) && kycStatus && (
           <div className="flex flex-col items-center text-center gap-4 py-4">
             {getStatusIcon()}
             <p className="text-muted-foreground max-w-md">{kycStatus.message}</p>
