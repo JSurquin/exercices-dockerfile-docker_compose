@@ -132,6 +132,19 @@ model Payout {
   gateFiOrderId        String?               @unique // Réutilisé pour Flexify orderId
   gateFiWidgetUrl      String?
   flexifyPayoutId      String?               @unique // ID Flexify du payout
+  // Whitepay fields
+  whitepayTransactionId String?              @unique // ID transaction Whitepay
+  whitepayStatus        String?              // Statut brut Whitepay (WAITING_CONFIRMATION, etc.)
+  whitepayExchangeRate  String?              // Taux de change appliqué
+  whitepayTargetValue   String?              // Montant en crypto reçu
+  whitepayTargetCurrency String?             // Ticker crypto (USDT, BTC, etc.)
+  whitepayNetwork       String?              // Réseau blockchain (ERC20, TRC20, etc.)
+  whitepayAddress       String?              // Adresse wallet destination
+  whitepayMemo          String?              // Memo/tag si applicable
+  whitepayTxHash        String?              // Hash de la transaction blockchain
+  whitepayFee           String?              // Frais Whitepay
+  whitepayEstimatedAt   DateTime?            // Timestamp estimation du taux
+  whitepayConfirmedAt   DateTime?            // Timestamp confirmation
   processingFeeCents   Int?                  // Frais de traitement
   networkFeeCents      Int?                  // Frais réseau
   errorMessage         String?               // Message d'erreur si échec
@@ -148,6 +161,7 @@ model Payout {
   @@index([createdAt])
   @@index([gateFiOrderId])
   @@index([flexifyPayoutId])
+  @@index([whitepayTransactionId])
 }
 
 model KycDocument {
@@ -501,6 +515,12 @@ enum PayoutStatus {
   FLEXIFY_PROCESSING
   FLEXIFY_PAID
   FLEXIFY_FAILED
+  // Whitepay specific statuses
+  WHITEPAY_WAITING_CONFIRMATION
+  WHITEPAY_PENDING_WITHDRAWAL
+  WHITEPAY_PROCESSING_WITHDRAWAL
+  WHITEPAY_COMPLETE
+  WHITEPAY_DECLINED
 }
 
 enum PaymentMethodType {
@@ -510,6 +530,8 @@ enum PaymentMethodType {
   // Flexify specific types
   FLEXIFY_SEPA
   FLEXIFY_CARD
+  // Whitepay specific type
+  WHITEPAY_CRYPTO
 }
 
 enum KycStatus {

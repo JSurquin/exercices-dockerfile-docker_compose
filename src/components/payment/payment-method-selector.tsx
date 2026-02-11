@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { CreditCard, Wallet } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { CreditCard, Wallet, Zap } from 'lucide-react';
 import { useLocale } from '@/components/providers/locale-provider';
 
-export type PaymentMethodType = 'SEPA' | 'CRYPTO';
+export type PaymentMethodType = 'SEPA' | 'CRYPTO' | 'WHITEPAY_CRYPTO';
 
 interface PaymentMethodSelectorProps {
   onSelect: (method: PaymentMethodType) => void;
@@ -45,7 +46,7 @@ export function PaymentMethodSelector({
           value={selected}
           onValueChange={handleSelect}
           disabled={disabled}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          className="grid grid-cols-1 md:grid-cols-3 gap-4"
         >
           {/* Option SEPA */}
           <Label
@@ -69,7 +70,7 @@ export function PaymentMethodSelector({
             </div>
           </Label>
 
-          {/* Option Crypto */}
+          {/* Option Crypto (ancien) */}
           <Label
             htmlFor="crypto"
             className={`flex flex-col items-center gap-3 p-6 border-2 rounded-lg cursor-pointer transition-all hover:border-primary ${
@@ -88,6 +89,29 @@ export function PaymentMethodSelector({
               <span>{t.crypto.delay}</span>
               <span>•</span>
               <span>{t.crypto.fees}</span>
+            </div>
+          </Label>
+
+          {/* Option Whitepay Crypto */}
+          <Label
+            htmlFor="whitepay_crypto"
+            className={`relative flex flex-col items-center gap-3 p-6 border-2 rounded-lg cursor-pointer transition-all hover:border-primary ${
+              selected === 'WHITEPAY_CRYPTO' ? 'border-primary bg-primary/5' : 'border-border'
+            } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <RadioGroupItem value="WHITEPAY_CRYPTO" id="whitepay_crypto" className="sr-only" />
+            <Badge className="absolute top-2 right-2 text-[10px]" variant="default">Whitepay</Badge>
+            <Zap className="h-12 w-12 text-primary" />
+            <div className="text-center space-y-1">
+              <h3 className="font-semibold text-lg">{t.whitepayCrypto.title}</h3>
+              <p className="text-sm text-muted-foreground">
+                {t.whitepayCrypto.description}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>{t.whitepayCrypto.delay}</span>
+              <span>•</span>
+              <span>{t.whitepayCrypto.fees}</span>
             </div>
           </Label>
         </RadioGroup>

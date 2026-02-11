@@ -3515,6 +3515,12 @@ export interface Messages {
           delay: string;
           fees: string;
         };
+        whitepayCrypto: {
+          title: string;
+          description: string;
+          delay: string;
+          fees: string;
+        };
       };
       kyc: {
         title: string;
@@ -3602,6 +3608,64 @@ export interface Messages {
         quoteRequired: string;
         paymentError: string;
         unknownError: string;
+      };
+      whitepayForm: {
+        title: string;
+        description: string;
+        flowStandard: {
+          title: string;
+          description: string;
+        };
+        flowInstant: {
+          title: string;
+          description: string;
+        };
+        selectCrypto: string;
+        selectCryptoPlaceholder: string;
+        selectNetwork: string;
+        selectNetworkPlaceholder: string;
+        walletAddress: string;
+        walletWarning: string;
+        memoLabel: string;
+        memoRequired: string;
+        memoPlaceholder: string;
+        memoWarning: string;
+        amount: string;
+        getQuoteButton: string;
+        instantButton: string;
+        disclaimer: string;
+        confirm: {
+          title: string;
+          description: string;
+          amount: string;
+          exchangeRate: string;
+          fee: string;
+          youReceive: string;
+          wallet: string;
+          network: string;
+          timeLeft: string;
+          expired: string;
+          expiredTitle: string;
+          expiredDescription: string;
+          refreshRate: string;
+          confirmButton: string;
+          cancel: string;
+        };
+        success: {
+          title: string;
+          description: string;
+          amount: string;
+          status: string;
+          txHash: string;
+          trackingInfo: string;
+        };
+        errors: {
+          kycRequired: string;
+          createError: string;
+          confirmError: string;
+          refreshError: string;
+          unknownError: string;
+        };
       };
     };
     legalPage: {
