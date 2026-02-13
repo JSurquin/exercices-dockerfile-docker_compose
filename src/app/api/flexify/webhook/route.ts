@@ -3,8 +3,8 @@ import { prisma } from '~/prisma/prisma';
 import {
   validateWebhookSignature,
   convertFlexifyStatus,
-  isPayoutCompleted,
-  isPayoutFailed,
+  isTransactionCompleted,
+  isTransactionFailed,
   type FlexifyWebhookPayload,
 } from '@/lib/flexify';
 
@@ -15,11 +15,25 @@ import {
 export async function POST(request: NextRequest) {
   try {
     const rawBody = await request.text();
-    const signature = request.headers.get('X-Signature') || '';
-    const timestamp = request.headers.get('X-Timestamp') || '';
+    
+    // Récupérer les headers nécessaires pour la validation
+    const authorizationHeader = request.headers.get('Authorization') || '';
+    const digestHeader = request.headers.get('Digest') || '';
+    const dateHeader = request.headers.get('Date') || '';
+    const hostHeader = request.headers.get('Host') || '';
+    const contentLengthHeader = request.headers.get('Content-Length') || '0';
 
-    // Valider la signature
-    if (!validateWebhookSignature(rawBody, signature, timestamp)) {
+    // Valider la signature selon la spec H2H
+    const isValid = validateWebhookSignature(
+      rawBody,
+      authorizationHeader,
+      digestHeader,
+      dateHeader,
+      hostHeader,
+      contentLengthHeader
+    );
+
+    if (!isValid) {
       console.error('[Flexify Webhook] Invalid signature');
       return NextResponse.json(
         { error: 'Invalid signature' },
@@ -30,15 +44,16 @@ export async function POST(request: NextRequest) {
     const payload: FlexifyWebhookPayload = JSON.parse(rawBody);
 
     console.log('[Flexify Webhook] Received:', {
-      eventType: payload.eventType,
-      payoutId: payload.payoutId,
-      orderId: payload.orderId,
+      transactionId: payload.transaction_id,
+      reference: payload.reference,
       status: payload.status,
+      amount: payload.amount,
+      method: payload.method,
     });
 
-    // Trouver le payout correspondant
+    // Trouver le payout correspondant par référence
     const payout = await prisma.payout.findFirst({
-      where: { gateFiOrderId: payload.orderId },
+      where: { gateFiOrderId: payload.reference },
       include: {
         user: { select: { id: true, email: true } },
         trade: true,
@@ -46,7 +61,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!payout) {
-      console.warn('[Flexify Webhook] Payout not found:', payload.orderId);
+      console.warn('[Flexify Webhook] Payout not found:', payload.reference);
       // Retourner 200 pour éviter les re-tentatives
       return NextResponse.json({ received: true });
     }
@@ -59,14 +74,15 @@ export async function POST(request: NextRequest) {
       where: { id: payout.id },
       data: {
         status: newStatus as 'PENDING' | 'VERIFICATION_REQUIRED' | 'VERIFIED' | 'SCHEDULED' | 'PROCESSING' | 'PAID' | 'FAILED',
-        txId: payload.transactionId,
-        paymentReference: payload.payoutId,
-        ...(isPayoutCompleted(payload.status) && { paidAt: new Date() }),
+        txId: payload.transaction_id,
+        flexifyPayoutId: payload.transaction_id,
+        paymentReference: payload.reference,
+        ...(isTransactionCompleted(payload.status) && { paidAt: new Date() }),
       },
     });
 
     // Si le payout est complété, mettre à jour le trade
-    if (isPayoutCompleted(payload.status) && payout.tradeId) {
+    if (isTransactionCompleted(payload.status) && payout.tradeId) {
       await prisma.trade.update({
         where: { id: payout.tradeId },
         data: { status: 'PAID' },
@@ -88,7 +104,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Si le payout a échoué
-    if (isPayoutFailed(payload.status) && payout.tradeId) {
+    if (isTransactionFailed(payload.status) && payout.tradeId) {
       await prisma.trade.update({
         where: { id: payout.tradeId },
         data: { status: 'FAILED' },
@@ -99,20 +115,21 @@ export async function POST(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         userId: payout.userId,
-        action: `PAYOUT_${payload.eventType.toUpperCase().replace('.', '_')}`,
+        action: `FLEXIFY_WEBHOOK_${payload.status.toUpperCase()}`,
         details: {
           payoutId: payout.id,
-          orderId: payload.orderId,
-          flexifyId: payload.payoutId,
+          reference: payload.reference,
+          flexifyTransactionId: payload.transaction_id,
           oldStatus: payout.status,
           newStatus,
-          transactionId: payload.transactionId,
-          errorMessage: payload.errorMessage,
-          fees: payload.fees,
+          amount: payload.amount,
+          method: payload.method,
+          sepaDetails: payload.sepa,
         },
       },
     });
 
+    // Répondre avec 200 dans les 30 secondes (requis par Flexify)
     return NextResponse.json({ received: true, processed: true });
   } catch (error) {
     console.error('[Flexify Webhook] Error:', error);

@@ -11,9 +11,14 @@ export const KYCAID_CONFIG = {
   baseUrl: process.env.KYCAID_BASE_URL || 'https://api.kycaid.com',
   formId: process.env.KYCAID_FORM_ID!, // ID du formulaire de vérification
   webhookSecret: process.env.KYCAID_WEBHOOK_SECRET!,
-  // URLs
-  callbackUrl: process.env.KYCAID_CALLBACK_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api/kycaid/webhook`,
+  // URLs - En dev, on n'utilise pas les webhooks (localhost inaccessible)
+  // En prod, KYCAID enverra les callbacks à l'URL de production
+  callbackUrl: process.env.NODE_ENV === 'production' 
+    ? (process.env.KYCAID_CALLBACK_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api/kycaid/webhook`)
+    : undefined, // Pas de callback en dev, on utilise le polling
   redirectUrl: process.env.KYCAID_REDIRECT_URL || `${process.env.NEXT_PUBLIC_APP_URL}/kyc/complete`,
+  // Mode développement : utiliser le polling au lieu des webhooks
+  isDevelopment: process.env.NODE_ENV === 'development',
 };
 
 // Log de la config au démarrage (masquer la clé API)
@@ -508,14 +513,26 @@ export async function createVerification(
 ): Promise<KycaidVerification> {
   validateConfig();
 
-  const requestBody = {
+  const requestBody: Record<string, any> = {
     applicant_id: params.applicantId,
     form_id: params.formId || KYCAID_CONFIG.formId,
     redirect_url: params.redirectUrl || KYCAID_CONFIG.redirectUrl,
     external_applicant_id: params.externalApplicantId,
   };
 
-  logKycTransaction('CREATE_VERIFICATION', params.applicantId, {});
+  // En production uniquement, ajouter le callback_url
+  // En dev, on n'ajoute PAS de callback_url car localhost n'est pas accessible
+  if (KYCAID_CONFIG.callbackUrl) {
+    requestBody.callback_url = KYCAID_CONFIG.callbackUrl;
+    console.log(`📡 [KYCAID] Callback URL configurée: ${KYCAID_CONFIG.callbackUrl}`);
+  } else {
+    console.log(`⚠️  [KYCAID] Mode développement: Pas de callback URL (utiliser le polling)`);
+  }
+
+  logKycTransaction('CREATE_VERIFICATION', params.applicantId, {
+    isDevelopment: KYCAID_CONFIG.isDevelopment,
+    hasCallbackUrl: !!KYCAID_CONFIG.callbackUrl,
+  });
 
   return kycaidRequest<KycaidVerification>('POST', '/verifications', requestBody);
 }

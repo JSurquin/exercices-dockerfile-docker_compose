@@ -3978,11 +3978,11 @@ export interface Messages {
     add: string;
     noMethods: string;
     addMethod: string;
-    card: string;
+    crypto: string;
     sepa: string;
     paymentMethod: string;
     sepaPrefix: string;
-    expire: string;
+    walletPrefix: string;
   };
   payoutPage: {
     title: string;
@@ -4026,12 +4026,19 @@ export interface Messages {
         bicPlaceholder: string;
         accountHolderLabel: string;
         accountHolderPlaceholder: string;
-        cardNumberLabel: string;
-        cardNumberPlaceholder: string;
-        expiryDateLabel: string;
-        expiryDatePlaceholder: string;
-        cardHolderLabel: string;
-        cardHolderPlaceholder: string;
+        // Crypto fields
+        cryptoLabel: string;
+        cryptoPlaceholder: string;
+        networkLabel: string;
+        networkPlaceholder: string;
+        walletAddressLabel: string;
+        walletAddressWarning: string;
+        cryptoWalletRequired: string;
+        cryptoMemoRequired: string;
+        memoLabel: string;
+        memoRequired: string;
+        memoPlaceholder: string;
+        memoWarning: string;
         security: {
           title: string;
           sepaInfo: string;

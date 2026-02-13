@@ -72,7 +72,7 @@ export function PaymentMethodsList({
 
   const getPaymentMethodDescription = (pm: StripePaymentMethod) => {
     if (pm.type === 'card' && pm.card) {
-      return `${pm.card.brand.toUpperCase()} • ${messages.paymentMethodsList.expire} ${pm.card.expMonth}/${pm.card.expYear}`;
+      return `${pm.card.brand.toUpperCase()} • ${pm.card.expMonth}/${pm.card.expYear}`;
     }
     if (pm.type === 'sepa_debit' && pm.sepa_debit) {
       return `SEPA • ${pm.sepa_debit.country.toUpperCase()}`;
@@ -147,7 +147,7 @@ export function PaymentMethodsList({
                       <CheckCircle className="h-5 w-5 text-primary" />
                     )}
                     <Badge variant="secondary">
-                      {pm.type === 'card' ? messages.paymentMethodsList.card : messages.paymentMethodsList.sepa}
+                      {pm.type === 'card' ? 'Card' : messages.paymentMethodsList.sepa}
                     </Badge>
                   </div>
                 </div>

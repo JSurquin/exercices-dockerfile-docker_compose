@@ -13,7 +13,6 @@ import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import {
   BanknotesIcon,
-  CreditCardIcon,
   ShieldCheckIcon,
   ClockIcon,
   CheckCircleIcon,
@@ -21,10 +20,43 @@ import {
   InformationCircleIcon,
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
+import { CurrencyDollarIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { formatCentsToCurrency, toCents } from '@/lib/currency-converter';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-type PayoutMethod = 'sepa' | 'card';
+type PayoutMethod = 'sepa' | 'crypto';
+
+// Cryptos supportées par Whitepay
+const SUPPORTED_CRYPTOS = [
+  { ticker: 'USDT', name: 'Tether (USDT)', networks: ['ERC20', 'TRC20', 'BEP20', 'TON', 'SOL'], is_stable: true },
+  { ticker: 'USDC', name: 'USD Coin (USDC)', networks: ['ERC20', 'TRC20', 'BEP20', 'SOL'], is_stable: true },
+  { ticker: 'BTC', name: 'Bitcoin (BTC)', networks: ['BTC'], is_stable: false },
+  { ticker: 'ETH', name: 'Ethereum (ETH)', networks: ['ERC20'], is_stable: false },
+  { ticker: 'SOL', name: 'Solana (SOL)', networks: ['SOL'], is_stable: false },
+  { ticker: 'TON', name: 'Toncoin (TON)', networks: ['TON'], is_stable: false },
+  { ticker: 'BNB', name: 'BNB (BNB)', networks: ['BEP20'], is_stable: false },
+];
+
+const MEMO_REQUIRED_NETWORKS = ['TON', 'STELLAR', 'XLM', 'COSMOS', 'ATOM'];
+
+function getAddressPlaceholder(network: string): string {
+  switch (network) {
+    case 'BTC': return 'bc1q...';
+    case 'ERC20':
+    case 'BEP20': return '0x...';
+    case 'TRC20': return 'T...';
+    case 'SOL': return 'So1...';
+    case 'TON': return 'EQ...';
+    default: return '0x...';
+  }
+}
 
 // Type for the quote response from our API
 interface QuoteData {
@@ -47,10 +79,11 @@ interface PayoutFormData {
   iban: string;
   bic: string;
   accountHolder: string;
-  // Card
-  cardNumber: string;
-  cardExpiry: string;
-  cardHolder: string;
+  // Crypto
+  walletAddress: string;
+  selectedCrypto: string;
+  selectedNetwork: string;
+  memo: string;
 }
 
 export default function PayoutPage() {
@@ -65,9 +98,10 @@ export default function PayoutPage() {
     iban: '',
     bic: '',
     accountHolder: '',
-    cardNumber: '',
-    cardExpiry: '',
-    cardHolder: '',
+    walletAddress: '',
+    selectedCrypto: 'USDT',
+    selectedNetwork: 'ERC20',
+    memo: '',
   });
   const [payoutHistory, setPayoutHistory] = useState<Array<{
     id: string;
@@ -99,7 +133,71 @@ export default function PayoutPage() {
     }
   }, [user, fetchPayoutHistory]);
 
-  // Obtenir un devis Flexify
+  // Polling automatique du KYC en dev (DOIT être avant les returns conditionnels)
+  useEffect(() => {
+    if (!user?.kycStatus || (user.kycStatus !== 'VERIFIED' && user.kycStatus !== 'KYCAID_VERIFIED')) {
+      // Vérifier si on vient juste de vérifier le KYC (pour éviter le loop)
+      const justVerified = localStorage.getItem('kyc_just_verified');
+      if (justVerified) {
+        const timestamp = parseInt(justVerified);
+        // Si c'est moins de 30 secondes, ne pas poller (laisse le temps à la BDD de se sync)
+        if (Date.now() - timestamp < 30000) {
+          console.log('[Payout] KYC just verified, waiting for DB sync...');
+          return;
+        } else {
+          // Nettoyer le localStorage si c'est trop vieux
+          localStorage.removeItem('kyc_just_verified');
+        }
+      }
+
+      // Récupérer le verificationId de la dernière vérification
+      const pollKycStatus = async () => {
+        try {
+          const response = await fetch('/api/kycaid/status');
+          if (!response.ok) return;
+          
+          const data = await response.json();
+          
+          // Si une vérification est en cours et qu'on est en dev, utiliser le polling
+          if (data.verificationId && process.env.NODE_ENV === 'development') {
+            console.log('[Payout] Polling KYC verification:', data.verificationId);
+            const pollResponse = await fetch(`/api/kycaid/poll/${data.verificationId}`);
+            
+            if (pollResponse.ok) {
+              const pollData = await pollResponse.json();
+              
+              if (pollData.verified === true) {
+                console.log('[Payout] ✅ KYC VERIFIED! Reloading page...');
+                // Stocker dans localStorage pour éviter le loop
+                localStorage.setItem('kyc_just_verified', Date.now().toString());
+                toast.success('KYC vérifié avec succès !');
+                // Rafraîchir la page pour mettre à jour le statut
+                setTimeout(() => window.location.reload(), 1000);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('[Payout] Error polling KYC:', error);
+        }
+      };
+      
+      // Poll immédiatement
+      pollKycStatus();
+      
+      // Puis toutes les 10 secondes
+      const interval = setInterval(pollKycStatus, 10000);
+      return () => clearInterval(interval);
+    } else {
+      // Si le KYC est vérifié, nettoyer le localStorage
+      localStorage.removeItem('kyc_just_verified');
+    }
+  }, [user?.kycStatus]);
+
+  // Réseaux disponibles pour la crypto sélectionnée
+  const availableNetworks = SUPPORTED_CRYPTOS.find((c) => c.ticker === formData.selectedCrypto)?.networks || [];
+  const needsMemo = MEMO_REQUIRED_NETWORKS.includes(formData.selectedNetwork);
+
+  // Obtenir un devis (Flexify pour SEPA, Whitepay pour Crypto)
   const getQuote = async () => {
     if (!amount || parseFloat(amount) <= 0) {
       toast.error(text.toast.amountTooLow);
@@ -112,6 +210,18 @@ export default function PayoutPage() {
     if (amountCents > balance) {
       toast.error(text.toast.insufficientBalance);
       return;
+    }
+
+    // Validation crypto
+    if (payoutMethod === 'crypto') {
+      if (!formData.walletAddress) {
+        toast.error(text.request.cryptoWalletRequired || 'Adresse wallet requise');
+        return;
+      }
+      if (needsMemo && !formData.memo) {
+        toast.error(text.request.cryptoMemoRequired || 'Memo/Tag requis pour ce réseau');
+        return;
+      }
     }
 
     setIsLoadingQuote(true);
@@ -154,21 +264,24 @@ export default function PayoutPage() {
 
     setIsLoading(true);
     try {
-      const payload = {
+      const payload = payoutMethod === 'sepa' ? {
         quoteId: quote.quoteId,
-        method: payoutMethod,
-        ...(payoutMethod === 'sepa' ? {
-          iban: formData.iban.replace(/\s/g, ''),
-          bic: formData.bic,
-          accountHolder: formData.accountHolder,
-        } : {
-          cardNumber: formData.cardNumber.replace(/\s/g, ''),
-          cardExpiry: formData.cardExpiry,
-          cardHolder: formData.cardHolder,
-        }),
+        method: 'sepa',
+        iban: formData.iban.replace(/\s/g, ''),
+        bic: formData.bic,
+        accountHolder: formData.accountHolder,
+      } : {
+        quoteId: quote.quoteId,
+        method: 'crypto',
+        walletAddress: formData.walletAddress,
+        targetCurrency: formData.selectedCrypto,
+        network: formData.selectedNetwork,
+        memo: needsMemo ? formData.memo : undefined,
       };
 
-      const response = await fetch('/api/flexify/payout', {
+      const apiUrl = payoutMethod === 'sepa' ? '/api/flexify/payout' : '/api/whitepay/withdrawal';
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -214,9 +327,19 @@ export default function PayoutPage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
-            <ShieldCheckIcon className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
+            <div className="relative">
+              <ShieldCheckIcon className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
+              {process.env.NODE_ENV === 'development' && (
+                <ArrowPathIcon className="w-6 h-6 absolute top-0 right-1/3 text-blue-500 animate-spin" />
+              )}
+            </div>
             <h2 className="text-xl font-semibold mb-2">{text.kyc.required}</h2>
             <p className="text-muted-foreground mb-6">{text.kyc.description}</p>
+            {process.env.NODE_ENV === 'development' && (
+              <p className="text-xs text-blue-500 mb-4">
+                🔄 Vérification automatique en cours... (polling toutes les 10s)
+              </p>
+            )}
             <Button 
               onClick={() => window.location.href = '/kyc'}
               className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
@@ -319,9 +442,9 @@ export default function PayoutPage() {
                       <BanknotesIcon className="w-4 h-4" />
                       SEPA
                     </TabsTrigger>
-                    <TabsTrigger value="card" className="flex items-center gap-2">
-                      <CreditCardIcon className="w-4 h-4" />
-                      Carte
+                    <TabsTrigger value="crypto" className="flex items-center gap-2">
+                      <CurrencyDollarIcon className="w-4 h-4" />
+                      Crypto
                     </TabsTrigger>
                   </TabsList>
 
@@ -364,46 +487,101 @@ export default function PayoutPage() {
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="card" className="space-y-4 mt-4">
-                    <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                  <TabsContent value="crypto" className="space-y-4 mt-4">
+                    <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
                       <div className="flex items-start space-x-3">
-                        <InformationCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-green-700 dark:text-green-300">{text.request.security.cryptoInfo}</p>
+                        <InformationCircleIcon className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-purple-700 dark:text-purple-300">{text.request.security.cryptoInfo}</p>
                       </div>
                     </div>
 
                     <div className="space-y-4">
+                      {/* Sélection de la crypto-monnaie */}
                       <div className="space-y-2">
-                        <Label htmlFor="cardNumber">{text.request.cardNumberLabel}</Label>
+                        <Label htmlFor="crypto">{text.request.cryptoLabel}</Label>
+                        <Select
+                          value={formData.selectedCrypto}
+                          onValueChange={(v) => {
+                            const crypto = SUPPORTED_CRYPTOS.find((c) => c.ticker === v);
+                            setFormData(prev => ({
+                              ...prev,
+                              selectedCrypto: v,
+                              selectedNetwork: crypto?.networks[0] || 'ERC20',
+                            }));
+                            setQuote(null);
+                          }}
+                        >
+                          <SelectTrigger id="crypto">
+                            <SelectValue placeholder={text.request.cryptoPlaceholder} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {SUPPORTED_CRYPTOS.map((c) => (
+                              <SelectItem key={c.ticker} value={c.ticker}>
+                                <span className="flex items-center gap-2">
+                                  {c.name}
+                                  {c.is_stable && (
+                                    <span className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded">Stablecoin</span>
+                                  )}
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Sélection du réseau */}
+                      <div className="space-y-2">
+                        <Label htmlFor="network">{text.request.networkLabel}</Label>
+                        <Select
+                          value={formData.selectedNetwork}
+                          onValueChange={(v) => {
+                            setFormData(prev => ({ ...prev, selectedNetwork: v }));
+                            setQuote(null);
+                          }}
+                        >
+                          <SelectTrigger id="network">
+                            <SelectValue placeholder={text.request.networkPlaceholder} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableNetworks.map((net) => (
+                              <SelectItem key={net} value={net}>
+                                {net}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Adresse du wallet */}
+                      <div className="space-y-2">
+                        <Label htmlFor="walletAddress">{text.request.walletAddressLabel}</Label>
                         <Input
-                          id="cardNumber"
-                          value={formData.cardNumber}
-                          onChange={(e) => setFormData(prev => ({ ...prev, cardNumber: e.target.value }))}
-                          placeholder={text.request.cardNumberPlaceholder}
-                          maxLength={19}
+                          id="walletAddress"
+                          value={formData.walletAddress}
+                          onChange={(e) => setFormData(prev => ({ ...prev, walletAddress: e.target.value.trim() }))}
+                          placeholder={getAddressPlaceholder(formData.selectedNetwork)}
                         />
+                        <p className="text-xs text-muted-foreground">{text.request.walletAddressWarning}</p>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+
+                      {/* Memo/Tag (si requis par le réseau) */}
+                      {needsMemo && (
                         <div className="space-y-2">
-                          <Label htmlFor="cardExpiry">{text.request.expiryDateLabel}</Label>
+                          <Label htmlFor="memo" className="flex items-center gap-2">
+                            {text.request.memoLabel}
+                            <span className="text-[10px] bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-1.5 py-0.5 rounded font-medium">{text.request.memoRequired}</span>
+                          </Label>
                           <Input
-                            id="cardExpiry"
-                            value={formData.cardExpiry}
-                            onChange={(e) => setFormData(prev => ({ ...prev, cardExpiry: e.target.value }))}
-                            placeholder={text.request.expiryDatePlaceholder}
-                            maxLength={5}
+                            id="memo"
+                            value={formData.memo}
+                            onChange={(e) => setFormData(prev => ({ ...prev, memo: e.target.value }))}
+                            placeholder={text.request.memoPlaceholder}
                           />
+                          <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                            <p className="text-xs text-yellow-700 dark:text-yellow-300">{text.request.memoWarning}</p>
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="cardHolder">{text.request.cardHolderLabel}</Label>
-                          <Input
-                            id="cardHolder"
-                            value={formData.cardHolder}
-                            onChange={(e) => setFormData(prev => ({ ...prev, cardHolder: e.target.value }))}
-                            placeholder={text.request.cardHolderPlaceholder}
-                          />
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </TabsContent>
                 </Tabs>
@@ -513,7 +691,7 @@ export default function PayoutPage() {
                         <div className="text-right">
                           {getStatusBadge(payout.status)}
                           <p className="text-xs text-muted-foreground mt-1">
-                            {payout.method === 'FLEXIFY_SEPA' ? 'SEPA' : 'Carte'}
+                            {payout.method === 'FLEXIFY_SEPA' ? 'SEPA' : payout.method === 'WHITEPAY_CRYPTO' ? 'Crypto' : payout.method}
                           </p>
                         </div>
                       </div>

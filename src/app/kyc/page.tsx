@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ import {
   InformationCircleIcon,
   ClockIcon,
   XCircleIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { Messages } from '~/utils/types';
@@ -51,6 +52,7 @@ export default function KYCPage() {
   const { messages } = useLocale();
   const [currentStep, setCurrentStep] = useState<KYCStep>('info');
   const [isLoading, setIsLoading] = useState(false);
+  const [forceShowForm, setForceShowForm] = useState(false); // Pour forcer l'affichage du formulaire
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     firstName: '',
     lastName: '',
@@ -64,6 +66,71 @@ export default function KYCPage() {
   const [documentType, setDocumentType] = useState<DocumentType>('id_card');
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({});
   const steps = getSteps(messages);
+
+  // Polling automatique du KYC en dev (vérifie le statut toutes les 10s)
+  useEffect(() => {
+    if (!user?.kycStatus || user.kycStatus === 'VERIFIED' || user.kycStatus === 'KYCAID_VERIFIED') {
+      // Déjà vérifié, pas besoin de poller
+      localStorage.removeItem('kyc_just_verified');
+      return;
+    }
+
+    // Seulement poller si le statut est IN_PROGRESS (ou pas encore vérifié)
+    if (user.kycStatus !== 'IN_PROGRESS') {
+      return;
+    }
+
+    // Vérifier si on vient juste de vérifier le KYC (pour éviter le loop)
+    const justVerified = localStorage.getItem('kyc_just_verified');
+    if (justVerified) {
+      const timestamp = parseInt(justVerified);
+      if (Date.now() - timestamp < 30000) {
+        console.log('[KYC Page] KYC just verified, waiting for DB sync...');
+        return;
+      } else {
+        localStorage.removeItem('kyc_just_verified');
+      }
+    }
+
+    const pollKycStatus = async () => {
+      try {
+        const response = await fetch('/api/kycaid/status');
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        // Si une vérification est en cours et qu'on est en dev, utiliser le polling
+        if (data.verificationId && process.env.NODE_ENV === 'development') {
+          console.log('[KYC Page] Polling KYC verification:', data.verificationId);
+          const pollResponse = await fetch(`/api/kycaid/poll/${data.verificationId}`);
+
+          if (pollResponse.ok) {
+            const pollData = await pollResponse.json();
+
+            if (pollData.verified === true) {
+              console.log('[KYC Page] ✅ KYC VERIFIED! Reloading page...');
+              localStorage.setItem('kyc_just_verified', Date.now().toString());
+              toast.success('KYC vérifié avec succès !');
+              setTimeout(() => window.location.reload(), 1000);
+            } else if (pollData.status === 'completed' && pollData.verified === false) {
+              console.log('[KYC Page] ❌ KYC REJECTED. Reloading page...');
+              toast.error('KYC refusé. Veuillez réessayer.');
+              setTimeout(() => window.location.reload(), 1000);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('[KYC Page] Error polling KYC:', error);
+      }
+    };
+
+    // Poll immédiatement
+    pollKycStatus();
+
+    // Puis toutes les 10 secondes
+    const interval = setInterval(pollKycStatus, 10000);
+    return () => clearInterval(interval);
+  }, [user?.kycStatus]);
 
   const handleFileUpload = (type: string, file: File) => {
     setUploadedFiles(prev => ({ ...prev, [type]: file }));
@@ -226,28 +293,50 @@ export default function KYCPage() {
     );
   }
 
-  // Si KYC en cours
-  if (user.kycStatus === 'IN_PROGRESS') {
+  // Si KYC en cours (et qu'on ne force pas l'affichage du formulaire)
+  if (user.kycStatus === 'IN_PROGRESS' && !forceShowForm) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
-            <ClockIcon className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
+            <div className="relative">
+              <ClockIcon className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
+              {process.env.NODE_ENV === 'development' && (
+                <ArrowPathIcon className="w-6 h-6 absolute top-0 right-1/3 text-blue-500 animate-spin" />
+              )}
+            </div>
             <h2 className="text-xl font-semibold mb-2">{messages.kycPage.status.inProgress.title}</h2>
             <p className="text-muted-foreground mb-6">
               {messages.kycPage.status.inProgress.description}
             </p>
-            <Button asChild variant="outline">
-              <a href="/dashboard">{messages.kycPage.status.inProgress.dashboard}</a>
-            </Button>
+            {process.env.NODE_ENV === 'development' && (
+              <p className="text-xs text-blue-500 mb-4">
+                Vérification automatique en cours... (polling toutes les 10s)
+              </p>
+            )}
+            <div className="flex flex-col gap-2">
+              <Button asChild variant="outline">
+                <a href="/dashboard">{messages.kycPage.status.inProgress.dashboard}</a>
+              </Button>
+              <Button 
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  console.log('[KYC] Forcing form display from IN_PROGRESS');
+                  setForceShowForm(true);
+                }}
+              >
+                Soumettre une nouvelle vérification
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  // Si KYC rejeté
-  if (user.kycStatus === 'REJECTED') {
+  // Si KYC rejeté (et qu'on ne force pas l'affichage du formulaire)
+  if (user.kycStatus === 'REJECTED' && !forceShowForm) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <Card className="max-w-md mx-auto text-center">
@@ -257,7 +346,15 @@ export default function KYCPage() {
             <p className="text-muted-foreground mb-6">
               {messages.kycPage.status.rejected.description}
             </p>
-            <Button onClick={() => setCurrentStep('info')}>
+            <Button 
+              onClick={() => {
+                console.log('[KYC] Recommencer button clicked - forcing form display');
+                setForceShowForm(true);
+                setCurrentStep('info');
+                // Reset les fichiers uploadés
+                setUploadedFiles({});
+              }}
+            >
               {messages.kycPage.status.rejected.restart}
             </Button>
           </CardContent>

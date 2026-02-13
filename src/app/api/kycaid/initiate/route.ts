@@ -10,12 +10,15 @@ import { prisma } from '~/prisma/prisma';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('[KYCAID Initiate] POST request received');
+    
     // Vérifier l'authentification
     const session = await auth.api.getSession({
       headers: await headers(),
     });
 
     if (!session?.user?.id) {
+      console.error('[KYCAID Initiate] No user session');
       return NextResponse.json(
         { error: 'Non authentifié' },
         { status: 401 }
@@ -23,15 +26,19 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
+    console.log('[KYCAID Initiate] User ID:', userId);
 
     // Récupérer l'adresse du body (optionnel)
     const body = await request.json().catch(() => ({}));
     const { address } = body; // { country, city, postalCode, streetName, buildingNumber, unitNumber }
+    console.log('[KYCAID Initiate] Address provided:', !!address);
 
     // Vérifier si l'utilisateur est déjà vérifié
     const currentStatus = await checkKycStatus(userId);
+    console.log('[KYCAID Initiate] Current status:', currentStatus.status);
     
     if (currentStatus.status === 'VERIFIED') {
+      console.log('[KYCAID Initiate] User already verified, skipping');
       return NextResponse.json({
         success: true,
         status: 'VERIFIED',
@@ -41,11 +48,17 @@ export async function POST(request: NextRequest) {
 
     // Si rejeté, on peut relancer le processus
     if (currentStatus.status === 'REJECTED') {
-      console.log('[KYCAID] Re-initiating KYC for rejected user:', userId);
+      console.log('[KYCAID Initiate] ♻️  Re-initiating KYC for rejected user:', userId);
     }
 
     // Initier le KYC avec l'adresse si fournie
+    console.log('[KYCAID Initiate] Calling initiateKyc()...');
     const kycResult = await initiateKyc(userId, address);
+    console.log('[KYCAID Initiate] ✅ Success:', {
+      verificationId: kycResult.verificationId,
+      applicantId: kycResult.applicantId,
+      url: kycResult.verificationUrl,
+    });
 
     // Logger l'événement
     await prisma.auditLog.create({
@@ -66,9 +79,15 @@ export async function POST(request: NextRequest) {
       applicantId: kycResult.applicantId,
     });
   } catch (error) {
-    console.error('[KYCAID] Error initiating KYC:', error);
+    console.error('[KYCAID Initiate] ❌ Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+    console.error('[KYCAID Initiate] Error details:', errorMessage);
+    
     return NextResponse.json(
-      { error: 'Erreur lors de l\'initialisation du KYC' },
+      { 
+        error: 'Erreur lors de l\'initialisation du KYC',
+        details: errorMessage,
+      },
       { status: 500 }
     );
   }

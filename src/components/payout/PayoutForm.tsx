@@ -7,7 +7,39 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, CreditCard, Building2, AlertCircle, CheckCircle, Euro, Clock, Shield } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Loader2, Wallet, Building2, AlertCircle, CheckCircle, Euro, Clock, Shield } from 'lucide-react';
+
+// Cryptos supportées par Whitepay
+const SUPPORTED_CRYPTOS = [
+  { ticker: 'USDT', name: 'Tether (USDT)', networks: ['ERC20', 'TRC20', 'BEP20', 'TON', 'SOL'], is_stable: true },
+  { ticker: 'USDC', name: 'USD Coin (USDC)', networks: ['ERC20', 'TRC20', 'BEP20', 'SOL'], is_stable: true },
+  { ticker: 'BTC', name: 'Bitcoin (BTC)', networks: ['BTC'], is_stable: false },
+  { ticker: 'ETH', name: 'Ethereum (ETH)', networks: ['ERC20'], is_stable: false },
+  { ticker: 'SOL', name: 'Solana (SOL)', networks: ['SOL'], is_stable: false },
+  { ticker: 'TON', name: 'Toncoin (TON)', networks: ['TON'], is_stable: false },
+  { ticker: 'BNB', name: 'BNB (BNB)', networks: ['BEP20'], is_stable: false },
+];
+
+const MEMO_REQUIRED_NETWORKS = ['TON', 'STELLAR', 'XLM', 'COSMOS', 'ATOM'];
+
+function getAddressPlaceholder(network: string): string {
+  switch (network) {
+    case 'BTC': return 'bc1q...';
+    case 'ERC20':
+    case 'BEP20': return '0x...';
+    case 'TRC20': return 'T...';
+    case 'SOL': return 'So1...';
+    case 'TON': return 'EQ...';
+    default: return '0x...';
+  }
+}
 
 interface PayoutFormProps {
   availableAmountCents: number;
@@ -31,7 +63,7 @@ interface QuoteData {
 export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }: PayoutFormProps) {
   // Simple translation fallback
   const t = (key: string) => key;
-  const [method, setMethod] = useState<'SEPA' | 'CARD'>('SEPA');
+  const [method, setMethod] = useState<'SEPA' | 'CRYPTO'>('SEPA');
   const [loading, setLoading] = useState(false);
   const [quote, setQuote] = useState<QuoteData | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
@@ -42,15 +74,19 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
   const [iban, setIban] = useState('');
   const [bic, setBic] = useState('');
 
-  // Card fields
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardHolderName, setCardHolderName] = useState('');
-  const [expiryMonth, setExpiryMonth] = useState('');
-  const [expiryYear, setExpiryYear] = useState('');
+  // Crypto fields
+  const [walletAddress, setWalletAddress] = useState('');
+  const [selectedCrypto, setSelectedCrypto] = useState('USDT');
+  const [selectedNetwork, setSelectedNetwork] = useState('ERC20');
+  const [memo, setMemo] = useState('');
 
   // Common fields
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+
+  // Réseaux disponibles pour la crypto sélectionnée
+  const availableNetworks = SUPPORTED_CRYPTOS.find((c) => c.ticker === selectedCrypto)?.networks || [];
+  const needsMemo = MEMO_REQUIRED_NETWORKS.includes(selectedNetwork);
 
   const formatCents = (cents: number) => {
     return (cents / 100).toFixed(2) + ' €';
@@ -61,10 +97,13 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
     return cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
   };
 
-  const formatCardNumber = (value: string) => {
-    const cleaned = value.replace(/\D/g, '');
-    return cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
-  };
+  // Quand on change de crypto, reset le réseau
+  useEffect(() => {
+    const crypto = SUPPORTED_CRYPTOS.find((c) => c.ticker === selectedCrypto);
+    if (crypto && crypto.networks.length > 0) {
+      setSelectedNetwork(crypto.networks[0]);
+    }
+  }, [selectedCrypto]);
 
   // Fetch quote when amount or method changes
   useEffect(() => {
@@ -77,7 +116,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            method,
+            method: method === 'SEPA' ? 'sepa' : 'crypto',
             amountCents: availableAmountCents,
           }),
         });
@@ -106,25 +145,36 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
     setError(null);
 
     try {
-      const payload: Record<string, unknown> = {
-        method,
-        amountCents: availableAmountCents,
-        tradeId,
-        firstName,
-        lastName,
-      };
+      let apiUrl: string;
+      let payload: Record<string, unknown>;
 
       if (method === 'SEPA') {
-        payload.iban = iban;
-        payload.bic = bic;
+        apiUrl = '/api/flexify/payout';
+        payload = {
+          method: 'SEPA',
+          amountCents: availableAmountCents,
+          tradeId,
+          firstName,
+          lastName,
+          iban,
+          bic,
+        };
       } else {
-        payload.cardNumber = cardNumber;
-        payload.cardHolderName = cardHolderName;
-        payload.expiryMonth = expiryMonth;
-        payload.expiryYear = expiryYear;
+        apiUrl = '/api/whitepay/withdrawal';
+        payload = {
+          method: 'CRYPTO',
+          amountCents: availableAmountCents,
+          tradeId,
+          firstName,
+          lastName,
+          walletAddress,
+          targetCurrency: selectedCrypto,
+          network: selectedNetwork,
+          memo: needsMemo ? memo : undefined,
+        };
       }
 
-      const response = await fetch('/api/flexify/payout', {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -164,7 +214,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
             <p className="text-muted-foreground">
               {method === 'SEPA'
                 ? t('payout.success.sepa') || 'Votre virement sera traité dans 1-2 jours ouvrés.'
-                : t('payout.success.card') || 'Votre paiement sera traité dans les 24h.'}
+                : t('payout.success.crypto') || 'Votre retrait crypto est en cours de traitement.'}
             </p>
           </div>
         </CardContent>
@@ -193,15 +243,15 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
           </Alert>
         )}
 
-        <Tabs value={method} onValueChange={(v) => setMethod(v as 'SEPA' | 'CARD')}>
+        <Tabs value={method} onValueChange={(v) => setMethod(v as 'SEPA' | 'CRYPTO')}>
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="SEPA" className="gap-2">
               <Building2 className="w-4 h-4" />
               {t('payout.sepa.title') || 'Virement SEPA'}
             </TabsTrigger>
-            <TabsTrigger value="CARD" className="gap-2">
-              <CreditCard className="w-4 h-4" />
-              {t('payout.card.title') || 'Carte bancaire'}
+            <TabsTrigger value="CRYPTO" className="gap-2">
+              <Wallet className="w-4 h-4" />
+              Crypto
             </TabsTrigger>
           </TabsList>
 
@@ -295,59 +345,80 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
               </Alert>
             </TabsContent>
 
-            <TabsContent value="CARD" className="space-y-4 mt-0">
+            <TabsContent value="CRYPTO" className="space-y-4 mt-0">
+              {/* Sélection de la crypto */}
               <div className="space-y-2">
-                <Label htmlFor="cardNumber">{t('payout.card.number') || 'Numéro de carte'}</Label>
-                <Input
-                  id="cardNumber"
-                  value={formatCardNumber(cardNumber)}
-                  onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, ''))}
-                  placeholder="4242 4242 4242 4242"
-                  required={method === 'CARD'}
-                  maxLength={19}
-                />
+                <Label htmlFor="crypto-select">Crypto-monnaie</Label>
+                <Select value={selectedCrypto} onValueChange={setSelectedCrypto}>
+                  <SelectTrigger id="crypto-select">
+                    <SelectValue placeholder="Choisir une crypto" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUPPORTED_CRYPTOS.map((c) => (
+                      <SelectItem key={c.ticker} value={c.ticker}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
+              {/* Sélection du réseau */}
               <div className="space-y-2">
-                <Label htmlFor="cardHolderName">{t('payout.card.holder') || 'Nom sur la carte'}</Label>
-                <Input
-                  id="cardHolderName"
-                  value={cardHolderName}
-                  onChange={(e) => setCardHolderName(e.target.value.toUpperCase())}
-                  placeholder="JEAN DUPONT"
-                  required={method === 'CARD'}
-                />
+                <Label htmlFor="network-select">Réseau blockchain</Label>
+                <Select value={selectedNetwork} onValueChange={setSelectedNetwork}>
+                  <SelectTrigger id="network-select">
+                    <SelectValue placeholder="Choisir un réseau" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableNetworks.map((net) => (
+                      <SelectItem key={net} value={net}>
+                        {net}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="expiryMonth">{t('payout.card.expiryMonth') || 'Mois'}</Label>
-                  <Input
-                    id="expiryMonth"
-                    value={expiryMonth}
-                    onChange={(e) => setExpiryMonth(e.target.value.replace(/\D/g, '').slice(0, 2))}
-                    placeholder="MM"
-                    required={method === 'CARD'}
-                    maxLength={2}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="expiryYear">{t('payout.card.expiryYear') || 'Année'}</Label>
-                  <Input
-                    id="expiryYear"
-                    value={expiryYear}
-                    onChange={(e) => setExpiryYear(e.target.value.replace(/\D/g, '').slice(0, 2))}
-                    placeholder="YY"
-                    required={method === 'CARD'}
-                    maxLength={2}
-                  />
-                </div>
+              {/* Adresse wallet */}
+              <div className="space-y-2">
+                <Label htmlFor="walletAddress">Adresse du wallet</Label>
+                <Input
+                  id="walletAddress"
+                  value={walletAddress}
+                  onChange={(e) => setWalletAddress(e.target.value.trim())}
+                  placeholder={getAddressPlaceholder(selectedNetwork)}
+                  required={method === 'CRYPTO'}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Vérifiez bien l&apos;adresse, les transactions crypto sont irréversibles.
+                </p>
               </div>
+
+              {/* Memo/Tag si requis */}
+              {needsMemo && (
+                <div className="space-y-2">
+                  <Label htmlFor="memo" className="flex items-center gap-2">
+                    Memo / Tag
+                    <span className="text-[10px] bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-1.5 py-0.5 rounded font-medium">Obligatoire</span>
+                  </Label>
+                  <Input
+                    id="memo"
+                    value={memo}
+                    onChange={(e) => setMemo(e.target.value)}
+                    placeholder="Entrez le memo/tag"
+                    required
+                  />
+                  <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                    Sans memo correct, vos fonds pourraient être perdus définitivement.
+                  </p>
+                </div>
+              )}
 
               <Alert>
                 <Shield className="h-4 w-4" />
                 <AlertDescription>
-                  {t('payout.card.info') || 'Les paiements par carte sont traités instantanément ou sous 24h.'}
+                  Les retraits crypto sont traités via Whitepay. Le paiement arrive généralement en quelques minutes.
                 </AlertDescription>
               </Alert>
             </TabsContent>
@@ -368,7 +439,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
                   {method === 'SEPA' ? (
                     <Building2 className="w-4 h-4 mr-2" />
                   ) : (
-                    <CreditCard className="w-4 h-4 mr-2" />
+                    <Wallet className="w-4 h-4 mr-2" />
                   )}
                   {t('payout.submit') || 'Recevoir'} {quote && formatCents(quote.netCents)}
                 </>

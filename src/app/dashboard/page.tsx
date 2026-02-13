@@ -97,6 +97,7 @@ export default function DashboardPage() {
   const [refreshingTradeId, setRefreshingTradeId] = useState<string | null>(null);
   const [dashboardStats, setDashboardStats] = useState<{ volumeData: any[]; tradeStatusData: any[] } | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [refreshingKyc, setRefreshingKyc] = useState(false);
   
   console.log("useSession data:", data);
   console.log("useSession isPending:", isPending);
@@ -591,11 +592,63 @@ export default function DashboardPage() {
                           </p>
                         </div>
                       </div>
-                      {(data?.user?.kycStatus !== 'VERIFIED' && data?.user?.kycStatus !== 'KYCAID_VERIFIED') && (
-                        <Button asChild className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
-                          <Link href="/kyc">{messages.payments.verify}</Link>
+                      <div className="flex flex-col gap-2">
+                        {(data?.user?.kycStatus !== 'VERIFIED' && data?.user?.kycStatus !== 'KYCAID_VERIFIED') && (
+                          <Button asChild className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
+                            <Link href="/kyc">{messages.payments.verify}</Link>
+                          </Button>
+                        )}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={async () => {
+                            setRefreshingKyc(true);
+                            try {
+                              // Récupérer le verificationId
+                              const statusRes = await fetch('/api/kycaid/status');
+                              if (statusRes.ok) {
+                                const statusData = await statusRes.json();
+                                if (statusData.verificationId) {
+                                  // Forcer le poll
+                                  const pollRes = await fetch(`/api/kycaid/poll/${statusData.verificationId}`);
+                                  if (pollRes.ok) {
+                                    const pollData = await pollRes.json();
+                                    if (pollData.verified === true && pollData.status === 'completed') {
+                                      toast.success('KYC vérifié !');
+                                    } else if (pollData.verified === false && pollData.status === 'completed') {
+                                      toast.error('KYC rejeté');
+                                    } else {
+                                      toast.info('Statut mis à jour');
+                                    }
+                                    // Recharger la page pour mettre à jour l'UI
+                                    setTimeout(() => window.location.reload(), 1000);
+                                  }
+                                } else {
+                                  toast.info('Aucune vérification en cours');
+                                }
+                              }
+                            } catch (error) {
+                              console.error('Error refreshing KYC:', error);
+                              toast.error('Erreur lors de la vérification');
+                            } finally {
+                              setRefreshingKyc(false);
+                            }
+                          }}
+                          disabled={refreshingKyc}
+                        >
+                          {refreshingKyc ? (
+                            <>
+                              <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
+                              Vérification...
+                            </>
+                          ) : (
+                            <>
+                              <ArrowPathIcon className="w-4 h-4 mr-2" />
+                              Rafraîchir le statut
+                            </>
+                          )}
                         </Button>
-                      )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

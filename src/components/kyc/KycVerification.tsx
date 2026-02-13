@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Shield, CheckCircle, XCircle, Clock, ExternalLink, AlertCircle, User } from 'lucide-react';
 import { AddressForm, type AddressData } from './AddressForm';
+import { toast } from 'sonner';
 
 interface KycStatus {
   status: 'PENDING' | 'VERIFIED' | 'REJECTED';
@@ -29,18 +30,49 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<'address' | 'verification'>('address');
   const [addressSubmitted, setAddressSubmitted] = useState(false);
+  const [verificationId, setVerificationId] = useState<string | null>(null);
+  const [isDevelopment, setIsDevelopment] = useState(false);
 
   const fetchStatus = async () => {
     try {
-      const response = await fetch('/api/kycaid/status');
-      const data = await response.json();
+      // En mode dev avec un verificationId, on poll directement l'API KYCAID
+      if (isDevelopment && verificationId && kycStatus?.status === 'PENDING') {
+        console.log('[KYC] Polling KYCAID API in dev mode...');
+        const response = await fetch(`/api/kycaid/poll/${verificationId}`);
+        const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de la vérification du statut');
+        if (!response.ok) {
+          throw new Error(data.error || 'Erreur lors de la vérification du statut');
+        }
+
+        // Transformer la réponse de polling en format KycStatus
+        const transformedStatus: KycStatus = {
+          status: data.verified === true ? 'VERIFIED' : 
+                  data.verified === false ? 'REJECTED' : 'PENDING',
+          message: data.message || '',
+          canRetry: data.status !== 'completed',
+          declineReasons: data.declineReasons,
+        };
+
+        setKycStatus(transformedStatus);
+        onStatusChange?.(transformedStatus.status);
+        
+        // Si complété, arrêter le polling
+        if (data.status === 'completed') {
+          setVerificationId(null);
+        }
+      } else {
+        // Mode normal: vérifier le statut en BDD
+        const response = await fetch('/api/kycaid/status');
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Erreur lors de la vérification du statut');
+        }
+
+        setKycStatus(data);
+        onStatusChange?.(data.status);
       }
-
-      setKycStatus(data);
-      onStatusChange?.(data.status);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
@@ -48,15 +80,30 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
     }
   };
 
-  const fetchStatusCallback = useCallback(fetchStatus, [onStatusChange]);
+  // Détecter le mode développement
+  useEffect(() => {
+    setIsDevelopment(process.env.NODE_ENV === 'development');
+  }, []);
+
+  const fetchStatusCallback = useCallback(fetchStatus, [
+    onStatusChange, 
+    isDevelopment, 
+    verificationId, 
+    kycStatus?.status
+  ]);
 
   useEffect(() => {
     fetchStatusCallback();
     
-    // Polling pour vérifier le statut toutes les 30 secondes
-    const interval = setInterval(fetchStatusCallback, 30000);
+    // En mode dev avec un verificationId en attente, poller plus fréquemment (10 secondes)
+    // En mode prod ou sans verificationId, poller toutes les 30 secondes
+    const pollInterval = (isDevelopment && verificationId && kycStatus?.status === 'PENDING') 
+      ? 10000  // 10 secondes en dev
+      : 30000; // 30 secondes sinon
+    
+    const interval = setInterval(fetchStatusCallback, pollInterval);
     return () => clearInterval(interval);
-  }, [fetchStatusCallback]);
+  }, [fetchStatusCallback, isDevelopment, verificationId, kycStatus?.status]);
 
   const handleAddressSubmit = async (address: AddressData) => {
     setInitiating(true);
@@ -86,28 +133,47 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
   };
 
   const handleInitiateKyc = async () => {
+    console.log('[KYC] Initiating KYC process...');
     setInitiating(true);
     setError(null);
 
     try {
+      console.log('[KYC] Calling /api/kycaid/initiate...');
       const response = await fetch('/api/kycaid/initiate', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
       });
 
+      console.log('[KYC] Response status:', response.status);
       const data = await response.json();
+      console.log('[KYC] Response data:', data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Erreur lors de l\'initialisation du KYC');
       }
 
+      // Stocker le verificationId pour le polling en mode dev
+      if (data.verificationId) {
+        setVerificationId(data.verificationId);
+        console.log('[KYC] ✅ Verification ID stored:', data.verificationId);
+      }
+
       // Rediriger vers l'URL de vérification
       if (data.verificationUrl) {
+        console.log('[KYC] ✅ Opening verification URL:', data.verificationUrl);
         window.open(data.verificationUrl, '_blank');
         // Actualiser le statut après quelques secondes
         setTimeout(fetchStatus, 3000);
+      } else {
+        console.warn('[KYC] ⚠️  No verification URL returned');
+        setError('Aucune URL de vérification retournée');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      console.error('[KYC] ❌ Error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setInitiating(false);
     }

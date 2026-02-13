@@ -6,9 +6,10 @@ import crypto from 'crypto';
 
 export const FLEXIFY_CONFIG = {
   apiKey: process.env.FLEXIFY_API_KEY!,
-  secretKey: process.env.FLEXIFY_SECRET_KEY!,
-  merchantId: process.env.FLEXIFY_MERCHANT_ID!,
-  baseUrl: process.env.FLEXIFY_BASE_URL || 'https://api.flexify.finance',
+  apiSecret: process.env.FLEXIFY_API_SECRET!, // Changé de secretKey à apiSecret
+  merchantIdentifier: process.env.FLEXIFY_MERCHANT_IDENTIFIER!, // Identifiant marchand (ex: MR_TEST)
+  h2hBaseUrl: process.env.FLEXIFY_H2H_URL || 'https://h2h.flexify.finance', // H2H Gate API
+  reportingBaseUrl: process.env.FLEXIFY_API_URL || 'https://api.flexify.finance', // Reporting API
   environment: (process.env.FLEXIFY_ENVIRONMENT || 'sandbox') as 'sandbox' | 'production',
   // URLs de callback
   callbackUrl: process.env.FLEXIFY_CALLBACK_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api/flexify/webhook`,
@@ -20,94 +21,80 @@ export const FLEXIFY_CONFIG = {
 // TYPES
 // =============================================================================
 
-export type FlexifyPayoutMethod = 'SEPA' | 'CARD';
-export type FlexifyPayoutStatus = 
-  | 'PENDING'
-  | 'PROCESSING'
-  | 'AWAITING_APPROVAL'
-  | 'APPROVED'
-  | 'SENT'
-  | 'COMPLETED'
-  | 'FAILED'
-  | 'CANCELLED'
-  | 'REFUNDED';
+export type FlexifyPaymentMethod = 'sepa' | 'card';
+export type FlexifyTransactionStatus = 
+  | 'new'
+  | 'pending'
+  | 'success'
+  | 'declined'
+  | 'failed'
+  | 'expired';
 
+// Structure selon la doc Flexify V1
 export interface FlexifyPayoutRequest {
-  merchantId: string;
-  orderId: string; // Notre ID unique de payout
-  amount: number; // En EUR (decimal)
+  method: FlexifyPaymentMethod;
+  mode: 'initial';
+  reference: string; // Notre ID unique
   currency: 'EUR';
-  method: FlexifyPayoutMethod;
-  // Informations bénéficiaire
-  beneficiary: FlexifyBeneficiary;
-  // Métadonnées
-  metadata?: Record<string, string>;
-  // URLs
-  callbackUrl: string;
-  successUrl?: string;
-  failureUrl?: string;
-}
-
-export interface FlexifyBeneficiary {
-  firstName: string;
-  lastName: string;
-  email: string;
-  // Pour SEPA
-  iban?: string;
-  bic?: string;
-  // Pour Carte
-  cardNumber?: string;
-  cardHolderName?: string;
-  expiryMonth?: string;
-  expiryYear?: string;
-  // Adresse
-  address?: {
-    street: string;
-    city: string;
-    postalCode: string;
+  amount: string; // Montant en string avec 2 décimales (ex: "100.00")
+  customer: {
+    identifier: string;
+    email: string;
     country: string; // Code ISO 2 lettres
+    ip: string;
+  };
+  callback_url: string;
+  sepa?: {
+    iban: string;
+    bic?: string;
+    holder_name: string;
+  };
+  card?: {
+    number: string;
+    holder_name: string;
+    expire_month: string;
+    expire_year: string;
+    cvv: string;
   };
 }
 
 export interface FlexifyPayoutResponse {
-  id: string;
-  orderId: string;
-  status: FlexifyPayoutStatus;
-  amount: number;
-  currency: string;
-  method: FlexifyPayoutMethod;
-  createdAt: string;
-  updatedAt: string;
-  fees?: {
-    processing: number;
-    network?: number;
+  code: number; // 0 = success
+  message?: string;
+  transaction?: {
+    id: string;
+    reference: string;
+    status: FlexifyTransactionStatus;
+    amount: string;
+    currency: string;
+    method: FlexifyPaymentMethod;
+    created_at: string;
+    updated_at: string;
   };
-  estimatedArrival?: string;
-  transactionId?: string;
-  errorMessage?: string;
+  error_code?: number;
+  error_message?: string;
 }
 
 export interface FlexifyWebhookPayload {
-  eventType: 'payout.created' | 'payout.processing' | 'payout.completed' | 'payout.failed' | 'payout.cancelled';
-  payoutId: string;
-  orderId: string;
-  status: FlexifyPayoutStatus;
-  amount: number;
+  transaction_id: string;
+  reference: string;
+  status: FlexifyTransactionStatus;
+  amount: string;
   currency: string;
-  method: FlexifyPayoutMethod;
-  timestamp: string;
-  transactionId?: string;
-  errorMessage?: string;
-  fees?: {
-    processing: number;
-    network?: number;
+  method: FlexifyPaymentMethod;
+  created_at: string;
+  updated_at: string;
+  sepa?: {
+    iban: string;
+    bic?: string;
+    holder_name: string;
   };
 }
 
 export interface FlexifyQuoteRequest {
   amount: number;
   currency: 'EUR';
-  method: FlexifyPayoutMethod;
+  method: FlexifyPaymentMethod;
   country: string;
 }
 
@@ -125,57 +112,107 @@ export interface FlexifyQuoteResponse {
 }
 
 // =============================================================================
-// SIGNATURE HMAC
+// SIGNATURE HMAC-SHA256 (selon spec Flexify)
 // =============================================================================
 
 /**
- * Génère une signature HMAC pour les requêtes Flexify
+ * Génère le Digest SHA-256 du body (pour POST)
  */
-function generateSignature(
-  method: string,
-  path: string,
-  timestamp: number,
-  body?: string
-): string {
-  const message = `${timestamp}${method.toUpperCase()}${path}${body || ''}`;
-  return crypto
-    .createHmac('sha256', FLEXIFY_CONFIG.secretKey)
-    .update(message)
-    .digest('hex');
+function generateDigest(body: string): string {
+  const hash = crypto.createHash('sha256').update(body, 'utf8').digest('base64');
+  return `SHA-256=${hash}`;
 }
 
 /**
- * Prépare les headers pour une requête Flexify
+ * Construit le payload de signature selon la spec Flexify
+ * Pour POST: host digest content-length date
+ * Pour GET: host date
+ */
+function buildSignaturePayload(
+  host: string,
+  method: string,
+  digest?: string,
+  contentLength?: number,
+  date?: string
+): string {
+  const parts: string[] = [];
+  
+  parts.push(`host: ${host}`);
+  
+  if (method === 'POST' && digest && contentLength !== undefined) {
+    parts.push(`digest: ${digest}`);
+    parts.push(`content-length: ${contentLength}`);
+  }
+  
+  if (date) {
+    parts.push(`date: ${date}`);
+  }
+  
+  return parts.join('');
+}
+
+/**
+ * Génère la signature HMAC-SHA256
+ */
+function generateSignature(payload: string): string {
+  return crypto
+    .createHmac('sha256', FLEXIFY_CONFIG.apiSecret)
+    .update(payload)
+    .digest('base64');
+}
+
+/**
+ * Prépare les headers pour une requête Flexify H2H
  */
 function prepareHeaders(
   method: string,
-  path: string,
+  host: string,
   body?: string
 ): Record<string, string> {
-  const timestamp = Math.floor(Date.now() / 1000);
-  const signature = generateSignature(method, path, timestamp, body);
-
-  return {
+  const date = new Date().toUTCString();
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'X-API-Key': FLEXIFY_CONFIG.apiKey,
-    'X-Signature': signature,
-    'X-Timestamp': timestamp.toString(),
-    'X-Merchant-ID': FLEXIFY_CONFIG.merchantId,
+    'Date': date,
+    'Host': host,
   };
+
+  if (method === 'POST' && body) {
+    const digest = generateDigest(body);
+    const contentLength = Buffer.byteLength(body, 'utf8');
+    
+    headers['Digest'] = digest;
+    headers['Content-Length'] = contentLength.toString();
+    
+    const signaturePayload = buildSignaturePayload(host, method, digest, contentLength, date);
+    const signature = generateSignature(signaturePayload);
+    
+    headers['Authorization'] = `Signature keyId="${FLEXIFY_CONFIG.apiKey}", algorithm="HmacSHA256", headers="host digest content-length date", signature="${signature}"`;
+  } else {
+    // GET request
+    const signaturePayload = buildSignaturePayload(host, method, undefined, undefined, date);
+    const signature = generateSignature(signaturePayload);
+    
+    headers['Authorization'] = `Signature keyId="${FLEXIFY_CONFIG.apiKey}", algorithm="HmacSHA256", headers="host date", signature="${signature}"`;
+  }
+
+  return headers;
 }
 
 /**
- * Effectue une requête vers l'API Flexify avec retry
+ * Effectue une requête vers l'API Flexify H2H avec retry
  */
 async function flexifyRequest<T>(
   method: string,
   path: string,
   body?: object,
-  retries: number = 3
+  retries: number = 3,
+  useReportingApi: boolean = false
 ): Promise<T> {
-  const url = `${FLEXIFY_CONFIG.baseUrl}${path}`;
+  const baseUrl = useReportingApi ? FLEXIFY_CONFIG.reportingBaseUrl : FLEXIFY_CONFIG.h2hBaseUrl;
+  const url = `${baseUrl}${path}`;
+  const host = new URL(baseUrl).host;
   const bodyString = body ? JSON.stringify(body) : undefined;
-  const headers = prepareHeaders(method, path, bodyString);
+  const headers = prepareHeaders(method, host, bodyString);
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
@@ -186,6 +223,13 @@ async function flexifyRequest<T>(
       });
 
       const data = await response.json();
+
+      // Vérifier le code d'erreur Flexify
+      if ('code' in data && data.code !== 0) {
+        throw new Error(
+          data.error_message || `Flexify error code: ${data.code}`
+        );
+      }
 
       if (!response.ok) {
         throw new Error(
@@ -209,14 +253,31 @@ async function flexifyRequest<T>(
 // =============================================================================
 
 /**
- * Obtient un devis pour un payout
+ * Obtient un devis pour un payout (calcul local car pas dans l'API V1)
  */
 export async function getPayoutQuote(
   params: FlexifyQuoteRequest
 ): Promise<FlexifyQuoteResponse> {
   validateConfig();
 
-  return flexifyRequest<FlexifyQuoteResponse>('POST', '/v1/payouts/quote', params);
+  // Calcul local des frais
+  const amountCents = Math.round(params.amount * 100);
+  const fees = params.method === 'sepa' 
+    ? calculateSepaFees(amountCents)
+    : calculateCardFees(amountCents);
+
+  return {
+    amount: params.amount,
+    netAmount: (amountCents - fees.totalFeeCents) / 100,
+    fees: {
+      processing: fees.processingFeeCents / 100,
+      network: fees.networkFeeCents / 100,
+      total: fees.totalFeeCents / 100,
+    },
+    estimatedDelivery: params.method === 'sepa' ? '1-2 business days' : 'Instant to 24h',
+    expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+    quoteId: `QUOTE-${Date.now()}`,
+  };
 }
 
 /**
@@ -266,59 +327,54 @@ export function calculateCardFees(amountCents: number): {
 // =============================================================================
 
 export interface CreateSepaPayoutParams {
-  orderId: string;
+  reference: string;
   amountCents: number;
-  beneficiary: {
-    firstName: string;
-    lastName: string;
+  customer: {
+    identifier: string; // User ID
     email: string;
+    country: string; // ISO 2 lettres
+    ip: string;
+  };
+  sepa: {
     iban: string;
     bic?: string;
-    address?: {
-      street: string;
-      city: string;
-      postalCode: string;
-      country: string;
-    };
+    holderName: string;
   };
-  metadata?: Record<string, string>;
 }
 
 /**
- * Crée un payout SEPA
+ * Crée un payout SEPA selon la spec Flexify V1
  */
 export async function createSepaPayout(
   params: CreateSepaPayoutParams
 ): Promise<FlexifyPayoutResponse> {
   validateConfig();
 
+  const amountEur = (params.amountCents / 100).toFixed(2);
+
   const request: FlexifyPayoutRequest = {
-    merchantId: FLEXIFY_CONFIG.merchantId,
-    orderId: params.orderId,
-    amount: params.amountCents / 100, // Convertir en EUR
+    method: 'sepa',
+    mode: 'initial',
+    reference: params.reference,
     currency: 'EUR',
-    method: 'SEPA',
-    beneficiary: {
-      firstName: params.beneficiary.firstName,
-      lastName: params.beneficiary.lastName,
-      email: params.beneficiary.email,
-      iban: params.beneficiary.iban,
-      bic: params.beneficiary.bic,
-      address: params.beneficiary.address,
+    amount: amountEur,
+    customer: {
+      identifier: params.customer.identifier,
+      email: params.customer.email,
+      country: params.customer.country,
+      ip: params.customer.ip,
     },
-    metadata: {
-      ...params.metadata,
-      source: 'moonskin',
-      environment: FLEXIFY_CONFIG.environment,
+    callback_url: FLEXIFY_CONFIG.callbackUrl,
+    sepa: {
+      iban: params.sepa.iban,
+      bic: params.sepa.bic,
+      holder_name: params.sepa.holderName,
     },
-    callbackUrl: FLEXIFY_CONFIG.callbackUrl,
-    successUrl: FLEXIFY_CONFIG.successUrl,
-    failureUrl: FLEXIFY_CONFIG.failureUrl,
   };
 
-  logPayoutTransaction('CREATE_SEPA', params.orderId, { amount: params.amountCents });
+  logPayoutTransaction('CREATE_SEPA_PAYOUT', params.reference, { amount: params.amountCents });
 
-  return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/payouts', request);
+  return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/payout', request);
 }
 
 // =============================================================================
@@ -326,56 +382,58 @@ export async function createSepaPayout(
 // =============================================================================
 
 export interface CreateCardPayoutParams {
-  orderId: string;
+  reference: string;
   amountCents: number;
-  beneficiary: {
-    firstName: string;
-    lastName: string;
+  customer: {
+    identifier: string;
     email: string;
-    cardNumber: string;
-    cardHolderName: string;
-    expiryMonth: string;
-    expiryYear: string;
+    country: string;
+    ip: string;
   };
-  metadata?: Record<string, string>;
+  card: {
+    number: string;
+    holderName: string;
+    expireMonth: string;
+    expireYear: string;
+    cvv: string;
+  };
 }
 
 /**
- * Crée un payout vers une carte bancaire
+ * Crée un payout vers une carte bancaire selon la spec Flexify V1
  */
 export async function createCardPayout(
   params: CreateCardPayoutParams
 ): Promise<FlexifyPayoutResponse> {
   validateConfig();
 
+  const amountEur = (params.amountCents / 100).toFixed(2);
+
   const request: FlexifyPayoutRequest = {
-    merchantId: FLEXIFY_CONFIG.merchantId,
-    orderId: params.orderId,
-    amount: params.amountCents / 100,
+    method: 'card',
+    mode: 'initial',
+    reference: params.reference,
     currency: 'EUR',
-    method: 'CARD',
-    beneficiary: {
-      firstName: params.beneficiary.firstName,
-      lastName: params.beneficiary.lastName,
-      email: params.beneficiary.email,
-      cardNumber: params.beneficiary.cardNumber,
-      cardHolderName: params.beneficiary.cardHolderName,
-      expiryMonth: params.beneficiary.expiryMonth,
-      expiryYear: params.beneficiary.expiryYear,
+    amount: amountEur,
+    customer: {
+      identifier: params.customer.identifier,
+      email: params.customer.email,
+      country: params.customer.country,
+      ip: params.customer.ip,
     },
-    metadata: {
-      ...params.metadata,
-      source: 'moonskin',
-      environment: FLEXIFY_CONFIG.environment,
+    callback_url: FLEXIFY_CONFIG.callbackUrl,
+    card: {
+      number: params.card.number,
+      holder_name: params.card.holderName,
+      expire_month: params.card.expireMonth,
+      expire_year: params.card.expireYear,
+      cvv: params.card.cvv,
     },
-    callbackUrl: FLEXIFY_CONFIG.callbackUrl,
-    successUrl: FLEXIFY_CONFIG.successUrl,
-    failureUrl: FLEXIFY_CONFIG.failureUrl,
   };
 
-  logPayoutTransaction('CREATE_CARD', params.orderId, { amount: params.amountCents });
+  logPayoutTransaction('CREATE_CARD_PAYOUT', params.reference, { amount: params.amountCents });
 
-  return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/payouts', request);
+  return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/payout', request);
 }
 
 // =============================================================================
@@ -383,54 +441,82 @@ export async function createCardPayout(
 // =============================================================================
 
 /**
- * Récupère le statut d'un payout
+ * Récupère le statut d'une transaction via Reporting API
+ * Utilise Basic Auth selon la spec
  */
-export async function getPayoutStatus(payoutId: string): Promise<FlexifyPayoutResponse> {
+export async function getTransactionStatus(transactionId: string): Promise<FlexifyPayoutResponse> {
   validateConfig();
 
-  return flexifyRequest<FlexifyPayoutResponse>('GET', `/v1/payouts/${payoutId}`);
-}
-
-/**
- * Récupère un payout par son orderId
- */
-export async function getPayoutByOrderId(orderId: string): Promise<FlexifyPayoutResponse> {
-  validateConfig();
-
-  return flexifyRequest<FlexifyPayoutResponse>('GET', `/v1/payouts/order/${orderId}`);
-}
-
-/**
- * Annule un payout (si possible)
- */
-export async function cancelPayout(payoutId: string): Promise<FlexifyPayoutResponse> {
-  validateConfig();
-
-  logPayoutTransaction('CANCEL', payoutId, {});
-
-  return flexifyRequest<FlexifyPayoutResponse>('POST', `/v1/payouts/${payoutId}/cancel`);
-}
-
-/**
- * Liste tous les payouts
- */
-export async function listPayouts(
-  limit: number = 50,
-  offset: number = 0,
-  status?: FlexifyPayoutStatus
-): Promise<{ payouts: FlexifyPayoutResponse[]; total: number }> {
-  validateConfig();
-
-  const queryParams = new URLSearchParams({
-    limit: limit.toString(),
-    offset: offset.toString(),
-    ...(status && { status }),
-  });
-
-  return flexifyRequest<{ payouts: FlexifyPayoutResponse[]; total: number }>(
-    'GET',
-    `/v1/payouts?${queryParams.toString()}`
+  // Utiliser le Reporting API avec Basic Auth
+  const authHeader = Buffer.from(`${FLEXIFY_CONFIG.apiKey}:${FLEXIFY_CONFIG.apiSecret}`).toString('base64');
+  
+  const response = await fetch(
+    `${FLEXIFY_CONFIG.reportingBaseUrl}/v1/report/transaction?transaction_id=${transactionId}&merchant_identifier=${FLEXIFY_CONFIG.merchantIdentifier}`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${authHeader}`,
+        'Content-Type': 'application/json',
+      },
+    }
   );
+
+  const data = await response.json();
+
+  if (!response.ok || ('code' in data && data.code !== 0)) {
+    throw new Error(data.error_message || 'Failed to fetch transaction status');
+  }
+
+  return data as FlexifyPayoutResponse;
+}
+
+/**
+ * Récupère une transaction par référence
+ */
+export async function getTransactionByReference(reference: string): Promise<FlexifyPayoutResponse> {
+  validateConfig();
+
+  const authHeader = Buffer.from(`${FLEXIFY_CONFIG.apiKey}:${FLEXIFY_CONFIG.apiSecret}`).toString('base64');
+  
+  const response = await fetch(
+    `${FLEXIFY_CONFIG.reportingBaseUrl}/v1/report/transaction?reference=${reference}&merchant_identifier=${FLEXIFY_CONFIG.merchantIdentifier}`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${authHeader}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok || ('code' in data && data.code !== 0)) {
+    throw new Error(data.error_message || 'Failed to fetch transaction');
+  }
+
+  return data as FlexifyPayoutResponse;
+}
+
+/**
+ * Effectue un refund (remboursement) d'une transaction
+ */
+export async function refundTransaction(
+  transactionId: string,
+  amountCents?: number
+): Promise<FlexifyPayoutResponse> {
+  validateConfig();
+
+  const amountEur = amountCents ? (amountCents / 100).toFixed(2) : undefined;
+
+  const request = {
+    transaction_id: transactionId,
+    ...(amountEur && { amount: amountEur }),
+  };
+
+  logPayoutTransaction('REFUND_TRANSACTION', transactionId, { amount: amountCents });
+
+  return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/refund', request);
 }
 
 // =============================================================================
@@ -438,24 +524,64 @@ export async function listPayouts(
 // =============================================================================
 
 /**
- * Valide la signature d'un webhook Flexify
+ * Valide la signature d'un webhook Flexify selon la spec H2H
  */
 export function validateWebhookSignature(
-  payload: string,
-  signature: string,
-  timestamp: string
+  rawBody: string,
+  authorizationHeader: string,
+  digestHeader: string,
+  dateHeader: string,
+  hostHeader: string,
+  contentLengthHeader: string
 ): boolean {
-  const expectedSignature = crypto
-    .createHmac('sha256', FLEXIFY_CONFIG.secretKey)
-    .update(`${timestamp}${payload}`)
-    .digest('hex');
-
   try {
+    // Parser le header Authorization
+    // Format: Signature keyId="...", algorithm="HmacSHA256", headers="host digest content-length date", signature="..."
+    const signatureMatch = authorizationHeader.match(/signature="([^"]+)"/);
+    const keyIdMatch = authorizationHeader.match(/keyId="([^"]+)"/);
+    const headersMatch = authorizationHeader.match(/headers="([^"]+)"/);
+    
+    if (!signatureMatch || !keyIdMatch || !headersMatch) {
+      console.error('[Flexify Webhook] Invalid Authorization header format');
+      return false;
+    }
+
+    const receivedSignature = signatureMatch[1];
+    const keyId = keyIdMatch[1];
+    const headersList = headersMatch[1].split(' ');
+
+    // Vérifier que le keyId correspond
+    if (keyId !== FLEXIFY_CONFIG.apiKey) {
+      console.error('[Flexify Webhook] Invalid keyId');
+      return false;
+    }
+
+    // Vérifier le digest
+    const expectedDigest = generateDigest(rawBody);
+    if (digestHeader !== expectedDigest) {
+      console.error('[Flexify Webhook] Digest mismatch');
+      return false;
+    }
+
+    // Reconstruire le payload de signature
+    const signaturePayload = buildSignaturePayload(
+      hostHeader,
+      'POST',
+      digestHeader,
+      parseInt(contentLengthHeader),
+      dateHeader
+    );
+
+    // Calculer la signature attendue
+    const expectedSignature = generateSignature(signaturePayload);
+
+    // Comparer de manière sécurisée
     return crypto.timingSafeEqual(
-      Buffer.from(signature),
+      Buffer.from(receivedSignature),
       Buffer.from(expectedSignature)
     );
-  } catch {
+  } catch (error) {
+    console.error('[Flexify Webhook] Signature validation error:', error);
     return false;
   }
 }
@@ -463,17 +589,14 @@ export function validateWebhookSignature(
 /**
  * Convertit le statut Flexify en statut interne
  */
-export function convertFlexifyStatus(status: FlexifyPayoutStatus): string {
-  const statusMap: Record<FlexifyPayoutStatus, string> = {
-    PENDING: 'PENDING',
-    PROCESSING: 'PROCESSING',
-    AWAITING_APPROVAL: 'VERIFICATION_REQUIRED',
-    APPROVED: 'VERIFIED',
-    SENT: 'SCHEDULED',
-    COMPLETED: 'PAID',
-    FAILED: 'FAILED',
-    CANCELLED: 'FAILED',
-    REFUNDED: 'FAILED',
+export function convertFlexifyStatus(status: FlexifyTransactionStatus): string {
+  const statusMap: Record<FlexifyTransactionStatus, string> = {
+    'new': 'PENDING',
+    'pending': 'PROCESSING',
+    'success': 'PAID',
+    'declined': 'FAILED',
+    'failed': 'FAILED',
+    'expired': 'FAILED',
   };
 
   return statusMap[status] || 'PENDING';
@@ -490,11 +613,11 @@ export function validateConfig(): void {
   if (!FLEXIFY_CONFIG.apiKey) {
     throw new Error('FLEXIFY_API_KEY is not configured');
   }
-  if (!FLEXIFY_CONFIG.secretKey) {
-    throw new Error('FLEXIFY_SECRET_KEY is not configured');
+  if (!FLEXIFY_CONFIG.apiSecret) {
+    throw new Error('FLEXIFY_API_SECRET is not configured');
   }
-  if (!FLEXIFY_CONFIG.merchantId) {
-    throw new Error('FLEXIFY_MERCHANT_ID is not configured');
+  if (!FLEXIFY_CONFIG.merchantIdentifier) {
+    throw new Error('FLEXIFY_MERCHANT_IDENTIFIER is not configured');
   }
 }
 
@@ -604,34 +727,34 @@ export function eurToCents(eur: number): number {
 }
 
 /**
- * Vérifie si un payout est terminé
+ * Vérifie si une transaction est terminée avec succès
  */
-export function isPayoutCompleted(status: FlexifyPayoutStatus): boolean {
-  return status === 'COMPLETED';
+export function isTransactionCompleted(status: FlexifyTransactionStatus): boolean {
+  return status === 'success';
 }
 
 /**
- * Vérifie si un payout a échoué
+ * Vérifie si une transaction a échoué
  */
-export function isPayoutFailed(status: FlexifyPayoutStatus): boolean {
-  return status === 'FAILED' || status === 'CANCELLED' || status === 'REFUNDED';
+export function isTransactionFailed(status: FlexifyTransactionStatus): boolean {
+  return status === 'declined' || status === 'failed' || status === 'expired';
 }
 
 /**
- * Vérifie si un payout est en cours
+ * Vérifie si une transaction est en cours
  */
-export function isPayoutPending(status: FlexifyPayoutStatus): boolean {
-  return ['PENDING', 'PROCESSING', 'AWAITING_APPROVAL', 'APPROVED', 'SENT'].includes(status);
+export function isTransactionPending(status: FlexifyTransactionStatus): boolean {
+  return status === 'new' || status === 'pending';
 }
 
 /**
  * Obtient les limites de payout
  */
-export function getPayoutLimits(method: FlexifyPayoutMethod): {
+export function getPayoutLimits(method: FlexifyPaymentMethod): {
   minCents: number;
   maxCents: number;
 } {
-  if (method === 'SEPA') {
+  if (method === 'sepa') {
     return {
       minCents: 1000, // 10 EUR minimum
       maxCents: 1000000, // 10,000 EUR maximum

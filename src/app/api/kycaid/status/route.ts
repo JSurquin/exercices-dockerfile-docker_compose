@@ -23,7 +23,7 @@ export async function GET() {
 
     const userId = session.user.id;
 
-    // Récupérer l'utilisateur avec son statut KYC
+    // Récupérer l'utilisateur avec son statut KYC et la dernière vérification
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -41,6 +41,15 @@ export async function GET() {
             uploadedAt: true,
             reviewedAt: true,
             rejectionReason: true,
+          },
+        },
+        kycVerifications: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            kycaidVerificationId: true,
+            status: true,
+            verified: true,
           },
         },
       },
@@ -78,11 +87,16 @@ export async function GET() {
         break;
     }
 
+    // Récupérer le verificationId si disponible
+    const latestVerification = user.kycVerifications?.[0];
+    const verificationId = latestVerification?.kycaidVerificationId;
+
     return NextResponse.json({
       status: currentStatus.status,
       message,
       canRetry,
       verificationUrl: currentStatus.verificationUrl,
+      verificationId, // Ajouté pour le polling
       declineReasons: currentStatus.declineReasons,
       documents: user.kycDocuments,
       user: {

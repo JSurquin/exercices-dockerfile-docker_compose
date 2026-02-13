@@ -359,7 +359,7 @@ export const messages: Record<Locale, Messages> = {
       kycInProgress: "En cours de vérification...",
       kycRequired: "Requis pour les retraits",
       withdrawFunds: "Retirer vos fonds",
-      sepaOrCard: "SEPA ou Carte bancaire",
+      sepaOrCard: "SEPA ou Crypto",
     },
     kyc: {
       title: "Vérification KYC",
@@ -2987,16 +2987,23 @@ export const messages: Record<Locale, Messages> = {
         bicPlaceholder: 'BNPAFRPP',
         accountHolderLabel: 'Titulaire du compte',
         accountHolderPlaceholder: 'Jean Dupont',
-        cardNumberLabel: 'Numéro de carte',
-        cardNumberPlaceholder: '4111 1111 1111 1111',
-        expiryDateLabel: 'Date d\'expiration',
-        expiryDatePlaceholder: 'MM/YY',
-        cardHolderLabel: 'Titulaire de la carte',
-        cardHolderPlaceholder: 'Jean Dupont',
+        // Crypto fields
+        cryptoLabel: 'Crypto-monnaie',
+        cryptoPlaceholder: 'Choisir une crypto-monnaie',
+        networkLabel: 'Réseau blockchain',
+        networkPlaceholder: 'Choisir un réseau',
+        walletAddressLabel: 'Adresse du wallet',
+        walletAddressWarning: 'Vérifiez bien l\'adresse, les transactions crypto sont irréversibles.',
+        cryptoWalletRequired: 'Adresse wallet requise',
+        cryptoMemoRequired: 'Memo/Tag requis pour ce réseau',
+        memoLabel: 'Memo / Tag',
+        memoRequired: 'Obligatoire',
+        memoPlaceholder: 'Entrez le memo/tag',
+        memoWarning: 'Sans memo correct, vos fonds pourraient être perdus définitivement.',
         security: {
           title: 'Sécurité',
           sepaInfo: 'Virement bancaire en 1-3 jours ouvrés',
-          cryptoInfo: 'Instant sur crypto'
+          cryptoInfo: 'Retrait crypto via Whitepay, généralement en quelques minutes'
         }
       },
       history: {
@@ -3038,10 +3045,10 @@ export const messages: Record<Locale, Messages> = {
       unknownError: 'Erreur inconnue',
       noMethods: 'Aucune méthode de paiement sauvegardée',
       paymentMethod: 'Méthode de paiement',
-      card: 'Carte',
+      crypto: 'Crypto',
       sepa: 'SEPA',
       sepaPrefix: 'IBAN',
-      expire: 'Expire',
+      walletPrefix: 'Wallet',
     },
     // Pages avec traductions manquantes
     affiliate: {
@@ -4417,7 +4424,7 @@ export const messages: Record<Locale, Messages> = {
       kycInProgress: "Verification in progress...",
       kycRequired: "Required for withdrawals",
       withdrawFunds: "Withdraw your funds",
-      sepaOrCard: "SEPA or Bank card",
+      sepaOrCard: "SEPA or Crypto",
     },
     kyc: {
       title: "KYC Verification",
@@ -5996,16 +6003,23 @@ export const messages: Record<Locale, Messages> = {
         bicPlaceholder: 'BNPAFRPP',
         accountHolderLabel: 'Account holder',
         accountHolderPlaceholder: 'John Doe',
-        cardNumberLabel: 'Card number',
-        cardNumberPlaceholder: '4111 1111 1111 1111',
-        expiryDateLabel: 'Expiry date',
-        expiryDatePlaceholder: 'MM/YY',
-        cardHolderLabel: 'Cardholder name',
-        cardHolderPlaceholder: 'John Doe',
+        // Crypto fields
+        cryptoLabel: 'Cryptocurrency',
+        cryptoPlaceholder: 'Choose a cryptocurrency',
+        networkLabel: 'Blockchain network',
+        networkPlaceholder: 'Choose a network',
+        walletAddressLabel: 'Wallet address',
+        walletAddressWarning: 'Double-check the address, crypto transactions are irreversible.',
+        cryptoWalletRequired: 'Wallet address required',
+        cryptoMemoRequired: 'Memo/Tag required for this network',
+        memoLabel: 'Memo / Tag',
+        memoRequired: 'Required',
+        memoPlaceholder: 'Enter the memo/tag',
+        memoWarning: 'Without the correct memo, your funds could be permanently lost.',
         security: {
           title: 'Security',
           sepaInfo: 'Bank transfer in 1-3 business days',
-          cryptoInfo: 'Instant on crypto'
+          cryptoInfo: 'Crypto withdrawal via Whitepay, usually within minutes'
         }
       },
       history: {
@@ -6047,10 +6061,10 @@ export const messages: Record<Locale, Messages> = {
       unknownError: 'Unknown error',
       noMethods: 'No saved payment methods',
       paymentMethod: 'Payment method',
-      card: 'Card',
+      crypto: 'Crypto',
       sepa: 'SEPA',
       sepaPrefix: 'IBAN',
-      expire: 'Expires',
+      walletPrefix: 'Wallet',
     },
     chatWidget: {
       support: "MoonSkin Support",
@@ -8471,7 +8485,7 @@ export const messages: Record<Locale, Messages> = {
       kycInProgress: "验证进行中...",
       kycRequired: "提款所需",
       withdrawFunds: "提取资金",
-      sepaOrCard: "SEPA 或银行卡",
+      sepaOrCard: "SEPA 或加密货币",
     },
     kyc: {
       title: "KYC验证",
@@ -9689,16 +9703,23 @@ export const messages: Record<Locale, Messages> = {
         bicPlaceholder: 'BNPAFRPP',
         accountHolderLabel: '账户持有人',
         accountHolderPlaceholder: '张三',
-        cardNumberLabel: '卡号',
-        cardNumberPlaceholder: '4111 1111 1111 1111',
-        expiryDateLabel: '有效期',
-        expiryDatePlaceholder: 'MM/YY',
-        cardHolderLabel: '持卡人姓名',
-        cardHolderPlaceholder: '张三',
+        // Crypto fields
+        cryptoLabel: '加密货币',
+        cryptoPlaceholder: '选择加密货币',
+        networkLabel: '区块链网络',
+        networkPlaceholder: '选择网络',
+        walletAddressLabel: '钱包地址',
+        walletAddressWarning: '请仔细核对地址，加密货币交易不可逆。',
+        cryptoWalletRequired: '需要钱包地址',
+        cryptoMemoRequired: '此网络需要Memo/Tag',
+        memoLabel: 'Memo / Tag',
+        memoRequired: '必填',
+        memoPlaceholder: '输入memo/tag',
+        memoWarning: '没有正确的memo，您的资金可能会永久丢失。',
         security: {
           title: '安全',
           sepaInfo: '1-3个工作日内到账',
-          cryptoInfo: '加密货币即时到账'
+          cryptoInfo: '通过Whitepay加密货币提款，通常几分钟内到账'
         }
       },
       history: {
@@ -9740,10 +9761,10 @@ export const messages: Record<Locale, Messages> = {
       unknownError: '未知错误',
       noMethods: '暂无保存的支付方式',
       paymentMethod: '支付方式',
-      card: '卡',
+      crypto: '加密货币',
       sepa: 'SEPA',
       sepaPrefix: 'IBAN',
-      expire: '过期',
+      walletPrefix: '钱包',
     },
     chatWidget: {
       support: "CashTrade客服",

@@ -4,21 +4,18 @@ import { headers } from 'next/headers';
 import { prisma } from '~/prisma/prisma';
 import {
   createSepaPayout,
-  createCardPayout,
   calculateSepaFees,
-  calculateCardFees,
   getPayoutLimits,
   validateIban,
   validateBic,
-  validateCardNumber,
   centsToEur,
   type FlexifyPayoutResponse,
 } from '@/lib/flexify';
 import { canUserMakePayout } from '@/lib/kycaid';
 import crypto from 'crypto';
 
-// Helper to generate UUID
-const generateUUID = () => crypto.randomUUID();
+// Helper to generate reference ID
+const generateReference = () => `MOON-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
 // =============================================================================
 // POST - Créer un nouveau payout
@@ -51,22 +48,25 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      method, // 'SEPA' | 'CARD'
+      method, // 'SEPA' (cette route ne gère que le SEPA — la crypto passe par /api/whitepay/withdrawal)
       amountCents,
       tradeId,
       // Données SEPA
       iban,
       bic,
-      // Données Carte
-      cardNumber,
-      cardHolderName,
-      expiryMonth,
-      expiryYear,
       // Données communes
       firstName,
       lastName,
       address,
     } = body;
+
+    // Cette route ne gère que le SEPA — la crypto passe par /api/whitepay/withdrawal
+    if (method !== 'SEPA' && method !== 'sepa') {
+      return NextResponse.json(
+        { error: 'Cette route ne gère que les paiements SEPA. Utilisez /api/whitepay/withdrawal pour la crypto.' },
+        { status: 400 }
+      );
+    }
 
     // Validation du montant
     if (!amountCents || amountCents <= 0) {
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérifier les limites
-    const limits = getPayoutLimits(method);
+    const limits = getPayoutLimits('sepa');
     if (amountCents < limits.minCents) {
       return NextResponse.json(
         { error: `Montant minimum: ${centsToEur(limits.minCents)}€` },
@@ -104,121 +104,80 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Récupérer l'IP du client
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+                     request.headers.get('x-real-ip') || 
+                     '0.0.0.0';
+
     // Validation selon la méthode
-    let flexifyResponse: FlexifyPayoutResponse;
-    const orderId = `PAYOUT-${generateUUID()}`;
-    let paymentMethodDetails: Record<string, unknown>;
-    let fees: { processingFeeCents: number; networkFeeCents: number; totalFeeCents: number };
+    const reference = generateReference();
 
-    if (method === 'SEPA') {
-      // Validation IBAN
-      if (!iban) {
-        return NextResponse.json(
-          { error: 'IBAN requis pour un paiement SEPA' },
-          { status: 400 }
-        );
-      }
-
-      const ibanValidation = validateIban(iban);
-      if (!ibanValidation.isValid) {
-        return NextResponse.json(
-          { error: ibanValidation.error },
-          { status: 400 }
-        );
-      }
-
-      // Validation BIC (optionnel mais recommandé)
-      if (bic) {
-        const bicValidation = validateBic(bic);
-        if (!bicValidation.isValid) {
-          return NextResponse.json(
-            { error: bicValidation.error },
-            { status: 400 }
-          );
-        }
-      }
-
-      fees = calculateSepaFees(amountCents);
-      paymentMethodDetails = {
-        type: 'SEPA',
-        iban: iban.replace(/\s/g, '').toUpperCase(),
-        bic: bic?.replace(/\s/g, '').toUpperCase(),
-      };
-
-      // Créer le payout SEPA
-      flexifyResponse = await createSepaPayout({
-        orderId,
-        amountCents,
-        beneficiary: {
-          firstName: firstName || user.name?.split(' ')[0] || 'User',
-          lastName: lastName || user.name?.split(' ').slice(1).join(' ') || 'User',
-          email: user.email,
-          iban: iban.replace(/\s/g, '').toUpperCase(),
-          bic: bic?.replace(/\s/g, '').toUpperCase(),
-          address,
-        },
-        metadata: {
-          userId,
-          tradeId: tradeId || '',
-        },
-      });
-    } else if (method === 'CARD') {
-      // Validation carte
-      if (!cardNumber || !cardHolderName || !expiryMonth || !expiryYear) {
-        return NextResponse.json(
-          { error: 'Informations de carte incomplètes' },
-          { status: 400 }
-        );
-      }
-
-      const cardValidation = validateCardNumber(cardNumber);
-      if (!cardValidation.isValid) {
-        return NextResponse.json(
-          { error: cardValidation.error },
-          { status: 400 }
-        );
-      }
-
-      fees = calculateCardFees(amountCents);
-      paymentMethodDetails = {
-        type: 'CARD',
-        lastFourDigits: cardNumber.slice(-4),
-        cardHolderName,
-      };
-
-      // Créer le payout Carte
-      flexifyResponse = await createCardPayout({
-        orderId,
-        amountCents,
-        beneficiary: {
-          firstName: firstName || user.name?.split(' ')[0] || 'User',
-          lastName: lastName || user.name?.split(' ').slice(1).join(' ') || 'User',
-          email: user.email,
-          cardNumber: cardNumber.replace(/\s|-/g, ''),
-          cardHolderName,
-          expiryMonth,
-          expiryYear,
-        },
-        metadata: {
-          userId,
-          tradeId: tradeId || '',
-        },
-      });
-    } else {
+    // Validation IBAN
+    if (!iban) {
       return NextResponse.json(
-        { error: 'Méthode de paiement non supportée' },
+        { error: 'IBAN requis pour un paiement SEPA' },
         { status: 400 }
       );
+    }
+
+    const ibanValidation = validateIban(iban);
+    if (!ibanValidation.isValid) {
+      return NextResponse.json(
+        { error: ibanValidation.error },
+        { status: 400 }
+      );
+    }
+
+    // Validation BIC (optionnel mais recommandé)
+    if (bic) {
+      const bicValidation = validateBic(bic);
+      if (!bicValidation.isValid) {
+        return NextResponse.json(
+          { error: bicValidation.error },
+          { status: 400 }
+        );
+      }
+    }
+
+    const fees = calculateSepaFees(amountCents);
+    const paymentMethodDetails: Record<string, unknown> = {
+      type: 'SEPA',
+      iban: iban.replace(/\s/g, '').toUpperCase(),
+      bic: bic?.replace(/\s/g, '').toUpperCase(),
+    };
+
+    // Créer le payout SEPA selon la spec V1
+    const holderName = `${firstName || user.name?.split(' ')[0] || 'User'} ${lastName || user.name?.split(' ').slice(1).join(' ') || 'User'}`.trim();
+    
+    const flexifyResponse = await createSepaPayout({
+      reference,
+      amountCents,
+      customer: {
+        identifier: userId,
+        email: user.email,
+        country: address?.country || 'FR', // Default FR si pas fourni
+        ip: clientIp,
+      },
+      sepa: {
+        iban: iban.replace(/\s/g, '').toUpperCase(),
+        bic: bic?.replace(/\s/g, '').toUpperCase(),
+        holderName,
+      },
+    });
+
+    // Vérifier la réponse Flexify
+    if (flexifyResponse.code !== 0 || !flexifyResponse.transaction) {
+      throw new Error(flexifyResponse.error_message || 'Échec de la création du payout');
     }
 
     // Créer ou récupérer la méthode de paiement
     let paymentMethod = await prisma.paymentMethod.findFirst({
       where: {
         userId,
-        type: method,
+        type: 'SEPA',
         details: {
           path: ['type'],
-          equals: method,
+          equals: 'SEPA',
         },
       },
     });
@@ -227,7 +186,7 @@ export async function POST(request: NextRequest) {
       paymentMethod = await prisma.paymentMethod.create({
         data: {
           userId,
-          type: method,
+          type: 'SEPA',
           details: paymentMethodDetails as object,
           isVerified: true, // Vérifié car le payout a été accepté
         },
@@ -242,7 +201,10 @@ export async function POST(request: NextRequest) {
         status: 'PENDING',
         amountCents,
         paymentMethodId: paymentMethod.id,
-        gateFiOrderId: orderId, // Réutilisation du champ pour Flexify
+        gateFiOrderId: reference, // Notre référence unique
+        flexifyPayoutId: flexifyResponse.transaction.id, // ID Flexify de la transaction
+        processingFeeCents: fees.processingFeeCents,
+        networkFeeCents: fees.networkFeeCents,
       },
     });
 
@@ -250,14 +212,15 @@ export async function POST(request: NextRequest) {
     await prisma.auditLog.create({
       data: {
         userId,
-        action: 'PAYOUT_CREATED',
+        action: 'FLEXIFY_PAYOUT_CREATED',
         details: {
           payoutId: payout.id,
-          orderId,
-          method,
+          reference,
+          method: 'SEPA',
           amountCents,
           fees,
-          flexifyId: flexifyResponse.id,
+          flexifyTransactionId: flexifyResponse.transaction.id,
+          flexifyStatus: flexifyResponse.transaction.status,
         },
       },
     });
@@ -266,14 +229,15 @@ export async function POST(request: NextRequest) {
       success: true,
       payout: {
         id: payout.id,
-        orderId,
+        reference,
         status: payout.status,
         amountCents,
         fees,
         netCents: amountCents - fees.totalFeeCents,
-        method,
-        flexifyId: flexifyResponse.id,
-        estimatedArrival: flexifyResponse.estimatedArrival,
+        method: 'SEPA',
+        flexifyTransactionId: flexifyResponse.transaction.id,
+        flexifyStatus: flexifyResponse.transaction.status,
+        estimatedArrival: '1-2 jours ouvrés',
       },
     });
   } catch (error) {
