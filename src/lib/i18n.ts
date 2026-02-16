@@ -3935,6 +3935,7 @@ export const messages: Record<Locale, Messages> = {
         audit: "Audit & Sécurité",
         exports: "Exports",
         settings: "Paramètres",
+        help: "Aide",
       },
       header: {
         adminPanel: "Admin Panel",
@@ -8000,6 +8001,7 @@ export const messages: Record<Locale, Messages> = {
         audit: "Audit & Security",
         exports: "Exports",
         settings: "Settings",
+        help: "Help",
       },
       header: {
         adminPanel: "Admin Panel",
@@ -11700,6 +11702,7 @@ export const messages: Record<Locale, Messages> = {
         audit: "审计与安全",
         exports: "导出",
         settings: "设置",
+        help: "帮助",
       },
       header: {
         adminPanel: "管理面板",

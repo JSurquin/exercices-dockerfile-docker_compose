@@ -28,6 +28,7 @@ import {
   Eye,
   DollarSign,
   FileText,
+  HelpCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -111,6 +112,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
         { title: t.items.audit, href: '/admin/audit', icon: Activity },
         { title: t.items.exports, href: '/admin/dashboard?tab=exports', icon: FileDown },
         { title: t.items.settings, href: '/admin/settings', icon: Settings },
+        { title: t.items.help, href: '/admin/aide', icon: HelpCircle },
       ],
     },
   ];

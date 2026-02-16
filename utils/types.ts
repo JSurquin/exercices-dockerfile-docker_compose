@@ -3851,6 +3851,7 @@ export interface Messages {
         audit: string;
         exports: string;
         settings: string;
+        help: string;
       };
       header: {
         adminPanel: string;
