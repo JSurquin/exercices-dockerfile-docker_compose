@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { canUserMakePayout } from '@/lib/gatefi-kyc';
+import { checkWithdrawalLimit } from '@/lib/balance-service';
 
 /**
  * POST /api/payout/initiate
@@ -68,6 +69,23 @@ export async function POST(request: NextRequest) {
           error: kycCheck.reason || 'KYC verification required',
           requiresKyc: true,
         },
+        { status: 403 }
+      );
+    }
+
+    // Vérifier que le compte n'est pas gelé
+    if (trade.user.accountFrozen) {
+      return NextResponse.json(
+        { error: 'Account frozen', accountFrozen: true },
+        { status: 403 }
+      );
+    }
+
+    // Vérifier le plafond mensuel de retrait
+    const limitCheck = await checkWithdrawalLimit(userId, trade.netCents);
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        { error: limitCheck.reason || 'Monthly withdrawal limit exceeded', limitExceeded: true },
         { status: 403 }
       );
     }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -260,8 +261,11 @@ export function AdminUsersTable() {
                     size="sm"
                     variant="outline"
                     className="border-slate-600 text-white hover:bg-slate-700"
+                    asChild
                   >
-                    <Eye className="h-4 w-4" />
+                    <Link href={`/admin/users/${user.id}`}>
+                      <Eye className="h-4 w-4" />
+                    </Link>
                   </Button>
                 </TableCell>
               </TableRow>

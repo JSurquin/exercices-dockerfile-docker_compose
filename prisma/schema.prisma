@@ -26,12 +26,17 @@ model User {
   xp                    Int                 @default(0)
   tickets               Int                 @default(0)
   totalVolumeCents      Int                 @default(0)
+  balanceCents          Int                 @default(0)
+  frozenBalanceCents     Int                 @default(0)
+  accountFrozen          Boolean             @default(false)
   kycStatus             KycStatus           @default(PENDING)
   kycaidApplicantId     String?             @unique // KYCAID applicant ID
   acceptedTermsAt       DateTime?
   isFirstLogin          Boolean             @default(true)
   referredByAffiliateId String?
   affiliateStats        AffiliateStats?
+  balanceTransactions   BalanceTransaction[]
+  withdrawalLimit        WithdrawalLimit?
   affiliateApplications AffiliateApplication[]
   reviewedApplications  AffiliateApplication[] @relation("AffiliateApplicationReviewer")
   giveawayEntries       GiveawayEntry[]
@@ -62,6 +67,35 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("audit_log")
+}
+
+model BalanceTransaction {
+  id               String                   @id @default(cuid())
+  userId           String
+  type             BalanceTransactionType
+  amountCents      Int
+  balanceAfterCents Int
+  reason           String?
+  createdBy        String?
+  metadata         Json?
+  createdAt        DateTime                @default(now())
+  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([type])
+  @@map("balance_transaction")
+}
+
+model WithdrawalLimit {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  monthlyLimitCents  Int
+  updatedBy          String?
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("withdrawal_limit")
 }
 
 model Trade {
@@ -518,9 +552,19 @@ enum PayoutStatus {
   // Whitepay specific statuses
   WHITEPAY_WAITING_CONFIRMATION
   WHITEPAY_PENDING_WITHDRAWAL
+  CANCELLED
   WHITEPAY_PROCESSING_WITHDRAWAL
   WHITEPAY_COMPLETE
   WHITEPAY_DECLINED
+}
+
+enum BalanceTransactionType {
+  TRADE_CREDIT
+  ADMIN_ADJUSTMENT
+  WITHDRAWAL
+  PAYOUT_REFUND
+  FROZEN
+  UNFROZEN
 }
 
 enum PaymentMethodType {

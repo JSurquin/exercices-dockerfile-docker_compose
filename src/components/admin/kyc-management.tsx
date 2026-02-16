@@ -160,6 +160,15 @@ export function AdminKYCManagement() {
     }
   };
 
+  /** Libellé affiché pour l’utilisateur (pseudo Steam en priorité, puis nom, email, sinon userId) */
+  const getUserDisplayLabel = (doc: KYCDocument) => {
+    const u = doc.user;
+    if (u?.steamUsername) return u.steamUsername;
+    if (u?.name) return u.name;
+    if (u?.email) return u.email;
+    return doc.userId;
+  };
+
   const formatDate = (date: Date | string) => {
     return new Intl.DateTimeFormat('fr-FR', {
       day: '2-digit',
@@ -219,7 +228,7 @@ export function AdminKYCManagement() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
-            placeholder="Rechercher par utilisateur, type de document..."
+            placeholder="Rechercher par pseudo Steam, email, ID..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
             className="pl-10 bg-slate-700 border-slate-600 text-white"
@@ -275,14 +284,19 @@ export function AdminKYCManagement() {
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="" alt={doc.userId} />
-                      <AvatarFallback>
-                        <User className="h-4 w-4" />
+                      <AvatarImage src={doc.user?.steamAvatar ?? undefined} alt={getUserDisplayLabel(doc)} />
+                      <AvatarFallback className="bg-slate-600 text-slate-300">
+                        {(doc.user?.steamUsername || doc.user?.name || doc.user?.email || doc.userId).slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="font-medium text-white">{doc.userId}</div>
-                      <div className="text-xs text-slate-400">ID: {doc.id}</div>
+                      <div className="font-medium text-white">{getUserDisplayLabel(doc)}</div>
+                      <div className="text-xs text-slate-400">
+                        {doc.user?.steamId && <span>Steam: {doc.user.steamId}</span>}
+                        {doc.user?.steamId && doc.user?.email && ' · '}
+                        {doc.user?.email && <span>{doc.user.email}</span>}
+                        {!doc.user?.steamId && !doc.user?.email && `ID: ${doc.id}`}
+                      </div>
                     </div>
                   </div>
                 </TableCell>

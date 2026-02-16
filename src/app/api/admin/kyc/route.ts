@@ -36,13 +36,15 @@ export async function GET(request: NextRequest) {
       where.userId = filters.userId;
     }
 
-    // Recherche textuelle
+    // Recherche textuelle (id, document KYCAID, nom, email, pseudo Steam)
     if (filters.search) {
       where.OR = [
         { id: { contains: filters.search, mode: 'insensitive' } },
         { kycaidDocumentId: { contains: filters.search, mode: 'insensitive' } },
         { user: { name: { contains: filters.search, mode: 'insensitive' } } },
         { user: { email: { contains: filters.search, mode: 'insensitive' } } },
+        { user: { steamUsername: { contains: filters.search, mode: 'insensitive' } } },
+        { user: { steamId: { contains: filters.search, mode: 'insensitive' } } },
       ];
     }
 
@@ -56,6 +58,9 @@ export async function GET(request: NextRequest) {
               id: true,
               name: true,
               email: true,
+              steamId: true,
+              steamUsername: true,
+              steamAvatar: true,
               kycStatus: true,
             },
           },
@@ -67,7 +72,7 @@ export async function GET(request: NextRequest) {
       prisma.kycDocument.count({ where }),
     ]);
 
-    // Transformer les données au format attendu
+    // Transformer les données au format attendu (avec infos utilisateur pour affichage admin)
     const documents: KYCDocument[] = documentsData.map(doc => ({
       id: doc.id,
       userId: doc.userId,
@@ -77,6 +82,13 @@ export async function GET(request: NextRequest) {
       uploadedAt: doc.uploadedAt,
       reviewedAt: doc.reviewedAt || undefined,
       rejectionReason: doc.rejectionReason || undefined,
+      user: doc.user ? {
+        steamUsername: doc.user.steamUsername ?? undefined,
+        steamId: doc.user.steamId ?? undefined,
+        steamAvatar: doc.user.steamAvatar ?? undefined,
+        name: doc.user.name ?? undefined,
+        email: doc.user.email,
+      } : undefined,
     }));
 
     return NextResponse.json({

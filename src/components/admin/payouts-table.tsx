@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,16 +18,22 @@ import {
   XCircle,
   RefreshCw,
   Euro,
-  CreditCard
+  CreditCard,
+  Ban
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { Payout, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
 
+const CANCELLABLE_STATUSES = ['en_attente', 'vérification_requise', 'vérifié', 'planifié'];
+
 export function AdminPayoutsTable() {
   const { messages } = useLocale();
+  const { toast } = useToast();
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [filters, setFilters] = useState<AdminFilters>({
     page: 1,
     limit: 20,
@@ -87,6 +94,7 @@ export function AdminPayoutsTable() {
       'exécuté': { variant: 'default' as const, icon: CheckCircle, text: 'Exécuté' },
       'payé': { variant: 'default' as const, icon: CheckCircle, text: 'Payé' },
       'échoué': { variant: 'destructive' as const, icon: XCircle, text: 'Échoué' },
+      'annulé': { variant: 'outline' as const, icon: Ban, text: 'Annulé' },
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['en_attente'];
@@ -126,6 +134,29 @@ export function AdminPayoutsTable() {
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(date));
+  };
+
+  const handleCancelPayout = async (payoutId: string) => {
+    setCancellingId(payoutId);
+    try {
+      const res = await fetch(`/api/admin/payouts/${payoutId}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: 'Annulé par l\'admin' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Erreur');
+      toast({ title: 'Payout annulé' });
+      fetchPayouts();
+    } catch (e) {
+      toast({
+        title: 'Erreur',
+        description: e instanceof Error ? e.message : 'Impossible d\'annuler le payout',
+        variant: 'destructive',
+      });
+    } finally {
+      setCancellingId(null);
+    }
   };
 
   const exportPayouts = async () => {
@@ -265,13 +296,29 @@ export function AdminPayoutsTable() {
                   {formatDate(payout.créédLe)}
                 </TableCell>
                 <TableCell>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-slate-600 text-white hover:bg-slate-700"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    {CANCELLABLE_STATUSES.includes(payout.status) && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-red-600 text-red-400 hover:bg-red-900/30"
+                        onClick={() => handleCancelPayout(payout.id)}
+                        disabled={cancellingId === payout.id}
+                      >
+                        <Ban className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-slate-600 text-white hover:bg-slate-700"
+                      asChild
+                    >
+                      <Link href={`/admin/users/${payout.userId}`}>
+                        <Eye className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

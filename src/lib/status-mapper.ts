@@ -32,7 +32,7 @@ export function mapTradeStatusToDb(displayStatus: string): string {
 }
 
 // Mapping pour les statuts de Payout
-type PayoutStatus = "en_attente" | "vérification_requise" | "vérifié" | "planifié" | "exécuté" | "payé" | "échoué";
+type PayoutStatus = "en_attente" | "vérification_requise" | "vérifié" | "planifié" | "exécuté" | "payé" | "échoué" | "annulé";
 
 export function mapPayoutStatusFromDb(prismaStatus: string): PayoutStatus {
   const mapping: Record<string, PayoutStatus> = {
@@ -43,6 +43,7 @@ export function mapPayoutStatusFromDb(prismaStatus: string): PayoutStatus {
     'PROCESSING': 'exécuté',
     'PAID': 'payé',
     'FAILED': 'échoué',
+    'CANCELLED': 'annulé',
     'FLEXIFY_PENDING': 'en_attente',
     'FLEXIFY_PROCESSING': 'exécuté',
     'FLEXIFY_PAID': 'payé',
@@ -60,6 +61,7 @@ export function mapPayoutStatusToDb(displayStatus: string): string {
     'en_cours': 'PROCESSING',
     'payé': 'PAID',
     'échoué': 'FAILED',
+    'annulé': 'CANCELLED',
   };
   return mapping[displayStatus] || displayStatus.toUpperCase();
 }

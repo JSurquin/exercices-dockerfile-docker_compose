@@ -68,7 +68,7 @@ export interface CryptoDetails {
 export interface Payout {
   id: string;
   userId: string;
-  status: 'en_attente' | 'vérification_requise' | 'vérifié' | 'planifié' | 'exécuté' | 'payé' | 'échoué';
+  status: 'en_attente' | 'vérification_requise' | 'vérifié' | 'planifié' | 'exécuté' | 'payé' | 'échoué' | 'annulé';
   montantCentimes: number;
   methodePaiement: PaymentMethod;
   referencePaiement?: string;
@@ -86,6 +86,14 @@ export interface KYCDocument {
   uploadedAt: Date;
   reviewedAt?: Date;
   rejectionReason?: string;
+  /** Infos utilisateur pour l’admin (pseudo Steam, etc.) */
+  user?: {
+    steamUsername?: string;
+    steamId?: string;
+    steamAvatar?: string;
+    name?: string;
+    email: string;
+  };
 }
 
 export interface Giveaway {
