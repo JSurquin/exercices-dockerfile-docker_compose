@@ -46,6 +46,9 @@ const SUPPORTED_CRYPTOS = [
 
 const MEMO_REQUIRED_NETWORKS = ['TON', 'STELLAR', 'XLM', 'COSMOS', 'ATOM'];
 
+// Minimum retrait crypto (Whitepay) : 21,20 €
+const CRYPTO_MIN_CENTS = 2120;
+
 function getAddressPlaceholder(network: string): string {
   switch (network) {
     case 'BTC': return 'bc1q...';
@@ -174,7 +177,15 @@ export default function PayoutPage() {
       return;
     }
 
-    // Validation crypto
+    // Validation crypto : minimum 21,20 € (exigence API Whitepay)
+    if (payoutMethod === 'crypto') {
+      if (amountCents < CRYPTO_MIN_CENTS) {
+        toast.error(text.request.cryptoMinAmount ?? `Montant minimum pour la crypto : 21,20 €`);
+        return;
+      }
+    }
+
+    // Validation crypto (wallet, memo)
     if (payoutMethod === 'crypto') {
       if (!formData.walletAddress) {
         toast.error(text.request.cryptoWalletRequired || 'Adresse wallet requise');

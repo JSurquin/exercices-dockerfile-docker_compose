@@ -611,7 +611,7 @@ export function getWhitepayLimits(): {
   maxCents: number;
 } {
   return {
-    minCents: 1000,     // 10 EUR minimum
+    minCents: 2120,     // 21.20 EUR minimum (API Whitepay: "The Amount must be at least 21.17")
     maxCents: 5000000,  // 50 000 EUR maximum
   };
 }

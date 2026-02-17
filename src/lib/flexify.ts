@@ -222,12 +222,38 @@ async function flexifyRequest<T>(
         body: bodyString,
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get('content-type') ?? '';
+      const rawText = await response.text();
 
-      // Vérifier le code d'erreur Flexify
-      if ('code' in data && data.code !== 0) {
+      if (!contentType.includes('application/json')) {
+        const snippet = rawText.slice(0, 400).replace(/\s+/g, ' ');
+        console.error('[Flexify] Réponse non-JSON (HTML ou erreur)', {
+          status: response.status,
+          url,
+          contentType,
+          snippet,
+        });
         throw new Error(
-          data.error_message || `Flexify error code: ${data.code}`
+          `Flexify a renvoyé une page HTML au lieu de JSON (status ${response.status}). Vérifiez : URL H2H (FLEXIFY_H2H_URL), IP serveur autorisée chez Flexify, et clés API. Détail: ${snippet}`
+        );
+      }
+
+      let data: unknown;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        console.error('[Flexify] Body JSON invalide', { status: response.status, rawText: rawText.slice(0, 300) });
+        throw new Error(`Flexify: réponse JSON invalide (status ${response.status})`);
+      }
+
+      // Vérifier le code d'erreur Flexify (error_code != 0 = échec)
+      if (typeof data === 'object' && data !== null && 'error_code' in data && (data as { error_code: number }).error_code !== 0) {
+        const msg = (data as { error_message?: string }).error_message ?? `Flexify error code: ${(data as { error_code: number }).error_code}`;
+        throw new Error(msg);
+      }
+      if ('code' in (data as object) && (data as { code: number }).code !== 0) {
+        throw new Error(
+          (data as { error_message?: string }).error_message || `Flexify error code: ${(data as { code: number }).code}`
         );
       }
 
