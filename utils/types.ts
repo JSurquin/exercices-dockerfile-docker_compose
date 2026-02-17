@@ -4036,6 +4036,7 @@ export interface Messages {
         walletAddressWarning: string;
         cryptoWalletRequired: string;
         cryptoMemoRequired: string;
+        cryptoMinAmount: string;
         memoLabel: string;
         memoRequired: string;
         memoPlaceholder: string;
