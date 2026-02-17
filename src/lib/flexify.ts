@@ -162,14 +162,15 @@ function generateSignature(payload: string): string {
 }
 
 /**
- * Prépare les headers pour une requête Flexify H2H
+ * Prépare les headers pour une requête Flexify H2H.
+ * Date au format ISO 8601 (ex: 2022-01-01T01:00:00.000Z) comme dans l'exemple Flexify.
  */
 function prepareHeaders(
   method: string,
   host: string,
   body?: string
 ): Record<string, string> {
-  const date = new Date().toUTCString();
+  const date = new Date().toISOString();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Date': date,
