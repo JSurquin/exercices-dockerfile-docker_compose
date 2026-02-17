@@ -153,10 +153,47 @@ export interface WhitepayStatusResponse {
 // TYPES — Webhook
 // =============================================================================
 
+/** Webhook pour les mises à jour de statut des retraits (payouts) */
 export interface WhitepayWebhookPayload {
   event: 'withdrawal.status_changed';
   transaction: WhitepayTransaction;
   timestamp: string;
+}
+
+/**
+ * Webhook "Final Amount Received" pour le flux Crypto Top-Up (dépôt sur le compte merchant).
+ * Whitepay envoie cet événement quand un dépôt crypto est reçu → crédite le merchant account.
+ * La même URL de webhook peut être utilisée pour deposits ET withdrawals.
+ */
+export interface WhitepayTopUpWebhookPayload {
+  event?: string; // ex: "invoice.final_amount_received" ou similaire
+  transaction_received_total?: string;
+  received_currency?: string;
+  /** Optionnel si Whitepay active external_currencies */
+  equivalent_fiat_amount?: number;
+  equivalent_fiat_currency?: string;
+  [key: string]: unknown;
+}
+
+export function isWhitepayWithdrawalEvent(payload: unknown): payload is WhitepayWebhookPayload {
+  const p = payload as Record<string, unknown>;
+  return !!(
+    p &&
+    typeof p === 'object' &&
+    p.transaction &&
+    typeof (p.transaction as Record<string, unknown>).id === 'string' &&
+    typeof (p.transaction as Record<string, unknown>).status === 'string'
+  );
+}
+
+export function isWhitepayTopUpEvent(payload: unknown): payload is WhitepayTopUpWebhookPayload {
+  const p = payload as Record<string, unknown>;
+  return !!(
+    p &&
+    typeof p === 'object' &&
+    (typeof p.transaction_received_total === 'string' || typeof p.transaction_received_total === 'number' ||
+     typeof p.received_currency === 'string')
+  );
 }
 
 // =============================================================================

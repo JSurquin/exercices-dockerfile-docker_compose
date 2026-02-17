@@ -5,11 +5,19 @@ import {
   convertWhitepayStatus,
   isTransactionComplete,
   isTransactionFailed,
+  isWhitepayWithdrawalEvent,
+  isWhitepayTopUpEvent,
   type WhitepayWebhookPayload,
 } from '@/lib/whitepay';
 
 // =============================================================================
-// POST - Recevoir les webhooks Whitepay (mises à jour de statut)
+// POST - Webhook Whitepay (une seule URL pour deposits ET withdrawals)
+// =============================================================================
+// Whitepay peut envoyer :
+// 1) Withdrawals (payouts) : event withdrawal.status_changed + transaction → on met à jour le Payout.
+// 2) Top-up (deposits) : "Final Amount Received" (transaction_received_total, received_currency) →
+//    le compte merchant est crédité côté Whitepay ; on log et on répond 200.
+// Répondre toujours 200 pour les événements reconnus pour éviter les retries.
 // =============================================================================
 
 export async function POST(request: NextRequest) {
@@ -18,7 +26,6 @@ export async function POST(request: NextRequest) {
     const signature = request.headers.get('X-Signature') || '';
     const timestamp = request.headers.get('X-Timestamp') || '';
 
-    // 1. Valider la signature du webhook
     if (!validateWebhookSignature(rawBody, signature, timestamp)) {
       console.error('[Whitepay Webhook] Invalid signature');
       return NextResponse.json(
@@ -27,17 +34,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const payload: WhitepayWebhookPayload = JSON.parse(rawBody);
-    const tx = payload.transaction;
+    let payload: unknown;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch {
+      console.error('[Whitepay Webhook] Invalid JSON body');
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    }
 
-    console.log('[Whitepay Webhook] Received:', {
-      event: payload.event,
+    // ————— Événement Top-Up (deposit) : Final Amount Received —————
+    if (isWhitepayTopUpEvent(payload)) {
+      console.log('[Whitepay Webhook] Top-up / deposit received:', {
+        transaction_received_total: payload.transaction_received_total,
+        received_currency: payload.received_currency,
+        event: (payload as Record<string, unknown>).event,
+      });
+      return NextResponse.json({ received: true, type: 'top_up' });
+    }
+
+    // ————— Événement Withdrawal (payout) : mise à jour de statut —————
+    if (!isWhitepayWithdrawalEvent(payload)) {
+      console.warn('[Whitepay Webhook] Unknown event shape, acknowledging:', {
+        keys: Object.keys(payload as object),
+        event: (payload as Record<string, unknown>).event,
+      });
+      return NextResponse.json({ received: true });
+    }
+
+    const { transaction: tx } = payload as WhitepayWebhookPayload;
+
+    console.log('[Whitepay Webhook] Withdrawal update:', {
+      event: (payload as WhitepayWebhookPayload).event,
       transactionId: tx.id,
       status: tx.status,
       txHash: tx.tx_hash,
     });
 
-    // 2. Trouver le payout correspondant par whitepayTransactionId
     const payout = await prisma.payout.findFirst({
       where: { whitepayTransactionId: tx.id },
       include: {
