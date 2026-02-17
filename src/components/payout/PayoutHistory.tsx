@@ -13,8 +13,15 @@ interface Payout {
   createdAt: string;
   paidAt?: string;
   paymentMethod: {
+    id: string;
     type: string;
-    details: Record<string, unknown>;
+    isVerified?: boolean;
+    details: {
+      type: string;
+      maskedIban?: string | null;
+      maskedBic?: string | null;
+      iban?: string; // legacy, ne plus utiliser
+    } | null;
   };
   trade?: {
     ticketId: string;
@@ -122,13 +129,17 @@ export function PayoutHistory() {
 
   const getMethodLabel = (payout: Payout) => {
     const type = payout.paymentMethod.type;
-    const details = payout.paymentMethod.details as Record<string, string>;
+    const details = payout.paymentMethod.details;
 
-    if (type === 'SEPA' && details.iban) {
-      return `SEPA ••••${details.iban.slice(-4)}`;
+    if (type === 'SEPA' && details?.maskedIban) {
+      return `SEPA ${details.maskedIban}`;
     }
-    if (type === 'CARD' && details.lastFourDigits) {
-      return `Carte ••••${details.lastFourDigits}`;
+    if (type === 'SEPA' && details && 'iban' in details && typeof (details as { iban?: string }).iban === 'string') {
+      const iban = (details as { iban: string }).iban;
+      return `SEPA ••••${iban.slice(-4)}`;
+    }
+    if (type === 'CARD' && details && 'lastFourDigits' in details) {
+      return `Carte ••••${(details as { lastFourDigits: string }).lastFourDigits}`;
     }
     return type;
   };

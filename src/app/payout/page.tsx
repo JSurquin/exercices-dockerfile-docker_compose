@@ -114,6 +114,9 @@ export default function PayoutPage() {
     createdAt: string;
   }>>([]);
   const [availableBalanceCents, setAvailableBalanceCents] = useState<number | null>(null);
+  const [savedSepaMethods, setSavedSepaMethods] = useState<Array<{ id: string; maskedIban: string | null; maskedBic: string | null }>>([]);
+  const [useSavedIban, setUseSavedIban] = useState(false);
+  const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<string | null>(null);
 
   // Traductions locales pour la page payout
   const text = messages.payoutPage;
@@ -147,12 +150,27 @@ export default function PayoutPage() {
     }
   }, []);
 
+  // Moyens de paiement enregistrés (IBAN masqués uniquement)
+  const fetchPaymentMethods = useCallback(async () => {
+    try {
+      const response = await fetch('/api/payment-methods');
+      if (response.ok) {
+        const data = await response.json();
+        const sepa = (data.paymentMethods || []).filter((m: { type: string }) => m.type === 'SEPA');
+        setSavedSepaMethods(sepa);
+      }
+    } catch (error) {
+      console.error('Error fetching payment methods:', error);
+    }
+  }, []);
+
   useEffect(() => {
     if (user) {
       fetchBalance();
       fetchPayoutHistory();
+      fetchPaymentMethods();
     }
-  }, [user, fetchBalance, fetchPayoutHistory]);
+  }, [user, fetchBalance, fetchPayoutHistory, fetchPaymentMethods]);
 
   // Pas de polling KYC sur la page payout : si le KYC est déjà validé, on ne touche plus à Kycaid.
   // Le retrait passe uniquement par Flexify (SEPA) ou Whitepay (crypto). Si le KYC n'est pas
@@ -251,15 +269,32 @@ export default function PayoutPage() {
       return;
     }
 
+    if (payoutMethod === 'sepa') {
+      if (useSavedIban && selectedPaymentMethodId) {
+        // OK : on envoie paymentMethodId, l'API déchiffre l'IBAN côté serveur
+      } else if (!formData.iban.replace(/\s/g, '')) {
+        toast.error(text.request.ibanLabel ? `${text.request.ibanLabel} requis` : 'IBAN requis');
+        return;
+      }
+    }
+
     setIsLoading(true);
     try {
+      const accountParts = formData.accountHolder.trim().split(/\s+/);
+      const firstName = accountParts[0] || '';
+      const lastName = accountParts.slice(1).join(' ') || '';
       const payload = payoutMethod === 'sepa' ? {
         quoteId: quote.quoteId,
         method: 'sepa',
         amountCents: quote.amountCents,
-        iban: formData.iban.replace(/\s/g, ''),
-        bic: formData.bic,
-        accountHolder: formData.accountHolder,
+        ...(useSavedIban && selectedPaymentMethodId
+          ? { paymentMethodId: selectedPaymentMethodId, firstName, lastName }
+          : {
+              iban: formData.iban.replace(/\s/g, ''),
+              bic: formData.bic,
+              firstName,
+              lastName,
+            }),
       } : {
         quoteId: quote.quoteId,
         method: 'crypto',
@@ -305,6 +340,7 @@ export default function PayoutPage() {
       setAmount('');
       fetchBalance();
       fetchPayoutHistory();
+      fetchPaymentMethods();
     } catch (error) {
       const message = error instanceof Error ? error.message : text.toast.payoutError;
       console.error('[PAYOUT] handleSubmit error', error);
@@ -469,34 +505,72 @@ export default function PayoutPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-4">
+                    {savedSepaMethods.length > 0 && (
                       <div className="space-y-2">
-                        <Label htmlFor="iban">{text.request.ibanLabel}</Label>
-                        <Input
-                          id="iban"
-                          value={formData.iban}
-                          onChange={(e) => setFormData(prev => ({ ...prev, iban: e.target.value }))}
-                          placeholder={text.request.ibanPlaceholder}
-                        />
+                        <Label>IBAN</Label>
+                        <div className="flex flex-col gap-2">
+                          <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                            <input
+                              type="radio"
+                              name="sepa-source"
+                              checked={useSavedIban}
+                              onChange={() => {
+                                setUseSavedIban(true);
+                                setSelectedPaymentMethodId(savedSepaMethods[0].id);
+                              }}
+                              className="h-4 w-4"
+                            />
+                            <span className="text-sm">
+                              Utiliser l&apos;IBAN enregistré : <strong>{savedSepaMethods[0].maskedIban ?? '••••'}</strong>
+                            </span>
+                          </label>
+                          <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                            <input
+                              type="radio"
+                              name="sepa-source"
+                              checked={!useSavedIban}
+                              onChange={() => {
+                                setUseSavedIban(false);
+                                setSelectedPaymentMethodId(null);
+                              }}
+                              className="h-4 w-4"
+                            />
+                            <span className="text-sm">Saisir un nouvel IBAN</span>
+                          </label>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="bic">{text.request.bicLabel}</Label>
-                        <Input
-                          id="bic"
-                          value={formData.bic}
-                          onChange={(e) => setFormData(prev => ({ ...prev, bic: e.target.value }))}
-                          placeholder={text.request.bicPlaceholder}
-                        />
+                    )}
+
+                    {(!useSavedIban || savedSepaMethods.length === 0) && (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="iban">{text.request.ibanLabel}</Label>
+                          <Input
+                            id="iban"
+                            value={formData.iban}
+                            onChange={(e) => setFormData(prev => ({ ...prev, iban: e.target.value }))}
+                            placeholder={text.request.ibanPlaceholder}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="bic">{text.request.bicLabel}</Label>
+                          <Input
+                            id="bic"
+                            value={formData.bic}
+                            onChange={(e) => setFormData(prev => ({ ...prev, bic: e.target.value }))}
+                            placeholder={text.request.bicPlaceholder}
+                          />
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="accountHolder">{text.request.accountHolderLabel}</Label>
-                        <Input
-                          id="accountHolder"
-                          value={formData.accountHolder}
-                          onChange={(e) => setFormData(prev => ({ ...prev, accountHolder: e.target.value }))}
-                          placeholder={text.request.accountHolderPlaceholder}
-                        />
-                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <Label htmlFor="accountHolder">{text.request.accountHolderLabel}</Label>
+                      <Input
+                        id="accountHolder"
+                        value={formData.accountHolder}
+                        onChange={(e) => setFormData(prev => ({ ...prev, accountHolder: e.target.value }))}
+                        placeholder={text.request.accountHolderPlaceholder}
+                      />
                     </div>
                   </TabsContent>
 

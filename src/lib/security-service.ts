@@ -230,7 +230,7 @@ export class SecurityService {
   }
 
   /**
-   * Vérifie le cooldown après changement d'IBAN
+   * Vérifie le cooldown après changement d'IBAN (comparaison par paymentMethodId, IBAN chiffré en BDD).
    */
   private async checkIbanCooldown(userId: string, paymentMethodId: string): Promise<SecurityCheck> {
     const paymentMethod = await prisma.paymentMethod.findUnique({
@@ -241,23 +241,18 @@ export class SecurityService {
       return { allowed: false, reason: 'Méthode de paiement non trouvée' };
     }
 
-    // Vérifie s'il y a eu un changement d'IBAN récent
     const recentPayouts = await prisma.payout.findMany({
       where: {
         userId,
         paymentMethod: { type: 'SEPA' },
         status: { in: ['PAID', 'PROCESSING'] },
       },
-      include: { paymentMethod: true },
+      select: { paymentMethodId: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
       take: 5,
     });
 
-    const currentIban = (paymentMethod.details as any).iban;
-    const lastDifferentIban = recentPayouts.find(p => {
-      const iban = (p.paymentMethod.details as any).iban;
-      return iban !== currentIban;
-    });
+    const lastDifferentIban = recentPayouts.find(p => p.paymentMethodId !== paymentMethodId);
 
     if (lastDifferentIban) {
       const cooldownEnd = new Date(lastDifferentIban.createdAt);
@@ -276,7 +271,7 @@ export class SecurityService {
   }
 
   /**
-   * Vérifie les limites par IBAN
+   * Vérifie les limites par moyen de paiement (même paymentMethodId = même IBAN, stocké chiffré).
    */
   private async checkIbanLimits(paymentMethodId: string): Promise<SecurityCheck> {
     const paymentMethod = await prisma.paymentMethod.findUnique({
@@ -287,15 +282,9 @@ export class SecurityService {
       return { allowed: false, reason: 'Méthode de paiement non trouvée' };
     }
 
-    const iban = (paymentMethod.details as any).iban;
-    
-    // Compte les payouts vers cet IBAN dans les 24h
     const recentPayouts = await prisma.payout.count({
       where: {
-        paymentMethod: {
-          type: 'SEPA',
-          details: { path: ['iban'], equals: iban },
-        },
+        paymentMethodId,
         createdAt: {
           gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
         },

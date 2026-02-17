@@ -3,6 +3,8 @@ import { auth } from '~/lib/auth';
 import { AdminStats } from '@/lib/types';
 import { prisma } from '~/prisma/prisma';
 import { mapTradeStatusFromDb, mapPayoutStatusFromDb, mapPaymentMethodTypeFromDb } from '@/lib/status-mapper';
+import { getPublicSepaDetails } from '@/lib/payment-method-sepa';
+import type { SepaDetailsStored } from '@/lib/payment-method-sepa';
 
 export async function GET(request: NextRequest) {
   try {
@@ -195,23 +197,28 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const recentPayouts = recentPayoutsData.map(payout => ({
-      id: payout.id,
-      userId: payout.userId,
-      status: mapPayoutStatusFromDb(payout.status),
-      montantCentimes: payout.amountCents,
-      methodePaiement: {
-        id: payout.paymentMethod.id,
-        type: mapPaymentMethodTypeFromDb(payout.paymentMethod.type),
-        details: payout.paymentMethod.details as any,
-        isVerified: payout.paymentMethod.isVerified,
-        isDefault: payout.paymentMethod.isDefault,
-        createdAt: payout.paymentMethod.createdAt,
-      },
-      referencePaiement: payout.paymentReference || undefined,
-      créédLe: payout.createdAt,
-      payéLe: payout.paidAt || undefined,
-    }));
+    const recentPayouts = recentPayoutsData.map(payout => {
+      const details = payout.paymentMethod.details as SepaDetailsStored | null;
+      const publicDetails =
+        details?.type === 'SEPA' ? getPublicSepaDetails(details) : (payout.paymentMethod.details as object);
+      return {
+        id: payout.id,
+        userId: payout.userId,
+        status: mapPayoutStatusFromDb(payout.status),
+        montantCentimes: payout.amountCents,
+        methodePaiement: {
+          id: payout.paymentMethod.id,
+          type: mapPaymentMethodTypeFromDb(payout.paymentMethod.type),
+          details: publicDetails ?? payout.paymentMethod.details,
+          isVerified: payout.paymentMethod.isVerified,
+          isDefault: payout.paymentMethod.isDefault,
+          createdAt: payout.paymentMethod.createdAt,
+        },
+        referencePaiement: payout.paymentReference || undefined,
+        créédLe: payout.createdAt,
+        payéLe: payout.paidAt || undefined,
+      };
+    });
 
     const stats: AdminStats = {
       totalUsers,

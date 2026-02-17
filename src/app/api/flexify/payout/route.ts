@@ -9,10 +9,16 @@ import {
   validateIban,
   validateBic,
   centsToEur,
-  type FlexifyPayoutResponse,
 } from '@/lib/flexify';
 import { canUserMakePayout } from '@/lib/kycaid';
 import crypto from 'crypto';
+import {
+  buildEncryptedSepaDetails,
+  getDecryptedSepaPayload,
+  getPublicSepaDetails,
+  migrateToEncryptedDetails,
+  type SepaDetailsStored,
+} from '@/lib/payment-method-sepa';
 
 const generateReference = () => `MOON-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
@@ -60,7 +66,8 @@ export async function POST(request: NextRequest) {
       method, // 'SEPA' (cette route ne gère que le SEPA — la crypto passe par /api/whitepay/withdrawal)
       amountCents,
       tradeId,
-      // Données SEPA
+      paymentMethodId, // optionnel : réutiliser un IBAN déjà enregistré (chiffré)
+      // Données SEPA (obligatoires si pas paymentMethodId)
       iban,
       bic,
       // Données communes
@@ -115,52 +122,79 @@ export async function POST(request: NextRequest) {
     }
     LOG('✓ User trouvé', { email: user.email });
 
-    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] || 
-                     request.headers.get('x-real-ip') || 
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] ||
+                     request.headers.get('x-real-ip') ||
                      '0.0.0.0';
 
-    // Validation selon la méthode
     const reference = generateReference();
+    let ibanToUse: string;
+    let bicToUse: string;
+    let paymentMethod = null;
 
-    if (!iban) {
-      LOG('✗ IBAN manquant');
-      return NextResponse.json(
-        { error: 'IBAN requis pour un paiement SEPA' },
-        { status: 400 }
-      );
-    }
-
-    const ibanValidation = validateIban(iban);
-    if (!ibanValidation.isValid) {
-      LOG('✗ IBAN invalide', { error: ibanValidation.error });
-      return NextResponse.json(
-        { error: ibanValidation.error },
-        { status: 400 }
-      );
-    }
-    LOG('✓ IBAN validé');
-
-    // Validation BIC (optionnel mais recommandé)
-    if (bic) {
-      const bicValidation = validateBic(bic);
-      if (!bicValidation.isValid) {
+    // Cas 1 : réutilisation d'un moyen de paiement SEPA existant (IBAN déjà chiffré en BDD)
+    if (paymentMethodId) {
+      const existing = await prisma.paymentMethod.findFirst({
+        where: { id: paymentMethodId, userId, type: 'SEPA' },
+      });
+      if (!existing) {
         return NextResponse.json(
-          { error: bicValidation.error },
+          { error: 'Moyen de paiement SEPA introuvable ou invalide' },
           { status: 400 }
         );
       }
+      const details = existing.details as SepaDetailsStored;
+      // Migration lazy : si ancien format (iban en clair), chiffrer et mettre à jour
+      const migrated = migrateToEncryptedDetails(details);
+      if (migrated) {
+        await prisma.paymentMethod.update({
+          where: { id: existing.id },
+          data: { details: migrated as object },
+        });
+      }
+      const payload = getDecryptedSepaPayload(migrated ?? details);
+      if (!payload) {
+        return NextResponse.json(
+          { error: 'Impossible de récupérer les coordonnées bancaires enregistrées' },
+          { status: 400 }
+        );
+      }
+      ibanToUse = payload.iban;
+      bicToUse = payload.bic || '';
+      paymentMethod = migrated ? await prisma.paymentMethod.findUnique({ where: { id: existing.id } }) : existing;
+    } else {
+      // Cas 2 : nouvel IBAN fourni dans le body
+      if (!iban) {
+        LOG('✗ IBAN manquant');
+        return NextResponse.json(
+          { error: 'IBAN requis pour un paiement SEPA' },
+          { status: 400 }
+        );
+      }
+      const ibanValidation = validateIban(iban);
+      if (!ibanValidation.isValid) {
+        LOG('✗ IBAN invalide', { error: ibanValidation.error });
+        return NextResponse.json(
+          { error: ibanValidation.error },
+          { status: 400 }
+        );
+      }
+      LOG('✓ IBAN validé');
+      if (bic) {
+        const bicValidation = validateBic(bic);
+        if (!bicValidation.isValid) {
+          return NextResponse.json(
+            { error: bicValidation.error },
+            { status: 400 }
+          );
+        }
+      }
+      ibanToUse = iban.replace(/\s/g, '').toUpperCase();
+      bicToUse = (bic || '').replace(/\s/g, '').toUpperCase();
     }
 
     const fees = calculateSepaFees(amountCents);
-    const paymentMethodDetails: Record<string, unknown> = {
-      type: 'SEPA',
-      iban: iban.replace(/\s/g, '').toUpperCase(),
-      bic: bic?.replace(/\s/g, '').toUpperCase(),
-    };
-
-    // Créer le payout SEPA selon la spec V1
     const holderName = `${firstName || user.name?.split(' ')[0] || 'User'} ${lastName || user.name?.split(' ').slice(1).join(' ') || 'User'}`.trim();
-    
+
     LOG('→ Appel Flexify createSepaPayout', { reference, amountCents });
     const flexifyResponse = await createSepaPayout({
       reference,
@@ -168,12 +202,12 @@ export async function POST(request: NextRequest) {
       customer: {
         identifier: userId,
         email: user.email,
-        country: address?.country || 'FR', // Default FR si pas fourni
+        country: address?.country || 'FR',
         ip: clientIp,
       },
       sepa: {
-        iban: iban.replace(/\s/g, '').toUpperCase(),
-        bic: bic?.replace(/\s/g, '').toUpperCase(),
+        iban: ibanToUse,
+        bic: bicToUse,
         holderName,
       },
     });
@@ -184,27 +218,32 @@ export async function POST(request: NextRequest) {
     }
     LOG('✓ Flexify OK', { transactionId: flexifyResponse.transaction?.id });
 
-    // Créer ou récupérer la méthode de paiement
-    let paymentMethod = await prisma.paymentMethod.findFirst({
-      where: {
-        userId,
-        type: 'SEPA',
-        details: {
-          path: ['type'],
-          equals: 'SEPA',
-        },
-      },
-    });
-
+    // Créer ou récupérer la méthode de paiement (stockage chiffré)
     if (!paymentMethod) {
-      paymentMethod = await prisma.paymentMethod.create({
-        data: {
+      const encryptedDetails = buildEncryptedSepaDetails(ibanToUse, bicToUse);
+      paymentMethod = await prisma.paymentMethod.findFirst({
+        where: {
           userId,
           type: 'SEPA',
-          details: paymentMethodDetails as object,
-          isVerified: true, // Vérifié car le payout a été accepté
+          details: { path: ['type'], equals: 'SEPA' },
         },
       });
+      if (!paymentMethod) {
+        paymentMethod = await prisma.paymentMethod.create({
+          data: {
+            userId,
+            type: 'SEPA',
+            details: encryptedDetails as object,
+            isVerified: true,
+          },
+        });
+      } else {
+        // Mettre à jour avec IBAN chiffré (même utilisateur, on écrase le moyen SEPA existant)
+        await prisma.paymentMethod.update({
+          where: { id: paymentMethod.id },
+          data: { details: encryptedDetails as object },
+        });
+      }
     }
 
     // Créer le payout en base
@@ -293,7 +332,7 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
 
-    const [payouts, total] = await Promise.all([
+    const [payoutsRaw, total] = await Promise.all([
       prisma.payout.findMany({
         where,
         include: {
@@ -312,6 +351,21 @@ export async function GET(request: NextRequest) {
       }),
       prisma.payout.count({ where }),
     ]);
+
+    // Ne jamais exposer IBAN/BIC en clair : ne renvoyer que les détails masqués
+    const payouts = payoutsRaw.map((p) => {
+      const pm = p.paymentMethod;
+      const details = pm?.details as SepaDetailsStored | null;
+      const publicDetails = details && details.type === 'SEPA'
+        ? getPublicSepaDetails(details)
+        : (pm?.details ? { type: pm.type, maskedIban: null, maskedBic: null } : null);
+      return {
+        ...p,
+        paymentMethod: pm
+          ? { id: pm.id, type: pm.type, isVerified: pm.isVerified, details: publicDetails }
+          : null,
+      };
+    });
 
     return NextResponse.json({
       payouts,

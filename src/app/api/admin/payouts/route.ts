@@ -3,6 +3,8 @@ import { auth } from '~/lib/auth';
 import { Payout, AdminFilters } from '@/lib/types';
 import { prisma } from '~/prisma/prisma';
 import { mapPayoutStatusFromDb, mapPayoutStatusToDb, mapPaymentMethodTypeFromDb } from '@/lib/status-mapper';
+import { getPublicSepaDetails } from '@/lib/payment-method-sepa';
+import type { SepaDetailsStored } from '@/lib/payment-method-sepa';
 
 export async function GET(request: NextRequest) {
   try {
@@ -67,24 +69,29 @@ export async function GET(request: NextRequest) {
       prisma.payout.count({ where }),
     ]);
 
-    // Transformer les données au format attendu
-    const payouts: Payout[] = payoutsData.map(payout => ({
-      id: payout.id,
-      userId: payout.userId,
-      status: mapPayoutStatusFromDb(payout.status),
-      montantCentimes: payout.amountCents,
-      methodePaiement: {
-        id: payout.paymentMethod.id,
-        type: mapPaymentMethodTypeFromDb(payout.paymentMethod.type),
-        details: payout.paymentMethod.details as any,
-        isVerified: payout.paymentMethod.isVerified,
-        isDefault: payout.paymentMethod.isDefault,
-        createdAt: payout.paymentMethod.createdAt,
-      },
-      referencePaiement: payout.paymentReference || undefined,
-      créédLe: payout.createdAt,
-      payéLe: payout.paidAt || undefined,
-    }));
+    // Transformer les données : détails SEPA masqués (IBAN/BIC jamais en clair)
+    const payouts: Payout[] = payoutsData.map(payout => {
+      const details = payout.paymentMethod.details as SepaDetailsStored | null;
+      const publicDetails =
+        details?.type === 'SEPA' ? getPublicSepaDetails(details) : (payout.paymentMethod.details as object);
+      return {
+        id: payout.id,
+        userId: payout.userId,
+        status: mapPayoutStatusFromDb(payout.status),
+        montantCentimes: payout.amountCents,
+        methodePaiement: {
+          id: payout.paymentMethod.id,
+          type: mapPaymentMethodTypeFromDb(payout.paymentMethod.type),
+          details: publicDetails ?? payout.paymentMethod.details,
+          isVerified: payout.paymentMethod.isVerified,
+          isDefault: payout.paymentMethod.isDefault,
+          createdAt: payout.paymentMethod.createdAt,
+        },
+        referencePaiement: payout.paymentReference || undefined,
+        créédLe: payout.createdAt,
+        payéLe: payout.paidAt || undefined,
+      };
+    });
 
     return NextResponse.json({
       payouts,
