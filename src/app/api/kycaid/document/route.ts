@@ -48,9 +48,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // KYCAID n'autorise qu'un seul document "identité" par applicant. On nettoie côté KYCAID (liste réelle) + DB avant de recréer.
+    // KYCAID n'autorise qu'un seul document "identité" par applicant. On nettoie ; si un reste, on ne crée pas (évite 422).
     if (isIdentityDocumentType(documentType)) {
-      await deleteExistingIdentityDocumentsInKycaid(user.kycaidApplicantId);
+      const { stillPresent } = await deleteExistingIdentityDocumentsInKycaid(user.kycaidApplicantId);
+      if (stillPresent.length > 0) {
+        return NextResponse.json(
+          {
+            error: 'Un document d\'identité existe déjà chez KYCAID. Contactez le support (ID: ' + stillPresent[0] + ').',
+            code: 'IDENTITY_DOCUMENT_BLOCKED',
+          },
+          { status: 400 }
+        );
+      }
       const local = await prisma.kycDocument.findMany({
         where: { kycaidApplicantId: user.kycaidApplicantId, type: { in: [...KYCAID_IDENTITY_DOCUMENT_TYPES] } },
       });

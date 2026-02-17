@@ -264,17 +264,24 @@ async function kycaidRequest<T>(
 
       if (!response.ok) {
         console.error(`❌ [KYCAID REQUEST] Error ${response.status}:`, data);
-        throw new Error(
+        const err = new Error(
           `KYCAID API error: ${response.status} - ${JSON.stringify(data)}`
-        );
+        ) as Error & { status?: number; data?: unknown };
+        err.status = response.status;
+        err.data = data;
+        throw err;
       }
 
       console.log(`✅ [KYCAID REQUEST] Success:`, data);
       return data as T;
     } catch (error) {
+      const status = (error as { status?: number }).status;
+      if (status === 422) {
+        // limit_exceeded / duplicate : retry ne sert à rien
+        throw error;
+      }
       if (attempt === retries) throw error;
       console.warn(`⚠️  [KYCAID REQUEST] Attempt ${attempt} failed, retrying...`);
-      // Backoff exponentiel
       await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
     }
   }
@@ -515,27 +522,66 @@ export async function deleteDocument(documentId: string): Promise<void> {
 }
 
 /**
- * Supprime côté KYCAID tous les documents "identité" existants pour cet applicant.
- * À appeler avant createDocument(type identité) pour éviter le 422 limit_exceeded.
- * On s'aligne sur l'état réel KYCAID (pas seulement notre DB) : même si notre DB
- * n'a pas la ligne, le document peut encore exister chez KYCAID.
+ * Récupère la liste des documents depuis la réponse KYCAID (plusieurs formats possibles).
  */
-export async function deleteExistingIdentityDocumentsInKycaid(applicantId: string): Promise<void> {
-  let list: { items?: KycaidDocument[] } = { items: [] };
-  try {
-    list = await listApplicantDocuments(applicantId);
-  } catch (e) {
-    console.warn('[KYCAID] listApplicantDocuments failed, skipping cleanup:', e);
+function parseDocumentsList(raw: unknown): KycaidDocument[] {
+  if (Array.isArray(raw)) return raw;
+  if (raw && typeof raw === 'object') {
+    const o = raw as Record<string, unknown>;
+    if (Array.isArray(o.items)) return o.items as KycaidDocument[];
+    if (Array.isArray(o.documents)) return o.documents as KycaidDocument[];
+    if (Array.isArray(o.data)) return o.data as KycaidDocument[];
   }
-  const identityDocs = (list.items || []).filter((d) => isIdentityDocumentType(d.type));
+  return [];
+}
+
+/**
+ * Supprime côté KYCAID tous les documents "identité" existants pour cet applicant.
+ * Retourne les document_id qui sont encore présents après tentative de suppression
+ * (si DELETE échoue ou n'existe pas, on ne fait pas createDocument → pas de 422).
+ */
+export async function deleteExistingIdentityDocumentsInKycaid(
+  applicantId: string
+): Promise<{ deleted: string[]; stillPresent: string[] }> {
+  let rawList: unknown = {};
+  try {
+    rawList = await listApplicantDocuments(applicantId);
+  } catch (e) {
+    console.warn('[KYCAID] listApplicantDocuments failed:', e);
+    return { deleted: [], stillPresent: [] };
+  }
+  const allDocs = parseDocumentsList(rawList);
+  const docId = (d: KycaidDocument & { documentId?: string }) => d.document_id || (d as { documentId?: string }).documentId || '';
+  const identityDocs = allDocs.filter((d) => isIdentityDocumentType(String(d.type || '').toUpperCase()));
+  console.log(`[KYCAID] Applicant ${applicantId} — documents listés: ${allDocs.length}, identité: ${identityDocs.map((d) => docId(d)).join(', ') || 'aucun'}`);
+
+  const deleted: string[] = [];
   for (const d of identityDocs) {
+    const id = docId(d);
+    if (!id) continue;
     try {
-      await deleteDocument(d.document_id);
-      console.log(`  ✓ [KYCAID] Document identité supprimé: ${d.document_id}`);
+      await deleteDocument(id);
+      deleted.push(id);
+      console.log(`  ✓ [KYCAID] Document supprimé: ${id}`);
     } catch (err) {
-      console.warn(`  ⚠ [KYCAID] Suppression ${d.document_id} ignorée:`, err);
+      console.warn(`  ⚠ [KYCAID] DELETE ${id} échoué (API peut ne pas supporter):`, err);
     }
   }
+
+  let stillPresent: string[] = [];
+  try {
+    const rawAgain = await listApplicantDocuments(applicantId);
+    const afterList = parseDocumentsList(rawAgain);
+    const stillIdentity = afterList.filter((d) => isIdentityDocumentType(String(d.type || '').toUpperCase()));
+    stillPresent = stillIdentity.map((d) => docId(d)).filter(Boolean);
+    if (stillPresent.length) {
+      console.warn(`[KYCAID] Après suppression, documents identité encore présents: ${stillPresent.join(', ')}`);
+    }
+  } catch {
+    // si la 2e liste échoue, on considère qu'il peut en rester
+    stillPresent = identityDocs.map((d) => d.document_id);
+  }
+  return { deleted, stillPresent };
 }
 
 /**

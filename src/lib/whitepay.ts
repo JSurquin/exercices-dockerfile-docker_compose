@@ -233,10 +233,8 @@ async function whitepayRequest<T>(
   retries: number = 3
 ): Promise<T> {
   const url = `${WHITEPAY_CONFIG.baseUrl}${path}`;
-  console.log('url', url);
   const bodyString = body ? JSON.stringify(body) : undefined;
   const headers = prepareHeaders(bodyString);
-  console.log('headers', headers);
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const response = await fetch(url, {
@@ -305,8 +303,10 @@ export async function createWithdrawal(
   validateConfig();
   validateWithdrawalParams(params);
 
+  // L'API Whitepay exige amount en string (sinon 422 The given data was invalid)
   const payload = {
     ...params,
+    amount: typeof params.amount === 'number' ? String(params.amount) : params.amount,
     callback_url: params.callback_url || WHITEPAY_CONFIG.callbackUrl,
   };
 
@@ -405,8 +405,10 @@ export async function createInstantWithdrawal(
   validateConfig();
   validateWithdrawalParams(params);
 
+  // L'API Whitepay exige amount en string (sinon 422 The given data was invalid)
   const payload = {
     ...params,
+    amount: typeof params.amount === 'number' ? String(params.amount) : params.amount,
     callback_url: params.callback_url || WHITEPAY_CONFIG.callbackUrl,
   };
 

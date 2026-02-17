@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, User, Mail, Hash } from 'lucide-react';
+import { ArrowLeft, User, Mail, Hash, RefreshCw } from 'lucide-react';
 import { BalanceManagement } from '@/components/admin/balance-management';
 import { WithdrawalLimits } from '@/components/admin/withdrawal-limits';
 
@@ -19,6 +19,7 @@ interface UserDetail {
   steamId: string | null;
   steamUsername: string | null;
   kycStatus: string;
+  kycaidApplicantId: string | null;
   level: number;
   xp: number;
   tickets: number;
@@ -36,6 +37,27 @@ export default function AdminUserDetailPage() {
   const [user, setUser] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [resetKycLoading, setResetKycLoading] = useState(false);
+  const [resetKycMessage, setResetKycMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const fetchUser = useCallback(async () => {
+    if (!userId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || res.statusText);
+      }
+      const data = await res.json();
+      setUser(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erreur');
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -61,6 +83,23 @@ export default function AdminUserDetailPage() {
       cancelled = true;
     };
   }, [userId]);
+
+  const handleResetKycApplicant = async () => {
+    if (!userId || !user) return;
+    setResetKycMessage(null);
+    setResetKycLoading(true);
+    try {
+      const res = await fetch(`/api/admin/kyc/reset-applicant/${userId}`, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      setResetKycMessage({ type: 'success', text: data.message ?? "Applicant réinitialisé." });
+      await fetchUser();
+    } catch (e) {
+      setResetKycMessage({ type: 'error', text: e instanceof Error ? e.message : 'Erreur' });
+    } finally {
+      setResetKycLoading(false);
+    }
+  };
 
   if (!userId) {
     return (
@@ -140,10 +179,27 @@ export default function AdminUserDetailPage() {
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+        <CardContent className="space-y-4">
+          {resetKycMessage && (
+            <p
+              className={
+                resetKycMessage.type === 'success'
+                  ? 'text-sm text-green-400'
+                  : 'text-sm text-red-400'
+              }
+            >
+              {resetKycMessage.text}
+            </p>
+          )}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
           <div>
             <p className="text-slate-400">KYC</p>
             <p className="text-white">{user.kycStatus}</p>
+            {user.kycaidApplicantId && (
+              <p className="text-xs text-slate-500 mt-0.5 truncate max-w-[180px]" title={user.kycaidApplicantId}>
+                {user.kycaidApplicantId}
+              </p>
+            )}
           </div>
           <div>
             <p className="text-slate-400">Niveau / XP</p>
@@ -159,6 +215,28 @@ export default function AdminUserDetailPage() {
               {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(user.totalVolumeCents / 100)}
             </p>
           </div>
+          </div>
+          {user.kycaidApplicantId && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-amber-600/50 text-amber-400 hover:bg-amber-500/10"
+              onClick={handleResetKycApplicant}
+              disabled={resetKycLoading}
+            >
+              {resetKycLoading ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                  Réinitialisation…
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Réinitialiser l&apos;applicant KYC
+                </>
+              )}
+            </Button>
+          )}
         </CardContent>
       </Card>
 

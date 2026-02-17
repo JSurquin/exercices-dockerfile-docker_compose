@@ -264,11 +264,22 @@ export async function POST(request: NextRequest) {
     }
 
     // 6.3 - Créer le document d'identité dans KYCAID
-    // KYCAID n'autorise qu'un seul document "identité" par applicant. On s'aligne sur
-    // l'état réel KYCAID (liste + suppression) pour éviter 422 même si notre DB est vide ou désync.
+    // KYCAID n'autorise qu'un seul document "identité" par applicant. On nettoie côté API + DB.
+    // Si après suppression il en reste encore (DELETE non supporté?), on ne fait PAS createDocument → pas de 422.
     if (isIdentityDocumentType(kycaidDocumentType)) {
-      console.log('🔄 [KYC SUBMIT] Nettoyage des documents identité existants (KYCAID + DB)...');
-      await deleteExistingIdentityDocumentsInKycaid(applicantId);
+      console.log('🔄 [KYC SUBMIT] Nettoyage documents identité (KYCAID + DB)...');
+      const { stillPresent } = await deleteExistingIdentityDocumentsInKycaid(applicantId);
+      if (stillPresent.length > 0) {
+        console.error('[KYC SUBMIT] Documents identité encore présents après suppression:', stillPresent);
+        return NextResponse.json(
+          {
+            error: 'Un document d\'identité existe déjà chez KYCAID et n\'a pas pu être supprimé. Contactez le support avec l\'ID: ' + stillPresent[0],
+            code: 'IDENTITY_DOCUMENT_BLOCKED',
+            duplicateDocumentIds: stillPresent,
+          },
+          { status: 400 }
+        );
+      }
       const localIdentity = await prisma.kycDocument.findMany({
         where: { kycaidApplicantId: applicantId, type: { in: [...KYCAID_IDENTITY_DOCUMENT_TYPES] } },
       });
@@ -281,25 +292,52 @@ export async function POST(request: NextRequest) {
 
     console.log('📄 [KYC SUBMIT] 6.3 - Création du document d\'identité dans KYCAID...');
     console.log(`  → Type KYCAID: ${kycaidDocumentType}`);
-    const document = await createDocument({
-      applicant_id: applicantId,
-      type: kycaidDocumentType,
-      front_side_id: frontFileObj.file_id,
-      back_side_id: backFileId,
-    });
-    console.log(`✅ [KYC SUBMIT] Document créé : ${document.document_id}`);
+    let documentId: string;
+    try {
+      const document = await createDocument({
+        applicant_id: applicantId,
+        type: kycaidDocumentType,
+        front_side_id: frontFileObj.file_id,
+        back_side_id: backFileId,
+      });
+      documentId = document.document_id;
+      console.log(`✅ [KYC SUBMIT] Document créé : ${documentId}`);
+    } catch (err: unknown) {
+      const data = (err as { data?: { duplicate_document_ids?: string[]; type?: string } }).data;
+      const ids = data?.duplicate_document_ids;
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('422') && (data?.type === 'limit_exceeded' || ids?.length) && ids?.[0]) {
+        // En prod la liste/delete peut échouer ou renvoyer vide → on reçoit 422. On réutilise le document existant.
+        documentId = ids[0];
+        console.log(`🔄 [KYC SUBMIT] 422 limit_exceeded — réutilisation du document existant: ${documentId}`);
+      } else {
+        throw err;
+      }
+    }
 
-    // Sauvegarder en base
-    const savedDoc = await prisma.kycDocument.create({
-      data: {
-        userId,
-        type: kycaidDocumentType as any,
-        status: 'PENDING',
-        kycaidApplicantId: applicantId,
-        kycaidDocumentId: document.document_id,
-      },
+    // Sauvegarder en base (ou mettre à jour si on a réutilisé un document existant)
+    let savedDoc = await prisma.kycDocument.findFirst({
+      where: { kycaidDocumentId: documentId, userId },
     });
-    console.log(`💾 [KYC SUBMIT] Document sauvegardé en base : ${savedDoc.id}`);
+    if (savedDoc) {
+      await prisma.kycDocument.update({
+        where: { id: savedDoc.id },
+        data: { status: 'PENDING', type: kycaidDocumentType as any },
+      });
+      await prisma.kycFile.deleteMany({ where: { documentId: savedDoc!.id } });
+      console.log(`💾 [KYC SUBMIT] Document réutilisé en base : ${savedDoc.id}`);
+    } else {
+      savedDoc = await prisma.kycDocument.create({
+        data: {
+          userId,
+          type: kycaidDocumentType as any,
+          status: 'PENDING',
+          kycaidApplicantId: applicantId,
+          kycaidDocumentId: documentId,
+        },
+      });
+      console.log(`💾 [KYC SUBMIT] Document sauvegardé en base : ${savedDoc.id}`);
+    }
 
     // Sauvegarder les fichiers
     await prisma.kycFile.createMany({

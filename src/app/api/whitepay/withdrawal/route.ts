@@ -10,7 +10,9 @@ import {
   validateWalletAddress,
   networkRequiresMemo,
   WHITEPAY_SUPPORTED_CRYPTOS,
+  WhitepayApiError,
   type WhitepayWithdrawalRequest,
+  type WhitepayTravelRule,
 } from '@/lib/whitepay';
 import { canUserMakePayout } from '@/lib/kycaid';
 import crypto from 'crypto';
@@ -164,6 +166,21 @@ export async function POST(request: NextRequest) {
     const orderId = generateOrderId();
     const amountEur = amountCents / 100;
 
+    // Travel Rule obligatoire pour l'EEE : fourni par le client ou construit depuis l'utilisateur
+    const travelRulePayload: WhitepayTravelRule | undefined = travelRule && typeof travelRule === 'object' && travelRule.type && travelRule.vasp && travelRule.name && travelRule.address
+      ? {
+          type: travelRule.type === 'entity' ? 'entity' : 'individual',
+          vasp: String(travelRule.vasp),
+          name: String(travelRule.name),
+          address: String(travelRule.address),
+        }
+      : {
+          type: 'individual' as const,
+          vasp: 'Self-custody',
+          name: (user.name || user.email || 'User').trim() || 'User',
+          address: (typeof travelRule === 'object' && travelRule?.address) ? String(travelRule.address) : 'N/A',
+        };
+
     const withdrawalParams: WhitepayWithdrawalRequest = {
       amount: amountEur,
       currency: 'EUR',
@@ -171,7 +188,7 @@ export async function POST(request: NextRequest) {
       network: network.toUpperCase(),
       address: walletAddress,
       memo: memo || undefined,
-      travel_rule: travelRule || undefined,
+      travel_rule: travelRulePayload,
       order_id: orderId,
     };
 
@@ -279,6 +296,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erreur lors de la création du retrait crypto';
     console.error('[PAYOUT WHITEPAY CRYPTO] Erreur', error);
+    if (error instanceof WhitepayApiError && error.responseData) {
+      console.error('[PAYOUT WHITEPAY CRYPTO] Détail API (ex. 422)', error.responseData);
+    }
     return NextResponse.json(
       { error: message },
       { status: 500 }

@@ -12,6 +12,7 @@ import {
   convertWhitepayStatus,
   WHITEPAY_SUPPORTED_CRYPTOS,
   type WhitepayInstantWithdrawalRequest,
+  type WhitepayTravelRule,
 } from '@/lib/whitepay';
 import { canUserMakePayout } from '@/lib/kycaid';
 import crypto from 'crypto';
@@ -149,6 +150,21 @@ export async function POST(request: NextRequest) {
     const orderId = generateOrderId();
     const amountEur = amountCents / 100;
 
+    // Travel Rule obligatoire pour l'EEE (même logique que withdrawal standard)
+    const travelRulePayload: WhitepayTravelRule | undefined = travelRule && typeof travelRule === 'object' && travelRule.type && travelRule.vasp && travelRule.name && travelRule.address
+      ? {
+          type: travelRule.type === 'entity' ? 'entity' : 'individual',
+          vasp: String(travelRule.vasp),
+          name: String(travelRule.name),
+          address: String(travelRule.address),
+        }
+      : {
+          type: 'individual' as const,
+          vasp: 'Self-custody',
+          name: (user.name || user.email || 'User').trim() || 'User',
+          address: (typeof travelRule === 'object' && travelRule?.address) ? String(travelRule.address) : 'N/A',
+        };
+
     // 10. Appeler Whitepay API - Instant Flow
     const instantParams: WhitepayInstantWithdrawalRequest = {
       amount: amountEur,
@@ -157,7 +173,7 @@ export async function POST(request: NextRequest) {
       network: network.toUpperCase(),
       address: walletAddress,
       memo: memo || undefined,
-      travel_rule: travelRule || undefined,
+      travel_rule: travelRulePayload,
       order_id: orderId,
     };
 

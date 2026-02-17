@@ -28,6 +28,7 @@ export async function GET(
         steamId: true,
         steamUsername: true,
         kycStatus: true,
+        kycaidApplicantId: true,
         level: true,
         xp: true,
         tickets: true,
