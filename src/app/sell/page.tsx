@@ -9,6 +9,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
 import { SkinplaceInventoryViewer } from "@/components/skinplace/skinplace-inventory-viewer";
 import { SkinplaceTradeCreator } from "@/components/skinplace/skinplace-trade-creator";
+import { ConvertedPrice } from "@/components/ui/converted-price";
 import { NormalizedInventoryItem } from "@/hooks/use-skinplace-inventory";
 import {
   LinkIcon,
@@ -58,10 +59,6 @@ export default function SellPage() {
     setTradeData(trade);
     setCurrentStep(2);
     toast.success(messages.sellPage.successMessages.tradeCreated);
-  };
-
-  const formatPrice = (centimes: number) => {
-    return (centimes / 100).toFixed(2) + "€";
   };
 
   if (!user) {
@@ -201,7 +198,7 @@ export default function SellPage() {
                           {messages.sellPage.confirmation.grossValue}
                         </span>
                         <p className="font-medium">
-                          {formatPrice(tradeData.total_value)}
+                          <ConvertedPrice usdCents={tradeData.total_value} />
                         </p>
                       </div>
                       <div>
@@ -209,7 +206,7 @@ export default function SellPage() {
                           {messages.sellPage.confirmation.totalFees}
                         </span>
                         <p className="font-medium text-orange-600">
-                          -{formatPrice(tradeData.fees.cashout_fee + tradeData.fees.network_fee)}
+                          -<ConvertedPrice usdCents={tradeData.fees.cashout_fee + tradeData.fees.network_fee} />
                         </p>
                       </div>
                       <div>
@@ -217,7 +214,7 @@ export default function SellPage() {
                           {messages.sellPage.confirmation.youWillReceive}
                         </span>
                         <p className="font-bold text-green-600">
-                          {formatPrice(tradeData.net_value)}
+                          <ConvertedPrice usdCents={tradeData.net_value} />
                         </p>
                       </div>
                     </div>

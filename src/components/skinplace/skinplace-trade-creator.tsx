@@ -23,6 +23,7 @@ import {
 import { toast } from 'sonner';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
+import { ConvertedPrice } from '@/components/ui/converted-price';
 
 interface SkinplaceTradeCreatorProps {
   steamId64: string;
@@ -101,7 +102,7 @@ export function SkinplaceTradeCreator({
 
     console.log('🎯 Création du trade avec', selectedItems.length, 'items sélectionnés:');
     selectedItems.forEach((item, index) => {
-      console.log(`  ${index + 1}. ${item.name} (${item.assetid}) - ${formatPrice(item.price_centimes)}`);
+      console.log(`  ${index + 1}. ${item.name} (${item.assetid}) - ${(item.price_centimes / 100).toFixed(2)} USD`);
     });
 
     setLoading(true);
@@ -183,10 +184,6 @@ export function SkinplaceTradeCreator({
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatPrice = (priceInCents: number) => {
-    return (priceInCents / 100).toFixed(2) + '€';
   };
 
   const getTotalEstimatedValueCentimes = () => {
@@ -345,9 +342,10 @@ export function SkinplaceTradeCreator({
                       <Badge variant="outline" className="text-xs">Souvenir</Badge>
                     )}
                   </div>
-                  <span className="text-green-600 font-medium">
-                    {formatPrice(item.price_centimes)}
-                  </span>
+                  <ConvertedPrice
+                    usdCents={item.price_centimes}
+                    className="text-green-600 font-medium"
+                  />
                 </div>
               ))}
             </div>
@@ -358,7 +356,7 @@ export function SkinplaceTradeCreator({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm">Valeur brute ({selectedItems.length} items)</span>
-                <span className="font-medium">{formatPrice(grossValueCentimes)}</span>
+                <ConvertedPrice usdCents={grossValueCentimes} className="font-medium" />
               </div>
               
               <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -366,16 +364,19 @@ export function SkinplaceTradeCreator({
                   <Minus className="h-3 w-3" />
                   Frais réseau
                 </span>
-                <span>-{formatPrice(fees.network_fee)}</span>
+                <span className="flex items-center gap-1">
+                  -<ConvertedPrice usdCents={fees.network_fee} />
+                </span>
               </div>
 
               <Separator />
 
               <div className="flex items-center justify-between text-lg font-bold">
                 <span>Vous recevrez</span>
-                <span className={netValueCentimes > 0 ? 'text-green-600' : 'text-red-600'}>
-                  {formatPrice(netValueCentimes)}
-                </span>
+                <ConvertedPrice
+                  usdCents={netValueCentimes}
+                  className={netValueCentimes > 0 ? 'text-green-600' : 'text-red-600'}
+                />
               </div>
 
               {netValueCentimes <= 0 && (
