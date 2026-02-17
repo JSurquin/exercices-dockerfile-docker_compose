@@ -203,6 +203,24 @@ export interface CreateDocumentParams {
   back_side_id?: string; // Pour cartes ID recto/verso
 }
 
+/**
+ * Types de documents "identité" pour lesquels KYCAID n'autorise qu'UN SEUL document
+ * par applicant. Créer un second document de ce groupe → 422 limit_exceeded.
+ */
+export const KYCAID_IDENTITY_DOCUMENT_TYPES = [
+  'DOMESTIC_PASSPORT',
+  'DRIVERS_LICENSE',
+  'FOREIGN_CITIZEN_PASSPORT',
+  'GOVERNMENT_ID',
+  'PASSPORT',
+  'PERMANENT_RESIDENCE_PERMIT',
+  'REFUGEE_CARD',
+] as const;
+
+export function isIdentityDocumentType(type: string): boolean {
+  return (KYCAID_IDENTITY_DOCUMENT_TYPES as readonly string[]).includes(type);
+}
+
 // =============================================================================
 // HEADERS & REQUÊTES
 // =============================================================================

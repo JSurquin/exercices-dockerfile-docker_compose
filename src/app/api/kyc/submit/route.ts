@@ -6,7 +6,9 @@ import {
   createVerification, 
   uploadFile, 
   createDocument,
-  createAddress
+  createAddress,
+  isIdentityDocumentType,
+  KYCAID_IDENTITY_DOCUMENT_TYPES,
 } from '@/lib/kycaid';
 import { prisma } from '~/prisma/prisma';
 import { emailService } from '@/lib/email';
@@ -261,6 +263,26 @@ export async function POST(request: NextRequest) {
     }
 
     // 6.3 - Créer le document d'identité dans KYCAID
+    // KYCAID n'autorise qu'un seul document "identité" par applicant
+    if (isIdentityDocumentType(kycaidDocumentType)) {
+      const existingIdentity = await prisma.kycDocument.findFirst({
+        where: {
+          kycaidApplicantId: applicantId,
+          type: { in: [...KYCAID_IDENTITY_DOCUMENT_TYPES] },
+        },
+      });
+      if (existingIdentity) {
+        console.log(`⚠️ [KYC SUBMIT] Un document d'identité existe déjà pour cet applicant (type: ${existingIdentity.type})`);
+        return NextResponse.json(
+          {
+            error: 'Un document d\'identité (carte d\'identité, passeport ou permis) existe déjà pour ce compte. KYCAID n\'autorise qu\'un seul document de ce type. Pour modifier ou remplacer, contactez le support.',
+            code: 'IDENTITY_DOCUMENT_ALREADY_EXISTS',
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     console.log('📄 [KYC SUBMIT] 6.3 - Création du document d\'identité dans KYCAID...');
     console.log(`  → Type KYCAID: ${kycaidDocumentType}`);
     const document = await createDocument({

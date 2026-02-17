@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
-import { uploadFile, createDocument } from '@/lib/kycaid';
+import { uploadFile, createDocument, isIdentityDocumentType, KYCAID_IDENTITY_DOCUMENT_TYPES } from '@/lib/kycaid';
 import { prisma } from '~/prisma/prisma';
 
 /**
@@ -46,6 +46,25 @@ export async function POST(request: NextRequest) {
         { error: 'Applicant KYCAID non trouvé' },
         { status: 400 }
       );
+    }
+
+    // KYCAID n'autorise qu'un seul document "identité" par applicant (carte d'identité, passeport, etc.)
+    if (isIdentityDocumentType(documentType)) {
+      const existing = await prisma.kycDocument.findFirst({
+        where: {
+          kycaidApplicantId: user.kycaidApplicantId,
+          type: { in: [...KYCAID_IDENTITY_DOCUMENT_TYPES] },
+        },
+      });
+      if (existing) {
+        return NextResponse.json(
+          {
+            error: 'Un document d\'identité existe déjà pour ce compte. KYCAID n\'autorise qu\'un seul document (carte d\'identité, passeport ou permis). Si vous devez le remplacer, contactez le support.',
+            code: 'IDENTITY_DOCUMENT_ALREADY_EXISTS',
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Étape 1 : Upload le fichier recto
