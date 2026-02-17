@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
-import { uploadFile, createDocument, isIdentityDocumentType, KYCAID_IDENTITY_DOCUMENT_TYPES } from '@/lib/kycaid';
+import { uploadFile, createDocument, deleteDocument, isIdentityDocumentType, KYCAID_IDENTITY_DOCUMENT_TYPES } from '@/lib/kycaid';
 import { prisma } from '~/prisma/prisma';
 
 /**
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // KYCAID n'autorise qu'un seul document "identité" par applicant (carte d'identité, passeport, etc.)
+    // KYCAID n'autorise qu'un seul document "identité" par applicant. Si un existe déjà (retry, remplacement), on le supprime puis on recrée.
     if (isIdentityDocumentType(documentType)) {
       const existing = await prisma.kycDocument.findFirst({
         where: {
@@ -56,14 +56,14 @@ export async function POST(request: NextRequest) {
           type: { in: [...KYCAID_IDENTITY_DOCUMENT_TYPES] },
         },
       });
-      if (existing) {
-        return NextResponse.json(
-          {
-            error: 'Un document d\'identité existe déjà pour ce compte. KYCAID n\'autorise qu\'un seul document (carte d\'identité, passeport ou permis). Si vous devez le remplacer, contactez le support.',
-            code: 'IDENTITY_DOCUMENT_ALREADY_EXISTS',
-          },
-          { status: 400 }
-        );
+      if (existing?.kycaidDocumentId) {
+        try {
+          await deleteDocument(existing.kycaidDocumentId);
+        } catch {
+          // ignore (404, etc.)
+        }
+        await prisma.kycFile.deleteMany({ where: { documentId: existing.id } });
+        await prisma.kycDocument.delete({ where: { id: existing.id } });
       }
     }
 

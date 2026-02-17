@@ -7,6 +7,7 @@ import {
   uploadFile, 
   createDocument,
   createAddress,
+  deleteDocument,
   isIdentityDocumentType,
   KYCAID_IDENTITY_DOCUMENT_TYPES,
 } from '@/lib/kycaid';
@@ -263,23 +264,28 @@ export async function POST(request: NextRequest) {
     }
 
     // 6.3 - Créer le document d'identité dans KYCAID
-    // KYCAID n'autorise qu'un seul document "identité" par applicant
+    // KYCAID n'autorise qu'un seul document "identité" par applicant. Si l'utilisateur
+    // renvoie le formulaire (retry, nouveau recto/verso), on supprime l'ancien puis on recrée.
     if (isIdentityDocumentType(kycaidDocumentType)) {
       const existingIdentity = await prisma.kycDocument.findFirst({
         where: {
           kycaidApplicantId: applicantId,
           type: { in: [...KYCAID_IDENTITY_DOCUMENT_TYPES] },
         },
+        include: { files: true },
       });
-      if (existingIdentity) {
-        console.log(`⚠️ [KYC SUBMIT] Un document d'identité existe déjà pour cet applicant (type: ${existingIdentity.type})`);
-        return NextResponse.json(
-          {
-            error: 'Un document d\'identité (carte d\'identité, passeport ou permis) existe déjà pour ce compte. KYCAID n\'autorise qu\'un seul document de ce type. Pour modifier ou remplacer, contactez le support.',
-            code: 'IDENTITY_DOCUMENT_ALREADY_EXISTS',
-          },
-          { status: 400 }
-        );
+      if (existingIdentity?.kycaidDocumentId) {
+        console.log(`🔄 [KYC SUBMIT] Document d'identité existant (${existingIdentity.kycaidDocumentId}) → suppression côté KYCAID puis recréation avec les nouveaux fichiers`);
+        try {
+          await deleteDocument(existingIdentity.kycaidDocumentId);
+          console.log(`  ✓ Document KYCAID supprimé`);
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.warn(`  ⚠ Suppression KYCAID ignorée (continuing): ${msg}`);
+        }
+        await prisma.kycFile.deleteMany({ where: { documentId: existingIdentity.id } });
+        await prisma.kycDocument.delete({ where: { id: existingIdentity.id } });
+        console.log(`  ✓ Ancien enregistrement local supprimé`);
       }
     }
 

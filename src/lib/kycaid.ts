@@ -506,6 +506,15 @@ export async function getDocument(documentId: string): Promise<KycaidDocument> {
 }
 
 /**
+ * Supprime un document côté KYCAID.
+ * À utiliser avant de recréer un document d'identité (KYCAID n'autorise qu'un seul par applicant).
+ */
+export async function deleteDocument(documentId: string): Promise<void> {
+  validateConfig();
+  await kycaidRequest<void>('DELETE', `/documents/${documentId}`);
+}
+
+/**
  * Liste les documents d'un applicant
  */
 export async function listApplicantDocuments(
