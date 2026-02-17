@@ -110,9 +110,26 @@ export default function PayoutPage() {
     method: string;
     createdAt: string;
   }>>([]);
+  const [availableBalanceCents, setAvailableBalanceCents] = useState<number | null>(null);
 
   // Traductions locales pour la page payout
   const text = messages.payoutPage;
+
+  // Récupérer le solde disponible (API dédiée)
+  const fetchBalance = useCallback(async () => {
+    try {
+      const response = await fetch('/api/user/balance');
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableBalanceCents(data.availableCents ?? 0);
+      } else {
+        setAvailableBalanceCents(0);
+      }
+    } catch (error) {
+      console.error('Error fetching balance:', error);
+      setAvailableBalanceCents(0);
+    }
+  }, []);
 
   // Récupérer l'historique des payouts
   const fetchPayoutHistory = useCallback(async () => {
@@ -129,69 +146,14 @@ export default function PayoutPage() {
 
   useEffect(() => {
     if (user) {
+      fetchBalance();
       fetchPayoutHistory();
     }
-  }, [user, fetchPayoutHistory]);
+  }, [user, fetchBalance, fetchPayoutHistory]);
 
-  // Polling automatique du KYC en dev (DOIT être avant les returns conditionnels)
-  useEffect(() => {
-    if (!user?.kycStatus || (user.kycStatus !== 'VERIFIED' && user.kycStatus !== 'KYCAID_VERIFIED')) {
-      // Vérifier si on vient juste de vérifier le KYC (pour éviter le loop)
-      const justVerified = localStorage.getItem('kyc_just_verified');
-      if (justVerified) {
-        const timestamp = parseInt(justVerified);
-        // Si c'est moins de 30 secondes, ne pas poller (laisse le temps à la BDD de se sync)
-        if (Date.now() - timestamp < 30000) {
-          console.log('[Payout] KYC just verified, waiting for DB sync...');
-          return;
-        } else {
-          // Nettoyer le localStorage si c'est trop vieux
-          localStorage.removeItem('kyc_just_verified');
-        }
-      }
-
-      // Récupérer le verificationId de la dernière vérification
-      const pollKycStatus = async () => {
-        try {
-          const response = await fetch('/api/kycaid/status');
-          if (!response.ok) return;
-          
-          const data = await response.json();
-          
-          // Si une vérification est en cours et qu'on est en dev, utiliser le polling
-          if (data.verificationId && process.env.NODE_ENV === 'development') {
-            console.log('[Payout] Polling KYC verification:', data.verificationId);
-            const pollResponse = await fetch(`/api/kycaid/poll/${data.verificationId}`);
-            
-            if (pollResponse.ok) {
-              const pollData = await pollResponse.json();
-              
-              if (pollData.verified === true) {
-                console.log('[Payout] ✅ KYC VERIFIED! Reloading page...');
-                // Stocker dans localStorage pour éviter le loop
-                localStorage.setItem('kyc_just_verified', Date.now().toString());
-                toast.success('KYC vérifié avec succès !');
-                // Rafraîchir la page pour mettre à jour le statut
-                setTimeout(() => window.location.reload(), 1000);
-              }
-            }
-          }
-        } catch (error) {
-          console.error('[Payout] Error polling KYC:', error);
-        }
-      };
-      
-      // Poll immédiatement
-      pollKycStatus();
-      
-      // Puis toutes les 10 secondes
-      const interval = setInterval(pollKycStatus, 10000);
-      return () => clearInterval(interval);
-    } else {
-      // Si le KYC est vérifié, nettoyer le localStorage
-      localStorage.removeItem('kyc_just_verified');
-    }
-  }, [user?.kycStatus]);
+  // Pas de polling KYC sur la page payout : si le KYC est déjà validé, on ne touche plus à Kycaid.
+  // Le retrait passe uniquement par Flexify (SEPA) ou Whitepay (crypto). Si le KYC n'est pas
+  // validé, l'utilisateur voit le bloc "KYC requis" avec un lien vers /kyc.
 
   // Réseaux disponibles pour la crypto sélectionnée
   const availableNetworks = SUPPORTED_CRYPTOS.find((c) => c.ticker === formData.selectedCrypto)?.networks || [];
@@ -205,9 +167,9 @@ export default function PayoutPage() {
     }
 
     const amountCents = toCents(parseFloat(amount));
-    const balance = (user?.totalVolume || 0);
+    const balanceCents = availableBalanceCents ?? 0;
 
-    if (amountCents > balance) {
+    if (amountCents > balanceCents) {
       toast.error(text.toast.insufficientBalance);
       return;
     }
@@ -226,25 +188,41 @@ export default function PayoutPage() {
 
     setIsLoadingQuote(true);
     try {
-      const response = await fetch('/api/flexify/quote', {
+      // SEPA → Flexify  |  Crypto → Whitepay
+      const quoteUrl = payoutMethod === 'sepa' ? '/api/flexify/quote' : '/api/whitepay/quote';
+      const requestBody =
+        payoutMethod === 'sepa'
+          ? { amountCents, currency: 'EUR', method: 'SEPA' }
+          : { amountCents, currency: 'EUR' };
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[PAYOUT] getQuote request', { url: quoteUrl, method: payoutMethod, body: requestBody });
+      }
+      const response = await fetch(quoteUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: amountCents,
-          currency: 'EUR',
-          method: payoutMethod,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        throw new Error('Quote request failed');
+        const errorMessage = typeof data?.error === 'string' ? data.error : data?.message ?? `HTTP ${response.status}`;
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[PAYOUT] getQuote failed', { status: response.status, statusText: response.statusText, body: data });
+        }
+        throw new Error(errorMessage);
       }
 
-      const data = await response.json();
-      setQuote(data);
+      // L'API renvoie { quote, limits }; le front utilise la structure quote directement (avec quoteId si présent)
+      const quotePayload = data.quote ? { ...data.quote, quoteId: data.quote.quoteId ?? `quote-${Date.now()}` } : data;
+      setQuote(quotePayload);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[PAYOUT] getQuote success', quotePayload);
+      }
     } catch (error) {
-      console.error('Error getting quote:', error);
-      toast.error(text.toast.payoutError);
+      const message = error instanceof Error ? error.message : text.toast.payoutError;
+      console.error('[PAYOUT] getQuote error', error);
+      toast.error(message);
     } finally {
       setIsLoadingQuote(false);
     }
@@ -267,12 +245,14 @@ export default function PayoutPage() {
       const payload = payoutMethod === 'sepa' ? {
         quoteId: quote.quoteId,
         method: 'sepa',
+        amountCents: quote.amountCents,
         iban: formData.iban.replace(/\s/g, ''),
         bic: formData.bic,
         accountHolder: formData.accountHolder,
       } : {
         quoteId: quote.quoteId,
         method: 'crypto',
+        amountCents: quote.amountCents,
         walletAddress: formData.walletAddress,
         targetCurrency: formData.selectedCrypto,
         network: formData.selectedNetwork,
@@ -281,23 +261,37 @@ export default function PayoutPage() {
 
       const apiUrl = payoutMethod === 'sepa' ? '/api/flexify/payout' : '/api/whitepay/withdrawal';
 
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[PAYOUT] handleSubmit request', { url: apiUrl, payload });
+      }
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
+      const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        throw new Error('Payout request failed');
+        const errorMessage = typeof data?.error === 'string' ? data.error : data?.message ?? `HTTP ${response.status}`;
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[PAYOUT] handleSubmit failed', { status: response.status, statusText: response.statusText, body: data });
+        }
+        throw new Error(errorMessage);
       }
 
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[PAYOUT] handleSubmit success', data);
+      }
       toast.success(text.toast.payoutCreated);
       setQuote(null);
       setAmount('');
+      fetchBalance();
       fetchPayoutHistory();
     } catch (error) {
-      console.error('Error submitting payout:', error);
-      toast.error(text.toast.payoutError);
+      const message = error instanceof Error ? error.message : text.toast.payoutError;
+      console.error('[PAYOUT] handleSubmit error', error);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -400,7 +394,9 @@ export default function PayoutPage() {
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground">{text.request.availableBalance}</p>
                     <p className="text-2xl font-bold text-green-500">
-                      {formatCentsToCurrency(user.totalVolume || 0, 'EUR')}
+                      {availableBalanceCents === null
+                        ? '—'
+                        : formatCentsToCurrency(availableBalanceCents, 'EUR')}
                     </p>
                   </div>
                 </div>
@@ -590,7 +586,7 @@ export default function PayoutPage() {
                 {!quote && (
                   <Button
                     onClick={getQuote}
-                    disabled={isLoadingQuote || !amount}
+                    disabled={isLoadingQuote || !amount || availableBalanceCents === null}
                     className="w-full"
                     variant="outline"
                   >

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '~/prisma/prisma';
-import { getVerification, updateUserKycStatus } from '@/lib/kycaid';
+import { getVerification, updateUserKycStatus, isUserKycVerified } from '@/lib/kycaid';
 
 /**
  * Route de polling pour vérifier l'état d'une vérification KYC en mode développement
@@ -91,24 +91,19 @@ export async function GET(
       },
     });
 
-    // Si la vérification est complétée, mettre à jour le statut utilisateur
+    // Si la vérification est complétée, mettre à jour le statut utilisateur (sauf si déjà à jour)
     if (verificationData.status === 'completed') {
-      // Vérifier si le statut a changé depuis la dernière fois
-      const hasStatusChanged = 
+      const hasStatusChanged =
         kycVerification.verified !== verificationData.verified ||
         kycVerification.status !== verificationData.status.toUpperCase();
 
-      console.log(`[KYCAID Poll] Status changed:`, hasStatusChanged, {
-        dbVerified: kycVerification.verified,
-        apiVerified: verificationData.verified,
-      });
-
-      // Toujours mettre à jour le statut utilisateur en fonction du statut KYCAID actuel
       if (verificationData.verified === true) {
-        await updateUserKycStatus(userId, 'VERIFIED', verificationId);
-        
+        // Ne pas rappeler updateUserKycStatus si l'utilisateur est déjà vérifié (évite emails en double)
+        const alreadyVerified = await isUserKycVerified(userId);
+        if (!alreadyVerified) {
+          await updateUserKycStatus(userId, 'VERIFIED', verificationId);
+        }
         console.log(`[KYCAID Poll] ✅ KYC VERIFIED for user ${userId}`);
-        
         return NextResponse.json({
           status: 'completed',
           verified: true,
@@ -116,14 +111,18 @@ export async function GET(
           statusChanged: hasStatusChanged,
         });
       } else {
-        // KYC refusé ou révoqué
+        // KYC refusé ou révoqué : mettre à jour seulement si pas déjà rejeté
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { kycStatus: true },
+        });
+        if (user?.kycStatus !== 'REJECTED') {
+          const declineReasons = collectDeclineReasons(verificationData);
+          const reasonText = declineReasons.join(', ') || 'Aucune raison spécifiée';
+          await updateUserKycStatus(userId, 'REJECTED', verificationId, reasonText);
+        }
         const declineReasons = collectDeclineReasons(verificationData);
-        const reasonText = declineReasons.join(', ') || 'Aucune raison spécifiée';
-        
-        await updateUserKycStatus(userId, 'REJECTED', verificationId, reasonText);
-        
-        console.log(`[KYCAID Poll] ❌ KYC REJECTED for user ${userId}:`, reasonText);
-        
+        console.log(`[KYCAID Poll] ❌ KYC REJECTED for user ${userId}`);
         return NextResponse.json({
           status: 'completed',
           verified: false,

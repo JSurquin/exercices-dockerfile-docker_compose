@@ -17,18 +17,25 @@ import crypto from 'crypto';
 
 const generateOrderId = () => `WP-${crypto.randomUUID()}`;
 
+const LOG = (msg: string, data?: object) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[PAYOUT WHITEPAY CRYPTO] ${msg}`, data ?? '');
+  }
+};
+
 // =============================================================================
 // POST - Créer un retrait crypto via Whitepay (Standard Flow)
 // =============================================================================
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Vérifier l'authentification
+    LOG('→ Début requête');
     const session = await auth.api.getSession({
       headers: await headers(),
     });
 
     if (!session?.user?.id) {
+      LOG('✗ Non authentifié');
       return NextResponse.json(
         { error: 'Non authentifié' },
         { status: 401 }
@@ -36,18 +43,20 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
+    LOG('✓ Session OK', { userId });
 
-    // 2. Vérifier le KYC
     const kycCheck = await canUserMakePayout(userId);
     if (!kycCheck.allowed) {
+      LOG('✗ KYC non validé', { reason: kycCheck.reason });
       return NextResponse.json(
         { error: kycCheck.reason, code: 'KYC_REQUIRED' },
         { status: 403 }
       );
     }
+    LOG('✓ KYC OK');
 
-    // 3. Parser le body
     const body = await request.json();
+    LOG('Body reçu', { keys: Object.keys(body) });
     const {
       amountCents,
       tradeId,
@@ -58,8 +67,8 @@ export async function POST(request: NextRequest) {
       travelRule,
     } = body;
 
-    // 4. Validation du montant
     if (!amountCents || amountCents <= 0) {
+      LOG('✗ Montant invalide', { amountCents });
       return NextResponse.json(
         { error: 'Montant invalide' },
         { status: 400 }
@@ -68,20 +77,23 @@ export async function POST(request: NextRequest) {
 
     const limits = getWhitepayLimits();
     if (amountCents < limits.minCents) {
+      LOG('✗ Montant trop bas', { amountCents, min: limits.minCents });
       return NextResponse.json(
         { error: `Montant minimum: ${centsToEur(limits.minCents)}€` },
         { status: 400 }
       );
     }
     if (amountCents > limits.maxCents) {
+      LOG('✗ Montant trop élevé', { amountCents, max: limits.maxCents });
       return NextResponse.json(
         { error: `Montant maximum: ${centsToEur(limits.maxCents)}€` },
         { status: 400 }
       );
     }
+    LOG('✓ Montant OK', { amountCents });
 
-    // 5. Validation de la crypto et du réseau
     if (!targetCurrency || !network) {
+      LOG('✗ Crypto ou réseau manquant', { targetCurrency, network });
       return NextResponse.json(
         { error: 'Crypto et réseau requis' },
         { status: 400 }
@@ -92,6 +104,7 @@ export async function POST(request: NextRequest) {
       (c) => c.ticker === targetCurrency.toUpperCase()
     );
     if (!supportedCrypto) {
+      LOG('✗ Crypto non supportée', { targetCurrency });
       return NextResponse.json(
         { error: `Crypto non supportée: ${targetCurrency}` },
         { status: 400 }
@@ -99,14 +112,16 @@ export async function POST(request: NextRequest) {
     }
 
     if (!supportedCrypto.networks.includes(network.toUpperCase() as never)) {
+      LOG('✗ Réseau non supporté', { network, targetCurrency });
       return NextResponse.json(
         { error: `Réseau ${network} non supporté pour ${targetCurrency}` },
         { status: 400 }
       );
     }
+    LOG('✓ Crypto et réseau OK', { targetCurrency, network });
 
-    // 6. Validation de l'adresse wallet
     if (!walletAddress) {
+      LOG('✗ Adresse wallet manquante');
       return NextResponse.json(
         { error: 'Adresse wallet requise' },
         { status: 400 }
@@ -115,39 +130,40 @@ export async function POST(request: NextRequest) {
 
     const addressValidation = validateWalletAddress(walletAddress, network);
     if (!addressValidation.isValid) {
+      LOG('✗ Adresse wallet invalide', { error: addressValidation.error });
       return NextResponse.json(
         { error: addressValidation.error },
         { status: 400 }
       );
     }
+    LOG('✓ Adresse wallet validée');
 
-    // 7. Vérification du memo si nécessaire
     if (networkRequiresMemo(network) && !memo) {
+      LOG('✗ Memo requis pour ce réseau', { network });
       return NextResponse.json(
         { error: `Un memo/tag est requis pour le réseau ${network}` },
         { status: 400 }
       );
     }
 
-    // 8. Récupérer l'utilisateur
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { email: true, name: true },
     });
 
     if (!user?.email) {
+      LOG('✗ Email utilisateur manquant');
       return NextResponse.json(
         { error: 'Email utilisateur requis' },
         { status: 400 }
       );
     }
+    LOG('✓ User trouvé', { email: user.email });
 
-    // 9. Calculer les frais
     const fees = calculateWhitepayFees(amountCents);
     const orderId = generateOrderId();
     const amountEur = amountCents / 100;
 
-    // 10. Appeler Whitepay API - Standard Flow
     const withdrawalParams: WhitepayWithdrawalRequest = {
       amount: amountEur,
       currency: 'EUR',
@@ -159,10 +175,11 @@ export async function POST(request: NextRequest) {
       order_id: orderId,
     };
 
+    LOG('→ Appel Whitepay createWithdrawal', { orderId, amountEur, targetCurrency: withdrawalParams.target_currency, network: withdrawalParams.network });
     const whitepayResponse = await createWithdrawal(withdrawalParams);
     const tx = whitepayResponse.transaction;
+    LOG('✓ Whitepay OK', { transactionId: tx?.id, status: tx?.status });
 
-    // 11. Créer ou récupérer la méthode de paiement
     let paymentMethod = await prisma.paymentMethod.findFirst({
       where: {
         userId,
@@ -232,7 +249,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 14. Retourner la réponse avec les infos nécessaires pour confirmation
+    LOG('✓ Payout créé en BDD', { payoutId: payout.id });
     return NextResponse.json({
       success: true,
       payout: {
@@ -260,9 +277,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('[Whitepay Withdrawal] Error:', error);
+    const message = error instanceof Error ? error.message : 'Erreur lors de la création du retrait crypto';
+    console.error('[PAYOUT WHITEPAY CRYPTO] Erreur', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la création du retrait crypto' },
+      { error: message },
       { status: 500 }
     );
   }

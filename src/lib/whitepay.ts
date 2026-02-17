@@ -233,9 +233,10 @@ async function whitepayRequest<T>(
   retries: number = 3
 ): Promise<T> {
   const url = `${WHITEPAY_CONFIG.baseUrl}${path}`;
+  console.log('url', url);
   const bodyString = body ? JSON.stringify(body) : undefined;
   const headers = prepareHeaders(bodyString);
-
+  console.log('headers', headers);
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const response = await fetch(url, {

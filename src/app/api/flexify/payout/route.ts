@@ -14,21 +14,27 @@ import {
 import { canUserMakePayout } from '@/lib/kycaid';
 import crypto from 'crypto';
 
-// Helper to generate reference ID
 const generateReference = () => `MOON-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
+const LOG = (msg: string, data?: object) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[PAYOUT FLEXIFY SEPA] ${msg}`, data ?? '');
+  }
+};
+
 // =============================================================================
-// POST - Créer un nouveau payout
+// POST - Créer un nouveau payout SEPA
 // =============================================================================
 
 export async function POST(request: NextRequest) {
   try {
-    // Vérifier l'authentification
+    LOG('→ Début requête');
     const session = await auth.api.getSession({
       headers: await headers(),
     });
 
     if (!session?.user?.id) {
+      LOG('✗ Non authentifié');
       return NextResponse.json(
         { error: 'Non authentifié' },
         { status: 401 }
@@ -36,17 +42,20 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
+    LOG('✓ Session OK', { userId });
 
-    // Vérifier le KYC
     const kycCheck = await canUserMakePayout(userId);
     if (!kycCheck.allowed) {
+      LOG('✗ KYC non validé', { reason: kycCheck.reason });
       return NextResponse.json(
         { error: kycCheck.reason, code: 'KYC_REQUIRED' },
         { status: 403 }
       );
     }
+    LOG('✓ KYC OK');
 
     const body = await request.json();
+    LOG('Body reçu', { keys: Object.keys(body) });
     const {
       method, // 'SEPA' (cette route ne gère que le SEPA — la crypto passe par /api/whitepay/withdrawal)
       amountCents,
@@ -60,16 +69,16 @@ export async function POST(request: NextRequest) {
       address,
     } = body;
 
-    // Cette route ne gère que le SEPA — la crypto passe par /api/whitepay/withdrawal
     if (method !== 'SEPA' && method !== 'sepa') {
+      LOG('✗ Méthode non SEPA', { method });
       return NextResponse.json(
         { error: 'Cette route ne gère que les paiements SEPA. Utilisez /api/whitepay/withdrawal pour la crypto.' },
         { status: 400 }
       );
     }
 
-    // Validation du montant
     if (!amountCents || amountCents <= 0) {
+      LOG('✗ Montant invalide', { amountCents });
       return NextResponse.json(
         { error: 'Montant invalide' },
         { status: 400 }
@@ -98,13 +107,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user?.email) {
+      LOG('✗ Email utilisateur manquant');
       return NextResponse.json(
         { error: 'Email utilisateur requis' },
         { status: 400 }
       );
     }
+    LOG('✓ User trouvé', { email: user.email });
 
-    // Récupérer l'IP du client
     const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] || 
                      request.headers.get('x-real-ip') || 
                      '0.0.0.0';
@@ -112,8 +122,8 @@ export async function POST(request: NextRequest) {
     // Validation selon la méthode
     const reference = generateReference();
 
-    // Validation IBAN
     if (!iban) {
+      LOG('✗ IBAN manquant');
       return NextResponse.json(
         { error: 'IBAN requis pour un paiement SEPA' },
         { status: 400 }
@@ -122,11 +132,13 @@ export async function POST(request: NextRequest) {
 
     const ibanValidation = validateIban(iban);
     if (!ibanValidation.isValid) {
+      LOG('✗ IBAN invalide', { error: ibanValidation.error });
       return NextResponse.json(
         { error: ibanValidation.error },
         { status: 400 }
       );
     }
+    LOG('✓ IBAN validé');
 
     // Validation BIC (optionnel mais recommandé)
     if (bic) {
@@ -149,6 +161,7 @@ export async function POST(request: NextRequest) {
     // Créer le payout SEPA selon la spec V1
     const holderName = `${firstName || user.name?.split(' ')[0] || 'User'} ${lastName || user.name?.split(' ').slice(1).join(' ') || 'User'}`.trim();
     
+    LOG('→ Appel Flexify createSepaPayout', { reference, amountCents });
     const flexifyResponse = await createSepaPayout({
       reference,
       amountCents,
@@ -165,10 +178,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Vérifier la réponse Flexify
     if (flexifyResponse.code !== 0 || !flexifyResponse.transaction) {
+      LOG('✗ Flexify a refusé', { code: flexifyResponse.code, error_message: flexifyResponse.error_message });
       throw new Error(flexifyResponse.error_message || 'Échec de la création du payout');
     }
+    LOG('✓ Flexify OK', { transactionId: flexifyResponse.transaction?.id });
 
     // Créer ou récupérer la méthode de paiement
     let paymentMethod = await prisma.paymentMethod.findFirst({
@@ -225,6 +239,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    LOG('✓ Payout créé en BDD', { payoutId: payout.id });
     return NextResponse.json({
       success: true,
       payout: {
@@ -241,9 +256,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('[Flexify Payout] Error:', error);
+    const message = error instanceof Error ? error.message : 'Erreur lors de la création du payout';
+    console.error('[PAYOUT FLEXIFY SEPA] Erreur', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la création du payout' },
+      { error: message },
       { status: 500 }
     );
   }

@@ -858,7 +858,9 @@ export async function processWebhook(payload: KycaidWebhookPayload): Promise<voi
 // =============================================================================
 
 /**
- * Met à jour le statut KYC d'un utilisateur
+ * Met à jour le statut KYC d'un utilisateur.
+ * L'email de notification n'est envoyé que lors d'un vrai changement de statut
+ * (passage à VERIFIED ou REJECTED depuis un autre statut), pour éviter les doublons.
  */
 export async function updateUserKycStatus(
   userId: string,
@@ -866,6 +868,13 @@ export async function updateUserKycStatus(
   verificationId?: string,
   rejectionReason?: string
 ): Promise<void> {
+  // Lire le statut actuel avant mise à jour (pour n'envoyer l'email qu'en cas de changement)
+  const currentUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { kycStatus: true, email: true, steamUsername: true },
+  });
+  const previousStatus = currentUser?.kycStatus ?? null;
+
   // Mettre à jour l'utilisateur
   await prisma.user.update({
     where: { id: userId },
@@ -907,33 +916,28 @@ export async function updateUserKycStatus(
 
   console.log(`[KYCAID] User ${userId} KYC status updated to ${status}`);
 
-  // =========================================================================
-  // ENVOYER L'EMAIL DE NOTIFICATION AU CLIENT
-  // =========================================================================
-  try {
-    // Récupérer les infos utilisateur pour l'email
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        email: true,
-        steamUsername: true,
-      },
-    });
+  // N'envoyer l'email que si le statut vient vraiment de changer (évite doublons / re-polling)
+  const statusActuallyChanged =
+    (status === 'VERIFIED' && previousStatus !== 'VERIFIED' && previousStatus !== 'KYCAID_VERIFIED') ||
+    (status === 'REJECTED' && previousStatus !== 'REJECTED');
 
-    if (user?.email) {
+  if (!statusActuallyChanged) {
+    return;
+  }
+
+  try {
+    if (currentUser?.email) {
       const { emailService } = await import('./email');
-      const username = user.steamUsername || 'Utilisateur';
-      
+      const username = currentUser.steamUsername || 'Utilisateur';
+
       if (status === 'VERIFIED') {
-        // Email de félicitations
-        console.log(`📧 [KYCAID] Envoi de l'email d'approbation KYC à ${user.email}`);
-        await emailService.sendKycApprovedEmail(user.email, username);
+        console.log(`📧 [KYCAID] Envoi de l'email d'approbation KYC à ${currentUser.email}`);
+        await emailService.sendKycApprovedEmail(currentUser.email, username);
         console.log(`✅ [KYCAID] Email d'approbation KYC envoyé avec succès`);
       } else if (status === 'REJECTED') {
-        // Email de rejet avec raison
-        console.log(`📧 [KYCAID] Envoi de l'email de rejet KYC à ${user.email}`);
+        console.log(`📧 [KYCAID] Envoi de l'email de rejet KYC à ${currentUser.email}`);
         await emailService.sendKycRejectedEmail(
-          user.email,
+          currentUser.email,
           username,
           rejectionReason || 'Aucune raison spécifiée'
         );
@@ -943,7 +947,6 @@ export async function updateUserKycStatus(
       console.warn(`⚠️  [KYCAID] Impossible d'envoyer l'email : email utilisateur non trouvé pour userId ${userId}`);
     }
   } catch (emailError: any) {
-    // L'erreur d'email ne doit pas bloquer la mise à jour du statut KYC
     console.error(`⚠️  [KYCAID] Erreur lors de l'envoi de l'email de notification KYC (non bloquant) :`, emailError.message);
   }
 }
@@ -953,7 +956,7 @@ export async function updateUserKycStatus(
 // =============================================================================
 
 /**
- * Vérifie si un utilisateur a un KYC validé
+ * Vérifie si un utilisateur a un KYC validé (VERIFIED ou KYCAID_VERIFIED).
  */
 export async function isUserKycVerified(userId: string): Promise<boolean> {
   const user = await prisma.user.findUnique({
@@ -961,7 +964,7 @@ export async function isUserKycVerified(userId: string): Promise<boolean> {
     select: { kycStatus: true },
   });
 
-  return user?.kycStatus === 'VERIFIED';
+  return user?.kycStatus === 'VERIFIED' || user?.kycStatus === 'KYCAID_VERIFIED';
 }
 
 /**
