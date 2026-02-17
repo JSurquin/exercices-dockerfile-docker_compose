@@ -303,12 +303,18 @@ export async function createWithdrawal(
   validateConfig();
   validateWithdrawalParams(params);
 
-  // L'API Whitepay exige amount en string (sinon 422 The given data was invalid)
-  const payload = {
-    ...params,
+  // Payload pour l'API : amount en string ; doc Whitepay indique "travelRule" (camelCase) pour la Travel Rule
+  const payload: Record<string, unknown> = {
     amount: typeof params.amount === 'number' ? String(params.amount) : params.amount,
+    currency: params.currency,
+    target_currency: params.target_currency,
+    network: params.network,
+    address: params.address,
     callback_url: params.callback_url || WHITEPAY_CONFIG.callbackUrl,
   };
+  if (params.memo !== undefined && params.memo !== '') payload.memo = params.memo;
+  if (params.order_id !== undefined) payload.order_id = params.order_id;
+  if (params.travel_rule !== undefined) payload.travelRule = params.travel_rule;
 
   logWhitepay('CREATE_WITHDRAWAL', params.order_id || 'no-order-id', {
     amount: params.amount,
@@ -405,12 +411,18 @@ export async function createInstantWithdrawal(
   validateConfig();
   validateWithdrawalParams(params);
 
-  // L'API Whitepay exige amount en string (sinon 422 The given data was invalid)
-  const payload = {
-    ...params,
+  // Même format que createWithdrawal : amount en string, travelRule en camelCase
+  const payload: Record<string, unknown> = {
     amount: typeof params.amount === 'number' ? String(params.amount) : params.amount,
+    currency: params.currency,
+    target_currency: params.target_currency,
+    network: params.network,
+    address: params.address,
     callback_url: params.callback_url || WHITEPAY_CONFIG.callbackUrl,
   };
+  if (params.memo !== undefined && params.memo !== '') payload.memo = params.memo;
+  if (params.order_id !== undefined) payload.order_id = params.order_id;
+  if (params.travel_rule !== undefined) payload.travelRule = params.travel_rule;
 
   logWhitepay('CREATE_INSTANT_WITHDRAWAL', params.order_id || 'no-order-id', {
     amount: params.amount,

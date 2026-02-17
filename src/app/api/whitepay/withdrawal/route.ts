@@ -299,9 +299,14 @@ export async function POST(request: NextRequest) {
     if (error instanceof WhitepayApiError && error.responseData) {
       console.error('[PAYOUT WHITEPAY CRYPTO] Détail API (ex. 422)', error.responseData);
     }
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
+    // Renvoyer le détail 422 au client pour diagnostic (quels champs invalides)
+    const status = error instanceof WhitepayApiError ? error.statusCode : 500;
+    const body: { error: string; whitepayErrors?: unknown } = { error: message };
+    if (error instanceof WhitepayApiError && error.responseData && typeof error.responseData === 'object') {
+      const data = error.responseData as Record<string, unknown>;
+      if (data.errors !== undefined) body.whitepayErrors = data.errors;
+      else body.whitepayErrors = data;
+    }
+    return NextResponse.json(body, { status });
   }
 }

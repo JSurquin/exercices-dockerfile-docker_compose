@@ -273,7 +273,13 @@ export default function PayoutPage() {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        const errorMessage = typeof data?.error === 'string' ? data.error : data?.message ?? `HTTP ${response.status}`;
+        let errorMessage = typeof data?.error === 'string' ? data.error : data?.message ?? `HTTP ${response.status}`;
+        if (data?.whitepayErrors) {
+          console.error('[PAYOUT] Whitepay validation errors', data.whitepayErrors);
+          if (process.env.NODE_ENV === 'development') {
+            errorMessage += ` — Détails: ${JSON.stringify(data.whitepayErrors)}`;
+          }
+        }
         if (process.env.NODE_ENV === 'development') {
           console.error('[PAYOUT] handleSubmit failed', { status: response.status, statusText: response.statusText, body: data });
         }
