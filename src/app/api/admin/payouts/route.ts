@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
-import { Payout, AdminFilters } from '@/lib/types';
+import { Payout, AdminFilters, type SEPADetails, type CryptoDetails } from '@/lib/types';
 import { prisma } from '~/prisma/prisma';
 import { mapPayoutStatusFromDb, mapPayoutStatusToDb, mapPaymentMethodTypeFromDb } from '@/lib/status-mapper';
 import { getPublicSepaDetails } from '@/lib/payment-method-sepa';
@@ -73,7 +73,10 @@ export async function GET(request: NextRequest) {
     const payouts: Payout[] = payoutsData.map(payout => {
       const details = payout.paymentMethod.details as SepaDetailsStored | null;
       const publicDetails =
-        details?.type === 'SEPA' ? getPublicSepaDetails(details) : (payout.paymentMethod.details as object);
+        details?.type === 'SEPA' ? getPublicSepaDetails(details) : (payout.paymentMethod.details as object | null);
+      const safeDetails: SEPADetails | CryptoDetails =
+        (publicDetails ?? payout.paymentMethod.details) as SEPADetails | CryptoDetails | null
+        ?? { iban: '—', accountHolder: '—', bankName: '—' };
       return {
         id: payout.id,
         userId: payout.userId,
@@ -82,7 +85,7 @@ export async function GET(request: NextRequest) {
         methodePaiement: {
           id: payout.paymentMethod.id,
           type: mapPaymentMethodTypeFromDb(payout.paymentMethod.type),
-          details: publicDetails ?? payout.paymentMethod.details,
+          details: safeDetails,
           isVerified: payout.paymentMethod.isVerified,
           isDefault: payout.paymentMethod.isDefault,
           createdAt: payout.paymentMethod.createdAt,

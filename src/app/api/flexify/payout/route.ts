@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      const details = existing.details as SepaDetailsStored;
+      const details = existing.details as unknown as SepaDetailsStored;
       // Migration lazy : si ancien format (iban en clair), chiffrer et mettre à jour
       const migrated = migrateToEncryptedDetails(details);
       if (migrated) {
