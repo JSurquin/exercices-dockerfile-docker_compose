@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
-import { uploadFile, createDocument, deleteDocument, isIdentityDocumentType, KYCAID_IDENTITY_DOCUMENT_TYPES } from '@/lib/kycaid';
+import { uploadFile, createDocument, deleteExistingIdentityDocumentsInKycaid, isIdentityDocumentType, KYCAID_IDENTITY_DOCUMENT_TYPES } from '@/lib/kycaid';
 import { prisma } from '~/prisma/prisma';
 
 /**
@@ -48,22 +48,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // KYCAID n'autorise qu'un seul document "identité" par applicant. Si un existe déjà (retry, remplacement), on le supprime puis on recrée.
+    // KYCAID n'autorise qu'un seul document "identité" par applicant. On nettoie côté KYCAID (liste réelle) + DB avant de recréer.
     if (isIdentityDocumentType(documentType)) {
-      const existing = await prisma.kycDocument.findFirst({
-        where: {
-          kycaidApplicantId: user.kycaidApplicantId,
-          type: { in: [...KYCAID_IDENTITY_DOCUMENT_TYPES] },
-        },
+      await deleteExistingIdentityDocumentsInKycaid(user.kycaidApplicantId);
+      const local = await prisma.kycDocument.findMany({
+        where: { kycaidApplicantId: user.kycaidApplicantId, type: { in: [...KYCAID_IDENTITY_DOCUMENT_TYPES] } },
       });
-      if (existing?.kycaidDocumentId) {
-        try {
-          await deleteDocument(existing.kycaidDocumentId);
-        } catch {
-          // ignore (404, etc.)
-        }
-        await prisma.kycFile.deleteMany({ where: { documentId: existing.id } });
-        await prisma.kycDocument.delete({ where: { id: existing.id } });
+      for (const doc of local) {
+        await prisma.kycFile.deleteMany({ where: { documentId: doc.id } });
+        await prisma.kycDocument.delete({ where: { id: doc.id } });
       }
     }
 

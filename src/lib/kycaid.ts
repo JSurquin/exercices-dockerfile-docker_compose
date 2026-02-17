@@ -515,6 +515,30 @@ export async function deleteDocument(documentId: string): Promise<void> {
 }
 
 /**
+ * Supprime côté KYCAID tous les documents "identité" existants pour cet applicant.
+ * À appeler avant createDocument(type identité) pour éviter le 422 limit_exceeded.
+ * On s'aligne sur l'état réel KYCAID (pas seulement notre DB) : même si notre DB
+ * n'a pas la ligne, le document peut encore exister chez KYCAID.
+ */
+export async function deleteExistingIdentityDocumentsInKycaid(applicantId: string): Promise<void> {
+  let list: { items?: KycaidDocument[] } = { items: [] };
+  try {
+    list = await listApplicantDocuments(applicantId);
+  } catch (e) {
+    console.warn('[KYCAID] listApplicantDocuments failed, skipping cleanup:', e);
+  }
+  const identityDocs = (list.items || []).filter((d) => isIdentityDocumentType(d.type));
+  for (const d of identityDocs) {
+    try {
+      await deleteDocument(d.document_id);
+      console.log(`  ✓ [KYCAID] Document identité supprimé: ${d.document_id}`);
+    } catch (err) {
+      console.warn(`  ⚠ [KYCAID] Suppression ${d.document_id} ignorée:`, err);
+    }
+  }
+}
+
+/**
  * Liste les documents d'un applicant
  */
 export async function listApplicantDocuments(
