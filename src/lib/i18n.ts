@@ -2997,6 +2997,16 @@ export const messages: Record<Locale, Messages> = {
         cryptoWalletRequired: 'Adresse wallet requise',
         cryptoMemoRequired: 'Memo/Tag requis pour ce réseau',
         cryptoMinAmount: 'Montant minimum pour la crypto : 21,20 €',
+        cardLabel: 'Carte',
+        cardNumberRequired: 'Numéro de carte requis',
+        cardHolderRequired: 'Titulaire de la carte requis',
+        cardExpiryRequired: "Date d'expiration requise",
+        cardCvvRequired: 'CVV requis',
+        cardNumberLabel: 'Numéro de carte',
+        cardHolderLabel: 'Titulaire de la carte',
+        cardExpireMonthLabel: 'Mois',
+        cardExpireYearLabel: 'Année',
+        cardCvvLabel: 'CVV',
         memoLabel: 'Memo / Tag',
         memoRequired: 'Obligatoire',
         memoPlaceholder: 'Entrez le memo/tag',
@@ -3004,7 +3014,8 @@ export const messages: Record<Locale, Messages> = {
         security: {
           title: 'Sécurité',
           sepaInfo: 'Virement bancaire en 1-3 jours ouvrés',
-          cryptoInfo: 'Retrait crypto via Whitepay, généralement en quelques minutes'
+          cryptoInfo: 'Retrait crypto via Whitepay, généralement en quelques minutes',
+          cardInfo: 'Retrait vers votre carte bancaire (Flexify). Généralement crédité sous 24h.'
         }
       },
       history: {
@@ -6015,6 +6026,16 @@ export const messages: Record<Locale, Messages> = {
         cryptoWalletRequired: 'Wallet address required',
         cryptoMemoRequired: 'Memo/Tag required for this network',
         cryptoMinAmount: 'Minimum amount for crypto: €21.20',
+        cardLabel: 'Card',
+        cardNumberRequired: 'Card number required',
+        cardHolderRequired: 'Cardholder name required',
+        cardExpiryRequired: 'Expiry date required',
+        cardCvvRequired: 'CVV required',
+        cardNumberLabel: 'Card number',
+        cardHolderLabel: 'Cardholder name',
+        cardExpireMonthLabel: 'Month',
+        cardExpireYearLabel: 'Year',
+        cardCvvLabel: 'CVV',
         memoLabel: 'Memo / Tag',
         memoRequired: 'Required',
         memoPlaceholder: 'Enter the memo/tag',
@@ -6022,7 +6043,8 @@ export const messages: Record<Locale, Messages> = {
         security: {
           title: 'Security',
           sepaInfo: 'Bank transfer in 1-3 business days',
-          cryptoInfo: 'Crypto withdrawal via Whitepay, usually within minutes'
+          cryptoInfo: 'Crypto withdrawal via Whitepay, usually within minutes',
+          cardInfo: 'Withdrawal to your card (Flexify). Usually credited within 24h.'
         }
       },
       history: {
@@ -9717,6 +9739,16 @@ export const messages: Record<Locale, Messages> = {
         cryptoWalletRequired: '需要钱包地址',
         cryptoMemoRequired: '此网络需要Memo/Tag',
         cryptoMinAmount: '加密货币最低金额：21.20€',
+        cardLabel: '银行卡',
+        cardNumberRequired: '请输入卡号',
+        cardHolderRequired: '请输入持卡人姓名',
+        cardExpiryRequired: '请输入有效期',
+        cardCvvRequired: '请输入CVV',
+        cardNumberLabel: '卡号',
+        cardHolderLabel: '持卡人',
+        cardExpireMonthLabel: '月',
+        cardExpireYearLabel: '年',
+        cardCvvLabel: 'CVV',
         memoLabel: 'Memo / Tag',
         memoRequired: '必填',
         memoPlaceholder: '输入memo/tag',
@@ -9724,7 +9756,8 @@ export const messages: Record<Locale, Messages> = {
         security: {
           title: '安全',
           sepaInfo: '1-3个工作日内到账',
-          cryptoInfo: '通过Whitepay加密货币提款，通常几分钟内到账'
+          cryptoInfo: '通过Whitepay加密货币提款，通常几分钟内到账',
+          cardInfo: '提款到银行卡（Flexify），通常24小时内到账。'
         }
       },
       history: {

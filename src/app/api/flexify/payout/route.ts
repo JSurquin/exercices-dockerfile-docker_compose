@@ -4,7 +4,9 @@ import { headers } from 'next/headers';
 import { prisma } from '~/prisma/prisma';
 import {
   createSepaPayout,
+  createCardPayout,
   calculateSepaFees,
+  calculateCardFees,
   getPayoutLimits,
   validateIban,
   validateBic,
@@ -24,12 +26,12 @@ const generateReference = () => `MOON-${Date.now()}-${crypto.randomBytes(4).toSt
 
 const LOG = (msg: string, data?: object) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log(`[PAYOUT FLEXIFY SEPA] ${msg}`, data ?? '');
+    console.log(`[PAYOUT FLEXIFY] ${msg}`, data ?? '');
   }
 };
 
 // =============================================================================
-// POST - Créer un nouveau payout SEPA
+// POST - Créer un nouveau payout Flexify (Carte ou SEPA). Crypto → /api/whitepay/withdrawal
 // =============================================================================
 
 export async function POST(request: NextRequest) {
@@ -63,23 +65,29 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     LOG('Body reçu', { keys: Object.keys(body) });
     const {
-      method, // 'SEPA' (cette route ne gère que le SEPA — la crypto passe par /api/whitepay/withdrawal)
+      method, // 'card' | 'sepa' — crypto → /api/whitepay/withdrawal
       amountCents,
       tradeId,
-      paymentMethodId, // optionnel : réutiliser un IBAN déjà enregistré (chiffré)
-      // Données SEPA (obligatoires si pas paymentMethodId)
+      paymentMethodId,
+      // Card
+      cardNumber,
+      cardHolder,
+      expireMonth,
+      expireYear,
+      cvv,
+      // SEPA
       iban,
       bic,
-      // Données communes
       firstName,
       lastName,
       address,
     } = body;
 
-    if (method !== 'SEPA' && method !== 'sepa') {
-      LOG('✗ Méthode non SEPA', { method });
+    const methodNorm = typeof method === 'string' ? method.toLowerCase() : method;
+    if (methodNorm !== 'card' && methodNorm !== 'sepa') {
+      LOG('✗ Méthode invalide (Flexify = card ou sepa)', { method });
       return NextResponse.json(
-        { error: 'Cette route ne gère que les paiements SEPA. Utilisez /api/whitepay/withdrawal pour la crypto.' },
+        { error: 'Cette route gère Carte et SEPA uniquement. Pour la crypto, utilisez /api/whitepay/withdrawal.' },
         { status: 400 }
       );
     }
@@ -92,8 +100,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Vérifier les limites
-    const limits = getPayoutLimits('sepa');
+    const limits = getPayoutLimits(methodNorm === 'card' ? 'card' : 'sepa');
     if (amountCents < limits.minCents) {
       return NextResponse.json(
         { error: `Montant minimum: ${centsToEur(limits.minCents)}€` },
@@ -107,7 +114,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Récupérer l'utilisateur
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { email: true, name: true },
@@ -127,6 +133,126 @@ export async function POST(request: NextRequest) {
                      '0.0.0.0';
 
     const reference = generateReference();
+
+    // ————— Carte (Flexify) —————
+    if (methodNorm === 'card') {
+      const cardNum = (cardNumber || '').replace(/\s/g, '');
+      if (!cardNum || cardNum.length < 13) {
+        return NextResponse.json(
+          { error: 'Numéro de carte invalide' },
+          { status: 400 }
+        );
+      }
+      if (!cardHolder?.trim()) {
+        return NextResponse.json(
+          { error: 'Titulaire de la carte requis' },
+          { status: 400 }
+        );
+      }
+      const expMonth = (expireMonth || '').toString().padStart(2, '0');
+      const expYear = (expireYear || '').toString();
+      const expYearFull = expYear.length === 2 ? `20${expYear}` : expYear;
+      if (!expMonth || !expYearFull || expMonth.length !== 2) {
+        return NextResponse.json(
+          { error: 'Date d\'expiration invalide' },
+          { status: 400 }
+        );
+      }
+      if (!cvv || cvv.length < 3) {
+        return NextResponse.json(
+          { error: 'CVV requis' },
+          { status: 400 }
+        );
+      }
+
+      const fees = calculateCardFees(amountCents);
+      LOG('→ Appel Flexify createCardPayout', { reference, amountCents });
+      const flexifyResponse = await createCardPayout({
+        reference,
+        amountCents,
+        customer: {
+          identifier: userId,
+          email: user.email,
+          country: address?.country || 'FR',
+          ip: clientIp,
+        },
+        card: {
+          number: cardNum,
+          holderName: cardHolder.trim(),
+          expireMonth: expMonth,
+          expireYear: expYearFull,
+          cvv: cvv.toString(),
+        },
+      });
+
+      if (flexifyResponse.code !== 0 || !flexifyResponse.transaction) {
+        LOG('✗ Flexify card refusé', { code: flexifyResponse.code, error_message: flexifyResponse.error_message });
+        throw new Error(flexifyResponse.error_message || 'Échec de la création du payout carte');
+      }
+      LOG('✓ Flexify card OK', { transactionId: flexifyResponse.transaction?.id });
+
+      const cardPaymentMethod = await prisma.paymentMethod.create({
+        data: {
+          userId,
+          type: 'FLEXIFY_CARD',
+          details: { last4: cardNum.slice(-4) },
+          isVerified: true,
+        },
+      });
+
+      const payout = await prisma.payout.create({
+        data: {
+          userId,
+          tradeId: tradeId || null,
+          status: 'PENDING',
+          amountCents,
+          paymentMethodId: cardPaymentMethod.id,
+          gateFiOrderId: reference,
+          flexifyPayoutId: flexifyResponse.transaction!.id,
+          processingFeeCents: fees.processingFeeCents,
+          networkFeeCents: fees.networkFeeCents,
+        },
+      });
+
+      await prisma.auditLog.create({
+        data: {
+          userId,
+          action: 'FLEXIFY_PAYOUT_CREATED',
+          details: {
+            payoutId: payout.id,
+            reference,
+            method: 'CARD',
+            amountCents,
+            fees,
+            flexifyTransactionId: flexifyResponse.transaction!.id,
+            flexifyStatus: flexifyResponse.transaction!.status,
+          },
+        },
+      });
+
+      LOG('✓ Payout carte créé en BDD', { payoutId: payout.id });
+      return NextResponse.json({
+        success: true,
+        payout: {
+          id: payout.id,
+          reference,
+          status: payout.status,
+          amountCents,
+          fees: {
+            processingCents: fees.processingFeeCents,
+            networkCents: fees.networkFeeCents,
+            totalCents: fees.totalFeeCents,
+          },
+          netCents: amountCents - fees.totalFeeCents,
+          method: 'CARD',
+          flexifyTransactionId: flexifyResponse.transaction!.id,
+          flexifyStatus: flexifyResponse.transaction!.status,
+          estimatedArrival: 'Instantané à 24h',
+        },
+      });
+    }
+
+    // ————— SEPA (Flexify) —————
     let ibanToUse: string;
     let bicToUse: string;
     let paymentMethod = null;

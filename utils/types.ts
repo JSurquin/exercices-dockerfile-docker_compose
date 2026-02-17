@@ -4037,6 +4037,16 @@ export interface Messages {
         cryptoWalletRequired: string;
         cryptoMemoRequired: string;
         cryptoMinAmount: string;
+        cardLabel: string;
+        cardNumberRequired: string;
+        cardHolderRequired: string;
+        cardExpiryRequired: string;
+        cardCvvRequired: string;
+        cardNumberLabel: string;
+        cardHolderLabel: string;
+        cardExpireMonthLabel: string;
+        cardExpireYearLabel: string;
+        cardCvvLabel: string;
         memoLabel: string;
         memoRequired: string;
         memoPlaceholder: string;
@@ -4045,6 +4055,7 @@ export interface Messages {
           title: string;
           sepaInfo: string;
           cryptoInfo: string;
+          cardInfo: string;
         };
       };
     history: {

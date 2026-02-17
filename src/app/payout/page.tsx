@@ -20,7 +20,7 @@ import {
   InformationCircleIcon,
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
-import { CurrencyDollarIcon } from '@heroicons/react/24/outline';
+import { CurrencyDollarIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { formatCentsToCurrency, toCents } from '@/lib/currency-converter';
 import {
@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-type PayoutMethod = 'sepa' | 'crypto';
+type PayoutMethod = 'card' | 'sepa' | 'crypto';
 
 // Cryptos supportées par Whitepay
 const SUPPORTED_CRYPTOS = [
@@ -78,6 +78,12 @@ interface QuoteData {
 }
 
 interface PayoutFormData {
+  // Card (Flexify)
+  cardNumber: string;
+  cardHolder: string;
+  expireMonth: string;
+  expireYear: string;
+  cvv: string;
   // SEPA
   iban: string;
   bic: string;
@@ -92,12 +98,17 @@ interface PayoutFormData {
 export default function PayoutPage() {
   const { user } = useAuth();
   const { messages, locale } = useLocale();
-  const [payoutMethod, setPayoutMethod] = useState<PayoutMethod>('sepa');
+  const [payoutMethod, setPayoutMethod] = useState<PayoutMethod>('card');
   const [amount, setAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingQuote, setIsLoadingQuote] = useState(false);
   const [quote, setQuote] = useState<QuoteData | null>(null);
   const [formData, setFormData] = useState<PayoutFormData>({
+    cardNumber: '',
+    cardHolder: '',
+    expireMonth: '',
+    expireYear: '',
+    cvv: '',
     iban: '',
     bic: '',
     accountHolder: '',
@@ -217,12 +228,12 @@ export default function PayoutPage() {
 
     setIsLoadingQuote(true);
     try {
-      // SEPA → Flexify  |  Crypto → Whitepay
-      const quoteUrl = payoutMethod === 'sepa' ? '/api/flexify/quote' : '/api/whitepay/quote';
+      // Card & SEPA → Flexify  |  Crypto → Whitepay
+      const quoteUrl = payoutMethod === 'crypto' ? '/api/whitepay/quote' : '/api/flexify/quote';
       const requestBody =
-        payoutMethod === 'sepa'
-          ? { amountCents, currency: 'EUR', method: 'SEPA' }
-          : { amountCents, currency: 'EUR' };
+        payoutMethod === 'crypto'
+          ? { amountCents, currency: 'EUR' }
+          : { amountCents, currency: 'EUR', method: payoutMethod === 'card' ? 'CARD' : 'SEPA' };
       if (process.env.NODE_ENV === 'development') {
         console.log('[PAYOUT] getQuote request', { url: quoteUrl, method: payoutMethod, body: requestBody });
       }
@@ -269,6 +280,25 @@ export default function PayoutPage() {
       return;
     }
 
+    if (payoutMethod === 'card') {
+      const cardNum = formData.cardNumber.replace(/\s/g, '');
+      if (!cardNum || cardNum.length < 13) {
+        toast.error(text.request.cardNumberRequired ?? 'Numéro de carte requis');
+        return;
+      }
+      if (!formData.cardHolder.trim()) {
+        toast.error(text.request.cardHolderRequired ?? 'Titulaire de la carte requis');
+        return;
+      }
+      if (!formData.expireMonth || !formData.expireYear) {
+        toast.error(text.request.cardExpiryRequired ?? 'Date d\'expiration requise');
+        return;
+      }
+      if (!formData.cvv || formData.cvv.length < 3) {
+        toast.error(text.request.cardCvvRequired ?? 'CVV requis');
+        return;
+      }
+    }
     if (payoutMethod === 'sepa') {
       if (useSavedIban && selectedPaymentMethodId) {
         // OK : on envoie paymentMethodId, l'API déchiffre l'IBAN côté serveur
@@ -283,29 +313,49 @@ export default function PayoutPage() {
       const accountParts = formData.accountHolder.trim().split(/\s+/);
       const firstName = accountParts[0] || '';
       const lastName = accountParts.slice(1).join(' ') || '';
-      const payload = payoutMethod === 'sepa' ? {
-        quoteId: quote.quoteId,
-        method: 'sepa',
-        amountCents: quote.amountCents,
-        ...(useSavedIban && selectedPaymentMethodId
-          ? { paymentMethodId: selectedPaymentMethodId, firstName, lastName }
-          : {
-              iban: formData.iban.replace(/\s/g, ''),
-              bic: formData.bic,
-              firstName,
-              lastName,
-            }),
-      } : {
-        quoteId: quote.quoteId,
-        method: 'crypto',
-        amountCents: quote.amountCents,
-        walletAddress: formData.walletAddress,
-        targetCurrency: formData.selectedCrypto,
-        network: formData.selectedNetwork,
-        memo: needsMemo ? formData.memo : undefined,
-      };
-
-      const apiUrl = payoutMethod === 'sepa' ? '/api/flexify/payout' : '/api/whitepay/withdrawal';
+      let payload: Record<string, unknown>;
+      let apiUrl: string;
+      if (payoutMethod === 'card') {
+        apiUrl = '/api/flexify/payout';
+        payload = {
+          quoteId: quote.quoteId,
+          method: 'card',
+          amountCents: quote.amountCents,
+          cardNumber: formData.cardNumber.replace(/\s/g, ''),
+          cardHolder: formData.cardHolder.trim(),
+          expireMonth: formData.expireMonth.padStart(2, '0'),
+          expireYear: formData.expireYear.length === 2 ? `20${formData.expireYear}` : formData.expireYear,
+          cvv: formData.cvv,
+          firstName,
+          lastName,
+        };
+      } else if (payoutMethod === 'sepa') {
+        apiUrl = '/api/flexify/payout';
+        payload = {
+          quoteId: quote.quoteId,
+          method: 'sepa',
+          amountCents: quote.amountCents,
+          ...(useSavedIban && selectedPaymentMethodId
+            ? { paymentMethodId: selectedPaymentMethodId, firstName, lastName }
+            : {
+                iban: formData.iban.replace(/\s/g, ''),
+                bic: formData.bic,
+                firstName,
+                lastName,
+              }),
+        };
+      } else {
+        apiUrl = '/api/whitepay/withdrawal';
+        payload = {
+          quoteId: quote.quoteId,
+          method: 'crypto',
+          amountCents: quote.amountCents,
+          walletAddress: formData.walletAddress,
+          targetCurrency: formData.selectedCrypto,
+          network: formData.selectedNetwork,
+          memo: needsMemo ? formData.memo : undefined,
+        };
+      }
 
       if (process.env.NODE_ENV === 'development') {
         console.log('[PAYOUT] handleSubmit request', { url: apiUrl, payload });
@@ -486,7 +536,11 @@ export default function PayoutPage() {
                   setPayoutMethod(v as PayoutMethod);
                   setQuote(null);
                 }}>
-                  <TabsList className="grid w-full grid-cols-2">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="card" className="flex items-center gap-2">
+                      <CreditCardIcon className="w-4 h-4" />
+                      {text.request.cardLabel ?? 'Carte'}
+                    </TabsTrigger>
                     <TabsTrigger value="sepa" className="flex items-center gap-2">
                       <BanknotesIcon className="w-4 h-4" />
                       SEPA
@@ -496,6 +550,97 @@ export default function PayoutPage() {
                       Crypto
                     </TabsTrigger>
                   </TabsList>
+
+                  <TabsContent value="card" className="space-y-4 mt-4">
+                    <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
+                        <InformationCircleIcon className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-emerald-700 dark:text-emerald-300">{text.request.security.cardInfo ?? 'Retrait vers votre carte bancaire (Flexify). Généralement crédité sous 24h.'}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="cardNumber">{text.request.cardNumberLabel ?? 'Numéro de carte'}</Label>
+                        <Input
+                          id="cardNumber"
+                          type="text"
+                          inputMode="numeric"
+                          autoComplete="cc-number"
+                          placeholder="1234 5678 9012 3456"
+                          value={formData.cardNumber}
+                          onChange={(e) => {
+                            const v = e.target.value.replace(/\D/g, '').slice(0, 19);
+                            setFormData(prev => ({ ...prev, cardNumber: v.replace(/(\d{4})/g, '$1 ').trim() }));
+                            setQuote(null);
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="cardHolder">{text.request.cardHolderLabel ?? 'Titulaire de la carte'}</Label>
+                        <Input
+                          id="cardHolder"
+                          autoComplete="cc-name"
+                          placeholder="Jean Dupont"
+                          value={formData.cardHolder}
+                          onChange={(e) => {
+                            setFormData(prev => ({ ...prev, cardHolder: e.target.value }));
+                            setQuote(null);
+                          }}
+                        />
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="expireMonth">{text.request.cardExpireMonthLabel ?? 'Mois'}</Label>
+                          <Select
+                            value={formData.expireMonth}
+                            onValueChange={(v) => {
+                              setFormData(prev => ({ ...prev, expireMonth: v }));
+                              setQuote(null);
+                            }}
+                          >
+                            <SelectTrigger id="expireMonth">
+                              <SelectValue placeholder="MM" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0')).map((m) => (
+                                <SelectItem key={m} value={m}>{m}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="expireYear">{text.request.cardExpireYearLabel ?? 'Année'}</Label>
+                          <Input
+                            id="expireYear"
+                            placeholder="AA"
+                            maxLength={4}
+                            value={formData.expireYear}
+                            onChange={(e) => {
+                              const v = e.target.value.replace(/\D/g, '').slice(0, 4);
+                              setFormData(prev => ({ ...prev, expireYear: v }));
+                              setQuote(null);
+                            }}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="cvv">{text.request.cardCvvLabel ?? 'CVV'}</Label>
+                          <Input
+                            id="cvv"
+                            type="password"
+                            inputMode="numeric"
+                            autoComplete="cc-csc"
+                            placeholder="•••"
+                            maxLength={4}
+                            value={formData.cvv}
+                            onChange={(e) => {
+                              setFormData(prev => ({ ...prev, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }));
+                              setQuote(null);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
 
                   <TabsContent value="sepa" className="space-y-4 mt-4">
                     <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
