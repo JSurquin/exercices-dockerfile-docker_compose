@@ -330,12 +330,13 @@ async function flexifyRequest<T>(
       const contentType = response.headers.get('content-type') ?? '';
       const rawText = await response.text();
 
+      const rawPreview = rawText.length > 2000 ? rawText.slice(0, 2000) + '...' : rawText;
       flexifyLog('STEP_RESPONSE_RAW', {
         attempt,
         status: response.status,
         contentType,
         bodyLength: rawText.length,
-        bodyPreview: rawText.slice(0, 500),
+        bodyPreview: rawPreview,
       });
 
       if (response.status === 504) {
@@ -351,15 +352,20 @@ async function flexifyRequest<T>(
       }
 
       if (!contentType.includes('application/json')) {
-        const snippet = rawText.slice(0, 400).replace(/\s+/g, ' ');
+        const fullBody = rawText.length > 15000 ? rawText.slice(0, 15000) + '\n...[tronqué]' : rawText;
         flexifyLog('STEP_RESPONSE_NOT_JSON', {
           status: response.status,
           url,
           contentType,
-          snippet,
+          bodyLength: rawText.length,
+          fullBody,
         }, 'error');
+        if (response.status === 403) {
+          await logOutboundIpForWhitelist();
+        }
+        const msgSuffix = fullBody.length > 3000 ? fullBody.slice(0, 3000) + '...' : fullBody;
         throw new Error(
-          `Flexify a renvoyé une page HTML au lieu de JSON (status ${response.status}). Vérifiez : URL H2H (FLEXIFY_H2H_URL), IP serveur autorisée chez Flexify, et clés API. Détail: ${snippet}`
+          `Flexify a renvoyé une page HTML au lieu de JSON (status ${response.status}). Vérifiez : URL H2H (FLEXIFY_H2H_URL), IP serveur autorisée chez Flexify, et clés API. Corps complet dans les logs [FLEXIFY] STEP_RESPONSE_NOT_JSON. Détail: ${msgSuffix}`
         );
       }
 
@@ -367,9 +373,11 @@ async function flexifyRequest<T>(
       try {
         data = JSON.parse(rawText);
       } catch {
+        const invalidPreview = rawText.length > 3000 ? rawText.slice(0, 3000) + '...' : rawText;
         flexifyLog('STEP_RESPONSE_JSON_INVALID', {
           status: response.status,
-          rawPreview: rawText.slice(0, 300),
+          bodyLength: rawText.length,
+          fullBody: invalidPreview,
         }, 'error');
         throw new Error(`Flexify: réponse JSON invalide (status ${response.status})`);
       }
