@@ -11,6 +11,10 @@ export const WHITEPAY_CONFIG = {
   callbackUrl: process.env.WHITEPAY_CALLBACK_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api/whitepay/webhook`,
   /** Durée max (en ms) avant expiration du taux — Whitepay impose 30s */
   rateExpirationMs: 30_000,
+  /** Secret pour vérifier les webhooks de dépôt (top-up). HMAC-SHA256 du raw body. */
+  webhookTokenDeposit: process.env.WHITEPAY_WEBHOOK_TOKEN_DEPOSIT ?? '',
+  /** Secret pour vérifier les webhooks de retrait (payout). HMAC-SHA256 du raw body. */
+  webhookTokenWithdrawal: process.env.WHITEPAY_WEBHOOK_TOKEN_WITHDRAWAL ?? '',
 };
 
 // =============================================================================
@@ -162,14 +166,13 @@ export interface WhitepayWebhookPayload {
 
 /**
  * Webhook "Final Amount Received" pour le flux Crypto Top-Up (dépôt sur le compte merchant).
- * Whitepay envoie cet événement quand un dépôt crypto est reçu → crédite le merchant account.
- * La même URL de webhook peut être utilisée pour deposits ET withdrawals.
+ * Whitepay notifie que notre compte merchant a été alimenté (on a envoyé de l'USDC sur leur wallet).
+ * Côté nous : on log pour audit, on ne crédite aucun user (notre solde = ventes skins, WhitePay = payout).
  */
 export interface WhitepayTopUpWebhookPayload {
-  event?: string; // ex: "invoice.final_amount_received" ou similaire
+  event?: string;
   transaction_received_total?: string;
   received_currency?: string;
-  /** Optionnel si Whitepay active external_currencies */
   equivalent_fiat_amount?: number;
   equivalent_fiat_currency?: string;
   [key: string]: unknown;
@@ -498,7 +501,8 @@ export async function getTransactionStatus(
 // =============================================================================
 
 /**
- * Valide la signature d'un webhook Whitepay
+ * Valide la signature d'un webhook Whitepay (ancienne méthode : timestamp + secretKey).
+ * Utilisée pour l'API sortante ; les callbacks webhook utilisent les tokens dédiés.
  */
 export function validateWebhookSignature(
   payload: string,
@@ -518,6 +522,65 @@ export function validateWebhookSignature(
   } catch {
     return false;
   }
+}
+
+/**
+ * Valide la signature d'un webhook WhitePay avec le token dédié (deposit ou withdrawal).
+ * WhitePay signe le body brut avec HMAC-SHA256(token, rawBody) et envoie le hash en hex dans le header.
+ *
+ * @param rawBody - Body brut de la requête (ne pas utiliser le JSON parsé)
+ * @param signature - Valeur du header X-Signature ou X-Whitepay-Signature
+ * @param token - WHITEPAY_WEBHOOK_TOKEN_DEPOSIT ou WHITEPAY_WEBHOOK_TOKEN_WITHDRAWAL
+ */
+export function validateWebhookSignatureWithToken(
+  rawBody: string,
+  signature: string,
+  token: string
+): boolean {
+  if (!token || !signature) return false;
+  const expected = crypto
+    .createHmac('sha256', token)
+    .update(rawBody)
+    .digest('hex');
+  try {
+    if (Buffer.byteLength(signature, 'utf8') !== Buffer.byteLength(expected, 'utf8')) return false;
+    return crypto.timingSafeEqual(
+      Buffer.from(signature, 'utf8'),
+      Buffer.from(expected, 'utf8')
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Valide la signature du webhook en fonction du type d'événement (deposit vs withdrawal).
+ * À utiliser après avoir parsé le body pour déterminer le type d'événement.
+ */
+export function validateWebhookSignatureByEvent(
+  rawBody: string,
+  signature: string,
+  isDepositEvent: boolean
+): boolean {
+  const token = isDepositEvent
+    ? WHITEPAY_CONFIG.webhookTokenDeposit
+    : WHITEPAY_CONFIG.webhookTokenWithdrawal;
+  return validateWebhookSignatureWithToken(rawBody, signature, token);
+}
+
+/**
+ * Vérifie si la requête webhook est signée par l'un des deux tokens (deposit ou withdrawal).
+ * Utile pour les événements inconnus : on accepte si une des deux signatures est valide.
+ */
+export function validateWebhookSignatureWithEitherToken(
+  rawBody: string,
+  signature: string
+): boolean {
+  const deposit = WHITEPAY_CONFIG.webhookTokenDeposit;
+  const withdrawal = WHITEPAY_CONFIG.webhookTokenWithdrawal;
+  if (deposit && validateWebhookSignatureWithToken(rawBody, signature, deposit)) return true;
+  if (withdrawal && validateWebhookSignatureWithToken(rawBody, signature, withdrawal)) return true;
+  return false;
 }
 
 // =============================================================================

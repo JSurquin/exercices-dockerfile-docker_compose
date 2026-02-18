@@ -212,6 +212,19 @@ function prepareHeaders(
 }
 
 /**
+ * En cas de 403 Access Denied, log l'IP sortante du serveur pour la communiquer à Flexify (whitelist).
+ */
+async function logOutboundIpForWhitelist(): Promise<void> {
+  try {
+    const res = await fetch('https://api.ipify.org', { signal: AbortSignal.timeout(3000) });
+    const ip = (await res.text()).trim();
+    console.error('[Flexify] 403 Access Denied → IP sortante du serveur (à faire whitelister chez Flexify):', ip);
+  } catch {
+    console.error('[Flexify] Pour obtenir l’IP sortante en prod: curl -s https://api.ipify.org');
+  }
+}
+
+/**
  * Effectue une requête vers l'API Flexify H2H avec retry
  */
 async function flexifyRequest<T>(
@@ -264,12 +277,17 @@ async function flexifyRequest<T>(
       if (typeof data === 'object' && data !== null && 'error_code' in data && (data as { error_code: number }).error_code !== 0) {
         const code = (data as { error_code: number }).error_code;
         const msg = (data as { error_message?: string }).error_message ?? `Flexify error code: ${code}`;
+        const errorReason = (data as { error_reason?: string }).error_reason;
         console.error('[Flexify] API error (error_code)', {
           message: msg,
           code,
           status: response.status,
+          error_reason: errorReason,
           data: JSON.stringify(data, null, 2),
         });
+        if (response.status === 403) {
+          await logOutboundIpForWhitelist();
+        }
         throw new FlexifyApiError(msg, responsePayload);
       }
       if ('code' in (data as object) && (data as { code: number }).code !== 0) {
@@ -281,6 +299,9 @@ async function flexifyRequest<T>(
           status: response.status,
           data: JSON.stringify(data, null, 2),
         });
+        if (response.status === 403) {
+          await logOutboundIpForWhitelist();
+        }
         throw new FlexifyApiError(msg, responsePayload);
       }
 
