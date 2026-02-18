@@ -21,6 +21,18 @@ export const FLEXIFY_CONFIG = {
 // TYPES
 // =============================================================================
 
+/** Erreur renvoyée par l'API Flexify avec le body complet pour le debug */
+export class FlexifyApiError extends Error {
+  constructor(
+    message: string,
+    public readonly response?: { status: number; data: unknown }
+  ) {
+    super(message);
+    this.name = 'FlexifyApiError';
+    Object.setPrototypeOf(this, FlexifyApiError.prototype);
+  }
+}
+
 export type FlexifyPaymentMethod = 'sepa' | 'card';
 export type FlexifyTransactionStatus = 
   | 'new'
@@ -248,14 +260,28 @@ async function flexifyRequest<T>(
       }
 
       // Vérifier le code d'erreur Flexify (error_code != 0 = échec)
+      const responsePayload = { status: response.status, data };
       if (typeof data === 'object' && data !== null && 'error_code' in data && (data as { error_code: number }).error_code !== 0) {
-        const msg = (data as { error_message?: string }).error_message ?? `Flexify error code: ${(data as { error_code: number }).error_code}`;
-        throw new Error(msg);
+        const code = (data as { error_code: number }).error_code;
+        const msg = (data as { error_message?: string }).error_message ?? `Flexify error code: ${code}`;
+        console.error('[Flexify] API error (error_code)', {
+          message: msg,
+          code,
+          status: response.status,
+          data: JSON.stringify(data, null, 2),
+        });
+        throw new FlexifyApiError(msg, responsePayload);
       }
       if ('code' in (data as object) && (data as { code: number }).code !== 0) {
-        throw new Error(
-          (data as { error_message?: string }).error_message || `Flexify error code: ${(data as { code: number }).code}`
-        );
+        const code = (data as { code: number }).code;
+        const msg = (data as { error_message?: string }).error_message || `Flexify error code: ${code}`;
+        console.error('[Flexify] API error (code)', {
+          message: msg,
+          code,
+          status: response.status,
+          data: JSON.stringify(data, null, 2),
+        });
+        throw new FlexifyApiError(msg, responsePayload);
       }
 
       if (!response.ok) {

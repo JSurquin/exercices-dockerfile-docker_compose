@@ -11,6 +11,7 @@ import {
   validateIban,
   validateBic,
   centsToEur,
+  FlexifyApiError,
 } from '@/lib/flexify';
 import { canUserMakePayout } from '@/lib/kycaid';
 import crypto from 'crypto';
@@ -422,7 +423,22 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erreur lors de la création du payout';
-    console.error('[PAYOUT FLEXIFY SEPA] Erreur', error);
+    // Log complet pour diagnostiquer les erreurs Flexify (ex: code 5 = IBAN, BIC, montant, KYC, etc.)
+    if (error instanceof FlexifyApiError && error.response) {
+      console.error('[PAYOUT FLEXIFY SEPA] FULL ERROR', {
+        message: error.message,
+        code: (error.response.data as { error_code?: number; code?: number })?.error_code ?? (error.response.data as { code?: number })?.code,
+        status: error.response.status,
+        data: error.response.data,
+      });
+      console.error('[PAYOUT FLEXIFY SEPA] Response body (JSON):', JSON.stringify(error.response.data, null, 2));
+    } else {
+      console.error('[PAYOUT FLEXIFY SEPA] Erreur', {
+        message,
+        name: error instanceof Error ? error.name : undefined,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+    }
     return NextResponse.json(
       { error: message },
       { status: 500 }
