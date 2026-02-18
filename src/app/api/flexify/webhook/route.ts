@@ -5,6 +5,7 @@ import {
   convertFlexifyStatus,
   isTransactionCompleted,
   isTransactionFailed,
+  flexifyLog,
   type FlexifyWebhookPayload,
 } from '@/lib/flexify';
 
@@ -14,16 +15,15 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
+    flexifyLog('WEBHOOK_RECEIVED', { hasBody: true });
     const rawBody = await request.text();
-    
-    // Récupérer les headers nécessaires pour la validation
+
     const authorizationHeader = request.headers.get('Authorization') || '';
     const digestHeader = request.headers.get('Digest') || '';
     const dateHeader = request.headers.get('Date') || '';
     const hostHeader = request.headers.get('Host') || '';
     const contentLengthHeader = request.headers.get('Content-Length') || '0';
 
-    // Valider la signature selon la spec H2H
     const isValid = validateWebhookSignature(
       rawBody,
       authorizationHeader,
@@ -34,16 +34,16 @@ export async function POST(request: NextRequest) {
     );
 
     if (!isValid) {
-      console.error('[Flexify Webhook] Invalid signature');
+      flexifyLog('WEBHOOK_SIGNATURE_INVALID', {}, 'error');
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 401 }
       );
     }
+    flexifyLog('WEBHOOK_SIGNATURE_VALID', {});
 
     const payload: FlexifyWebhookPayload = JSON.parse(rawBody);
-
-    console.log('[Flexify Webhook] Received:', {
+    flexifyLog('WEBHOOK_PAYLOAD', {
       transactionId: payload.transaction_id,
       reference: payload.reference,
       status: payload.status,
@@ -51,7 +51,6 @@ export async function POST(request: NextRequest) {
       method: payload.method,
     });
 
-    // Trouver le payout correspondant par référence
     const payout = await prisma.payout.findFirst({
       where: { gateFiOrderId: payload.reference },
       include: {
@@ -61,15 +60,18 @@ export async function POST(request: NextRequest) {
     });
 
     if (!payout) {
-      console.warn('[Flexify Webhook] Payout not found:', payload.reference);
-      // Retourner 200 pour éviter les re-tentatives
+      flexifyLog('WEBHOOK_PAYOUT_NOT_FOUND', { reference: payload.reference }, 'warn');
       return NextResponse.json({ received: true });
     }
+    flexifyLog('WEBHOOK_PAYOUT_FOUND', { payoutId: payout.id, reference: payload.reference });
 
-    // Convertir le statut Flexify vers notre statut interne
     const newStatus = convertFlexifyStatus(payload.status);
+    flexifyLog('WEBHOOK_STATUS_UPDATE', {
+      reference: payload.reference,
+      flexifyStatus: payload.status,
+      newStatus,
+    });
 
-    // Mettre à jour le payout
     await prisma.payout.update({
       where: { id: payout.id },
       data: {
@@ -129,10 +131,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Répondre avec 200 dans les 30 secondes (requis par Flexify)
+    flexifyLog('WEBHOOK_PROCESSED', { reference: payload.reference, newStatus });
     return NextResponse.json({ received: true, processed: true });
   } catch (error) {
-    console.error('[Flexify Webhook] Error:', error);
+    flexifyLog('WEBHOOK_ERROR', { error: String(error) }, 'error');
     return NextResponse.json(
       { error: 'Webhook processing error' },
       { status: 500 }

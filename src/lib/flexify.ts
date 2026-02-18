@@ -42,7 +42,7 @@ export type FlexifyTransactionStatus =
   | 'failed'
   | 'expired';
 
-// Structure selon la doc Flexify V1
+// Structure selon la doc Flexify V1 / Gate API
 export interface FlexifyPayoutRequest {
   method: FlexifyPaymentMethod;
   mode: 'initial';
@@ -70,8 +70,27 @@ export interface FlexifyPayoutRequest {
   };
 }
 
+/** Réponse Gate API selon doc : https://h2h.flexify.finance/v1/payout */
+export interface FlexifyGateApiResponse {
+  error_code: number; // 0 = OK, != 0 = Failed
+  error_reason?: string;
+  request_id?: string;
+  reference?: string;
+  status?: FlexifyTransactionStatus;
+  type?: string;
+  method?: FlexifyPaymentMethod;
+  mode?: string;
+  currency?: string;
+  amount?: string;
+  timestamp?: string;
+  error_fields?: Array< { field: string; message: string } >;
+}
+
 export interface FlexifyPayoutResponse {
-  code: number; // 0 = success
+  code: number; // 0 = success (compat interne)
+  error_code?: number;
+  error_reason?: string;
+  request_id?: string;
   message?: string;
   transaction?: {
     id: string;
@@ -83,8 +102,55 @@ export interface FlexifyPayoutResponse {
     created_at: string;
     updated_at: string;
   };
-  error_code?: number;
   error_message?: string;
+  /** Champs Gate API bruts pour logs */
+  reference?: string;
+  status?: FlexifyTransactionStatus;
+}
+
+/**
+ * Normalise la réponse Gate API (error_code, request_id, reference, status à la racine)
+ * vers FlexifyPayoutResponse (transaction.id, etc.).
+ */
+function normalizeGateApiResponse(raw: unknown): FlexifyPayoutResponse {
+  if (typeof raw !== 'object' || raw === null) {
+    return { code: 1, error_message: 'Invalid response' };
+  }
+  const r = raw as Record<string, unknown>;
+  const errorCode = (r.error_code as number) ?? (r.code as number) ?? 0;
+  const hasTransaction = r.transaction && typeof r.transaction === 'object';
+  const tx = r.transaction as Record<string, unknown> | undefined;
+  const requestId = (r.request_id as string) ?? (tx?.id as string) ?? (tx?.transaction_id as string);
+  const reference = (r.reference as string) ?? (tx?.reference as string);
+  const status = (r.status as FlexifyTransactionStatus) ?? (tx?.status as FlexifyTransactionStatus);
+  const method = (r.method as FlexifyPaymentMethod) ?? (tx?.method as FlexifyPaymentMethod);
+  const amount = (r.amount as string) ?? (tx?.amount as string);
+  const currency = (r.currency as string) ?? (tx?.currency as string);
+
+  const normalized: FlexifyPayoutResponse = {
+    code: errorCode,
+    error_code: errorCode,
+    error_reason: r.error_reason as string | undefined,
+    error_message: (r.error_message as string) ?? (r.error_reason as string),
+    request_id: requestId,
+    reference,
+    status,
+    transaction: hasTransaction
+      ? (tx as FlexifyPayoutResponse['transaction'])
+      : requestId
+        ? {
+            id: requestId,
+            reference: reference ?? '',
+            status: status ?? 'pending',
+            amount: amount ?? '',
+            currency: currency ?? 'EUR',
+            method: method ?? 'card',
+            created_at: (r.timestamp as string) ?? new Date().toISOString(),
+            updated_at: (r.timestamp as string) ?? new Date().toISOString(),
+          }
+        : undefined,
+  };
+  return normalized;
 }
 
 export interface FlexifyWebhookPayload {
@@ -218,14 +284,15 @@ async function logOutboundIpForWhitelist(): Promise<void> {
   try {
     const res = await fetch('https://api.ipify.org', { signal: AbortSignal.timeout(3000) });
     const ip = (await res.text()).trim();
-    console.error('[Flexify] 403 Access Denied → IP sortante du serveur (à faire whitelister chez Flexify):', ip);
+    flexifyLog('STEP_403_IP_WHITELIST', { ip }, 'error');
   } catch {
-    console.error('[Flexify] Pour obtenir l’IP sortante en prod: curl -s https://api.ipify.org');
+    flexifyLog('STEP_403_IP_WHITELIST', { hint: 'curl -s https://api.ipify.org' }, 'error');
   }
 }
 
 /**
- * Effectue une requête vers l'API Flexify H2H avec retry
+ * Effectue une requête vers l'API Flexify H2H avec retry.
+ * Respecte le schéma Gate API : error_code (0=OK), error_reason, request_id, reference, status.
  */
 async function flexifyRequest<T>(
   method: string,
@@ -240,8 +307,20 @@ async function flexifyRequest<T>(
   const bodyString = body ? JSON.stringify(body) : undefined;
   const headers = prepareHeaders(method, host, bodyString);
 
+  flexifyLog('STEP_REQUEST_START', {
+    method,
+    path,
+    url,
+    hasBody: !!body,
+    bodySanitized: body ? sanitizeForLog(body) : undefined,
+  });
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
+      if (attempt > 1) {
+        flexifyLog('STEP_RETRY', { attempt, maxRetries: retries });
+      }
+
       const response = await fetch(url, {
         method,
         headers,
@@ -251,14 +330,34 @@ async function flexifyRequest<T>(
       const contentType = response.headers.get('content-type') ?? '';
       const rawText = await response.text();
 
+      flexifyLog('STEP_RESPONSE_RAW', {
+        attempt,
+        status: response.status,
+        contentType,
+        bodyLength: rawText.length,
+        bodyPreview: rawText.slice(0, 500),
+      });
+
+      if (response.status === 504) {
+        flexifyLog('STEP_504_GATEWAY_TIMEOUT', {
+          attempt,
+          hint: 'Attendre le callback ou faire un check pour obtenir le statut final',
+        }, 'warn');
+        if (attempt === retries) {
+          throw new Error('Flexify Gateway Timeout (504) après tous les retries. Attendre callback ou faire check.');
+        }
+        await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
+        continue;
+      }
+
       if (!contentType.includes('application/json')) {
         const snippet = rawText.slice(0, 400).replace(/\s+/g, ' ');
-        console.error('[Flexify] Réponse non-JSON (HTML ou erreur)', {
+        flexifyLog('STEP_RESPONSE_NOT_JSON', {
           status: response.status,
           url,
           contentType,
           snippet,
-        });
+        }, 'error');
         throw new Error(
           `Flexify a renvoyé une page HTML au lieu de JSON (status ${response.status}). Vérifiez : URL H2H (FLEXIFY_H2H_URL), IP serveur autorisée chez Flexify, et clés API. Détail: ${snippet}`
         );
@@ -268,37 +367,33 @@ async function flexifyRequest<T>(
       try {
         data = JSON.parse(rawText);
       } catch {
-        console.error('[Flexify] Body JSON invalide', { status: response.status, rawText: rawText.slice(0, 300) });
+        flexifyLog('STEP_RESPONSE_JSON_INVALID', {
+          status: response.status,
+          rawPreview: rawText.slice(0, 300),
+        }, 'error');
         throw new Error(`Flexify: réponse JSON invalide (status ${response.status})`);
       }
 
-      // Vérifier le code d'erreur Flexify (error_code != 0 = échec)
+      const normalized = path === '/v1/payout' ? normalizeGateApiResponse(data) : (data as T);
       const responsePayload = { status: response.status, data };
-      if (typeof data === 'object' && data !== null && 'error_code' in data && (data as { error_code: number }).error_code !== 0) {
-        const code = (data as { error_code: number }).error_code;
-        const msg = (data as { error_message?: string }).error_message ?? `Flexify error code: ${code}`;
-        const errorReason = (data as { error_reason?: string }).error_reason;
-        console.error('[Flexify] API error (error_code)', {
-          message: msg,
-          code,
-          status: response.status,
-          error_reason: errorReason,
-          data: JSON.stringify(data, null, 2),
-        });
-        if (response.status === 403) {
-          await logOutboundIpForWhitelist();
-        }
-        throw new FlexifyApiError(msg, responsePayload);
-      }
-      if ('code' in (data as object) && (data as { code: number }).code !== 0) {
-        const code = (data as { code: number }).code;
-        const msg = (data as { error_message?: string }).error_message || `Flexify error code: ${code}`;
-        console.error('[Flexify] API error (code)', {
-          message: msg,
-          code,
-          status: response.status,
-          data: JSON.stringify(data, null, 2),
-        });
+
+      const errorCode = typeof normalized === 'object' && normalized !== null && 'error_code' in normalized
+        ? (normalized as { error_code: number }).error_code
+        : (normalized as { code?: number }).code;
+      const isError = errorCode !== undefined && errorCode !== 0;
+
+      if (isError) {
+        const msg = (normalized as { error_message?: string }).error_message
+          ?? (normalized as { error_reason?: string }).error_reason
+          ?? `Flexify error code: ${errorCode}`;
+        flexifyLog('STEP_ERROR_CODE', {
+          error_code: errorCode,
+          error_reason: (normalized as { error_reason?: string }).error_reason,
+          error_message: msg,
+          httpStatus: response.status,
+          error_fields: (data as { error_fields?: unknown }).error_fields,
+          fullBody: data,
+        }, 'error');
         if (response.status === 403) {
           await logOutboundIpForWhitelist();
         }
@@ -306,15 +401,23 @@ async function flexifyRequest<T>(
       }
 
       if (!response.ok) {
-        throw new Error(
-          `Flexify API error: ${response.status} - ${JSON.stringify(data)}`
-        );
+        flexifyLog('STEP_HTTP_NOT_OK', { status: response.status, data }, 'error');
+        throw new Error(`Flexify API error: ${response.status} - ${JSON.stringify(data)}`);
       }
 
-      return data as T;
+      flexifyLog('STEP_RESPONSE_SUCCESS', {
+        status: response.status,
+        reference: (normalized as { reference?: string }).reference,
+        request_id: (normalized as { request_id?: string }).request_id,
+        statusField: (normalized as { status?: string }).status,
+      });
+      return (path === '/v1/payout' ? normalized : data) as T;
     } catch (error) {
-      if (attempt === retries) throw error;
-      // Backoff exponentiel
+      if (attempt === retries) {
+        flexifyLog('STEP_REQUEST_FAILED_AFTER_RETRIES', { attempt, error: String(error) }, 'error');
+        throw error;
+      }
+      flexifyLog('STEP_RETRY_WAIT', { attempt, nextWaitMs: Math.pow(2, attempt) * 100 });
       await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
     }
   }
@@ -417,7 +520,7 @@ export interface CreateSepaPayoutParams {
 }
 
 /**
- * Crée un payout SEPA selon la spec Flexify V1
+ * Crée un payout SEPA selon la spec Flexify V1 / Gate API
  */
 export async function createSepaPayout(
   params: CreateSepaPayoutParams
@@ -426,7 +529,7 @@ export async function createSepaPayout(
 
   const amountEur = (params.amountCents / 100).toFixed(2);
 
-  const request: FlexifyPayoutRequest = {
+  const request: FlexifyGatePayoutBody = {
     method: 'sepa',
     mode: 'initial',
     reference: params.reference,
@@ -446,6 +549,11 @@ export async function createSepaPayout(
     },
   };
 
+  flexifyLog('STEP_CREATE_SEPA_PAYOUT_REQUEST', {
+    reference: params.reference,
+    amountEur,
+    ibanMasked: `${params.sepa.iban.slice(0, 4)}****${params.sepa.iban.slice(-4)}`,
+  });
   logPayoutTransaction('CREATE_SEPA_PAYOUT', params.reference, { amount: params.amountCents });
 
   return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/payout', request);
@@ -473,8 +581,27 @@ export interface CreateCardPayoutParams {
   };
 }
 
+/** Body envoyé à la Gate API /v1/payout (schéma doc : pan, exp_month, exp_year, holder_name) */
+interface FlexifyGatePayoutBody {
+  method: FlexifyPaymentMethod;
+  mode: 'initial';
+  reference: string;
+  currency: string;
+  amount: string;
+  customer: { identifier: string; email: string; country: string; ip: string };
+  callback_url: string;
+  sepa?: { iban: string; bic?: string; holder_name: string };
+  card?: {
+    pan: string;
+    exp_month: string;
+    exp_year: string;
+    holder_name: string;
+  };
+}
+
 /**
- * Crée un payout vers une carte bancaire selon la spec Flexify V1
+ * Crée un payout vers une carte bancaire selon la spec Flexify V1 / Gate API.
+ * Schéma doc : card = { pan, exp_month, exp_year, holder_name }.
  */
 export async function createCardPayout(
   params: CreateCardPayoutParams
@@ -483,7 +610,7 @@ export async function createCardPayout(
 
   const amountEur = (params.amountCents / 100).toFixed(2);
 
-  const request: FlexifyPayoutRequest = {
+  const request: FlexifyGatePayoutBody = {
     method: 'card',
     mode: 'initial',
     reference: params.reference,
@@ -497,14 +624,18 @@ export async function createCardPayout(
     },
     callback_url: FLEXIFY_CONFIG.callbackUrl,
     card: {
-      number: params.card.number,
+      pan: params.card.number,
+      exp_month: params.card.expireMonth,
+      exp_year: params.card.expireYear,
       holder_name: params.card.holderName,
-      expire_month: params.card.expireMonth,
-      expire_year: params.card.expireYear,
-      cvv: params.card.cvv,
     },
   };
 
+  flexifyLog('STEP_CREATE_CARD_PAYOUT_REQUEST', {
+    reference: params.reference,
+    amountEur,
+    cardMasked: `***${params.card.number.slice(-4)}`,
+  });
   logPayoutTransaction('CREATE_CARD_PAYOUT', params.reference, { amount: params.amountCents });
 
   return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/payout', request);
@@ -520,8 +651,8 @@ export async function createCardPayout(
  */
 export async function getTransactionStatus(transactionId: string): Promise<FlexifyPayoutResponse> {
   validateConfig();
+  flexifyLog('GET_TRANSACTION_STATUS_START', { transactionId });
 
-  // Utiliser le Reporting API avec Basic Auth
   const authHeader = Buffer.from(`${FLEXIFY_CONFIG.apiKey}:${FLEXIFY_CONFIG.apiSecret}`).toString('base64');
   
   const response = await fetch(
@@ -536,6 +667,7 @@ export async function getTransactionStatus(transactionId: string): Promise<Flexi
   );
 
   const data = await response.json();
+  flexifyLog('GET_TRANSACTION_STATUS_RESPONSE', { transactionId, status: response.status, hasError: !response.ok || (data as { code?: number }).code !== 0 });
 
   if (!response.ok || ('code' in data && data.code !== 0)) {
     throw new Error(data.error_message || 'Failed to fetch transaction status');
@@ -549,6 +681,7 @@ export async function getTransactionStatus(transactionId: string): Promise<Flexi
  */
 export async function getTransactionByReference(reference: string): Promise<FlexifyPayoutResponse> {
   validateConfig();
+  flexifyLog('GET_TRANSACTION_BY_REF_START', { reference });
 
   const authHeader = Buffer.from(`${FLEXIFY_CONFIG.apiKey}:${FLEXIFY_CONFIG.apiSecret}`).toString('base64');
   
@@ -564,6 +697,7 @@ export async function getTransactionByReference(reference: string): Promise<Flex
   );
 
   const data = await response.json();
+  flexifyLog('GET_TRANSACTION_BY_REF_RESPONSE', { reference, status: response.status, hasError: !response.ok || (data as { code?: number }).code !== 0 });
 
   if (!response.ok || ('code' in data && data.code !== 0)) {
     throw new Error(data.error_message || 'Failed to fetch transaction');
@@ -616,7 +750,7 @@ export function validateWebhookSignature(
     const headersMatch = authorizationHeader.match(/headers="([^"]+)"/);
     
     if (!signatureMatch || !keyIdMatch || !headersMatch) {
-      console.error('[Flexify Webhook] Invalid Authorization header format');
+      flexifyLog('WEBHOOK_SIGNATURE_PARSE_FAIL', { reason: 'Invalid Authorization header format' }, 'error');
       return false;
     }
 
@@ -624,16 +758,14 @@ export function validateWebhookSignature(
     const keyId = keyIdMatch[1];
     const headersList = headersMatch[1].split(' ');
 
-    // Vérifier que le keyId correspond
     if (keyId !== FLEXIFY_CONFIG.apiKey) {
-      console.error('[Flexify Webhook] Invalid keyId');
+      flexifyLog('WEBHOOK_SIGNATURE_KEYID_MISMATCH', {}, 'error');
       return false;
     }
 
-    // Vérifier le digest
     const expectedDigest = generateDigest(rawBody);
     if (digestHeader !== expectedDigest) {
-      console.error('[Flexify Webhook] Digest mismatch');
+      flexifyLog('WEBHOOK_SIGNATURE_DIGEST_MISMATCH', {}, 'error');
       return false;
     }
 
@@ -655,7 +787,7 @@ export function validateWebhookSignature(
       Buffer.from(expectedSignature)
     );
   } catch (error) {
-    console.error('[Flexify Webhook] Signature validation error:', error);
+    flexifyLog('WEBHOOK_SIGNATURE_VALIDATION_ERROR', { error: String(error) }, 'error');
     return false;
   }
 }
@@ -843,24 +975,75 @@ export function getPayoutLimits(method: FlexifyPaymentMethod): {
 }
 
 // =============================================================================
-// LOGGING
+// LOGGING — Actif en dev ET en prod pour tracer toutes les étapes Flexify
 // =============================================================================
 
+const FLEXIFY_LOG_PREFIX = '[FLEXIFY]';
+
 /**
- * Log une transaction pour le monitoring
+ * Sanitize payload pour les logs : pas de numéro de carte complet, pas de CVV, pas d'IBAN complet.
+ */
+function sanitizeForLog(obj: unknown): unknown {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj !== 'object') return obj;
+  const o = obj as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(o)) {
+    const key = k.toLowerCase();
+    if (key === 'pan' || key === 'number' || key === 'cvv') {
+      out[k] = typeof v === 'string' ? `***${(v as string).slice(-4)}` : '***';
+    } else if (key === 'iban' && typeof v === 'string') {
+      out[k] = `${(v as string).slice(0, 4)}****${(v as string).slice(-4)}`;
+    } else if (key === 'card' && v && typeof v === 'object') {
+      out[k] = sanitizeForLog(v);
+    } else if (key === 'sepa' && v && typeof v === 'object') {
+      const s = v as Record<string, unknown>;
+      out[k] = {
+        ...s,
+        iban: typeof s.iban === 'string' ? `${s.iban.slice(0, 4)}****${s.iban.slice(-4)}` : '***',
+      };
+    } else if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
+      out[k] = sanitizeForLog(v);
+    } else {
+      out[k] = v;
+    }
+  }
+  return out;
+}
+
+/**
+ * Log toutes les étapes Flexify (dev + prod). Permet de tout retracer.
+ */
+export function flexifyLog(
+  step: string,
+  data?: Record<string, unknown>,
+  level: 'info' | 'warn' | 'error' = 'info'
+): void {
+  const payload = {
+    step,
+    env: FLEXIFY_CONFIG.environment,
+    ts: new Date().toISOString(),
+    ...(data && { data: sanitizeForLog(data) }),
+  };
+  const msg = `${FLEXIFY_LOG_PREFIX} ${step}`;
+  if (level === 'error') {
+    console.error(msg, payload);
+  } else if (level === 'warn') {
+    console.warn(msg, payload);
+  } else {
+    console.log(msg, payload);
+  }
+}
+
+/**
+ * Log une transaction pour le monitoring (utilise le même logger que le reste)
  */
 function logPayoutTransaction(
   action: string,
   orderId: string,
   data: Record<string, unknown>
 ): void {
-  console.log('[Flexify Payout]', {
-    action,
-    orderId,
-    timestamp: new Date().toISOString(),
-    environment: FLEXIFY_CONFIG.environment,
-    ...data,
-  });
+  flexifyLog(`PAYOUT_${action}`, { orderId, ...data });
 }
 
 

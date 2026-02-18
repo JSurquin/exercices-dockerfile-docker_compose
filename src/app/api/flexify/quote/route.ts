@@ -6,12 +6,11 @@ import {
   calculateCardFees,
   getPayoutLimits,
   centsToEur,
+  flexifyLog,
 } from '@/lib/flexify';
 
-const LOG = (msg: string, data?: object) => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[PAYOUT QUOTE FLEXIFY] ${msg}`, data ?? '');
-  }
+const LOG = (step: string, data?: object) => {
+  flexifyLog(`QUOTE_API_${step}`, (data ?? {}) as Record<string, unknown>);
 };
 
 // =============================================================================
@@ -20,29 +19,29 @@ const LOG = (msg: string, data?: object) => {
 
 export async function POST(request: NextRequest) {
   try {
-    LOG('→ Début requête');
+    LOG('START', {});
     const session = await auth.api.getSession({
       headers: await headers(),
     });
 
     if (!session?.user?.id) {
-      LOG('✗ Non authentifié');
+      LOG('AUTH_FAIL', {});
       return NextResponse.json(
         { error: 'Non authentifié' },
         { status: 401 }
       );
     }
-    LOG('✓ Session OK', { userId: session.user.id });
+    LOG('SESSION_OK', { userId: session.user.id });
 
     const body = await request.json();
     const rawMethod = body.method;
     const amountCents = body.amountCents ?? body.amount;
     const method = typeof rawMethod === 'string' ? rawMethod.toUpperCase() : rawMethod;
 
-    LOG('Body reçu', { method, amountCents, bodyKeys: Object.keys(body) });
+    LOG('BODY_RECEIVED', { method, amountCents, bodyKeys: Object.keys(body) });
 
     if (!method || !['SEPA', 'CARD'].includes(method)) {
-      LOG('✗ Méthode invalide (Flexify = SEPA ou CARD uniquement)', { method });
+      LOG('METHOD_INVALID', { method });
       return NextResponse.json(
         { error: 'Méthode invalide. Pour Flexify utilisez SEPA ou CARD. Pour la crypto, utilisez /api/whitepay/quote.' },
         { status: 400 }
@@ -50,7 +49,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (amountCents == null || Number(amountCents) <= 0) {
-      LOG('✗ Montant invalide', { amountCents });
+      LOG('AMOUNT_INVALID', { amountCents });
       return NextResponse.json(
         { error: 'Montant invalide' },
         { status: 400 }
@@ -61,14 +60,14 @@ export async function POST(request: NextRequest) {
     const limits = getPayoutLimits((method === 'SEPA' ? 'sepa' : 'card') as 'sepa' | 'card');
 
     if (amount < limits.minCents) {
-      LOG('✗ Montant trop bas', { amount, min: limits.minCents });
+      LOG('AMOUNT_TOO_LOW', { amount, min: limits.minCents });
       return NextResponse.json(
         { error: `Montant minimum: ${centsToEur(limits.minCents)}€` },
         { status: 400 }
       );
     }
     if (amount > limits.maxCents) {
-      LOG('✗ Montant trop élevé', { amount, max: limits.maxCents });
+      LOG('AMOUNT_TOO_HIGH', { amount, max: limits.maxCents });
       return NextResponse.json(
         { error: `Montant maximum: ${centsToEur(limits.maxCents)}€` },
         { status: 400 }
@@ -95,7 +94,7 @@ export async function POST(request: NextRequest) {
       quoteId: `fx-quote-${Date.now()}-${session.user.id.slice(0, 8)}`,
     };
 
-    LOG('✓ Devis Flexify calculé', { method, amountCents: amount, netCents });
+    LOG('QUOTE_CALCULATED', { method, amountCents: amount, netCents });
     return NextResponse.json({
       quote,
       limits: {
@@ -104,7 +103,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('[PAYOUT QUOTE FLEXIFY] Erreur', error);
+    flexifyLog('QUOTE_API_ERROR', { error: String(error) }, 'error');
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Erreur lors du calcul du devis' },
       { status: 500 }
