@@ -550,19 +550,26 @@ export function calculateCardFees(amountCents: number): {
 export interface CreateSepaPayoutParams {
   reference: string;
   amountCents: number;
+  description?: string;
   customer: {
-    identifier: string; // User ID
+    identifier: string;
     email: string;
-    country: string; // ISO 2 lettres
+    phone: string;
+    first_name: string;
+    last_name: string;
+    address: string;
+    country: string;
     ip: string;
   };
   sepa: {
     iban: string;
     bic?: string;
-    /** Prénom du bénéficiaire (Flexify: beneficiary_first_name) */
-    beneficiaryFirstName: string;
-    /** Nom du bénéficiaire (Flexify: beneficiary_last_name) */
-    beneficiaryLastName: string;
+    beneficiary_first_name: string;
+    beneficiary_last_name: string;
+    beneficiary_country: string;
+    beneficiary_city: string;
+    beneficiary_address: string;
+    beneficiary_email: string;
   };
 }
 
@@ -583,17 +590,24 @@ export async function createSepaPayout(
     reference: params.reference,
     currency: 'EUR',
     amount: amountEur,
+    description: params.description || `Payout ${params.reference}`,
     customer: {
       identifier: params.customer.identifier,
       email: params.customer.email,
-      country: params.customer.country,
-      ip: params.customer.ip,
+      phone: params.customer.phone || '',
+      first_name: params.customer.first_name.trim(),
+      last_name: params.customer.last_name.trim(),
+      address: params.customer.address || '',
     },
     callback_url: FLEXIFY_CONFIG.callbackUrl,
     sepa: {
       account_number: params.sepa.iban,
-      beneficiary_first_name: params.sepa.beneficiaryFirstName.trim(),
-      beneficiary_last_name: params.sepa.beneficiaryLastName.trim(),
+      beneficiary_first_name: params.sepa.beneficiary_first_name.trim(),
+      beneficiary_last_name: params.sepa.beneficiary_last_name.trim(),
+      beneficiary_country: params.sepa.beneficiary_country.trim(),
+      beneficiary_city: params.sepa.beneficiary_city.trim(),
+      beneficiary_address: params.sepa.beneficiary_address.trim(),
+      beneficiary_email: params.sepa.beneficiary_email.trim(),
       ...(params.sepa.bic ? { bic: params.sepa.bic } : {}),
     },
   };
@@ -630,7 +644,7 @@ export interface CreateCardPayoutParams {
   };
 }
 
-/** Body envoyé à la Gate API /v1/payout (schéma doc : pan, exp_month, exp_year, holder_name) */
+/** Body envoyé à la Gate API /v1/payout — champs requis selon Flexify */
 interface FlexifyGatePayoutBody {
   merchant_identifier: string;
   method: FlexifyPaymentMethod;
@@ -638,12 +652,24 @@ interface FlexifyGatePayoutBody {
   reference: string;
   currency: string;
   amount: string;
-  customer: { identifier: string; email: string; country: string; ip: string };
+  description: string;
+  customer: {
+    identifier: string;
+    email: string;
+    phone: string;
+    first_name: string;
+    last_name: string;
+    address: string;
+  };
   callback_url: string;
   sepa?: {
-    account_number: string; // IBAN (nom de champ Flexify)
+    account_number: string;
     beneficiary_first_name: string;
     beneficiary_last_name: string;
+    beneficiary_country: string;
+    beneficiary_city: string;
+    beneficiary_address: string;
+    beneficiary_email: string;
     bic?: string;
   };
   card?: {
@@ -672,11 +698,14 @@ export async function createCardPayout(
     reference: params.reference,
     currency: 'EUR',
     amount: amountEur,
+    description: `Payout ${params.reference}`,
     customer: {
       identifier: params.customer.identifier,
       email: params.customer.email,
-      country: params.customer.country,
-      ip: params.customer.ip,
+      phone: (params.customer as { phone?: string }).phone || '',
+      first_name: (params.customer as { first_name?: string }).first_name || params.card.holderName.split(' ')[0] || '',
+      last_name: (params.customer as { last_name?: string }).last_name || params.card.holderName.split(' ').slice(1).join(' ') || '',
+      address: (params.customer as { address?: string }).address || '',
     },
     callback_url: FLEXIFY_CONFIG.callbackUrl,
     card: {

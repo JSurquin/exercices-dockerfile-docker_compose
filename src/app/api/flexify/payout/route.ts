@@ -70,18 +70,23 @@ export async function POST(request: NextRequest) {
       amountCents,
       tradeId,
       paymentMethodId,
+      description,
       // Card
       cardNumber,
       cardHolder,
       expireMonth,
       expireYear,
       cvv,
-      // SEPA
+      // SEPA / bénéficiaire
       iban,
       bic,
       firstName,
       lastName,
-      address,
+      phone,
+      address: addressStr,
+      beneficiaryCity,
+      beneficiaryCountry,
+      beneficiaryEmail,
     } = body;
 
     const methodNorm = typeof method === 'string' ? method.toLowerCase() : method;
@@ -174,7 +179,7 @@ export async function POST(request: NextRequest) {
         customer: {
           identifier: userId,
           email: user.email,
-          country: address?.country || 'FR',
+          country: (beneficiaryCountry && typeof beneficiaryCountry === 'string') ? beneficiaryCountry : 'FR',
           ip: clientIp,
         },
         card: {
@@ -322,22 +327,33 @@ export async function POST(request: NextRequest) {
     const fees = calculateSepaFees(amountCents);
     const beneficiaryFirst = (firstName ?? user.name?.split(' ')[0] ?? 'User').trim();
     const beneficiaryLast = (lastName ?? user.name?.split(' ').slice(1).join(' ') ?? 'User').trim();
+    const customerAddress = typeof addressStr === 'string' ? addressStr : '';
+    const beneficiaryAddr = customerAddress;
 
     LOG('CALL_CREATE_SEPA_PAYOUT', { reference, amountCents });
     const flexifyResponse = await createSepaPayout({
       reference,
       amountCents,
+      description: typeof description === 'string' ? description : undefined,
       customer: {
         identifier: userId,
         email: user.email,
-        country: address?.country || 'FR',
+        phone: (phone && typeof phone === 'string') ? phone : '',
+        first_name: beneficiaryFirst,
+        last_name: beneficiaryLast,
+        address: customerAddress,
+        country: beneficiaryCountry || 'FR',
         ip: clientIp,
       },
       sepa: {
         iban: ibanToUse,
         bic: bicToUse || undefined,
-        beneficiaryFirstName: beneficiaryFirst,
-        beneficiaryLastName: beneficiaryLast,
+        beneficiary_first_name: beneficiaryFirst,
+        beneficiary_last_name: beneficiaryLast,
+        beneficiary_country: (beneficiaryCountry && typeof beneficiaryCountry === 'string') ? beneficiaryCountry : 'FR',
+        beneficiary_city: (beneficiaryCity && typeof beneficiaryCity === 'string') ? beneficiaryCity : '',
+        beneficiary_address: beneficiaryAddr,
+        beneficiary_email: (beneficiaryEmail && typeof beneficiaryEmail === 'string') ? beneficiaryEmail : user.email,
       },
     });
 
