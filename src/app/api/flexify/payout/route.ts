@@ -424,18 +424,28 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erreur lors de la création du payout';
     if (error instanceof FlexifyApiError && error.response) {
+      const code = (error.response.data as { error_code?: number; code?: number })?.error_code ?? (error.response.data as { code?: number })?.code;
       flexifyLog('PAYOUT_API_ERROR_FLEXIFY', {
         message: error.message,
-        code: (error.response.data as { error_code?: number; code?: number })?.error_code ?? (error.response.data as { code?: number })?.code,
+        code,
         status: error.response.status,
+        error_fields: error.errorFields,
         data: error.response.data,
       }, 'error');
-    } else {
-      flexifyLog('PAYOUT_API_ERROR', {
-        message,
-        name: error instanceof Error ? error.name : undefined,
-      }, 'error');
+      // 400 Invalid params : renvoyer les champs invalides pour le debug / UX
+      const status = error.response.status === 400 ? 400 : 500;
+      return NextResponse.json(
+        {
+          error: message,
+          ...(error.errorFields?.length ? { error_fields: error.errorFields } : {}),
+        },
+        { status }
+      );
     }
+    flexifyLog('PAYOUT_API_ERROR', {
+      message,
+      name: error instanceof Error ? error.name : undefined,
+    }, 'error');
     return NextResponse.json(
       { error: message },
       { status: 500 }

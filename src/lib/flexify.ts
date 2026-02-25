@@ -56,7 +56,8 @@ export const FLEXIFY_CONFIG = {
 export class FlexifyApiError extends Error {
   constructor(
     message: string,
-    public readonly response?: { status: number; data: unknown }
+    public readonly response?: { status: number; data: unknown },
+    public readonly errorFields?: Array<{ field?: string; message?: string }>
   ) {
     super(message);
     this.name = 'FlexifyApiError';
@@ -427,18 +428,20 @@ async function flexifyRequest<T>(
         const msg = (normalized as { error_message?: string }).error_message
           ?? (normalized as { error_reason?: string }).error_reason
           ?? `Flexify error code: ${errorCode}`;
+        const errorFields = (data as { error_fields?: Array<{ field?: string; message?: string }> }).error_fields;
         flexifyLog('STEP_ERROR_CODE', {
           error_code: errorCode,
           error_reason: (normalized as { error_reason?: string }).error_reason,
           error_message: msg,
           httpStatus: response.status,
-          error_fields: (data as { error_fields?: unknown }).error_fields,
+          error_fields: errorFields ?? [],
+          error_fields_detail: errorFields ? JSON.stringify(errorFields) : '',
           fullBody: data,
         }, 'error');
         if (response.status === 403) {
           await logOutboundIpForWhitelist();
         }
-        throw new FlexifyApiError(msg, responsePayload);
+        throw new FlexifyApiError(msg, responsePayload, errorFields ?? undefined);
       }
 
       if (!response.ok) {
@@ -571,6 +574,7 @@ export async function createSepaPayout(
   const amountEur = (params.amountCents / 100).toFixed(2);
 
   const request: FlexifyGatePayoutBody = {
+    merchant_identifier: FLEXIFY_CONFIG.merchantIdentifier,
     method: 'sepa',
     mode: 'initial',
     reference: params.reference,
@@ -585,7 +589,7 @@ export async function createSepaPayout(
     callback_url: FLEXIFY_CONFIG.callbackUrl,
     sepa: {
       iban: params.sepa.iban,
-      bic: params.sepa.bic,
+      ...(params.sepa.bic ? { bic: params.sepa.bic } : {}),
       holder_name: params.sepa.holderName,
     },
   };
@@ -624,6 +628,7 @@ export interface CreateCardPayoutParams {
 
 /** Body envoyé à la Gate API /v1/payout (schéma doc : pan, exp_month, exp_year, holder_name) */
 interface FlexifyGatePayoutBody {
+  merchant_identifier: string;
   method: FlexifyPaymentMethod;
   mode: 'initial';
   reference: string;
@@ -652,6 +657,7 @@ export async function createCardPayout(
   const amountEur = (params.amountCents / 100).toFixed(2);
 
   const request: FlexifyGatePayoutBody = {
+    merchant_identifier: FLEXIFY_CONFIG.merchantIdentifier,
     method: 'card',
     mode: 'initial',
     reference: params.reference,
