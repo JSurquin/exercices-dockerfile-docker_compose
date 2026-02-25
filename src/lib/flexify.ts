@@ -591,10 +591,9 @@ export async function createSepaPayout(
 ): Promise<FlexifyPayoutResponse> {
   validateSepaConfig();
 
-  const amountEur = (params.amountCents / 100).toFixed(2);
+  const amountEur = params.amountCents / 100;
 
   const request: FlexifyGatePayoutBody = {
-    merchant_identifier: FLEXIFY_CONFIG.merchantIdentifier,
     method: 'sepa',
     mode: 'initial',
     reference: params.reference,
@@ -618,18 +617,16 @@ export async function createSepaPayout(
       beneficiary_city: params.sepa.beneficiary_city.trim(),
       beneficiary_address: params.sepa.beneficiary_address.trim(),
       beneficiary_email: params.sepa.beneficiary_email.trim(),
-      ...(params.sepa.bic ? { bic: params.sepa.bic } : {}),
     },
   };
 
   flexifyLog('STEP_CREATE_SEPA_PAYOUT_REQUEST', {
     reference: params.reference,
-    amountEur,
+    amount: amountEur,
     ibanMasked: `${params.sepa.iban.slice(0, 4)}****${params.sepa.iban.slice(-4)}`,
   });
-  // Vérifier que tous les champs requis Flexify sont bien présents (debug)
   const requiredKeys = [
-    'merchant_identifier', 'method', 'mode', 'reference', 'currency', 'amount', 'description',
+    'method', 'mode', 'reference', 'currency', 'amount', 'description',
     'customer', 'callback_url', 'sepa',
   ];
   const customerKeys = ['identifier', 'email', 'phone', 'first_name', 'last_name', 'address'];
@@ -677,14 +674,13 @@ export interface CreateCardPayoutParams {
   };
 }
 
-/** Body envoyé à la Gate API /v1/payout — champs requis selon Flexify */
+/** Body envoyé à la Gate API /v1/payout — uniquement les champs listés par le support Flexify */
 interface FlexifyGatePayoutBody {
-  merchant_identifier: string;
   method: FlexifyPaymentMethod;
   mode: 'initial';
   reference: string;
   currency: string;
-  amount: string;
+  amount: string | number;
   description: string;
   customer: {
     identifier: string;
@@ -703,7 +699,6 @@ interface FlexifyGatePayoutBody {
     beneficiary_city: string;
     beneficiary_address: string;
     beneficiary_email: string;
-    bic?: string;
   };
   card?: {
     pan: string;
@@ -725,7 +720,6 @@ export async function createCardPayout(
   const amountEur = (params.amountCents / 100).toFixed(2);
 
   const request: FlexifyGatePayoutBody = {
-    merchant_identifier: FLEXIFY_CONFIG.merchantIdentifier,
     method: 'card',
     mode: 'initial',
     reference: params.reference,
@@ -1177,10 +1171,15 @@ function sanitizeForLog(obj: unknown): unknown {
       out[k] = sanitizeForLog(v);
     } else if (key === 'sepa' && v && typeof v === 'object') {
       const s = v as Record<string, unknown>;
-      out[k] = {
-        ...s,
-        iban: typeof s.iban === 'string' ? `${s.iban.slice(0, 4)}****${s.iban.slice(-4)}` : '***',
-      };
+      const masked: Record<string, unknown> = {};
+      for (const [sk, sv] of Object.entries(s)) {
+        if (sk === 'account_number' && typeof sv === 'string') {
+          masked[sk] = `${sv.slice(0, 4)}****${sv.slice(-4)}`;
+        } else {
+          masked[sk] = sv;
+        }
+      }
+      out[k] = masked;
     } else if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
       out[k] = sanitizeForLog(v);
     } else {
