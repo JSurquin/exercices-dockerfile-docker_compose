@@ -559,7 +559,10 @@ export interface CreateSepaPayoutParams {
   sepa: {
     iban: string;
     bic?: string;
-    holderName: string;
+    /** Prénom du bénéficiaire (Flexify: beneficiary_first_name) */
+    beneficiaryFirstName: string;
+    /** Nom du bénéficiaire (Flexify: beneficiary_last_name) */
+    beneficiaryLastName: string;
   };
 }
 
@@ -588,9 +591,10 @@ export async function createSepaPayout(
     },
     callback_url: FLEXIFY_CONFIG.callbackUrl,
     sepa: {
-      iban: params.sepa.iban,
+      account_number: params.sepa.iban,
+      beneficiary_first_name: params.sepa.beneficiaryFirstName.trim(),
+      beneficiary_last_name: params.sepa.beneficiaryLastName.trim(),
       ...(params.sepa.bic ? { bic: params.sepa.bic } : {}),
-      holder_name: params.sepa.holderName,
     },
   };
 
@@ -636,7 +640,12 @@ interface FlexifyGatePayoutBody {
   amount: string;
   customer: { identifier: string; email: string; country: string; ip: string };
   callback_url: string;
-  sepa?: { iban: string; bic?: string; holder_name: string };
+  sepa?: {
+    account_number: string; // IBAN (nom de champ Flexify)
+    beneficiary_first_name: string;
+    beneficiary_last_name: string;
+    bic?: string;
+  };
   card?: {
     pan: string;
     exp_month: string;

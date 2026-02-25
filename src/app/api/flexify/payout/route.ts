@@ -320,7 +320,8 @@ export async function POST(request: NextRequest) {
     }
 
     const fees = calculateSepaFees(amountCents);
-    const holderName = `${firstName || user.name?.split(' ')[0] || 'User'} ${lastName || user.name?.split(' ').slice(1).join(' ') || 'User'}`.trim();
+    const beneficiaryFirst = (firstName ?? user.name?.split(' ')[0] ?? 'User').trim();
+    const beneficiaryLast = (lastName ?? user.name?.split(' ').slice(1).join(' ') ?? 'User').trim();
 
     LOG('CALL_CREATE_SEPA_PAYOUT', { reference, amountCents });
     const flexifyResponse = await createSepaPayout({
@@ -334,8 +335,9 @@ export async function POST(request: NextRequest) {
       },
       sepa: {
         iban: ibanToUse,
-        bic: bicToUse,
-        holderName,
+        bic: bicToUse || undefined,
+        beneficiaryFirstName: beneficiaryFirst,
+        beneficiaryLastName: beneficiaryLast,
       },
     });
 
