@@ -329,7 +329,22 @@ export async function POST(request: NextRequest) {
     const beneficiaryLast = (lastName ?? user.name?.split(' ').slice(1).join(' ') ?? 'User').trim();
     const customerAddress = typeof addressStr === 'string' ? addressStr : '';
     const beneficiaryAddr = customerAddress;
+    const beneficiaryCountryVal = (beneficiaryCountry && typeof beneficiaryCountry === 'string') ? beneficiaryCountry : 'FR';
+    const beneficiaryCityVal = (beneficiaryCity && typeof beneficiaryCity === 'string') ? beneficiaryCity : '';
+    const beneficiaryEmailVal = (beneficiaryEmail && typeof beneficiaryEmail === 'string') ? beneficiaryEmail : user.email;
+    const phoneVal = (phone && typeof phone === 'string') ? phone : '';
 
+    LOG('SEPA_PAYOUT_PARAMS', {
+      reference,
+      amountCents,
+      hasFirstName: !!beneficiaryFirst,
+      hasLastName: !!beneficiaryLast,
+      hasAddress: !!customerAddress,
+      hasPhone: !!phoneVal,
+      beneficiaryCountry: beneficiaryCountryVal,
+      beneficiaryCity: beneficiaryCityVal,
+      hasBeneficiaryEmail: !!beneficiaryEmailVal,
+    });
     LOG('CALL_CREATE_SEPA_PAYOUT', { reference, amountCents });
     const flexifyResponse = await createSepaPayout({
       reference,
@@ -338,11 +353,11 @@ export async function POST(request: NextRequest) {
       customer: {
         identifier: userId,
         email: user.email,
-        phone: (phone && typeof phone === 'string') ? phone : '',
+        phone: phoneVal,
         first_name: beneficiaryFirst,
         last_name: beneficiaryLast,
         address: customerAddress,
-        country: beneficiaryCountry || 'FR',
+        country: beneficiaryCountryVal,
         ip: clientIp,
       },
       sepa: {
@@ -350,10 +365,10 @@ export async function POST(request: NextRequest) {
         bic: bicToUse || undefined,
         beneficiary_first_name: beneficiaryFirst,
         beneficiary_last_name: beneficiaryLast,
-        beneficiary_country: (beneficiaryCountry && typeof beneficiaryCountry === 'string') ? beneficiaryCountry : 'FR',
-        beneficiary_city: (beneficiaryCity && typeof beneficiaryCity === 'string') ? beneficiaryCity : '',
+        beneficiary_country: beneficiaryCountryVal,
+        beneficiary_city: beneficiaryCityVal,
         beneficiary_address: beneficiaryAddr,
-        beneficiary_email: (beneficiaryEmail && typeof beneficiaryEmail === 'string') ? beneficiaryEmail : user.email,
+        beneficiary_email: beneficiaryEmailVal,
       },
     });
 

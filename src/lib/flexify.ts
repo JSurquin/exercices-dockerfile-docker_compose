@@ -349,6 +349,12 @@ async function flexifyRequest<T>(
     bodySanitized: body ? sanitizeForLog(body) : undefined,
   });
 
+  // Log du body exact envoyé à Flexify (dev + prod) — données sensibles masquées
+  if (body && path === '/v1/payout') {
+    const payloadLog = sanitizeForLog(body);
+    console.log('[FLEXIFY] PAYLOAD ENVOYÉ À FLEXIFY (v1/payout):', JSON.stringify(payloadLog, null, 2));
+  }
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       if (attempt > 1) {
@@ -438,6 +444,10 @@ async function flexifyRequest<T>(
           error_fields_detail: errorFields ? JSON.stringify(errorFields) : '',
           fullBody: data,
         }, 'error');
+        // En cas d'erreur (ex. general bank decline), log du payload envoyé (dev + prod)
+        if (path === '/v1/payout' && body) {
+          console.error('[FLEXIFY] ERREUR FLEXIFY — payload envoyé lors de l\'erreur:', JSON.stringify(sanitizeForLog(body), null, 2));
+        }
         if (response.status === 403) {
           await logOutboundIpForWhitelist();
         }
@@ -616,6 +626,29 @@ export async function createSepaPayout(
     reference: params.reference,
     amountEur,
     ibanMasked: `${params.sepa.iban.slice(0, 4)}****${params.sepa.iban.slice(-4)}`,
+  });
+  // Vérifier que tous les champs requis Flexify sont bien présents (debug)
+  const requiredKeys = [
+    'merchant_identifier', 'method', 'mode', 'reference', 'currency', 'amount', 'description',
+    'customer', 'callback_url', 'sepa',
+  ];
+  const customerKeys = ['identifier', 'email', 'phone', 'first_name', 'last_name', 'address'];
+  const sepaKeys = ['account_number', 'beneficiary_first_name', 'beneficiary_last_name', 'beneficiary_country', 'beneficiary_city', 'beneficiary_address', 'beneficiary_email'];
+  const missingRoot = requiredKeys.filter((k) => !(k in request));
+  const missingCustomer = customerKeys.filter((k) => !(k in request.customer));
+  const sepa = request.sepa;
+  const missingSepa = sepa ? sepaKeys.filter((k) => !(k in sepa)) : [];
+  if (missingRoot.length || missingCustomer.length || missingSepa.length) {
+    flexifyLog('STEP_CREATE_SEPA_PAYOUT_MISSING_KEYS', {
+      missingRoot,
+      missingCustomer,
+      missingSepa,
+    }, 'error');
+  }
+  flexifyLog('STEP_CREATE_SEPA_PAYOUT_BODY_KEYS', {
+    rootKeys: Object.keys(request),
+    customerKeys: Object.keys(request.customer),
+    sepaKeys: sepa ? Object.keys(sepa) : [],
   });
   logPayoutTransaction('CREATE_SEPA_PAYOUT', params.reference, { amount: params.amountCents });
 
