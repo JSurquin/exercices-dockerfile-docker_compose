@@ -84,10 +84,16 @@ interface PayoutFormData {
   expireMonth: string;
   expireYear: string;
   cvv: string;
-  // SEPA
+  // SEPA — prénom / nom séparés (requis Flexify)
   iban: string;
   bic: string;
-  accountHolder: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  address: string;
+  beneficiaryCity: string;
+  beneficiaryCountry: string;
+  beneficiaryEmail: string;
   // Crypto
   walletAddress: string;
   selectedCrypto: string;
@@ -111,7 +117,13 @@ export default function PayoutPage() {
     cvv: '',
     iban: '',
     bic: '',
-    accountHolder: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    address: '',
+    beneficiaryCity: '',
+    beneficiaryCountry: 'FR',
+    beneficiaryEmail: '',
     walletAddress: '',
     selectedCrypto: 'USDT',
     selectedNetwork: 'ERC20',
@@ -300,6 +312,14 @@ export default function PayoutPage() {
       }
     }
     if (payoutMethod === 'sepa') {
+      if (!formData.firstName?.trim()) {
+        toast.error(text.request.firstNameLabel ? `${text.request.firstNameLabel} requis` : 'Prénom requis');
+        return;
+      }
+      if (!formData.lastName?.trim()) {
+        toast.error(text.request.lastNameLabel ? `${text.request.lastNameLabel} requis` : 'Nom requis');
+        return;
+      }
       if (useSavedIban && selectedPaymentMethodId) {
         // OK : on envoie paymentMethodId, l'API déchiffre l'IBAN côté serveur
       } else if (!formData.iban.replace(/\s/g, '')) {
@@ -310,9 +330,8 @@ export default function PayoutPage() {
 
     setIsLoading(true);
     try {
-      const accountParts = formData.accountHolder.trim().split(/\s+/);
-      const firstName = accountParts[0] || '';
-      const lastName = accountParts.slice(1).join(' ') || '';
+      const firstName = formData.firstName.trim();
+      const lastName = formData.lastName.trim();
       let payload: Record<string, unknown>;
       let apiUrl: string;
       if (payoutMethod === 'card') {
@@ -335,13 +354,18 @@ export default function PayoutPage() {
           quoteId: quote.quoteId,
           method: 'sepa',
           amountCents: quote.amountCents,
+          firstName,
+          lastName,
+          phone: formData.phone.trim(),
+          address: formData.address.trim(),
+          beneficiaryCity: formData.beneficiaryCity.trim(),
+          beneficiaryCountry: formData.beneficiaryCountry || 'FR',
+          beneficiaryEmail: formData.beneficiaryEmail.trim() || (user?.email ?? ''),
           ...(useSavedIban && selectedPaymentMethodId
-            ? { paymentMethodId: selectedPaymentMethodId, firstName, lastName }
+            ? { paymentMethodId: selectedPaymentMethodId }
             : {
                 iban: formData.iban.replace(/\s/g, ''),
                 bic: formData.bic,
-                firstName,
-                lastName,
               }),
         };
       } else {
@@ -708,13 +732,73 @@ export default function PayoutPage() {
                         </div>
                       </div>
                     )}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="sepaFirstName">{text.request.firstNameLabel ?? 'Prénom'}</Label>
+                        <Input
+                          id="sepaFirstName"
+                          value={formData.firstName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                          placeholder={text.request.firstNamePlaceholder ?? 'Jean'}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sepaLastName">{text.request.lastNameLabel ?? 'Nom'}</Label>
+                        <Input
+                          id="sepaLastName"
+                          value={formData.lastName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                          placeholder={text.request.lastNamePlaceholder ?? 'Dupont'}
+                        />
+                      </div>
+                    </div>
                     <div className="space-y-2">
-                      <Label htmlFor="accountHolder">{text.request.accountHolderLabel}</Label>
+                      <Label htmlFor="sepaPhone">{text.request.phoneLabel ?? 'Téléphone'}</Label>
                       <Input
-                        id="accountHolder"
-                        value={formData.accountHolder}
-                        onChange={(e) => setFormData(prev => ({ ...prev, accountHolder: e.target.value }))}
-                        placeholder={text.request.accountHolderPlaceholder}
+                        id="sepaPhone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                        placeholder={text.request.phonePlaceholder ?? '+33 6 12 34 56 78'}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="sepaAddress">{text.request.addressLabel ?? 'Adresse'}</Label>
+                      <Input
+                        id="sepaAddress"
+                        value={formData.address}
+                        onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                        placeholder={text.request.addressPlaceholder ?? '123 rue Example, 75001 Paris'}
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="sepaCity">{text.request.cityLabel ?? 'Ville'}</Label>
+                        <Input
+                          id="sepaCity"
+                          value={formData.beneficiaryCity}
+                          onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryCity: e.target.value }))}
+                          placeholder={text.request.cityPlaceholder ?? 'Paris'}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sepaCountry">{text.request.countryLabel ?? 'Pays'}</Label>
+                        <Input
+                          id="sepaCountry"
+                          value={formData.beneficiaryCountry}
+                          onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryCountry: e.target.value }))}
+                          placeholder="FR"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="sepaBeneficiaryEmail">{text.request.beneficiaryEmailLabel ?? 'Email du bénéficiaire'}</Label>
+                      <Input
+                        id="sepaBeneficiaryEmail"
+                        type="email"
+                        value={formData.beneficiaryEmail}
+                        onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryEmail: e.target.value }))}
+                        placeholder={user?.email ?? 'email@exemple.com'}
                       />
                     </div>
                   </TabsContent>

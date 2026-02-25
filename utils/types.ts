@@ -4025,8 +4025,18 @@ export interface Messages {
         ibanPlaceholder: string;
         bicLabel: string;
         bicPlaceholder: string;
-        accountHolderLabel: string;
-        accountHolderPlaceholder: string;
+        firstNameLabel?: string;
+        firstNamePlaceholder?: string;
+        lastNameLabel?: string;
+        lastNamePlaceholder?: string;
+        phoneLabel?: string;
+        phonePlaceholder?: string;
+        addressLabel?: string;
+        addressPlaceholder?: string;
+        cityLabel?: string;
+        cityPlaceholder?: string;
+        countryLabel?: string;
+        beneficiaryEmailLabel?: string;
         // Crypto fields
         cryptoLabel: string;
         cryptoPlaceholder: string;
