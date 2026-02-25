@@ -360,7 +360,7 @@ export default function PayoutPage() {
           address: formData.address.trim(),
           beneficiaryCity: formData.beneficiaryCity.trim(),
           beneficiaryCountry: formData.beneficiaryCountry || 'FR',
-          beneficiaryEmail: formData.beneficiaryEmail.trim() || (user?.email ?? ''),
+          beneficiaryEmail: formData.beneficiaryEmail.trim(),
           ...(useSavedIban && selectedPaymentMethodId
             ? { paymentMethodId: selectedPaymentMethodId }
             : {
@@ -798,7 +798,7 @@ export default function PayoutPage() {
                         type="email"
                         value={formData.beneficiaryEmail}
                         onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryEmail: e.target.value }))}
-                        placeholder={user?.email ?? 'email@exemple.com'}
+                        placeholder="email@exemple.com"
                       />
                     </div>
                   </TabsContent>
