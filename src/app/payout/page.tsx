@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -140,6 +140,19 @@ export default function PayoutPage() {
   const [savedSepaMethods, setSavedSepaMethods] = useState<Array<{ id: string; maskedIban: string | null; maskedBic: string | null }>>([]);
   const [useSavedIban, setUseSavedIban] = useState(false);
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<string | null>(null);
+  const [savedCardMethods, setSavedCardMethods] = useState<Array<{ id: string; last4: string | null; holderName: string | null }>>([]);
+  const [useSavedCard, setUseSavedCard] = useState(false);
+  const [selectedCardMethodId, setSelectedCardMethodId] = useState<string | null>(null);
+  const [savedCryptoMethods, setSavedCryptoMethods] = useState<Array<{
+    id: string;
+    maskedAddress: string | null;
+    address: string;
+    network: string | null;
+    targetCurrency: string | null;
+    memo: string | null;
+  }>>([]);
+  const [useSavedWallet, setUseSavedWallet] = useState(false);
+  const [selectedCryptoMethodId, setSelectedCryptoMethodId] = useState<string | null>(null);
 
   // Traductions locales pour la page payout
   const text = messages.payoutPage;
@@ -173,14 +186,26 @@ export default function PayoutPage() {
     }
   }, []);
 
-  // Moyens de paiement enregistrés (IBAN masqués uniquement)
+  // Moyens de paiement enregistrés (IBAN / carte / wallet)
   const fetchPaymentMethods = useCallback(async () => {
     try {
       const response = await fetch('/api/payment-methods');
       if (response.ok) {
         const data = await response.json();
-        const sepa = (data.paymentMethods || []).filter((m: { type: string }) => m.type === 'SEPA');
+        const all = data.paymentMethods || [];
+        const sepa = all.filter((m: { type: string }) => m.type === 'SEPA' || m.type === 'FLEXIFY_SEPA');
+        const card = all.filter((m: { type: string }) => m.type === 'FLEXIFY_CARD' || m.type === 'CARD');
+        const crypto = all.filter((m: { type: string }) => m.type === 'WHITEPAY_CRYPTO' || m.type === 'CRYPTO');
         setSavedSepaMethods(sepa);
+        setSavedCardMethods(card.map((m: { id: string; last4: string | null; holderName: string | null }) => ({ id: m.id, last4: m.last4 ?? null, holderName: m.holderName ?? null })));
+        setSavedCryptoMethods(crypto.map((m: { id: string; maskedAddress: string | null; address?: string; network: string | null; targetCurrency: string | null; memo: string | null }) => ({
+          id: m.id,
+          maskedAddress: m.maskedAddress ?? null,
+          address: m.address ?? '',
+          network: m.network ?? null,
+          targetCurrency: m.targetCurrency ?? null,
+          memo: m.memo ?? null,
+        })));
       }
     } catch (error) {
       console.error('Error fetching payment methods:', error);
@@ -194,6 +219,63 @@ export default function PayoutPage() {
       fetchPaymentMethods();
     }
   }, [user, fetchBalance, fetchPayoutHistory, fetchPaymentMethods]);
+
+  // Pré-sélectionner les moyens enregistrés au premier chargement
+  const hasSetSepaDefault = useRef(false);
+  const hasSetCardDefault = useRef(false);
+  const hasSetCryptoDefault = useRef(false);
+  useEffect(() => {
+    if (savedSepaMethods.length > 0 && !hasSetSepaDefault.current) {
+      hasSetSepaDefault.current = true;
+      setUseSavedIban(true);
+      setSelectedPaymentMethodId(savedSepaMethods[0].id);
+    }
+  }, [savedSepaMethods]);
+  useEffect(() => {
+    if (savedCardMethods.length > 0 && !hasSetCardDefault.current) {
+      hasSetCardDefault.current = true;
+      setUseSavedCard(true);
+      setSelectedCardMethodId(savedCardMethods[0].id);
+      setFormData(prev => ({ ...prev, cardHolder: savedCardMethods[0].holderName ?? '' }));
+    }
+  }, [savedCardMethods]);
+  useEffect(() => {
+    if (savedCryptoMethods.length > 0 && !hasSetCryptoDefault.current) {
+      hasSetCryptoDefault.current = true;
+      const first = savedCryptoMethods[0];
+      setUseSavedWallet(true);
+      setSelectedCryptoMethodId(first.id);
+      setFormData(prev => ({
+        ...prev,
+        walletAddress: first.address,
+        selectedCrypto: first.targetCurrency ?? prev.selectedCrypto,
+        selectedNetwork: first.network ?? prev.selectedNetwork,
+        memo: first.memo ?? '',
+      }));
+    }
+  }, [savedCryptoMethods]);
+
+  // Synchroniser le formulaire quand on change de carte ou wallet enregistré
+  useEffect(() => {
+    if (useSavedCard && selectedCardMethodId) {
+      const card = savedCardMethods.find((c) => c.id === selectedCardMethodId);
+      if (card) setFormData(prev => ({ ...prev, cardHolder: card.holderName ?? '' }));
+    }
+  }, [useSavedCard, selectedCardMethodId, savedCardMethods]);
+  useEffect(() => {
+    if (useSavedWallet && selectedCryptoMethodId) {
+      const w = savedCryptoMethods.find((c) => c.id === selectedCryptoMethodId);
+      if (w) {
+        setFormData(prev => ({
+          ...prev,
+          walletAddress: w.address,
+          selectedCrypto: w.targetCurrency ?? prev.selectedCrypto,
+          selectedNetwork: w.network ?? prev.selectedNetwork,
+          memo: w.memo ?? '',
+        }));
+      }
+    }
+  }, [useSavedWallet, selectedCryptoMethodId, savedCryptoMethods]);
 
   // Pas de polling KYC sur la page payout : si le KYC est déjà validé, on ne touche plus à Kycaid.
   // Le retrait passe uniquement par Flexify (SEPA) ou Whitepay (crypto). Si le KYC n'est pas
@@ -555,20 +637,22 @@ export default function PayoutPage() {
                   </div>
                 </div>
 
-                {/* Méthode de paiement */}
+                {/* Méthode de paiement — SEPA masqué (non dispo France Flexify), décommenter pour réactiver */}
                 <Tabs value={payoutMethod} onValueChange={(v) => {
                   setPayoutMethod(v as PayoutMethod);
                   setQuote(null);
                 }}>
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="card" className="flex items-center gap-2">
                       <CreditCardIcon className="w-4 h-4" />
                       {text.request.cardLabel ?? 'Carte'}
                     </TabsTrigger>
+                    {/* SEPA masqué — Flexify non dispo en France
                     <TabsTrigger value="sepa" className="flex items-center gap-2">
                       <BanknotesIcon className="w-4 h-4" />
                       SEPA
                     </TabsTrigger>
+                    */}
                     <TabsTrigger value="crypto" className="flex items-center gap-2">
                       <CurrencyDollarIcon className="w-4 h-4" />
                       Crypto
@@ -582,6 +666,46 @@ export default function PayoutPage() {
                         <p className="text-sm text-emerald-700 dark:text-emerald-300">{text.request.security.cardInfo ?? 'Retrait vers votre carte bancaire (Flexify). Généralement crédité sous 24h.'}</p>
                       </div>
                     </div>
+                    {savedCardMethods.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>{text.request.savedCardLabel ?? 'Carte'}</Label>
+                        <div className="flex flex-col gap-2">
+                          {savedCardMethods.map((pm) => (
+                            <label key={pm.id} className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                              <input
+                                type="radio"
+                                name="card-source"
+                                checked={useSavedCard && selectedCardMethodId === pm.id}
+                                onChange={() => {
+                                  setUseSavedCard(true);
+                                  setSelectedCardMethodId(pm.id);
+                                }}
+                                className="h-4 w-4"
+                              />
+                              <span className="text-sm">
+                                {text.request.useSavedCard ?? 'Utiliser la carte enregistrée'}: **** {pm.last4 ?? '••••'}
+                                {pm.holderName ? ` — ${pm.holderName}` : ''}
+                              </span>
+                            </label>
+                          ))}
+                          <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                            <input
+                              type="radio"
+                              name="card-source"
+                              checked={!useSavedCard}
+                              onChange={() => {
+                                setUseSavedCard(false);
+                                setSelectedCardMethodId(null);
+                              }}
+                              className="h-4 w-4"
+                            />
+                            <span className="text-sm">{text.request.enterNewCard ?? 'Saisir une nouvelle carte'}</span>
+                          </label>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{text.request.savedCardHint ?? 'Le titulaire sera pré-rempli ; saisissez le numéro de carte pour ce retrait.'}</p>
+                      </div>
+                    )}
+                    {(!useSavedCard || savedCardMethods.length === 0) && (
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="cardNumber">{text.request.cardNumberLabel ?? 'Numéro de carte'}</Label>
@@ -664,144 +788,15 @@ export default function PayoutPage() {
                         </div>
                       </div>
                     </div>
+                    )}
+                    {(!useSavedCard || savedCardMethods.length === 0) && (
+                      <p className="text-xs text-muted-foreground">{text.request.saveCardHint ?? 'Cette carte sera enregistrée après ce retrait pour vos prochains retraits.'}</p>
+                    )}
                   </TabsContent>
 
-                  <TabsContent value="sepa" className="space-y-4 mt-4">
-                    <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                      <div className="flex items-start space-x-3">
-                        <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-blue-700 dark:text-blue-300">{text.request.security.sepaInfo}</p>
-                      </div>
-                    </div>
-
-                    {savedSepaMethods.length > 0 && (
-                      <div className="space-y-2">
-                        <Label>IBAN</Label>
-                        <div className="flex flex-col gap-2">
-                          <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
-                            <input
-                              type="radio"
-                              name="sepa-source"
-                              checked={useSavedIban}
-                              onChange={() => {
-                                setUseSavedIban(true);
-                                setSelectedPaymentMethodId(savedSepaMethods[0].id);
-                              }}
-                              className="h-4 w-4"
-                            />
-                            <span className="text-sm">
-                              Utiliser l&apos;IBAN enregistré : <strong>{savedSepaMethods[0].maskedIban ?? '••••'}</strong>
-                            </span>
-                          </label>
-                          <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
-                            <input
-                              type="radio"
-                              name="sepa-source"
-                              checked={!useSavedIban}
-                              onChange={() => {
-                                setUseSavedIban(false);
-                                setSelectedPaymentMethodId(null);
-                              }}
-                              className="h-4 w-4"
-                            />
-                            <span className="text-sm">Saisir un nouvel IBAN</span>
-                          </label>
-                        </div>
-                      </div>
-                    )}
-
-                    {(!useSavedIban || savedSepaMethods.length === 0) && (
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="iban">{text.request.ibanLabel}</Label>
-                          <Input
-                            id="iban"
-                            value={formData.iban}
-                            onChange={(e) => setFormData(prev => ({ ...prev, iban: e.target.value }))}
-                            placeholder={text.request.ibanPlaceholder}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="bic">{text.request.bicLabel}</Label>
-                          <Input
-                            id="bic"
-                            value={formData.bic}
-                            onChange={(e) => setFormData(prev => ({ ...prev, bic: e.target.value }))}
-                            placeholder={text.request.bicPlaceholder}
-                          />
-                        </div>
-                      </div>
-                    )}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="sepaFirstName">{text.request.firstNameLabel ?? 'Prénom'}</Label>
-                        <Input
-                          id="sepaFirstName"
-                          value={formData.firstName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                          placeholder={text.request.firstNamePlaceholder ?? 'Jean'}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="sepaLastName">{text.request.lastNameLabel ?? 'Nom'}</Label>
-                        <Input
-                          id="sepaLastName"
-                          value={formData.lastName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                          placeholder={text.request.lastNamePlaceholder ?? 'Dupont'}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="sepaPhone">{text.request.phoneLabel ?? 'Téléphone'}</Label>
-                      <Input
-                        id="sepaPhone"
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                        placeholder={text.request.phonePlaceholder ?? '+33 6 12 34 56 78'}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="sepaAddress">{text.request.addressLabel ?? 'Adresse'}</Label>
-                      <Input
-                        id="sepaAddress"
-                        value={formData.address}
-                        onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                        placeholder={text.request.addressPlaceholder ?? '123 rue Example, 75001 Paris'}
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="sepaCity">{text.request.cityLabel ?? 'Ville'}</Label>
-                        <Input
-                          id="sepaCity"
-                          value={formData.beneficiaryCity}
-                          onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryCity: e.target.value }))}
-                          placeholder={text.request.cityPlaceholder ?? 'Paris'}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="sepaCountry">{text.request.countryLabel ?? 'Pays'}</Label>
-                        <Input
-                          id="sepaCountry"
-                          value={formData.beneficiaryCountry}
-                          onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryCountry: e.target.value }))}
-                          placeholder="FR"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="sepaBeneficiaryEmail">{text.request.beneficiaryEmailLabel ?? 'Email du bénéficiaire'}</Label>
-                      <Input
-                        id="sepaBeneficiaryEmail"
-                        type="email"
-                        value={formData.beneficiaryEmail}
-                        onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryEmail: e.target.value }))}
-                        placeholder="email@exemple.com"
-                      />
-                    </div>
-                  </TabsContent>
+                  {/* SEPA (masqué — Flexify non dispo France) : décommenter le TabsTrigger ci‑dessus + ce bloc depuis l’historique git si besoin
+                  <TabsContent value="sepa" className="space-y-4 mt-4">...</TabsContent>
+                  */}
 
                   <TabsContent value="crypto" className="space-y-4 mt-4">
                     <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
@@ -811,6 +806,47 @@ export default function PayoutPage() {
                       </div>
                     </div>
 
+                    {savedCryptoMethods.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>{text.request.savedWalletLabel ?? 'Wallet'}</Label>
+                        <div className="flex flex-col gap-2">
+                          {savedCryptoMethods.map((pm) => (
+                            <label key={pm.id} className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                              <input
+                                type="radio"
+                                name="crypto-source"
+                                checked={useSavedWallet && selectedCryptoMethodId === pm.id}
+                                onChange={() => {
+                                  setUseSavedWallet(true);
+                                  setSelectedCryptoMethodId(pm.id);
+                                }}
+                                className="h-4 w-4"
+                              />
+                              <span className="text-sm">
+                                {text.request.useSavedWallet ?? 'Utiliser le wallet enregistré'}: <strong>{pm.maskedAddress ?? '••••'}</strong>
+                                {pm.network ? ` (${pm.network})` : ''} {pm.targetCurrency ? ` — ${pm.targetCurrency}` : ''}
+                              </span>
+                            </label>
+                          ))}
+                          <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                            <input
+                              type="radio"
+                              name="crypto-source"
+                              checked={!useSavedWallet}
+                              onChange={() => {
+                                setUseSavedWallet(false);
+                                setSelectedCryptoMethodId(null);
+                              }}
+                              className="h-4 w-4"
+                            />
+                            <span className="text-sm">{text.request.enterNewWallet ?? 'Saisir un nouveau wallet'}</span>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
+                    {(!useSavedWallet || savedCryptoMethods.length === 0) && (
+                    <>
                     <div className="space-y-4">
                       {/* Sélection de la crypto-monnaie */}
                       <div className="space-y-2">
@@ -899,6 +935,9 @@ export default function PayoutPage() {
                         </div>
                       )}
                     </div>
+                    <p className="text-xs text-muted-foreground">{text.request.saveWalletHint ?? 'Ce wallet sera enregistré après ce retrait pour vos prochains retraits.'}</p>
+                    </>
+                    )}
                   </TabsContent>
                 </Tabs>
 

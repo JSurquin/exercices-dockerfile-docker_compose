@@ -4061,6 +4061,19 @@ export interface Messages {
         memoRequired: string;
         memoPlaceholder: string;
         memoWarning: string;
+        savedIbanLabel?: string;
+        useSavedIban?: string;
+        enterNewIban?: string;
+        saveIbanHint?: string;
+        savedCardLabel?: string;
+        useSavedCard?: string;
+        enterNewCard?: string;
+        savedCardHint?: string;
+        saveCardHint?: string;
+        savedWalletLabel?: string;
+        useSavedWallet?: string;
+        enterNewWallet?: string;
+        saveWalletHint?: string;
         security: {
           title: string;
           sepaInfo: string;

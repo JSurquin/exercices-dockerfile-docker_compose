@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
         data: {
           userId,
           type: 'FLEXIFY_CARD',
-          details: { last4: cardNum.slice(-4) },
+          details: { last4: cardNum.slice(-4), holderName: cardHolder.trim() },
           isVerified: true,
         },
       });
