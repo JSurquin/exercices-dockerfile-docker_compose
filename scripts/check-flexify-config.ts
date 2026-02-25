@@ -47,10 +47,33 @@ function check(name: string, value: string | undefined, required: boolean = true
 
 console.log('\n🔍 Vérification de la configuration Flexify...\n');
 
-// Vérifications obligatoires
-check('FLEXIFY_API_KEY', process.env.FLEXIFY_API_KEY);
-check('FLEXIFY_API_SECRET', process.env.FLEXIFY_API_SECRET);
+// Obligatoire
 check('FLEXIFY_MERCHANT_IDENTIFIER', process.env.FLEXIFY_MERCHANT_IDENTIFIER);
+
+// Au moins une paire de clés (SEPA, Carte ou générique) pour H2H + Reporting
+const hasSepa = !!(process.env.FLEXIFY_SEPA_PUBLIC_KEY && process.env.FLEXIFY_SEPA_PRIVATE_KEY);
+const hasCard = !!(process.env.FLEXIFY_CARD_PUBLIC_KEY && process.env.FLEXIFY_CARD_PRIVATE_KEY);
+const hasGeneric = !!(process.env.FLEXIFY_API_KEY && process.env.FLEXIFY_API_SECRET);
+if (!hasSepa && !hasCard && !hasGeneric) {
+  results.push({
+    name: 'FLEXIFY_KEYS (SEPA/CARD/API)',
+    status: 'error',
+    message: '❌ Au moins une paire requise: (FLEXIFY_SEPA_PUBLIC_KEY+PRIVATE_KEY), (FLEXIFY_CARD_*), ou (FLEXIFY_API_KEY+API_SECRET)',
+  });
+} else {
+  results.push({
+    name: 'FLEXIFY_KEYS',
+    status: 'ok',
+    message: `✅ ${[hasSepa && 'SEPA', hasCard && 'CARD', hasGeneric && 'API'].filter(Boolean).join(', ')}`,
+  });
+}
+
+check('FLEXIFY_SEPA_PUBLIC_KEY', process.env.FLEXIFY_SEPA_PUBLIC_KEY, false);
+check('FLEXIFY_SEPA_PRIVATE_KEY', process.env.FLEXIFY_SEPA_PRIVATE_KEY, false);
+check('FLEXIFY_CARD_PUBLIC_KEY', process.env.FLEXIFY_CARD_PUBLIC_KEY, false);
+check('FLEXIFY_CARD_PRIVATE_KEY', process.env.FLEXIFY_CARD_PRIVATE_KEY, false);
+check('FLEXIFY_API_KEY', process.env.FLEXIFY_API_KEY, false);
+check('FLEXIFY_API_SECRET', process.env.FLEXIFY_API_SECRET, false);
 
 // Vérifications des URLs
 check('FLEXIFY_H2H_URL', process.env.FLEXIFY_H2H_URL);

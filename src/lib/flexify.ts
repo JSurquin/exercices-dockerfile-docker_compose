@@ -4,14 +4,45 @@ import crypto from 'crypto';
 // CONFIGURATION FLEXIFY
 // =============================================================================
 
+/** Paire de clés pour signer les requêtes (HMAC-SHA256) */
+export type FlexifyCredentialType = 'sepa' | 'card' | 'reporting';
+
+function getCredentials(type: FlexifyCredentialType): { apiKey: string; apiSecret: string } {
+  switch (type) {
+    case 'sepa':
+      return {
+        apiKey: process.env.FLEXIFY_SEPA_PUBLIC_KEY ?? process.env.FLEXIFY_API_KEY ?? '',
+        apiSecret: process.env.FLEXIFY_SEPA_PRIVATE_KEY ?? process.env.FLEXIFY_API_SECRET ?? '',
+      };
+    case 'card':
+      return {
+        apiKey: process.env.FLEXIFY_CARD_PUBLIC_KEY ?? process.env.FLEXIFY_API_KEY ?? '',
+        apiSecret: process.env.FLEXIFY_CARD_PRIVATE_KEY ?? process.env.FLEXIFY_API_SECRET ?? '',
+      };
+    case 'reporting':
+      return {
+        apiKey: process.env.FLEXIFY_API_KEY ?? process.env.FLEXIFY_SEPA_PUBLIC_KEY ?? '',
+        apiSecret: process.env.FLEXIFY_API_SECRET ?? process.env.FLEXIFY_SEPA_PRIVATE_KEY ?? '',
+      };
+    default:
+      return { apiKey: '', apiSecret: '' };
+  }
+}
+
 export const FLEXIFY_CONFIG = {
-  apiKey: process.env.FLEXIFY_API_KEY!,
-  apiSecret: process.env.FLEXIFY_API_SECRET!, // Changé de secretKey à apiSecret
-  merchantIdentifier: process.env.FLEXIFY_MERCHANT_IDENTIFIER!, // Identifiant marchand (ex: MR_TEST)
-  h2hBaseUrl: process.env.FLEXIFY_H2H_URL || 'https://h2h.flexify.finance', // H2H Gate API
-  reportingBaseUrl: process.env.FLEXIFY_API_URL || 'https://api.flexify.finance', // Reporting API
+  /** Clés génériques (reporting / fallback) */
+  apiKey: process.env.FLEXIFY_API_KEY ?? process.env.FLEXIFY_SEPA_PUBLIC_KEY ?? '',
+  apiSecret: process.env.FLEXIFY_API_SECRET ?? process.env.FLEXIFY_SEPA_PRIVATE_KEY ?? '',
+  /** Clés SEPA (payouts SEPA) — PUBLIC = keyId, PRIVATE = secret HMAC */
+  sepaApiKey: process.env.FLEXIFY_SEPA_PUBLIC_KEY ?? process.env.FLEXIFY_API_KEY ?? '',
+  sepaApiSecret: process.env.FLEXIFY_SEPA_PRIVATE_KEY ?? process.env.FLEXIFY_API_SECRET ?? '',
+  /** Clés Carte (payouts carte) */
+  cardApiKey: process.env.FLEXIFY_CARD_PUBLIC_KEY ?? process.env.FLEXIFY_API_KEY ?? '',
+  cardApiSecret: process.env.FLEXIFY_CARD_PRIVATE_KEY ?? process.env.FLEXIFY_API_SECRET ?? '',
+  merchantIdentifier: process.env.FLEXIFY_MERCHANT_IDENTIFIER!,
+  h2hBaseUrl: process.env.FLEXIFY_H2H_URL || 'https://h2h.flexify.finance',
+  reportingBaseUrl: process.env.FLEXIFY_API_URL || 'https://api.flexify.finance',
   environment: (process.env.FLEXIFY_ENVIRONMENT || 'sandbox') as 'sandbox' | 'production',
-  // URLs de callback
   callbackUrl: process.env.FLEXIFY_CALLBACK_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api/flexify/webhook`,
   successUrl: process.env.FLEXIFY_SUCCESS_URL || `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payout=success`,
   failureUrl: process.env.FLEXIFY_FAILURE_URL || `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payout=failed`,
@@ -230,24 +261,26 @@ function buildSignaturePayload(
 }
 
 /**
- * Génère la signature HMAC-SHA256
+ * Génère la signature HMAC-SHA256 avec le secret fourni
  */
-function generateSignature(payload: string): string {
+function generateSignature(payload: string, apiSecret: string): string {
   return crypto
-    .createHmac('sha256', FLEXIFY_CONFIG.apiSecret)
+    .createHmac('sha256', apiSecret)
     .update(payload)
     .digest('base64');
 }
 
 /**
- * Prépare les headers pour une requête Flexify H2H.
- * Date au format ISO 8601 (ex: 2022-01-01T01:00:00.000Z) comme dans l'exemple Flexify.
+ * Prépare les headers pour une requête Flexify H2H (auth HMAC-SHA256 selon spec).
+ * Utilise la paire de clés correspondant au type (sepa / card / reporting).
  */
 function prepareHeaders(
   method: string,
   host: string,
-  body?: string
+  body?: string,
+  credentialType: FlexifyCredentialType = 'reporting'
 ): Record<string, string> {
+  const { apiKey, apiSecret } = getCredentials(credentialType);
   const date = new Date().toISOString();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -258,20 +291,19 @@ function prepareHeaders(
   if (method === 'POST' && body) {
     const digest = generateDigest(body);
     const contentLength = Buffer.byteLength(body, 'utf8');
-    
+
     headers['Digest'] = digest;
     headers['Content-Length'] = contentLength.toString();
-    
+
     const signaturePayload = buildSignaturePayload(host, method, digest, contentLength, date);
-    const signature = generateSignature(signaturePayload);
-    
-    headers['Authorization'] = `Signature keyId="${FLEXIFY_CONFIG.apiKey}", algorithm="HmacSHA256", headers="host digest content-length date", signature="${signature}"`;
+    const signature = generateSignature(signaturePayload, apiSecret);
+
+    headers['Authorization'] = `Signature keyId="${apiKey}", algorithm="HmacSHA256", headers="host digest content-length date", signature="${signature}"`;
   } else {
-    // GET request
     const signaturePayload = buildSignaturePayload(host, method, undefined, undefined, date);
-    const signature = generateSignature(signaturePayload);
-    
-    headers['Authorization'] = `Signature keyId="${FLEXIFY_CONFIG.apiKey}", algorithm="HmacSHA256", headers="host date", signature="${signature}"`;
+    const signature = generateSignature(signaturePayload, apiSecret);
+
+    headers['Authorization'] = `Signature keyId="${apiKey}", algorithm="HmacSHA256", headers="host date", signature="${signature}"`;
   }
 
   return headers;
@@ -292,20 +324,21 @@ async function logOutboundIpForWhitelist(): Promise<void> {
 
 /**
  * Effectue une requête vers l'API Flexify H2H avec retry.
- * Respecte le schéma Gate API : error_code (0=OK), error_reason, request_id, reference, status.
+ * credentialType : 'sepa' | 'card' pour payouts (HMAC avec la bonne paire), 'reporting' pour balance/rapports.
  */
 async function flexifyRequest<T>(
   method: string,
   path: string,
   body?: object,
   retries: number = 3,
-  useReportingApi: boolean = false
+  useReportingApi: boolean = false,
+  credentialType: FlexifyCredentialType = 'reporting'
 ): Promise<T> {
   const baseUrl = useReportingApi ? FLEXIFY_CONFIG.reportingBaseUrl : FLEXIFY_CONFIG.h2hBaseUrl;
   const url = `${baseUrl}${path}`;
   const host = new URL(baseUrl).host;
   const bodyString = body ? JSON.stringify(body) : undefined;
-  const headers = prepareHeaders(method, host, bodyString);
+  const headers = prepareHeaders(method, host, bodyString, credentialType);
 
   flexifyLog('STEP_REQUEST_START', {
     method,
@@ -533,7 +566,7 @@ export interface CreateSepaPayoutParams {
 export async function createSepaPayout(
   params: CreateSepaPayoutParams
 ): Promise<FlexifyPayoutResponse> {
-  validateConfig();
+  validateSepaConfig();
 
   const amountEur = (params.amountCents / 100).toFixed(2);
 
@@ -564,7 +597,7 @@ export async function createSepaPayout(
   });
   logPayoutTransaction('CREATE_SEPA_PAYOUT', params.reference, { amount: params.amountCents });
 
-  return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/payout', request);
+  return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/payout', request, 3, false, 'sepa');
 }
 
 // =============================================================================
@@ -614,7 +647,7 @@ interface FlexifyGatePayoutBody {
 export async function createCardPayout(
   params: CreateCardPayoutParams
 ): Promise<FlexifyPayoutResponse> {
-  validateConfig();
+  validateCardConfig();
 
   const amountEur = (params.amountCents / 100).toFixed(2);
 
@@ -646,7 +679,7 @@ export async function createCardPayout(
   });
   logPayoutTransaction('CREATE_CARD_PAYOUT', params.reference, { amount: params.amountCents });
 
-  return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/payout', request);
+  return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/payout', request, 3, false, 'card');
 }
 
 // =============================================================================
@@ -658,11 +691,12 @@ export async function createCardPayout(
  * Utilise Basic Auth selon la spec
  */
 export async function getTransactionStatus(transactionId: string): Promise<FlexifyPayoutResponse> {
-  validateConfig();
+  validateReportingConfig();
   flexifyLog('GET_TRANSACTION_STATUS_START', { transactionId });
 
-  const authHeader = Buffer.from(`${FLEXIFY_CONFIG.apiKey}:${FLEXIFY_CONFIG.apiSecret}`).toString('base64');
-  
+  const { apiKey, apiSecret } = getCredentials('reporting');
+  const authHeader = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64');
+
   const response = await fetch(
     `${FLEXIFY_CONFIG.reportingBaseUrl}/v1/report/transaction?transaction_id=${transactionId}&merchant_identifier=${FLEXIFY_CONFIG.merchantIdentifier}`,
     {
@@ -688,11 +722,12 @@ export async function getTransactionStatus(transactionId: string): Promise<Flexi
  * Récupère une transaction par référence
  */
 export async function getTransactionByReference(reference: string): Promise<FlexifyPayoutResponse> {
-  validateConfig();
+  validateReportingConfig();
   flexifyLog('GET_TRANSACTION_BY_REF_START', { reference });
 
-  const authHeader = Buffer.from(`${FLEXIFY_CONFIG.apiKey}:${FLEXIFY_CONFIG.apiSecret}`).toString('base64');
-  
+  const { apiKey, apiSecret } = getCredentials('reporting');
+  const authHeader = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64');
+
   const response = await fetch(
     `${FLEXIFY_CONFIG.reportingBaseUrl}/v1/report/transaction?reference=${reference}&merchant_identifier=${FLEXIFY_CONFIG.merchantIdentifier}`,
     {
@@ -740,7 +775,28 @@ export async function refundTransaction(
 // =============================================================================
 
 /**
- * Valide la signature d'un webhook Flexify selon la spec H2H
+ * Retourne le secret à utiliser pour vérifier la signature webhook selon le keyId reçu.
+ * Flexify envoie le keyId (public key) utilisé pour la transaction (SEPA ou Carte).
+ */
+function getWebhookSecretForKeyId(keyId: string): string | null {
+  const sepaKey = process.env.FLEXIFY_SEPA_PUBLIC_KEY ?? FLEXIFY_CONFIG.sepaApiKey;
+  const cardKey = process.env.FLEXIFY_CARD_PUBLIC_KEY ?? FLEXIFY_CONFIG.cardApiKey;
+  const genericKey = process.env.FLEXIFY_API_KEY ?? FLEXIFY_CONFIG.apiKey;
+  if (keyId && sepaKey && keyId === sepaKey) {
+    return process.env.FLEXIFY_SEPA_PRIVATE_KEY ?? FLEXIFY_CONFIG.sepaApiSecret;
+  }
+  if (keyId && cardKey && keyId === cardKey) {
+    return process.env.FLEXIFY_CARD_PRIVATE_KEY ?? FLEXIFY_CONFIG.cardApiSecret;
+  }
+  if (keyId && genericKey && keyId === genericKey) {
+    return process.env.FLEXIFY_API_SECRET ?? FLEXIFY_CONFIG.apiSecret;
+  }
+  return null;
+}
+
+/**
+ * Valide la signature d'un webhook Flexify selon la spec H2H.
+ * Accepte les keyId SEPA, Carte ou générique pour recalculer la signature avec la bonne clé.
  */
 export function validateWebhookSignature(
   rawBody: string,
@@ -751,23 +807,21 @@ export function validateWebhookSignature(
   contentLengthHeader: string
 ): boolean {
   try {
-    // Parser le header Authorization
-    // Format: Signature keyId="...", algorithm="HmacSHA256", headers="host digest content-length date", signature="..."
-    const signatureMatch = authorizationHeader.match(/signature="([^"]+)"/);
-    const keyIdMatch = authorizationHeader.match(/keyId="([^"]+)"/);
-    const headersMatch = authorizationHeader.match(/headers="([^"]+)"/);
-    
+    const signatureMatch = authorizationHeader.match(/signature="([^"]+)"/i);
+    const keyIdMatch = authorizationHeader.match(/keyId="([^"]+)"/i);
+    const headersMatch = authorizationHeader.match(/headers="([^"]+)"/i);
+
     if (!signatureMatch || !keyIdMatch || !headersMatch) {
       flexifyLog('WEBHOOK_SIGNATURE_PARSE_FAIL', { reason: 'Invalid Authorization header format' }, 'error');
       return false;
     }
 
     const receivedSignature = signatureMatch[1];
-    const keyId = keyIdMatch[1];
-    const headersList = headersMatch[1].split(' ');
+    const keyId = keyIdMatch[1].trim();
 
-    if (keyId !== FLEXIFY_CONFIG.apiKey) {
-      flexifyLog('WEBHOOK_SIGNATURE_KEYID_MISMATCH', {}, 'error');
+    const apiSecret = getWebhookSecretForKeyId(keyId);
+    if (!apiSecret) {
+      flexifyLog('WEBHOOK_SIGNATURE_KEYID_MISMATCH', { keyIdPrefix: keyId.slice(0, 8) }, 'error');
       return false;
     }
 
@@ -777,22 +831,22 @@ export function validateWebhookSignature(
       return false;
     }
 
-    // Reconstruire le payload de signature
     const signaturePayload = buildSignaturePayload(
       hostHeader,
       'POST',
       digestHeader,
-      parseInt(contentLengthHeader),
+      parseInt(contentLengthHeader, 10) || 0,
       dateHeader
     );
 
-    // Calculer la signature attendue
-    const expectedSignature = generateSignature(signaturePayload);
+    const expectedSignature = generateSignature(signaturePayload, apiSecret);
 
-    // Comparer de manière sécurisée
+    if (Buffer.byteLength(receivedSignature, 'utf8') !== Buffer.byteLength(expectedSignature, 'utf8')) {
+      return false;
+    }
     return crypto.timingSafeEqual(
-      Buffer.from(receivedSignature),
-      Buffer.from(expectedSignature)
+      Buffer.from(receivedSignature, 'utf8'),
+      Buffer.from(expectedSignature, 'utf8')
     );
   } catch (error) {
     flexifyLog('WEBHOOK_SIGNATURE_VALIDATION_ERROR', { error: String(error) }, 'error');
@@ -821,17 +875,57 @@ export function convertFlexifyStatus(status: FlexifyTransactionStatus): string {
 // =============================================================================
 
 /**
- * Valide la configuration Flexify
+ * Valide la config minimale pour les payouts (au moins une paire SEPA ou Carte + merchant)
  */
 export function validateConfig(): void {
-  if (!FLEXIFY_CONFIG.apiKey) {
-    throw new Error('FLEXIFY_API_KEY is not configured');
-  }
-  if (!FLEXIFY_CONFIG.apiSecret) {
-    throw new Error('FLEXIFY_API_SECRET is not configured');
-  }
   if (!FLEXIFY_CONFIG.merchantIdentifier) {
     throw new Error('FLEXIFY_MERCHANT_IDENTIFIER is not configured');
+  }
+  const hasSepa = !!(process.env.FLEXIFY_SEPA_PUBLIC_KEY && process.env.FLEXIFY_SEPA_PRIVATE_KEY);
+  const hasCard = !!(process.env.FLEXIFY_CARD_PUBLIC_KEY && process.env.FLEXIFY_CARD_PRIVATE_KEY);
+  const hasGeneric = !!(process.env.FLEXIFY_API_KEY && process.env.FLEXIFY_API_SECRET);
+  if (!hasSepa && !hasCard && !hasGeneric) {
+    throw new Error(
+      'Configure at least one of: (FLEXIFY_SEPA_PUBLIC_KEY + FLEXIFY_SEPA_PRIVATE_KEY), (FLEXIFY_CARD_PUBLIC_KEY + FLEXIFY_CARD_PRIVATE_KEY), or (FLEXIFY_API_KEY + FLEXIFY_API_SECRET)'
+    );
+  }
+}
+
+/**
+ * Valide la config pour le reporting (balance, statut transaction)
+ */
+function validateReportingConfig(): void {
+  if (!FLEXIFY_CONFIG.merchantIdentifier) {
+    throw new Error('FLEXIFY_MERCHANT_IDENTIFIER is not configured');
+  }
+  const { apiKey, apiSecret } = getCredentials('reporting');
+  if (!apiKey || !apiSecret) {
+    throw new Error(
+      'Reporting API requires FLEXIFY_API_KEY + FLEXIFY_API_SECRET, or FLEXIFY_SEPA_PUBLIC_KEY + FLEXIFY_SEPA_PRIVATE_KEY'
+    );
+  }
+}
+
+
+/**
+ * Valide que les clés SEPA sont présentes (pour createSepaPayout)
+ */
+export function validateSepaConfig(): void {
+  validateConfig();
+  const { apiKey, apiSecret } = getCredentials('sepa');
+  if (!apiKey || !apiSecret) {
+    throw new Error('FLEXIFY_SEPA_PUBLIC_KEY and FLEXIFY_SEPA_PRIVATE_KEY are required for SEPA payouts');
+  }
+}
+
+/**
+ * Valide que les clés Carte sont présentes (pour createCardPayout)
+ */
+export function validateCardConfig(): void {
+  validateConfig();
+  const { apiKey, apiSecret } = getCredentials('card');
+  if (!apiKey || !apiSecret) {
+    throw new Error('FLEXIFY_CARD_PUBLIC_KEY and FLEXIFY_CARD_PRIVATE_KEY are required for card payouts');
   }
 }
 
