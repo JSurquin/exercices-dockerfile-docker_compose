@@ -1,4 +1,5 @@
 import { prisma } from '~/prisma/prisma';
+import type { Prisma } from '@prisma/client';
 
 const PAYOUT_AUTO_APPROVE_KEY = 'payout_auto_approve';
 
@@ -42,15 +43,16 @@ export async function setPayoutAutoApproveSettings(
     enabled: settings.enabled ?? current.enabled,
     thresholdCents: settings.thresholdCents ?? current.thresholdCents,
   };
+  const valueJson = next as unknown as Prisma.InputJsonValue;
   await prisma.siteSettings.upsert({
     where: { key: PAYOUT_AUTO_APPROVE_KEY },
     create: {
       key: PAYOUT_AUTO_APPROVE_KEY,
-      valueJson: next,
+      valueJson,
       updatedBy: updatedBy ?? null,
     },
     update: {
-      valueJson: next,
+      valueJson,
       updatedBy: updatedBy ?? null,
     },
   });

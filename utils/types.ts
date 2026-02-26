@@ -3496,6 +3496,14 @@ export interface Messages {
         executed: string;
         paid: string;
         failed: string;
+        pending?: string;
+        pendingApproval?: string;
+        approve?: string;
+        approveSuccess?: string;
+        autoApproveLabel?: string;
+        autoApproveThresholdLabel?: string;
+        save?: string;
+        autoApproveSaved?: string;
       };
     };
   };

@@ -68,7 +68,7 @@ export interface CryptoDetails {
 export interface Payout {
   id: string;
   userId: string;
-  status: 'en_attente' | 'vérification_requise' | 'vérifié' | 'planifié' | 'exécuté' | 'payé' | 'échoué' | 'annulé';
+  status: 'en_attente' | 'en_attente_approbation' | 'vérification_requise' | 'vérifié' | 'planifié' | 'exécuté' | 'payé' | 'échoué' | 'annulé';
   montantCentimes: number;
   methodePaiement: PaymentMethod;
   referencePaiement?: string;

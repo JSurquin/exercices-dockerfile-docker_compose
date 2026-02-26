@@ -7,6 +7,7 @@ import {
   convertWhitepayStatus,
   type WhitepayInstantWithdrawalRequest,
   type WhitepayTravelRule,
+  type WhitepayTransactionStatus,
 } from '@/lib/whitepay';
 import crypto from 'crypto';
 
@@ -110,7 +111,7 @@ export async function POST(
       );
     }
 
-    const internalStatus = convertWhitepayStatus(tx.status);
+    const internalStatus = convertWhitepayStatus(tx.status as WhitepayTransactionStatus);
 
     await prisma.payout.update({
       where: { id: payoutId },
