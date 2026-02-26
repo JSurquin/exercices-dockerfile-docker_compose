@@ -4109,6 +4109,7 @@ export interface Messages {
         executed: string;
         paid: string;
         failed: string;
+        cancelled: string;
       };
     };
     toast: {

@@ -23,7 +23,7 @@ import {
   Check,
   Settings2
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Payout, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
 
@@ -32,7 +32,6 @@ const APPROVABLE_STATUS = 'en_attente_approbation';
 
 export function AdminPayoutsTable() {
   const { messages } = useLocale();
-  const { toast } = useToast();
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,7 +93,7 @@ export function AdminPayoutsTable() {
     try {
       const thresholdCents = Math.round(parseFloat(autoApproveThresholdEur.replace(',', '.')) * 100);
       if (Number.isNaN(thresholdCents) || thresholdCents < 0) {
-        toast({ title: 'Seuil invalide', variant: 'destructive' });
+        toast.error('Seuil invalide');
         return;
       }
       const res = await fetch('/api/admin/settings/payout-auto-approve', {
@@ -103,12 +102,10 @@ export function AdminPayoutsTable() {
         body: JSON.stringify({ enabled: autoApproveEnabled, thresholdCents }),
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Erreur');
-      toast({ title: messages.components.admin.payouts?.autoApproveSaved ?? 'Paramètres enregistrés' });
+      toast.success(messages.components.admin.payouts?.autoApproveSaved ?? 'Paramètres enregistrés');
     } catch (e) {
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: e instanceof Error ? e.message : 'Impossible d\'enregistrer',
-        variant: 'destructive',
       });
     } finally {
       setAutoApproveSaving(false);
@@ -121,13 +118,11 @@ export function AdminPayoutsTable() {
       const res = await fetch(`/api/admin/payouts/${payoutId}/approve`, { method: 'POST' });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Erreur');
-      toast({ title: messages.components.admin.payouts?.approveSuccess ?? 'Payout approuvé' });
+      toast.success(messages.components.admin.payouts?.approveSuccess ?? 'Payout approuvé');
       fetchPayouts();
     } catch (e) {
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: e instanceof Error ? e.message : 'Impossible d\'approuver',
-        variant: 'destructive',
       });
     } finally {
       setApprovingId(null);
@@ -209,13 +204,11 @@ export function AdminPayoutsTable() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Erreur');
-      toast({ title: 'Payout annulé' });
+      toast.success('Payout annulé');
       fetchPayouts();
     } catch (e) {
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: e instanceof Error ? e.message : 'Impossible d\'annuler le payout',
-        variant: 'destructive',
       });
     } finally {
       setCancellingId(null);

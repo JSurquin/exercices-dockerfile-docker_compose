@@ -3060,7 +3060,8 @@ export const messages: Record<Locale, Messages> = {
           scheduled: 'Planifié',
           executed: 'Exécuté',
           paid: 'Payé',
-          failed: 'Échoué'
+          failed: 'Échoué',
+          cancelled: 'Refusé / Annulé'
         }
       },
       toast: {
@@ -6120,7 +6121,8 @@ export const messages: Record<Locale, Messages> = {
           scheduled: 'Scheduled',
           executed: 'Executed',
           paid: 'Paid',
-          failed: 'Failed'
+          failed: 'Failed',
+          cancelled: 'Declined / Cancelled'
         }
       },
       toast: {
@@ -9864,7 +9866,8 @@ export const messages: Record<Locale, Messages> = {
           scheduled: '已计划',
           executed: '已执行',
           paid: '已支付',
-          failed: '失败'
+          failed: '失败',
+          cancelled: '已拒绝/已取消'
         }
       },
       toast: {

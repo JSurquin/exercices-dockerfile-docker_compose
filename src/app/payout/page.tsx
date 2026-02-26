@@ -220,6 +220,15 @@ export default function PayoutPage() {
     }
   }, [user, fetchBalance, fetchPayoutHistory, fetchPaymentMethods]);
 
+  // Rafraîchir l'historique quand l'utilisateur revient sur l'onglet (ex. après qu'un admin ait refusé un payout)
+  useEffect(() => {
+    const onFocus = () => {
+      if (user) fetchPayoutHistory();
+    };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [user, fetchPayoutHistory]);
+
   // Pré-sélectionner les moyens enregistrés au premier chargement
   const hasSetSepaDefault = useRef(false);
   const hasSetCardDefault = useRef(false);
@@ -559,16 +568,23 @@ export default function PayoutPage() {
   }
 
   const getStatusBadge = (status: string) => {
-    switch (status.toLowerCase()) {
+    const s = status.toLowerCase();
+    switch (s) {
+      case 'paid':
       case 'completed':
       case 'flexify_paid':
+      case 'whitepay_complete':
         return <Badge className="bg-green-500">{text.history.status.paid}</Badge>;
       case 'processing':
       case 'flexify_processing':
-        return <Badge className="bg-blue-500">{text.history.status.paid}</Badge>;
+      case 'whitepay_processing_withdrawal':
+        return <Badge className="bg-blue-500">{text.history.status.pending}</Badge>;
       case 'failed':
       case 'flexify_failed':
+      case 'whitepay_declined':
         return <Badge className="bg-red-500">{text.history.status.failed}</Badge>;
+      case 'cancelled':
+        return <Badge className="bg-slate-500">{text.history.status.cancelled}</Badge>;
       default:
         return <Badge className="bg-yellow-500">{text.history.status.pending}</Badge>;
     }
@@ -1025,7 +1041,21 @@ export default function PayoutPage() {
           >
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">{text.history.title}</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">{text.history.title}</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      fetchPayoutHistory();
+                      fetchBalance();
+                    }}
+                    title={locale === 'fr' ? 'Actualiser' : 'Refresh'}
+                    className="h-8 w-8"
+                  >
+                    <ArrowPathIcon className="h-4 w-4" />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {payoutHistory.length === 0 ? (
