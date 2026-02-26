@@ -538,6 +538,7 @@ enum TradeStatus {
 
 enum PayoutStatus {
   PENDING
+  PENDING_APPROVAL
   VERIFICATION_REQUIRED
   VERIFIED
   SCHEDULED

@@ -32,11 +32,12 @@ export function mapTradeStatusToDb(displayStatus: string): string {
 }
 
 // Mapping pour les statuts de Payout
-type PayoutStatus = "en_attente" | "vérification_requise" | "vérifié" | "planifié" | "exécuté" | "payé" | "échoué" | "annulé";
+type PayoutStatus = "en_attente" | "en_attente_approbation" | "vérification_requise" | "vérifié" | "planifié" | "exécuté" | "payé" | "échoué" | "annulé";
 
 export function mapPayoutStatusFromDb(prismaStatus: string): PayoutStatus {
   const mapping: Record<string, PayoutStatus> = {
     'PENDING': 'en_attente',
+    'PENDING_APPROVAL': 'en_attente_approbation',
     'VERIFICATION_REQUIRED': 'vérification_requise',
     'VERIFIED': 'vérifié',
     'SCHEDULED': 'planifié',
@@ -48,6 +49,11 @@ export function mapPayoutStatusFromDb(prismaStatus: string): PayoutStatus {
     'FLEXIFY_PROCESSING': 'exécuté',
     'FLEXIFY_PAID': 'payé',
     'FLEXIFY_FAILED': 'échoué',
+    'WHITEPAY_WAITING_CONFIRMATION': 'en_attente',
+    'WHITEPAY_PENDING_WITHDRAWAL': 'en_attente',
+    'WHITEPAY_PROCESSING_WITHDRAWAL': 'exécuté',
+    'WHITEPAY_COMPLETE': 'payé',
+    'WHITEPAY_DECLINED': 'échoué',
   };
   return mapping[prismaStatus] || ('en_attente' as PayoutStatus);
 }
@@ -55,6 +61,7 @@ export function mapPayoutStatusFromDb(prismaStatus: string): PayoutStatus {
 export function mapPayoutStatusToDb(displayStatus: string): string {
   const mapping: Record<string, string> = {
     'en_attente': 'PENDING',
+    'en_attente_approbation': 'PENDING_APPROVAL',
     'vérification_requise': 'VERIFICATION_REQUIRED',
     'vérifié': 'VERIFIED',
     'planifié': 'SCHEDULED',
@@ -119,5 +126,6 @@ export function mapPaymentMethodTypeFromDb(prismaType: string): PaymentMethodTyp
     'FLEXIFY_SEPA': 'sepa',
     'FLEXIFY_CARD': 'sepa',
   };
+  if (prismaType === 'WHITEPAY_CRYPTO') return 'crypto' as PaymentMethodType;
   return mapping[prismaType] || ('sepa' as PaymentMethodType);
 }

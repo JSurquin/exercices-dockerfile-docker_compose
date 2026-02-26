@@ -7,6 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "db:seed": "tsx prisma/seed.ts",
+    "db:repair-migration-name": "prisma db execute --file prisma/migrations/REPAIR_flexify_kycaid_rename.sql --schema prisma/schema.prisma",
     "lint": "eslint",
     "check": "eslint ; npx tsc --noEmit",
     "test": "jest"

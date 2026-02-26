@@ -451,7 +451,7 @@ export default function PayoutPage() {
               }),
         };
       } else {
-        apiUrl = '/api/whitepay/withdrawal';
+        apiUrl = '/api/whitepay/payout-request';
         payload = {
           quoteId: quote.quoteId,
           method: 'crypto',
@@ -491,7 +491,10 @@ export default function PayoutPage() {
       if (process.env.NODE_ENV === 'development') {
         console.log('[PAYOUT] handleSubmit success', data);
       }
-      toast.success(text.toast.payoutCreated);
+      const successMessage = data?.pendingApproval && data?.message
+        ? data.message
+        : text.toast.payoutCreated;
+      toast.success(successMessage);
       setQuote(null);
       setAmount('');
       fetchBalance();

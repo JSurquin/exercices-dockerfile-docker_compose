@@ -146,6 +146,7 @@ export async function cancelPayout(
   if (!payout) throw new Error('Payout not found');
   const cancellable = [
     'PENDING',
+    'PENDING_APPROVAL',
     'VERIFICATION_REQUIRED',
     'VERIFIED',
     'SCHEDULED',

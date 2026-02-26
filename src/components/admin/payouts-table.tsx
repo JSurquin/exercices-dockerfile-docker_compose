@@ -19,13 +19,16 @@ import {
   RefreshCw,
   Euro,
   CreditCard,
-  Ban
+  Ban,
+  Check,
+  Settings2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Payout, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
 
-const CANCELLABLE_STATUSES = ['en_attente', 'vérification_requise', 'vérifié', 'planifié'];
+const CANCELLABLE_STATUSES = ['en_attente', 'en_attente_approbation', 'vérification_requise', 'vérifié', 'planifié'];
+const APPROVABLE_STATUS = 'en_attente_approbation';
 
 export function AdminPayoutsTable() {
   const { messages } = useLocale();
@@ -39,6 +42,10 @@ export function AdminPayoutsTable() {
     limit: 20,
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [autoApproveEnabled, setAutoApproveEnabled] = useState(false);
+  const [autoApproveThresholdEur, setAutoApproveThresholdEur] = useState('20');
+  const [autoApproveSaving, setAutoApproveSaving] = useState(false);
 
   const fetchPayouts = useCallback(async () => {
     try {
@@ -72,6 +79,61 @@ export function AdminPayoutsTable() {
     fetchPayouts();
   }, [fetchPayouts]);
 
+  useEffect(() => {
+    fetch('/api/admin/settings/payout-auto-approve')
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data && typeof data.enabled === 'boolean') setAutoApproveEnabled(data.enabled);
+        if (data && typeof data.thresholdCents === 'number') setAutoApproveThresholdEur(String(data.thresholdCents / 100));
+      })
+      .catch(() => {});
+  }, []);
+
+  const saveAutoApproveSettings = async () => {
+    setAutoApproveSaving(true);
+    try {
+      const thresholdCents = Math.round(parseFloat(autoApproveThresholdEur.replace(',', '.')) * 100);
+      if (Number.isNaN(thresholdCents) || thresholdCents < 0) {
+        toast({ title: 'Seuil invalide', variant: 'destructive' });
+        return;
+      }
+      const res = await fetch('/api/admin/settings/payout-auto-approve', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: autoApproveEnabled, thresholdCents }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Erreur');
+      toast({ title: messages.components.admin.payouts?.autoApproveSaved ?? 'Paramètres enregistrés' });
+    } catch (e) {
+      toast({
+        title: 'Erreur',
+        description: e instanceof Error ? e.message : 'Impossible d\'enregistrer',
+        variant: 'destructive',
+      });
+    } finally {
+      setAutoApproveSaving(false);
+    }
+  };
+
+  const handleApprovePayout = async (payoutId: string) => {
+    setApprovingId(payoutId);
+    try {
+      const res = await fetch(`/api/admin/payouts/${payoutId}/approve`, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Erreur');
+      toast({ title: messages.components.admin.payouts?.approveSuccess ?? 'Payout approuvé' });
+      fetchPayouts();
+    } catch (e) {
+      toast({
+        title: 'Erreur',
+        description: e instanceof Error ? e.message : 'Impossible d\'approuver',
+        variant: 'destructive',
+      });
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     setFilters(prev => ({ ...prev, page: 1 }));
@@ -87,13 +149,14 @@ export function AdminPayoutsTable() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      'en_attente': { variant: 'secondary' as const, icon: Clock, text: 'En attente' },
-      'vérification_requise': { variant: 'default' as const, icon: AlertTriangle, text: 'Vérification requise' },
-      'vérifié': { variant: 'default' as const, icon: CheckCircle, text: 'Vérifié' },
-      'planifié': { variant: 'default' as const, icon: Clock, text: 'Planifié' },
-      'exécuté': { variant: 'default' as const, icon: CheckCircle, text: 'Exécuté' },
-      'payé': { variant: 'default' as const, icon: CheckCircle, text: 'Payé' },
-      'échoué': { variant: 'destructive' as const, icon: XCircle, text: 'Échoué' },
+      'en_attente': { variant: 'secondary' as const, icon: Clock, text: messages.components.admin.payouts?.pending ?? 'En attente' },
+      'en_attente_approbation': { variant: 'default' as const, icon: AlertTriangle, text: messages.components.admin.payouts?.pendingApproval ?? 'En attente d\'approbation' },
+      'vérification_requise': { variant: 'default' as const, icon: AlertTriangle, text: messages.components.admin.payouts?.verificationRequired ?? 'Vérification requise' },
+      'vérifié': { variant: 'default' as const, icon: CheckCircle, text: messages.components.admin.payouts?.verified ?? 'Vérifié' },
+      'planifié': { variant: 'default' as const, icon: Clock, text: messages.components.admin.payouts?.scheduled ?? 'Planifié' },
+      'exécuté': { variant: 'default' as const, icon: CheckCircle, text: messages.components.admin.payouts?.executed ?? 'Exécuté' },
+      'payé': { variant: 'default' as const, icon: CheckCircle, text: messages.components.admin.payouts?.paid ?? 'Payé' },
+      'échoué': { variant: 'destructive' as const, icon: XCircle, text: messages.components.admin.payouts?.failed ?? 'Échoué' },
       'annulé': { variant: 'outline' as const, icon: Ban, text: 'Annulé' },
     };
 
@@ -203,6 +266,49 @@ export function AdminPayoutsTable() {
 
   return (
     <div className="space-y-4">
+      {/* Auto-payout settings */}
+      <Card className="bg-slate-800/30 border-slate-700">
+        <CardContent className="pt-6">
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="auto-approve-enabled"
+                checked={autoApproveEnabled}
+                onChange={(e) => setAutoApproveEnabled(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-600 bg-slate-700 text-orange-500"
+              />
+              <label htmlFor="auto-approve-enabled" className="text-sm text-slate-300">
+                {messages.components.admin.payouts?.autoApproveLabel ?? 'Activer le paiement automatique pour les montants sous le seuil'}
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Settings2 className="h-4 w-4 text-slate-400" />
+              <label htmlFor="auto-approve-threshold" className="text-sm text-slate-400">
+                {messages.components.admin.payouts?.autoApproveThresholdLabel ?? 'Seuil (€)'}
+              </label>
+              <Input
+                id="auto-approve-threshold"
+                type="number"
+                min={0}
+                step={1}
+                value={autoApproveThresholdEur}
+                onChange={(e) => setAutoApproveThresholdEur(e.target.value)}
+                className="w-24 bg-slate-700 border-slate-600 text-white"
+              />
+            </div>
+            <Button
+              size="sm"
+              onClick={saveAutoApproveSettings}
+              disabled={autoApproveSaving}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {autoApproveSaving ? '...' : (messages.components.admin.payouts?.save ?? 'Enregistrer')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
@@ -221,13 +327,14 @@ export function AdminPayoutsTable() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tous les statuts</SelectItem>
-            <SelectItem value="en_attente">En attente</SelectItem>
-            <SelectItem value="vérification_requise">{messages.components.admin.payouts.verificationRequired}</SelectItem>
-            <SelectItem value="vérifié">{messages.components.admin.payouts.verified}</SelectItem>
-            <SelectItem value="planifié">{messages.components.admin.payouts.scheduled}</SelectItem>
-            <SelectItem value="exécuté">{messages.components.admin.payouts.executed}</SelectItem>
-            <SelectItem value="payé">{messages.components.admin.payouts.paid}</SelectItem>
-            <SelectItem value="échoué">{messages.components.admin.payouts.failed}</SelectItem>
+            <SelectItem value="en_attente">{messages.components.admin.payouts?.pending ?? 'En attente'}</SelectItem>
+            <SelectItem value="en_attente_approbation">{messages.components.admin.payouts?.pendingApproval ?? 'En attente d\'approbation'}</SelectItem>
+            <SelectItem value="vérification_requise">{messages.components.admin.payouts?.verificationRequired ?? 'Vérification requise'}</SelectItem>
+            <SelectItem value="vérifié">{messages.components.admin.payouts?.verified ?? 'Vérifié'}</SelectItem>
+            <SelectItem value="planifié">{messages.components.admin.payouts?.scheduled ?? 'Planifié'}</SelectItem>
+            <SelectItem value="exécuté">{messages.components.admin.payouts?.executed ?? 'Exécuté'}</SelectItem>
+            <SelectItem value="payé">{messages.components.admin.payouts?.paid ?? 'Payé'}</SelectItem>
+            <SelectItem value="échoué">{messages.components.admin.payouts?.failed ?? 'Échoué'}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -297,6 +404,18 @@ export function AdminPayoutsTable() {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
+                    {payout.status === APPROVABLE_STATUS && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-green-600 text-green-400 hover:bg-green-900/30"
+                        onClick={() => handleApprovePayout(payout.id)}
+                        disabled={approvingId === payout.id}
+                        title={messages.components.admin.payouts?.approve ?? 'Approuver'}
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    )}
                     {CANCELLABLE_STATUSES.includes(payout.status) && (
                       <Button
                         size="sm"
