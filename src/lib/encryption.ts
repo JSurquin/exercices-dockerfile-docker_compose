@@ -11,16 +11,27 @@ const AUTH_TAG_LENGTH = 16;
 const KEY_LENGTH = 32;
 
 function getKey(): Buffer {
-  const raw = process.env.ENCRYPTION_KEY;
-  if (!raw || raw.length < 32) {
-    throw new Error(
-      'ENCRYPTION_KEY manquant ou invalide. Utilisez une clé 32 bytes (64 caractères hex) ou 44 caractères base64.'
-    );
+  const raw = process.env.ENCRYPTION_KEY?.trim();
+  console.log('getKey raw:', raw, 'length:', raw?.length);
+  if (!raw) {
+    throw new Error('ENCRYPTION_KEY absente');
   }
-  if (raw.length === 64 && /^[0-9a-fA-F]+$/.test(raw)) {
-    return Buffer.from(raw, 'hex');
+
+  let key: Buffer;
+
+  // Hex strict: 64 caractères hex = 32 bytes
+  if (raw.length === 64 && /^[0-9a-fA-F]{64}$/.test(raw)) {
+    key = Buffer.from(raw, 'hex');
+  } else {
+    // Base64 fallback
+    key = Buffer.from(raw, 'base64');
   }
-  return Buffer.from(raw, 'base64');
+
+  if (key.length !== KEY_LENGTH) {
+    throw new Error(`ENCRYPTION_KEY invalide: ${key.length} bytes (attendu ${KEY_LENGTH})`);
+  }
+
+  return key;
 }
 
 /**
@@ -36,6 +47,7 @@ export function encrypt(plaintext: string): string {
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH });
   const enc = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
   const authTag = cipher.getAuthTag();
+  console.log('encrypt iv length:', iv.length, 'authTag length:', authTag.length, 'ciphertext length:', enc.length);
   return Buffer.concat([iv, authTag, enc]).toString('base64');
 }
 
@@ -51,6 +63,7 @@ export function decrypt(ciphertextBase64: string): string {
   const iv = buf.subarray(0, IV_LENGTH);
   const authTag = buf.subarray(IV_LENGTH, IV_LENGTH + AUTH_TAG_LENGTH);
   const enc = buf.subarray(IV_LENGTH + AUTH_TAG_LENGTH);
+  console.log('decrypt iv length:', iv.length, 'authTag length:', authTag.length, 'ciphertext length:', enc.length);
   const decipher = crypto.createDecipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH });
   decipher.setAuthTag(authTag);
   return decipher.update(enc) + decipher.final('utf8');
