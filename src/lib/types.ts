@@ -75,6 +75,8 @@ export interface Payout {
   txId?: string;
   créédLe: Date;
   payéLe?: Date;
+  /** Présent pour les payouts Flexify (carte/SEPA), permet le bouton Resync statut */
+  flexifyPayoutId?: string | null;
 }
 
 export interface KYCDocument {

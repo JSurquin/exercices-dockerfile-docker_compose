@@ -182,6 +182,8 @@ model Payout {
   processingFeeCents   Int?                  // Frais de traitement
   networkFeeCents      Int?                  // Frais réseau
   errorMessage         String?               // Message d'erreur si échec
+  // Payload chiffré pour exécution différée (Flexify carte/SEPA en PENDING_APPROVAL)
+  pendingFlexifyRequestEncrypted String?     // Données pour createCardPayout/createSepaPayout à l'approbation admin
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   paidAt               DateTime?

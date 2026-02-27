@@ -51,16 +51,26 @@ export async function POST(request: NextRequest) {
       method: payload.method,
     });
 
-    const payout = await prisma.payout.findFirst({
+    // Trouver le payout par notre référence (gateFiOrderId) ou par l'ID transaction Flexify
+    let payout = await prisma.payout.findFirst({
       where: { gateFiOrderId: payload.reference },
       include: {
         user: { select: { id: true, email: true } },
         trade: true,
       },
     });
+    if (!payout && payload.transaction_id) {
+      payout = await prisma.payout.findFirst({
+        where: { flexifyPayoutId: payload.transaction_id },
+        include: {
+          user: { select: { id: true, email: true } },
+          trade: true,
+        },
+      });
+    }
 
     if (!payout) {
-      flexifyLog('WEBHOOK_PAYOUT_NOT_FOUND', { reference: payload.reference }, 'warn');
+      flexifyLog('WEBHOOK_PAYOUT_NOT_FOUND', { reference: payload.reference, transaction_id: payload.transaction_id }, 'warn');
       return NextResponse.json({ received: true });
     }
     flexifyLog('WEBHOOK_PAYOUT_FOUND', { payoutId: payout.id, reference: payload.reference });

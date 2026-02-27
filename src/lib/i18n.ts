@@ -3055,6 +3055,7 @@ export const messages: Record<Locale, Messages> = {
         },
         status: {
           pending: 'En attente',
+          pendingApproval: 'En attente d\'approbation',
           verificationRequired: 'Vérification requise',
           verified: 'Vérifié',
           scheduled: 'Planifié',
@@ -3624,6 +3625,8 @@ export const messages: Record<Locale, Messages> = {
           autoApproveThresholdLabel: "Seuil (€)",
           save: "Enregistrer",
           autoApproveSaved: "Paramètres enregistrés",
+          resyncFlexify: "Resync statut Flexify",
+          resyncSuccess: "Statut resynchronisé avec Flexify",
         },
       },
     },
@@ -6116,6 +6119,7 @@ export const messages: Record<Locale, Messages> = {
         },
         status: {
           pending: 'Pending',
+          pendingApproval: 'Pending approval',
           verificationRequired: 'Verification required',
           verified: 'Verified',
           scheduled: 'Scheduled',
@@ -7734,6 +7738,8 @@ export const messages: Record<Locale, Messages> = {
           autoApproveThresholdLabel: "Threshold (€)",
           save: "Save",
           autoApproveSaved: "Settings saved",
+          resyncFlexify: "Resync Flexify status",
+          resyncSuccess: "Status resynced with Flexify",
         },
       },
     },
@@ -9861,6 +9867,7 @@ export const messages: Record<Locale, Messages> = {
         },
         status: {
           pending: '待处理',
+          pendingApproval: '待审批',
           verificationRequired: '需要验证',
           verified: '已验证',
           scheduled: '已计划',

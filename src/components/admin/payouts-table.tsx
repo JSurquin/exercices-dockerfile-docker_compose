@@ -17,6 +17,7 @@ import {
   Clock,
   XCircle,
   RefreshCw,
+  RotateCw,
   Euro,
   CreditCard,
   Ban,
@@ -42,6 +43,7 @@ export function AdminPayoutsTable() {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [resyncingId, setResyncingId] = useState<string | null>(null);
   const [autoApproveEnabled, setAutoApproveEnabled] = useState(false);
   const [autoApproveThresholdEur, setAutoApproveThresholdEur] = useState('20');
   const [autoApproveSaving, setAutoApproveSaving] = useState(false);
@@ -192,6 +194,26 @@ export function AdminPayoutsTable() {
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(date));
+  };
+
+  const handleResyncFlexify = async (payoutId: string) => {
+    setResyncingId(payoutId);
+    try {
+      const res = await fetch(`/api/admin/payouts/${payoutId}/resync-flexify`, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Erreur');
+      toast.success(
+        messages.components.admin.payouts?.resyncSuccess ?? 'Statut resynchronisé avec Flexify',
+        { description: `${data.previousStatus} → ${data.newStatus}` }
+      );
+      fetchPayouts();
+    } catch (e) {
+      toast.error('Erreur', {
+        description: e instanceof Error ? e.message : 'Impossible de resynchroniser le statut Flexify',
+      });
+    } finally {
+      setResyncingId(null);
+    }
   };
 
   const handleCancelPayout = async (payoutId: string) => {
@@ -418,6 +440,18 @@ export function AdminPayoutsTable() {
                         disabled={cancellingId === payout.id}
                       >
                         <Ban className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {payout.flexifyPayoutId && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-amber-600 text-amber-400 hover:bg-amber-900/30"
+                        onClick={() => handleResyncFlexify(payout.id)}
+                        disabled={resyncingId === payout.id}
+                        title={messages.components.admin.payouts?.resyncFlexify ?? 'Resync statut Flexify'}
+                      >
+                        <RotateCw className={`h-4 w-4 ${resyncingId === payout.id ? 'animate-spin' : ''}`} />
                       </Button>
                     )}
                     <Button

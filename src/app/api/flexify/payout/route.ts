@@ -11,6 +11,8 @@ import {
   validateIban,
   validateBic,
   centsToEur,
+  convertFlexifyStatus,
+  isTransactionCompleted,
   FlexifyApiError,
   flexifyLog,
 } from '@/lib/flexify';
@@ -23,6 +25,8 @@ import {
   migrateToEncryptedDetails,
   type SepaDetailsStored,
 } from '@/lib/payment-method-sepa';
+import { getPayoutAutoApproveSettings } from '@/lib/payout-settings';
+import { encrypt } from '@/lib/encryption';
 
 const generateReference = () => `MOON-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
@@ -172,6 +176,81 @@ export async function POST(request: NextRequest) {
       }
 
       const fees = calculateCardFees(amountCents);
+      const autoSettings = await getPayoutAutoApproveSettings();
+      const shouldAutoApprove = autoSettings.enabled && amountCents <= autoSettings.thresholdCents;
+
+      if (!shouldAutoApprove) {
+        // Au-dessus du seuil : créer le payout en PENDING_APPROVAL (exécution à l'approbation admin)
+        const cardPayload = {
+          method: 'card' as const,
+          reference,
+          amountCents,
+          customer: {
+            identifier: userId,
+            email: user.email,
+            country: (beneficiaryCountry && typeof beneficiaryCountry === 'string') ? beneficiaryCountry : 'FR',
+            ip: clientIp,
+          },
+          card: {
+            number: cardNum,
+            holderName: cardHolder.trim(),
+            expireMonth: expMonth,
+            expireYear: expYearFull,
+            cvv: cvv.toString(),
+          },
+        };
+        const encryptedPayload = encrypt(JSON.stringify(cardPayload));
+        const cardPaymentMethod = await prisma.paymentMethod.create({
+          data: {
+            userId,
+            type: 'FLEXIFY_CARD',
+            details: { last4: cardNum.slice(-4), holderName: cardHolder.trim() },
+            isVerified: true,
+          },
+        });
+        const payout = await prisma.payout.create({
+          data: {
+            userId,
+            tradeId: tradeId || null,
+            status: 'PENDING_APPROVAL',
+            amountCents,
+            paymentMethodId: cardPaymentMethod.id,
+            gateFiOrderId: reference,
+            processingFeeCents: fees.processingFeeCents,
+            networkFeeCents: fees.networkFeeCents,
+            pendingFlexifyRequestEncrypted: encryptedPayload,
+          },
+        });
+        await prisma.auditLog.create({
+          data: {
+            userId,
+            action: 'FLEXIFY_PAYOUT_PENDING_APPROVAL',
+            details: { payoutId: payout.id, reference, method: 'CARD', amountCents, reason: 'above_threshold' },
+          },
+        });
+        LOG('DB_PAYOUT_CREATED_CARD_PENDING', { payoutId: payout.id });
+        return NextResponse.json({
+          success: true,
+          autoApproved: false,
+          pendingApproval: true,
+          message: 'Demande enregistrée. Elle sera traitée sous 24 h.',
+          payout: {
+            id: payout.id,
+            reference,
+            status: 'PENDING_APPROVAL',
+            amountCents,
+            fees: {
+              processingCents: fees.processingFeeCents,
+              networkCents: fees.networkFeeCents,
+              totalCents: fees.totalFeeCents,
+            },
+            netCents: amountCents - fees.totalFeeCents,
+            method: 'CARD',
+            message: 'Demande enregistrée. Elle sera traitée sous 24 h.',
+          },
+        });
+      }
+
       LOG('CALL_CREATE_CARD_PAYOUT', { reference, amountCents });
       const flexifyResponse = await createCardPayout({
         reference,
@@ -206,17 +285,20 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      const txStatus = flexifyResponse.transaction!.status;
+      const internalStatus = convertFlexifyStatus(txStatus) as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
       const payout = await prisma.payout.create({
         data: {
           userId,
           tradeId: tradeId || null,
-          status: 'PENDING',
+          status: internalStatus,
           amountCents,
           paymentMethodId: cardPaymentMethod.id,
           gateFiOrderId: reference,
           flexifyPayoutId: flexifyResponse.transaction!.id,
           processingFeeCents: fees.processingFeeCents,
           networkFeeCents: fees.networkFeeCents,
+          ...(isTransactionCompleted(txStatus) && { paidAt: new Date() }),
         },
       });
 
@@ -236,13 +318,13 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      LOG('DB_PAYOUT_CREATED_CARD', { payoutId: payout.id });
+      LOG('DB_PAYOUT_CREATED_CARD', { payoutId: payout.id, internalStatus });
       return NextResponse.json({
         success: true,
         payout: {
           id: payout.id,
           reference,
-          status: payout.status,
+          status: internalStatus,
           amountCents,
           fees: {
             processingCents: fees.processingFeeCents,
@@ -345,6 +427,94 @@ export async function POST(request: NextRequest) {
       beneficiaryCity: beneficiaryCityVal,
       hasBeneficiaryEmail: !!beneficiaryEmailVal,
     });
+
+    const autoSettingsSepa = await getPayoutAutoApproveSettings();
+    const shouldAutoApproveSepa = autoSettingsSepa.enabled && amountCents <= autoSettingsSepa.thresholdCents;
+
+    if (!shouldAutoApproveSepa) {
+      // Au-dessus du seuil : créer le payout en PENDING_APPROVAL
+      const sepaPayload = {
+        method: 'sepa' as const,
+        reference,
+        amountCents,
+        description: typeof description === 'string' ? description : undefined,
+        customer: {
+          identifier: userId,
+          email: user.email,
+          phone: phoneVal,
+          first_name: beneficiaryFirst,
+          last_name: beneficiaryLast,
+          address: customerAddress,
+          country: beneficiaryCountryVal,
+          ip: clientIp,
+        },
+        sepa: {
+          iban: ibanToUse,
+          bic: bicToUse || undefined,
+          beneficiary_first_name: beneficiaryFirst,
+          beneficiary_last_name: beneficiaryLast,
+          beneficiary_country: beneficiaryCountryVal,
+          beneficiary_city: beneficiaryCityVal,
+          beneficiary_address: beneficiaryAddr,
+          beneficiary_email: beneficiaryEmailVal,
+        },
+      };
+      const encryptedPayloadSepa = encrypt(JSON.stringify(sepaPayload));
+      if (!paymentMethod) {
+        const encryptedDetails = buildEncryptedSepaDetails(ibanToUse, bicToUse);
+        paymentMethod = await prisma.paymentMethod.findFirst({
+          where: { userId, type: 'SEPA', details: { path: ['type'], equals: 'SEPA' } },
+        });
+        if (!paymentMethod) {
+          paymentMethod = await prisma.paymentMethod.create({
+            data: { userId, type: 'SEPA', details: encryptedDetails as object, isVerified: true },
+          });
+        } else {
+          await prisma.paymentMethod.update({
+            where: { id: paymentMethod.id },
+            data: { details: encryptedDetails as object },
+          });
+        }
+      }
+      const payoutPending = await prisma.payout.create({
+        data: {
+          userId,
+          tradeId: tradeId || null,
+          status: 'PENDING_APPROVAL',
+          amountCents,
+          paymentMethodId: paymentMethod.id,
+          gateFiOrderId: reference,
+          processingFeeCents: fees.processingFeeCents,
+          networkFeeCents: fees.networkFeeCents,
+          pendingFlexifyRequestEncrypted: encryptedPayloadSepa,
+        },
+      });
+      await prisma.auditLog.create({
+        data: {
+          userId,
+          action: 'FLEXIFY_PAYOUT_PENDING_APPROVAL',
+          details: { payoutId: payoutPending.id, reference, method: 'SEPA', amountCents, reason: 'above_threshold' },
+        },
+      });
+      LOG('DB_PAYOUT_CREATED_SEPA_PENDING', { payoutId: payoutPending.id });
+      return NextResponse.json({
+        success: true,
+        autoApproved: false,
+        pendingApproval: true,
+        message: 'Demande enregistrée. Elle sera traitée sous 24 h.',
+        payout: {
+          id: payoutPending.id,
+          reference,
+          status: 'PENDING_APPROVAL',
+          amountCents,
+          fees,
+          netCents: amountCents - fees.totalFeeCents,
+          method: 'SEPA',
+          message: 'Demande enregistrée. Elle sera traitée sous 24 h.',
+        },
+      });
+    }
+
     LOG('CALL_CREATE_SEPA_PAYOUT', { reference, amountCents });
     const flexifyResponse = await createSepaPayout({
       reference,
@@ -406,18 +576,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Créer le payout en base
+    const txStatusSepa = flexifyResponse.transaction.status;
+    const internalStatusSepa = convertFlexifyStatus(txStatusSepa) as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
+    // Créer le payout en base avec le statut renvoyé par Flexify (success → Payé dès la création)
     const payout = await prisma.payout.create({
       data: {
         userId,
         tradeId: tradeId || null,
-        status: 'PENDING',
+        status: internalStatusSepa,
         amountCents,
         paymentMethodId: paymentMethod.id,
         gateFiOrderId: reference, // Notre référence unique
         flexifyPayoutId: flexifyResponse.transaction.id, // ID Flexify de la transaction
         processingFeeCents: fees.processingFeeCents,
         networkFeeCents: fees.networkFeeCents,
+        ...(isTransactionCompleted(txStatusSepa) && { paidAt: new Date() }),
       },
     });
 
@@ -438,13 +611,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    LOG('DB_PAYOUT_CREATED_SEPA', { payoutId: payout.id });
+    LOG('DB_PAYOUT_CREATED_SEPA', { payoutId: payout.id, internalStatus: internalStatusSepa });
     return NextResponse.json({
       success: true,
       payout: {
         id: payout.id,
         reference,
-        status: payout.status,
+        status: internalStatusSepa,
         amountCents,
         fees,
         netCents: amountCents - fees.totalFeeCents,

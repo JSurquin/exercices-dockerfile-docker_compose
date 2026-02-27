@@ -3504,6 +3504,8 @@ export interface Messages {
         autoApproveThresholdLabel?: string;
         save?: string;
         autoApproveSaved?: string;
+        resyncFlexify?: string;
+        resyncSuccess?: string;
       };
     };
   };
@@ -4103,6 +4105,7 @@ export interface Messages {
       };
       status: {
         pending: string;
+        pendingApproval: string;
         verificationRequired: string;
         verified: string;
         scheduled: string;

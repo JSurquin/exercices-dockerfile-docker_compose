@@ -93,6 +93,7 @@ export async function GET(request: NextRequest) {
         referencePaiement: payout.paymentReference || undefined,
         créédLe: payout.createdAt,
         payéLe: payout.paidAt || undefined,
+        flexifyPayoutId: payout.flexifyPayoutId ?? undefined,
       };
     });
 

@@ -9,6 +9,8 @@ import {
   type WhitepayTravelRule,
   type WhitepayTransactionStatus,
 } from '@/lib/whitepay';
+import { createCardPayout, createSepaPayout, convertFlexifyStatus } from '@/lib/flexify';
+import { decrypt } from '@/lib/encryption';
 import crypto from 'crypto';
 
 const generateOrderId = () => `WPA-${crypto.randomUUID()}`;
@@ -52,9 +54,128 @@ export async function POST(
       );
     }
 
-    if (payout.paymentMethod.type !== 'WHITEPAY_CRYPTO') {
+    const pmType = payout.paymentMethod.type;
+
+    // ————— Flexify (carte ou SEPA) : exécuter le payout avec le payload stocké —————
+    if (pmType === 'FLEXIFY_CARD' || pmType === 'SEPA') {
+      const encrypted = payout.pendingFlexifyRequestEncrypted;
+      if (!encrypted) {
+        return NextResponse.json(
+          { error: 'Données de payout Flexify manquantes (pendingFlexifyRequestEncrypted)' },
+          { status: 400 }
+        );
+      }
+      let payload: { method: 'card' | 'sepa'; reference: string; amountCents: number; customer: object; card?: object; sepa?: object; description?: string };
+      try {
+        payload = JSON.parse(decrypt(encrypted)) as typeof payload;
+      } catch (e) {
+        console.error('[admin/payouts/approve] Flexify payload decrypt failed', e);
+        return NextResponse.json(
+          { error: 'Impossible de décrypter les données du payout' },
+          { status: 400 }
+        );
+      }
+      try {
+        if (payload.method === 'card' && payload.card && payload.customer) {
+          const res = await createCardPayout({
+            reference: payload.reference,
+            amountCents: payload.amountCents,
+            customer: payload.customer as { identifier: string; email: string; country: string; ip: string },
+            card: payload.card as { number: string; holderName: string; expireMonth: string; expireYear: string; cvv: string },
+          });
+          if (res.code !== 0 || !res.transaction) {
+            throw new Error(res.error_message || 'Échec Flexify carte');
+          }
+          const internalStatus = convertFlexifyStatus(res.transaction.status);
+          await prisma.payout.update({
+            where: { id: payoutId },
+            data: {
+              status: internalStatus as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED',
+              flexifyPayoutId: res.transaction.id,
+              pendingFlexifyRequestEncrypted: null,
+            },
+          });
+          await prisma.auditLog.create({
+            data: {
+              userId: session.user.id,
+              action: 'ADMIN_PAYOUT_APPROVED',
+              details: {
+                payoutId,
+                targetUserId: payout.userId,
+                amountCents: payout.amountCents,
+                flexifyTransactionId: res.transaction.id,
+                method: 'FLEXIFY_CARD',
+              },
+              ipAddress: getClientIP(request),
+            },
+          });
+          return NextResponse.json({
+            success: true,
+            payoutId,
+            flexifyTransactionId: res.transaction.id,
+            status: internalStatus,
+          });
+        }
+        if (payload.method === 'sepa' && payload.sepa && payload.customer) {
+          const res = await createSepaPayout({
+            reference: payload.reference,
+            amountCents: payload.amountCents,
+            description: payload.description,
+            customer: payload.customer as { identifier: string; email: string; phone: string; first_name: string; last_name: string; address: string; country: string; ip: string },
+            sepa: payload.sepa as { iban: string; bic?: string; beneficiary_first_name: string; beneficiary_last_name: string; beneficiary_country: string; beneficiary_city: string; beneficiary_address: string; beneficiary_email: string },
+          });
+          if (res.code !== 0 || !res.transaction) {
+            throw new Error(res.error_message || 'Échec Flexify SEPA');
+          }
+          const internalStatus = convertFlexifyStatus(res.transaction.status);
+          await prisma.payout.update({
+            where: { id: payoutId },
+            data: {
+              status: internalStatus as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED',
+              flexifyPayoutId: res.transaction.id,
+              pendingFlexifyRequestEncrypted: null,
+            },
+          });
+          await prisma.auditLog.create({
+            data: {
+              userId: session.user.id,
+              action: 'ADMIN_PAYOUT_APPROVED',
+              details: {
+                payoutId,
+                targetUserId: payout.userId,
+                amountCents: payout.amountCents,
+                flexifyTransactionId: res.transaction.id,
+                method: 'SEPA',
+              },
+              ipAddress: getClientIP(request),
+            },
+          });
+          return NextResponse.json({
+            success: true,
+            payoutId,
+            flexifyTransactionId: res.transaction.id,
+            status: internalStatus,
+          });
+        }
+      } catch (err) {
+        console.error('[admin/payouts/approve] Flexify error:', err);
+        await prisma.payout.update({
+          where: { id: payoutId },
+          data: {
+            status: 'FAILED',
+            errorMessage: err instanceof Error ? err.message : 'Erreur Flexify',
+          },
+        });
+        return NextResponse.json(
+          { error: 'Échec de l\'appel Flexify. Payout marqué en échec.', details: err instanceof Error ? err.message : String(err) },
+          { status: 502 }
+        );
+      }
+    }
+
+    if (pmType !== 'WHITEPAY_CRYPTO') {
       return NextResponse.json(
-        { error: 'Seuls les payouts crypto (Whitepay) peuvent être approuvés ici' },
+        { error: 'Type de payout non géré pour approbation' },
         { status: 400 }
       );
     }
