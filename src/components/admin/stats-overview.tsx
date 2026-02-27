@@ -236,7 +236,7 @@ export function AdminStatsOverview() {
             {stats.recentTrades.length}
           </div>
           <p className="text-xs text-slate-400">
-            Dernières 24h
+            5 derniers trades
           </p>
         </CardContent>
       </Card>

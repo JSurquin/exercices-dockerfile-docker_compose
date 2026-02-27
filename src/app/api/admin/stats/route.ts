@@ -16,28 +16,53 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    // TODO: Vérifier que l'utilisateur est admin
-    // if (!session.user.isAdmin) {
-    //   return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
-    // }
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
+    }
 
-    // Statistiques globales
+    // Statistiques globales (toutes issues de la BDD)
     const [totalUsers, totalTrades, totalVolumeResult, totalPayoutsResult] = await Promise.all([
       prisma.user.count(),
       prisma.trade.count(),
       prisma.trade.aggregate({ _sum: { grossCents: true } }),
-      prisma.payout.aggregate({ _sum: { amountCents: true } }),
+      // Total payouts = uniquement les payouts effectivement payés (PAID, FLEXIFY_PAID, WHITEPAY_COMPLETE)
+      prisma.payout.aggregate({
+        _sum: { amountCents: true },
+        where: {
+          status: { in: ['PAID', 'FLEXIFY_PAID', 'WHITEPAY_COMPLETE'] },
+        },
+      }),
     ]);
 
-    // Stats actives
+    // Stats actives (en attente)
     const [activeTrades, pendingPayouts, kycPending] = await Promise.all([
-      prisma.trade.count({ 
-        where: { 
-          status: { in: ['CREATED', 'ACCEPTED_BY_BOT', 'IN_TRADE_HOLD', 'AVAILABLE'] } 
-        } 
+      prisma.trade.count({
+        where: {
+          status: { in: ['CREATED', 'ACCEPTED_BY_BOT', 'IN_TRADE_HOLD', 'AVAILABLE'] },
+        },
       }),
-      prisma.payout.count({ where: { status: 'PENDING' } }),
-      prisma.user.count({ where: { kycStatus: 'PENDING' } }),
+      // Payouts en attente : PENDING, PENDING_APPROVAL, et statuts Flexify/Whitepay en cours
+      prisma.payout.count({
+        where: {
+          status: {
+            in: [
+              'PENDING',
+              'PENDING_APPROVAL',
+              'FLEXIFY_PENDING',
+              'FLEXIFY_PROCESSING',
+              'WHITEPAY_WAITING_CONFIRMATION',
+              'WHITEPAY_PENDING_WITHDRAWAL',
+              'WHITEPAY_PROCESSING_WITHDRAWAL',
+            ],
+          },
+        },
+      }),
+      // KYC en attente : PENDING, KYCAID_PENDING, IN_PROGRESS
+      prisma.user.count({
+        where: {
+          kycStatus: { in: ['PENDING', 'KYCAID_PENDING', 'IN_PROGRESS'] },
+        },
+      }),
     ]);
 
     // Statistiques mensuelles (6 derniers mois)
@@ -128,29 +153,28 @@ export async function GET(request: NextRequest) {
 
     const monthlyStats = Array.from(monthlyStatsMap.values());
 
-    // Top users
+    // Top users (volume total réel en BDD)
     const topUsersData = await prisma.user.findMany({
       orderBy: { totalVolumeCents: 'desc' },
       take: 3,
       select: {
         id: true,
         name: true,
+        steamUsername: true,
         steamId: true,
         totalVolumeCents: true,
         level: true,
         xp: true,
-        _count: {
-          select: { trades: true },
-        },
+        _count: { select: { trades: true } },
       },
     });
 
     const topUsers = topUsersData.map(user => ({
       id: user.id,
-      username: user.name || 'Unknown',
+      username: (user.steamUsername || user.name || 'Inconnu').trim() || 'Inconnu',
       steamId64: user.steamId || '',
       totalVolumeCentimes: user.totalVolumeCents,
-      totalTrades: user._count.trades,
+      totalTrades: user._count?.trades ?? 0,
       level: user.level,
       xp: user.xp,
     }));
