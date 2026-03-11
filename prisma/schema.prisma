@@ -27,6 +27,7 @@ model User {
   tickets               Int                 @default(0)
   totalVolumeCents      Int                 @default(0)
   balanceCents          Int                 @default(0)
+  pendingBalanceCents   Int                 @default(0)
   frozenBalanceCents     Int                 @default(0)
   accountFrozen          Boolean             @default(false)
   kycStatus             KycStatus           @default(PENDING)
@@ -598,6 +599,8 @@ enum PayoutStatus {
 
 enum BalanceTransactionType {
   TRADE_CREDIT
+  TRADE_PENDING_CREDIT
+  TRADE_PENDING_RELEASE
   ADMIN_ADJUSTMENT
   WITHDRAWAL
   PAYOUT_REFUND

@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     const balance = await getBalance(session.user.id);
     return NextResponse.json({
       balanceCents: balance.balanceCents,
+      pendingBalanceCents: balance.pendingBalanceCents,
       frozenBalanceCents: balance.frozenBalanceCents,
       availableCents: balance.availableCents,
       accountFrozen: balance.accountFrozen,

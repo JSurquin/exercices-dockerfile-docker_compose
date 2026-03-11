@@ -21,7 +21,7 @@ import { TradeHooks } from '@/lib/trade-hooks';
 
 /**
  * Statuts du paiement (champ "status" de l'IPN) :
- *   complete  → trade accepté, fonds en hold
+ *   complete  → trade accepté, fonds EN HOLD chez Skinplace (~8 jours) — PAS de crédit balance
  *   active    → trade en cours / hold Steam actif
  *   cancelled → trade annulé
  *
@@ -29,9 +29,12 @@ import { TradeHooks } from '@/lib/trade-hooks';
  *   active / pending / cancelled / finished
  *
  * protection_status :
- *   unconfirmed → fonds toujours en hold (IPN #1 initial)
- *   confirmed   → fonds libérés (IPN #2 après 8 jours)
- *   rollback    → trade rollback (remboursement)
+ *   unconfirmed → fonds toujours en hold (IPN #1 initial) — PAS de crédit balance
+ *   confirmed   → fonds définitivement libérés (IPN #2 après ~8 jours) → CRÉDIT BALANCE ici
+ *   rollback    → trade rollback (remboursement) → trade FAILED, pas de crédit
+ *
+ * Sécurité anti-fraude : on ne crédite JAMAIS à l'IPN #1.
+ * Un utilisateur malveillant pourrait sinon : accepter → payout → rollback Steam.
  */
 
 function mapSkinplaceStatusToTradeStatus(status: string): TradeStatus {
@@ -154,9 +157,10 @@ export async function GET(request: NextRequest) {
       });
 
       if (protectionStatus === 'confirmed') {
-        console.log(`✅ Fonds Skinplace définitivement libérés pour trade ${trade.id}`);
-        // Les fonds sont déjà crédités côté user depuis IPN #1 — on update juste le trade
-        if (trade.status === 'ACCEPTED_BY_BOT' || trade.status === 'IN_TRADE_HOLD') {
+        console.log(`✅ Fonds Skinplace définitivement libérés pour trade ${trade.id} — crédit balance`);
+        // On passe le trade en AVAILABLE et on crédite la balance.
+        // onTradeAvailable gère l'idempotence : pas de double crédit si le webhook est rejoué.
+        if (trade.status !== 'PAID' && trade.status !== 'FAILED') {
           await prisma.trade.update({
             where: { id: trade.id },
             data: { status: 'AVAILABLE', availableAt: new Date() },
@@ -164,11 +168,12 @@ export async function GET(request: NextRequest) {
           await TradeHooks.onTradeAvailable(trade.id);
         }
       } else if (protectionStatus === 'rollback') {
-        console.error(`⚠️  Rollback Skinplace pour trade ${trade.id}`);
+        console.error(`⚠️  Rollback Skinplace pour trade ${trade.id} — annulation du pending balance`);
         await prisma.trade.update({
           where: { id: trade.id },
           data: { status: 'FAILED' },
         });
+        await TradeHooks.onTradeRolledBack(trade.userId, trade.id);
       }
 
       return new Response('ok', { status: 200 });

@@ -1,5 +1,5 @@
 import { AffiliateService } from '@/lib/affiliate-service';
-import { creditBalance } from '@/lib/balance-service';
+import { creditBalance, creditPendingBalance, releasePendingToBalance, debitPendingBalance } from '@/lib/balance-service';
 import { awardTradePoints } from '@/lib/points-service';
 import { prisma } from '../../prisma/prisma';
 
@@ -45,64 +45,49 @@ export class TradeHooks {
 
   /**
    * Hook appelé lors de l'IPN #1 Skinplace : l'échange Steam est ACCEPTÉ.
-   * C'est le moment exact où l'on crédite la balance de l'utilisateur sur notre site.
-   * Les fonds sont en "hold balance" chez Skinplace (~8 jours) mais on crédite
-   * immédiatement pour que l'utilisateur voie son solde disponible.
+   * On crédite le solde EN ATTENTE (pendingBalanceCents) pour que l'utilisateur
+   * voie que des fonds arrivent, sans pouvoir les retirer.
+   * La libération vers le solde réel se fait à l'IPN #2 (protection_status=confirmed).
    */
   static async onTradeAccepted(userId: string, tradeId: string): Promise<void> {
     try {
-      console.log(`[TradeHooks] IPN #1 — Trade ${tradeId} accepted by Steam, crediting balance`);
+      console.log(`[TradeHooks] IPN #1 — Trade ${tradeId} accepted, crediting pending balance`);
 
-      const trade = await prisma.trade.findUnique({
-        where: { id: tradeId },
-        include: { user: true },
-      });
+      const trade = await prisma.trade.findUnique({ where: { id: tradeId } });
+      if (!trade) throw new Error(`Trade ${tradeId} not found`);
 
-      if (!trade) {
-        throw new Error(`Trade ${tradeId} not found`);
-      }
-
-      // Vérifier qu'on n'a pas déjà crédité (idempotence)
-      const alreadyCredited = await prisma.auditLog.findFirst({
+      // Idempotence
+      const alreadyPending = await prisma.auditLog.findFirst({
         where: {
           userId,
-          action: 'TRADE_BALANCE_CREDITED',
+          action: 'TRADE_PENDING_BALANCE_CREDITED',
           details: { path: ['tradeId'], equals: tradeId },
         },
       });
 
-      if (alreadyCredited) {
-        console.warn(`[TradeHooks] Balance already credited for trade ${tradeId}, skipping`);
+      if (alreadyPending) {
+        console.warn(`[TradeHooks] Pending balance already credited for trade ${tradeId}, skipping`);
         return;
       }
 
-      // Créditer le solde utilisateur dès l'IPN #1 (échange Steam réussi)
-      await creditBalance(
+      await creditPendingBalance(
         userId,
         trade.netCents,
-        `Trade ${tradeId} accepté — fonds en cours de libération (8j)`,
-        { type: 'TRADE_CREDIT', tradeId }
+        `Trade ${tradeId} accepté — en attente de confirmation (~8j)`,
+        { tradeId }
       );
-
-      // Mettre à jour XP et tickets (la vente est confirmée)
-      await this.updateUserExperience(tradeId);
 
       await prisma.auditLog.create({
         data: {
           userId,
-          action: 'TRADE_BALANCE_CREDITED',
-          details: {
-            tradeId,
-            netCents: trade.netCents,
-            grossCents: trade.grossCents,
-            source: 'skinplace_ipn1',
-          },
+          action: 'TRADE_PENDING_BALANCE_CREDITED',
+          details: { tradeId, netCents: trade.netCents, source: 'skinplace_ipn1' },
         },
       });
 
-      console.log(`[TradeHooks] Balance credited for trade ${tradeId}: ${trade.netCents} centimes`);
+      console.log(`[TradeHooks] Pending balance credited for trade ${tradeId}: ${trade.netCents} centimes`);
     } catch (error) {
-      console.error(`[TradeHooks] Error crediting balance for trade ${tradeId}:`, error);
+      console.error(`[TradeHooks] Error in onTradeAccepted for trade ${tradeId}:`, error);
       throw error;
     }
   }
@@ -174,6 +159,56 @@ export class TradeHooks {
   }
   
   /**
+   * Hook appelé lors de l'IPN #2 avec protection_status=rollback.
+   * Skinplace annule le trade (demande de remboursement Steam, fraude, etc.).
+   * On décrémente le pendingBalanceCents crédité à l'IPN #1 pour remettre le solde à zéro.
+   * Si le pending a déjà été libéré vers balanceCents (ne devrait pas arriver),
+   * on débite le balanceCents en dernier recours.
+   */
+  static async onTradeRolledBack(userId: string, tradeId: string): Promise<void> {
+    try {
+      console.log(`[TradeHooks] Rollback trade ${tradeId} — reverting pending balance`);
+
+      const trade = await prisma.trade.findUnique({ where: { id: tradeId } });
+      if (!trade) throw new Error(`Trade ${tradeId} not found`);
+
+      // Idempotence
+      const alreadyReverted = await prisma.auditLog.findFirst({
+        where: {
+          userId,
+          action: 'TRADE_PENDING_BALANCE_REVERTED',
+          details: { path: ['tradeId'], equals: tradeId },
+        },
+      });
+
+      if (alreadyReverted) {
+        console.warn(`[TradeHooks] Pending balance already reverted for trade ${tradeId}, skipping`);
+        return;
+      }
+
+      await debitPendingBalance(
+        userId,
+        trade.netCents,
+        `Trade ${tradeId} annulé (rollback Skinplace) — solde en attente annulé`,
+        { tradeId }
+      );
+
+      await prisma.auditLog.create({
+        data: {
+          userId,
+          action: 'TRADE_PENDING_BALANCE_REVERTED',
+          details: { tradeId, netCents: trade.netCents, source: 'skinplace_ipn2_rollback' },
+        },
+      });
+
+      console.log(`[TradeHooks] Pending balance reverted for trade ${tradeId}: -${trade.netCents} centimes`);
+    } catch (error) {
+      console.error(`[TradeHooks] Error reverting pending balance for trade ${tradeId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Hook appelé lors du changement de statut d'un trade
    */
   static async onTradeStatusChanged(tradeId: string, oldStatus: string, newStatus: string): Promise<void> {
@@ -209,16 +244,14 @@ export class TradeHooks {
   }
   
   /**
-   * Hook appelé quand un trade est AVAILABLE (items dans l'inventaire Skinplace,
-   * cas sans hold ou après la période de hold).
-   *
-   * La balance a déjà été créditée lors de l'IPN #1 (onTradeAccepted).
-   * Ici on met juste à jour le statut du trade pour indiquer que le payout
-   * peut maintenant être déclenché par l'utilisateur.
+   * Hook appelé lors de l'IPN #2 Skinplace : protection_status=confirmed.
+   * Les fonds sont définitivement libérés chez Skinplace (~8 jours après l'échange).
+   * C'est ICI et UNIQUEMENT ICI que l'on crédite la balance de l'utilisateur.
+   * Cela empêche la fraude : accepter le trade → payout immédiat → remboursement Steam.
    */
   static async onTradeAvailable(tradeId: string): Promise<void> {
     try {
-      console.log(`[TradeHooks] Trade ${tradeId} is now AVAILABLE`);
+      console.log(`[TradeHooks] Trade ${tradeId} is now AVAILABLE — crediting balance`);
 
       const trade = await prisma.trade.findUnique({
         where: { id: tradeId },
@@ -229,8 +262,7 @@ export class TradeHooks {
         throw new Error('Trade not found');
       }
 
-      // Si la balance n'a pas encore été créditée (cas où onTradeAccepted n'a pas été appelé,
-      // ex: trade qui passe directement de CREATED à AVAILABLE sans passer par ACCEPTED_BY_BOT)
+      // Idempotence : ne pas créditer deux fois si le webhook est rejoué
       const alreadyCredited = await prisma.auditLog.findFirst({
         where: {
           userId: trade.userId,
@@ -239,13 +271,15 @@ export class TradeHooks {
         },
       });
 
-      if (!alreadyCredited) {
-        console.log(`[TradeHooks] Balance not yet credited for trade ${tradeId}, crediting now`);
-        await creditBalance(
+      if (alreadyCredited) {
+        console.warn(`[TradeHooks] Balance already credited for trade ${tradeId}, skipping`);
+      } else {
+        // Libère les fonds du solde en attente vers le solde disponible
+        await releasePendingToBalance(
           trade.userId,
           trade.netCents,
-          `Trade ${tradeId} disponible`,
-          { type: 'TRADE_CREDIT', tradeId }
+          `Trade ${tradeId} confirmé — fonds libérés par Skinplace`,
+          { tradeId }
         );
         await this.updateUserExperience(tradeId);
         await prisma.auditLog.create({
@@ -256,10 +290,11 @@ export class TradeHooks {
               tradeId,
               netCents: trade.netCents,
               grossCents: trade.grossCents,
-              source: 'skinplace_available',
+              source: 'skinplace_ipn2_confirmed',
             },
           },
         });
+        console.log(`[TradeHooks] Balance released from pending for trade ${tradeId}: ${trade.netCents} centimes`);
       }
 
       await prisma.auditLog.create({

@@ -73,24 +73,126 @@ export async function debitBalance(
   });
 }
 
+/**
+ * Crédite le solde en attente (hold) lors de l'IPN #1 Skinplace.
+ * Les fonds ne sont PAS encore disponibles pour un payout.
+ * Ils seront libérés vers balanceCents à l'IPN #2 (protection_status=confirmed).
+ */
+export async function creditPendingBalance(
+  userId: string,
+  amountCents: number,
+  reason: string | null,
+  metadata: { tradeId: string; [key: string]: unknown } = { tradeId: '' }
+): Promise<{ pendingBalanceCents: number }> {
+  if (amountCents <= 0) throw new Error('creditPendingBalance: amountCents must be positive');
+  return prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({ where: { id: userId }, select: { pendingBalanceCents: true } });
+    if (!user) throw new Error('User not found');
+    const pendingBalanceCents = user.pendingBalanceCents + amountCents;
+    await tx.user.update({ where: { id: userId }, data: { pendingBalanceCents } });
+    await tx.balanceTransaction.create({
+      data: {
+        userId,
+        type: 'TRADE_PENDING_CREDIT',
+        amountCents,
+        balanceAfterCents: pendingBalanceCents,
+        reason,
+        metadata: metadata as Prisma.InputJsonValue,
+      },
+    });
+    return { pendingBalanceCents };
+  });
+}
+
+/**
+ * Annule un crédit en attente (rollback Skinplace).
+ * Décrémente pendingBalanceCents sans toucher à balanceCents.
+ * Sécurisé : ne descend jamais en dessous de 0 (protection contre les incohérences).
+ */
+export async function debitPendingBalance(
+  userId: string,
+  amountCents: number,
+  reason: string | null,
+  metadata: { tradeId: string; [key: string]: unknown } = { tradeId: '' }
+): Promise<{ pendingBalanceCents: number }> {
+  if (amountCents <= 0) throw new Error('debitPendingBalance: amountCents must be positive');
+  return prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({ where: { id: userId }, select: { pendingBalanceCents: true } });
+    if (!user) throw new Error('User not found');
+    const pendingBalanceCents = Math.max(0, user.pendingBalanceCents - amountCents);
+    await tx.user.update({ where: { id: userId }, data: { pendingBalanceCents } });
+    await tx.balanceTransaction.create({
+      data: {
+        userId,
+        type: 'TRADE_PENDING_CREDIT',
+        amountCents: -amountCents,
+        balanceAfterCents: pendingBalanceCents,
+        reason,
+        metadata: metadata as Prisma.InputJsonValue,
+      },
+    });
+    return { pendingBalanceCents };
+  });
+}
+
+/**
+ * Libère un montant du solde en attente vers le solde disponible (IPN #2 confirmed).
+ * Décrémente pendingBalanceCents et incrémente balanceCents dans une seule transaction.
+ */
+export async function releasePendingToBalance(
+  userId: string,
+  amountCents: number,
+  reason: string | null,
+  metadata: { tradeId: string; [key: string]: unknown } = { tradeId: '' }
+): Promise<{ balanceCents: number; pendingBalanceCents: number }> {
+  if (amountCents <= 0) throw new Error('releasePendingToBalance: amountCents must be positive');
+  return prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { balanceCents: true, pendingBalanceCents: true },
+    });
+    if (!user) throw new Error('User not found');
+
+    // On ne peut libérer que ce qui est en pending (protection contre les incohérences)
+    const releaseAmount = Math.min(amountCents, user.pendingBalanceCents);
+    const balanceCents = user.balanceCents + releaseAmount;
+    const pendingBalanceCents = user.pendingBalanceCents - releaseAmount;
+
+    await tx.user.update({ where: { id: userId }, data: { balanceCents, pendingBalanceCents } });
+    await tx.balanceTransaction.create({
+      data: {
+        userId,
+        type: 'TRADE_PENDING_RELEASE',
+        amountCents: releaseAmount,
+        balanceAfterCents: balanceCents,
+        reason,
+        metadata: metadata as Prisma.InputJsonValue,
+      },
+    });
+    return { balanceCents, pendingBalanceCents };
+  });
+}
+
 export function getAvailableBalanceCents(balanceCents: number, frozenBalanceCents: number): number {
   return Math.max(0, balanceCents - frozenBalanceCents);
 }
 
 export async function getBalance(userId: string): Promise<{
   balanceCents: number;
+  pendingBalanceCents: number;
   frozenBalanceCents: number;
   availableCents: number;
   accountFrozen: boolean;
 }> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { balanceCents: true, frozenBalanceCents: true, accountFrozen: true },
+    select: { balanceCents: true, pendingBalanceCents: true, frozenBalanceCents: true, accountFrozen: true },
   });
   if (!user) throw new Error('User not found');
   const availableCents = getAvailableBalanceCents(user.balanceCents, user.frozenBalanceCents);
   return {
     balanceCents: user.balanceCents,
+    pendingBalanceCents: user.pendingBalanceCents,
     frozenBalanceCents: user.frozenBalanceCents,
     availableCents: user.accountFrozen ? 0 : availableCents,
     accountFrozen: user.accountFrozen,
