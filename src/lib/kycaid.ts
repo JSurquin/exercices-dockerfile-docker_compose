@@ -823,19 +823,26 @@ export async function checkKycStatus(userId: string): Promise<{
     return { status: 'VERIFIED' };
   }
 
-  // Chercher le document KYC le plus récent
-  const kycDoc = await prisma.kycDocument.findFirst({
+  // Chercher la vérification KYC la plus récente (source principale)
+  const kycVerification = await prisma.kycVerification.findFirst({
     where: { userId },
-    orderBy: { uploadedAt: 'desc' },
+    orderBy: { createdAt: 'desc' },
   });
 
-  if (!kycDoc?.kycaidApplicantId) {
+  // Fallback : ancienne table kycDocument
+  const applicantId =
+    kycVerification?.kycaidApplicantId ||
+    (await prisma.kycDocument
+      .findFirst({ where: { userId }, orderBy: { uploadedAt: 'desc' } })
+      .then((d) => d?.kycaidApplicantId ?? null));
+
+  if (!applicantId) {
     return { status: 'PENDING' };
   }
 
   try {
     // Vérifier le statut via KYCAID
-    const verifications = await listApplicantVerifications(kycDoc.kycaidApplicantId);
+    const verifications = await listApplicantVerifications(applicantId);
     const latestVerification = verifications.items[0];
 
     if (!latestVerification) {
@@ -843,7 +850,6 @@ export async function checkKycStatus(userId: string): Promise<{
     }
 
     if (latestVerification.verified) {
-      // Mettre à jour le statut en base
       await updateUserKycStatus(userId, 'VERIFIED', latestVerification.verification_id);
       return { status: 'VERIFIED' };
     }

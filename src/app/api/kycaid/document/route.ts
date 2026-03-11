@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
+
+export const maxDuration = 60;
 import { uploadFile, createDocument, deleteExistingIdentityDocumentsInKycaid, isIdentityDocumentType, KYCAID_IDENTITY_DOCUMENT_TYPES } from '@/lib/kycaid';
 import { prisma } from '~/prisma/prisma';
 

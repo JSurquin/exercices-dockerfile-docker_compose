@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import imageCompression from 'browser-image-compression';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { motion } from 'framer-motion';
@@ -106,9 +107,50 @@ export default function KYCPage() {
     refetchInterval: user?.kycStatus === 'IN_PROGRESS' ? 10_000 : false,
   });
 
-  const handleFileUpload = (type: string, file: File) => {
-    setUploadedFiles(prev => ({ ...prev, [type]: file }));
-    toast.success(`${file.name} ${messages.kycPage.toasts.uploaded}`);
+  const MAX_FILE_SIZE_MB = 5;
+  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+  const compressImageFile = async (file: File): Promise<File> => {
+    if (!file.type.startsWith('image/')) return file;
+
+    const options = {
+      maxSizeMB: 2,
+      maxWidthOrHeight: 2048,
+      useWebWorker: true,
+      fileType: file.type as string,
+    };
+
+    try {
+      const compressed = await imageCompression(file, options);
+      return new File([compressed], file.name, { type: file.type });
+    } catch {
+      return file;
+    }
+  };
+
+  const handleFileUpload = async (type: string, file: File) => {
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      toast.error(`Le fichier "${file.name}" dépasse la limite de ${MAX_FILE_SIZE_MB} Mo. Veuillez utiliser un fichier plus petit.`);
+      return;
+    }
+
+    let processedFile = file;
+
+    if (file.type.startsWith('image/') && file.size > 2 * 1024 * 1024) {
+      toast.info(`Compression de "${file.name}" en cours...`);
+      try {
+        processedFile = await compressImageFile(file);
+        const savedMb = ((file.size - processedFile.size) / 1024 / 1024).toFixed(1);
+        if (processedFile.size < file.size) {
+          toast.success(`Image compressée : ${(processedFile.size / 1024 / 1024).toFixed(1)} Mo (−${savedMb} Mo)`);
+        }
+      } catch {
+        processedFile = file;
+      }
+    }
+
+    setUploadedFiles(prev => ({ ...prev, [type]: processedFile }));
+    toast.success(`${processedFile.name} ${messages.kycPage.toasts.uploaded}`);
   };
 
   const handleNextStep = async () => {

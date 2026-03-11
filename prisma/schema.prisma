@@ -674,6 +674,8 @@ enum KycaidVerificationStatus {
   PENDING      // En attente de soumission utilisateur
   PROCESSING   // En cours de vérification
   COMPLETED    // Terminé (vérifié ou refusé)
+  VERIFIED     // Vérifié avec succès (alias COMPLETED + verified=true)
+  REJECTED     // Rejeté (alias DECLINED)
   DECLINED     // Refusé
 }
 
