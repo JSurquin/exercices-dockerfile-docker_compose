@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,7 @@ import {
 } from 'lucide-react';
 import AffiliateTools from './affiliate-tools';
 import { CreateAffiliateDialog } from './create-affiliate-dialog';
+import { queryKeys } from '@/lib/query-keys';
 
 interface AffiliateData {
   id: string;
@@ -57,61 +59,39 @@ interface GlobalStats {
 }
 
 export default function AffiliatesManagement() {
-  const [affiliates, setAffiliates] = useState<AffiliateData[]>([]);
-  const [globalStats, setGlobalStats] = useState<GlobalStats>({
-    totalAffiliates: 0,
-    totalReferrals: 0,
-    totalVolume: 0,
-    totalCommissions: 0
-  });
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [selectedAffiliate, setSelectedAffiliate] = useState<AffiliateData | null>(null);
   const [editingCommissionRate, setEditingCommissionRate] = useState(false);
   const [newCommissionRate, setNewCommissionRate] = useState(0);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    loadAffiliates();
-  }, [page, search, statusFilter]);
+  const defaultGlobalStats: GlobalStats = {
+    totalAffiliates: 0,
+    totalReferrals: 0,
+    totalVolume: 0,
+    totalCommissions: 0
+  };
 
-  const loadAffiliates = async () => {
-    try {
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.adminAffiliates({ page, search, status: statusFilter }),
+    queryFn: async () => {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '20',
         search,
         status: statusFilter
       });
-
       const response = await fetch(`/api/admin/affiliates?${params}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setAffiliates(data.data.affiliates);
-        setGlobalStats(data.data.globalStats);
-        setTotalPages(data.data.pagination.pages);
-      } else {
-        toast({
-          title: 'Erreur',
-          description: 'Impossible de charger les affiliés',
-          variant: 'destructive'
-        });
-      }
-    } catch (error) {
-      console.error('Erreur chargement affiliés:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Erreur de connexion',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
+      return response.json();
     }
-  };
+  });
+
+  const affiliates: AffiliateData[] = data?.data?.affiliates ?? [];
+  const globalStats: GlobalStats = data?.data?.globalStats ?? defaultGlobalStats;
+  const totalPages: number = data?.data?.pagination?.pages ?? 1;
 
   const toggleAffiliateStatus = async (affiliate: AffiliateData) => {
     try {
@@ -132,7 +112,7 @@ export default function AffiliatesManagement() {
           title: 'Succès',
           description: `Affilié ${affiliate.isActive ? 'désactivé' : 'activé'} avec succès`
         });
-        loadAffiliates();
+        queryClient.invalidateQueries({ queryKey: ['admin', 'affiliates'] });
       } else {
         toast({
           title: 'Erreur',
@@ -174,7 +154,7 @@ export default function AffiliatesManagement() {
           description: 'Taux de commission mis à jour'
         });
         setEditingCommissionRate(false);
-        loadAffiliates();
+        queryClient.invalidateQueries({ queryKey: ['admin', 'affiliates'] });
       } else {
         toast({
           title: 'Erreur',
@@ -202,7 +182,7 @@ export default function AffiliatesManagement() {
     return new Date(dateString).toLocaleDateString('fr-FR');
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -307,7 +287,7 @@ export default function AffiliatesManagement() {
                 <SelectItem value="inactive">Inactifs</SelectItem>
               </SelectContent>
             </Select>
-            <CreateAffiliateDialog onAffiliateCreated={loadAffiliates} />
+            <CreateAffiliateDialog onAffiliateCreated={() => queryClient.invalidateQueries({ queryKey: ['admin', 'affiliates'] })} />
           </div>
 
           {/* Tableau des affiliés */}

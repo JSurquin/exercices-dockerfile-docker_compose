@@ -76,6 +76,8 @@ export async function GET(request: NextRequest) {
     const trades: Trade[] = tradesData.map(trade => ({
       id: trade.id,
       userId: trade.userId,
+      userName: trade.user?.name || undefined,
+      userEmail: trade.user?.email || undefined,
       status: mapTradeStatusFromDb(trade.status),
       brutCentimes: trade.grossCents,
       frais: {

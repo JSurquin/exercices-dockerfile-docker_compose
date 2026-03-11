@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,8 +48,7 @@ interface BalanceManagementProps {
 }
 
 export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceManagementProps) {
-  const [context, setContext] = useState<BalanceContext | null>(initialContext ?? null);
-  const [loading, setLoading] = useState(!initialContext);
+  const queryClient = useQueryClient();
   const [adjusting, setAdjusting] = useState(false);
   const [freezing, setFreezing] = useState(false);
   const [adjustAmount, setAdjustAmount] = useState('');
@@ -55,36 +56,21 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
   const [freezeReason, setFreezeReason] = useState('');
   const { toast } = useToast();
 
-  const fetchContext = useCallback(async () => {
-    setLoading(true);
-    try {
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.adminBalance(userId),
+    queryFn: async () => {
       const res = await fetch(`/api/admin/balance/${userId}`);
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || res.statusText);
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.error || res.statusText);
       }
-      const data = await res.json();
-      setContext(data);
-      onUpdate?.();
-    } catch (e) {
-      toast({
-        title: 'Erreur',
-        description: e instanceof Error ? e.message : 'Impossible de charger le solde',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, onUpdate, toast]);
+      return res.json() as Promise<BalanceContext>;
+    },
+    initialData: initialContext ?? undefined,
+  });
 
-  useEffect(() => {
-    if (initialContext) {
-      setContext(initialContext);
-      setLoading(false);
-    } else {
-      fetchContext();
-    }
-  }, [userId, initialContext, fetchContext]);
+  const context = data ?? null;
+  const loading = isLoading;
 
   const handleAdjust = async (sign: 'add' | 'subtract') => {
     const raw = parseInt(adjustAmount, 10);
@@ -109,7 +95,8 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
       toast({ title: 'Solde mis à jour', description: `Nouveau solde: ${formatCents(data.balanceAfterCents)}` });
       setAdjustAmount('');
       setAdjustReason('');
-      await fetchContext();
+      await queryClient.invalidateQueries({ queryKey: queryKeys.adminBalance(userId) });
+      onUpdate?.();
     } catch (e) {
       toast({
         title: 'Erreur',
@@ -139,7 +126,8 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
       }
       toast({ title: 'Compte gelé' });
       setFreezeReason('');
-      await fetchContext();
+      await queryClient.invalidateQueries({ queryKey: queryKeys.adminBalance(userId) });
+      onUpdate?.();
     } catch (e) {
       toast({
         title: 'Erreur',
@@ -164,7 +152,8 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
         throw new Error(data.error || 'Erreur');
       }
       toast({ title: 'Compte dégelé' });
-      await fetchContext();
+      await queryClient.invalidateQueries({ queryKey: queryKeys.adminBalance(userId) });
+      onUpdate?.();
     } catch (e) {
       toast({
         title: 'Erreur',
@@ -301,7 +290,7 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
       <Card className="bg-slate-800/30 border-slate-700">
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-white text-base">Historique des transactions</CardTitle>
-          <Button variant="ghost" size="sm" onClick={fetchContext} className="text-slate-400">
+          <Button variant="ghost" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminBalance(userId) })} className="text-slate-400">
             <RefreshCw className="h-4 w-4" />
           </Button>
         </CardHeader>

@@ -59,6 +59,8 @@ export async function GET(request: NextRequest) {
               id: true,
               name: true,
               email: true,
+              steamUsername: true,
+              steamAvatar: true,
             },
           },
         },
@@ -80,6 +82,10 @@ export async function GET(request: NextRequest) {
       return {
         id: payout.id,
         userId: payout.userId,
+        userName: payout.user?.name ?? undefined,
+        userEmail: payout.user?.email ?? undefined,
+        userSteamUsername: payout.user?.steamUsername ?? undefined,
+        userSteamAvatar: payout.user?.steamAvatar ?? undefined,
         status: mapPayoutStatusFromDb(payout.status),
         montantCentimes: payout.amountCents,
         methodePaiement: {

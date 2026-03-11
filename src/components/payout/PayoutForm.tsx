@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -65,9 +67,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
   const t = (key: string) => key;
   const [method, setMethod] = useState<'SEPA' | 'CRYPTO'>('SEPA');
   const [loading, setLoading] = useState(false);
-  const [quote, setQuote] = useState<QuoteData | null>(null);
-  const [quoteLoading, setQuoteLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   // SEPA fields
@@ -105,44 +105,31 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
     }
   }, [selectedCrypto]);
 
-  // Fetch quote when amount or method changes
-  useEffect(() => {
-    const fetchQuote = async () => {
-      if (availableAmountCents <= 0) return;
+  const { data: quoteData, isLoading: quoteLoading, error: quoteError } = useQuery({
+    queryKey: queryKeys.flexifyQuote({ method, amountCents: availableAmountCents }),
+    queryFn: async () => {
+      const response = await fetch('/api/flexify/quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: method === 'SEPA' ? 'sepa' : 'crypto',
+          amountCents: availableAmountCents,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Erreur lors du calcul du devis');
+      return data.quote as QuoteData;
+    },
+    enabled: availableAmountCents > 0,
+  });
 
-      setQuoteLoading(true);
-      try {
-        const response = await fetch('/api/flexify/quote', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            method: method === 'SEPA' ? 'sepa' : 'crypto',
-            amountCents: availableAmountCents,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Erreur lors du calcul du devis');
-        }
-
-        setQuote(data.quote);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erreur inconnue');
-      } finally {
-        setQuoteLoading(false);
-      }
-    };
-
-    fetchQuote();
-  }, [method, availableAmountCents]);
+  const quote = quoteData ?? null;
+  const error = submitError ?? (quoteError instanceof Error ? quoteError.message : null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
       let apiUrl: string;
@@ -184,7 +171,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
 
       if (!response.ok) {
         if (data.code === 'KYC_REQUIRED') {
-          setError('Veuillez vérifier votre identité avant de demander un paiement.');
+          setSubmitError('Veuillez vérifier votre identité avant de demander un paiement.');
           onError?.('KYC_REQUIRED');
           return;
         }
@@ -195,7 +182,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
       onSuccess?.(data.payout);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erreur inconnue';
-      setError(message);
+      setSubmitError(message);
       onError?.(message);
     } finally {
       setLoading(false);

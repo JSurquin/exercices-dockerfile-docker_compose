@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, Circle, Clock, XCircle, Loader2 } from 'lucide-react';
@@ -28,10 +30,32 @@ export function PayoutStatusTracker({
 }: PayoutStatusTrackerProps) {
   const { messages } = useLocale();
   const [status, setStatus] = useState(currentStatus);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [orderDetails, setOrderDetails] = useState<any>(null);
 
   const t = messages.paymentComponents.statusTracker;
+
+  const endpoint =
+    orderType === 'SEPA'
+      ? `/api/gatefi/offramp/orders/${orderId}`
+      : `/api/gatefi/onramp/orders/${orderId}`;
+
+  const { data: orderData, isRefetching: isRefreshing, refetch } = useQuery({
+    queryKey: queryKeys.payoutStatus(endpoint),
+    queryFn: async () => {
+      const response = await fetch(endpoint);
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: autoRefresh && !!orderId && status !== 'PAID' && status !== 'FAILED',
+    refetchInterval: (autoRefresh && !!orderId && status !== 'PAID' && status !== 'FAILED') ? refreshInterval : false,
+    select: (data) => data?.order ?? null,
+  });
+
+  useEffect(() => {
+    if (orderData) {
+      const newStatus = mapGateFiStatusToAppStatus(orderData.status);
+      if (newStatus !== status) setStatus(newStatus);
+    }
+  }, [orderData]);
 
   const STATUS_STEPS = {
     SEPA: [
@@ -52,43 +76,6 @@ export function PayoutStatusTracker({
   const steps = STATUS_STEPS[orderType];
   const currentStepIndex = steps.findIndex((step) => step.key === status);
   const isFailed = status === 'FAILED';
-
-  // Rafraîchir le statut
-  const refreshStatus = async () => {
-    if (!orderId) return;
-
-    setIsRefreshing(true);
-    try {
-      const endpoint =
-        orderType === 'SEPA'
-          ? `/api/gatefi/offramp/orders/${orderId}`
-          : `/api/gatefi/onramp/orders/${orderId}`;
-
-      const response = await fetch(endpoint);
-      if (response.ok) {
-        const data = await response.json();
-        setOrderDetails(data.order);
-
-        // Mapper le statut GateFi au statut de notre application
-        const newStatus = mapGateFiStatusToAppStatus(data.order.status);
-        if (newStatus !== status) {
-          setStatus(newStatus);
-        }
-      }
-    } catch (error) {
-      console.error('Error refreshing status:', error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  // Auto-refresh
-  useEffect(() => {
-    if (!autoRefresh || !orderId || status === 'PAID' || status === 'FAILED') return;
-
-    const interval = setInterval(refreshStatus, refreshInterval);
-    return () => clearInterval(interval);
-  }, [autoRefresh, orderId, status, refreshInterval]);
 
   // Mapper les statuts
   const mapGateFiStatusToAppStatus = (gateFiStatus: string): string => {
@@ -204,31 +191,31 @@ export function PayoutStatusTracker({
           </div>
 
           {/* Détails de la commande */}
-          {orderDetails && (
+          {orderData && (
             <div className="mt-6 p-4 bg-muted rounded-lg space-y-2 text-sm">
               <h4 className="font-semibold">{t.transactionDetails}</h4>
               <div className="space-y-1">
-                {orderDetails.cryptoAmount && (
+                {orderData.cryptoAmount && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t.cryptoAmount}</span>
                     <span>
-                      {orderDetails.cryptoAmount} {orderDetails.crypto}
+                      {orderData.cryptoAmount} {orderData.crypto}
                     </span>
                   </div>
                 )}
-                {orderDetails.fiatAmount && (
+                {orderData.fiatAmount && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t.fiatAmount}</span>
                     <span>
-                      {orderDetails.fiatAmount} {orderDetails.fiat}
+                      {orderData.fiatAmount} {orderData.fiat}
                     </span>
                   </div>
                 )}
-                {orderDetails.txHash && (
+                {orderData.txHash && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t.transaction}</span>
                     <span className="font-mono text-xs truncate max-w-[200px]">
-                      {orderDetails.txHash}
+                      {orderData.txHash}
                     </span>
                   </div>
                 )}

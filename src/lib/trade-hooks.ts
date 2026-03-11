@@ -1,4 +1,6 @@
 import { AffiliateService } from '@/lib/affiliate-service';
+import { creditBalance } from '@/lib/balance-service';
+import { awardTradePoints } from '@/lib/points-service';
 import { prisma } from '../../prisma/prisma';
 
 /**
@@ -27,24 +29,87 @@ export class TradeHooks {
   }
   
   /**
-   * Hook appelé lors de la création d'un trade
-   * Associe l'utilisateur à un affilié si nécessaire
+   * Hook appelé lors de la CRÉATION du trade (avant l'échange Steam).
+   * Associe l'utilisateur à un affilié si nécessaire.
+   * Ne pas créditer la balance ici — l'échange n'est pas encore réalisé.
    */
   static async onTradeCreated(userId: string, tradeId: string): Promise<void> {
     try {
       console.log(`[TradeHooks] Processing new trade ${tradeId} for user ${userId}`);
-      
-      // Associer l'utilisateur à un affilié s'il y a un code de référence
       await AffiliateService.associateUserToAffiliate(userId);
-      
       console.log(`[TradeHooks] Successfully processed new trade ${tradeId}`);
     } catch (error) {
       console.error(`[TradeHooks] Error processing new trade ${tradeId}:`, error);
     }
   }
+
+  /**
+   * Hook appelé lors de l'IPN #1 Skinplace : l'échange Steam est ACCEPTÉ.
+   * C'est le moment exact où l'on crédite la balance de l'utilisateur sur notre site.
+   * Les fonds sont en "hold balance" chez Skinplace (~8 jours) mais on crédite
+   * immédiatement pour que l'utilisateur voie son solde disponible.
+   */
+  static async onTradeAccepted(userId: string, tradeId: string): Promise<void> {
+    try {
+      console.log(`[TradeHooks] IPN #1 — Trade ${tradeId} accepted by Steam, crediting balance`);
+
+      const trade = await prisma.trade.findUnique({
+        where: { id: tradeId },
+        include: { user: true },
+      });
+
+      if (!trade) {
+        throw new Error(`Trade ${tradeId} not found`);
+      }
+
+      // Vérifier qu'on n'a pas déjà crédité (idempotence)
+      const alreadyCredited = await prisma.auditLog.findFirst({
+        where: {
+          userId,
+          action: 'TRADE_BALANCE_CREDITED',
+          details: { path: ['tradeId'], equals: tradeId },
+        },
+      });
+
+      if (alreadyCredited) {
+        console.warn(`[TradeHooks] Balance already credited for trade ${tradeId}, skipping`);
+        return;
+      }
+
+      // Créditer le solde utilisateur dès l'IPN #1 (échange Steam réussi)
+      await creditBalance(
+        userId,
+        trade.netCents,
+        `Trade ${tradeId} accepté — fonds en cours de libération (8j)`,
+        { type: 'TRADE_CREDIT', tradeId }
+      );
+
+      // Mettre à jour XP et tickets (la vente est confirmée)
+      await this.updateUserExperience(tradeId);
+
+      await prisma.auditLog.create({
+        data: {
+          userId,
+          action: 'TRADE_BALANCE_CREDITED',
+          details: {
+            tradeId,
+            netCents: trade.netCents,
+            grossCents: trade.grossCents,
+            source: 'skinplace_ipn1',
+          },
+        },
+      });
+
+      console.log(`[TradeHooks] Balance credited for trade ${tradeId}: ${trade.netCents} centimes`);
+    } catch (error) {
+      console.error(`[TradeHooks] Error crediting balance for trade ${tradeId}:`, error);
+      throw error;
+    }
+  }
   
   /**
-   * Met à jour l'expérience et le niveau de l'utilisateur basé sur le trade
+   * Met à jour l'expérience, les points et le niveau de l'utilisateur basé sur le trade.
+   * Utilise le service de points configurable par l'admin.
    */
   private static async updateUserExperience(tradeId: string): Promise<void> {
     const trade = await prisma.trade.findUnique({
@@ -53,33 +118,46 @@ export class TradeHooks {
     });
     
     if (!trade) return;
-    
-    // Calculer l'XP basé sur le volume (1 XP par euro de volume brut)
-    const xpGained = Math.floor(trade.grossCents / 100);
-    
-    // Calculer les tickets basés sur le volume (1 ticket par 10 euros)
-    const ticketsGained = Math.floor(trade.grossCents / 1000);
-    
-    // Mettre à jour l'utilisateur
+
+    // Attribution des points via le service configurable
+    const { points: xpGained } = await awardTradePoints(
+      trade.userId,
+      tradeId,
+      trade.grossCents
+    );
+
+    // Mettre à jour le volume total
     const updatedUser = await prisma.user.update({
       where: { id: trade.userId },
-      data: {
-        xp: { increment: xpGained },
-        tickets: { increment: ticketsGained },
-        totalVolumeCents: { increment: trade.grossCents }
-      }
+      data: { totalVolumeCents: { increment: trade.grossCents } }
     });
     
-    // Calculer le nouveau niveau (exemple: niveau = racine carrée de XP / 100)
-    const newLevel = Math.floor(Math.sqrt(updatedUser.xp / 100)) + 1;
+    // Calculer le nouveau niveau (racine carrée de XP / 100)
+    const currentXp = updatedUser.xp;
+    const newLevel = Math.floor(Math.sqrt(currentXp / 100)) + 1;
     
     if (newLevel > updatedUser.level) {
       await prisma.user.update({
         where: { id: trade.userId },
         data: { level: newLevel }
       });
+
+      await prisma.pointTransaction.create({
+        data: {
+          userId: trade.userId,
+          type: 'LEVEL_UP',
+          points: 500,
+          tickets: 0,
+          reason: `Passage au niveau ${newLevel}`,
+          metadata: { oldLevel: updatedUser.level, newLevel, tradeId },
+        },
+      });
+
+      await prisma.user.update({
+        where: { id: trade.userId },
+        data: { xp: { increment: 500 } },
+      });
       
-      // Log de l'audit pour le changement de niveau
       await prisma.auditLog.create({
         data: {
           userId: trade.userId,
@@ -131,86 +209,70 @@ export class TradeHooks {
   }
   
   /**
-   * Hook appelé quand un trade devient disponible après le hold
-   * Crée automatiquement un payout en attente
+   * Hook appelé quand un trade est AVAILABLE (items dans l'inventaire Skinplace,
+   * cas sans hold ou après la période de hold).
+   *
+   * La balance a déjà été créditée lors de l'IPN #1 (onTradeAccepted).
+   * Ici on met juste à jour le statut du trade pour indiquer que le payout
+   * peut maintenant être déclenché par l'utilisateur.
    */
   static async onTradeAvailable(tradeId: string): Promise<void> {
     try {
-      console.log(`[TradeHooks] Trade ${tradeId} is now available for payout`);
-      
+      console.log(`[TradeHooks] Trade ${tradeId} is now AVAILABLE`);
+
       const trade = await prisma.trade.findUnique({
         where: { id: tradeId },
-        include: { user: true }
+        include: { user: true },
       });
-      
+
       if (!trade) {
         throw new Error('Trade not found');
       }
-      
-      // Vérifier si un payout existe déjà pour ce trade
-      const existingPayout = await prisma.payout.findFirst({
-        where: { tradeId }
-      });
-      
-      if (existingPayout) {
-        console.log(`[TradeHooks] Payout already exists for trade ${tradeId}`);
-        return;
-      }
-      
-      // Créer une méthode de paiement par défaut si l'utilisateur n'en a pas
-      let paymentMethod = await prisma.paymentMethod.findFirst({
+
+      // Si la balance n'a pas encore été créditée (cas où onTradeAccepted n'a pas été appelé,
+      // ex: trade qui passe directement de CREATED à AVAILABLE sans passer par ACCEPTED_BY_BOT)
+      const alreadyCredited = await prisma.auditLog.findFirst({
         where: {
           userId: trade.userId,
-          isDefault: true
-        }
+          action: 'TRADE_BALANCE_CREDITED',
+          details: { path: ['tradeId'], equals: tradeId },
+        },
       });
-      
-      if (!paymentMethod) {
-        // Créer une méthode de paiement SEPA par défaut
-        paymentMethod = await prisma.paymentMethod.create({
+
+      if (!alreadyCredited) {
+        console.log(`[TradeHooks] Balance not yet credited for trade ${tradeId}, crediting now`);
+        await creditBalance(
+          trade.userId,
+          trade.netCents,
+          `Trade ${tradeId} disponible`,
+          { type: 'TRADE_CREDIT', tradeId }
+        );
+        await this.updateUserExperience(tradeId);
+        await prisma.auditLog.create({
           data: {
             userId: trade.userId,
-            type: 'SEPA',
-            details: {},
-            isDefault: true,
-            isVerified: false
-          }
+            action: 'TRADE_BALANCE_CREDITED',
+            details: {
+              tradeId,
+              netCents: trade.netCents,
+              grossCents: trade.grossCents,
+              source: 'skinplace_available',
+            },
+          },
         });
       }
-      
-      // Créer le payout
-      await prisma.payout.create({
-        data: {
-          userId: trade.userId,
-          tradeId: trade.id,
-          amountCents: trade.netCents,
-          paymentMethodId: paymentMethod.id,
-          status: 'PENDING'
-        }
-      });
-      
-      // Mettre à jour le statut du trade
-      await prisma.trade.update({
-        where: { id: tradeId },
-        data: { status: 'PAYOUT_PENDING' }
-      });
-      
-      // Log de l'audit
+
       await prisma.auditLog.create({
         data: {
           userId: trade.userId,
-          action: 'PAYOUT_CREATED',
-          details: {
-            tradeId,
-            amountCents: trade.netCents,
-            paymentMethodId: paymentMethod.id
-          }
-        }
+          action: 'TRADE_AVAILABLE_FOR_PAYOUT',
+          details: { tradeId, amountCents: trade.netCents },
+        },
       });
-      
-      console.log(`[TradeHooks] Created payout for trade ${tradeId}`);
+
+      console.log(`[TradeHooks] Trade ${tradeId} ready for payout`);
     } catch (error) {
-      console.error(`[TradeHooks] Error creating payout for trade ${tradeId}:`, error);
+      console.error(`[TradeHooks] Error processing available trade ${tradeId}:`, error);
       throw error;
     }
   }

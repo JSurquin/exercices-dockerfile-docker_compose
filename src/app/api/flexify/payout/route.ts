@@ -26,7 +26,7 @@ import {
   type SepaDetailsStored,
 } from '@/lib/payment-method-sepa';
 import { getPayoutAutoApproveSettings } from '@/lib/payout-settings';
-import { encrypt } from '@/lib/encryption';
+import { encrypt, decrypt } from '@/lib/encryption';
 
 const generateReference = () => `MOON-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
@@ -146,38 +146,132 @@ export async function POST(request: NextRequest) {
 
     // ————— Carte (Flexify) —————
     if (methodNorm === 'card') {
-      const cardNum = (cardNumber || '').replace(/\s/g, '');
-      if (!cardNum || cardNum.length < 13) {
-        return NextResponse.json(
-          { error: 'Numéro de carte invalide' },
-          { status: 400 }
-        );
-      }
-      if (!cardHolder?.trim()) {
-        return NextResponse.json(
-          { error: 'Titulaire de la carte requis' },
-          { status: 400 }
-        );
-      }
-      const expMonth = (expireMonth || '').toString().padStart(2, '0');
-      const expYear = (expireYear || '').toString();
-      const expYearFull = expYear.length === 2 ? `20${expYear}` : expYear;
-      if (!expMonth || !expYearFull || expMonth.length !== 2) {
-        return NextResponse.json(
-          { error: 'Date d\'expiration invalide' },
-          { status: 400 }
-        );
-      }
-      if (!cvv || cvv.length < 3) {
-        return NextResponse.json(
-          { error: 'CVV requis' },
-          { status: 400 }
-        );
+      let cardPaymentMethod = null;
+      let cardNum = '';
+      let cardHolderName = '';
+      let expMonth = '';
+      let expYearFull = '';
+      let cvvVal = '';
+
+      // Cas 1 : réutilisation d'une carte enregistrée
+      if (paymentMethodId) {
+        const existingCard = await prisma.paymentMethod.findFirst({
+          where: { id: paymentMethodId, userId, type: 'FLEXIFY_CARD' },
+        });
+        if (!existingCard) {
+          return NextResponse.json(
+            { error: 'Carte enregistrée introuvable ou invalide' },
+            { status: 400 }
+          );
+        }
+        const details = existingCard.details as { last4?: string; holderName?: string; encryptedCard?: string } | null;
+        if (!details?.encryptedCard) {
+          return NextResponse.json(
+            { error: 'Impossible de récupérer les détails chiffrés de la carte enregistrée. Veuillez saisir votre carte à nouveau.' },
+            { status: 400 }
+          );
+        }
+        // Déchiffrer les détails complets de la carte
+        const decryptedCard = JSON.parse(decrypt(details.encryptedCard)) as {
+          number: string;
+          holderName: string;
+          expireMonth: string;
+          expireYear: string;
+          cvv: string;
+        };
+        cardNum = decryptedCard.number;
+        cardHolderName = decryptedCard.holderName;
+        expMonth = decryptedCard.expireMonth;
+        expYearFull = decryptedCard.expireYear;
+        cvvVal = decryptedCard.cvv;
+        cardPaymentMethod = existingCard;
+        LOG('CARD_REUSE_EXISTING', { paymentMethodId });
+      } else {
+        // Cas 2 : nouvelle carte saisie
+        cardNum = (cardNumber || '').replace(/\s/g, '');
+        if (!cardNum || cardNum.length < 13) {
+          return NextResponse.json(
+            { error: 'Numéro de carte invalide' },
+            { status: 400 }
+          );
+        }
+        if (!cardHolder?.trim()) {
+          return NextResponse.json(
+            { error: 'Titulaire de la carte requis' },
+            { status: 400 }
+          );
+        }
+        expMonth = (expireMonth || '').toString().padStart(2, '0');
+        const expYear = (expireYear || '').toString();
+        expYearFull = expYear.length === 2 ? `20${expYear}` : expYear;
+        if (!expMonth || !expYearFull || expMonth.length !== 2) {
+          return NextResponse.json(
+            { error: 'Date d\'expiration invalide' },
+            { status: 400 }
+          );
+        }
+        if (!cvv || cvv.length < 3) {
+          return NextResponse.json(
+            { error: 'CVV requis' },
+            { status: 400 }
+          );
+        }
+        cardHolderName = cardHolder.trim();
+        cvvVal = cvv.toString();
       }
 
       const fees = calculateCardFees(amountCents);
       const autoSettings = await getPayoutAutoApproveSettings();
       const shouldAutoApprove = autoSettings.enabled && amountCents <= autoSettings.thresholdCents;
+
+      // Créer ou réutiliser le PaymentMethod (sans doublon)
+      if (!cardPaymentMethod) {
+        // Chercher une carte existante avec le même last4 + holderName pour éviter les doublons
+        const last4 = cardNum.slice(-4);
+        const existingByLast4 = await prisma.paymentMethod.findFirst({
+          where: {
+            userId,
+            type: 'FLEXIFY_CARD',
+            details: { path: ['last4'], equals: last4 },
+          },
+        });
+        const cardDetailsEncrypted = encrypt(JSON.stringify({
+          number: cardNum,
+          holderName: cardHolderName,
+          expireMonth: expMonth,
+          expireYear: expYearFull,
+          cvv: cvvVal,
+        }));
+        if (existingByLast4) {
+          // Mettre à jour les détails chiffrés (CVV peut changer)
+          cardPaymentMethod = await prisma.paymentMethod.update({
+            where: { id: existingByLast4.id },
+            data: {
+              details: {
+                last4,
+                holderName: cardHolderName,
+                encryptedCard: cardDetailsEncrypted,
+              },
+              isVerified: true,
+            },
+          });
+          LOG('CARD_PM_UPDATED', { paymentMethodId: cardPaymentMethod.id, last4 });
+        } else {
+          cardPaymentMethod = await prisma.paymentMethod.create({
+            data: {
+              userId,
+              type: 'FLEXIFY_CARD',
+              details: {
+                last4,
+                holderName: cardHolderName,
+                encryptedCard: cardDetailsEncrypted,
+              },
+              isVerified: true,
+            },
+          });
+          LOG('CARD_PM_CREATED', { paymentMethodId: cardPaymentMethod.id, last4 });
+        }
+      }
 
       if (!shouldAutoApprove) {
         // Au-dessus du seuil : créer le payout en PENDING_APPROVAL (exécution à l'approbation admin)
@@ -193,21 +287,13 @@ export async function POST(request: NextRequest) {
           },
           card: {
             number: cardNum,
-            holderName: cardHolder.trim(),
+            holderName: cardHolderName,
             expireMonth: expMonth,
             expireYear: expYearFull,
-            cvv: cvv.toString(),
+            cvv: cvvVal,
           },
         };
         const encryptedPayload = encrypt(JSON.stringify(cardPayload));
-        const cardPaymentMethod = await prisma.paymentMethod.create({
-          data: {
-            userId,
-            type: 'FLEXIFY_CARD',
-            details: { last4: cardNum.slice(-4), holderName: cardHolder.trim() },
-            isVerified: true,
-          },
-        });
         const payout = await prisma.payout.create({
           data: {
             userId,
@@ -263,10 +349,10 @@ export async function POST(request: NextRequest) {
         },
         card: {
           number: cardNum,
-          holderName: cardHolder.trim(),
+          holderName: cardHolderName,
           expireMonth: expMonth,
           expireYear: expYearFull,
-          cvv: cvv.toString(),
+          cvv: cvvVal,
         },
       });
 
@@ -275,15 +361,6 @@ export async function POST(request: NextRequest) {
         throw new Error(flexifyResponse.error_message || 'Échec de la création du payout carte');
       }
       LOG('CARD_PAYOUT_OK', { transactionId: flexifyResponse.transaction?.id });
-
-      const cardPaymentMethod = await prisma.paymentMethod.create({
-        data: {
-          userId,
-          type: 'FLEXIFY_CARD',
-          details: { last4: cardNum.slice(-4), holderName: cardHolder.trim() },
-          isVerified: true,
-        },
-      });
 
       const txStatus = flexifyResponse.transaction!.status;
       const internalStatus = convertFlexifyStatus(txStatus) as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';

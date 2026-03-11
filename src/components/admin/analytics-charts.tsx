@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import * as d3 from 'd3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -355,38 +357,29 @@ function DonutChart({
 // Composant principal des analytics
 export function AdminAnalyticsCharts() {
   const { messages } = useLocale();
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
-  const [metricsData, setMetricsData] = useState<MetricsData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState(30);
+  const queryClient = useQueryClient();
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [analyticsRes, metricsRes] = await Promise.all([
-        fetch(`/api/admin/analytics?period=${period}`),
-        fetch('/api/admin/metrics')
-      ]);
+  const { data: analyticsResponse, isLoading: analyticsLoading } = useQuery({
+    queryKey: queryKeys.adminAnalytics(period),
+    queryFn: () => fetch(`/api/admin/analytics?period=${period}`).then(r => r.json()),
+    refetchInterval: 30_000
+  });
 
-      if (analyticsRes.ok && metricsRes.ok) {
-        const analytics = await analyticsRes.json();
-        const metrics = await metricsRes.json();
-        
-        if (analytics.success) setAnalyticsData(analytics.data);
-        if (metrics.success) setMetricsData(metrics.data);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des données:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [period]);
+  const { data: metricsResponse, isLoading: metricsLoading } = useQuery({
+    queryKey: queryKeys.adminMetrics,
+    queryFn: () => fetch('/api/admin/metrics').then(r => r.json()),
+    refetchInterval: 30_000
+  });
 
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 30000); // Refresh toutes les 30s
-    return () => clearInterval(interval);
-  }, [period, fetchData]);
+  const analyticsData: AnalyticsData | null = analyticsResponse?.success ? analyticsResponse.data : null;
+  const metricsData: MetricsData | null = metricsResponse?.success ? metricsResponse.data : null;
+  const loading = analyticsLoading || metricsLoading;
+
+  const fetchData = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.adminAnalytics(period) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.adminMetrics });
+  };
 
   if (loading) {
     return (

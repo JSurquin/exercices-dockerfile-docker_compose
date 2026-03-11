@@ -1,132 +1,206 @@
+import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { TradeStatus } from '@prisma/client';
 import { TradeHooks } from '@/lib/trade-hooks';
 
-/**
- * Webhook Skinplace pour recevoir les mises à jour de statut des trades
- * 
- * Appelé par Skinplace quand le statut d'un trade change :
- * - Offre acceptée par l'utilisateur
- * - Offre refusée
- * - Offre expirée
- * - Items reçus et disponibles
- */
-
-interface SkinplaceWebhookPayload {
-  token: string;
-  status: string; // 'pending', 'accepted', 'declined', 'expired', 'completed', 'failed'
-  tradeofferid?: string;
-  steamtrade?: {
-    tradeofferid: string;
-    status: string;
-    price: string;
-    items_to_receive: number;
-  };
-  order_id?: string;
-  timestamp: number;
-}
+// =============================================================================
+// Skinplace IPN (webhook)
+// Doc : https://skinplace.stoplight.io/docs/skinplace/9bbegvp9w1nxu-ipn-signature
+//
+// FORMAT : GET request avec paramètres dans la query string
+// RÉPONSE ATTENDUE : HTTP 200 avec body texte "ok"
+//
+// SIGNATURE : sha256(token + secret_key)
+//   où token = champ "token" de la query string (token de transaction Skinplace)
+//
+// Deux types d'IPN :
+//   - IPN #1 (type=payment)       : changement de statut du paiement (status=complete/cancelled/active)
+//   - IPN #2 (protection_status)  : levée du hold 8 jours après (unconfirmed/confirmed/rollback)
+// =============================================================================
 
 /**
- * Mapper les statuts Skinplace/Steam vers nos statuts TradeStatus
+ * Statuts du paiement (champ "status" de l'IPN) :
+ *   complete  → trade accepté, fonds en hold
+ *   active    → trade en cours / hold Steam actif
+ *   cancelled → trade annulé
+ *
+ * Statuts du steamtrade (champ "steamtrade.status" de l'API) :
+ *   active / pending / cancelled / finished
+ *
+ * protection_status :
+ *   unconfirmed → fonds toujours en hold (IPN #1 initial)
+ *   confirmed   → fonds libérés (IPN #2 après 8 jours)
+ *   rollback    → trade rollback (remboursement)
  */
-function mapSkinplaceStatusToTradeStatus(skinplaceStatus: string): TradeStatus {
+
+function mapSkinplaceStatusToTradeStatus(status: string): TradeStatus {
   const statusMap: Record<string, TradeStatus> = {
-    // Offre créée, en attente d'acceptation
-    'pending': 'CREATED',
-    'sent': 'CREATED',
-    
-    // Offre acceptée par l'utilisateur
+    // IPN payment status
+    'complete': 'ACCEPTED_BY_BOT',
+    'active':   'IN_TRADE_HOLD',
+    // steamtrade status (used in sync polling)
+    'pending':  'CREATED',
+    'sent':     'CREATED',
     'accepted': 'ACCEPTED_BY_BOT',
-    
-    // En période de trade hold Steam (7 jours)
-    'active': 'IN_TRADE_HOLD',
     'trade_hold': 'IN_TRADE_HOLD',
-    
-    // Items reçus, disponibles pour paiement
+    'finished': 'AVAILABLE',
     'completed': 'AVAILABLE',
-    'done': 'AVAILABLE',
-    
+    'done':     'AVAILABLE',
     // Échecs
-    'declined': 'FAILED',
-    'rejected': 'FAILED',
-    'expired': 'FAILED',
     'cancelled': 'FAILED',
-    'failed': 'FAILED',
+    'declined':  'FAILED',
+    'rejected':  'FAILED',
+    'expired':   'FAILED',
+    'failed':    'FAILED',
   };
-
-  return statusMap[skinplaceStatus.toLowerCase()] || 'CREATED';
+  return statusMap[status.toLowerCase()] ?? 'CREATED';
 }
 
-export async function POST(request: NextRequest) {
+/**
+ * Vérifie la signature IPN Skinplace.
+ * sha256(token + secret_key) doit correspondre au champ "signature" reçu.
+ */
+function verifySkinplaceSignature(token: string, receivedSignature: string, secretKey: string): boolean {
+  const expected = crypto.createHash('sha256').update(token + secretKey).digest('hex');
   try {
-    const body: SkinplaceWebhookPayload = await request.json();
+    if (expected.length !== receivedSignature.length) return false;
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(receivedSignature));
+  } catch {
+    return false;
+  }
+}
 
-    console.log('📥 Webhook Skinplace reçu:', JSON.stringify(body, null, 2));
+// =============================================================================
+// GET — Skinplace envoie les IPN via GET avec params dans la query string
+// =============================================================================
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
 
-    // Validation des données
-    if (!body.token) {
-      return NextResponse.json(
-        { success: false, error: 'Token manquant' },
-        { status: 400 }
-      );
-    }
+    const token            = searchParams.get('token') ?? '';
+    const orderId          = searchParams.get('order_id') ?? '';
+    const status           = searchParams.get('status') ?? '';
+    const type             = searchParams.get('type') ?? '';
+    const protectionStatus = searchParams.get('protection_status');
+    const receivedSignature = searchParams.get('signature') ?? '';
+    const tradeOfferId     = searchParams.get('trade_offer_id') ?? searchParams.get('tradeoffer_id') ?? '';
+    const amount           = searchParams.get('amount') ?? '';
+    const transactionId    = searchParams.get('transaction_id') ?? '';
 
-    // Trouver le trade par le token Skinplace ou order_id
-    let trade = await prisma.trade.findFirst({
-      where: {
-        OR: [
-          { ticketId: body.token },
-          { id: body.order_id },
-        ],
-      },
-      include: {
-        user: true,
-        items: true,
-      },
+    console.log('📥 IPN Skinplace reçu:', {
+      type, status, token, orderId, protectionStatus, tradeOfferId, amount, transactionId,
     });
 
-    if (!trade) {
-      console.error('❌ Trade non trouvé pour token/order_id:', body.token, body.order_id);
-      return NextResponse.json(
-        { success: false, error: 'Trade non trouvé' },
-        { status: 404 }
-      );
+    // Vérification de la signature IPN officielle
+    // secret_key IPN = SKINPLACE_API_KEY_PRIVATE (confirmé dashboard skin.place)
+    const secretKey = process.env.SKINPLACE_SECRET_KEY ?? process.env.SKINPLACE_API_KEY_PRIVATE ?? '';
+    if (secretKey && receivedSignature) {
+      if (!verifySkinplaceSignature(token, receivedSignature, secretKey)) {
+        console.error('❌ IPN Skinplace: signature invalide');
+        return new Response('wrong signature', { status: 401 });
+      }
+    } else if (!secretKey) {
+      console.warn('⚠️  SKINPLACE_API_KEY_PRIVATE non configurée — vérification signature IPN désactivée');
     }
 
-    // Mapper le statut Skinplace vers notre enum TradeStatus
-    const newStatus = mapSkinplaceStatusToTradeStatus(body.status);
+    if (!token && !orderId) {
+      return new Response('missing token', { status: 400 });
+    }
+
+    // Chercher le trade : priorité à order_id (notre ticketId), fallback sur token Skinplace
+    let trade = await prisma.trade.findFirst({
+      where: { ticketId: orderId || token },
+      include: { user: true, items: true },
+    });
+
+    if (!trade && orderId) {
+      // Dernier fallback : le token Skinplace stocké dans ticketId
+      trade = await prisma.trade.findFirst({
+        where: { ticketId: token },
+        include: { user: true, items: true },
+      });
+    }
+
+    if (!trade) {
+      console.error('❌ Trade non trouvé pour order_id/token:', orderId, token);
+      // Répondre "ok" pour éviter les retentatives si c'est un trade inconnu
+      return new Response('ok', { status: 200 });
+    }
+
     const oldStatus = trade.status;
 
-    console.log(`🔄 Mise à jour statut trade ${trade.id}: ${oldStatus} -> ${newStatus}`);
-    console.log(`   Statut Skinplace: ${body.status}`);
+    // =========================================================================
+    // IPN #2 — protection_status (~8 jours après l'échange)
+    // Valeurs : 'unconfirmed' (en hold), 'confirmed' (libéré), 'rollback'
+    // =========================================================================
+    if (protectionStatus !== null) {
+      console.log(`🔒 IPN #2 protection_status pour trade ${trade.id}: ${protectionStatus}`);
 
-    // Ne pas rétrograder un statut déjà plus avancé
+      await prisma.auditLog.create({
+        data: {
+          userId: trade.userId,
+          action: 'SKINPLACE_PROTECTION_STATUS',
+          details: {
+            tradeId: trade.id,
+            protectionStatus,
+            currentTradeStatus: trade.status,
+            tradeOfferId,
+            transactionId,
+            source: 'ipn2',
+          },
+          ipAddress: request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? 'skinplace',
+        },
+      });
+
+      if (protectionStatus === 'confirmed') {
+        console.log(`✅ Fonds Skinplace définitivement libérés pour trade ${trade.id}`);
+        // Les fonds sont déjà crédités côté user depuis IPN #1 — on update juste le trade
+        if (trade.status === 'ACCEPTED_BY_BOT' || trade.status === 'IN_TRADE_HOLD') {
+          await prisma.trade.update({
+            where: { id: trade.id },
+            data: { status: 'AVAILABLE', availableAt: new Date() },
+          });
+          await TradeHooks.onTradeAvailable(trade.id);
+        }
+      } else if (protectionStatus === 'rollback') {
+        console.error(`⚠️  Rollback Skinplace pour trade ${trade.id}`);
+        await prisma.trade.update({
+          where: { id: trade.id },
+          data: { status: 'FAILED' },
+        });
+      }
+
+      return new Response('ok', { status: 200 });
+    }
+
+    // =========================================================================
+    // IPN #1 — Changement de statut du paiement
+    // status : 'complete' | 'active' | 'cancelled'
+    // =========================================================================
+    if (!status) {
+      console.warn('IPN Skinplace sans champ status, ignoré');
+      return new Response('ok', { status: 200 });
+    }
+
+    const newStatus = mapSkinplaceStatusToTradeStatus(status);
+    console.log(`🔄 IPN #1 trade ${trade.id}: ${oldStatus} -> ${newStatus} (skinplace: ${status})`);
+
     const statusOrder: TradeStatus[] = [
-      'CREATED',
-      'ACCEPTED_BY_BOT',
-      'IN_TRADE_HOLD',
-      'AVAILABLE',
-      'PAYOUT_PENDING',
-      'PAID',
+      'CREATED', 'ACCEPTED_BY_BOT', 'IN_TRADE_HOLD', 'AVAILABLE', 'PAYOUT_PENDING', 'PAID',
     ];
+    const oldIdx = statusOrder.indexOf(oldStatus);
+    const newIdx = statusOrder.indexOf(newStatus);
 
-    const oldStatusIndex = statusOrder.indexOf(oldStatus);
-    const newStatusIndex = statusOrder.indexOf(newStatus);
-
-    // Si le nouveau statut est FAILED, toujours mettre à jour
-    // Sinon, ne mettre à jour que si le nouveau statut est plus avancé
-    if (newStatus === 'FAILED' || newStatusIndex > oldStatusIndex) {
-      // Calculer la date de disponibilité si le trade est accepté
+    if (newStatus === 'FAILED' || newIdx > oldIdx) {
       let availableAt = trade.availableAt;
       if (newStatus === 'ACCEPTED_BY_BOT' && !availableAt) {
         availableAt = new Date();
-        availableAt.setDate(availableAt.getDate() + 7); // 7 jours de trade hold
+        availableAt.setDate(availableAt.getDate() + 8);
       } else if (newStatus === 'AVAILABLE') {
-        availableAt = new Date(); // Disponible immédiatement
+        availableAt = new Date();
       }
 
-      // Mettre à jour le trade
       trade = await prisma.trade.update({
         where: { id: trade.id },
         data: {
@@ -135,13 +209,9 @@ export async function POST(request: NextRequest) {
           tradeAcceptedAt: newStatus === 'ACCEPTED_BY_BOT' ? new Date() : trade.tradeAcceptedAt,
           updatedAt: new Date(),
         },
-        include: {
-          user: true,
-          items: true,
-        },
+        include: { user: true, items: true },
       });
 
-      // Journaliser la mise à jour
       await prisma.auditLog.create({
         data: {
           userId: trade.userId,
@@ -150,60 +220,49 @@ export async function POST(request: NextRequest) {
             tradeId: trade.id,
             oldStatus,
             newStatus,
-            skinplaceStatus: body.status,
-            tradeOfferId: body.tradeofferid || body.steamtrade?.tradeofferid,
-            source: 'webhook',
+            skinplaceStatus: status,
+            tradeOfferId,
+            transactionId,
+            amount,
+            source: 'ipn1',
           },
-          ipAddress: request.headers.get('x-forwarded-for') || 
-                     request.headers.get('x-real-ip') || 
-                     'skinplace',
+          ipAddress: request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? 'skinplace',
         },
       });
 
-      // Appeler les hooks de trade selon le statut
       if (newStatus === 'ACCEPTED_BY_BOT') {
-        await TradeHooks.onTradeCreated(trade.userId, trade.id);
+        await TradeHooks.onTradeAccepted(trade.userId, trade.id);
       } else if (newStatus === 'AVAILABLE') {
         await TradeHooks.onTradeAvailable(trade.id);
       } else if (newStatus === 'FAILED') {
-        // Log trade failure for debugging
-        console.error(`Trade ${trade.id} failed for user ${trade.userId}`);
+        console.error(`Trade ${trade.id} échoué pour user ${trade.userId}`);
       }
-
-      console.log(`✅ Trade ${trade.id} mis à jour avec succès: ${oldStatus} -> ${newStatus}`);
     } else {
       console.log(`ℹ️  Statut ignoré (non progression): ${oldStatus} -> ${newStatus}`);
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Webhook traité avec succès',
-      trade: {
-        id: trade.id,
-        status: trade.status,
-        updatedAt: trade.updatedAt,
-      },
-    });
+    // Skinplace attend HTTP 200 avec body "ok"
+    return new Response('ok', { status: 200 });
 
   } catch (error) {
-    console.error('❌ Erreur traitement webhook Skinplace:', error);
-    
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erreur interne' 
-      },
-      { status: 500 }
-    );
+    console.error('❌ Erreur IPN Skinplace:', error);
+    return new Response('error', { status: 500 });
   }
 }
 
-// Permettre les requêtes GET pour vérifier que le webhook est actif
-export async function GET() {
-  return NextResponse.json({
-    success: true,
-    message: 'Webhook Skinplace actif',
-    timestamp: new Date().toISOString(),
-  });
+// Garder POST pour compatibilité éventuelle (certains setups peuvent envoyer POST)
+export async function POST(request: NextRequest) {
+  // Rediriger vers GET avec les params du body si nécessaire
+  // Skinplace envoie normalement en GET, mais on garde un fallback
+  try {
+    const body = await request.json().catch(() => ({}));
+    const url = new URL(request.url);
+    for (const [key, value] of Object.entries(body as Record<string, string>)) {
+      if (!url.searchParams.has(key)) url.searchParams.set(key, String(value));
+    }
+    return GET(new NextRequest(url.toString(), { headers: request.headers }));
+  } catch {
+    return new Response('ok', { status: 200 });
+  }
 }
 

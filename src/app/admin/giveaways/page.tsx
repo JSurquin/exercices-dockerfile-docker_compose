@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GiveawayAdmin } from '@/components/admin/giveaway-admin';
 import { useGiveaways, GiveawayWithEntries } from '@/hooks/use-giveaways';
@@ -16,11 +17,10 @@ import {
   GiftIcon,
   PlusIcon,
   TrophyIcon,
-  TicketIcon,
-  CalendarIcon,
   UserGroupIcon,
   TrashIcon,
   PlayIcon,
+  PowerIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 
@@ -38,6 +38,8 @@ export default function AdminGiveawaysPage() {
   const { messages } = useLocale();
   const [isCreating, setIsCreating] = useState(false);
   const [selectedTab, setSelectedTab] = useState('list');
+  const [giveawaysEnabled, setGiveawaysEnabled] = useState(true);
+  const [togglingEnabled, setTogglingEnabled] = useState(false);
   const [form, setForm] = useState<CreateGiveawayForm>({
     title: '',
     description: '',
@@ -46,6 +48,31 @@ export default function AdminGiveawaysPage() {
     maxTickets: 100,
     durationMinutes: 60,
   });
+
+  useEffect(() => {
+    fetch('/api/admin/giveaways-settings')
+      .then(r => r.json())
+      .then(d => setGiveawaysEnabled(d.enabled ?? true))
+      .catch(() => {});
+  }, []);
+
+  const handleToggleGiveaways = async (enabled: boolean) => {
+    setTogglingEnabled(true);
+    try {
+      const res = await fetch('/api/admin/giveaways-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled }),
+      });
+      if (!res.ok) throw new Error();
+      setGiveawaysEnabled(enabled);
+      toast.success(enabled ? 'Page Giveaways activée' : 'Page Giveaways désactivée');
+    } catch {
+      toast.error('Erreur lors de la mise à jour');
+    } finally {
+      setTogglingEnabled(false);
+    }
+  };
 
   const handleCreateGiveaway = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,13 +159,36 @@ export default function AdminGiveawaysPage() {
           transition={{ duration: 0.6 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold mb-4 text-white">
-            <GiftIcon className="w-8 h-8 inline-block mr-2 text-orange-500" />
-            Administration des Giveaways
-          </h1>
-          <p className="text-slate-400">
-            Gérez les giveaways, créez de nouveaux concours et effectuez les tirages.
-          </p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold mb-4 text-white">
+                <GiftIcon className="w-8 h-8 inline-block mr-2 text-orange-500" />
+                Administration des Giveaways
+              </h1>
+              <p className="text-slate-400">
+                Gérez les giveaways, créez de nouveaux concours et effectuez les tirages.
+              </p>
+            </div>
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <PowerIcon className={`w-5 h-5 ${giveawaysEnabled ? 'text-green-400' : 'text-red-400'}`} />
+                  <div>
+                    <p className="text-sm font-medium text-white">Page Giveaways</p>
+                    <p className="text-xs text-slate-400">
+                      {giveawaysEnabled ? 'Visible par les joueurs' : 'Masquée aux joueurs'}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={giveawaysEnabled}
+                    onCheckedChange={handleToggleGiveaways}
+                    disabled={togglingEnabled}
+                    className="data-[state=checked]:bg-green-500"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </motion.div>
 
         {/* Quick Stats */}

@@ -106,14 +106,29 @@ export interface KycaidVerification {
 
 export interface KycaidWebhookPayload {
   request_id: string;
-  type: 'VERIFICATION_COMPLETED' | 'VERIFICATION_STATUS_CHANGED' | 'APPLICANT_CREATED';
+  type: 'VERIFICATION_COMPLETED' | 'VERIFICATION_STATUS_CHANGED' | 'APPLICANT_CREATED' | 'FORM_URL_EXPIRED';
   verification_id?: string;
   applicant_id: string;
-  status?: KycaidVerificationStatus;
-  verified?: boolean;
+  external_applicant_id?: string;
+  form_id?: string;
+  form_token?: string;
+  // VERIFICATION_COMPLETED : status = "completed", verified = true|false
+  status?: KycaidVerificationStatus | 'completed';
+  verified?: boolean | null;
+  // VERIFICATION_STATUS_CHANGED : verification_status = "pending"
   verification_status?: string;
   decline_reasons?: string[];
-  created_at: string;
+  // Verifications détaillées incluses directement dans le payload VERIFICATION_COMPLETED
+  verifications?: {
+    profile?: { verified: boolean; comment?: string; decline_reasons?: string[] };
+    document?: { verified: boolean; comment?: string; decline_reasons?: string[] };
+    facial?: { verified: boolean; comment?: string; decline_reasons?: string[] };
+    address?: { verified: boolean; comment?: string; decline_reasons?: string[] };
+    aml?: { verified: boolean; comment?: string; decline_reasons?: string[] };
+  };
+  applicant?: Record<string, unknown>;
+  created_at?: string;
+  verification_attempts_left?: number | null;
 }
 
 export interface CreateApplicantParams {
@@ -878,7 +893,10 @@ export function validateWebhookSignature(
 }
 
 /**
- * Traite un webhook KYCAID et met à jour la base de données
+ * Traite un webhook KYCAID et met à jour la base de données.
+ *
+ * VERIFICATION_STATUS_CHANGED → le formulaire a été soumis, vérification en cours (pending).
+ * VERIFICATION_COMPLETED      → la vérification est terminée, verified = true|false.
  */
 export async function processWebhook(payload: KycaidWebhookPayload): Promise<void> {
   const { type, applicant_id, verification_id, status, verified, decline_reasons } = payload;
@@ -891,62 +909,137 @@ export async function processWebhook(payload: KycaidWebhookPayload): Promise<voi
   });
 
   if (!user) {
+    // Fallback : chercher via external_applicant_id si disponible
+    if (payload.external_applicant_id) {
+      const userByExtId = await prisma.user.findUnique({
+        where: { id: payload.external_applicant_id },
+      });
+      if (userByExtId) {
+        // Mémoriser l'applicant_id pour les prochains webhooks
+        await prisma.user.update({
+          where: { id: userByExtId.id },
+          data: { kycaidApplicantId: applicant_id },
+        });
+        console.log(`[KYCAID Webhook] Linked applicant ${applicant_id} to user ${userByExtId.id} via external_applicant_id`);
+        return processWebhook({ ...payload });
+      }
+    }
     console.warn('[KYCAID Webhook] No user found for applicant:', applicant_id);
     return;
   }
 
   switch (type) {
-    case 'VERIFICATION_COMPLETED':
-    case 'VERIFICATION_STATUS_CHANGED':
-      if (verification_id) {
-        // Récupérer les détails complets de la vérification
-        const verificationDetails = await getVerification(verification_id);
+    case 'VERIFICATION_STATUS_CHANGED': {
+      // Le formulaire a été soumis, la vérification est en attente de traitement.
+      // On ne change pas encore le statut utilisateur, on enregistre juste l'état pending.
+      if (!verification_id) break;
 
-        // Mettre à jour KycVerification
-        await prisma.kycVerification.upsert({
-          where: { kycaidVerificationId: verification_id },
-          update: {
-            status: status?.toUpperCase() as any || 'COMPLETED',
-            verified: verified || false,
-            documentStatus: verificationDetails.verifications?.document?.status,
-            documentVerified: verificationDetails.verifications?.document?.verified,
-            facialStatus: verificationDetails.verifications?.facial?.status,
-            facialVerified: verificationDetails.verifications?.facial?.verified,
-            addressStatus: verificationDetails.verifications?.address?.status,
-            addressVerified: verificationDetails.verifications?.address?.verified,
-            amlStatus: verificationDetails.verifications?.aml?.status,
-            amlVerified: verificationDetails.verifications?.aml?.verified,
-            declineReasons: decline_reasons as any,
-            metadata: verificationDetails as any,
-            completedAt: new Date(),
-          },
-          create: {
-            userId: user.id,
-            kycaidVerificationId: verification_id,
-            kycaidApplicantId: applicant_id,
-            status: 'COMPLETED',
-            verified: verified || false,
-            metadata: verificationDetails as any,
-          },
+      await prisma.kycVerification.upsert({
+        where: { kycaidVerificationId: verification_id },
+        update: {
+          status: 'PENDING',
+          verified: false,
+        },
+        create: {
+          userId: user.id,
+          kycaidVerificationId: verification_id,
+          kycaidApplicantId: applicant_id,
+          status: 'PENDING',
+          verified: false,
+        },
+      });
+
+      // Mettre le statut utilisateur en PENDING si ce n'est pas déjà VERIFIED/REJECTED
+      if (user.kycStatus !== 'VERIFIED' && user.kycStatus !== 'REJECTED') {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { kycStatus: 'PENDING' },
         });
-
-        // Mettre à jour le statut utilisateur
-        if (verified === true) {
-          await updateUserKycStatus(user.id, 'VERIFIED', verification_id);
-        } else if (status === 'declined') {
-          await updateUserKycStatus(
-            user.id,
-            'REJECTED',
-            verification_id,
-            decline_reasons?.join(', ')
-          );
-        }
       }
       break;
+    }
+
+    case 'VERIFICATION_COMPLETED': {
+      if (!verification_id) break;
+
+      // Récupérer les détails complets via API pour avoir tous les champs (status par sous-type)
+      let verificationDetails: KycaidVerification;
+      try {
+        verificationDetails = await getVerification(verification_id);
+      } catch (err) {
+        console.error('[KYCAID Webhook] Could not fetch verification details, using payload data:', err);
+        // Fallback : utiliser les données du payload directement
+        verificationDetails = {
+          verification_id,
+          applicant_id,
+          status: (status as KycaidVerificationStatus) || 'completed',
+          verified: verified === true,
+          verification_status: status || '',
+          form_id: payload.form_id || '',
+          form_url: '',
+          created_at: payload.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          verifications: payload.verifications as KycaidVerification['verifications'],
+        };
+      }
+
+      // Déterminer les raisons de refus depuis l'API ou le payload
+      const allDeclineReasons = decline_reasons && decline_reasons.length > 0
+        ? decline_reasons
+        : collectDeclineReasons(verificationDetails);
+
+      const isVerified = verified === true;
+      const isDeclined = verified === false || status === 'declined';
+      const dbStatus = isVerified ? 'VERIFIED' : isDeclined ? 'REJECTED' : 'COMPLETED';
+
+      await prisma.kycVerification.upsert({
+        where: { kycaidVerificationId: verification_id },
+        update: {
+          status: dbStatus as any,
+          verified: isVerified,
+          documentStatus: verificationDetails.verifications?.document?.status,
+          documentVerified: verificationDetails.verifications?.document?.verified,
+          facialStatus: verificationDetails.verifications?.facial?.status,
+          facialVerified: verificationDetails.verifications?.facial?.verified,
+          addressStatus: verificationDetails.verifications?.address?.status,
+          addressVerified: verificationDetails.verifications?.address?.verified,
+          amlStatus: verificationDetails.verifications?.aml?.status,
+          amlVerified: verificationDetails.verifications?.aml?.verified,
+          declineReasons: allDeclineReasons as any,
+          metadata: verificationDetails as any,
+          completedAt: new Date(),
+        },
+        create: {
+          userId: user.id,
+          kycaidVerificationId: verification_id,
+          kycaidApplicantId: applicant_id,
+          status: dbStatus as any,
+          verified: isVerified,
+          declineReasons: allDeclineReasons as any,
+          metadata: verificationDetails as any,
+          completedAt: new Date(),
+        },
+      });
+
+      if (isVerified) {
+        await updateUserKycStatus(user.id, 'VERIFIED', verification_id);
+      } else if (isDeclined) {
+        await updateUserKycStatus(
+          user.id,
+          'REJECTED',
+          verification_id,
+          allDeclineReasons.join(', ') || undefined
+        );
+      }
+      break;
+    }
 
     case 'APPLICANT_CREATED':
-      // Rien de particulier
+      // Rien à faire — l'applicant est déjà lié en base lors de l'initiation
       break;
+
+    default:
+      console.log(`[KYCAID Webhook] Unhandled type: ${type}`);
   }
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, User, Mail, Hash, RefreshCw } from 'lucide-react';
 import { BalanceManagement } from '@/components/admin/balance-management';
 import { WithdrawalLimits } from '@/components/admin/withdrawal-limits';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 
 interface UserDetail {
   id: string;
@@ -34,55 +36,23 @@ interface UserDetail {
 export default function AdminUserDetailPage() {
   const params = useParams();
   const userId = params?.userId as string | undefined;
-  const [user, setUser] = useState<UserDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [resetKycLoading, setResetKycLoading] = useState(false);
   const [resetKycMessage, setResetKycMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const fetchUser = useCallback(async () => {
-    if (!userId) return;
-    setLoading(true);
-    setError(null);
-    try {
+  const { data: user, isLoading: loading, error: queryError, refetch: refetchUser } = useQuery({
+    queryKey: queryKeys.adminUser(userId ?? ''),
+    queryFn: async () => {
+      if (!userId) return null;
       const res = await fetch(`/api/admin/users/${userId}`);
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || res.statusText);
       }
-      const data = await res.json();
-      setUser(data);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erreur');
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    if (!userId) return;
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`/api/admin/users/${userId}`);
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || res.statusText);
-        }
-        const data = await res.json();
-        if (!cancelled) setUser(data);
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Erreur');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
+      return res.json();
+    },
+    enabled: !!userId,
+  });
+  const error = queryError instanceof Error ? queryError.message : null;
 
   const handleResetKycApplicant = async () => {
     if (!userId || !user) return;
@@ -93,7 +63,7 @@ export default function AdminUserDetailPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || res.statusText);
       setResetKycMessage({ type: 'success', text: data.message ?? "Applicant réinitialisé." });
-      await fetchUser();
+      await refetchUser();
     } catch (e) {
       setResetKycMessage({ type: 'error', text: e instanceof Error ? e.message : 'Erreur' });
     } finally {

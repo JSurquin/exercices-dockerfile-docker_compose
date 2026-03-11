@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,31 +24,18 @@ export function PaymentMethodsList({
   className,
 }: PaymentMethodsListProps) {
   const { messages } = useLocale();
-  const [paymentMethods, setPaymentMethods] = useState<StripePaymentMethod[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchPaymentMethods();
-  }, []);
-
-  const fetchPaymentMethods = async () => {
-    try {
-      setIsLoading(true);
+  const { data, isLoading, error: queryError } = useQuery({
+    queryKey: queryKeys.paymentMethods,
+    queryFn: async () => {
       const response = await fetch('/api/stripe/payment-methods');
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || messages.paymentMethodsList.loadingError);
-      }
-
-      setPaymentMethods(data.paymentMethods || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : messages.paymentMethodsList.unknownError);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      if (!response.ok) throw new Error(data.error || messages.paymentMethodsList.loadingError);
+      return data.paymentMethods as StripePaymentMethod[];
+    },
+  });
+  const paymentMethods = data ?? [];
+  const error = queryError instanceof Error ? queryError.message : null;
 
   const getPaymentMethodIcon = (type: string) => {
     switch (type) {

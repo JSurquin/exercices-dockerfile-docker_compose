@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -47,35 +47,19 @@ export function DynamicLegalPage({
   warningText,
 }: DynamicLegalPageProps) {
   const { locale, messages } = useLocale();
-  const [page, setPage] = useState<LegalPageData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    const fetchPage = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/legal-pages/${slug}?lang=${locale}`);
-        
-        if (!response.ok) {
-          // Page non trouvée, utiliser le fallback
-          setError(true);
-          return;
-        }
-        
-        const data = await response.json();
-        setPage(data.page);
-        setError(false);
-      } catch (err) {
-        console.error('Error fetching legal page:', err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: pageData, isLoading: loading, isError: error } = useQuery({
+    queryKey: ['legal-page', slug, locale],
+    queryFn: async () => {
+      const response = await fetch(`/api/legal-pages/${slug}?lang=${locale}`);
+      if (!response.ok) return null;
+      const data = await response.json();
+      return data.page ?? null;
+    },
+    staleTime: 10 * 60 * 1000,
+  });
 
-    fetchPage();
-  }, [slug, locale]);
+  const page = pageData ?? null;
 
   // Loading state
   if (loading) {

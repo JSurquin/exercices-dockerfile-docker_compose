@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
+import { prisma } from '~/prisma/prisma';
+
+type DateFilter = { createdAt?: { gte?: Date; lte?: Date } };
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,306 +14,364 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
+    if ((session.user as { role?: string }).role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const format = searchParams.get('format') || 'csv';
-    // const dateFrom = searchParams.get('dateFrom');
-    // const dateTo = searchParams.get('dateTo');
+    const dateFromParam = searchParams.get('dateFrom');
+    const dateToParam = searchParams.get('dateTo');
+
+    const dateFrom = dateFromParam ? new Date(dateFromParam) : undefined;
+    const dateTo = dateToParam ? new Date(dateToParam) : undefined;
+
+    const dateFilter: DateFilter =
+      dateFrom || dateTo
+        ? {
+            createdAt: {
+              ...(dateFrom ? { gte: dateFrom } : {}),
+              ...(dateTo ? { lte: dateTo } : {}),
+            },
+          }
+        : {};
 
     if (!type) {
-      return NextResponse.json(
-        { error: 'Type d\'export requis' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Type d'export requis" }, { status: 400 });
     }
 
-    // Générer les données CSV selon le type
     let csvData = '';
     let filename = '';
 
     switch (type) {
       case 'trades':
-        csvData = generateTradesCSV();
+        csvData = await generateTradesCSV(dateFilter);
         filename = 'trades';
         break;
       case 'users':
-        csvData = generateUsersCSV();
+        csvData = await generateUsersCSV(dateFilter);
         filename = 'users';
         break;
       case 'payouts':
-        csvData = generatePayoutsCSV();
+        csvData = await generatePayoutsCSV(dateFilter);
         filename = 'payouts';
         break;
       case 'kyc':
-        csvData = generateKYCCSV();
+        csvData = await generateKYCCSV(dateFilter);
         filename = 'kyc-documents';
         break;
       case 'affiliates':
-        csvData = generateAffiliatesCSV();
+        csvData = await generateAffiliatesCSV(dateFilter);
         filename = 'affiliates';
         break;
       case 'giveaways':
-        csvData = generateGiveawaysCSV();
+        csvData = await generateGiveawaysCSV(dateFilter);
         filename = 'giveaways';
         break;
       default:
-        return NextResponse.json(
-          { error: 'Type d\'export non supporté' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: "Type d'export non supporté" }, { status: 400 });
     }
 
-    // Ajouter la date au nom de fichier
     const dateStr = new Date().toISOString().split('T')[0];
     filename = `${filename}-${dateStr}.${format}`;
 
-    if (format === 'csv') {
-      return new NextResponse(csvData, {
-        headers: {
-          'Content-Type': 'text/csv',
-          'Content-Disposition': `attachment; filename="${filename}"`,
-        },
-      });
-    } else {
-      // Pour Excel, on retourne du CSV pour l'instant
-      // TODO: Implémenter la génération Excel avec une librairie comme xlsx
-      return new NextResponse(csvData, {
-        headers: {
-          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          'Content-Disposition': `attachment; filename="${filename}"`,
-        },
-      });
-    }
+    const contentType =
+      format === 'excel'
+        ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        : 'text/csv';
+
+    return new NextResponse('\uFEFF' + csvData, {
+      headers: {
+        'Content-Type': `${contentType}; charset=utf-8`,
+        'Content-Disposition': `attachment; filename="${filename}"`,
+      },
+    });
   } catch (error) {
-    console.error('Erreur lors de l\'export:', error);
-    return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
-      { status: 500 }
-    );
+    console.error("Erreur lors de l'export:", error);
+    return NextResponse.json({ error: 'Erreur interne du serveur' }, { status: 500 });
   }
 }
 
-function generateTradesCSV(): string {
+function escapeCsv(value: unknown): string {
+  const str = value === null || value === undefined ? '' : String(value);
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+function rowToCSV(row: unknown[]): string {
+  return row.map(escapeCsv).join(',');
+}
+
+async function generateTradesCSV(dateFilter: DateFilter): Promise<string> {
+  const trades = await prisma.trade.findMany({
+    where: dateFilter,
+    include: {
+      user: { select: { name: true, email: true, steamId: true } },
+      items: { select: { name: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
   const headers = [
     'ID',
     'Ticket ID',
     'Utilisateur',
+    'Steam ID',
     'Statut',
     'Montant Brut (€)',
     'Frais Cashout (€)',
     'Frais Réseau (€)',
     'Montant Net (€)',
+    'Nombre items',
     'Créé le',
     'Accepté le',
     'Disponible le',
-    'Nombre d\'items'
   ];
 
-  const rows = [
-    [
-      'trade_1',
-      'TICK-20241201-0001',
-      'user_1',
-      'payé',
-      '150.00',
-      '0.75',
-      '2.00',
-      '147.25',
-      '2024-12-01 10:00:00',
-      '2024-12-01 10:30:00',
-      '2024-12-08 10:30:00',
-      '1'
-    ],
-    [
-      'trade_2',
-      'TICK-20241201-0002',
-      'user_2',
-      'paiement_en_cours',
-      '250.00',
-      '1.25',
-      '3.00',
-      '245.75',
-      '2024-12-01 11:00:00',
-      '2024-12-01 11:15:00',
-      '2024-12-08 11:15:00',
-      '1'
-    ],
-  ];
+  const rows = trades.map((t) => [
+    t.id,
+    t.ticketId,
+    t.user?.name ?? '',
+    t.user?.steamId ?? '',
+    t.status,
+    (t.grossCents / 100).toFixed(2),
+    (t.cashoutFees / 100).toFixed(2),
+    (t.networkFees / 100).toFixed(2),
+    (t.netCents / 100).toFixed(2),
+    t.items.length,
+    t.createdAt.toISOString(),
+    t.tradeAcceptedAt?.toISOString() ?? '',
+    t.availableAt?.toISOString() ?? '',
+  ]);
 
-  return [headers, ...rows].map(row => row.join(',')).join('\n');
+  return [rowToCSV(headers), ...rows.map(rowToCSV)].join('\n');
 }
 
-function generateUsersCSV(): string {
+async function generateUsersCSV(dateFilter: DateFilter): Promise<string> {
+  const users = await prisma.user.findMany({
+    where: dateFilter,
+    orderBy: { createdAt: 'desc' },
+  });
+
   const headers = [
     'ID',
-    'Steam ID64',
-    'Nom d\'utilisateur',
+    'Nom',
+    'Email',
+    'Steam ID',
     'Statut KYC',
+    'Rôle',
     'Volume Total (€)',
+    'Balance (€)',
     'Niveau',
     'XP',
     'Tickets',
-    'Inscrit le'
+    'Inscrit le',
   ];
 
-  const rows = [
-    [
-      'user_1',
-      '76561198000000001',
-      'ProTrader_CS2',
-      'verified',
-      '2500.00',
-      '15',
-      '12500',
-      '45',
-      '2024-01-15'
-    ],
-    [
-      'user_2',
-      '76561198000000002',
-      'SkinMaster',
-      'verified',
-      '2200.00',
-      '14',
-      '11200',
-      '38',
-      '2024-02-20'
-    ],
-  ];
+  const rows = users.map((u) => [
+    u.id,
+    u.name ?? '',
+    u.email,
+    u.steamId ?? '',
+    u.kycStatus,
+    u.role,
+    (u.totalVolumeCents / 100).toFixed(2),
+    (u.balanceCents / 100).toFixed(2),
+    u.level,
+    u.xp,
+    u.tickets,
+    u.createdAt.toISOString(),
+  ]);
 
-  return [headers, ...rows].map(row => row.join(',')).join('\n');
+  return [rowToCSV(headers), ...rows.map(rowToCSV)].join('\n');
 }
 
-function generatePayoutsCSV(): string {
+async function generatePayoutsCSV(dateFilter: DateFilter): Promise<string> {
+  const payouts = await prisma.payout.findMany({
+    where: dateFilter,
+    include: {
+      user: { select: { name: true, email: true, steamId: true } },
+      paymentMethod: { select: { type: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
   const headers = [
     'ID',
     'Utilisateur',
+    'Email',
+    'Steam ID',
     'Statut',
     'Montant (€)',
-    'Type de Paiement',
-    'Référence',
+    'Méthode de paiement',
+    'Référence paiement',
+    'TX Hash',
+    'Frais traitement (€)',
+    'Frais réseau (€)',
     'Créé le',
-    'Payé le'
+    'Payé le',
+    'Message erreur',
   ];
 
-  const rows = [
-    [
-      'payout_1',
-      'user_1',
-      'payé',
-      '147.25',
-      'sepa',
-      'PAY-20241201-001',
-      '2024-12-01 10:30:00',
-      '2024-12-01 14:30:00'
-    ],
-    [
-      'payout_2',
-      'user_2',
-      'en_attente',
-      '245.75',
-      'crypto',
-      '',
-      '2024-12-01 11:15:00',
-      ''
-    ],
-  ];
+  const rows = payouts.map((p) => [
+    p.id,
+    p.user?.name ?? '',
+    p.user?.email ?? '',
+    p.user?.steamId ?? '',
+    p.status,
+    (p.amountCents / 100).toFixed(2),
+    p.paymentMethod?.type ?? '',
+    p.paymentReference ?? '',
+    p.txId ?? p.whitepayTxHash ?? '',
+    p.processingFeeCents != null ? (p.processingFeeCents / 100).toFixed(2) : '',
+    p.networkFeeCents != null ? (p.networkFeeCents / 100).toFixed(2) : '',
+    p.createdAt.toISOString(),
+    p.paidAt?.toISOString() ?? '',
+    p.errorMessage ?? '',
+  ]);
 
-  return [headers, ...rows].map(row => row.join(',')).join('\n');
+  return [rowToCSV(headers), ...rows.map(rowToCSV)].join('\n');
 }
 
-function generateKYCCSV(): string {
+async function generateKYCCSV(dateFilter: { createdAt?: { gte?: Date; lte?: Date } }): Promise<string> {
+  // KycDocument uses uploadedAt instead of createdAt
+  const kycDateFilter =
+    dateFilter.createdAt
+      ? {
+          uploadedAt: {
+            ...(dateFilter.createdAt.gte ? { gte: dateFilter.createdAt.gte } : {}),
+            ...(dateFilter.createdAt.lte ? { lte: dateFilter.createdAt.lte } : {}),
+          },
+        }
+      : {};
+
+  const docs = await prisma.kycDocument.findMany({
+    where: kycDateFilter,
+    include: {
+      user: { select: { name: true, email: true, steamId: true } },
+    },
+    orderBy: { uploadedAt: 'desc' },
+  });
+
   const headers = [
     'ID',
     'Utilisateur',
-    'Type de Document',
+    'Email',
+    'Steam ID',
+    'Type document',
     'Statut',
-    'Provider ID',
+    'KYCAID Applicant ID',
+    'Vérifié',
     'Uploadé le',
     'Révisé le',
-    'Raison du Rejet'
+    'Raison rejet',
   ];
 
-  const rows = [
-    [
-      'kyc_1',
-      'user_1',
-      'id_card',
-      'approved',
-      'provider_123',
-      '2024-11-15 10:30:00',
-      '2024-11-15 14:30:00',
-      ''
-    ],
-    [
-      'kyc_2',
-      'user_2',
-      'selfie',
-      'pending',
-      'provider_124',
-      '2024-12-01 09:15:00',
-      '',
-      ''
-    ],
-  ];
+  const rows = docs.map((d) => [
+    d.id,
+    d.user?.name ?? '',
+    d.user?.email ?? '',
+    d.user?.steamId ?? '',
+    d.type,
+    d.status,
+    d.kycaidApplicantId,
+    d.isVerified ? 'oui' : 'non',
+    d.uploadedAt.toISOString(),
+    d.reviewedAt?.toISOString() ?? '',
+    d.rejectionReason ?? '',
+  ]);
 
-  return [headers, ...rows].map(row => row.join(',')).join('\n');
+  return [rowToCSV(headers), ...rows.map(rowToCSV)].join('\n');
 }
 
-function generateAffiliatesCSV(): string {
+async function generateAffiliatesCSV(dateFilter: DateFilter): Promise<string> {
+  const affiliates = await prisma.affiliateStats.findMany({
+    where: dateFilter,
+    include: {
+      user: { select: { name: true, email: true, steamId: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
   const headers = [
     'ID',
     'Utilisateur',
-    'Code',
-    'Références Total',
-    'Volume Total (€)',
-    'Commission Total (€)',
-    'Taux Commission (%)',
-    'Actif'
+    'Email',
+    'Steam ID',
+    'Code affilié',
+    'Total références',
+    'Volume total (€)',
+    'Commission totale (€)',
+    'Taux commission (%)',
+    'Actif',
+    'Créé le',
   ];
 
-  const rows = [
-    [
-      'aff_1',
-      'user_1',
-      'AFF001',
-      '25',
-      '5000.00',
-      '100.00',
-      '2.0',
-      'true'
-    ],
-  ];
+  const rows = affiliates.map((a) => [
+    a.id,
+    a.user?.name ?? '',
+    a.user?.email ?? '',
+    a.user?.steamId ?? '',
+    a.code,
+    a.totalReferrals,
+    (a.totalVolumeCents / 100).toFixed(2),
+    (a.totalCommissionCents / 100).toFixed(2),
+    (a.commissionRate * 100).toFixed(1),
+    a.isActive ? 'oui' : 'non',
+    a.createdAt.toISOString(),
+  ]);
 
-  return [headers, ...rows].map(row => row.join(',')).join('\n');
+  return [rowToCSV(headers), ...rows.map(rowToCSV)].join('\n');
 }
 
-function generateGiveawaysCSV(): string {
+async function generateGiveawaysCSV(dateFilter: DateFilter): Promise<string> {
+  const giveaways = await prisma.giveaway.findMany({
+    where: dateFilter,
+    include: {
+      entries: {
+        include: {
+          user: { select: { name: true, steamId: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
   const headers = [
     'ID',
     'Titre',
     'Prix',
-    'Prix Ticket',
-    'Tickets Max',
-    'Tickets Vendus',
-    'Date de Fin',
+    'Prix ticket',
+    'Tickets max',
+    'Tickets vendus',
+    'Date de fin',
     'Statut',
-    'Gagnant'
+    'Gagnant (Steam ID)',
+    'Nombre participants',
+    'Créé le',
   ];
 
-  const rows = [
-    [
-      'giveaway_1',
-      'Giveaway AK-47 Redline',
-      'AK-47 | Redline (Field-Tested)',
-      '10',
-      '100',
-      '85',
-      '2024-12-15 23:59:59',
-      'active',
-      ''
-    ],
-  ];
+  const rows = giveaways.map((g) => {
+    const winner = g.winnerId
+      ? g.entries.find((e) => e.userId === g.winnerId)
+      : null;
+    return [
+      g.id,
+      g.title,
+      g.prize,
+      (g.ticketPrice / 100).toFixed(2),
+      g.maxTickets,
+      g.soldTickets,
+      g.endDate.toISOString(),
+      g.status,
+      winner?.user?.steamId ?? g.winnerId ?? '',
+      g.entries.length,
+      g.createdAt.toISOString(),
+    ];
+  });
 
-  return [headers, ...rows].map(row => row.join(',')).join('\n');
+  return [rowToCSV(headers), ...rows.map(rowToCSV)].join('\n');
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,6 @@ import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { Messages } from '~/utils/types';
 import { useGiveaways, GiveawayWithEntries } from '@/hooks/use-giveaways';
-import { Giveaway } from '@/lib/types';
 import { GiveawayNotifications } from '@/components/giveaway/giveaway-notifications';
 import {
   GiftIcon,
@@ -25,6 +25,8 @@ import {
   StarIcon,
   CalendarIcon,
   CurrencyDollarIcon,
+  LockClosedIcon,
+  BellAlertIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -180,10 +182,21 @@ export default function GiveawaysPage() {
   const [selectedTab, setSelectedTab] = useState('active');
   const { giveaways, loading, participateInGiveaway, refetch } = useGiveaways();
   const [userTickets, setUserTickets] = useState(0);
-  const [myEntries, setMyEntries] = useState<any[]>([]);
-  const [loadingEntries, setLoadingEntries] = useState(false);
+  const [giveawaysEnabled, setGiveawaysEnabled] = useState<boolean | null>(null);
 
-  // Initialiser le premier giveaway au chargement
+  useEffect(() => {
+    if (user) {
+      setUserTickets(user.tickets || 0);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetch('/api/giveaways/status')
+      .then(r => r.json())
+      .then(d => setGiveawaysEnabled(d.enabled ?? true))
+      .catch(() => setGiveawaysEnabled(true));
+  }, []);
+
   useEffect(() => {
     const initGiveaway = async () => {
       try {
@@ -197,31 +210,16 @@ export default function GiveawaysPage() {
     initGiveaway();
   }, []);
 
-  // Mettre à jour les tickets de l'utilisateur
-  useEffect(() => {
-    if (user) {
-      setUserTickets(user.tickets || 0);
-      loadMyEntries();
-    }
-  }, [user]);
-
-  const loadMyEntries = async () => {
-    if (!user) return;
-    
-    setLoadingEntries(true);
-    try {
-      const response = await fetch(`/api/giveaways/my-entries?userId=${user.id}`);
+  const { data: myEntriesData, isLoading: loadingEntries, refetch: refetchEntries } = useQuery({
+    queryKey: ['giveaways', 'my-entries', user?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/giveaways/my-entries?userId=${user!.id}`);
       const data = await response.json();
-      
-      if (data.success) {
-        setMyEntries(data.data);
-      }
-    } catch (error) {
-      console.error('Erreur chargement participations:', error);
-    } finally {
-      setLoadingEntries(false);
-    }
-  };
+      return data.success ? data.data : [];
+    },
+    enabled: !!user,
+  });
+  const myEntries = myEntriesData ?? [];
 
   const handleParticipate = async (giveaway: GiveawayWithEntries, tickets: number) => {
     if (!user) {
@@ -236,10 +234,8 @@ export default function GiveawaysPage() {
 
     try {
       await participateInGiveaway(giveaway.id, user.id, tickets);
-      // Mettre à jour les tickets localement
       setUserTickets(prev => prev - tickets);
-      // Recharger les participations
-      loadMyEntries();
+      refetchEntries();
     } catch (error) {
       console.error('Erreur lors de la participation:', error);
     }
@@ -266,6 +262,96 @@ export default function GiveawaysPage() {
 
   const activeGiveaways = giveaways.filter(g => g.status === 'ACTIVE');
   const endedGiveaways = giveaways.filter(g => g.status === 'ENDED');
+
+  // Chargement de l'état
+  if (giveawaysEnabled === null) {
+    return (
+      <div className="container mx-auto px-4 py-24 flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Chargement...</div>
+      </div>
+    );
+  }
+
+  // Page désactivée par l'admin
+  if (!giveawaysEnabled) {
+    return (
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+        <div className="max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
+          >
+            {/* Icône animée */}
+            <div className="relative mb-8 inline-block">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-500/20 to-red-600/20 border border-orange-500/30 flex items-center justify-center mx-auto">
+                <LockClosedIcon className="w-16 h-16 text-orange-500" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-bold">!</span>
+              </div>
+            </div>
+
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">
+              <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+                Giveaways
+              </span>{' '}
+              bientôt disponibles
+            </h1>
+            <p className="text-xl text-muted-foreground mb-3">
+              La section concours est temporairement fermée.
+            </p>
+            <p className="text-muted-foreground mb-10 max-w-md mx-auto">
+              Notre équipe prépare de nouveaux concours exceptionnels pour vous. 
+              Revenez bientôt pour tenter votre chance et remporter des skins CS2 !
+            </p>
+
+            {/* Infos sur les tickets */}
+            <Card className="mb-8 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-orange-200 dark:border-orange-800">
+              <CardContent className="p-6">
+                <div className="flex items-start space-x-4">
+                  <BellAlertIcon className="w-6 h-6 text-orange-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-left">
+                    <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-1">
+                      Continuez à accumuler vos tickets
+                    </h3>
+                    <p className="text-sm text-orange-700 dark:text-orange-300">
+                      Vendez vos skins et connectez-vous chaque jour pour gagner des tickets. 
+                      Ils seront disponibles dès l&apos;ouverture du prochain concours.
+                    </p>
+                    {user && (
+                      <div className="mt-3 flex items-center space-x-2">
+                        <TicketIcon className="w-4 h-4 text-purple-600" />
+                        <span className="font-bold text-purple-700 dark:text-purple-300">
+                          {user.tickets ?? 0} tickets en attente
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/dashboard">
+                <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white">
+                  <TrophyIcon className="w-4 h-4 mr-2" />
+                  Voir mon dashboard
+                </Button>
+              </Link>
+              <Link href="/">
+                <Button variant="outline">
+                  <GiftIcon className="w-4 h-4 mr-2" />
+                  Vendre mes skins
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -469,7 +555,7 @@ export default function GiveawaysPage() {
                       </div>
                     ) : myEntries.length > 0 ? (
                       <div className="space-y-3 sm:space-y-4">
-                        {myEntries.map((entry) => (
+                        {myEntries.map((entry: { id: string; ticketsUsed: number; enteredAt: string; participationStatus: string; giveaway: { id: string; title: string; status: string; endDate: string } }) => (
                           <div key={entry.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
                             <div className="flex items-center justify-between">
                               <div className="flex-1">

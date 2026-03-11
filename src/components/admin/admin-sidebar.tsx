@@ -29,6 +29,7 @@ import {
   DollarSign,
   FileText,
   HelpCircle,
+  Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -91,6 +92,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
       title: t.groups.marketing,
       items: [
         { title: t.items.giveaways, href: '/admin/giveaways', icon: Gift },
+        { title: t.items.points ?? 'Points & Gamification', href: '/admin/points', icon: Star },
         { title: t.items.newsletter, href: '/admin/newsletter', icon: Mail },
       ],
     },

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -10,6 +10,7 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { queryKeys } from '@/lib/query-keys';
 
 interface AdminStats {
   recentTrades: any[];
@@ -34,28 +35,16 @@ const getStatusColor = (status: string) => {
 };
 
 export function DashboardOverview() {
-  const [stats, setStats] = useState<AdminStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: stats, isLoading } = useQuery<AdminStats>({
+    queryKey: queryKeys.adminStats,
+    queryFn: async () => {
+      const response = await fetch('/api/admin/stats');
+      if (!response.ok) throw new Error('Erreur lors du chargement des stats');
+      return response.json();
+    },
+  });
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetch('/api/admin/stats');
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data);
-        }
-      } catch (error) {
-        console.error('Erreur lors du chargement des stats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>

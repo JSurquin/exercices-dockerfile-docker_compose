@@ -3855,6 +3855,7 @@ export interface Messages {
         commissions: string;
         performance: string;
         giveaways: string;
+        points?: string;
         newsletter: string;
         chatSupport: string;
         legalPages: string;

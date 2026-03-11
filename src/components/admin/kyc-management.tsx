@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,21 +26,18 @@ import { KYCDocument, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
 
 export function AdminKYCManagement() {
-  const [kycDocuments, setKycDocuments] = useState<KYCDocument[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { messages } = useLocale();
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState<AdminFilters>({
     page: 1,
     limit: 20,
   });
   const [searchTerm, setSearchTerm] = useState('');
 
-  const fetchKYCDocuments = useCallback(async () => {
-    try {
-      setIsLoading(true);
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.adminKyc({ ...filters, search: searchTerm }),
+    queryFn: async () => {
       const params = new URLSearchParams();
-      
       if (filters.status) params.append('status', filters.status);
       if (filters.userId) params.append('userId', filters.userId);
       if (filters.dateFrom) params.append('dateFrom', filters.dateFrom.toISOString());
@@ -48,23 +47,13 @@ export function AdminKYCManagement() {
       if (searchTerm) params.append('search', searchTerm);
 
       const response = await fetch(`/api/admin/kyc?${params}`);
-      const data = await response.json();
+      const json = await response.json();
+      if (!response.ok) throw new Error(json.error || 'Erreur lors du chargement des documents KYC');
+      return json;
+    },
+  });
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors du chargement des documents KYC');
-      }
-
-      setKycDocuments(data.documents || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filters, searchTerm]);
-
-  useEffect(() => {
-    fetchKYCDocuments();
-  }, [fetchKYCDocuments]);
+  const kycDocuments: KYCDocument[] = data?.documents ?? [];
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -84,13 +73,8 @@ export function AdminKYCManagement() {
       const response = await fetch(`/api/admin/kyc/${documentId}/approve`, {
         method: 'POST',
       });
-
-      if (!response.ok) {
-        throw new Error('Erreur lors de l\'approbation');
-      }
-
-      // Rafraîchir la liste
-      fetchKYCDocuments();
+      if (!response.ok) throw new Error('Erreur lors de l\'approbation');
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc({ ...filters, search: searchTerm }) });
     } catch (err) {
       console.error('Erreur:', err);
     }
@@ -100,18 +84,11 @@ export function AdminKYCManagement() {
     try {
       const response = await fetch(`/api/admin/kyc/${documentId}/reject`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason }),
       });
-
-      if (!response.ok) {
-        throw new Error('Erreur lors du rejet');
-      }
-
-      // Rafraîchir la liste
-      fetchKYCDocuments();
+      if (!response.ok) throw new Error('Erreur lors du rejet');
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc({ ...filters, search: searchTerm }) });
     } catch (err) {
       console.error('Erreur:', err);
     }
@@ -214,7 +191,7 @@ export function AdminKYCManagement() {
         <CardContent className="p-6">
           <div className="flex items-center gap-2 text-red-400">
             <AlertTriangle className="h-5 w-5" />
-            <span>Erreur: {error}</span>
+            <span>Erreur: {error.message}</span>
           </div>
         </CardContent>
       </Card>
@@ -248,7 +225,7 @@ export function AdminKYCManagement() {
         </Select>
 
         <Button 
-          onClick={fetchKYCDocuments}
+          onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc({ ...filters, search: searchTerm }) })}
           variant="outline"
           className="border-slate-600 text-white hover:bg-slate-700"
         >

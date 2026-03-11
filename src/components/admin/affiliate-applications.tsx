@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -51,55 +53,32 @@ interface AffiliateApplication {
 }
 
 export default function AffiliateApplications() {
-  const [applications, setApplications] = useState<AffiliateApplication[]>([]);
-  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('pending');
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [pendingCount, setPendingCount] = useState(0);
   const [selectedApp, setSelectedApp] = useState<AffiliateApplication | null>(null);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [processing, setProcessing] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    loadApplications();
-  }, [page, statusFilter]);
-
-  const loadApplications = async () => {
-    try {
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.adminAffiliateApplications(statusFilter),
+    queryFn: async () => {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '20',
         status: statusFilter
       });
-
       const response = await fetch(`/api/admin/affiliate-applications?${params}`);
-      const data = await response.json();
+      return response.json();
+    },
+    refetchInterval: 30_000
+  });
 
-      if (data.success) {
-        setApplications(data.data.applications);
-        setTotalPages(data.data.pagination.pages);
-        setPendingCount(data.data.pendingCount);
-      } else {
-        toast({
-          title: 'Erreur',
-          description: 'Impossible de charger les demandes',
-          variant: 'destructive'
-        });
-      }
-    } catch (error) {
-      console.error('Erreur chargement demandes:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Erreur de connexion',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const applications: AffiliateApplication[] = data?.data?.applications ?? [];
+  const totalPages: number = data?.data?.pagination?.pages ?? 1;
+  const pendingCount: number = data?.data?.pendingCount ?? 0;
 
   const handleApprove = async (applicationId: string) => {
     if (!confirm('Êtes-vous sûr de vouloir approuver cette demande ?')) {
@@ -124,7 +103,7 @@ export default function AffiliateApplications() {
           title: 'Succès',
           description: 'Demande approuvée et compte affilié créé'
         });
-        loadApplications();
+        queryClient.invalidateQueries({ queryKey: ['admin', 'affiliate-applications'] });
       } else {
         toast({
           title: 'Erreur',
@@ -175,7 +154,7 @@ export default function AffiliateApplications() {
         setShowRejectDialog(false);
         setRejectionReason('');
         setSelectedApp(null);
-        loadApplications();
+        queryClient.invalidateQueries({ queryKey: ['admin', 'affiliate-applications'] });
       } else {
         toast({
           title: 'Erreur',
@@ -217,7 +196,7 @@ export default function AffiliateApplications() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -262,7 +241,7 @@ export default function AffiliateApplications() {
                 <SelectItem value="rejected">Rejetées</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={() => loadApplications()} variant="outline">
+            <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['admin', 'affiliate-applications'] })} variant="outline">
               Actualiser
             </Button>
           </div>

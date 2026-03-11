@@ -71,6 +71,7 @@ export type FlexifyTransactionStatus =
   | 'pending'
   | 'success'
   | 'declined'
+  | 'error'      // statut final d'échec renvoyé par Flexify (doc payout callback)
   | 'failed'
   | 'expired';
 
@@ -186,18 +187,33 @@ function normalizeGateApiResponse(raw: unknown): FlexifyPayoutResponse {
 }
 
 export interface FlexifyWebhookPayload {
-  transaction_id: string;
+  /** ID Flexify de la transaction (ex: "PT000000000000K") — champ "identifier" dans la doc */
+  identifier: string;
+  /** Notre référence interne passée à la création (gateFiOrderId) */
   reference: string;
   status: FlexifyTransactionStatus;
+  type: string;   // "payout"
+  method: FlexifyPaymentMethod;
+  mode: string;
   amount: string;
   currency: string;
-  method: FlexifyPaymentMethod;
-  created_at: string;
-  updated_at: string;
+  creation_date: string;
+  status_date?: string;
+  timestamp?: string;
+  error_code?: number;
+  error_reason?: string;
+  request_id?: string;
+  /** Alias pour compatibilité interne (= identifier) */
+  transaction_id?: string;
   sepa?: {
     iban: string;
     bic?: string;
     holder_name: string;
+  };
+  card?: {
+    bin: string;
+    last_4: string;
+    brand: string;
   };
 }
 
@@ -934,6 +950,7 @@ export function convertFlexifyStatus(status: FlexifyTransactionStatus): string {
     'pending': 'PROCESSING',
     'success': 'PAID',
     'declined': 'FAILED',
+    'error': 'FAILED',   // statut final d'échec (ex: processing error)
     'failed': 'FAILED',
     'expired': 'FAILED',
   };

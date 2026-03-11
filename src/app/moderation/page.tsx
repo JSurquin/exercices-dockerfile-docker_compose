@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import {
   ChartBarIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import { queryKeys } from '@/lib/query-keys';
 
 const priorityColors = {
   LOW: 'bg-green-100 text-green-800',
@@ -44,46 +46,38 @@ export default function ModerationPage() {
 
   console.log("mon user sur cette page : ", user);
   const { messages } = useLocale();
-  const [conversations, setConversations] = useState<ConversationWithMessages[]>([]);
-  const [stats, setStats] = useState<ChatStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState<ConversationFilters>({
     status: 'ACTIVE',
     page: 1,
     limit: 20,
   });
 
-  const fetchConversations = async () => {
-    try {
+  const { data: conversationsData, isLoading: loading } = useQuery({
+    queryKey: queryKeys.adminChatConversations(filters as Record<string, unknown>),
+    queryFn: async () => {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
           params.append(key, value.toString());
         }
       });
-
       const response = await fetch(`/api/chat/conversations?${params}`);
       if (!response.ok) throw new Error('Erreur lors du chargement');
-      
-      const data = await response.json();
-      setConversations(data.conversations);
-    } catch (error) {
-      toast.error('Erreur lors du chargement des conversations');
-      console.error(error);
-    }
-  };
+      return response.json();
+    },
+  });
 
-  const fetchStats = async () => {
-    try {
+  const conversations = conversationsData?.conversations ?? [];
+
+  const { data: stats } = useQuery({
+    queryKey: queryKeys.adminChatStats,
+    queryFn: async () => {
       const response = await fetch('/api/chat/stats');
       if (!response.ok) throw new Error('Erreur lors du chargement des stats');
-      
-      const data = await response.json();
-      setStats(data);
-    } catch (error) {
-      console.error('Erreur lors du chargement des statistiques:', error);
-    }
-  };
+      return response.json();
+    },
+  });
 
   const assignConversation = async (conversationId: string, moderatorId: string) => {
     try {
@@ -96,7 +90,7 @@ export default function ModerationPage() {
       if (!response.ok) throw new Error('Erreur lors de l\'assignation');
       
       toast.success('Conversation assignée avec succès');
-      fetchConversations();
+      queryClient.invalidateQueries({ queryKey: ['admin', 'chat', 'conversations'] });
     } catch (error) {
       toast.error('Erreur lors de l\'assignation');
       console.error(error);
@@ -114,21 +108,12 @@ export default function ModerationPage() {
       if (!response.ok) throw new Error('Erreur lors de la mise à jour');
       
       toast.success('Statut mis à jour avec succès');
-      fetchConversations();
+      queryClient.invalidateQueries({ queryKey: ['admin', 'chat', 'conversations'] });
     } catch (error) {
       toast.error('Erreur lors de la mise à jour');
       console.error(error);
     }
   };
-
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await Promise.all([fetchConversations(), fetchStats()]);
-      setLoading(false);
-    };
-    loadData();
-  }, [filters]);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('fr-FR', {
@@ -322,7 +307,7 @@ export default function ModerationPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {conversations.map((conversation) => (
+                {conversations.map((conversation: ConversationWithMessages) => (
                   <motion.div
                     key={conversation.id}
                     initial={{ opacity: 0, y: 10 }}
@@ -335,10 +320,10 @@ export default function ModerationPage() {
                           <h3 className="font-semibold">
                             {conversation.subject || 'Sans sujet'}
                           </h3>
-                          <Badge className={priorityColors[conversation.priority]}>
+                          <Badge className={priorityColors[conversation.priority as keyof typeof priorityColors]}>
                             {conversation.priority}
                           </Badge>
-                          <Badge className={statusColors[conversation.status]}>
+                          <Badge className={statusColors[conversation.status as keyof typeof statusColors]}>
                             {conversation.status}
                           </Badge>
                           {conversation.category && (

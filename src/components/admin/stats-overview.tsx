@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLocale } from '@/components/providers/locale-provider';
@@ -15,34 +15,22 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { AdminStats } from '@/lib/types';
+import { queryKeys } from '@/lib/query-keys';
 
 export function AdminStatsOverview() {
-  const [stats, setStats] = useState<AdminStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { messages } = useLocale();
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  const fetchStats = async () => {
-    try {
-      setIsLoading(true);
+  const { data: stats, isLoading, error } = useQuery<AdminStats>({
+    queryKey: queryKeys.adminStats,
+    queryFn: async () => {
       const response = await fetch('/api/admin/stats');
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.error || messages.admin.errors.loadingStats);
       }
-
-      setStats(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : messages.admin.errors.unknown);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      return data;
+    },
+  });
 
   const formatCurrency = (centimes: number) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -65,7 +53,7 @@ export function AdminStatsOverview() {
         <CardContent className="p-6">
           <div className="flex items-center gap-2 text-red-400">
             <AlertTriangle className="h-5 w-5" />
-            <span>Erreur: {error}</span>
+            <span>Erreur: {error.message}</span>
           </div>
         </CardContent>
       </Card>

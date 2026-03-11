@@ -1,111 +1,88 @@
-import { useState, useEffect, useCallback } from 'react';
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import { useCallback } from 'react';
 import { currencyConverter } from '@/lib/currency-converter';
+import { queryKeys } from '@/lib/query-keys';
 
 interface UseCurrencyConverterOptions {
   autoRefresh?: boolean;
-  refreshInterval?: number; // en millisecondes
+  refreshInterval?: number;
 }
 
 export function useCurrencyConverter(options: UseCurrencyConverterOptions = {}) {
-  const { autoRefresh = false, refreshInterval = 5 * 60 * 1000 } = options; // 5 minutes par défaut
-  
-  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const { autoRefresh = false, refreshInterval = 5 * 60 * 1000 } = options;
 
-  // Récupérer le taux de change
-  const fetchRate = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const rate = await currencyConverter.getUsdToEurRate();
-      setExchangeRate(rate);
-      setLastUpdate(new Date());
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';
-      setError(errorMessage);
-      console.error('Erreur lors de la récupération du taux de change:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const {
+    data: exchangeRate = null,
+    isLoading: loading,
+    error: queryError,
+    dataUpdatedAt,
+    refetch,
+  } = useQuery({
+    queryKey: queryKeys.currencyRate,
+    queryFn: () => currencyConverter.getUsdToEurRate(),
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: autoRefresh ? refreshInterval : false,
+  });
 
-  // Convertir un prix en centimes USD vers centimes EUR
-  const convertUsdCentsToEurCents = useCallback(async (usdCents: number): Promise<number> => {
-    return await currencyConverter.convertUsdCentsToEurCents(usdCents);
-  }, []);
+  const error = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : 'Erreur inconnue'
+    : null;
 
-  // Convertir un prix en dollars USD vers euros EUR
-  const convertUsdToEur = useCallback(async (usdAmount: number): Promise<number> => {
-    return await currencyConverter.convertUsdToEur(usdAmount);
-  }, []);
+  const lastUpdate = dataUpdatedAt ? new Date(dataUpdatedAt) : null;
 
-  // Formater un prix en euros
-  const formatEurPrice = useCallback((eurCents: number): string => {
-    return currencyConverter.formatEurPrice(eurCents);
-  }, []);
+  const convertUsdCentsToEurCents = useCallback(
+    async (usdCents: number): Promise<number> =>
+      currencyConverter.convertUsdCentsToEurCents(usdCents),
+    []
+  );
 
-  // Formater un prix en dollars
-  const formatUsdPrice = useCallback((usdCents: number): string => {
-    return currencyConverter.formatUsdPrice(usdCents);
-  }, []);
+  const convertUsdToEur = useCallback(
+    async (usdAmount: number): Promise<number> =>
+      currencyConverter.convertUsdToEur(usdAmount),
+    []
+  );
 
-  // Convertir et formater directement un prix USD en EUR
-  const convertAndFormatPrice = useCallback(async (usdCents: number): Promise<string> => {
-    const eurCents = await convertUsdCentsToEurCents(usdCents);
-    return formatEurPrice(eurCents);
-  }, [convertUsdCentsToEurCents, formatEurPrice]);
+  const formatEurPrice = useCallback(
+    (eurCents: number): string => currencyConverter.formatEurPrice(eurCents),
+    []
+  );
 
-  // Vider le cache
+  const formatUsdPrice = useCallback(
+    (usdCents: number): string => currencyConverter.formatUsdPrice(usdCents),
+    []
+  );
+
+  const convertAndFormatPrice = useCallback(
+    async (usdCents: number): Promise<string> => {
+      const eurCents = await convertUsdCentsToEurCents(usdCents);
+      return formatEurPrice(eurCents);
+    },
+    [convertUsdCentsToEurCents, formatEurPrice]
+  );
+
   const clearCache = useCallback(() => {
     currencyConverter.clearCache();
-    fetchRate(); // Récupérer un nouveau taux
-  }, [fetchRate]);
+    refetch();
+  }, [refetch]);
 
-  // Obtenir les informations du cache
-  const getCacheInfo = useCallback(() => {
-    return currencyConverter.getCacheInfo();
-  }, []);
-
-  // Charger le taux initial
-  useEffect(() => {
-    fetchRate();
-  }, [fetchRate]);
-
-  // Auto-refresh si activé
-  useEffect(() => {
-    if (!autoRefresh) return;
-
-    const interval = setInterval(() => {
-      fetchRate();
-    }, refreshInterval);
-
-    return () => clearInterval(interval);
-  }, [autoRefresh, refreshInterval, fetchRate]);
+  const getCacheInfo = useCallback(() => currencyConverter.getCacheInfo(), []);
 
   return {
-    // État
     exchangeRate,
     loading,
     error,
     lastUpdate,
-    
-    // Actions
-    fetchRate,
+    fetchRate: refetch,
     clearCache,
-    
-    // Utilitaires de conversion
     convertUsdCentsToEurCents,
     convertUsdToEur,
     convertAndFormatPrice,
-    
-    // Utilitaires de formatage
     formatEurPrice,
     formatUsdPrice,
-    
-    // Informations
     getCacheInfo,
   };
 }

@@ -260,11 +260,18 @@ async function handleGetDashboard(req: NextRequest): Promise<NextResponse> {
 
     // Détection de pics d'activité
     logger.info('📊 Detecting activity spikes...');
-    const activitySpikes = await safeQuery(
+    const rawSpikes = await safeQuery(
       () => FraudDetector.detectActivitySpikes(),
       { hasSpike: false, currentRate: 0, averageRate: 0, threshold: 0 },
       'activity spikes'
     );
+
+    const activitySpikes = {
+      isSpike: rawSpikes.hasSpike,
+      currentActivity: rawSpikes.currentRate,
+      averageActivity: rawSpikes.averageRate,
+      threshold: rawSpikes.threshold,
+    };
 
     // Tendances (comparaison avec période précédente)
     logger.info('📈 Calculating trends...');

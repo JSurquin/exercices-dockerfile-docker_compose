@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -129,105 +131,74 @@ export default function PayoutPage() {
     selectedNetwork: 'ERC20',
     memo: '',
   });
-  const [payoutHistory, setPayoutHistory] = useState<Array<{
-    id: string;
-    amount: number;
-    status: string;
-    method: string;
-    createdAt: string;
-  }>>([]);
-  const [availableBalanceCents, setAvailableBalanceCents] = useState<number | null>(null);
-  const [savedSepaMethods, setSavedSepaMethods] = useState<Array<{ id: string; maskedIban: string | null; maskedBic: string | null }>>([]);
   const [useSavedIban, setUseSavedIban] = useState(false);
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<string | null>(null);
-  const [savedCardMethods, setSavedCardMethods] = useState<Array<{ id: string; last4: string | null; holderName: string | null }>>([]);
   const [useSavedCard, setUseSavedCard] = useState(false);
   const [selectedCardMethodId, setSelectedCardMethodId] = useState<string | null>(null);
-  const [savedCryptoMethods, setSavedCryptoMethods] = useState<Array<{
-    id: string;
-    maskedAddress: string | null;
-    address: string;
-    network: string | null;
-    targetCurrency: string | null;
-    memo: string | null;
-  }>>([]);
   const [useSavedWallet, setUseSavedWallet] = useState(false);
   const [selectedCryptoMethodId, setSelectedCryptoMethodId] = useState<string | null>(null);
+  const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Traductions locales pour la page payout
   const text = messages.payoutPage;
 
-  // Récupérer le solde disponible (API dédiée)
-  const fetchBalance = useCallback(async () => {
-    try {
+  const queryClient = useQueryClient();
+
+  const { data: balanceData } = useQuery({
+    queryKey: queryKeys.userBalance,
+    queryFn: async () => {
       const response = await fetch('/api/user/balance');
-      if (response.ok) {
-        const data = await response.json();
-        setAvailableBalanceCents(data.availableCents ?? 0);
-      } else {
-        setAvailableBalanceCents(0);
-      }
-    } catch (error) {
-      console.error('Error fetching balance:', error);
-      setAvailableBalanceCents(0);
-    }
-  }, []);
+      if (!response.ok) return { availableCents: 0 };
+      return response.json();
+    },
+    enabled: !!user,
+  });
+  const availableBalanceCents = balanceData?.availableCents ?? null;
 
-  // Récupérer l'historique des payouts
-  const fetchPayoutHistory = useCallback(async () => {
-    try {
+  const { data: historyData } = useQuery({
+    queryKey: queryKeys.payoutHistory,
+    queryFn: async () => {
       const response = await fetch('/api/payouts/history');
-      if (response.ok) {
-        const data = await response.json();
-        setPayoutHistory(data.payouts || []);
-      }
-    } catch (error) {
-      console.error('Error fetching payout history:', error);
-    }
-  }, []);
+      if (!response.ok) return { payouts: [] };
+      return response.json();
+    },
+    enabled: !!user,
+    refetchOnWindowFocus: true,
+  });
+  const payoutHistory = historyData?.payouts ?? [];
 
-  // Moyens de paiement enregistrés (IBAN / carte / wallet)
-  const fetchPaymentMethods = useCallback(async () => {
-    try {
+  const { data: paymentMethodsData } = useQuery({
+    queryKey: queryKeys.paymentMethods,
+    queryFn: async () => {
       const response = await fetch('/api/payment-methods');
-      if (response.ok) {
-        const data = await response.json();
-        const all = data.paymentMethods || [];
-        const sepa = all.filter((m: { type: string }) => m.type === 'SEPA' || m.type === 'FLEXIFY_SEPA');
-        const card = all.filter((m: { type: string }) => m.type === 'FLEXIFY_CARD' || m.type === 'CARD');
-        const crypto = all.filter((m: { type: string }) => m.type === 'WHITEPAY_CRYPTO' || m.type === 'CRYPTO');
-        setSavedSepaMethods(sepa);
-        setSavedCardMethods(card.map((m: { id: string; last4: string | null; holderName: string | null }) => ({ id: m.id, last4: m.last4 ?? null, holderName: m.holderName ?? null })));
-        setSavedCryptoMethods(crypto.map((m: { id: string; maskedAddress: string | null; address?: string; network: string | null; targetCurrency: string | null; memo: string | null }) => ({
-          id: m.id,
-          maskedAddress: m.maskedAddress ?? null,
-          address: m.address ?? '',
-          network: m.network ?? null,
-          targetCurrency: m.targetCurrency ?? null,
-          memo: m.memo ?? null,
-        })));
-      }
-    } catch (error) {
-      console.error('Error fetching payment methods:', error);
-    }
-  }, []);
+      if (!response.ok) return { paymentMethods: [] };
+      return response.json();
+    },
+    enabled: !!user,
+  });
 
-  useEffect(() => {
-    if (user) {
-      fetchBalance();
-      fetchPayoutHistory();
-      fetchPaymentMethods();
-    }
-  }, [user, fetchBalance, fetchPayoutHistory, fetchPaymentMethods]);
+  const allPaymentMethods = paymentMethodsData?.paymentMethods ?? [];
+  const savedSepaMethods = allPaymentMethods.filter((m: { type: string }) => m.type === 'SEPA' || m.type === 'FLEXIFY_SEPA');
+  const savedCardMethods = allPaymentMethods
+    .filter((m: { type: string }) => m.type === 'FLEXIFY_CARD' || m.type === 'CARD')
+    .map((m: { id: string; last4: string | null; holderName: string | null }) => ({ id: m.id, last4: m.last4 ?? null, holderName: m.holderName ?? null }));
+  const savedCryptoMethods = allPaymentMethods
+    .filter((m: { type: string }) => m.type === 'WHITEPAY_CRYPTO' || m.type === 'CRYPTO')
+    .map((m: { id: string; maskedAddress: string | null; address?: string; network: string | null; targetCurrency: string | null; memo: string | null }) => ({
+      id: m.id,
+      maskedAddress: m.maskedAddress ?? null,
+      address: m.address ?? '',
+      network: m.network ?? null,
+      targetCurrency: m.targetCurrency ?? null,
+      memo: m.memo ?? null,
+    }));
 
-  // Rafraîchir l'historique quand l'utilisateur revient sur l'onglet (ex. après qu'un admin ait refusé un payout)
+  // Cleanup du polling au démontage
   useEffect(() => {
-    const onFocus = () => {
-      if (user) fetchPayoutHistory();
+    return () => {
+      if (pollingRef.current) clearTimeout(pollingRef.current);
     };
-    window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
-  }, [user, fetchPayoutHistory]);
+  }, []);
 
   // Pré-sélectionner les moyens enregistrés au premier chargement
   const hasSetSepaDefault = useRef(false);
@@ -267,13 +238,13 @@ export default function PayoutPage() {
   // Synchroniser le formulaire quand on change de carte ou wallet enregistré
   useEffect(() => {
     if (useSavedCard && selectedCardMethodId) {
-      const card = savedCardMethods.find((c) => c.id === selectedCardMethodId);
+      const card = savedCardMethods.find((c: { id: string; last4: string | null; holderName: string | null }) => c.id === selectedCardMethodId);
       if (card) setFormData(prev => ({ ...prev, cardHolder: card.holderName ?? '' }));
     }
   }, [useSavedCard, selectedCardMethodId, savedCardMethods]);
   useEffect(() => {
     if (useSavedWallet && selectedCryptoMethodId) {
-      const w = savedCryptoMethods.find((c) => c.id === selectedCryptoMethodId);
+      const w = savedCryptoMethods.find((c: { id: string; maskedAddress: string | null; address: string; network: string | null; targetCurrency: string | null; memo: string | null }) => c.id === selectedCryptoMethodId);
       if (w) {
         setFormData(prev => ({
           ...prev,
@@ -384,22 +355,24 @@ export default function PayoutPage() {
     }
 
     if (payoutMethod === 'card') {
-      const cardNum = formData.cardNumber.replace(/\s/g, '');
-      if (!cardNum || cardNum.length < 13) {
-        toast.error(text.request.cardNumberRequired ?? 'Numéro de carte requis');
-        return;
-      }
-      if (!formData.cardHolder.trim()) {
-        toast.error(text.request.cardHolderRequired ?? 'Titulaire de la carte requis');
-        return;
-      }
-      if (!formData.expireMonth || !formData.expireYear) {
-        toast.error(text.request.cardExpiryRequired ?? 'Date d\'expiration requise');
-        return;
-      }
-      if (!formData.cvv || formData.cvv.length < 3) {
-        toast.error(text.request.cardCvvRequired ?? 'CVV requis');
-        return;
+      if (!useSavedCard || !selectedCardMethodId) {
+        const cardNum = formData.cardNumber.replace(/\s/g, '');
+        if (!cardNum || cardNum.length < 13) {
+          toast.error(text.request.cardNumberRequired ?? 'Numéro de carte requis');
+          return;
+        }
+        if (!formData.cardHolder.trim()) {
+          toast.error(text.request.cardHolderRequired ?? 'Titulaire de la carte requis');
+          return;
+        }
+        if (!formData.expireMonth || !formData.expireYear) {
+          toast.error(text.request.cardExpiryRequired ?? 'Date d\'expiration requise');
+          return;
+        }
+        if (!formData.cvv || formData.cvv.length < 3) {
+          toast.error(text.request.cardCvvRequired ?? 'CVV requis');
+          return;
+        }
       }
     }
     if (payoutMethod === 'sepa') {
@@ -431,13 +404,17 @@ export default function PayoutPage() {
           quoteId: quote.quoteId,
           method: 'card',
           amountCents: quote.amountCents,
-          cardNumber: formData.cardNumber.replace(/\s/g, ''),
-          cardHolder: formData.cardHolder.trim(),
-          expireMonth: formData.expireMonth.padStart(2, '0'),
-          expireYear: formData.expireYear.length === 2 ? `20${formData.expireYear}` : formData.expireYear,
-          cvv: formData.cvv,
           firstName,
           lastName,
+          ...(useSavedCard && selectedCardMethodId
+            ? { paymentMethodId: selectedCardMethodId }
+            : {
+                cardNumber: formData.cardNumber.replace(/\s/g, ''),
+                cardHolder: formData.cardHolder.trim(),
+                expireMonth: formData.expireMonth.padStart(2, '0'),
+                expireYear: formData.expireYear.length === 2 ? `20${formData.expireYear}` : formData.expireYear,
+                cvv: formData.cvv,
+              }),
         };
       } else if (payoutMethod === 'sepa') {
         apiUrl = '/api/flexify/payout';
@@ -506,9 +483,25 @@ export default function PayoutPage() {
       toast.success(successMessage);
       setQuote(null);
       setAmount('');
-      fetchBalance();
-      fetchPayoutHistory();
-      fetchPaymentMethods();
+      queryClient.invalidateQueries({ queryKey: queryKeys.payoutHistory });
+      queryClient.invalidateQueries({ queryKey: queryKeys.userBalance });
+      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethods });
+
+      // Polling pendant 2 minutes pour détecter le webhook Flexify (statut PAID)
+      if (!data?.pendingApproval) {
+        let attempts = 0;
+        const maxAttempts = 24; // 24 × 5s = 2 min
+        const poll = () => {
+          attempts++;
+          queryClient.invalidateQueries({ queryKey: queryKeys.payoutHistory });
+          queryClient.invalidateQueries({ queryKey: queryKeys.userBalance });
+          if (attempts < maxAttempts) {
+            pollingRef.current = setTimeout(poll, 5000);
+          }
+        };
+        if (pollingRef.current) clearTimeout(pollingRef.current);
+        pollingRef.current = setTimeout(poll, 5000);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : text.toast.payoutError;
       console.error('[PAYOUT] handleSubmit error', error);
@@ -691,7 +684,7 @@ export default function PayoutPage() {
                       <div className="space-y-2">
                         <Label>{text.request.savedCardLabel ?? 'Carte'}</Label>
                         <div className="flex flex-col gap-2">
-                          {savedCardMethods.map((pm) => (
+                          {savedCardMethods.map((pm: { id: string; last4: string | null; holderName: string | null }) => (
                             <label key={pm.id} className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
                               <input
                                 type="radio"
@@ -831,7 +824,7 @@ export default function PayoutPage() {
                       <div className="space-y-2">
                         <Label>{text.request.savedWalletLabel ?? 'Wallet'}</Label>
                         <div className="flex flex-col gap-2">
-                          {savedCryptoMethods.map((pm) => (
+                          {savedCryptoMethods.map((pm: { id: string; maskedAddress: string | null; address: string; network: string | null; targetCurrency: string | null; memo: string | null }) => (
                             <label key={pm.id} className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
                               <input
                                 type="radio"
@@ -1049,8 +1042,8 @@ export default function PayoutPage() {
                     variant="ghost"
                     size="icon"
                     onClick={() => {
-                      fetchPayoutHistory();
-                      fetchBalance();
+                      queryClient.invalidateQueries({ queryKey: queryKeys.payoutHistory });
+                      queryClient.invalidateQueries({ queryKey: queryKeys.userBalance });
                     }}
                     title={locale === 'fr' ? 'Actualiser' : 'Refresh'}
                     className="h-8 w-8"
@@ -1067,7 +1060,7 @@ export default function PayoutPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {payoutHistory.slice(0, 5).map((payout) => (
+                    {payoutHistory.slice(0, 5).map((payout: { id: string; amount: number; status: string; method: string; createdAt: string }) => (
                       <div 
                         key={payout.id} 
                         className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"

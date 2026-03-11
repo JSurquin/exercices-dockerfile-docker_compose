@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
+'use client';
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Giveaway, GiveawayEntry } from '@/lib/types';
+import { queryKeys } from '@/lib/query-keys';
 
 export interface GiveawayEntryWithUser extends GiveawayEntry {
   user?: {
@@ -26,84 +29,118 @@ export interface DrawResult {
   randomSeed: string;
 }
 
-export function useGiveaways() {
-  const [giveaways, setGiveaways] = useState<GiveawayWithEntries[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
+  const queryClient = useQueryClient();
 
-  const fetchGiveaways = async (status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') => {
-    try {
-      setLoading(true);
+  const {
+    data: giveaways = [],
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useQuery<GiveawayWithEntries[]>({
+    queryKey: queryKeys.giveaways(status),
+    queryFn: async () => {
       const url = status ? `/api/giveaways?status=${status}` : '/api/giveaways';
       const response = await fetch(url);
-      
       if (!response.ok) {
         throw new Error('Erreur lors de la récupération des giveaways');
       }
-      
-      const data = await response.json();
-      setGiveaways(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
-      console.error('Error fetching giveaways:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.json();
+    },
+  });
 
-  const participateInGiveaway = async (giveawayId: string, userId: string, ticketsUsed: number) => {
-    try {
+  const error = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : 'Une erreur est survenue'
+    : null;
+
+  const participateMutation = useMutation({
+    mutationFn: async ({
+      giveawayId,
+      userId,
+      ticketsUsed,
+    }: {
+      giveawayId: string;
+      userId: string;
+      ticketsUsed: number;
+    }) => {
       const response = await fetch(`/api/giveaways/${giveawayId}/participate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, ticketsUsed }),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Erreur lors de la participation');
       }
-
-      const result = await response.json();
-      
-      // Actualiser la liste des giveaways
-      await fetchGiveaways();
-      
+      return response.json();
+    },
+    onSuccess: (_, { ticketsUsed }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.giveaways() });
       toast.success(`Participation réussie ! ${ticketsUsed} ticket(s) utilisé(s)`);
-      return result;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Une erreur est survenue';
-      toast.error(message);
-      throw err;
-    }
-  };
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Une erreur est survenue');
+    },
+  });
 
-  const drawGiveaway = async (giveawayId: string): Promise<DrawResult> => {
-    try {
+  const drawMutation = useMutation({
+    mutationFn: async (giveawayId: string): Promise<DrawResult> => {
       const response = await fetch(`/api/giveaways/${giveawayId}/draw`, {
         method: 'POST',
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Erreur lors du tirage');
       }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.giveaways() });
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Une erreur est survenue');
+    },
+  });
 
-      const result = await response.json();
-      
-      // Actualiser la liste des giveaways
-      await fetchGiveaways();
-      
-      return result;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Une erreur est survenue';
-      toast.error(message);
-      throw err;
-    }
-  };
+  const createMutation = useMutation({
+    mutationFn: async (giveawayData: {
+      title: string;
+      description: string;
+      prize: string;
+      ticketPrice: number;
+      maxTickets: number;
+      endDate: string;
+    }) => {
+      const response = await fetch('/api/giveaways', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(giveawayData),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors de la création');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.giveaways() });
+      toast.success('Giveaway créé avec succès !');
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Une erreur est survenue');
+    },
+  });
+
+  const participateInGiveaway = async (
+    giveawayId: string,
+    userId: string,
+    ticketsUsed: number
+  ) => participateMutation.mutateAsync({ giveawayId, userId, ticketsUsed });
+
+  const drawGiveaway = async (giveawayId: string): Promise<DrawResult> =>
+    drawMutation.mutateAsync(giveawayId);
 
   const createGiveaway = async (giveawayData: {
     title: string;
@@ -112,38 +149,11 @@ export function useGiveaways() {
     ticketPrice: number;
     maxTickets: number;
     endDate: string;
-  }) => {
-    try {
-      const response = await fetch('/api/giveaways', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(giveawayData),
-      });
+  }) => createMutation.mutateAsync(giveawayData);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la création');
-      }
-
-      const result = await response.json();
-      
-      // Actualiser la liste des giveaways
-      await fetchGiveaways();
-      
-      toast.success('Giveaway créé avec succès !');
-      return result;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Une erreur est survenue';
-      toast.error(message);
-      throw err;
-    }
+  const fetchGiveaways = async (_status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') => {
+    await refetch();
   };
-
-  useEffect(() => {
-    fetchGiveaways();
-  }, []);
 
   return {
     giveaways,
@@ -153,6 +163,6 @@ export function useGiveaways() {
     participateInGiveaway,
     drawGiveaway,
     createGiveaway,
-    refetch: fetchGiveaways,
+    refetch,
   };
 }

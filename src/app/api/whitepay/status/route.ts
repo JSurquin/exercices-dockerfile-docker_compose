@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
           network: tx.network,
           address: tx.address,
           createdAt: tx.created_at,
-          updatedAt: tx.updated_at,
+          completedAt: tx.completed_at,
         };
       } catch (error) {
         console.error('[Whitepay Status] Error fetching from API:', error);

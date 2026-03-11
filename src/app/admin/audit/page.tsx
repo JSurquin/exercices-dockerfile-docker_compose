@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,8 @@ import { AlertTriangle, Shield, Users, Activity, Clock, Filter, Download, Refres
 import { format } from 'date-fns';
 import { fr, enUS, zhCN } from 'date-fns/locale';
 import { useLocale } from '@/components/providers/locale-provider';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 
 interface AuditLog {
   id: string;
@@ -60,8 +62,7 @@ const severityColors = {
 
 export default function AuditPage() {
   const { locale, messages } = useLocale();
-  const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState({
     action: 'all',
     severity: 'all',
@@ -69,9 +70,22 @@ export default function AuditPage() {
     timeframe: '24h',
   });
 
-  // Extraire les données pour compatibilité
-  const metrics = dashboardData?.metrics || null;
-  const logs = dashboardData?.logs || [];
+  const { data: dashboardData, isLoading: loading } = useQuery({
+    queryKey: [...queryKeys.adminAuditDashboard, filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters.action !== 'all') params.append('action', filters.action);
+      if (filters.severity !== 'all') params.append('severity', filters.severity);
+      if (filters.userId) params.append('userId', filters.userId);
+      params.append('timeframe', filters.timeframe);
+
+      const response = await fetch(`/api/admin/audit/dashboard?${params}`);
+      if (!response.ok) throw new Error('Erreur lors du chargement');
+      return response.json() as Promise<DashboardResponse>;
+    },
+  });
+  const metrics = dashboardData?.metrics ?? null;
+  const logs = dashboardData?.logs ?? [];
 
   // Vérification de sécurité pour les traductions audit
   const auditMessages = messages.admin?.audit || {
@@ -182,28 +196,6 @@ export default function AuditPage() {
     );
   };
 
-  const fetchDashboardData = useCallback(async () => {
-    try {
-      const params = new URLSearchParams();
-      if (filters.action && filters.action !== 'all') params.append('action', filters.action);
-      if (filters.severity && filters.severity !== 'all') params.append('severity', filters.severity);
-      if (filters.userId) params.append('userId', filters.userId);
-      params.append('timeframe', filters.timeframe);
-
-      console.log('🔄 Fetching unified dashboard data...');
-      const response = await fetch(`/api/admin/audit/dashboard?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        setDashboardData(data);
-        console.log('✅ Dashboard data loaded successfully');
-      } else {
-        console.error('❌ Failed to fetch dashboard data:', response.status);
-      }
-    } catch (error) {
-      console.error('❌ Error loading dashboard data:', error);
-    }
-  }, [filters.action, filters.severity, filters.userId, filters.timeframe]);
-
   const exportLogs = async () => {
     try {
       const params = new URLSearchParams();
@@ -230,16 +222,6 @@ export default function AuditPage() {
     }
   };
 
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      // Un seul appel unifié - plus de problème de concurrence !
-      await fetchDashboardData();
-      setLoading(false);
-    };
-    loadData();
-  }, [filters, fetchDashboardData]);
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -261,7 +243,7 @@ export default function AuditPage() {
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button onClick={() => window.location.reload()} variant="outline" className="border-slate-600 text-white hover:bg-slate-800">
+          <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminAuditDashboard })} variant="outline" className="border-slate-600 text-white hover:bg-slate-800">
             <RefreshCw className="h-4 w-4 mr-2" />
             {auditMessages.refresh}
           </Button>
@@ -433,7 +415,14 @@ export default function AuditPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {logs.map((log) => (
+                    {logs.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-12 text-slate-400">
+                          <Activity className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                          <p className="text-sm">Aucun log d&apos;audit sur cette période</p>
+                        </TableCell>
+                      </TableRow>
+                    ) : logs.map((log) => (
                       <TableRow key={log.id}>
                         <TableCell className="min-w-[140px]">
                           <div className="flex items-center">

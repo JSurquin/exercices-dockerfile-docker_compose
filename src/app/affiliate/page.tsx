@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,83 +13,61 @@ import { useToast } from '@/hooks/use-toast';
 import { Copy, ExternalLink, Users, TrendingUp, DollarSign, Clock } from 'lucide-react';
 import { AffiliateStats, AffiliateCommission } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
+import { queryKeys } from '@/lib/query-keys';
 
 export default function AffiliatePage() {
-  const [affiliateData, setAffiliateData] = useState<AffiliateStats | null>(null);
-  const [commissions, setCommissions] = useState<AffiliateCommission[]>([]);
-  const [applications, setApplications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
-  const [showApplication, setShowApplication] = useState(false);
   const { toast } = useToast();
   const { messages } = useLocale();
+  const queryClient = useQueryClient();
 
-  // Mock user ID - À remplacer par l'auth réelle
   const userId = 'user_123';
 
-  useEffect(() => {
-    loadAffiliateData();
-  }, []);
+  const { data: statsData, isLoading: loading } = useQuery({
+    queryKey: queryKeys.affiliateStats,
+    queryFn: async () => {
+      const response = await fetch(`/api/affiliate/stats?userId=${userId}`);
+      const data = await response.json();
+      if (!data.success && response.status !== 404) throw new Error('Erreur stats affilié');
+      return { ...data, status: response.status };
+    },
+  });
 
-  const loadAffiliateData = async () => {
-    try {
-      // Charger les stats d'affilié
-      const statsResponse = await fetch(`/api/affiliate/stats?userId=${userId}`);
-      const statsData = await statsResponse.json();
+  const affiliateData = statsData?.success ? {
+    ...statsData.data,
+    metrics: statsData.data?.metrics || { totalPendingCommissions: 0, totalPaidCommissions: 0, conversionRate: 0, averageOrderValue: 0 },
+    recentReferrals: statsData.data?.recentReferrals || []
+  } : null;
 
-      if (statsData.success) {
-        // Ajouter les propriétés manquantes pour la compatibilité
-        const affiliateDataWithMetrics = {
-          ...statsData.data,
-          metrics: statsData.data.metrics || {
-            totalPendingCommissions: 0,
-            totalPaidCommissions: 0,
-            conversionRate: 0,
-            averageOrderValue: 0
-          },
-          recentReferrals: statsData.data.recentReferrals || []
-        };
-        setAffiliateData(affiliateDataWithMetrics);
-        loadCommissions();
-      } else if (statsResponse.status === 404) {
-        // Pas encore affilié, vérifier s'il y a une demande en cours
-        const applyResponse = await fetch(`/api/affiliate/apply?userId=${userId}`);
-        const applyData = await applyResponse.json();
-        
-        if (applyData.success && applyData.data.length > 0) {
-          setApplications(applyData.data);
-        } else {
-          setShowApplication(true);
-        }
-      }
-    } catch (error) {
-      console.error('Erreur chargement données affilié:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de charger les données d\'affiliation',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const isAffiliate = !!affiliateData;
 
-  const loadCommissions = async () => {
-    try {
+  const { data: applicationsData } = useQuery({
+    queryKey: queryKeys.affiliateApply,
+    queryFn: async () => {
+      const response = await fetch(`/api/affiliate/apply?userId=${userId}`);
+      const data = await response.json();
+      return data.success ? data.data : [];
+    },
+    enabled: !isAffiliate && statsData?.status === 404,
+  });
+
+  const applications = applicationsData ?? [];
+  const showApplication = !isAffiliate && applications.length === 0 && !loading;
+
+  const { data: commissionsData } = useQuery({
+    queryKey: queryKeys.affiliateCommissions,
+    queryFn: async () => {
       const response = await fetch(`/api/affiliate/commissions?userId=${userId}&status=PENDING`);
       const data = await response.json();
+      return data.success ? data.data.commissions : [];
+    },
+    enabled: isAffiliate,
+  });
 
-      if (data.success) {
-        setCommissions(data.data.commissions);
-      }
-    } catch (error) {
-      console.error('Erreur chargement commissions:', error);
-    }
-  };
+  const commissions = commissionsData ?? [];
 
-  const handleApplyAffiliate = async (formData: FormData) => {
-    setApplying(true);
-    try {
+  const applyMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
       const response = await fetch('/api/affiliate/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -103,29 +82,31 @@ export default function AffiliatePage() {
           }
         })
       });
-
       const data = await response.json();
-
-      if (data.success) {
-        toast({
-          title: messages.affiliate.application.success,
-          description: messages.affiliate.application.success
-        });
-        setShowApplication(false);
-        loadAffiliateData();
-      } else {
-        toast({
-          title: 'Erreur',
-          description: data.error || messages.affiliate.application.error,
-          variant: 'destructive'
-        });
-      }
-    } catch (error) {
+      if (!data.success) throw new Error(data.error || messages.affiliate.application.error);
+      return data;
+    },
+    onSuccess: () => {
+      toast({
+        title: messages.affiliate.application.success,
+        description: messages.affiliate.application.success
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.affiliateStats });
+      queryClient.invalidateQueries({ queryKey: queryKeys.affiliateApply });
+    },
+    onError: (error: Error) => {
       toast({
         title: 'Erreur',
-        description: 'Erreur de connexion',
+        description: error.message,
         variant: 'destructive'
       });
+    },
+  });
+
+  const handleApplyAffiliate = async (formData: FormData) => {
+    setApplying(true);
+    try {
+      await applyMutation.mutateAsync(formData);
     } finally {
       setApplying(false);
     }
@@ -174,7 +155,6 @@ export default function AffiliatePage() {
     );
   }
 
-  // Afficher l'état des demandes si elles existent
   if (applications.length > 0 && !affiliateData) {
     const latestApp = applications[0];
     
@@ -233,8 +213,7 @@ export default function AffiliatePage() {
 
                 <Button 
                   onClick={() => {
-                    setApplications([]);
-                    setShowApplication(true);
+                    queryClient.setQueryData(queryKeys.affiliateApply, []);
                   }}
                   className="w-full"
                 >
@@ -419,7 +398,7 @@ export default function AffiliatePage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(commissions.reduce((sum, c) => sum + c.amountCents, 0))}
+              {formatCurrency(commissions.reduce((sum: number, c: AffiliateCommission) => sum + c.amountCents, 0))}
             </div>
           </CardContent>
         </Card>
@@ -559,7 +538,7 @@ export default function AffiliatePage() {
             <CardContent>
               {commissions.length ? (
                 <div className="space-y-4">
-                  {commissions.map((commission) => (
+                  {commissions.map((commission: AffiliateCommission) => (
                     <div key={commission.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <p className="font-medium">

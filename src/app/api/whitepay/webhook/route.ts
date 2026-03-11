@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import {
-  validateWebhookSignatureByEvent,
-  validateWebhookSignatureWithEitherToken,
+  validateWebhookSignature,
   convertWhitepayStatus,
   isTransactionComplete,
   isTransactionFailed,
@@ -10,23 +9,21 @@ import {
   isWhitepayTopUpEvent,
   type WhitepayWebhookPayload,
 } from '@/lib/whitepay';
+import { debitBalance } from '@/lib/balance-service';
 
 // =============================================================================
-// POST - Webhook Whitepay (une seule URL pour deposits ET withdrawals)
+// POST - Webhook Whitepay (general webhooks : withdrawals & conversion_withdrawals)
 // =============================================================================
-// 1) Withdrawals (payouts) : event withdrawal.status_changed → on met à jour le Payout.
-// 2) Top-up (deposits) : "Final Amount Received" = WhitePay nous notifie que notre
-//    compte merchant a été alimenté (on a envoyé de l'USDC sur leur wallet).
-//    On ne crédite aucun user : notre système c'est du payout (solde = ventes skins).
-//    On log pour audit et on répond 200. Ne jamais ignorer le callback.
+// Header de signature : "Signature" (HMAC-SHA256 du body re-sérialisé, slashes échappés)
+// event_type : "withdrawal::completed" | "withdrawal::declined"
+//            | "conversion_withdrawal::completed" | "conversion_withdrawal::declined"
+//            | "order::*" | "transaction::*" | "rollback::*" → ignorés
 // =============================================================================
 
 export async function POST(request: NextRequest) {
   const rawBody = await request.text();
-  const signature =
-    request.headers.get('X-Whitepay-Signature') ||
-    request.headers.get('X-Signature') ||
-    '';
+  // Le header s'appelle "Signature" selon la doc officielle Whitepay
+  const signature = request.headers.get('Signature') || '';
 
   let payload: unknown;
   try {
@@ -36,14 +33,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  // Vérifier la signature avec le token correspondant au type d'événement
-  const isDeposit = isWhitepayTopUpEvent(payload);
-  const isWithdrawal = isWhitepayWithdrawalEvent(payload);
-  const signatureValid = isDeposit
-    ? validateWebhookSignatureByEvent(rawBody, signature, true)
-    : isWithdrawal
-      ? validateWebhookSignatureByEvent(rawBody, signature, false)
-      : validateWebhookSignatureWithEitherToken(rawBody, signature);
+  // Valider la signature : HMAC-SHA256(JSON.stringify(body).replace(/\//g, "\\/"), token)
+  const signatureValid = validateWebhookSignature(payload, signature);
 
   if (!signatureValid) {
     console.error('[Whitepay Webhook] Invalid signature');
@@ -53,40 +44,35 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // ————— Audit : loguer tous les callbacks (même doublons) —————
   const pl = payload as Record<string, unknown>;
   console.log('[Whitepay Webhook] Callback received:', {
-    event: pl.event,
+    event_type: pl.event_type,
     keys: Object.keys(pl),
     transactionId: pl.transaction && typeof pl.transaction === 'object' && (pl.transaction as Record<string, unknown>).id,
   });
 
   try {
-    // ————— Top-up : notification que notre compte merchant WhitePay a été alimenté —————
-    // Pas de crédit user : le solde chez nous vient des ventes skins ; WhitePay sert au payout.
+    // ————— Events non-withdrawal (orders, transactions, rollbacks) → on log et on ignore —————
     if (isWhitepayTopUpEvent(payload)) {
-      const p = payload as Record<string, unknown>;
-      console.log('[Whitepay Webhook] Merchant top-up received (audit only):', {
-        transaction_received_total: p.transaction_received_total,
-        received_currency: p.received_currency,
-        event: p.event,
+      console.log('[Whitepay Webhook] Non-withdrawal event (audit only):', {
+        event_type: payload.event_type,
       });
-      return NextResponse.json({ received: true, type: 'top_up' });
+      return NextResponse.json({ received: true, type: 'non_withdrawal' });
     }
 
-    // ————— Withdrawal (payout) : mise à jour de statut —————
+    // ————— Withdrawal / Conversion_withdrawal : mise à jour du payout —————
     if (!isWhitepayWithdrawalEvent(payload)) {
       console.warn('[Whitepay Webhook] Unknown event shape, acknowledging:', {
         keys: Object.keys(payload as object),
-        event: (payload as Record<string, unknown>).event,
+        event_type: (payload as Record<string, unknown>).event_type,
       });
       return NextResponse.json({ received: true });
     }
 
-    const { transaction: tx } = payload as WhitepayWebhookPayload;
+    const { transaction: tx, event_type } = payload as WhitepayWebhookPayload;
 
     console.log('[Whitepay Webhook] Withdrawal update:', {
-      event: (payload as WhitepayWebhookPayload).event,
+      event_type,
       transactionId: tx.id,
       status: tx.status,
       txHash: tx.tx_hash,
@@ -124,12 +110,25 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 5. Si la transaction est complète, mettre à jour le trade et les stats
+    // 5. Si la transaction est complète, mettre à jour le trade, débiter le solde et les stats
     if (isTransactionComplete(tx.status) && payout.tradeId) {
       await prisma.trade.update({
         where: { id: payout.tradeId },
         data: { status: 'PAID' },
       });
+
+      // Débiter le solde utilisateur (le crédit avait été fait lors du AVAILABLE)
+      try {
+        await debitBalance(
+          payout.userId,
+          payout.amountCents,
+          `Payout Whitepay ${payout.id} complété`,
+          { type: 'WITHDRAWAL', payoutId: payout.id }
+        );
+      } catch (balanceErr) {
+        console.error('[Whitepay Webhook] debitBalance error:', balanceErr, { payoutId: payout.id });
+        // Ne pas bloquer le webhook — le payout est déjà confirmé côté Whitepay
+      }
 
       // Mettre à jour le volume et XP de l'utilisateur
       await prisma.user.update({

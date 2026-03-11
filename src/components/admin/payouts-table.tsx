@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Search, 
   Download, 
@@ -33,9 +36,7 @@ const APPROVABLE_STATUS = 'en_attente_approbation';
 
 export function AdminPayoutsTable() {
   const { messages } = useLocale();
-  const [payouts, setPayouts] = useState<Payout[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [filters, setFilters] = useState<AdminFilters>({
     page: 1,
@@ -48,11 +49,10 @@ export function AdminPayoutsTable() {
   const [autoApproveThresholdEur, setAutoApproveThresholdEur] = useState('20');
   const [autoApproveSaving, setAutoApproveSaving] = useState(false);
 
-  const fetchPayouts = useCallback(async () => {
-    try {
-      setIsLoading(true);
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }),
+    queryFn: async () => {
       const params = new URLSearchParams();
-      
       if (filters.status) params.append('status', filters.status);
       if (filters.userId) params.append('userId', filters.userId);
       if (filters.dateFrom) params.append('dateFrom', filters.dateFrom.toISOString());
@@ -62,33 +62,31 @@ export function AdminPayoutsTable() {
       if (searchTerm) params.append('search', searchTerm);
 
       const response = await fetch(`/api/admin/payouts?${params}`);
-      const data = await response.json();
+      const json = await response.json();
+      if (!response.ok) throw new Error(json.error || 'Erreur lors du chargement des paiements');
+      return json;
+    },
+  });
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors du chargement des paiements');
-      }
+  const payouts: Payout[] = data?.payouts ?? [];
 
-      setPayouts(data.payouts || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
-    } finally {
-      setIsLoading(false);
+  const { data: autoApproveData } = useQuery({
+    queryKey: queryKeys.adminPayoutAutoApprove,
+    queryFn: async () => {
+      const r = await fetch('/api/admin/settings/payout-auto-approve');
+      if (!r.ok) return null;
+      return r.json();
+    },
+  });
+
+  useEffect(() => {
+    if (autoApproveData && typeof autoApproveData.enabled === 'boolean') {
+      setAutoApproveEnabled(autoApproveData.enabled);
     }
-  }, [filters, searchTerm]);
-
-  useEffect(() => {
-    fetchPayouts();
-  }, [fetchPayouts]);
-
-  useEffect(() => {
-    fetch('/api/admin/settings/payout-auto-approve')
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => {
-        if (data && typeof data.enabled === 'boolean') setAutoApproveEnabled(data.enabled);
-        if (data && typeof data.thresholdCents === 'number') setAutoApproveThresholdEur(String(data.thresholdCents / 100));
-      })
-      .catch(() => {});
-  }, []);
+    if (autoApproveData && typeof autoApproveData.thresholdCents === 'number') {
+      setAutoApproveThresholdEur(String(autoApproveData.thresholdCents / 100));
+    }
+  }, [autoApproveData]);
 
   const saveAutoApproveSettings = async () => {
     setAutoApproveSaving(true);
@@ -121,7 +119,7 @@ export function AdminPayoutsTable() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Erreur');
       toast.success(messages.components.admin.payouts?.approveSuccess ?? 'Payout approuvé');
-      fetchPayouts();
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) });
     } catch (e) {
       toast.error('Erreur', {
         description: e instanceof Error ? e.message : 'Impossible d\'approuver',
@@ -206,7 +204,7 @@ export function AdminPayoutsTable() {
         messages.components.admin.payouts?.resyncSuccess ?? 'Statut resynchronisé avec Flexify',
         { description: `${data.previousStatus} → ${data.newStatus}` }
       );
-      fetchPayouts();
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) });
     } catch (e) {
       toast.error('Erreur', {
         description: e instanceof Error ? e.message : 'Impossible de resynchroniser le statut Flexify',
@@ -227,7 +225,7 @@ export function AdminPayoutsTable() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Erreur');
       toast.success('Payout annulé');
-      fetchPayouts();
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) });
     } catch (e) {
       toast.error('Erreur', {
         description: e instanceof Error ? e.message : 'Impossible d\'annuler le payout',
@@ -272,7 +270,7 @@ export function AdminPayoutsTable() {
         <CardContent className="p-6">
           <div className="flex items-center gap-2 text-red-400">
             <AlertTriangle className="h-5 w-5" />
-            <span>Erreur: {error}</span>
+            <span>Erreur: {error.message}</span>
           </div>
         </CardContent>
       </Card>
@@ -354,7 +352,7 @@ export function AdminPayoutsTable() {
         </Select>
 
         <Button 
-          onClick={fetchPayouts}
+          onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) })}
           variant="outline"
           className="border-slate-600 text-white hover:bg-slate-700"
         >
@@ -393,8 +391,21 @@ export function AdminPayoutsTable() {
                   {payout.id}
                 </TableCell>
                 <TableCell className="text-slate-300">
-                  <div>
-                    <div className="font-medium">{payout.userId}</div>
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-7 w-7 shrink-0">
+                      <AvatarImage src={payout.userSteamAvatar} />
+                      <AvatarFallback className="bg-slate-700 text-xs text-slate-300">
+                        {(payout.userSteamUsername || payout.userName || '?').charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <div className="font-medium text-white truncate max-w-[120px]">
+                        {payout.userSteamUsername || payout.userName || '—'}
+                      </div>
+                      <div className="text-xs text-slate-500 truncate max-w-[120px]" title={payout.userId}>
+                        {payout.userId.substring(0, 8)}…
+                      </div>
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>

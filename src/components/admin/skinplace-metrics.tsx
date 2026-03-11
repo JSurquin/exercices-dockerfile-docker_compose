@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,16 +38,11 @@ interface SkinplaceMetrics {
 
 export function AdminSkinplaceMetrics() {
   const { messages } = useLocale();
-  const [metrics, setMetrics] = useState<SkinplaceMetrics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchMetrics = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Récupérer les données Skinplace
+  const { data: metrics, isLoading, error: queryError } = useQuery({
+    queryKey: queryKeys.skinplaceBalance,
+    queryFn: async (): Promise<SkinplaceMetrics> => {
       const [balanceRes, historyRes, holdRes] = await Promise.all([
         fetch('/api/skinplace/balance').catch(() => null),
         fetch('/api/skinplace/history').catch(() => null),
@@ -59,7 +55,6 @@ export function AdminSkinplaceMetrics() {
         lastSync: new Date().toISOString()
       };
 
-      // Balance
       if (balanceRes?.ok) {
         const balanceData = await balanceRes.json();
         if (balanceData.success) {
@@ -68,7 +63,6 @@ export function AdminSkinplaceMetrics() {
         }
       }
 
-      // Historique récent
       if (historyRes?.ok) {
         const historyData = await historyRes.json();
         if (historyData.success && historyData.data?.transactions) {
@@ -76,7 +70,6 @@ export function AdminSkinplaceMetrics() {
         }
       }
 
-      // Hold orders
       if (holdRes?.ok) {
         const holdData = await holdRes.json();
         if (holdData.success && holdData.data?.orders) {
@@ -89,29 +82,17 @@ export function AdminSkinplaceMetrics() {
         }
       }
 
-      // Si aucune API n'a répondu, marquer comme erreur
       if (!balanceRes?.ok && !historyRes?.ok && !holdRes?.ok) {
         skinplaceMetrics.apiStatus = 'error';
       }
 
-      setMetrics(skinplaceMetrics);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la récupération des métriques Skinplace');
-      setMetrics({
-        apiStatus: 'error',
-        recentTransactions: 0,
-        lastSync: new Date().toISOString()
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      return skinplaceMetrics;
+    },
+    refetchInterval: 60_000
+  });
 
-  useEffect(() => {
-    fetchMetrics();
-    const interval = setInterval(fetchMetrics, 60000); // Refresh toutes les minutes
-    return () => clearInterval(interval);
-  }, []);
+  const error: string | null = queryError ? (queryError instanceof Error ? queryError.message : 'Erreur lors de la récupération des métriques Skinplace') : null;
+  const loading = isLoading;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -201,7 +182,7 @@ export function AdminSkinplaceMetrics() {
               {metrics?.apiStatus === 'online' ? 'En ligne' : 
                metrics?.apiStatus === 'offline' ? 'Hors ligne' : 'Erreur'}
             </span>
-            <Button onClick={fetchMetrics} variant="outline" size="sm">
+            <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.skinplaceBalance })} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4" />
             </Button>
           </div>
@@ -215,7 +196,7 @@ export function AdminSkinplaceMetrics() {
           <div className="text-center py-6">
             <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
             <p className="text-red-400 text-sm">{error}</p>
-            <Button onClick={fetchMetrics} variant="outline" size="sm" className="mt-3">
+            <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.skinplaceBalance })} variant="outline" size="sm" className="mt-3">
               Réessayer
             </Button>
           </div>

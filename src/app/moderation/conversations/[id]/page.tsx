@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import { queryKeys } from '@/lib/query-keys';
 
 const senderTypeLabels = {
   USER: 'Utilisateur',
@@ -45,34 +47,28 @@ export default function ConversationPage() {
   const { user } = useAuth();
   const { messages } = useLocale();
   const { data: session, isPending } = useSession();
+  const queryClient = useQueryClient();
 
-  const [conversation, setConversation] = useState<ConversationWithMessages | null>(null);
-  const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const fetchConversation = async () => {
-    try {
+  const { data: conversation, isLoading: loading, refetch: refetchConversation } = useQuery({
+    queryKey: queryKeys.moderationConversation(params.id as string),
+    queryFn: async () => {
       const response = await fetch(`/api/chat/conversations/${params.id}`);
       if (!response.ok) {
         if (response.status === 404) {
           toast.error(messages.moderation.conversation.notFound.title);
           router.push('/moderation');
-          return;
+          return null;
         }
         throw new Error('Erreur lors du chargement');
       }
-      
-      const data = await response.json();
-      setConversation(data);
-    } catch (error) {
-      toast.error(messages.moderation.conversation.messages.loadError);
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.json();
+    },
+    enabled: !!params.id,
+  });
 
   const sendMessage = async () => {
     if (!message.trim() || sending) return;
@@ -91,7 +87,7 @@ export default function ConversationPage() {
       if (!response.ok) throw new Error('Erreur lors de l\'envoi');
       
       setMessage('');
-      await fetchConversation();
+      await refetchConversation();
       toast.success(messages.moderation.conversation.messages.messageSent);
     } catch (error) {
       toast.error(messages.moderation.conversation.messages.sendError);
@@ -111,7 +107,7 @@ export default function ConversationPage() {
 
       if (!response.ok) throw new Error('Erreur lors de la mise à jour');
       
-      await fetchConversation();
+      await refetchConversation();
       toast.success(messages.moderation.conversation.messages.statusUpdated);
     } catch (error) {
       toast.error(messages.moderation.conversation.messages.updateError);
@@ -129,7 +125,7 @@ export default function ConversationPage() {
 
       if (!response.ok) throw new Error('Erreur lors de l\'assignation');
       
-      await fetchConversation();
+      await refetchConversation();
       toast.success(messages.moderation.conversation.messages.assigned);
     } catch (error) {
       toast.error(messages.moderation.conversation.messages.assignError);
@@ -140,10 +136,6 @@ export default function ConversationPage() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
-  useEffect(() => {
-    fetchConversation();
-  }, [params.id]);
 
   useEffect(() => {
     scrollToBottom();
@@ -357,7 +349,7 @@ export default function ConversationPage() {
               {/* Zone de messages */}
               <ScrollArea className="flex-1 p-4">
                 <div className="space-y-4">
-                  {conversation.messages.map((msg) => (
+                  {conversation.messages.map((msg: ChatMessageWithUser) => (
                     <motion.div
                       key={msg.id}
                       initial={{ opacity: 0, y: 10 }}
@@ -366,8 +358,8 @@ export default function ConversationPage() {
                     >
                       <div className={`max-w-[70%] ${msg.senderType === 'USER' ? 'order-1' : 'order-2'}`}>
                         <div className="flex items-center gap-2 mb-1">
-                          <Badge className={senderTypeColors[msg.senderType]} variant="secondary">
-                            {senderTypeLabels[msg.senderType]}
+                          <Badge className={senderTypeColors[msg.senderType as keyof typeof senderTypeColors]} variant="secondary">
+                            {senderTypeLabels[msg.senderType as keyof typeof senderTypeLabels]}
                           </Badge>
                           <span className="text-xs text-muted-foreground">
                             {formatTime(msg.createdAt)}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { useLocale } from '@/components/providers/locale-provider';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import {
   DocumentTextIcon,
   PlusIcon,
@@ -92,8 +94,7 @@ const emptyForm: LegalPageForm = {
 
 export default function AdminLegalPagesPage() {
   const { messages } = useLocale();
-  const [pages, setPages] = useState<LegalPage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [selectedPage, setSelectedPage] = useState<LegalPage | null>(null);
@@ -103,25 +104,16 @@ export default function AdminLegalPagesPage() {
   const [form, setForm] = useState<LegalPageForm>(emptyForm);
   const [changeReason, setChangeReason] = useState('');
 
-  // Charger les pages
-  const fetchPages = async () => {
-    try {
-      setLoading(true);
+  const { data: legalPages = [], isLoading: loading, refetch } = useQuery({
+    queryKey: queryKeys.adminLegalPages,
+    queryFn: async () => {
       const response = await fetch('/api/admin/legal-pages');
-      if (!response.ok) throw new Error('Erreur lors du chargement');
+      if (!response.ok) return [];
       const data = await response.json();
-      setPages(data.pages || []);
-    } catch (error) {
-      console.error('Error fetching legal pages:', error);
-      toast.error('Erreur lors du chargement des pages légales');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPages();
-  }, []);
+      return data.pages ?? [];
+    },
+  });
+  const pages = legalPages;
 
   // Ouvrir le dialog pour créer/éditer
   const openEditDialog = (page?: LegalPage) => {
@@ -259,7 +251,7 @@ export default function AdminLegalPagesPage() {
 
       toast.success(editMode === 'create' ? 'Page créée avec succès' : 'Page mise à jour avec succès');
       setDialogOpen(false);
-      fetchPages();
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminLegalPages });
     } catch (error: any) {
       console.error('Save error:', error);
       toast.error(error.message || 'Erreur lors de la sauvegarde');
@@ -284,7 +276,7 @@ export default function AdminLegalPagesPage() {
       }
 
       toast.success('Page supprimée avec succès');
-      fetchPages();
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminLegalPages });
     } catch (error) {
       console.error('Delete error:', error);
       toast.error('Erreur lors de la suppression');
@@ -308,7 +300,7 @@ export default function AdminLegalPagesPage() {
       }
 
       toast.success(page.isPublished ? 'Page dépubliée' : 'Page publiée');
-      fetchPages();
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminLegalPages });
     } catch (error) {
       console.error('Toggle publish error:', error);
       toast.error('Erreur lors de la mise à jour');
@@ -335,7 +327,7 @@ export default function AdminLegalPagesPage() {
           <div className="flex items-center space-x-3">
             <Button
               variant="outline"
-              onClick={fetchPages}
+              onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminLegalPages })}
               disabled={loading}
               className="border-slate-600"
             >
@@ -374,7 +366,7 @@ export default function AdminLegalPagesPage() {
               <div>
                 <p className="text-sm text-slate-400">Publiées</p>
                 <p className="text-xl font-bold text-white">
-                  {pages.filter(p => p.isPublished).length}
+                  {pages.filter((p: LegalPage) => p.isPublished).length}
                 </p>
               </div>
             </div>
@@ -390,7 +382,7 @@ export default function AdminLegalPagesPage() {
               <div>
                 <p className="text-sm text-slate-400">Non publiées</p>
                 <p className="text-xl font-bold text-white">
-                  {pages.filter(p => !p.isPublished).length}
+                  {pages.filter((p: LegalPage) => !p.isPublished).length}
                 </p>
               </div>
             </div>
@@ -461,7 +453,7 @@ export default function AdminLegalPagesPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {pages.map((page) => (
+                {pages.map((page: LegalPage) => (
                   <div
                     key={page.id}
                     className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700 hover:border-orange-500/50 transition-colors"
@@ -551,7 +543,7 @@ export default function AdminLegalPagesPage() {
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {defaultPages
-                .filter(dp => !pages.some(p => p.slug === dp.slug))
+                .filter(dp => !pages.some((p: LegalPage) => p.slug === dp.slug))
                 .map((dp) => (
                   <Button
                     key={dp.slug}

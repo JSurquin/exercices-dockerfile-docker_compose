@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -16,30 +18,29 @@ type KycStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
 
 export function KycVerification({ onVerificationComplete }: KycVerificationProps) {
   const { messages } = useLocale();
-  const [kycStatus, setKycStatus] = useState<KycStatus>('PENDING');
-  const [isLoading, setIsLoading] = useState(true);
   const [isInitiating, setIsInitiating] = useState(false);
   const [sumsubToken, setSumsubToken] = useState<string | null>(null);
 
-  // Récupérer le statut KYC
-  const fetchKycStatus = async () => {
-    setIsLoading(true);
-    try {
+  const { data: kycData, isLoading, refetch } = useQuery({
+    queryKey: queryKeys.kycGatefi,
+    queryFn: async () => {
       const response = await fetch('/api/gatefi/kyc/status');
-      if (response.ok) {
-        const data = await response.json();
-        setKycStatus(data.kycStatus);
+      if (!response.ok) return null;
+      return response.json() as Promise<{ kycStatus: string } | null>;
+    },
+    refetchInterval: (query) => {
+      const status = query.state.data?.kycStatus;
+      return status === 'PENDING' ? 30_000 : false;
+    },
+  });
 
-        if (data.kycStatus === 'VERIFIED' && onVerificationComplete) {
-          onVerificationComplete();
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching KYC status:', error);
-    } finally {
-      setIsLoading(false);
+  const kycStatus: KycStatus = (kycData?.kycStatus as KycStatus) ?? 'PENDING';
+
+  useEffect(() => {
+    if (kycStatus === 'VERIFIED') {
+      onVerificationComplete?.();
     }
-  };
+  }, [kycStatus]);
 
   // Initier la vérification KYC
   const initiateKyc = async () => {
@@ -66,18 +67,6 @@ export function KycVerification({ onVerificationComplete }: KycVerificationProps
       setIsInitiating(false);
     }
   };
-
-  useEffect(() => {
-    fetchKycStatus();
-  }, []);
-
-  // Rafraîchir automatiquement le statut toutes les 30 secondes si en attente
-  useEffect(() => {
-    if (kycStatus === 'PENDING') {
-      const interval = setInterval(fetchKycStatus, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [kycStatus]);
 
   const getStatusIcon = () => {
     switch (kycStatus) {
@@ -205,7 +194,7 @@ export function KycVerification({ onVerificationComplete }: KycVerificationProps
 
         {kycStatus === 'PENDING' && (
           <Button
-            onClick={fetchKycStatus}
+            onClick={() => refetch()}
             variant="outline"
             className="w-full"
           >

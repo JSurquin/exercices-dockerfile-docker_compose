@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -58,54 +59,25 @@ interface StatusTotals {
 }
 
 export default function AffiliateCommissions() {
-  const [commissions, setCommissions] = useState<CommissionData[]>([]);
-  const [statusTotals, setStatusTotals] = useState<StatusTotals>({});
-  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('PENDING');
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [selectedCommissions, setSelectedCommissions] = useState<string[]>([]);
   const [processing, setProcessing] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    loadCommissions();
-  }, [page, statusFilter]);
-
-  const loadCommissions = async () => {
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '20',
-        status: statusFilter
-      });
-
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ['admin', 'affiliate-commissions', { page, statusFilter }],
+    queryFn: async () => {
+      const params = new URLSearchParams({ page: page.toString(), limit: '20', status: statusFilter });
       const response = await fetch(`/api/admin/affiliates/commissions?${params}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setCommissions(data.data.commissions);
-        setStatusTotals(data.data.statusTotals);
-        setTotalPages(data.data.pagination.pages);
-        setSelectedCommissions([]);
-      } else {
-        toast({
-          title: 'Erreur',
-          description: 'Impossible de charger les commissions',
-          variant: 'destructive'
-        });
-      }
-    } catch (error) {
-      console.error('Erreur chargement commissions:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Erreur de connexion',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      const json = await response.json();
+      return json.success ? json.data : null;
+    },
+  });
+  const commissions = data?.commissions ?? [];
+  const totalPages = data?.pagination?.pages ?? 1;
+  const statusTotals: StatusTotals = data?.statusTotals ?? {};
 
   const handleCommissionAction = async (action: 'approve' | 'reject') => {
     if (selectedCommissions.length === 0) {
@@ -135,7 +107,7 @@ export default function AffiliateCommissions() {
           title: 'Succès',
           description: `${selectedCommissions.length} commission(s) ${action === 'approve' ? 'approuvée(s)' : 'rejetée(s)'}`
         });
-        loadCommissions();
+        queryClient.invalidateQueries({ queryKey: ['admin', 'affiliate-commissions'] });
       } else {
         toast({
           title: 'Erreur',
@@ -184,7 +156,7 @@ export default function AffiliateCommissions() {
     if (selectedCommissions.length === commissions.length) {
       setSelectedCommissions([]);
     } else {
-      setSelectedCommissions(commissions.map(c => c.id));
+      setSelectedCommissions(commissions.map((c: CommissionData) => c.id));
     }
   };
 
@@ -334,7 +306,7 @@ export default function AffiliateCommissions() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {commissions.map((commission) => (
+                {commissions.map((commission: CommissionData) => (
                   <TableRow key={commission.id}>
                     <TableCell>
                       <Checkbox

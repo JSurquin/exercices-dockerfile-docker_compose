@@ -34,12 +34,15 @@ model User {
   acceptedTermsAt       DateTime?
   isFirstLogin          Boolean             @default(true)
   referredByAffiliateId String?
+  adminMetadata         Json?               // Notifications, preferences, security settings for admin
   affiliateStats        AffiliateStats?
   balanceTransactions   BalanceTransaction[]
   withdrawalLimit        WithdrawalLimit?
   affiliateApplications AffiliateApplication[]
   reviewedApplications  AffiliateApplication[] @relation("AffiliateApplicationReviewer")
   giveawayEntries       GiveawayEntry[]
+  pointTransactions     PointTransaction[]
+  dailyLogins           DailyLogin[]
   kycDocuments          KycDocument[]
   kycVerifications      KycVerification[]
   paymentMethods        PaymentMethod[]
@@ -484,6 +487,38 @@ model GiveawayEntry {
   @@index([giveawayId])
 }
 
+// Historique des transactions de points (XP/tickets gamification)
+model PointTransaction {
+  id          String            @id @default(cuid())
+  userId      String
+  type        PointEventType
+  points      Int               // Points gagnés (positif) ou dépensés (négatif)
+  tickets     Int               @default(0) // Tickets gagnés
+  reason      String?           // Libellé affiché à l'utilisateur
+  metadata    Json?             // Données contextuelles (tradeId, etc.)
+  createdAt   DateTime          @default(now())
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("point_transaction")
+}
+
+// Connexions quotidiennes pour le bonus daily login
+model DailyLogin {
+  id        String   @id @default(cuid())
+  userId    String
+  loginDate DateTime @default(now()) @db.Date
+  streak    Int      @default(1) // Nombre de jours consécutifs
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, loginDate])
+  @@index([userId])
+  @@index([loginDate])
+  @@map("daily_login")
+}
+
 model Verification {
   id         String   @id
   identifier String
@@ -653,6 +688,15 @@ enum GiveawayStatus {
   ACTIVE
   ENDED
   CANCELLED
+}
+
+enum PointEventType {
+  TRADE_SALE         // Vente réussie
+  DAILY_LOGIN        // Connexion quotidienne
+  LEVEL_UP           // Passage de niveau
+  ADMIN_ADJUSTMENT   // Ajustement manuel admin
+  GIVEAWAY_ENTRY     // Participation à un giveaway (dépense de tickets)
+  REFERRAL_BONUS     // Bonus parrainage
 }
 
 enum UserRole {

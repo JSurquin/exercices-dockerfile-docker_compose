@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -95,34 +97,20 @@ export default function DashboardPage() {
   const [preferredPaymentMethod, setPreferredPaymentMethod] = useState<'stripe' | 'qonto' | 'binance' | null>('qonto');
   const { data: tradesData, loading: tradesLoading, error: tradesError, refetch: refetchTrades } = useUserTrades();
   const [refreshingTradeId, setRefreshingTradeId] = useState<string | null>(null);
-  const [dashboardStats, setDashboardStats] = useState<{ volumeData: any[]; tradeStatusData: any[] } | null>(null);
-  const [statsLoading, setStatsLoading] = useState(true);
   const [refreshingKyc, setRefreshingKyc] = useState(false);
+  const { data: dashboardStats, isLoading: statsLoading } = useQuery({
+    queryKey: queryKeys.userDashboard,
+    queryFn: async () => {
+      const response = await fetch('/api/user/dashboard-stats');
+      if (!response.ok) throw new Error('Erreur statistiques');
+      return response.json();
+    },
+    enabled: !!data?.user,
+  });
   
   console.log("useSession data:", data);
   console.log("useSession isPending:", isPending);
   console.log("useSession error:", error);
-
-  // Charger les statistiques du dashboard
-  useEffect(() => {
-    const fetchDashboardStats = async () => {
-      try {
-        const response = await fetch('/api/user/dashboard-stats');
-        if (response.ok) {
-          const data = await response.json();
-          setDashboardStats(data);
-        }
-      } catch (error) {
-        console.error('Erreur lors du chargement des statistiques:', error);
-      } finally {
-        setStatsLoading(false);
-      }
-    };
-
-    if (data?.user) {
-      fetchDashboardStats();
-    }
-  }, [data?.user]);
 
   // Vérifier si c'est une connexion Steam réussie
   useEffect(() => {
@@ -538,7 +526,7 @@ export default function DashboardPage() {
                               `${name} ${(percent * 100).toFixed(0)}%`
                             }
                           >
-                            {(dashboardStats?.tradeStatusData || []).map((entry, index) => (
+                            {(dashboardStats?.tradeStatusData || []).map((entry: { name: string; value: number; color: string }, index: number) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                           </Pie>

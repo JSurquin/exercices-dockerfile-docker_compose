@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,34 +34,20 @@ interface Payout {
 export function PayoutHistory() {
   // Simple translation fallback
   const t = (key: string) => key;
-  const [loading, setLoading] = useState(true);
-  const [payouts, setPayouts] = useState<Payout[]>([]);
-  const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const limit = 10;
 
-  const fetchPayouts = async () => {
-    setLoading(true);
-    try {
+  const { data, isLoading: loading } = useQuery({
+    queryKey: [...queryKeys.flexifyHistory, { limit, offset }],
+    queryFn: async () => {
       const response = await fetch(`/api/flexify/payout?limit=${limit}&offset=${offset}`);
-      const data = await response.json();
+      if (!response.ok) return { payouts: [], total: 0 };
+      return response.json();
+    },
+  });
 
-      if (response.ok) {
-        setPayouts(data.payouts);
-        setTotal(data.total);
-      }
-    } catch (error) {
-      console.error('Error fetching payouts:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPayoutsCallback = useCallback(fetchPayouts, [offset]);
-
-  useEffect(() => {
-    fetchPayoutsCallback();
-  }, [fetchPayoutsCallback]);
+  const payouts = data?.payouts ?? [];
+  const total = data?.total ?? 0;
 
   const formatCents = (cents: number) => {
     return (cents / 100).toFixed(2) + ' €';
@@ -179,7 +167,7 @@ export function PayoutHistory() {
         ) : (
           <>
             <div className="space-y-4">
-              {payouts.map((payout) => (
+              {payouts.map((payout: Payout) => (
                 <div
                   key={payout.id}
                   className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"

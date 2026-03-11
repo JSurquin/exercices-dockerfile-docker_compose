@@ -8,6 +8,7 @@ import {
   flexifyLog,
   type FlexifyWebhookPayload,
 } from '@/lib/flexify';
+import { debitBalance } from '@/lib/balance-service';
 
 // =============================================================================
 // POST - Recevoir les webhooks Flexify
@@ -43,15 +44,20 @@ export async function POST(request: NextRequest) {
     flexifyLog('WEBHOOK_SIGNATURE_VALID', {});
 
     const payload: FlexifyWebhookPayload = JSON.parse(rawBody);
+    // "identifier" est le champ ID Flexify dans la doc (ex: "PT000000000000K")
+    // "transaction_id" est l'alias interne — on normalise ici pour la suite
+    const flexifyId = payload.identifier ?? payload.transaction_id;
     flexifyLog('WEBHOOK_PAYLOAD', {
-      transactionId: payload.transaction_id,
+      flexifyId,
       reference: payload.reference,
       status: payload.status,
       amount: payload.amount,
       method: payload.method,
+      type: payload.type,
     });
 
-    // Trouver le payout par notre référence (gateFiOrderId) ou par l'ID transaction Flexify
+    // Trouver le payout : en priorité par notre référence interne (gateFiOrderId),
+    // en fallback par l'ID Flexify (identifier) déjà stocké en DB
     let payout = await prisma.payout.findFirst({
       where: { gateFiOrderId: payload.reference },
       include: {
@@ -59,9 +65,9 @@ export async function POST(request: NextRequest) {
         trade: true,
       },
     });
-    if (!payout && payload.transaction_id) {
+    if (!payout && flexifyId) {
       payout = await prisma.payout.findFirst({
-        where: { flexifyPayoutId: payload.transaction_id },
+        where: { flexifyPayoutId: flexifyId },
         include: {
           user: { select: { id: true, email: true } },
           trade: true,
@@ -70,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!payout) {
-      flexifyLog('WEBHOOK_PAYOUT_NOT_FOUND', { reference: payload.reference, transaction_id: payload.transaction_id }, 'warn');
+      flexifyLog('WEBHOOK_PAYOUT_NOT_FOUND', { reference: payload.reference, flexifyId }, 'warn');
       return NextResponse.json({ received: true });
     }
     flexifyLog('WEBHOOK_PAYOUT_FOUND', { payoutId: payout.id, reference: payload.reference });
@@ -85,20 +91,33 @@ export async function POST(request: NextRequest) {
     await prisma.payout.update({
       where: { id: payout.id },
       data: {
-        status: newStatus as 'PENDING' | 'VERIFICATION_REQUIRED' | 'VERIFIED' | 'SCHEDULED' | 'PROCESSING' | 'PAID' | 'FAILED',
-        txId: payload.transaction_id,
-        flexifyPayoutId: payload.transaction_id,
+        status: newStatus as 'PENDING' | 'PENDING_APPROVAL' | 'VERIFICATION_REQUIRED' | 'VERIFIED' | 'SCHEDULED' | 'PROCESSING' | 'PAID' | 'FAILED',
+        txId: flexifyId,
+        flexifyPayoutId: flexifyId,
         paymentReference: payload.reference,
         ...(isTransactionCompleted(payload.status) && { paidAt: new Date() }),
       },
     });
 
-    // Si le payout est complété, mettre à jour le trade
+    // Si le payout est complété, mettre à jour le trade et débiter le solde
     if (isTransactionCompleted(payload.status) && payout.tradeId) {
       await prisma.trade.update({
         where: { id: payout.tradeId },
         data: { status: 'PAID' },
       });
+
+      // Débiter le solde utilisateur (le crédit avait été fait lors du AVAILABLE)
+      try {
+        await debitBalance(
+          payout.userId,
+          payout.amountCents,
+          `Payout Flexify ${payout.id} complété`,
+          { type: 'WITHDRAWAL', payoutId: payout.id }
+        );
+      } catch (balanceErr) {
+        flexifyLog('WEBHOOK_DEBIT_BALANCE_ERROR', { payoutId: payout.id, error: String(balanceErr) }, 'error');
+        // Ne pas bloquer le webhook — le payout est déjà marqué PAID côté Flexify
+      }
 
       // Mettre à jour le volume total de l'utilisateur
       await prisma.user.update({
@@ -107,7 +126,6 @@ export async function POST(request: NextRequest) {
           totalVolumeCents: {
             increment: payout.amountCents,
           },
-          // Ajouter de l'XP (1 XP par euro)
           xp: {
             increment: Math.floor(payout.amountCents / 100),
           },
@@ -131,11 +149,13 @@ export async function POST(request: NextRequest) {
         details: {
           payoutId: payout.id,
           reference: payload.reference,
-          flexifyTransactionId: payload.transaction_id,
+          flexifyTransactionId: flexifyId,
           oldStatus: payout.status,
           newStatus,
           amount: payload.amount,
           method: payload.method,
+          errorCode: payload.error_code,
+          errorReason: payload.error_reason,
           sepaDetails: payload.sepa,
         },
       },

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +25,8 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { NewsletterCampaignCreator } from '@/components/admin/newsletter-campaign-creator';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 
 interface Subscriber {
   id: string;
@@ -52,57 +54,33 @@ interface Stats {
 
 export default function NewsletterAdminPage() {
   const { messages } = useLocale();
-  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [stats, setStats] = useState<Stats>({ total: 0, active: 0, inactive: 0 });
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    loadSubscribers();
-    loadCampaigns();
-  }, [currentPage, searchTerm, statusFilter]);
-
-  const loadSubscribers = async () => {
-    try {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: '50',
-        search: searchTerm,
-        status: statusFilter,
-      });
-
+  const { data: subscribersData, isLoading: loading } = useQuery({
+    queryKey: [...queryKeys.adminNewsletterSubscribers, { page: currentPage, search: searchTerm, status: statusFilter }],
+    queryFn: async () => {
+      const params = new URLSearchParams({ page: currentPage.toString(), limit: '50', search: searchTerm, status: statusFilter });
       const response = await fetch(`/api/admin/newsletter/subscribers?${params}`);
       const data = await response.json();
+      return response.ok ? data : null;
+    },
+  });
+  const subscribers = subscribersData?.subscribers ?? [];
+  const stats = subscribersData?.stats ?? { total: 0, active: 0, inactive: 0 };
 
-      if (response.ok) {
-        setSubscribers(data.subscribers);
-        setStats(data.stats);
-      } else {
-        toast.error('Erreur lors du chargement des abonnés');
-      }
-    } catch (error) {
-      console.error('Error loading subscribers:', error);
-      toast.error('Erreur lors du chargement des abonnés');
-    }
-  };
-
-  const loadCampaigns = async () => {
-    try {
+  const { data: campaignsData } = useQuery({
+    queryKey: queryKeys.adminNewsletterCampaigns,
+    queryFn: async () => {
       const response = await fetch('/api/admin/newsletter/campaigns');
+      if (!response.ok) return [];
       const data = await response.json();
-
-      if (response.ok) {
-        setCampaigns(data.campaigns || []);
-      }
-    } catch (error) {
-      console.error('Error loading campaigns:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data.campaigns ?? [];
+    },
+  });
+  const campaigns = campaignsData ?? [];
 
   const deleteSubscriber = async (subscriberId: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet abonné ?')) {
@@ -116,7 +94,7 @@ export default function NewsletterAdminPage() {
 
       if (response.ok) {
         toast.success('Abonné supprimé avec succès');
-        loadSubscribers();
+        queryClient.invalidateQueries({ queryKey: queryKeys.adminNewsletterSubscribers });
       } else {
         toast.error('Erreur lors de la suppression');
       }
@@ -284,7 +262,7 @@ export default function NewsletterAdminPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {subscribers.map((subscriber) => (
+                      {subscribers.map((subscriber: Subscriber) => (
                         <TableRow key={subscriber.id} className="border-slate-700">
                           <TableCell className="text-white font-medium">
                             {subscriber.email}
@@ -327,7 +305,7 @@ export default function NewsletterAdminPage() {
 
           {/* Campaigns Tab */}
           <TabsContent value="campaigns" className="space-y-6">
-            <NewsletterCampaignCreator onCampaignCreated={loadCampaigns} />
+            <NewsletterCampaignCreator onCampaignCreated={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminNewsletterCampaigns })} />
             
             {campaigns.length > 0 && (
               <Card className="border-slate-700 bg-slate-800/50">
@@ -339,7 +317,7 @@ export default function NewsletterAdminPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {campaigns.map((campaign) => (
+                    {campaigns.map((campaign: Campaign) => (
                       <div
                         key={campaign.id}
                         className="flex items-center justify-between p-4 bg-slate-900/50 rounded-lg border border-slate-600/50"

@@ -15,15 +15,20 @@ export async function POST(request: NextRequest) {
     const signature = request.headers.get('X-Signature') || 
                       request.headers.get('x-signature') || '';
 
-    // Valider la signature si configurée
-    if (process.env.KYCAID_WEBHOOK_SECRET) {
+    const webhookSecret = process.env.KYCAID_WEBHOOK_SECRET;
+    const isPlaceholderSecret = !webhookSecret || webhookSecret === 'your-kycaid-webhook-secret';
+
+    if (!isPlaceholderSecret) {
+      // Valider la signature uniquement si un vrai secret est configuré
       if (!validateWebhookSignature(rawBody, signature)) {
-        console.error('[KYCAID Webhook] Invalid signature');
+        console.error('[KYCAID Webhook] Invalid signature — check KYCAID_WEBHOOK_SECRET in .env');
         return NextResponse.json(
           { error: 'Invalid signature' },
           { status: 401 }
         );
       }
+    } else {
+      console.warn('[KYCAID Webhook] ⚠️  Signature validation skipped — KYCAID_WEBHOOK_SECRET not configured. Set the real secret from the KYCAID dashboard.');
     }
 
     const payload: KycaidWebhookPayload = JSON.parse(rawBody);

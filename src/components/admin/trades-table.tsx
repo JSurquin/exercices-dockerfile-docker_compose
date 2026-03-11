@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Search, 
   Download, 
@@ -15,27 +17,31 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  RefreshCw
+  RefreshCw,
+  RotateCcw,
 } from 'lucide-react';
 import { Trade, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
+import { queryKeys } from '@/lib/query-keys';
+
+// Statuts pour lesquels le polling Skinplace a du sens
+const SYNCABLE_STATUSES = ['créé', 'accepté_par_bot', 'en_trade_hold', 'disponible'];
 
 export function AdminTradesTable() {
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { messages } = useLocale();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState<AdminFilters>({
     page: 1,
     limit: 20,
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [syncingTradeIds, setSyncingTradeIds] = useState<Set<string>>(new Set());
 
-  const fetchTrades = useCallback(async () => {
-    try {
-      setIsLoading(true);
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.adminTrades({ ...filters, search: searchTerm }),
+    queryFn: async () => {
       const params = new URLSearchParams();
-      
       if (filters.status) params.append('status', filters.status);
       if (filters.userId) params.append('userId', filters.userId);
       if (filters.dateFrom) params.append('dateFrom', filters.dateFrom.toISOString());
@@ -45,23 +51,15 @@ export function AdminTradesTable() {
       if (searchTerm) params.append('search', searchTerm);
 
       const response = await fetch(`/api/admin/trades?${params}`);
-      const data = await response.json();
-
+      const json = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors du chargement des trades');
+        throw new Error(json.error || 'Erreur lors du chargement des trades');
       }
+      return json;
+    },
+  });
 
-      setTrades(data.trades || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filters, searchTerm]);
-
-  useEffect(() => {
-    fetchTrades();
-  }, [fetchTrades]);
+  const trades: Trade[] = data?.trades ?? [];
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -115,6 +113,50 @@ export function AdminTradesTable() {
     }).format(new Date(date));
   };
 
+  const syncTrade = async (tradeId: string) => {
+    setSyncingTradeIds(prev => new Set(prev).add(tradeId));
+    try {
+      const response = await fetch(`/api/admin/trades/${tradeId}/sync-skinplace`, {
+        method: 'POST',
+      });
+      const json = await response.json();
+
+      if (!response.ok) {
+        toast({
+          title: 'Erreur de synchronisation',
+          description: json.error || 'Impossible de contacter Skinplace',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (json.synced) {
+        toast({
+          title: 'Statut mis à jour',
+          description: json.message,
+        });
+        queryClient.invalidateQueries({ queryKey: ['admin', 'trades'] });
+      } else {
+        toast({
+          title: 'Aucun changement',
+          description: json.message,
+        });
+      }
+    } catch {
+      toast({
+        title: 'Erreur réseau',
+        description: 'Impossible de joindre l\'API',
+        variant: 'destructive',
+      });
+    } finally {
+      setSyncingTradeIds(prev => {
+        const next = new Set(prev);
+        next.delete(tradeId);
+        return next;
+      });
+    }
+  };
+
   const exportTrades = async () => {
     try {
       const params = new URLSearchParams();
@@ -150,7 +192,7 @@ export function AdminTradesTable() {
         <CardContent className="p-6">
           <div className="flex items-center gap-2 text-red-400">
             <AlertTriangle className="h-5 w-5" />
-            <span>Erreur: {error}</span>
+            <span>Erreur: {error.message}</span>
           </div>
         </CardContent>
       </Card>
@@ -188,7 +230,7 @@ export function AdminTradesTable() {
         </Select>
 
         <Button 
-          onClick={fetchTrades}
+          onClick={() => queryClient.invalidateQueries({ queryKey: ['admin', 'trades'] })}
           variant="outline"
           className="border-slate-600 text-white hover:bg-slate-700"
         >
@@ -227,8 +269,11 @@ export function AdminTradesTable() {
                 </TableCell>
                 <TableCell className="text-slate-300">
                   <div>
-                    <div className="font-medium">{trade.userId}</div>
-                    <div className="text-xs text-slate-400">ID: {trade.id}</div>
+                    <div className="font-medium">{trade.userName || trade.userId}</div>
+                    {trade.userEmail && (
+                      <div className="text-xs text-slate-400">{trade.userEmail}</div>
+                    )}
+                    <div className="text-xs text-slate-500 font-mono">{trade.userId}</div>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -249,13 +294,27 @@ export function AdminTradesTable() {
                   {formatDate(trade.créédLe)}
                 </TableCell>
                 <TableCell>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-slate-600 text-white hover:bg-slate-700"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-slate-600 text-white hover:bg-slate-700"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    {SYNCABLE_STATUSES.includes(trade.status) && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={syncingTradeIds.has(trade.id)}
+                        onClick={() => syncTrade(trade.id)}
+                        className="border-orange-600 text-orange-400 hover:bg-orange-900/30"
+                        title="Interroger Skinplace pour mettre à jour le statut"
+                      >
+                        <RotateCcw className={`h-4 w-4 ${syncingTradeIds.has(trade.id) ? 'animate-spin' : ''}`} />
+                      </Button>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

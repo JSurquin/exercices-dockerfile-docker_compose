@@ -16,6 +16,8 @@ export interface User {
 export interface Trade {
   id: string;
   userId: string;
+  userName?: string;
+  userEmail?: string;
   status: 'créé' | 'accepté_par_bot' | 'en_trade_hold' | 'disponible' | 'paiement_en_cours' | 'payé' | 'échoué';
   brutCentimes: number;
   frais: {
@@ -68,6 +70,10 @@ export interface CryptoDetails {
 export interface Payout {
   id: string;
   userId: string;
+  userName?: string;
+  userEmail?: string;
+  userSteamUsername?: string;
+  userSteamAvatar?: string;
   status: 'en_attente' | 'en_attente_approbation' | 'vérification_requise' | 'vérifié' | 'planifié' | 'exécuté' | 'payé' | 'échoué' | 'annulé';
   montantCentimes: number;
   methodePaiement: PaymentMethod;

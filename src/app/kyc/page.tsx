@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -67,70 +69,42 @@ export default function KYCPage() {
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({});
   const steps = getSteps(messages);
 
-  // Polling automatique du KYC en dev (vérifie le statut toutes les 10s)
-  useEffect(() => {
-    if (!user?.kycStatus || user.kycStatus === 'VERIFIED' || user.kycStatus === 'KYCAID_VERIFIED') {
-      // Déjà vérifié, pas besoin de poller
-      localStorage.removeItem('kyc_just_verified');
-      return;
-    }
-
-    // Seulement poller si le statut est IN_PROGRESS (ou pas encore vérifié)
-    if (user.kycStatus !== 'IN_PROGRESS') {
-      return;
-    }
-
-    // Vérifier si on vient juste de vérifier le KYC (pour éviter le loop)
-    const justVerified = localStorage.getItem('kyc_just_verified');
-    if (justVerified) {
-      const timestamp = parseInt(justVerified);
-      if (Date.now() - timestamp < 30000) {
-        console.log('[KYC Page] KYC just verified, waiting for DB sync...');
-        return;
-      } else {
-        localStorage.removeItem('kyc_just_verified');
+  useQuery({
+    queryKey: queryKeys.kycStatus,
+    queryFn: async () => {
+      const justVerified = localStorage.getItem('kyc_just_verified');
+      if (justVerified) {
+        const timestamp = parseInt(justVerified);
+        if (Date.now() - timestamp < 30000) {
+          return null;
+        } else {
+          localStorage.removeItem('kyc_just_verified');
+        }
       }
-    }
 
-    const pollKycStatus = async () => {
-      try {
-        const response = await fetch('/api/kycaid/status');
-        if (!response.ok) return;
+      const response = await fetch('/api/kycaid/status');
+      if (!response.ok) return null;
+      const data = await response.json();
 
-        const data = await response.json();
-
-        // Si une vérification est en cours et qu'on est en dev, utiliser le polling
-        if (data.verificationId && process.env.NODE_ENV === 'development') {
-          console.log('[KYC Page] Polling KYC verification:', data.verificationId);
-          const pollResponse = await fetch(`/api/kycaid/poll/${data.verificationId}`);
-
-          if (pollResponse.ok) {
-            const pollData = await pollResponse.json();
-
-            if (pollData.verified === true) {
-              console.log('[KYC Page] ✅ KYC VERIFIED! Reloading page...');
-              localStorage.setItem('kyc_just_verified', Date.now().toString());
-              toast.success('KYC vérifié avec succès !');
-              setTimeout(() => window.location.reload(), 1000);
-            } else if (pollData.status === 'completed' && pollData.verified === false) {
-              console.log('[KYC Page] ❌ KYC REJECTED. Reloading page...');
-              toast.error('KYC refusé. Veuillez réessayer.');
-              setTimeout(() => window.location.reload(), 1000);
-            }
+      if (data.verificationId && process.env.NODE_ENV === 'development') {
+        const pollResponse = await fetch(`/api/kycaid/poll/${data.verificationId}`);
+        if (pollResponse.ok) {
+          const pollData = await pollResponse.json();
+          if (pollData.verified === true) {
+            localStorage.setItem('kyc_just_verified', Date.now().toString());
+            toast.success('KYC vérifié avec succès !');
+            setTimeout(() => window.location.reload(), 1000);
+          } else if (pollData.status === 'completed' && pollData.verified === false) {
+            toast.error('KYC refusé. Veuillez réessayer.');
+            setTimeout(() => window.location.reload(), 1000);
           }
         }
-      } catch (error) {
-        console.error('[KYC Page] Error polling KYC:', error);
       }
-    };
-
-    // Poll immédiatement
-    pollKycStatus();
-
-    // Puis toutes les 10 secondes
-    const interval = setInterval(pollKycStatus, 10000);
-    return () => clearInterval(interval);
-  }, [user?.kycStatus]);
+      return data;
+    },
+    enabled: user?.kycStatus === 'IN_PROGRESS',
+    refetchInterval: user?.kycStatus === 'IN_PROGRESS' ? 10_000 : false,
+  });
 
   const handleFileUpload = (type: string, file: File) => {
     setUploadedFiles(prev => ({ ...prev, [type]: file }));

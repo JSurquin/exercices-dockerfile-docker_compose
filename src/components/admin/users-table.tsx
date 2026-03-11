@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,23 +25,21 @@ import {
 import { User as UserType, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
 import { CreateUserDialog } from './create-user-dialog';
+import { queryKeys } from '@/lib/query-keys';
 
 export function AdminUsersTable() {
-  const [users, setUsers] = useState<UserType[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { messages } = useLocale();
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState<AdminFilters>({
     page: 1,
     limit: 20,
   });
   const [searchTerm, setSearchTerm] = useState('');
 
-  const fetchUsers = useCallback(async () => {
-    try {
-      setIsLoading(true);
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.adminUsers({ ...filters, search: searchTerm }),
+    queryFn: async () => {
       const params = new URLSearchParams();
-      
       if (filters.status) params.append('status', filters.status);
       if (filters.search) params.append('search', filters.search);
       if (filters.page) params.append('page', filters.page.toString());
@@ -48,23 +47,15 @@ export function AdminUsersTable() {
       if (searchTerm) params.append('search', searchTerm);
 
       const response = await fetch(`/api/admin/users?${params}`);
-      const data = await response.json();
-
+      const json = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors du chargement des utilisateurs');
+        throw new Error(json.error || 'Erreur lors du chargement des utilisateurs');
       }
+      return json;
+    },
+  });
 
-      setUsers(data.users || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filters, searchTerm]);
-
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+  const users: UserType[] = data?.users ?? [];
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -145,7 +136,7 @@ export function AdminUsersTable() {
         <CardContent className="p-6">
           <div className="flex items-center gap-2 text-red-400">
             <AlertTriangle className="h-5 w-5" />
-            <span>Erreur: {error}</span>
+            <span>Erreur: {error.message}</span>
           </div>
         </CardContent>
       </Card>
@@ -180,7 +171,7 @@ export function AdminUsersTable() {
         </Select>
 
         <Button 
-          onClick={fetchUsers}
+          onClick={() => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })}
           variant="outline"
           className="border-slate-600 text-white hover:bg-slate-700"
         >
@@ -196,7 +187,7 @@ export function AdminUsersTable() {
           Exporter
         </Button>
 
-        <CreateUserDialog onUserCreated={fetchUsers} />
+        <CreateUserDialog onUserCreated={() => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })} />
       </div>
 
       {/* Table */}

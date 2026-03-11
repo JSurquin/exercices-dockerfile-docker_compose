@@ -11,10 +11,18 @@ export const WHITEPAY_CONFIG = {
   callbackUrl: process.env.WHITEPAY_CALLBACK_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api/whitepay/webhook`,
   /** Durée max (en ms) avant expiration du taux — Whitepay impose 30s */
   rateExpirationMs: 30_000,
-  /** Secret pour vérifier les webhooks de dépôt (top-up). HMAC-SHA256 du raw body. */
-  webhookTokenDeposit: process.env.WHITEPAY_WEBHOOK_TOKEN_DEPOSIT ?? '',
-  /** Secret pour vérifier les webhooks de retrait (payout). HMAC-SHA256 du raw body. */
-  webhookTokenWithdrawal: process.env.WHITEPAY_WEBHOOK_TOKEN_WITHDRAWAL ?? '',
+  /**
+   * Token de signature des webhooks généraux Whitepay (Settings → Tokens dans le CRM).
+   * Utilisé pour : withdrawal::completed/declined, conversion_withdrawal::completed/declined
+   * Algo : HMAC-SHA256(JSON.stringify(body).replace(/\//g, "\\/"), token) → hex lowercase
+   * Header envoyé par Whitepay : "Signature"
+   *
+   * Distinctions :
+   *   WHITEPAY_WEBHOOK_TOKEN_WITHDRAWAL → general webhooks (payouts) ← celui-ci
+   *   WHITEPAY_WEBHOOK_TOKEN_DEPOSIT    → payment page webhooks (top-ups) ← pas utilisé ici
+   *   WHITEPAY_WEBHOOK_SECRET           → secret API pour les appels sortants
+   */
+  webhookSignatureToken: process.env.WHITEPAY_WEBHOOK_TOKEN_WITHDRAWAL ?? process.env.WHITEPAY_WEBHOOK_TOKEN ?? '',
 };
 
 // =============================================================================
@@ -75,24 +83,16 @@ export interface WhitepayWithdrawalRequest {
   memo?: string;
   /** Travel Rule (obligatoire pour les résidents EEE) */
   travel_rule?: WhitepayTravelRule;
-  /** ID de commande interne pour idempotence */
+  /** ID externe pour idempotence (envoyé comme "external_id" dans l'API) */
   order_id?: string;
-  /** URL de callback pour les mises à jour de statut */
-  callback_url?: string;
 }
 
 /** Même structure que WhitepayWithdrawalRequest — le flux combine création + taux + confirmation */
 export type WhitepayInstantWithdrawalRequest = WhitepayWithdrawalRequest;
 
-export interface WhitepayConfirmRequest {
-  /** ID de la transaction à confirmer */
-  transaction_id: string;
-}
-
-export interface WhitepayRefreshRequest {
-  /** ID de la transaction dont le taux a expiré */
-  transaction_id: string;
-}
+// Note: Confirm et Refresh utilisent l'ID de transaction directement dans le PATH (pas dans le body)
+// POST /private-api/convert-withdrawal/{transactionID}/confirm
+// POST /private-api/convert-withdrawal/{transactionID}/refresh
 
 // =============================================================================
 // TYPES — Réponses
@@ -103,14 +103,14 @@ export interface WhitepayTransaction {
   status: WhitepayTransactionStatus;
   /** Taux de change appliqué */
   exchange_rate: string;
-  /** Timestamp de l'estimation du taux */
+  /** Timestamp de l'estimation du taux (format: "YYYY-MM-DD HH:mm:ss") */
   estimated_at: string;
   /** Montant dans la devise cible */
   target_value: string;
-  /** Montant dans la devise source */
-  source_value: string;
-  /** Frais appliqués */
-  fee: string;
+  /** Montant dans la devise source (champ "value" dans la réponse API) */
+  value: string;
+  /** Frais appliqués (peut être null) */
+  fee: string | null;
   /** Devise source */
   currency: WhitepayCurrency;
   /** Devise cible */
@@ -125,12 +125,20 @@ export interface WhitepayTransaction {
   tx_hash?: string;
   /** Nombre de confirmations blockchain */
   confirmations?: number;
-  /** ID de commande interne */
-  order_id?: string;
-  /** Date de création */
+  /** ID externe fourni lors de la création (champ "external_id" dans la réponse API) */
+  external_id?: string;
+  /** Date de création (format: "YYYY-MM-DD HH:mm:ss") */
   created_at: string;
-  /** Date de dernière mise à jour */
-  updated_at: string;
+  /** Date de complétion (null si pas encore complété) */
+  completed_at: string | null;
+  /** Type de transaction */
+  type?: string;
+  /** Email associé */
+  email?: string | null;
+  /** Description */
+  description?: string | null;
+  /** Travel Rule */
+  travel_rule?: object;
 }
 
 export interface WhitepayWithdrawalResponse {
@@ -157,45 +165,55 @@ export interface WhitepayStatusResponse {
 // TYPES — Webhook
 // =============================================================================
 
-/** Webhook pour les mises à jour de statut des retraits (payouts) */
+/**
+ * Structure réelle des webhooks Whitepay (doc /webhooks/events).
+ * Champ discriminant : event_type
+ * - "withdrawal::completed" / "withdrawal::declined"
+ * - "conversion_withdrawal::completed" / "conversion_withdrawal::declined"
+ * - "order::completed" / "order::final_amount_was_received" (payment page — on ignore)
+ * - "rollback::to_merchant" / "rollback::to_client" (on ignore)
+ */
 export interface WhitepayWebhookPayload {
-  event: 'withdrawal.status_changed';
+  event_type: string;
   transaction: WhitepayTransaction;
-  timestamp: string;
 }
 
-/**
- * Webhook "Final Amount Received" pour le flux Crypto Top-Up (dépôt sur le compte merchant).
- * Whitepay notifie que notre compte merchant a été alimenté (on a envoyé de l'USDC sur leur wallet).
- * Côté nous : on log pour audit, on ne crédite aucun user (notre solde = ventes skins, WhitePay = payout).
- */
-export interface WhitepayTopUpWebhookPayload {
-  event?: string;
-  transaction_received_total?: string;
-  received_currency?: string;
-  equivalent_fiat_amount?: number;
-  equivalent_fiat_currency?: string;
-  [key: string]: unknown;
+/** Payload des webhooks liés aux invoices/orders (payment page) — on ne traite pas */
+export interface WhitepayOrderWebhookPayload {
+  event_type: string;
+  order: Record<string, unknown>;
 }
+
+export const WHITEPAY_WITHDRAWAL_EVENTS = [
+  'withdrawal::completed',
+  'withdrawal::declined',
+  'conversion_withdrawal::completed',
+  'conversion_withdrawal::declined',
+] as const;
 
 export function isWhitepayWithdrawalEvent(payload: unknown): payload is WhitepayWebhookPayload {
   const p = payload as Record<string, unknown>;
+  if (!p || typeof p !== 'object') return false;
+  const eventType = p.event_type as string | undefined;
   return !!(
-    p &&
-    typeof p === 'object' &&
+    eventType &&
+    WHITEPAY_WITHDRAWAL_EVENTS.includes(eventType as typeof WHITEPAY_WITHDRAWAL_EVENTS[number]) &&
     p.transaction &&
-    typeof (p.transaction as Record<string, unknown>).id === 'string' &&
-    typeof (p.transaction as Record<string, unknown>).status === 'string'
+    typeof (p.transaction as Record<string, unknown>).id === 'string'
   );
 }
 
-export function isWhitepayTopUpEvent(payload: unknown): payload is WhitepayTopUpWebhookPayload {
+/** Détecte les events payment-page (order, transaction) — on log et on ignore */
+export function isWhitepayTopUpEvent(payload: unknown): payload is WhitepayOrderWebhookPayload {
   const p = payload as Record<string, unknown>;
+  if (!p || typeof p !== 'object') return false;
+  const eventType = p.event_type as string | undefined;
   return !!(
-    p &&
-    typeof p === 'object' &&
-    (typeof p.transaction_received_total === 'string' || typeof p.transaction_received_total === 'number' ||
-     typeof p.received_currency === 'string')
+    eventType && (
+      eventType.startsWith('order::') ||
+      eventType.startsWith('transaction::') ||
+      eventType.startsWith('rollback::')
+    )
   );
 }
 
@@ -343,17 +361,16 @@ export async function createWithdrawal(
   validateConfig();
   validateWithdrawalParams(params);
 
-  // Payload pour l'API : amount en string ; doc Whitepay indique "travelRule" (camelCase) pour la Travel Rule
+  // Payload pour l'API : amount en number ; doc Whitepay utilise "external_id" et "travelRule" (camelCase)
   const payload: Record<string, unknown> = {
-    amount: typeof params.amount === 'number' ? String(params.amount) : params.amount,
+    amount: params.amount,
     currency: params.currency,
     target_currency: params.target_currency,
     network: params.network,
     address: params.address,
-    callback_url: params.callback_url || WHITEPAY_CONFIG.callbackUrl,
   };
   if (params.memo !== undefined && params.memo !== '') payload.memo = params.memo;
-  if (params.order_id !== undefined) payload.order_id = params.order_id;
+  if (params.order_id !== undefined) payload.external_id = params.order_id;
   if (params.travel_rule !== undefined) payload.travelRule = params.travel_rule;
 
   logWhitepay('CREATE_WITHDRAWAL', params.order_id || 'no-order-id', {
@@ -379,6 +396,7 @@ export async function createWithdrawal(
  * après `createWithdrawal()`.
  * 
  * Si le taux a expiré, gère automatiquement le refresh et re-confirme.
+ * Doc Whitepay: POST /private-api/convert-withdrawal/{transactionID}/confirm
  */
 export async function confirmWithdrawal(
   transactionId: string,
@@ -391,8 +409,7 @@ export async function confirmWithdrawal(
   try {
     return await whitepayRequest<WhitepayConfirmResponse>(
       'POST',
-      '/private-api/convert-withdrawal/confirm',
-      { transaction_id: transactionId }
+      `/private-api/convert-withdrawal/${transactionId}/confirm`
     );
   } catch (error) {
     // Gestion automatique de l'expiration du taux
@@ -421,6 +438,7 @@ export async function confirmWithdrawal(
 /**
  * Rafraîchit le taux de change pour une transaction dont le taux a expiré.
  * Le nouveau taux est valable 30 secondes.
+ * Doc Whitepay: POST /private-api/convert-withdrawal/{transactionID}/refresh
  */
 export async function refreshWithdrawal(
   transactionId: string
@@ -431,8 +449,7 @@ export async function refreshWithdrawal(
 
   return whitepayRequest<WhitepayRefreshResponse>(
     'POST',
-    '/private-api/convert-withdrawal/refresh',
-    { transaction_id: transactionId }
+    `/private-api/convert-withdrawal/${transactionId}/refresh`
   );
 }
 
@@ -451,17 +468,16 @@ export async function createInstantWithdrawal(
   validateConfig();
   validateWithdrawalParams(params);
 
-  // Même format que createWithdrawal : amount en string, travelRule en camelCase
+  // Même format que createWithdrawal : amount en number, external_id, travelRule en camelCase
   const payload: Record<string, unknown> = {
-    amount: typeof params.amount === 'number' ? String(params.amount) : params.amount,
+    amount: params.amount,
     currency: params.currency,
     target_currency: params.target_currency,
     network: params.network,
     address: params.address,
-    callback_url: params.callback_url || WHITEPAY_CONFIG.callbackUrl,
   };
   if (params.memo !== undefined && params.memo !== '') payload.memo = params.memo;
-  if (params.order_id !== undefined) payload.order_id = params.order_id;
+  if (params.order_id !== undefined) payload.external_id = params.order_id;
   if (params.travel_rule !== undefined) payload.travelRule = params.travel_rule;
 
   logWhitepay('CREATE_INSTANT_WITHDRAWAL', params.order_id || 'no-order-id', {
@@ -501,48 +517,34 @@ export async function getTransactionStatus(
 // =============================================================================
 
 /**
- * Valide la signature d'un webhook Whitepay (ancienne méthode : timestamp + secretKey).
- * Utilisée pour l'API sortante ; les callbacks webhook utilisent les tokens dédiés.
- */
-export function validateWebhookSignature(
-  payload: string,
-  signature: string,
-  timestamp: string
-): boolean {
-  const expectedSignature = crypto
-    .createHmac('sha256', WHITEPAY_CONFIG.secretKey)
-    .update(`${timestamp}${payload}`)
-    .digest('hex');
-
-  try {
-    return crypto.timingSafeEqual(
-      Buffer.from(signature),
-      Buffer.from(expectedSignature)
-    );
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Valide la signature d'un webhook WhitePay avec le token dédié (deposit ou withdrawal).
- * WhitePay signe le body brut avec HMAC-SHA256(token, rawBody) et envoie le hash en hex dans le header.
+ * Valide la signature d'un webhook Whitepay.
  *
- * @param rawBody - Body brut de la requête (ne pas utiliser le JSON parsé)
- * @param signature - Valeur du header X-Signature ou X-Whitepay-Signature
- * @param token - WHITEPAY_WEBHOOK_TOKEN_DEPOSIT ou WHITEPAY_WEBHOOK_TOKEN_WITHDRAWAL
+ * Algo officiel (doc /webhooks/authorization) :
+ *   signature = HMAC-SHA256(JSON.stringify(parsedBody).replace(/\//g, "\\/"), secret)
+ *   → résultat en hex lowercase
+ *   → envoyé dans le header "Signature"
+ *
+ * IMPORTANT : on signe le body RE-SÉRIALISÉ (pas le raw body brut),
+ * avec les slashes échappés comme le fait JSON.stringify natif de certains runtimes.
+ *
+ * @param parsedBody - Body déjà parsé (JSON.parse du raw body)
+ * @param signature  - Valeur du header "Signature"
+ * @param token      - WHITEPAY_WEBHOOK_TOKEN depuis le CRM Whitepay (Settings → Tokens)
  */
 export function validateWebhookSignatureWithToken(
-  rawBody: string,
+  parsedBody: unknown,
   signature: string,
   token: string
 ): boolean {
   if (!token || !signature) return false;
-  const expected = crypto
-    .createHmac('sha256', token)
-    .update(rawBody)
-    .digest('hex');
   try {
+    // Reproduire exactement l'algo JS de la doc :
+    // HmacSHA256(JSON.stringify(req.body).replace(/\//g, "\\/"), secret).toString()
+    const serialized = JSON.stringify(parsedBody).replace(/\//g, '\\/');
+    const expected = crypto
+      .createHmac('sha256', token)
+      .update(serialized)
+      .digest('hex');
     if (Buffer.byteLength(signature, 'utf8') !== Buffer.byteLength(expected, 'utf8')) return false;
     return crypto.timingSafeEqual(
       Buffer.from(signature, 'utf8'),
@@ -554,33 +556,30 @@ export function validateWebhookSignatureWithToken(
 }
 
 /**
- * Valide la signature du webhook en fonction du type d'événement (deposit vs withdrawal).
- * À utiliser après avoir parsé le body pour déterminer le type d'événement.
+ * Valide la signature du webhook Whitepay avec le token général configuré.
+ * Un seul token couvre tous les general webhooks (withdrawals, refunds, rollbacks).
  */
-export function validateWebhookSignatureByEvent(
-  rawBody: string,
-  signature: string,
-  isDepositEvent: boolean
-): boolean {
-  const token = isDepositEvent
-    ? WHITEPAY_CONFIG.webhookTokenDeposit
-    : WHITEPAY_CONFIG.webhookTokenWithdrawal;
-  return validateWebhookSignatureWithToken(rawBody, signature, token);
-}
-
-/**
- * Vérifie si la requête webhook est signée par l'un des deux tokens (deposit ou withdrawal).
- * Utile pour les événements inconnus : on accepte si une des deux signatures est valide.
- */
-export function validateWebhookSignatureWithEitherToken(
-  rawBody: string,
+export function validateWebhookSignature(
+  parsedBody: unknown,
   signature: string
 ): boolean {
-  const deposit = WHITEPAY_CONFIG.webhookTokenDeposit;
-  const withdrawal = WHITEPAY_CONFIG.webhookTokenWithdrawal;
-  if (deposit && validateWebhookSignatureWithToken(rawBody, signature, deposit)) return true;
-  if (withdrawal && validateWebhookSignatureWithToken(rawBody, signature, withdrawal)) return true;
-  return false;
+  return validateWebhookSignatureWithToken(parsedBody, signature, WHITEPAY_CONFIG.webhookSignatureToken);
+}
+
+// Aliases conservés pour compatibilité interne
+export function validateWebhookSignatureByEvent(
+  parsedBody: unknown,
+  signature: string,
+  _isDepositEvent: boolean
+): boolean {
+  return validateWebhookSignature(parsedBody, signature);
+}
+
+export function validateWebhookSignatureWithEitherToken(
+  parsedBody: unknown,
+  signature: string
+): boolean {
+  return validateWebhookSignature(parsedBody, signature);
 }
 
 // =============================================================================

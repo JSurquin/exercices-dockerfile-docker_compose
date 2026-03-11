@@ -1,59 +1,50 @@
-import { useState, useEffect, useCallback } from 'react';
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 
 interface UseAffiliateApplicationsResult {
   pendingCount: number;
   loading: boolean;
   error: string | null;
-  refresh: () => Promise<void>;
+  refresh: () => void;
 }
 
 /**
- * Hook pour récupérer le nombre de demandes d'affiliation en attente
- * Auto-refresh toutes les 30 secondes
+ * Hook pour récupérer le nombre de demandes d'affiliation en attente.
+ * Auto-refresh toutes les 30 secondes via TanStack Query refetchInterval.
  */
 export function useAffiliateApplications(): UseAffiliateApplicationsResult {
-  const [pendingCount, setPendingCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchPendingCount = useCallback(async () => {
-    try {
-      const response = await fetch('/api/admin/affiliate-applications?limit=1&status=pending');
-      const data = await response.json();
-
-      if (data.success) {
-        setPendingCount(data.data.pendingCount || 0);
-        setError(null);
-      } else {
-        setError('Erreur lors du chargement');
+  const {
+    data,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useQuery({
+    queryKey: queryKeys.adminAffiliateApplications('pending'),
+    queryFn: async () => {
+      const response = await fetch(
+        '/api/admin/affiliate-applications?limit=1&status=pending'
+      );
+      const json = await response.json();
+      if (!json.success) {
+        throw new Error('Erreur lors du chargement');
       }
-    } catch (err) {
-      console.error('Erreur chargement demandes d\'affiliation:', err);
-      setError('Erreur de connexion');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      return json.data.pendingCount as number;
+    },
+    refetchInterval: 30_000,
+  });
 
-  // Charger au montage
-  useEffect(() => {
-    fetchPendingCount();
-  }, [fetchPendingCount]);
-
-  // Auto-refresh toutes les 30 secondes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchPendingCount();
-    }, 30000); // 30 secondes
-
-    return () => clearInterval(interval);
-  }, [fetchPendingCount]);
+  const error = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : 'Erreur de connexion'
+    : null;
 
   return {
-    pendingCount,
+    pendingCount: data ?? 0,
     loading,
     error,
-    refresh: fetchPendingCount
+    refresh: refetch,
   };
 }
-

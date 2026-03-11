@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -24,86 +26,52 @@ interface KycVerificationProps {
 export function KycVerification({ onStatusChange }: KycVerificationProps) {
   // Simple translation fallback
   const t = (key: string) => key;
-  const [loading, setLoading] = useState(true);
   const [initiating, setInitiating] = useState(false);
-  const [kycStatus, setKycStatus] = useState<KycStatus | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<'address' | 'verification'>('address');
   const [addressSubmitted, setAddressSubmitted] = useState(false);
   const [verificationId, setVerificationId] = useState<string | null>(null);
-  const [isDevelopment, setIsDevelopment] = useState(false);
+  const [isDevelopment] = useState(() => process.env.NODE_ENV === 'development');
+  const [error, setError] = useState<string | null>(null);
+  const previousStatusRef = useRef<KycStatus | null>(null);
 
-  const fetchStatus = async () => {
-    try {
-      // En mode dev avec un verificationId, on poll directement l'API KYCAID
-      if (isDevelopment && verificationId && kycStatus?.status === 'PENDING') {
-        console.log('[KYC] Polling KYCAID API in dev mode...');
+  const { data: kycStatus, isLoading: loading, error: queryFetchError, refetch } = useQuery<KycStatus | null>({
+    queryKey: queryKeys.kycStatus,
+    queryFn: async (): Promise<KycStatus | null> => {
+      if (isDevelopment && verificationId && previousStatusRef.current?.status === 'PENDING') {
         const response = await fetch(`/api/kycaid/poll/${verificationId}`);
         const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Erreur lors de la vérification du statut');
-        }
-
-        // Transformer la réponse de polling en format KycStatus
+        if (!response.ok) throw new Error(data.error || 'Erreur');
         const transformedStatus: KycStatus = {
-          status: data.verified === true ? 'VERIFIED' : 
-                  data.verified === false ? 'REJECTED' : 'PENDING',
+          status: data.verified === true ? 'VERIFIED' : data.verified === false ? 'REJECTED' : 'PENDING',
           message: data.message || '',
           canRetry: data.status !== 'completed',
           declineReasons: data.declineReasons,
         };
-
-        setKycStatus(transformedStatus);
-        onStatusChange?.(transformedStatus.status);
-        
-        // Si complété, arrêter le polling
-        if (data.status === 'completed') {
-          setVerificationId(null);
-        }
+        if (data.status === 'completed') setVerificationId(null);
+        return transformedStatus;
       } else {
-        // Mode normal: vérifier le statut en BDD
         const response = await fetch('/api/kycaid/status');
         const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Erreur lors de la vérification du statut');
-        }
-
-        setKycStatus(data);
-        onStatusChange?.(data.status);
+        if (!response.ok) throw new Error(data.error || 'Erreur');
+        return data as KycStatus;
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
-    } finally {
-      setLoading(false);
+    },
+    refetchInterval: (isDevelopment && verificationId && previousStatusRef.current?.status === 'PENDING') ? 10_000 : 30_000,
+    staleTime: 0,
+  });
+
+  useEffect(() => {
+    previousStatusRef.current = kycStatus ?? null;
+  }, [kycStatus]);
+
+  const queryError2 = queryFetchError instanceof Error ? queryFetchError.message : null;
+  const displayError = error ?? queryError2;
+
+  useEffect(() => {
+    if (kycStatus) {
+      onStatusChange?.(kycStatus.status);
     }
-  };
-
-  // Détecter le mode développement
-  useEffect(() => {
-    setIsDevelopment(process.env.NODE_ENV === 'development');
-  }, []);
-
-  const fetchStatusCallback = useCallback(fetchStatus, [
-    onStatusChange, 
-    isDevelopment, 
-    verificationId, 
-    kycStatus?.status
-  ]);
-
-  useEffect(() => {
-    fetchStatusCallback();
-    
-    // En mode dev avec un verificationId en attente, poller plus fréquemment (10 secondes)
-    // En mode prod ou sans verificationId, poller toutes les 30 secondes
-    const pollInterval = (isDevelopment && verificationId && kycStatus?.status === 'PENDING') 
-      ? 10000  // 10 secondes en dev
-      : 30000; // 30 secondes sinon
-    
-    const interval = setInterval(fetchStatusCallback, pollInterval);
-    return () => clearInterval(interval);
-  }, [fetchStatusCallback, isDevelopment, verificationId, kycStatus?.status]);
+  }, [kycStatus]);
 
   const handleAddressSubmit = async (address: AddressData) => {
     setInitiating(true);
@@ -164,7 +132,7 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
         console.log('[KYC] ✅ Opening verification URL:', data.verificationUrl);
         window.open(data.verificationUrl, '_blank');
         // Actualiser le statut après quelques secondes
-        setTimeout(fetchStatus, 3000);
+        setTimeout(() => refetch(), 3000);
       } else {
         console.warn('[KYC] ⚠️  No verification URL returned');
         setError('Aucune URL de vérification retournée');
@@ -233,11 +201,11 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {error && (
+        {displayError && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{t('common.error') || 'Erreur'}</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>{displayError}</AlertDescription>
           </Alert>
         )}
 
@@ -258,7 +226,7 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
                 <AlertTitle>{t('kyc.declineReasons') || 'Raisons du refus'}</AlertTitle>
                 <AlertDescription>
                   <ul className="list-disc pl-4 mt-2 space-y-1">
-                    {kycStatus.declineReasons.map((reason, index) => (
+                    {kycStatus.declineReasons.map((reason: string, index: number) => (
                       <li key={index}>{reason}</li>
                     ))}
                   </ul>

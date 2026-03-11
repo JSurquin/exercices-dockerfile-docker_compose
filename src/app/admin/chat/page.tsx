@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { useLocale } from '@/components/providers/locale-provider';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 
 interface Moderator {
   id: string;
@@ -53,51 +55,50 @@ export default function AdminChatPage() {
   const { data: session, isPending } = useSession();
   const user = session?.user;
   const { messages } = useLocale();
-  const [conversations, setConversations] = useState<ConversationWithMessages[]>([]);
-  const [moderators, setModerators] = useState<Moderator[]>([]);
-  const [moderatorStats, setModeratorStats] = useState<ModeratorStats[]>([]);
-  const [chatStats, setChatStats] = useState<ChatStats | null>(null);
+  const queryClient = useQueryClient();
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchUser, setSearchUser] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [promotingUser, setPromotingUser] = useState(false);
 
-  const fetchData = async () => {
-    try {
-      const [conversationsRes, moderatorsRes, statsRes, moderatorStatsRes] = await Promise.all([
-        fetch('/api/chat/conversations?limit=50'),
-        fetch('/api/admin/moderators'),
-        fetch('/api/chat/stats'),
-        fetch('/api/chat/stats/moderators', { method: 'POST' }),
-      ]);
+  const { data: convData, isLoading: loading } = useQuery({
+    queryKey: queryKeys.adminChatConversations({ limit: 50 }),
+    queryFn: async () => {
+      const res = await fetch('/api/chat/conversations?limit=50');
+      if (!res.ok) return { conversations: [] };
+      return res.json();
+    },
+  });
+  const conversations = convData?.conversations ?? [];
 
-      if (conversationsRes.ok) {
-        const convData = await conversationsRes.json();
-        setConversations(convData.conversations);
-      }
+  const { data: moderators = [] } = useQuery({
+    queryKey: queryKeys.adminModerators,
+    queryFn: async () => {
+      const res = await fetch('/api/admin/moderators');
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.moderators ?? [];
+    },
+  });
 
-      if (moderatorsRes.ok) {
-        const modData = await moderatorsRes.json();
-        setModerators(modData);
-      }
+  const { data: chatStats } = useQuery({
+    queryKey: queryKeys.adminChatStats,
+    queryFn: async () => {
+      const res = await fetch('/api/chat/stats');
+      if (!res.ok) return null;
+      return res.json();
+    },
+  });
 
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        setChatStats(statsData);
-      }
-
-      if (moderatorStatsRes.ok) {
-        const modStatsData = await moderatorStatsRes.json();
-        setModeratorStats(modStatsData);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement:', error);
-      toast.error('Erreur lors du chargement des données');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: moderatorStats = [] } = useQuery({
+    queryKey: queryKeys.adminChatModeratorStats,
+    queryFn: async () => {
+      const res = await fetch('/api/chat/stats/moderators', { method: 'POST' });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.moderatorStats ?? [];
+    },
+  });
 
   const searchUsers = async () => {
     if (!searchUser.trim()) return;
@@ -132,7 +133,7 @@ export default function AdminChatPage() {
       setSelectedUser(null);
       setUsers([]);
       setSearchUser('');
-      await fetchData();
+      queryClient.invalidateQueries({ queryKey: ['admin', 'chat'] });
     } catch (error: any) {
       toast.error(error.message);
       console.error(error);
@@ -153,16 +154,12 @@ export default function AdminChatPage() {
       }
 
       toast.success(messages.admin.chat.moderators.successDemote);
-      await fetchData();
+      queryClient.invalidateQueries({ queryKey: ['admin', 'chat'] });
     } catch (error: any) {
       toast.error(error.message || messages.admin.chat.moderators.errorDemote);
       console.error(error);
     }
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('fr-FR', {
@@ -291,7 +288,7 @@ export default function AdminChatPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {conversations.slice(0, 10).map((conversation) => (
+                    {conversations.slice(0, 10).map((conversation: ConversationWithMessages) => (
                       <div
                         key={conversation.id}
                         className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
@@ -416,7 +413,7 @@ export default function AdminChatPage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {moderators.map((moderator) => (
+                      {moderators.map((moderator: Moderator) => (
                         <div
                           key={moderator.id}
                           className="flex items-center justify-between p-4 border rounded-lg"
@@ -478,7 +475,7 @@ export default function AdminChatPage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {moderatorStats.map((stat) => (
+                      {moderatorStats.map((stat: ModeratorStats) => (
                         <div
                           key={stat.id}
                           className="flex items-center justify-between p-4 border rounded-lg"
@@ -531,7 +528,7 @@ export default function AdminChatPage() {
                             }>
                               {priority}
                             </Badge>
-                            <span className="font-semibold">{count}</span>
+                            <span className="font-semibold">{count as string}</span>
                           </div>
                         ))}
                       </div>
@@ -547,7 +544,7 @@ export default function AdminChatPage() {
                         {Object.entries(chatStats.conversationsByCategory).map(([category, count]) => (
                           <div key={category} className="flex items-center justify-between">
                             <Badge variant="outline">{category}</Badge>
-                            <span className="font-semibold">{count}</span>
+                            <span className="font-semibold">{count as string}</span>
                           </div>
                         ))}
                       </div>

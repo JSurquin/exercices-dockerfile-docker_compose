@@ -131,6 +131,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Récupérer l'utilisateur depuis la base de données
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Utilisateur non trouvé' },
+        { status: 404 }
+      );
+    }
+
+    // Vérifier les limites de trade (AVANT l'appel Skinplace pour éviter les trades orphelins)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tradesCountToday = await prisma.trade.count({
+      where: {
+        userId: user.id,
+        createdAt: { gte: today },
+      },
+    });
+
+    if (tradesCountToday >= 5) {
+      return NextResponse.json(
+        { success: false, error: 'Limite de trades quotidienne atteinte (5 max)' },
+        { status: 429 }
+      );
+    }
+
     // Générer la signature pour l'API Skinplace
     const signature = generateSkinplaceSignature(body.steam_id, privateKey);
 
@@ -144,6 +174,10 @@ export async function POST(request: NextRequest) {
     }
     const tradeToken = tradeUrlMatch[2];
 
+    // Générer le token ici pour l'utiliser à la fois dans le payload Skinplace (order_id)
+    // et comme ticketId du trade en DB — c'est la clé de lookup dans le webhook IPN
+    const tradeToken2 = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
     // Préparer les données pour l'API Skinplace selon la nouvelle structure
     const skinplacePayload = {
       signature: signature,
@@ -152,8 +186,8 @@ export async function POST(request: NextRequest) {
       steamid: body.steam_id,
       trade_token: tradeToken,
       offers: body.items.map(item => item.asset_id), // Asset IDs des items à vendre
-      ipn_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/skinplace/webhook`, // URL de callback
-      order_id: `ORDER-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+      ipn_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/skinplace/webhook?secret=${process.env.SKINPLACE_WEBHOOK_SECRET || ''}`, // URL de callback avec secret
+      order_id: tradeToken2,
       send_offer_sync: 1, // Envoyer l'offre de manière synchrone
     };
 
@@ -223,42 +257,10 @@ export async function POST(request: NextRequest) {
     const tradeStatus = mapSkinplaceStatusToTradeStatus(skinplaceStatus);
     console.log('  - Status mappé:', tradeStatus);
 
-    // Récupérer l'utilisateur depuis la base de données
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Utilisateur non trouvé' },
-        { status: 404 }
-      );
-    }
-
-    // Vérifier les limites de trade (selon les règles CTF)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const tradesCountToday = await prisma.trade.count({
-      where: {
-        userId: user.id,
-        createdAt: {
-          gte: today,
-        },
-      },
-    });
-
-    // Limite de 5 trades par jour par utilisateur
-    if (tradesCountToday >= 5) {
-      return NextResponse.json(
-        { success: false, error: 'Limite de trades quotidienne atteinte (5 max)' },
-        { status: 429 }
-      );
-    }
-
     // Générer un ID unique pour le trade
     const tradeId = `TRADE-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    // tradeToken2 a déjà été généré avant le payload Skinplace et utilisé comme order_id
+    const token = tradeToken2;
 
     // Date d'expiration (7 jours selon les règles Steam)
     const expiresAt = new Date();

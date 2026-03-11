@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,39 +26,27 @@ export function WithdrawalLimits({
   monthlyUsedCents: initialUsed = 0,
   onUpdate,
 }: WithdrawalLimitsProps) {
-  const [limitCents, setLimitCents] = useState<number | null>(initialLimit);
-  const [usedCents, setUsedCents] = useState(initialUsed);
   const [inputValue, setInputValue] = useState(
     initialLimit != null ? String(initialLimit / 100) : ''
   );
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchLimits = useCallback(async () => {
-    setLoading(true);
-    try {
+  const { data: limitsData, isLoading: loading } = useQuery({
+    queryKey: ['admin', 'withdrawal-limits', userId],
+    queryFn: async () => {
       const res = await fetch(`/api/admin/withdrawal-limits/${userId}`);
       if (!res.ok) throw new Error('Erreur chargement');
       const data = await res.json();
-      setLimitCents(data.monthlyLimitCents ?? null);
-      setUsedCents(data.monthlyUsedCents ?? 0);
-      setInputValue(data.monthlyLimitCents != null ? String(data.monthlyLimitCents / 100) : '');
       onUpdate?.();
-    } catch {
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de charger les limites',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, onUpdate, toast]);
+      return data;
+    },
+    enabled: !!userId,
+  });
 
-  useEffect(() => {
-    fetchLimits();
-  }, [fetchLimits]);
+  const limitCents: number | null = limitsData?.monthlyLimitCents ?? initialLimit;
+  const usedCents: number = limitsData?.monthlyUsedCents ?? initialUsed;
 
   const handleSave = async () => {
     const raw = inputValue.trim() === '' ? null : Math.round(parseFloat(inputValue.replace(',', '.')) * 100);
@@ -77,10 +66,9 @@ export function WithdrawalLimits({
         throw new Error(data.error || 'Erreur');
       }
       toast({ title: 'Plafond mis à jour' });
-      setLimitCents(raw);
       if (raw != null) setInputValue(String(raw / 100));
       else setInputValue('');
-      await fetchLimits();
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'withdrawal-limits'] });
     } catch (e) {
       toast({
         title: 'Erreur',
@@ -102,7 +90,7 @@ export function WithdrawalLimits({
           <TrendingUp className="h-5 w-5" />
           Plafond de retrait mensuel
         </CardTitle>
-        <Button variant="ghost" size="sm" onClick={fetchLimits} disabled={loading} className="text-slate-400">
+        <Button variant="ghost" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['admin', 'withdrawal-limits'] })} disabled={loading} className="text-slate-400">
           <RefreshCw className="h-4 w-4" />
         </Button>
       </CardHeader>
