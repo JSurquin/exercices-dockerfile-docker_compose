@@ -150,7 +150,7 @@ export default function AffiliatePage() {
             </div>
             <h2 className="text-xl font-bold">Accès réservé aux affiliés</h2>
             <p className="text-muted-foreground text-sm">
-              Vous n'êtes pas encore affilié. Contactez un administrateur ou postulez depuis la page programme.
+              Vous n&apos;êtes pas encore affilié. Contactez un administrateur ou postulez depuis la page programme.
             </p>
           </CardContent>
         </Card>
@@ -439,7 +439,7 @@ export default function AffiliatePage() {
                     Générateur de liens
                   </CardTitle>
                   <CardDescription>
-                    Créez des liens affiliés vers n'importe quelle page
+                    Créez des liens affiliés vers n&apos;importe quelle page
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
