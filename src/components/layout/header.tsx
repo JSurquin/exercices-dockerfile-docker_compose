@@ -186,9 +186,20 @@ export function Header() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      {user.username}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium leading-none">{user.username}</p>
+                      {isAffiliate && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/20 border border-purple-500/40 px-1.5 py-0.5 text-[10px] font-semibold text-purple-400 leading-none">
+                          <UserCircleIcon className="h-2.5 w-2.5" />
+                          Affilié
+                        </span>
+                      )}
+                      {isAdmin && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/20 border border-orange-500/40 px-1.5 py-0.5 text-[10px] font-semibold text-orange-400 leading-none">
+                          Admin
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs leading-none text-muted-foreground">
                       {messages.user.level} {user.level} • {user.xp} {messages.user.xp}
                     </p>
