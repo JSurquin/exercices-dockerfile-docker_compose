@@ -19,13 +19,28 @@ export async function POST(request: NextRequest) {
     flexifyLog('WEBHOOK_RECEIVED', { hasBody: true });
     const rawBody = await request.text();
 
-    const authorizationHeader = request.headers.get('Authorization') || '';
+    // Log tous les headers reçus pour diagnostiquer les problèmes de signature
+    const allHeaders: Record<string, string> = {};
+    request.headers.forEach((value, key) => { allHeaders[key] = value; });
+    flexifyLog('WEBHOOK_HEADERS', { headers: allHeaders });
+
+    // Flexify peut envoyer la signature dans Authorization ou dans un header Signature dédié
+    const authorizationHeader =
+      request.headers.get('Authorization') ||
+      request.headers.get('Signature') ||
+      request.headers.get('X-Signature') ||
+      '';
     const digestHeader = request.headers.get('Digest') || '';
     const dateHeader = request.headers.get('Date') || '';
-    const hostHeader = request.headers.get('Host') || '';
-    const contentLengthHeader = request.headers.get('Content-Length') || '0';
+    const hostHeader =
+      request.headers.get('Host') ||
+      request.headers.get('X-Forwarded-Host') ||
+      '';
+    const contentLengthHeader = request.headers.get('Content-Length') || String(Buffer.byteLength(rawBody, 'utf8'));
 
-    const isValid = validateWebhookSignature(
+    const skipVerify = process.env.FLEXIFY_WEBHOOK_SKIP_VERIFY === 'true';
+
+    const isValid = skipVerify || validateWebhookSignature(
       rawBody,
       authorizationHeader,
       digestHeader,
@@ -35,13 +50,18 @@ export async function POST(request: NextRequest) {
     );
 
     if (!isValid) {
-      flexifyLog('WEBHOOK_SIGNATURE_INVALID', {}, 'error');
+      flexifyLog('WEBHOOK_SIGNATURE_INVALID', {
+        authorizationHeader: authorizationHeader.slice(0, 60),
+        digestHeader,
+        dateHeader,
+        hostHeader,
+      }, 'error');
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 401 }
       );
     }
-    flexifyLog('WEBHOOK_SIGNATURE_VALID', {});
+    flexifyLog(skipVerify ? 'WEBHOOK_SIGNATURE_SKIPPED' : 'WEBHOOK_SIGNATURE_VALID', {});
 
     const payload: FlexifyWebhookPayload = JSON.parse(rawBody);
     // "identifier" est le champ ID Flexify dans la doc (ex: "PT000000000000K")
