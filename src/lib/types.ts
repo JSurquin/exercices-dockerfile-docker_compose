@@ -6,6 +6,7 @@ export interface User {
   tradeLink?: string;
   acceptedTermsAt?: Date;
   kycStatus: 'PENDING' | 'IN_PROGRESS' | 'VERIFIED' | 'REJECTED' | 'KYCAID_PENDING' | 'KYCAID_VERIFIED' | 'KYCAID_REJECTED';
+  role?: string;
   totalVolume: number; // en centimes
   xp: number;
   level: number;

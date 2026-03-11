@@ -7,9 +7,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Search, 
   Download, 
@@ -20,21 +29,38 @@ import {
   XCircle,
   RefreshCw,
   User,
-  Clock
+  Clock,
+  UserCheck,
+  Loader2
 } from 'lucide-react';
 import { User as UserType, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
 import { CreateUserDialog } from './create-user-dialog';
 import { queryKeys } from '@/lib/query-keys';
 
+interface PromoteDialogState {
+  open: boolean;
+  userId: string;
+  username: string;
+}
+
 export function AdminUsersTable() {
   const { messages } = useLocale();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [filters, setFilters] = useState<AdminFilters>({
     page: 1,
     limit: 20,
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [promoteDialog, setPromoteDialog] = useState<PromoteDialogState>({
+    open: false,
+    userId: '',
+    username: '',
+  });
+  const [promoteCode, setPromoteCode] = useState('');
+  const [promoteCommission, setPromoteCommission] = useState('2');
+  const [promoting, setPromoting] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.adminUsers({ ...filters, search: searchTerm }),
@@ -123,6 +149,57 @@ export function AdminUsersTable() {
       document.body.removeChild(a);
     } catch (err) {
       console.error('Erreur lors de l\'export:', err);
+    }
+  };
+
+  const openPromoteDialog = (user: UserType) => {
+    setPromoteCode('');
+    setPromoteCommission('2');
+    setPromoteDialog({ open: true, userId: user.id, username: user.username });
+  };
+
+  const handlePromoteAffiliate = async () => {
+    const t = messages.admin.promoteAffiliate;
+    const rate = parseFloat(promoteCommission);
+    if (isNaN(rate) || rate < 0 || rate > 100) {
+      toast({ title: t.errorTitle, description: messages.admin.affiliateCreation.errorInvalidRate, variant: 'destructive' });
+      return;
+    }
+
+    setPromoting(true);
+    try {
+      const response = await fetch(`/api/admin/users/${promoteDialog.userId}/promote-affiliate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          commissionRate: rate,
+          code: promoteCode || undefined,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        let description = data.error || t.errorMessage;
+        if (data.error?.includes('déjà affilié') || data.error?.includes('already')) {
+          description = t.errorAlreadyAffiliate;
+        } else if (data.error?.includes('code')) {
+          description = t.errorCodeExists;
+        }
+        throw new Error(description);
+      }
+      toast({
+        title: t.successTitle,
+        description: t.successMessage.replace('{code}', data.data.affiliateCode),
+      });
+      setPromoteDialog({ open: false, userId: '', username: '' });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+    } catch (err) {
+      toast({
+        title: messages.admin.promoteAffiliate.errorTitle,
+        description: err instanceof Error ? err.message : messages.admin.promoteAffiliate.errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setPromoting(false);
     }
   };
 
@@ -248,16 +325,29 @@ export function AdminUsersTable() {
                   {formatDate(user.joinedAt)}
                 </TableCell>
                 <TableCell>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-slate-600 text-white hover:bg-slate-700"
-                    asChild
-                  >
-                    <Link href={`/admin/users/${user.id}`}>
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-slate-600 text-white hover:bg-slate-700"
+                      asChild
+                    >
+                      <Link href={`/admin/users/${user.id}`}>
+                        <Eye className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    {user.role !== 'AFFILIATE' && user.role !== 'ADMIN' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-purple-600 text-purple-400 hover:bg-purple-900/30 hover:text-purple-300"
+                        onClick={() => openPromoteDialog(user)}
+                        title={messages.admin.promoteAffiliate.buttonLabel}
+                      >
+                        <UserCheck className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -272,6 +362,85 @@ export function AdminUsersTable() {
           </CardContent>
         </Card>
       )}
+
+      <Dialog
+        open={promoteDialog.open}
+        onOpenChange={(open) => setPromoteDialog((prev) => ({ ...prev, open }))}
+      >
+        <DialogContent className="sm:max-w-[420px] bg-slate-800 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <UserCheck className="h-5 w-5 text-purple-400" />
+              {messages.admin.promoteAffiliate.dialogTitle}
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              <span className="font-semibold text-purple-300">{promoteDialog.username}</span>
+              {' — '}
+              {messages.admin.promoteAffiliate.dialogDescription}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="promote-code" className="text-white">
+                {messages.admin.promoteAffiliate.codeLabel}
+              </Label>
+              <Input
+                id="promote-code"
+                type="text"
+                placeholder={messages.admin.promoteAffiliate.codePlaceholder}
+                value={promoteCode}
+                onChange={(e) => setPromoteCode(e.target.value)}
+                className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="promote-commission" className="text-white">
+                {messages.admin.promoteAffiliate.commissionRateLabel}
+              </Label>
+              <Input
+                id="promote-commission"
+                type="number"
+                step="0.1"
+                min="0"
+                max="100"
+                placeholder={messages.admin.promoteAffiliate.commissionRatePlaceholder}
+                value={promoteCommission}
+                onChange={(e) => setPromoteCommission(e.target.value)}
+                className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+              />
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setPromoteDialog((prev) => ({ ...prev, open: false }))}
+                disabled={promoting}
+                className="border-slate-600 text-white hover:bg-slate-700"
+              >
+                {messages.common.cancel}
+              </Button>
+              <Button
+                type="button"
+                onClick={handlePromoteAffiliate}
+                disabled={promoting}
+                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700"
+              >
+                {promoting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {messages.admin.promoteAffiliate.promoting}
+                  </>
+                ) : (
+                  <>
+                    <UserCheck className="mr-2 h-4 w-4" />
+                    {messages.admin.promoteAffiliate.confirmButton}
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

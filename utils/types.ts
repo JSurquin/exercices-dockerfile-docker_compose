@@ -1133,6 +1133,23 @@ export interface Messages {
       errorCodeExists: string;
       errorInvalidRate: string;
     };
+    promoteAffiliate: {
+      buttonLabel: string;
+      dialogTitle: string;
+      dialogDescription: string;
+      codeLabel: string;
+      codePlaceholder: string;
+      commissionRateLabel: string;
+      commissionRatePlaceholder: string;
+      confirmButton: string;
+      promoting: string;
+      successTitle: string;
+      successMessage: string;
+      errorTitle: string;
+      errorMessage: string;
+      errorAlreadyAffiliate: string;
+      errorCodeExists: string;
+    };
     export: {
       users: string;
       trades: string;

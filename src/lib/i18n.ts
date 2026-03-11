@@ -2538,6 +2538,23 @@ export const messages: Record<Locale, Messages> = {
         errorCodeExists: "Ce code d'affiliation est déjà utilisé",
         errorInvalidRate: "Le taux de commission doit être entre 0 et 100"
       },
+      promoteAffiliate: {
+        buttonLabel: "Promouvoir affilié",
+        dialogTitle: "Promouvoir en affilié",
+        dialogDescription: "Cet utilisateur deviendra affilié/partenaire et recevra un code d'affiliation.",
+        codeLabel: "Code d'affiliation (optionnel)",
+        codePlaceholder: "Laissez vide pour génération automatique",
+        commissionRateLabel: "Taux de commission (%)",
+        commissionRatePlaceholder: "2",
+        confirmButton: "Confirmer",
+        promoting: "Promotion...",
+        successTitle: "Utilisateur promu",
+        successMessage: "L'utilisateur est maintenant affilié avec le code : {code}",
+        errorTitle: "Erreur",
+        errorMessage: "Impossible de promouvoir cet utilisateur",
+        errorAlreadyAffiliate: "Cet utilisateur est déjà affilié",
+        errorCodeExists: "Ce code d'affiliation est déjà utilisé"
+      },
       export: {
         users: "Export Utilisateurs",
         trades: "Export Trades",
@@ -5594,6 +5611,23 @@ export const messages: Record<Locale, Messages> = {
         errorEmailExists: "This email already exists",
         errorCodeExists: "This affiliate code is already in use",
         errorInvalidRate: "Commission rate must be between 0 and 100"
+      },
+      promoteAffiliate: {
+        buttonLabel: "Promote affiliate",
+        dialogTitle: "Promote to affiliate",
+        dialogDescription: "This user will become an affiliate/partner and receive an affiliate code.",
+        codeLabel: "Affiliate code (optional)",
+        codePlaceholder: "Leave empty for auto-generation",
+        commissionRateLabel: "Commission rate (%)",
+        commissionRatePlaceholder: "2",
+        confirmButton: "Confirm",
+        promoting: "Promoting...",
+        successTitle: "User promoted",
+        successMessage: "The user is now an affiliate with code: {code}",
+        errorTitle: "Error",
+        errorMessage: "Unable to promote this user",
+        errorAlreadyAffiliate: "This user is already an affiliate",
+        errorCodeExists: "This affiliate code is already in use"
       },
       export: {
         users: "Export Users",
@@ -9494,6 +9528,23 @@ export const messages: Record<Locale, Messages> = {
         errorEmailExists: "该邮箱已存在",
         errorCodeExists: "该联盟代码已被使用",
         errorInvalidRate: "佣金率必须在0到100之间"
+      },
+      promoteAffiliate: {
+        buttonLabel: "提升为联盟",
+        dialogTitle: "提升为联盟/合作伙伴",
+        dialogDescription: "该用户将成为联盟/合作伙伴并获得联盟代码。",
+        codeLabel: "联盟代码（可选）",
+        codePlaceholder: "留空自动生成",
+        commissionRateLabel: "佣金率（%）",
+        commissionRatePlaceholder: "2",
+        confirmButton: "确认",
+        promoting: "提升中...",
+        successTitle: "用户已提升",
+        successMessage: "该用户现在是联盟，代码：{code}",
+        errorTitle: "错误",
+        errorMessage: "无法提升该用户",
+        errorAlreadyAffiliate: "该用户已经是联盟",
+        errorCodeExists: "该联盟代码已被使用"
       },
       export: {
         users: "导出用户",
