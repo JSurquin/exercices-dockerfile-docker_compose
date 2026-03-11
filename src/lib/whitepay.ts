@@ -305,6 +305,12 @@ async function whitepayRequest<T>(
 
       if (!response.ok) {
         const errorMessage = data?.message || data?.error || JSON.stringify(data);
+        console.error('[Whitepay] API error response:', {
+          status: response.status,
+          url,
+          method,
+          responseData: JSON.stringify(data, null, 2),
+        });
         throw new WhitepayApiError(
           `Whitepay API error: ${response.status} - ${errorMessage}`,
           response.status,

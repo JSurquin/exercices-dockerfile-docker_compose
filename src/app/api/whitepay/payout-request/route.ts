@@ -336,9 +336,33 @@ export async function POST(request: NextRequest) {
       message: 'Demande enregistrée. Elle sera traitée sous 24 h.',
     });
   } catch (error) {
+    if (error instanceof Error && error.name === 'WhitepayApiError') {
+      const wpError = error as Error & { statusCode?: number; responseData?: unknown };
+      const responseDataStr = wpError.responseData
+        ? JSON.stringify(wpError.responseData, null, 2)
+        : 'no response data';
+      console.error('[Whitepay PayoutRequest] WhitepayApiError:', {
+        message: wpError.message,
+        statusCode: wpError.statusCode,
+        responseData: wpError.responseData,
+      });
+      return NextResponse.json(
+        {
+          error: 'Erreur API Whitepay',
+          details: wpError.message,
+          statusCode: wpError.statusCode,
+          whitepayResponse: wpError.responseData ?? null,
+          whitepayResponseRaw: responseDataStr,
+        },
+        { status: wpError.statusCode && wpError.statusCode >= 400 && wpError.statusCode < 500 ? 400 : 502 }
+      );
+    }
     console.error('[Whitepay PayoutRequest] Error:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la demande de retrait' },
+      {
+        error: 'Erreur lors de la demande de retrait',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
