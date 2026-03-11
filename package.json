@@ -53,6 +53,7 @@
     "@types/d3": "^7.4.3",
     "@types/nodemailer": "^7.0.2",
     "better-auth": "1.2.12",
+    "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
