@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import imageCompression from 'browser-image-compression';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,9 +53,10 @@ interface PersonalInfo {
 export default function KYCPage() {
   const { user, updateUser } = useAuth();
   const { messages } = useLocale();
+  const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState<KYCStep>('info');
   const [isLoading, setIsLoading] = useState(false);
-  const [forceShowForm, setForceShowForm] = useState(false); // Pour forcer l'affichage du formulaire
+  const [forceShowForm, setForceShowForm] = useState(false);
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     firstName: '',
     lastName: '',
@@ -70,42 +71,43 @@ export default function KYCPage() {
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({});
   const steps = getSteps(messages);
 
-  useQuery({
+  const isPolling = user?.kycStatus === 'IN_PROGRESS';
+  const prevStatusRef = useRef<string | null>(null);
+
+  const { data: kycData } = useQuery({
     queryKey: queryKeys.kycStatus,
     queryFn: async () => {
-      const justVerified = localStorage.getItem('kyc_just_verified');
-      if (justVerified) {
-        const timestamp = parseInt(justVerified);
-        if (Date.now() - timestamp < 30000) {
-          return null;
-        } else {
-          localStorage.removeItem('kyc_just_verified');
-        }
-      }
-
       const response = await fetch('/api/kycaid/status');
       if (!response.ok) return null;
-      const data = await response.json();
-
-      if (data.verificationId && process.env.NODE_ENV === 'development') {
-        const pollResponse = await fetch(`/api/kycaid/poll/${data.verificationId}`);
-        if (pollResponse.ok) {
-          const pollData = await pollResponse.json();
-          if (pollData.verified === true) {
-            localStorage.setItem('kyc_just_verified', Date.now().toString());
-            toast.success('KYC vérifié avec succès !');
-            setTimeout(() => window.location.reload(), 1000);
-          } else if (pollData.status === 'completed' && pollData.verified === false) {
-            toast.error('KYC refusé. Veuillez réessayer.');
-            setTimeout(() => window.location.reload(), 1000);
-          }
-        }
-      }
-      return data;
+      return response.json();
     },
-    enabled: user?.kycStatus === 'IN_PROGRESS',
-    refetchInterval: user?.kycStatus === 'IN_PROGRESS' ? 10_000 : false,
+    enabled: isPolling,
+    // Polling toutes les 10s tant que IN_PROGRESS
+    refetchInterval: isPolling ? 10_000 : false,
+    // Dès que l'utilisateur revient sur l'onglet → refetch immédiat
+    refetchOnWindowFocus: isPolling,
+    staleTime: 0,
   });
+
+  // Réagir aux changements de statut retournés par l'API sans recharger la page
+  useEffect(() => {
+    if (!kycData) return;
+
+    const newStatus = kycData.status as string;
+    if (prevStatusRef.current === newStatus) return;
+    prevStatusRef.current = newStatus;
+
+    if (newStatus === 'VERIFIED') {
+      toast.success('🎉 Identité vérifiée avec succès !');
+      updateUser({ kycStatus: 'VERIFIED' }).catch(() => null);
+      // Invalider les queries dépendantes
+      queryClient.invalidateQueries({ queryKey: queryKeys.userProfile });
+      queryClient.invalidateQueries({ queryKey: queryKeys.userDashboard });
+    } else if (newStatus === 'REJECTED') {
+      toast.error('Vérification refusée. Vous pouvez réessayer.');
+      updateUser({ kycStatus: 'REJECTED' }).catch(() => null);
+    }
+  }, [kycData, updateUser, queryClient]);
 
   const MAX_FILE_SIZE_MB = 5;
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;

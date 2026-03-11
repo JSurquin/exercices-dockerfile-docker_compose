@@ -3350,6 +3350,7 @@ export interface Messages {
       searchPlaceholder: string;
       sortBy: string;
       priceDescending: string;
+      priceAscending: string;
       rarity: string;
       name: string;
       allExteriors: string;

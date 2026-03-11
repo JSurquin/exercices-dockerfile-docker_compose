@@ -62,7 +62,7 @@ export function SkinplaceInventoryViewer({
   const [selectedRarity, setSelectedRarity] = useState<string>('');
   const [selectedExterior, setSelectedExterior] = useState<string>('');
   const [statTrakOnly, setStatTrakOnly] = useState(false);
-  const [sortBy, setSortBy] = useState<'value' | 'rarity' | 'name'>('value');
+  const [sortBy, setSortBy] = useState<'value_desc' | 'value_asc' | 'rarity' | 'name'>('value_desc');
   const [showFilters, setShowFilters] = useState(false);
   
   const { 
@@ -155,8 +155,11 @@ export function SkinplaceInventoryViewer({
     
     // Trier
     switch (sortBy) {
-      case 'value':
-        filtered = sortItemsByValue(filtered, false); // Du plus cher au moins cher
+      case 'value_desc':
+        filtered = sortItemsByValue(filtered, false);
+        break;
+      case 'value_asc':
+        filtered = sortItemsByValue(filtered, true);
         break;
       case 'rarity':
         filtered = sortItemsByRarity(filtered);
@@ -229,7 +232,7 @@ export function SkinplaceInventoryViewer({
     setSelectedRarity('');
     setSelectedExterior('');
     setStatTrakOnly(false);
-    setSortBy('value');
+    setSortBy('value_desc');
   };
 
   if (loading) {
@@ -558,12 +561,13 @@ export function SkinplaceInventoryViewer({
             
             <div className="w-48">
               <Label>{messages.components.skinplace.sortBy}</Label>
-              <Select value={sortBy} onValueChange={(value: 'value' | 'rarity' | 'name') => setSortBy(value)}>
+              <Select value={sortBy} onValueChange={(value: 'value_desc' | 'value_asc' | 'rarity' | 'name') => setSortBy(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="value">{messages.components.skinplace.priceDescending}</SelectItem>
+                  <SelectItem value="value_desc">{messages.components.skinplace.priceDescending}</SelectItem>
+                  <SelectItem value="value_asc">{messages.components.skinplace.priceAscending}</SelectItem>
                   <SelectItem value="rarity">{messages.components.skinplace.rarity}</SelectItem>
                   <SelectItem value="name">{messages.components.skinplace.name}</SelectItem>
                 </SelectContent>
@@ -576,12 +580,12 @@ export function SkinplaceInventoryViewer({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
               <div>
                 <Label>{messages.components.skinplace.rarity}</Label>
-                <Select value={selectedRarity} onValueChange={setSelectedRarity}>
+                <Select value={selectedRarity || "all"} onValueChange={(v) => setSelectedRarity(v === "all" ? "" : v)}>
                   <SelectTrigger>
                     <SelectValue placeholder={messages.components.skinplace.allRarities} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">{messages.components.skinplace.allRarities}</SelectItem>
+                    <SelectItem value="all">{messages.components.skinplace.allRarities}</SelectItem>
                     {availableRarities.map(rarity => (
                       <SelectItem key={rarity} value={rarity}>
                         <div className="flex items-center gap-2">
@@ -599,12 +603,12 @@ export function SkinplaceInventoryViewer({
               
               <div>
                 <Label>{messages.components.skinplace.exterior}</Label>
-                <Select value={selectedExterior} onValueChange={setSelectedExterior}>
+                <Select value={selectedExterior || "all"} onValueChange={(v) => setSelectedExterior(v === "all" ? "" : v)}>
                   <SelectTrigger>
                     <SelectValue placeholder={messages.components.skinplace.allExteriors} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">{messages.components.skinplace.allExteriors}</SelectItem>
+                    <SelectItem value="all">{messages.components.skinplace.allExteriors}</SelectItem>
                     {availableExteriors.map(exterior => (
                       <SelectItem key={exterior} value={exterior}>
                         {exterior}
