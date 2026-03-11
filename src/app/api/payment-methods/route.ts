@@ -25,7 +25,7 @@ export async function GET() {
   }
 
   const methods = await prisma.paymentMethod.findMany({
-    where: { userId: session.user.id },
+    where: { userId: session.user.id, isVerified: true },
     orderBy: { updatedAt: 'desc' },
   });
 

@@ -166,9 +166,13 @@ export async function POST(request: NextRequest) {
         }
         const details = existingCard.details as { last4?: string; holderName?: string; encryptedCard?: string } | null;
         if (!details?.encryptedCard) {
-          // Carte sans données chiffrées (ancienne entrée) : on la supprime pour forcer une nouvelle saisie
-          await prisma.paymentMethod.delete({ where: { id: existingCard.id } });
-          LOG('CARD_PM_DELETED_NO_ENCRYPTED', { paymentMethodId: existingCard.id });
+          // Carte sans données chiffrées (ancienne entrée) : on la marque comme non vérifiée
+          // (impossible de supprimer à cause de la contrainte FK Payout → PaymentMethod)
+          await prisma.paymentMethod.update({
+            where: { id: existingCard.id },
+            data: { isVerified: false },
+          });
+          LOG('CARD_PM_MARKED_INVALID', { paymentMethodId: existingCard.id });
           return NextResponse.json(
             { error: 'Votre carte enregistrée était obsolète et a été supprimée. Veuillez saisir votre carte à nouveau.', code: 'CARD_STALE_DELETED' },
             { status: 400 }

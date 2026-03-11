@@ -138,6 +138,16 @@ export default function PayoutPage() {
   const [useSavedWallet, setUseSavedWallet] = useState(false);
   const [selectedCryptoMethodId, setSelectedCryptoMethodId] = useState<string | null>(null);
   const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [payoutResult, setPayoutResult] = useState<{
+    id: string;
+    reference: string;
+    status: string;
+    amountCents: number;
+    fees: { processingCents: number; networkCents: number; totalCents: number };
+    netCents: number;
+    method: string;
+    pendingApproval?: boolean;
+  } | null>(null);
 
   // Traductions locales pour la page payout
   const text = messages.payoutPage;
@@ -505,6 +515,14 @@ export default function PayoutPage() {
         ? data.message
         : text.toast.payoutCreated;
       toast.success(successMessage);
+
+      if (data?.payout) {
+        setPayoutResult({
+          ...data.payout,
+          pendingApproval: !!data.pendingApproval,
+        });
+      }
+
       setQuote(null);
       setAmount('');
       queryClient.invalidateQueries({ queryKey: queryKeys.payoutHistory });
@@ -649,6 +667,8 @@ export default function PayoutPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
+                {!payoutResult && (
+                <>
                 {/* Montant */}
                 <div className="space-y-2">
                   <Label htmlFor="amount">{text.request.amountLabel}</Label>
@@ -677,6 +697,7 @@ export default function PayoutPage() {
 
                 {/* Méthode de paiement — SEPA masqué (non dispo France Flexify), décommenter pour réactiver */}
                 <Tabs value={payoutMethod} onValueChange={(v) => {
+                  setPayoutResult(null);
                   setPayoutMethod(v as PayoutMethod);
                   setQuote(null);
                 }}>
@@ -980,7 +1001,7 @@ export default function PayoutPage() {
                 </Tabs>
 
                 {/* Bouton Obtenir devis */}
-                {!quote && (
+                {!quote && !payoutResult && (
                   <Button
                     onClick={getQuote}
                     disabled={isLoadingQuote || !amount || availableBalanceCents === null}
@@ -999,7 +1020,7 @@ export default function PayoutPage() {
                 )}
 
                 {/* Récapitulatif du devis */}
-                {quote && (
+                {quote && !payoutResult && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1015,8 +1036,12 @@ export default function PayoutPage() {
                         <span>{formatCentsToCurrency(quote.amountCents, 'EUR')}</span>
                       </div>
                       <div className="flex justify-between text-orange-500">
-                        <span>{text.request.feesInfo}</span>
-                        <span>-{formatCentsToCurrency(quote.fees.totalCents, 'EUR')}</span>
+                        <span>Frais de traitement</span>
+                        <span>-{formatCentsToCurrency(quote.fees.processingCents, 'EUR')}</span>
+                      </div>
+                      <div className="flex justify-between text-orange-500">
+                        <span>Frais réseau</span>
+                        <span>-{formatCentsToCurrency(quote.fees.networkCents, 'EUR')}</span>
                       </div>
                       <Separator />
                       <div className="flex justify-between font-semibold text-lg">
@@ -1045,6 +1070,53 @@ export default function PayoutPage() {
                       ) : (
                         text.request.submitButton
                       )}
+                    </Button>
+                  </motion.div>
+                )}
+                </>
+                )}
+
+                {/* Récapitulatif frais réels après soumission */}
+                {payoutResult && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="rounded-lg border border-green-500/40 bg-green-500/5 p-4 space-y-3"
+                  >
+                    <h3 className="font-semibold flex items-center gap-2 text-green-600 dark:text-green-400">
+                      <CheckCircleIcon className="w-5 h-5" />
+                      {payoutResult.pendingApproval ? 'Demande enregistrée' : 'Paiement initié'}
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Référence</span>
+                        <span className="font-mono text-xs">{payoutResult.reference}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">{text.request.grossAmount}</span>
+                        <span>{formatCentsToCurrency(payoutResult.amountCents, 'EUR')}</span>
+                      </div>
+                      <div className="flex justify-between text-orange-500">
+                        <span>Frais de traitement</span>
+                        <span>-{formatCentsToCurrency(payoutResult.fees.processingCents, 'EUR')}</span>
+                      </div>
+                      <div className="flex justify-between text-orange-500">
+                        <span>Frais réseau</span>
+                        <span>-{formatCentsToCurrency(payoutResult.fees.networkCents, 'EUR')}</span>
+                      </div>
+                      <Separator />
+                      <div className="flex justify-between font-semibold text-lg">
+                        <span>{text.request.youReceive}</span>
+                        <span className="text-green-500">{formatCentsToCurrency(payoutResult.netCents, 'EUR')}</span>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => setPayoutResult(null)}
+                    >
+                      Nouveau retrait
                     </Button>
                   </motion.div>
                 )}
