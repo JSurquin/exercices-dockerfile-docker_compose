@@ -119,14 +119,17 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Si le payout est complété, mettre à jour le trade et débiter le solde
-    if (isTransactionCompleted(payload.status) && payout.tradeId) {
-      await prisma.trade.update({
-        where: { id: payout.tradeId },
-        data: { status: 'PAID' },
-      });
+    // Si le payout est complété
+    if (isTransactionCompleted(payload.status)) {
+      // Mettre à jour le trade uniquement s'il y en a un associé
+      if (payout.tradeId) {
+        await prisma.trade.update({
+          where: { id: payout.tradeId },
+          data: { status: 'PAID' },
+        });
+      }
 
-      // Débiter le solde utilisateur (le crédit avait été fait lors du AVAILABLE)
+      // Débiter le solde utilisateur dans tous les cas (avec ou sans tradeId)
       try {
         await debitBalance(
           payout.userId,
