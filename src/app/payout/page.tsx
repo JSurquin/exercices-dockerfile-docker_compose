@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { motion } from 'framer-motion';
@@ -178,20 +178,32 @@ export default function PayoutPage() {
   });
 
   const allPaymentMethods = paymentMethodsData?.paymentMethods ?? [];
-  const savedSepaMethods = allPaymentMethods.filter((m: { type: string }) => m.type === 'SEPA' || m.type === 'FLEXIFY_SEPA');
-  const savedCardMethods = allPaymentMethods
-    .filter((m: { type: string }) => m.type === 'FLEXIFY_CARD' || m.type === 'CARD')
-    .map((m: { id: string; last4: string | null; holderName: string | null }) => ({ id: m.id, last4: m.last4 ?? null, holderName: m.holderName ?? null }));
-  const savedCryptoMethods = allPaymentMethods
-    .filter((m: { type: string }) => m.type === 'WHITEPAY_CRYPTO' || m.type === 'CRYPTO')
-    .map((m: { id: string; maskedAddress: string | null; address?: string; network: string | null; targetCurrency: string | null; memo: string | null }) => ({
-      id: m.id,
-      maskedAddress: m.maskedAddress ?? null,
-      address: m.address ?? '',
-      network: m.network ?? null,
-      targetCurrency: m.targetCurrency ?? null,
-      memo: m.memo ?? null,
-    }));
+  const savedSepaMethods = useMemo(
+    () => allPaymentMethods.filter((m: { type: string }) => m.type === 'SEPA' || m.type === 'FLEXIFY_SEPA'),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [paymentMethodsData]
+  );
+  const savedCardMethods = useMemo(
+    () => allPaymentMethods
+      .filter((m: { type: string }) => m.type === 'FLEXIFY_CARD' || m.type === 'CARD')
+      .map((m: { id: string; last4: string | null; holderName: string | null }) => ({ id: m.id, last4: m.last4 ?? null, holderName: m.holderName ?? null })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [paymentMethodsData]
+  );
+  const savedCryptoMethods = useMemo(
+    () => allPaymentMethods
+      .filter((m: { type: string }) => m.type === 'WHITEPAY_CRYPTO' || m.type === 'CRYPTO')
+      .map((m: { id: string; maskedAddress: string | null; address?: string; network: string | null; targetCurrency: string | null; memo: string | null }) => ({
+        id: m.id,
+        maskedAddress: m.maskedAddress ?? null,
+        address: m.address ?? '',
+        network: m.network ?? null,
+        targetCurrency: m.targetCurrency ?? null,
+        memo: m.memo ?? null,
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [paymentMethodsData]
+  );
 
   // Cleanup du polling au démontage
   useEffect(() => {
@@ -235,16 +247,22 @@ export default function PayoutPage() {
     }
   }, [savedCryptoMethods]);
 
+  // Refs stables pour éviter les boucles de re-render dans les useEffect de synchro
+  const savedCardMethodsRef = useRef(savedCardMethods);
+  savedCardMethodsRef.current = savedCardMethods;
+  const savedCryptoMethodsRef = useRef(savedCryptoMethods);
+  savedCryptoMethodsRef.current = savedCryptoMethods;
+
   // Synchroniser le formulaire quand on change de carte ou wallet enregistré
   useEffect(() => {
     if (useSavedCard && selectedCardMethodId) {
-      const card = savedCardMethods.find((c: { id: string; last4: string | null; holderName: string | null }) => c.id === selectedCardMethodId);
+      const card = savedCardMethodsRef.current.find((c: { id: string }) => c.id === selectedCardMethodId) as { id: string; last4: string | null; holderName: string | null } | undefined;
       if (card) setFormData(prev => ({ ...prev, cardHolder: card.holderName ?? '' }));
     }
-  }, [useSavedCard, selectedCardMethodId, savedCardMethods]);
+  }, [useSavedCard, selectedCardMethodId]);
   useEffect(() => {
     if (useSavedWallet && selectedCryptoMethodId) {
-      const w = savedCryptoMethods.find((c: { id: string; maskedAddress: string | null; address: string; network: string | null; targetCurrency: string | null; memo: string | null }) => c.id === selectedCryptoMethodId);
+      const w = savedCryptoMethodsRef.current.find((c: { id: string }) => c.id === selectedCryptoMethodId) as { id: string; maskedAddress: string | null; address: string; network: string | null; targetCurrency: string | null; memo: string | null } | undefined;
       if (w) {
         setFormData(prev => ({
           ...prev,
@@ -255,7 +273,7 @@ export default function PayoutPage() {
         }));
       }
     }
-  }, [useSavedWallet, selectedCryptoMethodId, savedCryptoMethods]);
+  }, [useSavedWallet, selectedCryptoMethodId]);
 
   // Pas de polling KYC sur la page payout : si le KYC est déjà validé, on ne touche plus à Kycaid.
   // Le retrait passe uniquement par Flexify (SEPA) ou Whitepay (crypto). Si le KYC n'est pas
@@ -470,6 +488,12 @@ export default function PayoutPage() {
         }
         if (process.env.NODE_ENV === 'development') {
           console.error('[PAYOUT] handleSubmit failed', { status: response.status, statusText: response.statusText, body: data });
+        }
+        // Carte obsolète supprimée côté serveur : on rafraîchit les méthodes et on bascule en saisie manuelle
+        if (data?.code === 'CARD_STALE_DELETED') {
+          queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethods });
+          setUseSavedCard(false);
+          setSelectedCardMethodId(null);
         }
         throw new Error(errorMessage);
       }
