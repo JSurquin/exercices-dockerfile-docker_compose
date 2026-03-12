@@ -21,6 +21,7 @@ import { Messages } from "~/utils/types";
 import { User } from "~/utils/types";
 import { toast } from "sonner";
 import { useUserTrades } from "@/hooks/use-user-trades";
+import { TradeItemsGallery } from "@/components/trade/trade-items-gallery";
 import {
   CurrencyDollarIcon,
   ChartBarIcon,
@@ -411,51 +412,40 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">
-                              {messages.dashboard.tradeHistory.items} ({trade.items.length}):
-                            </span>
-                            <div className="mt-1">
-                              {trade.items.slice(0, 2).map((item, index) => (
-                                <p key={index} className="truncate">
-                                  {item.name}
+                        <div className="flex flex-col sm:flex-row gap-4 text-sm">
+                          {/* Galerie d'images des skins */}
+                          <div className="flex-shrink-0">
+                            <p className="text-muted-foreground text-xs mb-2">
+                              {messages.dashboard.tradeHistory.items} ({trade.items.length})
+                            </p>
+                            <TradeItemsGallery items={trade.items} />
+                          </div>
+
+                          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <span className="text-muted-foreground text-xs block mb-1">
+                                {messages.dashboard.tradeHistory.fees}
+                              </span>
+                              <p>{messages.dashboard.tradeHistory.cashout} {formatPrice(trade.frais.cashout)}</p>
+                              <p>{messages.dashboard.tradeHistory.network} {formatPrice(trade.frais.réseau)}</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground text-xs block mb-1">
+                                {messages.dashboard.tradeHistory.timeline}
+                              </span>
+                              {trade.tradeAcceptéLe && (
+                                <p>
+                                  {messages.dashboard.tradeHistory.accepted}{" "}
+                                  {new Date(trade.tradeAcceptéLe).toLocaleDateString()}
                                 </p>
-                              ))}
-                              {trade.items.length > 2 && (
-                                <p className="text-muted-foreground">
-                                  +{trade.items.length - 2} {messages.dashboard.tradeHistory.others}
+                              )}
+                              {trade.disponibleLe && (
+                                <p>
+                                  {messages.dashboard.tradeHistory.available}{" "}
+                                  {new Date(trade.disponibleLe).toLocaleDateString()}
                                 </p>
                               )}
                             </div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">
-                              {messages.dashboard.tradeHistory.fees}
-                            </span>
-                            <p>{messages.dashboard.tradeHistory.cashout} {formatPrice(trade.frais.cashout)}</p>
-                            <p>{messages.dashboard.tradeHistory.network} {formatPrice(trade.frais.réseau)}</p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">
-                              {messages.dashboard.tradeHistory.timeline}
-                            </span>
-                            {trade.tradeAcceptéLe && (
-                              <p>
-                                {messages.dashboard.tradeHistory.accepted}{" "}
-                                {new Date(
-                                  trade.tradeAcceptéLe
-                                ).toLocaleDateString()}
-                              </p>
-                            )}
-                            {trade.disponibleLe && (
-                              <p>
-                                {messages.dashboard.tradeHistory.available}{" "}
-                                {new Date(
-                                  trade.disponibleLe
-                                ).toLocaleDateString()}
-                              </p>
-                            )}
                           </div>
                         </div>
                       </div>
