@@ -457,8 +457,8 @@ export default function KYCPage() {
                       <step.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                     )}
                   </div>
-                  {/* Label sous l'icône, masqué sur très petit écran */}
-                  <p className={`hidden xs:block text-[10px] sm:text-xs font-medium text-center max-w-[60px] sm:max-w-[80px] leading-tight ${
+                  {/* Label sous l'icône — toujours visible, xs sur mobile */}
+                  <p className={`text-[10px] sm:text-xs font-medium text-center w-[56px] sm:w-[72px] leading-tight ${
                     index <= getStepIndex() ? 'text-foreground' : 'text-muted-foreground'
                   }`}>
                     {step.title}
