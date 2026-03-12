@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,10 +42,8 @@ const statusColors = {
 
 export default function ModerationPage() {
   const { user } = useAuth();
-
+  const router = useRouter();
   const { data: session, isPending } = useSession();
-
-  console.log("mon user sur cette page : ", user);
   const { messages } = useLocale();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<ConversationFilters>({
@@ -379,7 +378,7 @@ export default function ModerationPage() {
 
                         <Button
                           size="sm"
-                          onClick={() => window.open(`/moderation/conversations/${conversation.id}`, '_blank')}
+                          onClick={() => router.push(`/moderation/conversations/${conversation.id}`)}
                         >
                           Ouvrir
                         </Button>

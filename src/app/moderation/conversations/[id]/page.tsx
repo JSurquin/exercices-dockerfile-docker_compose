@@ -10,7 +10,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { ConversationWithMessages, ChatMessageWithUser } from '@/lib/types/chat';
@@ -206,27 +205,29 @@ export default function ConversationPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-6"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6"
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 min-w-0">
           <Button
             variant="outline"
             size="icon"
+            className="flex-shrink-0"
             onClick={() => router.push('/moderation')}
           >
             <ArrowLeftIcon className="w-4 h-4" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold truncate">
               {conversation.subject || messages.moderation.conversation.header.noSubject}
             </h1>
-            <p className="text-muted-foreground">
-              {messages.moderation.conversation.header.withUser} {conversation.user?.name || conversation.user?.email || messages.moderation.conversation.header.anonymousUser}
+            <p className="text-muted-foreground text-sm truncate">
+              {messages.moderation.conversation.header.withUser}{' '}
+              {conversation.user?.name || conversation.user?.email || messages.moderation.conversation.header.anonymousUser}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <Badge className={`${conversation.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
             {conversation.status}
           </Badge>
@@ -236,33 +237,33 @@ export default function ConversationPage() {
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         {/* Informations de la conversation */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 order-2 lg:order-1">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">{messages.moderation.conversation.info.title}</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{messages.moderation.conversation.info.title}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Utilisateur */}
               <div>
-                <h4 className="font-medium mb-2">{messages.moderation.conversation.info.userTitle}</h4>
+                <h4 className="font-medium mb-2 text-sm">{messages.moderation.conversation.info.userTitle}</h4>
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-8 w-8 flex-shrink-0">
                     <AvatarImage src={conversation.user?.steamAvatar || undefined} />
                     <AvatarFallback>
                       <UserIcon className="h-4 w-4" />
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <p className="text-sm font-medium">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">
                       {conversation.user?.name || messages.moderation.conversation.info.anonymous}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground truncate">
                       {conversation.user?.email}
                     </p>
                     {conversation.user?.steamUsername && (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground truncate">
                         {messages.moderation.conversation.info.steam} {conversation.user.steamUsername}
                       </p>
                     )}
@@ -272,15 +273,15 @@ export default function ConversationPage() {
 
               {/* Assignation */}
               <div>
-                <h4 className="font-medium mb-2">{messages.moderation.conversation.info.assignmentTitle}</h4>
+                <h4 className="font-medium mb-2 text-sm">{messages.moderation.conversation.info.assignmentTitle}</h4>
                 {conversation.assignedModerator ? (
-                  <p className="text-sm">
+                  <p className="text-sm truncate">
                     {conversation.assignedModerator.name || conversation.assignedModerator.email}
                   </p>
                 ) : (
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">{messages.moderation.conversation.info.unassigned}</p>
-                    <Button size="sm" onClick={assignToMe}>
+                    <Button size="sm" onClick={assignToMe} className="w-full">
                       {messages.moderation.conversation.info.assignToMe}
                     </Button>
                   </div>
@@ -289,19 +290,19 @@ export default function ConversationPage() {
 
               {/* Dates */}
               <div>
-                <h4 className="font-medium mb-2">{messages.moderation.conversation.info.datesTitle}</h4>
-                <div className="space-y-1 text-sm text-muted-foreground">
+                <h4 className="font-medium mb-2 text-sm">{messages.moderation.conversation.info.datesTitle}</h4>
+                <div className="space-y-1 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <ClockIcon className="w-3 h-3" />
+                    <ClockIcon className="w-3 h-3 flex-shrink-0" />
                     <span>{messages.moderation.conversation.info.created} {formatDate(conversation.createdAt)}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <ClockIcon className="w-3 h-3" />
+                    <ClockIcon className="w-3 h-3 flex-shrink-0" />
                     <span>{messages.moderation.conversation.info.updated} {formatDate(conversation.updatedAt)}</span>
                   </div>
                   {conversation.closedAt && (
                     <div className="flex items-center gap-2">
-                      <CheckIcon className="w-3 h-3" />
+                      <CheckIcon className="w-3 h-3 flex-shrink-0" />
                       <span>{messages.moderation.conversation.info.closed} {formatDate(conversation.closedAt)}</span>
                     </div>
                   )}
@@ -310,7 +311,7 @@ export default function ConversationPage() {
 
               {/* Actions */}
               <div>
-                <h4 className="font-medium mb-2">{messages.moderation.conversation.info.actionsTitle}</h4>
+                <h4 className="font-medium mb-2 text-sm">{messages.moderation.conversation.info.actionsTitle}</h4>
                 <div className="space-y-2">
                   {conversation.status === 'ACTIVE' ? (
                     <Button
@@ -338,86 +339,93 @@ export default function ConversationPage() {
         </div>
 
         {/* Messages */}
-        <div className="lg:col-span-3">
-          <Card className="h-[600px] flex flex-col">
-            <CardHeader>
-              <CardTitle className="text-lg">
+        <div className="lg:col-span-3 order-1 lg:order-2">
+          {/*
+            Layout chat : la card occupe une hauteur fixe calculée pour rester dans le viewport.
+            On utilise un div interne en flex-col avec une hauteur explicite plutôt que
+            de dépendre de flex-1 sur ScrollArea (Radix ne propage pas correctement la hauteur).
+          */}
+          <Card className="flex flex-col overflow-hidden" style={{ height: 'clamp(480px, 70vh, 720px)' }}>
+            <CardHeader className="flex-shrink-0 pb-3 border-b">
+              <CardTitle className="text-base">
                 {messages.moderation.conversation.messages.title} ({conversation.messages.length})
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col p-0">
-              {/* Zone de messages */}
-              <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
-                  {conversation.messages.map((msg: ChatMessageWithUser) => (
-                    <motion.div
-                      key={msg.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`flex ${msg.senderType === 'USER' ? 'justify-start' : 'justify-end'}`}
-                    >
-                      <div className={`max-w-[70%] ${msg.senderType === 'USER' ? 'order-1' : 'order-2'}`}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge className={senderTypeColors[msg.senderType as keyof typeof senderTypeColors]} variant="secondary">
-                            {senderTypeLabels[msg.senderType as keyof typeof senderTypeLabels]}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {formatTime(msg.createdAt)}
-                          </span>
-                        </div>
-                        <div
-                          className={`rounded-lg px-4 py-2 ${
-                            msg.senderType === 'USER'
-                              ? 'bg-muted border'
-                              : msg.senderType === 'MODERATOR'
-                              ? 'bg-orange-500 text-white'
-                              : msg.senderType === 'BOT'
-                              ? 'bg-green-500 text-white'
-                              : 'bg-gray-500 text-white'
-                          }`}
-                        >
-                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
-              </ScrollArea>
 
-              {/* Zone de saisie */}
-              <div className="border-t p-4">
-                <div className="flex gap-2">
-                  <Textarea
-                    placeholder={messages.moderation.conversation.typeYourReply}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage();
-                      }
-                    }}
-                    className="flex-1 min-h-[80px] resize-none"
-                    disabled={sending}
-                  />
-                  <Button
-                    onClick={sendMessage}
-                    disabled={!message.trim() || sending}
-                    className="self-end"
+            {/* Zone messages scrollable — hauteur = total card - header - zone saisie */}
+            <div className="flex-1 overflow-y-auto px-4 py-3 min-h-0">
+              <div className="space-y-4">
+                {conversation.messages.map((msg: ChatMessageWithUser) => (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex ${msg.senderType === 'USER' ? 'justify-start' : 'justify-end'}`}
                   >
-                    {sending ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                    ) : (
-                      <PaperAirplaneIcon className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Appuyez sur Entrée pour envoyer, Shift+Entrée pour une nouvelle ligne
-                </p>
+                    <div className="max-w-[80%] sm:max-w-[70%]">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge
+                          className={senderTypeColors[msg.senderType as keyof typeof senderTypeColors]}
+                          variant="secondary"
+                        >
+                          {senderTypeLabels[msg.senderType as keyof typeof senderTypeLabels]}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {formatTime(msg.createdAt)}
+                        </span>
+                      </div>
+                      <div
+                        className={`rounded-lg px-3 py-2 sm:px-4 break-words ${
+                          msg.senderType === 'USER'
+                            ? 'bg-muted border'
+                            : msg.senderType === 'MODERATOR'
+                            ? 'bg-orange-500 text-white'
+                            : msg.senderType === 'BOT'
+                            ? 'bg-green-500 text-white'
+                            : 'bg-gray-500 text-white'
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+                <div ref={messagesEndRef} />
               </div>
-            </CardContent>
+            </div>
+
+            {/* Zone de saisie — toujours visible en bas, z-index explicite */}
+            <div className="flex-shrink-0 border-t bg-background px-4 py-3 z-10">
+              <div className="flex gap-2 items-end">
+                <Textarea
+                  placeholder={messages.moderation.conversation.typeYourReply}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                  className="flex-1 min-h-[72px] max-h-[140px] resize-none"
+                  disabled={sending}
+                />
+                <Button
+                  onClick={sendMessage}
+                  disabled={!message.trim() || sending}
+                  className="flex-shrink-0 h-10 w-10 p-0"
+                >
+                  {sending ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                  ) : (
+                    <PaperAirplaneIcon className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Entrée pour envoyer · Shift+Entrée pour nouvelle ligne
+              </p>
+            </div>
           </Card>
         </div>
       </div>
