@@ -48,11 +48,12 @@ function mapSkinplaceStatusToTradeStatus(skinplaceStatus: string): TradeStatus {
     'completed': 'AVAILABLE',
     'done': 'AVAILABLE',
     
-    // Échecs
+    // Annulé
+    'cancelled': 'CANCELLED',
+    // Échecs techniques
     'declined': 'FAILED',
     'rejected': 'FAILED',
     'expired': 'FAILED',
-    'cancelled': 'FAILED',
     'failed': 'FAILED',
   };
 
@@ -183,8 +184,8 @@ export async function GET(
       const oldStatusIndex = statusOrder.indexOf(oldStatus);
       const newStatusIndex = statusOrder.indexOf(newStatus);
 
-      // Mettre à jour uniquement si le statut progresse ou devient FAILED
-      if (newStatus === 'FAILED' || newStatusIndex > oldStatusIndex) {
+      // Mettre à jour uniquement si le statut progresse ou devient FAILED/CANCELLED
+      if (newStatus === 'FAILED' || newStatus === 'CANCELLED' || newStatusIndex > oldStatusIndex) {
         // Calculer la date de disponibilité
         let availableAt = trade.availableAt;
         if (newStatus === 'ACCEPTED_BY_BOT' && !availableAt) {

@@ -198,7 +198,8 @@ export async function GET(request: NextRequest) {
     const oldIdx = statusOrder.indexOf(oldStatus);
     const newIdx = statusOrder.indexOf(newStatus);
 
-    if (newStatus === 'FAILED' || newIdx > oldIdx) {
+    // FAILED et CANCELLED sont des états terminaux qui peuvent arriver depuis n'importe quel état
+    if (newStatus === 'FAILED' || newStatus === 'CANCELLED' || newIdx > oldIdx) {
       let availableAt = trade.availableAt;
       if (newStatus === 'ACCEPTED_BY_BOT' && !availableAt) {
         availableAt = new Date();
