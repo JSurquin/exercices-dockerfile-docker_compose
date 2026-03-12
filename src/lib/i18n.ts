@@ -2870,6 +2870,17 @@ export const messages: Record<Locale, Messages> = {
         uploaded: "téléchargé avec succès",
         submitted: "Dossier KYC soumis avec succès ! Vous recevrez une réponse sous 24-48h.",
         error: "Erreur lors de la soumission du dossier KYC"
+      },
+      privacy: {
+        badge: "Confidentialité garantie",
+        title: "Vos fichiers ne sont jamais stockés par nous",
+        description: "Vos documents sont transmis directement et de façon sécurisée à notre partenaire de vérification d'identité certifié, KYCAID. Nous ne conservons aucun fichier sur nos serveurs, ni dans un cloud interne. Seul un identifiant de référence nous est retourné une fois la vérification effectuée.",
+        points: {
+          noStorage: "Aucun stockage de fichiers de notre côté",
+          directTransfer: "Transmission directe et chiffrée vers KYCAID",
+          certifiedPartner: "Partenaire certifié conforme RGPD",
+          referenceOnly: "Seule une référence numérique est conservée"
+        }
       }
     },
     sellPage: {
@@ -5953,6 +5964,17 @@ export const messages: Record<Locale, Messages> = {
         uploaded: "uploaded successfully",
         submitted: "KYC file submitted successfully! You will receive a response within 24-48h.",
         error: "Error submitting KYC file"
+      },
+      privacy: {
+        badge: "Privacy guaranteed",
+        title: "Your files are never stored by us",
+        description: "Your documents are transmitted directly and securely to our certified identity verification partner, KYCAID. We do not store any files on our servers or in any internal cloud. Only a reference identifier is returned to us once verification is complete.",
+        points: {
+          noStorage: "No file storage on our end",
+          directTransfer: "Direct and encrypted transfer to KYCAID",
+          certifiedPartner: "GDPR-compliant certified partner",
+          referenceOnly: "Only a digital reference is retained"
+        }
       }
     },
     sellPage: {
@@ -9723,7 +9745,8 @@ export const messages: Record<Locale, Messages> = {
       review: { complete: "", description: "", personalInfo: "", documents: "", identity: "", selfie: "", addressDocument: "", delay: { title: "", description: "" }, fullName: "", nationality: "", address: "" },
       navigation: { previous: "", next: "", submit: "", loading: "" },
       status: { verified: { title: "", description: "", dashboard: "" }, inProgress: { title: "", description: "", dashboard: "" }, rejected: { title: "", description: "", restart: "" }, loginRequired: { title: "", description: "", login: "" } },
-      toasts: { uploaded: "", submitted: "", error: "" }
+      toasts: { uploaded: "", submitted: "", error: "" },
+      privacy: { badge: "", title: "", description: "", points: { noStorage: "", directTransfer: "", certifiedPartner: "", referenceOnly: "" } }
     },
     sellPage: {
       title: "出售您的CS2皮肤",

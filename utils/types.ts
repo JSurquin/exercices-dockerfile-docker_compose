@@ -1849,6 +1849,17 @@ export interface Messages {
       submitted: string;
       error: string;
     };
+    privacy: {
+      badge: string;
+      title: string;
+      description: string;
+      points: {
+        noStorage: string;
+        directTransfer: string;
+        certifiedPartner: string;
+        referenceOnly: string;
+      };
+    };
   };
   sellPage: {
     title: string;

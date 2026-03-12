@@ -24,6 +24,8 @@ import {
   ClockIcon,
   XCircleIcon,
   ArrowPathIcon,
+  LockClosedIcon,
+  ShieldExclamationIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { Messages } from '~/utils/types';
@@ -397,11 +399,55 @@ export default function KYCPage() {
           </p>
         </motion.div>
 
-        {/* Progress */}
+        {/* Privacy banner */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
+          className="mb-6 sm:mb-8"
+        >
+          <div className="relative overflow-hidden rounded-xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/60 via-emerald-900/40 to-emerald-950/60 dark:from-emerald-950/80 dark:via-emerald-900/60 dark:to-emerald-950/80 p-5 shadow-lg shadow-emerald-900/20">
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-emerald-400/10 to-emerald-500/5 pointer-events-none" />
+            <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
+                <LockClosedIcon className="w-6 h-6 text-emerald-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 rounded-full px-2.5 py-0.5">
+                    <ShieldCheckIcon className="w-3.5 h-3.5" />
+                    {messages.kycPage.privacy.badge}
+                  </span>
+                </div>
+                <p className="text-sm font-semibold text-emerald-100 mb-1">
+                  {messages.kycPage.privacy.title}
+                </p>
+                <p className="text-xs text-emerald-300/80 leading-relaxed">
+                  {messages.kycPage.privacy.description}
+                </p>
+              </div>
+            </div>
+            <div className="relative mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {[
+                { icon: ShieldCheckIcon, text: messages.kycPage.privacy.points.noStorage },
+                { icon: LockClosedIcon, text: messages.kycPage.privacy.points.directTransfer },
+                { icon: ShieldExclamationIcon, text: messages.kycPage.privacy.points.certifiedPartner },
+                { icon: DocumentTextIcon, text: messages.kycPage.privacy.points.referenceOnly },
+              ].map(({ icon: Icon, text }) => (
+                <div key={text} className="flex items-start gap-2 bg-emerald-900/30 border border-emerald-500/20 rounded-lg p-2.5">
+                  <Icon className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-xs text-emerald-200/90 leading-snug">{text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Progress */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
           className="mb-6 sm:mb-8"
         >
           <div className="flex items-center justify-between mb-4">
