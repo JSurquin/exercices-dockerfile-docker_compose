@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,11 +11,11 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
 import { useLocale } from '@/components/providers/locale-provider';
 import { useSession } from '~/lib/auth-client';
 import { queryKeys } from '@/lib/query-keys';
 import { AffiliateCommission } from '@/lib/types';
+import { toast } from 'sonner';
 import {
   Copy,
   ExternalLink,
@@ -27,8 +27,6 @@ import {
   Zap,
   Share2,
   BarChart3,
-  ArrowUpRight,
-  ArrowDownRight,
   CheckCircle2,
   XCircle,
   Loader2,
@@ -36,14 +34,17 @@ import {
   Gift,
   Shield,
   UserCheck,
+  AlertTriangle,
+  Check,
 } from 'lucide-react';
 
 export default function AffiliatePage() {
-  const { toast } = useToast();
   const { messages } = useLocale();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const [customPath, setCustomPath] = useState('');
+  const [generatedLink, setGeneratedLink] = useState('');
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const userId = session?.user?.id;
 
@@ -89,6 +90,23 @@ export default function AffiliatePage() {
   const commissions = allCommissionsData?.pending ?? [];
   const paidCommissions = allCommissionsData?.paid ?? [];
 
+  // Détecter si l'utilisateur a visité sa propre page avec son propre lien affilié
+  useEffect(() => {
+    if (!affiliateData?.code) return;
+    const cookieRef = document.cookie
+      .split(';')
+      .find((c) => c.trim().startsWith('ctf_affiliate_ref='))
+      ?.split('=')[1]
+      ?.trim();
+    if (cookieRef && cookieRef === affiliateData.code) {
+      toast.warning('Auto-référencement détecté', {
+        description: "Vous ne pouvez pas vous parrainer vous-même. Ce lien ne vous rapportera aucune commission si c'est vous qui l'utilisez.",
+        duration: 8000,
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [affiliateData?.code]);
+
   const payoutMutation = useMutation({
     mutationFn: async (commissionIds: string[]) => {
       const res = await fetch('/api/affiliate/commissions', {
@@ -101,28 +119,48 @@ export default function AffiliatePage() {
       return data;
     },
     onSuccess: () => {
-      toast({ title: 'Demande envoyée', description: 'Votre demande de paiement a été soumise.' });
+      toast.success('Demande envoyée', { description: 'Votre demande de paiement a été soumise.' });
       queryClient.invalidateQueries({ queryKey: queryKeys.affiliateCommissions });
     },
     onError: (err: Error) => {
-      toast({ title: 'Erreur', description: err.message, variant: 'destructive' });
+      toast.error('Erreur', { description: err.message });
     },
   });
 
-  const generateAffiliateLink = async (path = '') => {
+  const generateAffiliateLink = async (path = '', copyKey = 'custom') => {
+    // Validation du path
+    const normalizedPath = path.trim();
+    if (normalizedPath && !normalizedPath.startsWith('/')) {
+      toast.error('Chemin invalide', { description: "Le chemin doit commencer par / (ex: /sell, /giveaways)" });
+      return;
+    }
+
     try {
       const res = await fetch('/api/affiliate/link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, path }),
+        body: JSON.stringify({ userId, path: normalizedPath }),
       });
       const data = await res.json();
-      if (data.success) {
-        await navigator.clipboard.writeText(data.data.link);
-        toast({ title: messages.affiliate.linkCopied, description: data.data.link });
+      if (!data.success) {
+        toast.error('Erreur', { description: data.error || 'Impossible de générer le lien' });
+        return;
       }
+
+      const link: string = data.data.link;
+      setGeneratedLink(link);
+
+      await navigator.clipboard.writeText(link);
+
+      setCopiedKey(copyKey);
+      setTimeout(() => setCopiedKey(null), 2500);
+
+      toast.success(messages.affiliate.linkCopied, {
+        description: link,
+        duration: 5000,
+      });
     } catch {
-      toast({ title: 'Erreur', description: 'Impossible de générer le lien', variant: 'destructive' });
+      toast.error('Erreur', { description: 'Impossible de copier le lien. Vérifiez les permissions du navigateur.' });
     }
   };
 
@@ -203,11 +241,15 @@ export default function AffiliatePage() {
 
             {/* Quick copy */}
             <Button
-              onClick={() => generateAffiliateLink()}
+              onClick={() => generateAffiliateLink('', 'hero')}
               className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-lg shadow-purple-500/20"
             >
-              <Copy className="h-4 w-4 mr-2" />
-              Copier mon lien affilié
+              {copiedKey === 'hero' ? (
+                <Check className="h-4 w-4 mr-2 text-green-300" />
+              ) : (
+                <Copy className="h-4 w-4 mr-2" />
+              )}
+              {copiedKey === 'hero' ? 'Copié !' : 'Copier mon lien affilié'}
             </Button>
           </div>
         </div>
@@ -444,36 +486,60 @@ export default function AffiliatePage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Page cible (optionnel)</Label>
+                    <Label className="text-slate-300">
+                      Page cible <span className="text-slate-500 font-normal">(optionnel)</span>
+                    </Label>
                     <Input
                       placeholder="/sell, /giveaways, etc."
                       value={customPath}
                       onChange={(e) => setCustomPath(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') generateAffiliateLink(customPath, 'custom');
+                      }}
                       className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
                     />
+                    <p className="text-xs text-slate-500">
+                      Laissez vide pour la page d&apos;accueil. Commencez par <code className="text-purple-400">/</code> pour une page spécifique.
+                    </p>
                   </div>
                   <Button
                     className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
-                    onClick={() => generateAffiliateLink(customPath)}
+                    onClick={() => generateAffiliateLink(customPath, 'custom')}
                   >
-                    <Copy className="h-4 w-4 mr-2" />
-                    Générer et copier
+                    {copiedKey === 'custom' ? (
+                      <><Check className="h-4 w-4 mr-2 text-green-300" /> Copié !</>
+                    ) : (
+                      <><Copy className="h-4 w-4 mr-2" /> Générer et copier</>
+                    )}
                   </Button>
+
+                  {/* Aperçu du lien généré */}
+                  {generatedLink && (
+                    <div className="rounded-lg border border-purple-500/30 bg-purple-950/20 p-3">
+                      <p className="text-xs text-purple-400 font-medium mb-1">Dernier lien généré :</p>
+                      <p className="text-xs text-slate-300 break-all font-mono">{generatedLink}</p>
+                    </div>
+                  )}
+
                   <Separator className="bg-slate-700" />
                   <div className="space-y-2">
-                    <p className="text-xs text-slate-400 font-medium">Liens rapides</p>
+                    <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Liens rapides</p>
                     {[
-                      { label: 'Page principale', path: '' },
-                      { label: 'Page vente', path: '/sell' },
-                      { label: 'Giveaways', path: '/giveaways' },
-                    ].map(({ label, path }) => (
+                      { label: 'Page principale', path: '', key: 'quick-home' },
+                      { label: 'Page vente', path: '/sell', key: 'quick-sell' },
+                      { label: 'Giveaways', path: '/giveaways', key: 'quick-giveaways' },
+                    ].map(({ label, path, key }) => (
                       <button
-                        key={path}
-                        onClick={() => generateAffiliateLink(path)}
-                        className="w-full flex items-center justify-between p-3 rounded-lg border border-slate-700 bg-slate-800/50 hover:bg-slate-700/60 transition-colors text-sm text-slate-300 hover:text-white"
+                        key={key}
+                        onClick={() => generateAffiliateLink(path, key)}
+                        className="w-full flex items-center justify-between p-3 rounded-lg border border-slate-700 bg-slate-800/50 hover:bg-slate-700/60 transition-colors text-sm text-slate-300 hover:text-white group"
                       >
                         <span>{label}</span>
-                        <Copy className="h-3.5 w-3.5 text-slate-500" />
+                        {copiedKey === key ? (
+                          <Check className="h-3.5 w-3.5 text-green-400" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5 text-slate-500 group-hover:text-slate-300 transition-colors" />
+                        )}
                       </button>
                     ))}
                   </div>
