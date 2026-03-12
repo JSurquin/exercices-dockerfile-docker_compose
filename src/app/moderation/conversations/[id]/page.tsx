@@ -9,11 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { ConversationWithMessages, ChatMessageWithUser } from '@/lib/types/chat';
-import { ConversationStatus, SenderType } from '@prisma/client';
+import { ConversationStatus } from '@prisma/client';
 import { useSession } from '~/lib/auth-client';
 import {
   ArrowLeftIcon,
@@ -22,6 +22,7 @@ import {
   ClockIcon,
   CheckIcon,
   ExclamationTriangleIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
@@ -155,6 +156,7 @@ export default function ConversationPage() {
     });
   };
 
+
   // Vérifier les permissions
   if (!session?.user || session.user.role !== 'MODERATOR' && session.user.role !== 'ADMIN') {
     return (
@@ -200,202 +202,176 @@ export default function ConversationPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl">
-      {/* Header */}
+    /*
+     * Sur mobile/tablette : layout vertical — sidebar collapsible en haut,
+     *   chat en dessous avec hauteur contrainte par dvh.
+     * Sur desktop (lg+) : grid 4 colonnes côte à côte, sidebar sticky.
+     * Le wrapper principal n'a pas de overflow caché pour laisser la page
+     * défiler normalement sur mobile.
+     */
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl">
+
+      {/* ── Header ── */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6"
+        className="flex items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6"
       >
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Button
             variant="outline"
             size="icon"
-            className="flex-shrink-0"
+            className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
             onClick={() => router.push('/moderation')}
           >
             <ArrowLeftIcon className="w-4 h-4" />
           </Button>
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold truncate">
+            <h1 className="text-base sm:text-xl lg:text-2xl font-bold truncate leading-tight">
               {conversation.subject || messages.moderation.conversation.header.noSubject}
             </h1>
-            <p className="text-muted-foreground text-sm truncate">
+            <p className="text-muted-foreground text-xs sm:text-sm truncate">
               {messages.moderation.conversation.header.withUser}{' '}
               {conversation.user?.name || conversation.user?.email || messages.moderation.conversation.header.anonymousUser}
             </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <Badge className={`${conversation.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <Badge
+            className={`text-xs px-1.5 py-0.5 ${conversation.status === 'ACTIVE' ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}
+          >
             {conversation.status}
           </Badge>
-          <Badge className={`${conversation.priority === 'URGENT' ? 'bg-red-100 text-red-800' : conversation.priority === 'HIGH' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}`}>
+          <Badge
+            className={`text-xs px-1.5 py-0.5 hidden sm:inline-flex ${
+              conversation.priority === 'URGENT'
+                ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'
+                : conversation.priority === 'HIGH'
+                ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300'
+                : 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
+            }`}
+          >
             {conversation.priority}
           </Badge>
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        {/* Informations de la conversation */}
-        <div className="lg:col-span-1 order-2 lg:order-1">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">{messages.moderation.conversation.info.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Utilisateur */}
-              <div>
-                <h4 className="font-medium mb-2 text-sm">{messages.moderation.conversation.info.userTitle}</h4>
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarImage src={conversation.user?.steamAvatar || undefined} />
-                    <AvatarFallback>
-                      <UserIcon className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {conversation.user?.name || messages.moderation.conversation.info.anonymous}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {conversation.user?.email}
-                    </p>
-                    {conversation.user?.steamUsername && (
-                      <p className="text-xs text-muted-foreground truncate">
-                        {messages.moderation.conversation.info.steam} {conversation.user.steamUsername}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
+      {/* ── Layout principal ── */}
+      <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 lg:gap-6 lg:items-start">
 
-              {/* Assignation */}
-              <div>
-                <h4 className="font-medium mb-2 text-sm">{messages.moderation.conversation.info.assignmentTitle}</h4>
-                {conversation.assignedModerator ? (
-                  <p className="text-sm truncate">
-                    {conversation.assignedModerator.name || conversation.assignedModerator.email}
-                  </p>
-                ) : (
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-2">{messages.moderation.conversation.info.unassigned}</p>
-                    <Button size="sm" onClick={assignToMe} className="w-full">
-                      {messages.moderation.conversation.info.assignToMe}
-                    </Button>
-                  </div>
-                )}
-              </div>
+        {/* ── Sidebar infos — collapsible sur mobile, toujours visible sur lg ── */}
+        <div className="lg:col-span-1 lg:sticky lg:top-4">
 
-              {/* Dates */}
-              <div>
-                <h4 className="font-medium mb-2 text-sm">{messages.moderation.conversation.info.datesTitle}</h4>
-                <div className="space-y-1 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <ClockIcon className="w-3 h-3 flex-shrink-0" />
-                    <span>{messages.moderation.conversation.info.created} {formatDate(conversation.createdAt)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <ClockIcon className="w-3 h-3 flex-shrink-0" />
-                    <span>{messages.moderation.conversation.info.updated} {formatDate(conversation.updatedAt)}</span>
-                  </div>
-                  {conversation.closedAt && (
-                    <div className="flex items-center gap-2">
-                      <CheckIcon className="w-3 h-3 flex-shrink-0" />
-                      <span>{messages.moderation.conversation.info.closed} {formatDate(conversation.closedAt)}</span>
-                    </div>
-                  )}
-                </div>
+          {/* Version mobile : accordéon */}
+          <Collapsible className="lg:hidden">
+            <CollapsibleTrigger asChild>
+              <button className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border bg-card text-sm font-medium hover:bg-muted/50 transition-colors">
+                <span>{messages.moderation.conversation.info.title}</span>
+                <ChevronDownIcon className="w-4 h-4 text-muted-foreground transition-transform duration-200 [[data-state=open]_&]:rotate-180" />
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-2 rounded-lg border bg-card px-4 py-3 space-y-3">
+                <SidebarContent
+                  conversation={conversation}
+                  messages={messages}
+                  assignToMe={assignToMe}
+                  updateStatus={updateStatus}
+                  formatDate={formatDate}
+                />
               </div>
+            </CollapsibleContent>
+          </Collapsible>
 
-              {/* Actions */}
-              <div>
-                <h4 className="font-medium mb-2 text-sm">{messages.moderation.conversation.info.actionsTitle}</h4>
-                <div className="space-y-2">
-                  {conversation.status === 'ACTIVE' ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => updateStatus('CLOSED')}
-                    >
-                      {messages.moderation.conversation.info.closeConversation}
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => updateStatus('ACTIVE')}
-                    >
-                      {messages.moderation.conversation.info.reopenConversation}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Version desktop : toujours visible */}
+          <div className="hidden lg:block rounded-lg border bg-card p-4 space-y-4">
+            <p className="font-semibold text-sm">{messages.moderation.conversation.info.title}</p>
+            <SidebarContent
+              conversation={conversation}
+              messages={messages}
+              assignToMe={assignToMe}
+              updateStatus={updateStatus}
+              formatDate={formatDate}
+            />
+          </div>
         </div>
 
-        {/* Messages */}
-        <div className="lg:col-span-3 order-1 lg:order-2">
+        {/* ── Zone chat ── */}
+        <div className="lg:col-span-3">
           {/*
-            Layout chat : la card occupe une hauteur fixe calculée pour rester dans le viewport.
-            On utilise un div interne en flex-col avec une hauteur explicite plutôt que
-            de dépendre de flex-1 sur ScrollArea (Radix ne propage pas correctement la hauteur).
-          */}
-          <Card className="flex flex-col overflow-hidden" style={{ height: 'clamp(480px, 70vh, 720px)' }}>
-            <CardHeader className="flex-shrink-0 pb-3 border-b">
-              <CardTitle className="text-base">
-                {messages.moderation.conversation.messages.title} ({conversation.messages.length})
+           * Hauteur :
+           *  - Mobile  : 60dvh (assez pour voir les messages sans occuper tout l'écran)
+           *  - Tablette: 65dvh
+           *  - Desktop : 72dvh plafonné à 760px
+           * On utilise dvh (dynamic viewport height) pour tenir compte de la barre
+           * d'adresse mobile qui s'escamote.
+           */}
+          <Card
+            className="flex flex-col overflow-hidden"
+            style={{ height: 'clamp(420px, 60dvh, 760px)' }}
+          >
+            {/* En-tête chat */}
+            <CardHeader className="flex-shrink-0 py-3 px-4 border-b">
+              <CardTitle className="text-sm sm:text-base">
+                {messages.moderation.conversation.messages.title}{' '}
+                <span className="text-muted-foreground font-normal">
+                  ({conversation.messages.length})
+                </span>
               </CardTitle>
             </CardHeader>
 
-            {/* Zone messages scrollable — hauteur = total card - header - zone saisie */}
-            <div className="flex-1 overflow-y-auto px-4 py-3 min-h-0">
-              <div className="space-y-4">
-                {conversation.messages.map((msg: ChatMessageWithUser) => (
-                  <motion.div
-                    key={msg.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${msg.senderType === 'USER' ? 'justify-start' : 'justify-end'}`}
-                  >
-                    <div className="max-w-[80%] sm:max-w-[70%]">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge
-                          className={senderTypeColors[msg.senderType as keyof typeof senderTypeColors]}
-                          variant="secondary"
+            {/* Messages — zone scrollable contrainte */}
+            <div className="flex-1 overflow-y-auto min-h-0 px-3 sm:px-4 py-3">
+              {conversation.messages.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                  Aucun message dans cette conversation.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {conversation.messages.map((msg: ChatMessageWithUser) => (
+                    <motion.div
+                      key={msg.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className={`flex ${msg.senderType === 'USER' ? 'justify-start' : 'justify-end'}`}
+                    >
+                      {/* Bulle limitée à 85% sur mobile, 72% sur desktop */}
+                      <div className="max-w-[85%] sm:max-w-[72%] min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                          <Badge
+                            className={`text-[10px] px-1.5 py-0 ${senderTypeColors[msg.senderType as keyof typeof senderTypeColors]}`}
+                            variant="secondary"
+                          >
+                            {senderTypeLabels[msg.senderType as keyof typeof senderTypeLabels]}
+                          </Badge>
+                          <span className="text-[10px] text-muted-foreground">
+                            {formatTime(msg.createdAt)}
+                          </span>
+                        </div>
+                        <div
+                          className={`rounded-xl px-3 py-2 break-words overflow-hidden ${
+                            msg.senderType === 'USER'
+                              ? 'bg-muted border rounded-tl-sm'
+                              : msg.senderType === 'MODERATOR'
+                              ? 'bg-orange-500 text-white rounded-tr-sm'
+                              : msg.senderType === 'BOT'
+                              ? 'bg-green-600 text-white rounded-tr-sm'
+                              : 'bg-muted-foreground/20 rounded-tr-sm'
+                          }`}
                         >
-                          {senderTypeLabels[msg.senderType as keyof typeof senderTypeLabels]}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {formatTime(msg.createdAt)}
-                        </span>
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                        </div>
                       </div>
-                      <div
-                        className={`rounded-lg px-3 py-2 sm:px-4 break-words ${
-                          msg.senderType === 'USER'
-                            ? 'bg-muted border'
-                            : msg.senderType === 'MODERATOR'
-                            ? 'bg-orange-500 text-white'
-                            : msg.senderType === 'BOT'
-                            ? 'bg-green-500 text-white'
-                            : 'bg-gray-500 text-white'
-                        }`}
-                      >
-                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
+                    </motion.div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+              )}
             </div>
 
-            {/* Zone de saisie — toujours visible en bas, z-index explicite */}
-            <div className="flex-shrink-0 border-t bg-background px-4 py-3 z-10">
+            {/* Zone saisie — ancrée en bas, jamais couverte */}
+            <div className="flex-shrink-0 border-t bg-card px-3 sm:px-4 py-2.5 sm:py-3">
               <div className="flex gap-2 items-end">
                 <Textarea
                   placeholder={messages.moderation.conversation.typeYourReply}
@@ -407,22 +383,23 @@ export default function ConversationPage() {
                       sendMessage();
                     }
                   }}
-                  className="flex-1 min-h-[72px] max-h-[140px] resize-none"
+                  className="flex-1 min-h-[60px] sm:min-h-[72px] max-h-[120px] resize-none text-sm"
                   disabled={sending}
                 />
                 <Button
                   onClick={sendMessage}
                   disabled={!message.trim() || sending}
-                  className="flex-shrink-0 h-10 w-10 p-0"
+                  size="icon"
+                  className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 self-end"
                 >
                   {sending ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
                   ) : (
                     <PaperAirplaneIcon className="w-4 h-4" />
                   )}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground mt-1.5">
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 select-none">
                 Entrée pour envoyer · Shift+Entrée pour nouvelle ligne
               </p>
             </div>
@@ -430,5 +407,111 @@ export default function ConversationPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+ * Contenu de la sidebar — partagé entre mobile
+ * (Collapsible) et desktop (div fixe).
+ * ───────────────────────────────────────────── */
+function SidebarContent({
+  conversation,
+  messages,
+  assignToMe,
+  updateStatus,
+  formatDate,
+}: {
+  conversation: ConversationWithMessages;
+  messages: any;
+  assignToMe: () => void;
+  updateStatus: (status: ConversationStatus) => void;
+  formatDate: (d: Date) => string;
+}) {
+  return (
+    <>
+      {/* Utilisateur */}
+      <div>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+          {messages.moderation.conversation.info.userTitle}
+        </p>
+        <div className="flex items-center gap-2.5">
+          <Avatar className="h-8 w-8 flex-shrink-0">
+            <AvatarImage src={(conversation as any).user?.steamAvatar || undefined} />
+            <AvatarFallback><UserIcon className="h-4 w-4" /></AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <p className="text-sm font-medium truncate">
+              {(conversation as any).user?.name || messages.moderation.conversation.info.anonymous}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              {(conversation as any).user?.email}
+            </p>
+            {(conversation as any).user?.steamUsername && (
+              <p className="text-xs text-muted-foreground truncate">
+                Steam: {(conversation as any).user.steamUsername}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Assignation */}
+      <div>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+          {messages.moderation.conversation.info.assignmentTitle}
+        </p>
+        {(conversation as any).assignedModerator ? (
+          <p className="text-sm truncate">
+            {(conversation as any).assignedModerator.name || (conversation as any).assignedModerator.email}
+          </p>
+        ) : (
+          <div className="space-y-1.5">
+            <p className="text-xs text-muted-foreground">{messages.moderation.conversation.info.unassigned}</p>
+            <Button size="sm" onClick={assignToMe} className="w-full h-8 text-xs">
+              {messages.moderation.conversation.info.assignToMe}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Dates */}
+      <div>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+          {messages.moderation.conversation.info.datesTitle}
+        </p>
+        <div className="space-y-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <ClockIcon className="w-3 h-3 flex-shrink-0" />
+            <span>{messages.moderation.conversation.info.created} {formatDate((conversation as any).createdAt)}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <ClockIcon className="w-3 h-3 flex-shrink-0" />
+            <span>{messages.moderation.conversation.info.updated} {formatDate((conversation as any).updatedAt)}</span>
+          </div>
+          {(conversation as any).closedAt && (
+            <div className="flex items-center gap-1.5">
+              <CheckIcon className="w-3 h-3 flex-shrink-0" />
+              <span>{messages.moderation.conversation.info.closed} {formatDate((conversation as any).closedAt)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+          {messages.moderation.conversation.info.actionsTitle}
+        </p>
+        {(conversation as any).status === 'ACTIVE' ? (
+          <Button size="sm" variant="outline" className="w-full h-8 text-xs" onClick={() => updateStatus('CLOSED')}>
+            {messages.moderation.conversation.info.closeConversation}
+          </Button>
+        ) : (
+          <Button size="sm" variant="outline" className="w-full h-8 text-xs" onClick={() => updateStatus('ACTIVE')}>
+            {messages.moderation.conversation.info.reopenConversation}
+          </Button>
+        )}
+      </div>
+    </>
   );
 }
