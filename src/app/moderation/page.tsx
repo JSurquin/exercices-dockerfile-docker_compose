@@ -313,10 +313,11 @@ export default function ModerationPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold">
+                    <div className="flex items-start justify-between gap-3 min-w-0">
+                      {/* Infos — min-w-0 indispensable pour que truncate/wrap fonctionne dans un flex */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <h3 className="font-semibold truncate max-w-[200px] sm:max-w-xs">
                             {conversation.subject || 'Sans sujet'}
                           </h3>
                           <Badge className={priorityColors[conversation.priority as keyof typeof priorityColors]}>
@@ -330,32 +331,35 @@ export default function ModerationPage() {
                           )}
                         </div>
 
-                        <div className="text-sm text-muted-foreground mb-2">
-                          <span className="font-medium">
+                        <div className="text-sm text-muted-foreground mb-2 min-w-0">
+                          <span className="font-medium break-all">
                             {conversation.user?.name || conversation.user?.email || 'Utilisateur anonyme'}
                           </span>
                           {conversation.user?.steamUsername && (
-                            <span> • Steam: {conversation.user.steamUsername}</span>
+                            <span className="break-all"> • Steam: {conversation.user.steamUsername}</span>
                           )}
                         </div>
 
                         {conversation.messages.length > 0 && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
+                          <p className="text-sm text-muted-foreground line-clamp-2 break-words">
                             {conversation.messages[0].content}
                           </p>
                         )}
 
-                        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                          <span>Créée le {formatDate(conversation.createdAt)}</span>
-                          <span>Mise à jour le {formatDate(conversation.updatedAt)}</span>
-                          <span>{conversation._count?.messages || 0} messages</span>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
+                          <span className="whitespace-nowrap">Créée le {formatDate(conversation.createdAt)}</span>
+                          <span className="whitespace-nowrap">Mise à jour le {formatDate(conversation.updatedAt)}</span>
+                          <span className="whitespace-nowrap">{conversation._count?.messages || 0} messages</span>
                           {conversation.assignedModerator && (
-                            <span>Assignée à {conversation.assignedModerator.name || conversation.assignedModerator.email}</span>
+                            <span className="break-all">
+                              Assignée à {conversation.assignedModerator.name || conversation.assignedModerator.email}
+                            </span>
                           )}
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 ml-4">
+                      {/* Actions — flex-shrink-0 pour ne jamais être compressées */}
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-shrink-0">
                         {!conversation.assignedTo && user?.id && (
                           <Button
                             size="sm"
