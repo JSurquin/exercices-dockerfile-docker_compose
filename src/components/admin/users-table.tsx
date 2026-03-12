@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
@@ -53,6 +53,16 @@ export function AdminUsersTable() {
     limit: 20,
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setFilters(prev => ({ ...prev, page: 1 }));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   const [promoteDialog, setPromoteDialog] = useState<PromoteDialogState>({
     open: false,
     userId: '',
@@ -63,14 +73,13 @@ export function AdminUsersTable() {
   const [promoting, setPromoting] = useState(false);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.adminUsers({ ...filters, search: searchTerm }),
+    queryKey: queryKeys.adminUsers({ ...filters, search: debouncedSearch }),
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filters.status) params.append('status', filters.status);
-      if (filters.search) params.append('search', filters.search);
+      if (debouncedSearch) params.append('search', debouncedSearch);
       if (filters.page) params.append('page', filters.page.toString());
       if (filters.limit) params.append('limit', filters.limit.toString());
-      if (searchTerm) params.append('search', searchTerm);
 
       const response = await fetch(`/api/admin/users?${params}`);
       const json = await response.json();
@@ -82,11 +91,6 @@ export function AdminUsersTable() {
   });
 
   const users: UserType[] = data?.users ?? [];
-
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setFilters(prev => ({ ...prev, page: 1 }));
-  };
 
   const handleKYCFilter = (status: string) => {
     setFilters(prev => ({ 
@@ -229,7 +233,7 @@ export function AdminUsersTable() {
           <Input
             placeholder="Rechercher par nom d'utilisateur, Steam ID..."
             value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 bg-slate-700 border-slate-600 text-white"
           />
         </div>
