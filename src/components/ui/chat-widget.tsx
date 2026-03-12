@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLocale } from "@/components/providers/locale-provider";
+import { resolveI18nContent } from "@/lib/resolve-i18n-content";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useChat } from "@/hooks/use-chat";
 import { SenderType } from "@prisma/client";
@@ -93,6 +94,10 @@ export function ChatWidget() {
       minute: "2-digit" 
     });
   };
+
+  const resolveContent = (content: string) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolveI18nContent(content, messages as any);
 
   return (
     <>
@@ -204,7 +209,7 @@ export function ChatWidget() {
                         </div>
                       )}
                       
-                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      <p className="text-sm whitespace-pre-wrap">{resolveContent(msg.content)}</p>
                       <div
                         className={`flex items-center justify-between mt-1 gap-2 ${
                           isUserMessage ? "text-white/70" : "text-muted-foreground"

@@ -26,6 +26,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
+import { resolveI18nContent } from '@/lib/resolve-i18n-content';
 
 const senderTypeLabels = {
   USER: 'Utilisateur',
@@ -360,7 +361,7 @@ export default function ConversationPage() {
                               : 'bg-muted-foreground/20 rounded-tr-sm'
                           }`}
                         >
-                          <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed">{resolveI18nContent(msg.content, messages)}</p>
                         </div>
                       </div>
                     </motion.div>
