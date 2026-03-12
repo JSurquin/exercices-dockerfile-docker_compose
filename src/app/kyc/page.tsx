@@ -37,7 +37,6 @@ const getSteps = (messages: Messages) => [
   { id: 'info', title: messages.kycPage.steps.info, icon: DocumentTextIcon },
   { id: 'documents', title: messages.kycPage.steps.documents, icon: DocumentTextIcon },
   { id: 'selfie', title: messages.kycPage.steps.selfie, icon: CameraIcon },
-  { id: 'address', title: messages.kycPage.steps.address, icon: HomeIcon },
   { id: 'review', title: messages.kycPage.steps.review, icon: CheckCircleIcon },
 ];
 
@@ -157,18 +156,16 @@ export default function KYCPage() {
     toast.success(`${processedFile.name} ${messages.kycPage.toasts.uploaded}`);
   };
 
+  const ACTIVE_STEPS: KYCStep[] = ['info', 'documents', 'selfie', 'review'];
+
   const handleNextStep = async () => {
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const stepOrder: KYCStep[] = ['info', 'documents', 'selfie', 'address', 'review'];
-      const currentIndex = stepOrder.indexOf(currentStep);
-      
-      if (currentIndex < stepOrder.length - 1) {
-        setCurrentStep(stepOrder[currentIndex + 1]);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const currentIndex = ACTIVE_STEPS.indexOf(currentStep);
+      if (currentIndex < ACTIVE_STEPS.length - 1) {
+        setCurrentStep(ACTIVE_STEPS[currentIndex + 1]);
       } else {
-        // Submit KYC
         await submitKYC();
       }
     } finally {
@@ -177,11 +174,9 @@ export default function KYCPage() {
   };
 
   const handlePrevStep = () => {
-    const stepOrder: KYCStep[] = ['info', 'documents', 'selfie', 'address', 'review'];
-    const currentIndex = stepOrder.indexOf(currentStep);
-    
+    const currentIndex = ACTIVE_STEPS.indexOf(currentStep);
     if (currentIndex > 0) {
-      setCurrentStep(stepOrder[currentIndex - 1]);
+      setCurrentStep(ACTIVE_STEPS[currentIndex - 1]);
     }
   };
 
@@ -254,10 +249,7 @@ export default function KYCPage() {
     }
   };
 
-  const getStepIndex = () => {
-    const stepOrder: KYCStep[] = ['info', 'documents', 'selfie', 'address', 'review'];
-    return stepOrder.indexOf(currentStep);
-  };
+  const getStepIndex = () => ACTIVE_STEPS.indexOf(currentStep);
 
   const isStepValid = () => {
     switch (currentStep) {
@@ -267,8 +259,6 @@ export default function KYCPage() {
         return uploadedFiles.identity;
       case 'selfie':
         return uploadedFiles.selfie;
-      case 'address':
-        return uploadedFiles.address || true; // Optionnel
       default:
         return true;
     }
@@ -393,7 +383,7 @@ export default function KYCPage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-6 sm:mb-8"
         >
-          <h1 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">{messages.kycPage.title}</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">{messages.kycPage.title}</h1>
           <p className="text-muted-foreground">
             {messages.kycPage.subtitle}
           </p>
@@ -450,36 +440,40 @@ export default function KYCPage() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mb-6 sm:mb-8"
         >
-          <div className="flex items-center justify-between mb-4">
+          {/* Stepper — icônes + connecteurs fluides */}
+          <div className="flex items-center mb-4">
             {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                  index <= getStepIndex() 
-                    ? 'bg-orange-500 border-orange-500 text-white' 
-                    : 'border-muted-foreground text-muted-foreground'
-                }`}>
-                  {index < getStepIndex() ? (
-                    <CheckCircleIcon className="w-6 h-6" />
-                  ) : (
-                    <step.icon className="w-5 h-5" />
-                  )}
-                </div>
-                <div className="ml-3 hidden sm:block">
-                  <p className={`text-sm font-medium ${
+              <div key={step.id} className="flex items-center flex-1 last:flex-none">
+                {/* Cercle icône */}
+                <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
+                  <div className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 transition-colors ${
+                    index <= getStepIndex()
+                      ? 'bg-orange-500 border-orange-500 text-white'
+                      : 'border-muted-foreground/40 text-muted-foreground'
+                  }`}>
+                    {index < getStepIndex() ? (
+                      <CheckCircleIcon className="w-5 h-5" />
+                    ) : (
+                      <step.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    )}
+                  </div>
+                  {/* Label sous l'icône, masqué sur très petit écran */}
+                  <p className={`hidden xs:block text-[10px] sm:text-xs font-medium text-center max-w-[60px] sm:max-w-[80px] leading-tight ${
                     index <= getStepIndex() ? 'text-foreground' : 'text-muted-foreground'
                   }`}>
                     {step.title}
                   </p>
                 </div>
+                {/* Connecteur — prend tout l'espace restant jusqu'au prochain step */}
                 {index < steps.length - 1 && (
-                  <div className={`w-20 h-0.5 ml-6 ${
+                  <div className={`flex-1 h-0.5 mx-1.5 sm:mx-2 transition-colors ${
                     index < getStepIndex() ? 'bg-orange-500' : 'bg-muted'
                   }`} />
                 )}
               </div>
             ))}
           </div>
-          <Progress value={(getStepIndex() / (steps.length - 1)) * 100} className="h-2" />
+          <Progress value={(getStepIndex() / (steps.length - 1)) * 100} className="h-1.5 sm:h-2" />
         </motion.div>
 
         {/* Step Content */}
@@ -630,10 +624,10 @@ export default function KYCPage() {
                   </div>
 
                   {/* Recto du document */}
-                  <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
-                    <DocumentTextIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <h4 className="font-semibold mb-2">{messages.kycPage.documents.upload} (Recto) *</h4>
-                    <p className="text-muted-foreground mb-4">
+                  <div className="border-2 border-dashed border-muted rounded-lg p-4 sm:p-6 text-center">
+                    <DocumentTextIcon className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-muted-foreground" />
+                    <h4 className="font-semibold mb-1 text-sm sm:text-base">{messages.kycPage.documents.upload} (Recto) *</h4>
+                    <p className="text-muted-foreground mb-4 text-xs sm:text-sm">
                       {messages.kycPage.documents.description}
                     </p>
                     <Input
@@ -643,12 +637,12 @@ export default function KYCPage() {
                         const file = e.target.files?.[0];
                         if (file) handleFileUpload('identity', file);
                       }}
-                      className="max-w-xs mx-auto"
+                      className="w-full sm:max-w-xs mx-auto"
                     />
                     {uploadedFiles.identity && (
-                      <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
-                        <CheckCircleIcon className="w-5 h-5 text-green-500 inline-block mr-2" />
-                        <span className="text-green-700 dark:text-green-300">
+                      <div className="mt-3 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2 text-left">
+                        <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+                        <span className="text-green-700 dark:text-green-300 text-sm truncate">
                           {uploadedFiles.identity.name} {messages.kycPage.documents.uploaded}
                         </span>
                       </div>
@@ -657,10 +651,10 @@ export default function KYCPage() {
 
                   {/* Verso du document (si carte d'identité) */}
                   {documentType === 'id_card' && (
-                    <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
-                      <DocumentTextIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <h4 className="font-semibold mb-2">Verso de la carte d&apos;identité</h4>
-                      <p className="text-muted-foregro und mb-4">
+                    <div className="border-2 border-dashed border-muted rounded-lg p-4 sm:p-6 text-center">
+                      <DocumentTextIcon className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-muted-foreground" />
+                      <h4 className="font-semibold mb-1 text-sm sm:text-base">Verso de la carte d&apos;identité</h4>
+                      <p className="text-muted-foreground mb-4 text-xs sm:text-sm">
                         Upload le verso de votre carte d&apos;identité (optionnel mais recommandé)
                       </p>
                       <Input
@@ -670,12 +664,12 @@ export default function KYCPage() {
                           const file = e.target.files?.[0];
                           if (file) handleFileUpload('identityBack', file);
                         }}
-                        className="max-w-xs mx-auto"
+                        className="w-full sm:max-w-xs mx-auto"
                       />
                       {uploadedFiles.identityBack && (
-                        <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
-                          <CheckCircleIcon className="w-5 h-5 text-green-500 inline-block mr-2" />
-                          <span className="text-green-700 dark:text-green-300">
+                        <div className="mt-3 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2 text-left">
+                          <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+                          <span className="text-green-700 dark:text-green-300 text-sm truncate">
                             {uploadedFiles.identityBack.name} {messages.kycPage.documents.uploaded}
                           </span>
                         </div>
@@ -705,10 +699,10 @@ export default function KYCPage() {
               {/* Selfie Step */}
               {currentStep === 'selfie' && (
                 <div className="space-y-3 sm:space-y-4">
-                  <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
-                    <CameraIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <h4 className="font-semibold mb-2">{messages.kycPage.selfie.title}</h4>
-                    <p className="text-muted-foreground mb-4">
+                  <div className="border-2 border-dashed border-muted rounded-lg p-4 sm:p-6 text-center">
+                    <CameraIcon className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-muted-foreground" />
+                    <h4 className="font-semibold mb-1 text-sm sm:text-base">{messages.kycPage.selfie.title}</h4>
+                    <p className="text-muted-foreground mb-4 text-xs sm:text-sm">
                       {messages.kycPage.selfie.description}
                     </p>
                     <Input
@@ -719,12 +713,12 @@ export default function KYCPage() {
                         const file = e.target.files?.[0];
                         if (file) handleFileUpload('selfie', file);
                       }}
-                      className="max-w-xs mx-auto"
+                      className="w-full sm:max-w-xs mx-auto"
                     />
                     {uploadedFiles.selfie && (
-                      <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
-                        <CheckCircleIcon className="w-5 h-5 text-green-500 inline-block mr-2" />
-                        <span className="text-green-700 dark:text-green-300">
+                      <div className="mt-3 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
+                        <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+                        <span className="text-green-700 dark:text-green-300 text-sm">
                           {messages.kycPage.selfie.uploaded}
                         </span>
                       </div>
@@ -817,23 +811,25 @@ export default function KYCPage() {
 
                   <div className="space-y-3 sm:space-y-4">
                     <h3 className="font-semibold">{messages.kycPage.review.personalInfo}</h3>
-                    <div className="grid md:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">{messages.kycPage.review.fullName}</span>
-                        <p className="font-medium">{personalInfo.firstName} {personalInfo.lastName}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                      <div className="p-3 rounded-lg bg-muted/40">
+                        <span className="text-muted-foreground text-xs">{messages.kycPage.review.fullName}</span>
+                        <p className="font-medium mt-0.5">{personalInfo.firstName} {personalInfo.lastName}</p>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground">{messages.kycPage.info.dateOfBirth}:</span>
-                        <p className="font-medium">{personalInfo.dateOfBirth}</p>
+                      <div className="p-3 rounded-lg bg-muted/40">
+                        <span className="text-muted-foreground text-xs">{messages.kycPage.info.dateOfBirth}</span>
+                        <p className="font-medium mt-0.5">{personalInfo.dateOfBirth}</p>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground">{messages.kycPage.review.nationality}</span>
-                        <p className="font-medium">{personalInfo.nationality}</p>
+                      <div className="p-3 rounded-lg bg-muted/40">
+                        <span className="text-muted-foreground text-xs">{messages.kycPage.review.nationality}</span>
+                        <p className="font-medium mt-0.5">{personalInfo.nationality}</p>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground">{messages.kycPage.review.address}</span>
-                        <p className="font-medium">{personalInfo.address}, {personalInfo.city} {personalInfo.postalCode}</p>
-                      </div>
+                      {personalInfo.address && (
+                        <div className="p-3 rounded-lg bg-muted/40">
+                          <span className="text-muted-foreground text-xs">{messages.kycPage.review.address}</span>
+                          <p className="font-medium mt-0.5 break-words">{personalInfo.address}{personalInfo.city ? `, ${personalInfo.city}` : ''}{personalInfo.postalCode ? ` ${personalInfo.postalCode}` : ''}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -841,21 +837,15 @@ export default function KYCPage() {
                     <h3 className="font-semibold">{messages.kycPage.review.documents}</h3>
                     <div className="space-y-2">
                       {uploadedFiles.identity && (
-                        <div className="flex items-center space-x-2">
-                          <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                          <span>{messages.kycPage.review.identity} {uploadedFiles.identity.name}</span>
+                        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                          <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+                          <span className="text-sm truncate">{messages.kycPage.review.identity} {uploadedFiles.identity.name}</span>
                         </div>
                       )}
                       {uploadedFiles.selfie && (
-                        <div className="flex items-center space-x-2">
-                          <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                          <span>{messages.kycPage.review.selfie}</span>
-                        </div>
-                      )}
-                      {uploadedFiles.address && (
-                        <div className="flex items-center space-x-2">
-                          <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                          <span>{messages.kycPage.review.addressDocument} {uploadedFiles.address.name}</span>
+                        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                          <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+                          <span className="text-sm">{messages.kycPage.review.selfie}</span>
                         </div>
                       )}
                     </div>
@@ -878,20 +868,25 @@ export default function KYCPage() {
               )}
 
               {/* Navigation */}
-              <div className="flex justify-between pt-6 border-t">
+              <div className="flex justify-between gap-3 pt-5 sm:pt-6 border-t">
                 <Button
                   variant="outline"
                   onClick={handlePrevStep}
                   disabled={currentStep === 'info'}
+                  className="min-w-[90px] sm:min-w-[110px]"
                 >
                   {messages.kycPage.navigation.previous}
                 </Button>
                 <Button
                   onClick={handleNextStep}
                   disabled={!isStepValid() || isLoading}
-                  className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                  className="flex-1 sm:flex-none sm:min-w-[160px] bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
                 >
-                  {isLoading ? messages.kycPage.navigation.loading : currentStep === 'review' ? messages.kycPage.navigation.submit : messages.kycPage.navigation.next}
+                  {isLoading
+                    ? messages.kycPage.navigation.loading
+                    : currentStep === 'review'
+                    ? messages.kycPage.navigation.submit
+                    : messages.kycPage.navigation.next}
                 </Button>
               </div>
             </CardContent>
