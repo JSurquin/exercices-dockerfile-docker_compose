@@ -183,6 +183,7 @@ export interface Messages {
       paiement_en_cours: string;
       payé: string;
       échoué: string;
+      annulé: string;
     };
   };
   features: {

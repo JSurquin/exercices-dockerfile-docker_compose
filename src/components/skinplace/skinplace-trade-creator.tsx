@@ -25,21 +25,30 @@ import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 
+export interface SkinplaceBotInfo {
+  name: string;
+  avatar: string;
+  profile_url: string;
+  level: string;
+  registration_date: string;
+  steamid: string;
+}
+
+export interface TradeCreatedData {
+  trade_id: string;
+  token: string;
+  status: string;
+  total_value: number;
+  net_value: number;
+  fees: { cashout_fee: number; network_fee: number };
+  expires_at: Date;
+  bot: SkinplaceBotInfo | null;
+}
+
 interface SkinplaceTradeCreatorProps {
   steamId64: string;
   selectedItems: NormalizedInventoryItem[];
-  onTradeCreated?: (tradeData: { 
-    trade_id: string; 
-    token: string; 
-    status: string; 
-    total_value: number; 
-    net_value: number;
-    fees: {
-      cashout_fee: number;
-      network_fee: number;
-    };
-    expires_at: Date;
-  }) => void;
+  onTradeCreated?: (tradeData: TradeCreatedData) => void;
 }
 
 export function SkinplaceTradeCreator({ 
@@ -158,17 +167,18 @@ export function SkinplaceTradeCreator({
       const result = await response.json();
       
       if (result.success) {
-        const tradeData = {
+        const tradeData: TradeCreatedData = {
           trade_id: result.data.trade_id,
           token: result.data.token,
           status: result.data.status,
           total_value: grossValueCentimes,
-          net_value: realNetValueCentimes, // Utiliser la vraie valeur nette
+          net_value: realNetValueCentimes,
           fees: {
-            cashout_fee: realFees.cashout_fee, // Vrais frais pour l'étape 3
+            cashout_fee: realFees.cashout_fee,
             network_fee: realFees.network_fee,
           },
           expires_at: new Date(result.data.expires_at),
+          bot: result.data.bot || null,
         };
         
         onTradeCreated?.(tradeData);

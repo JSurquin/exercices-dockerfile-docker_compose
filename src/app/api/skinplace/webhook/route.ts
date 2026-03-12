@@ -50,8 +50,9 @@ function mapSkinplaceStatusToTradeStatus(status: string): TradeStatus {
     'finished': 'AVAILABLE',
     'completed': 'AVAILABLE',
     'done':     'AVAILABLE',
-    // Échecs
-    'cancelled': 'FAILED',
+    // Annulé (par l'utilisateur ou par le bot)
+    'cancelled': 'CANCELLED',
+    // Échecs techniques
     'declined':  'FAILED',
     'rejected':  'FAILED',
     'expired':   'FAILED',

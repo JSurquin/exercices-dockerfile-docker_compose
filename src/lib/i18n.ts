@@ -282,6 +282,7 @@ export const messages: Record<Locale, Messages> = {
         paiement_en_cours: "Paiement en cours",
         payé: "Payé",
         échoué: "Échec",
+        annulé: "Annulé",
       },
     },
     dashboard: {
@@ -4425,6 +4426,7 @@ export const messages: Record<Locale, Messages> = {
         paiement_en_cours: "Payment processing",
         payé: "Paid",
         échoué: "Failed",
+        annulé: "Cancelled",
       },
     },
     dashboard: {
@@ -8564,6 +8566,7 @@ export const messages: Record<Locale, Messages> = {
         paiement_en_cours: "付款处理中",
         payé: "已付款",
         échoué: "失败",
+        annulé: "已取消",
       },
     },
     dashboard: {

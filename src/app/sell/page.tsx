@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
 import { SkinplaceInventoryViewer } from "@/components/skinplace/skinplace-inventory-viewer";
-import { SkinplaceTradeCreator } from "@/components/skinplace/skinplace-trade-creator";
+import { SkinplaceTradeCreator, TradeCreatedData } from "@/components/skinplace/skinplace-trade-creator";
 import { ConvertedPrice } from "@/components/ui/converted-price";
 import { NormalizedInventoryItem } from "@/hooks/use-skinplace-inventory";
 import {
@@ -16,6 +16,7 @@ import {
   CurrencyDollarIcon,
   ShieldCheckIcon,
   CheckCircleIcon,
+  UserIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
@@ -31,15 +32,7 @@ export default function SellPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const steps = getSteps(messages);
   const [selectedItems, setSelectedItems] = useState<NormalizedInventoryItem[]>([]);
-  const [tradeData, setTradeData] = useState<{ 
-    trade_id: string; 
-    token: string; 
-    status: string; 
-    total_value: number; 
-    net_value: number;
-    fees: { cashout_fee: number; network_fee: number };
-    expires_at: Date;
-  } | null>(null);
+  const [tradeData, setTradeData] = useState<TradeCreatedData | null>(null);
   const [activeSteamId, setActiveSteamId] = useState(user?.steamId64 || '');
 
   const handleItemSelect = (items: NormalizedInventoryItem[]) => {
@@ -47,15 +40,7 @@ export default function SellPage() {
     setCurrentStep(1);
   };
 
-  const handleTradeCreated = (trade: { 
-    trade_id: string; 
-    token: string; 
-    status: string; 
-    total_value: number; 
-    net_value: number;
-    fees: { cashout_fee: number; network_fee: number };
-    expires_at: Date;
-  }) => {
+  const handleTradeCreated = (trade: TradeCreatedData) => {
     setTradeData(trade);
     setCurrentStep(2);
     toast.success(messages.sellPage.successMessages.tradeCreated);
@@ -237,6 +222,64 @@ export default function SellPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Bot Skinplace */}
+              {tradeData.bot && (
+                <Card className="border-orange-500/30 bg-orange-500/5">
+                  <CardContent className="p-6">
+                    <h3 className="text-base font-semibold mb-4 flex items-center gap-2 text-orange-500">
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2z"/>
+                        <path d="M2 20c0-4 4-7 10-7s10 3 10 7"/>
+                        <circle cx="18" cy="8" r="3" fill="currentColor" stroke="none" className="opacity-60"/>
+                        <path d="M18 5v-.5M18 11v-.5M15.5 8h-.5M21 8h-.5" strokeWidth="1.5"/>
+                      </svg>
+                      Bot Skinplace assigné
+                    </h3>
+                    <div className="flex items-center gap-4">
+                      {tradeData.bot.avatar ? (
+                        <img
+                          src={tradeData.bot.avatar}
+                          alt={tradeData.bot.name}
+                          className="w-14 h-14 rounded-full border-2 border-orange-500/40 object-cover"
+                        />
+                      ) : (
+                        <div className="w-14 h-14 rounded-full border-2 border-orange-500/40 bg-muted flex items-center justify-center">
+                          <UserIcon className="w-7 h-7 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold text-base truncate">{tradeData.bot.name}</p>
+                          {tradeData.bot.level && (
+                            <span className="text-xs bg-orange-500/20 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full font-medium">
+                              Niv. {tradeData.bot.level}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground font-mono mt-0.5 truncate">
+                          SteamID : {tradeData.bot.steamid}
+                        </p>
+                        {tradeData.bot.registration_date && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Membre depuis : {tradeData.bot.registration_date}
+                          </p>
+                        )}
+                      </div>
+                      {tradeData.bot.profile_url && (
+                        <a
+                          href={tradeData.bot.profile_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 text-xs underline text-orange-500 hover:text-orange-600"
+                        >
+                          Voir profil
+                        </a>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Processus de paiement */}
               <Card>

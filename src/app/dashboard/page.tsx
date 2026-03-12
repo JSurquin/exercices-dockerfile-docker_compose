@@ -62,6 +62,7 @@ const getStatusColor = (status: string) => {
     PAYOUT_PENDING: "bg-orange-500",
     PAID: "bg-emerald-500",
     FAILED: "bg-red-500",
+    CANCELLED: "bg-red-400",
     // Anciens statuts français (pour compatibilité)
     créé: "bg-blue-500",
     accepté_par_bot: "bg-indigo-500",
@@ -84,6 +85,7 @@ const getStatusText = (status: string, messages: Messages) => {
     PAYOUT_PENDING: "paiement_en_cours",
     PAID: "payé",
     FAILED: "échoué",
+    CANCELLED: "annulé",
   };
   
   const statusKey = statusKeyMap[status] || status;

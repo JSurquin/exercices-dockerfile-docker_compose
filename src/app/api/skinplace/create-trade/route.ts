@@ -38,6 +38,15 @@ interface SkinplaceTradeResponse {
   message?: string;
 }
 
+interface SkinplaceBotInfo {
+  name: string;
+  avatar: string;
+  profile_url: string;
+  level: string;
+  registration_date: string;
+  steamid: string;
+}
+
 /**
  * Mapper les statuts Skinplace/Steam vers nos statuts TradeStatus
  */
@@ -59,11 +68,12 @@ function mapSkinplaceStatusToTradeStatus(skinplaceStatus: string): TradeStatus {
     'completed': 'AVAILABLE',
     'done': 'AVAILABLE',
     
-    // Échecs
+    // Annulé
+    'cancelled': 'CANCELLED',
+    // Échecs techniques
     'declined': 'FAILED',
     'rejected': 'FAILED',
     'expired': 'FAILED',
-    'cancelled': 'FAILED',
     'failed': 'FAILED',
   };
 
@@ -246,6 +256,8 @@ export async function POST(request: NextRequest) {
     const tradeOfferId = steamTrade?.tradeofferid;
     const skinplaceToken = skinplaceData.token;
     const skinplaceStatus = steamTrade?.status || skinplaceData.status || 'pending';
+    // Bot qui a récupéré le trade (peut être null si trade pas encore assigné)
+    const botInfo: SkinplaceBotInfo | null = steamTrade?.bot || null;
     
     console.log('✅ Trade créé avec succès:');
     console.log('  - Trade Offer ID Steam:', tradeOfferId);
@@ -371,6 +383,8 @@ export async function POST(request: NextRequest) {
         network_fee: trade.networkFees,
       },
       items_count: trade.items?.length || 0,
+      // Infos du bot Skinplace qui a récupéré le trade
+      bot: botInfo,
     };
 
     console.log('✅ Trade créé et sauvegardé avec succès:', trade.id);

@@ -572,6 +572,7 @@ enum TradeStatus {
   PAYOUT_PENDING
   PAID
   FAILED
+  CANCELLED
 }
 
 enum PayoutStatus {
