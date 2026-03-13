@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import {
   validateWebhookSignature,
+  validateWebhookSignatureRaw,
   convertWhitepayStatus,
   isTransactionComplete,
   isTransactionFailed,
@@ -33,11 +34,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  // Valider la signature : HMAC-SHA256(JSON.stringify(body).replace(/\//g, "\\/"), token)
-  const signatureValid = validateWebhookSignature(payload, signature);
+  // Whitepay signe : HMAC-SHA256(JSON.stringify(req.body).replace(/\//g, "\\/"), secret)
+  // On tente 2 stratégies pour couvrir les différences de sérialisation :
+  //   1. body re-sérialisé (comportement attendu par la doc)
+  //   2. rawBody tel que reçu (cas où Whitepay signe le corps brut sans re-sérialisation)
+  const signatureValid =
+    validateWebhookSignature(payload, signature) ||
+    validateWebhookSignatureRaw(rawBody, signature);
 
   if (!signatureValid) {
-    console.error('[Whitepay Webhook] Invalid signature');
+    console.error('[Whitepay Webhook] Invalid signature', {
+      signatureHeader: signature?.slice(0, 16) + '...',
+      tokenConfigured: !!process.env.WHITEPAY_WEBHOOK_TOKEN_WITHDRAWAL,
+    });
     return NextResponse.json(
       { error: 'Invalid signature' },
       { status: 401 }

@@ -458,6 +458,14 @@ export async function POST(request: NextRequest) {
       }
       ibanToUse = payload.iban;
       bicToUse = payload.bic || '';
+      // Bloquer les IBAN FR même s'ils sont enregistrés en base
+      if (ibanToUse.replace(/\s/g, '').toUpperCase().startsWith('FR')) {
+        LOG('SEPA_SAVED_IBAN_FR_REJECTED', { paymentMethodId });
+        return NextResponse.json(
+          { error: 'Les paiements SEPA vers des IBAN français (FR) ne sont pas pris en charge par notre prestataire. Veuillez utiliser la méthode Carte ou Crypto.' },
+          { status: 400 }
+        );
+      }
       paymentMethod = migrated ? await prisma.paymentMethod.findUnique({ where: { id: existing.id } }) : existing;
     } else {
       // Cas 2 : nouvel IBAN fourni dans le body
@@ -473,6 +481,15 @@ export async function POST(request: NextRequest) {
         LOG('SEPA_IBAN_INVALID', { error: ibanValidation.error });
         return NextResponse.json(
           { error: ibanValidation.error },
+          { status: 400 }
+        );
+      }
+      // Bloquer les IBAN français : Flexify ne supporte pas les banques FR
+      const ibanClean = iban.replace(/\s/g, '').toUpperCase();
+      if (ibanClean.startsWith('FR')) {
+        LOG('SEPA_IBAN_FR_REJECTED', { country: 'FR' });
+        return NextResponse.json(
+          { error: 'Les paiements SEPA vers des IBAN français (FR) ne sont pas pris en charge par notre prestataire. Veuillez utiliser la méthode Carte ou Crypto.' },
           { status: 400 }
         );
       }

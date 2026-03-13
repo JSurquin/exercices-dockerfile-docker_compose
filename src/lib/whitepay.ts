@@ -572,6 +572,32 @@ export function validateWebhookSignature(
   return validateWebhookSignatureWithToken(parsedBody, signature, WHITEPAY_CONFIG.webhookSignatureToken);
 }
 
+/**
+ * Variante : signe le rawBody brut (string) sans re-sérialisation.
+ * Couvre le cas où Whitepay signe le corps exactement tel qu'il l'envoie.
+ */
+export function validateWebhookSignatureRaw(
+  rawBody: string,
+  signature: string
+): boolean {
+  const token = WHITEPAY_CONFIG.webhookSignatureToken;
+  if (!token || !signature) return false;
+  try {
+    const serialized = rawBody.replace(/\//g, '\\/');
+    const expected = crypto
+      .createHmac('sha256', token)
+      .update(serialized)
+      .digest('hex');
+    if (Buffer.byteLength(signature, 'utf8') !== Buffer.byteLength(expected, 'utf8')) return false;
+    return crypto.timingSafeEqual(
+      Buffer.from(signature, 'utf8'),
+      Buffer.from(expected, 'utf8')
+    );
+  } catch {
+    return false;
+  }
+}
+
 // Aliases conservés pour compatibilité interne
 export function validateWebhookSignatureByEvent(
   parsedBody: unknown,

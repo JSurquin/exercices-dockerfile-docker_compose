@@ -701,17 +701,15 @@ export default function PayoutPage() {
                   setPayoutMethod(v as PayoutMethod);
                   setQuote(null);
                 }}>
-                  <TabsList className="grid w-full grid-cols-2">
+                  <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="card" className="flex items-center gap-2">
                       <CreditCardIcon className="w-4 h-4" />
                       {text.request.cardLabel ?? 'Carte'}
                     </TabsTrigger>
-                    {/* SEPA masqué — Flexify non dispo en France
                     <TabsTrigger value="sepa" className="flex items-center gap-2">
                       <BanknotesIcon className="w-4 h-4" />
                       SEPA
                     </TabsTrigger>
-                    */}
                     <TabsTrigger value="crypto" className="flex items-center gap-2">
                       <CurrencyDollarIcon className="w-4 h-4" />
                       Crypto
@@ -853,9 +851,171 @@ export default function PayoutPage() {
                     )}
                   </TabsContent>
 
-                  {/* SEPA (masqué — Flexify non dispo France) : décommenter le TabsTrigger ci‑dessus + ce bloc depuis l’historique git si besoin
-                  <TabsContent value="sepa" className="space-y-4 mt-4">...</TabsContent>
-                  */}
+                  <TabsContent value="sepa" className="space-y-4 mt-4">
+                    <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
+                        <ExclamationTriangleIcon className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-amber-700 dark:text-amber-300">
+                          Les paiements SEPA vers des IBAN français (FR) ne sont pas pris en charge par notre prestataire de paiement. Veuillez utiliser un IBAN d’un autre pays européen ou choisir la méthode Carte ou Crypto.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
+                        <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-blue-700 dark:text-blue-300">{text.request.security.sepaInfo ?? 'Virement bancaire en 1-3 jours ouvrés'}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="sepaFirstName">{text.request.firstNameLabel ?? 'Prénom'}</Label>
+                        <Input
+                          id="sepaFirstName"
+                          placeholder={text.request.firstNamePlaceholder ?? 'Jean'}
+                          value={formData.firstName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sepaLastName">{text.request.lastNameLabel ?? 'Nom'}</Label>
+                        <Input
+                          id="sepaLastName"
+                          placeholder={text.request.lastNamePlaceholder ?? 'Dupont'}
+                          value={formData.lastName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+
+                    {savedSepaMethods.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>{text.request.savedIbanLabel ?? 'IBAN'}</Label>
+                        <div className="flex flex-col gap-2">
+                          {savedSepaMethods.map((pm: { id: string; maskedIban?: string | null; holderName?: string | null }) => (
+                            <label key={pm.id} className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                              <input
+                                type="radio"
+                                name="sepa-source"
+                                checked={useSavedIban && selectedPaymentMethodId === pm.id}
+                                onChange={() => {
+                                  setUseSavedIban(true);
+                                  setSelectedPaymentMethodId(pm.id);
+                                }}
+                                className="h-4 w-4"
+                              />
+                              <span className="text-sm">
+                                {text.request.useSavedIban ?? "Utiliser l'IBAN enregistré"}: <strong>{String(pm.maskedIban ?? '••••••••••••').slice(-4).padStart(12, '•')}</strong>
+                                {pm.holderName ? ` — ${pm.holderName}` : ''}
+                              </span>
+                            </label>
+                          ))}
+                          <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                            <input
+                              type="radio"
+                              name="sepa-source"
+                              checked={!useSavedIban}
+                              onChange={() => {
+                                setUseSavedIban(false);
+                                setSelectedPaymentMethodId(null);
+                              }}
+                              className="h-4 w-4"
+                            />
+                            <span className="text-sm">{text.request.enterNewIban ?? 'Saisir un nouvel IBAN'}</span>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
+                    {(!useSavedIban || savedSepaMethods.length === 0) && (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="iban">{text.request.ibanLabel ?? 'IBAN'}</Label>
+                        <Input
+                          id="iban"
+                          placeholder={text.request.ibanPlaceholder ?? 'FR76 1234 5678 9012 3456 7890 123'}
+                          value={formData.iban}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/\s/g, '').toUpperCase();
+                            const formatted = raw.match(/.{1,4}/g)?.join(' ') ?? raw;
+                            setFormData(prev => ({ ...prev, iban: formatted }));
+                            setQuote(null);
+                            if (raw.startsWith('FR') && raw.length >= 4) {
+                              toast.warning('IBAN français détecté : les paiements SEPA vers des IBAN FR ne sont pas pris en charge par notre prestataire. Veuillez utiliser la méthode Carte ou Crypto.', { duration: 6000 });
+                            }
+                          }}
+                          maxLength={42}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="bic">{text.request.bicLabel ?? 'BIC/SWIFT'}</Label>
+                        <Input
+                          id="bic"
+                          placeholder={text.request.bicPlaceholder ?? 'BNPAFRPP'}
+                          value={formData.bic}
+                          onChange={(e) => setFormData(prev => ({ ...prev, bic: e.target.value.toUpperCase() }))}
+                          maxLength={11}
+                        />
+                      </div>
+                    </div>
+                    )}
+
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="sepaPhone">{text.request.phoneLabel ?? 'Téléphone'}</Label>
+                        <Input
+                          id="sepaPhone"
+                          type="tel"
+                          placeholder={text.request.phonePlaceholder ?? '+33 6 12 34 56 78'}
+                          value={formData.phone}
+                          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sepaAddress">{text.request.addressLabel ?? 'Adresse'}</Label>
+                        <Input
+                          id="sepaAddress"
+                          placeholder={text.request.addressPlaceholder ?? '123 rue Example, 75001 Paris'}
+                          value={formData.address}
+                          onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="sepaCity">{text.request.cityLabel ?? 'Ville'}</Label>
+                          <Input
+                            id="sepaCity"
+                            placeholder={text.request.cityPlaceholder ?? 'Paris'}
+                            value={formData.beneficiaryCity}
+                            onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryCity: e.target.value }))}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="sepaCountry">{text.request.countryLabel ?? 'Pays'}</Label>
+                          <Input
+                            id="sepaCountry"
+                            placeholder="DE"
+                            value={formData.beneficiaryCountry}
+                            onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryCountry: e.target.value.toUpperCase().slice(0, 2) }))}
+                            maxLength={2}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sepaEmail">{text.request.beneficiaryEmailLabel ?? 'Email du bénéficiaire'}</Label>
+                        <Input
+                          id="sepaEmail"
+                          type="email"
+                          placeholder="jean.dupont@example.com"
+                          value={formData.beneficiaryEmail}
+                          onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryEmail: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+                    {(!useSavedIban || savedSepaMethods.length === 0) && (
+                      <p className="text-xs text-muted-foreground">{text.request.saveIbanHint ?? "Cet IBAN sera enregistré après ce retrait pour vos prochains retraits."}</p>
+                    )}
+                  </TabsContent>
 
                   <TabsContent value="crypto" className="space-y-4 mt-4">
                     <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
