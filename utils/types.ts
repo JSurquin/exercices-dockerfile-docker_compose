@@ -4051,6 +4051,7 @@ export interface Messages {
         amountLabel: string;
         amountPlaceholder: string;
         feesInfo: string;
+        feesPreview: string;
         processingFee: string;
         networkFee: string;
         youReceive: string;

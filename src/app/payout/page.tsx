@@ -1000,6 +1000,43 @@ export default function PayoutPage() {
                   </TabsContent>
                 </Tabs>
 
+                {/* Prévisualisation des frais Whitepay (crypto) — affichée dès que le montant est valide */}
+                {payoutMethod === 'crypto' && !quote && !payoutResult && amount && parseFloat(amount) > 0 && (() => {
+                  const amtCents = toCents(parseFloat(amount));
+                  const WHITEPAY_PROCESSING = 22;
+                  const WHITEPAY_NETWORK = 200;
+                  const WHITEPAY_TOTAL = WHITEPAY_PROCESSING + WHITEPAY_NETWORK;
+                  const netCents = amtCents - WHITEPAY_TOTAL;
+                  return (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-muted/40 border border-border rounded-lg p-4 space-y-2 text-sm"
+                    >
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">{text.request.feesPreview ?? 'Aperçu des frais'}</p>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">{text.request.grossAmount}</span>
+                        <span>{formatCentsToCurrency(amtCents, 'EUR')}</span>
+                      </div>
+                      <div className="flex justify-between text-orange-500">
+                        <span>Frais de traitement</span>
+                        <span>-{formatCentsToCurrency(WHITEPAY_PROCESSING, 'EUR')}</span>
+                      </div>
+                      <div className="flex justify-between text-orange-500">
+                        <span>Frais réseau</span>
+                        <span>-{formatCentsToCurrency(WHITEPAY_NETWORK, 'EUR')}</span>
+                      </div>
+                      <Separator />
+                      <div className="flex justify-between font-semibold">
+                        <span>{text.request.youReceive}</span>
+                        <span className={netCents > 0 ? 'text-green-500' : 'text-destructive'}>
+                          {netCents > 0 ? formatCentsToCurrency(netCents, 'EUR') : '—'}
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
+                })()}
+
                 {/* Bouton Obtenir devis */}
                 {!quote && !payoutResult && (
                   <Button

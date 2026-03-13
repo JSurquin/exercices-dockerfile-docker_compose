@@ -335,6 +335,47 @@ export function Header() {
                   ))}
                 </nav>
 
+                {/* Compte utilisateur (mobile) */}
+                {user && (
+                  <div className="border-t pt-3 flex flex-col space-y-1">
+                    <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      Mon compte
+                    </p>
+                    <Link
+                      href={isAdmin ? "/admin/dashboard" : "/dashboard"}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-3 p-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
+                    >
+                      <ChartBarIcon className="h-5 w-5" />
+                      <span>Dashboard</span>
+                    </Link>
+                    <Link
+                      href="/payout"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-3 p-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
+                    >
+                      <BanknotesIcon className="h-5 w-5" />
+                      <span>Retirer mes fonds</span>
+                    </Link>
+                    <Link
+                      href="/kyc"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-3 p-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
+                    >
+                      <ShieldCheckIcon className="h-5 w-5" />
+                      <span>Vérification KYC</span>
+                    </Link>
+                    <Link
+                      href={isAdmin ? "/admin/settings" : "/settings"}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center space-x-3 p-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
+                    >
+                      <UserCircleIcon className="h-5 w-5" />
+                      <span>{messages.nav.settings}</span>
+                    </Link>
+                  </div>
+                )}
+
                 {/* Settings */}
                 <div className="border-t pt-4 space-y-2">
                   <Button

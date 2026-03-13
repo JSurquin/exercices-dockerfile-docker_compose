@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { prisma } from '~/prisma/prisma';
 import {
   createWithdrawal,
-  calculateWhitepayFees,
+  parseWhitepayFeesFromResponse,
   getWhitepayLimits,
   centsToEur,
   validateWalletAddress,
@@ -162,7 +162,6 @@ export async function POST(request: NextRequest) {
     }
     LOG('✓ User trouvé', { email: user.email });
 
-    const fees = calculateWhitepayFees(amountCents);
     const orderId = generateOrderId();
     const amountEur = amountCents / 100;
 
@@ -196,6 +195,9 @@ export async function POST(request: NextRequest) {
     const whitepayResponse = await createWithdrawal(withdrawalParams);
     const tx = whitepayResponse.transaction;
     LOG('✓ Whitepay OK', { transactionId: tx?.id, status: tx?.status });
+
+    // Utiliser les frais réels retournés par Whitepay (tx.fee = total EUR)
+    const realFees = parseWhitepayFeesFromResponse(tx.fee);
 
     let paymentMethod = await prisma.paymentMethod.findFirst({
       where: {
@@ -242,8 +244,8 @@ export async function POST(request: NextRequest) {
         whitepayMemo: memo || null,
         whitepayFee: tx.fee,
         whitepayEstimatedAt: new Date(tx.estimated_at),
-        processingFeeCents: fees.processingFeeCents,
-        networkFeeCents: fees.networkFeeCents,
+        processingFeeCents: realFees.processingFeeCents,
+        networkFeeCents: realFees.networkFeeCents,
       },
     });
 
@@ -275,11 +277,11 @@ export async function POST(request: NextRequest) {
         status: payout.status,
         amountCents,
         fees: {
-          processingCents: fees.processingFeeCents,
-          networkCents: fees.networkFeeCents,
-          totalCents: fees.totalFeeCents,
+          processingCents: realFees.processingFeeCents,
+          networkCents: realFees.networkFeeCents,
+          totalCents: realFees.totalFeeCents,
         },
-        netCents: amountCents - fees.totalFeeCents,
+        netCents: amountCents - realFees.totalFeeCents,
       },
       whitepay: {
         transactionId: tx.id,

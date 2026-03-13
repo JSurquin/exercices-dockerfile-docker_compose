@@ -659,24 +659,44 @@ function isRateExpiredError(error: WhitepayApiError): boolean {
 // =============================================================================
 
 /**
- * Calcule les frais estimés pour un retrait crypto Whitepay
- * @param amountCents - Montant en centimes EUR
- * @returns Frais estimés en centimes
+ * Frais fixes Whitepay basés sur les vraies valeurs retournées par l'API
+ * processingCents: 22 (0,22€ fixe) — networkCents: 200 (2,00€ réseau blockchain)
  */
-export function calculateWhitepayFees(amountCents: number): {
+export const WHITEPAY_FEES = {
+  processingFeeCents: 22,
+  networkFeeCents: 200,
+  totalFeeCents: 222,
+} as const;
+
+/**
+ * Calcule les frais pour un retrait crypto Whitepay
+ * Valeurs fixes réelles issues de l'API Whitepay (processingCents: 22, networkCents: 200)
+ */
+export function calculateWhitepayFees(_amountCents: number): {
   processingFeeCents: number;
   networkFeeCents: number;
   totalFeeCents: number;
 } {
-  // Frais Whitepay: 1% de processing + frais réseau estimé (~2€)
-  const processingFeeCents = Math.ceil(amountCents * 0.01); // 1%
-  const networkFeeCents = 200; // ~2€ estimation réseau blockchain
+  return { ...WHITEPAY_FEES };
+}
 
-  return {
-    processingFeeCents,
-    networkFeeCents,
-    totalFeeCents: processingFeeCents + networkFeeCents,
-  };
+/**
+ * Extrait les frais réels depuis la réponse Whitepay (tx.fee = total en EUR string)
+ * et les décompose en processing + network
+ */
+export function parseWhitepayFeesFromResponse(txFee: string | null): {
+  processingFeeCents: number;
+  networkFeeCents: number;
+  totalFeeCents: number;
+} {
+  if (!txFee) return { ...WHITEPAY_FEES };
+
+  const totalFeeCents = Math.round(parseFloat(txFee) * 100);
+  // On conserve le réseau fixe à 200 centimes, le reste est le processing
+  const networkFeeCents = WHITEPAY_FEES.networkFeeCents;
+  const processingFeeCents = Math.max(0, totalFeeCents - networkFeeCents);
+
+  return { processingFeeCents, networkFeeCents, totalFeeCents };
 }
 
 /**
