@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { TradeStatus } from '@prisma/client';
-import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
 
 /**
  * Endpoint pour récupérer et mettre à jour le statut d'un trade depuis Skinplace
@@ -15,16 +14,13 @@ import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
  * - Mettre à jour la base de données
  */
 
+// Interfaces gardées pour référence mais on parse dynamiquement
 interface SkinplaceTradeStatusResponse {
-  success: boolean;
+  success?: boolean;
   status?: string;
-  steamtrade?: {
-    tradeofferid: string;
-    status: string;
-    price: string;
-    items_to_receive: number;
-    created_at: number;
-  };
+  steamtrade?: { status?: string; [key: string]: unknown };
+  payment?: { status?: string; [key: string]: unknown };
+  data?: Array<{ steamtrade?: { status?: string }; payment?: { status?: string } }>;
   error?: string;
 }
 
@@ -136,34 +132,55 @@ export async function GET(
       });
     }
 
-    // Générer la signature pour l'API Skinplace
-    const signature = generateSkinplaceSignature(trade.steamId, privateKey);
+    let skinplaceStatus: string | null = null;
 
-    // Appeler l'API Skinplace pour obtenir le statut du trade
-    // Note: L'endpoint exact peut varier selon la documentation Skinplace
-    const skinplaceResponse = await fetch(
-      `https://api.skin.place/api/v3/instant/status/${trade.ticketId}`,
-      {
-        method: 'GET',
+    // Stratégie 1 : GET /api/v3/instant/payment/trade/{skinplaceToken}
+    // C'est l'endpoint officiel — nécessite le token Skinplace retourné à la création
+    if (trade.skinplaceToken) {
+      const res = await fetch(
+        `https://api.skin.place/api/v3/instant/payment/trade/${trade.skinplaceToken}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${privateKey}`,
+            'Content-Type': 'application/json',
+            'User-Agent': 'MoonSkin/1.0',
+            'Accept': 'application/json',
+          },
+          signal: AbortSignal.timeout(10000),
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        skinplaceStatus = data?.steamtrade?.status || data?.payment?.status || null;
+        console.log(`📊 [strategy1] Statut Skinplace pour trade ${trade.id}:`, skinplaceStatus, data);
+      } else {
+        console.warn(`⚠️  [strategy1] Échec GET payment/trade/${trade.skinplaceToken}: ${res.status}`);
+      }
+    }
+
+    // Stratégie 2 (fallback) : POST /api/v3/instant/history avec order_ids
+    // Utilise notre order_id (ticketId) pour retrouver le trade dans l'historique
+    if (!skinplaceStatus) {
+      const res = await fetch('https://api.skin.place/api/v3/instant/history', {
+        method: 'POST',
         headers: {
+          'Authorization': `Bearer ${privateKey}`,
           'Content-Type': 'application/json',
           'User-Agent': 'MoonSkin/1.0',
           'Accept': 'application/json',
         },
+        body: JSON.stringify({ order_ids: [trade.ticketId], limit: 1 }),
         signal: AbortSignal.timeout(10000),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const entry = data?.data?.[0];
+        skinplaceStatus = entry?.steamtrade?.status || entry?.payment?.status || null;
+        console.log(`📊 [strategy2] Statut Skinplace pour trade ${trade.id}:`, skinplaceStatus, entry);
+      } else {
+        console.warn(`⚠️  [strategy2] Échec instant/history: ${res.status}`);
       }
-    );
-
-    let skinplaceData: SkinplaceTradeStatusResponse | null = null;
-    let skinplaceStatus: string | null = null;
-
-    if (skinplaceResponse.ok) {
-      skinplaceData = await skinplaceResponse.json();
-      skinplaceStatus = skinplaceData?.status || skinplaceData?.steamtrade?.status || null;
-      
-      console.log(`📊 Statut Skinplace pour trade ${trade.id}:`, skinplaceStatus);
-    } else {
-      console.warn(`⚠️  Impossible de récupérer le statut Skinplace pour ${trade.id}`);
     }
 
     // Si on a un statut de Skinplace, mettre à jour le trade

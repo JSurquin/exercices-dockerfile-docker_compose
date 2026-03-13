@@ -310,6 +310,7 @@ export async function POST(request: NextRequest) {
         expiresAt: expiresAt,
         tradeAcceptedAt,
         ticketId: token,
+        skinplaceToken: skinplaceToken || null,
         items: {
           create: body.items.map((item) => ({
             name: item.market_hash_name,

@@ -112,6 +112,7 @@ model Trade {
   steamId            String
   netCents           Int
   ticketId           String              @unique
+  skinplaceToken     String?
   tradeAcceptedAt    DateTime?
   tradeUrl           String?
   expiresAt          DateTime?
