@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 import { useLocale } from '@/components/providers/locale-provider';
+import { usePublicStats } from '@/hooks/use-public-stats';
 
 const RatingStars = ({ rating }: { rating: number }) => {
   return (
@@ -23,6 +24,7 @@ const RatingStars = ({ rating }: { rating: number }) => {
 
 export function TestimonialsSection() {
   const { messages } = useLocale();
+  const { data: publicStats } = usePublicStats();
   
   const testimonials = [
     {
@@ -126,7 +128,7 @@ export function TestimonialsSection() {
             </div>
             <div className="h-6 w-px bg-border" />
             <div className="text-muted-foreground">
-              {messages.testimonials.basedOn} <strong>3,247</strong> {messages.testimonials.reviews}
+              {messages.testimonials.basedOn} <strong>{(publicStats?.totalUsers ?? 0).toLocaleString()}</strong> {messages.testimonials.reviews}
             </div>
           </div>
         </motion.div>
@@ -205,11 +207,11 @@ export function TestimonialsSection() {
             <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.satisfaction}</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-orange-600 mb-2">15,420+</div>
+            <div className="text-3xl font-bold text-orange-600 mb-2">{(publicStats?.totalUsers ?? 0).toLocaleString()}+</div>
             <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.users}</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-orange-600 mb-2">€2.4M+</div>
+            <div className="text-3xl font-bold text-orange-600 mb-2">€{publicStats?.volumeMillions ?? 0}M+</div>
             <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.volume}</div>
           </div>
           <div>

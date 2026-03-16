@@ -99,8 +99,8 @@ export default function AffiliatePage() {
       ?.split('=')[1]
       ?.trim();
     if (cookieRef && cookieRef === affiliateData.code) {
-      toast.warning('Auto-référencement détecté', {
-        description: "Vous ne pouvez pas vous parrainer vous-même. Ce lien ne vous rapportera aucune commission si c'est vous qui l'utilisez.",
+      toast.warning(messages.affiliate.dashboard.selfReferralWarning, {
+        description: messages.affiliate.dashboard.selfReferralDesc,
         duration: 8000,
       });
     }
@@ -119,11 +119,11 @@ export default function AffiliatePage() {
       return data;
     },
     onSuccess: () => {
-      toast.success('Demande envoyée', { description: 'Votre demande de paiement a été soumise.' });
+      toast.success(messages.affiliate.dashboard.payoutRequested, { description: messages.affiliate.dashboard.payoutRequestedDesc });
       queryClient.invalidateQueries({ queryKey: queryKeys.affiliateCommissions });
     },
     onError: (err: Error) => {
-      toast.error('Erreur', { description: err.message });
+      toast.error(messages.affiliate.dashboard.payoutError, { description: err.message });
     },
   });
 
@@ -131,7 +131,7 @@ export default function AffiliatePage() {
     // Validation du path
     const normalizedPath = path.trim();
     if (normalizedPath && !normalizedPath.startsWith('/')) {
-      toast.error('Chemin invalide', { description: "Le chemin doit commencer par / (ex: /sell, /giveaways)" });
+      toast.error(messages.affiliate.dashboard.invalidPath, { description: messages.affiliate.dashboard.invalidPathDesc });
       return;
     }
 
@@ -143,7 +143,7 @@ export default function AffiliatePage() {
       });
       const data = await res.json();
       if (!data.success) {
-        toast.error('Erreur', { description: data.error || 'Impossible de générer le lien' });
+        toast.error(messages.affiliate.dashboard.generateError, { description: data.error || messages.affiliate.dashboard.generateErrorDesc });
         return;
       }
 
@@ -160,7 +160,7 @@ export default function AffiliatePage() {
         duration: 5000,
       });
     } catch {
-      toast.error('Erreur', { description: 'Impossible de copier le lien. Vérifiez les permissions du navigateur.' });
+      toast.error(messages.affiliate.dashboard.copyError, { description: messages.affiliate.dashboard.copyErrorDesc });
     }
   };
 
@@ -186,9 +186,9 @@ export default function AffiliatePage() {
             <div className="mx-auto h-16 w-16 rounded-full bg-purple-500/10 flex items-center justify-center">
               <Shield className="h-8 w-8 text-purple-400" />
             </div>
-            <h2 className="text-xl font-bold">Accès réservé aux affiliés</h2>
+            <h2 className="text-xl font-bold">{messages.affiliate.dashboard.notAffiliate}</h2>
             <p className="text-muted-foreground text-sm">
-              Vous n&apos;êtes pas encore affilié. Contactez un administrateur ou postulez depuis la page programme.
+              {messages.affiliate.dashboard.notAffiliateDesc}
             </p>
           </CardContent>
         </Card>
@@ -220,18 +220,18 @@ export default function AffiliatePage() {
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h1 className="text-2xl font-bold text-white">Espace Affilié</h1>
+                  <h1 className="text-2xl font-bold text-white">{messages.affiliate.dashboard.title}</h1>
                   <Badge className="bg-purple-500/20 border-purple-500/40 text-purple-300 text-xs">
-                    {affiliateData.isActive ? 'Actif' : 'Inactif'}
+                    {affiliateData.isActive ? messages.affiliate.dashboard.active : messages.affiliate.dashboard.inactive}
                   </Badge>
                 </div>
                 <p className="text-slate-400 text-sm">
-                  Code :{' '}
+                  {messages.affiliate.dashboard.codeLabel} :{' '}
                   <span className="font-mono font-semibold text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded">
                     {affiliateData.code}
                   </span>
                   {' · '}
-                  Commission :{' '}
+                  {messages.affiliate.dashboard.commissionLabel} :{' '}
                   <span className="font-semibold text-white">
                     {(affiliateData.commissionRate * 100).toFixed(1)}%
                   </span>
@@ -249,7 +249,7 @@ export default function AffiliatePage() {
               ) : (
                 <Copy className="h-4 w-4 mr-2" />
               )}
-              {copiedKey === 'hero' ? 'Copié !' : 'Copier mon lien affilié'}
+              {copiedKey === 'hero' ? messages.affiliate.dashboard.copied : messages.affiliate.dashboard.copyMyLink}
             </Button>
           </div>
         </div>
@@ -260,28 +260,28 @@ export default function AffiliatePage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             icon={<Users className="h-5 w-5 text-blue-400" />}
-            label="Parrainages"
+            label={messages.affiliate.dashboard.kpi.referrals}
             value={affiliateData.totalReferrals.toString()}
-            sub="utilisateurs référés"
+            sub={messages.affiliate.dashboard.kpi.referralsSub}
             color="blue"
           />
           <StatCard
             icon={<TrendingUp className="h-5 w-5 text-emerald-400" />}
-            label="Volume total"
+            label={messages.affiliate.dashboard.kpi.totalVolume}
             value={fmt(affiliateData.totalVolumeCents)}
-            sub="généré par vos refs"
+            sub={messages.affiliate.dashboard.kpi.totalVolumeSub}
             color="emerald"
           />
           <StatCard
             icon={<DollarSign className="h-5 w-5 text-purple-400" />}
-            label="Commissions totales"
+            label={messages.affiliate.dashboard.kpi.totalCommissions}
             value={fmt(affiliateData.totalCommissionCents)}
-            sub={`dont ${fmt(paidTotal)} versés`}
+            sub={`${fmt(paidTotal)} ${messages.affiliate.dashboard.commissionPaid.toLowerCase()}`}
             color="purple"
           />
           <StatCard
             icon={<Clock className="h-5 w-5 text-orange-400" />}
-            label="En attente"
+            label={messages.affiliate.dashboard.kpi.pending}
             value={fmt(pendingTotal)}
             sub={`${commissions.length} commission(s)`}
             color="orange"
@@ -293,20 +293,20 @@ export default function AffiliatePage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
-              Performance
+              {messages.affiliate.dashboard.performance}
             </CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-slate-400">Taux de conversion</span>
+                <span className="text-xs text-slate-400">{messages.affiliate.dashboard.conversionRate}</span>
                 <span className="text-sm font-bold text-white">{conversionPct}%</span>
               </div>
               <Progress value={parseFloat(conversionPct)} className="h-2 bg-slate-700" />
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-slate-400">Valeur moyenne / ref</span>
+                <span className="text-xs text-slate-400">{messages.affiliate.dashboard.avgOrderValue}</span>
                 <span className="text-sm font-bold text-white">
                   {fmt(affiliateData.metrics?.averageOrderValue || 0)}
                 </span>
@@ -321,7 +321,7 @@ export default function AffiliatePage() {
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-slate-400">Taux de commission</span>
+                <span className="text-xs text-slate-400">{messages.affiliate.dashboard.commissionRate}</span>
                 <span className="text-sm font-bold text-purple-300">
                   {(affiliateData.commissionRate * 100).toFixed(1)}%
                 </span>
@@ -339,15 +339,15 @@ export default function AffiliatePage() {
           <TabsList className="bg-slate-800 border border-slate-700">
             <TabsTrigger value="referrals" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
               <Users className="h-4 w-4 mr-2" />
-              Parrainages
+              {messages.affiliate.dashboard.tabs.referrals}
             </TabsTrigger>
             <TabsTrigger value="commissions" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
               <DollarSign className="h-4 w-4 mr-2" />
-              Commissions
+              {messages.affiliate.dashboard.tabs.commissions}
             </TabsTrigger>
             <TabsTrigger value="tools" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
               <Zap className="h-4 w-4 mr-2" />
-              Outils
+              {messages.affiliate.dashboard.tabs.tools}
             </TabsTrigger>
           </TabsList>
 
@@ -355,8 +355,8 @@ export default function AffiliatePage() {
           <TabsContent value="referrals">
             <Card className="border-slate-700 bg-slate-900/50">
               <CardHeader>
-                <CardTitle className="text-white">Parrainages récents</CardTitle>
-                <CardDescription>Les 10 derniers utilisateurs référés par votre code</CardDescription>
+                <CardTitle className="text-white">{messages.affiliate.dashboard.recentReferrals}</CardTitle>
+                <CardDescription>{messages.affiliate.dashboard.recentReferralsSub}</CardDescription>
               </CardHeader>
               <CardContent>
                 {affiliateData.recentReferrals?.length ? (
@@ -378,7 +378,7 @@ export default function AffiliatePage() {
                               {ref.referredUser?.steamUsername || 'Utilisateur'}
                             </p>
                             <p className="text-xs text-slate-400">
-                              Référé le {fmtDate(ref.createdAt)}
+                              {messages.affiliate.dashboard.referredOn} {fmtDate(ref.createdAt)}
                             </p>
                           </div>
                         </div>
@@ -392,8 +392,8 @@ export default function AffiliatePage() {
                 ) : (
                   <EmptyState
                     icon={<Users className="h-8 w-8 text-slate-500" />}
-                    label="Aucun parrainage pour le moment"
-                    sub="Partagez votre lien pour commencer à gagner des commissions"
+                    label={messages.affiliate.dashboard.noReferrals}
+                    sub={messages.affiliate.dashboard.noReferralsSub}
                   />
                 )}
               </CardContent>
@@ -408,10 +408,10 @@ export default function AffiliatePage() {
                 <div>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Clock className="h-4 w-4 text-orange-400" />
-                    Commissions en attente
+                    {messages.affiliate.dashboard.pendingCommissionsTitle}
                   </CardTitle>
                   <CardDescription>
-                    Total : <span className="font-semibold text-orange-300">{fmt(pendingTotal)}</span>
+                    {messages.affiliate.dashboard.pendingTotal} : <span className="font-semibold text-orange-300">{fmt(pendingTotal)}</span>
                   </CardDescription>
                 </div>
                 {commissions.length > 0 && (
@@ -426,7 +426,7 @@ export default function AffiliatePage() {
                     ) : (
                       <>
                         <DollarSign className="h-4 w-4 mr-1" />
-                        Demander le versement
+                        {messages.affiliate.dashboard.requestPayout}
                       </>
                     )}
                   </Button>
@@ -434,12 +434,12 @@ export default function AffiliatePage() {
               </CardHeader>
               <CardContent>
                 {commissions.length ? (
-                  <CommissionList commissions={commissions} fmt={fmt} fmtDate={fmtDate} />
+                  <CommissionList commissions={commissions} fmt={fmt} fmtDate={fmtDate} paidLabel={messages.affiliate.dashboard.commissionPaid} pendingLabel={messages.affiliate.dashboard.commissionPending} />
                 ) : (
                   <EmptyState
                     icon={<CheckCircle2 className="h-8 w-8 text-emerald-500/50" />}
-                    label="Aucune commission en attente"
-                    sub="Toutes vos commissions ont été versées"
+                    label={messages.affiliate.dashboard.noPending}
+                    sub={messages.affiliate.dashboard.noPendingSub}
                   />
                 )}
               </CardContent>
@@ -448,22 +448,22 @@ export default function AffiliatePage() {
             {/* Historique versé */}
             <Card className="border-slate-700 bg-slate-900/50">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
+                  <CardTitle className="text-white flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                  Commissions versées
+                  {messages.affiliate.dashboard.paidCommissionsTitle}
                 </CardTitle>
                 <CardDescription>
-                  Total reçu : <span className="font-semibold text-emerald-300">{fmt(paidTotal)}</span>
+                  {messages.affiliate.dashboard.totalReceived} : <span className="font-semibold text-emerald-300">{fmt(paidTotal)}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {paidCommissions.length ? (
-                  <CommissionList commissions={paidCommissions} fmt={fmt} fmtDate={fmtDate} paid />
+                  <CommissionList commissions={paidCommissions} fmt={fmt} fmtDate={fmtDate} paid paidLabel={messages.affiliate.dashboard.commissionPaid} pendingLabel={messages.affiliate.dashboard.commissionPending} />
                 ) : (
                   <EmptyState
                     icon={<XCircle className="h-8 w-8 text-slate-500" />}
-                    label="Aucun versement pour le moment"
-                    sub="Vos commissions versées apparaîtront ici"
+                    label={messages.affiliate.dashboard.noPaid}
+                    sub={messages.affiliate.dashboard.noPaidSub}
                   />
                 )}
               </CardContent>
@@ -478,16 +478,16 @@ export default function AffiliatePage() {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <LinkIcon className="h-5 w-5 text-purple-400" />
-                    Générateur de liens
+                    {messages.affiliate.dashboard.linkGenerator}
                   </CardTitle>
                   <CardDescription>
-                    Créez des liens affiliés vers n&apos;importe quelle page
+                    {messages.affiliate.dashboard.linkGeneratorDesc}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label className="text-slate-300">
-                      Page cible <span className="text-slate-500 font-normal">(optionnel)</span>
+                      {messages.affiliate.dashboard.targetPage} <span className="text-slate-500 font-normal">{messages.affiliate.dashboard.targetPageOptional}</span>
                     </Label>
                     <Input
                       placeholder="/sell, /giveaways, etc."
@@ -499,7 +499,7 @@ export default function AffiliatePage() {
                       className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
                     />
                     <p className="text-xs text-slate-500">
-                      Laissez vide pour la page d&apos;accueil. Commencez par <code className="text-purple-400">/</code> pour une page spécifique.
+                      {messages.affiliate.dashboard.targetPageHint}
                     </p>
                   </div>
                   <Button
@@ -507,27 +507,27 @@ export default function AffiliatePage() {
                     onClick={() => generateAffiliateLink(customPath, 'custom')}
                   >
                     {copiedKey === 'custom' ? (
-                      <><Check className="h-4 w-4 mr-2 text-green-300" /> Copié !</>
+                      <><Check className="h-4 w-4 mr-2 text-green-300" /> {messages.affiliate.dashboard.copied}</>
                     ) : (
-                      <><Copy className="h-4 w-4 mr-2" /> Générer et copier</>
+                      <><Copy className="h-4 w-4 mr-2" /> {messages.affiliate.dashboard.generateAndCopy}</>
                     )}
                   </Button>
 
                   {/* Aperçu du lien généré */}
                   {generatedLink && (
                     <div className="rounded-lg border border-purple-500/30 bg-purple-950/20 p-3">
-                      <p className="text-xs text-purple-400 font-medium mb-1">Dernier lien généré :</p>
+                      <p className="text-xs text-purple-400 font-medium mb-1">{messages.affiliate.dashboard.lastGenerated} :</p>
                       <p className="text-xs text-slate-300 break-all font-mono">{generatedLink}</p>
                     </div>
                   )}
 
                   <Separator className="bg-slate-700" />
                   <div className="space-y-2">
-                    <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Liens rapides</p>
+                    <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">{messages.affiliate.dashboard.quickLinks}</p>
                     {[
-                      { label: 'Page principale', path: '', key: 'quick-home' },
-                      { label: 'Page vente', path: '/sell', key: 'quick-sell' },
-                      { label: 'Giveaways', path: '/giveaways', key: 'quick-giveaways' },
+                      { label: messages.affiliate.dashboard.quickHome, path: '', key: 'quick-home' },
+                      { label: messages.affiliate.dashboard.quickSell, path: '/sell', key: 'quick-sell' },
+                      { label: messages.affiliate.dashboard.quickGiveaways, path: '/giveaways', key: 'quick-giveaways' },
                     ].map(({ label, path, key }) => (
                       <button
                         key={key}
@@ -551,30 +551,30 @@ export default function AffiliatePage() {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Star className="h-5 w-5 text-yellow-400" />
-                    Vos avantages partenaire
+                    {messages.affiliate.dashboard.partnerBenefits}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {[
                     {
                       icon: <DollarSign className="h-4 w-4 text-emerald-400" />,
-                      label: `Commission de ${(affiliateData.commissionRate * 100).toFixed(1)}% sur le volume`,
+                      label: messages.affiliate.dashboard.benefitCommission.replace('{rate}', (affiliateData.commissionRate * 100).toFixed(1)),
                     },
                     {
                       icon: <Gift className="h-4 w-4 text-purple-400" />,
-                      label: 'Paiements mensuels via SEPA ou crypto',
+                      label: messages.affiliate.dashboard.benefitPayments,
                     },
                     {
                       icon: <BarChart3 className="h-4 w-4 text-blue-400" />,
-                      label: 'Dashboard analytics en temps réel',
+                      label: messages.affiliate.dashboard.benefitAnalytics,
                     },
                     {
                       icon: <Share2 className="h-4 w-4 text-orange-400" />,
-                      label: 'Outils marketing & créatifs fournis',
+                      label: messages.affiliate.dashboard.benefitMarketing,
                     },
                     {
                       icon: <Shield className="h-4 w-4 text-indigo-400" />,
-                      label: 'Support dédié affiliés prioritaire',
+                      label: messages.affiliate.dashboard.benefitSupport,
                     },
                   ].map(({ icon, label }, i) => (
                     <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700">
@@ -589,7 +589,7 @@ export default function AffiliatePage() {
                     onClick={() => window.open('/support', '_blank')}
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
-                    Contacter le support affiliés
+                    {messages.affiliate.dashboard.contactSupport}
                   </Button>
                 </CardContent>
               </Card>
@@ -640,11 +640,15 @@ function CommissionList({
   fmt,
   fmtDate,
   paid = false,
+  paidLabel,
+  pendingLabel,
 }: {
   commissions: AffiliateCommission[];
   fmt: (c: number) => string;
   fmtDate: (d: string | Date) => string;
   paid?: boolean;
+  paidLabel: string;
+  pendingLabel: string;
 }) {
   return (
     <div className="space-y-2">
@@ -665,7 +669,7 @@ function CommissionList({
                 : 'bg-orange-500/20 text-orange-300 border-orange-500/30'
             }
           >
-            {paid ? 'Versé' : 'En attente'}
+            {paid ? paidLabel : pendingLabel}
           </Badge>
         </div>
       ))}

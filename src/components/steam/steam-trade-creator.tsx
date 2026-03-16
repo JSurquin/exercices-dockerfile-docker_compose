@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLocale } from '@/components/providers/locale-provider';
+import { usePlatformSettings } from '@/hooks/use-platform-settings';
 
 interface SteamTradeCreatorProps {
   steamId64: string;
@@ -46,6 +47,7 @@ export function SteamTradeCreator({
   onTradeCreated 
 }: SteamTradeCreatorProps) {
   const { messages } = useLocale();
+  const { data: platformSettings } = usePlatformSettings();
   const [tradeUrl, setTradeUrl] = useState('');
   const [isValidUrl, setIsValidUrl] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
@@ -62,11 +64,10 @@ export function SteamTradeCreator({
   };
 
   const calculateFees = (grossValue: number) => {
-    // Frais de cashout: 0.5% selon les règles CTF
-    const cashoutFee = Math.round(grossValue * 0.005);
-    // Frais réseau: fixe ou variable selon le mode de paiement
-    const networkFee = 200; // 2€ par défaut, à adapter selon le mode de paiement
-    
+    const cashoutRate = platformSettings?.cashoutFeeRate ?? 0.005;
+    const networkFee = platformSettings?.networkFeeCentimes ?? 200;
+    const cashoutFee = Math.round(grossValue * cashoutRate);
+
     return {
       cashout_fee: cashoutFee,
       network_fee: networkFee,
@@ -264,7 +265,7 @@ export function SteamTradeCreator({
             {/* Calculs */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm">Valeur brute ({selectedItems.length} items)</span>
+                <span className="text-sm">{messages.tradeCreator.grossValue.replace('{count}', selectedItems.length.toString())}</span>
                 <span className="font-medium">{formatPrice(grossValue)}</span>
               </div>
               
@@ -279,7 +280,7 @@ export function SteamTradeCreator({
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Minus className="h-3 w-3" />
-                  Frais réseau
+                  {messages.tradeCreator.networkFees}
                 </span>
                 <span>-{formatPrice(fees.network_fee)}</span>
               </div>
@@ -287,7 +288,7 @@ export function SteamTradeCreator({
               <Separator />
 
               <div className="flex items-center justify-between text-lg font-bold">
-                <span>Vous recevrez</span>
+                <span>{messages.tradeCreator.youReceive}</span>
                 <span className={netValue > 0 ? 'text-green-600' : 'text-red-600'}>
                   {formatPrice(netValue)}
                 </span>
@@ -297,7 +298,7 @@ export function SteamTradeCreator({
                 <Alert variant="destructive">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
-                    La valeur nette est négative ou nulle. Sélectionnez des items de plus grande valeur.
+                    {messages.tradeCreator.negativeNetAlert}
                   </AlertDescription>
                 </Alert>
               )}

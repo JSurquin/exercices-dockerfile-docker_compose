@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLocale } from "@/components/providers/locale-provider";
+import { usePublicStats } from "@/hooks/use-public-stats";
 import { Messages } from "~/utils/types";
 import {
   ShieldCheckIcon,
@@ -17,10 +18,10 @@ import {
   RocketLaunchIcon,
 } from "@heroicons/react/24/outline";
 
-const getStats = (messages: Messages) => [
-  { label: messages.about.stats.users, value: "15,420+", icon: UserGroupIcon },
-  { label: messages.about.stats.volume, value: "€2.4M+", icon: CurrencyDollarIcon },
-  { label: messages.about.stats.trades, value: "8,967+", icon: ChartBarIcon },
+const getStats = (messages: Messages, totalUsers: number, volumeMillions: number, completedTrades: number) => [
+  { label: messages.about.stats.users, value: `${totalUsers.toLocaleString()}+`, icon: UserGroupIcon },
+  { label: messages.about.stats.volume, value: `€${volumeMillions}M+`, icon: CurrencyDollarIcon },
+  { label: messages.about.stats.trades, value: `${completedTrades.toLocaleString()}+`, icon: ChartBarIcon },
   { label: messages.about.stats.countries, value: "25+", icon: GlobeEuropeAfricaIcon },
 ];
 
@@ -29,33 +30,29 @@ const getTeam = (messages: Messages) => [
     name: messages.about.team.members.ceo.name,
     role: messages.about.team.members.ceo.role,
     bio: messages.about.team.members.ceo.bio,
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    skills: ["Leadership", "Trading", "Blockchain"],
+    avatar: "/team/ceo.jpg",
+    skills: messages.about.team.members.ceo.skills,
   },
   {
     name: messages.about.team.members.cto.name,
     role: messages.about.team.members.cto.role,
     bio: messages.about.team.members.cto.bio,
-    avatar:
-      "https://images.unsplash.com/photo-1494790108755-2616b612d451?w=150&h=150&fit=crop&crop=face",
-    skills: ["Blockchain", "Security", "Architecture"],
+    avatar: "/team/cto.jpg",
+    skills: messages.about.team.members.cto.skills,
   },
   {
     name: messages.about.team.members.product.name,
     role: messages.about.team.members.product.role,
     bio: messages.about.team.members.product.bio,
-    avatar:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    skills: ["UX/UI", "Product", "Gaming"],
+    avatar: "/team/product.jpg",
+    skills: messages.about.team.members.product.skills,
   },
   {
     name: messages.about.team.members.compliance.name,
     role: messages.about.team.members.compliance.role,
     bio: messages.about.team.members.compliance.bio,
-    avatar:
-      "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face",
-    skills: ["Compliance", "Legal", "GDPR"],
+    avatar: "/team/compliance.jpg",
+    skills: messages.about.team.members.compliance.skills,
   },
 ];
 
@@ -117,7 +114,13 @@ const getTimeline = (messages: Messages) => [
 
 export default function AboutPage() {
   const { messages } = useLocale();
-  const stats = getStats(messages);
+  const { data: publicStats } = usePublicStats();
+  const stats = getStats(
+    messages,
+    publicStats?.totalUsers ?? 0,
+    publicStats?.volumeMillions ?? 0,
+    publicStats?.completedTrades ?? 0
+  );
   const team = getTeam(messages);
   const values = getValues(messages);
   const timeline = getTimeline(messages);
@@ -190,8 +193,14 @@ export default function AboutPage() {
               </div>
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-red-600/20 rounded-2xl" />
-                <div className="rounded-2xl relative z-10 bg-muted/50 h-64 flex items-center justify-center">
-                  <span className="text-muted-foreground">Team Photo</span>
+                <div className="rounded-2xl relative z-10 bg-muted/50 h-64 overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/team/team-photo.jpg"
+                    alt="MoonSkin Team"
+                    className="w-full h-full object-cover opacity-80"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                  />
                 </div>
               </div>
             </div>

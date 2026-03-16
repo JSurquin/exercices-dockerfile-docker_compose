@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { ConvertedPrice } from '@/components/ui/converted-price';
+import { usePlatformSettings } from '@/hooks/use-platform-settings';
 
 export interface SkinplaceBotInfo {
   name: string;
@@ -58,6 +59,7 @@ export function SkinplaceTradeCreator({
 }: SkinplaceTradeCreatorProps) {
   const { user, updateUser } = useAuth();
   const { messages } = useLocale();
+  const { data: platformSettings } = usePlatformSettings();
   const [tradeUrl, setTradeUrl] = useState(user?.tradeLink || '');
   const [isValidUrl, setIsValidUrl] = useState<boolean | null>(user?.tradeLink ? true : null);
   const [loading, setLoading] = useState(false);
@@ -94,15 +96,14 @@ export function SkinplaceTradeCreator({
   };
 
   const calculateFees = (grossValueCentimes: number) => {
-    // Frais de cashout: 0.5% selon les règles CTF (masqués pour l'instant)
-    const cashoutFee = Math.round(grossValueCentimes * 0.005);
-    // Frais réseau: fixe ou variable selon le mode de paiement
-    const networkFee = 200; // 2€ par défaut, à adapter selon le mode de paiement
-    
+    const cashoutRate = platformSettings?.cashoutFeeRate ?? 0.005;
+    const networkFee = platformSettings?.networkFeeCentimes ?? 200;
+    const cashoutFee = Math.round(grossValueCentimes * cashoutRate);
+
     return {
       cashout_fee: cashoutFee,
       network_fee: networkFee,
-      total_fees: networkFee, // On ne compte que les frais réseau pour l'affichage
+      total_fees: networkFee,
     };
   };
 
@@ -123,11 +124,12 @@ export function SkinplaceTradeCreator({
       const displayFees = calculateFees(grossValueCentimes); // Frais pour l'affichage (sans cashout)
       const netValueCentimes = grossValueCentimes - displayFees.total_fees;
 
-      // Calculer les vrais frais pour l'API (avec cashout)
+      const cashoutRate = platformSettings?.cashoutFeeRate ?? 0.005;
+      const networkFeeCentimes = platformSettings?.networkFeeCentimes ?? 200;
       const realFees = {
-        cashout_fee: Math.round(grossValueCentimes * 0.005), // 0.5% cashout
-        network_fee: 200, // 2€ frais réseau
-        total_fees: Math.round(grossValueCentimes * 0.005) + 200,
+        cashout_fee: Math.round(grossValueCentimes * cashoutRate),
+        network_fee: networkFeeCentimes,
+        total_fees: Math.round(grossValueCentimes * cashoutRate) + networkFeeCentimes,
       };
       const realNetValueCentimes = grossValueCentimes - realFees.total_fees;
 
@@ -365,14 +367,14 @@ export function SkinplaceTradeCreator({
             {/* Calculs */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm">Valeur brute ({selectedItems.length} items)</span>
+                <span className="text-sm">{messages.tradeCreator.grossValue.replace('{count}', selectedItems.length.toString())}</span>
                 <ConvertedPrice usdCents={grossValueCentimes} className="font-medium" />
               </div>
               
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Minus className="h-3 w-3" />
-                  Frais réseau
+                  {messages.tradeCreator.networkFees}
                 </span>
                 <span className="flex items-center gap-1">
                   -<ConvertedPrice usdCents={fees.network_fee} />
@@ -382,7 +384,7 @@ export function SkinplaceTradeCreator({
               <Separator />
 
               <div className="flex items-center justify-between text-lg font-bold">
-                <span>Vous recevrez</span>
+                <span>{messages.tradeCreator.youReceive}</span>
                 <ConvertedPrice
                   usdCents={netValueCentimes}
                   className={netValueCentimes > 0 ? 'text-green-600' : 'text-red-600'}
@@ -393,7 +395,7 @@ export function SkinplaceTradeCreator({
                 <Alert variant="destructive">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
-                    La valeur nette est négative ou nulle. Sélectionnez des items de plus grande valeur.
+                    {messages.tradeCreator.negativeNetAlert}
                   </AlertDescription>
                 </Alert>
               )}

@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -21,8 +22,7 @@ interface ErrorProps {
 export default function Error({ error, reset }: ErrorProps) {
   const { messages } = useLocale();
   useEffect(() => {
-    // Log l&apos;erreur pour le monitoring
-    console.error("Application error:", error);
+    Sentry.captureException(error);
   }, [error]);
 
   return (
@@ -139,12 +139,12 @@ export default function Error({ error, reset }: ErrorProps) {
             <p className="text-sm text-muted-foreground">
               Vérifiez le statut de nos services sur{" "}
               <a
-                href="https://status.moonskin.gg"
+                href={process.env.NEXT_PUBLIC_STATUS_URL ?? 'https://status.moonskin.gg'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-orange-600 hover:underline"
               >
-                status.moonskin.gg
+                {(process.env.NEXT_PUBLIC_STATUS_URL ?? 'https://status.moonskin.gg').replace('https://', '')}
               </a>
             </p>
           </motion.div>

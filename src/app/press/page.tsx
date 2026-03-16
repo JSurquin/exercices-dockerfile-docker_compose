@@ -15,6 +15,7 @@ import {
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { useLocale } from "@/components/providers/locale-provider";
+import { usePublicStats } from "@/hooks/use-public-stats";
 
 const pressReleases = [
   {
@@ -61,37 +62,22 @@ const getMediaKit = (messages: any) => [
   },
 ];
 
-const getStats = (messages: any) => [
-  { label: messages.press.stats.activeUsers, value: "15,420+", icon: UserGroupIcon },
-  { label: messages.press.stats.volumeProcessed, value: "€2.4M+", icon: TrophyIcon },
-  { label: messages.press.stats.completedTrades, value: "8,967+", icon: ChartBarIcon },
+const getStats = (messages: any, totalUsers: number, volumeMillions: number, completedTrades: number) => [
+  { label: messages.press.stats.activeUsers, value: `${totalUsers.toLocaleString()}+`, icon: UserGroupIcon },
+  { label: messages.press.stats.volumeProcessed, value: `€${volumeMillions}M+`, icon: TrophyIcon },
+  { label: messages.press.stats.completedTrades, value: `${completedTrades.toLocaleString()}+`, icon: ChartBarIcon },
   { label: messages.press.stats.satisfactionRate, value: "99.8%", icon: TrophyIcon },
-];
-
-const teamMembers = [
-  {
-    name: "Alexandre Dubois",
-    role: "CEO & Co-fondateur",
-    bio: "Ex-développeur chez Ubisoft, passionné d&apos;esport depuis 10 ans",
-    image: "/team/alexandre.jpg",
-  },
-  {
-    name: "Marie Laurent",
-    role: "CTO & Co-fondatrice", 
-    bio: "Ancienne ingénieure blockchain chez Ledger, experte en sécurité",
-    image: "/team/marie.jpg",
-  },
-  {
-    name: "Thomas Martin",
-    role: "Head of Business Development",
-    bio: "15 ans d&apos;expérience dans l&apos;industrie du gaming et de l&apos;esport",
-    image: "/team/thomas.jpg",
-  },
 ];
 
 export default function PressPage() {
   const { messages } = useLocale();
-  const stats = getStats(messages);
+  const { data: publicStats } = usePublicStats();
+  const stats = getStats(
+    messages,
+    publicStats?.totalUsers ?? 0,
+    publicStats?.volumeMillions ?? 0,
+    publicStats?.completedTrades ?? 0
+  );
   const mediaKit = getMediaKit(messages);
   
   return (
@@ -254,14 +240,14 @@ export default function PressPage() {
                   <CardTitle>{messages.press.managementTeam}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {teamMembers.map((member, index) => (
+                  {Object.values(messages.about.team.members).map((member, index, arr) => (
                     <div key={index} className="space-y-2">
                       <div>
                         <h4 className="font-medium">{member.name}</h4>
                         <p className="text-sm text-orange-600">{member.role}</p>
                       </div>
                       <p className="text-xs text-muted-foreground">{member.bio}</p>
-                      {index < teamMembers.length - 1 && <hr className="my-3" />}
+                      {index < arr.length - 1 && <hr className="my-3" />}
                     </div>
                   ))}
                 </CardContent>
@@ -279,26 +265,28 @@ export default function PressPage() {
                   <CardTitle>{messages.press.pressContact}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div>
-                    <h4 className="font-medium">Marie Dubois</h4>
-                    <p className="text-sm text-muted-foreground">Responsable Communication</p>
-                  </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center space-x-2">
                       <span>📧</span>
-                      <span>press@moonskin.gg</span>
+                      <a href={`mailto:${process.env.NEXT_PUBLIC_PRESS_EMAIL ?? 'press@moonskin.gg'}`} className="hover:underline">
+                        {process.env.NEXT_PUBLIC_PRESS_EMAIL ?? 'press@moonskin.gg'}
+                      </a>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span>📞</span>
-                      <span>+33 1 23 45 67 89</span>
-                    </div>
+                    {process.env.NEXT_PUBLIC_SUPPORT_PHONE && (
+                      <div className="flex items-center space-x-2">
+                        <span>📞</span>
+                        <span>{process.env.NEXT_PUBLIC_SUPPORT_PHONE}</span>
+                      </div>
+                    )}
                     <div className="flex items-center space-x-2">
                       <span>🕐</span>
                       <span>{messages.press.workingHours}</span>
                     </div>
                   </div>
-                  <Button className="w-full mt-4">
-                    {messages.press.contactPress}
+                  <Button className="w-full mt-4" asChild>
+                    <a href={`mailto:${process.env.NEXT_PUBLIC_PRESS_EMAIL ?? 'press@moonskin.gg'}`}>
+                      {messages.press.contactPress}
+                    </a>
                   </Button>
                 </CardContent>
               </Card>

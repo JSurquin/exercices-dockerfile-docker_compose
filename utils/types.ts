@@ -546,21 +546,25 @@ export interface Messages {
           name: string;
           role: string;
           bio: string;
+          skills: string[];
         };
         cto: {
           name: string;
           role: string;
           bio: string;
+          skills: string[];
         };
         product: {
           name: string;
           role: string;
           bio: string;
+          skills: string[];
         };
         compliance: {
           name: string;
           role: string;
           bio: string;
+          skills: string[];
         };
       };
     };
@@ -3018,6 +3022,75 @@ export interface Messages {
     banners: string;
     textAds: string;
     emailTemplates: string;
+    dashboard: {
+      title: string;
+      active: string;
+      inactive: string;
+      codeLabel: string;
+      commissionLabel: string;
+      copyMyLink: string;
+      copied: string;
+      kpi: {
+        referrals: string;
+        referralsSub: string;
+        totalVolume: string;
+        totalVolumeSub: string;
+        totalCommissions: string;
+        pending: string;
+      };
+      performance: string;
+      conversionRate: string;
+      avgOrderValue: string;
+      commissionRate: string;
+      tabs: { referrals: string; commissions: string; tools: string };
+      recentReferrals: string;
+      recentReferralsSub: string;
+      referredOn: string;
+      noReferrals: string;
+      noReferralsSub: string;
+      pendingCommissionsTitle: string;
+      pendingTotal: string;
+      requestPayout: string;
+      noPending: string;
+      noPendingSub: string;
+      paidCommissionsTitle: string;
+      totalReceived: string;
+      noPaid: string;
+      noPaidSub: string;
+      linkGenerator: string;
+      linkGeneratorDesc: string;
+      targetPage: string;
+      targetPageOptional: string;
+      targetPageHint: string;
+      generateAndCopy: string;
+      lastGenerated: string;
+      quickLinks: string;
+      quickHome: string;
+      quickSell: string;
+      quickGiveaways: string;
+      partnerBenefits: string;
+      benefitCommission: string;
+      benefitPayments: string;
+      benefitAnalytics: string;
+      benefitMarketing: string;
+      benefitSupport: string;
+      contactSupport: string;
+      commissionPaid: string;
+      commissionPending: string;
+      payoutRequested: string;
+      payoutRequestedDesc: string;
+      payoutError: string;
+      invalidPath: string;
+      invalidPathDesc: string;
+      generateError: string;
+      generateErrorDesc: string;
+      copyError: string;
+      copyErrorDesc: string;
+      selfReferralWarning: string;
+      selfReferralDesc: string;
+      notAffiliate: string;
+      notAffiliateDesc: string;
+    };
     application: {
       title: string;
       description: string;
@@ -3069,7 +3142,6 @@ export interface Messages {
     accessDenied: string;
     accessDeniedDesc: string;
     reservedInterface: string;
-    testAccount: string;
   };
   moderation: {
     title: string;
@@ -4011,6 +4083,10 @@ export interface Messages {
     negativeNetValue: string;
     tradeCreatedSuccess: string;
     tradeCreationError: string;
+    grossValue: string;
+    networkFees: string;
+    youReceive: string;
+    negativeNetAlert: string;
   };
   paymentMethodsList: {
     loadingError: string;

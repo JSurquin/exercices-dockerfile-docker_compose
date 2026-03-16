@@ -35,12 +35,13 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Stats actives (en attente)
-    const [activeTrades, pendingPayouts, kycPending] = await Promise.all([
+    const [activeTrades, failedTrades, pendingPayouts, kycPending] = await Promise.all([
       prisma.trade.count({
         where: {
           status: { in: ['CREATED', 'ACCEPTED_BY_BOT', 'IN_TRADE_HOLD', 'AVAILABLE'] },
         },
       }),
+      prisma.trade.count({ where: { status: 'FAILED' } }),
       // Payouts en attente : PENDING, PENDING_APPROVAL, et statuts Flexify/Whitepay en cours
       prisma.payout.count({
         where: {
@@ -250,6 +251,7 @@ export async function GET(request: NextRequest) {
     const stats: AdminStats = {
       totalUsers,
       totalTrades,
+      failedTrades,
       totalVolumeCentimes: totalVolumeResult._sum.grossCents || 0,
       totalPayoutsCentimes: totalPayoutsResult._sum.amountCents || 0,
       activeTrades,

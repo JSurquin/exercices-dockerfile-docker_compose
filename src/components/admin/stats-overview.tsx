@@ -183,8 +183,8 @@ export function AdminStatsOverview() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-white">
-            {stats.totalTrades > 0 
-              ? Math.round((stats.totalTrades - (stats.totalTrades * 0.05)) / stats.totalTrades * 100)
+            {stats.totalTrades > 0
+              ? Math.round(((stats.totalTrades - (stats.failedTrades ?? 0)) / stats.totalTrades) * 100)
               : 0}%
           </div>
           <p className="text-xs text-slate-400">

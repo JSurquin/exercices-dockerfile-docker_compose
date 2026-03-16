@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicStats } from "@/hooks/use-public-stats";
+import { usePlatformSettings } from "@/hooks/use-platform-settings";
 import { motion } from "framer-motion";
 import CountUp from "react-countup";
 import {
@@ -31,7 +33,18 @@ import {
 export function HeroSection() {
   const { messages } = useLocale();
   const { user } = useAuth();
+  const { data: publicStats } = usePublicStats();
+  const { data: platformSettings } = usePlatformSettings();
   const [isVisible, setIsVisible] = useState(false);
+
+  // Calculs de la carte démo basés sur les vrais taux
+  const demoAk47Cents = 12750;
+  const demoAwpCents = 284700;
+  const demoGrossCents = demoAk47Cents + demoAwpCents;
+  const demoCashoutFeeCents = Math.round(demoGrossCents * (platformSettings?.cashoutFeeRate ?? 0.005));
+  const demoNetworkFeeCents = platformSettings?.networkFeeCentimes ?? 200;
+  const demoNetCents = demoGrossCents - demoCashoutFeeCents - demoNetworkFeeCents;
+  const fmt = (cents: number) => `${(cents / 100).toFixed(2)}€`;
 
   // Précharger les vraies images CS2
   usePreloadCS2Backgrounds();
@@ -40,11 +53,10 @@ export function HeroSection() {
     setIsVisible(true);
   }, []);
 
-  // Données traduites
   const stats = [
-    { value: 15420, label: messages.hero.stats.users, prefix: "", suffix: "+" },
-    { value: 2.4, label: messages.hero.stats.volume, prefix: "€", suffix: "M+" },
-    { value: 8967, label: messages.hero.stats.trades, prefix: "", suffix: "+" },
+    { value: publicStats?.totalUsers ?? 0, label: messages.hero.stats.users, prefix: "", suffix: "+" },
+    { value: publicStats?.volumeMillions ?? 0, label: messages.hero.stats.volume, prefix: "€", suffix: "M+" },
+    { value: publicStats?.completedTrades ?? 0, label: messages.hero.stats.trades, prefix: "", suffix: "+" },
     { value: 99.8, label: messages.hero.stats.satisfaction, prefix: "", suffix: "%" },
   ];
 
@@ -62,7 +74,7 @@ export function HeroSection() {
     {
       icon: CurrencyDollarIcon,
       title: messages.hero.features.transparent,
-      description: messages.hero.features.transparentDesc,
+      description: messages.hero.features.transparentDesc.replace('{rate}', ((platformSettings?.cashoutFeeRate ?? 0.005) * 100).toFixed(1)),
     },
   ];
 
@@ -309,7 +321,7 @@ export function HeroSection() {
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="font-bold text-sm sm:text-lg text-green-600">
-                        127.50€
+                        {fmt(demoAk47Cents)}
                       </p>
                       <p className="text-xs text-muted-foreground">+15% ↗</p>
                     </div>
@@ -342,7 +354,7 @@ export function HeroSection() {
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="font-bold text-sm sm:text-lg text-green-600">
-                        2,847.00€
+                        {fmt(demoAwpCents)}
                       </p>
                       <p className="text-xs text-green-500">+8% ↗</p>
                     </div>
@@ -353,20 +365,20 @@ export function HeroSection() {
                 <div className="border-t pt-4 space-y-2 bg-muted/30 rounded-lg p-3">
                   <div className="flex justify-between text-sm">
                     <span>{messages.hero.tradeInterface.totalBrut}</span>
-                    <span className="font-medium">2,974.50€</span>
+                    <span className="font-medium">{fmt(demoGrossCents)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>{messages.hero.tradeInterface.cashoutFees}</span>
-                    <span>-14.87€</span>
+                    <span>{messages.hero.tradeInterface.cashoutFees.replace('{rate}', ((platformSettings?.cashoutFeeRate ?? 0.005) * 100).toFixed(1))}</span>
+                    <span>-{fmt(demoCashoutFeeCents)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>{messages.hero.tradeInterface.sepafees}</span>
-                    <span>-2.50€</span>
+                    <span>-{fmt(demoNetworkFeeCents)}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg border-t pt-2 text-green-600">
                     <span>{messages.hero.tradeInterface.totalNet}</span>
                     <span className="bg-green-500/10 px-2 py-1 rounded">
-                      2,957.13€
+                      {fmt(demoNetCents)}
                     </span>
                   </div>
                   <div className="text-xs text-center text-muted-foreground pt-2">

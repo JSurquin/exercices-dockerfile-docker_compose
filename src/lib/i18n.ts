@@ -39,7 +39,7 @@ export const messages: Record<Locale, Messages> = {
       transparent: "Frais transparents",
       instantDesc: "Prix en temps réel via notre API Skinplace intégrée",
       secureDesc: "SEPA, crypto, et KYC obligatoire pour votre sécurité",
-      transparentDesc: "Seulement 0,5% de frais de cashout, pas de frais cachés",
+      transparentDesc: "Seulement {rate}% de frais de cashout, pas de frais cachés",
     },
       stats: {
         users: "Utilisateurs actifs",
@@ -50,7 +50,7 @@ export const messages: Record<Locale, Messages> = {
       tradeInterface: {
         estimation: "Estimation instantanée",
         totalBrut: "Total brut",
-        cashoutFees: "Frais de cashout (0.5%)",
+        cashoutFees: "Frais de cashout ({rate}%)",
         sepafees: "Frais réseau SEPA",
         totalNet: "Total net",
       },
@@ -171,7 +171,7 @@ export const messages: Record<Locale, Messages> = {
         },
         transparent: {
           title: "Frais transparents",
-          description: "Seulement 0,5% de frais de cashout, pas de frais cachés."
+          description: "Seulement {rate}% de frais de cashout, pas de frais cachés."
         }
       },
       cta: {
@@ -214,7 +214,7 @@ export const messages: Record<Locale, Messages> = {
       tradeLink: "Trade Link Steam",
       estimation: "Estimation instantanée",
       fees: "Frais",
-      cashoutFee: "Frais de cashout (0.5%)",
+      cashoutFee: "Frais de cashout ({rate}%)",
       networkFee: "Frais réseau SEPA",
       total: "Total net",
       confirm: "Confirmer la vente",
@@ -258,7 +258,7 @@ export const messages: Record<Locale, Messages> = {
       items: {
         selected: "Items sélectionnés",
         totalBrut: "Total brut",
-        cashoutFees: "Frais de cashout (0,5%)",
+        cashoutFees: "Frais de cashout ({rate}%)",
         networkFees: "Frais réseau",
         totalNet: "Total net",
         timeline: "Timeline",
@@ -488,7 +488,7 @@ export const messages: Record<Locale, Messages> = {
           howItWorks: "Comment fonctionne MoonSkin ?",
           howItWorksAnswer: "MoonSkin est une plateforme qui vous permet de vendre vos skins CS2 contre de l'argent réel. Vous connectez votre compte Steam, ajoutez votre Trade Link, nous estimons vos skins en temps réel via l'API Skinplace, puis nous créons un trade. Après le trade hold Steam de 7 jours, vous recevez automatiquement votre paiement.",
           fees: "Quels sont les frais ?",
-          feesAnswer: "Nous appliquons seulement 0,5% de frais de cashout sur le montant brut de votre vente. Des frais de réseau peuvent s'appliquer selon votre méthode de paiement (environ 20€ pour SEPA, variable pour les cryptomonnaies). Aucun frais caché !",
+          feesAnswer: "Nous appliquons seulement {rate}% de frais de cashout sur le montant brut de votre vente. Des frais de réseau peuvent s'appliquer selon votre méthode de paiement (environ 20€ pour SEPA, variable pour les cryptomonnaies). Aucun frais caché !",
           processTime: "Combien de temps prend le processus ?",
           processTimeAnswer: "Le processus complet prend environ 7-9 jours : estimation instantanée, création du trade (quelques minutes), trade hold Steam obligatoire (7 jours), puis paiement automatique (24-48h). Vous pouvez suivre l'état en temps réel sur votre dashboard.",
           priceCalculation: "Comment sont calculés les prix des skins ?",
@@ -1558,22 +1558,26 @@ export const messages: Record<Locale, Messages> = {
           ceo: {
             name: "Alexandre Martin",
             role: "CEO & Fondateur",
-            bio: "Ex-ingénieur Steam, passionné de CS depuis 2003. Vision : démocratiser le trading de skins."
+            bio: "Ex-ingénieur Steam, passionné de CS depuis 2003. Vision : démocratiser le trading de skins.",
+            skills: ["Leadership", "Trading", "Blockchain"]
           },
           cto: {
             name: "Sophie Chen",
             role: "CTO",
-            bio: "Experte sécurité blockchain, ex-Binance. Garantit la sécurité de chaque transaction."
+            bio: "Experte sécurité blockchain, ex-Binance. Garantit la sécurité de chaque transaction.",
+            skills: ["Blockchain", "Security", "Architecture"]
           },
           product: {
             name: "Thomas Dubois",
             role: "Head of Product",
-            bio: "Designer UX/UI passionné. Créateur des interfaces les plus intuitives du gaming."
+            bio: "Designer UX/UI passionné. Créateur des interfaces les plus intuitives du gaming.",
+            skills: ["UX/UI", "Product", "Gaming"]
           },
           compliance: {
             name: "Marie Leroy",
             role: "Head of Compliance",
-            bio: "Ex-juriste fintech, spécialiste réglementation européenne. Assure la conformité légale."
+            bio: "Ex-juriste fintech, spécialiste réglementation européenne. Assure la conformité légale.",
+            skills: ["Compliance", "Legal", "GDPR"]
           }
         }
       },
@@ -3140,6 +3144,79 @@ export const messages: Record<Locale, Messages> = {
       banners: "Bannières",
       textAds: "Annonces texte",
       emailTemplates: "Modèles d'email",
+      dashboard: {
+        title: "Espace Affilié",
+        active: "Actif",
+        inactive: "Inactif",
+        codeLabel: "Code",
+        commissionLabel: "Commission",
+        copyMyLink: "Copier mon lien affilié",
+        copied: "Copié !",
+        kpi: {
+          referrals: "Parrainages",
+          referralsSub: "utilisateurs référés",
+          totalVolume: "Volume total",
+          totalVolumeSub: "généré par vos refs",
+          totalCommissions: "Commissions totales",
+          pending: "En attente",
+        },
+        performance: "Performance",
+        conversionRate: "Taux de conversion",
+        avgOrderValue: "Valeur moyenne / ref",
+        commissionRate: "Taux de commission",
+        tabs: {
+          referrals: "Parrainages",
+          commissions: "Commissions",
+          tools: "Outils",
+        },
+        recentReferrals: "Parrainages récents",
+        recentReferralsSub: "Les 10 derniers utilisateurs référés par votre code",
+        referredOn: "Référé le",
+        noReferrals: "Aucun parrainage pour le moment",
+        noReferralsSub: "Partagez votre lien pour commencer à gagner des commissions",
+        pendingCommissionsTitle: "Commissions en attente",
+        pendingTotal: "Total",
+        requestPayout: "Demander le versement",
+        noPending: "Aucune commission en attente",
+        noPendingSub: "Toutes vos commissions ont été versées",
+        paidCommissionsTitle: "Commissions versées",
+        totalReceived: "Total reçu",
+        noPaid: "Aucun versement pour le moment",
+        noPaidSub: "Vos commissions versées apparaîtront ici",
+        linkGenerator: "Générateur de liens",
+        linkGeneratorDesc: "Créez des liens affiliés vers n'importe quelle page",
+        targetPage: "Page cible",
+        targetPageOptional: "(optionnel)",
+        targetPageHint: "Laissez vide pour la page d'accueil. Commencez par / pour une page spécifique.",
+        generateAndCopy: "Générer et copier",
+        lastGenerated: "Dernier lien généré",
+        quickLinks: "Liens rapides",
+        quickHome: "Page principale",
+        quickSell: "Page vente",
+        quickGiveaways: "Giveaways",
+        partnerBenefits: "Vos avantages partenaire",
+        benefitCommission: "Commission de {rate}% sur le volume",
+        benefitPayments: "Paiements mensuels via SEPA ou crypto",
+        benefitAnalytics: "Dashboard analytics en temps réel",
+        benefitMarketing: "Outils marketing & créatifs fournis",
+        benefitSupport: "Support dédié affiliés prioritaire",
+        contactSupport: "Contacter le support affiliés",
+        commissionPaid: "Versé",
+        commissionPending: "En attente",
+        payoutRequested: "Demande envoyée",
+        payoutRequestedDesc: "Votre demande de paiement a été soumise.",
+        payoutError: "Erreur",
+        invalidPath: "Chemin invalide",
+        invalidPathDesc: "Le chemin doit commencer par / (ex: /sell, /giveaways)",
+        generateError: "Erreur",
+        generateErrorDesc: "Impossible de générer le lien",
+        copyError: "Erreur",
+        copyErrorDesc: "Impossible de copier le lien. Vérifiez les permissions du navigateur.",
+        selfReferralWarning: "Auto-référencement détecté",
+        selfReferralDesc: "Vous ne pouvez pas vous parrainer vous-même. Ce lien ne vous rapportera aucune commission si c'est vous qui l'utilisez.",
+        notAffiliate: "Accès réservé aux affiliés",
+        notAffiliateDesc: "Vous n'êtes pas encore affilié. Contactez un administrateur ou postulez depuis la page programme.",
+      },
       application: {
         title: "Candidature d'affiliation",
         description: "Remplissez ce formulaire pour rejoindre notre programme d'affiliation",
@@ -3191,7 +3268,6 @@ export const messages: Record<Locale, Messages> = {
       accessDenied: "Accès refusé",
       accessDeniedDesc: "Vous n'avez pas les permissions nécessaires",
       reservedInterface: "Interface réservée aux modérateurs",
-      testAccount: "💡 Compte de test :"
     },
     moderation: {
       title: "Modération",
@@ -4109,6 +4185,10 @@ export const messages: Record<Locale, Messages> = {
       negativeNetValue: "La valeur nette après frais doit être positive",
       tradeCreatedSuccess: "Trade créé avec succès !",
       tradeCreationError: "Erreur lors de la création du trade",
+      grossValue: "Valeur brute ({count} items)",
+      networkFees: "Frais réseau",
+      youReceive: "Vous recevrez",
+      negativeNetAlert: "La valeur nette est négative ou nulle. Sélectionnez des items de plus grande valeur.",
     },
     notFound: {
       code: "404",
@@ -4185,7 +4265,7 @@ export const messages: Record<Locale, Messages> = {
         transparent: "Transparent fees",
         instantDesc: "Real-time pricing via our integrated Skinplace API",
         secureDesc: "SEPA, crypto, and mandatory KYC for your security",
-        transparentDesc: "Only 0.5% cashout fees, no hidden costs",
+        transparentDesc: "Only {rate}% cashout fees, no hidden costs",
       },
       stats: {
         users: "Active users",
@@ -4196,7 +4276,7 @@ export const messages: Record<Locale, Messages> = {
       tradeInterface: {
         estimation: "Instant estimation",
         totalBrut: "Gross total",
-        cashoutFees: "Cashout fees (0.5%)",
+        cashoutFees: "Cashout fees ({rate}%)",
         sepafees: "SEPA network fees",
         totalNet: "Net total",
       },
@@ -4317,7 +4397,7 @@ export const messages: Record<Locale, Messages> = {
         },
         transparent: {
           title: "Transparent fees",
-          description: "Only 0.5% cashout fees, no hidden costs."
+          description: "Only {rate}% cashout fees, no hidden costs."
         }
       },
       cta: {
@@ -4360,7 +4440,7 @@ export const messages: Record<Locale, Messages> = {
       tradeLink: "Steam Trade Link",
       estimation: "Instant estimation",
       fees: "Fees",
-      cashoutFee: "Cashout fee (0.5%)",
+      cashoutFee: "Cashout fee ({rate}%)",
       networkFee: "SEPA network fee",
       total: "Net total",
       confirm: "Confirm sale",
@@ -4403,7 +4483,7 @@ export const messages: Record<Locale, Messages> = {
       items: {
         selected: "Selected items",
         totalBrut: "Gross total",
-        cashoutFees: "Cashout fees (0.5%)",
+        cashoutFees: "Cashout fees ({rate}%)",
         networkFees: "Network fees",
         totalNet: "Net total",
         timeline: "Timeline",
@@ -4633,7 +4713,7 @@ export const messages: Record<Locale, Messages> = {
           howItWorks: "How does MoonSkin work?",
           howItWorksAnswer: "MoonSkin is a platform that allows you to sell your CS2 skins for real money. You connect your Steam account, add your Trade Link, we estimate your skins in real time via the Skinplace API, then we create a trade. After the 7-day Steam trade hold, you automatically receive your payment.",
           fees: "What are the fees?",
-          feesAnswer: "We only apply 0.5% cashout fees on the gross amount of your sale. Network fees may apply depending on your payment method (around €20 for SEPA, variable for cryptocurrencies). No hidden fees!",
+          feesAnswer: "We only apply {rate}% cashout fees on the gross amount of your sale. Network fees may apply depending on your payment method (around €20 for SEPA, variable for cryptocurrencies). No hidden fees!",
           processTime: "How long does the process take?",
           processTimeAnswer: "The complete process takes about 7-9 days: instant estimation, trade creation (a few minutes), mandatory Steam trade hold (7 days), then automatic payment (24-48h). You can track the status in real time on your dashboard.",
           priceCalculation: "How are skin prices calculated?",
@@ -4823,22 +4903,26 @@ export const messages: Record<Locale, Messages> = {
           ceo: {
             name: "Alexandre Martin",
             role: "CEO & Founder",
-            bio: "Former Steam engineer, CS enthusiast since 2003. Vision: democratize skin trading."
+            bio: "Former Steam engineer, CS enthusiast since 2003. Vision: democratize skin trading.",
+            skills: ["Leadership", "Trading", "Blockchain"]
           },
           cto: {
             name: "Sophie Chen",
             role: "CTO",
-            bio: "Blockchain security expert, ex-Binance. Ensures the security of every transaction."
+            bio: "Blockchain security expert, ex-Binance. Ensures the security of every transaction.",
+            skills: ["Blockchain", "Security", "Architecture"]
           },
           product: {
             name: "Thomas Dubois",
             role: "Head of Product",
-            bio: "Passionate UX/UI designer. Creator of the most intuitive interfaces in gaming."
+            bio: "Passionate UX/UI designer. Creator of the most intuitive interfaces in gaming.",
+            skills: ["UX/UI", "Product", "Gaming"]
           },
           compliance: {
             name: "Marie Leroy",
             role: "Head of Compliance",
-            bio: "Ex-fintech lawyer, European regulation specialist. Ensures legal compliance."
+            bio: "Ex-fintech lawyer, European regulation specialist. Ensures legal compliance.",
+            skills: ["Compliance", "Legal", "GDPR"]
           }
         }
       },
@@ -7116,6 +7200,79 @@ export const messages: Record<Locale, Messages> = {
       banners: "Banners",
       textAds: "Text ads",
       emailTemplates: "Email templates",
+      dashboard: {
+        title: "Affiliate Space",
+        active: "Active",
+        inactive: "Inactive",
+        codeLabel: "Code",
+        commissionLabel: "Commission",
+        copyMyLink: "Copy my affiliate link",
+        copied: "Copied!",
+        kpi: {
+          referrals: "Referrals",
+          referralsSub: "referred users",
+          totalVolume: "Total volume",
+          totalVolumeSub: "generated by your refs",
+          totalCommissions: "Total commissions",
+          pending: "Pending",
+        },
+        performance: "Performance",
+        conversionRate: "Conversion rate",
+        avgOrderValue: "Avg. value / ref",
+        commissionRate: "Commission rate",
+        tabs: {
+          referrals: "Referrals",
+          commissions: "Commissions",
+          tools: "Tools",
+        },
+        recentReferrals: "Recent referrals",
+        recentReferralsSub: "The last 10 users referred by your code",
+        referredOn: "Referred on",
+        noReferrals: "No referrals yet",
+        noReferralsSub: "Share your link to start earning commissions",
+        pendingCommissionsTitle: "Pending commissions",
+        pendingTotal: "Total",
+        requestPayout: "Request payout",
+        noPending: "No pending commissions",
+        noPendingSub: "All your commissions have been paid",
+        paidCommissionsTitle: "Paid commissions",
+        totalReceived: "Total received",
+        noPaid: "No payouts yet",
+        noPaidSub: "Your paid commissions will appear here",
+        linkGenerator: "Link generator",
+        linkGeneratorDesc: "Create affiliate links to any page",
+        targetPage: "Target page",
+        targetPageOptional: "(optional)",
+        targetPageHint: "Leave empty for the homepage. Start with / for a specific page.",
+        generateAndCopy: "Generate and copy",
+        lastGenerated: "Last generated link",
+        quickLinks: "Quick links",
+        quickHome: "Home page",
+        quickSell: "Sell page",
+        quickGiveaways: "Giveaways",
+        partnerBenefits: "Your partner benefits",
+        benefitCommission: "{rate}% commission on volume",
+        benefitPayments: "Monthly payments via SEPA or crypto",
+        benefitAnalytics: "Real-time analytics dashboard",
+        benefitMarketing: "Marketing & creative tools provided",
+        benefitSupport: "Priority dedicated affiliate support",
+        contactSupport: "Contact affiliate support",
+        commissionPaid: "Paid",
+        commissionPending: "Pending",
+        payoutRequested: "Request sent",
+        payoutRequestedDesc: "Your payout request has been submitted.",
+        payoutError: "Error",
+        invalidPath: "Invalid path",
+        invalidPathDesc: "The path must start with / (e.g. /sell, /giveaways)",
+        generateError: "Error",
+        generateErrorDesc: "Unable to generate link",
+        copyError: "Error",
+        copyErrorDesc: "Unable to copy link. Check browser permissions.",
+        selfReferralWarning: "Self-referral detected",
+        selfReferralDesc: "You cannot refer yourself. This link will not earn you any commission if you use it.",
+        notAffiliate: "Affiliate access only",
+        notAffiliateDesc: "You are not yet an affiliate. Contact an administrator or apply from the program page.",
+      },
       application: {
         title: "Affiliate application",
         description: "Fill out this form to join our affiliate program",
@@ -7167,7 +7324,6 @@ export const messages: Record<Locale, Messages> = {
       accessDenied: "Access denied",
       accessDeniedDesc: "You do not have the necessary permissions",
       reservedInterface: "Interface reserved for moderators",
-      testAccount: "💡 Test account:"
     },
     moderation: {
       title: "Moderation",
@@ -7814,7 +7970,7 @@ export const messages: Record<Locale, Messages> = {
             title: "SEPA Transfer",
             description: "Receive your payment directly to your bank account",
             delay: "Delay: 1-3 days",
-            fees: "Fees: ~0.5%",
+            fees: "Fees: ~{rate}%",
           },
           crypto: {
             title: "Cryptocurrency",
@@ -8254,6 +8410,10 @@ export const messages: Record<Locale, Messages> = {
       negativeNetValue: "Net value after fees must be positive",
       tradeCreatedSuccess: "Trade created successfully!",
       tradeCreationError: "Error creating trade",
+      grossValue: "Gross value ({count} items)",
+      networkFees: "Network fees",
+      youReceive: "You will receive",
+      negativeNetAlert: "Net value is negative or zero. Select higher-value items.",
     },
     notFound: {
       code: "404",
@@ -8330,7 +8490,7 @@ export const messages: Record<Locale, Messages> = {
         transparent: "透明费用",
         instantDesc: "通过集成的Skinplace API实时定价",
         secureDesc: "SEPA、加密货币和强制KYC保障您的安全",
-        transparentDesc: "仅收取0.5%提现费，无隐藏费用",
+        transparentDesc: "仅收取{rate}%提现费，无隐藏费用",
       },
       stats: {
         users: "活跃用户",
@@ -8341,7 +8501,7 @@ export const messages: Record<Locale, Messages> = {
       tradeInterface: {
         estimation: "即时估价",
         totalBrut: "总额",
-        cashoutFees: "提现费 (0.5%)",
+        cashoutFees: "提现费 ({rate}%)",
         sepafees: "SEPA网络费",
         totalNet: "净额",
       },
@@ -8462,7 +8622,7 @@ export const messages: Record<Locale, Messages> = {
         },
         transparent: {
           title: "透明费用",
-          description: "仅收取0.5%提现费，无隐藏费用。"
+          description: "仅收取{rate}%提现费，无隐藏费用。"
         }
       },
       cta: {
@@ -8505,7 +8665,7 @@ export const messages: Record<Locale, Messages> = {
       tradeLink: "Steam交易链接",
       estimation: "即时估价",
       fees: "费用",
-      cashoutFee: "提现费 (0.5%)",
+      cashoutFee: "提现费 ({rate}%)",
       networkFee: "SEPA网络费",
       total: "净总额",
       confirm: "确认出售",
@@ -8544,7 +8704,7 @@ export const messages: Record<Locale, Messages> = {
       items: {
         selected: "选定物品",
         totalBrut: "总额",
-        cashoutFees: "提现费 (0.5%)",
+        cashoutFees: "提现费 ({rate}%)",
         networkFees: "网络费",
         totalNet: "净额",
         timeline: "时间线",
@@ -8933,7 +9093,7 @@ export const messages: Record<Locale, Messages> = {
       subtitle: "我们革命性地改变了反恐精英2玩家将皮肤转换为真钱的方式。",
       mission: { title: "我们的使命", description1: "", description2: "", description3: "" },
       values: { title: "我们的价值观", subtitle: "", security: { title: "安全第一", description: "" }, community: { title: "社区第一", description: "" }, innovation: { title: "持续创新", description: "" }, simplicity: { title: "简单", description: "" } },
-      team: { title: "我们的团队", subtitle: "", members: { ceo: { name: "", role: "", bio: "" }, cto: { name: "", role: "", bio: "" }, product: { name: "", role: "", bio: "" }, compliance: { name: "", role: "", bio: "" } } },
+      team: { title: "我们的团队", subtitle: "", members: { ceo: { name: "", role: "", bio: "", skills: [] }, cto: { name: "", role: "", bio: "", skills: [] }, product: { name: "", role: "", bio: "", skills: [] }, compliance: { name: "", role: "", bio: "", skills: [] } } },
       timeline: { title: "我们的历史", subtitle: "", events: { founding: { year: "", title: "", description: "" }, mvp: { year: "", title: "", description: "" }, crypto: { year: "", title: "", description: "" }, gamification: { year: "", title: "", description: "" }, international: { year: "", title: "", description: "" }, future: { year: "", title: "", description: "" } } },
       cta: { title: "", description: "", start: "", discord: "" },
       stats: { users: "", volume: "", trades: "", countries: "" }
@@ -10886,6 +11046,33 @@ export const messages: Record<Locale, Messages> = {
       banners: "横幅",
       textAds: "文字广告",
       emailTemplates: "邮件模板",
+      dashboard: {
+        title: "联盟空间", active: "活跃", inactive: "非活跃", codeLabel: "代码", commissionLabel: "佣金",
+        copyMyLink: "复制我的联盟链接", copied: "已复制！",
+        kpi: { referrals: "推荐", referralsSub: "推荐用户", totalVolume: "总量", totalVolumeSub: "由您的推荐产生", totalCommissions: "总佣金", pending: "待付" },
+        performance: "表现", conversionRate: "转化率", avgOrderValue: "平均订单价值", commissionRate: "佣金率",
+        tabs: { referrals: "推荐", commissions: "佣金", tools: "工具" },
+        recentReferrals: "最近推荐", recentReferralsSub: "您的代码推荐的最近10位用户", referredOn: "推荐于",
+        noReferrals: "暂无推荐", noReferralsSub: "分享您的链接开始赚取佣金",
+        pendingCommissionsTitle: "待付佣金", pendingTotal: "总计", requestPayout: "申请付款",
+        noPending: "无待付佣金", noPendingSub: "所有佣金已付",
+        paidCommissionsTitle: "已付佣金", totalReceived: "总收入", noPaid: "暂无付款", noPaidSub: "已付佣金将显示在此处",
+        linkGenerator: "链接生成器", linkGeneratorDesc: "创建指向任何页面的联盟链接",
+        targetPage: "目标页面", targetPageOptional: "（可选）", targetPageHint: "留空表示主页。以/开头表示特定页面。",
+        generateAndCopy: "生成并复制", lastGenerated: "最后生成的链接",
+        quickLinks: "快速链接", quickHome: "主页", quickSell: "出售页面", quickGiveaways: "抽奖",
+        partnerBenefits: "您的合作伙伴优势",
+        benefitCommission: "{rate}% 佣金", benefitPayments: "每月通过SEPA或加密货币付款",
+        benefitAnalytics: "实时分析仪表板", benefitMarketing: "提供营销和创意工具", benefitSupport: "优先专属联盟支持",
+        contactSupport: "联系联盟支持",
+        commissionPaid: "已付", commissionPending: "待付",
+        payoutRequested: "请求已发送", payoutRequestedDesc: "您的付款请求已提交。",
+        payoutError: "错误", invalidPath: "路径无效", invalidPathDesc: "路径必须以/开头",
+        generateError: "错误", generateErrorDesc: "无法生成链接",
+        copyError: "错误", copyErrorDesc: "无法复制链接。请检查浏览器权限。",
+        selfReferralWarning: "检测到自我推荐", selfReferralDesc: "您不能推荐自己。",
+        notAffiliate: "仅限联盟会员访问", notAffiliateDesc: "您还不是联盟会员。请联系管理员或从计划页面申请。",
+      },
       application: {
         title: "联盟申请",
         description: "填写此表格加入我们的联盟计划",
@@ -10937,7 +11124,6 @@ export const messages: Record<Locale, Messages> = {
       accessDenied: "拒绝访问",
       accessDeniedDesc: "您没有必要的权限",
       reservedInterface: "管理员专用界面",
-      testAccount: "💡 测试账户："
     },
     moderation: {
       title: "审核管理",
@@ -12022,6 +12208,10 @@ export const messages: Record<Locale, Messages> = {
       negativeNetValue: "扣除费用后的净值必须为正",
       tradeCreatedSuccess: "交易创建成功！",
       tradeCreationError: "创建交易时出错",
+      grossValue: "总价值（{count} 件）",
+      networkFees: "网络费",
+      youReceive: "您将收到",
+      negativeNetAlert: "净值为负或零。请选择价值更高的物品。",
     },
     notFound: {
       code: "404",

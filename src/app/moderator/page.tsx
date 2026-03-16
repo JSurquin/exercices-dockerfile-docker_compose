@@ -116,14 +116,6 @@ export default function ModeratorLoginPage() {
             <div className="text-center text-sm text-muted-foreground">
               <p>{t.reservedInterface}</p>
             </div>
-            
-            <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-              <p className="font-medium">{t.testAccount}</p>
-              <p className="text-muted-foreground">
-                <span className="font-mono">moderator@moonskin.com</span><br />
-                <span className="font-mono">Moderator2024!</span>
-              </p>
-            </div>
 
             <p className="text-center text-sm">
               <Link href="/" className="text-primary hover:underline">

@@ -1,25 +1,34 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useLocale } from "@/components/providers/locale-provider";
 
 interface GlobalErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
 }
 
+// Textes en fallback : global-error remplace le layout, useLocale n'est pas disponible
+const messages = {
+  title: "Erreur critique",
+  message: "Une erreur critique s'est produite. L'application doit être rechargée.",
+  errorDetails: "Détails de l'erreur :",
+  reload: "Recharger l'application",
+  home: "Retour à l'accueil",
+  supportDesc: "Si ce problème persiste, contactez notre support",
+};
+
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
-  const { messages } = useLocale();
   useEffect(() => {
-    // Log l&apos;erreur globale pour le monitoring
     console.error("Global error:", error);
+    Sentry.captureException(error);
   }, [error]);
 
   return (
     <html>
       <body>
-        <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-background text-foreground">
+        <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
           <div className="max-w-md mx-auto text-center">
             {/* Error Icon */}
             <div className="w-20 h-20 mx-auto mb-6 bg-red-50 dark:bg-red-950/20 rounded-full flex items-center justify-center">
@@ -39,16 +48,14 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             </div>
 
             {/* Error Message */}
-            <h1 className="text-2xl font-bold mb-4">{messages.globalError.title}</h1>
-            <p className="text-muted-foreground mb-6">
-              {messages.globalError.message}
-            </p>
+            <h1 className="text-2xl font-bold mb-4">{messages.title}</h1>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-6">{messages.message}</p>
 
             {/* Error Details (en mode développement) */}
             {process.env.NODE_ENV === "development" && (
               <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
                 <h3 className="font-semibold text-red-900 dark:text-red-100 mb-2 text-sm">
-                  {messages.globalError.errorDetails}
+                  {messages.errorDetails}
                 </h3>
                 <pre className="text-xs text-red-700 dark:text-red-300 overflow-auto">
                   {error.message}
@@ -67,26 +74,26 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 onClick={reset}
                 className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
               >
-                {messages.globalError.reload}
+                {messages.reload}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => (window.location.href = "/")}
                 className="w-full"
               >
-                {messages.globalError.home}
+                {messages.home}
               </Button>
             </div>
 
             {/* Support Info */}
-            <div className="mt-8 p-4 bg-muted/50 rounded-lg">
-              <p className="text-xs text-muted-foreground">
-                {messages.globalError.supportDesc}{" "}
+            <div className="mt-8 p-4 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-lg">
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                {messages.supportDesc}{" "}
                 <a
-                  href="mailto:support@moonskin.gg"
+                  href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@moonskin.gg"}`}
                   className="text-orange-600 hover:underline"
                 >
-                  support@moonskin.gg
+                  {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@moonskin.gg"}
                 </a>
               </p>
             </div>

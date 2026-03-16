@@ -232,6 +232,7 @@ export interface StripeWebhookEvent {
 export interface AdminStats {
   totalUsers: number;
   totalTrades: number;
+  failedTrades: number;
   totalVolumeCentimes: number;
   totalPayoutsCentimes: number;
   activeTrades: number;

@@ -61,7 +61,7 @@ export default function ContactPage() {
       availability: t.methods.email.availability,
       responseTime: t.methods.email.responseTime,
       color: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400",
-      action: "support@moonskin.gg",
+      action: process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@moonskin.gg",
     },
     {
       title: t.methods.phone.title,
@@ -70,38 +70,38 @@ export default function ContactPage() {
       availability: t.methods.phone.availability,
       responseTime: t.methods.phone.responseTime,
       color: "bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400",
-      action: "+33 1 23 45 67 89",
+      action: process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? "",
     },
   ];
 
   const getDepartments = () => [
     {
       name: t.departmentsList.technical.name,
-      email: "support@moonskin.gg",
+      email: process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@moonskin.gg",
       description: t.departmentsList.technical.description,
       icon: QuestionMarkCircleIcon,
     },
     {
       name: t.departmentsList.security.name,
-      email: "security@moonskin.gg",
+      email: `security@${(process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@moonskin.gg").split("@")[1]}`,
       description: t.departmentsList.security.description,
       icon: ShieldCheckIcon,
     },
     {
       name: t.departmentsList.compliance.name,
-      email: "compliance@moonskin.gg",
+      email: `compliance@${(process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@moonskin.gg").split("@")[1]}`,
       description: t.departmentsList.compliance.description,
       icon: DocumentTextIcon,
     },
     {
       name: t.departmentsList.partnerships.name,
-      email: "business@moonskin.gg",
+      email: `business@${(process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@moonskin.gg").split("@")[1]}`,
       description: t.departmentsList.partnerships.description,
       icon: CurrencyEuroIcon,
     },
     {
       name: t.departmentsList.press.name,
-      email: "press@moonskin.gg",
+      email: process.env.NEXT_PUBLIC_PRESS_EMAIL ?? "press@moonskin.gg",
       description: t.departmentsList.press.description,
       icon: DocumentTextIcon,
     },

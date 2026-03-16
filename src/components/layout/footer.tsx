@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useLocale } from "@/components/providers/locale-provider";
+import { usePublicStats } from "@/hooks/use-public-stats";
 
 export function Footer() {
   const { messages } = useLocale();
+  const { data: publicStats } = usePublicStats();
 
   const links = {
     company: [
@@ -28,10 +30,10 @@ export function Footer() {
       { name: messages.footer.links.amlPolicy, href: "/aml-policy" },
     ],
     community: [
-      { name: messages.footer.socialLinks.discord, href: "https://discord.gg/moonskin" },
-      { name: messages.footer.socialLinks.twitter, href: "https://twitter.com/moonskin" },
-      { name: messages.footer.socialLinks.reddit, href: "https://reddit.com/r/moonskin" },
-      { name: messages.footer.socialLinks.youtube, href: "https://youtube.com/moonskin" },
+      ...(process.env.NEXT_PUBLIC_DISCORD_URL ? [{ name: messages.footer.socialLinks.discord, href: process.env.NEXT_PUBLIC_DISCORD_URL }] : []),
+      ...(process.env.NEXT_PUBLIC_TWITTER_URL ? [{ name: messages.footer.socialLinks.twitter, href: process.env.NEXT_PUBLIC_TWITTER_URL }] : []),
+      ...(process.env.NEXT_PUBLIC_REDDIT_URL ? [{ name: messages.footer.socialLinks.reddit, href: process.env.NEXT_PUBLIC_REDDIT_URL }] : []),
+      ...(process.env.NEXT_PUBLIC_YOUTUBE_URL ? [{ name: messages.footer.socialLinks.youtube, href: process.env.NEXT_PUBLIC_YOUTUBE_URL }] : []),
     ],
   };
 
@@ -141,17 +143,17 @@ export function Footer() {
         <div className="border-t mt-8 pt-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-orange-600">15,420+</div>
+              <div className="text-2xl font-bold text-orange-600">{(publicStats?.totalUsers ?? 0).toLocaleString()}+</div>
               <div className="text-sm text-muted-foreground">
                 {messages.footer.stats.activeUsers}
               </div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-orange-600">€2.4M+</div>
+              <div className="text-2xl font-bold text-orange-600">€{publicStats?.volumeMillions ?? 0}M+</div>
               <div className="text-sm text-muted-foreground">{messages.footer.stats.volumeProcessed}</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-orange-600">8,967+</div>
+              <div className="text-2xl font-bold text-orange-600">{(publicStats?.completedTrades ?? 0).toLocaleString()}+</div>
               <div className="text-sm text-muted-foreground">
                 {messages.footer.stats.tradesCompleted}
               </div>
