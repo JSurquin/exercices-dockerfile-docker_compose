@@ -2984,7 +2984,18 @@ export const messages: Record<Locale, Messages> = {
         timeRemaining: "Temps restant",
         endsOn: "Fin le",
         ticketsSold: "Tickets vendus",
-        statistics: "Statistiques"
+        statistics: "Statistiques",
+        backToGiveaways: "Retour aux giveaways",
+        errorOccurred: "Une erreur est survenue",
+        finished: "Terminé",
+        winnerTitle: "Gagnant du Giveaway",
+        usedTickets: "A utilisé",
+        probability: "Probabilité",
+        participantsCount: "Participants",
+        noParticipants: "Aucun participant pour le moment",
+        user: "Utilisateur",
+        tickets: "ticket(s)",
+        drawSeed: "Seed de tirage"
       }
     },
     payoutPage: {
@@ -6169,7 +6180,18 @@ export const messages: Record<Locale, Messages> = {
         timeRemaining: "Time Remaining",
         endsOn: "Ends On",
         ticketsSold: "Tickets Sold",
-        statistics: "Statistics"
+        statistics: "Statistics",
+        backToGiveaways: "Back to giveaways",
+        errorOccurred: "An error occurred",
+        finished: "Finished",
+        winnerTitle: "Giveaway Winner",
+        usedTickets: "Used",
+        probability: "Probability",
+        participantsCount: "Participants",
+        noParticipants: "No participants yet",
+        user: "User",
+        tickets: "ticket(s)",
+        drawSeed: "Draw seed"
       }
     },
     payoutPage: {
@@ -10024,7 +10046,18 @@ export const messages: Record<Locale, Messages> = {
         timeRemaining: "剩余时间",
         endsOn: "结束于",
         ticketsSold: "已售票券",
-        statistics: "统计"
+        statistics: "统计",
+        backToGiveaways: "返回抽奖",
+        errorOccurred: "发生错误",
+        finished: "已完成",
+        winnerTitle: "抽奖获胜者",
+        usedTickets: "使用了",
+        probability: "概率",
+        participantsCount: "参与者",
+        noParticipants: "暂无参与者",
+        user: "用户",
+        tickets: "张票券",
+        drawSeed: "抽奖种子"
       }
     },
     payoutPage: {

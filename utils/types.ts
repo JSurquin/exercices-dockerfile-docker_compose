@@ -1951,6 +1951,17 @@ export interface Messages {
       endsOn: string;
       ticketsSold: string;
       statistics: string;
+      backToGiveaways: string;
+      errorOccurred: string;
+      finished: string;
+      winnerTitle: string;
+      usedTickets: string;
+      probability: string;
+      participantsCount: string;
+      noParticipants: string;
+      user: string;
+      tickets: string;
+      drawSeed: string;
     };
   };
   support: {

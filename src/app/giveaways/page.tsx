@@ -57,7 +57,7 @@ const formatTimeRemaining = (timeRemaining: ReturnType<typeof getTimeRemaining>,
   }
 };
 
-const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets }: { giveaway: GiveawayWithEntries; onParticipate: (giveaway: GiveawayWithEntries, tickets: number) => void; messages: Messages; userTickets: number }) => {
+const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets, locale }: { giveaway: GiveawayWithEntries; onParticipate: (giveaway: GiveawayWithEntries, tickets: number) => void; messages: Messages; userTickets: number; locale: string }) => {
   const [ticketsToUse, setTicketsToUse] = useState(1);
   const endDate = typeof giveaway.endDate === 'string' ? new Date(giveaway.endDate) : giveaway.endDate;
   const timeRemaining = getTimeRemaining(endDate);
@@ -108,7 +108,7 @@ const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets }: { give
           </div>
           <div className="flex items-center space-x-2">
             <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-            <span>{endDate.toLocaleDateString()}</span>
+            <span>{endDate.toLocaleDateString(locale === 'cn' ? 'zh-CN' : locale)}</span>
           </div>
         </div>
 
@@ -178,7 +178,7 @@ const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets }: { give
 
 export default function GiveawaysPage() {
   const { user } = useAuth();
-  const { messages } = useLocale();
+  const { messages, locale } = useLocale();
   const [selectedTab, setSelectedTab] = useState('active');
   const { giveaways, loading, participateInGiveaway, refetch } = useGiveaways();
   const [userTickets, setUserTickets] = useState(0);
@@ -499,7 +499,7 @@ export default function GiveawaysPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: index * 0.1 }}
                     >
-                      <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} userTickets={userTickets} />
+                      <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} userTickets={userTickets} locale={locale} />
                     </motion.div>
                   ))}
                 </div>
@@ -532,7 +532,7 @@ export default function GiveawaysPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: index * 0.1 }}
                     >
-                      <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} userTickets={userTickets} />
+                      <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} userTickets={userTickets} locale={locale} />
                     </motion.div>
                   ))}
                 </div>
@@ -566,7 +566,7 @@ export default function GiveawaysPage() {
                                   {entry.ticketsUsed} {entry.ticketsUsed > 1 ? messages.giveawaysPage.ticketsUsed : messages.giveawaysPage.ticketUsed}
                                 </p>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                  {messages.giveawaysPage.participatedOn} {new Date(entry.enteredAt).toLocaleDateString('fr-FR', {
+                                  {messages.giveawaysPage.participatedOn} {new Date(entry.enteredAt).toLocaleDateString(locale === 'cn' ? 'zh-CN' : locale, {
                                     day: '2-digit',
                                     month: 'long',
                                     year: 'numeric'
@@ -577,7 +577,7 @@ export default function GiveawaysPage() {
                                 {getStatusBadge(entry.participationStatus)}
                                 {entry.giveaway.status === 'ENDED' && (
                                   <p className="text-xs text-muted-foreground">
-                                    {messages.giveawaysPage.endedOn} {new Date(entry.giveaway.endDate).toLocaleDateString('fr-FR')}
+                                    {messages.giveawaysPage.endedOn} {new Date(entry.giveaway.endDate).toLocaleDateString(locale === 'cn' ? 'zh-CN' : locale)}
                                   </p>
                                 )}
                               </div>

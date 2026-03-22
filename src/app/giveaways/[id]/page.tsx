@@ -35,7 +35,7 @@ interface GiveawayDetails extends Giveaway {
 
 export default function GiveawayDetailsPage() {
   const params = useParams();
-  const { messages } = useLocale();
+  const { messages, locale } = useLocale();
   const [giveaway, setGiveaway] = useState<GiveawayDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,14 +49,14 @@ export default function GiveawayDetailsPage() {
         const response = await fetch(`/api/giveaways/${giveawayId}`);
         
         if (!response.ok) {
-          throw new Error('Giveaway introuvable');
+          throw new Error(messages.giveawaysPage.giveawayNotFound);
         }
         
         const data = await response.json();
         setGiveaway(data);
         setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+        setError(err instanceof Error ? err.message : messages.giveawaysPage.detail.errorOccurred);
         console.error('Error fetching giveaway:', err);
       } finally {
         setLoading(false);
@@ -94,7 +94,7 @@ export default function GiveawayDetailsPage() {
               <Link href="/giveaways">
                 <Button>
                   <ArrowLeftIcon className="w-4 h-4 mr-2" />
-                  Retour aux giveaways
+                  {messages.giveawaysPage.detail.backToGiveaways}
                 </Button>
               </Link>
             </CardContent>
@@ -113,7 +113,7 @@ export default function GiveawayDetailsPage() {
     const end = new Date(endDate);
     const diff = end.getTime() - now.getTime();
     
-    if (diff <= 0) return 'Terminé';
+    if (diff <= 0) return messages.giveawaysPage.detail.finished;
     
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -136,7 +136,7 @@ export default function GiveawayDetailsPage() {
           <Link href="/giveaways">
             <Button variant="outline" size="sm">
               <ArrowLeftIcon className="w-4 h-4 mr-2" />
-              Retour aux giveaways
+              {messages.giveawaysPage.detail.backToGiveaways}
             </Button>
           </Link>
         </div>
@@ -210,7 +210,7 @@ export default function GiveawayDetailsPage() {
                     <div className="text-center p-4 bg-muted rounded-lg">
                       <CalendarIcon className="w-6 h-6 mx-auto mb-2 text-orange-500" />
                       <p className="text-sm text-muted-foreground">{messages.giveawaysPage.detail.endsOn}</p>
-                      <p className="text-lg font-semibold">{new Date(giveaway.endDate).toLocaleDateString()}</p>
+                      <p className="text-lg font-semibold">{new Date(giveaway.endDate).toLocaleDateString(locale === 'cn' ? 'zh-CN' : locale)}</p>
                     </div>
                   </div>
 
@@ -237,7 +237,7 @@ export default function GiveawayDetailsPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <TrophyIcon className="w-6 h-6 text-yellow-500" />
-                      <span>🎉 Gagnant du Giveaway</span>
+                      <span>🎉 {messages.giveawaysPage.detail.winnerTitle}</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -250,10 +250,10 @@ export default function GiveawayDetailsPage() {
                       </Avatar>
                       <div className="flex-1">
                         <h3 className="text-xl font-semibold text-yellow-800 dark:text-yellow-200">
-                          {winner.user.steamUsername || `Utilisateur ${winner.userId.slice(-6)}`}
+                          {winner.user.steamUsername || `${messages.giveawaysPage.detail.user} ${winner.userId.slice(-6)}`}
                         </h3>
                         <p className="text-yellow-700 dark:text-yellow-300">
-                          A utilisé {winner.ticketsUsed} ticket(s) • Probabilité: {((winner.ticketsUsed / totalTickets) * 100).toFixed(2)}%
+                          {messages.giveawaysPage.detail.usedTickets} {winner.ticketsUsed} {messages.giveawaysPage.detail.tickets} • {messages.giveawaysPage.detail.probability}: {((winner.ticketsUsed / totalTickets) * 100).toFixed(2)}%
                         </p>
                       </div>
                       <CheckCircleIcon className="w-8 h-8 text-yellow-600" />
@@ -273,13 +273,13 @@ export default function GiveawayDetailsPage() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>Participants ({giveaway.entries.length})</CardTitle>
+                  <CardTitle>{messages.giveawaysPage.detail.participantsCount} ({giveaway.entries.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {giveaway.entries.length === 0 ? (
                       <p className="text-center text-muted-foreground py-4">
-                        Aucun participant pour le moment
+                        {messages.giveawaysPage.detail.noParticipants}
                       </p>
                     ) : (
                       giveaway.entries
@@ -304,13 +304,13 @@ export default function GiveawayDetailsPage() {
                             </Avatar>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">
-                                {entry.user.steamUsername || `Utilisateur ${entry.userId.slice(-6)}`}
+                                {entry.user.steamUsername || `${messages.giveawaysPage.detail.user} ${entry.userId.slice(-6)}`}
                                 {entry.userId === giveaway.winnerId && (
                                   <StarIcon className="w-4 h-4 inline-block ml-1 text-yellow-500" />
                                 )}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {entry.ticketsUsed} ticket(s) • {((entry.ticketsUsed / totalTickets) * 100).toFixed(1)}%
+                                {entry.ticketsUsed} {messages.giveawaysPage.detail.tickets} • {((entry.ticketsUsed / totalTickets) * 100).toFixed(1)}%
                               </p>
                             </div>
                           </div>
@@ -353,7 +353,7 @@ export default function GiveawayDetailsPage() {
                   {giveaway.status === 'ENDED' && giveaway.randomSeed && (
                     <div className="pt-2 border-t">
                       <p className="text-xs text-muted-foreground">
-                        Seed de tirage: <code className="bg-muted px-1 rounded">{giveaway.randomSeed.slice(0, 16)}...</code>
+                        {messages.giveawaysPage.detail.drawSeed}: <code className="bg-muted px-1 rounded">{giveaway.randomSeed.slice(0, 16)}...</code>
                       </p>
                     </div>
                   )}
