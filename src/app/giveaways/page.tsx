@@ -133,7 +133,7 @@ const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets }: { give
               </div>
               <Link href={`/giveaways/${giveaway.id}`}>
                 <Button variant="outline" size="sm" className="text-xs">
-                  Voir détails
+                  {messages.giveawaysPage.viewDetails}
                 </Button>
               </Link>
             </div>
@@ -267,7 +267,7 @@ export default function GiveawaysPage() {
   if (giveawaysEnabled === null) {
     return (
       <div className="container mx-auto px-4 py-24 flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Chargement...</div>
+        <div className="animate-pulse text-muted-foreground">{messages.giveawaysPage.loading}</div>
       </div>
     );
   }
@@ -297,14 +297,13 @@ export default function GiveawaysPage() {
               <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
                 Giveaways
               </span>{' '}
-              bientôt disponibles
+              {messages.giveawaysPage.comingSoon}
             </h1>
             <p className="text-xl text-muted-foreground mb-3">
-              La section concours est temporairement fermée.
+              {messages.giveawaysPage.temporarilyClosed}
             </p>
             <p className="text-muted-foreground mb-10 max-w-md mx-auto">
-              Notre équipe prépare de nouveaux concours exceptionnels pour vous. 
-              Revenez bientôt pour tenter votre chance et remporter des skins CS2 !
+              {messages.giveawaysPage.comingSoonDescription}
             </p>
 
             {/* Infos sur les tickets */}
@@ -314,17 +313,16 @@ export default function GiveawaysPage() {
                   <BellAlertIcon className="w-6 h-6 text-orange-600 flex-shrink-0 mt-0.5" />
                   <div className="text-left">
                     <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-1">
-                      Continuez à accumuler vos tickets
+                      {messages.giveawaysPage.keepAccumulating}
                     </h3>
                     <p className="text-sm text-orange-700 dark:text-orange-300">
-                      Vendez vos skins et connectez-vous chaque jour pour gagner des tickets. 
-                      Ils seront disponibles dès l&apos;ouverture du prochain concours.
+                      {messages.giveawaysPage.keepAccumulatingDescription}
                     </p>
                     {user && (
                       <div className="mt-3 flex items-center space-x-2">
                         <TicketIcon className="w-4 h-4 text-purple-600" />
                         <span className="font-bold text-purple-700 dark:text-purple-300">
-                          {user.tickets ?? 0} tickets en attente
+                          {user.tickets ?? 0} {messages.giveawaysPage.ticketsPending}
                         </span>
                       </div>
                     )}
@@ -337,13 +335,13 @@ export default function GiveawaysPage() {
               <Link href="/dashboard">
                 <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white">
                   <TrophyIcon className="w-4 h-4 mr-2" />
-                  Voir mon dashboard
+                  {messages.giveawaysPage.viewDashboard}
                 </Button>
               </Link>
               <Link href="/">
                 <Button variant="outline">
                   <GiftIcon className="w-4 h-4 mr-2" />
-                  Vendre mes skins
+                  {messages.giveawaysPage.sellMySkins}
                 </Button>
               </Link>
             </div>

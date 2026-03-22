@@ -1913,6 +1913,15 @@ export interface Messages {
     ticketUsed: string;
     participatedOn: string;
     endedOn: string;
+    viewDetails: string;
+    comingSoon: string;
+    temporarilyClosed: string;
+    comingSoonDescription: string;
+    keepAccumulating: string;
+    keepAccumulatingDescription: string;
+    ticketsPending: string;
+    viewDashboard: string;
+    sellMySkins: string;
     noEntries: string;
     noEntriesDescription: string;
     viewActive: string;
