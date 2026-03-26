@@ -491,6 +491,7 @@ export interface Messages {
       privacy: string;
       kycPolicy: string;
       amlPolicy: string;
+      paymentCashout: string;
       login: string;
       admin: string;
     };
@@ -4302,6 +4303,31 @@ export interface Messages {
       zeroTolerance: { title: string; content: string };
       userResponsibility: { title: string; content: string };
       dataRetention: { title: string; content: string };
+      modifications: { title: string; content: string };
+    };
+  };
+  paymentCashout: {
+    title: string;
+    subtitle: string;
+    content: string;
+    comingSoon: string;
+    warning: string;
+    warningText: string;
+    sections: {
+      introduction: { title: string; content: string };
+      operatingPrinciple: { title: string; content: string };
+      estimationPricing: { title: string; content: string };
+      transactionValidation: { title: string; content: string };
+      tradeLockDelays: { title: string; content: string };
+      payment: { title: string; content: string };
+      fees: { title: string; content: string };
+      paymentConditions: { title: string; content: string };
+      noGuarantee: { title: string; content: string };
+      cancellation: { title: string; content: string };
+      suspensionFunds: { title: string; content: string };
+      thirdPartyServices: { title: string; content: string };
+      userResponsibility: { title: string; content: string };
+      transactionRefusal: { title: string; content: string };
       modifications: { title: string; content: string };
     };
   };

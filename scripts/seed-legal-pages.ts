@@ -875,6 +875,296 @@ Moonskin may amend this policy at any time to reflect regulatory and operational
     contactPhone: null,
     isPublished: true,
   },
+  {
+    slug: 'payment-cashout',
+    titleFr: 'Conditions de paiement & de cashout',
+    titleEn: 'Payment & cashout terms',
+    subtitleFr: 'Vente de skins, transactions et règlements sur Moonskin',
+    subtitleEn: 'Skin sales, transactions and payouts on Moonskin',
+    contentFr: `# 1. Objet
+
+Les présentes conditions encadrent les modalités de vente de skins, de traitement des transactions et de paiement sur la plateforme Moonskin.
+
+# 2. Principe de fonctionnement
+
+Moonskin propose un service permettant aux utilisateurs de vendre leurs skins contre une contrepartie financière.
+
+La plateforme agit en tant qu'intermédiaire ou acheteur, selon les cas.
+
+# 3. Estimation et prix
+
+Le prix affiché lors d'une demande de vente constitue une estimation indicative au moment de la demande.
+
+Le prix final peut évoluer jusqu'à la confirmation effective de la transaction, notamment en fonction des plateformes tierces de payout.
+
+Le prix devient définitif uniquement après validation de la transaction de payout.
+
+# 4. Validation de la transaction
+
+Une transaction est considérée comme engagée lorsque :
+
+- L'utilisateur accepte l'offre proposée
+- Le skin est transféré à Moonskin ou à un tiers validé
+
+À partir de ce moment, la transaction est irréversible.
+
+# 5. Trade lock et délais
+
+Les utilisateurs reconnaissent que :
+
+- Certains skins sont soumis à un trade lock Steam (généralement 7 jours)
+- Le délai de vente dépend de facteurs externes
+
+Le paiement ne peut intervenir qu'après :
+
+- Réception effective du skin
+- Fin du trade lock
+- Validation complète de la transaction
+
+# 6. Paiement
+
+Les paiements sont effectués via des prestataires tiers, notamment :
+
+- **Flexify**
+- **Whitepay**
+
+Les délais de paiement peuvent varier en fonction :
+
+- Du mode de paiement
+- Des délais des prestataires
+- Des contrôles de sécurité (KYC)
+
+Moonskin ne peut garantir un délai exact de paiement.
+
+# 7. Frais
+
+Des frais peuvent s'appliquer à la transaction.
+
+Ces frais peuvent inclure :
+
+- Des frais Moonskin
+- Des frais de prestataires tiers
+- Des frais liés aux plateformes utilisées
+
+Les frais connus sont affichés avant validation.
+
+# 8. Conditions de paiement
+
+Le paiement est effectué uniquement si :
+
+- Le skin a été reçu et validé
+- Le KYC (si requis) est complété
+- Aucune anomalie n'est détectée
+
+En cas de non-respect de ces conditions, le paiement peut être suspendu.
+
+# 9. Absence de garantie
+
+Moonskin ne garantit pas :
+
+- La vente immédiate d'un skin
+- Un prix fixe dans le temps
+- Une liquidité constante
+
+# 10. Annulation
+
+Une fois le skin transféré :
+
+- La transaction ne peut plus être annulée
+- Aucun retour en arrière n'est possible
+
+# 11. Suspension et gel des fonds
+
+Moonskin se réserve le droit de :
+
+- Suspendre une transaction
+- Retarder un paiement
+- Geler temporairement des fonds
+
+En cas de :
+
+- Suspicion de fraude
+- Non-conformité
+- Activité anormale
+- Demande des forces de l'ordre
+
+# 12. Dépendance aux services tiers
+
+Moonskin dépend de services externes tels que :
+
+- Steam
+- Marketplaces
+- Prestataires de paiement
+
+Moonskin ne peut être tenue responsable des dysfonctionnements ou retards liés à ces services.
+
+# 13. Responsabilité de l'utilisateur
+
+L'utilisateur est responsable :
+
+- De la validité de ses informations
+- De son trade link
+- Des actions effectuées depuis son compte
+
+Toute erreur imputable à l'utilisateur ne pourra engager la responsabilité de Moonskin.
+
+# 14. Refus de transaction
+
+Moonskin se réserve le droit de refuser toute transaction :
+
+- Suspecte
+- Non conforme
+- Ou présentant un risque
+
+Sans obligation de justification détaillée.
+
+# 15. Modification
+
+Moonskin se réserve le droit de modifier les présentes conditions à tout moment.`,
+    contentEn: `# 1. Purpose
+
+These terms govern how skin sales, transaction processing and payments work on Moonskin.
+
+# 2. How it works
+
+Moonskin offers a service allowing users to sell skins for cash consideration.
+
+The platform may act as an intermediary or as buyer, depending on the case.
+
+# 3. Pricing and estimates
+
+The price shown when you request a sale is an indicative estimate at that moment.
+
+The final amount may change until the transaction is actually confirmed, including based on third-party payout platforms.
+
+The price is final only once the payout transaction is validated.
+
+# 4. Transaction commitment
+
+A transaction is considered binding when:
+
+- You accept the proposed offer
+- The skin is transferred to Moonskin or an approved third party
+
+From that point, the transaction is irreversible.
+
+# 5. Trade lock and timing
+
+You acknowledge that:
+
+- Some skins are subject to a Steam trade lock (often 7 days)
+- Sale timing depends on external factors
+
+Payment can only occur after:
+
+- The skin is actually received
+- The trade lock ends
+- The transaction is fully validated
+
+# 6. Payment
+
+Payments are made through third-party providers, including:
+
+- **Flexify**
+- **Whitepay**
+
+Timing may vary depending on:
+
+- Payment method
+- Provider processing times
+- Security checks (KYC)
+
+Moonskin cannot guarantee an exact payment timeframe.
+
+# 7. Fees
+
+Fees may apply to the transaction.
+
+They may include:
+
+- Moonskin fees
+- Third-party provider fees
+- Platform-related fees
+
+Known fees are shown before you confirm.
+
+# 8. Payment conditions
+
+Payment is made only if:
+
+- The skin has been received and validated
+- KYC (if required) is completed
+- No anomaly is detected
+
+If these conditions are not met, payment may be suspended.
+
+# 9. No guarantee
+
+Moonskin does not guarantee:
+
+- Immediate sale of a skin
+- A fixed price over time
+- Constant liquidity
+
+# 10. Cancellation
+
+Once the skin is transferred:
+
+- The transaction cannot be cancelled
+- No rollback is possible
+
+# 11. Suspension and freezing
+
+Moonskin may:
+
+- Suspend a transaction
+- Delay a payout
+- Temporarily freeze funds
+
+Where there is:
+
+- Suspected fraud
+- Non-compliance
+- Abnormal activity
+- A request from law enforcement
+
+# 12. Third-party services
+
+Moonskin relies on external services such as:
+
+- Steam
+- Marketplaces
+- Payment providers
+
+Moonskin is not liable for outages or delays caused by those services.
+
+# 13. User responsibility
+
+You are responsible for:
+
+- The accuracy of your information
+- Your trade link
+- Actions taken from your account
+
+Moonskin is not liable for errors attributable to you.
+
+# 14. Refusal of a transaction
+
+Moonskin may refuse any transaction that is:
+
+- Suspicious
+- Non-compliant
+- Or presenting undue risk
+
+Without a detailed obligation to justify the decision.
+
+# 15. Changes
+
+Moonskin may amend these terms at any time.`,
+    contactEmail: 'contact@moonskin.com',
+    contactPhone: null,
+    isPublished: true,
+  },
 ];
 
 async function seedLegalPages(forceReset: boolean = false) {

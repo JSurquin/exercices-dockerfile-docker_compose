@@ -28,6 +28,7 @@ export function Footer() {
       { name: messages.footer.links.privacy, href: "/privacy" },
       { name: messages.footer.links.kycPolicy, href: "/kyc-policy" },
       { name: messages.footer.links.amlPolicy, href: "/aml-policy" },
+      { name: messages.footer.links.paymentCashout, href: "/payment-cashout" },
     ],
     community: [
       ...(process.env.NEXT_PUBLIC_DISCORD_URL ? [{ name: messages.footer.socialLinks.discord, href: process.env.NEXT_PUBLIC_DISCORD_URL }] : []),

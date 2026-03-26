@@ -449,6 +449,7 @@ export const messages: Record<Locale, Messages> = {
         privacy: "Politique de confidentialité",
         kycPolicy: "Politique KYC",
         amlPolicy: "Politique anti-blanchiment",
+        paymentCashout: "Paiement & cashout",
         login: "Connexion",
         admin: "Administration",
       },
@@ -4383,6 +4384,76 @@ export const messages: Record<Locale, Messages> = {
           content: "Moonskin se réserve le droit de modifier la présente politique à tout moment afin de s'adapter aux évolutions réglementaires et opérationnelles."
         }
       }
+    },
+    paymentCashout: {
+      title: "Conditions de paiement & de cashout",
+      subtitle: "Vente de skins, transactions et règlements sur Moonskin",
+      content: "Modalités de vente, de validation et de paiement. Les paiements transitent par des prestataires tiers (Flexify, Whitepay).",
+      comingSoon: "Contenu de secours — la version publiée peut provenir de l'administration des pages légales.",
+      warning: "Délais et montants",
+      warningText: "Les délais de paiement dépendent des prestataires tiers, du mode de paiement et des contrôles KYC. Moonskin ne garantit pas un délai ou un prix exact avant validation définitive du payout.",
+      sections: {
+        introduction: {
+          title: "1. Objet",
+          content: "Les présentes conditions encadrent les modalités de vente de skins, de traitement des transactions et de paiement sur la plateforme Moonskin."
+        },
+        operatingPrinciple: {
+          title: "2. Principe de fonctionnement",
+          content: "Moonskin propose un service permettant aux utilisateurs de vendre leurs skins contre une contrepartie financière.\n\nLa plateforme agit en tant qu'intermédiaire ou acheteur, selon les cas."
+        },
+        estimationPricing: {
+          title: "3. Estimation et prix",
+          content: "Le prix affiché lors d'une demande de vente constitue une estimation indicative au moment de la demande.\n\nLe prix final peut évoluer jusqu'à la confirmation effective de la transaction, notamment en fonction des plateformes tierces de payout.\n\nLe prix devient définitif uniquement après validation de la transaction de payout."
+        },
+        transactionValidation: {
+          title: "4. Validation de la transaction",
+          content: "Une transaction est considérée comme engagée lorsque :\n\n• L'utilisateur accepte l'offre proposée\n• Le skin est transféré à Moonskin ou à un tiers validé\n\nÀ partir de ce moment, la transaction est irréversible."
+        },
+        tradeLockDelays: {
+          title: "5. Trade lock et délais",
+          content: "Les utilisateurs reconnaissent que :\n\n• Certains skins sont soumis à un trade lock Steam (généralement 7 jours)\n• Le délai de vente dépend de facteurs externes\n\nLe paiement ne peut intervenir qu'après :\n\n• Réception effective du skin\n• Fin du trade lock\n• Validation complète de la transaction"
+        },
+        payment: {
+          title: "6. Paiement",
+          content: "Les paiements sont effectués via des prestataires tiers, notamment :\n\n• Flexify\n• Whitepay\n\nLes délais de paiement peuvent varier en fonction :\n\n• Du mode de paiement\n• Des délais des prestataires\n• Des contrôles de sécurité (KYC)\n\nMoonskin ne peut garantir un délai exact de paiement."
+        },
+        fees: {
+          title: "7. Frais",
+          content: "Des frais peuvent s'appliquer à la transaction.\n\nCes frais peuvent inclure :\n\n• Des frais Moonskin\n• Des frais de prestataires tiers\n• Des frais liés aux plateformes utilisées\n\nLes frais connus sont affichés avant validation."
+        },
+        paymentConditions: {
+          title: "8. Conditions de paiement",
+          content: "Le paiement est effectué uniquement si :\n\n• Le skin a été reçu et validé\n• Le KYC (si requis) est complété\n• Aucune anomalie n'est détectée\n\nEn cas de non-respect de ces conditions, le paiement peut être suspendu."
+        },
+        noGuarantee: {
+          title: "9. Absence de garantie",
+          content: "Moonskin ne garantit pas :\n\n• La vente immédiate d'un skin\n• Un prix fixe dans le temps\n• Une liquidité constante"
+        },
+        cancellation: {
+          title: "10. Annulation",
+          content: "Une fois le skin transféré :\n\n• La transaction ne peut plus être annulée\n• Aucun retour en arrière n'est possible"
+        },
+        suspensionFunds: {
+          title: "11. Suspension et gel des fonds",
+          content: "Moonskin se réserve le droit de :\n\n• Suspendre une transaction\n• Retarder un paiement\n• Geler temporairement des fonds\n\nEn cas de :\n\n• Suspicion de fraude\n• Non-conformité\n• Activité anormale\n• Demande des forces de l'ordre"
+        },
+        thirdPartyServices: {
+          title: "12. Dépendance aux services tiers",
+          content: "Moonskin dépend de services externes tels que :\n\n• Steam\n• Marketplaces\n• Prestataires de paiement\n\nMoonskin ne peut être tenue responsable des dysfonctionnements ou retards liés à ces services."
+        },
+        userResponsibility: {
+          title: "13. Responsabilité de l'utilisateur",
+          content: "L'utilisateur est responsable :\n\n• De la validité de ses informations\n• De son trade link\n• Des actions effectuées depuis son compte\n\nToute erreur imputable à l'utilisateur ne pourra engager la responsabilité de Moonskin."
+        },
+        transactionRefusal: {
+          title: "14. Refus de transaction",
+          content: "Moonskin se réserve le droit de refuser toute transaction :\n\n• Suspecte\n• Non conforme\n• Ou présentant un risque\n\nSans obligation de justification détaillée."
+        },
+        modifications: {
+          title: "15. Modification",
+          content: "Moonskin se réserve le droit de modifier les présentes conditions à tout moment."
+        }
+      }
     }
   },
   en: {
@@ -4828,6 +4899,7 @@ export const messages: Record<Locale, Messages> = {
         privacy: "Privacy Policy",
         kycPolicy: "KYC Policy",
         amlPolicy: "AML Policy",
+        paymentCashout: "Payment & cashout",
         login: "Login",
         admin: "Administration",
       },
@@ -8762,6 +8834,76 @@ export const messages: Record<Locale, Messages> = {
           content: "Moonskin may amend this policy at any time to reflect regulatory and operational changes."
         }
       }
+    },
+    paymentCashout: {
+      title: "Payment & cashout terms",
+      subtitle: "Skin sales, transactions and payouts on Moonskin",
+      content: "Rules for selling, validation and payment. Payouts are processed through third-party providers (Flexify, Whitepay).",
+      comingSoon: "Fallback content — the published version may come from the legal pages admin.",
+      warning: "Timing and amounts",
+      warningText: "Payout timing depends on third-party providers, payment method and KYC checks. Moonskin does not guarantee an exact timeline or amount until payout is finally confirmed.",
+      sections: {
+        introduction: {
+          title: "1. Purpose",
+          content: "These terms govern how skin sales, transaction processing and payments work on Moonskin."
+        },
+        operatingPrinciple: {
+          title: "2. How it works",
+          content: "Moonskin offers a service allowing users to sell skins for cash consideration.\n\nThe platform may act as an intermediary or as buyer, depending on the case."
+        },
+        estimationPricing: {
+          title: "3. Pricing and estimates",
+          content: "The price shown when you request a sale is an indicative estimate at that moment.\n\nThe final amount may change until the transaction is actually confirmed, including based on third-party payout platforms.\n\nThe price is final only once the payout transaction is validated."
+        },
+        transactionValidation: {
+          title: "4. Transaction commitment",
+          content: "A transaction is considered binding when:\n\n• You accept the proposed offer\n• The skin is transferred to Moonskin or an approved third party\n\nFrom that point, the transaction is irreversible."
+        },
+        tradeLockDelays: {
+          title: "5. Trade lock and timing",
+          content: "You acknowledge that:\n\n• Some skins are subject to a Steam trade lock (often 7 days)\n• Sale timing depends on external factors\n\nPayment can only occur after:\n\n• The skin is actually received\n• The trade lock ends\n• The transaction is fully validated"
+        },
+        payment: {
+          title: "6. Payment",
+          content: "Payments are made through third-party providers, including:\n\n• Flexify\n• Whitepay\n\nTiming may vary depending on:\n\n• Payment method\n• Provider processing times\n• Security checks (KYC)\n\nMoonskin cannot guarantee an exact payment timeframe."
+        },
+        fees: {
+          title: "7. Fees",
+          content: "Fees may apply to the transaction.\n\nThey may include:\n\n• Moonskin fees\n• Third-party provider fees\n• Platform-related fees\n\nKnown fees are shown before you confirm."
+        },
+        paymentConditions: {
+          title: "8. Payment conditions",
+          content: "Payment is made only if:\n\n• The skin has been received and validated\n• KYC (if required) is completed\n• No anomaly is detected\n\nIf these conditions are not met, payment may be suspended."
+        },
+        noGuarantee: {
+          title: "9. No guarantee",
+          content: "Moonskin does not guarantee:\n\n• Immediate sale of a skin\n• A fixed price over time\n• Constant liquidity"
+        },
+        cancellation: {
+          title: "10. Cancellation",
+          content: "Once the skin is transferred:\n\n• The transaction cannot be cancelled\n• No rollback is possible"
+        },
+        suspensionFunds: {
+          title: "11. Suspension and freezing",
+          content: "Moonskin may:\n\n• Suspend a transaction\n• Delay a payout\n• Temporarily freeze funds\n\nWhere there is:\n\n• Suspected fraud\n• Non-compliance\n• Abnormal activity\n• A request from law enforcement"
+        },
+        thirdPartyServices: {
+          title: "12. Third-party services",
+          content: "Moonskin relies on external services such as:\n\n• Steam\n• Marketplaces\n• Payment providers\n\nMoonskin is not liable for outages or delays caused by those services."
+        },
+        userResponsibility: {
+          title: "13. User responsibility",
+          content: "You are responsible for:\n\n• The accuracy of your information\n• Your trade link\n• Actions taken from your account\n\nMoonskin is not liable for errors attributable to you."
+        },
+        transactionRefusal: {
+          title: "14. Refusal of a transaction",
+          content: "Moonskin may refuse any transaction that is:\n\n• Suspicious\n• Non-compliant\n• Or presenting undue risk\n\nWithout a detailed obligation to justify the decision."
+        },
+        modifications: {
+          title: "15. Changes",
+          content: "Moonskin may amend these terms at any time."
+        }
+      }
     }
   },
   cn: {
@@ -9203,6 +9345,7 @@ export const messages: Record<Locale, Messages> = {
         privacy: "隐私政策",
         kycPolicy: "KYC政策",
         amlPolicy: "反洗钱政策",
+        paymentCashout: "付款与提现",
         login: "登录",
         admin: "管理",
       },
@@ -12792,6 +12935,76 @@ export const messages: Record<Locale, Messages> = {
         modifications: {
           title: "10. 政策变更",
           content: "Moonskin 可随时修订本政策，以适应监管与运营变化。"
+        }
+      }
+    },
+    paymentCashout: {
+      title: "付款与提现条款",
+      subtitle: "在 Moonskin 上出售饰品、交易与结算",
+      content: "出售、确认与付款规则。付款通过第三方（Flexify、Whitepay）处理。",
+      comingSoon: "备用内容 — 正式发布版本可能来自法律页面管理后台。",
+      warning: "时间与金额",
+      warningText: "付款时间取决于第三方、支付方式与 KYC 审核。在 payout 最终确认前，Moonskin 不保证确切时间或金额。",
+      sections: {
+        introduction: {
+          title: "1. 适用范围",
+          content: "本条款规范在 Moonskin 平台上饰品销售、交易处理与付款方式。"
+        },
+        operatingPrinciple: {
+          title: "2. 运作原则",
+          content: "Moonskin 提供用户将饰品出售并取得对价的服务。\n\n平台根据情形可作为中介或买方。"
+        },
+        estimationPricing: {
+          title: "3. 估价与价格",
+          content: "提交出售请求时显示的价格为当时的参考估价。\n\n直至交易实际确认前，最终价格可能变化，尤其取决于第三方提现平台。\n\n价格在提现交易验证通过后方为最终价格。"
+        },
+        transactionValidation: {
+          title: "4. 交易成立",
+          content: "在下列情形交易视为已成立：\n\n• 用户接受报价\n• 饰品已转移至 Moonskin 或经批准的第三方\n\n自此交易不可撤销。"
+        },
+        tradeLockDelays: {
+          title: "5. 交易锁与时间",
+          content: "用户知悉：\n\n• 部分饰品受 Steam 交易锁限制（常见 7 天）\n• 完成出售时间受外部因素影响\n\n仅在以下之后方可付款：\n\n• 实际收到饰品\n• 交易锁结束\n• 交易完全通过验证"
+        },
+        payment: {
+          title: "6. 付款",
+          content: "付款通过第三方完成，包括：\n\n• Flexify\n• Whitepay\n\n时间可能因以下因素变化：\n\n• 付款方式\n• 服务商处理时长\n• 安全与 KYC 审核\n\nMoonskin 不能保证确切到账时间。"
+        },
+        fees: {
+          title: "7. 费用",
+          content: "交易可能产生费用。\n\n可能包括：\n\n• Moonskin 费用\n• 第三方费用\n• 相关平台费用\n\n已知费用在确认前展示。"
+        },
+        paymentConditions: {
+          title: "8. 付款条件",
+          content: "仅在以下条件满足时付款：\n\n• 饰品已收到并验证\n• 如需 KYC 则已完成\n• 未发现异常\n\n若不满足，付款可暂停。"
+        },
+        noGuarantee: {
+          title: "9. 无保证",
+          content: "Moonskin 不保证：\n\n• 饰品即时售出\n• 价格长期固定\n• 流动性始终充足"
+        },
+        cancellation: {
+          title: "10. 取消",
+          content: "一旦饰品已转移：\n\n• 交易不可取消\n• 不可回滚"
+        },
+        suspensionFunds: {
+          title: "11. 暂停与冻结",
+          content: "Moonskin 可：\n\n• 暂停交易\n• 推迟付款\n• 暂时冻结资金\n\n在以下情形：\n\n• 涉嫌欺诈\n• 不合规\n• 异常活动\n• 执法部门要求"
+        },
+        thirdPartyServices: {
+          title: "12. 第三方服务依赖",
+          content: "Moonskin 依赖外部服务，例如：\n\n• Steam\n• 交易平台\n• 支付服务商\n\n对上述服务的故障或延误，Moonskin 不承担责任。"
+        },
+        userResponsibility: {
+          title: "13. 用户责任",
+          content: "用户对其负责：\n\n• 信息真实性\n• 交易链接\n• 账户内操作\n\n因用户过错导致的错误，Moonskin 不承担责任。"
+        },
+        transactionRefusal: {
+          title: "14. 拒绝交易",
+          content: "Moonskin 可拒绝可疑、不合规或具风险的交易，且无义务提供详尽说明。"
+        },
+        modifications: {
+          title: "15. 修订",
+          content: "Moonskin 可随时修订本条款。"
         }
       }
     }
