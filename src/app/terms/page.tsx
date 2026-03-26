@@ -9,18 +9,18 @@ export default function TermsPage() {
 
   const sections = messages.terms.sections;
   const fallbackSections = [
-    { id: "acceptance", ...sections.acceptance },
-    { id: "eligibility", ...sections.eligibility },
-    { id: "services", ...sections.services },
-    { id: "trading", ...sections.trading },
-    { id: "payments", ...sections.payments },
-    { id: "kycSection", ...sections.kycSection },
-    { id: "security", ...sections.security },
-    { id: "restrictions", ...sections.restrictions },
+    { id: "object", ...sections.object },
+    { id: "access", ...sections.access },
+    { id: "kycCompliance", ...sections.kycCompliance },
+    { id: "servicesDescription", ...sections.servicesDescription },
+    { id: "transactionsRisks", ...sections.transactionsRisks },
+    { id: "noFinancialAdvice", ...sections.noFinancialAdvice },
     { id: "liability", ...sections.liability },
-    { id: "data", ...sections.data },
-    { id: "termination", ...sections.termination },
-    { id: "governing", ...sections.governing },
+    { id: "userConduct", ...sections.userConduct },
+    { id: "personalData", ...sections.personalData },
+    { id: "modifications", ...sections.modifications },
+    { id: "governingLaw", ...sections.governingLaw },
+    { id: "contactSection", ...sections.contactSection },
   ];
 
   const fallbackContent = {

@@ -629,35 +629,27 @@ export interface Messages {
     tableOfContents: string;
     warningText: string;
     sections: {
-      acceptance: {
+      object: {
         title: string;
         content: string;
       };
-      eligibility: {
+      access: {
         title: string;
         content: string;
       };
-      services: {
+      kycCompliance: {
         title: string;
         content: string;
       };
-      trading: {
+      servicesDescription: {
         title: string;
         content: string;
       };
-      payments: {
+      transactionsRisks: {
         title: string;
         content: string;
       };
-      kycSection: {
-        title: string;
-        content: string;
-      };
-      security: {
-        title: string;
-        content: string;
-      };
-      restrictions: {
+      noFinancialAdvice: {
         title: string;
         content: string;
       };
@@ -665,15 +657,23 @@ export interface Messages {
         title: string;
         content: string;
       };
-      data: {
+      userConduct: {
         title: string;
         content: string;
       };
-      termination: {
+      personalData: {
         title: string;
         content: string;
       };
-      governing: {
+      modifications: {
+        title: string;
+        content: string;
+      };
+      governingLaw: {
+        title: string;
+        content: string;
+      };
+      contactSection: {
         title: string;
         content: string;
       };

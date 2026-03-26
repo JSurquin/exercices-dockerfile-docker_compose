@@ -1632,71 +1632,71 @@ export const messages: Record<Locale, Messages> = {
     },
     terms: {
       title: "Conditions d'utilisation",
-      subtitle: "Conditions générales d'utilisation de la plateforme MoonSkin",
-      lastUpdated: "Dernière mise à jour : 21 septembre 2024",
-      version: "Version 1.2",
+      subtitle: "Conditions générales d'utilisation de la plateforme Moonskin",
+      lastUpdated: "Dernière mise à jour : 26 mars 2025",
+      version: "Version 2.0",
       importantNotice: {
         title: "Information importante",
-        content: "Ces conditions d'utilisation constituent un contrat légalement contraignant entre vous et MoonSkin. En utilisant nos services, vous acceptez d'être lié par l'ensemble de ces conditions. Veuillez les lire attentivement avant d'utiliser notre plateforme."
+        content: "Les présentes CGU ont valeur contractuelle. En accédant à la plateforme, vous reconnaissez les avoir prises connaissance et les accepter sans réserve."
       },
       tableOfContents: "Table des matières",
-      warningText: "Ces conditions d'utilisation constituent un contrat légalement contraignant entre vous et MoonSkin. En utilisant nos services, vous acceptez d'être lié par l'ensemble de ces conditions.",
+      warningText: "En accédant à Moonskin, vous reconnaissez avoir pris connaissance des présentes conditions générales d'utilisation et les accepter sans réserve.",
       sections: {
-        acceptance: {
-          title: "1. Acceptation des conditions",
-          content: "En utilisant MoonSkin, vous acceptez d'être lié par les présentes conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service.\n\nCes conditions peuvent être modifiées à tout moment. Les modifications entreront en vigueur dès leur publication sur notre site. Il est de votre responsabilité de consulter régulièrement ces conditions."
+        object: {
+          title: "1. Objet",
+          content: "Les présentes Conditions Générales d'Utilisation (CGU) ont pour objet de définir les modalités d'accès et d'utilisation des services proposés par Moonskin, plateforme spécialisée dans l'intermédiation, l'achat, la vente et l'échange de skins liés au jeu Counter-Strike 2 (CS2).\n\nEn accédant à la plateforme, l'utilisateur reconnaît avoir pris connaissance des présentes CGU et les accepter sans réserve."
         },
-        eligibility: {
-          title: "2. Conditions d'éligibilité",
-          content: "Pour utiliser MoonSkin, vous devez :\n• Être âgé d'au moins 18 ans\n• Avoir la capacité juridique de conclure des contrats\n• Résider dans un pays où nos services sont légalement disponibles\n• Posséder un compte Steam en règle\n• Compléter avec succès notre processus KYC (Know Your Customer)\n\nNous nous réservons le droit de refuser ou de suspendre l'accès à tout utilisateur ne respectant pas ces critères."
+        access: {
+          title: "2. Accès aux services",
+          content: "L'accès à la plateforme est ouvert à toute personne.\n\nToutefois, certaines fonctionnalités, notamment les retraits de fonds, sont soumises à des conditions spécifiques.\n\nL'utilisateur s'engage à :\n• Fournir des informations exactes\n• Ne pas usurper l'identité d'un tiers\n\nMoonskin se réserve le droit de suspendre, limiter ou supprimer l'accès à tout utilisateur en cas de non-respect des présentes CGU."
         },
-        services: {
-          title: "3. Description des services",
-          content: "MoonSkin fournit une plateforme permettant de :\n• Vendre des skins Counter-Strike 2 contre de l'argent réel\n• Recevoir des paiements via SEPA ou cryptomonnaies\n• Participer à des giveaways et concours\n• Accéder à des statistiques de trading\n\nNos services sont fournis \"en l'état\" et nous ne garantissons pas leur disponibilité ininterrompue."
+        kycCompliance: {
+          title: "3. Vérification d'identité (KYC) et conformité",
+          content: "Dans le cadre de la lutte contre le blanchiment de capitaux et le financement du terrorisme, Moonskin peut exiger une vérification d'identité (KYC), notamment lors des retraits.\n\nCette vérification peut être requise pour :\n• Les retraits de fonds\n• Certaines opérations jugées sensibles\n• Le respect des obligations réglementaires\n\nMoonskin se réserve le droit de :\n• Refuser ou bloquer une transaction en cas d'informations incomplètes, incohérentes ou suspectes\n• Demander des documents complémentaires\n• Suspendre ou clôturer un compte en cas de non-conformité, d'utilisation de faux documents ou de tentative de fraude\n\nAucun retrait ne pourra être effectué sans validation préalable du KYC lorsque celui-ci est requis."
         },
-        trading: {
-          title: "4. Processus de trading",
-          content: "Le processus de vente comprend :\n• Connexion Steam et ajout du Trade Link\n• Estimation automatique des skins via API Skinplace\n• Acceptation des conditions de vente\n• Trade automatique avec notre bot\n• Période de trade hold Steam (7 jours obligatoires)\n• Paiement automatique après validation\n\nLes prix sont indicatifs et peuvent varier selon les conditions de marché. Une fois le trade accepté sur Steam, la vente est définitive."
+        servicesDescription: {
+          title: "4. Description des services",
+          content: "Moonskin propose notamment :\n• Un service de vente de skins CS2 via le site\n• Une mise en relation entre vendeurs et acheteurs via le Discord officiel\n• Des services d'accès à la supply de skins issus de marketplaces étrangères\n• Des outils d'analyse, d'estimation et d'accompagnement\n\nMoonskin agit en tant qu'intermédiaire.\n\nSauf mention contraire, Moonskin ne détient pas la propriété des biens échangés."
         },
-        payments: {
-          title: "5. Paiements et frais",
-          content: "Frais applicables :\n• Frais de cashout : 0,5% du montant brut\n• Frais de réseau variables selon la méthode de paiement\n• Aucun frais caché\n\nDélais de paiement :\n• SEPA : 24-48h ouvrées après trade hold\n• Crypto : Quelques heures après trade hold\n\nTous les montants sont calculés en centimes pour éviter les erreurs d'arrondi."
+        transactionsRisks: {
+          title: "5. Transactions et risques",
+          content: "Les utilisateurs reconnaissent que :\n• Le marché des skins est fluctuant et non garanti\n• Les transactions peuvent être soumises à des contraintes techniques (trade lock Steam de 7 jours, délais, plateformes tierces, frais externes)\n\nLes décisions prises par les utilisateurs relèvent de leur seule responsabilité."
         },
-        kycSection: {
-          title: "6. Vérification KYC",
-          content: "La vérification KYC est obligatoire pour :\n• Effectuer tout paiement\n• Respecter la réglementation anti-blanchiment\n• Assurer la sécurité de la plateforme\n\nDocuments requis :\n• Pièce d'identité valide (carte d'identité, passeport)\n• Selfie de vérification\n• Justificatif de domicile (optionnel)\n\nVos documents sont traités par un prestataire certifié et nous ne conservons que les références de vérification."
-        },
-        security: {
-          title: "7. Sécurité et protection",
-          content: "Nous mettons en place :\n• Chiffrement SSL 256-bit pour toutes les communications\n• Authentification à deux facteurs recommandée\n• Surveillance anti-fraude 24/7\n• Conformité aux standards de sécurité bancaires\n\nL'utilisateur s'engage à :\n• Protéger ses identifiants de connexion\n• Signaler immédiatement toute activité suspecte\n• Ne pas partager son compte avec des tiers"
-        },
-        restrictions: {
-          title: "8. Utilisations interdites",
-          content: "Il est strictement interdit de :\n• Utiliser la plateforme pour blanchir de l'argent\n• Créer plusieurs comptes pour contourner les limites\n• Utiliser des bots ou scripts automatisés\n• Tenter de manipuler les prix ou le système\n• Violer les conditions d'utilisation de Steam\n• Effectuer des activités frauduleuses\n\nToute violation peut entraîner la suspension immédiate du compte."
+        noFinancialAdvice: {
+          title: "6. Absence de conseil financier",
+          content: "Les informations fournies sur Moonskin ne constituent en aucun cas :\n• Un conseil en investissement\n• Une recommandation financière\n• Une incitation à acheter ou vendre"
         },
         liability: {
-          title: "9. Limitation de responsabilité",
-          content: "MoonSkin ne peut être tenu responsable :\n• Des fluctuations de prix des skins\n• Des interruptions de service temporaires\n• Des décisions de Steam concernant les trades\n• Des pertes indirectes ou consécutives\n• Des erreurs d'estimation dues aux conditions de marché\n\nNotre responsabilité est limitée au montant des frais payés pour le service concerné."
+          title: "7. Responsabilité",
+          content: "Moonskin met en œuvre tous les moyens raisonnables pour assurer le bon fonctionnement de ses services.\n\nToutefois, la responsabilité de Moonskin ne saurait être engagée en cas de :\n• Perte financière\n• Fluctuation de la valeur des skins\n• Dysfonctionnement de services tiers (Steam, marketplaces, etc.)\n• Retard, blocage ou annulation de transaction indépendant de sa volonté"
         },
-        data: {
-          title: "10. Protection des données",
-          content: "Conformément au RGPD, vous avez le droit de :\n• Accéder à vos données personnelles\n• Demander leur rectification ou suppression\n• Vous opposer à leur traitement\n• Demander la portabilité de vos données\n\nNous conservons vos données uniquement le temps nécessaire aux obligations légales et réglementaires."
+        userConduct: {
+          title: "8. Comportement des utilisateurs",
+          content: "L'utilisateur s'engage à :\n• Respecter les lois en vigueur\n• Ne pas utiliser la plateforme à des fins frauduleuses\n• Ne pas contourner les systèmes de sécurité\n\nTout comportement abusif pourra entraîner une suspension immédiate ou définitive du compte."
         },
-        termination: {
-          title: "11. Résiliation",
-          content: "Vous pouvez résilier votre compte à tout moment via les paramètres.\n\nNous pouvons suspendre ou résilier votre compte en cas de :\n• Violation des présentes conditions\n• Activité frauduleuse ou suspecte\n• Non-respect des exigences KYC\n• Demande des autorités compétentes\n\nEn cas de résiliation, les trades en cours seront finalisés selon les conditions acceptées."
+        personalData: {
+          title: "9. Données personnelles",
+          content: "Moonskin accorde une importance particulière à la protection des données personnelles et s'engage à respecter la réglementation en vigueur, notamment le RGPD.\n\nDans le cadre de certaines opérations, notamment les retraits de fonds, une procédure de vérification d'identité (KYC) peut être requise.\n\nÀ ce titre :\n• Les données KYC sont collectées, traitées et stockées par un prestataire spécialisé : KYCAID\n• Moonskin n'accède pas directement aux données sensibles, sauf dans les limites strictement nécessaires à la validation des comptes\n• Ce prestataire assure un traitement conforme aux exigences réglementaires\n\nL'utilisateur accepte que ses données soient transmises à ce prestataire dans ce cadre.\n\nMoonskin peut également faire appel à des prestataires de paiement, notamment :\n• Flexify\n• Whitepay\n\nMoonskin ne saurait être tenue responsable en cas de défaillance imputable à ces prestataires, dans la limite des dispositions légales applicables."
         },
-        governing: {
-          title: "12. Droit applicable",
-          content: "Ces conditions sont régies par le droit français. Tout litige sera soumis à la juridiction exclusive des tribunaux de Paris.\n\nEn cas de litige, nous encourageons la résolution amiable via notre service client avant toute action judiciaire."
+        modifications: {
+          title: "10. Modification des CGU",
+          content: "Moonskin se réserve le droit de modifier les présentes CGU à tout moment.\n\nL'utilisation continue des services vaut acceptation des nouvelles conditions."
+        },
+        governingLaw: {
+          title: "11. Droit applicable",
+          content: "Les présentes CGU sont régies par le droit français.\n\nTout litige sera soumis aux juridictions compétentes."
+        },
+        contactSection: {
+          title: "12. Contact",
+          content: "Pour toute question relative aux présentes CGU : contact@moonskin.com"
         }
       },
       contactInfo: {
         title: "Questions sur ces conditions ?",
-        description: "Notre équipe légale est disponible pour répondre à toutes vos questions concernant ces conditions d'utilisation.",
-        email: "legal@moonskin.gg",
-        phone: "+33 1 23 45 67 89",
-        support: "Support 24/7"
+        description: "Contactez-nous pour toute précision concernant les présentes conditions générales d'utilisation.",
+        email: "contact@moonskin.com",
+        phone: "",
+        support: ""
       }
     },
     privacy: {
@@ -4997,71 +4997,71 @@ export const messages: Record<Locale, Messages> = {
     },
     terms: {
       title: "Terms of Service",
-      subtitle: "General terms of use for the MoonSkin platform",
-      lastUpdated: "Last updated: September 21, 2024",
-      version: "Version 1.2",
+      subtitle: "General terms of use for the Moonskin platform",
+      lastUpdated: "Last updated: March 26, 2025",
+      version: "Version 2.0",
       importantNotice: {
         title: "Important information",
-        content: "These terms of use constitute a legally binding contract between you and MoonSkin. By using our services, you agree to be bound by all of these terms. Please read them carefully before using our platform."
+        content: "These Terms constitute a binding contract. By accessing the platform, you acknowledge that you have read them and accept them without reservation."
       },
       tableOfContents: "Table of Contents",
-      warningText: "These terms of use constitute a legally binding contract between you and MoonSkin. By using our services, you agree to be bound by all of these terms.",
+      warningText: "By accessing Moonskin, you acknowledge that you have read these Terms of Service and accept them without reservation.",
       sections: {
-        acceptance: {
-          title: "1. Acceptance of terms",
-          content: "By using MoonSkin, you agree to be bound by these terms of use. If you do not accept these terms, please do not use our service.\n\nThese terms may be modified at any time. Changes will take effect upon publication on our site. It is your responsibility to regularly review these terms."
+        object: {
+          title: "1. Purpose",
+          content: "These Terms of Service (\"Terms\") set out the terms of access to and use of the services offered by Moonskin, a platform specialising in intermediation, purchase, sale and exchange of skins related to the game Counter-Strike 2 (CS2).\n\nBy accessing the platform, the user acknowledges having read these Terms and accepts them without reservation."
         },
-        eligibility: {
-          title: "2. Eligibility conditions",
-          content: "To use MoonSkin, you must:\n• Be at least 18 years old\n• Have the legal capacity to enter into contracts\n• Reside in a country where our services are legally available\n• Own a valid Steam account\n• Successfully complete our KYC (Know Your Customer) process\n\nWe reserve the right to refuse or suspend access to any user who does not meet these criteria."
+        access: {
+          title: "2. Access to services",
+          content: "Access to the platform is open to everyone.\n\nHowever, certain features, in particular withdrawals, are subject to specific conditions.\n\nThe user undertakes to:\n• Provide accurate information\n• Not impersonate a third party\n\nMoonskin reserves the right to suspend, restrict or remove access for any user who fails to comply with these Terms."
         },
-        services: {
-          title: "3. Description of services",
-          content: "MoonSkin provides a platform that allows you to:\n• Sell Counter-Strike 2 skins for real money\n• Receive payments via SEPA or cryptocurrencies\n• Participate in giveaways and contests\n• Access trading statistics\n\nOur services are provided \"as is\" and we do not guarantee their uninterrupted availability."
+        kycCompliance: {
+          title: "3. Identity verification (KYC) and compliance",
+          content: "As part of anti-money laundering and counter-terrorist financing obligations, Moonskin may require identity verification (KYC), in particular for withdrawals.\n\nSuch verification may be required for:\n• Fund withdrawals\n• Certain operations deemed sensitive\n• Compliance with regulatory obligations\n\nMoonskin reserves the right to:\n• Refuse or block a transaction if information is incomplete, inconsistent or suspicious\n• Request additional documents\n• Suspend or close an account in the event of non-compliance, use of forged documents or attempted fraud\n\nNo withdrawal may be made without prior KYC approval when KYC is required."
         },
-        trading: {
-          title: "4. Trading process",
-          content: "The selling process includes:\n• Steam connection and Trade Link addition\n• Automatic skin estimation via Skinplace API\n• Acceptance of sale conditions\n• Automatic trade with our bot\n• Steam trade hold period (mandatory 7 days)\n• Automatic payment after validation\n\nPrices are indicative and may vary according to market conditions. Once the trade is accepted on Steam, the sale is final."
+        servicesDescription: {
+          title: "4. Description of services",
+          content: "Moonskin offers in particular:\n• Sale of CS2 skins via the website\n• Introduction of sellers and buyers through the official Discord\n• Access to skin supply from foreign marketplaces\n• Analysis, valuation and support tools\n\nMoonskin acts as an intermediary.\n\nUnless otherwise stated, Moonskin does not own the assets being traded."
         },
-        payments: {
-          title: "5. Payments and fees",
-          content: "Applicable fees:\n• Cashout fees: 0.5% of gross amount\n• Network fees variable according to payment method\n• No hidden fees\n\nPayment times:\n• SEPA: 24-48 business hours after trade hold\n• Crypto: A few hours after trade hold\n\nAll amounts are calculated in cents to avoid rounding errors."
+        transactionsRisks: {
+          title: "5. Transactions and risks",
+          content: "Users acknowledge that:\n• The skin market is volatile and not guaranteed\n• Transactions may be subject to technical constraints (7-day Steam trade lock, delays, third-party platforms, external fees)\n\nDecisions made by users are their sole responsibility."
         },
-        kycSection: {
-          title: "6. KYC verification",
-          content: "KYC verification is mandatory for:\n• Making any payment\n• Complying with anti-money laundering regulations\n• Ensuring platform security\n\nRequired documents:\n• Valid ID (identity card, passport)\n• Verification selfie\n• Proof of address (optional)\n\nYour documents are processed by a certified provider and we only keep verification references."
-        },
-        security: {
-          title: "7. Security and protection",
-          content: "We implement:\n• 256-bit SSL encryption for all communications\n• Two-factor authentication recommended\n• 24/7 anti-fraud monitoring\n• Compliance with banking security standards\n\nThe user agrees to:\n• Protect their login credentials\n• Immediately report any suspicious activity\n• Not share their account with third parties"
-        },
-        restrictions: {
-          title: "8. Prohibited uses",
-          content: "It is strictly forbidden to:\n• Use the platform for money laundering\n• Create multiple accounts to bypass limits\n• Use bots or automated scripts\n• Attempt to manipulate prices or the system\n• Violate Steam terms of use\n• Perform fraudulent activities\n\nAny violation may result in immediate account suspension."
+        noFinancialAdvice: {
+          title: "6. No financial advice",
+          content: "Information provided on Moonskin does not constitute:\n• Investment advice\n• A financial recommendation\n• An inducement to buy or sell"
         },
         liability: {
-          title: "9. Limitation of liability",
-          content: "MoonSkin cannot be held responsible for:\n• Skin price fluctuations\n• Temporary service interruptions\n• Steam decisions regarding trades\n• Indirect or consequential losses\n• Estimation errors due to market conditions\n\nOur liability is limited to the amount of fees paid for the service concerned."
+          title: "7. Liability",
+          content: "Moonskin uses reasonable efforts to ensure proper operation of its services.\n\nHowever, Moonskin shall not be liable for:\n• Financial loss\n• Fluctuations in skin value\n• Malfunction of third-party services (Steam, marketplaces, etc.)\n• Delay, blocking or cancellation of a transaction beyond its control"
         },
-        data: {
-          title: "10. Data protection",
-          content: "In accordance with GDPR, you have the right to:\n• Access your personal data\n• Request their correction or deletion\n• Object to their processing\n• Request data portability\n\nWe retain your data only for the time necessary for legal and regulatory obligations."
+        userConduct: {
+          title: "8. User conduct",
+          content: "The user undertakes to:\n• Comply with applicable laws\n• Not use the platform for fraudulent purposes\n• Not circumvent security systems\n\nAbusive behaviour may result in immediate or permanent suspension of the account."
         },
-        termination: {
-          title: "11. Termination",
-          content: "You can terminate your account at any time through settings.\n\nWe may suspend or terminate your account in case of:\n• Violation of these terms\n• Fraudulent or suspicious activity\n• Non-compliance with KYC requirements\n• Request from competent authorities\n\nIn case of termination, ongoing trades will be finalized according to accepted conditions."
+        personalData: {
+          title: "9. Personal data",
+          content: "Moonskin attaches particular importance to the protection of personal data and undertakes to comply with applicable regulations, including the GDPR.\n\nFor certain operations, in particular withdrawals, identity verification (KYC) may be required.\n\nIn this respect:\n• KYC data is collected, processed and stored by a specialised provider: KYCAID\n• Moonskin does not directly access sensitive data, except to the strictly limited extent necessary to validate accounts\n• That provider processes data in compliance with regulatory requirements\n\nThe user agrees that their data may be transferred to that provider in this context.\n\nMoonskin may also use payment providers, including:\n• Flexify\n• Whitepay\n\nMoonskin shall not be liable for failures attributable to those providers, to the extent permitted by applicable law."
         },
-        governing: {
-          title: "12. Applicable law",
-          content: "These terms are governed by French law. Any dispute will be submitted to the exclusive jurisdiction of Paris courts.\n\nIn case of dispute, we encourage amicable resolution through our customer service before any legal action."
+        modifications: {
+          title: "10. Changes to the Terms",
+          content: "Moonskin reserves the right to amend these Terms at any time.\n\nContinued use of the services constitutes acceptance of the new terms."
+        },
+        governingLaw: {
+          title: "11. Governing law",
+          content: "These Terms are governed by French law.\n\nAny dispute shall be submitted to the competent courts."
+        },
+        contactSection: {
+          title: "12. Contact",
+          content: "For any questions regarding these Terms: contact@moonskin.com"
         }
       },
       contactInfo: {
         title: "Questions about these terms?",
-        description: "Our legal team is available to answer all your questions regarding these terms of use.",
-        email: "legal@moonskin.gg",
-        phone: "+33 1 23 45 67 89",
-        support: "24/7 Support"
+        description: "Contact us for any clarification regarding these Terms of Service.",
+        email: "contact@moonskin.com",
+        phone: "",
+        support: ""
       }
     },
     privacy: {
@@ -9140,14 +9140,72 @@ export const messages: Record<Locale, Messages> = {
     },
     terms: {
       title: "服务条款",
-      subtitle: "CashTrade平台的一般使用条款",
-      lastUpdated: "最后更新：2024年9月21日",
-      version: "版本1.2",
-      importantNotice: { title: "重要信息", content: "" },
+      subtitle: "Moonskin 平台的一般使用条款",
+      lastUpdated: "最后更新：2025年3月26日",
+      version: "版本 2.0",
+      importantNotice: {
+        title: "重要信息",
+        content: "本条款具有合同效力。访问平台即表示您已阅读并接受本条款。"
+      },
       tableOfContents: "目录",
-      warningText: "这些使用条款构成您与CashTrade之间具有法律约束力的合同。使用我们的服务，即表示您同意受所有这些条款的约束。",
-      sections: { acceptance: { title: "", content: "" }, eligibility: { title: "", content: "" }, services: { title: "", content: "" }, trading: { title: "", content: "" }, payments: { title: "", content: "" }, kycSection: { title: "", content: "" }, security: { title: "", content: "" }, restrictions: { title: "", content: "" }, liability: { title: "", content: "" }, data: { title: "", content: "" }, termination: { title: "", content: "" }, governing: { title: "", content: "" } },
-      contactInfo: { title: "", description: "", email: "", phone: "", support: "" }
+      warningText: "访问 Moonskin 即表示您已阅读并无条件接受本服务条款。",
+      sections: {
+        object: {
+          title: "1. 目的",
+          content: "本服务条款旨在规范您访问和使用 Moonskin 提供的服务；Moonskin 是专注于《反恐精英2》（CS2）相关饰品中介、购买、销售和交换的平台。\n\n访问平台即表示用户确认已阅读并接受本条款。"
+        },
+        access: {
+          title: "2. 服务访问",
+          content: "平台面向所有人开放。\n\n但部分功能（特别是提现）须满足特定条件。\n\n用户承诺：\n• 提供准确信息\n• 不冒用他人身份\n\n若违反本条款，Moonskin 有权暂停、限制或终止用户访问。"
+        },
+        kycCompliance: {
+          title: "3. 身份验证（KYC）与合规",
+          content: "为履行反洗钱与反恐怖融资义务，Moonskin 可要求身份验证（KYC），尤其在提现时。\n\n在以下情形可能要求验证：\n• 资金提取\n• 被视为敏感的部分操作\n• 履行监管义务\n\nMoonskin 有权：\n• 在信息不完整、不一致或可疑时拒绝或阻断交易\n• 要求补充材料\n• 在不合规、使用伪造文件或涉嫌欺诈时暂停或关闭账户\n\n在需要 KYC 时，未通过验证不得提现。"
+        },
+        servicesDescription: {
+          title: "4. 服务说明",
+          content: "Moonskin 提供的服务包括但不限于：\n• 通过网站销售 CS2 饰品\n• 通过官方 Discord 为买卖双方提供对接\n• 访问来自境外交易平台的饰品供货\n• 分析、估价与辅助工具\n\nMoonskin 作为中介。\n\n除另有说明外，Moonskin 不拥有交易标的之所有权。"
+        },
+        transactionsRisks: {
+          title: "5. 交易与风险",
+          content: "用户确认：\n• 饰品市场波动大且无收益保证\n• 交易可能受技术因素限制（如 Steam 7 天交易锁定、延迟、第三方平台、外部费用等）\n\n用户自行承担交易决策风险。"
+        },
+        noFinancialAdvice: {
+          title: "6. 非投资建议",
+          content: "Moonskin 上的信息不构成：\n• 投资建议\n• 理财推荐\n• 买卖邀约"
+        },
+        liability: {
+          title: "7. 责任",
+          content: "Moonskin 尽合理努力保障服务运行。\n\n但对于下列情形，Moonskin 不承担责任：\n• 财务损失\n• 饰品价值波动\n• 第三方服务故障（Steam、交易平台等）\n• 非因 Moonskin 可控原因导致的延迟、阻断或交易取消"
+        },
+        userConduct: {
+          title: "8. 用户行为",
+          content: "用户承诺：\n• 遵守适用法律\n• 不将平台用于欺诈目的\n• 不绕过安全机制\n\n滥用行为可能导致账户被立即或永久暂停。"
+        },
+        personalData: {
+          title: "9. 个人数据",
+          content: "Moonskin 重视个人数据保护，并遵守适用法规（包括 GDPR）。\n\n在部分操作（特别是提现）中可能需要进行身份验证（KYC）。\n\n在此情形下：\n• KYC 数据由专门服务商 KYCAID 收集、处理与存储\n• Moonskin 除为验证账户所严格必需的范围外，不直接访问敏感数据\n• 该服务商按监管要求进行数据处理\n\n用户同意在此范围内向其传输数据。\n\nMoonskin 亦可使用支付服务商，包括 Flexify 与 Whitepay。\n\n在法律允许范围内，Moonskin 对因该等服务商过错导致的故障不承担责任。"
+        },
+        modifications: {
+          title: "10. 条款变更",
+          content: "Moonskin 可随时修订本条款。\n\n持续使用服务即视为接受新条款。"
+        },
+        governingLaw: {
+          title: "11. 适用法律",
+          content: "本条款受法国法律管辖。\n\n争议由有管辖权的法院处理。"
+        },
+        contactSection: {
+          title: "12. 联系方式",
+          content: "有关本条款的问题：contact@moonskin.com"
+        }
+      },
+      contactInfo: {
+        title: "对条款有疑问？",
+        description: "若需了解本服务条款，欢迎联系我们。",
+        email: "contact@moonskin.com",
+        phone: "",
+        support: ""
+      }
     },
     privacy: {
       title: "隐私政策",
