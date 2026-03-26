@@ -492,6 +492,7 @@ export interface Messages {
       kycPolicy: string;
       amlPolicy: string;
       paymentCashout: string;
+      mentionsLegales: string;
       login: string;
       admin: string;
     };
@@ -4329,6 +4330,24 @@ export interface Messages {
       userResponsibility: { title: string; content: string };
       transactionRefusal: { title: string; content: string };
       modifications: { title: string; content: string };
+    };
+  };
+  mentionsLegales: {
+    title: string;
+    subtitle: string;
+    content: string;
+    comingSoon: string;
+    warning: string;
+    warningText: string;
+    sections: {
+      publisher: { title: string; content: string };
+      publicationDirector: { title: string; content: string };
+      hosting: { title: string; content: string };
+      intellectualProperty: { title: string; content: string };
+      liability: { title: string; content: string };
+      personalData: { title: string; content: string };
+      externalLinks: { title: string; content: string };
+      applicableLaw: { title: string; content: string };
     };
   };
 }

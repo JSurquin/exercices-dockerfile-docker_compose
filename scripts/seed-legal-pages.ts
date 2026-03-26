@@ -1165,6 +1165,146 @@ Moonskin may amend these terms at any time.`,
     contactPhone: null,
     isPublished: true,
   },
+  {
+    slug: 'mentions-legales',
+    titleFr: 'Mentions légales',
+    titleEn: 'Legal notice',
+    subtitleFr: "Éditeur, hébergement, propriété intellectuelle et cadre juridique du site Moonskin",
+    subtitleEn: 'Publisher, hosting, intellectual property and legal framework',
+    contentFr: `# 1. Éditeur du site
+
+Le site Moonskin est édité par :
+
+**COUNTER TRADE FRANCE**  
+Société par Actions Simplifiée Unipersonnelle (SASU)  
+SIRET : 939 155 875 00015  
+Siège social : 53 T rue Auguste Blanqui, 78800 Houilles  
+
+**Président :** Lucas Pallanca  
+
+**Email :** contact@moonskin.com  
+
+# 2. Directeur de la publication
+
+Le directeur de la publication est :
+
+Lucas Pallanca
+
+# 3. Hébergement
+
+Le site Moonskin est hébergé par :
+
+**[À compléter]**  
+*(Exemples : Vercel, AWS, OVHcloud — indiquer l'hébergeur et les coordonnées légales requises.)*
+
+# 4. Propriété intellectuelle
+
+L'ensemble du contenu présent sur le site Moonskin, incluant notamment :
+
+- Textes
+- Images
+- Graphismes
+- Logo
+- Design
+
+est protégé par le droit de la propriété intellectuelle.
+
+Toute reproduction, représentation ou exploitation, totale ou partielle, sans autorisation préalable est interdite.
+
+# 5. Responsabilité
+
+Moonskin s'efforce d'assurer l'exactitude des informations diffusées sur le site.
+
+Toutefois, Moonskin ne saurait être tenue responsable :
+
+- Des erreurs ou omissions
+- Des interruptions du service
+- Des dommages directs ou indirects résultant de l'utilisation du site
+
+# 6. Données personnelles
+
+Moonskin s'engage à respecter la réglementation en vigueur relative à la protection des données personnelles, notamment le RGPD.
+
+Pour plus d'informations, l'utilisateur est invité à consulter la **Politique de confidentialité** (voir la page dédiée sur le site).
+
+# 7. Liens externes
+
+Le site peut contenir des liens vers des sites tiers.
+
+Moonskin ne saurait être tenue responsable du contenu ou du fonctionnement de ces sites externes.
+
+# 8. Droit applicable
+
+Les présentes mentions légales sont régies par le droit français.`,
+    contentEn: `# 1. Site publisher
+
+The Moonskin website is published by:
+
+**COUNTER TRADE FRANCE**  
+French simplified single-shareholder company (SASU)  
+SIRET: 939 155 875 00015  
+Registered office: 53 T rue Auguste Blanqui, 78800 Houilles, France  
+
+**President:** Lucas Pallanca  
+
+**Email:** contact@moonskin.com  
+
+# 2. Publication director
+
+The publication director is:
+
+Lucas Pallanca
+
+# 3. Hosting
+
+The Moonskin website is hosted by:
+
+**[To be completed]**  
+*(e.g. Vercel, AWS, OVHcloud — specify the host and legally required details.)*
+
+# 4. Intellectual property
+
+All content on the Moonskin website, including in particular:
+
+- Text
+- Images
+- Graphics
+- Logo
+- Design
+
+is protected by intellectual property law.
+
+Any full or partial reproduction, representation or exploitation without prior permission is prohibited.
+
+# 5. Liability
+
+Moonskin strives to ensure the accuracy of information published on the website.
+
+However, Moonskin shall not be liable for:
+
+- Errors or omissions
+- Service interruptions
+- Direct or indirect damage resulting from use of the website
+
+# 6. Personal data
+
+Moonskin complies with applicable personal data protection rules, including the GDPR.
+
+For more information, users should read the **Privacy Policy** (dedicated page on the website).
+
+# 7. External links
+
+The website may contain links to third-party sites.
+
+Moonskin is not responsible for the content or operation of those external sites.
+
+# 8. Applicable law
+
+These legal notices are governed by French law.`,
+    contactEmail: 'contact@moonskin.com',
+    contactPhone: null,
+    isPublished: true,
+  },
 ];
 
 async function seedLegalPages(forceReset: boolean = false) {

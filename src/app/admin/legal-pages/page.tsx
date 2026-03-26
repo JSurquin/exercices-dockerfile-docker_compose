@@ -73,6 +73,7 @@ const defaultPages = [
   { slug: 'kyc-policy', labelFr: 'Politique KYC', labelEn: 'KYC Policy' },
   { slug: 'aml-policy', labelFr: 'Politique AML', labelEn: 'AML Policy' },
   { slug: 'payment-cashout', labelFr: 'Paiement & cashout', labelEn: 'Payment & cashout' },
+  { slug: 'mentions-legales', labelFr: 'Mentions légales', labelEn: 'Legal notice' },
   { slug: 'about', labelFr: 'À propos', labelEn: 'About' },
   { slug: 'press', labelFr: 'Presse', labelEn: 'Press' },
 ];

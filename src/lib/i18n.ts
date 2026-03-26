@@ -450,6 +450,7 @@ export const messages: Record<Locale, Messages> = {
         kycPolicy: "Politique KYC",
         amlPolicy: "Politique anti-blanchiment",
         paymentCashout: "Paiement & cashout",
+        mentionsLegales: "Mentions légales",
         login: "Connexion",
         admin: "Administration",
       },
@@ -4454,6 +4455,48 @@ export const messages: Record<Locale, Messages> = {
           content: "Moonskin se réserve le droit de modifier les présentes conditions à tout moment."
         }
       }
+    },
+    mentionsLegales: {
+      title: "Mentions légales",
+      subtitle: "Informations sur l'éditeur, l'hébergement et le cadre juridique du site Moonskin",
+      content: "Identification de l'éditeur, hébergement, propriété intellectuelle et responsabilité.",
+      comingSoon: "Contenu de secours — la version publiée peut provenir de l'administration des pages légales.",
+      warning: "Informations légales",
+      warningText: "Les coordonnées d'hébergement peuvent être complétées dans l'admin des pages légales lorsque elles sont définitives.",
+      sections: {
+        publisher: {
+          title: "1. Éditeur du site",
+          content: "Le site Moonskin est édité par :\n\nCOUNTER TRADE FRANCE\nSociété par Actions Simplifiée Unipersonnelle (SASU)\nSIRET : 939 155 875 00015\nSiège social : 53 T rue Auguste Blanqui, 78800 Houilles\n\nPrésident : Lucas Pallanca\n\nEmail : contact@moonskin.com"
+        },
+        publicationDirector: {
+          title: "2. Directeur de la publication",
+          content: "Le directeur de la publication est :\n\nLucas Pallanca"
+        },
+        hosting: {
+          title: "3. Hébergement",
+          content: "Le site Moonskin est hébergé par :\n\n[À compléter — préciser l'hébergeur et l'adresse, par ex. Vercel Inc., AWS, OVHcloud, etc.]"
+        },
+        intellectualProperty: {
+          title: "4. Propriété intellectuelle",
+          content: "L'ensemble du contenu présent sur le site Moonskin, incluant notamment :\n\n• Textes\n• Images\n• Graphismes\n• Logo\n• Design\n\nest protégé par le droit de la propriété intellectuelle.\n\nToute reproduction, représentation ou exploitation, totale ou partielle, sans autorisation préalable est interdite."
+        },
+        liability: {
+          title: "5. Responsabilité",
+          content: "Moonskin s'efforce d'assurer l'exactitude des informations diffusées sur le site.\n\nToutefois, Moonskin ne saurait être tenue responsable :\n\n• Des erreurs ou omissions\n• Des interruptions du service\n• Des dommages directs ou indirects résultant de l'utilisation du site"
+        },
+        personalData: {
+          title: "6. Données personnelles",
+          content: "Moonskin s'engage à respecter la réglementation en vigueur relative à la protection des données personnelles, notamment le RGPD.\n\nPour plus d'informations, l'utilisateur est invité à consulter la Politique de confidentialité."
+        },
+        externalLinks: {
+          title: "7. Liens externes",
+          content: "Le site peut contenir des liens vers des sites tiers.\n\nMoonskin ne saurait être tenue responsable du contenu ou du fonctionnement de ces sites externes."
+        },
+        applicableLaw: {
+          title: "8. Droit applicable",
+          content: "Les présentes mentions légales sont régies par le droit français."
+        }
+      }
     }
   },
   en: {
@@ -4900,6 +4943,7 @@ export const messages: Record<Locale, Messages> = {
         kycPolicy: "KYC Policy",
         amlPolicy: "AML Policy",
         paymentCashout: "Payment & cashout",
+        mentionsLegales: "Legal notice",
         login: "Login",
         admin: "Administration",
       },
@@ -8904,6 +8948,48 @@ export const messages: Record<Locale, Messages> = {
           content: "Moonskin may amend these terms at any time."
         }
       }
+    },
+    mentionsLegales: {
+      title: "Legal notice",
+      subtitle: "Publisher, hosting and legal framework for the Moonskin website",
+      content: "Publisher identification, hosting, intellectual property and liability.",
+      comingSoon: "Fallback content — the published version may come from the legal pages admin.",
+      warning: "Legal information",
+      warningText: "Hosting details can be completed in the legal pages admin when final.",
+      sections: {
+        publisher: {
+          title: "1. Site publisher",
+          content: "The Moonskin website is published by:\n\nCOUNTER TRADE FRANCE\nFrench simplified single-shareholder company (SASU)\nSIRET: 939 155 875 00015\nRegistered office: 53 T rue Auguste Blanqui, 78800 Houilles, France\n\nPresident: Lucas Pallanca\n\nEmail: contact@moonskin.com"
+        },
+        publicationDirector: {
+          title: "2. Publication director",
+          content: "The publication director is:\n\nLucas Pallanca"
+        },
+        hosting: {
+          title: "3. Hosting",
+          content: "The Moonskin website is hosted by:\n\n[To be completed — e.g. Vercel, AWS, OVHcloud, with legal address as required]"
+        },
+        intellectualProperty: {
+          title: "4. Intellectual property",
+          content: "All content on the Moonskin website, including in particular:\n\n• Text\n• Images\n• Graphics\n• Logo\n• Design\n\nis protected by intellectual property law.\n\nAny full or partial reproduction, representation or use without prior permission is prohibited."
+        },
+        liability: {
+          title: "5. Liability",
+          content: "Moonskin strives to keep information on the website accurate.\n\nHowever, Moonskin shall not be liable for:\n\n• Errors or omissions\n• Service interruptions\n• Direct or indirect damage arising from use of the website"
+        },
+        personalData: {
+          title: "6. Personal data",
+          content: "Moonskin complies with applicable personal data protection rules, including the GDPR.\n\nFor more information, users should read the Privacy Policy."
+        },
+        externalLinks: {
+          title: "7. External links",
+          content: "The website may contain links to third-party sites.\n\nMoonskin is not responsible for the content or operation of those external sites."
+        },
+        applicableLaw: {
+          title: "8. Applicable law",
+          content: "These legal notices are governed by French law."
+        }
+      }
     }
   },
   cn: {
@@ -9346,6 +9432,7 @@ export const messages: Record<Locale, Messages> = {
         kycPolicy: "KYC政策",
         amlPolicy: "反洗钱政策",
         paymentCashout: "付款与提现",
+        mentionsLegales: "法律声明",
         login: "登录",
         admin: "管理",
       },
@@ -13005,6 +13092,48 @@ export const messages: Record<Locale, Messages> = {
         modifications: {
           title: "15. 修订",
           content: "Moonskin 可随时修订本条款。"
+        }
+      }
+    },
+    mentionsLegales: {
+      title: "法律声明",
+      subtitle: "Moonskin 网站运营者、托管与法律框架信息",
+      content: "运营者身份、托管、知识产权与责任说明。",
+      comingSoon: "备用内容 — 正式发布版本可能来自法律页面管理后台。",
+      warning: "法律信息",
+      warningText: "托管方信息可在法律页面管理后台补全。",
+      sections: {
+        publisher: {
+          title: "1. 网站运营者",
+          content: "Moonskin 网站由以下主体运营：\n\nCOUNTER TRADE FRANCE（法国一人简化股份有限公司 SASU）\nSIRET：939 155 875 00015\n注册地址：53 T rue Auguste Blanqui, 78800 Houilles, France\n\n总裁：Lucas Pallanca\n\n电子邮件：contact@moonskin.com"
+        },
+        publicationDirector: {
+          title: "2. 发布负责人",
+          content: "发布负责人：Lucas Pallanca"
+        },
+        hosting: {
+          title: "3. 托管",
+          content: "Moonskin 网站托管方：\n\n【待填写 — 请注明托管商及依法需公示的地址，例如 Vercel、AWS、OVHcloud 等】"
+        },
+        intellectualProperty: {
+          title: "4. 知识产权",
+          content: "Moonskin 网站上的全部内容（包括但不限于文字、图片、图形、标志、设计）受知识产权法保护。\n\n未经事先许可，禁止全部或部分复制、展示或利用。"
+        },
+        liability: {
+          title: "5. 责任",
+          content: "Moonskin 力求确保网站信息准确。\n\n但对于下列情形，Moonskin 不承担责任：\n\n• 错误或遗漏\n• 服务中断\n• 因使用网站造成的直接或间接损害"
+        },
+        personalData: {
+          title: "6. 个人数据",
+          content: "Moonskin 遵守适用的个人数据保护规则（包括 GDPR）。\n\n详见《隐私政策》。"
+        },
+        externalLinks: {
+          title: "7. 外部链接",
+          content: "网站可能包含指向第三方网站的链接。Moonskin 对该等网站的内容或运行不承担责任。"
+        },
+        applicableLaw: {
+          title: "8. 适用法律",
+          content: "本法律声明受法国法律管辖。"
         }
       }
     }
