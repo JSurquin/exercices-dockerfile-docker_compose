@@ -269,164 +269,260 @@ For any questions: **contact@moonskin.com**`,
   },
   {
     slug: 'privacy',
-    titleFr: 'Politique de Confidentialité',
+    titleFr: 'Politique de confidentialité',
     titleEn: 'Privacy Policy',
-    subtitleFr: 'Comment nous collectons, utilisons et protégeons vos données personnelles',
-    subtitleEn: 'How we collect, use and protect your personal data',
-    contentFr: `# Notre engagement
+    subtitleFr: 'Comment Moonskin collecte, utilise et protège vos données personnelles',
+    subtitleEn: 'How Moonskin collects, uses and protects your personal data',
+    contentFr: `# 1. Introduction
 
-Chez MoonSkin, la protection de vos données personnelles est notre priorité absolue. Cette politique explique comment nous collectons, utilisons, stockons et protégeons vos informations en conformité avec le Règlement Général sur la Protection des Données (RGPD) et les lois françaises.
+La présente politique de confidentialité a pour objectif d'informer les utilisateurs de la plateforme Moonskin sur la manière dont leurs données personnelles sont collectées, utilisées et protégées.
 
-Nous appliquons le principe de minimisation des données : nous ne collectons que les informations strictement nécessaires au fonctionnement de notre service et à nos obligations légales.
+Moonskin attache une importance particulière à la protection de la vie privée et s'engage à traiter les données personnelles dans le respect du Règlement Général sur la Protection des Données (RGPD).
 
-# Types de données collectées
+# 2. Responsable du traitement
 
-## Données d'identification
-- Nom et prénom
-- Date de naissance
+Le responsable du traitement est :
+
+COUNTER TRADE FRANCE  
+SASU immatriculée en France  
+SIRET : 939 155 875 00015  
+Email : countertradefrance@gmail.com  
+Adresse : 53 T RUE AUGUSTE BLANQUI 78800 HOUILLES
+
+# 3. Données collectées
+
+Nous pouvons collecter les données suivantes :
+
+**Données d'identification**
+- Nom / pseudonyme
 - Adresse email
-- Steam ID
+- Identifiant Steam
+
+**Données de transaction**
+- Historique des ventes et achats
+- Skins échangés
+- Montants des transactions
+
+**Données techniques**
 - Adresse IP
+- Données de connexion
+- Navigateur / appareil
 
-**Finalité :** Authentification et vérification d'identité (KYC)
-**Conservation :** 5 ans après fermeture du compte
+**Données de vérification (KYC)**
 
-## Données KYC
-- Pièce d'identité
-- Selfie de vérification
-- Justificatif de domicile
+Dans le cadre de la sécurisation de la plateforme et de la conformité réglementaire, certaines vérifications peuvent être requises.
 
-**Finalité :** Conformité réglementaire anti-blanchiment
-**Conservation :** 10 ans (obligation légale)
+Ces données sont collectées et traitées via notre prestataire spécialisé : **KYCAID**
 
-## Données financières
-- IBAN (haché)
-- Adresses crypto
-- Historique transactions
+# 4. Finalités du traitement
 
-**Finalité :** Traitement des paiements et audit
-**Conservation :** 7 ans (obligation comptable)
+Les données sont utilisées pour :
 
-## Données d'usage
-- Logs de connexion
-- Activité de trading
-- Préférences utilisateur
+- Fournir et améliorer les services Moonskin
+- Sécuriser les transactions
+- Prévenir la fraude et les activités illicites
+- Gérer les paiements et retraits
+- Respecter les obligations légales
+- Communiquer avec les utilisateurs
 
-**Finalité :** Amélioration du service et sécurité
-**Conservation :** 2 ans maximum
+# 5. Base légale
 
-# Base légale du traitement
+Les traitements reposent sur :
 
-- **Contrat** : Exécution de nos services de trading et paiement
-- **Obligation légale** : Conformité KYC, lutte anti-blanchiment, obligations fiscales
-- **Intérêt légitime** : Sécurité, prévention fraude, amélioration du service
+- L'exécution du contrat (utilisation de la plateforme)
+- Le respect des obligations légales
+- L'intérêt légitime (sécurité, amélioration du service)
+- Le consentement (le cas échéant)
 
-# Vos droits RGPD
+# 6. Partage des données
 
-- **Droit d'accès** : Demander une copie de toutes vos données personnelles
-- **Droit de rectification** : Corriger ou mettre à jour vos informations personnelles
-- **Droit à l'effacement** : Supprimer vos données (sauf obligations légales)
-- **Droit à la portabilité** : Récupérer vos données dans un format lisible
+Les données peuvent être partagées avec des prestataires de confiance, uniquement lorsque cela est nécessaire au fonctionnement du service :
 
-# Sécurité des données
+- **KYCAID** — vérification d'identité (KYC)
+- **Flexify** — traitement des paiements
+- **Whitepay** — solutions de paiement
 
-**Mesures techniques :**
-- Chiffrement SSL/TLS 256-bit
-- Chiffrement des données sensibles en base
-- Authentification à deux facteurs
-- Surveillance 24/7 des accès
+Ainsi que :
 
-**Mesures organisationnelles :**
-- Accès limité aux données (need-to-know)
-- Formation sécurité des employés
-- Audits de sécurité réguliers
-- Plan de réponse aux incidents
+- Fournisseurs techniques (hébergement, infrastructure)
+- Autorités légales si requis
 
-# Partage des données
+Moonskin ne vend ni ne loue les données personnelles.
 
-Nous ne vendons jamais vos données personnelles. Nous pouvons les partager uniquement dans les cas suivants :
+# 7. Conservation des données
 
-- **Prestataires de services** : Qonto (paiements SEPA), prestataire KYC, hébergeur cloud - sous contrat de confidentialité strict
-- **Obligations légales** : Autorités fiscales, TRACFIN (lutte anti-blanchiment), autorités judiciaires sur réquisition
-- **Votre consentement** : Avec votre accord explicite pour des services additionnels`,
-    contentEn: `# Our Commitment
+Les données sont conservées :
 
-At MoonSkin, protecting your personal data is our absolute priority. This policy explains how we collect, use, store and protect your information in compliance with the General Data Protection Regulation (GDPR) and French laws.
+- Pendant la durée d'utilisation du service
+- Puis archivées selon les obligations légales
 
-We apply the principle of data minimization: we only collect information strictly necessary for the operation of our service and our legal obligations.
+Les données de vérification (KYC) peuvent être conservées conformément aux exigences réglementaires des prestataires concernés.
 
-# Types of Data Collected
+# 8. Sécurité
 
-## Identification Data
-- First and last name
-- Date of birth
+Moonskin met en œuvre des mesures de sécurité adaptées :
+
+- Accès restreint aux données
+- Chiffrement des données sensibles
+- Surveillance des activités suspectes
+
+# 9. Vos droits
+
+Conformément au RGPD, vous disposez des droits suivants :
+
+- Droit d'accès
+- Droit de rectification
+- Droit de suppression
+- Droit d'opposition
+- Droit à la portabilité
+
+Vous pouvez exercer vos droits à : **contact@moonskin.fun**
+
+# 10. Cookies
+
+Moonskin utilise des cookies afin de :
+
+- Assurer le bon fonctionnement du site
+- Améliorer l'expérience utilisateur
+- Analyser l'utilisation de la plateforme
+
+Vous pouvez gérer vos préférences directement depuis votre navigateur.
+
+# 11. Modifications
+
+Cette politique peut être modifiée à tout moment afin de refléter les évolutions du service ou des obligations légales.
+
+# 12. Contact
+
+Pour toute question relative à cette politique :
+
+Email : **contact@moonskin.fun**`,
+    contentEn: `# 1. Introduction
+
+This privacy policy describes how Moonskin collects, uses and protects personal data for users of the platform.
+
+Moonskin takes privacy seriously and processes personal data in accordance with the General Data Protection Regulation (GDPR).
+
+# 2. Data controller
+
+The data controller is:
+
+COUNTER TRADE FRANCE  
+French simplified joint-stock company (SASU)  
+SIRET: 939 155 875 00015  
+Email: countertradefrance@gmail.com  
+Address: 53 T rue Auguste Blanqui, 78800 Houilles, France
+
+# 3. Data collected
+
+We may collect:
+
+**Identification data**
+- Name / display name
 - Email address
 - Steam ID
+
+**Transaction data**
+- Sales and purchase history
+- Skins exchanged
+- Transaction amounts
+
+**Technical data**
 - IP address
+- Connection data
+- Browser / device
 
-**Purpose:** Authentication and identity verification (KYC)
-**Retention:** 5 years after account closure
+**Verification data (KYC)**
 
-## KYC Data
-- Identity document
-- Verification selfie
-- Proof of address
+Certain checks may be required for platform security and regulatory compliance.
 
-**Purpose:** Anti-money laundering regulatory compliance
-**Retention:** 10 years (legal obligation)
+This data is collected and processed through our specialised provider: **KYCAID**
 
-## Financial Data
-- IBAN (hashed)
-- Crypto addresses
-- Transaction history
+# 4. Purposes
 
-**Purpose:** Payment processing and audit
-**Retention:** 7 years (accounting obligation)
+Data is used to:
 
-## Usage Data
-- Login logs
-- Trading activity
-- User preferences
+- Provide and improve Moonskin services
+- Secure transactions
+- Prevent fraud and unlawful activity
+- Manage payments and withdrawals
+- Comply with legal obligations
+- Communicate with users
 
-**Purpose:** Service improvement and security
-**Retention:** Maximum 2 years
+# 5. Legal basis
 
-# Legal Basis for Processing
+Processing is based on:
 
-- **Contract**: Execution of our trading and payment services
-- **Legal obligation**: KYC compliance, anti-money laundering, tax obligations
-- **Legitimate interest**: Security, fraud prevention, service improvement
+- Performance of the contract (use of the platform)
+- Legal obligations
+- Legitimate interests (security, service improvement)
+- Consent (where applicable)
 
-# Your GDPR Rights
+# 6. Sharing
 
-- **Right of access**: Request a copy of all your personal data
-- **Right to rectification**: Correct or update your personal information
-- **Right to erasure**: Delete your data (except legal obligations)
-- **Right to portability**: Retrieve your data in a readable format
+Data may be shared with trusted processors only where necessary:
 
-# Data Security
+- **KYCAID** — identity verification (KYC)
+- **Flexify** — payment processing
+- **Whitepay** — payment solutions
 
-**Technical measures:**
-- SSL/TLS 256-bit encryption
-- Encryption of sensitive data in database
-- Two-factor authentication
-- 24/7 access monitoring
+As well as:
 
-**Organizational measures:**
-- Limited data access (need-to-know)
-- Employee security training
-- Regular security audits
-- Incident response plan
+- Technical providers (hosting, infrastructure)
+- Authorities where required by law
 
-# Data Sharing
+Moonskin does not sell or rent personal data.
 
-We never sell your personal data. We may share it only in the following cases:
+# 7. Retention
 
-- **Service providers**: Qonto (SEPA payments), KYC provider, cloud host - under strict confidentiality contract
-- **Legal obligations**: Tax authorities, TRACFIN (anti-money laundering), judicial authorities upon request
-- **Your consent**: With your explicit agreement for additional services`,
-    contactEmail: 'dpo@moonskin.gg',
-    contactPhone: '+33 1 23 45 67 89',
+Data is retained:
+
+- For the duration of use of the service
+- Then archived according to legal obligations
+
+KYC data may be retained in line with requirements applicable to the relevant providers.
+
+# 8. Security
+
+Moonskin implements appropriate measures:
+
+- Restricted access to data
+- Encryption of sensitive data
+- Monitoring of suspicious activity
+
+# 9. Your rights
+
+Under the GDPR you have:
+
+- Right of access
+- Right to rectification
+- Right to erasure
+- Right to object
+- Right to data portability
+
+To exercise your rights: **contact@moonskin.fun**
+
+# 10. Cookies
+
+Moonskin uses cookies to:
+
+- Ensure the site works properly
+- Improve user experience
+- Analyse use of the platform
+
+You can manage preferences in your browser.
+
+# 11. Changes
+
+This policy may be updated at any time to reflect changes to our services or legal requirements.
+
+# 12. Contact
+
+Questions about this policy:
+
+Email: **contact@moonskin.fun**`,
+    contactEmail: 'contact@moonskin.fun',
+    contactPhone: null,
     isPublished: true,
   },
   {

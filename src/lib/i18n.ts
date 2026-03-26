@@ -1701,10 +1701,10 @@ export const messages: Record<Locale, Messages> = {
     },
     privacy: {
       title: "Politique de confidentialité",
-      subtitle: "Comment nous collectons, utilisons et protégeons vos données personnelles",
-      lastUpdated: "Dernière mise à jour : 21 septembre 2024",
+      subtitle: "Comment Moonskin collecte, utilise et protège vos données personnelles",
+      lastUpdated: "Dernière mise à jour : 26 mars 2025",
       gdprCompliant: "Conforme RGPD",
-      intro: "MoonSkin s'engage à protéger votre vie privée et vos données personnelles conformément au RGPD.",
+      intro: "Moonskin s'engage à protéger votre vie privée et vos données personnelles conformément au RGPD.",
       commitment: {
         title: "Notre engagement",
         description1: "Chez MoonSkin, la protection de vos données personnelles est notre priorité absolue. Cette politique explique comment nous collectons, utilisons, stockons et protégeons vos informations en conformité avec le Règlement Général sur la Protection des Données (RGPD) et les lois françaises.",
@@ -1803,11 +1803,61 @@ export const messages: Record<Locale, Messages> = {
           description: "Avec votre accord explicite pour des services additionnels (partenariats, etc.)"
         }
       },
+      sections: {
+        introduction: {
+          title: "1. Introduction",
+          content: "La présente politique de confidentialité a pour objectif d'informer les utilisateurs de la plateforme Moonskin sur la manière dont leurs données personnelles sont collectées, utilisées et protégées.\n\nMoonskin attache une importance particulière à la protection de la vie privée et s'engage à traiter les données personnelles dans le respect du Règlement Général sur la Protection des Données (RGPD)."
+        },
+        controller: {
+          title: "2. Responsable du traitement",
+          content: "Le responsable du traitement est :\n\nCOUNTER TRADE FRANCE\nSASU immatriculée en France\nSIRET : 939 155 875 00015\nEmail : countertradefrance@gmail.com\nAdresse : 53 T RUE AUGUSTE BLANQUI 78800 HOUILLES"
+        },
+        dataCollected: {
+          title: "3. Données collectées",
+          content: "Nous pouvons collecter les données suivantes :\n\nDonnées d'identification\n• Nom / pseudonyme\n• Adresse email\n• Identifiant Steam\n\nDonnées de transaction\n• Historique des ventes et achats\n• Skins échangés\n• Montants des transactions\n\nDonnées techniques\n• Adresse IP\n• Données de connexion\n• Navigateur / appareil\n\nDonnées de vérification (KYC)\n\nDans le cadre de la sécurisation de la plateforme et de la conformité réglementaire, certaines vérifications peuvent être requises.\n\nCes données sont collectées et traitées via notre prestataire spécialisé : KYCAID."
+        },
+        purposes: {
+          title: "4. Finalités du traitement",
+          content: "Les données sont utilisées pour :\n\n• Fournir et améliorer les services Moonskin\n• Sécuriser les transactions\n• Prévenir la fraude et les activités illicites\n• Gérer les paiements et retraits\n• Respecter les obligations légales\n• Communiquer avec les utilisateurs"
+        },
+        legalBasisSection: {
+          title: "5. Base légale",
+          content: "Les traitements reposent sur :\n\n• L'exécution du contrat (utilisation de la plateforme)\n• Le respect des obligations légales\n• L'intérêt légitime (sécurité, amélioration du service)\n• Le consentement (le cas échéant)"
+        },
+        sharingSection: {
+          title: "6. Partage des données",
+          content: "Les données peuvent être partagées avec des prestataires de confiance, uniquement lorsque cela est nécessaire au fonctionnement du service :\n\n• KYCAID — vérification d'identité (KYC)\n• Flexify — traitement des paiements\n• Whitepay — solutions de paiement\n\nAinsi que :\n\n• Fournisseurs techniques (hébergement, infrastructure)\n• Autorités légales si requis\n\nMoonskin ne vend ni ne loue les données personnelles."
+        },
+        retention: {
+          title: "7. Conservation des données",
+          content: "Les données sont conservées :\n\n• Pendant la durée d'utilisation du service\n• Puis archivées selon les obligations légales\n\nLes données de vérification (KYC) peuvent être conservées conformément aux exigences réglementaires des prestataires concernés."
+        },
+        securitySection: {
+          title: "8. Sécurité",
+          content: "Moonskin met en œuvre des mesures de sécurité adaptées :\n\n• Accès restreint aux données\n• Chiffrement des données sensibles\n• Surveillance des activités suspectes"
+        },
+        yourRights: {
+          title: "9. Vos droits",
+          content: "Conformément au RGPD, vous disposez des droits suivants :\n\n• Droit d'accès\n• Droit de rectification\n• Droit de suppression\n• Droit d'opposition\n• Droit à la portabilité\n\nVous pouvez exercer vos droits à : contact@moonskin.fun"
+        },
+        cookies: {
+          title: "10. Cookies",
+          content: "Moonskin utilise des cookies afin de :\n\n• Assurer le bon fonctionnement du site\n• Améliorer l'expérience utilisateur\n• Analyser l'utilisation de la plateforme\n\nVous pouvez gérer vos préférences directement depuis votre navigateur."
+        },
+        modifications: {
+          title: "11. Modifications",
+          content: "Cette politique peut être modifiée à tout moment afin de refléter les évolutions du service ou des obligations légales."
+        },
+        contactSection: {
+          title: "12. Contact",
+          content: "Pour toute question relative à cette politique :\n\nEmail : contact@moonskin.fun"
+        }
+      },
       contact: {
-        title: "Contact Délégué à la Protection des Données",
-        description: "Pour toute question concernant vos données personnelles ou pour exercer vos droits, contactez notre DPO.",
-        email: "dpo@moonskin.gg",
-        address: "MoonSkin - DPO, 123 Rue de la Tech, 75001 Paris",
+        title: "Contact — protection des données",
+        description: "Pour exercer vos droits ou pour toute question relative à cette politique :",
+        email: "contact@moonskin.fun",
+        address: "COUNTER TRADE FRANCE — 53 T rue Auguste Blanqui, 78800 Houilles, France",
         cnil: "Vous avez également le droit de déposer une plainte auprès de la CNIL en cas de manquement."
       }
     },
@@ -5066,10 +5116,10 @@ export const messages: Record<Locale, Messages> = {
     },
     privacy: {
       title: "Privacy Policy",
-      subtitle: "How we collect, use and protect your personal data",
-      lastUpdated: "Last updated: September 21, 2024",
+      subtitle: "How Moonskin collects, uses and protects your personal data",
+      lastUpdated: "Last updated: March 26, 2025",
       gdprCompliant: "GDPR Compliant",
-      intro: "MoonSkin is committed to protecting your privacy and personal data in accordance with GDPR.",
+      intro: "Moonskin is committed to protecting your privacy and personal data in accordance with GDPR.",
       commitment: {
         title: "Our commitment",
         description1: "At MoonSkin, protecting your personal data is our absolute priority. This policy explains how we collect, use, store and protect your information in compliance with the General Data Protection Regulation (GDPR) and French laws.",
@@ -5168,12 +5218,62 @@ export const messages: Record<Locale, Messages> = {
           description: "With your explicit agreement for additional services (partnerships, etc.)"
         }
       },
+      sections: {
+        introduction: {
+          title: "1. Introduction",
+          content: "This privacy policy explains how Moonskin processes personal data: what we collect, how we use it and how we protect it.\n\nMoonskin takes privacy seriously and processes personal data in accordance with the General Data Protection Regulation (GDPR)."
+        },
+        controller: {
+          title: "2. Data controller",
+          content: "The data controller is:\n\nCOUNTER TRADE FRANCE\nFrench simplified joint-stock company (SASU)\nSIRET: 939 155 875 00015\nEmail: countertradefrance@gmail.com\nAddress: 53 T rue Auguste Blanqui, 78800 Houilles, France"
+        },
+        dataCollected: {
+          title: "3. Data collected",
+          content: "We may collect the following data:\n\nIdentification data\n• Name / display name\n• Email address\n• Steam ID\n\nTransaction data\n• Sales and purchase history\n• Skins exchanged\n• Transaction amounts\n\nTechnical data\n• IP address\n• Connection data\n• Browser / device\n\nVerification data (KYC)\n\nFor platform security and regulatory compliance, certain checks may be required.\n\nSuch data is collected and processed through our specialised provider: KYCAID."
+        },
+        purposes: {
+          title: "4. Purposes of processing",
+          content: "Data is used to:\n\n• Provide and improve Moonskin services\n• Secure transactions\n• Prevent fraud and unlawful activity\n• Manage payments and withdrawals\n• Comply with legal obligations\n• Communicate with users"
+        },
+        legalBasisSection: {
+          title: "5. Legal basis",
+          content: "Processing is based on:\n\n• Performance of the contract (use of the platform)\n• Legal obligations\n• Legitimate interests (security, service improvement)\n• Consent (where applicable)"
+        },
+        sharingSection: {
+          title: "6. Sharing of data",
+          content: "Data may be shared with trusted processors only where necessary to operate the service:\n\n• KYCAID — identity verification (KYC)\n• Flexify — payment processing\n• Whitepay — payment solutions\n\nAs well as:\n\n• Technical providers (hosting, infrastructure)\n• Law enforcement or authorities where required by law\n\nMoonskin does not sell or rent personal data."
+        },
+        retention: {
+          title: "7. Retention",
+          content: "Data is retained:\n\n• For the duration of use of the service\n• Then archived according to legal requirements\n\nKYC verification data may be retained in line with regulatory requirements applicable to the relevant providers."
+        },
+        securitySection: {
+          title: "8. Security",
+          content: "Moonskin implements appropriate security measures:\n\n• Restricted access to data\n• Encryption of sensitive data\n• Monitoring of suspicious activity"
+        },
+        yourRights: {
+          title: "9. Your rights",
+          content: "Under the GDPR, you have the following rights:\n\n• Right of access\n• Right to rectification\n• Right to erasure\n• Right to object\n• Right to data portability\n\nTo exercise your rights: contact@moonskin.fun"
+        },
+        cookies: {
+          title: "10. Cookies",
+          content: "Moonskin uses cookies in order to:\n\n• Ensure the website works correctly\n• Improve user experience\n• Analyse use of the platform\n\nYou can manage preferences in your browser."
+        },
+        modifications: {
+          title: "11. Changes",
+          content: "This policy may be updated at any time to reflect changes to our services or legal requirements."
+        },
+        contactSection: {
+          title: "12. Contact",
+          content: "Questions about this policy:\n\nEmail: contact@moonskin.fun"
+        }
+      },
       contact: {
-        title: "Data Protection Officer Contact",
-        description: "For any questions regarding your personal data or to exercise your rights, contact our DPO.",
-        email: "dpo@moonskin.gg",
-        address: "MoonSkin - DPO, 123 Rue de la Tech, 75001 Paris",
-        cnil: "You also have the right to file a complaint with the CNIL in case of breach."
+        title: "Contact — data protection",
+        description: "To exercise your rights or for questions about this policy:",
+        email: "contact@moonskin.fun",
+        address: "COUNTER TRADE FRANCE — 53 T rue Auguste Blanqui, 78800 Houilles, France",
+        cnil: "You may also lodge a complaint with the CNIL (France)."
       }
     },
     status: {
@@ -9209,17 +9309,89 @@ export const messages: Record<Locale, Messages> = {
     },
     privacy: {
       title: "隐私政策",
-      subtitle: "我们如何收集、使用和保护您的个人数据",
-      lastUpdated: "最后更新：2024年9月21日",
-      gdprCompliant: "GDPR合规",
-      intro: "CashTrade致力于按照GDPR保护您的隐私和个人数据。",
-      commitment: { title: "我们的承诺", description1: "在CashTrade，保护您的个人数据是我们的首要任务。", description2: "我们应用数据最小化原则。" },
-      dataTypes: { title: "", identity: { category: "", data: [], purpose: "", retention: "" }, kyc: { category: "", data: [], purpose: "", retention: "" }, financial: { category: "", data: [], purpose: "", retention: "" }, usage: { category: "", data: [], purpose: "", retention: "" } },
-      legalBasis: { title: "", contract: { title: "", description: "" }, legal: { title: "", description: "" }, legitimate: { title: "", description: "" } },
-      rights: { title: "", access: { title: "", description: "", action: "" }, rectification: { title: "", description: "", action: "" }, erasure: { title: "", description: "", action: "" }, portability: { title: "", description: "", action: "" } },
-      security: { title: "", description: "", technical: { title: "", measures: [] }, organizational: { title: "", measures: [] } },
-      sharing: { title: "", description: "", providers: { title: "", description: "" }, legal: { title: "", description: "" }, consent: { title: "", description: "" } },
-      contact: { title: "", description: "", email: "", address: "", cnil: "" }
+      subtitle: "Moonskin 如何收集、使用与保护您的个人数据",
+      lastUpdated: "最后更新：2025年3月26日",
+      gdprCompliant: "符合 GDPR",
+      intro: "Moonskin 致力于依据 GDPR 保护您的隐私与个人数据。",
+      commitment: {
+        title: "我们的承诺",
+        description1: "本政策说明我们如何处理您的个人数据。",
+        description2: "我们仅在提供服务与履行法定义务所必需的范围内处理数据。"
+      },
+      dataTypes: {
+        title: "数据类型",
+        identity: { category: "身份信息", data: ["姓名/昵称", "电子邮箱", "Steam ID", "IP 地址"], purpose: "", retention: "" },
+        kyc: { category: "KYC", data: ["由 KYCAID 处理的验证数据"], purpose: "", retention: "" },
+        financial: { category: "交易", data: ["买卖记录", "饰品与金额"], purpose: "", retention: "" },
+        usage: { category: "技术数据", data: ["连接日志", "浏览器/设备"], purpose: "", retention: "" }
+      },
+      legalBasis: { title: "法律基础", contract: { title: "", description: "" }, legal: { title: "", description: "" }, legitimate: { title: "", description: "" } },
+      rights: {
+        title: "您的权利",
+        access: { title: "访问权", description: "", action: "" },
+        rectification: { title: "更正权", description: "", action: "" },
+        erasure: { title: "删除权", description: "", action: "" },
+        portability: { title: "可携带权", description: "", action: "" }
+      },
+      security: { title: "安全", description: "", technical: { title: "", measures: [] }, organizational: { title: "", measures: [] } },
+      sharing: { title: "共享", description: "", providers: { title: "", description: "" }, legal: { title: "", description: "" }, consent: { title: "", description: "" } },
+      sections: {
+        introduction: {
+          title: "1. 简介",
+          content: "本隐私政策旨在向 Moonskin 用户说明个人数据的收集、使用与保护方式。\n\nMoonskin 高度重视隐私保护，并依照《通用数据保护条例》（GDPR）处理个人数据。"
+        },
+        controller: {
+          title: "2. 数据控制者",
+          content: "数据控制者为：\n\nCOUNTER TRADE FRANCE（法国 SASU）\nSIRET：939 155 875 00015\n电子邮箱：countertradefrance@gmail.com\n地址：53 T rue Auguste Blanqui, 78800 Houilles, France"
+        },
+        dataCollected: {
+          title: "3. 收集的数据",
+          content: "我们可能收集：\n\n身份数据\n• 姓名/昵称\n• 电子邮箱\n• Steam 标识\n\n交易数据\n• 买卖记录\n• 交换的饰品\n• 交易金额\n\n技术数据\n• IP 地址\n• 连接信息\n• 浏览器/设备\n\n验证数据（KYC）\n\n出于平台安全与合规，可能需要进行身份验证。\n\n相关数据由专门服务商 KYCAID 收集与处理。"
+        },
+        purposes: {
+          title: "4. 处理目的",
+          content: "数据用于：\n\n• 提供并改进 Moonskin 服务\n• 保障交易安全\n• 防范欺诈与违法活动\n• 管理支付与提现\n• 履行法律义务\n• 与用户沟通"
+        },
+        legalBasisSection: {
+          title: "5. 法律依据",
+          content: "处理依据包括：\n\n• 合同履行（使用平台）\n• 法律义务\n• 合法利益（安全、改进服务）\n• 在适用情形下的同意"
+        },
+        sharingSection: {
+          title: "6. 数据共享",
+          content: "仅在运营服务所必要时，我们可能向可信的处理者共享数据：\n\n• KYCAID — 身份验证（KYC）\n• Flexify — 支付处理\n• Whitepay — 支付方案\n\n以及：\n\n• 技术供应商（托管、基础设施）\n• 依法有权的机关\n\nMoonskin 不出售或出租个人数据。"
+        },
+        retention: {
+          title: "7. 保存期限",
+          content: "数据将：\n\n• 在服务使用期间予以保存\n• 其后按法律要求进行归档\n\nKYC 数据可依据相关服务商适用的监管要求保留。"
+        },
+        securitySection: {
+          title: "8. 安全",
+          content: "Moonskin 采取适当措施：\n\n• 限制数据访问\n• 敏感数据加密\n• 监测可疑活动"
+        },
+        yourRights: {
+          title: "9. 您的权利",
+          content: "依 GDPR，您享有：\n\n• 访问权\n• 更正权\n• 删除权\n• 反对权\n• 可携带权\n\n行使权利请联系：contact@moonskin.fun"
+        },
+        cookies: {
+          title: "10. Cookie",
+          content: "Moonskin 使用 Cookie 以：\n\n• 保障网站正常运行\n• 改善用户体验\n• 分析平台使用情况\n\n您可在浏览器中管理偏好。"
+        },
+        modifications: {
+          title: "11. 修订",
+          content: "本政策可能随时更新，以反映服务或法律要求的变化。"
+        },
+        contactSection: {
+          title: "12. 联系方式",
+          content: "关于本政策的问题：\n\n电子邮箱：contact@moonskin.fun"
+        }
+      },
+      contact: {
+        title: "联系 — 数据保护",
+        description: "行使权利或咨询本政策：",
+        email: "contact@moonskin.fun",
+        address: "COUNTER TRADE FRANCE — 53 T rue Auguste Blanqui, 78800 Houilles, France",
+        cnil: "您亦有权向法国 CNIL 投诉。"
+      }
     },
     status: {
       title: "CashTrade服务状态",

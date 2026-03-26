@@ -790,6 +790,20 @@ export interface Messages {
         description: string;
       };
     };
+    sections: {
+      introduction: { title: string; content: string };
+      controller: { title: string; content: string };
+      dataCollected: { title: string; content: string };
+      purposes: { title: string; content: string };
+      legalBasisSection: { title: string; content: string };
+      sharingSection: { title: string; content: string };
+      retention: { title: string; content: string };
+      securitySection: { title: string; content: string };
+      yourRights: { title: string; content: string };
+      cookies: { title: string; content: string };
+      modifications: { title: string; content: string };
+      contactSection: { title: string; content: string };
+    };
     contact: {
       title: string;
       description: string;
