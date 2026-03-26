@@ -717,172 +717,162 @@ Moonskin may amend this policy at any time.`,
     slug: 'aml-policy',
     titleFr: 'Politique Anti-Blanchiment (AML)',
     titleEn: 'Anti-Money Laundering (AML) Policy',
-    subtitleFr: "Notre engagement dans la lutte contre le blanchiment d'argent et le financement du terrorisme",
-    subtitleEn: 'Our commitment to fighting money laundering and terrorist financing',
-    contentFr: `# Notre engagement
+    subtitleFr: "Lutte contre le blanchiment de capitaux et le financement du terrorisme",
+    subtitleEn: 'Combating money laundering and terrorist financing',
+    contentFr: `# 1. Introduction
 
-MoonSkin applique une politique de tolérance zéro envers le blanchiment d'argent, le financement du terrorisme et toute activité illicite. Nous mettons en œuvre des mesures strictes conformes aux réglementations européennes et françaises.
+Moonskin met en place une politique de lutte contre le blanchiment de capitaux et le financement du terrorisme (Anti-Money Laundering – AML).
 
-Notre approche repose sur la prévention, la détection et le signalement de toute activité suspecte, en collaboration étroite avec les autorités compétentes.
+Cette politique vise à prévenir l'utilisation de la plateforme à des fins illégales et à garantir un environnement sécurisé pour l'ensemble des utilisateurs.
 
-> **Avertissement important** : Toute tentative de blanchiment d'argent ou de financement d'activités illicites entraînera la fermeture immédiate du compte, la saisie des fonds et le signalement aux autorités judiciaires et financières.
+# 2. Engagement de Moonskin
 
-# Facteurs de risque surveillés
+Moonskin s'engage à :
 
-## Facteurs géographiques
-- Pays sous sanctions internationales
-- Juridictions à haut risque (liste GAFI)
-- Paradis fiscaux non coopératifs
-- Zones de conflit ou d'instabilité politique
+- Prévenir toute utilisation frauduleuse de la plateforme
+- Identifier et analyser les comportements à risque
+- Mettre en œuvre des procédures de contrôle adaptées
+- Coopérer avec les autorités compétentes si nécessaire
 
-## Comportements suspects
-- Transactions inhabituellement importantes
-- Fréquence anormale des opérations
-- Utilisation de multiples comptes
-- Refus de fournir des informations KYC
+# 3. Vérification des utilisateurs
 
-## Profils à risque
-- Personnes politiquement exposées (PPE)
-- Activités dans des secteurs sensibles
-- Historique de sanctions ou enquêtes
-- Liens avec des entités sanctionnées
+Dans le cadre de cette politique, Moonskin applique des procédures de vérification d'identité (KYC).
 
-## Transactions suspectes
-- Montants incohérents avec le profil
-- Structuration pour éviter les seuils
-- Origine des fonds non justifiée
-- Destination finale inconnue
+Ces vérifications sont réalisées via notre prestataire spécialisé : **KYCAID**
 
-# Mesures de surveillance
+Elles peuvent être exigées notamment :
 
-## Surveillance en temps réel
-- Algorithmes de détection d'anomalies
-- Alertes automatiques sur seuils
-- Analyse comportementale avancée
-- Corrélation avec bases de données externes
+- Lors de retraits de fonds
+- En cas d'activité suspecte
+- Pour certains volumes de transactions
 
-## Contrôles renforcés
-- Due diligence renforcée (EDD)
-- Vérification source des fonds
-- Contrôle des listes de sanctions
-- Validation manuelle par experts
+# 4. Surveillance des transactions
 
-## Reporting réglementaire
-- Déclarations TRACFIN automatiques
-- Rapports périodiques à l'ACPR
-- Conservation des preuves 5 ans
-- Coopération avec les enquêtes
+Moonskin met en place des mécanismes de surveillance afin de détecter :
 
-# Activités interdites
+- Les comportements anormaux ou incohérents
+- Les volumes de transactions inhabituels
+- Les tentatives de contournement des règles
+- Les activités pouvant être liées à du blanchiment
 
-## Blanchiment d'argent
-Conversion d'argent d'origine illicite en fonds apparemment légaux.
-**Sanctions :** Jusqu'à 5 ans de prison et 375 000€ d'amende
+# 5. Mesures en cas de suspicion
 
-## Financement du terrorisme
-Fourniture de fonds ou ressources à des organisations terroristes.
-**Sanctions :** Jusqu'à 10 ans de prison et 750 000€ d'amende
+En cas de suspicion d'activité frauduleuse ou illicite, Moonskin se réserve le droit de :
 
-## Contournement de sanctions
-Évitement des mesures restrictives internationales.
-**Sanctions :** Sanctions administratives et pénales selon le cas
+- Suspendre ou restreindre un compte
+- Bloquer une transaction
+- Geler temporairement des fonds
+- Demander des informations ou justificatifs supplémentaires
 
-# Vos obligations
+# 6. Signalement
 
-- **Fourniture d'informations exactes** : Vous devez fournir des informations véridiques lors de votre inscription et les maintenir à jour.
-- **Justification de l'origine des fonds** : Vous devez pouvoir justifier la provenance légale de vos skins et cryptomonnaies.
-- **Signalement d'activités suspectes** : Vous devez nous signaler toute tentative d'utilisation frauduleuse de votre compte.
-- **Respect des sanctions internationales** : Vous ne devez pas utiliser nos services pour contourner des sanctions ou embargos.
+Moonskin peut être amenée à transmettre certaines informations aux autorités compétentes, conformément aux obligations légales en vigueur.
 
-# Cadre réglementaire
+# 7. Tolérance zéro
 
-- **Directive européenne** : 5ème directive anti-blanchiment (UE) 2018/843
-- **Code monétaire français** : Articles L561-1 à L561-55
-- **Autorité de contrôle** : ACPR - Banque de France
-- **Cellule de renseignement** : TRACFIN - Ministère des Finances`,
-    contentEn: `# Our Commitment
+Moonskin applique une politique de tolérance zéro concernant :
 
-MoonSkin applies a zero-tolerance policy towards money laundering, terrorist financing and any illicit activity. We implement strict measures in accordance with European and French regulations.
+- Le blanchiment de capitaux
+- Le financement du terrorisme
+- L'utilisation de fonds d'origine illicite
+- Les skins issus d'activités frauduleuses (scam, vol, etc.)
 
-Our approach is based on the prevention, detection and reporting of any suspicious activity, in close collaboration with the competent authorities.
+Tout manquement pourra entraîner une suspension immédiate et définitive du compte.
 
-> **Important warning**: Any attempt at money laundering or financing of illicit activities will result in immediate account closure, seizure of funds and reporting to judicial and financial authorities.
+# 8. Responsabilité des utilisateurs
 
-# Monitored Risk Factors
+Les utilisateurs s'engagent à :
 
-## Geographic Factors
-- Countries under international sanctions
-- High-risk jurisdictions (FATF list)
-- Non-cooperative tax havens
-- Areas of conflict or political instability
+- Utiliser la plateforme de manière légale
+- Ne pas dissimuler l'origine des fonds
+- Fournir des informations exactes
+- Coopérer en cas de vérification
 
-## Suspicious Behaviors
-- Unusually large transactions
-- Abnormal frequency of operations
-- Use of multiple accounts
-- Refusal to provide KYC information
+# 9. Conservation des données
 
-## At-risk Profiles
-- Politically Exposed Persons (PEPs)
-- Activities in sensitive sectors
-- History of sanctions or investigations
-- Links with sanctioned entities
+Les informations collectées dans le cadre des procédures AML/KYC sont conservées conformément aux obligations légales et réglementaires.
 
-## Suspicious Transactions
-- Amounts inconsistent with profile
-- Structuring to avoid thresholds
-- Unjustified source of funds
-- Unknown final destination
+# 10. Modification de la politique
 
-# Monitoring Measures
+Moonskin se réserve le droit de modifier la présente politique à tout moment afin de s'adapter aux évolutions réglementaires et opérationnelles.`,
+    contentEn: `# 1. Introduction
 
-## Real-time Surveillance
-- Anomaly detection algorithms
-- Automatic threshold alerts
-- Advanced behavioral analysis
-- Correlation with external databases
+Moonskin implements a policy to combat money laundering and terrorist financing (Anti-Money Laundering – AML).
 
-## Enhanced Controls
-- Enhanced Due Diligence (EDD)
-- Source of funds verification
-- Sanctions list screening
-- Manual validation by experts
+This policy aims to prevent unlawful use of the platform and to maintain a secure environment for all users.
 
-## Regulatory Reporting
-- Automatic TRACFIN declarations
-- Periodic reports to ACPR
-- Evidence retention for 5 years
-- Cooperation with investigations
+# 2. Moonskin's commitment
 
-# Prohibited Activities
+Moonskin undertakes to:
 
-## Money Laundering
-Conversion of illicitly obtained money into apparently legal funds.
-**Penalties:** Up to 5 years imprisonment and €375,000 fine
+- Prevent fraudulent use of the platform
+- Identify and analyse higher-risk behaviour
+- Apply appropriate control procedures
+- Cooperate with competent authorities where necessary
 
-## Terrorist Financing
-Provision of funds or resources to terrorist organizations.
-**Penalties:** Up to 10 years imprisonment and €750,000 fine
+# 3. User verification
 
-## Sanctions Evasion
-Avoidance of international restrictive measures.
-**Penalties:** Administrative and criminal sanctions as applicable
+As part of this policy, Moonskin applies identity verification (KYC) procedures.
 
-# Your Obligations
+These checks are carried out through our specialised provider: **KYCAID**
 
-- **Provision of accurate information**: You must provide truthful information when registering and keep it up to date.
-- **Justification of source of funds**: You must be able to justify the legal origin of your skins and cryptocurrencies.
-- **Reporting of suspicious activities**: You must report any attempted fraudulent use of your account.
-- **Compliance with international sanctions**: You must not use our services to circumvent sanctions or embargoes.
+They may be required in particular:
 
-# Regulatory Framework
+- When withdrawing funds
+- In case of suspicious activity
+- For certain transaction volumes
 
-- **European Directive**: 5th Anti-Money Laundering Directive (EU) 2018/843
-- **French Monetary Code**: Articles L561-1 to L561-55
-- **Supervisory Authority**: ACPR - Bank of France
-- **Intelligence Unit**: TRACFIN - Ministry of Finance`,
-    contactEmail: 'compliance@moonskin.gg',
-    contactPhone: '+33 1 23 45 67 89',
+# 4. Transaction monitoring
+
+Moonskin uses monitoring mechanisms to help detect:
+
+- Abnormal or inconsistent behaviour
+- Unusual transaction volumes
+- Attempts to circumvent the rules
+- Activity that may relate to money laundering
+
+# 5. Measures if suspicion arises
+
+If fraudulent or illicit activity is suspected, Moonskin may:
+
+- Suspend or restrict an account
+- Block a transaction
+- Temporarily freeze funds
+- Request further information or supporting documents
+
+# 6. Reporting
+
+Moonskin may transmit certain information to competent authorities in accordance with applicable legal obligations.
+
+# 7. Zero tolerance
+
+Moonskin applies zero tolerance regarding:
+
+- Money laundering
+- Terrorist financing
+- Use of illicitly obtained funds
+- Skins from fraudulent activity (scams, theft, etc.)
+
+Any breach may result in immediate and permanent account suspension.
+
+# 8. User responsibilities
+
+Users undertake to:
+
+- Use the platform lawfully
+- Not conceal the origin of funds
+- Provide accurate information
+- Cooperate when verification is required
+
+# 9. Data retention
+
+Information collected under AML/KYC procedures is retained in accordance with legal and regulatory requirements.
+
+# 10. Changes to this policy
+
+Moonskin may amend this policy at any time to reflect regulatory and operational changes.`,
+    contactEmail: 'contact@moonskin.com',
+    contactPhone: null,
     isPublished: true,
   },
 ];

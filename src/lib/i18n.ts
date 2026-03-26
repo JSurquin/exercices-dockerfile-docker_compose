@@ -4336,11 +4336,53 @@ export const messages: Record<Locale, Messages> = {
     },
     amlPolicy: {
       title: "Politique Anti-Blanchiment (AML)",
-      subtitle: "Notre engagement dans la lutte contre le blanchiment d'argent et le financement du terrorisme",
-      content: "Notre politique AML (Anti-Money Laundering) vise à prévenir et détecter toute activité suspecte liée au blanchiment d'argent ou au financement du terrorisme. Nous surveillons activement les transactions et coopérons avec les autorités compétentes lorsque cela est nécessaire.",
-      comingSoon: "Cette page sera bientôt disponible avec du contenu dynamique.",
-      warning: "Toute tentative de blanchiment d'argent ou de financement d'activités illicites entraînera la fermeture immédiate du compte et le signalement aux autorités.",
-      warningText: "Toute activité suspecte sera signalée aux autorités compétentes conformément à la loi."
+      subtitle: "Lutte contre le blanchiment de capitaux et le financement du terrorisme",
+      content: "Moonskin applique une politique AML pour prévenir l'usage illicite de la plateforme.",
+      comingSoon: "Contenu de secours — la version publiée peut provenir de l'administration des pages légales.",
+      warning: "Blanchiment, financement du terrorisme et fraude : tolérance zéro.",
+      warningText: "Toute activité suspecte peut entraîner la suspension du compte, le blocage des transactions ou le gel des fonds, et le cas échéant un signalement aux autorités conformément à la loi.",
+      sections: {
+        introduction: {
+          title: "1. Introduction",
+          content: "Moonskin met en place une politique de lutte contre le blanchiment de capitaux et le financement du terrorisme (Anti-Money Laundering – AML).\n\nCette politique vise à prévenir l'utilisation de la plateforme à des fins illégales et à garantir un environnement sécurisé pour l'ensemble des utilisateurs."
+        },
+        commitment: {
+          title: "2. Engagement de Moonskin",
+          content: "Moonskin s'engage à :\n\n• Prévenir toute utilisation frauduleuse de la plateforme\n• Identifier et analyser les comportements à risque\n• Mettre en œuvre des procédures de contrôle adaptées\n• Coopérer avec les autorités compétentes si nécessaire"
+        },
+        userVerification: {
+          title: "3. Vérification des utilisateurs",
+          content: "Dans le cadre de cette politique, Moonskin applique des procédures de vérification d'identité (KYC).\n\nCes vérifications sont réalisées via notre prestataire spécialisé : KYCAID.\n\nElles peuvent être exigées notamment :\n\n• Lors de retraits de fonds\n• En cas d'activité suspecte\n• Pour certains volumes de transactions"
+        },
+        transactionMonitoring: {
+          title: "4. Surveillance des transactions",
+          content: "Moonskin met en place des mécanismes de surveillance afin de détecter :\n\n• Les comportements anormaux ou incohérents\n• Les volumes de transactions inhabituels\n• Les tentatives de contournement des règles\n• Les activités pouvant être liées à du blanchiment"
+        },
+        suspiciousMeasures: {
+          title: "5. Mesures en cas de suspicion",
+          content: "En cas de suspicion d'activité frauduleuse ou illicite, Moonskin se réserve le droit de :\n\n• Suspendre ou restreindre un compte\n• Bloquer une transaction\n• Geler temporairement des fonds\n• Demander des informations ou justificatifs supplémentaires"
+        },
+        reporting: {
+          title: "6. Signalement",
+          content: "Moonskin peut être amenée à transmettre certaines informations aux autorités compétentes, conformément aux obligations légales en vigueur."
+        },
+        zeroTolerance: {
+          title: "7. Tolérance zéro",
+          content: "Moonskin applique une politique de tolérance zéro concernant :\n\n• Le blanchiment de capitaux\n• Le financement du terrorisme\n• L'utilisation de fonds d'origine illicite\n• Les skins issus d'activités frauduleuses (scam, vol, etc.)\n\nTout manquement pourra entraîner une suspension immédiate et définitive du compte."
+        },
+        userResponsibility: {
+          title: "8. Responsabilité des utilisateurs",
+          content: "Les utilisateurs s'engagent à :\n\n• Utiliser la plateforme de manière légale\n• Ne pas dissimuler l'origine des fonds\n• Fournir des informations exactes\n• Coopérer en cas de vérification"
+        },
+        dataRetention: {
+          title: "9. Conservation des données",
+          content: "Les informations collectées dans le cadre des procédures AML/KYC sont conservées conformément aux obligations légales et réglementaires."
+        },
+        modifications: {
+          title: "10. Modification de la politique",
+          content: "Moonskin se réserve le droit de modifier la présente politique à tout moment afin de s'adapter aux évolutions réglementaires et opérationnelles."
+        }
+      }
     }
   },
   en: {
@@ -8673,11 +8715,53 @@ export const messages: Record<Locale, Messages> = {
     },
     amlPolicy: {
       title: "Anti-Money Laundering (AML) Policy",
-      subtitle: "Our commitment to fighting money laundering and terrorist financing",
-      content: "Our AML (Anti-Money Laundering) policy aims to prevent and detect any suspicious activity related to money laundering or terrorist financing. We actively monitor transactions and cooperate with relevant authorities when necessary.",
-      comingSoon: "This page will soon be available with dynamic content.",
-      warning: "Any attempt at money laundering or financing of illicit activities will result in immediate account closure and reporting to authorities.",
-      warningText: "Any suspicious activity will be reported to the relevant authorities in accordance with the law."
+      subtitle: "Combating money laundering and terrorist financing",
+      content: "Moonskin maintains an AML programme to prevent illicit use of the platform.",
+      comingSoon: "Fallback content — the published version may come from the legal pages admin.",
+      warning: "Zero tolerance for money laundering, terrorist financing and fraud.",
+      warningText: "Suspicious activity may result in account suspension, blocked transactions or frozen funds, and where required, reporting to authorities under applicable law.",
+      sections: {
+        introduction: {
+          title: "1. Introduction",
+          content: "Moonskin implements an anti-money laundering and counter-terrorist financing policy (AML/CFT).\n\nThis policy helps prevent unlawful use of the platform and keep the environment secure for all users."
+        },
+        commitment: {
+          title: "2. Moonskin's commitment",
+          content: "Moonskin undertakes to:\n\n• Prevent fraudulent use of the platform\n• Identify and analyse higher-risk behaviour\n• Apply appropriate control procedures\n• Cooperate with competent authorities where necessary"
+        },
+        userVerification: {
+          title: "3. User verification",
+          content: "As part of this policy, Moonskin applies identity verification (KYC) procedures.\n\nVerification is carried out through our specialised provider: KYCAID.\n\nIt may be required in particular:\n\n• When withdrawing funds\n• In case of suspicious activity\n• For certain transaction volumes"
+        },
+        transactionMonitoring: {
+          title: "4. Transaction monitoring",
+          content: "Moonskin uses monitoring to help detect:\n\n• Abnormal or inconsistent behaviour\n• Unusual transaction volumes\n• Attempts to circumvent the rules\n• Activity that may relate to money laundering"
+        },
+        suspiciousMeasures: {
+          title: "5. Measures if suspicion arises",
+          content: "If fraudulent or illicit activity is suspected, Moonskin may:\n\n• Suspend or restrict an account\n• Block a transaction\n• Temporarily freeze funds\n• Request further information or supporting documents"
+        },
+        reporting: {
+          title: "6. Reporting",
+          content: "Moonskin may transmit certain information to competent authorities in accordance with applicable legal obligations."
+        },
+        zeroTolerance: {
+          title: "7. Zero tolerance",
+          content: "Moonskin applies zero tolerance regarding:\n\n• Money laundering\n• Terrorist financing\n• Use of illicitly obtained funds\n• Skins from fraudulent activity (scams, theft, etc.)\n\nAny breach may result in immediate and permanent account suspension."
+        },
+        userResponsibility: {
+          title: "8. User responsibilities",
+          content: "Users undertake to:\n\n• Use the platform lawfully\n• Not conceal the origin of funds\n• Provide accurate information\n• Cooperate when verification is required"
+        },
+        dataRetention: {
+          title: "9. Data retention",
+          content: "Information collected under AML/KYC procedures is retained in accordance with legal and regulatory requirements."
+        },
+        modifications: {
+          title: "10. Changes to this policy",
+          content: "Moonskin may amend this policy at any time to reflect regulatory and operational changes."
+        }
+      }
     }
   },
   cn: {
@@ -12662,12 +12746,54 @@ export const messages: Record<Locale, Messages> = {
       }
     },
     amlPolicy: {
-      title: "反洗钱政策 (AML)",
-      subtitle: "我们在打击洗钱和恐怖融资方面的承诺",
-      content: "我们的AML（反洗钱）政策旨在防止和检测与洗钱或恐怖主义融资相关的任何可疑活动。我们积极监控交易，并在必要时与相关当局合作。",
-      comingSoon: "此页面即将提供动态内容。",
-      warning: "任何洗钱或资助非法活动的企图都将导致账户立即关闭并向当局举报。",
-      warningText: "任何可疑活动都将根据法律向相关当局报告。"
+      title: "反洗钱政策（AML）",
+      subtitle: "打击洗钱与恐怖融资",
+      content: "Moonskin 实施 AML 措施，防止非法使用平台。",
+      comingSoon: "备用内容 — 正式发布版本可能来自法律页面管理后台。",
+      warning: "对洗钱、恐怖融资与欺诈零容忍。",
+      warningText: "可疑活动可能导致账户暂停、交易阻断或资金冻结，并在依法需履行义务时向主管机关报告。",
+      sections: {
+        introduction: {
+          title: "1. 简介",
+          content: "Moonskin 制定反洗钱与反恐怖融资（AML/CFT）政策。\n\n本政策旨在防止非法使用平台，并为用户维持安全环境。"
+        },
+        commitment: {
+          title: "2. Moonskin 的承诺",
+          content: "Moonskin 承诺：\n\n• 防范欺诈性使用平台\n• 识别并分析高风险行为\n• 实施适当的管控程序\n• 在必要时与主管机关合作"
+        },
+        userVerification: {
+          title: "3. 用户验证",
+          content: "作为本政策的一部分，Moonskin 实施身份验证（KYC）程序。\n\n验证由专门服务商 KYCAID 完成。\n\n在下列情况可能要求验证：\n\n• 提现\n• 可疑活动\n• 特定交易规模"
+        },
+        transactionMonitoring: {
+          title: "4. 交易监控",
+          content: "Moonskin 建立监控机制以识别：\n\n• 异常或不一致行为\n• 异常交易规模\n• 规避规则的行为\n• 可能与洗钱相关的活动"
+        },
+        suspiciousMeasures: {
+          title: "5. 怀疑情形下的措施",
+          content: "若怀疑存在欺诈或违法活动，Moonskin 有权：\n\n• 暂停或限制账户\n• 阻止交易\n• 暂时冻结资金\n• 要求补充信息或证明材料"
+        },
+        reporting: {
+          title: "6. 报告",
+          content: "依据适用法律义务，Moonskin 可能向主管机关报送相关信息。"
+        },
+        zeroTolerance: {
+          title: "7. 零容忍",
+          content: "对以下情形零容忍：\n\n• 洗钱\n• 恐怖融资\n• 使用非法来源资金\n• 来自欺诈活动（诈骗、盗窃等）的饰品\n\n任何违约可能导致账户被立即永久暂停。"
+        },
+        userResponsibility: {
+          title: "8. 用户责任",
+          content: "用户承诺：\n\n• 合法使用平台\n• 不隐瞒资金来源\n• 提供准确信息\n• 在验证时予以配合"
+        },
+        dataRetention: {
+          title: "9. 数据保存",
+          content: "根据 AML/KYC 程序收集的信息，将依法保留。"
+        },
+        modifications: {
+          title: "10. 政策变更",
+          content: "Moonskin 可随时修订本政策，以适应监管与运营变化。"
+        }
+      }
     }
   },
 };

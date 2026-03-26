@@ -4292,5 +4292,17 @@ export interface Messages {
     comingSoon: string;
     warning: string;
     warningText: string;
+    sections: {
+      introduction: { title: string; content: string };
+      commitment: { title: string; content: string };
+      userVerification: { title: string; content: string };
+      transactionMonitoring: { title: string; content: string };
+      suspiciousMeasures: { title: string; content: string };
+      reporting: { title: string; content: string };
+      zeroTolerance: { title: string; content: string };
+      userResponsibility: { title: string; content: string };
+      dataRetention: { title: string; content: string };
+      modifications: { title: string; content: string };
+    };
   };
 }
