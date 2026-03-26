@@ -527,164 +527,190 @@ Email: **contact@moonskin.fun**`,
   },
   {
     slug: 'kyc-policy',
-    titleFr: 'Politique KYC',
-    titleEn: 'KYC Policy',
-    subtitleFr: "Processus de vérification d'identité conforme aux réglementations européennes",
-    subtitleEn: 'Identity verification process compliant with European regulations',
-    contentFr: `# Pourquoi le KYC ?
+    titleFr: 'Politique KYC (Know Your Customer)',
+    titleEn: 'KYC Policy (Know Your Customer)',
+    subtitleFr: "Vérification d'identité, sécurité des transactions et conformité LCB-FT",
+    subtitleEn: 'Identity verification, transaction security and AML/CFT compliance',
+    contentFr: `# 1. Introduction
 
-Le processus KYC (Know Your Customer) est une obligation légale pour tous les prestataires de services financiers. Il nous permet de :
-- Lutter contre le blanchiment d'argent
-- Prévenir le financement du terrorisme
-- Protéger nos utilisateurs contre la fraude
-- Respecter les réglementations ACPR et AMF
+Dans le cadre de son activité, Moonskin met en place des procédures de vérification d'identité (KYC – Know Your Customer) afin de garantir la sécurité des transactions et de prévenir toute activité frauduleuse.
 
-## Important à savoir
-- La vérification KYC est obligatoire avant tout paiement
-- Vos documents sont traités de manière confidentielle
-- Le processus est généralement finalisé en 24h
-- Aucun paiement n'est effectué sans validation KYC
+Cette politique vise à assurer la conformité avec les obligations en matière de lutte contre le blanchiment de capitaux et le financement du terrorisme (LCB-FT).
 
-# Niveaux de vérification
+# 2. Objectifs du KYC
 
-## Niveau 1 - Basique
-**Documents requis :**
-- Pièce d'identité valide (CNI, passeport)
-- Selfie de vérification
-- Confirmation d'email et téléphone
+Les procédures KYC ont pour objectif de :
 
-**Limites :** 500€/jour - 2,000€/mois
-**Délai :** 2-24 heures
+- Vérifier l'identité des utilisateurs
+- Prévenir les fraudes et les usurpations d'identité
+- Lutter contre les activités illicites
+- Sécuriser les transactions sur la plateforme
+- Assurer la conformité réglementaire
 
-## Niveau 2 - Avancé
-**Documents requis :**
-- Tous les documents du Niveau 1
-- Justificatif de domicile (< 3 mois)
-- Déclaration de revenus ou fiche de paie
+# 3. Cas nécessitant une vérification
 
-**Limites :** 5,000€/jour - 20,000€/mois
-**Délai :** 24-72 heures
+Une vérification KYC peut être exigée dans les situations suivantes :
 
-## Niveau 3 - Premium
-**Documents requis :**
-- Tous les documents des niveaux précédents
-- Entretien vidéo avec notre équipe
-- Vérification source de fonds
+- Lors d'une demande de retrait de fonds
+- En cas d'activité suspecte ou inhabituelle
+- Pour certains volumes de transactions
+- En cas de doute sur l'identité de l'utilisateur
+- Pour répondre à des obligations légales
 
-**Limites :** Illimité
-**Délai :** 3-7 jours
+Moonskin se réserve le droit d'exiger un KYC à tout moment.
 
-# Documents acceptés
+# 4. Procédure de vérification
 
-## Pièces d'identité acceptées
-- Carte nationale d'identité française
-- Passeport français ou européen
-- Permis de conduire français
-- Titre de séjour (pour les résidents)
+La vérification d'identité est réalisée via notre prestataire spécialisé : **KYCAID**
 
-**Exigences :**
-- Document en cours de validité
-- Photo lisible et non floue
-- Toutes les informations visibles
-- Format JPEG, PNG ou PDF (max 10MB)
+L'utilisateur pourra être amené à fournir :
 
-## Justificatifs de domicile
-- Facture d'électricité, gaz ou eau
-- Facture de téléphone fixe ou internet
-- Relevé bancaire
-- Attestation d'assurance habitation
-- Quittance de loyer
+- Une pièce d'identité valide
+- Un selfie ou une vérification biométrique
+- Tout document complémentaire jugé nécessaire
 
-**Exigences :**
-- Document daté de moins de 3 mois
-- Nom et adresse clairement visibles
-- Correspondance avec l'identité fournie
-- Document original (non modifié)
+Le traitement des données est effectué directement par KYCAID.
 
-# Protection des données
+# 5. Refus ou non-conformité
 
-- **Chiffrement de bout en bout** : Tous vos documents sont chiffrés avec AES-256
-- **Stockage sécurisé** : Hébergement en France, conforme RGPD
-- **Accès restreint** : Seule l'équipe KYC peut consulter vos documents
-- **Suppression automatique** : Documents supprimés après validation (sauf obligations légales)`,
-    contentEn: `# Why KYC?
+Moonskin se réserve le droit de :
 
-The KYC (Know Your Customer) process is a legal requirement for all financial service providers. It allows us to:
-- Fight against money laundering
-- Prevent terrorist financing
-- Protect our users against fraud
-- Comply with ACPR and AMF regulations
+- Refuser un KYC en cas de documents invalides ou falsifiés
+- Demander des informations complémentaires
+- Suspendre ou restreindre un compte
+- Bloquer une transaction
 
-## Important to know
-- KYC verification is mandatory before any payment
-- Your documents are processed confidentially
-- The process is generally completed within 24h
-- No payment is made without KYC validation
+Aucun retrait ne pourra être effectué sans validation du KYC lorsque celui-ci est requis.
 
-# Verification Levels
+# 6. Lutte contre la fraude
 
-## Level 1 - Basic
-**Required documents:**
-- Valid ID (national ID, passport)
-- Verification selfie
-- Email and phone confirmation
+Moonskin applique une politique de tolérance zéro concernant :
 
-**Limits:** €500/day - €2,000/month
-**Processing time:** 2-24 hours
+- Les comptes frauduleux
+- Les tentatives d'usurpation d'identité
+- L'utilisation de fonds d'origine illicite
+- Les skins issus de scams
 
-## Level 2 - Advanced
-**Required documents:**
-- All Level 1 documents
-- Proof of address (< 3 months)
-- Income statement or payslip
+Toute activité suspecte pourra entraîner :
 
-**Limits:** €5,000/day - €20,000/month
-**Processing time:** 24-72 hours
+- Une suspension immédiate du compte
+- Un gel des fonds
+- Un signalement aux autorités compétentes si nécessaire
 
-## Level 3 - Premium
-**Required documents:**
-- All documents from previous levels
-- Video interview with our team
-- Source of funds verification
+# 7. Protection des données
 
-**Limits:** Unlimited
-**Processing time:** 3-7 days
+Les données collectées dans le cadre du KYC :
 
-# Accepted Documents
+- Sont traitées par KYCAID
+- Sont sécurisées conformément aux standards en vigueur
+- Ne sont accessibles que dans la limite nécessaire à la validation
 
-## Accepted Identity Documents
-- French national identity card
-- French or European passport
-- French driving license
-- Residence permit (for residents)
+Moonskin ne stocke pas directement les données sensibles lorsque cela n'est pas nécessaire.
 
-**Requirements:**
-- Valid document
-- Clear, non-blurry photo
-- All information visible
-- JPEG, PNG or PDF format (max 10MB)
+# 8. Conservation des données
 
-## Proof of Address
-- Electricity, gas or water bill
-- Landline or internet bill
-- Bank statement
-- Home insurance certificate
-- Rent receipt
+Les données KYC peuvent être conservées pendant la durée nécessaire au respect des obligations légales et réglementaires.
 
-**Requirements:**
-- Document dated less than 3 months
-- Name and address clearly visible
-- Correspondence with provided identity
-- Original document (unmodified)
+# 9. Droits des utilisateurs
 
-# Data Protection
+Conformément à la réglementation en vigueur, les utilisateurs disposent de droits sur leurs données personnelles.
 
-- **End-to-end encryption**: All your documents are encrypted with AES-256
-- **Secure storage**: Hosted in France, GDPR compliant
-- **Restricted access**: Only the KYC team can view your documents
-- **Automatic deletion**: Documents deleted after validation (except legal obligations)`,
-    contactEmail: 'kyc@moonskin.gg',
-    contactPhone: '+33 1 23 45 67 89',
+Toute demande peut être adressée à : **contact@moonskin.com**
+
+# 10. Modification de la politique
+
+Moonskin se réserve le droit de modifier la présente politique à tout moment.`,
+    contentEn: `# 1. Introduction
+
+Moonskin operates Know Your Customer (KYC) identity verification procedures to secure transactions and help prevent fraudulent activity.
+
+This policy supports compliance with anti-money laundering and counter-terrorist financing (AML/CFT) obligations.
+
+# 2. Objectives of KYC
+
+KYC procedures aim to:
+
+- Verify users' identities
+- Prevent fraud and identity theft
+- Combat unlawful activity
+- Secure transactions on the platform
+- Meet regulatory requirements
+
+# 3. When verification is required
+
+KYC may be required in situations such as:
+
+- A request to withdraw funds
+- Suspicious or unusual activity
+- Certain transaction volumes
+- Doubts about a user's identity
+- Legal obligations
+
+Moonskin may require KYC at any time.
+
+# 4. Verification process
+
+Identity verification is performed through our specialised provider: **KYCAID**
+
+You may be asked to provide:
+
+- A valid identity document
+- A selfie or biometric verification
+- Any additional document deemed necessary
+
+Data processing is carried out directly by KYCAID.
+
+# 5. Refusal or non-compliance
+
+Moonskin may:
+
+- Reject KYC if documents are invalid or forged
+- Request further information
+- Suspend or restrict an account
+- Block a transaction
+
+No withdrawal may be made without KYC approval when KYC is required.
+
+# 6. Anti-fraud
+
+Moonskin applies a zero-tolerance policy regarding:
+
+- Fraudulent accounts
+- Identity theft attempts
+- Use of funds from illicit sources
+- Skins originating from scams
+
+Suspicious activity may lead to:
+
+- Immediate account suspension
+- Freezing of funds
+- Reporting to competent authorities where appropriate
+
+# 7. Data protection
+
+Data collected for KYC:
+
+- Is processed by KYCAID
+- Is secured in line with applicable standards
+- Is accessed only to the extent necessary for validation
+
+Moonskin does not store sensitive data directly where this is not necessary.
+
+# 8. Data retention
+
+KYC data may be retained for as long as necessary to comply with legal and regulatory obligations.
+
+# 9. User rights
+
+Under applicable law, users have rights over their personal data.
+
+Requests may be sent to: **contact@moonskin.com**
+
+# 10. Changes to this policy
+
+Moonskin may amend this policy at any time.`,
+    contactEmail: 'contact@moonskin.com',
+    contactPhone: null,
     isPublished: true,
   },
   {

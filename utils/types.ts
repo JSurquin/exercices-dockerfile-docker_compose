@@ -4272,6 +4272,18 @@ export interface Messages {
     comingSoon: string;
     warning: string;
     warningText: string;
+    sections: {
+      introduction: { title: string; content: string };
+      objectives: { title: string; content: string };
+      whenRequired: { title: string; content: string };
+      procedure: { title: string; content: string };
+      refusal: { title: string; content: string };
+      antiFraud: { title: string; content: string };
+      dataProtection: { title: string; content: string };
+      retention: { title: string; content: string };
+      userRights: { title: string; content: string };
+      modifications: { title: string; content: string };
+    };
   };
   amlPolicy: {
     title: string;

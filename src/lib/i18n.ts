@@ -4285,12 +4285,54 @@ export const messages: Record<Locale, Messages> = {
       }
     },
     kycPolicy: {
-      title: "Politique KYC",
-      subtitle: "Processus de vérification d'identité conforme aux réglementations européennes",
-      content: "Nous sommes tenus par la loi de vérifier l'identité de nos utilisateurs avant de permettre certaines transactions. Cette procédure de vérification KYC (Know Your Customer) nous permet de nous conformer aux réglementations en vigueur et de protéger nos utilisateurs contre la fraude.",
-      comingSoon: "Cette page sera bientôt disponible avec du contenu dynamique.",
-      warning: "La vérification KYC est obligatoire avant tout paiement selon la réglementation européenne.",
-      warningText: "Vos données personnelles sont stockées de manière sécurisée et ne sont jamais partagées avec des tiers sans votre consentement."
+      title: "Politique KYC (Know Your Customer)",
+      subtitle: "Vérification d'identité, sécurité des transactions et conformité LCB-FT",
+      content: "Moonskin met en place des procédures KYC via KYCAID pour sécuriser la plateforme et respecter la réglementation.",
+      comingSoon: "Contenu de secours — la version publiée peut provenir de l'administration des pages légales.",
+      warning: "Le KYC peut être exigé à tout moment, notamment pour les retraits.",
+      warningText: "Une vérification d'identité peut être requise via notre prestataire KYCAID. Lorsque le KYC est obligatoire, aucun retrait ne pourra être effectué sans validation préalable.",
+      sections: {
+        introduction: {
+          title: "1. Introduction",
+          content: "Dans le cadre de son activité, Moonskin met en place des procédures de vérification d'identité (KYC – Know Your Customer) afin de garantir la sécurité des transactions et de prévenir toute activité frauduleuse.\n\nCette politique vise à assurer la conformité avec les obligations en matière de lutte contre le blanchiment de capitaux et le financement du terrorisme (LCB-FT)."
+        },
+        objectives: {
+          title: "2. Objectifs du KYC",
+          content: "Les procédures KYC ont pour objectif de :\n\n• Vérifier l'identité des utilisateurs\n• Prévenir les fraudes et les usurpations d'identité\n• Lutter contre les activités illicites\n• Sécuriser les transactions sur la plateforme\n• Assurer la conformité réglementaire"
+        },
+        whenRequired: {
+          title: "3. Cas nécessitant une vérification",
+          content: "Une vérification KYC peut être exigée dans les situations suivantes :\n\n• Lors d'une demande de retrait de fonds\n• En cas d'activité suspecte ou inhabituelle\n• Pour certains volumes de transactions\n• En cas de doute sur l'identité de l'utilisateur\n• Pour répondre à des obligations légales\n\nMoonskin se réserve le droit d'exiger un KYC à tout moment."
+        },
+        procedure: {
+          title: "4. Procédure de vérification",
+          content: "La vérification d'identité est réalisée via notre prestataire spécialisé : KYCAID.\n\nL'utilisateur pourra être amené à fournir :\n\n• Une pièce d'identité valide\n• Un selfie ou une vérification biométrique\n• Tout document complémentaire jugé nécessaire\n\nLe traitement des données est effectué directement par KYCAID."
+        },
+        refusal: {
+          title: "5. Refus ou non-conformité",
+          content: "Moonskin se réserve le droit de :\n\n• Refuser un KYC en cas de documents invalides ou falsifiés\n• Demander des informations complémentaires\n• Suspendre ou restreindre un compte\n• Bloquer une transaction\n\nAucun retrait ne pourra être effectué sans validation du KYC lorsque celui-ci est requis."
+        },
+        antiFraud: {
+          title: "6. Lutte contre la fraude",
+          content: "Moonskin applique une politique de tolérance zéro concernant :\n\n• Les comptes frauduleux\n• Les tentatives d'usurpation d'identité\n• L'utilisation de fonds d'origine illicite\n• Les skins issus de scams\n\nToute activité suspecte pourra entraîner :\n\n• Une suspension immédiate du compte\n• Un gel des fonds\n• Un signalement aux autorités compétentes si nécessaire"
+        },
+        dataProtection: {
+          title: "7. Protection des données",
+          content: "Les données collectées dans le cadre du KYC :\n\n• Sont traitées par KYCAID\n• Sont sécurisées conformément aux standards en vigueur\n• Ne sont accessibles que dans la limite nécessaire à la validation\n\nMoonskin ne stocke pas directement les données sensibles lorsque cela n'est pas nécessaire."
+        },
+        retention: {
+          title: "8. Conservation des données",
+          content: "Les données KYC peuvent être conservées pendant la durée nécessaire au respect des obligations légales et réglementaires."
+        },
+        userRights: {
+          title: "9. Droits des utilisateurs",
+          content: "Conformément à la réglementation en vigueur, les utilisateurs disposent de droits sur leurs données personnelles.\n\nToute demande peut être adressée à : contact@moonskin.com"
+        },
+        modifications: {
+          title: "10. Modification de la politique",
+          content: "Moonskin se réserve le droit de modifier la présente politique à tout moment."
+        }
+      }
     },
     amlPolicy: {
       title: "Politique Anti-Blanchiment (AML)",
@@ -8580,12 +8622,54 @@ export const messages: Record<Locale, Messages> = {
       }
     },
     kycPolicy: {
-      title: "KYC Policy",
-      subtitle: "Identity verification process compliant with European regulations",
-      content: "We are required by law to verify the identity of our users before allowing certain transactions. This KYC (Know Your Customer) verification procedure allows us to comply with applicable regulations and protect our users against fraud.",
-      comingSoon: "This page will soon be available with dynamic content.",
-      warning: "KYC verification is mandatory before any payment according to European regulations.",
-      warningText: "Your personal data is stored securely and is never shared with third parties without your consent."
+      title: "KYC Policy (Know Your Customer)",
+      subtitle: "Identity verification, transaction security and AML/CFT compliance",
+      content: "Moonskin implements KYC procedures through KYCAID to protect the platform and meet regulatory requirements.",
+      comingSoon: "Fallback content — the published version may come from the legal pages admin.",
+      warning: "KYC may be required at any time, in particular for withdrawals.",
+      warningText: "Identity verification may be required through our provider KYCAID. When KYC is mandatory, no withdrawal can be processed without prior approval.",
+      sections: {
+        introduction: {
+          title: "1. Introduction",
+          content: "Moonskin operates Know Your Customer (KYC) identity verification procedures to secure transactions and help prevent fraudulent activity.\n\nThis policy supports compliance with anti-money laundering and counter-terrorist financing (AML/CFT) obligations."
+        },
+        objectives: {
+          title: "2. Objectives of KYC",
+          content: "KYC procedures aim to:\n\n• Verify users' identities\n• Prevent fraud and identity theft\n• Combat unlawful activity\n• Secure transactions on the platform\n• Meet regulatory requirements"
+        },
+        whenRequired: {
+          title: "3. When verification is required",
+          content: "KYC may be required in situations such as:\n\n• A request to withdraw funds\n• Suspicious or unusual activity\n• Certain transaction volumes\n• Doubts about a user's identity\n• Legal obligations\n\nMoonskin may require KYC at any time."
+        },
+        procedure: {
+          title: "4. Verification process",
+          content: "Identity verification is performed through our specialised provider: KYCAID.\n\nYou may be asked to provide:\n\n• A valid identity document\n• A selfie or biometric verification\n• Any additional document deemed necessary\n\nData processing is carried out directly by KYCAID."
+        },
+        refusal: {
+          title: "5. Refusal or non-compliance",
+          content: "Moonskin may:\n\n• Reject KYC if documents are invalid or forged\n• Request further information\n• Suspend or restrict an account\n• Block a transaction\n\nNo withdrawal may be made without KYC approval when KYC is required."
+        },
+        antiFraud: {
+          title: "6. Anti-fraud",
+          content: "Moonskin applies a zero-tolerance policy regarding:\n\n• Fraudulent accounts\n• Identity theft attempts\n• Use of funds from illicit sources\n• Skins originating from scams\n\nSuspicious activity may lead to:\n\n• Immediate account suspension\n• Freezing of funds\n• Reporting to competent authorities where appropriate"
+        },
+        dataProtection: {
+          title: "7. Data protection",
+          content: "Data collected for KYC:\n\n• Is processed by KYCAID\n• Is secured in line with applicable standards\n• Is accessed only to the extent necessary for validation\n\nMoonskin does not store sensitive data directly where this is not necessary."
+        },
+        retention: {
+          title: "8. Data retention",
+          content: "KYC data may be retained for as long as necessary to comply with legal and regulatory obligations."
+        },
+        userRights: {
+          title: "9. User rights",
+          content: "Under applicable law, users have rights over their personal data.\n\nRequests may be sent to: contact@moonskin.com"
+        },
+        modifications: {
+          title: "10. Changes to this policy",
+          content: "Moonskin may amend this policy at any time."
+        }
+      }
     },
     amlPolicy: {
       title: "Anti-Money Laundering (AML) Policy",
@@ -12528,12 +12612,54 @@ export const messages: Record<Locale, Messages> = {
       }
     },
     kycPolicy: {
-      title: "KYC政策",
-      subtitle: "符合欧洲法规的身份验证流程",
-      content: "法律要求我们在允许某些交易之前验证用户的身份。此KYC（了解您的客户）验证程序使我们能够遵守适用的法规并保护我们的用户免受欺诈。",
-      comingSoon: "此页面即将提供动态内容。",
-      warning: "根据欧洲法规，KYC验证是任何付款前的强制要求。",
-      warningText: "您的个人数据被安全存储，未经您的同意，绝不会与第三方共享。"
+      title: "KYC 政策（了解您的客户）",
+      subtitle: "身份验证、交易安全与反洗钱/反恐怖融资合规",
+      content: "Moonskin 通过 KYCAID 实施 KYC 流程，以保障平台安全并履行监管义务。",
+      comingSoon: "备用内容 — 正式发布版本可能来自法律页面管理后台。",
+      warning: "在任何时候都可能要求完成 KYC，特别是提现时。",
+      warningText: "我们可能通过服务商 KYCAID 要求进行身份验证。在必须完成 KYC 的情况下，未通过验证则无法提现。",
+      sections: {
+        introduction: {
+          title: "1. 简介",
+          content: "Moonskin 实施「了解您的客户」（KYC）身份验证程序，以保障交易安全并防范欺诈。\n\n本政策旨在满足反洗钱与反恐怖融资（AML/CFT）相关义务。"
+        },
+        objectives: {
+          title: "2. KYC 目标",
+          content: "KYC 程序旨在：\n\n• 核实用户身份\n• 防范欺诈与盗用身份\n• 遏制违法活动\n• 保障平台交易安全\n• 满足监管要求"
+        },
+        whenRequired: {
+          title: "3. 需要验证的情形",
+          content: "在下列情形可能要求 KYC：\n\n• 申请提现\n• 可疑或异常活动\n• 特定交易规模\n• 对用户身份存疑\n• 法律义务\n\nMoonskin 保留随时要求 KYC 的权利。"
+        },
+        procedure: {
+          title: "4. 验证流程",
+          content: "身份验证由专门服务商 KYCAID 执行。\n\n您可能被要求提供：\n\n• 有效身份证件\n• 自拍或生物识别验证\n• 认为必要的补充材料\n\n数据处理由 KYCAID 直接完成。"
+        },
+        refusal: {
+          title: "5. 拒绝或不合规",
+          content: "Moonskin 有权：\n\n• 在文件无效或伪造时拒绝 KYC\n• 要求补充信息\n• 暂停或限制账户\n• 阻止交易\n\n在必须完成 KYC 时，未获批准不得提现。"
+        },
+        antiFraud: {
+          title: "6. 反欺诈",
+          content: "对以下情况适用零容忍：\n\n• 欺诈账户\n• 盗用身份企图\n• 使用非法来源资金\n• 来自诈骗的饰品\n\n可疑活动可能导致：\n\n• 立即暂停账户\n• 冻结资金\n• 在必要时向主管机关报告"
+        },
+        dataProtection: {
+          title: "7. 数据保护",
+          content: "KYC 所收集的数据：\n\n• 由 KYCAID 处理\n• 按适用标准予以保护\n• 仅在验证所必需的范围内被访问\n\n在非必要情况下，Moonskin 不直接存储敏感数据。"
+        },
+        retention: {
+          title: "8. 数据保存",
+          content: "KYC 数据可在遵守法律与监管义务所需期限内保留。"
+        },
+        userRights: {
+          title: "9. 用户权利",
+          content: "依适用法律，用户对其个人数据享有权利。\n\n请求可发送至：contact@moonskin.com"
+        },
+        modifications: {
+          title: "10. 政策变更",
+          content: "Moonskin 可随时修订本政策。"
+        }
+      }
     },
     amlPolicy: {
       title: "反洗钱政策 (AML)",
