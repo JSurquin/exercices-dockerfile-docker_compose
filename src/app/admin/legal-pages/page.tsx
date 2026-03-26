@@ -74,6 +74,7 @@ const defaultPages = [
   { slug: 'aml-policy', labelFr: 'Politique AML', labelEn: 'AML Policy' },
   { slug: 'payment-cashout', labelFr: 'Paiement & cashout', labelEn: 'Payment & cashout' },
   { slug: 'mentions-legales', labelFr: 'Mentions légales', labelEn: 'Legal notice' },
+  { slug: 'skin-sale-terms', labelFr: 'Vente de skins', labelEn: 'Skin sale terms' },
   { slug: 'about', labelFr: 'À propos', labelEn: 'About' },
   { slug: 'press', labelFr: 'Presse', labelEn: 'Press' },
 ];

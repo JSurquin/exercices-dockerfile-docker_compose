@@ -1305,6 +1305,171 @@ These legal notices are governed by French law.`,
     contactPhone: null,
     isPublished: true,
   },
+  {
+    slug: 'skin-sale-terms',
+    titleFr: 'Conditions spécifiques de vente de skins',
+    titleEn: 'Specific terms for skin sales',
+    subtitleFr: 'Complément aux CGU — vente de skins CS2 sur Moonskin',
+    subtitleEn: 'Supplement to the Terms — selling CS2 skins on Moonskin',
+    contentFr: `# 1. Objet
+
+Les présentes conditions encadrent spécifiquement la vente de skins sur la plateforme Moonskin, en complément des CGU.
+
+# 2. Nature des biens
+
+Les skins échangés sont des biens numériques liés au jeu Counter-Strike 2 (CS2).
+
+Ils ne constituent pas des actifs financiers et leur valeur dépend exclusivement de l'offre et de la demande sur le marché.
+
+# 3. Processus de vente
+
+Le processus de vente se déroule comme suit :
+
+- L'utilisateur sélectionne un ou plusieurs skins
+- Une estimation de prix est proposée
+- L'utilisateur valide la transaction
+- Le skin est transféré
+- La transaction est traitée
+- Le trade est placé en trade lock par Steam (généralement 7 jours)
+- Le paiement est effectué après levée du trade lock et selon les délais des prestataires de payout
+
+# 4. Propriété et transfert
+
+L'utilisateur garantit être le propriétaire légitime des skins proposés à la vente.
+
+Le transfert de propriété intervient dès réception effective du skin par Moonskin ou le tiers désigné.
+
+Toute tentative de vente de skins issus de fraude, vol ou scam est strictement interdite.
+
+# 5. Trade lock Steam
+
+Les utilisateurs reconnaissent que :
+
+- Les skins peuvent être soumis à un trade lock Steam (généralement 7 jours)
+- Durant cette période, aucun transfert complémentaire ni paiement ne peut intervenir tant que le hold n'est pas levé
+
+Moonskin ne peut être tenue responsable des délais imposés par Steam.
+
+# 6. Prix et volatilité
+
+Le prix convenu lors de la validation de la vente par l'utilisateur s'applique ; il n'est pas réévalué automatiquement à la hausse ou à la baisse pendant le trade lock en fonction des cours du marché.
+
+Le montant effectivement versé peut toutefois différer de l'estimation initialement affichée selon le mode de payout choisi et les frais communiqués par nos prestataires.
+
+Après validation par l'utilisateur, aucune réclamation sur ce fondement ne sera recevable.
+
+# 7. Liquidité
+
+Moonskin ne garantit pas :
+
+- La vente immédiate d'un skin
+- La disponibilité constante d'acheteurs
+- Un niveau de prix stable
+
+# 8. Dépendance aux plateformes tierces
+
+Les transactions peuvent dépendre de :
+
+- Steam
+- Marketplaces externes
+- Fournisseurs de liquidité
+
+Moonskin ne saurait être tenue responsable en cas de blocage, retard ou dysfonctionnement imputable à ces services.
+
+# 9. Refus de skins
+
+Moonskin se réserve le droit de refuser un skin jugé suspect, d'origine douteuse ou non conforme, sans obligation de justification détaillée.
+
+# 10. Fraude et sanctions
+
+En cas de fraude ou tentative de fraude : le compte peut être suspendu ou supprimé ; les transactions peuvent être annulées ou bloquées ; les fonds peuvent être gelés.
+
+# 11. Responsabilité de l'utilisateur
+
+L'utilisateur est responsable de la validité de son trade link, de la sécurité de son compte Steam et des skins qu'il propose à la vente.
+
+# 12. Irréversibilité
+
+Une fois le skin transféré, la transaction est définitive ; aucun retour ni annulation n'est possible.
+
+# 13. Force majeure
+
+Moonskin ne pourra être tenue responsable en cas de panne ou indisponibilité de Steam, de blocage de compte pour des raisons légales, d'incident technique imputable à un prestataire ou d'événement de force majeure au sens juridique du terme.
+
+Moonskin met tout en œuvre pour régulariser et clarifier d'éventuels problèmes dans les meilleurs délais, dans la mesure du possible.`,
+    contentEn: `# 1. Purpose
+
+These terms specifically govern skin sales on Moonskin, in addition to the Terms of Service.
+
+# 2. Nature of the goods
+
+Skins traded are digital items related to Counter-Strike 2 (CS2).
+
+They are not financial assets and their value depends solely on market supply and demand.
+
+# 3. Sale process
+
+- User selects one or more skins
+- A price estimate is offered
+- User confirms the transaction
+- Skin is transferred
+- Transaction is processed
+- Trade is subject to Steam trade lock (typically 7 days)
+- Payout after the lock clears, per payout providers’ timelines
+
+# 4. Ownership and transfer
+
+The user warrants lawful ownership of the skins offered for sale.
+
+Ownership transfers when Moonskin or the designated third party actually receives the skin.
+
+Selling skins from fraud, theft or scams is strictly prohibited.
+
+# 5. Steam trade lock
+
+Skins may be under a Steam trade lock (typically 7 days). During this period no further transfer or payout occurs until the lock clears.
+
+Moonskin is not liable for delays imposed by Steam.
+
+# 6. Price and volatility
+
+The price agreed when you confirm applies; it is not auto re-priced during the lock based on market moves.
+
+The amount paid may differ from the first estimate depending on payout method and provider fees.
+
+After confirmation, no claim on this ground will be accepted.
+
+# 7. Liquidity
+
+Moonskin does not guarantee immediate sale, constant buyers or stable prices.
+
+# 8. Third-party platforms
+
+Transactions may depend on Steam, external marketplaces and liquidity providers. Moonskin is not liable for blocks, delays or faults from those services.
+
+# 9. Refusal of skins
+
+Moonskin may refuse skins that are suspicious, of doubtful origin or non-compliant, without detailed justification.
+
+# 10. Fraud and sanctions
+
+Fraud may lead to account suspension or closure, blocked or cancelled transactions, and frozen funds.
+
+# 11. User responsibility
+
+You are responsible for your trade link, Steam account security and the skins you offer.
+
+# 12. Irreversibility
+
+Once transferred, the transaction is final; no return or cancellation.
+
+# 13. Force majeure
+
+Moonskin is not liable for Steam outages, legal account blocks, provider technical incidents or force majeure. Moonskin uses reasonable efforts to resolve issues promptly.`,
+    contactEmail: 'contact@moonskin.com',
+    contactPhone: null,
+    isPublished: true,
+  },
 ];
 
 async function seedLegalPages(forceReset: boolean = false) {

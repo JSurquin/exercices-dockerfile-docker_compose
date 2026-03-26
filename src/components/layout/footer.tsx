@@ -30,6 +30,7 @@ export function Footer() {
       { name: messages.footer.links.amlPolicy, href: "/aml-policy" },
       { name: messages.footer.links.paymentCashout, href: "/payment-cashout" },
       { name: messages.footer.links.mentionsLegales, href: "/mentions-legales" },
+      { name: messages.footer.links.skinSaleTerms, href: "/skin-sale-terms" },
     ],
     community: [
       ...(process.env.NEXT_PUBLIC_DISCORD_URL ? [{ name: messages.footer.socialLinks.discord, href: process.env.NEXT_PUBLIC_DISCORD_URL }] : []),

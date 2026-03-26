@@ -451,6 +451,7 @@ export const messages: Record<Locale, Messages> = {
         amlPolicy: "Politique anti-blanchiment",
         paymentCashout: "Paiement & cashout",
         mentionsLegales: "Mentions légales",
+        skinSaleTerms: "Vente de skins",
         login: "Connexion",
         admin: "Administration",
       },
@@ -4497,6 +4498,68 @@ export const messages: Record<Locale, Messages> = {
           content: "Les présentes mentions légales sont régies par le droit français."
         }
       }
+    },
+    skinSaleTerms: {
+      title: "Conditions spécifiques de vente de skins",
+      subtitle: "Complément aux CGU — vente de skins CS2 sur Moonskin",
+      content: "Règles propres au processus de vente, au trade lock Steam et aux risques de marché.",
+      comingSoon: "Contenu de secours — la version publiée peut provenir de l'administration des pages légales.",
+      warning: "Vente de biens numériques",
+      warningText: "Les skins CS2 ne sont pas des instruments financiers ; les délais Steam (trade lock) et les plateformes tierces peuvent affecter la transaction et le paiement.",
+      sections: {
+        introduction: {
+          title: "1. Objet",
+          content: "Les présentes conditions encadrent spécifiquement la vente de skins sur la plateforme Moonskin, en complément des CGU."
+        },
+        natureOfGoods: {
+          title: "2. Nature des biens",
+          content: "Les skins échangés sont des biens numériques liés au jeu Counter-Strike 2 (CS2).\n\nIls ne constituent pas des actifs financiers et leur valeur dépend exclusivement de l'offre et de la demande sur le marché."
+        },
+        saleProcess: {
+          title: "3. Processus de vente",
+          content: "Le processus de vente se déroule comme suit :\n\n• L'utilisateur sélectionne un ou plusieurs skins\n• Une estimation de prix est proposée\n• L'utilisateur valide la transaction\n• Le skin est transféré\n• La transaction est traitée\n• Le trade est placé en trade lock par Steam (généralement 7 jours)\n• Le paiement est effectué après levée du trade lock et selon les délais des prestataires de payout (typiquement à partir du 8e jour calendaire selon le calendrier Steam et les validations internes)"
+        },
+        ownershipTransfer: {
+          title: "4. Propriété et transfert",
+          content: "L'utilisateur garantit être le propriétaire légitime des skins proposés à la vente.\n\nLe transfert de propriété intervient dès réception effective du skin par Moonskin ou le tiers désigné.\n\nToute tentative de vente de skins issus de fraude, vol ou scam est strictement interdite."
+        },
+        tradeLock: {
+          title: "5. Trade lock Steam",
+          content: "Les utilisateurs reconnaissent que :\n\n• Les skins peuvent être soumis à un trade lock Steam (généralement 7 jours)\n• Durant cette période, aucun transfert complémentaire ni paiement ne peut intervenir tant que le hold n'est pas levé\n\nMoonskin ne peut être tenue responsable des délais imposés par Steam."
+        },
+        priceVolatility: {
+          title: "6. Prix et volatilité",
+          content: "Le prix convenu lors de la validation de la vente par l'utilisateur s'applique ; il n'est pas réévalué automatiquement à la hausse ou à la baisse pendant le trade lock en fonction des cours du marché.\n\nLe montant effectivement versé peut toutefois différer de l'estimation initialement affichée selon le mode de payout choisi et les frais communiqués par nos prestataires.\n\nAprès validation par l'utilisateur, aucune réclamation sur ce fondement ne sera recevable."
+        },
+        liquidity: {
+          title: "7. Liquidité",
+          content: "Moonskin ne garantit pas :\n\n• La vente immédiate d'un skin\n• La disponibilité constante d'acheteurs\n• Un niveau de prix stable"
+        },
+        thirdPartyDependency: {
+          title: "8. Dépendance aux plateformes tierces",
+          content: "Les transactions peuvent dépendre de :\n\n• Steam\n• Marketplaces externes\n• Fournisseurs de liquidité\n\nMoonskin ne saurait être tenue responsable en cas de :\n\n• Blocage\n• Retard\n• Dysfonctionnement imputable à ces services"
+        },
+        skinRefusal: {
+          title: "9. Refus de skins",
+          content: "Moonskin se réserve le droit de refuser un skin :\n\n• Jugé suspect\n• D'origine douteuse\n• Non conforme\n\nSans obligation de justification détaillée."
+        },
+        fraudSanctions: {
+          title: "10. Fraude et sanctions",
+          content: "En cas de fraude ou tentative de fraude :\n\n• Le compte peut être suspendu ou supprimé\n• Les transactions peuvent être annulées ou bloquées\n• Les fonds peuvent être gelés"
+        },
+        userResponsibility: {
+          title: "11. Responsabilité de l'utilisateur",
+          content: "L'utilisateur est responsable :\n\n• De la validité de son trade link\n• De la sécurité de son compte Steam\n• Des skins qu'il propose à la vente"
+        },
+        irreversibility: {
+          title: "12. Irréversibilité",
+          content: "Une fois le skin transféré :\n\n• La transaction est définitive\n• Aucun retour ni annulation n'est possible"
+        },
+        forceMajeure: {
+          title: "13. Force majeure",
+          content: "Moonskin ne pourra être tenue responsable en cas de :\n\n• Panne ou indisponibilité de Steam\n• Blocage de compte pour des raisons légales\n• Incident technique imputable à un prestataire\n• Événement de force majeure au sens juridique du terme\n\nMoonskin met tout en œuvre pour régulariser et clarifier d'éventuels problèmes dans les meilleurs délais, dans la mesure du possible."
+        }
+      }
     }
   },
   en: {
@@ -4944,6 +5007,7 @@ export const messages: Record<Locale, Messages> = {
         amlPolicy: "AML Policy",
         paymentCashout: "Payment & cashout",
         mentionsLegales: "Legal notice",
+        skinSaleTerms: "Skin sales",
         login: "Login",
         admin: "Administration",
       },
@@ -8990,6 +9054,68 @@ export const messages: Record<Locale, Messages> = {
           content: "These legal notices are governed by French law."
         }
       }
+    },
+    skinSaleTerms: {
+      title: "Specific terms for skin sales",
+      subtitle: "Supplement to the Terms — selling CS2 skins on Moonskin",
+      content: "Rules specific to the sale process, Steam trade lock and market risk.",
+      comingSoon: "Fallback content — the published version may come from the legal pages admin.",
+      warning: "Digital goods",
+      warningText: "CS2 skins are not financial instruments. Steam trade locks and third-party platforms may affect the transaction and payout.",
+      sections: {
+        introduction: {
+          title: "1. Purpose",
+          content: "These terms specifically govern skin sales on Moonskin, in addition to the Terms of Service."
+        },
+        natureOfGoods: {
+          title: "2. Nature of the goods",
+          content: "Skins traded are digital items related to Counter-Strike 2 (CS2).\n\nThey are not financial assets and their value depends solely on market supply and demand."
+        },
+        saleProcess: {
+          title: "3. Sale process",
+          content: "The sale process is:\n\n• User selects one or more skins\n• A price estimate is offered\n• User confirms the transaction\n• Skin is transferred\n• Transaction is processed\n• Trade is subject to Steam trade lock (typically 7 days)\n• Payout occurs after the lock clears, according to payout providers’ timelines (often from the 8th calendar day depending on Steam dates and internal checks)"
+        },
+        ownershipTransfer: {
+          title: "4. Ownership and transfer",
+          content: "The user warrants lawful ownership of the skins offered for sale.\n\nOwnership transfers when Moonskin or the designated third party actually receives the skin.\n\nSelling skins from fraud, theft or scams is strictly prohibited."
+        },
+        tradeLock: {
+          title: "5. Steam trade lock",
+          content: "You acknowledge that:\n\n• Skins may be under a Steam trade lock (typically 7 days)\n• During this period no further transfer or payout can occur until the lock clears\n\nMoonskin is not liable for delays imposed by Steam."
+        },
+        priceVolatility: {
+          title: "6. Price and volatility",
+          content: "The price agreed when you confirm the sale applies; it is not automatically re-priced up or down during the trade lock based on market moves.\n\nThe amount actually paid may still differ from the first estimate shown, depending on the payout method chosen and fees displayed by our providers.\n\nAfter your confirmation, no claim on this ground will be accepted."
+        },
+        liquidity: {
+          title: "7. Liquidity",
+          content: "Moonskin does not guarantee:\n\n• Immediate sale of a skin\n• Constant buyer availability\n• A stable price level"
+        },
+        thirdPartyDependency: {
+          title: "8. Third-party platforms",
+          content: "Transactions may depend on:\n\n• Steam\n• External marketplaces\n• Liquidity providers\n\nMoonskin shall not be liable for:\n\n• Blocks\n• Delays\n• Malfunctions attributable to those services"
+        },
+        skinRefusal: {
+          title: "9. Refusal of skins",
+          content: "Moonskin may refuse a skin that is:\n\n• Deemed suspicious\n• Of doubtful origin\n• Non-compliant\n\nWithout a detailed obligation to justify the decision."
+        },
+        fraudSanctions: {
+          title: "10. Fraud and sanctions",
+          content: "In case of fraud or attempted fraud:\n\n• The account may be suspended or closed\n• Transactions may be cancelled or blocked\n• Funds may be frozen"
+        },
+        userResponsibility: {
+          title: "11. User responsibility",
+          content: "You are responsible for:\n\n• A valid trade link\n• Security of your Steam account\n• The skins you offer for sale"
+        },
+        irreversibility: {
+          title: "12. Irreversibility",
+          content: "Once the skin is transferred:\n\n• The transaction is final\n• No return or cancellation is possible"
+        },
+        forceMajeure: {
+          title: "13. Force majeure",
+          content: "Moonskin shall not be liable in case of:\n\n• Steam outage or unavailability\n• Account blocking for legal reasons\n• Technical incident attributable to a provider\n• Force majeure in the legal sense\n\nMoonskin makes reasonable efforts to resolve and clarify issues as quickly as practicable."
+        }
+      }
     }
   },
   cn: {
@@ -9433,6 +9559,7 @@ export const messages: Record<Locale, Messages> = {
         amlPolicy: "反洗钱政策",
         paymentCashout: "付款与提现",
         mentionsLegales: "法律声明",
+        skinSaleTerms: "饰品销售条款",
         login: "登录",
         admin: "管理",
       },
@@ -13134,6 +13261,68 @@ export const messages: Record<Locale, Messages> = {
         applicableLaw: {
           title: "8. 适用法律",
           content: "本法律声明受法国法律管辖。"
+        }
+      }
+    },
+    skinSaleTerms: {
+      title: "饰品销售特别条款",
+      subtitle: "对服务条款的补充 — 在 Moonskin 上出售 CS2 饰品",
+      content: "涉及出售流程、Steam 交易锁定与市场风险的专门规则。",
+      comingSoon: "备用内容 — 正式发布版本可能来自法律页面管理后台。",
+      warning: "数字商品",
+      warningText: "CS2 饰品并非金融工具；Steam 交易锁与第三方可能影响交易与付款。",
+      sections: {
+        introduction: {
+          title: "1. 适用范围",
+          content: "本条款专门规范在 Moonskin 上出售饰品，是对《服务条款》的补充。"
+        },
+        natureOfGoods: {
+          title: "2. 标的物性质",
+          content: "交易的饰品为与《反恐精英2》（CS2）相关的数字物品。\n\n其并非金融资产，价值完全取决于市场供需。"
+        },
+        saleProcess: {
+          title: "3. 出售流程",
+          content: "流程如下：\n\n• 用户选择一件或多件饰品\n• 平台给出估价\n• 用户确认交易\n• 转移饰品\n• 处理交易\n• Steam 交易锁（通常 7 天）\n• 锁定期结束后按提现服务商时效付款（结合 Steam 日期与内部校验，实践中常见为第 8 个日历日起视情况而定）"
+        },
+        ownershipTransfer: {
+          title: "4. 所有权与转让",
+          content: "用户保证对所售饰品拥有合法权利。\n\n在 Moonskin 或指定第三方实际收到饰品时，所有权转移。\n\n严禁出售来源涉诈、盗窃或诈骗的饰品。"
+        },
+        tradeLock: {
+          title: "5. Steam 交易锁",
+          content: "用户知悉：\n\n• 饰品可能处于 Steam 交易锁（通常 7 天）\n• 此期间在锁未解除前无法进行进一步转让或付款\n\n因 Steam 造成的延误，Moonskin 不承担责任。"
+        },
+        priceVolatility: {
+          title: "6. 价格与波动",
+          content: "用户确认出售时锁定的价格适用；交易锁期间不因市场行情自动调高或调低。\n\n实际到账金额仍可能因所选提现方式及服务商公示费用而与最初估价不同。\n\n用户确认后，不得以该理由提出异议。"
+        },
+        liquidity: {
+          title: "7. 流动性",
+          content: "Moonskin 不保证：\n\n• 饰品即时售出\n• 始终有买方\n• 价格水平稳定"
+        },
+        thirdPartyDependency: {
+          title: "8. 第三方平台依赖",
+          content: "交易可能依赖：\n\n• Steam\n• 外部市场\n• 流动性提供方\n\n对阻断、延误或该等服务的故障，Moonskin 不承担责任。"
+        },
+        skinRefusal: {
+          title: "9. 拒绝接收饰品",
+          content: "Moonskin 可拒绝被认为可疑、来源不明或不合规的饰品，且无义务提供详尽理由。"
+        },
+        fraudSanctions: {
+          title: "10. 欺诈与处理措施",
+          content: "若构成欺诈或欺诈未遂：\n\n• 账户可被暂停或关闭\n• 交易可被取消或阻止\n• 资金可被冻结"
+        },
+        userResponsibility: {
+          title: "11. 用户责任",
+          content: "用户负责：\n\n• 交易链接有效\n• Steam 账户安全\n• 所售饰品的合法性"
+        },
+        irreversibility: {
+          title: "12. 不可撤销",
+          content: "饰品一旦转移：\n\n• 交易即告确定\n• 不可退回或撤销"
+        },
+        forceMajeure: {
+          title: "13. 不可抗力",
+          content: "对下列情形 Moonskin 不承担责任：\n\n• Steam 故障或不可用\n• 因法律原因导致的账户限制\n• 可归责于服务商的技术事件\n• 法律意义上的不可抗力\n\nMoonskin 将在合理范围内尽快协调并说明情况。"
         }
       }
     }

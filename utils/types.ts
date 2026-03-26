@@ -493,6 +493,7 @@ export interface Messages {
       amlPolicy: string;
       paymentCashout: string;
       mentionsLegales: string;
+      skinSaleTerms: string;
       login: string;
       admin: string;
     };
@@ -4348,6 +4349,29 @@ export interface Messages {
       personalData: { title: string; content: string };
       externalLinks: { title: string; content: string };
       applicableLaw: { title: string; content: string };
+    };
+  };
+  skinSaleTerms: {
+    title: string;
+    subtitle: string;
+    content: string;
+    comingSoon: string;
+    warning: string;
+    warningText: string;
+    sections: {
+      introduction: { title: string; content: string };
+      natureOfGoods: { title: string; content: string };
+      saleProcess: { title: string; content: string };
+      ownershipTransfer: { title: string; content: string };
+      tradeLock: { title: string; content: string };
+      priceVolatility: { title: string; content: string };
+      liquidity: { title: string; content: string };
+      thirdPartyDependency: { title: string; content: string };
+      skinRefusal: { title: string; content: string };
+      fraudSanctions: { title: string; content: string };
+      userResponsibility: { title: string; content: string };
+      irreversibility: { title: string; content: string };
+      forceMajeure: { title: string; content: string };
     };
   };
 }
