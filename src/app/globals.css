@@ -100,6 +100,34 @@
   margin: 1.5rem auto;
 }
 
+/* Sentry User Feedback — style du bouton flottant (feedbackIntegration), host #sentry-feedback */
+/* Coin bas-gauche : inset = top, right, bottom, left */
+#sentry-feedback {
+  --font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --actor-background: linear-gradient(135deg, #f97316 0%, #dc2626 100%);
+  --actor-hover-background: linear-gradient(135deg, #fb923c 0%, #ef4444 100%);
+  --actor-color: #ffffff;
+  --actor-border: none;
+  --actor-box-shadow: 0 10px 28px -6px rgba(220, 38, 38, 0.4);
+  --actor-border-radius: 9999px;
+  --page-margin: 1.25rem;
+  --inset: auto auto 1.25rem 1.25rem;
+}
+
+/*
+ * En dev, Next.js affiche l’indicateur de build (coin bas-gauche).
+ * Remonter le widget pour qu’il reste juste au-dessus.
+ */
+body.next-dev-overlay-present #sentry-feedback {
+  --inset: auto auto 5rem 1.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  #sentry-feedback {
+    --actor-box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.6);
+  }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

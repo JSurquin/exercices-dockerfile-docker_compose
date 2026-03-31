@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useLocale } from "@/components/providers/locale-provider";
 import { usePublicStats } from "@/hooks/use-public-stats";
+import { MOONSKIN_DISCORD_URL, MOONSKIN_X_URL } from "@/lib/moonskin-social";
 
 export function Footer() {
   const { messages } = useLocale();
@@ -33,10 +34,14 @@ export function Footer() {
       { name: messages.footer.links.skinSaleTerms, href: "/skin-sale-terms" },
     ],
     community: [
-      ...(process.env.NEXT_PUBLIC_DISCORD_URL ? [{ name: messages.footer.socialLinks.discord, href: process.env.NEXT_PUBLIC_DISCORD_URL }] : []),
-      ...(process.env.NEXT_PUBLIC_TWITTER_URL ? [{ name: messages.footer.socialLinks.twitter, href: process.env.NEXT_PUBLIC_TWITTER_URL }] : []),
-      ...(process.env.NEXT_PUBLIC_REDDIT_URL ? [{ name: messages.footer.socialLinks.reddit, href: process.env.NEXT_PUBLIC_REDDIT_URL }] : []),
-      ...(process.env.NEXT_PUBLIC_YOUTUBE_URL ? [{ name: messages.footer.socialLinks.youtube, href: process.env.NEXT_PUBLIC_YOUTUBE_URL }] : []),
+      { name: messages.footer.socialLinks.discord, href: MOONSKIN_DISCORD_URL },
+      { name: messages.footer.socialLinks.x, href: MOONSKIN_X_URL },
+      ...(process.env.NEXT_PUBLIC_REDDIT_URL
+        ? [{ name: messages.footer.socialLinks.reddit, href: process.env.NEXT_PUBLIC_REDDIT_URL }]
+        : []),
+      ...(process.env.NEXT_PUBLIC_YOUTUBE_URL
+        ? [{ name: messages.footer.socialLinks.youtube, href: process.env.NEXT_PUBLIC_YOUTUBE_URL }]
+        : []),
     ],
   };
 
@@ -55,6 +60,25 @@ export function Footer() {
             <p className="text-muted-foreground mb-4 max-w-md">
               {messages.footer.description}
             </p>
+            <div className="flex flex-wrap gap-3 mb-4">
+              <a
+                href={MOONSKIN_DISCORD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300"
+              >
+                {messages.footer.socialLinks.discord}
+              </a>
+              <span className="text-muted-foreground">·</span>
+              <a
+                href={MOONSKIN_X_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300"
+              >
+                {messages.footer.socialLinks.x}
+              </a>
+            </div>
             <div className="flex space-x-3 sm:space-x-4">
               <div className="text-sm text-muted-foreground">
                 <p className="font-medium">{messages.footer.securedBy}</p>

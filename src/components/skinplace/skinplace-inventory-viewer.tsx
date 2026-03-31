@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Search, 
   RefreshCw, 
@@ -32,6 +33,8 @@ import { currencyConverter } from '@/lib/currency-converter';
 
 interface SkinplaceInventoryViewerProps {
   steamId64: string;
+  /** Identité Steam du compte MoonSkin (affichée seulement si currentSteamId === steamId64) */
+  linkedSteamIdentity?: { name: string; avatarUrl: string };
   onItemSelect?: (items: NormalizedInventoryItem[]) => void;
   selectable?: boolean;
   allowSteamIdChange?: boolean;
@@ -39,7 +42,8 @@ interface SkinplaceInventoryViewerProps {
 }
 
 export function SkinplaceInventoryViewer({ 
-  steamId64, 
+  steamId64,
+  linkedSteamIdentity,
   onItemSelect, 
   selectable = false,
   allowSteamIdChange = false,
@@ -376,13 +380,29 @@ export function SkinplaceInventoryViewer({
         <Card className="bg-muted/30">
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-full bg-primary/10">
-                  <User className="h-5 w-5 text-primary" />
-                </div>
-                <div>
+              <div className="flex items-center gap-3 min-w-0">
+                {linkedSteamIdentity && currentSteamId === steamId64 && linkedSteamIdentity.avatarUrl ? (
+                  <Avatar className="h-11 w-11 border-2 border-primary/30 shrink-0">
+                    <AvatarImage src={linkedSteamIdentity.avatarUrl} alt="" />
+                    <AvatarFallback className="text-xs">
+                      {(linkedSteamIdentity.name || '?').slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <div className="p-2 rounded-full bg-primary/10 shrink-0">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                )}
+                <div className="min-w-0">
                   <p className="text-sm text-muted-foreground">Inventaire chargé pour</p>
-                  <p className="font-mono text-sm font-medium">{currentSteamId}</p>
+                  {linkedSteamIdentity && currentSteamId === steamId64 && linkedSteamIdentity.name ? (
+                    <p className="font-semibold text-sm truncate" title={linkedSteamIdentity.name}>
+                      {linkedSteamIdentity.name}
+                    </p>
+                  ) : null}
+                  <p className="font-mono text-xs sm:text-sm font-medium text-muted-foreground truncate">
+                    {currentSteamId}
+                  </p>
                 </div>
                 {currentSteamId !== steamId64 && (
                   <Badge variant="secondary" className="ml-2">

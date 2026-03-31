@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLocale } from "@/components/providers/locale-provider";
+import { useAuth } from "@/components/providers/auth-provider";
+import { useRouter } from "next/navigation";
 import {
   LinkIcon,
   CurrencyDollarIcon,
@@ -15,6 +17,16 @@ import {
 
 export function HowItWorks() {
   const { messages } = useLocale();
+  const { user, loginWithSteam } = useAuth();
+  const router = useRouter();
+
+  const handlePrimaryCta = () => {
+    if (user) {
+      router.push("/sell");
+      return;
+    }
+    void loginWithSteam();
+  };
 
   const steps = [
     {
@@ -184,11 +196,9 @@ export function HowItWorks() {
               <Button
                 size="lg"
                 className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                onClick={handlePrimaryCta}
               >
                 {messages.howItWorks.cta.primary}
-              </Button>
-              <Button variant="outline" size="lg">
-                {messages.howItWorks.cta.secondary}
               </Button>
             </div>
           </div>

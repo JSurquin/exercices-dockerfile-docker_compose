@@ -208,7 +208,7 @@ export default function GiveawaysPage() {
     };
 
     initGiveaway();
-  }, []);
+  }, [refetch]);
 
   const { data: myEntriesData, isLoading: loadingEntries, refetch: refetchEntries } = useQuery({
     queryKey: ['giveaways', 'my-entries', user?.id],

@@ -143,6 +143,10 @@ export default function SellPage() {
           {currentStep === 0 && (
             <SkinplaceInventoryViewer
               steamId64={user.steamId64}
+              linkedSteamIdentity={{
+                name: user.username,
+                avatarUrl: user.avatar,
+              }}
               onItemSelect={handleItemSelect}
               selectable={true}
               allowSteamIdChange={true}

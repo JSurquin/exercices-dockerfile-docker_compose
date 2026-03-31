@@ -32,7 +32,6 @@ import {
   CheckIcon,
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
-import { StripeIcon, QontoIcon, BinanceIcon } from "@/components/ui/payment-icons";
 import {
   LineChart,
   Line,
@@ -92,12 +91,72 @@ const getStatusText = (status: string, messages: Messages) => {
   return messages.trade.status[statusKey as keyof typeof messages.trade.status] || status;
 };
 
+type DashboardPayoutApi = {
+  id: string;
+  status: string;
+  amountCents: number;
+  paymentReference: string | null;
+  flexifyPayoutId: string | null;
+  whitepayTransactionId: string | null;
+  whitepayTargetCurrency: string | null;
+  whitepayTargetValue: string | null;
+  whitepayNetwork: string | null;
+  createdAt: string;
+  paymentMethod: { id: string; type: string } | null;
+  trade: { id: string; ticketId: string | null } | null;
+};
+
+const PAYOUT_TERMINAL = new Set([
+  "PAID",
+  "FAILED",
+  "CANCELLED",
+  "FLEXIFY_PAID",
+  "FLEXIFY_FAILED",
+  "WHITEPAY_COMPLETE",
+  "WHITEPAY_DECLINED",
+]);
+
+const isPayoutInProgress = (status: string) => !PAYOUT_TERMINAL.has(status);
+
+const payoutChannelLabel = (
+  p: DashboardPayoutApi,
+  pay: Messages["dashboard"]["payments"],
+) => {
+  const t = p.paymentMethod?.type ?? "";
+  if (p.whitepayTransactionId || t === "WHITEPAY_CRYPTO") return pay.channelWhitepay;
+  if (["FLEXIFY_CARD", "FLEXIFY_SEPA", "CARD", "SEPA"].includes(t)) return pay.channelFlexify;
+  return pay.channelOther;
+};
+
+const formatPayoutReference = (p: DashboardPayoutApi) =>
+  p.paymentReference ||
+  p.flexifyPayoutId ||
+  (p.whitepayTransactionId ? `${p.whitepayTransactionId.slice(0, 12)}…` : null) ||
+  `${p.id.slice(0, 10)}…`;
+
+const payoutStatusBadgeClass = (status: string) => {
+  if (["PAID", "FLEXIFY_PAID", "WHITEPAY_COMPLETE"].includes(status)) {
+    return "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30";
+  }
+  if (["FAILED", "FLEXIFY_FAILED", "WHITEPAY_DECLINED", "CANCELLED"].includes(status)) {
+    return "bg-red-500/15 text-red-800 dark:text-red-300 border-red-500/30";
+  }
+  return "bg-amber-500/15 text-amber-900 dark:text-amber-200 border-amber-500/30";
+};
+
+const payoutStatusLabel = (
+  status: string,
+  labels: Messages["dashboard"]["payments"]["status"],
+) => labels[status as keyof typeof labels] ?? status;
+
+const dateLocaleTag = (locale: string) =>
+  locale === "en" ? "en-GB" : locale === "cn" ? "zh-CN" : "fr-FR";
+
 export default function DashboardPage() {
   const { data, isPending, error } = useSession();
   const searchParams = useSearchParams();
   const { isFirstLogin, completeOnboarding } = useOnboarding();
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [preferredPaymentMethod, setPreferredPaymentMethod] = useState<'stripe' | 'qonto' | 'binance' | null>('qonto');
   const { data: tradesData, loading: tradesLoading, error: tradesError, refetch: refetchTrades } = useUserTrades();
   const [refreshingTradeId, setRefreshingTradeId] = useState<string | null>(null);
   const [refreshingKyc, setRefreshingKyc] = useState(false);
@@ -110,6 +169,8 @@ export default function DashboardPage() {
     },
     enabled: !!data?.user,
   });
+
+  const { messages, locale: appLocale } = useLocale();
   
   console.log("useSession data:", data);
   console.log("useSession isPending:", isPending);
@@ -128,7 +189,7 @@ export default function DashboardPage() {
       url.searchParams.delete('steam_login');
       window.history.replaceState({}, '', url.toString());
     }
-  }, [searchParams, data?.user?.name]);
+  }, [searchParams, data?.user?.name, messages.toast.steamLoginSuccess, messages.dashboard.welcome]);
 
   // Gérer l'affichage de l'onboarding
   useEffect(() => {
@@ -183,10 +244,22 @@ export default function DashboardPage() {
       setRefreshingTradeId(null);
     }
   };
-  
-  const { messages } = useLocale();
+
+  const { data: payoutsPayload, isLoading: payoutsLoading, error: payoutsQueryError, refetch: refetchPayouts } = useQuery({
+    queryKey: queryKeys.userPayouts,
+    queryFn: async () => {
+      const response = await fetch("/api/flexify/payout?limit=50", { credentials: "include" });
+      if (!response.ok) throw new Error("payouts");
+      return (await response.json()) as { payouts: DashboardPayoutApi[]; total: number };
+    },
+    enabled: !!data?.user,
+  });
 
   const user = data?.user as User;
+  const payoutList = payoutsPayload?.payouts ?? [];
+  const payoutsInProgress = payoutList.filter((p) => isPayoutInProgress(p.status));
+  const payoutsCompleted = payoutList.filter((p) => !isPayoutInProgress(p.status));
+  const localeTag = dateLocaleTag(appLocale);
 
   if (!data || !user) {
     return (
@@ -594,22 +667,22 @@ export default function DashboardPage() {
                                   if (pollRes.ok) {
                                     const pollData = await pollRes.json();
                                     if (pollData.verified === true && pollData.status === 'completed') {
-                                      toast.success('KYC vérifié !');
+                                      toast.success(messages.dashboard.payments.kycToastVerified);
                                     } else if (pollData.verified === false && pollData.status === 'completed') {
-                                      toast.error('KYC rejeté');
+                                      toast.error(messages.dashboard.payments.kycToastRejected);
                                     } else {
-                                      toast.info('Statut mis à jour');
+                                      toast.info(messages.dashboard.payments.kycToastUpdated);
                                     }
                                     // Recharger la page pour mettre à jour l'UI
                                     setTimeout(() => window.location.reload(), 1000);
                                   }
                                 } else {
-                                  toast.info('Aucune vérification en cours');
+                                  toast.info(messages.dashboard.payments.kycToastNoVerification);
                                 }
                               }
                             } catch (error) {
                               console.error('Error refreshing KYC:', error);
-                              toast.error('Erreur lors de la vérification');
+                              toast.error(messages.dashboard.payments.kycToastRefreshError);
                             } finally {
                               setRefreshingKyc(false);
                             }
@@ -619,12 +692,12 @@ export default function DashboardPage() {
                           {refreshingKyc ? (
                             <>
                               <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
-                              Vérification...
+                              {messages.dashboard.payments.kycRefreshing}
                             </>
                           ) : (
                             <>
                               <ArrowPathIcon className="w-4 h-4 mr-2" />
-                              Rafraîchir le statut
+                              {messages.dashboard.payments.kycRefreshStatus}
                             </>
                           )}
                         </Button>
@@ -656,166 +729,138 @@ export default function DashboardPage() {
                 </Card>
               </div>
 
-              {/* Preferred Payment Method Section */}
+              {/* Payout history (Flexify / Whitepay) */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <BanknotesIcon className="w-5 h-5" />
-                    <span>{messages.dashboard.payments.preferredMethod}</span>
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    {messages.dashboard.payments.selectPreferred}
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Stripe Option */}
-                    <div 
-                      className={`relative border-2 rounded-lg p-6 cursor-pointer transition-all hover:shadow-md ${
-                        preferredPaymentMethod === 'stripe' 
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-950' 
-                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
-                      }`}
-                      onClick={() => setPreferredPaymentMethod('stripe')}
-                    >
-                      {preferredPaymentMethod === 'stripe' && (
-                        <div className="absolute top-3 right-3">
-                          <CheckIcon className="w-5 h-5 text-blue-500" />
-                        </div>
-                      )}
-                      <div className="flex flex-col items-center text-center space-y-3">
-                        <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center shadow-sm">
-                          <StripeIcon className="w-8 h-8" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold">{messages.dashboard.payments.stripe}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Cartes bancaires
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Qonto Option */}
-                    <div 
-                      className={`relative border-2 rounded-lg p-6 cursor-pointer transition-all hover:shadow-md ${
-                        preferredPaymentMethod === 'qonto' 
-                          ? 'border-orange-500 bg-orange-50 dark:bg-orange-950' 
-                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
-                      }`}
-                      onClick={() => setPreferredPaymentMethod('qonto')}
-                    >
-                      {preferredPaymentMethod === 'qonto' && (
-                        <div className="absolute top-3 right-3">
-                          <CheckIcon className="w-5 h-5 text-orange-500" />
-                        </div>
-                      )}
-                      <div className="flex flex-col items-center text-center space-y-3">
-                        <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center shadow-sm">
-                          <QontoIcon className="w-8 h-8" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold">{messages.dashboard.payments.qonto}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Virement bancaire
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Binance Option */}
-                    <div 
-                      className={`relative border-2 rounded-lg p-6 cursor-pointer transition-all hover:shadow-md ${
-                        preferredPaymentMethod === 'binance' 
-                          ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950' 
-                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
-                      }`}
-                      onClick={() => setPreferredPaymentMethod('binance')}
-                    >
-                      {preferredPaymentMethod === 'binance' && (
-                        <div className="absolute top-3 right-3">
-                          <CheckIcon className="w-5 h-5 text-yellow-500" />
-                        </div>
-                      )}
-                      <div className="flex flex-col items-center text-center space-y-3">
-                        <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center shadow-sm">
-                          <BinanceIcon className="w-8 h-8" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold">{messages.dashboard.payments.binance}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Cryptomonnaies
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <BanknotesIcon className="w-5 h-5" />
+                      {messages.dashboard.payments.title}
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {messages.dashboard.payments.subtitle}
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Existing Payment Methods Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <BanknotesIcon className="w-5 h-5" />
-                    <span>{messages.dashboard.payments.methods}</span>
-                  </CardTitle>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => refetchPayouts()}
+                    disabled={payoutsLoading}
+                  >
+                    <ArrowPathIcon className={`w-4 h-4 mr-2 ${payoutsLoading ? "animate-spin" : ""}`} />
+                    {messages.dashboard.payments.refreshPayoutList}
+                  </Button>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 sm:space-y-4">
-                    <div className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                            <BanknotesIcon className="w-5 h-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <p className="font-medium">SEPA - Qonto</p>
-                            <p className="text-sm text-muted-foreground">
-                              FR76 **** **** **** **89
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Badge
-                            variant="secondary"
-                            className="bg-green-100 text-green-800"
+                <CardContent className="space-y-8">
+                  {payoutsQueryError && (
+                    <p className="text-sm text-destructive">{messages.dashboard.payments.loadError}</p>
+                  )}
+
+                  {payoutsLoading && !payoutList.length ? (
+                    <p className="text-sm text-muted-foreground">{messages.common.loading}</p>
+                  ) : null}
+
+                  {!payoutsLoading && !payoutList.length && !payoutsQueryError ? (
+                    <p className="text-sm text-muted-foreground">{messages.dashboard.payments.empty}</p>
+                  ) : null}
+
+                  {payoutsInProgress.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold">{messages.dashboard.payments.inProgress}</h4>
+                      <ul className="space-y-3">
+                        {payoutsInProgress.map((p) => (
+                          <li
+                            key={p.id}
+                            className="rounded-lg border bg-muted/30 p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
                           >
-                            {messages.dashboard.payments.verified}
-                          </Badge>
-                          <Badge variant="outline">{messages.dashboard.payments.default}</Badge>
-                        </div>
-                      </div>
+                            <div className="space-y-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-medium tabular-nums">{formatPrice(p.amountCents)}</span>
+                                <Badge variant="outline" className={payoutStatusBadgeClass(p.status)}>
+                                  {payoutStatusLabel(p.status, messages.dashboard.payments.status)}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(p.createdAt).toLocaleString(localeTag, {
+                                  dateStyle: "short",
+                                  timeStyle: "short",
+                                })}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {messages.dashboard.payments.channel}: {payoutChannelLabel(p, messages.dashboard.payments)}
+                              </p>
+                              {(p.whitepayTargetCurrency || p.whitepayNetwork || p.whitepayTargetValue) && (
+                                <p className="text-xs text-muted-foreground">
+                                  {[p.whitepayTargetValue, p.whitepayTargetCurrency].filter(Boolean).join(" ")}
+                                  {p.whitepayNetwork ? ` · ${p.whitepayNetwork}` : ""}
+                                </p>
+                              )}
+                              {p.trade?.ticketId ? (
+                                <p className="text-xs">
+                                  <span className="text-muted-foreground">{messages.dashboard.payments.trade}: </span>
+                                  {p.trade.ticketId}
+                                </p>
+                              ) : null}
+                            </div>
+                            <div className="text-xs text-muted-foreground sm:text-right sm:max-w-[40%] truncate">
+                              <span className="font-medium text-foreground/80">{messages.dashboard.payments.reference}: </span>
+                              {formatPayoutReference(p)}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
+                  )}
 
-                    <div className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
-                            <span className="text-orange-600 font-bold text-xs">
-                              ₿
-                            </span>
-                          </div>
-                          <div>
-                            <p className="font-medium">{messages.dashboard.payments.bitcoin}</p>
-                            <p className="text-sm text-muted-foreground">
-                              1A1z...DivfNa
-                            </p>
-                          </div>
-                        </div>
-                        <Badge
-                          variant="secondary"
-                          className="bg-green-100 text-green-800"
-                        >
-                          {messages.dashboard.payments.verified}
-                        </Badge>
-                      </div>
+                  {payoutsCompleted.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold">{messages.dashboard.payments.history}</h4>
+                      <ul className="space-y-3">
+                        {payoutsCompleted.map((p) => (
+                          <li
+                            key={p.id}
+                            className="rounded-lg border border-border/80 p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                          >
+                            <div className="space-y-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-medium tabular-nums">{formatPrice(p.amountCents)}</span>
+                                <Badge variant="outline" className={payoutStatusBadgeClass(p.status)}>
+                                  {payoutStatusLabel(p.status, messages.dashboard.payments.status)}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(p.createdAt).toLocaleString(localeTag, {
+                                  dateStyle: "short",
+                                  timeStyle: "short",
+                                })}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {messages.dashboard.payments.channel}: {payoutChannelLabel(p, messages.dashboard.payments)}
+                              </p>
+                              {(p.whitepayTargetCurrency || p.whitepayNetwork || p.whitepayTargetValue) && (
+                                <p className="text-xs text-muted-foreground">
+                                  {[p.whitepayTargetValue, p.whitepayTargetCurrency].filter(Boolean).join(" ")}
+                                  {p.whitepayNetwork ? ` · ${p.whitepayNetwork}` : ""}
+                                </p>
+                              )}
+                              {p.trade?.ticketId ? (
+                                <p className="text-xs">
+                                  <span className="text-muted-foreground">{messages.dashboard.payments.trade}: </span>
+                                  {p.trade.ticketId}
+                                </p>
+                              ) : null}
+                            </div>
+                            <div className="text-xs text-muted-foreground sm:text-right sm:max-w-[40%] truncate">
+                              <span className="font-medium text-foreground/80">{messages.dashboard.payments.reference}: </span>
+                              {formatPayoutReference(p)}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-
-                    <Button variant="outline" className="w-full">
-                      {messages.dashboard.payments.addMethod}
-                    </Button>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

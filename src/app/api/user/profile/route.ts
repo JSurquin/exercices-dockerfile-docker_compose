@@ -14,51 +14,55 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Utiliser les données de session directement (éviter requête DB qui peut planter)
-    let tradeLink = null;
+    // Préférer la DB pour Steam (source de vérité après login) + session pour le reste
+    let dbRow: {
+      tradeLink: string | null;
+      steamId: string | null;
+      steamUsername: string | null;
+      steamAvatar: string | null;
+      name: string | null;
+      image: string | null;
+    } | null = null;
+
     try {
-      // Seulement requêter le tradeLink qui n'est pas dans la session
-      const userTradeLink = await prisma.user.findUnique({
+      dbRow = await prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { tradeLink: true }
+        select: {
+          tradeLink: true,
+          steamId: true,
+          steamUsername: true,
+          steamAvatar: true,
+          name: true,
+          image: true,
+        },
       });
-      tradeLink = userTradeLink?.tradeLink;
     } catch (error) {
-      console.error('Error fetching trade link:', error);
-      // Continuer sans le tradeLink si erreur
+      console.error('Error fetching user profile fields:', error);
     }
 
-    const user = {
+    const steamId = dbRow?.steamId ?? session.user.steamId ?? '';
+    const steamUsername = dbRow?.steamUsername ?? session.user.steamUsername ?? null;
+    const steamAvatar = dbRow?.steamAvatar ?? session.user.steamAvatar ?? null;
+    const accountName = dbRow?.name ?? session.user.name ?? null;
+    const accountImage = dbRow?.image ?? session.user.image ?? null;
+
+    // Affichage header / vente : identité Steam du compte lié (pas un autre provider ni un nom générique seul)
+    const displayName = (steamUsername?.trim() || accountName?.trim() || 'User').trim();
+    const displayAvatar = (steamAvatar?.trim() || accountImage?.trim() || '').trim();
+
+    const responseUser = {
       id: session.user.id,
-      name: session.user.name,
-      image: session.user.image,
-      steamId: session.user.steamId,
-      steamUsername: session.user.steamUsername,
-      steamAvatar: session.user.steamAvatar,
-      tradeLink: tradeLink,
+      steamId64: steamId,
+      username: displayName,
+      avatar: displayAvatar,
+      tradeLink: dbRow?.tradeLink ?? null,
       level: session.user.level || 1,
       xp: session.user.xp || 0,
       tickets: session.user.tickets || 0,
-      totalVolumeCents: session.user.totalVolumeCents || 0,
+      totalVolume: (session.user.totalVolumeCents || 0) / 100,
       kycStatus: session.user.kycStatus || 'PENDING',
       acceptedTermsAt: session.user.acceptedTermsAt,
-      createdAt: session.user.createdAt || new Date(),
-    };
-
-    // Convertir vers le format attendu par le frontend
-    const responseUser = {
-      id: user.id,
-      steamId64: user.steamId || '',
-      username: user.name || user.steamUsername || 'User',
-      avatar: user.image || user.steamAvatar || '',
-      tradeLink: user.tradeLink,
-      level: user.level,
-      xp: user.xp,
-      tickets: user.tickets,
-      totalVolume: user.totalVolumeCents / 100, // Convertir centimes en euros
-      kycStatus: user.kycStatus,
-      acceptedTermsAt: user.acceptedTermsAt,
-      joinedAt: user.createdAt,
+      joinedAt: session.user.createdAt || new Date(),
     };
 
     return NextResponse.json(responseUser);

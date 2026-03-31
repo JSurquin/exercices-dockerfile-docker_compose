@@ -111,7 +111,7 @@ function DashboardContent() {
         <span className="hidden md:inline">{messages.admin.dashboard.fullReport}</span>
       </Button>
     </div>
-  ), [handleExportData, handleGenerateReport]);
+  ), [handleExportData, handleGenerateReport, messages]);
 
   // Rendu du contenu selon le tab actif
   const renderContent = () => {

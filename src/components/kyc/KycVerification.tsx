@@ -71,7 +71,7 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
     if (kycStatus) {
       onStatusChange?.(kycStatus.status);
     }
-  }, [kycStatus]);
+  }, [kycStatus, onStatusChange]);
 
   const handleAddressSubmit = async (address: AddressData) => {
     setInitiating(true);

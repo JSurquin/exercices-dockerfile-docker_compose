@@ -370,16 +370,47 @@ export interface Messages {
       };
       payments: {
         title: string;
-        methods: string;
-        verified: string;
-        default: string;
-        addMethod: string;
-        preferredMethod: string;
-        selectPreferred: string;
-        stripe: string;
-        qonto: string;
-        binance: string;
-        bitcoin: string;
+        subtitle: string;
+        inProgress: string;
+        history: string;
+        empty: string;
+        loadError: string;
+        amount: string;
+        date: string;
+        reference: string;
+        trade: string;
+        channel: string;
+        channelFlexify: string;
+        channelWhitepay: string;
+        channelOther: string;
+        status: {
+          PENDING: string;
+          PENDING_APPROVAL: string;
+          VERIFICATION_REQUIRED: string;
+          VERIFIED: string;
+          SCHEDULED: string;
+          PROCESSING: string;
+          PAID: string;
+          FAILED: string;
+          FLEXIFY_PENDING: string;
+          FLEXIFY_PROCESSING: string;
+          FLEXIFY_PAID: string;
+          FLEXIFY_FAILED: string;
+          WHITEPAY_WAITING_CONFIRMATION: string;
+          WHITEPAY_PENDING_WITHDRAWAL: string;
+          CANCELLED: string;
+          WHITEPAY_PROCESSING_WITHDRAWAL: string;
+          WHITEPAY_COMPLETE: string;
+          WHITEPAY_DECLINED: string;
+        };
+        kycRefreshStatus: string;
+        kycRefreshing: string;
+        kycToastVerified: string;
+        kycToastRejected: string;
+        kycToastUpdated: string;
+        kycToastNoVerification: string;
+        kycToastRefreshError: string;
+        refreshPayoutList: string;
       };
       settings: {
         profile: string;
@@ -507,6 +538,7 @@ export interface Messages {
     copyright: string;
     socialLinks: {
       discord: string;
+      x: string;
       twitter: string;
       reddit: string;
       youtube: string;
@@ -514,29 +546,39 @@ export interface Messages {
   };
   about: {
     title: string;
-    subtitle: string;
+    tagline: string;
+    intro: {
+      p1: string;
+      p2: string;
+      p3: string;
+    };
     mission: {
       title: string;
-      description1: string;
-      description2: string;
-      description3: string;
+      p1: string;
+      frictionTitle: string;
+      frictionItems: string[];
+      closing: string;
+    };
+    story: {
+      title: string;
+      paragraphs: string[];
     };
     values: {
       title: string;
       subtitle: string;
+      performance: {
+        title: string;
+        description: string;
+      };
+      transparency: {
+        title: string;
+        description: string;
+      };
       security: {
         title: string;
         description: string;
       };
-      community: {
-        title: string;
-        description: string;
-      };
-      innovation: {
-        title: string;
-        description: string;
-      };
-      simplicity: {
+      longTerm: {
         title: string;
         description: string;
       };
@@ -544,74 +586,66 @@ export interface Messages {
     team: {
       title: string;
       subtitle: string;
+      footer: string;
       members: {
-        ceo: {
+        founder: {
           name: string;
           role: string;
           bio: string;
           skills: string[];
         };
-        cto: {
+        operations: {
           name: string;
           role: string;
           bio: string;
           skills: string[];
         };
-        product: {
+        moderator1: {
           name: string;
           role: string;
           bio: string;
           skills: string[];
         };
-        compliance: {
+        moderator2: {
           name: string;
           role: string;
           bio: string;
           skills: string[];
+        };
+        moderator3: {
+          name: string;
+          role: string;
+          bio: string;
+          skills: string[];
+        };
+        contractor: {
+          name: string;
+          role: string;
+          bio: string;
+          skills: string[];
+          linkUrl?: string;
+          linkLabel?: string;
         };
       };
     };
-    timeline: {
+    now: {
       title: string;
-      subtitle: string;
-      events: {
-        founding: {
-          year: string;
-          title: string;
-          description: string;
-        };
-        mvp: {
-          year: string;
-          title: string;
-          description: string;
-        };
-        crypto: {
-          year: string;
-          title: string;
-          description: string;
-        };
-        gamification: {
-          year: string;
-          title: string;
-          description: string;
-        };
-        international: {
-          year: string;
-          title: string;
-          description: string;
-        };
-        future: {
-          year: string;
-          title: string;
-          description: string;
-        };
-      };
+      p1: string;
+      p2: string;
+    };
+    roadmap: {
+      title: string;
+      phases: { title: string; items: string[] }[];
+      visionTitle: string;
+      visionLead: string;
+      visionItems: string[];
     };
     cta: {
       title: string;
       description: string;
       start: string;
       discord: string;
+      x: string;
     };
     stats: {
       users: string;

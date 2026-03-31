@@ -53,7 +53,7 @@ export function PayoutStatusTracker({
   useEffect(() => {
     if (orderData) {
       const newStatus = mapGateFiStatusToAppStatus(orderData.status);
-      if (newStatus !== status) setStatus(newStatus);
+      setStatus((prev) => (newStatus !== prev ? newStatus : prev));
     }
   }, [orderData]);
 

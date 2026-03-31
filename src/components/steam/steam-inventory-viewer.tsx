@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSteamInventory, SteamInventoryItem } from '@/hooks/use-steam-inventory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +44,7 @@ export function SteamInventoryViewer({
     },
   });
 
-  const loadInventory = async () => {
+  const loadInventory = useCallback(async () => {
     console.log('loadInventory');
     console.log('steamId64', steamId64);
     const result = await getSteamInventory(steamId64);
@@ -52,14 +52,12 @@ export function SteamInventoryViewer({
     if (result?.success && result.items) {
       const enrichedItems = enrichItems(result.items);
       setInventory(enrichedItems);
-      
-      // Estimer les prix des items tradables
+
       const tradableItems = enrichedItems.filter(isTradableAndMarketable);
       if (tradableItems.length > 0) {
         setEstimatingPrices(true);
         const priceResult = await estimateItemsPrices(tradableItems);
         if (priceResult?.items) {
-          // Mettre à jour les items avec les prix estimés
           const updatedItems = enrichedItems.map(item => ({
             ...item,
             estimated_price: priceResult.items[item.market_hash_name as keyof typeof priceResult.items] || 0,
@@ -69,13 +67,19 @@ export function SteamInventoryViewer({
         setEstimatingPrices(false);
       }
     }
-  };
+  }, [
+    steamId64,
+    getSteamInventory,
+    enrichItems,
+    estimateItemsPrices,
+    isTradableAndMarketable,
+  ]);
 
   useEffect(() => {
     if (steamId64) {
-      loadInventory();
+      void loadInventory();
     }
-  }, [steamId64]);
+  }, [steamId64, loadInventory]);
 
   const filteredItems = inventory.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

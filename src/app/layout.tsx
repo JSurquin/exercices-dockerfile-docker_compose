@@ -64,7 +64,9 @@ export default function RootLayout({
         <meta name="description" content="The fastest and most secure platform to convert your Counter-Strike 2 skins into real money. SEPA and crypto payments available." />
       </head>
       <body
-        className={`${poppins.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen flex flex-col`}
+        className={`${poppins.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen flex flex-col${
+          process.env.NODE_ENV === "development" ? " next-dev-overlay-present" : ""
+        }`}
       >
         <ThemeProvider
           attribute="class"

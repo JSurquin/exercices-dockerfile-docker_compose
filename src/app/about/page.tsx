@@ -1,11 +1,16 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { useLocale } from "@/components/providers/locale-provider";
+import { useAuth } from "@/components/providers/auth-provider";
+import { useRouter } from "next/navigation";
 import { usePublicStats } from "@/hooks/use-public-stats";
+import { MOONSKIN_DISCORD_URL, MOONSKIN_X_URL } from "@/lib/moonskin-social";
 import { Messages } from "~/utils/types";
 import {
   ShieldCheckIcon,
@@ -13,108 +18,78 @@ import {
   UserGroupIcon,
   GlobeEuropeAfricaIcon,
   ChartBarIcon,
-  HeartIcon,
-  LightBulbIcon,
+  BoltIcon,
+  EyeIcon,
   RocketLaunchIcon,
 } from "@heroicons/react/24/outline";
 
-const getStats = (messages: Messages, totalUsers: number, volumeMillions: number, completedTrades: number) => [
+const TEAM_ORDER = [
+  "founder",
+  "operations",
+  "moderator1",
+  "moderator2",
+  "moderator3",
+  "contractor",
+] as const;
+
+const getStats = (
+  messages: Messages,
+  totalUsers: number,
+  volumeMillions: number,
+  completedTrades: number
+) => [
   { label: messages.about.stats.users, value: `${totalUsers.toLocaleString()}+`, icon: UserGroupIcon },
   { label: messages.about.stats.volume, value: `€${volumeMillions}M+`, icon: CurrencyDollarIcon },
   { label: messages.about.stats.trades, value: `${completedTrades.toLocaleString()}+`, icon: ChartBarIcon },
   { label: messages.about.stats.countries, value: "25+", icon: GlobeEuropeAfricaIcon },
 ];
 
-const getTeam = (messages: Messages) => [
-  {
-    name: messages.about.team.members.ceo.name,
-    role: messages.about.team.members.ceo.role,
-    bio: messages.about.team.members.ceo.bio,
-    avatar: "/team/ceo.jpg",
-    skills: messages.about.team.members.ceo.skills,
-  },
-  {
-    name: messages.about.team.members.cto.name,
-    role: messages.about.team.members.cto.role,
-    bio: messages.about.team.members.cto.bio,
-    avatar: "/team/cto.jpg",
-    skills: messages.about.team.members.cto.skills,
-  },
-  {
-    name: messages.about.team.members.product.name,
-    role: messages.about.team.members.product.role,
-    bio: messages.about.team.members.product.bio,
-    avatar: "/team/product.jpg",
-    skills: messages.about.team.members.product.skills,
-  },
-  {
-    name: messages.about.team.members.compliance.name,
-    role: messages.about.team.members.compliance.role,
-    bio: messages.about.team.members.compliance.bio,
-    avatar: "/team/compliance.jpg",
-    skills: messages.about.team.members.compliance.skills,
-  },
-];
+const getTeam = (messages: Messages) =>
+  TEAM_ORDER.map((key) => {
+    const m = messages.about.team.members[key];
+    return {
+      ...m,
+      key,
+      avatar: `/team/${key}.jpg`,
+    };
+  });
 
 const getValues = (messages: Messages) => [
+  {
+    icon: BoltIcon,
+    title: messages.about.values.performance.title,
+    description: messages.about.values.performance.description,
+  },
+  {
+    icon: EyeIcon,
+    title: messages.about.values.transparency.title,
+    description: messages.about.values.transparency.description,
+  },
   {
     icon: ShieldCheckIcon,
     title: messages.about.values.security.title,
     description: messages.about.values.security.description,
   },
   {
-    icon: HeartIcon,
-    title: messages.about.values.community.title,
-    description: messages.about.values.community.description,
-  },
-  {
-    icon: LightBulbIcon,
-    title: messages.about.values.innovation.title,
-    description: messages.about.values.innovation.description,
-  },
-  {
     icon: RocketLaunchIcon,
-    title: messages.about.values.simplicity.title,
-    description: messages.about.values.simplicity.description,
-  },
-];
-
-const getTimeline = (messages: Messages) => [
-  {
-    year: messages.about.timeline.events.founding.year,
-    title: messages.about.timeline.events.founding.title,
-    description: messages.about.timeline.events.founding.description,
-  },
-  {
-    year: messages.about.timeline.events.mvp.year,
-    title: messages.about.timeline.events.mvp.title,
-    description: messages.about.timeline.events.mvp.description,
-  },
-  {
-    year: messages.about.timeline.events.crypto.year,
-    title: messages.about.timeline.events.crypto.title,
-    description: messages.about.timeline.events.crypto.description,
-  },
-  {
-    year: messages.about.timeline.events.gamification.year,
-    title: messages.about.timeline.events.gamification.title,
-    description: messages.about.timeline.events.gamification.description,
-  },
-  {
-    year: messages.about.timeline.events.international.year,
-    title: messages.about.timeline.events.international.title,
-    description: messages.about.timeline.events.international.description,
-  },
-  {
-    year: messages.about.timeline.events.future.year,
-    title: messages.about.timeline.events.future.title,
-    description: messages.about.timeline.events.future.description,
+    title: messages.about.values.longTerm.title,
+    description: messages.about.values.longTerm.description,
   },
 ];
 
 export default function AboutPage() {
   const { messages } = useLocale();
+  const { user, loginWithSteam } = useAuth();
+  const router = useRouter();
   const { data: publicStats } = usePublicStats();
+
+  const handleSteamCta = () => {
+    if (user) {
+      router.push("/sell");
+      return;
+    }
+    void loginWithSteam();
+  };
   const stats = getStats(
     messages,
     publicStats?.totalUsers ?? 0,
@@ -123,11 +98,9 @@ export default function AboutPage() {
   );
   const team = getTeam(messages);
   const values = getValues(messages);
-  const timeline = getTimeline(messages);
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
       <section className="py-24 bg-gradient-to-br from-background to-muted/20">
         <div className="container mx-auto px-4">
           <motion.div
@@ -136,21 +109,29 @@ export default function AboutPage() {
             transition={{ duration: 0.6 }}
             className="text-center max-w-3xl mx-auto"
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              {messages.about.title}{" "}
-              <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
-                MoonSkin
-              </span>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              <button
+                type="button"
+                onClick={handleSteamCta}
+                className="w-full max-w-full text-center bg-transparent border-0 p-0 font-bold text-inherit cursor-pointer hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 rounded-sm"
+              >
+                {messages.about.title}{" "}
+                <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+                  MoonSkin
+                </span>
+              </button>
             </h1>
-            <p className="text-xl text-muted-foreground mb-6 sm:mb-8">
-              {messages.about.subtitle}
-            </p>
+            <p className="text-xl font-medium text-foreground/90 mb-6">{messages.about.tagline}</p>
+            <div className="text-muted-foreground space-y-4 text-left md:text-center max-w-3xl mx-auto">
+              <p className="text-lg">{messages.about.intro.p1}</p>
+              <p className="text-lg">{messages.about.intro.p2}</p>
+              <p className="text-lg">{messages.about.intro.p3}</p>
+            </div>
 
-            {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
               {stats.map((stat, index) => (
                 <motion.div
-                  key={index}
+                  key={stat.label}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -166,7 +147,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Notre Mission */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <motion.div
@@ -174,42 +154,45 @@ export default function AboutPage() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="max-w-4xl mx-auto"
+            className="max-w-3xl mx-auto"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-8">
               {messages.about.mission.title}
             </h2>
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <p className="text-lg text-muted-foreground mb-6">
-                  {messages.about.mission.description1}
-                </p>
-                <p className="text-lg text-muted-foreground mb-6">
-                  {messages.about.mission.description2}
-                </p>
-                <p className="text-lg text-muted-foreground">
-                  {messages.about.mission.description3}
-                </p>
-              </div>
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-red-600/20 rounded-2xl" />
-                <div className="rounded-2xl relative z-10 bg-muted/50 h-64 overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/team/team-photo.jpg"
-                    alt="MoonSkin Team"
-                    className="w-full h-full object-cover opacity-80"
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                  />
-                </div>
-              </div>
+            <p className="text-lg text-muted-foreground mb-6">{messages.about.mission.p1}</p>
+            <p className="font-medium mb-3">{messages.about.mission.frictionTitle}</p>
+            <ul className="list-disc pl-6 space-y-2 text-muted-foreground mb-6">
+              {messages.about.mission.frictionItems.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+            <p className="text-lg text-muted-foreground">{messages.about.mission.closing}</p>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="max-w-3xl mx-auto"
+          >
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-8">
+              {messages.about.story.title}
+            </h2>
+            <div className="space-y-5 text-muted-foreground text-lg">
+              {messages.about.story.paragraphs.map((paragraph, i) => (
+                <p key={i}>{paragraph}</p>
+              ))}
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Nos Valeurs */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -218,16 +201,14 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="text-center mb-8 sm:mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">{messages.about.values.title}</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              {messages.about.values.subtitle}
-            </p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">{messages.about.values.title}</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">{messages.about.values.subtitle}</p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {values.map((value, index) => (
               <motion.div
-                key={index}
+                key={value.title}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -237,9 +218,7 @@ export default function AboutPage() {
                   <CardContent className="p-4 sm:p-6">
                     <value.icon className="w-12 h-12 mx-auto mb-4 text-orange-600" />
                     <h3 className="font-semibold mb-3">{value.title}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {value.description}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{value.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -248,8 +227,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Notre Équipe */}
-      <section className="py-20">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -258,23 +236,21 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="text-center mb-8 sm:mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">{messages.about.team.title}</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              {messages.about.team.subtitle}
-            </p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">{messages.about.team.title}</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">{messages.about.team.subtitle}</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {team.map((member, index) => (
               <motion.div
-                key={index}
+                key={member.key}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                transition={{ duration: 0.6, delay: index * 0.05 }}
                 viewport={{ once: true }}
               >
-                <Card className="text-center hover:shadow-lg transition-shadow">
-                  <CardContent className="p-4 sm:p-6">
+                <Card className="text-center hover:shadow-lg transition-shadow h-full">
+                  <CardContent className="p-4 sm:p-6 flex flex-col h-full">
                     <Avatar className="w-20 h-20 mx-auto mb-4">
                       <AvatarImage src={member.avatar} alt={member.name} />
                       <AvatarFallback>
@@ -285,19 +261,23 @@ export default function AboutPage() {
                       </AvatarFallback>
                     </Avatar>
                     <h3 className="font-semibold mb-1">{member.name}</h3>
-                    <p className="text-sm text-orange-600 mb-3">
-                      {member.role}
-                    </p>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {member.bio}
-                    </p>
-                    <div className="flex flex-wrap gap-1 justify-center">
-                      {member.skills.map((skill, skillIndex) => (
-                        <Badge
-                          key={skillIndex}
-                          variant="secondary"
-                          className="text-xs"
+                    <p className="text-sm text-orange-600 mb-3">{member.role}</p>
+                    <p className="text-sm text-muted-foreground mb-4 flex-1">{member.bio}</p>
+                    {"linkUrl" in member && member.linkUrl ? (
+                      <p className="text-xs mb-3">
+                        <a
+                          href={member.linkUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-orange-600 hover:underline"
                         >
+                          {member.linkLabel ?? member.linkUrl}
+                        </a>
+                      </p>
+                    ) : null}
+                    <div className="flex flex-wrap gap-1 justify-center">
+                      {member.skills.map((skill) => (
+                        <Badge key={skill} variant="secondary" className="text-xs">
                           {skill}
                         </Badge>
                       ))}
@@ -307,10 +287,27 @@ export default function AboutPage() {
               </motion.div>
             ))}
           </div>
+          <p className="text-center text-muted-foreground max-w-2xl mx-auto mt-10 text-sm sm:text-base">
+            {messages.about.team.footer}
+          </p>
         </div>
       </section>
 
-      {/* Timeline */}
+      <section className="py-20">
+        <div className="container mx-auto px-4 max-w-3xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6">{messages.about.now.title}</h2>
+            <p className="text-lg text-muted-foreground mb-4">{messages.about.now.p1}</p>
+            <p className="text-lg text-muted-foreground">{messages.about.now.p2}</p>
+          </motion.div>
+        </div>
+      </section>
+
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div
@@ -318,61 +315,48 @@ export default function AboutPage() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-8 sm:mb-12"
+            className="text-center mb-10"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">{messages.about.timeline.title}</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              {messages.about.timeline.subtitle}
-            </p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">{messages.about.roadmap.title}</h2>
           </motion.div>
 
-          <div className="max-w-4xl mx-auto">
-            <div className="relative">
-              {/* Timeline line */}
-              <div className="absolute left-4 md:left-1/2 md:transform md:-translate-x-px h-full w-0.5 bg-gradient-to-b from-orange-500 to-red-600" />
-
-              {timeline.map((item, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className={`relative flex items-center mb-6 sm:mb-8 ${
-                    index % 2 === 0 ? "md:justify-start" : "md:justify-end"
-                  }`}
-                >
-                  {/* Timeline dot */}
-                  <div className="absolute left-4 md:left-1/2 md:transform md:-translate-x-1/2 w-3 h-3 bg-orange-500 rounded-full border-4 border-background" />
-
-                  {/* Content */}
-                  <div
-                    className={`ml-12 md:ml-0 md:w-5/12 ${
-                      index % 2 === 0
-                        ? "md:mr-auto md:pr-8"
-                        : "md:ml-auto md:pl-8"
-                    }`}
-                  >
-                    <Card>
-                      <CardContent className="p-4 sm:p-6">
-                        <Badge variant="secondary" className="mb-2">
-                          {item.year}
-                        </Badge>
-                        <h3 className="font-semibold mb-2">{item.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {item.description}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            {messages.about.roadmap.phases.map((phase) => (
+              <Card key={phase.title}>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold text-lg mb-4">{phase.title}</h3>
+                  <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
+                    {phase.items.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            ))}
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="max-w-3xl mx-auto mt-12"
+          >
+            <Card className="border-orange-500/30 bg-orange-500/5">
+              <CardContent className="p-6 sm:p-8">
+                <h3 className="text-xl font-bold mb-3">{messages.about.roadmap.visionTitle}</h3>
+                <p className="text-muted-foreground mb-4">{messages.about.roadmap.visionLead}</p>
+                <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
+                  {messages.about.roadmap.visionItems.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <motion.div
@@ -383,19 +367,24 @@ export default function AboutPage() {
             className="text-center"
           >
             <div className="bg-gradient-to-r from-orange-500/10 to-red-600/10 rounded-2xl p-12 border">
-              <h2 className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-                {messages.about.cta.title}
-              </h2>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">{messages.about.cta.title}</h2>
               <p className="text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto">
                 {messages.about.cta.description}
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg font-medium hover:from-orange-600 hover:to-red-700 transition-all">
-                  {messages.about.cta.start}
-                </button>
-                <button className="px-8 py-3 border border-muted-foreground rounded-lg font-medium hover:bg-muted transition-colors">
-                  {messages.about.cta.discord}
-                </button>
+              <div className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center">
+                <Button asChild className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
+                  <Link href="/sell">{messages.about.cta.start}</Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <a href={MOONSKIN_DISCORD_URL} target="_blank" rel="noopener noreferrer">
+                    {messages.about.cta.discord}
+                  </a>
+                </Button>
+                <Button variant="outline" asChild>
+                  <a href={MOONSKIN_X_URL} target="_blank" rel="noopener noreferrer">
+                    {messages.about.cta.x}
+                  </a>
+                </Button>
               </div>
             </div>
           </motion.div>

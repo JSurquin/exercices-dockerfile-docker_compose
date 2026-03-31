@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSkinplace } from '@/hooks/use-skinplace';
 import { SkinplaceInventoryItem } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,19 +38,19 @@ export function InventoryViewer({
   const [inventory, setInventory] = useState<SkinplaceInventoryItem[]>([]);
   const [totalValue, setTotalValue] = useState(0);
 
-  const loadInventory = async () => {
+  const loadInventory = useCallback(async () => {
     const result = await getInventory(steamId);
     if (result?.success && result.data) {
       setInventory(result.data.items);
       setTotalValue(result.data.total_value);
     }
-  };
+  }, [steamId, getInventory]);
 
   useEffect(() => {
     if (steamId) {
-      loadInventory();
+      void loadInventory();
     }
-  }, [steamId]);
+  }, [steamId, loadInventory]);
 
   const filteredItems = inventory.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -4,6 +4,7 @@ export const queryKeys = {
   userTrades: ['user', 'trades'] as const,
   userBalance: ['user', 'balance'] as const,
   userDashboard: ['user', 'dashboard'] as const,
+  userPayouts: ['user', 'payouts'] as const,
 
   // Chat
   conversations: ['chat', 'conversations'] as const,

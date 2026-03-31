@@ -9,20 +9,15 @@
  * contenu n'est pas une clé i18n, le contenu brut est retourné tel quel
  * (rétrocompatibilité avec les anciens messages stockés en texte libre).
  */
-export function resolveI18nContent(
-  content: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  messages: Record<string, any>
-): string {
+export function resolveI18nContent(content: string, messages: unknown): string {
   const match = content.match(/^__i18n:(.+)__$/);
   if (!match) return content;
 
   const keyPath = match[1].split('.');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let node: any = messages;
+  let node: unknown = messages;
   for (const k of keyPath) {
     if (node == null || typeof node !== 'object') return content;
-    node = node[k];
+    node = (node as Record<string, unknown>)[k];
   }
   return typeof node === 'string' ? node : content;
 }

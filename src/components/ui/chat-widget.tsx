@@ -95,9 +95,7 @@ export function ChatWidget() {
     });
   };
 
-  const resolveContent = (content: string) =>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolveI18nContent(content, messages as any);
+  const resolveContent = (content: string) => resolveI18nContent(content, messages);
 
   return (
     <>

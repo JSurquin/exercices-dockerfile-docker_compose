@@ -66,7 +66,7 @@ export default function GiveawayDetailsPage() {
     if (giveawayId) {
       fetchGiveaway();
     }
-  }, [giveawayId]);
+  }, [giveawayId, messages.giveawaysPage.giveawayNotFound, messages.giveawaysPage.detail.errorOccurred]);
 
   if (loading) {
     return (

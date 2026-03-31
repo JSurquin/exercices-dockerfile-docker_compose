@@ -396,34 +396,6 @@ export function HeroSection() {
                 <CheckCircleIcon className="w-5 h-5 text-white" />
               </div>
             </div>
-
-            {/* Testimonial Cards */}
-            <div className="absolute -bottom-6 -left-6 w-72 bg-card rounded-xl border p-4 shadow-lg hidden lg:block">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-bold">PG</span>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center space-x-1">
-                    {[...Array(5)].map((_, i) => (
-                      <StarIcon
-                        key={i}
-                        className="w-4 h-4 fill-yellow-400 text-yellow-400"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-sm font-medium">{testimonials[0].name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {testimonials[0].comment}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-green-600">
-                    {testimonials[0].amount}
-                  </p>
-                </div>
-              </div>
-            </div>
           </motion.div>
         </div>
       </div>

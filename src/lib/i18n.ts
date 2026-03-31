@@ -327,17 +327,49 @@ export const messages: Record<Locale, Messages> = {
         tradeStatus: "Statut des trades",
       },
       payments: {
-        title: "Méthodes de paiement",
-        methods: "Méthodes de paiement",
-        verified: "Vérifié",
-        default: "Par défaut",
-        addMethod: "Ajouter une méthode de paiement",
-        preferredMethod: "Moyen de paiement préféré",
-        selectPreferred: "Sélectionner le moyen préféré",
-        stripe: "Stripe",
-        qonto: "Qonto",
-        binance: "Binance",
-        bitcoin: "Bitcoin",
+        title: "Retraits et virements",
+        subtitle:
+          "Suivez vos paiements en cours et votre historique (carte / SEPA via Flexify, crypto via Whitepay).",
+        inProgress: "En cours",
+        history: "Historique",
+        empty: "Aucun retrait pour le moment. Lancez un virement depuis la page dédiée.",
+        loadError: "Impossible de charger vos retraits.",
+        amount: "Montant",
+        date: "Date",
+        reference: "Référence",
+        trade: "Trade",
+        channel: "Canal",
+        channelFlexify: "Flexify (carte / SEPA)",
+        channelWhitepay: "Whitepay (crypto)",
+        channelOther: "Autre",
+        status: {
+          PENDING: "En attente",
+          PENDING_APPROVAL: "En attente d'approbation",
+          VERIFICATION_REQUIRED: "Vérification requise",
+          VERIFIED: "Vérifié",
+          SCHEDULED: "Planifié",
+          PROCESSING: "Traitement",
+          PAID: "Payé",
+          FAILED: "Échoué",
+          FLEXIFY_PENDING: "Flexify — en attente",
+          FLEXIFY_PROCESSING: "Flexify — traitement",
+          FLEXIFY_PAID: "Flexify — payé",
+          FLEXIFY_FAILED: "Flexify — échoué",
+          WHITEPAY_WAITING_CONFIRMATION: "Whitepay — confirmation",
+          WHITEPAY_PENDING_WITHDRAWAL: "Whitepay — retrait en attente",
+          CANCELLED: "Annulé",
+          WHITEPAY_PROCESSING_WITHDRAWAL: "Whitepay — retrait en cours",
+          WHITEPAY_COMPLETE: "Whitepay — terminé",
+          WHITEPAY_DECLINED: "Whitepay — refusé",
+        },
+        kycRefreshStatus: "Rafraîchir le statut",
+        kycRefreshing: "Vérification…",
+        kycToastVerified: "KYC vérifié !",
+        kycToastRejected: "KYC rejeté",
+        kycToastUpdated: "Statut mis à jour",
+        kycToastNoVerification: "Aucune vérification en cours",
+        kycToastRefreshError: "Erreur lors de la vérification",
+        refreshPayoutList: "Actualiser la liste",
       },
       settings: {
         profile: "Profil",
@@ -360,7 +392,7 @@ export const messages: Record<Locale, Messages> = {
       kycInProgress: "En cours de vérification...",
       kycRequired: "Requis pour les retraits",
       withdrawFunds: "Retirer vos fonds",
-      sepaOrCard: "SEPA ou Crypto",
+      sepaOrCard: "Carte, SEPA (Flexify) ou crypto (Whitepay)",
     },
     kyc: {
       title: "Vérification KYC",
@@ -465,6 +497,7 @@ export const messages: Record<Locale, Messages> = {
       copyright: "© 2024 MoonSkin. Tous droits réservés. | Licence EU: CT-2024-001",
       socialLinks: {
         discord: "Discord",
+        x: "X",
         twitter: "Twitter",
         reddit: "Reddit",
         youtube: "YouTube",
@@ -1527,104 +1560,164 @@ export const messages: Record<Locale, Messages> = {
     },
     about: {
       title: "À propos de",
-      subtitle: "Nous révolutionnons la façon dont les joueurs de Counter-Strike 2 transforment leurs skins en argent réel. Une plateforme sécurisée, transparente et innovante créée par des passionnés pour des passionnés.",
+      tagline: "Sell smarter. Trade safer.",
+      intro: {
+        p1: "Moonskin est une jeune plateforme dédiée aux skins Counter-Strike, conçue pour offrir une expérience de vente simple, rapide et sécurisée.",
+        p2: "Dans un marché où les scams, les délais et les frais cachés sont devenus la norme, nous avons choisi une autre approche : remettre l'utilisateur au centre.",
+        p3: "Avec Moonskin, vous ne vendez pas seulement vos skins. Vous utilisez une infrastructure pensée pour maximiser votre sécurité, votre temps et votre capital."
+      },
       mission: {
-        title: "Notre Mission",
-        description1: "Fondée en 2023 par une équipe de développeurs et de traders passionnés, MoonSkin est née d'un constat simple : le trading de skins CS était trop complexe, peu sécurisé et souvent opaque.",
-        description2: "Notre mission est de créer la plateforme de référence pour convertir vos skins en argent réel, en alliant sécurité maximale, transparence totale et expérience utilisateur exceptionnelle.",
-        description3: "Nous croyons que chaque joueur devrait pouvoir monétiser facilement ses items virtuels, sans compromis sur la sécurité ou la simplicité."
+        title: "Notre mission",
+        p1: "Construire la référence française du trading de skins, en apportant un standard de confiance, de transparence et de simplicité qui nous tient à cœur au quotidien.",
+        frictionTitle: "Nous voulons éliminer les frictions :",
+        frictionItems: [
+          "Plus de listings interminables",
+          "Plus d'attente incertaine",
+          "Plus de frais imprévisibles"
+        ],
+        closing: "Juste une exécution propre, rapide et maîtrisée."
+      },
+      story: {
+        title: "Notre histoire",
+        paragraphs: [
+          "En 2023, après avoir été victime d'un scam de plus de 1 000 €, Lucas Pallanca (Nyouz) prend la mesure des limites d'un marché encore peu structuré.",
+          "Il lance alors, avec son associé NPTZ, un premier système via Discord permettant d'accéder de manière sécurisée aux marketplaces asiatiques pour les Français.",
+          "Très rapidement, la demande explose.",
+          "En 2025, cette activité devient officielle avec la création de Counter-Trade France par Nyouz, une structure dédiée à l'intermédiation et au trading de skins.",
+          "Porté par la croissance et la confiance de la communauté, un nouveau projet est lancé fin 2025 : Moonskin. Une plateforme pensée dès le départ pour industrialiser et sécuriser l'achat et la vente de skins.",
+          "Début 2026, Moonskin voit le jour avec une vision claire : construire un standard durable dans un marché encore immature."
+        ]
       },
       values: {
-        title: "Nos Valeurs",
-        subtitle: "Les principes qui guident chacune de nos décisions et innovations",
+        title: "Nos principes",
+        subtitle: "Ce qui guide Moonskin au quotidien",
+        performance: {
+          title: "Performance sans friction",
+          description: "Chaque étape est optimisée pour aller à l'essentiel. Vous déposez, vous vendez, vous êtes payé."
+        },
+        transparency: {
+          title: "Transparence totale",
+          description: "Aucun frais caché. Chaque coût est affiché avant validation. Ce que vous voyez est ce que vous recevez."
+        },
         security: {
           title: "Sécurité avant tout",
-          description: "Chaque transaction est protégée par les plus hauts standards de sécurité. KYC obligatoire, chiffrement SSL, et conformité européenne."
+          description: "Nous appliquons une politique stricte : vérification des utilisateurs (KYC), détection et blocage des fonds frauduleux, zéro tolérance pour les activités illicites."
         },
-        community: {
-          title: "Communauté first",
-          description: "Notre communauté de gamers est au cœur de tout ce que nous faisons. Support 24/7, écoute active, et amélioration continue."
-        },
-        innovation: {
-          title: "Innovation continue",
-          description: "Nous repoussons constamment les limites de ce qui est possible dans le trading de skins avec les dernières technologies."
-        },
-        simplicity: {
-          title: "Simplicité",
-          description: "Rendre le trading de skins accessible à tous, du débutant au trader expérimenté, avec une interface intuitive."
+        longTerm: {
+          title: "Vision long terme",
+          description: "Moonskin n'est pas un projet opportuniste. Nous construisons une infrastructure durable, pensée pour évoluer avec l'écosystème."
         }
       },
       team: {
-        title: "Notre Équipe",
-        subtitle: "Des experts passionnés qui travaillent chaque jour pour améliorer votre expérience",
+        title: "L'équipe",
+        subtitle: "Les personnes derrière le projet",
+        footer: "Une équipe dédiée pour accompagner la croissance de la plateforme et garantir une expérience utilisateur optimale.",
         members: {
-          ceo: {
-            name: "Alexandre Martin",
-            role: "CEO & Fondateur",
-            bio: "Ex-ingénieur Steam, passionné de CS depuis 2003. Vision : démocratiser le trading de skins.",
-            skills: ["Leadership", "Trading", "Blockchain"]
+          founder: {
+            name: "Lucas Pallanca",
+            role: "Founder & CEO",
+            bio: "Fondateur de Moonskin et de Counter-Trade France. Actif sur le marché depuis plusieurs années, spécialisé dans le business development et la structuration du trading de skins à grande échelle.",
+            skills: ["Vision", "Exécution", "Marché"]
           },
-          cto: {
-            name: "Sophie Chen",
-            role: "CTO",
-            bio: "Experte sécurité blockchain, ex-Binance. Garantit la sécurité de chaque transaction.",
-            skills: ["Blockchain", "Security", "Architecture"]
+          operations: {
+            name: "Mehdi Badaoui",
+            role: "Operations",
+            bio: "Prestataire : opérations et développement interne. Chasseur de têtes et de l'efficacité des processus.",
+            skills: ["Structuration", "Fiabilité", "Exécution"]
           },
-          product: {
-            name: "Thomas Dubois",
-            role: "Head of Product",
-            bio: "Designer UX/UI passionné. Créateur des interfaces les plus intuitives du gaming.",
-            skills: ["UX/UI", "Product", "Gaming"]
+          moderator1: {
+            name: "Modérateur 1",
+            role: "Modération",
+            bio: "À confirmer.",
+            skills: ["TBC"]
           },
-          compliance: {
-            name: "Marie Leroy",
-            role: "Head of Compliance",
-            bio: "Ex-juriste fintech, spécialiste réglementation européenne. Assure la conformité légale.",
-            skills: ["Compliance", "Legal", "GDPR"]
+          moderator2: {
+            name: "Modérateur 2",
+            role: "Modération",
+            bio: "À confirmer.",
+            skills: ["TBC"]
+          },
+          moderator3: {
+            name: "Modérateur 3",
+            role: "Modération",
+            bio: "À confirmer.",
+            skills: ["TBC"]
+          },
+          contractor: {
+            name: "Partenaire technique",
+            role: "Développement web (prestataire)",
+            bio: "Conception et développement de la plateforme Moonskin — merci pour la confiance.",
+            skills: ["Produit", "Ingénierie", "Qualité"]
           }
         }
       },
-      timeline: {
-        title: "Notre Histoire",
-        subtitle: "De l'idée initiale aux perspectives d'avenir",
-        events: {
-          founding: {
-            year: "2023",
-            title: "Fondation de MoonSkin",
-            description: "Lancement de la startup avec une vision claire : révolutionner le trading de skins CS."
+      now: {
+        title: "Et maintenant ?",
+        p1: "Moonskin n'en est qu'à ses débuts.",
+        p2: "Nous construisons avec une seule idée en tête : créer la plateforme que nous aurions voulu avoir dès le départ."
+      },
+      roadmap: {
+        title: "Roadmap",
+        phases: [
+          {
+            title: "Phase 1 — Lancement & fondations",
+            items: [
+              "Mise en place des bases de Moonskin et déploiement de la plateforme.",
+              "Développement initial de Moonskin",
+              "Mise en ligne de la plateforme",
+              "Mise en place des premiers flux de vente sécurisés",
+              "Optimisation de l'expérience utilisateur",
+              "Structuration des opérations"
+            ]
           },
-          mvp: {
-            year: "2024 Q1",
-            title: "Première version",
-            description: "Lancement de la plateforme MVP avec support SEPA et premiers 1000 utilisateurs."
+          {
+            title: "Phase 2 — Acquisition & croissance",
+            items: [
+              "Développement de la visibilité et montée en puissance de la plateforme.",
+              "Lancement de la première campagne marketing",
+              "Déploiement de la deuxième campagne marketing",
+              "Développement de la communauté",
+              "Partenariats avec créateurs de contenu",
+              "Amélioration continue du produit"
+            ]
           },
-          crypto: {
-            year: "2024 Q2",
-            title: "Expansion crypto",
-            description: "Ajout du support Bitcoin, Ethereum et stablecoins. Partenariat avec Binance."
+          {
+            title: "Phase 3 — Expansion de l'offre",
+            items: [
+              "Enrichissement des fonctionnalités et des sources de liquidité.",
+              "Intégration de la supply issue des marketplaces chinoises",
+              "Optimisation des prix et de la liquidité",
+              "Amélioration des outils de pricing",
+              "Accélération des délais de vente"
+            ]
           },
-          gamification: {
-            year: "2024 Q3",
-            title: "Gamification",
-            description: "Lancement du système XP, tickets et giveaways. Engagement utilisateur +300%."
-          },
-          international: {
-            year: "2024 Q4",
-            title: "International",
-            description: "Expansion européenne, support multilingue, conformité RGPD complète."
-          },
-          future: {
-            year: "2025",
-            title: "Vision future",
-            description: "Application mobile, API publique, support multi-jeux (Dota 2, TF2)."
+          {
+            title: "Phase 4 — Écosystème Moonskin",
+            items: [
+              "Construction d'une plateforme complète et autonome.",
+              "Ajout d'un système de vente peer-to-peer",
+              "Lancement d'une marketplace interne",
+              "Accès à des prix compétitifs du marché",
+              "Développement d'un environnement d'achat/vente complet",
+              "Renforcement de la sécurité et des contrôles"
+            ]
           }
-        }
+        ],
+        visionTitle: "Vision long terme",
+        visionLead: "Faire de Moonskin une référence en Europe sur le trading de skins.",
+        visionItems: [
+          "Plateforme complète (achat, vente, liquidité)",
+          "Infrastructure scalable",
+          "Expérience utilisateur optimisée",
+          "Standard de confiance sur le marché"
+        ]
       },
       cta: {
-        title: "Rejoignez l'aventure MoonSkin",
-        description: "Faites partie de la révolution du trading de skins CS2. Une communauté de plus de 15,000 traders vous attend.",
-        start: "Commencer à trader",
-        discord: "Rejoindre Discord"
+        title: "Rejoignez Moonskin",
+        description: "Vendez vos skins CS2 avec une exécution claire, transparente et sécurisée.",
+        start: "Commencer à vendre",
+        discord: "Rejoindre Discord",
+        x: "Suivre sur X"
       },
       stats: {
         users: "Utilisateurs actifs",
@@ -4883,17 +4976,49 @@ export const messages: Record<Locale, Messages> = {
         tradeStatus: "Trade Status",
       },
       payments: {
-        title: "Payment Methods",
-        methods: "Payment Methods",
-        verified: "Verified",
-        default: "Default",
-        addMethod: "Add payment method",
-        preferredMethod: "Preferred Payment Method",
-        selectPreferred: "Select preferred method",
-        stripe: "Stripe",
-        qonto: "Qonto",
-        binance: "Binance",
-        bitcoin: "Bitcoin",
+        title: "Payouts & transfers",
+        subtitle:
+          "Track in-progress and past withdrawals (card / SEPA via Flexify, crypto via Whitepay).",
+        inProgress: "In progress",
+        history: "History",
+        empty: "No withdrawals yet. Start one from the payout page.",
+        loadError: "Could not load your withdrawals.",
+        amount: "Amount",
+        date: "Date",
+        reference: "Reference",
+        trade: "Trade",
+        channel: "Channel",
+        channelFlexify: "Flexify (card / SEPA)",
+        channelWhitepay: "Whitepay (crypto)",
+        channelOther: "Other",
+        status: {
+          PENDING: "Pending",
+          PENDING_APPROVAL: "Pending approval",
+          VERIFICATION_REQUIRED: "Verification required",
+          VERIFIED: "Verified",
+          SCHEDULED: "Scheduled",
+          PROCESSING: "Processing",
+          PAID: "Paid",
+          FAILED: "Failed",
+          FLEXIFY_PENDING: "Flexify — pending",
+          FLEXIFY_PROCESSING: "Flexify — processing",
+          FLEXIFY_PAID: "Flexify — paid",
+          FLEXIFY_FAILED: "Flexify — failed",
+          WHITEPAY_WAITING_CONFIRMATION: "Whitepay — awaiting confirmation",
+          WHITEPAY_PENDING_WITHDRAWAL: "Whitepay — withdrawal pending",
+          CANCELLED: "Cancelled",
+          WHITEPAY_PROCESSING_WITHDRAWAL: "Whitepay — withdrawal processing",
+          WHITEPAY_COMPLETE: "Whitepay — complete",
+          WHITEPAY_DECLINED: "Whitepay — declined",
+        },
+        kycRefreshStatus: "Refresh status",
+        kycRefreshing: "Checking…",
+        kycToastVerified: "KYC verified!",
+        kycToastRejected: "KYC rejected",
+        kycToastUpdated: "Status updated",
+        kycToastNoVerification: "No verification in progress",
+        kycToastRefreshError: "Error while checking status",
+        refreshPayoutList: "Refresh list",
       },
       settings: {
         profile: "Profile",
@@ -4916,7 +5041,7 @@ export const messages: Record<Locale, Messages> = {
       kycInProgress: "Verification in progress...",
       kycRequired: "Required for withdrawals",
       withdrawFunds: "Withdraw your funds",
-      sepaOrCard: "SEPA or Crypto",
+      sepaOrCard: "Card, SEPA (Flexify) or crypto (Whitepay)",
     },
     kyc: {
       title: "KYC Verification",
@@ -5021,6 +5146,7 @@ export const messages: Record<Locale, Messages> = {
       copyright: "© 2024 MoonSkin. All rights reserved. | EU License: CT-2024-001",
       socialLinks: {
         discord: "Discord",
+        x: "X",
         twitter: "Twitter",
         reddit: "Reddit",
         youtube: "YouTube",
@@ -5203,104 +5329,164 @@ export const messages: Record<Locale, Messages> = {
     },
     about: {
       title: "About",
-      subtitle: "We revolutionize the way Counter-Strike 2 players turn their skins into real money. A secure, transparent and innovative platform created by enthusiasts for enthusiasts.",
+      tagline: "Sell smarter. Trade safer.",
+      intro: {
+        p1: "Moonskin is a focused Counter-Strike skins platform built to make selling simple, fast and safe.",
+        p2: "In a market where scams, delays and hidden fees have become the norm, we chose a different path: putting users back at the centre.",
+        p3: "With Moonskin you are not just selling skins. You use infrastructure designed to protect your time, your capital and your peace of mind."
+      },
       mission: {
-        title: "Our Mission",
-        description1: "Founded in 2023 by a team of passionate developers and traders, MoonSkin was born from a simple observation: CS skin trading was too complex, not secure enough and often opaque.",
-        description2: "Our mission is to create the reference platform to convert your skins into real money, combining maximum security, total transparency and exceptional user experience.",
-        description3: "We believe that every player should be able to easily monetize their virtual items, without compromising on security or simplicity."
+        title: "Our mission",
+        p1: "To build the French reference for skin trading—with a standard of trust, transparency and simplicity we care about every day.",
+        frictionTitle: "We want to remove friction:",
+        frictionItems: [
+          "No endless listings",
+          "No uncertain waiting",
+          "No unpredictable fees"
+        ],
+        closing: "Just clean, fast and controlled execution."
+      },
+      story: {
+        title: "Our story",
+        paragraphs: [
+          "In 2023, after losing over €1,000 to a scam, Lucas Pallanca (Nyouz) saw how immature the market still was.",
+          "With his partner NPTZ, he launched a first Discord-based system to help French users access Asian marketplaces safely.",
+          "Demand exploded almost immediately.",
+          "In 2025 the activity became official with Counter-Trade France, founded by Nyouz—focused on intermediation and skin trading.",
+          "Driven by community growth and trust, a new project launched at the end of 2025: Moonskin—a platform designed from day one to industrialise and secure buying and selling.",
+          "In early 2026 Moonskin goes live with a clear goal: build a lasting standard in a market that still has room to mature."
+        ]
       },
       values: {
-        title: "Our Values",
-        subtitle: "The principles that guide each of our decisions and innovations",
+        title: "Our principles",
+        subtitle: "What guides Moonskin day to day",
+        performance: {
+          title: "Frictionless performance",
+          description: "Every step is optimised to get to the point. You list, you sell, you get paid."
+        },
+        transparency: {
+          title: "Total transparency",
+          description: "No hidden fees. Every cost is shown before you confirm. What you see is what you receive."
+        },
         security: {
           title: "Security first",
-          description: "Every transaction is protected by the highest security standards. Mandatory KYC, SSL encryption, and European compliance."
+          description: "We apply strict rules: user verification (KYC), detection and blocking of fraudulent funds, zero tolerance for illicit activity."
         },
-        community: {
-          title: "Community first",
-          description: "Our gaming community is at the heart of everything we do. 24/7 support, active listening, and continuous improvement."
-        },
-        innovation: {
-          title: "Continuous innovation",
-          description: "We constantly push the boundaries of what's possible in skin trading with the latest technologies."
-        },
-        simplicity: {
-          title: "Simplicity",
-          description: "Making skin trading accessible to everyone, from beginner to experienced trader, with an intuitive interface."
+        longTerm: {
+          title: "Long-term vision",
+          description: "Moonskin is not a short-term play. We are building durable infrastructure meant to grow with the ecosystem."
         }
       },
       team: {
-        title: "Our Team",
-        subtitle: "Passionate experts who work every day to improve your experience",
+        title: "The team",
+        subtitle: "The people behind the project",
+        footer: "A dedicated team to support the platform’s growth and keep the experience sharp.",
         members: {
-          ceo: {
-            name: "Alexandre Martin",
-            role: "CEO & Founder",
-            bio: "Former Steam engineer, CS enthusiast since 2003. Vision: democratize skin trading.",
-            skills: ["Leadership", "Trading", "Blockchain"]
+          founder: {
+            name: "Lucas Pallanca",
+            role: "Founder & CEO",
+            bio: "Founder of Moonskin and Counter-Trade France. Active in the market for years, focused on business development and large-scale skin trading operations.",
+            skills: ["Vision", "Execution", "Market"]
           },
-          cto: {
-            name: "Sophie Chen",
-            role: "CTO",
-            bio: "Blockchain security expert, ex-Binance. Ensures the security of every transaction.",
-            skills: ["Blockchain", "Security", "Architecture"]
+          operations: {
+            name: "Mehdi Badaoui",
+            role: "Operations",
+            bio: "Contractor: operations and internal development. Focused on talent and process efficiency.",
+            skills: ["Structure", "Reliability", "Execution"]
           },
-          product: {
-            name: "Thomas Dubois",
-            role: "Head of Product",
-            bio: "Passionate UX/UI designer. Creator of the most intuitive interfaces in gaming.",
-            skills: ["UX/UI", "Product", "Gaming"]
+          moderator1: {
+            name: "Moderator 1",
+            role: "Moderation",
+            bio: "To be confirmed.",
+            skills: ["TBC"]
           },
-          compliance: {
-            name: "Marie Leroy",
-            role: "Head of Compliance",
-            bio: "Ex-fintech lawyer, European regulation specialist. Ensures legal compliance.",
-            skills: ["Compliance", "Legal", "GDPR"]
+          moderator2: {
+            name: "Moderator 2",
+            role: "Moderation",
+            bio: "To be confirmed.",
+            skills: ["TBC"]
+          },
+          moderator3: {
+            name: "Moderator 3",
+            role: "Moderation",
+            bio: "To be confirmed.",
+            skills: ["TBC"]
+          },
+          contractor: {
+            name: "Technical partner",
+            role: "Web development (contractor)",
+            bio: "Design and engineering of the Moonskin platform—thank you for your trust.",
+            skills: ["Product", "Engineering", "Quality"]
           }
         }
       },
-      timeline: {
-        title: "Our History",
-        subtitle: "From the initial idea to future prospects",
-        events: {
-          founding: {
-            year: "2023",
-            title: "MoonSkin Foundation",
-            description: "Startup launch with a clear vision: revolutionize CS skin trading."
+      now: {
+        title: "What now?",
+        p1: "Moonskin is only getting started.",
+        p2: "We build with one idea in mind: the platform we wish had existed from day one."
+      },
+      roadmap: {
+        title: "Roadmap",
+        phases: [
+          {
+            title: "Phase 1 — Launch & foundations",
+            items: [
+              "Lay Moonskin’s foundations and ship the platform.",
+              "Initial Moonskin development",
+              "Platform go-live",
+              "First secure sale flows",
+              "UX optimisation",
+              "Operations structure"
+            ]
           },
-          mvp: {
-            year: "2024 Q1",
-            title: "First version",
-            description: "MVP platform launch with SEPA support and first 1000 users."
+          {
+            title: "Phase 2 — Acquisition & growth",
+            items: [
+              "Grow visibility and scale the platform.",
+              "First marketing campaign",
+              "Second marketing campaign",
+              "Community growth",
+              "Creator partnerships",
+              "Continuous product improvements"
+            ]
           },
-          crypto: {
-            year: "2024 Q2",
-            title: "Crypto expansion",
-            description: "Addition of Bitcoin, Ethereum and stablecoin support. Partnership with Binance."
+          {
+            title: "Phase 3 — Expanding the offer",
+            items: [
+              "More features and liquidity sources.",
+              "Supply integration from Chinese marketplaces",
+              "Price and liquidity optimisation",
+              "Better pricing tools",
+              "Faster time-to-sale"
+            ]
           },
-          gamification: {
-            year: "2024 Q3",
-            title: "Gamification",
-            description: "Launch of XP system, tickets and giveaways. User engagement +300%."
-          },
-          international: {
-            year: "2024 Q4",
-            title: "International",
-            description: "European expansion, multilingual support, complete GDPR compliance."
-          },
-          future: {
-            year: "2025",
-            title: "Future vision",
-            description: "Mobile application, public API, multi-game support (Dota 2, TF2)."
+          {
+            title: "Phase 4 — Moonskin ecosystem",
+            items: [
+              "A full, autonomous platform.",
+              "Peer-to-peer selling",
+              "Internal marketplace",
+              "Competitive market pricing",
+              "End-to-end buy/sell environment",
+              "Stronger security and controls"
+            ]
           }
-        }
+        ],
+        visionTitle: "Long-term vision",
+        visionLead: "Make Moonskin a European reference for skin trading.",
+        visionItems: [
+          "Full platform (buy, sell, liquidity)",
+          "Scalable infrastructure",
+          "Polished user experience",
+          "A trust standard for the market"
+        ]
       },
       cta: {
-        title: "Join the MoonSkin adventure",
-        description: "Be part of the CS2 skin trading revolution. A community of over 15,000 traders awaits you.",
-        start: "Start trading",
-        discord: "Join Discord"
+        title: "Join Moonskin",
+        description: "Sell your CS2 skins with clear, transparent and secure execution.",
+        start: "Start selling",
+        discord: "Join Discord",
+        x: "Follow on X"
       },
       stats: {
         users: "Active users",
@@ -9435,17 +9621,48 @@ export const messages: Record<Locale, Messages> = {
         tradeStatus: "交易状态",
       },
       payments: {
-        title: "支付方式",
-        methods: "支付方式",
-        verified: "已验证",
-        default: "默认",
-        addMethod: "添加支付方式",
-        preferredMethod: "首选支付方式",
-        selectPreferred: "选择首选方式",
-        stripe: "Stripe",
-        qonto: "Qonto",
-        binance: "Binance",
-        bitcoin: "Bitcoin",
+        title: "提现与转账",
+        subtitle: "查看进行中与历史提现（Flexify 银行卡/SEPA，Whitepay 加密货币）。",
+        inProgress: "进行中",
+        history: "历史记录",
+        empty: "暂无提现。请在提现页面发起。",
+        loadError: "无法加载提现记录。",
+        amount: "金额",
+        date: "日期",
+        reference: "参考号",
+        trade: "交易",
+        channel: "渠道",
+        channelFlexify: "Flexify（银行卡 / SEPA）",
+        channelWhitepay: "Whitepay（加密货币）",
+        channelOther: "其他",
+        status: {
+          PENDING: "待处理",
+          PENDING_APPROVAL: "待审批",
+          VERIFICATION_REQUIRED: "需验证",
+          VERIFIED: "已验证",
+          SCHEDULED: "已计划",
+          PROCESSING: "处理中",
+          PAID: "已支付",
+          FAILED: "失败",
+          FLEXIFY_PENDING: "Flexify — 待处理",
+          FLEXIFY_PROCESSING: "Flexify — 处理中",
+          FLEXIFY_PAID: "Flexify — 已支付",
+          FLEXIFY_FAILED: "Flexify — 失败",
+          WHITEPAY_WAITING_CONFIRMATION: "Whitepay — 待确认",
+          WHITEPAY_PENDING_WITHDRAWAL: "Whitepay — 提现在队列",
+          CANCELLED: "已取消",
+          WHITEPAY_PROCESSING_WITHDRAWAL: "Whitepay — 提现处理中",
+          WHITEPAY_COMPLETE: "Whitepay — 已完成",
+          WHITEPAY_DECLINED: "Whitepay — 已拒绝",
+        },
+        kycRefreshStatus: "刷新状态",
+        kycRefreshing: "验证中…",
+        kycToastVerified: "KYC 已通过！",
+        kycToastRejected: "KYC 已拒绝",
+        kycToastUpdated: "状态已更新",
+        kycToastNoVerification: "没有进行中的验证",
+        kycToastRefreshError: "验证时出错",
+        refreshPayoutList: "刷新列表",
       },
       settings: {
         profile: "资料",
@@ -9468,7 +9685,7 @@ export const messages: Record<Locale, Messages> = {
       kycInProgress: "验证进行中...",
       kycRequired: "提款所需",
       withdrawFunds: "提取资金",
-      sepaOrCard: "SEPA 或加密货币",
+      sepaOrCard: "银行卡、SEPA（Flexify）或加密货币（Whitepay）",
     },
     kyc: {
       title: "KYC验证",
@@ -9573,6 +9790,7 @@ export const messages: Record<Locale, Messages> = {
       copyright: "© 2024 MoonSkin. 保留所有权利。| 欧盟许可证：CT-2024-001",
       socialLinks: {
         discord: "Discord",
+        x: "X",
         twitter: "Twitter",
         reddit: "Reddit",
         youtube: "YouTube",
@@ -9754,14 +9972,148 @@ export const messages: Record<Locale, Messages> = {
       youHave: "您有",
     },
     about: {
-      title: "关于我们",
-      subtitle: "我们革命性地改变了反恐精英2玩家将皮肤转换为真钱的方式。",
-      mission: { title: "我们的使命", description1: "", description2: "", description3: "" },
-      values: { title: "我们的价值观", subtitle: "", security: { title: "安全第一", description: "" }, community: { title: "社区第一", description: "" }, innovation: { title: "持续创新", description: "" }, simplicity: { title: "简单", description: "" } },
-      team: { title: "我们的团队", subtitle: "", members: { ceo: { name: "", role: "", bio: "", skills: [] }, cto: { name: "", role: "", bio: "", skills: [] }, product: { name: "", role: "", bio: "", skills: [] }, compliance: { name: "", role: "", bio: "", skills: [] } } },
-      timeline: { title: "我们的历史", subtitle: "", events: { founding: { year: "", title: "", description: "" }, mvp: { year: "", title: "", description: "" }, crypto: { year: "", title: "", description: "" }, gamification: { year: "", title: "", description: "" }, international: { year: "", title: "", description: "" }, future: { year: "", title: "", description: "" } } },
-      cta: { title: "", description: "", start: "", discord: "" },
-      stats: { users: "", volume: "", trades: "", countries: "" }
+      title: "关于",
+      tagline: "Sell smarter. Trade safer.",
+      intro: {
+        p1: "Moonskin 是专注于《反恐精英》饰品的年轻平台，旨在提供简单、快速且安全的出售体验。",
+        p2: "在诈骗、漫长等待和隐形费用司空见惯的市场里，我们选择另一条路：让用户回到中心位置。",
+        p3: "在 Moonskin，您不只是出售饰品，而是在使用一套为您的时间、资金与安全而设计的体系。"
+      },
+      mission: {
+        title: "我们的使命",
+        p1: "打造法国皮肤交易的标杆，在信任、透明与简化上建立我们每天都在坚持的标准。",
+        frictionTitle: "我们希望消除这些阻碍：",
+        frictionItems: ["不再有无止境的上架流程", "不再有不确定的等待", "不再有难以预测的费用"],
+        closing: "只有干净、快速且可控的执行。"
+      },
+      story: {
+        title: "我们的故事",
+        paragraphs: [
+          "2023 年，在遭遇超过 1000 欧元的诈骗后，Lucas Pallanca（Nyouz）看清了当时市场仍欠成熟的现实。",
+          "他与合伙人 NPTZ 先在 Discord 上搭建系统，帮助法国用户更安全地连接亚洲交易平台。",
+          "需求迅速爆发。",
+          "2025 年，这项业务以 Counter-Trade France（Nyouz 创立）正式化，专注于中介与皮肤交易。",
+          "在社区增长与信任推动下，2025 年底启动新项目 Moonskin：从一开始就为规模化、安全化的买卖流程而设计。",
+          "2026 年初 Moonskin 上线，目标明确：在仍不成熟的市场里建立长期标准。"
+        ]
+      },
+      values: {
+        title: "我们的原则",
+        subtitle: "指引 Moonskin 日常经营的准则",
+        performance: {
+          title: "无摩擦的高效",
+          description: "每一步都围绕核心目标优化：上架、成交、收款。"
+        },
+        transparency: {
+          title: "完全透明",
+          description: "没有隐藏费用。确认前展示每一笔成本。所见即所得。"
+        },
+        security: {
+          title: "安全为先",
+          description: "我们执行严格政策：用户验证（KYC）、识别并阻断可疑资金，对违法活动零容忍。"
+        },
+        longTerm: {
+          title: "长期愿景",
+          description: "Moonskin 不是机会主义项目。我们建设可持续、可随生态演进的基础设施。"
+        }
+      },
+      team: {
+        title: "团队",
+        subtitle: "项目背后的成员",
+        footer: "专注团队伴随平台成长，保障最佳用户体验。",
+        members: {
+          founder: {
+            name: "Lucas Pallanca",
+            role: "创始人 & CEO",
+            bio: "Moonskin 与 Counter-Trade France 的创始人。多年活跃于市场，专注业务拓展与大规模皮肤交易体系搭建。",
+            skills: ["愿景", "执行", "市场"]
+          },
+          operations: {
+            name: "Mehdi Badaoui",
+            role: "运营",
+            bio: "外包协作：运营与内部开发。关注人才与流程效率。",
+            skills: ["结构化", "可靠", "执行"]
+          },
+          moderator1: { name: "管理员 1", role: "社区管理", bio: "待定。", skills: ["待定"] },
+          moderator2: { name: "管理员 2", role: "社区管理", bio: "待定。", skills: ["待定"] },
+          moderator3: { name: "管理员 3", role: "社区管理", bio: "待定。", skills: ["待定"] },
+          contractor: {
+            name: "技术合作方",
+            role: "网站开发（外包）",
+            bio: "Moonskin 平台的设计与工程实现——感谢您的信任。",
+            skills: ["产品", "工程", "品质"]
+          }
+        }
+      },
+      now: {
+        title: "接下来？",
+        p1: "Moonskin 才刚刚起步。",
+        p2: "我们怀着同一个想法建设：做出我们一开始就希望拥有的平台。"
+      },
+      roadmap: {
+        title: "路线图",
+        phases: [
+          {
+            title: "第一阶段 — 启动与基础",
+            items: [
+              "搭建 Moonskin 基础并上线平台。",
+              "Moonskin 初期开发",
+              "平台正式发布",
+              "首批安全出售流程",
+              "用户体验优化",
+              "运营体系搭建"
+            ]
+          },
+          {
+            title: "第二阶段 — 获客与增长",
+            items: [
+              "提升曝光与平台体量。",
+              "首轮营销活动",
+              "第二轮营销活动",
+              "社区发展",
+              "与内容创作者合作",
+              "持续改进产品"
+            ]
+          },
+          {
+            title: "第三阶段 — 扩展供给",
+            items: [
+              "丰富功能与流动性来源。",
+              "对接中国交易平台供货",
+              "价格与流动性优化",
+              "定价工具升级",
+              "缩短成交时间"
+            ]
+          },
+          {
+            title: "第四阶段 — Moonskin 生态",
+            items: [
+              "打造完整自治平台。",
+              "点对点出售能力",
+              "内部交易市场",
+              "具竞争力的市场价格",
+              "完整买卖环境",
+              "安全与风控强化"
+            ]
+          }
+        ],
+        visionTitle: "长期愿景",
+        visionLead: "让 Moonskin 成为欧洲皮肤交易的标杆。",
+        visionItems: ["全功能平台（买、卖、流动性）", "可扩展基础设施", "一流用户体验", "市场信任标准"]
+      },
+      cta: {
+        title: "加入 Moonskin",
+        description: "以清晰、透明、安全的方式出售您的 CS2 饰品。",
+        start: "开始出售",
+        discord: "加入 Discord",
+        x: "在 X 上关注"
+      },
+      stats: {
+        users: "活跃用户",
+        volume: "处理成交额",
+        trades: "完成交易",
+        countries: "支持国家/地区"
+      }
     },
     terms: {
       title: "服务条款",

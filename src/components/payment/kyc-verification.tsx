@@ -40,7 +40,7 @@ export function KycVerification({ onVerificationComplete }: KycVerificationProps
     if (kycStatus === 'VERIFIED') {
       onVerificationComplete?.();
     }
-  }, [kycStatus]);
+  }, [kycStatus, onVerificationComplete]);
 
   // Initier la vérification KYC
   const initiateKyc = async () => {

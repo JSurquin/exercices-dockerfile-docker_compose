@@ -16,9 +16,22 @@ Sentry.init({
       maskAllInputs: true,
       blockAllMedia: true,
     }),
-    // Widget de feedback utilisateur
+    // Widget de feedback utilisateur (bouton flottant « Report a Bug » + formulaire)
     Sentry.feedbackIntegration({
       colorScheme: "system",
+      showBranding: false,
+      themeLight: {
+        accentBackground: "#ea580c",
+        accentForeground: "#ffffff",
+        boxShadow: "0 12px 40px -12px rgba(234, 88, 12, 0.22)",
+        outline: "1px auto #ea580c",
+      },
+      themeDark: {
+        accentBackground: "#f97316",
+        accentForeground: "#ffffff",
+        boxShadow: "0 12px 48px -16px rgba(0, 0, 0, 0.55)",
+        outline: "1px auto #f97316",
+      },
     }),
   ],
 

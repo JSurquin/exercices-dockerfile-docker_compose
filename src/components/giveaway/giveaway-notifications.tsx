@@ -38,27 +38,22 @@ export function GiveawayNotifications() {
               const drawTime = new Date(giveaway.updatedAt);
               const now = new Date();
               const timeDiff = now.getTime() - drawTime.getTime();
-              
-              // Si le tirage a eu lieu dans les 5 dernières minutes
+
               if (timeDiff < 5 * 60 * 1000) {
-                const existingNotification = notifications.find(n => n.id === giveaway.id);
-                if (!existingNotification) {
+                setNotifications((prev) => {
+                  if (prev.find((n) => n.id === giveaway.id)) return prev;
                   const winner = giveaway.entries?.find((entry) => entry.userId === giveaway.winnerId);
-                  if (winner && winner.user) {
-                    const notification: DrawNotification = {
-                      id: giveaway.id,
-                      giveawayTitle: giveaway.title,
-                      winner: winner.user,
-                      prize: giveaway.prize,
-                      timestamp: drawTime
-                    };
-                    
-                    setNotifications(prev => [notification, ...prev.slice(0, 2)]); // Garder max 3 notifications
-                    
-                    // Toast notification
-                    toast.success(`🎉 ${giveaway.title} - Gagnant: ${winner.user.steamUsername || 'Joueur'}`);
-                  }
-                }
+                  if (!winner?.user) return prev;
+                  const notification: DrawNotification = {
+                    id: giveaway.id,
+                    giveawayTitle: giveaway.title,
+                    winner: winner.user,
+                    prize: giveaway.prize,
+                    timestamp: drawTime,
+                  };
+                  toast.success(`🎉 ${giveaway.title} - Gagnant: ${winner.user.steamUsername || 'Joueur'}`);
+                  return [notification, ...prev.slice(0, 2)];
+                });
               }
             }
           });
@@ -74,7 +69,7 @@ export function GiveawayNotifications() {
     // TODO: Réactiver avec WebSockets ou une meilleure gestion
     // const interval = setInterval(checkForDraws, 30000);
     // return () => clearInterval(interval);
-  }, []); // Pas de dépendances pour éviter les boucles
+  }, []);
 
   const removeNotification = (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));

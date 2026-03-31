@@ -53,7 +53,7 @@ export default function UnsubscribePage() {
     };
 
     unsubscribe();
-  }, [token]);
+  }, [token, t.missingToken]);
 
   const getStatusIcon = () => {
     switch (status) {

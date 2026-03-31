@@ -88,8 +88,6 @@ export async function GET(request: NextRequest) {
           email: email,
           password: password,
           name: steamUser.personaname,
-          // temporary remove
-          //image: steamUser.avatarfull || steamUser.avatar,
         },
       });
 
@@ -102,6 +100,8 @@ export async function GET(request: NextRequest) {
         where: { id: signUpResult.user.id },
         data: {
           emailVerified: true, // Considéré comme vérifié via Steam
+          name: steamUser.personaname,
+          image: steamUser.avatarfull || steamUser.avatar,
           steamId: steamUser.steamid,
           steamUsername: steamUser.personaname,
           steamAvatar: steamUser.avatarfull || steamUser.avatar,
