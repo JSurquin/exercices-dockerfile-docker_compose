@@ -65,13 +65,13 @@ export function SteamTradeCreator({
 
   const calculateFees = (grossValue: number) => {
     const cashoutRate = platformSettings?.cashoutFeeRate ?? 0.005;
-    const networkFee = platformSettings?.networkFeeCentimes ?? 200;
+    const indicativePayoutFeesCentimes = platformSettings?.networkFeeCentimes ?? 200;
     const cashoutFee = Math.round(grossValue * cashoutRate);
 
     return {
       cashout_fee: cashoutFee,
-      network_fee: networkFee,
-      total_fees: cashoutFee + networkFee,
+      indicative_payout_fees_centimes: indicativePayoutFeesCentimes,
+      net_credited_centimes: grossValue - cashoutFee,
     };
   };
 
@@ -85,7 +85,7 @@ export function SteamTradeCreator({
       // Calculer la valeur brute
       const grossValue = getTotalEstimatedValue();
       const fees = calculateFees(grossValue);
-      const netValue = grossValue - fees.total_fees;
+      const netValue = fees.net_credited_centimes;
 
       if (netValue <= 0) {
         toast.error(messages.tradeCreator.negativeNetValue);
@@ -109,7 +109,11 @@ export function SteamTradeCreator({
             estimated_price: item.estimated_price || 0,
           })),
           gross_value: grossValue,
-          fees: fees,
+          fees: {
+            cashout_fee: fees.cashout_fee,
+            network_fee: 0,
+            total_fees: fees.cashout_fee,
+          },
           net_value: netValue,
         }),
       });
@@ -130,7 +134,7 @@ export function SteamTradeCreator({
           net_value: netValue,
           fees: {
             cashout_fee: fees.cashout_fee,
-            network_fee: fees.network_fee,
+            network_fee: 0,
           },
           expires_at: new Date(result.data.expires_at),
         };
@@ -160,7 +164,7 @@ export function SteamTradeCreator({
 
   const grossValue = getTotalEstimatedValue();
   const fees = calculateFees(grossValue);
-  const netValue = grossValue - fees.total_fees;
+  const netValue = fees.net_credited_centimes;
   const cashoutPercentDisplay = ((platformSettings?.cashoutFeeRate ?? 0.005) * 100).toFixed(2);
 
   return (
@@ -278,12 +282,11 @@ export function SteamTradeCreator({
                 <span>-{formatPrice(fees.cashout_fee)}</span>
               </div>
 
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Minus className="h-3 w-3" />
-                  {messages.tradeCreator.estimatedNetworkFees}
+              <div className="flex items-start justify-between gap-2 text-xs text-muted-foreground border border-dashed border-muted-foreground/25 rounded-md p-2">
+                <span className="text-left">{messages.tradeCreator.payoutFeesIndicativeLine}</span>
+                <span className="shrink-0 font-medium text-foreground/80 tabular-nums">
+                  ~{formatPrice(fees.indicative_payout_fees_centimes)}
                 </span>
-                <span>-{formatPrice(fees.network_fee)}</span>
               </div>
 
               <Separator />

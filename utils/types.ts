@@ -358,6 +358,8 @@ export interface Messages {
         cashout: string;
         /** Libellé frais réseau enregistrés sur le trade (forfait estimatif) */
         network: string;
+        /** Libellé quand aucun frais « réseau » n’est déduit sur le trade (frais au retrait) */
+        payoutFeesAtWithdrawal: string;
         accepted: string;
         available: string;
         others: string;
@@ -1944,7 +1946,7 @@ export interface Messages {
       grossValue: string;
       totalFees: string;
       cashoutFeesLine: string;
-      estimatedNetworkFeesLine: string;
+      payoutFeesReminder: string;
       feesExplanation: string;
       youWillReceive: string;
       trackTrade: string;
@@ -4217,6 +4219,8 @@ export interface Messages {
     networkFees: string;
     cashoutFeesLabel: string;
     estimatedNetworkFees: string;
+    /** Ordre de grandeur des frais prestataire au retrait (non déduit du net trade) */
+    payoutFeesIndicativeLine: string;
     tradeFeesFootnote: string;
     youReceive: string;
     negativeNetAlert: string;

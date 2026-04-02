@@ -3,6 +3,10 @@ import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { newsletterService } from '@/lib/newsletter-service';
 import { TradeHooks } from '@/lib/trade-hooks';
+import {
+  computeTradeLedgerFromGross,
+  getCashoutFeeRate,
+} from '@/lib/trade-platform-fees';
 
 interface CreateTradeRequest {
   steam_id: string;
@@ -65,10 +69,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Vérifier que la valeur nette est positive
-    if (body.net_value <= 0) {
+    if (body.gross_value <= 0) {
       return NextResponse.json(
-        { success: false, error: 'La valeur nette doit être positive' },
+        { success: false, error: 'La valeur brute doit être positive' },
+        { status: 400 }
+      );
+    }
+
+    const cashoutFeeRate = await getCashoutFeeRate();
+    const ledger = computeTradeLedgerFromGross(body.gross_value, cashoutFeeRate);
+    if (ledger.netCents <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'La valeur nette après frais plateforme doit être positive' },
         { status: 400 }
       );
     }
@@ -127,9 +139,9 @@ export async function POST(request: NextRequest) {
         tradeUrl: body.trade_url,
         status: 'CREATED', // États: created -> accepted_by_bot -> in_trade_hold -> available -> payment_in_progress -> paid -> failed
         grossCents: body.gross_value,
-        cashoutFees: body.fees.cashout_fee,
-        networkFees: body.fees.network_fee,
-        netCents: body.net_value,
+        cashoutFees: ledger.cashoutFees,
+        networkFees: ledger.networkFees,
+        netCents: ledger.netCents,
         availableAt: availableAt,
         ticketId: token,
         items: {
@@ -164,7 +176,7 @@ export async function POST(request: NextRequest) {
           tradeId: trade.id,
           itemsCount: body.items.length,
           grossValue: body.gross_value,
-          netValue: body.net_value,
+          netValue: ledger.netCents,
         },
         ipAddress: request.headers.get('x-forwarded-for') || 
                    request.headers.get('x-real-ip') || 
@@ -185,7 +197,7 @@ export async function POST(request: NextRequest) {
             tradeId: trade.id,
             itemsCount: body.items.length,
             grossValue: body.gross_value,
-            netValue: body.net_value,
+            netValue: ledger.netCents,
             availableAt: trade.availableAt?.toISOString() || new Date().toISOString(),
           }
         );

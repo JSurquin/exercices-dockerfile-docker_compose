@@ -206,12 +206,9 @@ export default function SellPage() {
                           -<ConvertedPrice usdCents={tradeData.fees.cashout_fee} />
                         </span>
                       </div>
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-orange-600">
-                        <span>{messages.sellPage.confirmation.estimatedNetworkFeesLine}</span>
-                        <span className="font-medium">
-                          -<ConvertedPrice usdCents={tradeData.fees.network_fee} />
-                        </span>
-                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed border-t border-border pt-3">
+                        {messages.sellPage.confirmation.payoutFeesReminder}
+                      </p>
                       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
                         <span className="text-muted-foreground font-medium">
                           {messages.sellPage.confirmation.youWillReceive}
