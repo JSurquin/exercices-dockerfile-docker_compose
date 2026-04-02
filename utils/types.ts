@@ -356,6 +356,7 @@ export interface Messages {
         fees: string;
         timeline: string;
         cashout: string;
+        /** Libellé frais réseau enregistrés sur le trade (forfait estimatif) */
         network: string;
         accepted: string;
         available: string;
@@ -1942,6 +1943,9 @@ export interface Messages {
       tradeIdSteam: string;
       grossValue: string;
       totalFees: string;
+      cashoutFeesLine: string;
+      estimatedNetworkFeesLine: string;
+      feesExplanation: string;
       youWillReceive: string;
       trackTrade: string;
       openSteam: string;
@@ -4211,6 +4215,9 @@ export interface Messages {
     tradeCreationError: string;
     grossValue: string;
     networkFees: string;
+    cashoutFeesLabel: string;
+    estimatedNetworkFees: string;
+    tradeFeesFootnote: string;
     youReceive: string;
     negativeNetAlert: string;
   };

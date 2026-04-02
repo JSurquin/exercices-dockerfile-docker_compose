@@ -103,7 +103,7 @@ export function SkinplaceTradeCreator({
     return {
       cashout_fee: cashoutFee,
       network_fee: networkFee,
-      total_fees: networkFee,
+      total_fees: cashoutFee + networkFee,
     };
   };
 
@@ -121,17 +121,8 @@ export function SkinplaceTradeCreator({
     try {
       // Calculer la valeur brute en centimes
       const grossValueCentimes = getTotalEstimatedValueCentimes();
-      const displayFees = calculateFees(grossValueCentimes); // Frais pour l'affichage (sans cashout)
-      const netValueCentimes = grossValueCentimes - displayFees.total_fees;
-
-      const cashoutRate = platformSettings?.cashoutFeeRate ?? 0.005;
-      const networkFeeCentimes = platformSettings?.networkFeeCentimes ?? 200;
-      const realFees = {
-        cashout_fee: Math.round(grossValueCentimes * cashoutRate),
-        network_fee: networkFeeCentimes,
-        total_fees: Math.round(grossValueCentimes * cashoutRate) + networkFeeCentimes,
-      };
-      const realNetValueCentimes = grossValueCentimes - realFees.total_fees;
+      const fees = calculateFees(grossValueCentimes);
+      const netValueCentimes = grossValueCentimes - fees.total_fees;
 
       if (netValueCentimes <= 0) {
         toast.error(messages.tradeCreator.negativeNetValue);
@@ -156,8 +147,8 @@ export function SkinplaceTradeCreator({
             price_centimes: item.price_centimes,
           })),
           gross_value_centimes: grossValueCentimes,
-          fees: realFees, // Envoyer les vrais frais à l'API
-          net_value_centimes: realNetValueCentimes, // Vraie valeur nette
+          fees,
+          net_value_centimes: netValueCentimes,
         }),
       });
 
@@ -174,10 +165,10 @@ export function SkinplaceTradeCreator({
           token: result.data.token,
           status: result.data.status,
           total_value: grossValueCentimes,
-          net_value: realNetValueCentimes,
+          net_value: netValueCentimes,
           fees: {
-            cashout_fee: realFees.cashout_fee,
-            network_fee: realFees.network_fee,
+            cashout_fee: fees.cashout_fee,
+            network_fee: fees.network_fee,
           },
           expires_at: new Date(result.data.expires_at),
           bot: result.data.bot || null,
@@ -205,6 +196,7 @@ export function SkinplaceTradeCreator({
   const grossValueCentimes = getTotalEstimatedValueCentimes();
   const fees = calculateFees(grossValueCentimes);
   const netValueCentimes = grossValueCentimes - fees.total_fees;
+  const cashoutPercentDisplay = ((platformSettings?.cashoutFeeRate ?? 0.005) * 100).toFixed(2);
 
   return (
     <div className="space-y-6">
@@ -374,7 +366,17 @@ export function SkinplaceTradeCreator({
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Minus className="h-3 w-3" />
-                  {messages.tradeCreator.networkFees}
+                  {messages.tradeCreator.cashoutFeesLabel.replace("{percent}", cashoutPercentDisplay)}
+                </span>
+                <span className="flex items-center gap-1">
+                  -<ConvertedPrice usdCents={fees.cashout_fee} />
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <Minus className="h-3 w-3" />
+                  {messages.tradeCreator.estimatedNetworkFees}
                 </span>
                 <span className="flex items-center gap-1">
                   -<ConvertedPrice usdCents={fees.network_fee} />
@@ -400,6 +402,8 @@ export function SkinplaceTradeCreator({
                 </Alert>
               )}
             </div>
+
+            <p className="text-xs text-muted-foreground px-1">{messages.tradeCreator.tradeFeesFootnote}</p>
 
             <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
               <p className="mb-1">ℹ️ <strong>Délai de paiement :</strong> 7 jours (Trade Hold Steam)</p>

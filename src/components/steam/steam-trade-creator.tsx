@@ -161,6 +161,7 @@ export function SteamTradeCreator({
   const grossValue = getTotalEstimatedValue();
   const fees = calculateFees(grossValue);
   const netValue = grossValue - fees.total_fees;
+  const cashoutPercentDisplay = ((platformSettings?.cashoutFeeRate ?? 0.005) * 100).toFixed(2);
 
   return (
     <div className="space-y-6">
@@ -272,15 +273,15 @@ export function SteamTradeCreator({
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Minus className="h-3 w-3" />
-                  Frais de cashout (0,5%)
+                  {messages.tradeCreator.cashoutFeesLabel.replace("{percent}", cashoutPercentDisplay)}
                 </span>
                 <span>-{formatPrice(fees.cashout_fee)}</span>
               </div>
-              
+
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Minus className="h-3 w-3" />
-                  {messages.tradeCreator.networkFees}
+                  {messages.tradeCreator.estimatedNetworkFees}
                 </span>
                 <span>-{formatPrice(fees.network_fee)}</span>
               </div>
@@ -303,6 +304,8 @@ export function SteamTradeCreator({
                 </Alert>
               )}
             </div>
+
+            <p className="text-xs text-muted-foreground px-1">{messages.tradeCreator.tradeFeesFootnote}</p>
 
             <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
               <p className="mb-1">ℹ️ <strong>Délai de paiement :</strong> 7 jours (Trade Hold Steam)</p>
