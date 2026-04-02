@@ -494,7 +494,7 @@ export const messages: Record<Locale, Messages> = {
         satisfactionRate: "Taux de satisfaction",
       },
       disclaimer: "Avertissement : MoonSkin n'est pas affilié à Valve Corporation ou Steam. Counter-Strike et Steam sont des marques déposées de Valve Corporation. Le trading de skins comporte des risques et les prix peuvent fluctuer. Veuillez trader de manière responsable et ne jamais investir plus que ce que vous pouvez vous permettre de perdre.",
-      copyright: "© 2024 MoonSkin. Tous droits réservés. | Licence EU: CT-2024-001",
+      copyright: "© 2026 MoonSkin. Tous droits réservés. | Licence EU: CT-2024-001",
       socialLinks: {
         discord: "Discord",
         x: "X",
@@ -5221,7 +5221,7 @@ export const messages: Record<Locale, Messages> = {
         satisfactionRate: "Satisfaction rate",
       },
       disclaimer: "Disclaimer: MoonSkin is not affiliated with Valve Corporation or Steam. Counter-Strike and Steam are registered trademarks of Valve Corporation. Skin trading involves risks and prices may fluctuate. Please trade responsibly and never invest more than you can afford to lose.",
-      copyright: "© 2024 MoonSkin. All rights reserved. | EU License: CT-2024-001",
+      copyright: "© 2026 MoonSkin. All rights reserved. | EU License: CT-2024-001",
       socialLinks: {
         discord: "Discord",
         x: "X",
@@ -9943,7 +9943,7 @@ export const messages: Record<Locale, Messages> = {
         satisfactionRate: "满意度",
       },
       disclaimer: "免责声明：CashTrade与Valve Corporation或Steam无关。反恐精英和Steam是Valve Corporation的注册商标。皮肤交易存在风险，价格可能波动。请负责任地交易，永远不要投资超过您承受损失能力的资金。",
-      copyright: "© 2024 MoonSkin. 保留所有权利。| 欧盟许可证：CT-2024-001",
+      copyright: "© 2026 MoonSkin. 保留所有权利。| 欧盟许可证：CT-2024-001",
       socialLinks: {
         discord: "Discord",
         x: "X",
