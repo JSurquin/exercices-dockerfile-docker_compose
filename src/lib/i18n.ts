@@ -3073,7 +3073,12 @@ export const messages: Record<Locale, Messages> = {
             description: "Après 7 jours, vous recevrez automatiquement votre paiement sur votre compte"
           }
         },
-        tip: "💡 Astuce : Configurez dès maintenant votre méthode de paiement dans votre dashboard pour recevoir votre argent automatiquement !"
+        tip: "💡 Astuce : Configurez dès maintenant votre méthode de paiement dans votre dashboard pour recevoir votre argent automatiquement !",
+        moonSkinBotTitle: "MoonSkin Bot assigné",
+        botLevelShort: "Niv.",
+        steamIdLabel: "SteamID :",
+        memberSince: "Membre depuis :",
+        viewProfile: "Voir profil"
       },
       helpSteps: ["Ouvrez Steam et allez dans votre inventaire", "Cliquez sur \"Paramètres de confidentialité\"", "Copiez l'URL du Trade Link"],
       successMessages: {
@@ -3773,6 +3778,12 @@ export const messages: Record<Locale, Messages> = {
           unknown: "Raison inconnue"
         },
         unavailable: "Non disponible",
+        purchasableOnly: "Montrer uniquement les items achetables",
+        selectAll: "Tout sélectionner",
+        priceRange: "Fourchette de prix (USD)",
+        priceMin: "Prix min",
+        priceMax: "Prix max",
+        priceRangeHint: "Montants en dollars US (prix brut inventaire). Laisser vide pour pas de limite.",
       },
       steam: {
         searchPlaceholder: "Rechercher un skin...",
@@ -6673,7 +6684,12 @@ export const messages: Record<Locale, Messages> = {
             description: "After 7 days, you will automatically receive your payment in your account"
           }
         },
-        tip: "💡 Tip: Set up your payment method now in your dashboard to receive your money automatically!"
+        tip: "💡 Tip: Set up your payment method now in your dashboard to receive your money automatically!",
+        moonSkinBotTitle: "MoonSkin Bot assigned",
+        botLevelShort: "Lvl.",
+        steamIdLabel: "Steam ID:",
+        memberSince: "Member since:",
+        viewProfile: "View profile"
       },
       helpSteps: ["Open Steam and go to your inventory", "Click on \"Privacy settings\"", "Copy the Trade Link URL"],
       successMessages: {
@@ -8422,6 +8438,12 @@ export const messages: Record<Locale, Messages> = {
           unknown: "Unknown reason"
         },
         unavailable: "Unavailable",
+        purchasableOnly: "Show only purchasable items",
+        selectAll: "Select all",
+        priceRange: "Price range (USD)",
+        priceMin: "Min price",
+        priceMax: "Max price",
+        priceRangeHint: "Amounts in US dollars (gross inventory price). Leave empty for no limit.",
       },
       steam: {
         searchPlaceholder: "Search for a skin...",
@@ -11099,7 +11121,12 @@ export const messages: Record<Locale, Messages> = {
             description: "7天后，您将自动收到支付到您的账户"
           }
         },
-        tip: "💡 提示：立即在您的仪表板中设置支付方式，以自动收到您的资金！"
+        tip: "💡 提示：立即在您的仪表板中设置支付方式，以自动收到您的资金！",
+        moonSkinBotTitle: "MoonSkin 机器人",
+        botLevelShort: "等级",
+        steamIdLabel: "Steam ID：",
+        memberSince: "注册于：",
+        viewProfile: "查看资料"
       },
       helpSteps: ["打开Steam并前往您的库存", "点击\"隐私设置\"", "复制交易链接URL"],
       successMessages: { tradeCreated: "交易创建成功！", followInstructions: "您的交易已创建并发送。在Steam上接受报价以继续。" }
@@ -12799,6 +12826,12 @@ export const messages: Record<Locale, Messages> = {
           unknown: "未知原因"
         },
         unavailable: "不可用",
+        purchasableOnly: "仅显示可购买物品",
+        selectAll: "全选",
+        priceRange: "价格范围（美元）",
+        priceMin: "最低价格",
+        priceMax: "最高价格",
+        priceRangeHint: "以美元计（库存毛价）。留空表示不限制。",
       },
       steam: {
         searchPlaceholder: "搜索皮肤...",

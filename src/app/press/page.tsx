@@ -2,46 +2,26 @@
 
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   NewspaperIcon,
   DocumentTextIcon,
   PhotoIcon,
-  LinkIcon,
-  CalendarIcon,
+  ChartBarIcon,
   UserGroupIcon,
   TrophyIcon,
-  ChartBarIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 import { useLocale } from "@/components/providers/locale-provider";
 import { usePublicStats } from "@/hooks/use-public-stats";
 
-const pressReleases = [
-  {
-    date: "2024-09-15",
-    title: "MoonSkin lève 2M€ pour révolutionner le trading de skins CS2",
-    description: "La startup française annonce une levée de fonds pour accélérer son développement international et renforcer sa sécurité.",
-    category: "Financement",
-    link: "/press/moonskin-leve-2m-euros",
-  },
-  {
-    date: "2024-08-20",
-    title: "Partenariat stratégique avec Skinplace pour l&apos;estimation des skins",
-    description: "MoonSkin s&apos;associe à Skinplace pour offrir les estimations les plus précises du marché.",
-    category: "Partenariat",
-    link: "/press/partenariat-skinplace",
-  },
-  {
-    date: "2024-07-10",
-    title: "MoonSkin atteint 15 000 utilisateurs actifs",
-    description: "La plateforme française de trading de skins franchit un nouveau cap avec plus de 2,4M€ de volume traité.",
-    category: "Croissance",
-    link: "/press/15k-utilisateurs",
-  },
-];
+const PRESS_EMAIL = process.env.NEXT_PUBLIC_PRESS_EMAIL ?? "contact@moonskin.fun";
 
-const getMediaKit = (messages: any) => [
+const getMediaKit = (messages: { press: { mediaKitItems: {
+  logos: { title: string; description: string };
+  screenshots: { title: string; description: string };
+  factsheet: { title: string; description: string };
+} } }) => [
   {
     title: messages.press.mediaKitItems.logos.title,
     description: messages.press.mediaKitItems.logos.description,
@@ -62,7 +42,17 @@ const getMediaKit = (messages: any) => [
   },
 ];
 
-const getStats = (messages: any, totalUsers: number, volumeMillions: number, completedTrades: number) => [
+const getStats = (
+  messages: { press: { stats: {
+    activeUsers: string;
+    volumeProcessed: string;
+    completedTrades: string;
+    satisfactionRate: string;
+  } } },
+  totalUsers: number,
+  volumeMillions: number,
+  completedTrades: number
+) => [
   { label: messages.press.stats.activeUsers, value: `${totalUsers.toLocaleString()}+`, icon: UserGroupIcon },
   { label: messages.press.stats.volumeProcessed, value: `€${volumeMillions}M+`, icon: TrophyIcon },
   { label: messages.press.stats.completedTrades, value: `${completedTrades.toLocaleString()}+`, icon: ChartBarIcon },
@@ -70,7 +60,7 @@ const getStats = (messages: any, totalUsers: number, volumeMillions: number, com
 ];
 
 export default function PressPage() {
-  const { messages } = useLocale();
+  const { messages, locale } = useLocale();
   const { data: publicStats } = usePublicStats();
   const stats = getStats(
     messages,
@@ -79,11 +69,17 @@ export default function PressPage() {
     publicStats?.completedTrades ?? 0
   );
   const mediaKit = getMediaKit(messages);
-  
+
+  const localeTag = locale === "cn" ? "zh-CN" : locale === "en" ? "en-GB" : "fr-FR";
+  const lastUpdateLabel = new Intl.DateTimeFormat(localeTag, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -97,12 +93,11 @@ export default function PressPage() {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
             {messages.press.subtitle}
           </p>
-          <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-            {messages.press.lastUpdate} 15 septembre 2024
-          </Badge>
+          <p className="text-sm text-muted-foreground">
+            {messages.press.lastUpdate} {lastUpdateLabel}
+          </p>
         </motion.div>
 
-        {/* Quick Stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -128,39 +123,41 @@ export default function PressPage() {
         </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Press Releases */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="mb-8"
             >
               <h2 className="text-2xl font-semibold mb-6">{messages.press.pressReleases}</h2>
-              <div className="space-y-4">
-                {pressReleases.map((release, index) => (
-                  <Card key={index} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-3">
-                        <Badge variant="outline">{release.category}</Badge>
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <CalendarIcon className="w-4 h-4 mr-1" />
-                          {new Date(release.date).toLocaleDateString('fr-FR')}
-                        </div>
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2">{release.title}</h3>
-                      <p className="text-muted-foreground mb-4">{release.description}</p>
-                      <Button variant="outline" size="sm">
-                        <LinkIcon className="w-4 h-4 mr-2" />
-                        {messages.press.readRelease}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <Card className="border-dashed">
+                <CardContent className="p-8">
+                  <h3 className="text-lg font-semibold mb-2">{messages.press.noPressReleasesTitle}</h3>
+                  <p className="text-muted-foreground leading-relaxed mb-6">{messages.press.noPressReleasesBody}</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <span className="text-2xl" aria-hidden>
+                      📧
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{messages.press.pressContact}</p>
+                      <a
+                        href={`mailto:${PRESS_EMAIL}`}
+                        className="text-orange-600 hover:underline font-medium break-all"
+                      >
+                        {PRESS_EMAIL}
+                      </a>
+                    </div>
+                  </div>
+                  <Button className="mt-6" asChild>
+                    <a href={`mailto:${PRESS_EMAIL}`}>
+                      <EnvelopeIcon className="w-4 h-4 mr-2" />
+                      {messages.press.contactPress}
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
             </motion.div>
 
-            {/* About Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -171,12 +168,8 @@ export default function PressPage() {
                   <CardTitle>{messages.press.aboutTitle}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-muted-foreground leading-relaxed">
-                    {messages.press.aboutDescription1}
-                  </p>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {messages.press.aboutDescription2}
-                  </p>
+                  <p className="text-muted-foreground leading-relaxed">{messages.press.aboutDescription1}</p>
+                  <p className="text-muted-foreground leading-relaxed">{messages.press.aboutDescription2}</p>
                   <div className="grid md:grid-cols-2 gap-4 mt-6">
                     <div>
                       <h4 className="font-medium mb-2">{messages.press.sector}</h4>
@@ -200,9 +193,7 @@ export default function PressPage() {
             </motion.div>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-8">
-            {/* Media Kit */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -216,11 +207,11 @@ export default function PressPage() {
                   {mediaKit.map((item, index) => (
                     <div key={index} className="flex items-start space-x-3">
                       <item.icon className="w-5 h-5 text-orange-600 flex-shrink-0 mt-1" />
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm">{item.title}</h4>
                         <p className="text-xs text-muted-foreground mb-2">{item.description}</p>
-                        <Button variant="outline" size="sm" className="text-xs">
-                          {messages.press.download}
+                        <Button variant="outline" size="sm" className="text-xs" asChild>
+                          <a href={item.downloadLink}>{messages.press.download}</a>
                         </Button>
                       </div>
                     </div>
@@ -229,7 +220,6 @@ export default function PressPage() {
               </Card>
             </motion.div>
 
-            {/* Team */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -254,7 +244,6 @@ export default function PressPage() {
               </Card>
             </motion.div>
 
-            {/* Contact Press */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -265,26 +254,29 @@ export default function PressPage() {
                   <CardTitle>{messages.press.pressContact}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <span>📧</span>
-                      <a href={`mailto:${process.env.NEXT_PUBLIC_PRESS_EMAIL ?? 'press@moonskin.gg'}`} className="hover:underline">
-                        {process.env.NEXT_PUBLIC_PRESS_EMAIL ?? 'press@moonskin.gg'}
+                  <div className="flex items-start gap-3 text-sm">
+                    <span className="text-xl shrink-0" aria-hidden>
+                      📧
+                    </span>
+                    <div>
+                      <a href={`mailto:${PRESS_EMAIL}`} className="text-orange-600 hover:underline font-medium break-all">
+                        {PRESS_EMAIL}
                       </a>
                     </div>
-                    {process.env.NEXT_PUBLIC_SUPPORT_PHONE && (
-                      <div className="flex items-center space-x-2">
-                        <span>📞</span>
-                        <span>{process.env.NEXT_PUBLIC_SUPPORT_PHONE}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center space-x-2">
-                      <span>🕐</span>
-                      <span>{messages.press.workingHours}</span>
+                  </div>
+                  {process.env.NEXT_PUBLIC_SUPPORT_PHONE && (
+                    <div className="flex items-center space-x-2 text-sm">
+                      <span aria-hidden>📞</span>
+                      <span>{process.env.NEXT_PUBLIC_SUPPORT_PHONE}</span>
                     </div>
+                  )}
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                    <span aria-hidden>🕐</span>
+                    <span>{messages.press.workingHours}</span>
                   </div>
                   <Button className="w-full mt-4" asChild>
-                    <a href={`mailto:${process.env.NEXT_PUBLIC_PRESS_EMAIL ?? 'press@moonskin.gg'}`}>
+                    <a href={`mailto:${PRESS_EMAIL}`}>
+                      <EnvelopeIcon className="w-4 h-4 mr-2" />
                       {messages.press.contactPress}
                     </a>
                   </Button>

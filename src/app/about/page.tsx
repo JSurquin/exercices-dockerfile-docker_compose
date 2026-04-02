@@ -21,6 +21,7 @@ import {
   BoltIcon,
   EyeIcon,
   RocketLaunchIcon,
+  BuildingOffice2Icon,
 } from "@heroicons/react/24/outline";
 
 const TEAM_ORDER = [
@@ -290,6 +291,58 @@ export default function AboutPage() {
           <p className="text-center text-muted-foreground max-w-2xl mx-auto mt-10 text-sm sm:text-base">
             {messages.about.team.footer}
           </p>
+        </div>
+      </section>
+
+      <section className="py-20">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <Card className="border-orange-500/30 bg-gradient-to-br from-orange-500/5 to-red-600/5 overflow-hidden">
+              <CardContent className="p-6 sm:p-10">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-6">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-500/15 to-red-600/15 mx-auto sm:mx-0">
+                    <BuildingOffice2Icon className="h-8 w-8 text-orange-600" aria-hidden />
+                  </div>
+                  <div className="flex-1 text-center sm:text-left space-y-3">
+                    <h2 className="text-2xl sm:text-3xl font-bold">
+                      {messages.about.technicalPartner.title}
+                    </h2>
+                    <p className="text-sm font-medium text-orange-600">
+                      {messages.about.technicalPartner.role}
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {messages.about.technicalPartner.description}
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {messages.about.technicalPartner.location}
+                    </p>
+                    <div className="flex flex-wrap gap-2 justify-center sm:justify-start pt-1">
+                      {messages.about.technicalPartner.tags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    <p className="pt-2">
+                      <a
+                        href={messages.about.technicalPartner.websiteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-orange-600 hover:underline"
+                      >
+                        {messages.about.technicalPartner.websiteLabel}
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </section>
 

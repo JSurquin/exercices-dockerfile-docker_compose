@@ -31,6 +31,19 @@ import { ConvertedPrice } from '@/components/ui/converted-price';
 import { useCurrency } from '@/components/providers/currency-provider';
 import { currencyConverter } from '@/lib/currency-converter';
 
+function isPurchasable(item: NormalizedInventoryItem): boolean {
+  return item.tradable && !item.skip_reason;
+}
+
+/** Saisie utilisateur en dollars US → centimes USD (entier). */
+function parseUsdDollarsToCents(s: string): number | null {
+  const t = s.trim().replace(',', '.');
+  if (!t) return null;
+  const n = Number(t);
+  if (!Number.isFinite(n) || n < 0) return null;
+  return Math.round(n * 100);
+}
+
 interface SkinplaceInventoryViewerProps {
   steamId64: string;
   /** Identité Steam du compte MoonSkin (affichée seulement si currentSteamId === steamId64) */
@@ -68,6 +81,9 @@ export function SkinplaceInventoryViewer({
   const [statTrakOnly, setStatTrakOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'value_desc' | 'value_asc' | 'rarity' | 'name'>('value_desc');
   const [showFilters, setShowFilters] = useState(false);
+  const [purchasableOnly, setPurchasableOnly] = useState(false);
+  const [priceMinUsd, setPriceMinUsd] = useState('');
+  const [priceMaxUsd, setPriceMaxUsd] = useState('');
   
   const { 
     loading, 
@@ -153,6 +169,22 @@ export function SkinplaceInventoryViewer({
     if (statTrakOnly) {
       filtered = filterByStatTrak(filtered, true);
     }
+
+    if (purchasableOnly) {
+      filtered = filtered.filter(isPurchasable);
+    }
+
+    let minBound = parseUsdDollarsToCents(priceMinUsd);
+    let maxBound = parseUsdDollarsToCents(priceMaxUsd);
+    if (minBound !== null && maxBound !== null && maxBound < minBound) {
+      [minBound, maxBound] = [maxBound, minBound];
+    }
+    if (minBound !== null) {
+      filtered = filtered.filter((item) => item.price_centimes >= minBound!);
+    }
+    if (maxBound !== null) {
+      filtered = filtered.filter((item) => item.price_centimes <= maxBound!);
+    }
     
     // Ne garder que les items tradables
     filtered = filterTradableItems(filtered);
@@ -174,7 +206,7 @@ export function SkinplaceInventoryViewer({
     }
     
     setFilteredItems(filtered);
-  }, [inventory, searchTerm, selectedRarity, selectedExterior, statTrakOnly, sortBy, filterBySearch, filterByRarity, filterByExterior, filterByStatTrak, filterTradableItems, sortItemsByValue, sortItemsByRarity]);
+  }, [inventory, searchTerm, selectedRarity, selectedExterior, statTrakOnly, sortBy, purchasableOnly, priceMinUsd, priceMaxUsd, filterBySearch, filterByRarity, filterByExterior, filterByStatTrak, filterTradableItems, sortItemsByValue, sortItemsByRarity]);
 
   useEffect(() => {
     if (currentSteamId) {
@@ -237,6 +269,13 @@ export function SkinplaceInventoryViewer({
     setSelectedExterior('');
     setStatTrakOnly(false);
     setSortBy('value_desc');
+    setPurchasableOnly(false);
+    setPriceMinUsd('');
+    setPriceMaxUsd('');
+  };
+
+  const handleSelectAllPurchasable = () => {
+    setSelectedItems(filteredItems.filter(isPurchasable).map((i) => i.id));
   };
 
   if (loading) {
@@ -541,7 +580,17 @@ export function SkinplaceInventoryViewer({
               {messages.components.skinplace.yourInventory}
               <Badge variant="secondary">{filteredItems.length} {messages.components.skinplace.items}</Badge>
             </CardTitle>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 justify-end">
+              {selectable && filteredItems.some(isPurchasable) && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleSelectAllPurchasable}
+                >
+                  {messages.components.skinplace.selectAll}
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -579,7 +628,7 @@ export function SkinplaceInventoryViewer({
               </div>
             </div>
             
-            <div className="w-48">
+            <div className="w-full sm:w-48">
               <Label>{messages.components.skinplace.sortBy}</Label>
               <Select value={sortBy} onValueChange={(value: 'value_desc' | 'value_asc' | 'rarity' | 'name') => setSortBy(value)}>
                 <SelectTrigger>
@@ -592,6 +641,46 @@ export function SkinplaceInventoryViewer({
                   <SelectItem value="name">{messages.components.skinplace.name}</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 rounded-lg border border-border/60 bg-muted/20 p-4 sm:flex-row sm:flex-wrap sm:items-end">
+            <div className="flex items-center space-x-2 sm:pt-0.5">
+              <Checkbox
+                id="purchasable-only"
+                checked={purchasableOnly}
+                onCheckedChange={(checked) => setPurchasableOnly(checked === true)}
+              />
+              <Label htmlFor="purchasable-only" className="text-sm font-normal leading-snug cursor-pointer">
+                {messages.components.skinplace.purchasableOnly}
+              </Label>
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:min-w-[260px]">
+              <Label className="text-sm">{messages.components.skinplace.priceRange}</Label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder={messages.components.skinplace.priceMin}
+                  value={priceMinUsd}
+                  onChange={(e) => setPriceMinUsd(e.target.value)}
+                  className="min-w-[6rem] flex-1 sm:max-w-[8rem]"
+                  aria-label={messages.components.skinplace.priceMin}
+                />
+                <span className="text-muted-foreground shrink-0">–</span>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder={messages.components.skinplace.priceMax}
+                  value={priceMaxUsd}
+                  onChange={(e) => setPriceMaxUsd(e.target.value)}
+                  className="min-w-[6rem] flex-1 sm:max-w-[8rem]"
+                  aria-label={messages.components.skinplace.priceMax}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {messages.components.skinplace.priceRangeHint}
+              </p>
             </div>
           </div>
 
@@ -662,10 +751,9 @@ export function SkinplaceInventoryViewer({
         <CardContent className="p-6">
           {filteredItems.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              {searchTerm || selectedRarity || selectedExterior || statTrakOnly ? 
-                messages.components.skinplace.noItemsFiltered : 
-                messages.components.skinplace.noTradableItems
-              }
+              {searchTerm || selectedRarity || selectedExterior || statTrakOnly || purchasableOnly || priceMinUsd.trim() || priceMaxUsd.trim()
+                ? messages.components.skinplace.noItemsFiltered
+                : messages.components.skinplace.noTradableItems}
             </div>
           ) : (
             <div className="relative">

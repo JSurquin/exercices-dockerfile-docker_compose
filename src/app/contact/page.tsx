@@ -101,7 +101,7 @@ export default function ContactPage() {
     },
     {
       name: t.departmentsList.press.name,
-      email: process.env.NEXT_PUBLIC_PRESS_EMAIL ?? "press@moonskin.gg",
+      email: process.env.NEXT_PUBLIC_PRESS_EMAIL ?? "contact@moonskin.fun",
       description: t.departmentsList.press.description,
       icon: DocumentTextIcon,
     },

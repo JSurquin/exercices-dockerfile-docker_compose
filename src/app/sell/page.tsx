@@ -227,7 +227,7 @@ export default function SellPage() {
                 </CardContent>
               </Card>
 
-              {/* Bot Skinplace */}
+              {/* MoonSkin trade bot (profil technique fourni par l’API partenaire) */}
               {tradeData.bot && (
                 <Card className="border-orange-500/30 bg-orange-500/5">
                   <CardContent className="p-6">
@@ -238,7 +238,7 @@ export default function SellPage() {
                         <circle cx="18" cy="8" r="3" fill="currentColor" stroke="none" className="opacity-60"/>
                         <path d="M18 5v-.5M18 11v-.5M15.5 8h-.5M21 8h-.5" strokeWidth="1.5"/>
                       </svg>
-                      Bot Skinplace assigné
+                      {messages.sellPage.confirmation.moonSkinBotTitle}
                     </h3>
                     <div className="flex items-center gap-4">
                       {tradeData.bot.avatar ? (
@@ -257,16 +257,16 @@ export default function SellPage() {
                           <p className="font-semibold text-base truncate">{tradeData.bot.name}</p>
                           {tradeData.bot.level && (
                             <span className="text-xs bg-orange-500/20 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full font-medium">
-                              Niv. {tradeData.bot.level}
+                              {messages.sellPage.confirmation.botLevelShort} {tradeData.bot.level}
                             </span>
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground font-mono mt-0.5 truncate">
-                          SteamID : {tradeData.bot.steamid}
+                          {messages.sellPage.confirmation.steamIdLabel} {tradeData.bot.steamid}
                         </p>
                         {tradeData.bot.registration_date && (
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            Membre depuis : {tradeData.bot.registration_date}
+                            {messages.sellPage.confirmation.memberSince} {tradeData.bot.registration_date}
                           </p>
                         )}
                       </div>
@@ -277,7 +277,7 @@ export default function SellPage() {
                           rel="noopener noreferrer"
                           className="shrink-0 text-xs underline text-orange-500 hover:text-orange-600"
                         >
-                          Voir profil
+                          {messages.sellPage.confirmation.viewProfile}
                         </a>
                       )}
                     </div>

@@ -1945,6 +1945,11 @@ export interface Messages {
         step4: { title: string; description: string; };
       };
       tip: string;
+      moonSkinBotTitle: string;
+      botLevelShort: string;
+      steamIdLabel: string;
+      memberSince: string;
+      viewProfile: string;
     };
     helpSteps: string[];
     successMessages: {
@@ -3552,6 +3557,12 @@ export interface Messages {
         unknown: string;
       };
       unavailable: string;
+      purchasableOnly: string;
+      selectAll: string;
+      priceRange: string;
+      priceMin: string;
+      priceMax: string;
+      priceRangeHint: string;
     };
     steam: {
       searchPlaceholder: string;
