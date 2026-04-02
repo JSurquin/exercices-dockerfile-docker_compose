@@ -1651,6 +1651,16 @@ export const messages: Record<Locale, Messages> = {
           }
         }
       },
+      technicalPartner: {
+        title: "Andromed",
+        role: "Studio web & design",
+        description:
+          "Partenaire de la conception et du développement de l’interface Moonskin : expérience utilisateur, identité visuelle et mise en production.",
+        location: "France",
+        tags: ["Produit", "UI/UX", "Next.js"],
+        websiteUrl: "https://andromed.fr",
+        websiteLabel: "Découvrir andromed.fr",
+      },
       now: {
         title: "Et maintenant ?",
         p1: "Moonskin n'en est qu'à ses débuts.",
@@ -3562,6 +3572,9 @@ export const messages: Record<Locale, Messages> = {
       statsTitle: "MoonSkin en chiffres",
       pressReleases: "Communiqués de presse",
       readRelease: "Lire le communiqué",
+      noPressReleasesTitle: "Aucun communiqué pour le moment",
+      noPressReleasesBody:
+        "Notre équipe presse prépare les prochaines annonces. En attendant, écrivez-nous pour toute demande média ou interview.",
       aboutTitle: "À propos de MoonSkin",
       aboutDescription1: "MoonSkin est la première plateforme française dédiée au trading sécurisé de skins Counter-Strike 2. Fondée en 2024, l'entreprise révolutionne l'écosystème du gaming en permettant aux joueurs de monétiser facilement leurs inventaires virtuels.",
       aboutDescription2: "Grâce à des partenariats stratégiques avec Skinplace pour l'estimation et Qonto pour les paiements SEPA, MoonSkin garantit transparence, sécurité et conformité réglementaire. La plateforme respecte scrupuleusement les obligations KYC et anti-blanchiment.",
@@ -4093,6 +4106,8 @@ export const messages: Record<Locale, Messages> = {
       },
       helpPage: {
         browseByCategory: "Parcourir par catégorie",
+        searchNoResults:
+          "Aucun article ne correspond à votre recherche. Essayez d'autres mots-clés ou contactez le support.",
         supportOptions: {
           liveChat: {
             title: "Chat en direct",
@@ -4151,6 +4166,58 @@ export const messages: Record<Locale, Messages> = {
             steamTradeError: "Erreur lors du trade Steam",
             steamConnectionIssue: "Problème de connexion Steam",
             buggyInterface: "Interface qui bug : solutions",
+          },
+        },
+        articleBodies: {
+          gettingStarted: {
+            createAccount:
+              "MoonSkin repose sur Steam : utilisez « Se connecter avec Steam », autorisez l'application et votre compte est créé à la première connexion. Il n'y a pas de mot de passe MoonSkin séparé. Pensez à accepter les conditions générales.",
+            steamConnection:
+              "Votre profil est identifié par votre SteamID64. Depuis Steam, copiez votre lien d'échange (Trade URL) et renseignez-le sur MoonSkin pour recevoir les offres de trade.",
+            kycStepByStep:
+              "Avant tout retrait, une vérification d'identité (KYC) est obligatoire. Suivez les étapes depuis votre espace : pièce d'identité, selfie si demandé, éventuellement justificatif de domicile. Les contrôles sont effectués par un prestataire agréé ; le délai dépend de la qualité du dossier.",
+            firstTrade:
+              "Rendez-vous sur Vendre, collez votre Trade Link, choisissez vos skins et validez l'estimation (montant net et frais affichés). Après confirmation, un bot gère l'échange Steam : comptez le trade hold de 7 jours imposé par Valve, puis le paiement automatique une fois les fonds disponibles.",
+          },
+          trading: {
+            howToSell:
+              "Pour chaque vente : estimation, création du ticket, acceptation du trade dans le client Steam, attente du hold, puis encaissement. Suivez chaque étape sur votre tableau de bord jusqu'au statut payé.",
+            priceEstimation:
+              "Les prix reflètent le marché et nos sources de liquidité ; ils sont indicatifs jusqu'à la finalisation du trade. Les frais (cashout, réseau le cas échéant) sont détaillés avant validation.",
+            tradeHold:
+              "Après un échange avec un nouveau partenaire, Steam bloque les objets 7 jours : c'est une règle Valve (trade lock), pas une décision MoonSkin. Le versement intervient après cette période.",
+            fees:
+              "Les montants sont calculés en centimes pour limiter les erreurs d'arrondi. Le détail brut, frais et net vous est montré avant confirmation de la vente.",
+          },
+          payments: {
+            methods:
+              "Selon votre compte, vous pouvez retirer en SEPA (virement bancaire) ou via des options crypto. Chaque canal peut imposer des vérifications complémentaires conformes à la réglementation.",
+            delays:
+              "Pour le SEPA, comptez en général 24 à 48 h ouvrées après disponibilité des fonds. Pour la crypto, les délais dépendent du réseau et du nombre de confirmations.",
+            ibanVerification:
+              "Lors du premier retrait SEPA ou après modification d'IBAN, une étape renforcée peut être exigée (OTP, micro-virement). Cela sécurise les paiements vers votre compte bancaire.",
+            paymentIssue:
+              "Vérifiez que le KYC est validé et que l'IBAN est correct. Si le problème persiste, ouvrez un ticket support en indiquant l'identifiant de transaction ou de retrait s'il est affiché.",
+          },
+          security: {
+            secureAccount:
+              "Activez Steam Guard et surveillez les e-mails Steam. Ne partagez jamais vos identifiants. MoonSkin ne vous demandera jamais votre mot de passe Steam par message.",
+            accountSuspended:
+              "Contactez le support en précisant votre SteamID. Une suspension peut suivre une revue de conformité : fournissez les informations demandées pour faciliter le traitement.",
+            reportSuspicious:
+              "Signalez via le support tout site frauduleux ou demande d'informations bancaires hors processus officiel. Joignez captures et dates si possible.",
+            accountRecovery:
+              "L'accès MoonSkin suit votre compte Steam. Si vous perdez l'accès Steam, suivez d'abord la procédure Valve ; reconnecté avec le même SteamID, vous retrouvez votre espace MoonSkin.",
+          },
+          technical: {
+            siteNotLoading:
+              "Essayez un autre navigateur, videz le cache, désactivez les bloqueurs de contenu ou essayez la navigation privée. Vérifiez votre connexion et nos canaux en cas de maintenance.",
+            steamTradeError:
+              "Vérifiez que l'inventaire est public, qu'aucune restriction Steam ne bloque l'échange, et que vous acceptez l'offre dans les délais. Réessayez après quelques minutes si Steam est instable.",
+            steamConnectionIssue:
+              "Déconnectez-vous et reconnectez-vous via Steam, autorisez les fenêtres pop-up pour l'OpenID, vérifiez que l'horloge de votre appareil est à l'heure.",
+            buggyInterface:
+              "Mettez à jour votre navigateur. Si un bug persiste, indiquez la page, la version du navigateur et joignez une capture au support.",
           },
         },
         popularArticles: {
@@ -5430,6 +5497,16 @@ export const messages: Record<Locale, Messages> = {
             skills: ["Product", "Engineering", "Quality"]
           }
         }
+      },
+      technicalPartner: {
+        title: "Andromed",
+        role: "Web & design studio",
+        description:
+          "Partner on Moonskin’s interface design and engineering: UX, visual identity and production rollout.",
+        location: "France",
+        tags: ["Product", "UI/UX", "Next.js"],
+        websiteUrl: "https://andromed.fr",
+        websiteLabel: "Visit andromed.fr",
       },
       now: {
         title: "What now?",
@@ -8222,6 +8299,9 @@ export const messages: Record<Locale, Messages> = {
       statsTitle: "MoonSkin in numbers",
       pressReleases: "Press releases",
       readRelease: "Read release",
+      noPressReleasesTitle: "No press releases yet",
+      noPressReleasesBody:
+        "Our press team is preparing upcoming announcements. In the meantime, email us for any media request or interview.",
       aboutTitle: "About MoonSkin",
       aboutDescription1: "MoonSkin is the first French platform dedicated to secure Counter-Strike 2 skin trading. Founded in 2024, the company revolutionizes the gaming ecosystem by allowing players to easily monetize their virtual inventories.",
       aboutDescription2: "Through strategic partnerships with Skinplace for estimation and Qonto for SEPA payments, MoonSkin guarantees transparency, security and regulatory compliance. The platform strictly respects KYC and anti-money laundering obligations.",
@@ -8753,6 +8833,8 @@ export const messages: Record<Locale, Messages> = {
       },
       helpPage: {
         browseByCategory: "Browse by category",
+        searchNoResults:
+          "No articles match your search. Try different keywords or contact support.",
         supportOptions: {
           liveChat: {
             title: "Live chat",
@@ -8811,6 +8893,58 @@ export const messages: Record<Locale, Messages> = {
             steamTradeError: "Error during Steam trade",
             steamConnectionIssue: "Steam connection problem",
             buggyInterface: "Buggy interface: solutions",
+          },
+        },
+        articleBodies: {
+          gettingStarted: {
+            createAccount:
+              "MoonSkin uses Steam sign-in: click “Sign in with Steam”, approve the app, and your account is created on first login. There is no separate MoonSkin password. Please accept the terms of use.",
+            steamConnection:
+              "Your profile is tied to your SteamID64. Copy your Steam Trade URL from your Steam profile settings and add it on MoonSkin so our bots can send trade offers.",
+            kycStepByStep:
+              "Withdrawals require identity verification (KYC). From your dashboard, follow the steps: ID document, selfie if requested, proof of address when needed. Checks are handled by a certified provider; timing depends on document quality.",
+            firstTrade:
+              "Go to Sell, paste your Trade Link, pick your skins, and confirm the quote (net amount and fees shown). After you confirm, a bot handles the Steam trade. Expect Steam’s 7-day trade hold, then automatic payout once funds are available.",
+          },
+          trading: {
+            howToSell:
+              "Each sale follows the same flow: quote, ticket creation, accept the trade in the Steam client, wait for the hold, then get paid. Track every step on your dashboard until the paid status.",
+            priceEstimation:
+              "Prices reflect the market and our liquidity sources; they are indicative until the trade is completed. Cashout and network fees (if any) are broken down before you confirm.",
+            tradeHold:
+              "After trading with a new partner, Steam locks items for 7 days. That is a Valve rule (trade lock), not a MoonSkin policy. Payout happens after that period.",
+            fees:
+              "Amounts are calculated in cents to avoid rounding issues. You see gross, fees, and net before you confirm the sale.",
+          },
+          payments: {
+            methods:
+              "Depending on your account, you can withdraw via SEPA bank transfer or configured crypto options. Each channel may require extra checks to meet regulations.",
+            delays:
+              "SEPA transfers usually take about 1–2 business days after funds are available on our side. Crypto timing depends on the network and confirmation count.",
+            ibanVerification:
+              "Your first SEPA withdrawal or a changed IBAN may require a stronger step (OTP, micro-deposit). This protects payouts to your bank account.",
+            paymentIssue:
+              "Check that KYC is approved and your IBAN details are correct. If it still fails, open a support ticket with the payout or transaction ID if shown.",
+          },
+          security: {
+            secureAccount:
+              "Enable Steam Guard and watch for Steam emails. Never share your Steam credentials. MoonSkin will never ask for your Steam password in chat or email.",
+            accountSuspended:
+              "Contact support with your SteamID. Suspensions may follow a compliance review—provide the requested information to speed things up.",
+            reportSuspicious:
+              "Report fake sites or out-of-band payment requests through support. Screenshots and timestamps help us investigate.",
+            accountRecovery:
+              "MoonSkin access follows your Steam account. If you lose Steam access, use Valve’s recovery first; once you sign in again with the same SteamID, your MoonSkin account is still there.",
+          },
+          technical: {
+            siteNotLoading:
+              "Try another browser, clear cache, disable strict blockers, or use private mode. Check your connection and our status channels for maintenance.",
+            steamTradeError:
+              "Make sure your inventory is public, no Steam restriction blocks trades, and you accept offers in time. Retry after a few minutes if Steam is unstable.",
+            steamConnectionIssue:
+              "Sign out and sign in with Steam again, allow pop-ups for OpenID, and check that your device clock is accurate.",
+            buggyInterface:
+              "Update your browser. If a bug persists, tell us the page, browser version, and attach a screenshot to support.",
           },
         },
         popularArticles: {
@@ -10066,6 +10200,16 @@ export const messages: Record<Locale, Messages> = {
             skills: ["产品", "工程", "品质"]
           }
         }
+      },
+      technicalPartner: {
+        title: "Andromed",
+        role: "网页与设计工作室",
+        description:
+          "Moonskin 界面设计与工程合作方：用户体验、视觉识别与上线交付。",
+        location: "法国",
+        tags: ["产品", "UI/UX", "Next.js"],
+        websiteUrl: "https://andromed.fr",
+        websiteLabel: "访问 andromed.fr",
       },
       now: {
         title: "接下来？",
@@ -12610,6 +12754,8 @@ export const messages: Record<Locale, Messages> = {
       statsTitle: "MoonSkin 数据",
       pressReleases: "新闻稿",
       readRelease: "阅读新闻稿",
+      noPressReleasesTitle: "暂无新闻稿",
+      noPressReleasesBody: "新闻团队正在准备后续公告。如有媒体报道或采访需求，欢迎发邮件与我们联系。",
       aboutTitle: "关于 MoonSkin",
       aboutDescription1: "MoonSkin 是首个专注于安全 Counter-Strike 2 皮肤交易的法国平台。成立于 2024 年，该公司通过让玩家轻松变现虚拟库存来革命化游戏生态系统。",
       aboutDescription2: "通过与 Skinplace 的估价战略合作伙伴关系和 Qonto 的 SEPA 支付，CashTrade 保证透明度、安全性和监管合规性。该平台严格遵守 KYC 和反洗钱义务。",
@@ -13139,6 +13285,7 @@ export const messages: Record<Locale, Messages> = {
       },
       helpPage: {
         browseByCategory: "按类别浏览",
+        searchNoResults: "没有符合您搜索的文章。请尝试其他关键词或联系客服。",
         supportOptions: {
           liveChat: {
             title: "在线聊天",
@@ -13197,6 +13344,58 @@ export const messages: Record<Locale, Messages> = {
             steamTradeError: "Steam交易错误",
             steamConnectionIssue: "Steam连接问题",
             buggyInterface: "界面问题：解决方案",
+          },
+        },
+        articleBodies: {
+          gettingStarted: {
+            createAccount:
+              "MoonSkin 使用 Steam 登录：点击「使用 Steam 登录」并授权应用，首次登录即自动创建账户，没有单独的 MoonSkin 密码。请接受服务条款。",
+            steamConnection:
+              "账户与您的 SteamID64 绑定。请在 Steam 个人资料设置中复制交易链接（Trade URL），并在 MoonSkin 填写，以便机器人发送报价。",
+            kycStepByStep:
+              "提现前必须完成身份验证（KYC）。在控制台按步骤提交身份证件、如需则自拍、以及住址证明。验证由合规服务商处理，时间取决于材料是否完整清晰。",
+            firstTrade:
+              "进入「出售」页面，粘贴交易链接，选择饰品并确认报价（会显示净额与费用）。确认后由机器人处理 Steam 交易；需经历 Steam 强制 7 天交易冷却，之后资金可用时将自动打款。",
+          },
+          trading: {
+            howToSell:
+              "每次出售流程相同：估价、创建工单、在 Steam 客户端接受交易、等待冷却、然后收款。请在控制台跟踪状态直至「已支付」。",
+            priceEstimation:
+              "价格反映市场与流动性来源，在完成交易前均为参考。确认前会列出提现费及（如有）网络费。",
+            tradeHold:
+              "与新交易伙伴交换后，Steam 会将物品锁定 7 天，这是 Valve 的规则，并非 MoonSkin 额外限制。冷却结束后才会放款。",
+            fees:
+              "金额以分为单位计算以减少舍入误差。确认出售前会显示总额、费用与净额。",
+          },
+          payments: {
+            methods:
+              "视账户配置，可通过 SEPA 银行转账或已启用的加密货币方式提现。各渠道可能需额外合规核验。",
+            delays:
+              "SEPA 一般在平台侧资金可用后约 1–2 个工作日到账。加密货币取决于网络与确认数。",
+            ibanVerification:
+              "首次 SEPA 提现或更改 IBAN 后，可能需加强验证（一次性验证码、小额打款等），以保护您的银行账户。",
+            paymentIssue:
+              "请确认 KYC 已通过且 IBAN 信息正确。若仍失败，请提交工单并附上显示的提现或交易编号。",
+          },
+          security: {
+            secureAccount:
+              "请开启 Steam 令牌并留意 Steam 邮件。切勿向他人泄露 Steam 凭据。MoonSkin 绝不会通过聊天或邮件索要您的 Steam 密码。",
+            accountSuspended:
+              "请联系支持并提供 SteamID。若因合规审查暂停账户，请按要求提交资料以加快处理。",
+            reportSuspicious:
+              "若遇仿冒网站或要求私下转账等情况，请通过支持渠道举报，附上截图与时间更有助于核查。",
+            accountRecovery:
+              "MoonSkin 与 Steam 账户联动。若无法登录 Steam，请先走 Valve 找回流程；用同一 SteamID 再次登录后，MoonSkin 账户仍在。",
+          },
+          technical: {
+            siteNotLoading:
+              "可尝试更换浏览器、清除缓存、关闭严格拦截插件或使用无痕模式，并检查网络与维护公告。",
+            steamTradeError:
+              "请确认库存公开、无阻止交易的 Steam 限制，并在时限内接受报价。若 Steam 不稳定可稍后重试。",
+            steamConnectionIssue:
+              "退出并重新通过 Steam 登录，允许 OpenID 弹窗，并检查设备系统时间是否准确。",
+            buggyInterface:
+              "请更新浏览器。若问题仍在，请向支持说明页面、浏览器版本并附上截图。",
           },
         },
         popularArticles: {

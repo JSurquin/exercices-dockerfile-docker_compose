@@ -628,6 +628,15 @@ export interface Messages {
         };
       };
     };
+    technicalPartner: {
+      title: string;
+      role: string;
+      description: string;
+      location: string;
+      tags: string[];
+      websiteUrl: string;
+      websiteLabel: string;
+    };
     now: {
       title: string;
       p1: string;
@@ -3341,6 +3350,8 @@ export interface Messages {
     statsTitle: string;
     pressReleases: string;
     readRelease: string;
+    noPressReleasesTitle: string;
+    noPressReleasesBody: string;
     aboutTitle: string;
     aboutDescription1: string;
     aboutDescription2: string;
@@ -3872,6 +3883,7 @@ export interface Messages {
     };
     helpPage: {
       browseByCategory: string;
+      searchNoResults: string;
       supportOptions: {
         liveChat: {
           title: string;
@@ -3901,6 +3913,38 @@ export interface Messages {
       supportOnline: string;
       avgResponseTime: string;
       articles: {
+        gettingStarted: {
+          createAccount: string;
+          steamConnection: string;
+          kycStepByStep: string;
+          firstTrade: string;
+        };
+        trading: {
+          howToSell: string;
+          priceEstimation: string;
+          tradeHold: string;
+          fees: string;
+        };
+        payments: {
+          methods: string;
+          delays: string;
+          ibanVerification: string;
+          paymentIssue: string;
+        };
+        security: {
+          secureAccount: string;
+          accountSuspended: string;
+          reportSuspicious: string;
+          accountRecovery: string;
+        };
+        technical: {
+          siteNotLoading: string;
+          steamTradeError: string;
+          steamConnectionIssue: string;
+          buggyInterface: string;
+        };
+      };
+      articleBodies: {
         gettingStarted: {
           createAccount: string;
           steamConnection: string;
