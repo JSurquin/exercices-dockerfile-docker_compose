@@ -4,7 +4,7 @@ import { skinplaceService } from '@/lib/skinplace';
 
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
-  if (!session?.user || (session.user as { role?: string }).role !== 'admin') {
+  if (!session?.user || session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Admin requis' }, { status: 403 });
   }
 
