@@ -112,6 +112,8 @@ export interface Giveaway {
   title: string;
   description: string;
   prize: string;
+  prizeImageUrl?: string | null;
+  steamMarketHashName?: string | null;
   ticketPrice: number;
   maxTickets: number;
   soldTickets: number;

@@ -22,6 +22,7 @@ import {
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface GiveawayDetails extends Giveaway {
   entries: (GiveawayEntry & {
@@ -182,7 +183,18 @@ export default function GiveawayDetailsPage() {
                   {/* Prize */}
                   <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 rounded-lg p-6 border">
                     <div className="flex items-center space-x-4">
-                      <TrophyIcon className="w-12 h-12 text-orange-600" />
+                      {giveaway.prizeImageUrl ? (
+                        <Image
+                          src={giveaway.prizeImageUrl}
+                          alt={giveaway.prize}
+                          width={120}
+                          height={88}
+                          className="object-contain rounded drop-shadow-lg shrink-0"
+                          unoptimized
+                        />
+                      ) : (
+                        <TrophyIcon className="w-12 h-12 text-orange-600 shrink-0" />
+                      )}
                       <div>
                         <h3 className="text-xl font-semibold text-orange-800 dark:text-orange-200">{messages.giveawaysPage.detail.prizeTitle}</h3>
                         <p className="text-lg text-orange-700 dark:text-orange-300">{giveaway.prize}</p>

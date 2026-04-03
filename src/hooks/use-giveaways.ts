@@ -126,6 +126,8 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
       title: string;
       description: string;
       prize: string;
+      prizeImageUrl?: string | null;
+      steamMarketHashName?: string | null;
       ticketPrice: number;
       maxTickets: number;
       endDate: string;
@@ -165,6 +167,8 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
     title: string;
     description: string;
     prize: string;
+    prizeImageUrl?: string | null;
+    steamMarketHashName?: string | null;
     ticketPrice: number;
     maxTickets: number;
     endDate: string;

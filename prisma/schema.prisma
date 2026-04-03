@@ -466,6 +466,10 @@ model Giveaway {
   title             String
   description       String
   prize             String
+  /// URL image Steam (community.cloudflare.steamstatic.com) du lot
+  prizeImageUrl         String?
+  /// steam_market_hash_name du lot
+  steamMarketHashName   String?
   /// Coût d’une entrée en fragments (anciennement « ticket »)
   ticketPrice       Int
   maxTickets        Int

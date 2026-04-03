@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,8 +11,9 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GiveawayAdmin } from '@/components/admin/giveaway-admin';
-import { useGiveaways, GiveawayWithEntries } from '@/hooks/use-giveaways';
+import { useGiveaways } from '@/hooks/use-giveaways';
 import { useLocale } from '@/components/providers/locale-provider';
+import Image from 'next/image';
 import {
   GiftIcon,
   PlusIcon,
@@ -21,13 +22,28 @@ import {
   TrashIcon,
   PlayIcon,
   PowerIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+
+interface SkinItem {
+  steam_market_hash_name: string;
+  icon_url: string | null;
+  price: number | null;
+  rarity: string | null;
+  rarity_color: string | null;
+  exterior: string | null;
+  item_type: string | null;
+  phase: string | null;
+}
 
 interface CreateGiveawayForm {
   title: string;
   description: string;
   prize: string;
+  prizeImageUrl: string;
+  steamMarketHashName: string;
   ticketPrice: number;
   maxTickets: number;
   durationMinutes: number;
@@ -48,6 +64,8 @@ export default function AdminGiveawaysPage() {
     title: '',
     description: '',
     prize: '',
+    prizeImageUrl: '',
+    steamMarketHashName: '',
     ticketPrice: 100,
     maxTickets: 10000,
     durationMinutes: 60,
@@ -56,6 +74,63 @@ export default function AdminGiveawaysPage() {
     winnerCount: 1,
     maxEntriesPerUser: '',
   });
+
+  const [skinSearch, setSkinSearch] = useState('');
+  const [skinResults, setSkinResults] = useState<SkinItem[]>([]);
+  const [skinSearchLoading, setSkinSearchLoading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedSkin, setSelectedSkin] = useState<SkinItem | null>(null);
+  const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const searchSkins = useCallback(async (q: string) => {
+    if (q.trim().length < 2) {
+      setSkinResults([]);
+      setShowDropdown(false);
+      return;
+    }
+    setSkinSearchLoading(true);
+    try {
+      const res = await fetch(
+        `/api/admin/skinplace-items-search?search=${encodeURIComponent(q)}&limit=20`,
+        { credentials: 'include' }
+      );
+      const data = await res.json();
+      setSkinResults(data.items ?? []);
+      setShowDropdown(true);
+    } catch {
+      setSkinResults([]);
+    } finally {
+      setSkinSearchLoading(false);
+    }
+  }, []);
+
+  const handleSkinSearchChange = (v: string) => {
+    setSkinSearch(v);
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    searchDebounce.current = setTimeout(() => searchSkins(v), 400);
+  };
+
+  const handleSelectSkin = (skin: SkinItem) => {
+    setSelectedSkin(skin);
+    setSkinSearch(skin.steam_market_hash_name);
+    setShowDropdown(false);
+    setForm((prev) => ({
+      ...prev,
+      prize: skin.steam_market_hash_name,
+      prizeImageUrl: skin.icon_url ?? '',
+      steamMarketHashName: skin.steam_market_hash_name,
+      rewardValueCents: skin.price != null ? Math.round(skin.price * 100) : prev.rewardValueCents,
+    }));
+  };
+
+  const handleClearSkin = () => {
+    setSelectedSkin(null);
+    setSkinSearch('');
+    setSkinResults([]);
+    setShowDropdown(false);
+    setForm((prev) => ({ ...prev, prize: '', prizeImageUrl: '', steamMarketHashName: '' }));
+  };
 
   useEffect(() => {
     fetch('/api/admin/giveaways-settings')
@@ -85,9 +160,13 @@ export default function AdminGiveawaysPage() {
   const handleCreateGiveaway = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!form.title || !form.description || !form.prize) {
+    const prizeValue = selectedSkin?.steam_market_hash_name || form.prize;
+    if (!form.title || !form.description || !prizeValue) {
       toast.error(messages.admin.giveaways.create.errorRequired);
       return;
+    }
+    if (!form.prize && selectedSkin) {
+      form.prize = selectedSkin.steam_market_hash_name;
     }
 
     try {
@@ -101,6 +180,8 @@ export default function AdminGiveawaysPage() {
         title: form.title,
         description: form.description,
         prize: form.prize,
+        prizeImageUrl: form.prizeImageUrl || null,
+        steamMarketHashName: form.steamMarketHashName || null,
         ticketPrice: form.ticketPrice,
         maxTickets: form.maxTickets,
         endDate: endDate.toISOString(),
@@ -110,11 +191,12 @@ export default function AdminGiveawaysPage() {
         maxEntriesPerUser: maxEu ? parseInt(maxEu, 10) : null,
       });
 
-      // Reset form
       setForm({
         title: '',
         description: '',
         prize: '',
+        prizeImageUrl: '',
+        steamMarketHashName: '',
         ticketPrice: 100,
         maxTickets: 10000,
         durationMinutes: 60,
@@ -123,6 +205,8 @@ export default function AdminGiveawaysPage() {
         winnerCount: 1,
         maxEntriesPerUser: '',
       });
+      setSelectedSkin(null);
+      setSkinSearch('');
 
       setSelectedTab('list');
     } catch (error) {
@@ -300,6 +384,16 @@ export default function AdminGiveawaysPage() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center space-x-3 mb-2">
+                              {giveaway.prizeImageUrl && (
+                                <Image
+                                  src={giveaway.prizeImageUrl}
+                                  alt={giveaway.prize}
+                                  width={52}
+                                  height={38}
+                                  className="object-contain rounded shrink-0"
+                                  unoptimized
+                                />
+                              )}
                               <h3 className="text-lg font-semibold">{giveaway.title}</h3>
                               <Badge 
                                 variant={giveaway.status === 'ACTIVE' ? 'default' : 'secondary'}
@@ -407,14 +501,100 @@ export default function AdminGiveawaysPage() {
                       </div>
 
                       <div>
-                        <Label htmlFor="prize">Prix à gagner *</Label>
-                        <Input
-                          id="prize"
-                          value={form.prize}
-                          onChange={(e) => setForm(prev => ({ ...prev, prize: e.target.value }))}
-                          placeholder={messages.admin.giveaways.create.prizePlaceholder}
-                          required
-                        />
+                        <Label>Prix à gagner — skin Skinplace *</Label>
+                        {selectedSkin ? (
+                          <div className="flex items-center gap-3 mt-1 p-3 rounded-md border border-orange-500/60 bg-slate-700/50">
+                            {selectedSkin.icon_url && (
+                              <Image
+                                src={selectedSkin.icon_url}
+                                alt={selectedSkin.steam_market_hash_name}
+                                width={56}
+                                height={40}
+                                className="object-contain rounded shrink-0"
+                                unoptimized
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{selectedSkin.steam_market_hash_name}</p>
+                              <p className="text-xs text-slate-400">
+                                {selectedSkin.price != null ? `~${selectedSkin.price.toFixed(2)} $` : 'prix inconnu'}
+                                {selectedSkin.exterior ? ` · ${selectedSkin.exterior}` : ''}
+                                {selectedSkin.rarity ? ` · ${selectedSkin.rarity}` : ''}
+                              </p>
+                            </div>
+                            <button type="button" onClick={handleClearSkin} className="text-slate-400 hover:text-red-400 shrink-0">
+                              <XMarkIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="relative mt-1" ref={dropdownRef}>
+                            <div className="relative">
+                              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                              <Input
+                                className="pl-9"
+                                placeholder="Rechercher un skin CS2 (ex: AK-47 Redline)..."
+                                value={skinSearch}
+                                onChange={(e) => handleSkinSearchChange(e.target.value)}
+                                onFocus={() => skinResults.length > 0 && setShowDropdown(true)}
+                                autoComplete="off"
+                              />
+                              {skinSearchLoading && (
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">…</span>
+                              )}
+                            </div>
+                            {showDropdown && skinResults.length > 0 && (
+                              <div className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md border border-slate-600 bg-slate-800 shadow-xl max-h-72 overflow-y-auto">
+                                {skinResults.map((skin) => (
+                                  <button
+                                    key={skin.steam_market_hash_name}
+                                    type="button"
+                                    className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-slate-700 transition-colors"
+                                    onClick={() => handleSelectSkin(skin)}
+                                  >
+                                    {skin.icon_url ? (
+                                      <Image
+                                        src={skin.icon_url}
+                                        alt={skin.steam_market_hash_name}
+                                        width={48}
+                                        height={34}
+                                        className="object-contain rounded shrink-0"
+                                        unoptimized
+                                      />
+                                    ) : (
+                                      <div className="w-12 h-8 bg-slate-700 rounded shrink-0" />
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm truncate">{skin.steam_market_hash_name}</p>
+                                      <p className="text-xs text-slate-400">
+                                        {skin.price != null ? `~${skin.price.toFixed(2)} $` : '—'}
+                                        {skin.exterior ? ` · ${skin.exterior}` : ''}
+                                        {skin.rarity_color ? (
+                                          <span
+                                            className="ml-1 inline-block w-2 h-2 rounded-full"
+                                            style={{ background: `#${skin.rarity_color}` }}
+                                          />
+                                        ) : null}
+                                      </p>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {!selectedSkin && (
+                          <p className="text-xs text-slate-400 mt-1">
+                            Ou saisis manuellement ci-dessous si le skin n&apos;est pas trouvé.
+                          </p>
+                        )}
+                        {!selectedSkin && (
+                          <Input
+                            className="mt-1"
+                            placeholder="Nom manuel du prix (fallback)"
+                            value={form.prize}
+                            onChange={(e) => setForm((prev) => ({ ...prev, prize: e.target.value }))}
+                          />
+                        )}
                       </div>
 
                       <div>

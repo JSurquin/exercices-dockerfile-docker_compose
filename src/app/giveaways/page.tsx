@@ -31,6 +31,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const getTimeRemaining = (endDate: Date) => {
   const now = new Date();
@@ -123,7 +124,18 @@ const GiveawayCard = ({
       <CardContent className="space-y-3 sm:space-y-4">
         <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 rounded-lg p-4 border">
           <div className="flex items-center space-x-3">
-            <TrophyIcon className="w-8 h-8 text-orange-600" />
+            {giveaway.prizeImageUrl ? (
+              <Image
+                src={giveaway.prizeImageUrl}
+                alt={giveaway.prize}
+                width={72}
+                height={52}
+                className="object-contain rounded shrink-0 drop-shadow"
+                unoptimized
+              />
+            ) : (
+              <TrophyIcon className="w-8 h-8 text-orange-600 shrink-0" />
+            )}
             <div>
               <h4 className="font-semibold text-orange-800 dark:text-orange-200">{messages.giveaways.card.prize}</h4>
               <p className="text-orange-700 dark:text-orange-300">{giveaway.prize}</p>
