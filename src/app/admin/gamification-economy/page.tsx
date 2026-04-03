@@ -28,15 +28,15 @@ export default function AdminGamificationEconomyPage() {
     );
   }
 
-  const fmtEur = (n: number) =>
-    n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+  const fmtEur = (n: number | undefined | null) =>
+    (n ?? 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6 max-w-6xl">
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">Économie fragments & giveaways</h1>
         <p className="text-slate-400 text-sm">
-          Marge brute estimée : {((data.marginRateAssumption as number) * 100).toFixed(0)} % du volume vendu
+          Marge brute estimée : {(((data.marginRateAssumption ?? 0) as number) * 100).toFixed(0)} % du volume vendu
           (paramètre `marginRate` sur l’API si besoin).
         </p>
       </div>
@@ -59,27 +59,27 @@ export default function AdminGamificationEconomyPage() {
           </CardHeader>
           <CardContent className="text-sm text-slate-300 space-y-2">
             <p>
-              Volume vendu 7j : {fmtEur((data.finance.volumeSoldCents7d as number) / 100)}
+              Volume vendu 7j : {fmtEur((data.finance?.volumeSoldCents7d ?? 0) / 100)}
             </p>
             <p>
-              Volume vendu 30j : {fmtEur((data.finance.volumeSoldCents30d as number) / 100)}
+              Volume vendu 30j : {fmtEur((data.finance?.volumeSoldCents30d ?? 0) / 100)}
             </p>
             <p>
-              Marge brute estimée 7j : {fmtEur(data.finance.estimatedGrossBenefitEur7d as number)}
+              Marge brute estimée 7j : {fmtEur(data.finance?.estimatedGrossBenefitEur7d)}
             </p>
             <p>
-              Marge brute estimée 30j : {fmtEur(data.finance.estimatedGrossBenefitEur30d as number)}
+              Marge brute estimée 30j : {fmtEur(data.finance?.estimatedGrossBenefitEur30d)}
             </p>
             <p>
-              Coût giveaways 7j : {fmtEur(data.finance.giveawayCostEur7d as number)}
+              Coût giveaways 7j : {fmtEur(data.finance?.giveawayCostEur7d)}
             </p>
             <p>
-              Coût giveaways 30j : {fmtEur(data.finance.giveawayCostEur30j as number)}
+              Coût giveaways 30j : {fmtEur(data.finance?.giveawayCostEur30j ?? data.finance?.giveawayCostEur30d)}
             </p>
             <p>
               Ratio coût giveaways / marge 30j :{' '}
-              {data.finance.ratioGiveawayCostToBenefit30d != null
-                ? `${((data.finance.ratioGiveawayCostToBenefit30j as number) * 100).toFixed(2)} %`
+              {(data.finance?.ratioGiveawayCostToBenefit30j ?? data.finance?.ratioGiveawayCostToBenefit30d) != null
+                ? `${(((data.finance?.ratioGiveawayCostToBenefit30j ?? data.finance?.ratioGiveawayCostToBenefit30d) as number) * 100).toFixed(2)} %`
                 : '—'}
             </p>
           </CardContent>
@@ -90,15 +90,15 @@ export default function AdminGamificationEconomyPage() {
             <CardTitle className="text-white text-base">Fragments</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-slate-300 space-y-2">
-            <p>Générés (total types GENERATED*) : {data.fragments.generatedTotal as number}</p>
-            <p>Brûlés giveaways (total) : {data.fragments.spentTotalGiveaways as number}</p>
-            <p>Circulation théorique : {data.fragments.circulationTheoretical as number}</p>
-            <p>Solde utilisateurs (inutilisés) : {data.fragments.unusedOnBalances as number}</p>
-            <p>Générés 30j : {data.fragments.generated30d as number}</p>
-            <p>Dépensés 30j : {data.fragments.spent30dAbs as number}</p>
+            <p>Générés (total types GENERATED*) : {(data.fragments?.generatedTotal ?? 0).toLocaleString('fr-FR')}</p>
+            <p>Brûlés giveaways (total) : {(data.fragments?.spentTotalGiveaways ?? 0).toLocaleString('fr-FR')}</p>
+            <p>Circulation théorique : {(data.fragments?.circulationTheoretical ?? 0).toLocaleString('fr-FR')}</p>
+            <p>Solde utilisateurs (inutilisés) : {(data.fragments?.unusedOnBalances ?? 0).toLocaleString('fr-FR')}</p>
+            <p>Générés 30j : {(data.fragments?.generated30d ?? 0).toLocaleString('fr-FR')}</p>
+            <p>Dépensés 30j : {(data.fragments?.spent30dAbs ?? 0).toLocaleString('fr-FR')}</p>
             <p>
               Taux utilisation 30j :{' '}
-              {((data.fragments.utilizationRate30d as number) * 100).toFixed(1)} %
+              {(((data.fragments?.utilizationRate30d ?? 0) as number) * 100).toFixed(1)} %
             </p>
           </CardContent>
         </Card>
@@ -108,10 +108,10 @@ export default function AdminGamificationEconomyPage() {
             <CardTitle className="text-white text-base">Giveaways</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-slate-300 space-y-2">
-            <p>Entrées totales (lignes) : {data.giveaways.totalEntries as number}</p>
-            <p>Participants uniques (approx.) : {data.giveaways.approxUniqueParticipants as number}</p>
-            <p>Giveaways terminés : {data.giveaways.endedCount as number}</p>
-            <p>Coût lots terminés (centimes) : {data.giveaways.totalEndedRewardCostCents as number}</p>
+            <p>Entrées totales (lignes) : {(data.giveaways?.totalEntries ?? 0).toLocaleString('fr-FR')}</p>
+            <p>Participants uniques (approx.) : {(data.giveaways?.approxUniqueParticipants ?? 0).toLocaleString('fr-FR')}</p>
+            <p>Giveaways terminés : {data.giveaways?.endedCount ?? 0}</p>
+            <p>Coût lots terminés (centimes) : {(data.giveaways?.totalEndedRewardCostCents ?? 0).toLocaleString('fr-FR')}</p>
             <div className="pt-2">
               <p className="font-medium text-white mb-1">Par type de durée</p>
               <ul className="list-disc pl-5 space-y-1">

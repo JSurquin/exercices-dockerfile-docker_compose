@@ -163,7 +163,7 @@ export default function AdminPointsPage() {
                   <div>
                     <p className="text-xs text-slate-400">Total Points</p>
                     <p className="text-xl font-bold text-white">
-                      {metrics.totals.points.toLocaleString('fr-FR')}
+                      {(metrics.totals.points ?? 0).toLocaleString('fr-FR')}
                     </p>
                   </div>
                 </div>
@@ -179,7 +179,7 @@ export default function AdminPointsPage() {
                   <div>
                     <p className="text-xs text-slate-400">Total Tickets</p>
                     <p className="text-xl font-bold text-white">
-                      {metrics.totals.tickets.toLocaleString('fr-FR')}
+                      {(metrics.totals.tickets ?? 0).toLocaleString('fr-FR')}
                     </p>
                   </div>
                 </div>
@@ -195,7 +195,7 @@ export default function AdminPointsPage() {
                   <div>
                     <p className="text-xs text-slate-400">Via Ventes</p>
                     <p className="text-xl font-bold text-white">
-                      {metrics.bySource.tradeSale.count.toLocaleString('fr-FR')}
+                      {(metrics.bySource.tradeSale.count ?? 0).toLocaleString('fr-FR')}
                     </p>
                     <p className="text-xs text-slate-500">transactions</p>
                   </div>
@@ -303,7 +303,7 @@ export default function AdminPointsPage() {
                         <div className="grid grid-cols-2 gap-4">
                           <div className="bg-slate-700/50 rounded-lg p-4 text-center">
                             <p className="text-2xl font-bold text-blue-400">
-                              {metrics.bySource.dailyLogin.count.toLocaleString('fr-FR')}
+                              {(metrics.bySource.dailyLogin.count ?? 0).toLocaleString('fr-FR')}
                             </p>
                             <p className="text-xs text-slate-400 mt-1">Connexions totales</p>
                           </div>
@@ -440,7 +440,7 @@ export default function AdminPointsPage() {
                         <div className="flex items-center space-x-4">
                           <div className="text-right">
                             <p className="text-sm font-bold text-yellow-400">
-                              {user.xp.toLocaleString('fr-FR')} XP
+                              {(user.xp ?? 0).toLocaleString('fr-FR')} XP
                             </p>
                             <p className="text-xs text-purple-400">{user.tickets} tickets</p>
                           </div>

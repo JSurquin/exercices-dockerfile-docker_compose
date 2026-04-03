@@ -175,7 +175,7 @@ export default function SettingsPage() {
                       </div>
                       <div className="text-center p-4 bg-muted/50 rounded-lg">
                         <p className="text-2xl font-bold">
-                          {user.xp.toLocaleString()}
+                          {(user.xp ?? 0).toLocaleString()}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {messages.settings.profile.totalXp}
