@@ -42,6 +42,7 @@ function mapSkinplaceStatusToTradeStatus(skinplaceStatus: string): TradeStatus {
     
     // Items reçus, disponibles pour paiement
     'completed': 'AVAILABLE',
+    'finished': 'AVAILABLE',
     'done': 'AVAILABLE',
     
     // Annulé

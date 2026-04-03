@@ -25,6 +25,9 @@ export async function GET(request: NextRequest) {
         createdAt: {
           gte: sevenDaysAgo,
         },
+        status: {
+          notIn: ['CANCELLED', 'FAILED'],
+        },
       },
       select: {
         createdAt: true,
@@ -96,6 +99,9 @@ export async function GET(request: NextRequest) {
         case 'FAILED':
           color = '#DC2626'; // dark red
           break;
+        case 'CANCELLED':
+          color = '#9CA3AF'; // gray
+          break;
       }
       
       // Regrouper certains statuts pour l'affichage
@@ -110,6 +116,8 @@ export async function GET(request: NextRequest) {
         groupedStatus = 'Payés';
       } else if (status === 'échoué') {
         groupedStatus = 'Échoués';
+      } else if (status === 'annulé') {
+        groupedStatus = 'Annulés';
       }
       
       const existing = statusMap.get(groupedStatus);

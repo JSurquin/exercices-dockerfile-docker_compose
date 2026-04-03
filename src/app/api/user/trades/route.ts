@@ -43,10 +43,13 @@ export async function GET(request: NextRequest) {
         'AVAILABLE': 'disponible',
         'PAYOUT_PENDING': 'paiement_en_cours',
         'PAID': 'payé',
-        'FAILED': 'échoué'
+        'FAILED': 'échoué',
+        'CANCELLED': 'annulé',
       };
       return statusMap[status] || status.toLowerCase();
     };
+
+    const TERMINAL_STATUSES = new Set(['CANCELLED', 'FAILED']);
 
     // Transformer les données pour correspondre au format attendu par le frontend
     const formattedTrades = trades.map(trade => ({
@@ -78,7 +81,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       trades: formattedTrades,
       totalTrades: trades.length,
-      totalVolume: trades.reduce((sum, trade) => sum + trade.grossCents, 0)
+      totalVolume: trades
+        .filter(trade => !TERMINAL_STATUSES.has(trade.status))
+        .reduce((sum, trade) => sum + trade.grossCents, 0),
     });
 
   } catch (error) {

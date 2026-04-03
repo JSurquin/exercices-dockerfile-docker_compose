@@ -47,9 +47,10 @@ export async function GET(request: NextRequest) {
       // Total trades
       prisma.trade.count(),
       
-      // Volume total en centimes
+      // Volume total en centimes (hors trades annulés/échoués)
       prisma.trade.aggregate({
-        _sum: { grossCents: true }
+        _sum: { grossCents: true },
+        where: { status: { notIn: ['CANCELLED', 'FAILED'] } },
       }),
       
       // Total payouts
@@ -100,6 +101,7 @@ export async function GET(request: NextRequest) {
         COUNT(*) as trades
       FROM "Trade"
       WHERE "createdAt" >= ${startDate} AND "createdAt" <= ${endDate}
+        AND "status" NOT IN ('CANCELLED', 'FAILED')
       GROUP BY DATE("createdAt")
       ORDER BY date ASC
     `;
@@ -194,7 +196,8 @@ export async function GET(request: NextRequest) {
           createdAt: {
             gte: previousPeriodStart,
             lte: previousPeriodEnd
-          }
+          },
+          status: { notIn: ['CANCELLED', 'FAILED'] },
         }
       })
     ]);

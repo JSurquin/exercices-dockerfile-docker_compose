@@ -47,9 +47,9 @@ function mapSkinplaceStatusToTradeStatus(status: string): TradeStatus {
     'sent':     'CREATED',
     'accepted': 'ACCEPTED_BY_BOT',
     'trade_hold': 'IN_TRADE_HOLD',
-    'finished': 'AVAILABLE',
+    'finished':  'AVAILABLE',
     'completed': 'AVAILABLE',
-    'done':     'AVAILABLE',
+    'done':      'AVAILABLE',
     // Annulé (par l'utilisateur ou par le bot)
     'cancelled': 'CANCELLED',
     // Échecs techniques
@@ -197,6 +197,13 @@ export async function GET(request: NextRequest) {
     ];
     const oldIdx = statusOrder.indexOf(oldStatus);
     const newIdx = statusOrder.indexOf(newStatus);
+
+    const TERMINAL_STATUSES: TradeStatus[] = ['FAILED', 'CANCELLED', 'PAID'];
+    // Ne pas réécrire un état terminal déjà atteint
+    if (TERMINAL_STATUSES.includes(oldStatus)) {
+      console.log(`ℹ️  Trade ${trade.id} déjà en état terminal ${oldStatus}, IPN ignoré`);
+      return new Response('ok', { status: 200 });
+    }
 
     // FAILED et CANCELLED sont des états terminaux qui peuvent arriver depuis n'importe quel état
     if (newStatus === 'FAILED' || newStatus === 'CANCELLED' || newIdx > oldIdx) {

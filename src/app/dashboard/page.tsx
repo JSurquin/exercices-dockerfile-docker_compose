@@ -462,8 +462,8 @@ export default function DashboardPage() {
                             <span className="font-mono text-sm text-muted-foreground">
                               {trade.ticketId}
                             </span>
-                            {/* Bouton pour rafraîchir le statut - uniquement pour les trades en attente */}
-                            {(trade.status === 'CREATED' || trade.status === 'ACCEPTED_BY_BOT' || trade.status === 'IN_TRADE_HOLD') && (
+                            {/* Bouton pour rafraîchir le statut - uniquement pour les trades actifs */}
+                            {(trade.status === 'créé' || trade.status === 'accepté_par_bot' || trade.status === 'en_trade_hold') && (
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -519,7 +519,7 @@ export default function DashboardPage() {
                                   {new Date(trade.tradeAcceptéLe).toLocaleDateString()}
                                 </p>
                               )}
-                              {trade.disponibleLe && (
+                              {trade.disponibleLe && !['annulé', 'échoué'].includes(trade.status) && (
                                 <p>
                                   {messages.dashboard.tradeHistory.available}{" "}
                                   {new Date(trade.disponibleLe).toLocaleDateString()}

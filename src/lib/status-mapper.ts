@@ -3,7 +3,7 @@
  */
 
 // Mapping pour les statuts de Trade
-type TradeStatus = "créé" | "accepté_par_bot" | "en_trade_hold" | "disponible" | "paiement_en_cours" | "payé" | "échoué";
+type TradeStatus = "créé" | "accepté_par_bot" | "en_trade_hold" | "disponible" | "paiement_en_cours" | "payé" | "échoué" | "annulé";
 
 export function mapTradeStatusFromDb(prismaStatus: string): TradeStatus {
   const mapping: Record<string, TradeStatus> = {
@@ -14,6 +14,7 @@ export function mapTradeStatusFromDb(prismaStatus: string): TradeStatus {
     'PAYOUT_PENDING': 'paiement_en_cours',
     'PAID': 'payé',
     'FAILED': 'échoué',
+    'CANCELLED': 'annulé',
   };
   return mapping[prismaStatus] || ('créé' as TradeStatus);
 }
@@ -27,6 +28,7 @@ export function mapTradeStatusToDb(displayStatus: string): string {
     'paiement_en_cours': 'PAYOUT_PENDING',
     'payé': 'PAID',
     'échoué': 'FAILED',
+    'annulé': 'CANCELLED',
   };
   return mapping[displayStatus] || displayStatus.toUpperCase();
 }
