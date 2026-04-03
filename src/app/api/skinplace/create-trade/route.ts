@@ -5,6 +5,10 @@ import { TradeStatus } from '@prisma/client';
 import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
 import { TradeHooks } from '@/lib/trade-hooks';
 import { newsletterService } from '@/lib/newsletter-service';
+import {
+  computeTradeLedgerFromGross,
+  getCashoutFeeRate,
+} from '@/lib/trade-platform-fees';
 
 interface CreateTradeRequest {
   steam_id: string;
@@ -121,10 +125,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validation des valeurs (doivent être positives)
-    if (body.gross_value_centimes <= 0 || body.net_value_centimes <= 0) {
+    if (body.gross_value_centimes <= 0) {
       return NextResponse.json(
-        { success: false, error: 'Les valeurs doivent être positives' },
+        { success: false, error: 'La valeur brute doit être positive' },
+        { status: 400 }
+      );
+    }
+
+    const cashoutFeeRate = await getCashoutFeeRate();
+    const ledger = computeTradeLedgerFromGross(body.gross_value_centimes, cashoutFeeRate);
+    if (ledger.netCents <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'La valeur nette après frais plateforme doit être positive' },
         { status: 400 }
       );
     }
@@ -303,9 +315,9 @@ export async function POST(request: NextRequest) {
         tradeUrl: body.trade_url,
         status: tradeStatus, // États: CREATED -> ACCEPTED_BY_BOT -> IN_TRADE_HOLD -> AVAILABLE -> PAYOUT_PENDING -> PAID -> FAILED
         grossCents: body.gross_value_centimes,
-        cashoutFees: body.fees.cashout_fee,
-        networkFees: body.fees.network_fee,
-        netCents: body.net_value_centimes,
+        cashoutFees: ledger.cashoutFees,
+        networkFees: ledger.networkFees,
+        netCents: ledger.netCents,
         availableAt: tradeStatus !== 'FAILED' ? availableAt : undefined,
         expiresAt: expiresAt,
         tradeAcceptedAt,
@@ -337,7 +349,7 @@ export async function POST(request: NextRequest) {
           tradeId: trade.id,
           itemsCount: body.items.length,
           grossValue: body.gross_value_centimes,
-          netValue: body.net_value_centimes,
+          netValue: ledger.netCents,
           initialStatus: tradeStatus,
           skinplaceStatus,
           tradeOfferId,
@@ -361,7 +373,7 @@ export async function POST(request: NextRequest) {
             tradeId: trade.id,
             itemsCount: body.items.length,
             grossValue: body.gross_value_centimes,
-            netValue: body.net_value_centimes,
+            netValue: ledger.netCents,
             availableAt: trade.availableAt?.toISOString() || new Date().toISOString(),
           }
         );

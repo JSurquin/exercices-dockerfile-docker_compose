@@ -35,6 +35,11 @@ export default function SellPage() {
   const [tradeData, setTradeData] = useState<TradeCreatedData | null>(null);
   const [activeSteamId, setActiveSteamId] = useState(user?.steamId64 || '');
 
+  const confirmationCashoutPercent =
+    tradeData && tradeData.total_value > 0
+      ? ((tradeData.fees.cashout_fee / tradeData.total_value) * 100).toFixed(2)
+      : "0.50";
+
   const handleItemSelect = (items: NormalizedInventoryItem[]) => {
     setSelectedItems(items);
     setCurrentStep(1);
@@ -174,39 +179,48 @@ export default function SellPage() {
                     {messages.sellPage.confirmation.description}
                   </p>
 
-                  <div className="bg-muted/50 rounded-lg p-4 mb-6">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="bg-muted/50 rounded-lg p-4 mb-6 text-left">
+                    <div className="space-y-3 text-sm">
                       <div>
-                        <span className="text-muted-foreground">
+                        <span className="text-muted-foreground block">
                           {messages.sellPage.confirmation.tradeIdSteam}
                         </span>
                         <p className="font-mono">{tradeData.trade_id}</p>
                       </div>
-                      <div>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="text-muted-foreground">
                           {messages.sellPage.confirmation.grossValue}
                         </span>
-                        <p className="font-medium">
+                        <span className="font-medium">
                           <ConvertedPrice usdCents={tradeData.total_value} />
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">
-                          {messages.sellPage.confirmation.totalFees}
                         </span>
-                        <p className="font-medium text-orange-600">
-                          -<ConvertedPrice usdCents={tradeData.fees.cashout_fee + tradeData.fees.network_fee} />
-                        </p>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-orange-600">
+                        <span>
+                          {messages.sellPage.confirmation.cashoutFeesLine.replace(
+                            "{percent}",
+                            confirmationCashoutPercent
+                          )}
+                        </span>
+                        <span className="font-medium">
+                          -<ConvertedPrice usdCents={tradeData.fees.cashout_fee} />
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed border-t border-border pt-3">
+                        {messages.sellPage.confirmation.payoutFeesReminder}
+                      </p>
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+                        <span className="text-muted-foreground font-medium">
                           {messages.sellPage.confirmation.youWillReceive}
                         </span>
-                        <p className="font-bold text-green-600">
+                        <span className="font-bold text-green-600 text-base">
                           <ConvertedPrice usdCents={tradeData.net_value} />
-                        </p>
+                        </span>
                       </div>
                     </div>
+                    <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
+                      {messages.sellPage.confirmation.feesExplanation}
+                    </p>
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">

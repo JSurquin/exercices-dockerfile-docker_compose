@@ -95,15 +95,16 @@ export function SkinplaceTradeCreator({
     }
   };
 
+  /** Frais déduits du trade : cashout uniquement. Les frais prestataire sont au retrait (/payout). */
   const calculateFees = (grossValueCentimes: number) => {
     const cashoutRate = platformSettings?.cashoutFeeRate ?? 0.005;
-    const networkFee = platformSettings?.networkFeeCentimes ?? 200;
+    const indicativePayoutFeesCentimes = platformSettings?.networkFeeCentimes ?? 200;
     const cashoutFee = Math.round(grossValueCentimes * cashoutRate);
 
     return {
       cashout_fee: cashoutFee,
-      network_fee: networkFee,
-      total_fees: networkFee,
+      indicative_payout_fees_centimes: indicativePayoutFeesCentimes,
+      net_credited_centimes: grossValueCentimes - cashoutFee,
     };
   };
 
@@ -121,17 +122,8 @@ export function SkinplaceTradeCreator({
     try {
       // Calculer la valeur brute en centimes
       const grossValueCentimes = getTotalEstimatedValueCentimes();
-      const displayFees = calculateFees(grossValueCentimes); // Frais pour l'affichage (sans cashout)
-      const netValueCentimes = grossValueCentimes - displayFees.total_fees;
-
-      const cashoutRate = platformSettings?.cashoutFeeRate ?? 0.005;
-      const networkFeeCentimes = platformSettings?.networkFeeCentimes ?? 200;
-      const realFees = {
-        cashout_fee: Math.round(grossValueCentimes * cashoutRate),
-        network_fee: networkFeeCentimes,
-        total_fees: Math.round(grossValueCentimes * cashoutRate) + networkFeeCentimes,
-      };
-      const realNetValueCentimes = grossValueCentimes - realFees.total_fees;
+      const fees = calculateFees(grossValueCentimes);
+      const netValueCentimes = fees.net_credited_centimes;
 
       if (netValueCentimes <= 0) {
         toast.error(messages.tradeCreator.negativeNetValue);
@@ -156,8 +148,12 @@ export function SkinplaceTradeCreator({
             price_centimes: item.price_centimes,
           })),
           gross_value_centimes: grossValueCentimes,
-          fees: realFees, // Envoyer les vrais frais à l'API
-          net_value_centimes: realNetValueCentimes, // Vraie valeur nette
+          fees: {
+            cashout_fee: fees.cashout_fee,
+            network_fee: 0,
+            total_fees: fees.cashout_fee,
+          },
+          net_value_centimes: netValueCentimes,
         }),
       });
 
@@ -173,11 +169,11 @@ export function SkinplaceTradeCreator({
           trade_id: result.data.trade_id,
           token: result.data.token,
           status: result.data.status,
-          total_value: grossValueCentimes,
-          net_value: realNetValueCentimes,
+          total_value: result.data.gross_value_centimes,
+          net_value: result.data.net_value_centimes,
           fees: {
-            cashout_fee: realFees.cashout_fee,
-            network_fee: realFees.network_fee,
+            cashout_fee: result.data.fees.cashout_fee,
+            network_fee: result.data.fees.network_fee,
           },
           expires_at: new Date(result.data.expires_at),
           bot: result.data.bot || null,
@@ -204,7 +200,8 @@ export function SkinplaceTradeCreator({
 
   const grossValueCentimes = getTotalEstimatedValueCentimes();
   const fees = calculateFees(grossValueCentimes);
-  const netValueCentimes = grossValueCentimes - fees.total_fees;
+  const netValueCentimes = fees.net_credited_centimes;
+  const cashoutPercentDisplay = ((platformSettings?.cashoutFeeRate ?? 0.005) * 100).toFixed(2);
 
   return (
     <div className="space-y-6">
@@ -374,10 +371,17 @@ export function SkinplaceTradeCreator({
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Minus className="h-3 w-3" />
-                  {messages.tradeCreator.networkFees}
+                  {messages.tradeCreator.cashoutFeesLabel.replace("{percent}", cashoutPercentDisplay)}
                 </span>
                 <span className="flex items-center gap-1">
-                  -<ConvertedPrice usdCents={fees.network_fee} />
+                  -<ConvertedPrice usdCents={fees.cashout_fee} />
+                </span>
+              </div>
+
+              <div className="flex items-start justify-between gap-2 text-xs text-muted-foreground border border-dashed border-muted-foreground/25 rounded-md p-2">
+                <span className="text-left">{messages.tradeCreator.payoutFeesIndicativeLine}</span>
+                <span className="shrink-0 font-medium text-foreground/80 tabular-nums">
+                  ~<ConvertedPrice usdCents={fees.indicative_payout_fees_centimes} />
                 </span>
               </div>
 
@@ -400,6 +404,8 @@ export function SkinplaceTradeCreator({
                 </Alert>
               )}
             </div>
+
+            <p className="text-xs text-muted-foreground px-1">{messages.tradeCreator.tradeFeesFootnote}</p>
 
             <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
               <p className="mb-1">ℹ️ <strong>Délai de paiement :</strong> 7 jours (Trade Hold Steam)</p>

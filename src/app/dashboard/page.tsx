@@ -502,7 +502,12 @@ export default function DashboardPage() {
                                 {messages.dashboard.tradeHistory.fees}
                               </span>
                               <p>{messages.dashboard.tradeHistory.cashout} {formatPrice(trade.frais.cashout)}</p>
-                              <p>{messages.dashboard.tradeHistory.network} {formatPrice(trade.frais.réseau)}</p>
+                              <p>
+                                {messages.dashboard.tradeHistory.network}{" "}
+                                {trade.frais.réseau > 0
+                                  ? formatPrice(trade.frais.réseau)
+                                  : messages.dashboard.tradeHistory.payoutFeesAtWithdrawal}
+                              </p>
                             </div>
                             <div>
                               <span className="text-muted-foreground text-xs block mb-1">
