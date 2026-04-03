@@ -3565,14 +3565,21 @@ export interface Messages {
       items: string;
       skipReasons: {
         over_stock: string;
+        overstock: string;
         low_demand: string;
         price_too_low: string;
+        low_price: string;
+        high_volatility: string;
+        unliquid: string;
+        trade_lock: string;
         restricted_item: string;
         market_banned: string;
         trade_banned: string;
         untradable: string;
         unknown: string;
       };
+      askSupport: string;
+      blockedItemMessage: string;
       unavailable: string;
       purchasableOnly: string;
       selectAll: string;

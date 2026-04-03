@@ -100,6 +100,7 @@ export function SkinplaceInventoryViewer({
     formatPriceSync,
     getRarityColor,
     translateSkipReason,
+    getSkipReasonCategory,
   } = useSkinplaceInventory({
     onError: (err) => {
       console.error('Erreur Skinplace Inventory:', err);
@@ -276,6 +277,16 @@ export function SkinplaceInventoryViewer({
 
   const handleSelectAllPurchasable = () => {
     setSelectedItems(filteredItems.filter(isPurchasable).map((i) => i.id));
+  };
+
+  const openSupportForItem = (item: NormalizedInventoryItem) => {
+    const reason = translateSkipReason(item.skip_reason);
+    const template = messages.components?.skinplace?.blockedItemMessage
+      ?? "Mon skin {name} est bloqué ({reason}), pouvez-vous m'aider ?";
+    const prefillMessage = template
+      .replace('{name}', item.name)
+      .replace('{reason}', reason);
+    window.dispatchEvent(new CustomEvent('open-support-chat', { detail: { prefillMessage } }));
   };
 
   if (loading) {
@@ -762,6 +773,20 @@ export function SkinplaceInventoryViewer({
                 {filteredItems.map((item) => {
                   const isSelected = selectedItems.includes(item.id);
                   const isDisabled = !!item.skip_reason;
+                  const skipCategory = getSkipReasonCategory(item.skip_reason);
+                  const isOverstock = skipCategory === 'overstock';
+                  const needsSupport = isDisabled && !isOverstock;
+
+                  // Couleur et libellé du badge selon la catégorie
+                  const skipBadgeConfig: Record<string, { label: string; className: string }> = {
+                    overstock:      { label: translateSkipReason(item.skip_reason), className: 'bg-gray-500 text-white' },
+                    low_price:      { label: translateSkipReason(item.skip_reason), className: 'bg-orange-500 text-white' },
+                    high_volatility:{ label: translateSkipReason(item.skip_reason), className: 'bg-red-500 text-white' },
+                    unliquid:       { label: translateSkipReason(item.skip_reason), className: 'bg-yellow-500 text-white' },
+                    trade_lock:     { label: translateSkipReason(item.skip_reason), className: 'bg-blue-500 text-white' },
+                    other:          { label: translateSkipReason(item.skip_reason), className: 'bg-destructive text-white' },
+                  };
+                  const badgeCfg = skipCategory ? skipBadgeConfig[skipCategory] : null;
                   
                   return (
                     <Card
@@ -790,11 +815,11 @@ export function SkinplaceInventoryViewer({
                                 isDisabled ? 'grayscale' : ''
                               }`}
                             />
-                            {item.skip_reason && (
+                            {badgeCfg && (
                               <div className="absolute top-0 right-0">
-                                <Badge variant="destructive" className="text-xs">
-                                  {translateSkipReason(item.skip_reason)}
-                                </Badge>
+                                <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${badgeCfg.className}`}>
+                                  {badgeCfg.label}
+                                </span>
                               </div>
                             )}
                             {isDisabled && (
@@ -838,8 +863,8 @@ export function SkinplaceInventoryViewer({
                             )}
                           </div>
                           
-                          {/* Prix */}
-                          <div className="flex items-center justify-between">
+                          {/* Prix + actions */}
+                          <div className="flex items-center justify-between gap-2">
                             <ConvertedPrice 
                               usdCents={item.price_centimes}
                               className={`text-lg font-bold ${
@@ -852,12 +877,27 @@ export function SkinplaceInventoryViewer({
                                 {messages.components.skinplace.selected}
                               </Badge>
                             )}
-                            {isDisabled && (
+                            {isOverstock && (
                               <Badge variant="secondary" className="text-xs">
                                 {messages.components.skinplace.unavailable}
                               </Badge>
                             )}
                           </div>
+
+                          {/* Bouton Ask Support pour low_price, high_price, unliquid */}
+                          {needsSupport && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full text-xs h-7 border-orange-300 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:hover:bg-orange-950"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openSupportForItem(item);
+                              }}
+                            >
+                              {messages.components?.skinplace?.askSupport ?? 'Ask support'}
+                            </Button>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

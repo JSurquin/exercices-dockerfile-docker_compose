@@ -165,6 +165,20 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
     return colors[rarity] || '#b0c3d9';
   }, []);
 
+  // Catégories de skip_reason pour l'affichage conditionnel
+  type SkipReasonCategory = 'overstock' | 'low_price' | 'high_volatility' | 'unliquid' | 'trade_lock' | 'other';
+
+  const getSkipReasonCategory = useCallback((skipReason?: string): SkipReasonCategory | null => {
+    if (!skipReason) return null;
+    const r = skipReason.toLowerCase();
+    if (r === 'system_lock' || r === 'over_stock' || r === 'overstocked' || r === 'overstock') return 'overstock';
+    if (r === 'low_price' || r === 'price_too_low') return 'low_price';
+    if (r === 'high_price') return 'high_volatility';
+    if (r === 'unliquid' || r === 'low_demand') return 'unliquid';
+    if (r === 'trade_lock') return 'trade_lock';
+    return 'other';
+  }, []);
+
   // Traduire les skip_reason
   const translateSkipReason = useCallback((skipReason?: string): string => {
     if (!skipReason) return '';
@@ -172,22 +186,16 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
     const skipReasons = messages.components?.skinplace?.skipReasons;
     if (!skipReasons) return skipReason;
     
-    // Mapper les skip_reason connus vers les traductions
-    const reasonMap: Record<string, keyof typeof skipReasons> = {
-      'over_stock': 'over_stock',
-      'overstocked': 'over_stock',
-      'low_demand': 'low_demand',
-      'price_too_low': 'price_too_low',
-      'restricted_item': 'restricted_item',
-      'market_banned': 'market_banned',
-      'trade_banned': 'trade_banned',
-      'untradable': 'untradable',
-      'not_tradable': 'untradable',
-    };
-    
-    const mappedReason = reasonMap[skipReason.toLowerCase()];
-    return mappedReason ? skipReasons[mappedReason] : skipReasons.unknown;
-  }, [messages]);
+    const category = getSkipReasonCategory(skipReason);
+    switch (category) {
+      case 'overstock':       return skipReasons.overstock ?? skipReasons.over_stock;
+      case 'low_price':       return skipReasons.low_price ?? skipReasons.price_too_low;
+      case 'high_volatility': return skipReasons.high_volatility ?? skipReason;
+      case 'unliquid':        return skipReasons.unliquid ?? skipReasons.low_demand;
+      case 'trade_lock':      return skipReasons.trade_lock ?? 'Trade lock';
+      default:                return skipReasons.unknown;
+    }
+  }, [messages, getSkipReasonCategory]);
 
   return {
     loading,
@@ -205,6 +213,7 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
     formatPriceSync,
     getRarityColor,
     translateSkipReason,
+    getSkipReasonCategory,
   };
 }
 

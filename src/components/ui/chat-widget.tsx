@@ -58,6 +58,18 @@ export function ChatWidget() {
     scrollToBottom();
   }, [currentConversation?.messages]);
 
+  useEffect(() => {
+    const handleOpenSupport = (e: Event) => {
+      const detail = (e as CustomEvent<{ prefillMessage?: string }>).detail;
+      setIsOpen(true);
+      if (detail?.prefillMessage) {
+        setMessage(detail.prefillMessage);
+      }
+    };
+    window.addEventListener('open-support-chat', handleOpenSupport);
+    return () => window.removeEventListener('open-support-chat', handleOpenSupport);
+  }, []);
+
   const quickActions: QuickAction[] = [
     {
       icon: ChatBubbleBottomCenterTextIcon,
