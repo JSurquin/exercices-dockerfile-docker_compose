@@ -92,6 +92,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
       title: t.groups.marketing,
       items: [
         { title: t.items.giveaways, href: '/admin/giveaways', icon: Gift },
+        { title: t.items.gamificationEconomy ?? 'Économie gamification', href: '/admin/gamification-economy', icon: TrendingUp },
         { title: t.items.points ?? 'Points & Gamification', href: '/admin/points', icon: Star },
         { title: t.items.newsletter, href: '/admin/newsletter', icon: Mail },
       ],

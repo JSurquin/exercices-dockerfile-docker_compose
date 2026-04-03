@@ -27,6 +27,7 @@ import {
   CurrencyDollarIcon,
   LockClosedIcon,
   BellAlertIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -57,12 +58,47 @@ const formatTimeRemaining = (timeRemaining: ReturnType<typeof getTimeRemaining>,
   }
 };
 
-const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets, locale }: { giveaway: GiveawayWithEntries; onParticipate: (giveaway: GiveawayWithEntries, tickets: number) => void; messages: Messages; userTickets: number; locale: string }) => {
-  const [ticketsToUse, setTicketsToUse] = useState(1);
+const defaultFragmentLabels = {
+  costPerEntry: 'fragments / entrée',
+  totalEntries: 'entrées',
+  participants: 'participants',
+  yourEntries: 'Tes entrées',
+  yourChance: 'Ta chance',
+  winnerCount: 'gagnants',
+  entriesToBuy: 'Nombre d’entrées',
+  entriesAvailable: 'fragments disponibles',
+};
+
+const GiveawayCard = ({
+  giveaway,
+  onParticipate,
+  messages,
+  userFragments,
+  locale,
+}: {
+  giveaway: GiveawayWithEntries;
+  onParticipate: (giveaway: GiveawayWithEntries, entries: number) => void;
+  messages: Messages;
+  userFragments: number;
+  locale: string;
+}) => {
+  const [entriesToBuy, setEntriesToBuy] = useState(1);
   const endDate = typeof giveaway.endDate === 'string' ? new Date(giveaway.endDate) : giveaway.endDate;
   const timeRemaining = getTimeRemaining(endDate);
   const progress = (giveaway.soldTickets / giveaway.maxTickets) * 100;
-  
+  const fg = { ...defaultFragmentLabels, ...messages.giveaways.fragments };
+  const myEntries = giveaway.myEntries ?? 0;
+  const totalParticipants = giveaway.totalParticipants ?? giveaway.entries?.length ?? 0;
+  const totalEntries = giveaway.totalEntries ?? giveaway.soldTickets;
+  const myChance = giveaway.myChancePercent ?? (totalEntries > 0 ? (100 * myEntries) / totalEntries : 0);
+  const poolLeft = giveaway.maxTickets - giveaway.soldTickets;
+  const maxPerUser =
+    giveaway.maxEntriesPerUser != null ? Math.max(0, giveaway.maxEntriesPerUser - myEntries) : poolLeft;
+  const maxAffordable =
+    giveaway.ticketPrice > 0 ? Math.floor(userFragments / giveaway.ticketPrice) : 0;
+  const maxSelectable = Math.max(0, Math.min(poolLeft, maxPerUser, maxAffordable));
+  const totalCost = entriesToBuy * giveaway.ticketPrice;
+
   return (
     <Card className="h-full hover:shadow-lg transition-all duration-300">
       <CardHeader>
@@ -71,17 +107,20 @@ const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets, locale }
             <CardTitle className="text-lg mb-2">{giveaway.title}</CardTitle>
             <p className="text-sm text-muted-foreground mb-3">{giveaway.description}</p>
           </div>
-          <Badge 
+          <Badge
             variant={giveaway.status === 'ACTIVE' ? 'default' : 'secondary'}
             className={giveaway.status === 'ACTIVE' ? 'bg-green-500' : ''}
           >
-            {giveaway.status === 'ACTIVE' ? messages.giveaways.card.status.active : giveaway.status === 'ENDED' ? messages.giveaways.card.status.ended : messages.giveaways.card.status.cancelled}
+            {giveaway.status === 'ACTIVE'
+              ? messages.giveaways.card.status.active
+              : giveaway.status === 'ENDED'
+                ? messages.giveaways.card.status.ended
+                : messages.giveaways.card.status.cancelled}
           </Badge>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-3 sm:space-y-4">
-        {/* Prize */}
         <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 rounded-lg p-4 border">
           <div className="flex items-center space-x-3">
             <TrophyIcon className="w-8 h-8 text-orange-600" />
@@ -92,16 +131,34 @@ const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets, locale }
           </div>
         </div>
 
-        {/* Stats */}
+        <div className="rounded-lg border bg-muted/30 p-3 text-sm space-y-1.5">
+          <div className="flex items-center gap-2">
+            <SparklesIcon className="w-4 h-4 text-amber-500 shrink-0" />
+            <span>
+              {giveaway.ticketPrice} {fg.costPerEntry}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <UserGroupIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+            <span>
+              {totalParticipants} {fg.participants} · {totalEntries} {fg.totalEntries}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <TicketIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+            <span>
+              {fg.yourEntries}: {myEntries} · {fg.yourChance}: {myChance.toFixed(2)}%
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <TrophyIcon className="w-4 h-4 shrink-0" />
+            <span>
+              {giveaway.winnerCount ?? 1} {fg.winnerCount}
+            </span>
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center space-x-2">
-            <TicketIcon className="w-4 h-4 text-muted-foreground" />
-            <span>{messages.giveaways.card.price} {giveaway.ticketPrice} {messages.giveaways.userTickets.tickets}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <UserGroupIcon className="w-4 h-4 text-muted-foreground" />
-            <span>{giveaway.soldTickets} / {giveaway.maxTickets}</span>
-          </div>
           <div className="flex items-center space-x-2">
             <ClockIcon className="w-4 h-4 text-muted-foreground" />
             <span>{formatTimeRemaining(timeRemaining, messages)}</span>
@@ -112,7 +169,6 @@ const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets, locale }
           </div>
         </div>
 
-        {/* Progress */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span>{messages.giveaways.card.ticketsSold}</span>
@@ -121,18 +177,20 @@ const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets, locale }
           <Progress value={progress} className="h-2" />
         </div>
 
-        {/* Winner (if ended) */}
-        {giveaway.status === 'ENDED' && giveaway.winnerId && (
+        {giveaway.status === 'ENDED' && (giveaway.winnerId || (giveaway.winners && giveaway.winners.length > 0)) && (
           <div className="bg-green-50 dark:bg-green-950/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <StarIcon className="w-5 h-5 text-green-600" />
-                <span className="text-sm font-medium text-green-800 dark:text-green-200">
-                  {messages.giveaways.card.winner} {giveaway.winnerId?.slice(-6)}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center space-x-2 min-w-0">
+                <StarIcon className="w-5 h-5 text-green-600 shrink-0" />
+                <span className="text-sm font-medium text-green-800 dark:text-green-200 truncate">
+                  {messages.giveaways.card.winner}{' '}
+                  {giveaway.winners && giveaway.winners.length > 0
+                    ? `${giveaway.winners.length} gagnant(s)`
+                    : giveaway.winnerId?.slice(-6)}
                 </span>
               </div>
               <Link href={`/giveaways/${giveaway.id}`}>
-                <Button variant="outline" size="sm" className="text-xs">
+                <Button variant="outline" size="sm" className="text-xs shrink-0">
                   {messages.giveawaysPage.viewDetails}
                 </Button>
               </Link>
@@ -140,35 +198,41 @@ const GiveawayCard = ({ giveaway, onParticipate, messages, userTickets, locale }
           </div>
         )}
 
-        {/* Participation */}
         {giveaway.status === 'ACTIVE' && !timeRemaining.expired && (
           <div className="border-t pt-4 space-y-3">
-            <div className="flex items-center space-x-2">
-              <Label htmlFor={`tickets-${giveaway.id}`} className="text-sm">
-                {messages.giveaways.card.ticketsToUse}
-              </Label>
-            </div>
+            <Label htmlFor={`entries-${giveaway.id}`} className="text-sm">
+              {fg.entriesToBuy}
+            </Label>
             <div className="flex space-x-2">
               <Input
-                id={`tickets-${giveaway.id}`}
+                id={`entries-${giveaway.id}`}
                 type="number"
                 min="1"
-                max={Math.min(userTickets, giveaway.maxTickets - giveaway.soldTickets)}
-                value={ticketsToUse}
-                onChange={(e) => setTicketsToUse(Math.max(1, parseInt(e.target.value) || 1))}
+                max={Math.max(1, maxSelectable)}
+                value={entriesToBuy}
+                onChange={(e) => {
+                  const v = Math.max(1, parseInt(e.target.value, 10) || 1);
+                  setEntriesToBuy(Math.min(v, Math.max(1, maxSelectable)));
+                }}
                 className="flex-1"
               />
               <Button
-                onClick={() => onParticipate(giveaway, ticketsToUse)}
-                disabled={userTickets < ticketsToUse || ticketsToUse > (giveaway.maxTickets - giveaway.soldTickets)}
+                onClick={() => onParticipate(giveaway, entriesToBuy)}
+                disabled={
+                  maxSelectable < 1 ||
+                  userFragments < totalCost ||
+                  entriesToBuy > poolLeft ||
+                  entriesToBuy > maxPerUser
+                }
                 className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
               >
                 {messages.giveaways.card.participate}
               </Button>
             </div>
-              <p className="text-xs text-muted-foreground">
-                {messages.giveaways.youHave} {userTickets} {messages.giveaways.card.ticketsAvailable}
-              </p>
+            <p className="text-xs text-muted-foreground">
+              {messages.giveaways.youHave} {userFragments} {fg.entriesAvailable} — coût : {totalCost}{' '}
+              fragments
+            </p>
           </div>
         )}
       </CardContent>
@@ -181,12 +245,12 @@ export default function GiveawaysPage() {
   const { messages, locale } = useLocale();
   const [selectedTab, setSelectedTab] = useState('active');
   const { giveaways, loading, participateInGiveaway, refetch } = useGiveaways();
-  const [userTickets, setUserTickets] = useState(0);
+  const [userFragments, setUserFragments] = useState(0);
   const [giveawaysEnabled, setGiveawaysEnabled] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (user) {
-      setUserTickets(user.tickets || 0);
+      setUserFragments(user.fragments ?? 0);
     }
   }, [user]);
 
@@ -213,7 +277,7 @@ export default function GiveawaysPage() {
   const { data: myEntriesData, isLoading: loadingEntries, refetch: refetchEntries } = useQuery({
     queryKey: ['giveaways', 'my-entries', user?.id],
     queryFn: async () => {
-      const response = await fetch(`/api/giveaways/my-entries?userId=${user!.id}`);
+      const response = await fetch('/api/giveaways/my-entries', { credentials: 'include' });
       const data = await response.json();
       return data.success ? data.data : [];
     },
@@ -221,20 +285,25 @@ export default function GiveawaysPage() {
   });
   const myEntries = myEntriesData ?? [];
 
-  const handleParticipate = async (giveaway: GiveawayWithEntries, tickets: number) => {
+  const handleParticipate = async (giveaway: GiveawayWithEntries, entries: number) => {
     if (!user) {
       toast.error(messages.giveaways.participation.loginRequired);
       return;
     }
 
-    if (userTickets < tickets) {
-      toast.error(messages.giveaways.participation.notEnoughTickets);
+    const cost = entries * giveaway.ticketPrice;
+    if (userFragments < cost) {
+      toast.error(
+        messages.giveaways.participation.notEnoughFragments ??
+          messages.giveaways.participation.notEnoughTickets
+      );
       return;
     }
 
     try {
-      await participateInGiveaway(giveaway.id, user.id, tickets);
-      setUserTickets(prev => prev - tickets);
+      const res = await participateInGiveaway(giveaway.id, entries);
+      setUserFragments(res.newFragmentBalance);
+      refetch();
       refetchEntries();
     } catch (error) {
       console.error('Erreur lors de la participation:', error);
@@ -320,9 +389,9 @@ export default function GiveawaysPage() {
                     </p>
                     {user && (
                       <div className="mt-3 flex items-center space-x-2">
-                        <TicketIcon className="w-4 h-4 text-purple-600" />
-                        <span className="font-bold text-purple-700 dark:text-purple-300">
-                          {user.tickets ?? 0} {messages.giveawaysPage.ticketsPending}
+                        <SparklesIcon className="w-4 h-4 text-amber-500" />
+                        <span className="font-bold text-amber-700 dark:text-amber-300">
+                          {user.fragments ?? 0} fragments
                         </span>
                       </div>
                     )}
@@ -380,7 +449,6 @@ export default function GiveawaysPage() {
           </Button>
         </motion.div>
 
-        {/* User Tickets */}
         {user && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -390,7 +458,7 @@ export default function GiveawaysPage() {
           >
             <Card>
               <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center space-x-3 sm:space-x-4">
                     <Avatar className="w-12 h-12">
                       <AvatarImage src={user.avatar} alt={user.username} />
@@ -398,18 +466,23 @@ export default function GiveawaysPage() {
                     </Avatar>
                     <div>
                       <h3 className="font-semibold">{user.username}</h3>
-                      <p className="text-sm text-muted-foreground">{messages.giveaways.userTickets.level} {user.level}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {messages.giveaways.userTickets.level} {user.level}
+                      </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <TicketIcon className="w-5 h-5 text-purple-500" />
-                      <span className="text-2xl font-bold">{userTickets}</span>
-                      <span className="text-muted-foreground">{messages.giveaways.userTickets.tickets}</span>
+                    <div className="flex items-center justify-end space-x-2 mb-1">
+                      <SparklesIcon className="w-5 h-5 text-amber-500" />
+                      <span className="text-2xl font-bold">{userFragments}</span>
+                      <span className="text-muted-foreground">fragments</span>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {messages.giveaways.userTickets.description}
-                    </p>
+                    <div className="flex flex-wrap justify-end gap-2 text-sm text-muted-foreground">
+                      <span>{messages.giveaways.userTickets.tickets}: {user.tickets ?? 0}</span>
+                      <Link href="/missions" className="text-orange-600 hover:underline">
+                        Missions
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -499,7 +572,7 @@ export default function GiveawaysPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: index * 0.1 }}
                     >
-                      <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} userTickets={userTickets} locale={locale} />
+                      <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} userFragments={userFragments} locale={locale} />
                     </motion.div>
                   ))}
                 </div>
@@ -532,7 +605,7 @@ export default function GiveawaysPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: index * 0.1 }}
                     >
-                      <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} userTickets={userTickets} locale={locale} />
+                      <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} userFragments={userFragments} locale={locale} />
                     </motion.div>
                   ))}
                 </div>

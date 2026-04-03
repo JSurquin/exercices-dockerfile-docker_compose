@@ -12,6 +12,7 @@ export interface User {
   xp: number;
   level: number;
   tickets: number;
+  fragments?: number;
   joinedAt: Date;
 }
 
@@ -118,8 +119,18 @@ export interface Giveaway {
   status: 'ACTIVE' | 'ENDED' | 'CANCELLED';
   winnerId?: string;
   randomSeed?: string;
+  rewardValueCents?: number;
+  durationType?: string;
+  winnerCount?: number;
+  maxEntriesPerUser?: number | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  /** Agrégats API */
+  totalParticipants?: number;
+  totalEntries?: number;
+  myEntries?: number;
+  myChancePercent?: number;
+  winners?: { userId: string; rank: number }[];
 }
 
 export interface GiveawayEntry {

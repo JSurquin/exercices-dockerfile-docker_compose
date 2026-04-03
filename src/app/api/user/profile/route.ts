@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
       twoFactorEnabled: boolean;
       name: string | null;
       image: string | null;
+      fragments: number;
     } | null = null;
 
     try {
@@ -35,6 +36,7 @@ export async function GET(request: NextRequest) {
           twoFactorEnabled: true,
           name: true,
           image: true,
+          fragments: true,
         },
       });
     } catch (error) {
@@ -61,6 +63,7 @@ export async function GET(request: NextRequest) {
       level: user.level || 1,
       xp: user.xp || 0,
       tickets: user.tickets || 0,
+      fragments: dbRow?.fragments ?? (user as { fragments?: number }).fragments ?? 0,
       totalVolume: (user.totalVolumeCents || 0) / 100,
       kycStatus: user.kycStatus || 'PENDING',
       acceptedTermsAt: user.acceptedTermsAt,

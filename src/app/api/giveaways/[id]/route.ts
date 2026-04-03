@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
+import { auth } from '~/lib/auth';
+import { enrichGiveawayForViewer } from '@/lib/giveaway-public';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = await Promise.resolve(params);
 
     const giveaway = await prisma.giveaway.findUnique({
       where: { id },
@@ -18,24 +20,27 @@ export async function GET(
                 id: true,
                 steamUsername: true,
                 steamAvatar: true,
-              }
-            }
+              },
+            },
           },
           orderBy: {
-            enteredAt: 'asc'
-          }
-        }
-      }
+            enteredAt: 'asc',
+          },
+        },
+        winners: {
+          orderBy: { rank: 'asc' },
+        },
+      },
     });
 
     if (!giveaway) {
-      return NextResponse.json(
-        { error: 'Giveaway introuvable' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Giveaway introuvable' }, { status: 404 });
     }
 
-    return NextResponse.json(giveaway);
+    const session = await auth.api.getSession({ headers: request.headers });
+    const viewerId = session?.user?.id ?? null;
+
+    return NextResponse.json(enrichGiveawayForViewer(giveaway, viewerId));
   } catch (error) {
     console.error('Error fetching giveaway:', error);
     return NextResponse.json(
@@ -47,10 +52,10 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = await Promise.resolve(params);
     const body = await request.json();
 
     const giveaway = await prisma.giveaway.update({
@@ -64,11 +69,11 @@ export async function PATCH(
                 id: true,
                 steamUsername: true,
                 steamAvatar: true,
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     });
 
     return NextResponse.json(giveaway);
@@ -83,13 +88,13 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = await Promise.resolve(params);
 
     await prisma.giveaway.delete({
-      where: { id }
+      where: { id },
     });
 
     return NextResponse.json({ success: true });

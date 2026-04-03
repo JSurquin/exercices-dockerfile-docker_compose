@@ -115,6 +115,10 @@ export const auth = betterAuth({
         type: "number",
         defaultValue: 0,
       },
+      fragments: {
+        type: "number",
+        defaultValue: 0,
+      },
       totalVolumeCents: {
         type: "number",
         defaultValue: 0,

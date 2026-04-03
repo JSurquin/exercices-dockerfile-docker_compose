@@ -31,6 +31,10 @@ interface CreateGiveawayForm {
   ticketPrice: number;
   maxTickets: number;
   durationMinutes: number;
+  rewardValueCents: number;
+  durationType: string;
+  winnerCount: number;
+  maxEntriesPerUser: string;
 }
 
 export default function AdminGiveawaysPage() {
@@ -44,9 +48,13 @@ export default function AdminGiveawaysPage() {
     title: '',
     description: '',
     prize: '',
-    ticketPrice: 5,
-    maxTickets: 100,
+    ticketPrice: 100,
+    maxTickets: 10000,
     durationMinutes: 60,
+    rewardValueCents: 0,
+    durationType: 'WEEKLY',
+    winnerCount: 1,
+    maxEntriesPerUser: '',
   });
 
   useEffect(() => {
@@ -88,6 +96,7 @@ export default function AdminGiveawaysPage() {
       const endDate = new Date();
       endDate.setMinutes(endDate.getMinutes() + form.durationMinutes);
 
+      const maxEu = form.maxEntriesPerUser.trim();
       await createGiveaway({
         title: form.title,
         description: form.description,
@@ -95,6 +104,10 @@ export default function AdminGiveawaysPage() {
         ticketPrice: form.ticketPrice,
         maxTickets: form.maxTickets,
         endDate: endDate.toISOString(),
+        rewardValueCents: form.rewardValueCents,
+        durationType: form.durationType,
+        winnerCount: form.winnerCount,
+        maxEntriesPerUser: maxEu ? parseInt(maxEu, 10) : null,
       });
 
       // Reset form
@@ -102,9 +115,13 @@ export default function AdminGiveawaysPage() {
         title: '',
         description: '',
         prize: '',
-        ticketPrice: 5,
-        maxTickets: 100,
+        ticketPrice: 100,
+        maxTickets: 10000,
         durationMinutes: 60,
+        rewardValueCents: 0,
+        durationType: 'WEEKLY',
+        winnerCount: 1,
+        maxEntriesPerUser: '',
       });
 
       setSelectedTab('list');
@@ -118,7 +135,14 @@ export default function AdminGiveawaysPage() {
   const handleManualDraw = async (giveawayId: string) => {
     try {
       const result = await drawGiveaway(giveawayId);
-      toast.success(`Tirage effectué ! Gagnant: ${result.winner?.steamUsername || result.winner?.id || 'Inconnu'}`);
+      const names =
+        result.winners
+          ?.map((w) => w.user?.steamUsername || w.userId.slice(-8))
+          .join(', ') ||
+        result.winner?.steamUsername ||
+        result.winner?.id ||
+        '?';
+      toast.success(`Tirage effectué ! Gagnant(s): ${names}`);
     } catch (error) {
       console.error('Erreur lors du tirage:', error);
     }
@@ -292,15 +316,15 @@ export default function AdminGiveawaysPage() {
                                 <p className="font-medium">{giveaway.prize}</p>
                               </div>
                               <div>
-                                <span className="text-muted-foreground">Prix ticket:</span>
-                                <p className="font-medium">{giveaway.ticketPrice} tickets</p>
+                                <span className="text-muted-foreground">Coût entrée:</span>
+                                <p className="font-medium">{giveaway.ticketPrice} fragments</p>
                               </div>
                               <div>
                                 <span className="text-muted-foreground">Participants:</span>
                                 <p className="font-medium">{giveaway.entries?.length || 0}</p>
                               </div>
                               <div>
-                                <span className="text-muted-foreground">Tickets vendus:</span>
+                                <span className="text-muted-foreground">Entrées:</span>
                                 <p className="font-medium">{giveaway.soldTickets} / {giveaway.maxTickets}</p>
                               </div>
                             </div>
@@ -394,7 +418,7 @@ export default function AdminGiveawaysPage() {
                       </div>
 
                       <div>
-                        <Label htmlFor="ticketPrice">Prix par ticket</Label>
+                        <Label htmlFor="ticketPrice">Coût par entrée (fragments)</Label>
                         <Input
                           id="ticketPrice"
                           type="number"
@@ -403,17 +427,67 @@ export default function AdminGiveawaysPage() {
                           onChange={(e) => setForm(prev => ({ ...prev, ticketPrice: parseInt(e.target.value) || 1 }))}
                         />
                       </div>
+                      <div>
+                        <Label htmlFor="rewardValueCents">Coût réel du lot (centimes €)</Label>
+                        <Input
+                          id="rewardValueCents"
+                          type="number"
+                          min="0"
+                          value={form.rewardValueCents}
+                          onChange={(e) =>
+                            setForm((prev) => ({ ...prev, rewardValueCents: parseInt(e.target.value, 10) || 0 }))
+                          }
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="maxTickets">Nombre maximum de tickets</Label>
+                        <Label htmlFor="maxTickets">Nombre maximum d’entrées (pool)</Label>
                         <Input
                           id="maxTickets"
                           type="number"
                           min="1"
                           value={form.maxTickets}
                           onChange={(e) => setForm(prev => ({ ...prev, maxTickets: parseInt(e.target.value) || 1 }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="winnerCount">Nombre de gagnants</Label>
+                        <Input
+                          id="winnerCount"
+                          type="number"
+                          min="1"
+                          value={form.winnerCount}
+                          onChange={(e) =>
+                            setForm((prev) => ({ ...prev, winnerCount: parseInt(e.target.value, 10) || 1 }))
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="durationType">Type (durée marketing)</Label>
+                        <select
+                          id="durationType"
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          value={form.durationType}
+                          onChange={(e) => setForm((prev) => ({ ...prev, durationType: e.target.value }))}
+                        >
+                          <option value="DAILY">Daily</option>
+                          <option value="WEEKLY">Weekly</option>
+                          <option value="MONTHLY">Monthly</option>
+                          <option value="YEARLY">Yearly</option>
+                          <option value="CUSTOM">Custom</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label htmlFor="maxEntriesPerUser">Max entrées / user (vide = illimité)</Label>
+                        <Input
+                          id="maxEntriesPerUser"
+                          type="number"
+                          min="1"
+                          placeholder="Illimité"
+                          value={form.maxEntriesPerUser}
+                          onChange={(e) => setForm((prev) => ({ ...prev, maxEntriesPerUser: e.target.value }))}
                         />
                       </div>
 

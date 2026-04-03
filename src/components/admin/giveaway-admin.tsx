@@ -14,6 +14,7 @@ export function GiveawayAdmin() {
       setIsDrawing(true);
       const response = await fetch('/api/giveaways/auto-draw', {
         method: 'POST',
+        credentials: 'include',
       });
 
       if (!response.ok) {

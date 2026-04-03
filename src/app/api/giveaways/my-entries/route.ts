@@ -1,23 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../prisma/prisma';
+import { auth } from '~/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const session = await auth.api.getSession({ headers: request.headers });
+    const userId = session?.user?.id;
 
     if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'ID utilisateur requis' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Non authentifié' }, { status: 401 });
     }
 
-    // Récupérer toutes les participations de l'utilisateur avec les détails du giveaway
     const entries = await prisma.giveawayEntry.findMany({
-      where: {
-        userId
-      },
+      where: { userId },
       include: {
         giveaway: {
           select: {
@@ -32,39 +27,41 @@ export async function GET(request: NextRequest) {
             status: true,
             winnerId: true,
             randomSeed: true,
+            rewardValueCents: true,
+            durationType: true,
+            winnerCount: true,
+            maxEntriesPerUser: true,
             createdAt: true,
-            updatedAt: true
-          }
-        }
+            updatedAt: true,
+            winners: { select: { userId: true, rank: true } },
+          },
+        },
       },
-      orderBy: {
-        enteredAt: 'desc'
-      }
+      orderBy: { enteredAt: 'desc' },
     });
 
-    // Enrichir les données avec le statut de participation
-    const enrichedEntries = entries.map(entry => {
+    const enrichedEntries = entries.map((entry) => {
+      const g = entry.giveaway;
       let participationStatus: 'in_progress' | 'won' | 'lost';
-      
-      if (entry.giveaway.status === 'ACTIVE' || !entry.giveaway.winnerId) {
+
+      if (g.status === 'ACTIVE') {
         participationStatus = 'in_progress';
-      } else if (entry.giveaway.winnerId === userId) {
-        participationStatus = 'won';
       } else {
-        participationStatus = 'lost';
+        const won =
+          g.winnerId === userId || g.winners.some((w) => w.userId === userId);
+        participationStatus = won ? 'won' : 'lost';
       }
 
       return {
         ...entry,
-        participationStatus
+        participationStatus,
       };
     });
 
     return NextResponse.json({
       success: true,
-      data: enrichedEntries
+      data: enrichedEntries,
     });
-
   } catch (error) {
     console.error('Erreur récupération participations:', error);
     return NextResponse.json(
@@ -73,4 +70,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

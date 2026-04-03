@@ -16,6 +16,8 @@ export interface PointsConfig {
   streakMaxDays: number;
   // Points bonus niveau supérieur
   levelUpBonusPoints: number;
+  // Fragments gagnés par euro de vente (ex: 0.2 = 200 fragments pour 1000€)
+  fragmentsPerEuro: number;
 }
 
 const POINTS_CONFIG_KEY = 'points_config';
@@ -29,6 +31,7 @@ export const DEFAULT_POINTS_CONFIG: PointsConfig = {
   streakMultiplier: 1.1,
   streakMaxDays: 7,
   levelUpBonusPoints: 500,
+  fragmentsPerEuro: 0.2,
 };
 
 export async function getPointsConfig(): Promise<PointsConfig> {
@@ -47,6 +50,7 @@ export async function getPointsConfig(): Promise<PointsConfig> {
     streakMultiplier: typeof v.streakMultiplier === 'number' ? v.streakMultiplier : DEFAULT_POINTS_CONFIG.streakMultiplier,
     streakMaxDays: typeof v.streakMaxDays === 'number' ? v.streakMaxDays : DEFAULT_POINTS_CONFIG.streakMaxDays,
     levelUpBonusPoints: typeof v.levelUpBonusPoints === 'number' ? v.levelUpBonusPoints : DEFAULT_POINTS_CONFIG.levelUpBonusPoints,
+    fragmentsPerEuro: typeof v.fragmentsPerEuro === 'number' ? v.fragmentsPerEuro : DEFAULT_POINTS_CONFIG.fragmentsPerEuro,
   };
 }
 
@@ -92,11 +96,12 @@ export async function awardTradePoints(
   userId: string,
   tradeId: string,
   grossCents: number
-): Promise<{ points: number; tickets: number }> {
+): Promise<{ points: number; tickets: number; fragments: number }> {
   const config = await getPointsConfig();
   const euros = grossCents / 100;
   const points = Math.floor(euros * config.pointsPerEuro);
   const tickets = Math.floor(euros * config.ticketsPerEuro);
+  const fragments = Math.floor(euros * config.fragmentsPerEuro);
 
   await prisma.$transaction(async (tx) => {
     await tx.pointTransaction.create({
@@ -109,16 +114,28 @@ export async function awardTradePoints(
         metadata: { tradeId, grossCents },
       },
     });
+    if (fragments > 0) {
+      await tx.fragmentTransaction.create({
+        data: {
+          userId,
+          type: 'GENERATED_SALE',
+          amount: fragments,
+          reason: `Fragments vente (${euros.toFixed(2)}€)`,
+          metadata: { tradeId, grossCents } as Prisma.InputJsonValue,
+        },
+      });
+    }
     await tx.user.update({
       where: { id: userId },
       data: {
         xp: { increment: points },
         tickets: { increment: tickets },
+        ...(fragments > 0 ? { fragments: { increment: fragments } } : {}),
       },
     });
   });
 
-  return { points, tickets };
+  return { points, tickets, fragments };
 }
 
 /**

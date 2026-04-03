@@ -15,6 +15,7 @@ export interface GiveawayEntryWithUser extends GiveawayEntry {
 
 export interface GiveawayWithEntries extends Giveaway {
   entries?: GiveawayEntryWithUser[];
+  winners?: { userId: string; rank: number }[];
 }
 
 export interface DrawResult {
@@ -24,8 +25,18 @@ export interface DrawResult {
     steamUsername: string | null;
     steamAvatar: string | null;
   };
+  winners?: {
+    userId: string;
+    rank: number;
+    user?: {
+      id: string;
+      steamUsername: string | null;
+      steamAvatar: string | null;
+    };
+  }[];
   totalParticipants: number;
   totalTickets: number;
+  totalEntries?: number;
   randomSeed: string;
 }
 
@@ -41,7 +52,7 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
     queryKey: queryKeys.giveaways(status),
     queryFn: async () => {
       const url = status ? `/api/giveaways?status=${status}` : '/api/giveaways';
-      const response = await fetch(url);
+      const response = await fetch(url, { credentials: 'include' });
       if (!response.ok) {
         throw new Error('Erreur lors de la récupération des giveaways');
       }
@@ -58,27 +69,32 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
   const participateMutation = useMutation({
     mutationFn: async ({
       giveawayId,
-      userId,
-      ticketsUsed,
+      entriesToBuy,
     }: {
       giveawayId: string;
-      userId: string;
-      ticketsUsed: number;
+      entriesToBuy: number;
     }) => {
       const response = await fetch(`/api/giveaways/${giveawayId}/participate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, ticketsUsed }),
+        credentials: 'include',
+        body: JSON.stringify({ entriesToBuy }),
       });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Erreur lors de la participation');
       }
-      return response.json();
+      return response.json() as Promise<{
+        newFragmentBalance: number;
+        entriesAdded: number;
+        fragmentsSpent: number;
+      }>;
     },
-    onSuccess: (_, { ticketsUsed }) => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.giveaways() });
-      toast.success(`Participation réussie ! ${ticketsUsed} ticket(s) utilisé(s)`);
+      toast.success(
+        `Participation enregistrée : ${data.entriesAdded} entrée(s) (${data.fragmentsSpent} fragments)`
+      );
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Une erreur est survenue');
@@ -89,6 +105,7 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
     mutationFn: async (giveawayId: string): Promise<DrawResult> => {
       const response = await fetch(`/api/giveaways/${giveawayId}/draw`, {
         method: 'POST',
+        credentials: 'include',
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -112,10 +129,15 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
       ticketPrice: number;
       maxTickets: number;
       endDate: string;
+      rewardValueCents?: number;
+      durationType?: string;
+      winnerCount?: number;
+      maxEntriesPerUser?: number | null;
     }) => {
       const response = await fetch('/api/giveaways', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(giveawayData),
       });
       if (!response.ok) {
@@ -133,11 +155,8 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
     },
   });
 
-  const participateInGiveaway = async (
-    giveawayId: string,
-    userId: string,
-    ticketsUsed: number
-  ) => participateMutation.mutateAsync({ giveawayId, userId, ticketsUsed });
+  const participateInGiveaway = async (giveawayId: string, entriesToBuy: number) =>
+    participateMutation.mutateAsync({ giveawayId, entriesToBuy });
 
   const drawGiveaway = async (giveawayId: string): Promise<DrawResult> =>
     drawMutation.mutateAsync(giveawayId);
@@ -149,6 +168,10 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
     ticketPrice: number;
     maxTickets: number;
     endDate: string;
+    rewardValueCents?: number;
+    durationType?: string;
+    winnerCount?: number;
+    maxEntriesPerUser?: number | null;
   }) => createMutation.mutateAsync(giveawayData);
 
   const fetchGiveaways = async (_status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') => {

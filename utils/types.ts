@@ -2206,9 +2206,20 @@ export interface Messages {
     participation: {
       success: string;
       notEnoughTickets: string;
+      notEnoughFragments?: string;
       loginRequired: string;
     };
     youHave: string;
+    fragments?: {
+      costPerEntry: string;
+      totalEntries: string;
+      participants: string;
+      yourEntries: string;
+      yourChance: string;
+      winnerCount: string;
+      entriesToBuy: string;
+      entriesAvailable: string;
+    };
   };
   chatWidget: {
     support: string;
@@ -4097,6 +4108,7 @@ export interface Messages {
         performance: string;
         giveaways: string;
         points?: string;
+        gamificationEconomy?: string;
         newsletter: string;
         chatSupport: string;
         legalPages: string;

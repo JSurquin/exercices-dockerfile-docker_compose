@@ -25,6 +25,7 @@ model User {
   level                 Int                 @default(1)
   xp                    Int                 @default(0)
   tickets               Int                 @default(0)
+  fragments             Int                 @default(0)
   totalVolumeCents      Int                 @default(0)
   balanceCents          Int                 @default(0)
   pendingBalanceCents   Int                 @default(0)
@@ -43,6 +44,8 @@ model User {
   affiliateApplications AffiliateApplication[]
   reviewedApplications  AffiliateApplication[] @relation("AffiliateApplicationReviewer")
   giveawayEntries       GiveawayEntry[]
+  fragmentTransactions  FragmentTransaction[]
+  missionCompletions      UserMissionCompletion[]
   pointTransactions     PointTransaction[]
   dailyLogins           DailyLogin[]
   kycDocuments          KycDocument[]
@@ -459,29 +462,38 @@ model AffiliateApplication {
 }
 
 model Giveaway {
-  id          String          @id @default(cuid())
-  title       String
-  description String
-  prize       String
-  ticketPrice Int
-  maxTickets  Int
-  soldTickets Int             @default(0)
-  endDate     DateTime
-  status      GiveawayStatus  @default(ACTIVE)
-  winnerId    String?
-  randomSeed  String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  entries     GiveawayEntry[]
+  id                String               @id @default(cuid())
+  title             String
+  description       String
+  prize             String
+  /// Coût d’une entrée en fragments (anciennement « ticket »)
+  ticketPrice       Int
+  maxTickets        Int
+  soldTickets       Int                  @default(0)
+  endDate           DateTime
+  status            GiveawayStatus       @default(ACTIVE)
+  winnerId          String?
+  randomSeed        String?
+  /// Coût réel du lot en centimes (KPI admin)
+  rewardValueCents  Int                  @default(0)
+  durationType      GiveawayDurationType @default(CUSTOM)
+  winnerCount       Int                  @default(1)
+  maxEntriesPerUser Int?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  entries           GiveawayEntry[]
+  winners           GiveawayWinner[]
 
   @@index([status])
   @@index([endDate])
+  @@index([durationType])
 }
 
 model GiveawayEntry {
   id          String   @id @default(cuid())
   userId      String
   giveawayId  String
+  /// Nombre d’entrées (tickets pondérés au tirage)
   ticketsUsed Int
   enteredAt   DateTime @default(now())
   giveaway    Giveaway @relation(fields: [giveawayId], references: [id], onDelete: Cascade)
@@ -489,6 +501,49 @@ model GiveawayEntry {
 
   @@unique([userId, giveawayId])
   @@index([giveawayId])
+}
+
+model GiveawayWinner {
+  id         String   @id @default(cuid())
+  giveawayId String
+  userId     String
+  rank       Int      @default(1)
+  createdAt  DateTime @default(now())
+  giveaway   Giveaway @relation(fields: [giveawayId], references: [id], onDelete: Cascade)
+
+  @@unique([giveawayId, userId])
+  @@index([giveawayId])
+  @@map("giveaway_winner")
+}
+
+model FragmentTransaction {
+  id        String                  @id @default(cuid())
+  userId    String
+  type      FragmentTransactionType
+  amount    Int
+  reason    String?
+  metadata  Json?
+  createdAt DateTime                @default(now())
+  user      User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("fragment_transaction")
+}
+
+model UserMissionCompletion {
+  id              String   @id @default(cuid())
+  userId          String
+  missionKey      String
+  periodKey       String
+  rewardFragments Int
+  completedAt     DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, missionKey, periodKey])
+  @@index([userId])
+  @@map("user_mission_completion")
 }
 
 // Historique des transactions de points (XP/tickets gamification)
@@ -709,6 +764,27 @@ enum GiveawayStatus {
   ACTIVE
   ENDED
   CANCELLED
+}
+
+enum GiveawayDurationType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+  CUSTOM
+}
+
+enum FragmentTransactionType {
+  GENERATED_SALE
+  GENERATED_MISSION_DAILY
+  GENERATED_MISSION_WEEKLY
+  GENERATED_MISSION_MONTHLY
+  GENERATED_MISSION_SOCIAL
+  GENERATED_MISSION_BONUS
+  GENERATED_LEVEL_TIER
+  GENERATED_EVENT
+  GENERATED_ADMIN
+  SPENT_GIVEAWAY
 }
 
 enum PointEventType {

@@ -614,7 +614,7 @@ export const messages: Record<Locale, Messages> = {
     },
     giveaways: {
       title: "Giveaways",
-      subtitle: "Utilisez vos tickets pour participer aux giveaways et gagner des skins exceptionnels",
+      subtitle: "Dépensez vos fragments pour acheter des entrées — plus d’entrées, plus de chances. Les tickets XP restent affichés à part.",
       userTickets: {
         level: "Niveau",
         tickets: "tickets",
@@ -675,9 +675,20 @@ export const messages: Record<Locale, Messages> = {
       participation: {
         success: "Participation enregistrée !",
         notEnoughTickets: "Vous n'avez pas assez de tickets",
+        notEnoughFragments: "Vous n'avez pas assez de fragments",
         loginRequired: "Vous devez être connecté pour participer",
       },
       youHave: "Vous avez",
+      fragments: {
+        costPerEntry: "fragments / entrée",
+        totalEntries: "entrées au total",
+        participants: "participants",
+        yourEntries: "Tes entrées",
+        yourChance: "Ta chance",
+        winnerCount: "gagnants",
+        entriesToBuy: "Nombre d’entrées",
+        entriesAvailable: "fragments disponibles",
+      },
     },
     chatWidget: {
       support: "MoonSkin Support",
@@ -4341,6 +4352,7 @@ export const messages: Record<Locale, Messages> = {
         performance: "Performances",
         giveaways: "Giveaways",
         points: "Points & Gamification",
+        gamificationEconomy: "Économie gamification",
         newsletter: "Newsletter",
         chatSupport: "Chat Support",
         legalPages: "Pages légales",
@@ -5359,7 +5371,7 @@ export const messages: Record<Locale, Messages> = {
     },
     giveaways: {
       title: "Giveaways",
-      subtitle: "Use your tickets to participate in giveaways and win exceptional skins",
+      subtitle: "Spend fragments to buy entries — more entries, better odds. XP tickets are shown separately.",
       userTickets: {
         level: "Level",
         tickets: "tickets",
@@ -5420,9 +5432,20 @@ export const messages: Record<Locale, Messages> = {
       participation: {
         success: "Entry registered!",
         notEnoughTickets: "You don't have enough tickets",
+        notEnoughFragments: "You don't have enough fragments",
         loginRequired: "You must be logged in to participate",
       },
       youHave: "You have",
+      fragments: {
+        costPerEntry: "fragments per entry",
+        totalEntries: "total entries",
+        participants: "participants",
+        yourEntries: "Your entries",
+        yourChance: "Your odds",
+        winnerCount: "winners",
+        entriesToBuy: "Entries to buy",
+        entriesAvailable: "fragments available",
+      },
     },
     about: {
       title: "About",
@@ -9086,6 +9109,7 @@ export const messages: Record<Locale, Messages> = {
         performance: "Performance",
         giveaways: "Giveaways",
         points: "Points & Gamification",
+        gamificationEconomy: "Gamification economy",
         newsletter: "Newsletter",
         chatSupport: "Chat Support",
         legalPages: "Legal Pages",

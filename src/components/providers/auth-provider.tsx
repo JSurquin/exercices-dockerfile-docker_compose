@@ -45,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               level: 1,
               xp: 0,
               tickets: 0,
+              fragments: 0,
               totalVolume: 0,
               kycStatus: 'PENDING',
               acceptedTermsAt: new Date(),
