@@ -177,6 +177,13 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Connexion réussie, redirection vers dashboard');
+    let requiresTwoFactor = false;
+    try {
+      const payload = await signInResponse.clone().json();
+      requiresTwoFactor = Boolean(payload?.twoFactorRedirect);
+    } catch {
+      requiresTwoFactor = false;
+    }
 
     // Log de connexion réussie
     context.userId = user.id;
@@ -194,15 +201,36 @@ export async function GET(request: NextRequest) {
     );
 
     // Créer la réponse avec redirection
-    const redirectUrl = new URL('/dashboard', request.url);
-    redirectUrl.searchParams.set('steam_login', 'success');
+    const redirectPath = requiresTwoFactor ? '/two-factor' : '/dashboard';
+    const redirectUrl = new URL(redirectPath, request.url);
+    if (!requiresTwoFactor) {
+      redirectUrl.searchParams.set('steam_login', 'success');
+    } else {
+      redirectUrl.searchParams.set('mode', 'verify');
+      redirectUrl.searchParams.set('redirect', '/dashboard');
+    }
     const response = NextResponse.redirect(redirectUrl.toString());
 
-    // Copier TOUS les cookies de la réponse Better Auth
-    const setCookieHeader = signInResponse.headers.get('set-cookie');
-    if (setCookieHeader) {
-      // Better Auth peut définir plusieurs cookies, on les copie tous
-      response.headers.set('set-cookie', setCookieHeader);
+    const allCookies = signInResponse.headers.getSetCookie?.() ?? [];
+
+    let cookiesToForward: string[];
+    if (requiresTwoFactor) {
+      // Cas 2FA : Better Auth émet session_token + cookies de suppression + two_factor.
+      // On ne transmet QUE le two_factor — les cookies de suppression (Max-Age=0)
+      // effaceraient la session dans le navigateur avant que verify-totp soit appelé.
+      cookiesToForward = allCookies.filter(
+        (c) => !c.includes('Max-Age=0')
+          && !c.startsWith('better-auth.session_token=')
+          && !c.startsWith('better-auth.session_data='),
+      );
+    } else {
+      // Cas normal (pas de 2FA) : on transmet tous les cookies tels quels.
+      cookiesToForward = allCookies;
+    }
+
+    console.log('[Steam] cookies transmis:', cookiesToForward.map(c => c.split(';')[0]));
+    for (const cookie of cookiesToForward) {
+      response.headers.append('set-cookie', cookie);
     }
 
     return response;

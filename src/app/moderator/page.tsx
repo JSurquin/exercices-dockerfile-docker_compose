@@ -37,6 +37,12 @@ export default function ModeratorLoginPage() {
         return;
       }
 
+      if ((data as Record<string, unknown>)?.twoFactorRedirect) {
+        toast.error("La 2FA n'est pas disponible pour les comptes moderateur.");
+        await authClient.signOut();
+        return;
+      }
+
       // Vérifier que l'utilisateur est bien modérateur ou admin
       if (data?.user) {
         // Récupérer le rôle depuis la DB car Better Auth ne le retourne pas automatiquement

@@ -7,6 +7,7 @@ export interface User {
   acceptedTermsAt?: Date;
   kycStatus: 'PENDING' | 'IN_PROGRESS' | 'VERIFIED' | 'REJECTED' | 'KYCAID_PENDING' | 'KYCAID_VERIFIED' | 'KYCAID_REJECTED';
   role?: string;
+  twoFactorEnabled?: boolean;
   totalVolume: number; // en centimes
   xp: number;
   level: number;

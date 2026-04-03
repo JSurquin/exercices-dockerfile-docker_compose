@@ -48,6 +48,7 @@ export default function SettingsPage() {
     language: locale,
     theme: theme || "dark",
   });
+  const canUseTwoFactor = user?.role !== "ADMIN" && user?.role !== "MODERATOR";
 
   const handleSaveSettings = async () => {
     try {
@@ -217,27 +218,41 @@ export default function SettingsPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4 sm:space-y-6">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-semibold">
-                          {messages.settings.security.twoFactor.title}
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          {messages.settings.security.twoFactor.description}
-                        </p>
+                    {canUseTwoFactor && (
+                      <div className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <h4 className="font-semibold">
+                            {messages.settings.security.twoFactor.title}
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            {messages.settings.security.twoFactor.description}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge
+                            variant="secondary"
+                            className={
+                              (user as { twoFactorEnabled?: boolean })?.twoFactorEnabled
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            }
+                          >
+                            {(user as { twoFactorEnabled?: boolean })?.twoFactorEnabled
+                              ? messages.settings.security.twoFactor.enabled
+                              : "Disabled"}
+                          </Badge>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              window.location.href = "/two-factor";
+                            }}
+                          >
+                            {messages.settings.security.twoFactor.configure}
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge
-                          variant="secondary"
-                          className="bg-green-100 text-green-800"
-                        >
-                          {messages.settings.security.twoFactor.enabled}
-                        </Badge>
-                        <Button variant="outline" size="sm">
-                          {messages.settings.security.twoFactor.configure}
-                        </Button>
-                      </div>
-                    </div>
+                    )}
 
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div>

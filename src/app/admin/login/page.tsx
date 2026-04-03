@@ -46,6 +46,12 @@ export default function AdminLoginPage() {
         return;
       }
 
+      if ((result.data as Record<string, unknown>)?.twoFactorRedirect) {
+        setError("La 2FA n'est pas disponible pour les comptes administrateurs.");
+        await authClient.signOut();
+        return;
+      }
+
       // Succès de la connexion
       toast.success(messages.admin.login.loginSuccess, {
         description: messages.admin.login.welcomeMessage,

@@ -1,68 +1,90 @@
 import { betterAuth } from "better-auth";
+import type { BetterAuthPlugin } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { twoFactor } from "better-auth/plugins";
 import { prisma } from "~/prisma/prisma";
 import { emailService } from "../src/lib/email";
 
+// Better Auth 1.2.12 a un bug de typage sur viewBackupCodes (GET avec body dans un GET endpoint).
+// Le cast est sans impact runtime — le plugin fonctionne normalement.
+const twoFactorPlugin = twoFactor({
+  issuer: "MoonSkin",
+  otpOptions: {
+    async sendOTP({ user, otp }: { user: { email: string }; otp: string }) {
+      await emailService.sendEmail({
+        to: user.email,
+        subject: "MoonSkin - Code de verification 2FA",
+        html: `
+          <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#0f172a;border-radius:12px;">
+            <h2 style="color:#f97316;margin:0 0 8px">MoonSkin — Verification 2FA</h2>
+            <p style="color:#94a3b8;margin:0 0 24px">Utilisez ce code pour confirmer votre connexion.</p>
+            <div style="background:#1e293b;border-radius:8px;padding:20px;text-align:center;">
+              <span style="font-size:36px;font-weight:700;letter-spacing:8px;color:#fff;">${otp}</span>
+            </div>
+            <p style="color:#64748b;font-size:13px;margin:16px 0 0">Ce code expire dans quelques minutes. Ne le partagez jamais.</p>
+          </div>
+        `,
+        text: `Votre code de verification MoonSkin est : ${otp}`,
+      });
+    },
+  },
+}) as unknown as BetterAuthPlugin;
+
 export const auth = betterAuth({
+  appName: "MoonSkin",
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-   socialProviders: {
-     discord: {
-       clientId: process.env.DISCORD_CLIENT_ID as string,
-       clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
-     },
-   },
-   emailAndPassword: {
+  socialProviders: {
+    discord: {
+      clientId: process.env.DISCORD_CLIENT_ID as string,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
+    },
+  },
+  emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
-    sendResetPassword: async ({user, url, token}, request) => {
-      // Vérifier si c'est un nouveau compte (pas de password dans Account)
+    sendResetPassword: async ({ user, url, token }, request) => {
       const account = await prisma.account.findFirst({
-        where: { userId: user.id, providerId: 'credential' }
+        where: { userId: user.id, providerId: "credential" },
       });
-      
+
       const isNewAccount = !account || !account.password;
-      
-      // Récupérer le user complet avec le rôle
+
       const fullUser = await prisma.user.findUnique({
         where: { id: user.id },
-        include: { affiliateStats: true }
+        include: { affiliateStats: true },
       });
-      
-      if (isNewAccount && fullUser?.role === 'AFFILIATE' && fullUser.affiliateStats) {
-        // Nouveau compte affilié créé par admin
+
+      if (isNewAccount && fullUser?.role === "AFFILIATE" && fullUser.affiliateStats) {
         await emailService.sendAffiliateWelcomeEmail(
           user.email,
           token,
           fullUser.affiliateStats.code,
           user.name || user.email,
-          fullUser.affiliateStats.commissionRate
+          fullUser.affiliateStats.commissionRate,
         );
       } else if (isNewAccount) {
-        // Nouveau compte utilisateur créé par admin
         await emailService.sendWelcomeEmailWithPasswordReset(
           user.email,
           token,
           user.name || user.email,
-          true
+          true,
         );
       } else {
-        // Reset de mot de passe classique
-        await emailService.sendPasswordResetEmail(user.email, token, user.name || user.email);
+        await emailService.sendPasswordResetEmail(
+          user.email,
+          token,
+          user.name || user.email,
+        );
       }
     },
-    onPasswordReset: async ({ user }: { user: { email: string; name: string | null } }) => {
-      await emailService.sendPasswordSuccessResetEmail(user.email, user.name || user.email);
-    },
-
-    
-   },
-   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 jours
-    updateAge: 60 * 60 * 24, // 1 jour
-   },
+  },
+  session: {
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
+  },
   user: {
     additionalFields: {
       role: {
@@ -74,7 +96,7 @@ export const auth = betterAuth({
         required: false,
       },
       steamUsername: {
-        type: "string", 
+        type: "string",
         required: false,
       },
       steamAvatar: {
@@ -86,7 +108,7 @@ export const auth = betterAuth({
         defaultValue: 1,
       },
       xp: {
-        type: "number", 
+        type: "number",
         defaultValue: 0,
       },
       tickets: {
@@ -99,7 +121,7 @@ export const auth = betterAuth({
       },
       kycStatus: {
         type: "string",
-        defaultValue: "PENDING", // PENDING, VERIFIED, REJECTED
+        defaultValue: "PENDING",
       },
       acceptedTermsAt: {
         type: "date",
@@ -117,11 +139,23 @@ export const auth = betterAuth({
 
   plugins: [
     nextCookies(),
+    twoFactorPlugin,
   ],
 });
 
 export type AuthUser = typeof auth.$Infer.Session.user & {
   role: string;
+  steamId?: string;
+  steamUsername?: string;
+  steamAvatar?: string;
+  level?: number;
+  xp?: number;
+  tickets?: number;
+  totalVolumeCents?: number;
+  kycStatus?: string;
+  acceptedTermsAt?: Date;
+  isFirstLogin?: boolean;
+  twoFactorEnabled?: boolean;
 };
 
 export type Session = Omit<typeof auth.$Infer.Session, "user"> & {

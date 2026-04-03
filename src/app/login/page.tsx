@@ -37,6 +37,12 @@ export default function LoginPage() {
         return;
       }
 
+      // Better Auth injecte twoFactorRedirect dynamiquement (non typé statiquement)
+      if ((result.data as Record<string, unknown>)?.twoFactorRedirect) {
+        // onTwoFactorRedirect dans auth-client gère la redirection automatiquement
+        return;
+      }
+
       // Redirection selon le rôle
       if (result.data?.user) {
         const role = (result.data.user as any).role;
