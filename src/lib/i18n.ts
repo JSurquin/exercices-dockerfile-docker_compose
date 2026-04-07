@@ -2309,7 +2309,8 @@ export const messages: Record<Locale, Messages> = {
           personal: "Personnel",
           security: "Sécurité",
           notifications: "Notifications",
-          preferences: "Préférences"
+          preferences: "Préférences",
+          smtp: "Email / SMTP"
         },
         personal: {
           title: "Informations Personnelles",
@@ -2387,6 +2388,36 @@ export const messages: Record<Locale, Messages> = {
           save: "Sauvegarder les préférences",
           success: "Préférences mises à jour",
           error: "Erreur lors de la mise à jour des préférences"
+        },
+        smtpSettings: {
+          title: "Configuration Email / SMTP",
+          subtitle: "Paramètres du serveur d'envoi d'emails. Laissez vide pour utiliser les valeurs du fichier .env.",
+          tabLabel: "Email / SMTP",
+          host: "Serveur SMTP (host)",
+          hostPlaceholder: "smtp.example.com",
+          port: "Port SMTP",
+          user: "Utilisateur SMTP",
+          userPlaceholder: "user@example.com",
+          password: "Mot de passe SMTP",
+          passwordPlaceholder: "••••••••",
+          from: "Adresse d'expédition (From)",
+          fromPlaceholder: "noreply@example.com",
+          secure: "Connexion sécurisée (TLS/SSL)",
+          secureDesc: "Activer TLS/SSL pour la connexion SMTP",
+          alertEmailTo: "Email de contact admin (alertes)",
+          alertEmailToPlaceholder: "admin@example.com",
+          sourceDb: "Source : base de données",
+          sourceEnv: "Source : .env (fallback)",
+          save: "Sauvegarder la configuration",
+          saving: "Sauvegarde...",
+          success: "Configuration SMTP mise à jour avec succès",
+          error: "Erreur lors de la mise à jour de la configuration SMTP",
+          testConnection: "Tester la connexion",
+          testConnectionSuccess: "Connexion SMTP réussie !",
+          testConnectionError: "Échec de la connexion SMTP",
+          resetToEnv: "Réinitialiser vers .env",
+          resetToEnvConfirm: "Supprimer la config en BDD et revenir aux valeurs .env ?",
+          resetSuccess: "Configuration réinitialisée vers .env"
         }
       },
       chat: {
@@ -6063,7 +6094,8 @@ export const messages: Record<Locale, Messages> = {
           personal: "Personal",
           security: "Security",
           notifications: "Notifications",
-          preferences: "Preferences"
+          preferences: "Preferences",
+          smtp: "Email / SMTP"
         },
         personal: {
           title: "Personal Information",
@@ -6141,6 +6173,36 @@ export const messages: Record<Locale, Messages> = {
           save: "Save preferences",
           success: "Preferences updated",
           error: "Error updating preferences"
+        },
+        smtpSettings: {
+          title: "Email / SMTP Configuration",
+          subtitle: "Mail server settings. Leave empty to use .env file values.",
+          tabLabel: "Email / SMTP",
+          host: "SMTP Host",
+          hostPlaceholder: "smtp.example.com",
+          port: "SMTP Port",
+          user: "SMTP User",
+          userPlaceholder: "user@example.com",
+          password: "SMTP Password",
+          passwordPlaceholder: "••••••••",
+          from: "Sender Address (From)",
+          fromPlaceholder: "noreply@example.com",
+          secure: "Secure Connection (TLS/SSL)",
+          secureDesc: "Enable TLS/SSL for SMTP connection",
+          alertEmailTo: "Admin contact email (alerts)",
+          alertEmailToPlaceholder: "admin@example.com",
+          sourceDb: "Source: database",
+          sourceEnv: "Source: .env (fallback)",
+          save: "Save configuration",
+          saving: "Saving...",
+          success: "SMTP configuration updated successfully",
+          error: "Error updating SMTP configuration",
+          testConnection: "Test connection",
+          testConnectionSuccess: "SMTP connection successful!",
+          testConnectionError: "SMTP connection failed",
+          resetToEnv: "Reset to .env",
+          resetToEnvConfirm: "Delete DB config and revert to .env values?",
+          resetSuccess: "Configuration reset to .env"
         }
       },
       chat: {
@@ -10749,7 +10811,8 @@ export const messages: Record<Locale, Messages> = {
           personal: "个人",
           security: "安全",
           notifications: "通知",
-          preferences: "偏好"
+          preferences: "偏好",
+          smtp: "邮件 / SMTP"
         },
         personal: {
           title: "个人信息",
@@ -10827,6 +10890,36 @@ export const messages: Record<Locale, Messages> = {
           save: "保存偏好",
           success: "偏好已更新",
           error: "更新偏好时出错"
+        },
+        smtpSettings: {
+          title: "邮件 / SMTP 配置",
+          subtitle: "邮件服务器设置。留空则使用 .env 文件中的值。",
+          tabLabel: "邮件 / SMTP",
+          host: "SMTP 服务器",
+          hostPlaceholder: "smtp.example.com",
+          port: "SMTP 端口",
+          user: "SMTP 用户名",
+          userPlaceholder: "user@example.com",
+          password: "SMTP 密码",
+          passwordPlaceholder: "••••••••",
+          from: "发件人地址（From）",
+          fromPlaceholder: "noreply@example.com",
+          secure: "安全连接（TLS/SSL）",
+          secureDesc: "为 SMTP 连接启用 TLS/SSL",
+          alertEmailTo: "管理员联系邮箱（警报）",
+          alertEmailToPlaceholder: "admin@example.com",
+          sourceDb: "来源：数据库",
+          sourceEnv: "来源：.env（备用）",
+          save: "保存配置",
+          saving: "保存中...",
+          success: "SMTP 配置更新成功",
+          error: "更新 SMTP 配置时出错",
+          testConnection: "测试连接",
+          testConnectionSuccess: "SMTP 连接成功！",
+          testConnectionError: "SMTP 连接失败",
+          resetToEnv: "重置为 .env",
+          resetToEnvConfirm: "删除数据库中的配置并恢复 .env 值？",
+          resetSuccess: "配置已重置为 .env"
         }
       },
       chat: {

@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { logger } from './logger';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { prisma } from '~/prisma/prisma';
 
 interface EmailConfig {
   host: string;
@@ -19,41 +20,82 @@ interface EmailOptions {
   text?: string;
 }
 
-class EmailService {
-  private transporter: nodemailer.Transporter;
-  private from: string;
+async function loadSmtpConfig(): Promise<{ config: EmailConfig; from: string; alertEmailTo: string }> {
+  let dbSettings: Record<string, string> = {};
 
-  constructor() {
-    const config: EmailConfig = {
-      host: process.env.SMTP_HOST!,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER!,
-        pass: process.env.SMTP_PASSWORD!,
+  try {
+    const rows = await prisma.siteSettings.findMany({
+      where: {
+        key: {
+          in: ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_password', 'smtp_from', 'smtp_secure', 'smtp_alert_email_to'],
+        },
       },
-    };
+    });
+    dbSettings = Object.fromEntries(rows.map((r) => [r.key, r.valueFr ?? '']));
+  } catch {
+    // Fallback silencieux si la DB n'est pas disponible
+  }
 
-    this.from = process.env.SMTP_FROM!;
-    this.transporter = nodemailer.createTransport(config as SMTPTransport.Options);
+  const host = dbSettings['smtp_host'] || process.env.SMTP_HOST || '';
+  const port = dbSettings['smtp_port']
+    ? parseInt(dbSettings['smtp_port'])
+    : parseInt(process.env.SMTP_PORT || '587');
+  const user = dbSettings['smtp_user'] || process.env.SMTP_USER || '';
+  const pass = dbSettings['smtp_password'] || process.env.SMTP_PASSWORD || '';
+  const from = dbSettings['smtp_from'] || process.env.SMTP_FROM || '';
+  const secure = dbSettings['smtp_secure'] !== undefined
+    ? dbSettings['smtp_secure'] === 'true'
+    : process.env.SMTP_SECURE === 'true';
+  const alertEmailTo = dbSettings['smtp_alert_email_to'] || process.env.ALERT_EMAIL_TO || '';
 
-    logger.info('Email service initialized', {
+  return {
+    config: { host, port, secure, auth: { user, pass } },
+    from,
+    alertEmailTo,
+  };
+}
+
+class EmailService {
+  /**
+   * La config est rechargée depuis la BDD à chaque envoi.
+   * Pas de cache : garantit que les modifications admin sont prises en compte immédiatement,
+   * même dans un contexte multi-worker (Next.js serverless).
+   */
+  private async getTransporter(): Promise<{ transporter: nodemailer.Transporter; from: string; alertEmailTo: string }> {
+    const { config, from, alertEmailTo } = await loadSmtpConfig();
+
+    const transporter = nodemailer.createTransport(config as SMTPTransport.Options);
+
+    logger.info('Email transporter created', {
       host: config.host,
       port: config.port,
       secure: config.secure,
       user: config.auth.user,
     });
+
+    return { transporter, from, alertEmailTo };
+  }
+
+  /** Conservé pour compatibilité, ne fait plus rien (pas de cache à vider) */
+  async reload() {
+    // no-op
+  }
+
+  getAlertEmailTo(): string {
+    return process.env.ALERT_EMAIL_TO ?? '';
   }
 
   async sendEmail(options: EmailOptions): Promise<boolean> {
     try {
+      const { transporter, from } = await this.getTransporter();
+
       logger.info('Sending email', {
         to: options.to,
         subject: options.subject,
       });
 
-      const info = await this.transporter.sendMail({
-        from: this.from,
+      const info = await transporter.sendMail({
+        from,
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -397,7 +439,8 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
 
   async testConnection(): Promise<boolean> {
     try {
-      await this.transporter.verify();
+      const { transporter } = await this.getTransporter();
+      await transporter.verify();
       logger.success('Email service connection verified');
       return true;
     } catch (error) {
@@ -419,7 +462,8 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
     motivation: string;
     createdAt: Date;
   }): Promise<boolean> {
-    const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+    const { alertEmailTo } = await this.getTransporter();
+    const adminEmail = alertEmailTo || process.env.ADMIN_EMAIL || process.env.SMTP_USER;
     if (!adminEmail) {
       logger.error('ADMIN_EMAIL not configured');
       return false;

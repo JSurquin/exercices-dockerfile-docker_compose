@@ -72,6 +72,7 @@ export const queryKeys = {
 
   // Admin - settings
   adminSettings: ['admin', 'settings'] as const,
+  adminSmtpSettings: ['admin', 'smtp-settings'] as const,
 
   // Admin - chat / moderation
   adminChatConversations: (filters?: Record<string, unknown>) =>

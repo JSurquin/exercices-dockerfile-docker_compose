@@ -1395,6 +1395,7 @@ export interface Messages {
         security: string;
         notifications: string;
         preferences: string;
+        smtp: string;
       };
       personal: {
         title: string;
@@ -1472,6 +1473,36 @@ export interface Messages {
         save: string;
         success: string;
         error: string;
+      };
+      smtpSettings: {
+        title: string;
+        subtitle: string;
+        tabLabel: string;
+        host: string;
+        hostPlaceholder: string;
+        port: string;
+        user: string;
+        userPlaceholder: string;
+        password: string;
+        passwordPlaceholder: string;
+        from: string;
+        fromPlaceholder: string;
+        secure: string;
+        secureDesc: string;
+        alertEmailTo: string;
+        alertEmailToPlaceholder: string;
+        sourceDb: string;
+        sourceEnv: string;
+        save: string;
+        saving: string;
+        success: string;
+        error: string;
+        testConnection: string;
+        testConnectionSuccess: string;
+        testConnectionError: string;
+        resetToEnv: string;
+        resetToEnvConfirm: string;
+        resetSuccess: string;
       };
     };
     chat: {

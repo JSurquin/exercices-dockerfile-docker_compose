@@ -26,6 +26,8 @@ import {
   EyeSlashIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
+  EnvelopeIcon,
+  ServerIcon,
 } from '@heroicons/react/24/outline';
 import { useLocale } from '@/components/providers/locale-provider';
 import { queryKeys } from '@/lib/query-keys';
@@ -56,9 +58,57 @@ interface AdminSettingsData {
   };
 }
 
+interface SmtpSettingsData {
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+  from: string;
+  secure: boolean;
+  alertEmailTo: string;
+  isFromDb: boolean;
+}
+
 async function fetchSettings(): Promise<AdminSettingsData> {
   const res = await fetch('/api/admin/settings');
   if (!res.ok) throw new Error('Erreur lors du chargement des paramètres');
+  return res.json();
+}
+
+async function fetchSmtpSettings(): Promise<SmtpSettingsData> {
+  const res = await fetch('/api/admin/smtp-settings');
+  if (!res.ok) throw new Error('Erreur lors du chargement des paramètres SMTP');
+  return res.json();
+}
+
+async function patchSmtpSettings(data: Partial<Omit<SmtpSettingsData, 'isFromDb'>>) {
+  const res = await fetch('/api/admin/smtp-settings', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error ?? 'Erreur lors de la sauvegarde SMTP');
+  }
+  return res.json();
+}
+
+async function resetSmtpSettings() {
+  const res = await fetch('/api/admin/smtp-settings', { method: 'DELETE' });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error ?? 'Erreur lors de la réinitialisation SMTP');
+  }
+  return res.json();
+}
+
+async function testSmtpConnection() {
+  const res = await fetch('/api/admin/smtp-settings/test', { method: 'POST' });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error ?? 'Connexion SMTP échouée');
+  }
   return res.json();
 }
 
@@ -107,10 +157,17 @@ export default function AdminSettingsPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [passwords, setPasswords] = useState({ current: '', newPwd: '', confirm: '' });
+  const [showSmtpPassword, setShowSmtpPassword] = useState(false);
+  const [smtpForm, setSmtpForm] = useState<Partial<Omit<SmtpSettingsData, 'isFromDb'>>>({});
 
   const { data: settings, isLoading } = useQuery({
     queryKey: queryKeys.adminSettings,
     queryFn: fetchSettings,
+  });
+
+  const { data: smtpSettings, isLoading: isSmtpLoading } = useQuery({
+    queryKey: queryKeys.adminSmtpSettings,
+    queryFn: fetchSmtpSettings,
   });
 
   const profileMutation = useMutation({
@@ -138,6 +195,32 @@ export default function AdminSettingsPage() {
       queryClient.invalidateQueries({ queryKey: queryKeys.adminSettings });
     },
     onError: (e: Error) => toast.error(e.message),
+  });
+
+  const smtpMutation = useMutation({
+    mutationFn: patchSmtpSettings,
+    onSuccess: () => {
+      toast.success(messages.admin.settings.smtpSettings.success);
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminSmtpSettings });
+      setSmtpForm({});
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const smtpResetMutation = useMutation({
+    mutationFn: resetSmtpSettings,
+    onSuccess: () => {
+      toast.success(messages.admin.settings.smtpSettings.resetSuccess);
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminSmtpSettings });
+      setSmtpForm({});
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const smtpTestMutation = useMutation({
+    mutationFn: testSmtpConnection,
+    onSuccess: () => toast.success(messages.admin.settings.smtpSettings.testConnectionSuccess),
+    onError: (e: Error) => toast.error(`${messages.admin.settings.smtpSettings.testConnectionError}: ${e.message}`),
   });
 
   const handlePasswordChange = () => {
@@ -214,12 +297,13 @@ export default function AdminSettingsPage() {
       {/* Settings Tabs */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
         <Tabs defaultValue="personal" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-slate-800/50 backdrop-blur-sm border border-slate-700">
+          <TabsList className="grid w-full grid-cols-5 bg-slate-800/50 backdrop-blur-sm border border-slate-700">
             {[
               { value: 'personal', icon: UserIcon, label: messages.admin.settings.tabs.personal },
               { value: 'security', icon: ShieldCheckIcon, label: messages.admin.settings.tabs.security },
               { value: 'notifications', icon: BellIcon, label: messages.admin.settings.tabs.notifications },
               { value: 'preferences', icon: CogIcon, label: messages.admin.settings.tabs.preferences },
+              { value: 'smtp', icon: EnvelopeIcon, label: messages.admin.settings.tabs.smtp },
             ].map(({ value, icon: Icon, label }) => (
               <TabsTrigger
                 key={value}
@@ -434,6 +518,183 @@ export default function AdminSettingsPage() {
                     />
                   </div>
                 ))}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Email / SMTP */}
+          <TabsContent value="smtp" className="mt-6">
+            <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <ServerIcon className="w-5 h-5 text-cyan-400" />
+                  {messages.admin.settings.smtpSettings.title}
+                </CardTitle>
+                <p className="text-sm text-slate-400 mt-1">{messages.admin.settings.smtpSettings.subtitle}</p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {isSmtpLoading ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-10 w-full bg-slate-700" />
+                    <Skeleton className="h-10 w-full bg-slate-700" />
+                    <Skeleton className="h-10 w-full bg-slate-700" />
+                  </div>
+                ) : smtpSettings ? (
+                  <>
+                    {/* Badge source */}
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={smtpSettings.isFromDb
+                          ? 'bg-green-500/10 border-green-500/50 text-green-400'
+                          : 'bg-yellow-500/10 border-yellow-500/50 text-yellow-400'}
+                      >
+                        {smtpSettings.isFromDb
+                          ? messages.admin.settings.smtpSettings.sourceDb
+                          : messages.admin.settings.smtpSettings.sourceEnv}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Host */}
+                      <div className="space-y-2">
+                        <Label className="text-slate-200">{messages.admin.settings.smtpSettings.host}</Label>
+                        <Input
+                          defaultValue={smtpForm.host ?? smtpSettings.host}
+                          className="bg-slate-900/50 border-slate-600 text-white"
+                          placeholder={messages.admin.settings.smtpSettings.hostPlaceholder}
+                          onChange={(e) => setSmtpForm(f => ({ ...f, host: e.target.value }))}
+                        />
+                      </div>
+
+                      {/* Port */}
+                      <div className="space-y-2">
+                        <Label className="text-slate-200">{messages.admin.settings.smtpSettings.port}</Label>
+                        <Input
+                          type="number"
+                          defaultValue={smtpForm.port ?? smtpSettings.port}
+                          className="bg-slate-900/50 border-slate-600 text-white"
+                          placeholder="587"
+                          onChange={(e) => setSmtpForm(f => ({ ...f, port: parseInt(e.target.value) || undefined }))}
+                        />
+                      </div>
+
+                      {/* User */}
+                      <div className="space-y-2">
+                        <Label className="text-slate-200">{messages.admin.settings.smtpSettings.user}</Label>
+                        <Input
+                          defaultValue={smtpForm.user ?? smtpSettings.user}
+                          className="bg-slate-900/50 border-slate-600 text-white"
+                          placeholder={messages.admin.settings.smtpSettings.userPlaceholder}
+                          onChange={(e) => setSmtpForm(f => ({ ...f, user: e.target.value }))}
+                        />
+                      </div>
+
+                      {/* Password */}
+                      <div className="space-y-2">
+                        <Label className="text-slate-200">{messages.admin.settings.smtpSettings.password}</Label>
+                        <div className="relative">
+                          <Input
+                            type={showSmtpPassword ? 'text' : 'password'}
+                            defaultValue={smtpForm.password ?? smtpSettings.password}
+                            className="bg-slate-900/50 border-slate-600 text-white pr-10"
+                            placeholder={messages.admin.settings.smtpSettings.passwordPlaceholder}
+                            onChange={(e) => setSmtpForm(f => ({ ...f, password: e.target.value }))}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                            onClick={() => setShowSmtpPassword(s => !s)}
+                          >
+                            {showSmtpPassword ? <EyeSlashIcon className="h-4 w-4 text-slate-400" /> : <EyeIcon className="h-4 w-4 text-slate-400" />}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* From */}
+                      <div className="space-y-2">
+                        <Label className="text-slate-200">{messages.admin.settings.smtpSettings.from}</Label>
+                        <Input
+                          type="email"
+                          defaultValue={smtpForm.from ?? smtpSettings.from}
+                          className="bg-slate-900/50 border-slate-600 text-white"
+                          placeholder={messages.admin.settings.smtpSettings.fromPlaceholder}
+                          onChange={(e) => setSmtpForm(f => ({ ...f, from: e.target.value }))}
+                        />
+                      </div>
+
+                      {/* Alert Email To */}
+                      <div className="space-y-2">
+                        <Label className="text-slate-200">{messages.admin.settings.smtpSettings.alertEmailTo}</Label>
+                        <Input
+                          type="email"
+                          defaultValue={smtpForm.alertEmailTo ?? smtpSettings.alertEmailTo}
+                          className="bg-slate-900/50 border-slate-600 text-white"
+                          placeholder={messages.admin.settings.smtpSettings.alertEmailToPlaceholder}
+                          onChange={(e) => setSmtpForm(f => ({ ...f, alertEmailTo: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Secure switch */}
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <Label className="text-slate-200">{messages.admin.settings.smtpSettings.secure}</Label>
+                        <p className="text-sm text-slate-400">{messages.admin.settings.smtpSettings.secureDesc}</p>
+                      </div>
+                      <Switch
+                        checked={smtpForm.secure ?? smtpSettings.secure}
+                        onCheckedChange={(checked) => setSmtpForm(f => ({ ...f, secure: checked }))}
+                      />
+                    </div>
+
+                    <Separator className="bg-slate-600" />
+
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => smtpTestMutation.mutate()}
+                          disabled={smtpTestMutation.isPending}
+                          className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
+                        >
+                          <EnvelopeIcon className="w-4 h-4 mr-2" />
+                          {smtpTestMutation.isPending ? '...' : messages.admin.settings.smtpSettings.testConnection}
+                        </Button>
+
+                        {smtpSettings.isFromDb && (
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              if (confirm(messages.admin.settings.smtpSettings.resetToEnvConfirm)) {
+                                smtpResetMutation.mutate();
+                              }
+                            }}
+                            disabled={smtpResetMutation.isPending}
+                            className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                          >
+                            {messages.admin.settings.smtpSettings.resetToEnv}
+                          </Button>
+                        )}
+                      </div>
+
+                      <Button
+                        onClick={() => smtpMutation.mutate({
+                          ...smtpSettings,
+                          ...smtpForm,
+                        })}
+                        disabled={smtpMutation.isPending}
+                        className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700"
+                      >
+                        {smtpMutation.isPending
+                          ? messages.admin.settings.smtpSettings.saving
+                          : messages.admin.settings.smtpSettings.save}
+                      </Button>
+                    </div>
+                  </>
+                ) : null}
               </CardContent>
             </Card>
           </TabsContent>
