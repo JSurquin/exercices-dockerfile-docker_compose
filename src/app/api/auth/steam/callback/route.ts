@@ -132,14 +132,11 @@ export async function GET(request: NextRequest) {
       // Mettre à jour les informations Steam + migrer l'email si ancien domaine
       console.log('Mise à jour utilisateur existant:', user.name);
       
-      if (user.email !== email) {
-        console.log(`Migration email: ${user.email} -> ${email}`);
-      }
-      
+      const hasRealEmail = user.email && !user.email.endsWith('@moonskin.local');
       user = await prisma.user.update({
         where: { id: user.id },
         data: {
-          email: email, // Normaliser vers @moonskin.local
+          ...(hasRealEmail ? {} : { email }),
           name: steamUser.personaname,
           image: steamUser.avatarfull || steamUser.avatar,
           steamUsername: steamUser.personaname,
