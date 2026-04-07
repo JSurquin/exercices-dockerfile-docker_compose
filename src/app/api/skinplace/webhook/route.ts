@@ -137,8 +137,14 @@ export async function GET(request: NextRequest) {
     // =========================================================================
     // IPN #2 — protection_status (~8 jours après l'échange)
     // Valeurs : 'unconfirmed' (en hold), 'confirmed' (libéré), 'rollback'
+    //
+    // IMPORTANT : Skinplace peut envoyer protection_status=unconfirmed ET
+    // status=cancelled dans le même IPN (ex. annulation côté utilisateur).
+    // Dans ce cas, l'annulation est prioritaire : on ne doit pas ignorer le
+    // status=cancelled sous prétexte que protectionStatus est présent.
+    // On n'entre dans le bloc IPN #2 que si le statut n'est pas une annulation.
     // =========================================================================
-    if (protectionStatus !== null) {
+    if (protectionStatus !== null && status !== 'cancelled') {
       console.log(`🔒 IPN #2 protection_status pour trade ${trade.id}: ${protectionStatus}`);
 
       await prisma.auditLog.create({

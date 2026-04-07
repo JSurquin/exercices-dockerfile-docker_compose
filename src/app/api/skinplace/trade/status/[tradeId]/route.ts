@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { TradeStatus } from '@prisma/client';
+import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
 
 /**
  * Endpoint pour récupérer et mettre à jour le statut d'un trade depuis Skinplace
@@ -100,8 +101,9 @@ export async function GET(
       );
     }
 
-    // Si le trade est déjà payé ou en cours de paiement, ne pas vérifier Skinplace
-    if (trade.status === 'PAID' || trade.status === 'PAYOUT_PENDING') {
+    // Statuts terminaux : retourner directement le statut DB sans appel Skinplace
+    if (trade.status === 'PAID' || trade.status === 'PAYOUT_PENDING' ||
+        trade.status === 'CANCELLED' || trade.status === 'FAILED') {
       return NextResponse.json({
         success: true,
         trade: {
@@ -135,52 +137,33 @@ export async function GET(
 
     let skinplaceStatus: string | null = null;
 
-    // Stratégie 1 : GET /api/v3/instant/payment/trade/{skinplaceToken}
-    // C'est l'endpoint officiel — nécessite le token Skinplace retourné à la création
-    if (trade.skinplaceToken) {
-      const res = await fetch(
-        `https://api.skin.place/api/v3/instant/payment/trade/${trade.skinplaceToken}`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${privateKey}`,
-            'Content-Type': 'application/json',
-            'User-Agent': 'MoonSkin/1.0',
-            'Accept': 'application/json',
-          },
-          signal: AbortSignal.timeout(10000),
-        }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        skinplaceStatus = data?.steamtrade?.status || data?.payment?.status || null;
-        console.log(`📊 [strategy1] Statut Skinplace pour trade ${trade.id}:`, skinplaceStatus, data);
-      } else {
-        console.warn(`⚠️  [strategy1] Échec GET payment/trade/${trade.skinplaceToken}: ${res.status}`);
-      }
-    }
+    // Skinplace auth : signature = sha256(steamId + privateKey) + public_key en query params
+    const tokenForQuery = trade.skinplaceToken || trade.ticketId;
+    if (tokenForQuery) {
+      try {
+        const signature = generateSkinplaceSignature(trade.steamId, privateKey);
+        const url = new URL(`https://api.skin.place/api/v3/instant/payment/trade/${tokenForQuery}`);
+        url.searchParams.set('signature', signature);
+        url.searchParams.set('public_key', publicKey);
+        url.searchParams.set('project', 'csgo');
+        url.searchParams.set('steamid', trade.steamId);
 
-    // Stratégie 2 (fallback) : POST /api/v3/instant/history avec order_ids
-    // Utilise notre order_id (ticketId) pour retrouver le trade dans l'historique
-    if (!skinplaceStatus) {
-      const res = await fetch('https://api.skin.place/api/v3/instant/history', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${privateKey}`,
-          'Content-Type': 'application/json',
-          'User-Agent': 'MoonSkin/1.0',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ order_ids: [trade.ticketId], limit: 1 }),
-        signal: AbortSignal.timeout(10000),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const entry = data?.data?.[0];
-        skinplaceStatus = entry?.steamtrade?.status || entry?.payment?.status || null;
-        console.log(`📊 [strategy2] Statut Skinplace pour trade ${trade.id}:`, skinplaceStatus, entry);
-      } else {
-        console.warn(`⚠️  [strategy2] Échec instant/history: ${res.status}`);
+        const res = await fetch(url.toString(), {
+          method: 'GET',
+          headers: { 'Accept': 'application/json', 'User-Agent': 'MoonSkin/1.0' },
+          signal: AbortSignal.timeout(10000),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          skinplaceStatus = data?.steamtrade?.status || data?.payment?.status || null;
+          console.log(`📊 Statut Skinplace pour trade ${trade.id}:`, skinplaceStatus);
+        } else {
+          const errText = await res.text().catch(() => '');
+          console.warn(`⚠️  Skinplace status check failed ${res.status} pour trade ${trade.id}:`, errText);
+        }
+      } catch (e) {
+        console.warn(`⚠️  Skinplace status check exception pour trade ${trade.id}:`, e);
       }
     }
 
