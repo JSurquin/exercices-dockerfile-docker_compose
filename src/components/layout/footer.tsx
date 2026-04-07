@@ -22,7 +22,6 @@ export function Footer() {
     ],
     account: [
       { name: messages.footer.links.login, href: "/login" },
-      { name: messages.footer.links.admin, href: "/admin/login" },
     ],
     legal: [
       { name: messages.footer.links.terms, href: "/terms" },
