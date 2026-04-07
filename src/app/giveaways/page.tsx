@@ -108,16 +108,23 @@ const GiveawayCard = ({
             <CardTitle className="text-lg mb-2">{giveaway.title}</CardTitle>
             <p className="text-sm text-muted-foreground mb-3">{giveaway.description}</p>
           </div>
-          <Badge
-            variant={giveaway.status === 'ACTIVE' ? 'default' : 'secondary'}
-            className={giveaway.status === 'ACTIVE' ? 'bg-green-500' : ''}
-          >
-            {giveaway.status === 'ACTIVE'
-              ? messages.giveaways.card.status.active
-              : giveaway.status === 'ENDED'
-                ? messages.giveaways.card.status.ended
-                : messages.giveaways.card.status.cancelled}
-          </Badge>
+          <div className="flex flex-col items-end gap-1">
+            <Badge
+              variant={giveaway.status === 'ACTIVE' ? 'default' : 'secondary'}
+              className={giveaway.status === 'ACTIVE' ? 'bg-green-500' : ''}
+            >
+              {giveaway.status === 'ACTIVE'
+                ? messages.giveaways.card.status.active
+                : giveaway.status === 'ENDED'
+                  ? messages.giveaways.card.status.ended
+                  : messages.giveaways.card.status.cancelled}
+            </Badge>
+            {giveaway.isPrivate && (
+              <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs">
+                {messages.giveaways.card.privateLabel ?? '🔒 Privé'}
+              </Badge>
+            )}
+          </div>
         </div>
       </CardHeader>
 

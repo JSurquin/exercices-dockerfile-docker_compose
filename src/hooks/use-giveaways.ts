@@ -135,6 +135,8 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
       durationType?: string;
       winnerCount?: number;
       maxEntriesPerUser?: number | null;
+      isPrivate?: boolean;
+      requiredAffiliateCode?: string | null;
     }) => {
       const response = await fetch('/api/giveaways', {
         method: 'POST',
@@ -176,6 +178,8 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
     durationType?: string;
     winnerCount?: number;
     maxEntriesPerUser?: number | null;
+    isPrivate?: boolean;
+    requiredAffiliateCode?: string | null;
   }) => createMutation.mutateAsync(giveawayData);
 
   const fetchGiveaways = async (_status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') => {

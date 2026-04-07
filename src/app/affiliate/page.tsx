@@ -72,6 +72,18 @@ export default function AffiliatePage() {
       }
     : null;
 
+  // Giveaways privés liés au code de cet affilié
+  const { data: privateGiveaways = [] } = useQuery<{ id: string; title: string; status: string }[]>({
+    queryKey: ['giveaways', 'private', affiliateData?.code],
+    queryFn: async () => {
+      const res = await fetch('/api/giveaways/private?affiliateCode=' + affiliateData!.code, { credentials: 'include' });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data ?? [];
+    },
+    enabled: !!affiliateData?.code,
+  });
+
   const { data: allCommissionsData } = useQuery({
     queryKey: [...queryKeys.affiliateCommissions, 'all'],
     queryFn: async () => {
@@ -542,6 +554,35 @@ export default function AffiliatePage() {
                         )}
                       </button>
                     ))}
+                    {privateGiveaways.length > 0 && (
+                      <>
+                        <p className="text-xs text-purple-400 font-medium uppercase tracking-wide pt-2">
+                          {messages.affiliate.dashboard.privateGiveawaysLabel ?? '🔒 Giveaways privés'}
+                        </p>
+                        {privateGiveaways.map((g) => {
+                          const key = `private-${g.id}`;
+                          return (
+                            <button
+                              key={key}
+                              onClick={() => generateAffiliateLink(`/giveaways/${g.id}`, key)}
+                              className="w-full flex items-center justify-between p-3 rounded-lg border border-purple-500/30 bg-purple-950/20 hover:bg-purple-950/40 transition-colors text-sm text-purple-300 hover:text-purple-100 group"
+                            >
+                              <span className="truncate">{g.title}</span>
+                              <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                                {g.status === 'ACTIVE' && (
+                                  <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+                                )}
+                                {copiedKey === key ? (
+                                  <Check className="h-3.5 w-3.5 text-green-400" />
+                                ) : (
+                                  <Copy className="h-3.5 w-3.5 text-purple-500 group-hover:text-purple-300 transition-colors" />
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>

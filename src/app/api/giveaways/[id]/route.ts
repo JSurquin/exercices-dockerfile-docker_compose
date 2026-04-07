@@ -37,6 +37,22 @@ export async function GET(
       return NextResponse.json({ error: 'Giveaway introuvable' }, { status: 404 });
     }
 
+    // Vérifier l'accès aux giveaways privés
+    if (giveaway.isPrivate && giveaway.requiredAffiliateCode) {
+      const cookieHeader = request.headers.get('cookie') ?? '';
+      const affiliateCookie = cookieHeader
+        .split(';')
+        .find((c) => c.trim().startsWith('ctf_affiliate_ref='))
+        ?.split('=')[1]
+        ?.trim();
+      const refParam = new URL(request.url).searchParams.get('ref');
+      const affiliateRef = refParam ?? affiliateCookie ?? null;
+
+      if (affiliateRef !== giveaway.requiredAffiliateCode) {
+        return NextResponse.json({ error: 'Accès non autorisé à ce giveaway' }, { status: 403 });
+      }
+    }
+
     const session = await auth.api.getSession({ headers: request.headers });
     const viewerId = session?.user?.id ?? null;
 

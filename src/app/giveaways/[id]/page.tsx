@@ -171,12 +171,19 @@ export default function GiveawayDetailsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>{messages.giveawaysPage.detail.title}</span>
-                    <Badge 
-                      variant={giveaway.status === 'ACTIVE' ? 'default' : 'secondary'}
-                      className={giveaway.status === 'ACTIVE' ? 'bg-green-500' : giveaway.status === 'ENDED' ? 'bg-blue-500' : 'bg-gray-500'}
-                    >
-                      {giveaway.status === 'ACTIVE' ? messages.giveawaysPage.detail.status.active : giveaway.status === 'ENDED' ? messages.giveawaysPage.detail.status.ended : messages.giveawaysPage.detail.status.cancelled}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge 
+                        variant={giveaway.status === 'ACTIVE' ? 'default' : 'secondary'}
+                        className={giveaway.status === 'ACTIVE' ? 'bg-green-500' : giveaway.status === 'ENDED' ? 'bg-blue-500' : 'bg-gray-500'}
+                      >
+                        {giveaway.status === 'ACTIVE' ? messages.giveawaysPage.detail.status.active : giveaway.status === 'ENDED' ? messages.giveawaysPage.detail.status.ended : messages.giveawaysPage.detail.status.cancelled}
+                      </Badge>
+                      {giveaway.isPrivate && (
+                        <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs">
+                          🔒 {messages.giveaways?.card?.privateLabel ?? 'Privé'}
+                        </Badge>
+                      )}
+                    </div>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">

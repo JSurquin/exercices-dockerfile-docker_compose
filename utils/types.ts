@@ -1567,6 +1567,7 @@ export interface Messages {
       descriptionPlaceholder: string;
       title: string;
       subtitle: string;
+      confirmDelete: string;
       stats: {
         active: string;
         ended: string;
@@ -1577,6 +1578,19 @@ export interface Messages {
         create: string;
         manage: string;
       };
+      page: {
+        pageGiveaways: string;
+        visibleToPlayers: string;
+        hiddenFromPlayers: string;
+      };
+      toasts: {
+        pageEnabled: string;
+        pageDisabled: string;
+        updateError: string;
+        drawSuccess: string;
+        deleteSuccess: string;
+        deleteError: string;
+      };
       list: {
         title: string;
         refresh: string;
@@ -1584,7 +1598,10 @@ export interface Messages {
         price: string;
         ticketPrice: string;
         tickets: string;
+        entryPrice: string;
+        fragments: string;
         participants: string;
+        entries: string;
         ticketsSold: string;
         winner: string;
         drawNow: string;
@@ -1592,6 +1609,7 @@ export interface Messages {
         noGiveaways: string;
         noGiveawaysDesc: string;
         createGiveaway: string;
+        private: string;
       };
       create: {
         title: string;
@@ -1608,6 +1626,32 @@ export interface Messages {
         creating: string;
         create: string;
         errorRequired: string;
+      };
+      form: {
+        titleLabel: string;
+        prizeLabel: string;
+        prizeSearchPlaceholder: string;
+        prizeManualHint: string;
+        prizeManualPlaceholder: string;
+        entryPriceLabel: string;
+        rewardValueLabel: string;
+        maxTicketsLabel: string;
+        winnerCountLabel: string;
+        durationTypeLabel: string;
+        maxEntriesPerUserLabel: string;
+        maxEntriesPlaceholder: string;
+        durationLabel: string;
+        durationHelp: string;
+        descriptionLabel: string;
+        cancel: string;
+        creating: string;
+        create: string;
+        privateTitle: string;
+        privateDescription: string;
+        affiliateCodeLabel: string;
+        affiliateCodePlaceholder: string;
+        affiliateCodeHint: string;
+        priceUnknown: string;
       };
       info: {
         title: string;
@@ -2187,6 +2231,7 @@ export interface Messages {
       ticketsToUse: string;
       participate: string;
       ticketsAvailable: string;
+      privateLabel?: string;
     };
     empty: {
       noActive: string;
@@ -3170,6 +3215,7 @@ export interface Messages {
       quickHome: string;
       quickSell: string;
       quickGiveaways: string;
+      privateGiveawaysLabel?: string;
       partnerBenefits: string;
       benefitCommission: string;
       benefitPayments: string;

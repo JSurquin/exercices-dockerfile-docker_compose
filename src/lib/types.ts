@@ -125,6 +125,8 @@ export interface Giveaway {
   durationType?: string;
   winnerCount?: number;
   maxEntriesPerUser?: number | null;
+  isPrivate?: boolean;
+  requiredAffiliateCode?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   /** Agrégats API */

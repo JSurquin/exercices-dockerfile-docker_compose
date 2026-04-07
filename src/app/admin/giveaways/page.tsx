@@ -51,6 +51,8 @@ interface CreateGiveawayForm {
   durationType: string;
   winnerCount: number;
   maxEntriesPerUser: string;
+  isPrivate: boolean;
+  requiredAffiliateCode: string;
 }
 
 export default function AdminGiveawaysPage() {
@@ -68,6 +70,8 @@ export default function AdminGiveawaysPage() {
     steamMarketHashName: '',
     ticketPrice: 100,
     maxTickets: 10000,
+    isPrivate: false,
+    requiredAffiliateCode: '',
     durationMinutes: 60,
     rewardValueCents: 0,
     durationType: 'WEEKLY',
@@ -149,9 +153,9 @@ export default function AdminGiveawaysPage() {
       });
       if (!res.ok) throw new Error();
       setGiveawaysEnabled(enabled);
-      toast.success(enabled ? 'Page Giveaways activée' : 'Page Giveaways désactivée');
+      toast.success(enabled ? messages.admin.giveaways.toasts.pageEnabled : messages.admin.giveaways.toasts.pageDisabled);
     } catch {
-      toast.error('Erreur lors de la mise à jour');
+      toast.error(messages.admin.giveaways.toasts.updateError);
     } finally {
       setTogglingEnabled(false);
     }
@@ -189,6 +193,10 @@ export default function AdminGiveawaysPage() {
         durationType: form.durationType,
         winnerCount: form.winnerCount,
         maxEntriesPerUser: maxEu ? parseInt(maxEu, 10) : null,
+        isPrivate: form.isPrivate,
+        requiredAffiliateCode: form.isPrivate && form.requiredAffiliateCode.trim()
+          ? form.requiredAffiliateCode.trim()
+          : null,
       });
 
       setForm({
@@ -199,6 +207,8 @@ export default function AdminGiveawaysPage() {
         steamMarketHashName: '',
         ticketPrice: 100,
         maxTickets: 10000,
+        isPrivate: false,
+        requiredAffiliateCode: '',
         durationMinutes: 60,
         rewardValueCents: 0,
         durationType: 'WEEKLY',
@@ -226,14 +236,14 @@ export default function AdminGiveawaysPage() {
         result.winner?.steamUsername ||
         result.winner?.id ||
         '?';
-      toast.success(`Tirage effectué ! Gagnant(s): ${names}`);
+      toast.success(`${messages.admin.giveaways.toasts.drawSuccess} ${names}`);
     } catch (error) {
       console.error('Erreur lors du tirage:', error);
     }
   };
 
   const handleDeleteGiveaway = async (giveawayId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce giveaway ?')) {
+    if (!confirm(messages.admin.giveaways.confirmDelete)) {
       return;
     }
 
@@ -243,14 +253,14 @@ export default function AdminGiveawaysPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la suppression');
+        throw new Error(messages.admin.giveaways.toasts.deleteError);
       }
 
-      toast.success('Giveaway supprimé avec succès');
+      toast.success(messages.admin.giveaways.toasts.deleteSuccess);
       refetch();
     } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
-      toast.error('Erreur lors de la suppression');
+      console.error('Delete error:', error);
+      toast.error(messages.admin.giveaways.toasts.deleteError);
     }
   };
 
@@ -271,10 +281,10 @@ export default function AdminGiveawaysPage() {
             <div>
               <h1 className="text-3xl font-bold mb-4 text-white">
                 <GiftIcon className="w-8 h-8 inline-block mr-2 text-orange-500" />
-                Administration des Giveaways
+                {messages.admin.giveaways.title}
               </h1>
               <p className="text-slate-400">
-                Gérez les giveaways, créez de nouveaux concours et effectuez les tirages.
+                {messages.admin.giveaways.subtitle}
               </p>
             </div>
             <Card className="bg-slate-800/50 border-slate-700">
@@ -282,9 +292,9 @@ export default function AdminGiveawaysPage() {
                 <div className="flex items-center space-x-3">
                   <PowerIcon className={`w-5 h-5 ${giveawaysEnabled ? 'text-green-400' : 'text-red-400'}`} />
                   <div>
-                    <p className="text-sm font-medium text-white">Page Giveaways</p>
+                    <p className="text-sm font-medium text-white">{messages.admin.giveaways.page.pageGiveaways}</p>
                     <p className="text-xs text-slate-400">
-                      {giveawaysEnabled ? 'Visible par les joueurs' : 'Masquée aux joueurs'}
+                      {giveawaysEnabled ? messages.admin.giveaways.page.visibleToPlayers : messages.admin.giveaways.page.hiddenFromPlayers}
                     </p>
                   </div>
                   <Switch
@@ -308,7 +318,7 @@ export default function AdminGiveawaysPage() {
                   <TrophyIcon className="w-6 h-6 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-400">Giveaways Actifs</p>
+                  <p className="text-sm text-slate-400">{messages.admin.giveaways.stats.active}</p>
                   <p className="text-2xl font-bold text-white">{activeGiveaways.length}</p>
                 </div>
               </div>
@@ -322,7 +332,7 @@ export default function AdminGiveawaysPage() {
                   <GiftIcon className="w-6 h-6 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-400">Giveaways Terminés</p>
+                  <p className="text-sm text-slate-400">{messages.admin.giveaways.stats.ended}</p>
                   <p className="text-2xl font-bold text-white">{endedGiveaways.length}</p>
                 </div>
               </div>
@@ -336,7 +346,7 @@ export default function AdminGiveawaysPage() {
                   <UserGroupIcon className="w-6 h-6 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-400">Total Participants</p>
+                  <p className="text-sm text-slate-400">{messages.admin.giveaways.stats.totalParticipants}</p>
                   <p className="text-2xl font-bold text-white">
                     {giveaways.reduce((total, g) => total + (g.entries?.length || 0), 0)}
                   </p>
@@ -350,13 +360,13 @@ export default function AdminGiveawaysPage() {
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border-slate-700">
             <TabsTrigger value="list" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-              Liste des Giveaways
+              {messages.admin.giveaways.tabs.list}
             </TabsTrigger>
             <TabsTrigger value="create" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-              Créer un Giveaway
+              {messages.admin.giveaways.tabs.create}
             </TabsTrigger>
             <TabsTrigger value="manage" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-              Gestion Automatique
+              {messages.admin.giveaways.tabs.manage}
             </TabsTrigger>
           </TabsList>
 
@@ -364,16 +374,16 @@ export default function AdminGiveawaysPage() {
           <TabsContent value="list">
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-white">Tous les Giveaways</h2>
+                <h2 className="text-xl font-semibold text-white">{messages.admin.giveaways.list.title}</h2>
                 <Button onClick={() => refetch()} disabled={loading}>
-                  {loading ? 'Chargement...' : 'Actualiser'}
+                  {loading ? messages.admin.giveaways.list.loading : messages.admin.giveaways.list.refresh}
                 </Button>
               </div>
 
               {loading ? (
                 <Card className="bg-slate-800/50 border-slate-700">
                   <CardContent className="p-8 text-center">
-                    <p className="text-slate-300">Chargement des giveaways...</p>
+                    <p className="text-slate-300">{messages.admin.giveaways.list.loading}</p>
                   </CardContent>
                 </Card>
               ) : (
@@ -401,24 +411,29 @@ export default function AdminGiveawaysPage() {
                               >
                                 {giveaway.status}
                               </Badge>
+                              {giveaway.isPrivate && (
+                                <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40">
+                                  {messages.admin.giveaways.list.private} · {giveaway.requiredAffiliateCode}
+                                </Badge>
+                              )}
                             </div>
                             <p className="text-muted-foreground mb-3">{giveaway.description}</p>
                             
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                               <div>
-                                <span className="text-muted-foreground">Prix:</span>
+                                <span className="text-muted-foreground">{messages.admin.giveaways.list.price}</span>
                                 <p className="font-medium">{giveaway.prize}</p>
                               </div>
                               <div>
-                                <span className="text-muted-foreground">Coût entrée:</span>
-                                <p className="font-medium">{giveaway.ticketPrice} fragments</p>
+                                <span className="text-muted-foreground">{messages.admin.giveaways.list.entryPrice}</span>
+                                <p className="font-medium">{giveaway.ticketPrice} {messages.admin.giveaways.list.fragments}</p>
                               </div>
                               <div>
-                                <span className="text-muted-foreground">Participants:</span>
+                                <span className="text-muted-foreground">{messages.admin.giveaways.list.participants}</span>
                                 <p className="font-medium">{giveaway.entries?.length || 0}</p>
                               </div>
                               <div>
-                                <span className="text-muted-foreground">Entrées:</span>
+                                <span className="text-muted-foreground">{messages.admin.giveaways.list.entries}</span>
                                 <p className="font-medium">{giveaway.soldTickets} / {giveaway.maxTickets}</p>
                               </div>
                             </div>
@@ -427,7 +442,7 @@ export default function AdminGiveawaysPage() {
                               <div className="mt-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
                                 <p className="text-sm text-green-800 dark:text-green-200">
                                   <TrophyIcon className="w-4 h-4 inline mr-1" />
-                                  Gagnant: {giveaway.winnerId.slice(-6)}
+                                  {messages.admin.giveaways.list.winner} {giveaway.winnerId.slice(-6)}
                                 </p>
                               </div>
                             )}
@@ -441,7 +456,7 @@ export default function AdminGiveawaysPage() {
                                 className="bg-orange-500 hover:bg-orange-600"
                               >
                                 <PlayIcon className="w-4 h-4 mr-1" />
-                                Tirer maintenant
+                                {messages.admin.giveaways.list.drawNow}
                               </Button>
                             )}
                             
@@ -451,7 +466,7 @@ export default function AdminGiveawaysPage() {
                               variant="destructive"
                             >
                               <TrashIcon className="w-4 h-4 mr-1" />
-                              Supprimer
+                              {messages.admin.giveaways.list.delete}
                             </Button>
                           </div>
                         </div>
@@ -463,13 +478,13 @@ export default function AdminGiveawaysPage() {
                     <Card className="bg-slate-800/50 border-slate-700">
                       <CardContent className="p-8 text-center">
                         <GiftIcon className="w-16 h-16 mx-auto mb-4 text-slate-400" />
-                        <h3 className="text-xl font-semibold mb-2 text-white">Aucun giveaway</h3>
+                        <h3 className="text-xl font-semibold mb-2 text-white">{messages.admin.giveaways.list.noGiveaways}</h3>
                         <p className="text-slate-400 mb-6">
-                          Créez votre premier giveaway pour commencer.
+                          {messages.admin.giveaways.list.noGiveawaysDesc}
                         </p>
                         <Button onClick={() => setSelectedTab('create')}>
                           <PlusIcon className="w-4 h-4 mr-2" />
-                          Créer un giveaway
+                          {messages.admin.giveaways.list.createGiveaway}
                         </Button>
                       </CardContent>
                     </Card>
@@ -483,14 +498,14 @@ export default function AdminGiveawaysPage() {
           <TabsContent value="create">
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">Créer un nouveau Giveaway</CardTitle>
+                <CardTitle className="text-white">{messages.admin.giveaways.create.title}</CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleCreateGiveaway} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="title">Titre *</Label>
+                        <Label htmlFor="title">{messages.admin.giveaways.form.titleLabel}</Label>
                         <Input
                           id="title"
                           value={form.title}
@@ -501,7 +516,7 @@ export default function AdminGiveawaysPage() {
                       </div>
 
                       <div>
-                        <Label>Prix à gagner — skin Skinplace *</Label>
+                        <Label>{messages.admin.giveaways.form.prizeLabel}</Label>
                         {selectedSkin ? (
                           <div className="flex items-center gap-3 mt-1 p-3 rounded-md border border-orange-500/60 bg-slate-700/50">
                             {selectedSkin.icon_url && (
@@ -517,7 +532,7 @@ export default function AdminGiveawaysPage() {
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">{selectedSkin.steam_market_hash_name}</p>
                               <p className="text-xs text-slate-400">
-                                {selectedSkin.price != null ? `~${selectedSkin.price.toFixed(2)} $` : 'prix inconnu'}
+                                {selectedSkin.price != null ? `~${selectedSkin.price.toFixed(2)} $` : messages.admin.giveaways.form.priceUnknown}
                                 {selectedSkin.exterior ? ` · ${selectedSkin.exterior}` : ''}
                                 {selectedSkin.rarity ? ` · ${selectedSkin.rarity}` : ''}
                               </p>
@@ -532,7 +547,7 @@ export default function AdminGiveawaysPage() {
                               <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                               <Input
                                 className="pl-9"
-                                placeholder="Rechercher un skin CS2 (ex: AK-47 Redline)..."
+                                placeholder={messages.admin.giveaways.form.prizeSearchPlaceholder}
                                 value={skinSearch}
                                 onChange={(e) => handleSkinSearchChange(e.target.value)}
                                 onFocus={() => skinResults.length > 0 && setShowDropdown(true)}
@@ -584,13 +599,13 @@ export default function AdminGiveawaysPage() {
                         )}
                         {!selectedSkin && (
                           <p className="text-xs text-slate-400 mt-1">
-                            Ou saisis manuellement ci-dessous si le skin n&apos;est pas trouvé.
+                            {messages.admin.giveaways.form.prizeManualHint}
                           </p>
                         )}
                         {!selectedSkin && (
                           <Input
                             className="mt-1"
-                            placeholder="Nom manuel du prix (fallback)"
+                            placeholder={messages.admin.giveaways.form.prizeManualPlaceholder}
                             value={form.prize}
                             onChange={(e) => setForm((prev) => ({ ...prev, prize: e.target.value }))}
                           />
@@ -598,7 +613,7 @@ export default function AdminGiveawaysPage() {
                       </div>
 
                       <div>
-                        <Label htmlFor="ticketPrice">Coût par entrée (fragments)</Label>
+                        <Label htmlFor="ticketPrice">{messages.admin.giveaways.form.entryPriceLabel}</Label>
                         <Input
                           id="ticketPrice"
                           type="number"
@@ -608,7 +623,7 @@ export default function AdminGiveawaysPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="rewardValueCents">Coût réel du lot (centimes €)</Label>
+                        <Label htmlFor="rewardValueCents">{messages.admin.giveaways.form.rewardValueLabel}</Label>
                         <Input
                           id="rewardValueCents"
                           type="number"
@@ -623,7 +638,7 @@ export default function AdminGiveawaysPage() {
 
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="maxTickets">Nombre maximum d’entrées (pool)</Label>
+                        <Label htmlFor="maxTickets">{messages.admin.giveaways.form.maxTicketsLabel}</Label>
                         <Input
                           id="maxTickets"
                           type="number"
@@ -633,7 +648,7 @@ export default function AdminGiveawaysPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="winnerCount">Nombre de gagnants</Label>
+                        <Label htmlFor="winnerCount">{messages.admin.giveaways.form.winnerCountLabel}</Label>
                         <Input
                           id="winnerCount"
                           type="number"
@@ -645,7 +660,7 @@ export default function AdminGiveawaysPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="durationType">Type (durée marketing)</Label>
+                        <Label htmlFor="durationType">{messages.admin.giveaways.form.durationTypeLabel}</Label>
                         <select
                           id="durationType"
                           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -660,19 +675,19 @@ export default function AdminGiveawaysPage() {
                         </select>
                       </div>
                       <div>
-                        <Label htmlFor="maxEntriesPerUser">Max entrées / user (vide = illimité)</Label>
+                        <Label htmlFor="maxEntriesPerUser">{messages.admin.giveaways.form.maxEntriesPerUserLabel}</Label>
                         <Input
                           id="maxEntriesPerUser"
                           type="number"
                           min="1"
-                          placeholder="Illimité"
+                          placeholder={messages.admin.giveaways.form.maxEntriesPlaceholder}
                           value={form.maxEntriesPerUser}
                           onChange={(e) => setForm((prev) => ({ ...prev, maxEntriesPerUser: e.target.value }))}
                         />
                       </div>
 
                       <div>
-                        <Label htmlFor="duration">Durée (en minutes)</Label>
+                        <Label htmlFor="duration">{messages.admin.giveaways.form.durationLabel}</Label>
                         <Input
                           id="duration"
                           type="number"
@@ -681,19 +696,51 @@ export default function AdminGiveawaysPage() {
                           onChange={(e) => setForm(prev => ({ ...prev, durationMinutes: parseInt(e.target.value) || 1 }))}
                         />
                         <p className="text-xs text-muted-foreground mt-1">
-                          Le giveaway se terminera automatiquement après cette durée
+                          {messages.admin.giveaways.form.durationHelp}
                         </p>
                       </div>
                     </div>
                   </div>
 
+                  {/* Accès privé affilié */}
+                  <div className="rounded-lg border border-purple-500/30 bg-purple-950/10 p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-purple-300 font-semibold">{messages.admin.giveaways.form.privateTitle}</Label>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {messages.admin.giveaways.form.privateDescription}
+                        </p>
+                      </div>
+                      <Switch
+                        checked={form.isPrivate}
+                        onCheckedChange={(v) => setForm((prev) => ({ ...prev, isPrivate: v, requiredAffiliateCode: v ? prev.requiredAffiliateCode : '' }))}
+                        className="data-[state=checked]:bg-purple-500"
+                      />
+                    </div>
+                    {form.isPrivate && (
+                      <div>
+                        <Label htmlFor="requiredAffiliateCode">{messages.admin.giveaways.form.affiliateCodeLabel}</Label>
+                        <Input
+                          id="requiredAffiliateCode"
+                          placeholder={messages.admin.giveaways.form.affiliateCodePlaceholder}
+                          value={form.requiredAffiliateCode}
+                          onChange={(e) => setForm((prev) => ({ ...prev, requiredAffiliateCode: e.target.value }))}
+                          className="mt-1 font-mono"
+                        />
+                        <p className="text-xs text-slate-400 mt-1">
+                          {messages.admin.giveaways.form.affiliateCodeHint}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
                   <div>
-                    <Label htmlFor="description">Description *</Label>
+                    <Label htmlFor="description">{messages.admin.giveaways.form.descriptionLabel}</Label>
                     <Textarea
                       id="description"
                       value={form.description}
                       onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder={messages.admin?.giveaways?.descriptionPlaceholder || "Décrivez le giveaway et le prix à gagner..."}
+                      placeholder={messages.admin.giveaways.descriptionPlaceholder}
                       rows={4}
                       required
                     />
@@ -705,11 +752,11 @@ export default function AdminGiveawaysPage() {
                       variant="outline"
                       onClick={() => setSelectedTab('list')}
                     >
-                      Annuler
+                      {messages.admin.giveaways.form.cancel}
                     </Button>
                     <Button type="submit" disabled={isCreating}>
                       <PlusIcon className="w-4 h-4 mr-2" />
-                      {isCreating ? 'Création...' : 'Créer le giveaway'}
+                      {isCreating ? messages.admin.giveaways.form.creating : messages.admin.giveaways.form.create}
                     </Button>
                   </div>
                 </form>
@@ -724,26 +771,26 @@ export default function AdminGiveawaysPage() {
               
               <Card className="bg-slate-800/50 border-slate-700">
                 <CardHeader>
-                  <CardTitle className="text-white">Informations</CardTitle>
+                  <CardTitle className="text-white">{messages.admin.giveaways.info.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4 text-sm">
                     <div>
-                      <h4 className="font-semibold mb-2">Fonctionnement automatique :</h4>
+                      <h4 className="font-semibold mb-2">{messages.admin.giveaways.info.autoTitle}</h4>
                       <ul className="space-y-1 text-muted-foreground">
-                        <li>• Les giveaways se terminent automatiquement à leur date d&apos;expiration</li>
-                        <li>• Utilisez le bouton {"Effectuer le tirage automatique"} pour traiter les giveaways expirés</li>
-                        <li>• Le tirage est basé sur un algorithme pondéré (plus de tickets = plus de chances)</li>
-                        <li>• Chaque tirage génère un seed cryptographique pour la transparence</li>
+                        <li>• {messages.admin.giveaways.info.autoPoint1}</li>
+                        <li>• {messages.admin.giveaways.info.autoPoint2}</li>
+                        <li>• {messages.admin.giveaways.info.autoPoint3}</li>
+                        <li>• {messages.admin.giveaways.info.autoPoint4}</li>
                       </ul>
                     </div>
                     
                     <div>
-                      <h4 className="font-semibold mb-2">Gestion manuelle :</h4>
+                      <h4 className="font-semibold mb-2">{messages.admin.giveaways.info.manualTitle}</h4>
                       <ul className="space-y-1 text-muted-foreground">
-                        <li>• Vous pouvez forcer le tirage d&apos;un giveaway actif depuis la liste</li>
-                        <li>• Les giveaways peuvent être supprimés (attention : action irréversible)</li>
-                        <li>• Les participants sont automatiquement notifiés des résultats</li>
+                        <li>• {messages.admin.giveaways.info.manualPoint1}</li>
+                        <li>• {messages.admin.giveaways.info.manualPoint2}</li>
+                        <li>• {messages.admin.giveaways.info.manualPoint3}</li>
                       </ul>
                     </div>
                   </div>

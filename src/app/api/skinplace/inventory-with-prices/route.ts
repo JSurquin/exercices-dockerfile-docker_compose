@@ -298,10 +298,11 @@ export async function GET(request: NextRequest) {
       price_original_centimes: Math.round(item.price_original * 100),
       price_real_centimes: Math.round(item.price_real * 100),
       
-      // Statut (les items de Skin.place sont généralement tradables sauf si skip_reason)
-      tradable: true,
+      // Statut : untouchable = Skinplace ne peut pas acheter cet item (hors stock)
+      tradable: !item.untouchable && !item.skip_reason,
       marketable: true,
-      skip_reason: item.skip_reason,
+      // Si untouchable sans skip_reason explicite, on marque system_lock (overstock)
+      skip_reason: item.skip_reason || (item.untouchable ? 'system_lock' : undefined),
       
       // Données supplémentaires
       descriptions: item.descriptions || [],

@@ -9,10 +9,19 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') as GiveawayStatus | null;
 
-    const where = status ? { status } : {};
-
     const session = await auth.api.getSession({ headers: request.headers });
     const viewerId = session?.user?.id ?? null;
+
+    // Lire le code affilié depuis le cookie ou le query param
+    const cookieHeader = request.headers.get('cookie') ?? '';
+    const affiliateCookie = cookieHeader
+      .split(';')
+      .find((c) => c.trim().startsWith('ctf_affiliate_ref='))
+      ?.split('=')[1]
+      ?.trim();
+    const affiliateRef = searchParams.get('ref') ?? affiliateCookie ?? null;
+
+    const where = status ? { status } : {};
 
     const giveaways = await prisma.giveaway.findMany({
       where,
@@ -36,7 +45,14 @@ export async function GET(request: NextRequest) {
       orderBy: [{ status: 'asc' }, { endDate: 'asc' }],
     });
 
-    return NextResponse.json(giveaways.map((g) => enrichGiveawayForViewer(g, viewerId)));
+    // Filtrer les giveaways privés : visibles uniquement si le code affilié correspond
+    const visible = giveaways.filter((g) => {
+      if (!g.isPrivate) return true;
+      if (!g.requiredAffiliateCode) return true;
+      return affiliateRef === g.requiredAffiliateCode;
+    });
+
+    return NextResponse.json(visible.map((g) => enrichGiveawayForViewer(g, viewerId)));
   } catch (error) {
     console.error('Error fetching giveaways:', error);
     return NextResponse.json(
@@ -62,6 +78,8 @@ export async function POST(request: NextRequest) {
       durationType,
       winnerCount,
       maxEntriesPerUser,
+      isPrivate,
+      requiredAffiliateCode,
     } = body;
 
     if (!title || !description || !prize || !ticketPrice || !maxTickets || !endDate) {
@@ -100,6 +118,10 @@ export async function POST(request: NextRequest) {
           typeof maxEntriesPerUser === 'number' && maxEntriesPerUser >= 1
             ? Math.floor(maxEntriesPerUser)
             : null,
+        isPrivate: isPrivate === true,
+        requiredAffiliateCode: isPrivate && typeof requiredAffiliateCode === 'string' && requiredAffiliateCode.trim()
+          ? requiredAffiliateCode.trim()
+          : null,
       },
     });
 

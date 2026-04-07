@@ -152,12 +152,16 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
 
   const getSkipReasonCategory = useCallback((skipReason?: string): SkipReasonCategory | null => {
     if (!skipReason) return null;
-    const r = skipReason.toLowerCase();
-    if (r === 'system_lock' || r === 'over_stock' || r === 'overstocked' || r === 'overstock') return 'overstock';
-    if (r === 'low_price' || r === 'price_too_low') return 'low_price';
-    if (r === 'high_price') return 'high_volatility';
-    if (r === 'unliquid' || r === 'low_demand') return 'unliquid';
-    if (r === 'trade_lock') return 'trade_lock';
+    const r = skipReason.toLowerCase().trim();
+    if (!r) return null;
+
+    // Valeurs officielles Skinplace: trade_lock, low_price, high_price, system_lock
+    if (r === 'trade_lock' || r.includes('trade_lock') || r.includes('trade lock')) return 'trade_lock';
+    if (r === 'low_price' || r === 'price_too_low' || r.includes('low_price') || r.includes('low price')) return 'low_price';
+    if (r === 'high_price' || r === 'high_volatility' || r.includes('high_price') || r.includes('high_volatility') || r.includes('volatile')) return 'high_volatility';
+    if (r === 'unliquid' || r === 'low_demand' || r.includes('unliquid') || r.includes('illiquid') || r.includes('low_demand')) return 'unliquid';
+    // system_lock = overstock côté Skinplace
+    if (r === 'system_lock' || r === 'over_stock' || r === 'overstocked' || r === 'overstock' || r.includes('overstock') || r.includes('over_stock') || r.includes('system_lock')) return 'overstock';
     return 'other';
   }, []);
 
