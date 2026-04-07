@@ -20,14 +20,14 @@ interface EmailOptions {
   text?: string;
 }
 
-async function loadSmtpConfig(): Promise<{ config: EmailConfig; from: string; alertEmailTo: string }> {
+async function loadSmtpConfig(): Promise<{ config: EmailConfig; from: string; alertEmailTo: string; bccAdminEnabled: boolean }> {
   let dbSettings: Record<string, string> = {};
 
   try {
     const rows = await prisma.siteSettings.findMany({
       where: {
         key: {
-          in: ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_password', 'smtp_from', 'smtp_secure', 'smtp_alert_email_to'],
+          in: ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_password', 'smtp_from', 'smtp_secure', 'smtp_alert_email_to', 'smtp_bcc_admin_enabled'],
         },
       },
     });
@@ -47,11 +47,13 @@ async function loadSmtpConfig(): Promise<{ config: EmailConfig; from: string; al
     ? dbSettings['smtp_secure'] === 'true'
     : process.env.SMTP_SECURE === 'true';
   const alertEmailTo = dbSettings['smtp_alert_email_to'] || process.env.ALERT_EMAIL_TO || '';
+  const bccAdminEnabled = dbSettings['smtp_bcc_admin_enabled'] === 'true';
 
   return {
     config: { host, port, secure, auth: { user, pass } },
     from,
     alertEmailTo,
+    bccAdminEnabled,
   };
 }
 
@@ -61,8 +63,8 @@ class EmailService {
    * Pas de cache : garantit que les modifications admin sont prises en compte immédiatement,
    * même dans un contexte multi-worker (Next.js serverless).
    */
-  private async getTransporter(): Promise<{ transporter: nodemailer.Transporter; from: string; alertEmailTo: string }> {
-    const { config, from, alertEmailTo } = await loadSmtpConfig();
+  private async getTransporter(): Promise<{ transporter: nodemailer.Transporter; from: string; alertEmailTo: string; bccAdminEnabled: boolean }> {
+    const { config, from, alertEmailTo, bccAdminEnabled } = await loadSmtpConfig();
 
     const transporter = nodemailer.createTransport(config as SMTPTransport.Options);
 
@@ -73,7 +75,7 @@ class EmailService {
       user: config.auth.user,
     });
 
-    return { transporter, from, alertEmailTo };
+    return { transporter, from, alertEmailTo, bccAdminEnabled };
   }
 
   /** Conservé pour compatibilité, ne fait plus rien (pas de cache à vider) */
@@ -87,25 +89,32 @@ class EmailService {
 
   async sendEmail(options: EmailOptions): Promise<boolean> {
     try {
-      const { transporter, from } = await this.getTransporter();
+      const { transporter, from, alertEmailTo, bccAdminEnabled } = await this.getTransporter();
 
       logger.info('Sending email', {
         to: options.to,
         subject: options.subject,
       });
 
-      const info = await transporter.sendMail({
+      const mailOptions: nodemailer.SendMailOptions = {
         from,
         to: options.to,
         subject: options.subject,
         html: options.html,
         text: options.text,
-      });
+      };
+
+      if (bccAdminEnabled && alertEmailTo && alertEmailTo !== options.to) {
+        mailOptions.bcc = alertEmailTo;
+      }
+
+      const info = await transporter.sendMail(mailOptions);
 
       logger.success('Email sent successfully', {
         messageId: info.messageId,
         to: options.to,
         subject: options.subject,
+        bcc: bccAdminEnabled ? alertEmailTo : undefined,
       });
 
       return true;

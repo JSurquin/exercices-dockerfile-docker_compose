@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       phase?: string | null;
     };
 
-    const r = result as Record<string, unknown>;
+    const r = result as unknown as Record<string, unknown>;
     const rawItems: RawItem[] = Array.isArray(r?.data) ? (r.data as RawItem[]) : [];
 
     const items = rawItems.map((s) => ({

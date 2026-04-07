@@ -17,6 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTheme } from "next-themes";
@@ -29,6 +30,7 @@ import {
   MoonIcon,
   SunIcon,
   ExclamationTriangleIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 import TradeLinkConfig from "@/components/settings/trade-link-config";
@@ -48,7 +50,28 @@ export default function SettingsPage() {
     language: locale,
     theme: theme || "dark",
   });
+  const [emailInput, setEmailInput] = useState(user?.email ?? "");
+  const [isEmailSaving, setIsEmailSaving] = useState(false);
   const canUseTwoFactor = user?.role !== "ADMIN" && user?.role !== "MODERATOR";
+
+  const handleEmailUpdate = async () => {
+    if (!emailInput.trim()) return;
+    setIsEmailSaving(true);
+    try {
+      const res = await fetch("/api/user/update-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailInput.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Erreur");
+      toast.success(messages.settings.profile.emailSuccess);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setIsEmailSaving(false);
+    }
+  };
 
   const handleSaveSettings = async () => {
     try {
@@ -163,6 +186,38 @@ export default function SettingsPage() {
                         value={new Date(user.joinedAt).toLocaleDateString()}
                         disabled
                       />
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <EnvelopeIcon className="w-4 h-4 text-muted-foreground" />
+                      <Label className="text-base font-semibold">
+                        {messages.settings.profile.email}
+                      </Label>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {messages.settings.profile.emailHelp}
+                    </p>
+                    <div className="flex gap-2 max-w-md">
+                      <Input
+                        type="email"
+                        value={emailInput}
+                        onChange={(e) => setEmailInput(e.target.value)}
+                        placeholder={messages.settings.profile.emailPlaceholder}
+                        className="flex-1"
+                      />
+                      <Button
+                        onClick={handleEmailUpdate}
+                        disabled={isEmailSaving || !emailInput.trim() || emailInput.trim() === user.email}
+                        size="sm"
+                      >
+                        {isEmailSaving
+                          ? messages.settings.profile.emailSaving
+                          : messages.settings.profile.emailSave}
+                      </Button>
                     </div>
                   </div>
 

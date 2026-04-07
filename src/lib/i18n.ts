@@ -2065,7 +2065,14 @@ export const messages: Record<Locale, Messages> = {
         level: "Niveau",
         totalXp: "XP Total",
         tickets: "Tickets",
-        volume: "Volume"
+        volume: "Volume",
+        email: "Adresse email",
+        emailPlaceholder: "votre@email.com",
+        emailHelp: "Utilisée pour recevoir les notifications. Steam ne partage pas votre email.",
+        emailSave: "Mettre à jour l'email",
+        emailSaving: "Mise à jour...",
+        emailSuccess: "Email mis à jour avec succès",
+        emailNotSet: "Aucun email renseigné"
       },
       security: {
         title: "Sécurité du compte",
@@ -2406,6 +2413,8 @@ export const messages: Record<Locale, Messages> = {
           secureDesc: "Activer TLS/SSL pour la connexion SMTP",
           alertEmailTo: "Email de contact admin (alertes)",
           alertEmailToPlaceholder: "admin@example.com",
+          bccAdmin: "Copie BCC admin activée",
+          bccAdminDesc: "Recevoir une copie en BCC de chaque email envoyé aux utilisateurs (utile pour déboguer en production).",
           sourceDb: "Source : base de données",
           sourceEnv: "Source : .env (fallback)",
           save: "Sauvegarder la configuration",
@@ -6191,6 +6200,8 @@ export const messages: Record<Locale, Messages> = {
           secureDesc: "Enable TLS/SSL for SMTP connection",
           alertEmailTo: "Admin contact email (alerts)",
           alertEmailToPlaceholder: "admin@example.com",
+          bccAdmin: "Admin BCC copy enabled",
+          bccAdminDesc: "Receive a BCC copy of every email sent to users (useful for debugging in production).",
           sourceDb: "Source: database",
           sourceEnv: "Source: .env (fallback)",
           save: "Save configuration",
@@ -8303,7 +8314,14 @@ export const messages: Record<Locale, Messages> = {
         level: "Level",
         totalXp: "Total XP",
         tickets: "Tickets",
-        volume: "Volume"
+        volume: "Volume",
+        email: "Email address",
+        emailPlaceholder: "your@email.com",
+        emailHelp: "Used to receive notifications. Steam does not share your email.",
+        emailSave: "Update email",
+        emailSaving: "Updating...",
+        emailSuccess: "Email updated successfully",
+        emailNotSet: "No email set"
       },
       security: {
         title: "Account security",
@@ -10908,6 +10926,8 @@ export const messages: Record<Locale, Messages> = {
           secureDesc: "为 SMTP 连接启用 TLS/SSL",
           alertEmailTo: "管理员联系邮箱（警报）",
           alertEmailToPlaceholder: "admin@example.com",
+          bccAdmin: "管理员 BCC 抄送已启用",
+          bccAdminDesc: "接收发送给用户的每封邮件的 BCC 副本（用于生产调试）。",
           sourceDb: "来源：数据库",
           sourceEnv: "来源：.env（备用）",
           save: "保存配置",
@@ -12852,7 +12872,14 @@ export const messages: Record<Locale, Messages> = {
         level: "等级",
         totalXp: "总经验值",
         tickets: "票券",
-        volume: "交易量"
+        volume: "交易量",
+        email: "电子邮件地址",
+        emailPlaceholder: "your@email.com",
+        emailHelp: "用于接收通知。Steam 不分享您的邮箱。",
+        emailSave: "更新邮箱",
+        emailSaving: "更新中...",
+        emailSuccess: "邮箱更新成功",
+        emailNotSet: "未设置邮箱"
       },
       security: {
         title: "账户安全",

@@ -12,6 +12,7 @@ const SMTP_KEYS = [
   'smtp_from',
   'smtp_secure',
   'smtp_alert_email_to',
+  'smtp_bcc_admin_enabled',
 ] as const;
 
 const smtpSchema = z.object({
@@ -22,6 +23,7 @@ const smtpSchema = z.object({
   from: z.string().email().optional(),
   secure: z.boolean().optional(),
   alertEmailTo: z.string().email().optional(),
+  bccAdminEnabled: z.boolean().optional(),
 });
 
 export type SmtpSettingsPayload = z.infer<typeof smtpSchema>;
@@ -34,6 +36,7 @@ export interface SmtpSettingsResponse {
   from: string;
   secure: boolean;
   alertEmailTo: string;
+  bccAdminEnabled: boolean;
   isFromDb: boolean;
 }
 
@@ -54,6 +57,7 @@ async function getSmtpFromDb(): Promise<Partial<SmtpSettingsResponse> & { isFrom
     from: map['smtp_from'] || undefined,
     secure: map['smtp_secure'] === 'true',
     alertEmailTo: map['smtp_alert_email_to'] || undefined,
+    bccAdminEnabled: map['smtp_bcc_admin_enabled'] === 'true',
     isFromDb: true,
   };
 }
@@ -75,6 +79,7 @@ export async function GET(request: NextRequest) {
       from: dbSettings.from ?? process.env.SMTP_FROM ?? '',
       secure: dbSettings.secure ?? process.env.SMTP_SECURE === 'true',
       alertEmailTo: dbSettings.alertEmailTo ?? process.env.ALERT_EMAIL_TO ?? '',
+      bccAdminEnabled: dbSettings.bccAdminEnabled ?? false,
       isFromDb: dbSettings.isFromDb,
     };
 
@@ -105,6 +110,7 @@ export async function PATCH(request: NextRequest) {
       from: 'smtp_from',
       secure: 'smtp_secure',
       alertEmailTo: 'smtp_alert_email_to',
+      bccAdminEnabled: 'smtp_bcc_admin_enabled',
     };
 
     for (const [field, value] of Object.entries(patch)) {

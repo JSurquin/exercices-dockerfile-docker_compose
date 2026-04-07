@@ -66,6 +66,7 @@ interface SmtpSettingsData {
   from: string;
   secure: boolean;
   alertEmailTo: string;
+  bccAdminEnabled: boolean;
   isFromDb: boolean;
 }
 
@@ -647,6 +648,18 @@ export default function AdminSettingsPage() {
                       <Switch
                         checked={smtpForm.secure ?? smtpSettings.secure}
                         onCheckedChange={(checked) => setSmtpForm(f => ({ ...f, secure: checked }))}
+                      />
+                    </div>
+
+                    {/* BCC admin toggle */}
+                    <div className="flex items-center justify-between p-4 rounded-lg bg-orange-500/5 border border-orange-500/20">
+                      <div className="space-y-1">
+                        <Label className="text-slate-200">{messages.admin.settings.smtpSettings.bccAdmin}</Label>
+                        <p className="text-sm text-slate-400">{messages.admin.settings.smtpSettings.bccAdminDesc}</p>
+                      </div>
+                      <Switch
+                        checked={smtpForm.bccAdminEnabled ?? smtpSettings.bccAdminEnabled}
+                        onCheckedChange={(checked) => setSmtpForm(f => ({ ...f, bccAdminEnabled: checked }))}
                       />
                     </div>
 

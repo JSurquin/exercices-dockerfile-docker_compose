@@ -947,6 +947,13 @@ export interface Messages {
       totalXp: string;
       tickets: string;
       volume: string;
+      email: string;
+      emailPlaceholder: string;
+      emailHelp: string;
+      emailSave: string;
+      emailSaving: string;
+      emailSuccess: string;
+      emailNotSet: string;
     };
     security: {
       title: string;
@@ -1491,6 +1498,8 @@ export interface Messages {
         secureDesc: string;
         alertEmailTo: string;
         alertEmailToPlaceholder: string;
+        bccAdmin: string;
+        bccAdminDesc: string;
         sourceDb: string;
         sourceEnv: string;
         save: string;

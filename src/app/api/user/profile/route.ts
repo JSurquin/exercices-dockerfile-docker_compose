@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
       name: string | null;
       image: string | null;
       fragments: number;
+      email: string | null;
     } | null = null;
 
     try {
@@ -37,6 +38,7 @@ export async function GET(request: NextRequest) {
           name: true,
           image: true,
           fragments: true,
+          email: true,
         },
       });
     } catch (error) {
@@ -57,6 +59,7 @@ export async function GET(request: NextRequest) {
       steamId64: steamId,
       username: displayName,
       avatar: displayAvatar,
+      email: dbRow?.email ?? null,
       role: user.role || 'USER',
       twoFactorEnabled: dbRow?.twoFactorEnabled ?? false,
       tradeLink: dbRow?.tradeLink ?? null,
