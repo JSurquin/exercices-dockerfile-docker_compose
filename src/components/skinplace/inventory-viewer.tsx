@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, RefreshCw, DollarSign } from 'lucide-react';
 import { useLocale } from '@/components/providers/locale-provider';
+import { getRarityHexColor } from '@/lib/cs2-constants';
 
 interface InventoryViewerProps {
   steamId: string;
@@ -72,16 +73,7 @@ export function InventoryViewer({
   };
 
   const getRarityColor = (rarity: string) => {
-    const colors: Record<string, string> = {
-      'Consumer Grade': 'bg-gray-500',
-      'Industrial Grade': 'bg-blue-500',
-      'Mil-Spec Grade': 'bg-purple-500',
-      'Restricted': 'bg-pink-500',
-      'Classified': 'bg-orange-500',
-      'Covert': 'bg-red-500',
-      'Contraband': 'bg-yellow-500',
-    };
-    return colors[rarity] || 'bg-gray-500';
+    return getRarityHexColor(rarity);
   };
 
   if (loading) {
@@ -190,7 +182,8 @@ export function InventoryViewer({
                       <div className="flex items-center gap-2 mt-2">
                         <Badge 
                           variant="secondary" 
-                          className={`text-xs ${getRarityColor(item.rarity)} text-white`}
+                          className="text-xs text-white"
+                          style={{ backgroundColor: getRarityColor(item.rarity) }}
                         >
                           {item.rarity}
                         </Badge>

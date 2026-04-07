@@ -1,4 +1,5 @@
 import React from "react";
+import { getRarityHexColor } from "@/lib/cs2-constants";
 
 interface IconProps {
   className?: string;
@@ -146,16 +147,7 @@ export const WeaponGradeIndicator: React.FC<{
   className?: string;
 }> = ({ grade, className = "h-4 w-4" }) => {
   const getGradeColor = (grade: string) => {
-    const colors = {
-      "Consumer Grade": "#B0C3D9",
-      "Industrial Grade": "#5E98D9",
-      "Mil-Spec": "#4B69FF",
-      Restricted: "#8847FF",
-      Classified: "#D32CE6",
-      Covert: "#EB4B4B",
-      Extraordinary: "#FFD700",
-    };
-    return colors[grade as keyof typeof colors] || "#B0C3D9";
+    return getRarityHexColor(grade);
   };
 
   return (

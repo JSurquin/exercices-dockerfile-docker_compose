@@ -1,6 +1,8 @@
 // Générateur d'images CS2 optimisées avec des techniques modernes
 // Utilise des SVG, gradients et patterns pour créer des visuels CS2 authentiques
 
+import { getRarityHexColor } from '@/lib/cs2-constants';
+
 export const generateCS2WeaponImage = (
   weapon: string,
   skin: string,
@@ -8,19 +10,8 @@ export const generateCS2WeaponImage = (
   width: number = 400,
   height: number = 250
 ): string => {
-  const rarityColors = {
-    "Consumer Grade": ["#b0c3d9", "#8fb1d3"],
-    "Industrial Grade": ["#5e98d9", "#4a7ba7"],
-    "Mil-Spec": ["#4b69ff", "#3b52cc"],
-    Restricted: ["#8847ff", "#6936cc"],
-    Classified: ["#d32ce6", "#a623b8"],
-    Covert: ["#eb4b4b", "#cc3333"],
-    Extraordinary: ["#ffd700", "#e6c200"],
-  };
-
-  const [primaryColor, secondaryColor] =
-    rarityColors[rarity as keyof typeof rarityColors] ||
-    rarityColors["Consumer Grade"];
+  const primaryColor = getRarityHexColor(rarity);
+  const secondaryColor = primaryColor + 'cc';
 
   const svg = `
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
@@ -283,8 +274,8 @@ export const defaultCS2Images = {
   weapons: {
     ak47_redline: generateCS2WeaponImage("AK-47", "Redline", "Classified"),
     awp_dragon_lore: generateCS2WeaponImage("AWP", "Dragon Lore", "Covert"),
-    m4a4_howl: generateCS2WeaponImage("M4A4", "Howl", "Extraordinary"),
-    karambit_fade: generateCS2WeaponImage("Karambit", "Fade", "Extraordinary"),
+    m4a4_howl: generateCS2WeaponImage("M4A4", "Howl", "Exceedingly Rare"),
+    karambit_fade: generateCS2WeaponImage("Karambit", "Fade", "Exceedingly Rare"),
   },
 
   backgrounds: {

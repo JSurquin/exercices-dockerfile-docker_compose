@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { NormalizedInventoryResponse, NormalizedInventoryItem } from '@/app/api/skinplace/inventory-with-prices/route';
 import { currencyConverter } from '@/lib/currency-converter';
 import { useLocale } from '@/components/providers/locale-provider';
+import { RARITY_ORDER, getRarityHexColor, normalizeRarity } from '@/lib/cs2-constants';
 
 interface UseSkinplaceInventoryOptions {
   onError?: (error: string) => void;
@@ -65,19 +66,9 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
   }, []);
 
   const sortItemsByRarity = useCallback((items: NormalizedInventoryItem[]): NormalizedInventoryItem[] => {
-    const rarityOrder = {
-      'Contraband': 7,
-      'Covert': 6,
-      'Classified': 5,
-      'Restricted': 4,
-      'Mil-Spec Grade': 3,
-      'Industrial Grade': 2,
-      'Consumer Grade': 1,
-    };
-
     return [...items].sort((a, b) => {
-      const rarityA = rarityOrder[a.rarity as keyof typeof rarityOrder] || 0;
-      const rarityB = rarityOrder[b.rarity as keyof typeof rarityOrder] || 0;
+      const rarityA = RARITY_ORDER[normalizeRarity(a.rarity)] ?? 0;
+      const rarityB = RARITY_ORDER[normalizeRarity(b.rarity)] ?? 0;
       return rarityB - rarityA;
     });
   }, []);
@@ -153,16 +144,7 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
 
   // Obtenir la couleur de rareté
   const getRarityColor = useCallback((rarity: string): string => {
-    const colors: Record<string, string> = {
-      'Consumer Grade': '#b0c3d9',
-      'Industrial Grade': '#5e98d9',
-      'Mil-Spec Grade': '#4b69ff',
-      'Restricted': '#8847ff',
-      'Classified': '#d32ce6',
-      'Covert': '#eb4b4b',
-      'Contraband': '#e4ae39',
-    };
-    return colors[rarity] || '#b0c3d9';
+    return getRarityHexColor(rarity);
   }, []);
 
   // Catégories de skip_reason pour l'affichage conditionnel

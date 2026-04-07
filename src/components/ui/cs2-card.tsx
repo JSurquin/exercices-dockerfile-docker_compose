@@ -2,6 +2,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { getRarityHexColor } from "@/lib/cs2-constants";
 
 interface CS2CardProps {
   children: React.ReactNode;
@@ -73,16 +74,17 @@ export const CS2WeaponCard: React.FC<CS2WeaponCardProps> = ({
   className,
 }) => {
   const getRarityColor = (rarity: string) => {
-    const colors = {
-      "Consumer Grade": "from-gray-500 to-gray-600",
-      "Industrial Grade": "from-blue-500 to-blue-600",
-      "Mil-Spec": "from-indigo-500 to-indigo-600",
-      Restricted: "from-purple-500 to-purple-600",
-      Classified: "from-pink-500 to-pink-600",
-      Covert: "from-red-500 to-red-600",
-      Extraordinary: "from-yellow-500 to-orange-500",
+    const normalized = getRarityHexColor(rarity);
+    const gradients: Record<string, string> = {
+      '#b0c3d9': 'from-gray-500 to-gray-600',
+      '#5e98d9': 'from-blue-500 to-blue-600',
+      '#4b69ff': 'from-indigo-500 to-indigo-600',
+      '#8847ff': 'from-purple-500 to-purple-600',
+      '#d32ce6': 'from-pink-500 to-pink-600',
+      '#eb4b4b': 'from-red-500 to-red-600',
+      '#ffd700': 'from-yellow-500 to-orange-500',
     };
-    return colors[rarity as keyof typeof colors] || colors["Consumer Grade"];
+    return gradients[normalized] || 'from-gray-500 to-gray-600';
   };
 
   const getConditionStars = (condition: string) => {

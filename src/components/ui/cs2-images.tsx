@@ -1,6 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { getRarityHexColor } from "@/lib/cs2-constants";
 
 interface CS2ImageProps {
   src?: string;
@@ -58,16 +59,7 @@ const generatePlaceholder = (type: string, rarity?: string) => {
 };
 
 function getRarityColor(rarity: string): string {
-  const colors = {
-    "Consumer Grade": "#b0c3d9",
-    "Industrial Grade": "#5e98d9",
-    "Mil-Spec": "#4b69ff",
-    Restricted: "#8847ff",
-    Classified: "#d32ce6",
-    Covert: "#eb4b4b",
-    Extraordinary: "#ffd700",
-  };
-  return colors[rarity as keyof typeof colors] || colors["Consumer Grade"];
+  return getRarityHexColor(rarity);
 }
 
 export const CS2Image: React.FC<CS2ImageProps> = ({
