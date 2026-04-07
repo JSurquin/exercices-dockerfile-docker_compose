@@ -634,7 +634,7 @@ export default function AdminLegalPagesPage() {
 
             {/* Content tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <TabsList className="bg-slate-800">
                   <TabsTrigger value="fr" className="data-[state=active]:bg-orange-500">
                     🇫🇷 Français

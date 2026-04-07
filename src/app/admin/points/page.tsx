@@ -126,7 +126,7 @@ export default function AdminPointsPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="space-y-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
@@ -225,16 +225,16 @@ export default function AdminPointsPage() {
         <Tabs defaultValue="metrics" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border-slate-700">
             <TabsTrigger value="metrics" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-              <ChartBarIcon className="w-4 h-4 mr-2" />
-              Métriques
+              <ChartBarIcon className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Métriques</span>
             </TabsTrigger>
             <TabsTrigger value="leaderboard" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-              <TrophyIcon className="w-4 h-4 mr-2" />
-              Classement
+              <TrophyIcon className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Classement</span>
             </TabsTrigger>
             <TabsTrigger value="config" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-              <Cog6ToothIcon className="w-4 h-4 mr-2" />
-              Configuration
+              <Cog6ToothIcon className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Configuration</span>
             </TabsTrigger>
           </TabsList>
 
@@ -583,7 +583,7 @@ export default function AdminPointsPage() {
 
                     <div className="bg-slate-700/30 rounded-lg p-4">
                       <p className="text-sm text-slate-300 font-medium mb-2">Simulation du streak</p>
-                      <div className="grid grid-cols-4 gap-2 text-xs">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                         {[1, 3, 7, editConfig.streakMaxDays].map((day) => {
                           const eff = Math.min(day, editConfig.streakMaxDays);
                           const mult = 1 + (eff - 1) * (editConfig.streakMultiplier - 1);

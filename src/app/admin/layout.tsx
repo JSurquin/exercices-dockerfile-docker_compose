@@ -94,7 +94,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
           {/* Page Content */}
           <main className="flex-1 overflow-y-auto">
-            <div className="container mx-auto px-4 py-6 md:px-6 lg:px-8">
+            <div className="container mx-auto px-4 py-6 pt-20 md:px-6 md:pt-6 lg:px-8">
               {children}
             </div>
           </main>

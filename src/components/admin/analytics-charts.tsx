@@ -553,8 +553,8 @@ export function AdminAnalyticsCharts() {
 
       {/* Graphiques principaux */}
       <Tabs defaultValue="volume" className="w-full">
-        <div className="flex items-center justify-between mb-6">
-          <TabsList className="bg-slate-800/50">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <TabsList className="bg-slate-800/50 flex-wrap h-auto">
             <TabsTrigger value="volume" className="data-[state=active]:bg-slate-700">
               Volume & Trades
             </TabsTrigger>

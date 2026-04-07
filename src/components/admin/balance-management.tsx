@@ -294,15 +294,16 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
             <RefreshCw className="h-4 w-4" />
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="border-slate-700">
-                <TableHead className="text-slate-400">Date</TableHead>
-                <TableHead className="text-slate-400">Type</TableHead>
-                <TableHead className="text-slate-400">Montant</TableHead>
-                <TableHead className="text-slate-400">Solde après</TableHead>
-                <TableHead className="text-slate-400">Raison</TableHead>
+                <TableHead className="text-slate-400 whitespace-nowrap">Date</TableHead>
+                <TableHead className="text-slate-400 whitespace-nowrap">Type</TableHead>
+                <TableHead className="text-slate-400 whitespace-nowrap">Montant</TableHead>
+                <TableHead className="text-slate-400 whitespace-nowrap">Solde après</TableHead>
+                <TableHead className="text-slate-400 whitespace-nowrap">Raison</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -329,6 +330,7 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

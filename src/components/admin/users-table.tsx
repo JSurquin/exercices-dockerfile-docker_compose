@@ -272,18 +272,19 @@ export function AdminUsersTable() {
       </div>
 
       {/* Table */}
-      <Card className="bg-slate-800/30 border-slate-700">
+      <Card className="bg-slate-800/30 border-slate-700 overflow-hidden">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="border-slate-700">
-              <TableHead className="text-slate-300">Utilisateur</TableHead>
-              <TableHead className="text-slate-300">Steam ID</TableHead>
-              <TableHead className="text-slate-300">KYC</TableHead>
-              <TableHead className="text-slate-300">Niveau</TableHead>
-              <TableHead className="text-slate-300">Volume</TableHead>
-              <TableHead className="text-slate-300">Tickets</TableHead>
-              <TableHead className="text-slate-300">Inscrit le</TableHead>
-              <TableHead className="text-slate-300">Actions</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Utilisateur</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Steam ID</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">KYC</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Niveau</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Volume</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Tickets</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Inscrit le</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -365,6 +366,7 @@ export function AdminUsersTable() {
             ))}
           </TableBody>
         </Table>
+        </div>
       </Card>
 
       {users.length === 0 && (

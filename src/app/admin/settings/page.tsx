@@ -250,14 +250,14 @@ export default function AdminSettingsPage() {
     <div className="space-y-6">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
               {messages.admin.settings.title}
             </h1>
             <p className="text-slate-300">{messages.admin.settings.subtitle}</p>
           </div>
-          <Badge variant="outline" className="bg-orange-500/10 border-orange-500/50 text-orange-400">
+          <Badge variant="outline" className="bg-orange-500/10 border-orange-500/50 text-orange-400 shrink-0">
             <ShieldCheckIcon className="w-4 h-4 mr-1" />
             {messages.admin.settings.badge}
           </Badge>
@@ -267,24 +267,24 @@ export default function AdminSettingsPage() {
       {/* Profile Overview */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
         <Card className="bg-slate-800/50 border-2 border-orange-500/50 backdrop-blur-sm shadow-lg shadow-orange-500/20">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-6">
-              <Avatar className="h-20 w-20 border-2 border-orange-500/50">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+              <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-2 border-orange-500/50 shrink-0">
                 <AvatarImage src={settings.personalInfo.avatar} />
                 <AvatarFallback className="bg-orange-500/20 text-orange-400 text-xl">
                   {settings.personalInfo.name?.charAt(0) || 'A'}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-white">{settings.personalInfo.name || 'Administrateur'}</h2>
-                <p className="text-slate-300">{settings.personalInfo.email}</p>
-                <div className="flex items-center gap-4 mt-2">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl sm:text-2xl font-bold text-white truncate">{settings.personalInfo.name || 'Administrateur'}</h2>
+                <p className="text-slate-300 truncate">{settings.personalInfo.email}</p>
+                <div className="flex flex-wrap items-center gap-2 mt-2">
                   <Badge variant="outline" className="bg-green-500/10 border-green-500/50 text-green-400">
                     <CheckCircleIcon className="w-4 h-4 mr-1" />
                     {messages.admin.settings.accountVerified}
                   </Badge>
                   {settings.personalInfo.steamUsername && (
-                    <Badge variant="outline" className="bg-blue-500/10 border-blue-500/50 text-blue-400">
+                    <Badge variant="outline" className="bg-blue-500/10 border-blue-500/50 text-blue-400 max-w-[200px] truncate">
                       Steam: {settings.personalInfo.steamUsername}
                     </Badge>
                   )}
@@ -298,7 +298,7 @@ export default function AdminSettingsPage() {
       {/* Settings Tabs */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
         <Tabs defaultValue="personal" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 bg-slate-800/50 backdrop-blur-sm border border-slate-700">
+          <TabsList className="flex flex-wrap h-auto gap-1 bg-slate-800/50 backdrop-blur-sm border border-slate-700 p-1">
             {[
               { value: 'personal', icon: UserIcon, label: messages.admin.settings.tabs.personal },
               { value: 'security', icon: ShieldCheckIcon, label: messages.admin.settings.tabs.security },
@@ -309,10 +309,11 @@ export default function AdminSettingsPage() {
               <TabsTrigger
                 key={value}
                 value={value}
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
+                className="flex-1 min-w-[120px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
               >
-                <Icon className="w-4 h-4 mr-2" />
-                {label}
+                <Icon className="w-4 h-4 mr-2 shrink-0" />
+                <span className="hidden sm:inline">{label}</span>
+                <span className="sm:hidden">{label.substring(0, 4)}</span>
               </TabsTrigger>
             ))}
           </TabsList>

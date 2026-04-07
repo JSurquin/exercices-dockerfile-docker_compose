@@ -187,7 +187,7 @@ export default function AdminChatPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
@@ -195,8 +195,8 @@ export default function AdminChatPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold mb-2 flex items-center text-white">
-            <ChatBubbleLeftRightIcon className="w-8 h-8 mr-3 text-orange-500" />
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2 flex items-center gap-2 text-white">
+            <ChatBubbleLeftRightIcon className="w-7 h-7 sm:w-8 sm:h-8 text-orange-500 shrink-0" />
             {messages.admin.chat.title}
           </h1>
           <p className="text-slate-400">

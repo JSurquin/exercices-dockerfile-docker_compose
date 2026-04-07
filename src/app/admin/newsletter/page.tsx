@@ -251,7 +251,7 @@ export default function NewsletterAdminPage() {
                 </div>
 
                 {/* Subscribers Table */}
-                <div className="rounded-md border border-slate-700">
+                <div className="rounded-md border border-slate-700 overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow className="border-slate-700">

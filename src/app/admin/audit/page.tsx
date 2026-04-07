@@ -234,22 +234,22 @@ export default function AuditPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6">
+      <div className="flex flex-wrap justify-between items-start gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-white">{auditMessages.title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">{auditMessages.title}</h1>
           <p className="text-slate-400">
             {auditMessages.subtitle}
           </p>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex flex-wrap gap-2">
           <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminAuditDashboard })} variant="outline" className="border-slate-600 text-white hover:bg-slate-800">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            {auditMessages.refresh}
+            <RefreshCw className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">{auditMessages.refresh}</span>
           </Button>
           <Button onClick={exportLogs} variant="outline" className="border-slate-600 text-white hover:bg-slate-800">
-            <Download className="h-4 w-4 mr-2" />
-            {auditMessages.export}
+            <Download className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">{auditMessages.export}</span>
           </Button>
         </div>
       </div>

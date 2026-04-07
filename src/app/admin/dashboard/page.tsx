@@ -314,11 +314,11 @@ function DashboardContent() {
         transition={{ duration: 0.5 }}
         className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
       >
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent md:text-4xl">
-            {messages.admin.dashboard.title}
-          </h1>
-        </div>
+          <div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent sm:text-3xl md:text-4xl">
+              {messages.admin.dashboard.title}
+            </h1>
+          </div>
         {quickActions}
       </motion.div>
 

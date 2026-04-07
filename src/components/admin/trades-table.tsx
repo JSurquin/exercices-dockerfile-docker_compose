@@ -248,17 +248,18 @@ export function AdminTradesTable() {
       </div>
 
       {/* Table */}
-      <Card className="bg-slate-800/30 border-slate-700">
+      <Card className="bg-slate-800/30 border-slate-700 overflow-hidden">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="border-slate-700">
-              <TableHead className="text-slate-300">Ticket ID</TableHead>
-              <TableHead className="text-slate-300">Utilisateur</TableHead>
-              <TableHead className="text-slate-300">Statut</TableHead>
-              <TableHead className="text-slate-300">Montant</TableHead>
-              <TableHead className="text-slate-300">Items</TableHead>
-              <TableHead className="text-slate-300">Créé le</TableHead>
-              <TableHead className="text-slate-300">Actions</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Ticket ID</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Utilisateur</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Statut</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Montant</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Items</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Créé le</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -320,6 +321,7 @@ export function AdminTradesTable() {
             ))}
           </TableBody>
         </Table>
+        </div>
       </Card>
 
       {trades.length === 0 && (

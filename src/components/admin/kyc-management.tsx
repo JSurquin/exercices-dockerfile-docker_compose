@@ -243,16 +243,17 @@ export function AdminKYCManagement() {
       </div>
 
       {/* Table */}
-      <Card className="bg-slate-800/30 border-slate-700">
+      <Card className="bg-slate-800/30 border-slate-700 overflow-hidden">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="border-slate-700">
-              <TableHead className="text-slate-300">Utilisateur</TableHead>
-              <TableHead className="text-slate-300">Type</TableHead>
-              <TableHead className="text-slate-300">Statut</TableHead>
-              <TableHead className="text-slate-300">Uploadé le</TableHead>
-              <TableHead className="text-slate-300">Révisé le</TableHead>
-              <TableHead className="text-slate-300">Actions</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Utilisateur</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Type</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Statut</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Uploadé le</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Révisé le</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -327,6 +328,7 @@ export function AdminKYCManagement() {
             ))}
           </TableBody>
         </Table>
+        </div>
       </Card>
 
       {kycDocuments.length === 0 && (

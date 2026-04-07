@@ -32,7 +32,7 @@ export default function AdminGamificationEconomyPage() {
     (n ?? 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">Économie fragments & giveaways</h1>
         <p className="text-slate-400 text-sm">
