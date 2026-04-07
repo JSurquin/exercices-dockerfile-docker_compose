@@ -39,46 +39,41 @@ const RARITY_LABELS: Record<string, string> = {
 
 export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: SkinPickerModalProps) {
   const [search, setSearch] = useState('');
-  const [items, setItems] = useState<SkinItem[]>([]);
+  const [allItems, setAllItems] = useState<SkinItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [highlighted, setHighlighted] = useState<string | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchedRef = useRef(false);
 
-  const fetchItems = useCallback(async (q: string) => {
+  const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/admin/skinplace-items-search?search=${encodeURIComponent(q)}&limit=50`,
+        `/api/admin/skinplace-items-search?limit=500`,
         { credentials: 'include' }
       );
       const data = await res.json();
-      setItems(data.items ?? []);
+      setAllItems(data.items ?? []);
     } catch {
-      setItems([]);
+      setAllItems([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (!open) return;
-    if (search.trim().length < 2) {
-      setItems([]);
-      setLoading(false);
-      return;
+    if (open && !fetchedRef.current) {
+      fetchedRef.current = true;
+      fetchItems();
     }
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => fetchItems(search), 350);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [search, open, fetchItems]);
-
-  useEffect(() => {
-    if (open) {
+    if (!open) {
       setSearch('');
     }
-  }, [open]);
+  }, [open, fetchItems]);
+
+  const q = search.trim().toLowerCase();
+  const items = q
+    ? allItems.filter((s) => s.steam_market_hash_name.toLowerCase().includes(q))
+    : allItems;
 
   const handleSelect = (skin: SkinItem) => {
     onSelect(skin);
@@ -110,21 +105,21 @@ export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: Skin
         </DialogHeader>
 
         <div className="overflow-y-auto" style={{ maxHeight: '60vh' }}>
-          {items.length === 0 && !loading && (
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+              <span className="text-sm animate-pulse">Chargement des articles…</span>
+            </div>
+          )}
+          {!loading && items.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-slate-400">
               <MagnifyingGlassIcon className="w-12 h-12 mb-3 opacity-40" />
               <p className="text-sm">
-                {search.trim().length < 2
-                  ? 'Tapez au moins 2 caractères pour rechercher'
-                  : 'Aucun résultat pour cette recherche'}
+                {q ? 'Aucun résultat pour cette recherche' : 'Aucun article disponible'}
               </p>
-              {search.trim().length < 2 && (
-                <p className="text-xs text-slate-500 mt-1">ex : AK-47, AWP, Karambit…</p>
-              )}
             </div>
           )}
 
-          {items.length > 0 && (
+          {!loading && items.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-6">
               {items.map((skin) => {
                 const isSelected = selected?.steam_market_hash_name === skin.steam_market_hash_name;
@@ -212,7 +207,11 @@ export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: Skin
 
         <div className="flex items-center justify-between px-6 py-4 border-t border-slate-700/60 bg-slate-900/80">
           <p className="text-xs text-slate-400">
-            {items.length > 0 ? `${items.length} article${items.length > 1 ? 's' : ''} trouvé${items.length > 1 ? 's' : ''}` : ''}
+            {allItems.length > 0 && (
+              q
+                ? `${items.length} / ${allItems.length} article${allItems.length > 1 ? 's' : ''}`
+                : `${allItems.length} article${allItems.length > 1 ? 's' : ''}`
+            )}
           </p>
           <Button
             type="button"
