@@ -291,30 +291,25 @@ class SkinplaceService {
     page = 1,
     limit = 50,
     filters?: {
-      rarity?: string;
-      exterior?: string;
-      stat_trak?: boolean;
-      min_price?: number;
-      max_price?: number;
       search?: string;
     }
   ): Promise<SkinplaceListingsResponse> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
-    
-    if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined) {
-          params.append(key, value.toString());
-        }
-      });
+    const body: Record<string, unknown> = {
+      game: 'csgo',
+      limit,
+      offset: (page - 1) * limit,
+    };
+
+    if (filters?.search) {
+      body.search = filters.search;
     }
 
     return this.makeRequest<SkinplaceListingsResponse>(
-      `/api/v3/items/listing?${params}`,
-      { method: 'GET' },
+      '/api/v3/items/listing',
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      },
       true
     );
   }

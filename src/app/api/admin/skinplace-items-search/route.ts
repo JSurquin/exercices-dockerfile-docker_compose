@@ -14,15 +14,11 @@ export async function GET(request: NextRequest) {
   try {
     const result = await skinplaceService.getItemListings(1, limit, {
       search: search || undefined,
-    } as Parameters<typeof skinplaceService.getItemListings>[2]);
+    });
 
-    console.log('[skinplace-items-search] raw result keys:', Object.keys(result ?? {}));
-    console.log('[skinplace-items-search] raw result (truncated):', JSON.stringify(result).slice(0, 500));
-
+    // L'API retourne { data: ListingSteamItem[], status: "success" }
     type RawItem = {
       steam_market_hash_name?: string;
-      market_hash_name?: string;
-      name?: string;
       icon_url?: string;
       price?: number;
       rarity?: string;
@@ -32,22 +28,11 @@ export async function GET(request: NextRequest) {
       phase?: string | null;
     };
 
-    type AnyResult = Record<string, unknown>;
-    const r = result as AnyResult;
-
-    const rawItems: RawItem[] = (
-      Array.isArray(r?.data) ? r.data :
-      Array.isArray((r?.data as AnyResult)?.items) ? (r.data as AnyResult).items :
-      Array.isArray((r?.data as AnyResult)?.data) ? (r.data as AnyResult).data :
-      Array.isArray(r?.items) ? r.items :
-      Array.isArray(r?.results) ? r.results :
-      []
-    ) as RawItem[];
-
-    console.log('[skinplace-items-search] rawItems count:', rawItems.length);
+    const r = result as Record<string, unknown>;
+    const rawItems: RawItem[] = Array.isArray(r?.data) ? (r.data as RawItem[]) : [];
 
     const items = rawItems.map((s) => ({
-      steam_market_hash_name: s.steam_market_hash_name ?? s.market_hash_name ?? s.name ?? '',
+      steam_market_hash_name: s.steam_market_hash_name ?? '',
       icon_url: s.icon_url
         ? s.icon_url.startsWith('http')
           ? s.icon_url
