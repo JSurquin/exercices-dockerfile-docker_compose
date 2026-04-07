@@ -24,7 +24,7 @@ export type CS2Exterior = keyof typeof CS2_EXTERIORS;
 // Fonction utilitaire pour normaliser la rareté venant de l'API
 export function normalizeRarity(apiRarity: string): CS2Rarity {
   for (const [key, value] of Object.entries(CS2_RARITIES)) {
-    if (value.apiValues.includes(apiRarity)) {
+    if ((value.apiValues as readonly string[]).includes(apiRarity)) {
       return key as CS2Rarity;
     }
   }
