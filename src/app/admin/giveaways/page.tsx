@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,10 +22,11 @@ import {
   TrashIcon,
   PlayIcon,
   PowerIcon,
-  MagnifyingGlassIcon,
   XMarkIcon,
+  CubeIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import { SkinPickerModal } from '@/components/admin/skin-picker-modal';
 
 interface SkinItem {
   steam_market_hash_name: string;
@@ -79,46 +80,11 @@ export default function AdminGiveawaysPage() {
     maxEntriesPerUser: '',
   });
 
-  const [skinSearch, setSkinSearch] = useState('');
-  const [skinResults, setSkinResults] = useState<SkinItem[]>([]);
-  const [skinSearchLoading, setSkinSearchLoading] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [selectedSkin, setSelectedSkin] = useState<SkinItem | null>(null);
-  const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const searchSkins = useCallback(async (q: string) => {
-    if (q.trim().length < 2) {
-      setSkinResults([]);
-      setShowDropdown(false);
-      return;
-    }
-    setSkinSearchLoading(true);
-    try {
-      const res = await fetch(
-        `/api/admin/skinplace-items-search?search=${encodeURIComponent(q)}&limit=20`,
-        { credentials: 'include' }
-      );
-      const data = await res.json();
-      setSkinResults(data.items ?? []);
-      setShowDropdown(true);
-    } catch {
-      setSkinResults([]);
-    } finally {
-      setSkinSearchLoading(false);
-    }
-  }, []);
-
-  const handleSkinSearchChange = (v: string) => {
-    setSkinSearch(v);
-    if (searchDebounce.current) clearTimeout(searchDebounce.current);
-    searchDebounce.current = setTimeout(() => searchSkins(v), 400);
-  };
+  const [skinPickerOpen, setSkinPickerOpen] = useState(false);
 
   const handleSelectSkin = (skin: SkinItem) => {
     setSelectedSkin(skin);
-    setSkinSearch(skin.steam_market_hash_name);
-    setShowDropdown(false);
     setForm((prev) => ({
       ...prev,
       prize: skin.steam_market_hash_name,
@@ -130,9 +96,6 @@ export default function AdminGiveawaysPage() {
 
   const handleClearSkin = () => {
     setSelectedSkin(null);
-    setSkinSearch('');
-    setSkinResults([]);
-    setShowDropdown(false);
     setForm((prev) => ({ ...prev, prize: '', prizeImageUrl: '', steamMarketHashName: '' }));
   };
 
@@ -216,8 +179,6 @@ export default function AdminGiveawaysPage() {
         maxEntriesPerUser: '',
       });
       setSelectedSkin(null);
-      setSkinSearch('');
-
       setSelectedTab('list');
     } catch (error) {
       console.error('Erreur lors de la création:', error);
@@ -518,97 +479,56 @@ export default function AdminGiveawaysPage() {
                       <div>
                         <Label>{messages.admin.giveaways.form.prizeLabel}</Label>
                         {selectedSkin ? (
-                          <div className="flex items-center gap-3 mt-1 p-3 rounded-md border border-orange-500/60 bg-slate-700/50">
+                          <div className="flex items-center gap-3 mt-1 p-3 rounded-xl border border-orange-500/60 bg-slate-700/50">
                             {selectedSkin.icon_url && (
                               <Image
                                 src={selectedSkin.icon_url}
                                 alt={selectedSkin.steam_market_hash_name}
-                                width={56}
-                                height={40}
-                                className="object-contain rounded shrink-0"
+                                width={64}
+                                height={48}
+                                className="object-contain rounded shrink-0 drop-shadow-lg"
                                 unoptimized
                               />
                             )}
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{selectedSkin.steam_market_hash_name}</p>
-                              <p className="text-xs text-slate-400">
+                              <p className="text-sm font-semibold text-white truncate">{selectedSkin.steam_market_hash_name}</p>
+                              <p className="text-xs text-slate-400 mt-0.5">
                                 {selectedSkin.price != null ? `~${selectedSkin.price.toFixed(2)} $` : messages.admin.giveaways.form.priceUnknown}
                                 {selectedSkin.exterior ? ` · ${selectedSkin.exterior}` : ''}
                                 {selectedSkin.rarity ? ` · ${selectedSkin.rarity}` : ''}
                               </p>
                             </div>
-                            <button type="button" onClick={handleClearSkin} className="text-slate-400 hover:text-red-400 shrink-0">
-                              <XMarkIcon className="w-4 h-4" />
-                            </button>
+                            <div className="flex gap-2 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => setSkinPickerOpen(true)}
+                                className="text-xs text-orange-400 hover:text-orange-300 transition-colors px-2 py-1 rounded border border-orange-500/40 hover:border-orange-400"
+                              >
+                                Changer
+                              </button>
+                              <button type="button" onClick={handleClearSkin} className="text-slate-400 hover:text-red-400 transition-colors">
+                                <XMarkIcon className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
                         ) : (
-                          <div className="relative mt-1" ref={dropdownRef}>
-                            <div className="relative">
-                              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                              <Input
-                                className="pl-9"
-                                placeholder={messages.admin.giveaways.form.prizeSearchPlaceholder}
-                                value={skinSearch}
-                                onChange={(e) => handleSkinSearchChange(e.target.value)}
-                                onFocus={() => skinResults.length > 0 && setShowDropdown(true)}
-                                autoComplete="off"
-                              />
-                              {skinSearchLoading && (
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">…</span>
-                              )}
+                          <button
+                            type="button"
+                            onClick={() => setSkinPickerOpen(true)}
+                            className="mt-1 w-full flex items-center gap-3 rounded-xl border-2 border-dashed border-slate-600 hover:border-orange-500/60 bg-slate-800/40 hover:bg-slate-700/40 px-4 py-4 transition-all group"
+                          >
+                            <div className="p-2 rounded-lg bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
+                              <CubeIcon className="w-6 h-6 text-orange-400" />
                             </div>
-                            {showDropdown && skinResults.length > 0 && (
-                              <div className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md border border-slate-600 bg-slate-800 shadow-xl max-h-72 overflow-y-auto">
-                                {skinResults.map((skin) => (
-                                  <button
-                                    key={skin.steam_market_hash_name}
-                                    type="button"
-                                    className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-slate-700 transition-colors"
-                                    onClick={() => handleSelectSkin(skin)}
-                                  >
-                                    {skin.icon_url ? (
-                                      <Image
-                                        src={skin.icon_url}
-                                        alt={skin.steam_market_hash_name}
-                                        width={48}
-                                        height={34}
-                                        className="object-contain rounded shrink-0"
-                                        unoptimized
-                                      />
-                                    ) : (
-                                      <div className="w-12 h-8 bg-slate-700 rounded shrink-0" />
-                                    )}
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm truncate">{skin.steam_market_hash_name}</p>
-                                      <p className="text-xs text-slate-400">
-                                        {skin.price != null ? `~${skin.price.toFixed(2)} $` : '—'}
-                                        {skin.exterior ? ` · ${skin.exterior}` : ''}
-                                        {skin.rarity_color ? (
-                                          <span
-                                            className="ml-1 inline-block w-2 h-2 rounded-full"
-                                            style={{ background: `#${skin.rarity_color}` }}
-                                          />
-                                        ) : null}
-                                      </p>
-                                    </div>
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        {!selectedSkin && (
-                          <p className="text-xs text-slate-400 mt-1">
-                            {messages.admin.giveaways.form.prizeManualHint}
-                          </p>
-                        )}
-                        {!selectedSkin && (
-                          <Input
-                            className="mt-1"
-                            placeholder={messages.admin.giveaways.form.prizeManualPlaceholder}
-                            value={form.prize}
-                            onChange={(e) => setForm((prev) => ({ ...prev, prize: e.target.value }))}
-                          />
+                            <div className="text-left">
+                              <p className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
+                                Choisir un article
+                              </p>
+                              <p className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors">
+                                Parcourir le catalogue Skinplace
+                              </p>
+                            </div>
+                          </button>
                         )}
                       </div>
 
@@ -800,6 +720,13 @@ export default function AdminGiveawaysPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <SkinPickerModal
+        open={skinPickerOpen}
+        onOpenChange={setSkinPickerOpen}
+        onSelect={handleSelectSkin}
+        selected={selectedSkin}
+      />
     </div>
   );
 }
