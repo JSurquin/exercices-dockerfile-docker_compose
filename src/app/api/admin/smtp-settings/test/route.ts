@@ -10,15 +10,16 @@ export async function POST(request: NextRequest) {
     }
 
     await emailService.reload();
-    const ok = await emailService.testConnection();
+    const result = await emailService.testConnection();
 
-    if (ok) {
+    if (result.ok) {
       return NextResponse.json({ success: true });
     } else {
-      return NextResponse.json({ error: 'Connexion SMTP échouée' }, { status: 422 });
+      return NextResponse.json({ error: result.message }, { status: 422 });
     }
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('SMTP test error:', error);
-    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

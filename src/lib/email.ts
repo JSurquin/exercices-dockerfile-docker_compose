@@ -446,15 +446,16 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
     `;
   }
 
-  async testConnection(): Promise<boolean> {
+  async testConnection(): Promise<{ ok: true } | { ok: false; message: string }> {
     try {
       const { transporter } = await this.getTransporter();
       await transporter.verify();
       logger.success('Email service connection verified');
-      return true;
+      return { ok: true };
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       logger.error('Email service connection failed', error);
-      return false;
+      return { ok: false, message };
     }
   }
   // ========== NOTIFICATIONS AFFILIATION ==========
