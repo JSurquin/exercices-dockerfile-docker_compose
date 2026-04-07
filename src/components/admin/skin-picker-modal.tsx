@@ -62,6 +62,11 @@ export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: Skin
 
   useEffect(() => {
     if (!open) return;
+    if (search.trim().length < 2) {
+      setItems([]);
+      setLoading(false);
+      return;
+    }
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => fetchItems(search), 350);
     return () => {
@@ -109,10 +114,13 @@ export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: Skin
             <div className="flex flex-col items-center justify-center py-16 text-slate-400">
               <MagnifyingGlassIcon className="w-12 h-12 mb-3 opacity-40" />
               <p className="text-sm">
-                {search.length === 0
-                  ? 'Tapez un nom pour rechercher des skins'
+                {search.trim().length < 2
+                  ? 'Tapez au moins 2 caractères pour rechercher'
                   : 'Aucun résultat pour cette recherche'}
               </p>
+              {search.trim().length < 2 && (
+                <p className="text-xs text-slate-500 mt-1">ex : AK-47, AWP, Karambit…</p>
+              )}
             </div>
           )}
 
