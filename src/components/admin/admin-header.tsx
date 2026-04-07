@@ -32,6 +32,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '~/lib/auth-client';
 import { useTheme } from 'next-themes';
+import { useAuth } from '@/components/providers/auth-provider';
 
 interface Breadcrumb {
   label: string;
@@ -47,6 +48,7 @@ interface AdminHeaderProps {
 export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
+  const { logout } = useAuth();
   const [notificationsCount] = useState(3);
   const pathname = usePathname();
 
@@ -245,7 +247,7 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-slate-700" />
-              <DropdownMenuItem className="text-red-400 focus:bg-red-500/10 focus:text-red-300">
+              <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-400 focus:bg-red-500/10 focus:text-red-300">
                 <LogOut className="mr-2 h-4 w-4" />
                 Déconnexion
               </DropdownMenuItem>
