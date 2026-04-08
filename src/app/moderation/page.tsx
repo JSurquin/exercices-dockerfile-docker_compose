@@ -124,8 +124,17 @@ export default function ModerationPage() {
     });
   };
 
+  // Attendre le chargement de la session
+  if (isPending) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto" />
+      </div>
+    );
+  }
+
   // Vérifier les permissions
-  if (!session?.user || session.user.role !== 'MODERATOR' && session.user.role !== 'ADMIN') {
+  if (!session?.user || (session.user.role !== 'MODERATOR' && session.user.role !== 'ADMIN')) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>
@@ -360,11 +369,11 @@ export default function ModerationPage() {
 
                       {/* Actions — flex-shrink-0 pour ne jamais être compressées */}
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-shrink-0">
-                        {!conversation.assignedTo && user?.id && (
+                        {!conversation.assignedTo && session?.user?.id && (
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => assignConversation(conversation.id, user.id)}
+                            onClick={() => assignConversation(conversation.id, session.user!.id)}
                           >
                             S&apos;assigner
                           </Button>

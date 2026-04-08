@@ -113,7 +113,7 @@ export function ChatWidget() {
     <>
       {/* Chat Popup */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 md:w-[380px] md:h-[600px] chat-glass rounded-2xl shadow-2xl z-[9999] flex flex-col overflow-hidden animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 duration-200 pointer-events-auto">
+        <div className="fixed bottom-24 right-3 left-3 sm:left-auto sm:right-6 sm:w-[380px] h-[520px] sm:h-[600px] chat-glass rounded-2xl shadow-2xl z-[9999] flex flex-col overflow-hidden animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 duration-200 pointer-events-auto">
           {/* Header */}
           <div className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-500 to-red-600 text-white">
             <div className="flex items-center space-x-3">
@@ -324,9 +324,6 @@ export function ChatWidget() {
           <button
             className="h-14 w-14 rounded-full bg-orange-500 border-4 shadow-lg transition-all duration-200 group flex items-center justify-center cursor-pointer relative"
             onClick={handleToggleChat}
-            onMouseDown={() => console.log("🔥 MOUSE DOWN!")}
-            onMouseUp={() => console.log("🔥 MOUSE UP!")}
-            onMouseEnter={() => console.log("🔥 MOUSE ENTER!")}
             style={{ zIndex: 99999 }}
           >
             {isOpen ? (

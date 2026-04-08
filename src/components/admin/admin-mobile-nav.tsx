@@ -129,12 +129,12 @@ export function AdminMobileNav() {
 
   return (
     <>
-      {/* Burger Button */}
+      {/* Burger Button - aligné avec le header (h-14) */}
       <Button
         variant="ghost"
         size="icon"
         onClick={toggleMenu}
-        className="lg:hidden fixed top-4 left-4 z-50 bg-slate-800/90 backdrop-blur-sm border border-slate-700 text-white hover:bg-slate-700"
+        className="lg:hidden fixed top-0 left-0 z-50 h-14 w-14 rounded-none bg-transparent border-r border-b border-slate-700 text-white hover:bg-slate-800/80"
       >
         {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>

@@ -15,7 +15,7 @@ import { getVerification, updateUserKycStatus, isUserKycVerified } from '@/lib/k
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { verificationId: string } }
+  { params }: { params: Promise<{ verificationId: string }> }
 ) {
   try {
     // Vérifier l'authentification
@@ -31,7 +31,7 @@ export async function GET(
     }
 
     const userId = session.user.id;
-    const { verificationId } = params;
+    const { verificationId } = await params;
 
     console.log(`[KYCAID Poll] Polling verification ${verificationId} for user ${userId}`);
 

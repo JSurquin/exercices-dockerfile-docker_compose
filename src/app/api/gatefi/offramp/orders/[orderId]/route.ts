@@ -9,7 +9,7 @@ import { getOffRampOrderStatus } from '@/lib/gatefi-offramp';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
     // Vérifier l'authentification
@@ -25,7 +25,7 @@ export async function GET(
     }
 
     const userId = session.user.id;
-    const { orderId } = params;
+    const { orderId } = await params;
 
     // Vérifier que le payout appartient à l'utilisateur
     const payout = await prisma.payout.findFirst({

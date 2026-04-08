@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { queryKeys } from '@/lib/query-keys';
 
 interface ChatMessage {
@@ -28,26 +28,52 @@ const GUEST_CONVERSATION_KEY = 'guest_conversation_id';
 export function useChat() {
   const queryClient = useQueryClient();
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedId = localStorage.getItem(GUEST_CONVERSATION_KEY);
-      if (savedId) {
-        setConversationId(savedId);
-      }
-    }
-  }, []);
-
-  const { data: conversations = [] } = useQuery<Conversation[]>({
+  // Charger la liste des conversations de l'utilisateur (connecté ou invité)
+  const { data: conversationsData } = useQuery({
     queryKey: queryKeys.conversations,
     queryFn: async () => {
       const res = await fetch('/api/chat/conversations');
-      if (!res.ok) return [];
-      return res.json();
+      if (!res.ok) return { conversations: [] };
+      const data = await res.json();
+      return Array.isArray(data) ? { conversations: data } : data;
     },
     staleTime: 10_000,
   });
 
+  const conversations: Conversation[] = useMemo(
+    () => conversationsData?.conversations ?? [],
+    [conversationsData]
+  );
+
+  // Initialiser l'ID de conversation : depuis l'API (utilisateur connecté) ou localStorage (invité)
+  useEffect(() => {
+    if (initialized) return;
+
+    if (typeof window === 'undefined') return;
+
+    // Si l'utilisateur a des conversations côté serveur, prendre la plus récente active
+    if (conversations.length > 0) {
+      const active = conversations.find((c) => c.status === 'ACTIVE') ?? conversations[0];
+      if (active) {
+        setConversationId(active.id);
+        localStorage.setItem(GUEST_CONVERSATION_KEY, active.id);
+        setInitialized(true);
+        return;
+      }
+    }
+
+    // Sinon fallback localStorage (invité)
+    const savedId = localStorage.getItem(GUEST_CONVERSATION_KEY);
+    if (savedId) {
+      setConversationId(savedId);
+    }
+
+    setInitialized(true);
+  }, [conversations, initialized]);
+
+  // Charger la conversation courante avec polling
   const { data: currentConversation } = useQuery<Conversation>({
     queryKey: queryKeys.conversation(conversationId),
     queryFn: async () => {
@@ -77,15 +103,11 @@ export function useChat() {
     onSuccess: (data) => {
       const newConvId = data.id;
       setConversationId(newConvId);
-
       if (typeof window !== 'undefined') {
         localStorage.setItem(GUEST_CONVERSATION_KEY, newConvId);
       }
-
       queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.conversation(newConvId),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversation(newConvId) });
     },
   });
 
@@ -94,23 +116,16 @@ export function useChat() {
       if (!conversationId) {
         return createConversationMutation.mutateAsync(content);
       }
-
       const res = await fetch('/api/chat/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conversationId,
-          content,
-        }),
+        body: JSON.stringify({ conversationId, content }),
       });
-
       if (!res.ok) throw new Error('Failed to send message');
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.conversation(conversationId),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversation(conversationId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
     },
   });
@@ -128,7 +143,6 @@ export function useChat() {
     conversationId,
     sendMessage: (content: string) => sendMessageMutation.mutate(content),
     getUnreadCount,
-    isLoading:
-      createConversationMutation.isPending || sendMessageMutation.isPending,
+    isLoading: createConversationMutation.isPending || sendMessageMutation.isPending,
   };
 }

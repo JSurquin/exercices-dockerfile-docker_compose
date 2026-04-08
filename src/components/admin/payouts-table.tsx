@@ -323,50 +323,56 @@ export function AdminPayoutsTable() {
       </Card>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder={messages.components.admin.payouts.searchPlaceholder}
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-10 bg-slate-700 border-slate-600 text-white"
-          />
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder={messages.components.admin.payouts.searchPlaceholder}
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-10 bg-slate-700 border-slate-600 text-white"
+            />
+          </div>
+          
+          <Select onValueChange={handleStatusFilter}>
+            <SelectTrigger className="w-full sm:w-48 bg-slate-700 border-slate-600 text-white">
+              <SelectValue placeholder="Filtrer par statut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les statuts</SelectItem>
+              <SelectItem value="en_attente">{messages.components.admin.payouts?.pending ?? 'En attente'}</SelectItem>
+              <SelectItem value="en_attente_approbation">{messages.components.admin.payouts?.pendingApproval ?? 'En attente d\'approbation'}</SelectItem>
+              <SelectItem value="vérification_requise">{messages.components.admin.payouts?.verificationRequired ?? 'Vérification requise'}</SelectItem>
+              <SelectItem value="vérifié">{messages.components.admin.payouts?.verified ?? 'Vérifié'}</SelectItem>
+              <SelectItem value="planifié">{messages.components.admin.payouts?.scheduled ?? 'Planifié'}</SelectItem>
+              <SelectItem value="exécuté">{messages.components.admin.payouts?.executed ?? 'Exécuté'}</SelectItem>
+              <SelectItem value="payé">{messages.components.admin.payouts?.paid ?? 'Payé'}</SelectItem>
+              <SelectItem value="échoué">{messages.components.admin.payouts?.failed ?? 'Échoué'}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        
-        <Select onValueChange={handleStatusFilter}>
-          <SelectTrigger className="w-full sm:w-48 bg-slate-700 border-slate-600 text-white">
-            <SelectValue placeholder="Filtrer par statut" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les statuts</SelectItem>
-            <SelectItem value="en_attente">{messages.components.admin.payouts?.pending ?? 'En attente'}</SelectItem>
-            <SelectItem value="en_attente_approbation">{messages.components.admin.payouts?.pendingApproval ?? 'En attente d\'approbation'}</SelectItem>
-            <SelectItem value="vérification_requise">{messages.components.admin.payouts?.verificationRequired ?? 'Vérification requise'}</SelectItem>
-            <SelectItem value="vérifié">{messages.components.admin.payouts?.verified ?? 'Vérifié'}</SelectItem>
-            <SelectItem value="planifié">{messages.components.admin.payouts?.scheduled ?? 'Planifié'}</SelectItem>
-            <SelectItem value="exécuté">{messages.components.admin.payouts?.executed ?? 'Exécuté'}</SelectItem>
-            <SelectItem value="payé">{messages.components.admin.payouts?.paid ?? 'Payé'}</SelectItem>
-            <SelectItem value="échoué">{messages.components.admin.payouts?.failed ?? 'Échoué'}</SelectItem>
-          </SelectContent>
-        </Select>
 
-        <Button 
-          onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) })}
-          variant="outline"
-          className="border-slate-600 text-white hover:bg-slate-700"
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Actualiser
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button 
+            onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) })}
+            variant="outline"
+            size="sm"
+            className="border-slate-600 text-white hover:bg-slate-700"
+          >
+            <RefreshCw className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Actualiser</span>
+          </Button>
 
-        <Button 
-          onClick={exportPayouts}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Exporter
-        </Button>
+          <Button 
+            onClick={exportPayouts}
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Download className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Exporter</span>
+          </Button>
+        </div>
       </div>
 
       {/* Table */}

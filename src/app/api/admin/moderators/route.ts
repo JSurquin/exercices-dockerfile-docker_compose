@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json(moderators);
+    return NextResponse.json({ moderators });
   } catch (error) {
     logger.error('Erreur lors de la récupération des modérateurs:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });

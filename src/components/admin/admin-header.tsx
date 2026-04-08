@@ -61,7 +61,10 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-700 bg-slate-900/95 backdrop-blur-sm supports-[backdrop-filter]:bg-slate-900/75">
-      <div className="flex h-16 items-center gap-4 px-4 md:px-6">
+      <div className="flex h-14 items-center gap-4 px-4 md:px-6">
+        {/* Spacer for mobile burger button */}
+        <div className="w-10 shrink-0 lg:hidden" />
+
         {/* Breadcrumbs - Hidden on mobile */}
         <div className="hidden flex-1 items-center gap-2 lg:flex">
           <Shield className="h-5 w-5 text-orange-500" />
@@ -89,9 +92,12 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
         {/* Title on mobile */}
         {title && (
           <div className="flex-1 lg:hidden">
-            <h1 className="text-lg font-bold text-white">{title}</h1>
+            <h1 className="text-base font-bold text-white truncate">{title}</h1>
           </div>
         )}
+
+        {/* On mobile without title, spacer */}
+        {!title && <div className="flex-1 lg:hidden" />}
 
         {/* Search Bar */}
         <div className="hidden w-full max-w-sm md:flex">
@@ -256,17 +262,7 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
         </div>
       </div>
 
-      {/* Mobile Search Bar */}
-      <div className="border-t border-slate-700 px-4 py-2 md:hidden">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input
-            type="search"
-            placeholder="Rechercher..."
-            className="h-9 w-full border-slate-700 bg-slate-800/50 pl-9 text-sm text-white placeholder:text-slate-400"
-          />
-        </div>
-      </div>
+      {/* Mobile Search Bar - only show if user triggers it, hidden by default */}
     </header>
   );
 }

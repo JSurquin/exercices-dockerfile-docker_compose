@@ -3,7 +3,7 @@ import { executeGiveawayDraw } from '@/lib/execute-giveaway-draw';
 
 export async function POST(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> | { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await Promise.resolve(params);

@@ -60,7 +60,7 @@ function mapSkinplaceStatusToTradeStatus(skinplaceStatus: string): TradeStatus {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { tradeId: string } }
+  { params }: { params: Promise<{ tradeId: string }> }
 ) {
   try {
     // Vérifier l'authentification
@@ -75,7 +75,7 @@ export async function GET(
       );
     }
 
-    const { tradeId } = params;
+    const { tradeId } = await params;
 
     // Récupérer le trade depuis la base de données
     const trade = await prisma.trade.findUnique({

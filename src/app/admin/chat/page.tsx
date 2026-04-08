@@ -93,10 +93,10 @@ export default function AdminChatPage() {
   const { data: moderatorStats = [] } = useQuery({
     queryKey: queryKeys.adminChatModeratorStats,
     queryFn: async () => {
-      const res = await fetch('/api/chat/stats/moderators', { method: 'POST' });
+      const res = await fetch('/api/chat/stats/moderators');
       if (!res.ok) return [];
       const data = await res.json();
-      return data.moderatorStats ?? [];
+      return Array.isArray(data) ? data : data.moderatorStats ?? [];
     },
   });
 
@@ -187,15 +187,13 @@ export default function AdminChatPage() {
   }
 
   return (
-    <div>
-      <div className="max-w-7xl mx-auto">
+    <div className="space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
         >
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2 flex items-center gap-2 text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1 flex items-center gap-2 text-white">
             <ChatBubbleLeftRightIcon className="w-7 h-7 sm:w-8 sm:h-8 text-orange-500 shrink-0" />
             {messages.admin.chat.title}
           </h1>
@@ -210,7 +208,7 @@ export default function AdminChatPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4"
           >
             <Card className="bg-slate-800/50 border-slate-700">
               <CardContent className="p-4">
@@ -263,10 +261,22 @@ export default function AdminChatPage() {
         )}
 
         <Tabs defaultValue="conversations" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="conversations">{messages.admin.chat.tabs.conversations}</TabsTrigger>
-          <TabsTrigger value="moderators">{messages.admin.chat.tabs.moderators}</TabsTrigger>
-          <TabsTrigger value="stats">{messages.admin.chat.tabs.stats}</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border-slate-700 h-auto">
+          <TabsTrigger value="conversations" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <ChatBubbleLeftRightIcon className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">{messages.admin.chat.tabs.conversations}</span>
+            <span className="sm:hidden text-[10px]">Convs</span>
+          </TabsTrigger>
+          <TabsTrigger value="moderators" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <UserGroupIcon className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">{messages.admin.chat.tabs.moderators}</span>
+            <span className="sm:hidden text-[10px]">Modos</span>
+          </TabsTrigger>
+          <TabsTrigger value="stats" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <ChartBarIcon className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">{messages.admin.chat.tabs.stats}</span>
+            <span className="sm:hidden text-[10px]">Stats</span>
+          </TabsTrigger>
         </TabsList>
 
           {/* Onglet Conversations */}
@@ -555,7 +565,6 @@ export default function AdminChatPage() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
     </div>
   );
 }

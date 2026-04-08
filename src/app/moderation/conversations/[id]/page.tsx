@@ -69,6 +69,7 @@ export default function ConversationPage() {
       return response.json();
     },
     enabled: !!params.id,
+    refetchInterval: 5000,
   });
 
   const sendMessage = async () => {
@@ -121,7 +122,7 @@ export default function ConversationPage() {
       const response = await fetch(`/api/chat/conversations/${params.id}/assign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ moderatorId: user?.id || '' }),
+        body: JSON.stringify({ moderatorId: session?.user?.id || user?.id || '' }),
       });
 
       if (!response.ok) throw new Error('Erreur lors de l\'assignation');
@@ -158,8 +159,17 @@ export default function ConversationPage() {
   };
 
 
+  // Attendre le chargement de la session
+  if (isPending) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto" />
+      </div>
+    );
+  }
+
   // Vérifier les permissions
-  if (!session?.user || session.user.role !== 'MODERATOR' && session.user.role !== 'ADMIN') {
+  if (!session?.user || (session.user.role !== 'MODERATOR' && session.user.role !== 'ADMIN')) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>

@@ -202,49 +202,55 @@ export function AdminTradesTable() {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Rechercher par ticket ID, utilisateur..."
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-10 bg-slate-700 border-slate-600 text-white"
-          />
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Rechercher par ticket ID, utilisateur..."
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-10 bg-slate-700 border-slate-600 text-white"
+            />
+          </div>
+          
+          <Select onValueChange={handleStatusFilter}>
+            <SelectTrigger className="w-full sm:w-48 bg-slate-700 border-slate-600 text-white">
+              <SelectValue placeholder="Filtrer par statut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les statuts</SelectItem>
+              <SelectItem value="créé">{messages.components.admin.trades.created}</SelectItem>
+              <SelectItem value="accepté_par_bot">{messages.components.admin.trades.accepted}</SelectItem>
+              <SelectItem value="en_trade_hold">Trade Hold</SelectItem>
+              <SelectItem value="disponible">Disponible</SelectItem>
+              <SelectItem value="paiement_en_cours">Paiement</SelectItem>
+              <SelectItem value="payé">{messages.components.admin.trades.paid}</SelectItem>
+              <SelectItem value="échoué">{messages.components.admin.trades.failed}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        
-        <Select onValueChange={handleStatusFilter}>
-          <SelectTrigger className="w-full sm:w-48 bg-slate-700 border-slate-600 text-white">
-            <SelectValue placeholder="Filtrer par statut" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les statuts</SelectItem>
-            <SelectItem value="créé">{messages.components.admin.trades.created}</SelectItem>
-            <SelectItem value="accepté_par_bot">{messages.components.admin.trades.accepted}</SelectItem>
-            <SelectItem value="en_trade_hold">Trade Hold</SelectItem>
-            <SelectItem value="disponible">Disponible</SelectItem>
-            <SelectItem value="paiement_en_cours">Paiement</SelectItem>
-            <SelectItem value="payé">{messages.components.admin.trades.paid}</SelectItem>
-            <SelectItem value="échoué">{messages.components.admin.trades.failed}</SelectItem>
-          </SelectContent>
-        </Select>
 
-        <Button 
-          onClick={() => queryClient.invalidateQueries({ queryKey: ['admin', 'trades'] })}
-          variant="outline"
-          className="border-slate-600 text-white hover:bg-slate-700"
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Actualiser
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button 
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['admin', 'trades'] })}
+            variant="outline"
+            size="sm"
+            className="border-slate-600 text-white hover:bg-slate-700"
+          >
+            <RefreshCw className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Actualiser</span>
+          </Button>
 
-        <Button 
-          onClick={exportTrades}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Exporter
-        </Button>
+          <Button 
+            onClick={exportTrades}
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Download className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Exporter</span>
+          </Button>
+        </div>
       </div>
 
       {/* Table */}
