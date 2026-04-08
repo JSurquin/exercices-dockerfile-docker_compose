@@ -573,8 +573,8 @@ export function validateWebhookSignature(
 }
 
 /**
- * Variante : signe le rawBody brut (string) sans re-sérialisation.
- * Couvre le cas où Whitepay signe le corps exactement tel qu'il l'envoie.
+ * Variante : signe le rawBody brut (string) sans re-sérialisation ni substitution de slashes.
+ * Couvre le cas où Whitepay signe le corps exactement tel qu'il l'envoie sur le réseau.
  */
 export function validateWebhookSignatureRaw(
   rawBody: string,
@@ -583,10 +583,9 @@ export function validateWebhookSignatureRaw(
   const token = WHITEPAY_CONFIG.webhookSignatureToken;
   if (!token || !signature) return false;
   try {
-    const serialized = rawBody.replace(/\//g, '\\/');
     const expected = crypto
       .createHmac('sha256', token)
-      .update(serialized)
+      .update(rawBody)
       .digest('hex');
     if (Buffer.byteLength(signature, 'utf8') !== Buffer.byteLength(expected, 'utf8')) return false;
     return crypto.timingSafeEqual(
@@ -619,15 +618,15 @@ export function validateWebhookSignatureWithEitherToken(
 // =============================================================================
 
 /**
- * Convertit un statut Whitepay vers le statut interne Payout
+ * Convertit un statut Whitepay vers le statut interne Payout (enum Prisma PayoutStatus)
  */
 export function convertWhitepayStatus(status: WhitepayTransactionStatus): string {
   const statusMap: Record<WhitepayTransactionStatus, string> = {
-    WAITING_CONFIRMATION: 'PENDING',
-    PENDING_WITHDRAWAL: 'PROCESSING',
-    PROCESSING_WITHDRAWAL: 'PROCESSING',
-    COMPLETE: 'PAID',
-    DECLINED: 'FAILED',
+    WAITING_CONFIRMATION: 'WHITEPAY_WAITING_CONFIRMATION',
+    PENDING_WITHDRAWAL: 'WHITEPAY_PENDING_WITHDRAWAL',
+    PROCESSING_WITHDRAWAL: 'WHITEPAY_PROCESSING_WITHDRAWAL',
+    COMPLETE: 'WHITEPAY_COMPLETE',
+    DECLINED: 'WHITEPAY_DECLINED',
   };
 
   return statusMap[status] || 'PENDING';

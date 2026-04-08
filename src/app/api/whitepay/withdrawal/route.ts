@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { email: true, name: true },
+      select: { email: true, name: true, balanceCents: true, frozenBalanceCents: true, accountFrozen: true },
     });
 
     if (!user?.email) {
@@ -161,6 +161,21 @@ export async function POST(request: NextRequest) {
       );
     }
     LOG('✓ User trouvé', { email: user.email });
+
+    if (user.accountFrozen) {
+      LOG('✗ Compte gelé');
+      return NextResponse.json({ error: 'Compte suspendu' }, { status: 403 });
+    }
+
+    const availableCents = Math.max(0, user.balanceCents - user.frozenBalanceCents);
+    if (availableCents < amountCents) {
+      LOG('✗ Solde insuffisant', { availableCents, amountCents });
+      return NextResponse.json(
+        { error: `Solde insuffisant (disponible : ${centsToEur(availableCents)}€)` },
+        { status: 400 }
+      );
+    }
+    LOG('✓ Solde OK', { availableCents, amountCents });
 
     const orderId = generateOrderId();
     const amountEur = amountCents / 100;

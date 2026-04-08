@@ -135,12 +135,24 @@ export async function POST(request: NextRequest) {
     // 8. Récupérer l'utilisateur
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { email: true, name: true },
+      select: { email: true, name: true, balanceCents: true, frozenBalanceCents: true, accountFrozen: true },
     });
 
     if (!user?.email) {
       return NextResponse.json(
         { error: 'Email utilisateur requis' },
+        { status: 400 }
+      );
+    }
+
+    if (user.accountFrozen) {
+      return NextResponse.json({ error: 'Compte suspendu' }, { status: 403 });
+    }
+
+    const availableCents = Math.max(0, user.balanceCents - user.frozenBalanceCents);
+    if (availableCents < amountCents) {
+      return NextResponse.json(
+        { error: `Solde insuffisant (disponible : ${centsToEur(availableCents)}€)` },
         { status: 400 }
       );
     }

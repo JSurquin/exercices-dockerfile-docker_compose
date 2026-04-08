@@ -10,7 +10,6 @@ import {
   isWhitepayTopUpEvent,
   type WhitepayWebhookPayload,
 } from '@/lib/whitepay';
-import { debitBalance } from '@/lib/balance-service';
 
 // =============================================================================
 // POST - Webhook Whitepay (general webhooks : withdrawals & conversion_withdrawals)
@@ -43,9 +42,12 @@ export async function POST(request: NextRequest) {
     validateWebhookSignatureRaw(rawBody, signature);
 
   if (!signatureValid) {
+    const token = process.env.WHITEPAY_WEBHOOK_TOKEN_WITHDRAWAL ?? process.env.WHITEPAY_WEBHOOK_TOKEN ?? '';
     console.error('[Whitepay Webhook] Invalid signature', {
-      signatureHeader: signature?.slice(0, 16) + '...',
-      tokenConfigured: !!process.env.WHITEPAY_WEBHOOK_TOKEN_WITHDRAWAL,
+      signatureHeader: signature ? signature.slice(0, 16) + '...' : '(empty)',
+      tokenConfigured: !!token,
+      tokenPrefix: token ? token.slice(0, 8) + '...' : '(empty)',
+      rawBodyLength: rawBody.length,
     });
     return NextResponse.json(
       { error: 'Invalid signature' },
@@ -87,6 +89,7 @@ export async function POST(request: NextRequest) {
       txHash: tx.tx_hash,
     });
 
+    // Récupérer le payout pour avoir les données nécessaires aux actions suivantes
     const payout = await prisma.payout.findFirst({
       where: { whitepayTransactionId: tx.id },
       include: {
@@ -97,91 +100,102 @@ export async function POST(request: NextRequest) {
 
     if (!payout) {
       console.warn('[Whitepay Webhook] Payout not found for transaction:', tx.id);
-      // Retourner 200 pour éviter les re-tentatives
       return NextResponse.json({ received: true });
     }
 
     // 3. Convertir le statut Whitepay vers notre statut interne
     const newInternalStatus = convertWhitepayStatus(tx.status);
 
-    // 4. Mettre à jour le payout
-    await prisma.payout.update({
-      where: { id: payout.id },
-      data: {
-        status: newInternalStatus as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED' | 'WHITEPAY_WAITING_CONFIRMATION' | 'WHITEPAY_PENDING_WITHDRAWAL' | 'WHITEPAY_PROCESSING_WITHDRAWAL' | 'WHITEPAY_COMPLETE' | 'WHITEPAY_DECLINED',
-        whitepayStatus: tx.status,
-        whitepayTxHash: tx.tx_hash || payout.whitepayTxHash,
-        whitepayExchangeRate: tx.exchange_rate,
-        whitepayTargetValue: tx.target_value,
-        whitepayFee: tx.fee,
-        txId: tx.tx_hash || payout.txId,
-        ...(isTransactionComplete(tx.status) && { paidAt: new Date() }),
-      },
-    });
+    // 4. Idempotence atomique : on tente l'update uniquement si le payout n'est pas déjà final.
+    //    updateMany retourne { count: 0 } si la condition WHERE ne matche pas → aucun doublon possible.
+    await prisma.$transaction(async (dbTx) => {
+      const updated = await dbTx.payout.updateMany({
+        where: {
+          id: payout.id,
+          whitepayStatus: { notIn: ['COMPLETE', 'DECLINED'] },
+        },
+        data: {
+          status: newInternalStatus as never,
+          whitepayStatus: tx.status,
+          whitepayTxHash: tx.tx_hash || payout.whitepayTxHash,
+          whitepayExchangeRate: tx.exchange_rate,
+          whitepayTargetValue: tx.target_value,
+          whitepayFee: tx.fee,
+          txId: tx.tx_hash || payout.txId,
+          ...(isTransactionComplete(tx.status) && { paidAt: new Date() }),
+        },
+      });
 
-    // 5. Si la transaction est complète, mettre à jour le trade, débiter le solde et les stats
-    if (isTransactionComplete(tx.status)) {
-      // Mettre à jour le trade uniquement s'il y en a un associé
-      if (payout.tradeId) {
-        await prisma.trade.update({
+      // Si count = 0 → déjà traité, on sort proprement sans re-débiter
+      if (updated.count === 0) {
+        console.log('[Whitepay Webhook] Already in final state (atomic check), skipping:', {
+          payoutId: payout.id,
+          incomingStatus: tx.status,
+        });
+        return;
+      }
+
+      if (isTransactionComplete(tx.status)) {
+        if (payout.tradeId) {
+          await dbTx.trade.update({
+            where: { id: payout.tradeId },
+            data: { status: 'PAID' },
+          });
+        }
+
+        // Débiter le solde et mettre à jour le volume/XP dans la même transaction
+        const user = await dbTx.user.findUnique({
+          where: { id: payout.userId },
+          select: { balanceCents: true },
+        });
+        if (user) {
+          const balanceAfterCents = Math.max(0, user.balanceCents - payout.amountCents);
+          await dbTx.user.update({
+            where: { id: payout.userId },
+            data: {
+              balanceCents: balanceAfterCents,
+              totalVolumeCents: { increment: payout.amountCents },
+              xp: { increment: Math.floor(payout.amountCents / 100) },
+            },
+          });
+          await dbTx.balanceTransaction.create({
+            data: {
+              userId: payout.userId,
+              type: 'WITHDRAWAL',
+              amountCents: -payout.amountCents,
+              balanceAfterCents,
+              reason: `Payout Whitepay ${payout.id} complété`,
+              metadata: { type: 'WITHDRAWAL', payoutId: payout.id },
+            },
+          });
+        }
+      }
+
+      if (isTransactionFailed(tx.status) && payout.tradeId) {
+        await dbTx.trade.update({
           where: { id: payout.tradeId },
-          data: { status: 'PAID' },
+          data: { status: 'FAILED' },
         });
       }
 
-      // Débiter le solde utilisateur dans tous les cas (avec ou sans tradeId)
-      try {
-        await debitBalance(
-          payout.userId,
-          payout.amountCents,
-          `Payout Whitepay ${payout.id} complété`,
-          { type: 'WITHDRAWAL', payoutId: payout.id }
-        );
-      } catch (balanceErr) {
-        console.error('[Whitepay Webhook] debitBalance error:', balanceErr, { payoutId: payout.id });
-        // Ne pas bloquer le webhook — le payout est déjà confirmé côté Whitepay
-      }
-
-      // Mettre à jour le volume et XP de l'utilisateur
-      await prisma.user.update({
-        where: { id: payout.userId },
+      await dbTx.auditLog.create({
         data: {
-          totalVolumeCents: {
-            increment: payout.amountCents,
-          },
-          xp: {
-            increment: Math.floor(payout.amountCents / 100),
+          userId: payout.userId,
+          action: `WHITEPAY_WEBHOOK_${tx.status}`,
+          details: {
+            payoutId: payout.id,
+            whitepayTransactionId: tx.id,
+            oldStatus: payout.whitepayStatus,
+            newStatus: tx.status,
+            internalStatus: newInternalStatus,
+            txHash: tx.tx_hash,
+            confirmations: tx.confirmations,
+            exchangeRate: tx.exchange_rate,
+            targetValue: tx.target_value,
+            fee: tx.fee,
           },
         },
       });
-    }
-
-    // 6. Si la transaction a échoué, marquer le trade
-    if (isTransactionFailed(tx.status) && payout.tradeId) {
-      await prisma.trade.update({
-        where: { id: payout.tradeId },
-        data: { status: 'FAILED' },
-      });
-    }
-
-    // 7. Logger l'événement
-    await prisma.auditLog.create({
-      data: {
-        userId: payout.userId,
-        action: `WHITEPAY_WEBHOOK_${tx.status}`,
-        details: {
-          payoutId: payout.id,
-          whitepayTransactionId: tx.id,
-          oldStatus: payout.whitepayStatus,
-          newStatus: tx.status,
-          internalStatus: newInternalStatus,
-          txHash: tx.tx_hash,
-          confirmations: tx.confirmations,
-          exchangeRate: tx.exchange_rate,
-          targetValue: tx.target_value,
-          fee: tx.fee,
-        },
-      },
     });
 
     return NextResponse.json({ received: true, processed: true });

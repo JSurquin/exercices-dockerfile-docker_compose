@@ -63,16 +63,20 @@ export async function GET(request: NextRequest) {
         const statusResponse = await getTransactionStatus(payout.whitepayTransactionId);
         const tx = statusResponse.transaction;
 
-        // Mettre à jour le payout si le statut a changé
+        // Mise à jour informative uniquement si le statut a changé.
+        // Le débit de solde, trade update et XP sont gérés UNIQUEMENT par le webhook
+        // pour éviter tout double débit en cas de poll concurrent.
         if (tx.status !== payout.whitepayStatus) {
           const newInternalStatus = convertWhitepayStatus(tx.status);
-
-          await prisma.payout.update({
-            where: { id: payoutId },
+          await prisma.payout.updateMany({
+            where: {
+              id: payoutId,
+              whitepayStatus: { not: tx.status },
+            },
             data: {
               whitepayStatus: tx.status,
               whitepayTxHash: tx.tx_hash || payout.whitepayTxHash,
-              status: newInternalStatus as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED' | 'WHITEPAY_WAITING_CONFIRMATION' | 'WHITEPAY_PENDING_WITHDRAWAL' | 'WHITEPAY_PROCESSING_WITHDRAWAL' | 'WHITEPAY_COMPLETE' | 'WHITEPAY_DECLINED',
+              status: newInternalStatus as never,
               ...(tx.status === 'COMPLETE' && { paidAt: new Date() }),
             },
           });
