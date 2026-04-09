@@ -29,9 +29,6 @@ const getSteps = (messages: any) => [
 
 const POLL_INTERVAL_MS = 8000;
 const POLL_MAX_ATTEMPTS = 45; // ~6 minutes de polling
-// Délai de grâce avant de montrer "accepté" sur ACCEPTED_BY_BOT :
-// on attend N polls supplémentaires pour laisser un éventuel cancel arriver.
-const ACCEPTED_BY_BOT_GRACE_POLLS = 2;
 
 export default function SellPage() {
   const { user } = useAuth();
@@ -44,7 +41,6 @@ export default function SellPage() {
   const [modalStatus, setModalStatus] = useState<TradeModalStatus>(null);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollAttemptsRef = useRef(0);
-  const acceptedByBotSinceRef = useRef<number | null>(null);
 
   const stopPolling = useCallback(() => {
     if (pollIntervalRef.current) {
@@ -52,7 +48,6 @@ export default function SellPage() {
       pollIntervalRef.current = null;
     }
     pollAttemptsRef.current = 0;
-    acceptedByBotSinceRef.current = null;
   }, []);
 
   const startPolling = useCallback((tradeId: string) => {
@@ -72,28 +67,14 @@ export default function SellPage() {
         const data = await res.json();
         const status: string = data?.trade?.status ?? "";
 
-        if (status === "IN_TRADE_HOLD" || status === "AVAILABLE") {
-          // Statut stable confirmant que l'utilisateur a bien accepté sur Steam
+        if (status === "ACCEPTED_BY_BOT") {
+          // L'utilisateur a accepté l'offre sur Steam
           stopPolling();
           setModalStatus("accepted");
         } else if (status === "CANCELLED" || status === "FAILED") {
+          // L'utilisateur a annulé ou refusé l'offre sur Steam
           stopPolling();
           setModalStatus("cancelled");
-        } else if (status === "ACCEPTED_BY_BOT") {
-          // Statut intermédiaire : on attend quelques polls supplémentaires
-          // avant de conclure, car un cancel peut encore arriver peu après
-          if (acceptedByBotSinceRef.current === null) {
-            acceptedByBotSinceRef.current = pollAttemptsRef.current;
-          } else if (
-            pollAttemptsRef.current - acceptedByBotSinceRef.current >=
-            ACCEPTED_BY_BOT_GRACE_POLLS
-          ) {
-            stopPolling();
-            setModalStatus("accepted");
-          }
-        } else {
-          // Tout autre statut (CREATED etc.) reset le compteur de grâce
-          acceptedByBotSinceRef.current = null;
         }
       } catch {
         // Silencieux — on réessaie au prochain tick
