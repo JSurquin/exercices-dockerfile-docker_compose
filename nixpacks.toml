@@ -1,0 +1,10 @@
+[phases.install]
+cmds = [
+  "pnpm install --no-frozen-lockfile --prefer-offline=false"
+]
+
+[phases.build]
+cmds = [
+  "npx prisma generate",
+  "pnpm run build"
+]
