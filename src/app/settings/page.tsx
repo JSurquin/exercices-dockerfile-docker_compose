@@ -50,7 +50,7 @@ export default function SettingsPage() {
     language: locale,
     theme: theme || "dark",
   });
-  const [emailInput, setEmailInput] = useState(user?.email ?? "");
+  const [emailInput, setEmailInput] = useState(user?.contactEmail ?? "");
   const [isEmailSaving, setIsEmailSaving] = useState(false);
   const canUseTwoFactor = user?.role !== "ADMIN" && user?.role !== "MODERATOR";
 
@@ -211,7 +211,7 @@ export default function SettingsPage() {
                       />
                       <Button
                         onClick={handleEmailUpdate}
-                        disabled={isEmailSaving || !emailInput.trim() || emailInput.trim() === user.email}
+                        disabled={isEmailSaving || !emailInput.trim() || emailInput.trim() === (user.contactEmail ?? "")}
                         size="sm"
                       >
                         {isEmailSaving

@@ -3,7 +3,7 @@ export interface User {
   steamId64: string;
   username: string;
   avatar: string;
-  email?: string | null;
+  contactEmail?: string | null;
   tradeLink?: string;
   acceptedTermsAt?: Date;
   kycStatus: 'PENDING' | 'IN_PROGRESS' | 'VERIFIED' | 'REJECTED' | 'KYCAID_PENDING' | 'KYCAID_VERIFIED' | 'KYCAID_REJECTED';
