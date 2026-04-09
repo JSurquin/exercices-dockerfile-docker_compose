@@ -127,7 +127,7 @@ export default function NewsletterAdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
           <p className="text-slate-300">Chargement...</p>
@@ -137,23 +137,22 @@ export default function NewsletterAdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-              <Mail className="h-8 w-8 text-orange-500" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+              <Mail className="h-7 w-7 text-orange-500 shrink-0" />
               Gestion Newsletter
             </h1>
-            <p className="text-slate-400 mt-2">
+            <p className="text-slate-400 mt-1">
               Gérez vos abonnés et campagnes d&apos;emailing
             </p>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 gap-4 sm:gap-6">
           <Card className="border-slate-700 bg-slate-800/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-slate-300">
@@ -193,14 +192,16 @@ export default function NewsletterAdminPage() {
 
         {/* Main Content */}
         <Tabs defaultValue="subscribers" className="space-y-6">
-          <TabsList className="bg-slate-800 border-slate-700">
-            <TabsTrigger value="subscribers" className="data-[state=active]:bg-orange-500">
-              <Users className="h-4 w-4 mr-2" />
-              Abonnés
+          <TabsList className="grid w-full grid-cols-2 bg-slate-800 border-slate-700 h-auto">
+            <TabsTrigger value="subscribers" className="flex items-center gap-2 py-2 text-xs sm:text-sm data-[state=active]:bg-orange-500">
+              <Users className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">Abonnés</span>
+              <span className="sm:hidden">Abonnés</span>
             </TabsTrigger>
-            <TabsTrigger value="campaigns" className="data-[state=active]:bg-orange-500">
-              <Send className="h-4 w-4 mr-2" />
-              Campagnes
+            <TabsTrigger value="campaigns" className="flex items-center gap-2 py-2 text-xs sm:text-sm data-[state=active]:bg-orange-500">
+              <Send className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">Campagnes</span>
+              <span className="sm:hidden">Campagnes</span>
             </TabsTrigger>
           </TabsList>
 
@@ -208,7 +209,7 @@ export default function NewsletterAdminPage() {
           <TabsContent value="subscribers" className="space-y-6">
             <Card className="border-slate-700 bg-slate-800/50">
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
                     <CardTitle className="text-white">Liste des Abonnés</CardTitle>
                     <CardDescription>
@@ -217,8 +218,9 @@ export default function NewsletterAdminPage() {
                   </div>
                   <Button 
                     onClick={exportSubscribers}
-                    variant="outline" 
-                    className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                    variant="outline"
+                    size="sm"
+                    className="border-slate-600 text-slate-300 hover:bg-slate-700 self-start sm:self-auto"
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Exporter CSV
@@ -357,7 +359,6 @@ export default function NewsletterAdminPage() {
             )}
           </TabsContent>
         </Tabs>
-      </div>
     </div>
   );
 }

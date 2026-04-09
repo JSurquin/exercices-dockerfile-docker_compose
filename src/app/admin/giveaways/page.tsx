@@ -319,15 +319,21 @@ export default function AdminGiveawaysPage() {
 
         {/* Main Content */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border-slate-700">
-            <TabsTrigger value="list" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-              {messages.admin.giveaways.tabs.list}
+          <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border-slate-700 h-auto">
+            <TabsTrigger value="list" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+              <TrophyIcon className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline truncate">{messages.admin.giveaways.tabs.list}</span>
+              <span className="sm:hidden text-[10px] leading-tight text-center">Liste</span>
             </TabsTrigger>
-            <TabsTrigger value="create" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-              {messages.admin.giveaways.tabs.create}
+            <TabsTrigger value="create" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+              <PlusIcon className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline truncate">{messages.admin.giveaways.tabs.create}</span>
+              <span className="sm:hidden text-[10px] leading-tight text-center">Créer</span>
             </TabsTrigger>
-            <TabsTrigger value="manage" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-              {messages.admin.giveaways.tabs.manage}
+            <TabsTrigger value="manage" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+              <UserGroupIcon className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline truncate">{messages.admin.giveaways.tabs.manage}</span>
+              <span className="sm:hidden text-[10px] leading-tight text-center">Gestion</span>
             </TabsTrigger>
           </TabsList>
 

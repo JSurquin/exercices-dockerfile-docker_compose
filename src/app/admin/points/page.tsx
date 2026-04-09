@@ -127,18 +127,16 @@ export default function AdminPointsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-8"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-3xl font-bold mb-2 text-white">
-                <StarIcon className="w-8 h-8 inline-block mr-2 text-yellow-400" />
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-white flex items-center gap-2">
+                <StarIcon className="w-7 h-7 text-yellow-400 shrink-0" />
                 Système de Points & Gamification
               </h1>
               <p className="text-slate-400">
@@ -153,7 +151,7 @@ export default function AdminPointsPage() {
 
         {/* Stats rapides */}
         {metrics && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="bg-slate-800/50 border-slate-700">
               <CardContent className="p-5">
                 <div className="flex items-center space-x-3">
@@ -659,7 +657,6 @@ export default function AdminPointsPage() {
             )}
           </TabsContent>
         </Tabs>
-      </div>
     </div>
   );
 }

@@ -310,15 +310,21 @@ export default function AuditPage() {
       </div>
 
       <Tabs defaultValue="logs" className="space-y-4">
-        <TabsList className="bg-slate-800/50 border-slate-700">
-          <TabsTrigger value="logs" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-            {auditMessages.tabs.logs}
+        <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border-slate-700 h-auto">
+          <TabsTrigger value="logs" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <Activity className="h-4 w-4 shrink-0" />
+            <span className="hidden sm:inline">{auditMessages.tabs.logs}</span>
+            <span className="sm:hidden text-[10px]">Logs</span>
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-            {auditMessages.tabs.analytics}
+          <TabsTrigger value="analytics" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <Shield className="h-4 w-4 shrink-0" />
+            <span className="hidden sm:inline">{auditMessages.tabs.analytics}</span>
+            <span className="sm:hidden text-[10px]">Analyses</span>
           </TabsTrigger>
-          <TabsTrigger value="alerts" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-            {auditMessages.tabs.alerts}
+          <TabsTrigger value="alerts" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <span className="hidden sm:inline">{auditMessages.tabs.alerts}</span>
+            <span className="sm:hidden text-[10px]">Alertes</span>
           </TabsTrigger>
         </TabsList>
 

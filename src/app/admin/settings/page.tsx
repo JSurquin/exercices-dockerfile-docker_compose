@@ -298,7 +298,7 @@ export default function AdminSettingsPage() {
       {/* Settings Tabs */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
         <Tabs defaultValue="personal" className="w-full">
-          <TabsList className="flex flex-wrap h-auto gap-1 bg-slate-800/50 backdrop-blur-sm border border-slate-700 p-1">
+          <TabsList className="grid grid-cols-5 h-auto bg-slate-800/50 backdrop-blur-sm border border-slate-700 p-1">
             {[
               { value: 'personal', icon: UserIcon, label: messages.admin.settings.tabs.personal },
               { value: 'security', icon: ShieldCheckIcon, label: messages.admin.settings.tabs.security },
@@ -309,11 +309,11 @@ export default function AdminSettingsPage() {
               <TabsTrigger
                 key={value}
                 value={value}
-                className="flex-1 min-w-[120px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
+                className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-1 text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
               >
-                <Icon className="w-4 h-4 mr-2 shrink-0" />
-                <span className="hidden sm:inline">{label}</span>
-                <span className="sm:hidden">{label.substring(0, 4)}</span>
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="hidden md:inline truncate">{label}</span>
+                <span className="md:hidden text-[10px] leading-tight text-center truncate w-full">{label.split(' ')[0]}</span>
               </TabsTrigger>
             ))}
           </TabsList>

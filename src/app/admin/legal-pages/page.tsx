@@ -318,31 +318,34 @@ export default function AdminLegalPagesPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
               Pages Légales
             </h1>
-            <p className="text-slate-300">
+            <p className="text-slate-300 text-sm sm:text-base">
               Gérez les CGU, politique de confidentialité et autres pages légales du site
             </p>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               variant="outline"
+              size="sm"
               onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminLegalPages })}
               disabled={loading}
               className="border-slate-600"
             >
-              <ArrowPathIcon className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Actualiser
+              <ArrowPathIcon className={`w-4 h-4 sm:mr-2 ${loading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Actualiser</span>
             </Button>
             <Button
+              size="sm"
               onClick={() => openEditDialog()}
               className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
             >
-              <PlusIcon className="w-4 h-4 mr-2" />
-              Nouvelle page
+              <PlusIcon className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Nouvelle page</span>
+              <span className="sm:hidden">Créer</span>
             </Button>
           </div>
         </div>
@@ -359,7 +362,7 @@ export default function AdminLegalPagesPage() {
       </Alert>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-slate-800/50 border-slate-700">
           <CardContent className="p-4">
             <div className="flex items-center space-x-3">

@@ -32,9 +32,9 @@ export default function AdminGamificationEconomyPage() {
     (n ?? 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Économie fragments & giveaways</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Économie fragments & giveaways</h1>
         <p className="text-slate-400 text-sm">
           Marge brute estimée : {(((data.marginRateAssumption ?? 0) as number) * 100).toFixed(0)} % du volume vendu
           (paramètre `marginRate` sur l’API si besoin).
