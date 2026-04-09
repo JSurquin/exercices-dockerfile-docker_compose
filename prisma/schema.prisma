@@ -37,6 +37,7 @@ model User {
   pendingBalanceCents   Int                     @default(0)
   fragments             Int                     @default(0)
   twoFactorEnabled      Boolean                 @default(false)
+  contactEmail          String?
   reviewedApplications  AffiliateApplication[]  @relation("AffiliateApplicationReviewer")
   affiliateApplications AffiliateApplication[]
   referrals             AffiliateReferral[]     @relation("AffiliateReferrals")

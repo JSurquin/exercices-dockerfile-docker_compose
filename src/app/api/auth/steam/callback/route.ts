@@ -129,14 +129,11 @@ export async function GET(request: NextRequest) {
         'low'
       );
 
-      // Mettre à jour les informations Steam + migrer l'email si ancien domaine
+      // Mettre à jour les informations Steam — ne jamais toucher email (clé d'auth interne)
       console.log('Mise à jour utilisateur existant:', user.name);
-      
-      const hasRealEmail = user.email && !user.email.endsWith('@moonskin.local');
       user = await prisma.user.update({
         where: { id: user.id },
         data: {
-          ...(hasRealEmail ? {} : { email }),
           name: steamUser.personaname,
           image: steamUser.avatarfull || steamUser.avatar,
           steamUsername: steamUser.personaname,
@@ -148,7 +145,7 @@ export async function GET(request: NextRequest) {
     // Connecter l'utilisateur via Better Auth en utilisant le handler complet
     console.log('Connexion utilisateur:', user.email);
     
-    // Créer une requête pour l'endpoint de connexion Better Auth
+    // Connexion via l'email interne @moonskin.local — jamais le contactEmail
     const signInRequest = new Request(`${request.nextUrl.origin}/api/auth/sign-in/email`, {
       method: 'POST',
       headers: {

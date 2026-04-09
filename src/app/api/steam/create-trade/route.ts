@@ -188,11 +188,12 @@ export async function POST(request: NextRequest) {
     await TradeHooks.onTradeCreated(user.id, trade.id);
 
     // Envoyer l'email de confirmation de trade (en arrière-plan)
-    if (user.email) {
+    const notificationEmail = (user as { contactEmail?: string | null }).contactEmail || user.email;
+    if (notificationEmail) {
       try {
         await newsletterService.sendTradeCreatedEmail(
-          user.email,
-          user.name || user.email,
+          notificationEmail,
+          user.name || notificationEmail,
           {
             tradeId: trade.id,
             itemsCount: body.items.length,
@@ -201,7 +202,7 @@ export async function POST(request: NextRequest) {
             availableAt: trade.availableAt?.toISOString() || new Date().toISOString(),
           }
         );
-        console.log(`✅ Email de confirmation de trade envoyé à ${user.email}`);
+        console.log(`✅ Email de confirmation de trade envoyé à ${notificationEmail}`);
       } catch (emailError) {
         console.error('❌ Erreur envoi email trade:', emailError);
         // Ne pas faire échouer la création du trade si l'email échoue
