@@ -18,9 +18,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email } = schema.parse(body);
 
-    // Vérifier si l'email est déjà utilisé par un autre utilisateur
+    // Vérifier si l'email est déjà utilisé comme contactEmail par un autre utilisateur
     const existing = await prisma.user.findFirst({
-      where: { email, NOT: { id: session.user.id } },
+      where: { contactEmail: email, NOT: { id: session.user.id } },
       select: { id: true },
     });
 
@@ -28,9 +28,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Cette adresse email est déjà utilisée' }, { status: 409 });
     }
 
+    // On met à jour contactEmail — jamais user.email qui est la clé d'auth interne Steam
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { email },
+      data: { contactEmail: email },
     });
 
     await prisma.auditLog.create({
