@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import type { BetterAuthPlugin } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { twoFactor } from "better-auth/plugins";
+import { twoFactor, admin } from "better-auth/plugins";
 import { prisma } from "~/prisma/prisma";
 import { emailService } from "../src/lib/email";
 
@@ -144,6 +144,9 @@ export const auth = betterAuth({
   plugins: [
     nextCookies(),
     twoFactorPlugin,
+    admin({
+      adminRoles: ["ADMIN"],
+    }),
   ],
 });
 

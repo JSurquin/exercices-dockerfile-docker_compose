@@ -9,7 +9,8 @@ function generateTempPassword(length = 12): string {
   return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-// POST /api/admin/moderators/invite - Inviter un nouveau modérateur par email
+// POST /api/admin/moderators/invite
+// Crée un compte modérateur via email (sans écraser la session admin courante)
 export async function POST(request: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Adresse email invalide' }, { status: 400 });
     }
 
-    // Vérifier si un compte existe déjà avec cet email
+    // Si le compte existe déjà → on le promeut simplement
     const existingUser = await prisma.user.findUnique({ where: { email } });
 
     if (existingUser) {
@@ -34,7 +35,6 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Promouvoir le compte existant
       const updatedUser = await prisma.user.update({
         where: { id: existingUser.id },
         data: { role: 'MODERATOR' },
@@ -49,7 +49,6 @@ export async function POST(request: NextRequest) {
         method: 'email_existing',
       });
 
-      // Notifier l'utilisateur
       try {
         await emailService.sendEmail({
           to: email,
@@ -59,54 +58,48 @@ export async function POST(request: NextRequest) {
               <h2 style="color:#f97316;margin:0 0 8px">MoonSkin — Nouveau rôle</h2>
               <p style="color:#94a3b8;margin:0 0 16px">Bonjour ${existingUser.name || email},</p>
               <p style="color:#94a3b8;margin:0 0 16px">Votre compte a été promu au rôle de <strong style="color:#f97316">Modérateur</strong> par l'équipe MoonSkin.</p>
-              <p style="color:#94a3b8;margin:0 0 16px">Connectez-vous à votre compte habituel pour accéder à la section modération.</p>
               <p style="color:#64748b;font-size:13px;margin:16px 0 0">Si vous n'êtes pas à l'origine de cette demande, contactez-nous.</p>
             </div>
           `,
-          text: `Bonjour, votre compte MoonSkin a été promu au rôle de Modérateur.`,
+          text: `Votre compte MoonSkin a été promu au rôle de Modérateur.`,
         });
       } catch {
-        // L'email est secondaire, on ne bloque pas si ça échoue
+        // Email secondaire, non bloquant
       }
 
       return NextResponse.json({ ...updatedUser, invited: false });
     }
 
-    // Créer un nouveau compte modérateur
+    // Nouveau compte → utiliser auth.api.createUser (plugin admin)
+    // Cette méthode ne crée PAS de session, contrairement à signUpEmail
     const tempPassword = generateTempPassword();
-    const displayName = name || email.split('@')[0];
+    const displayName = name?.trim() || email.split('@')[0];
 
-    const signUpResult = await auth.api.signUpEmail({
+    const created = await (auth.api as any).createUser({
       body: {
-        email,
+        email: email.toLowerCase(),
         password: tempPassword,
         name: displayName,
+        role: 'MODERATOR',
+        data: { emailVerified: true },
       },
+      headers: request.headers,
     });
 
-    if (!signUpResult) {
-      return NextResponse.json(
-        { error: 'Erreur lors de la création du compte' },
-        { status: 500 }
-      );
+    if (!created?.user) {
+      return NextResponse.json({ error: 'Erreur lors de la création du compte' }, { status: 500 });
     }
 
-    // Promouvoir immédiatement au rôle MODERATOR
-    const newUser = await prisma.user.update({
-      where: { email },
-      data: { role: 'MODERATOR' },
-      select: { id: true, name: true, email: true, role: true },
-    });
-
     await logAudit(session.user.id, 'MODERATOR_INVITED', {
-      targetUserId: newUser.id,
+      targetUserId: created.user.id,
       targetUserEmail: email,
       newRole: 'MODERATOR',
       method: 'email_invite',
     });
 
-    // Envoyer l'email d'invitation avec les credentials
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://moonskin.gg';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://moonskin.gg';
+
+    let emailError = false;
     try {
       await emailService.sendEmail({
         to: email,
@@ -123,19 +116,25 @@ export async function POST(request: NextRequest) {
             </div>
             <p style="color:#94a3b8;margin:0 0 16px">Connectez-vous et changez votre mot de passe dès que possible.</p>
             <a href="${appUrl}/admin/login" style="display:inline-block;background:#f97316;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Se connecter</a>
-            <p style="color:#64748b;font-size:13px;margin:16px 0 0">Cet email a été envoyé par l'équipe MoonSkin. Ne le transférez pas.</p>
+            <p style="color:#64748b;font-size:13px;margin:16px 0 0">Ne transférez pas cet email.</p>
           </div>
         `,
-        text: `Invitation MoonSkin — Email: ${email} — Mot de passe temporaire: ${tempPassword} — ${appUrl}/admin/login`,
+        text: `MoonSkin — Email: ${email} — Mot de passe temporaire: ${tempPassword} — ${appUrl}/admin/login`,
       });
     } catch {
-      // L'email a échoué mais le compte est créé — on retourne un warning
-      return NextResponse.json({ ...newUser, invited: true, emailError: true });
+      emailError = true;
     }
 
-    return NextResponse.json({ ...newUser, invited: true, emailError: false });
-  } catch (error) {
-    logger.error('Erreur lors de l\'invitation du modérateur:', error);
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+    return NextResponse.json({
+      id: created.user.id,
+      name: created.user.name,
+      email: created.user.email,
+      role: 'MODERATOR',
+      invited: true,
+      emailError,
+    });
+  } catch (error: any) {
+    logger.error("Erreur lors de l'invitation du modérateur:", error);
+    return NextResponse.json({ error: error?.message ?? 'Erreur serveur' }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -66,7 +66,9 @@ export default function AdminChatPage() {
   // State — promotion utilisateur existant
   const [users, setUsers] = useState<User[]>([]);
   const [searchUser, setSearchUser] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
   const [promotingUser, setPromotingUser] = useState(false);
+  const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // State — invitation par email
   const [inviteEmail, setInviteEmail] = useState('');
@@ -115,17 +117,28 @@ export default function AdminChatPage() {
 
   const invalidateChat = () => queryClient.invalidateQueries({ queryKey: ['admin', 'chat'] });
 
-  const searchUsers = async () => {
-    if (!searchUser.trim()) return;
+  const doSearch = async (query: string) => {
+    if (!query.trim()) { setUsers([]); return; }
+    setSearchLoading(true);
     try {
-      const response = await fetch(`/api/admin/users?search=${encodeURIComponent(searchUser)}&role=USER`);
-      if (!response.ok) throw new Error('Erreur de recherche');
+      const response = await fetch(`/api/admin/moderators/search?q=${encodeURIComponent(query)}`);
+      if (!response.ok) throw new Error();
       const data = await response.json();
       setUsers(data.users || []);
     } catch {
       toast.error(t.errorSearch);
+    } finally {
+      setSearchLoading(false);
     }
   };
+
+  // Debounce auto-search
+  useEffect(() => {
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    searchDebounce.current = setTimeout(() => doSearch(searchUser), 350);
+    return () => { if (searchDebounce.current) clearTimeout(searchDebounce.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchUser]);
 
   const promoteToModerator = async (userId: string) => {
     setPromotingUser(true);
@@ -536,17 +549,17 @@ export default function AdminChatPage() {
 
                         {/* Promotion d'un compte Steam existant */}
                         <TabsContent value="promote" className="space-y-4 mt-4">
-                          <div className="flex gap-2">
+                          <div className="relative">
+                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <Input
                               placeholder={t.searchPlaceholder}
                               value={searchUser}
                               onChange={(e) => setSearchUser(e.target.value)}
-                              onKeyDown={(e) => e.key === 'Enter' && searchUsers()}
-                              className="bg-slate-800 border-slate-600 text-white"
+                              className="bg-slate-800 border-slate-600 text-white pl-9 pr-9"
                             />
-                            <Button onClick={searchUsers} variant="outline" className="border-slate-600 text-slate-300 hover:text-white">
-                              <MagnifyingGlassIcon className="w-4 h-4" />
-                            </Button>
+                            {searchLoading && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                            )}
                           </div>
 
                           {users.length > 0 && (
