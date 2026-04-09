@@ -98,6 +98,9 @@ importers:
       '@sentry/nextjs':
         specifier: ^10.43.0
         version: 10.43.0(@opentelemetry/context-async-hooks@2.6.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.6.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.6.0(@opentelemetry/api@1.9.0))(next@15.4.10(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(webpack@5.105.4)
+      '@tailwindcss/oxide-linux-x64-gnu':
+        specifier: ^4.2.2
+        version: 4.2.2
       '@tanstack/react-query':
         specifier: ^5.90.8
         version: 5.90.21(react@19.1.0)
@@ -2581,6 +2584,12 @@ packages:
 
   '@tailwindcss/oxide-linux-x64-gnu@4.2.1':
     resolution: {integrity: sha512-qMFzxI2YlBOLW5PhblzuSWlWfwLHaneBE0xHzLrBgNtqN6mWfs+qYbhryGSXQjFYB1Dzf5w+LN5qbUTPhW7Y5g==}
+    engines: {node: '>= 20'}
+    cpu: [x64]
+    os: [linux]
+
+  '@tailwindcss/oxide-linux-x64-gnu@4.2.2':
+    resolution: {integrity: sha512-rTAGAkDgqbXHNp/xW0iugLVmX62wOp2PoE39BTCGKjv3Iocf6AFbRP/wZT/kuCxC9QBh9Pu8XPkv/zCZB2mcMg==}
     engines: {node: '>= 20'}
     cpu: [x64]
     os: [linux]
@@ -9116,6 +9125,8 @@ snapshots:
 
   '@tailwindcss/oxide-linux-x64-gnu@4.2.1':
     optional: true
+
+  '@tailwindcss/oxide-linux-x64-gnu@4.2.2': {}
 
   '@tailwindcss/oxide-linux-x64-musl@4.2.1':
     optional: true
