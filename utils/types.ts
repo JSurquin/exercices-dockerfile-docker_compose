@@ -2075,6 +2075,16 @@ export interface Messages {
       memberSince: string;
       viewProfile: string;
     };
+    tradeStatusModal: {
+      acceptedTitle: string;
+      acceptedDescription: string;
+      cancelledTitle: string;
+      cancelledDescription: string;
+      backToAccount: string;
+      sellAgain: string;
+      viewTrades: string;
+      holdReminder: string;
+    };
     helpSteps: string[];
     successMessages: {
       tradeCreated: string;

@@ -3217,6 +3217,16 @@ export const messages: Record<Locale, Messages> = {
         memberSince: "Membre depuis :",
         viewProfile: "Voir profil"
       },
+      tradeStatusModal: {
+        acceptedTitle: "🎉 Vente confirmée !",
+        acceptedDescription: "Vous avez accepté l'offre sur Steam. Vos items sont maintenant entre les mains de notre bot. La période de trade hold Steam (7 jours) va commencer.",
+        cancelledTitle: "Trade annulé",
+        cancelledDescription: "Le trade a été annulé ou refusé. Vos items sont restés dans votre inventaire Steam.",
+        backToAccount: "Retour à mon compte",
+        sellAgain: "Revendre des skins",
+        viewTrades: "Voir mes trades",
+        holdReminder: "Pendant ces 7 jours, configurez votre méthode de paiement dans votre dashboard pour recevoir votre argent automatiquement.",
+      },
       helpSteps: ["Ouvrez Steam et allez dans votre inventaire", "Cliquez sur \"Paramètres de confidentialité\"", "Copiez l'URL du Trade Link"],
       successMessages: {
         tradeCreated: "Trade créé avec succès !",
@@ -7026,6 +7036,16 @@ export const messages: Record<Locale, Messages> = {
         steamIdLabel: "Steam ID:",
         memberSince: "Member since:",
         viewProfile: "View profile"
+      },
+      tradeStatusModal: {
+        acceptedTitle: "🎉 Sale confirmed!",
+        acceptedDescription: "You accepted the offer on Steam. Your items are now in our bot's hands. The Steam trade hold period (7 days) will now begin.",
+        cancelledTitle: "Trade cancelled",
+        cancelledDescription: "The trade was cancelled or declined. Your items remain in your Steam inventory.",
+        backToAccount: "Back to my account",
+        sellAgain: "Sell more skins",
+        viewTrades: "View my trades",
+        holdReminder: "During these 7 days, set up your payment method in your dashboard to receive your money automatically.",
       },
       helpSteps: ["Open Steam and go to your inventory", "Click on \"Privacy settings\"", "Copy the Trade Link URL"],
       successMessages: {
@@ -11659,6 +11679,16 @@ export const messages: Record<Locale, Messages> = {
         steamIdLabel: "Steam ID：",
         memberSince: "注册于：",
         viewProfile: "查看资料"
+      },
+      tradeStatusModal: {
+        acceptedTitle: "🎉 出售确认！",
+        acceptedDescription: "您已在Steam上接受报价。您的物品现已由我们的机器人接管，Steam交易冻结期（7天）即将开始。",
+        cancelledTitle: "交易已取消",
+        cancelledDescription: "交易已被取消或拒绝。您的物品仍在您的Steam库存中。",
+        backToAccount: "返回我的账户",
+        sellAgain: "继续出售皮肤",
+        viewTrades: "查看我的交易",
+        holdReminder: "在这7天内，请在您的仪表板中设置支付方式，以自动收到您的资金。",
       },
       helpSteps: ["打开Steam并前往您的库存", "点击\"隐私设置\"", "复制交易链接URL"],
       successMessages: { tradeCreated: "交易创建成功！", followInstructions: "您的交易已创建并发送。在Steam上接受报价以继续。" }

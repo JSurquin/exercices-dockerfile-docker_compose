@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { SkinplaceInventoryViewer } from "@/components/skinplace/skinplace-inven
 import { SkinplaceTradeCreator, TradeCreatedData } from "@/components/skinplace/skinplace-trade-creator";
 import { ConvertedPrice } from "@/components/ui/converted-price";
 import { NormalizedInventoryItem } from "@/hooks/use-skinplace-inventory";
+import { TradeStatusModal, TradeModalStatus } from "@/components/sell/trade-status-modal";
 import {
   LinkIcon,
   CurrencyDollarIcon,
@@ -26,6 +27,9 @@ const getSteps = (messages: any) => [
   { id: "confirmation", title: messages.sellPage.steps.confirmation, icon: CheckCircleIcon },
 ];
 
+const POLL_INTERVAL_MS = 8000;
+const POLL_MAX_ATTEMPTS = 45; // ~6 minutes de polling
+
 export default function SellPage() {
   const { user } = useAuth();
   const { messages } = useLocale();
@@ -34,6 +38,51 @@ export default function SellPage() {
   const [selectedItems, setSelectedItems] = useState<NormalizedInventoryItem[]>([]);
   const [tradeData, setTradeData] = useState<TradeCreatedData | null>(null);
   const [activeSteamId, setActiveSteamId] = useState(user?.steamId64 || '');
+  const [modalStatus, setModalStatus] = useState<TradeModalStatus>(null);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollAttemptsRef = useRef(0);
+
+  const stopPolling = useCallback(() => {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+    pollAttemptsRef.current = 0;
+  }, []);
+
+  const startPolling = useCallback((tradeId: string) => {
+    stopPolling();
+    pollAttemptsRef.current = 0;
+
+    pollIntervalRef.current = setInterval(async () => {
+      pollAttemptsRef.current += 1;
+      if (pollAttemptsRef.current > POLL_MAX_ATTEMPTS) {
+        stopPolling();
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/skinplace/trade/status/${tradeId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const status: string = data?.trade?.status ?? "";
+
+        if (status === "ACCEPTED_BY_BOT" || status === "IN_TRADE_HOLD") {
+          stopPolling();
+          setModalStatus("accepted");
+        } else if (status === "CANCELLED" || status === "FAILED") {
+          stopPolling();
+          setModalStatus("cancelled");
+        }
+      } catch {
+        // Silencieux — on réessaie au prochain tick
+      }
+    }, POLL_INTERVAL_MS);
+  }, [stopPolling]);
+
+  useEffect(() => {
+    return () => stopPolling();
+  }, [stopPolling]);
 
   const confirmationCashoutPercent =
     tradeData && tradeData.total_value > 0
@@ -49,6 +98,20 @@ export default function SellPage() {
     setTradeData(trade);
     setCurrentStep(2);
     toast.success(messages.sellPage.successMessages.tradeCreated);
+    if (trade.trade_id) {
+      startPolling(trade.trade_id);
+    }
+  };
+
+  const handleModalClose = () => {
+    setModalStatus(null);
+  };
+
+  const handleSellAgain = () => {
+    setModalStatus(null);
+    setTradeData(null);
+    setSelectedItems([]);
+    setCurrentStep(0);
   };
 
   if (!user) {
@@ -74,6 +137,11 @@ export default function SellPage() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <TradeStatusModal
+        status={modalStatus}
+        onClose={handleModalClose}
+        onSellAgain={handleSellAgain}
+      />
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
