@@ -177,12 +177,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (tradesCountToday >= 5) {
-      return NextResponse.json(
-        { success: false, error: 'Limite de trades quotidienne atteinte (5 max)' },
-        { status: 429 }
-      );
-    }
+    // if (tradesCountToday >= 5) {
+    //   return NextResponse.json(
+    //     { success: false, error: 'Limite de trades quotidienne atteinte (5 max)' },
+    //     { status: 429 }
+    //   );
+    // }
 
     // Générer la signature pour l'API Skinplace
     const signature = generateSkinplaceSignature(body.steam_id, privateKey);

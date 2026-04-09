@@ -111,12 +111,12 @@ export async function POST(request: NextRequest) {
     });
 
     // Limite de 5 trades par jour par utilisateur
-    if (tradesCountToday >= 5) {
-      return NextResponse.json(
-        { success: false, error: 'Limite de trades quotidienne atteinte (5 max)' },
-        { status: 429 }
-      );
-    }
+    // if (tradesCountToday >= 5) {
+    //   return NextResponse.json(
+    //     { success: false, error: 'Limite de trades quotidienne atteinte (5 max)' },
+    //     { status: 429 }
+    //   );
+    // }
 
     // Générer un ID unique pour le trade
     const tradeId = `TRADE-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
