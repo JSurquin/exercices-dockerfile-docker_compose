@@ -1,0 +1,141 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '~/lib/auth';
+import { prisma } from '~/prisma/prisma';
+import { logger, logAudit } from '@/lib/logger';
+import { emailService } from '@/lib/email';
+
+function generateTempPassword(length = 12): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+// POST /api/admin/moderators/invite - Inviter un nouveau modérateur par email
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    }
+
+    const { email, name } = await request.json();
+
+    if (!email || !email.includes('@')) {
+      return NextResponse.json({ error: 'Adresse email invalide' }, { status: 400 });
+    }
+
+    // Vérifier si un compte existe déjà avec cet email
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+
+    if (existingUser) {
+      if (existingUser.role === 'MODERATOR' || existingUser.role === 'ADMIN') {
+        return NextResponse.json(
+          { error: 'Cet utilisateur est déjà modérateur ou administrateur' },
+          { status: 400 }
+        );
+      }
+
+      // Promouvoir le compte existant
+      const updatedUser = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: { role: 'MODERATOR' },
+        select: { id: true, name: true, email: true, role: true },
+      });
+
+      await logAudit(session.user.id, 'USER_PROMOTED_TO_MODERATOR', {
+        targetUserId: existingUser.id,
+        targetUserEmail: email,
+        previousRole: existingUser.role,
+        newRole: 'MODERATOR',
+        method: 'email_existing',
+      });
+
+      // Notifier l'utilisateur
+      try {
+        await emailService.sendEmail({
+          to: email,
+          subject: 'MoonSkin — Vous êtes maintenant modérateur',
+          html: `
+            <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#0f172a;border-radius:12px;">
+              <h2 style="color:#f97316;margin:0 0 8px">MoonSkin — Nouveau rôle</h2>
+              <p style="color:#94a3b8;margin:0 0 16px">Bonjour ${existingUser.name || email},</p>
+              <p style="color:#94a3b8;margin:0 0 16px">Votre compte a été promu au rôle de <strong style="color:#f97316">Modérateur</strong> par l'équipe MoonSkin.</p>
+              <p style="color:#94a3b8;margin:0 0 16px">Connectez-vous à votre compte habituel pour accéder à la section modération.</p>
+              <p style="color:#64748b;font-size:13px;margin:16px 0 0">Si vous n'êtes pas à l'origine de cette demande, contactez-nous.</p>
+            </div>
+          `,
+          text: `Bonjour, votre compte MoonSkin a été promu au rôle de Modérateur.`,
+        });
+      } catch {
+        // L'email est secondaire, on ne bloque pas si ça échoue
+      }
+
+      return NextResponse.json({ ...updatedUser, invited: false });
+    }
+
+    // Créer un nouveau compte modérateur
+    const tempPassword = generateTempPassword();
+    const displayName = name || email.split('@')[0];
+
+    const signUpResult = await auth.api.signUpEmail({
+      body: {
+        email,
+        password: tempPassword,
+        name: displayName,
+      },
+    });
+
+    if (!signUpResult) {
+      return NextResponse.json(
+        { error: 'Erreur lors de la création du compte' },
+        { status: 500 }
+      );
+    }
+
+    // Promouvoir immédiatement au rôle MODERATOR
+    const newUser = await prisma.user.update({
+      where: { email },
+      data: { role: 'MODERATOR' },
+      select: { id: true, name: true, email: true, role: true },
+    });
+
+    await logAudit(session.user.id, 'MODERATOR_INVITED', {
+      targetUserId: newUser.id,
+      targetUserEmail: email,
+      newRole: 'MODERATOR',
+      method: 'email_invite',
+    });
+
+    // Envoyer l'email d'invitation avec les credentials
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://moonskin.gg';
+    try {
+      await emailService.sendEmail({
+        to: email,
+        subject: 'MoonSkin — Invitation modérateur',
+        html: `
+          <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#0f172a;border-radius:12px;">
+            <h2 style="color:#f97316;margin:0 0 8px">MoonSkin — Invitation modérateur</h2>
+            <p style="color:#94a3b8;margin:0 0 16px">Bonjour ${displayName},</p>
+            <p style="color:#94a3b8;margin:0 0 16px">Vous avez été invité(e) en tant que <strong style="color:#f97316">Modérateur</strong> sur la plateforme MoonSkin.</p>
+            <div style="background:#1e293b;border-radius:8px;padding:16px;margin:0 0 16px;">
+              <p style="color:#94a3b8;margin:0 0 8px;font-size:13px">Vos identifiants de connexion :</p>
+              <p style="color:#fff;margin:0 0 4px"><strong>Email :</strong> ${email}</p>
+              <p style="color:#fff;margin:0"><strong>Mot de passe temporaire :</strong> <span style="color:#f97316;font-family:monospace">${tempPassword}</span></p>
+            </div>
+            <p style="color:#94a3b8;margin:0 0 16px">Connectez-vous et changez votre mot de passe dès que possible.</p>
+            <a href="${appUrl}/admin/login" style="display:inline-block;background:#f97316;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Se connecter</a>
+            <p style="color:#64748b;font-size:13px;margin:16px 0 0">Cet email a été envoyé par l'équipe MoonSkin. Ne le transférez pas.</p>
+          </div>
+        `,
+        text: `Invitation MoonSkin — Email: ${email} — Mot de passe temporaire: ${tempPassword} — ${appUrl}/admin/login`,
+      });
+    } catch {
+      // L'email a échoué mais le compte est créé — on retourne un warning
+      return NextResponse.json({ ...newUser, invited: true, emailError: true });
+    }
+
+    return NextResponse.json({ ...newUser, invited: true, emailError: false });
+  } catch (error) {
+    logger.error('Erreur lors de l\'invitation du modérateur:', error);
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+  }
+}
