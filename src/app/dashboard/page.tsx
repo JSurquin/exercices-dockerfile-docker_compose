@@ -31,6 +31,8 @@ import {
   BanknotesIcon,
   CheckIcon,
   ArrowPathIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
 } from "@heroicons/react/24/outline";
 import {
   LineChart,
@@ -43,8 +45,11 @@ import {
   PieChart,
   Pie,
   Cell,
+  AreaChart,
+  Area,
 } from "recharts";
 import CountUp from "react-countup";
+import { formatCentsToCurrency } from "@/lib/currency-converter";
 
 const formatPrice = (centimes: number) => {
   return (centimes / 100).toFixed(2) + "€";
@@ -168,6 +173,22 @@ export default function DashboardPage() {
       return response.json();
     },
     enabled: !!data?.user,
+  });
+
+  const { data: balanceHistoryData, isLoading: balanceHistoryLoading } = useQuery({
+    queryKey: queryKeys.userBalanceHistory,
+    queryFn: async () => {
+      const response = await fetch('/api/user/balance-history');
+      if (!response.ok) throw new Error('Erreur historique solde');
+      return response.json() as Promise<{
+        history: { date: string; balanceCents: number }[];
+        variationCents: number;
+        variationPct: number;
+        currentBalanceCents: number;
+      }>;
+    },
+    enabled: !!data?.user,
+    refetchOnWindowFocus: true,
   });
 
   const { messages, locale: appLocale } = useLocale();
@@ -345,11 +366,157 @@ export default function DashboardPage() {
           </Card>
         </motion.div>
 
-        {/* Stats Cards */}
+        {/* Balance Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
+          className="mb-6 sm:mb-8"
+        >
+          <Card className="overflow-hidden border-green-500/20 bg-gradient-to-br from-green-500/5 via-background to-emerald-500/5">
+            <CardContent className="p-0">
+              <div className="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border/50">
+                {/* Solde numérique */}
+                <div className="p-5 sm:p-6 flex flex-col justify-between gap-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-9 h-9 rounded-full bg-green-500/15 flex items-center justify-center">
+                        <BanknotesIcon className="w-5 h-5 text-green-500" />
+                      </div>
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {messages.dashboard.balance?.title ?? "Solde disponible"}
+                      </span>
+                    </div>
+                    {balanceHistoryData && (
+                      <div className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
+                        balanceHistoryData.variationCents >= 0
+                          ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                          : "bg-red-500/10 text-red-600 dark:text-red-400"
+                      }`}>
+                        {balanceHistoryData.variationCents >= 0
+                          ? <ArrowTrendingUpIcon className="w-3.5 h-3.5" />
+                          : <ArrowTrendingDownIcon className="w-3.5 h-3.5" />
+                        }
+                        {balanceHistoryData.variationPct >= 0 ? "+" : ""}
+                        {balanceHistoryData.variationPct}%
+                        <span className="text-muted-foreground font-normal ml-0.5">
+                          {messages.dashboard.balance?.last7days ?? "7j"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    {balanceHistoryLoading ? (
+                      <div className="h-12 w-40 animate-pulse bg-muted rounded-lg" />
+                    ) : (
+                      <p className="text-4xl sm:text-5xl font-bold tracking-tight text-green-500">
+                        <CountUp
+                          end={(balanceHistoryData?.currentBalanceCents ?? 0) / 100}
+                          duration={1.5}
+                          decimals={2}
+                          suffix="€"
+                          separator=" "
+                        />
+                      </p>
+                    )}
+                    {balanceHistoryData && balanceHistoryData.variationCents !== 0 && (
+                      <p className={`text-sm mt-1 ${
+                        balanceHistoryData.variationCents >= 0
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-red-600 dark:text-red-400"
+                      }`}>
+                        {balanceHistoryData.variationCents >= 0 ? "+" : ""}
+                        {formatCentsToCurrency(balanceHistoryData.variationCents, "EUR")}{" "}
+                        {messages.dashboard.balance?.vsLastWeek ?? "vs semaine dernière"}
+                      </p>
+                    )}
+                  </div>
+
+                  <Link href="/payout">
+                    <Button
+                      size="sm"
+                      className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
+                    >
+                      <BanknotesIcon className="w-4 h-4 mr-2" />
+                      {messages.payments.withdraw}
+                    </Button>
+                  </Link>
+                </div>
+
+                {/* Graphique de variation */}
+                <div className="p-5 sm:p-6 flex flex-col gap-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {messages.dashboard.balance?.chart30days ?? "Évolution sur 30 jours"}
+                  </p>
+                  {balanceHistoryLoading ? (
+                    <div className="flex-1 min-h-[120px] animate-pulse bg-muted rounded-lg" />
+                  ) : !balanceHistoryData?.history?.length ? (
+                    <div className="flex-1 min-h-[120px] flex items-center justify-center text-sm text-muted-foreground">
+                      {messages.dashboard.balance?.noData ?? "Pas de données"}
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={140}>
+                      <AreaChart
+                        data={balanceHistoryData.history.map((d) => ({
+                          date: new Date(d.date).toLocaleDateString(
+                            appLocale === "en" ? "en-GB" : appLocale === "cn" ? "zh-CN" : "fr-FR",
+                            { day: "2-digit", month: "short" }
+                          ),
+                          solde: d.balanceCents / 100,
+                        }))}
+                        margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
+                      >
+                        <defs>
+                          <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#22c55e" stopOpacity={0.25} />
+                            <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fontSize: 10, fill: "currentColor" }}
+                          className="text-muted-foreground"
+                          tickLine={false}
+                          axisLine={false}
+                          interval={6}
+                        />
+                        <YAxis hide />
+                        <Tooltip
+                          contentStyle={{
+                            background: "hsl(var(--card))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "8px",
+                            fontSize: "12px",
+                          }}
+                          formatter={(value: number) => [
+                            `${value.toFixed(2)} €`,
+                            messages.dashboard.balance?.title ?? "Solde",
+                          ]}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="solde"
+                          stroke="#22c55e"
+                          strokeWidth={2}
+                          fill="url(#balanceGradient)"
+                          dot={false}
+                          activeDot={{ r: 4, fill: "#22c55e" }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Stats Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 sm:mb-8"
         >
           <Card>
@@ -414,7 +581,7 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
         >
           <Tabs defaultValue="trades" className="space-y-4 sm:space-y-6">
             <TabsList className="grid w-full grid-cols-4">

@@ -394,6 +394,13 @@ export const messages: Record<Locale, Messages> = {
       kycRequired: "Requis pour les retraits",
       withdrawFunds: "Retirer vos fonds",
       sepaOrCard: "Carte, SEPA (Flexify) ou crypto (Whitepay)",
+      balance: {
+        title: "Solde disponible",
+        last7days: "7j",
+        vsLastWeek: "vs semaine dernière",
+        chart30days: "Évolution sur 30 jours",
+        noData: "Aucune donnée",
+      },
     },
     kyc: {
       title: "Vérification KYC",
@@ -5272,6 +5279,13 @@ export const messages: Record<Locale, Messages> = {
       kycRequired: "Required for withdrawals",
       withdrawFunds: "Withdraw your funds",
       sepaOrCard: "Card, SEPA (Flexify) or crypto (Whitepay)",
+      balance: {
+        title: "Available balance",
+        last7days: "7d",
+        vsLastWeek: "vs last week",
+        chart30days: "30-day evolution",
+        noData: "No data",
+      },
     },
     kyc: {
       title: "KYC Verification",
@@ -10145,6 +10159,13 @@ export const messages: Record<Locale, Messages> = {
       kycRequired: "提款所需",
       withdrawFunds: "提取资金",
       sepaOrCard: "银行卡、SEPA（Flexify）或加密货币（Whitepay）",
+      balance: {
+        title: "可用余额",
+        last7days: "7天",
+        vsLastWeek: "与上周相比",
+        chart30days: "30天趋势",
+        noData: "暂无数据",
+      },
     },
     kyc: {
       title: "KYC验证",

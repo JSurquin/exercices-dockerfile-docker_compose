@@ -3,6 +3,7 @@ export const queryKeys = {
   userProfile: ['user', 'profile'] as const,
   userTrades: ['user', 'trades'] as const,
   userBalance: ['user', 'balance'] as const,
+  userBalanceHistory: ['user', 'balance-history'] as const,
   userDashboard: ['user', 'dashboard'] as const,
   userPayouts: ['user', 'payouts'] as const,
 

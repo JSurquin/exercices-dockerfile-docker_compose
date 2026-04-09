@@ -437,6 +437,13 @@ export interface Messages {
       kycRequired: string;
       withdrawFunds: string;
       sepaOrCard: string;
+      balance?: {
+        title: string;
+        last7days: string;
+        vsLastWeek: string;
+        chart30days: string;
+        noData: string;
+      };
     };
   kyc: {
     title: string;
