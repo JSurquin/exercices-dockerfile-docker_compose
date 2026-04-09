@@ -2127,14 +2127,16 @@ export const messages: Record<Locale, Messages> = {
       },
       payments: {
         title: "Méthodes de paiement",
-        sepa: "SEPA - Qonto",
-        bitcoin: "Bitcoin",
+        flexify: "Carte / Virement SEPA (Flexify)",
+        whitepay: "Crypto (Whitepay)",
         verified: "Vérifié",
         default: "Par défaut",
         modify: "Modifier",
         add: "Ajouter une méthode de paiement",
         important: "Important",
-        ibanWarning: "Tout changement d'IBAN nécessite une nouvelle vérification et un délai de 7 jours."
+        ibanWarning: "Tout changement d'IBAN nécessite une nouvelle vérification et un délai de 7 jours.",
+        flexifyDesc: "Paiement par carte bancaire ou virement SEPA",
+        whitepayDesc: "Retrait en cryptomonnaie avec taux garanti"
       },
       preferences: {
         title: "Préférences d'affichage",
@@ -8439,14 +8441,16 @@ export const messages: Record<Locale, Messages> = {
       },
       payments: {
         title: "Payment methods",
-        sepa: "SEPA - Qonto",
-        bitcoin: "Bitcoin",
+        flexify: "Card / SEPA Transfer (Flexify)",
+        whitepay: "Crypto (Whitepay)",
         verified: "Verified",
         default: "Default",
         modify: "Modify",
         add: "Add payment method",
         important: "Important",
-        ibanWarning: "Any IBAN change requires new verification and a 7-day delay."
+        ibanWarning: "Any IBAN change requires new verification and a 7-day delay.",
+        flexifyDesc: "Pay by credit card or SEPA bank transfer",
+        whitepayDesc: "Crypto withdrawal with guaranteed rate"
       },
       loginRequired: {
         title: "Login required",
@@ -13020,14 +13024,16 @@ export const messages: Record<Locale, Messages> = {
       },
       payments: {
         title: "支付方式",
-        sepa: "SEPA - Qonto",
-        bitcoin: "比特币",
+        flexify: "银行卡 / SEPA 转账 (Flexify)",
+        whitepay: "加密货币 (Whitepay)",
         verified: "已验证",
         default: "默认",
         modify: "修改",
         add: "添加支付方式",
         important: "重要",
-        ibanWarning: "任何 IBAN 更改都需要重新验证并有 7 天延迟。"
+        ibanWarning: "任何 IBAN 更改都需要重新验证并有 7 天延迟。",
+        flexifyDesc: "通过银行卡或 SEPA 银行转账付款",
+        whitepayDesc: "以保证汇率提取加密货币"
       },
       loginRequired: {
         title: "需要登录",

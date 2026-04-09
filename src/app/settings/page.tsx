@@ -506,21 +506,14 @@ export default function SettingsPage() {
                             <CreditCardIcon className="w-5 h-5 text-blue-600" />
                           </div>
                           <div>
-                            <p className="font-medium">{messages.settings.payments.sepa}</p>
+                            <p className="font-medium">{messages.settings.payments.flexify}</p>
                             <p className="text-sm text-muted-foreground">
-                              FR76 **** **** **** **89
+                              {messages.settings.payments.flexifyDesc}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Badge
-                            variant="secondary"
-                            className="bg-green-100 text-green-800"
-                          >
-                            {messages.settings.payments.verified}
-                          </Badge>
-                          <Badge variant="outline">{messages.settings.payments.default}</Badge>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="outline" size="sm" onClick={() => window.location.href = "/dashboard?tab=payouts"}>
                             {messages.settings.payments.modify}
                           </Button>
                         </div>
@@ -530,36 +523,24 @@ export default function SettingsPage() {
                     <div className="border rounded-lg p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
-                            <span className="text-orange-600 font-bold text-xs">
-                              ₿
-                            </span>
+                          <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                            <span className="text-purple-600 font-bold text-xs">₿</span>
                           </div>
                           <div>
-                            <p className="font-medium">{messages.settings.payments.bitcoin}</p>
+                            <p className="font-medium">{messages.settings.payments.whitepay}</p>
                             <p className="text-sm text-muted-foreground">
-                              1A1z...DivfNa
+                              {messages.settings.payments.whitepayDesc}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Badge
-                            variant="secondary"
-                            className="bg-green-100 text-green-800"
-                          >
-                            {messages.settings.payments.verified}
-                          </Badge>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="outline" size="sm" onClick={() => window.location.href = "/dashboard?tab=payouts"}>
                             {messages.settings.payments.modify}
                           </Button>
                         </div>
                       </div>
                     </div>
                   </div>
-
-                  <Button variant="outline" className="w-full">
-                    {messages.settings.payments.add}
-                  </Button>
 
                   <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
                     <div className="flex items-start space-x-3">

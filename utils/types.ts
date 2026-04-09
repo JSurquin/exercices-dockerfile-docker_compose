@@ -1008,8 +1008,10 @@ export interface Messages {
     };
     payments: {
       title: string;
-      sepa: string;
-      bitcoin: string;
+      flexify: string;
+      whitepay: string;
+      flexifyDesc: string;
+      whitepayDesc: string;
       verified: string;
       default: string;
       modify: string;
