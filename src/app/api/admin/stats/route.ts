@@ -24,7 +24,10 @@ export async function GET(request: NextRequest) {
     const [totalUsers, totalTrades, totalVolumeResult, totalPayoutsResult] = await Promise.all([
       prisma.user.count(),
       prisma.trade.count(),
-      prisma.trade.aggregate({ _sum: { grossCents: true } }),
+      prisma.trade.aggregate({
+        _sum: { grossCents: true },
+        where: { status: { notIn: ['CANCELLED', 'FAILED'] } },
+      }),
       // Total payouts = uniquement les payouts effectivement payés (PAID, FLEXIFY_PAID, WHITEPAY_COMPLETE)
       prisma.payout.aggregate({
         _sum: { amountCents: true },
@@ -73,9 +76,8 @@ export async function GET(request: NextRequest) {
     const tradesGrouped = await prisma.trade.groupBy({
       by: ['createdAt'],
       where: {
-        createdAt: {
-          gte: sixMonthsAgo,
-        },
+        createdAt: { gte: sixMonthsAgo },
+        status: { notIn: ['CANCELLED', 'FAILED'] },
       },
       _count: { id: true },
       _sum: { grossCents: true },
