@@ -145,6 +145,7 @@ export const auth = betterAuth({
     nextCookies(),
     twoFactorPlugin,
     admin({
+      defaultRole: "USER",
       adminRoles: ["ADMIN"],
     }),
   ],
