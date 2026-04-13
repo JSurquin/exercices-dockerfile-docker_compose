@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '~/lib/auth';
+import { headers } from 'next/headers';
 import { TradeHooks } from '@/lib/trade-hooks';
 import { prisma } from '../../../../../../prisma/prisma';
 
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Vérifier les permissions admin
-    
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Accès refusé' }, { status: 403 });
+    }
+
+    const adminUserId = session.user.id;
     const { action, affiliateId, tradeId } = await request.json();
     
     switch (action) {
@@ -21,7 +27,7 @@ export async function POST(request: NextRequest) {
         
         await prisma.auditLog.create({
           data: {
-            userId: 'admin', // TODO: ID admin réel
+            userId: adminUserId,
             action: 'AFFILIATE_COMMISSIONS_RECALCULATED',
             details: { affiliateId }
           }
@@ -44,7 +50,7 @@ export async function POST(request: NextRequest) {
         
         await prisma.auditLog.create({
           data: {
-            userId: 'admin',
+            userId: adminUserId,
             action: 'TRADE_COMMISSION_PROCESSED',
             details: { tradeId }
           }
@@ -55,8 +61,7 @@ export async function POST(request: NextRequest) {
           message: 'Trade traité pour les commissions'
         });
         
-      case 'recalculate_all':
-        // Recalculer pour tous les affiliés actifs
+      case 'recalculate_all': {
         const activeAffiliates = await prisma.affiliateStats.findMany({
           where: { isActive: true },
           select: { id: true }
@@ -74,7 +79,7 @@ export async function POST(request: NextRequest) {
         
         await prisma.auditLog.create({
           data: {
-            userId: 'admin',
+            userId: adminUserId,
             action: 'ALL_AFFILIATE_COMMISSIONS_RECALCULATED',
             details: { 
               totalAffiliates: activeAffiliates.length,
@@ -87,6 +92,7 @@ export async function POST(request: NextRequest) {
           success: true,
           message: `Commissions recalculées pour ${processed}/${activeAffiliates.length} affiliés`
         });
+      }
         
       default:
         return NextResponse.json(

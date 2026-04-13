@@ -11,6 +11,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { queryKeys } from '@/lib/query-keys';
+import { CHART_COLORS, RECHARTS_TOOLTIP_STYLE } from '@/lib/chart-colors';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface AdminStats {
   recentTrades: any[];
@@ -35,6 +37,7 @@ const getStatusColor = (status: string) => {
 };
 
 export function DashboardOverview() {
+  const { messages } = useLocale();
   const { data: stats, isLoading } = useQuery<AdminStats>({
     queryKey: queryKeys.adminStats,
     queryFn: async () => {
@@ -55,7 +58,7 @@ export function DashboardOverview() {
   if (!stats) {
     return (
       <div className="text-center py-12 text-red-500">
-        <p>Erreur lors du chargement des statistiques</p>
+        <p>{messages.adminDashboard.overview.loadError}</p>
       </div>
     );
   }
@@ -83,38 +86,33 @@ export function DashboardOverview() {
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2 text-base md:text-lg">
               <ChartBarIcon className="h-5 w-5 text-cyan-400" />
-              Volume des Trades (7 derniers jours)
+              {messages.adminDashboard.overview.volumeChart}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[250px] w-full md:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={volumeData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.slate700} />
                   <XAxis 
                     dataKey="date" 
-                    stroke="#9CA3AF"
+                    stroke={CHART_COLORS.slate400}
                     tick={{ fontSize: 12 }}
                   />
                   <YAxis 
-                    stroke="#9CA3AF"
+                    stroke={CHART_COLORS.slate400}
                     tick={{ fontSize: 12 }}
                   />
                   <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1F2937', 
-                      border: '1px solid #374151',
-                      borderRadius: '8px',
-                      fontSize: '14px'
-                    }}
-                    labelStyle={{ color: '#F3F4F6' }}
+                    contentStyle={RECHARTS_TOOLTIP_STYLE}
+                    labelStyle={{ color: CHART_COLORS.slate100 }}
                   />
                   <Line 
                     type="monotone" 
                     dataKey="volume" 
-                    stroke="#F97316" 
+                    stroke={CHART_COLORS.orange} 
                     strokeWidth={2}
-                    dot={{ fill: '#F97316', strokeWidth: 2, r: 4 }}
+                    dot={{ fill: CHART_COLORS.orange, strokeWidth: 2, r: 4 }}
                     activeDot={{ r: 6 }}
                   />
                 </LineChart>
@@ -128,35 +126,30 @@ export function DashboardOverview() {
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2 text-base md:text-lg">
               <UsersIcon className="h-5 w-5 text-purple-400" />
-              Répartition des Trades
+              {messages.adminDashboard.overview.tradeDistribution}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[250px] w-full md:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={statusData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.slate700} />
                   <XAxis 
                     dataKey="status" 
-                    stroke="#9CA3AF"
+                    stroke={CHART_COLORS.slate400}
                     tick={{ fontSize: 12 }}
                   />
                   <YAxis 
-                    stroke="#9CA3AF"
+                    stroke={CHART_COLORS.slate400}
                     tick={{ fontSize: 12 }}
                   />
                   <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1F2937', 
-                      border: '1px solid #374151',
-                      borderRadius: '8px',
-                      fontSize: '14px'
-                    }}
-                    labelStyle={{ color: '#F3F4F6' }}
+                    contentStyle={RECHARTS_TOOLTIP_STYLE}
+                    labelStyle={{ color: CHART_COLORS.slate100 }}
                   />
                   <Bar 
                     dataKey="count" 
-                    fill="#F97316" 
+                    fill={CHART_COLORS.orange} 
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
@@ -171,7 +164,7 @@ export function DashboardOverview() {
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2 text-base md:text-lg">
             <ClockIcon className="h-5 w-5 text-emerald-400" />
-            Activité Récente
+              {messages.adminDashboard.overview.recentActivity}
           </CardTitle>
         </CardHeader>
         <CardContent>

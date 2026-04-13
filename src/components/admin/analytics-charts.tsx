@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLocale } from '@/components/providers/locale-provider';
+import { ADMIN_ANALYTICS_REFETCH_INTERVAL_MS } from '@/lib/admin-constants';
+import { CHART_COLORS, CHART_PALETTE } from '@/lib/chart-colors';
 
 interface AnalyticsData {
   overview: {
@@ -107,7 +109,7 @@ function HorizontalBarChart({
       .attr('y', d => yScale(d.label) || 0)
       .attr('width', 0)
       .attr('height', yScale.bandwidth())
-      .attr('fill', d => d.color || '#f97316')
+      .attr('fill', d => d.color || CHART_COLORS.orange)
       .attr('rx', 4)
       .transition()
       .duration(800)
@@ -122,7 +124,7 @@ function HorizontalBarChart({
       .attr('y', d => (yScale(d.label) || 0) + yScale.bandwidth() / 2)
       .attr('dy', '0.35em')
       .style('font-size', '12px')
-      .style('fill', '#e2e8f0')
+      .style('fill', CHART_COLORS.slate200)
       .text(d => d.value.toLocaleString());
 
     // Axe Y (labels)
@@ -136,7 +138,7 @@ function HorizontalBarChart({
       .attr('dy', '0.35em')
       .style('text-anchor', 'end')
       .style('font-size', '12px')
-      .style('fill', '#cbd5e1')
+      .style('fill', CHART_COLORS.slate300)
       .text(d => d.label);
 
   }, [data, width, height]);
@@ -199,12 +201,12 @@ function AreaChart({
 
     gradient.append('stop')
       .attr('offset', '0%')
-      .attr('stop-color', '#f97316')
+      .attr('stop-color', CHART_COLORS.orange)
       .attr('stop-opacity', 0.1);
 
     gradient.append('stop')
       .attr('offset', '100%')
-      .attr('stop-color', '#f97316')
+      .attr('stop-color', CHART_COLORS.orange)
       .attr('stop-opacity', 0.8);
 
     // Ligne
@@ -230,7 +232,7 @@ function AreaChart({
     g.append('path')
       .datum(data)
       .attr('fill', 'none')
-      .attr('stroke', '#f97316')
+      .attr('stroke', CHART_COLORS.orange)
       .attr('stroke-width', 2)
       .attr('d', line);
 
@@ -242,7 +244,7 @@ function AreaChart({
       .attr('cx', d => (xScale(d[dateKey]) || 0) + xScale.bandwidth() / 2)
       .attr('cy', d => yScale(d[valueKey]))
       .attr('r', 0)
-      .attr('fill', '#f97316')
+      .attr('fill', CHART_COLORS.orange)
       .transition()
       .duration(800)
       .attr('r', 4);
@@ -252,19 +254,19 @@ function AreaChart({
       .attr('transform', `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale))
       .selectAll('text')
-      .style('fill', '#cbd5e1')
+      .style('fill', CHART_COLORS.slate300)
       .style('font-size', '12px');
 
     // Axe Y
     g.append('g')
       .call(d3.axisLeft(yScale).ticks(5))
       .selectAll('text')
-      .style('fill', '#cbd5e1')
+      .style('fill', CHART_COLORS.slate300)
       .style('font-size', '12px');
 
     // Styling des axes
     g.selectAll('.domain, .tick line')
-      .style('stroke', '#475569');
+      .style('stroke', CHART_COLORS.slate600);
 
   }, [data, width, height, valueKey, dateKey]);
 
@@ -304,7 +306,7 @@ function DonutChart({
 
     const color = d3.scaleOrdinal()
       .domain(data.map(d => d.label))
-      .range(['#f97316', '#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444']);
+      .range(CHART_PALETTE);
 
     const pie = d3.pie<any>()
       .value(d => d.value)
@@ -322,7 +324,7 @@ function DonutChart({
     arcs.append('path')
       .attr('d', arc)
       .attr('fill', (d, i) => data[i].color || color(data[i].label) as string)
-      .attr('stroke', '#1e293b')
+      .attr('stroke', CHART_COLORS.slate900)
       .attr('stroke-width', 2)
       .transition()
       .duration(800)
@@ -363,13 +365,13 @@ export function AdminAnalyticsCharts() {
   const { data: analyticsResponse, isLoading: analyticsLoading } = useQuery({
     queryKey: queryKeys.adminAnalytics(period),
     queryFn: () => fetch(`/api/admin/analytics?period=${period}`).then(r => r.json()),
-    refetchInterval: 30_000
+    refetchInterval: ADMIN_ANALYTICS_REFETCH_INTERVAL_MS
   });
 
   const { data: metricsResponse, isLoading: metricsLoading } = useQuery({
     queryKey: queryKeys.adminMetrics,
     queryFn: () => fetch('/api/admin/metrics').then(r => r.json()),
-    refetchInterval: 30_000
+    refetchInterval: ADMIN_ANALYTICS_REFETCH_INTERVAL_MS
   });
 
   const analyticsData: AnalyticsData | null = analyticsResponse?.success ? analyticsResponse.data : null;
@@ -440,14 +442,14 @@ export function AdminAnalyticsCharts() {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-slate-100 mb-2">
-                Données indisponibles
+                {messages.adminDashboard.analytics.unavailable}
               </h3>
               <p className="text-slate-400 mb-4">
-                Impossible de charger les analytics. Vérifiez votre connexion.
+                {messages.adminDashboard.analytics.unavailableDesc}
               </p>
               <Button onClick={fetchData} variant="outline">
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Réessayer
+                {messages.adminDashboard.analytics.retry}
               </Button>
             </div>
           </div>
@@ -483,7 +485,7 @@ export function AdminAnalyticsCharts() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-400">Utilisateurs Total</p>
+                <p className="text-sm font-medium text-slate-400">{messages.adminDashboard.analytics.totalUsers}</p>
                 <p className="text-2xl font-bold text-slate-100">
                   {analyticsData.overview.totalUsers.toLocaleString()}
                 </p>
@@ -502,7 +504,7 @@ export function AdminAnalyticsCharts() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-400">Volume Total</p>
+                <p className="text-sm font-medium text-slate-400">{messages.adminDashboard.analytics.totalVolume}</p>
                 <p className="text-2xl font-bold text-slate-100">
                   {formatCurrency(analyticsData.overview.totalVolumeCents)}
                 </p>
@@ -521,7 +523,7 @@ export function AdminAnalyticsCharts() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-400">Trades Total</p>
+                <p className="text-sm font-medium text-slate-400">{messages.adminDashboard.analytics.totalTrades}</p>
                 <p className="text-2xl font-bold text-slate-100">
                   {analyticsData.overview.totalTrades.toLocaleString()}
                 </p>
@@ -540,11 +542,11 @@ export function AdminAnalyticsCharts() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-400">Sessions Actives</p>
+                <p className="text-sm font-medium text-slate-400">{messages.adminDashboard.analytics.activeSessions}</p>
                 <p className="text-2xl font-bold text-slate-100">
                   {metricsData.realtime.activeSessions}
                 </p>
-                <p className="text-sm text-slate-400 mt-1">En temps réel</p>
+                <p className="text-sm text-slate-400 mt-1">{messages.adminDashboard.analytics.realtime}</p>
               </div>
             </div>
           </CardContent>
@@ -556,16 +558,16 @@ export function AdminAnalyticsCharts() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <TabsList className="bg-slate-800/50 flex-wrap h-auto">
             <TabsTrigger value="volume" className="data-[state=active]:bg-slate-700">
-              Volume & Trades
+              {messages.adminDashboard.analytics.tabVolume}
             </TabsTrigger>
             <TabsTrigger value="users" className="data-[state=active]:bg-slate-700">
-              Utilisateurs
+              {messages.adminDashboard.analytics.tabUsers}
             </TabsTrigger>
             <TabsTrigger value="status" className="data-[state=active]:bg-slate-700">
-              Statuts
+              {messages.adminDashboard.analytics.tabStatus}
             </TabsTrigger>
             <TabsTrigger value="realtime" className="data-[state=active]:bg-slate-700">
-              Temps Réel
+              {messages.adminDashboard.analytics.tabRealtime}
             </TabsTrigger>
           </TabsList>
           
@@ -575,9 +577,9 @@ export function AdminAnalyticsCharts() {
               onChange={(e) => setPeriod(Number(e.target.value))}
               className="bg-slate-800 border border-slate-600 rounded px-3 py-1 text-slate-100"
             >
-              <option value={7}>7 jours</option>
-              <option value={30}>30 jours</option>
-              <option value={90}>90 jours</option>
+              <option value={7}>{messages.adminDashboard.analytics.period7}</option>
+              <option value={30}>{messages.adminDashboard.analytics.period30}</option>
+              <option value={90}>{messages.adminDashboard.analytics.period90}</option>
             </select>
             <Button onClick={fetchData} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4" />
@@ -589,9 +591,9 @@ export function AdminAnalyticsCharts() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-slate-100">Volume Quotidien</CardTitle>
+                <CardTitle className="text-slate-100">{messages.adminDashboard.analytics.chartDailyVolume}</CardTitle>
                 <CardDescription className="text-slate-400">
-                  Évolution du volume de trades sur {period} jours
+                  {messages.adminDashboard.analytics.chartDailyVolumeDesc.replace('{period}', String(period))}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -608,9 +610,9 @@ export function AdminAnalyticsCharts() {
 
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-slate-100">Top Utilisateurs</CardTitle>
+                <CardTitle className="text-slate-100">{messages.adminDashboard.analytics.chartTopUsers}</CardTitle>
                 <CardDescription className="text-slate-400">
-                  Classement par volume de trades
+                  {messages.adminDashboard.analytics.chartTopUsersDesc}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -618,7 +620,7 @@ export function AdminAnalyticsCharts() {
                   data={analyticsData.topUsers.slice(0, 5).map(user => ({
                     label: user.name,
                     value: user.volume,
-                    color: '#f97316'
+                    color: CHART_COLORS.orange
                   }))}
                   title=""
                   width={500}
@@ -631,12 +633,12 @@ export function AdminAnalyticsCharts() {
 
         <TabsContent value="users" className="space-y-6">
           <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-slate-100">Nouveaux Utilisateurs</CardTitle>
-              <CardDescription className="text-slate-400">
-                Inscriptions quotidiennes sur {period} jours
-              </CardDescription>
-            </CardHeader>
+              <CardHeader>
+                <CardTitle className="text-slate-100">{messages.adminDashboard.analytics.chartNewUsers}</CardTitle>
+                <CardDescription className="text-slate-400">
+                  {messages.adminDashboard.analytics.chartNewUsersDesc.replace('{period}', String(period))}
+                </CardDescription>
+              </CardHeader>
             <CardContent>
               <AreaChart
                 data={analyticsData.charts.dailyUsers}
@@ -654,9 +656,9 @@ export function AdminAnalyticsCharts() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-slate-100">Statuts des Trades</CardTitle>
+                <CardTitle className="text-slate-100">{messages.adminDashboard.analytics.chartTradeStatus}</CardTitle>
                 <CardDescription className="text-slate-400">
-                  Répartition des statuts sur {period} jours
+                  {messages.adminDashboard.analytics.chartTradeStatusDesc.replace('{period}', String(period))}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -674,9 +676,9 @@ export function AdminAnalyticsCharts() {
 
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-slate-100">Méthodes de Paiement</CardTitle>
+                <CardTitle className="text-slate-100">{messages.adminDashboard.analytics.chartPaymentMethods}</CardTitle>
                 <CardDescription className="text-slate-400">
-                  Répartition des méthodes configurées
+                  {messages.adminDashboard.analytics.chartPaymentMethodsDesc}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -698,9 +700,9 @@ export function AdminAnalyticsCharts() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-slate-100">Activité par Heure</CardTitle>
+                <CardTitle className="text-slate-100">{messages.adminDashboard.analytics.chartHourly}</CardTitle>
                 <CardDescription className="text-slate-400">
-                  Dernières 24 heures
+                  {messages.adminDashboard.analytics.chartHourlyDesc}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -717,9 +719,9 @@ export function AdminAnalyticsCharts() {
 
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-slate-100">Alertes Système</CardTitle>
+                <CardTitle className="text-slate-100">{messages.adminDashboard.analytics.chartAlerts}</CardTitle>
                 <CardDescription className="text-slate-400">
-                  État actuel de la plateforme
+                  {messages.adminDashboard.analytics.chartAlertsDesc}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -732,13 +734,13 @@ export function AdminAnalyticsCharts() {
                         'bg-blue-900/20 border-blue-500/50 text-blue-300'
                       }`}>
                         <p className="text-sm">{alert.message}</p>
-                        <span className="text-xs opacity-75">Priorité: {alert.priority}</span>
+                        <span className="text-xs opacity-75">{messages.adminDashboard.analytics.alertPriority}: {alert.priority}</span>
                       </div>
                     ))
                   ) : (
                     <div className="text-center py-8">
-                      <p className="text-slate-400">Aucune alerte système</p>
-                      <p className="text-sm text-slate-500 mt-1">Tout fonctionne normalement</p>
+                      <p className="text-slate-400">{messages.adminDashboard.analytics.noAlerts}</p>
+                      <p className="text-sm text-slate-500 mt-1">{messages.adminDashboard.analytics.noAlertsDesc}</p>
                     </div>
                   )}
                 </div>
@@ -752,29 +754,29 @@ export function AdminAnalyticsCharts() {
       {analyticsData.skinplace && (
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-slate-100">Statistiques Skinplace</CardTitle>
+            <CardTitle className="text-slate-100">{messages.adminDashboard.analytics.skinplaceStats}</CardTitle>
             <CardDescription className="text-slate-400">
-              Intégration API Skinplace en temps réel
+              {messages.adminDashboard.analytics.skinplaceStatsDesc}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {analyticsData.skinplace.balance && (
                 <div className="text-center">
-                  <p className="text-sm text-slate-400">Solde Skinplace</p>
+                  <p className="text-sm text-slate-400">{messages.adminDashboard.analytics.skinplaceBalance}</p>
                   <p className="text-2xl font-bold text-slate-100">
                     {analyticsData.skinplace.balance.balance} {analyticsData.skinplace.balance.currency}
                   </p>
                 </div>
               )}
               <div className="text-center">
-                <p className="text-sm text-slate-400">Transactions Récentes</p>
+                <p className="text-sm text-slate-400">{messages.adminDashboard.analytics.skinplaceTransactions}</p>
                 <p className="text-2xl font-bold text-slate-100">
                   {analyticsData.skinplace.recentTransactions?.length || 0}
                 </p>
               </div>
               <div className="text-center">
-                <p className="text-sm text-slate-400">Dernière MAJ</p>
+                <p className="text-sm text-slate-400">{messages.adminDashboard.analytics.skinplaceLastUpdate}</p>
                 <p className="text-sm text-slate-300">
                   {new Date(analyticsData.generatedAt).toLocaleString('fr-FR')}
                 </p>

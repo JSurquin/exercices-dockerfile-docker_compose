@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
+import { ADMIN_SKINPLACE_REFETCH_INTERVAL_MS, SKINPLACE_DASHBOARD_URL } from '@/lib/admin-constants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -88,7 +89,7 @@ export function AdminSkinplaceMetrics() {
 
       return skinplaceMetrics;
     },
-    refetchInterval: 60_000
+    refetchInterval: ADMIN_SKINPLACE_REFETCH_INTERVAL_MS
   });
 
   const error: string | null = queryError ? (queryError instanceof Error ? queryError.message : 'Erreur lors de la récupération des métriques Skinplace') : null;
@@ -301,7 +302,7 @@ export function AdminSkinplaceMetrics() {
             {/* Liens utiles */}
             <div className="flex gap-2 pt-2">
               <Button variant="outline" size="sm" asChild>
-                <a href="https://skin.place" target="_blank" rel="noopener noreferrer">
+                <a href={SKINPLACE_DASHBOARD_URL} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Dashboard Skinplace
                 </a>

@@ -7,6 +7,11 @@ import { FraudDetector } from '@/lib/security';
 import { logger } from '@/lib/logger';
 import {headers} from 'next/headers';
 import { Session } from 'better-auth';
+import {
+  PRISMA_SEQUENTIAL_DELAY_MS,
+  PRISMA_HEAVY_QUERY_DELAY_MS,
+  PRISMA_FINAL_QUERY_DELAY_MS,
+} from '@/lib/admin-constants';
 
 // Fonction helper pour exécuter une requête avec fallback
 async function safeQuery<T>(
@@ -68,7 +73,7 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
       'Error fetching rate limit hits'
     );
 
-    await new Promise(resolve => setTimeout(resolve, 25));
+    await new Promise(resolve => setTimeout(resolve, PRISMA_SEQUENTIAL_DELAY_MS));
 
     const fraudDetections = await safeQuery(
       () => prisma.auditLog.count({
@@ -81,7 +86,7 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
       'Error fetching fraud detections'
     );
 
-    await new Promise(resolve => setTimeout(resolve, 25));
+    await new Promise(resolve => setTimeout(resolve, PRISMA_SEQUENTIAL_DELAY_MS));
 
     const blockedIPs = await safeQuery(
       () => prisma.auditLog.count({
@@ -94,7 +99,7 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
       'Error fetching blocked IPs'
     );
 
-    await new Promise(resolve => setTimeout(resolve, 25));
+    await new Promise(resolve => setTimeout(resolve, PRISMA_SEQUENTIAL_DELAY_MS));
 
     const suspiciousActivities = await safeQuery(
       () => prisma.auditLog.count({
@@ -107,7 +112,7 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
       'Error fetching suspicious activities'
     );
 
-    await new Promise(resolve => setTimeout(resolve, 25));
+    await new Promise(resolve => setTimeout(resolve, PRISMA_SEQUENTIAL_DELAY_MS));
 
     const loginFailures = await safeQuery(
       () => prisma.auditLog.count({
@@ -120,7 +125,7 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
       'Error fetching login failures'
     );
 
-    await new Promise(resolve => setTimeout(resolve, 25));
+    await new Promise(resolve => setTimeout(resolve, PRISMA_SEQUENTIAL_DELAY_MS));
 
     const accountLocks = await safeQuery(
       () => prisma.auditLog.count({
@@ -133,7 +138,7 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
       'Error fetching account locks'
     );
 
-    await new Promise(resolve => setTimeout(resolve, 25));
+    await new Promise(resolve => setTimeout(resolve, PRISMA_SEQUENTIAL_DELAY_MS));
 
     const ibanChanges = await safeQuery(
       () => prisma.auditLog.count({
@@ -146,7 +151,7 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
       'Error fetching IBAN changes'
     );
 
-    await new Promise(resolve => setTimeout(resolve, 25));
+    await new Promise(resolve => setTimeout(resolve, PRISMA_SEQUENTIAL_DELAY_MS));
 
     const payoutRequests = await safeQuery(
       () => prisma.auditLog.count({
@@ -163,7 +168,7 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
     const topIPs = [];
     try {
       // Attendre un peu pour éviter les conflits avec les requêtes précédentes
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, PRISMA_HEAVY_QUERY_DELAY_MS));
       
       const ipLogs = await prisma.auditLog.findMany({
         where: {
@@ -193,7 +198,7 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
     const topUsers = [];
     try {
       // Attendre un peu pour éviter les conflits
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, PRISMA_HEAVY_QUERY_DELAY_MS));
       
       const userLogs = await prisma.auditLog.findMany({
         where: {
@@ -220,7 +225,7 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
     }
 
     // Attendre avant les dernières requêtes
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, PRISMA_HEAVY_QUERY_DELAY_MS));
 
     // Récupérer les activités récentes suspectes
     const recentSuspiciousActivities = await safeQuery(
@@ -244,7 +249,7 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
       'Error fetching recent suspicious activities'
     );
 
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise(resolve => setTimeout(resolve, PRISMA_FINAL_QUERY_DELAY_MS));
 
     // Détecter les pics d'activité actuels
     const activitySpike = await safeQuery(
@@ -258,7 +263,7 @@ async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse>
       'Error detecting activity spikes'
     );
 
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise(resolve => setTimeout(resolve, PRISMA_FINAL_QUERY_DELAY_MS));
 
     // Calculer les tendances (comparaison avec la période précédente)
     const previousPeriodSince = new Date(since.getTime() - (timeframeMs || 0));

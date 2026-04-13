@@ -4,6 +4,11 @@ import { prisma } from '../../../../../prisma/prisma';
 import { skinplaceService } from '@/lib/skinplace';
 import { logger } from '@/lib/logger';
 import { subHours, subDays } from 'date-fns';
+import {
+  ALERT_THRESHOLD_FAILED_PAYOUTS,
+  ALERT_THRESHOLD_PENDING_KYC,
+  ALERT_THRESHOLD_PENDING_TRADES,
+} from '@/lib/admin-constants';
 
 export async function GET(request: NextRequest) {
   try {
@@ -185,7 +190,7 @@ export async function GET(request: NextRequest) {
     // Alertes système
     const alerts = [];
     
-    if (failedPayouts > 5) {
+    if (failedPayouts > ALERT_THRESHOLD_FAILED_PAYOUTS) {
       alerts.push({
         type: 'error',
         message: `${failedPayouts} paiements échoués nécessitent une attention`,
@@ -193,7 +198,7 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    if (pendingKyc > 10) {
+    if (pendingKyc > ALERT_THRESHOLD_PENDING_KYC) {
       alerts.push({
         type: 'warning',
         message: `${pendingKyc} demandes KYC en attente de validation`,
@@ -201,7 +206,7 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    if (pendingTrades > 20) {
+    if (pendingTrades > ALERT_THRESHOLD_PENDING_TRADES) {
       alerts.push({
         type: 'info',
         message: `${pendingTrades} trades en cours de traitement`,

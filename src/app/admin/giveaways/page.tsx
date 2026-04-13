@@ -27,6 +27,13 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { SkinPickerModal } from '@/components/admin/skin-picker-modal';
+import {
+  GIVEAWAY_DEFAULT_TICKET_PRICE,
+  GIVEAWAY_DEFAULT_MAX_TICKETS,
+  GIVEAWAY_DEFAULT_DURATION_MINUTES,
+  GIVEAWAY_DEFAULT_DURATION_TYPE,
+  GIVEAWAY_DEFAULT_WINNER_COUNT,
+} from '@/lib/admin-constants';
 
 interface SkinItem {
   steam_market_hash_name: string;
@@ -69,14 +76,14 @@ export default function AdminGiveawaysPage() {
     prize: '',
     prizeImageUrl: '',
     steamMarketHashName: '',
-    ticketPrice: 100,
-    maxTickets: 10000,
+    ticketPrice: GIVEAWAY_DEFAULT_TICKET_PRICE,
+    maxTickets: GIVEAWAY_DEFAULT_MAX_TICKETS,
     isPrivate: false,
     requiredAffiliateCode: '',
-    durationMinutes: 60,
+    durationMinutes: GIVEAWAY_DEFAULT_DURATION_MINUTES,
     rewardValueCents: 0,
-    durationType: 'WEEKLY',
-    winnerCount: 1,
+    durationType: GIVEAWAY_DEFAULT_DURATION_TYPE,
+    winnerCount: GIVEAWAY_DEFAULT_WINNER_COUNT,
     maxEntriesPerUser: '',
   });
 

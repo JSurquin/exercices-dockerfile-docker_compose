@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { z } from 'zod';
+import {
+  ADMIN_DEFAULT_TIMEZONE,
+  ADMIN_DEFAULT_SESSION_TIMEOUT_MINUTES,
+  ADMIN_DEFAULT_THEME,
+  ADMIN_DEFAULT_LANGUAGE,
+  ADMIN_DEFAULT_DASHBOARD_LAYOUT,
+} from '@/lib/admin-constants';
 
 const DEFAULT_METADATA = {
   notifications: {
@@ -11,14 +18,14 @@ const DEFAULT_METADATA = {
     weeklyReports: false,
   },
   preferences: {
-    theme: 'dark',
-    language: 'fr',
-    timezone: 'Europe/Paris',
-    dashboardLayout: 'grid',
+    theme: ADMIN_DEFAULT_THEME,
+    language: ADMIN_DEFAULT_LANGUAGE,
+    timezone: ADMIN_DEFAULT_TIMEZONE,
+    dashboardLayout: ADMIN_DEFAULT_DASHBOARD_LAYOUT,
   },
   security: {
     twoFactorEnabled: false,
-    sessionTimeout: 30,
+    sessionTimeout: ADMIN_DEFAULT_SESSION_TIMEOUT_MINUTES,
   },
 };
 

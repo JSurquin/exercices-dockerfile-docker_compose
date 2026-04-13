@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { skinplaceService } from '@/lib/skinplace';
+import {
+  SKINPLACE_ITEMS_DEFAULT_LIMIT,
+  SKINPLACE_ITEMS_MAX_LIMIT,
+  STEAM_CDN_IMAGE_BASE,
+} from '@/lib/admin-constants';
 
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -9,7 +14,10 @@ export async function GET(request: NextRequest) {
   }
 
   const search = request.nextUrl.searchParams.get('search') ?? '';
-  const limit = Math.min(parseInt(request.nextUrl.searchParams.get('limit') ?? '50'), 200);
+  const limit = Math.min(
+    parseInt(request.nextUrl.searchParams.get('limit') ?? String(SKINPLACE_ITEMS_DEFAULT_LIMIT)),
+    SKINPLACE_ITEMS_MAX_LIMIT
+  );
 
   try {
     const result = await skinplaceService.getItemListings(1, limit, {
@@ -36,7 +44,7 @@ export async function GET(request: NextRequest) {
       icon_url: s.icon_url
         ? s.icon_url.startsWith('http')
           ? s.icon_url
-          : `https://community.cloudflare.steamstatic.com/economy/image/${s.icon_url}`
+          : `${STEAM_CDN_IMAGE_BASE}${s.icon_url}`
         : null,
       price: s.price ?? null,
       rarity: s.rarity ?? null,

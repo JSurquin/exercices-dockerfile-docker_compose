@@ -1,20 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '~/lib/auth';
+import { headers } from 'next/headers';
 import { AffiliateService } from '@/lib/affiliate-service';
 import { prisma } from '../../../../../prisma/prisma';
+import { DEFAULT_PAGE_SIZE } from '@/lib/admin-constants';
+
+async function requireAdmin(request: NextRequest) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user || session.user.role !== 'ADMIN') return null;
+  return session;
+}
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Vérifier les permissions admin
-    
+    const session = await requireAdmin(request);
+    if (!session) {
+      return NextResponse.json({ success: false, error: 'Accès refusé' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const limit = parseInt(searchParams.get('limit') || String(DEFAULT_PAGE_SIZE));
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || 'all';
     
     const skip = (page - 1) * limit;
     
-    // Construire les filtres
     const where: any = {};
     
     if (status !== 'all') {
@@ -29,7 +40,6 @@ export async function GET(request: NextRequest) {
       ];
     }
     
-    // Récupérer les affiliés avec pagination
     const [affiliates, total] = await Promise.all([
       prisma.affiliateStats.findMany({
         where,
@@ -58,7 +68,6 @@ export async function GET(request: NextRequest) {
       prisma.affiliateStats.count({ where })
     ]);
     
-    // Calculer les métriques globales
     const globalStats = await prisma.affiliateStats.aggregate({
       _sum: {
         totalReferrals: true,
@@ -101,8 +110,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Vérifier les permissions admin
-    
+    const session = await requireAdmin(request);
+    if (!session) {
+      return NextResponse.json({ success: false, error: 'Accès refusé' }, { status: 403 });
+    }
+
+    const adminUserId = session.user.id;
     const { action, affiliateId, data } = await request.json();
     
     switch (action) {
@@ -112,10 +125,9 @@ export async function POST(request: NextRequest) {
           data: { isActive: !data.currentStatus }
         });
         
-        // Log de l'audit
         await prisma.auditLog.create({
           data: {
-            userId: 'admin', // TODO: ID admin réel
+            userId: adminUserId,
             action: 'AFFILIATE_STATUS_CHANGED',
             details: {
               affiliateId,
@@ -133,7 +145,7 @@ export async function POST(request: NextRequest) {
         
         await prisma.auditLog.create({
           data: {
-            userId: 'admin',
+            userId: adminUserId,
             action: 'AFFILIATE_COMMISSION_RATE_CHANGED',
             details: {
               affiliateId,

@@ -4625,4 +4625,51 @@ export interface Messages {
       forceMajeure: { title: string; content: string };
     };
   };
+  adminDashboard: {
+    analytics: {
+      unavailable: string;
+      unavailableDesc: string;
+      retry: string;
+      totalUsers: string;
+      totalVolume: string;
+      totalTrades: string;
+      activeSessions: string;
+      realtime: string;
+      tabVolume: string;
+      tabUsers: string;
+      tabStatus: string;
+      tabRealtime: string;
+      period7: string;
+      period30: string;
+      period90: string;
+      chartDailyVolume: string;
+      chartDailyVolumeDesc: string;
+      chartTopUsers: string;
+      chartTopUsersDesc: string;
+      chartNewUsers: string;
+      chartNewUsersDesc: string;
+      chartTradeStatus: string;
+      chartTradeStatusDesc: string;
+      chartPaymentMethods: string;
+      chartPaymentMethodsDesc: string;
+      chartHourly: string;
+      chartHourlyDesc: string;
+      chartAlerts: string;
+      chartAlertsDesc: string;
+      noAlerts: string;
+      noAlertsDesc: string;
+      alertPriority: string;
+      skinplaceStats: string;
+      skinplaceStatsDesc: string;
+      skinplaceBalance: string;
+      skinplaceTransactions: string;
+      skinplaceLastUpdate: string;
+    };
+    overview: {
+      volumeChart: string;
+      tradeDistribution: string;
+      recentActivity: string;
+      loadError: string;
+    };
+  };
 }

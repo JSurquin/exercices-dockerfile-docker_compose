@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { ADMIN_GAMIFICATION_REFETCH_INTERVAL_MS } from '@/lib/admin-constants';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -206,7 +207,7 @@ export default function AdminGamificationEconomyPage() {
       if (!r.ok) throw new Error('Accès refusé ou erreur');
       return r.json();
     },
-    refetchInterval: 60_000,
+    refetchInterval: ADMIN_GAMIFICATION_REFETCH_INTERVAL_MS,
   });
 
   if (isLoading) {

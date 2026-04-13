@@ -6,6 +6,7 @@ import { AffiliateService } from '@/lib/affiliate-service';
 import { AuditLogger, AuditAction } from '@/lib/security/audit-logger';
 import { headers } from 'next/headers';
 import crypto from 'crypto';
+import { AFFILIATE_DEFAULT_COMMISSION_RATE_PERCENT } from '@/lib/admin-constants';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
       email, 
       name, 
       code, 
-      commissionRate = 2, // Pourcentage (2 = 2%)
+      commissionRate = AFFILIATE_DEFAULT_COMMISSION_RATE_PERCENT,
       sendEmail = true 
     } = body;
 
