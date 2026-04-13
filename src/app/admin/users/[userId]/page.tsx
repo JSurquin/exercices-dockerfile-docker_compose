@@ -176,7 +176,7 @@ export default function AdminUserDetailPage() {
             <p className="text-white">{user.level} — {user.xp} XP</p>
           </div>
           <div>
-            <p className="text-slate-400">Tickets</p>
+            <p className="text-slate-400">Fragments</p>
             <p className="text-white">{user.tickets}</p>
           </div>
           <div>

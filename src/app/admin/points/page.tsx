@@ -176,7 +176,7 @@ export default function AdminPointsPage() {
                     <TicketIcon className="w-5 h-5 text-purple-400" />
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400">Total Tickets</p>
+                    <p className="text-xs text-slate-400">Total Fragments</p>
                     <p className="text-xl font-bold text-white">
                       {(metrics.totals.tickets ?? 0).toLocaleString('fr-FR')}
                     </p>
@@ -275,7 +275,7 @@ export default function AdminPointsPage() {
                               </p>
                               {(item._sum.tickets ?? 0) > 0 && (
                                 <p className="text-xs text-purple-400">
-                                  +{item._sum.tickets} tickets
+                                  +{item._sum.tickets} fragments
                                 </p>
                               )}
                             </div>
@@ -412,7 +412,7 @@ export default function AdminPointsPage() {
                             <div className="text-right">
                               <p className="text-sm font-bold text-yellow-400">+{tx.points} pts</p>
                               {tx.tickets > 0 && (
-                                <p className="text-xs text-purple-400">+{tx.tickets} tickets</p>
+                                <p className="text-xs text-purple-400">+{tx.tickets} fragments</p>
                               )}
                             </div>
                             <p className="text-xs text-slate-500 w-20 text-right">
@@ -439,7 +439,7 @@ export default function AdminPointsPage() {
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
                   <TrophyIcon className="w-5 h-5 mr-2 text-yellow-400" />
-                  Top 10 Joueurs — XP & Tickets
+                  Top 10 Joueurs — XP & Fragments
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -487,7 +487,7 @@ export default function AdminPointsPage() {
                             <p className="text-sm font-bold text-yellow-400">
                               {(user.xp ?? 0).toLocaleString('fr-FR')} XP
                             </p>
-                            <p className="text-xs text-purple-400">{user.tickets} tickets</p>
+                            <p className="text-xs text-purple-400">{user.tickets} fragments</p>
                           </div>
                         </div>
                       </div>
@@ -532,7 +532,7 @@ export default function AdminPointsPage() {
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-slate-300">Tickets par euro vendu</Label>
+                        <Label className="text-slate-300">Fragments par euro vendu</Label>
                         <Input
                           type="number"
                           min="0"
@@ -542,7 +542,7 @@ export default function AdminPointsPage() {
                           className="bg-slate-700 border-slate-600 text-white"
                         />
                         <p className="text-xs text-slate-500">
-                          Ex: 0.1 = 1 ticket par 10€. Vente de 50€ → 5 tickets
+                          Ex: 0.1 = 1 fragment par 10€. Vente de 50€ → 5 fragments
                         </p>
                       </div>
                     </div>
@@ -554,7 +554,7 @@ export default function AdminPointsPage() {
                       <p className="text-xs text-slate-400">
                         Pour une vente de <span className="text-white font-semibold">100€</span> :
                         {' '}<span className="text-yellow-400 font-semibold">{Math.floor(100 * editConfig.pointsPerEuro)} pts</span>
-                        {' '}et <span className="text-purple-400 font-semibold">{Math.floor(100 * editConfig.ticketsPerEuro)} tickets</span>
+                        {' '}et <span className="text-purple-400 font-semibold">{Math.floor(100 * editConfig.ticketsPerEuro)} fragments</span>
                       </p>
                     </div>
                   </CardContent>
@@ -582,7 +582,7 @@ export default function AdminPointsPage() {
                         <p className="text-xs text-slate-500">Points de base (avant multiplicateur streak)</p>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-slate-300">Tickets par connexion</Label>
+                        <Label className="text-slate-300">Fragments par connexion</Label>
                         <Input
                           type="number"
                           min="0"
@@ -590,7 +590,7 @@ export default function AdminPointsPage() {
                           onChange={(e) => updateField('dailyLoginTickets', parseInt(e.target.value) || 0)}
                           className="bg-slate-700 border-slate-600 text-white"
                         />
-                        <p className="text-xs text-slate-500">Mettre à 0 pour ne pas donner de tickets</p>
+                        <p className="text-xs text-slate-500">Mettre à 0 pour ne pas donner de fragments</p>
                       </div>
                     </div>
 
