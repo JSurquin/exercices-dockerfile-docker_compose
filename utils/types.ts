@@ -2086,6 +2086,9 @@ export interface Messages {
     tradeStatusModal: {
       acceptedTitle: string;
       acceptedDescription: string;
+      pendingTitle: string;
+      pendingDescription: string;
+      acceptOnSteam: string;
       cancelledTitle: string;
       cancelledDescription: string;
       backToAccount: string;

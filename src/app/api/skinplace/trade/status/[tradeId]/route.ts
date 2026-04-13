@@ -135,13 +135,12 @@ export async function GET(
     }
 
     let skinplaceStatus: string | null = null;
+    const signature = generateSkinplaceSignature(trade.steamId, privateKey);
 
-    // Skinplace auth : signature = sha256(steamId + privateKey) + public_key en query params
-    const tokenForQuery = trade.skinplaceToken || trade.ticketId;
-    if (tokenForQuery) {
+    // Stratégie 1 : lookup direct par skinplaceToken (transaction token retourné par Skinplace)
+    if (trade.skinplaceToken) {
       try {
-        const signature = generateSkinplaceSignature(trade.steamId, privateKey);
-        const url = new URL(`https://api.skin.place/api/v3/instant/payment/trade/${tokenForQuery}`);
+        const url = new URL(`https://api.skin.place/api/v3/instant/payment/trade/${trade.skinplaceToken}`);
         url.searchParams.set('signature', signature);
         url.searchParams.set('public_key', publicKey);
         url.searchParams.set('project', 'csgo');
@@ -156,13 +155,61 @@ export async function GET(
         if (res.ok) {
           const data = await res.json();
           skinplaceStatus = data?.steamtrade?.status || data?.payment?.status || null;
-          console.log(`📊 Statut Skinplace pour trade ${trade.id}:`, skinplaceStatus);
+          console.log(`📊 [strategy=token] Statut Skinplace pour trade ${trade.id}:`, skinplaceStatus);
         } else {
           const errText = await res.text().catch(() => '');
-          console.warn(`⚠️  Skinplace status check failed ${res.status} pour trade ${trade.id}:`, errText);
+          console.warn(`⚠️  [strategy=token] Skinplace ${res.status} pour trade ${trade.id}:`, errText);
         }
       } catch (e) {
-        console.warn(`⚠️  Skinplace status check exception pour trade ${trade.id}:`, e);
+        console.warn(`⚠️  [strategy=token] Exception pour trade ${trade.id}:`, e);
+      }
+    } else {
+      console.warn(`⚠️  skinplaceToken null pour trade ${trade.id}, fallback sur order_id (ticketId: ${trade.ticketId})`);
+    }
+
+    // Stratégie 2 : fallback via /instant/history avec order_id si le token direct n'a rien donné
+    if (!skinplaceStatus && trade.ticketId) {
+      try {
+        const historyRes = await fetch('https://api.skin.place/api/v3/instant/history', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'User-Agent': 'MoonSkin/1.0',
+          },
+          body: JSON.stringify({
+            signature,
+            public_key: publicKey,
+            order_ids: [trade.ticketId],
+            limit: 1,
+          }),
+          signal: AbortSignal.timeout(10000),
+        });
+
+        if (historyRes.ok) {
+          const historyData = await historyRes.json();
+          const entry = historyData?.data?.[0];
+          if (entry) {
+            skinplaceStatus = entry?.steamtrade?.status || entry?.payment?.status || null;
+            // Sauvegarder le token Skinplace pour les prochains appels
+            const foundToken: string | undefined = entry?.token;
+            if (foundToken && !trade.skinplaceToken) {
+              await prisma.trade.update({
+                where: { id: trade.id },
+                data: { skinplaceToken: foundToken },
+              });
+              console.log(`💾 skinplaceToken récupéré via history et sauvegardé pour trade ${trade.id}`);
+            }
+            console.log(`📊 [strategy=history] Statut Skinplace pour trade ${trade.id}:`, skinplaceStatus);
+          } else {
+            console.warn(`⚠️  [strategy=history] Aucune entrée trouvée pour order_id ${trade.ticketId}`);
+          }
+        } else {
+          const errText = await historyRes.text().catch(() => '');
+          console.warn(`⚠️  [strategy=history] Skinplace ${historyRes.status} pour trade ${trade.id}:`, errText);
+        }
+      } catch (e) {
+        console.warn(`⚠️  [strategy=history] Exception pour trade ${trade.id}:`, e);
       }
     }
 

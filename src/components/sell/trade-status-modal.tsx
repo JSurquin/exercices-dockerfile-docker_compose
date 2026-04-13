@@ -15,10 +15,11 @@ import {
   XCircleIcon,
   ArrowRightIcon,
   ArrowPathIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import { useLocale } from "@/components/providers/locale-provider";
 
-export type TradeModalStatus = "accepted" | "cancelled" | null;
+export type TradeModalStatus = "accepted" | "cancelled" | "pending" | null;
 
 interface TradeStatusModalProps {
   status: TradeModalStatus;
@@ -41,12 +42,13 @@ export function TradeStatusModal({
   const t = messages.sellPage.tradeStatusModal;
   const isAccepted = status === "accepted";
   const isCancelled = status === "cancelled";
+  const isPending = status === "pending";
 
   return (
-    <Dialog open={status !== null} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={status !== null} onOpenChange={(open) => !open && (isPending ? null : onClose())}>
       <DialogContent
         className="sm:max-w-md text-center overflow-hidden"
-        showCloseButton={false}
+        showCloseButton={!isPending}
       >
         {/* Particules confetti CSS pour trade accepté */}
         {isAccepted && (
@@ -102,6 +104,28 @@ export function TradeStatusModal({
               </motion.div>
             )}
 
+            {isPending && (
+              <motion.div
+                key="pending"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="flex flex-col items-center gap-4"
+              >
+                <div className="relative">
+                  <motion.div
+                    className="absolute inset-0 rounded-full bg-orange-500/20"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.6, 0, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+                  />
+                  <ClockIcon className="w-20 h-20 text-orange-500 relative z-10" />
+                </div>
+                <DialogTitle className="text-2xl font-bold text-center">
+                  {t.pendingTitle}
+                </DialogTitle>
+              </motion.div>
+            )}
+
             {isCancelled && (
               <motion.div
                 key="cancelled"
@@ -121,7 +145,11 @@ export function TradeStatusModal({
 
         <div className="space-y-4 pt-2">
           <DialogDescription className="text-base text-center leading-relaxed">
-            {isAccepted ? t.acceptedDescription : t.cancelledDescription}
+            {isAccepted
+              ? t.acceptedDescription
+              : isPending
+              ? t.pendingDescription
+              : t.cancelledDescription}
           </DialogDescription>
 
           {isAccepted && (
@@ -154,6 +182,19 @@ export function TradeStatusModal({
                 </Button>
                 <Button asChild variant="outline" className="w-full">
                   <a href="/dashboard?tab=trades">{t.viewTrades}</a>
+                </Button>
+              </>
+            ) : isPending ? (
+              <>
+                <Button asChild className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+                  <a
+                    href="https://steamcommunity.com/my/tradeoffers/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ArrowRightIcon className="w-4 h-4 mr-2" />
+                    {t.acceptOnSteam}
+                  </a>
                 </Button>
               </>
             ) : (

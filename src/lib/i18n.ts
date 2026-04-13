@@ -3228,6 +3228,9 @@ export const messages: Record<Locale, Messages> = {
       tradeStatusModal: {
         acceptedTitle: "🎉 Vente confirmée !",
         acceptedDescription: "Vous avez accepté l'offre sur Steam. Vos skins sont maintenant chez notre bot, la période de hold de 7 jours démarre.",
+        pendingTitle: "⏳ Offre envoyée sur Steam",
+        pendingDescription: "Notre bot vous a envoyé une offre de trade sur Steam. Ouvrez Steam pour l'accepter afin de finaliser la vente.",
+        acceptOnSteam: "Accepter l'offre sur Steam",
         cancelledTitle: "Trade annulé",
         cancelledDescription: "Vous avez refusé ou annulé l'offre sur Steam. Vos items sont restés dans votre inventaire.",
         backToAccount: "Retour à mon compte",
@@ -7056,6 +7059,9 @@ export const messages: Record<Locale, Messages> = {
       tradeStatusModal: {
         acceptedTitle: "🎉 Sale confirmed!",
         acceptedDescription: "You accepted the offer on Steam. Your skins are now with our bot and the 7-day hold period has started.",
+        pendingTitle: "⏳ Offer sent on Steam",
+        pendingDescription: "Our bot has sent you a trade offer on Steam. Open Steam to accept it and complete the sale.",
+        acceptOnSteam: "Accept offer on Steam",
         cancelledTitle: "Trade cancelled",
         cancelledDescription: "You declined or cancelled the offer on Steam. Your items are still in your inventory.",
         backToAccount: "Back to my account",
@@ -11707,6 +11713,9 @@ export const messages: Record<Locale, Messages> = {
       tradeStatusModal: {
         acceptedTitle: "🎉 出售确认！",
         acceptedDescription: "您已在Steam上接受报价，您的皮肤已转至我们的机器人，7天冻结期正式开始。",
+        pendingTitle: "⏳ 报价已发送至Steam",
+        pendingDescription: "我们的机器人已向您在Steam上发送了交易报价，请打开Steam接受报价以完成出售。",
+        acceptOnSteam: "在Steam上接受报价",
         cancelledTitle: "交易已取消",
         cancelledDescription: "您在Steam上拒绝或取消了报价，您的物品仍在您的库存中。",
         backToAccount: "返回我的账户",

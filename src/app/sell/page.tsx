@@ -67,12 +67,14 @@ export default function SellPage() {
         const data = await res.json();
         const status: string = data?.trade?.status ?? "";
 
-        if (status === "ACCEPTED_BY_BOT" || status === "IN_TRADE_HOLD" || status === "AVAILABLE") {
-          // L'utilisateur a accepté l'offre sur Steam
+        if (status === "ACCEPTED_BY_BOT") {
+          // Le bot a envoyé l'offre Steam — en attente d'acceptation par l'utilisateur
+          setModalStatus("pending");
+        } else if (status === "IN_TRADE_HOLD" || status === "AVAILABLE") {
+          // L'utilisateur a vraiment accepté l'offre Steam → hold démarre
           stopPolling();
           setModalStatus("accepted");
         } else if (status === "CANCELLED" || status === "FAILED") {
-          // L'utilisateur a annulé ou refusé l'offre sur Steam
           stopPolling();
           setModalStatus("cancelled");
         }
