@@ -104,7 +104,7 @@ export function Header() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="group relative flex items-center space-x-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200"
+                className="group relative flex items-center space-x-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-all duration-200"
               >
                 <item.icon className="h-4 w-4 group-hover:text-orange-500 transition-colors" />
                 <span>{item.name}</span>
