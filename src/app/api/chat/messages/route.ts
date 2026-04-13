@@ -89,10 +89,36 @@ export async function POST(request: NextRequest) {
       where: { id: body.conversationId },
       data: {
         updatedAt: new Date(),
-        // Réouvrir la conversation si elle était fermée et qu'un utilisateur envoie un message
         status: conversation.status === 'CLOSED' && senderType === 'USER' ? 'ACTIVE' : conversation.status,
       },
     });
+
+    // Ajouter un message système "ticket transmis" si c'est la première réponse de l'utilisateur après un message BOT
+    if (senderType === 'USER') {
+      const existingMessages = await prisma.chatMessage.findMany({
+        where: { conversationId: body.conversationId },
+        orderBy: { createdAt: 'asc' },
+        select: { senderType: true, id: true },
+      });
+
+      const hasBotMessage = existingMessages.some((m) => m.senderType === 'BOT');
+      const userMessagesBeforeThis = existingMessages.filter(
+        (m) => m.senderType === 'USER' && m.id !== message.id
+      );
+
+      if (hasBotMessage && userMessagesBeforeThis.length === 0) {
+        await prisma.chatMessage.create({
+          data: {
+            conversationId: body.conversationId,
+            userId: null,
+            content:
+              '✅ Votre demande a bien été transmise à notre équipe. Un modérateur vous répondra rapidement. Merci de votre patience 🙏',
+            senderType: 'SYSTEM',
+            isRead: false,
+          },
+        });
+      }
+    }
 
     // Log de l'audit
     if (session?.user) {

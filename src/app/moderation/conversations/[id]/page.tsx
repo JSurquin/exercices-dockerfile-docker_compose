@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -135,13 +135,28 @@ export default function ConversationPage() {
     }
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef(0);
 
+  const scrollToBottom = useCallback((smooth = false) => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = smooth
+        ? messagesContainerRef.current.scrollHeight
+        : messagesContainerRef.current.scrollHeight;
+    }
+  }, []);
+
+  // Scroll au bas uniquement lors du premier chargement ou quand un NOUVEAU message arrive
   useEffect(() => {
-    scrollToBottom();
-  }, [conversation?.messages]);
+    const count = conversation?.messages?.length ?? 0;
+    const prevCount = prevMessageCountRef.current;
+
+    if (count > 0 && (prevCount === 0 || count > prevCount)) {
+      // Premier chargement → scroll instantané; nouveau message → scroll fluide
+      setTimeout(() => scrollToBottom(), 50);
+    }
+    prevMessageCountRef.current = count;
+  }, [conversation?.messages?.length, scrollToBottom]);
 
   const formatTime = (date: Date) => {
     return new Date(date).toLocaleTimeString('fr-FR', {
@@ -309,17 +324,9 @@ export default function ConversationPage() {
 
         {/* ── Zone chat ── */}
         <div className="lg:col-span-3">
-          {/*
-           * Hauteur :
-           *  - Mobile  : 60dvh (assez pour voir les messages sans occuper tout l'écran)
-           *  - Tablette: 65dvh
-           *  - Desktop : 72dvh plafonné à 760px
-           * On utilise dvh (dynamic viewport height) pour tenir compte de la barre
-           * d'adresse mobile qui s'escamote.
-           */}
           <Card
             className="flex flex-col overflow-hidden"
-            style={{ height: 'clamp(420px, 60dvh, 760px)' }}
+            style={{ height: 'clamp(520px, 72dvh, 860px)' }}
           >
             {/* En-tête chat */}
             <CardHeader className="flex-shrink-0 py-3 px-4 border-b">
@@ -331,54 +338,58 @@ export default function ConversationPage() {
               </CardTitle>
             </CardHeader>
 
-            {/* Messages — zone scrollable contrainte */}
-            <div className="flex-1 overflow-y-auto min-h-0 px-3 sm:px-4 py-3">
+            {/* Messages — zone scrollable, ordre chronologique (le plus récent en bas) */}
+            <div
+              ref={messagesContainerRef}
+              className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-4 py-3 space-y-3"
+            >
               {conversation.messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
                   Aucun message dans cette conversation.
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {conversation.messages.map((msg: ChatMessageWithUser) => (
-                    <motion.div
-                      key={msg.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.15 }}
-                      className={`flex ${msg.senderType === 'USER' ? 'justify-start' : 'justify-end'}`}
-                    >
-                      {/* Bulle limitée à 85% sur mobile, 72% sur desktop */}
-                      <div className="max-w-[85%] sm:max-w-[72%] min-w-0">
-                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                          <Badge
-                            className={`text-[10px] px-1.5 py-0 ${senderTypeColors[msg.senderType as keyof typeof senderTypeColors]}`}
-                            variant="secondary"
-                          >
-                            {senderTypeLabels[msg.senderType as keyof typeof senderTypeLabels]}
-                          </Badge>
-                          <span className="text-[10px] text-muted-foreground">
-                            {formatTime(msg.createdAt)}
-                          </span>
-                        </div>
-                        <div
-                          className={`rounded-xl px-3 py-2 break-words overflow-hidden ${
-                            msg.senderType === 'USER'
-                              ? 'bg-muted border rounded-tl-sm'
-                              : msg.senderType === 'MODERATOR'
-                              ? 'bg-orange-500 text-white rounded-tr-sm'
-                              : msg.senderType === 'BOT'
-                              ? 'bg-green-600 text-white rounded-tr-sm'
-                              : 'bg-muted-foreground/20 rounded-tr-sm'
-                          }`}
+                conversation.messages.map((msg: ChatMessageWithUser) => (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className={`flex ${msg.senderType === 'USER' ? 'justify-start' : 'justify-end'}`}
+                  >
+                    <div className="max-w-[85%] sm:max-w-[72%] min-w-0">
+                      <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                        <Badge
+                          className={`text-[10px] px-1.5 py-0 ${senderTypeColors[msg.senderType as keyof typeof senderTypeColors]}`}
+                          variant="secondary"
                         >
-                          <p className="text-sm whitespace-pre-wrap leading-relaxed">{resolveI18nContent(msg.content, messages)}</p>
-                        </div>
+                          {senderTypeLabels[msg.senderType as keyof typeof senderTypeLabels]}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground">
+                          {formatTime(msg.createdAt)}
+                        </span>
                       </div>
-                    </motion.div>
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
+                      <div
+                        className={`rounded-xl px-3 py-2 break-words overflow-hidden ${
+                          msg.senderType === 'USER'
+                            ? 'bg-muted border rounded-tl-sm'
+                            : msg.senderType === 'MODERATOR'
+                            ? 'bg-orange-500 text-white rounded-tr-sm'
+                            : msg.senderType === 'BOT'
+                            ? 'bg-green-600 text-white rounded-tr-sm'
+                            : msg.senderType === 'SYSTEM'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 text-emerald-800 dark:text-emerald-200 rounded-tr-sm'
+                            : 'bg-muted-foreground/20 rounded-tr-sm'
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                          {resolveI18nContent(msg.content, messages)}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))
               )}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Zone saisie — ancrée en bas, jamais couverte */}

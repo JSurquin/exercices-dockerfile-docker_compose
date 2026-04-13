@@ -141,7 +141,7 @@ export function useChat() {
     conversations,
     currentConversation,
     conversationId,
-    sendMessage: (content: string) => sendMessageMutation.mutate(content),
+    sendMessage: (content: string) => sendMessageMutation.mutateAsync(content),
     getUnreadCount,
     isLoading: createConversationMutation.isPending || sendMessageMutation.isPending,
   };
