@@ -71,6 +71,11 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (session?.user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Accès refusé — admin requis' }, { status: 403 });
+    }
+
     const { id } = await Promise.resolve(params);
     const body = await request.json();
 
@@ -107,6 +112,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (session?.user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Accès refusé — admin requis' }, { status: 403 });
+    }
+
     const { id } = await Promise.resolve(params);
 
     await prisma.giveaway.delete({

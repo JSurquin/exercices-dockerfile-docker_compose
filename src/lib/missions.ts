@@ -204,31 +204,101 @@ export async function claimMission(userId: string, missionKey: string): Promise<
 
 export async function listMissionsForUser(userId: string) {
   const now = new Date();
+
+  // Calculer toutes les period keys d'un coup
+  const periodKeys = MISSION_DEFINITIONS.map((def) => periodKeyFor(def, now));
+
+  // Récupérer toutes les completions en une seule requête
+  const completions = await prisma.userMissionCompletion.findMany({
+    where: {
+      userId,
+      missionKey: { in: MISSION_DEFINITIONS.map((d) => d.key) },
+    },
+  });
+  const completionMap = new Map(
+    completions.map((c) => [`${c.missionKey}:${c.periodKey}`, c])
+  );
+
+  // Calculer les périodes nécessaires pour les missions volumétriques/giveaway
+  const { start: dayStart, end: dayEnd } = startEndForPeriod(
+    { period: 'day', key: '', category: 'DAILY', rewardFragments: 0, fragmentType: 'GENERATED_MISSION_DAILY' } as MissionDef,
+    now
+  );
+  const { start: weekStart, end: weekEnd } = startEndForPeriod(
+    { period: 'week', key: '', category: 'WEEKLY', rewardFragments: 0, fragmentType: 'GENERATED_MISSION_WEEKLY' } as MissionDef,
+    now
+  );
+  const { start: monthStart, end: monthEnd } = startEndForPeriod(
+    { period: 'month', key: '', category: 'MONTHLY', rewardFragments: 0, fragmentType: 'GENERATED_MISSION_MONTHLY' } as MissionDef,
+    now
+  );
+
+  // Batch des données volumétriques en 3 requêtes parallèles
+  const [dayTrades, weekVolume, monthVolume, weekGiveaways, daySells] = await Promise.all([
+    prisma.trade.count({ where: { userId, status: 'PAID', updatedAt: { gte: dayStart, lt: dayEnd } } }),
+    prisma.trade.aggregate({ where: { userId, status: 'PAID', updatedAt: { gte: weekStart, lt: weekEnd } }, _sum: { grossCents: true } }),
+    prisma.trade.aggregate({ where: { userId, status: 'PAID', updatedAt: { gte: monthStart, lt: monthEnd } }, _sum: { grossCents: true } }),
+    prisma.giveawayEntry.count({ where: { userId, enteredAt: { gte: weekStart, lt: weekEnd } } }),
+    prisma.trade.count({ where: { userId, status: 'PAID', updatedAt: { gte: dayStart, lt: dayEnd } } }),
+  ]);
+
+  const weekVolumeCents = weekVolume._sum.grossCents ?? 0;
+  const monthVolumeCents = monthVolume._sum.grossCents ?? 0;
+
   const results = [];
 
-  for (const def of MISSION_DEFINITIONS) {
-    const pKey = periodKeyFor(def, now);
-    const completed = await prisma.userMissionCompletion.findUnique({
-      where: {
-        userId_missionKey_periodKey: { userId, missionKey: def.key, periodKey: pKey },
-      },
-    });
-    const eligible = completed ? false : await isMissionEligible(userId, def, now);
+  for (let i = 0; i < MISSION_DEFINITIONS.length; i++) {
+    const def = MISSION_DEFINITIONS[i];
+    const pKey = periodKeys[i];
+    const completed = completionMap.get(`${def.key}:${pKey}`) ?? null;
 
-    // Reward dynamique pour la mission bonus
+    // Éligibilité calculée depuis les données batch (pas de requêtes supplémentaires)
+    let eligible = false;
+    if (!completed) {
+      if (def.key === 'DAILY_CLAIM' || def.key === 'DAILY_VISIT' || def.key === 'BONUS_DAILY_SURPRISE') {
+        eligible = true;
+      } else if (def.key === 'DAILY_SELL_SKIN') {
+        eligible = daySells >= 1;
+      } else if (def.thresholdCents != null) {
+        const vol = def.period === 'week' ? weekVolumeCents : monthVolumeCents;
+        eligible = vol >= def.thresholdCents;
+      } else if (def.minGiveawayParticipations != null) {
+        eligible = weekGiveaways >= def.minGiveawayParticipations;
+      } else if (def.period === 'once' && def.category === 'SOCIAL') {
+        eligible = true;
+      }
+    }
+
     const dateStr = pKey.replace('day:', '');
     const rewardFragments = def.bonusRange
       ? completed
-        ? (completed.rewardFragments) // montant déjà réclamé
+        ? completed.rewardFragments
         : getDailyBonusReward(userId, dateStr, def.bonusRange)
       : def.rewardFragments;
+
+    // Données de progression pour les missions volumétriques
+    let progressCurrent: number | undefined;
+    let progressTarget: number | undefined;
+    if (def.thresholdCents != null) {
+      const vol = def.period === 'week' ? weekVolumeCents : monthVolumeCents;
+      progressCurrent = vol;
+      progressTarget = def.thresholdCents;
+    } else if (def.minGiveawayParticipations != null) {
+      progressCurrent = weekGiveaways;
+      progressTarget = def.minGiveawayParticipations;
+    } else if (def.key === 'DAILY_SELL_SKIN') {
+      progressCurrent = dayTrades;
+      progressTarget = 1;
+    }
 
     results.push({
       ...def,
       rewardFragments,
       periodKey: pKey,
       completed: !!completed,
-      eligible: !!eligible,
+      eligible,
+      progressCurrent,
+      progressTarget,
     });
   }
 

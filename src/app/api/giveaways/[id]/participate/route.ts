@@ -18,71 +18,64 @@ export async function POST(
     const raw = body.entriesToBuy ?? body.ticketsUsed ?? 1;
     const entriesToBuy = Math.floor(Number(raw));
     if (!Number.isFinite(entriesToBuy) || entriesToBuy < 1) {
-      return NextResponse.json({ error: 'Nombre d’entrées invalide' }, { status: 400 });
+      return NextResponse.json({ error: "Nombre d'entrées invalide" }, { status: 400 });
     }
 
     const userId = session.user.id;
 
-    const giveaway = await prisma.giveaway.findUnique({
-      where: { id: giveawayId },
-    });
-
+    // Early-exit rapide hors transaction (non-ACTIVE ou inexistant)
+    const giveaway = await prisma.giveaway.findUnique({ where: { id: giveawayId } });
     if (!giveaway) {
       return NextResponse.json({ error: 'Giveaway introuvable' }, { status: 404 });
     }
-
     if (giveaway.status !== 'ACTIVE') {
       return NextResponse.json({ error: "Ce giveaway n'est plus actif" }, { status: 400 });
     }
-
     if (new Date() > giveaway.endDate) {
       return NextResponse.json({ error: 'Ce giveaway est terminé' }, { status: 400 });
     }
 
     const costPerEntry = giveaway.ticketPrice;
     const totalCost = entriesToBuy * costPerEntry;
-
-    if (giveaway.soldTickets + entriesToBuy > giveaway.maxTickets) {
-      return NextResponse.json({ error: 'Pas assez de places disponibles' }, { status: 400 });
-    }
-
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 404 });
-    }
-
-    if (user.fragments < totalCost) {
-      return NextResponse.json({ error: 'Pas assez de fragments' }, { status: 400 });
-    }
-
-    const existingEntry = await prisma.giveawayEntry.findUnique({
-      where: {
-        userId_giveawayId: { userId, giveawayId },
-      },
-    });
-
-    const nextUserEntries = (existingEntry?.ticketsUsed ?? 0) + entriesToBuy;
-    if (giveaway.maxEntriesPerUser != null && nextUserEntries > giveaway.maxEntriesPerUser) {
-      return NextResponse.json(
-        { error: `Limite d’entrées par utilisateur (${giveaway.maxEntriesPerUser})` },
-        { status: 400 }
-      );
-    }
-
     const meta: Prisma.InputJsonValue = { giveawayId, entriesToBuy, costPerEntry, totalCost };
 
+    let newFragmentBalance = 0;
+
+    // Toutes les vérifications concurrentes (places, fragments, limite) se font
+    // DANS la transaction pour éliminer les race conditions.
     const entry = await prisma.$transaction(async (tx) => {
+      const [liveGiveaway, liveUser, existingEntry] = await Promise.all([
+        tx.giveaway.findUnique({ where: { id: giveawayId } }),
+        tx.user.findUnique({ where: { id: userId } }),
+        tx.giveawayEntry.findUnique({ where: { userId_giveawayId: { userId, giveawayId } } }),
+      ]);
+
+      if (!liveGiveaway || liveGiveaway.status !== 'ACTIVE') {
+        throw new Error("Ce giveaway n'est plus actif");
+      }
+      if (new Date() > liveGiveaway.endDate) {
+        throw new Error('Ce giveaway est terminé');
+      }
+      if (liveGiveaway.soldTickets + entriesToBuy > liveGiveaway.maxTickets) {
+        throw new Error('Pas assez de places disponibles');
+      }
+      if (!liveUser) throw new Error('Utilisateur introuvable');
+      if (liveUser.fragments < totalCost) {
+        throw new Error('Pas assez de fragments');
+      }
+
+      const nextUserEntries = (existingEntry?.ticketsUsed ?? 0) + entriesToBuy;
+      if (liveGiveaway.maxEntriesPerUser != null && nextUserEntries > liveGiveaway.maxEntriesPerUser) {
+        throw new Error(`Limite d'entrées par utilisateur (${liveGiveaway.maxEntriesPerUser})`);
+      }
+
       const e = existingEntry
         ? await tx.giveawayEntry.update({
             where: { userId_giveawayId: { userId, giveawayId } },
             data: { ticketsUsed: { increment: entriesToBuy } },
           })
         : await tx.giveawayEntry.create({
-            data: {
-              userId,
-              giveawayId,
-              ticketsUsed: entriesToBuy,
-            },
+            data: { userId, giveawayId, ticketsUsed: entriesToBuy },
           });
 
       await tx.fragmentTransaction.create({
@@ -95,7 +88,7 @@ export async function POST(
         },
       });
 
-      await tx.user.update({
+      const updatedUser = await tx.user.update({
         where: { id: userId },
         data: { fragments: { decrement: totalCost } },
       });
@@ -105,6 +98,7 @@ export async function POST(
         data: { soldTickets: { increment: entriesToBuy } },
       });
 
+      newFragmentBalance = updatedUser.fragments;
       return e;
     });
 
@@ -112,10 +106,19 @@ export async function POST(
       entry,
       fragmentsSpent: totalCost,
       entriesAdded: entriesToBuy,
-      newFragmentBalance: user.fragments - totalCost,
+      newFragmentBalance,
     });
   } catch (error) {
-    console.error('Error participating in giveaway:', error);
-    return NextResponse.json({ error: 'Erreur lors de la participation' }, { status: 500 });
+    const msg = error instanceof Error ? error.message : 'Erreur lors de la participation';
+    const knownErrors = [
+      "Ce giveaway n'est plus actif",
+      'Ce giveaway est terminé',
+      'Pas assez de places disponibles',
+      'Pas assez de fragments',
+      'Utilisateur introuvable',
+    ];
+    const status = knownErrors.some((e) => msg.startsWith(e)) ? 400 : 500;
+    if (status === 500) console.error('Error participating in giveaway:', error);
+    return NextResponse.json({ error: msg }, { status });
   }
 }

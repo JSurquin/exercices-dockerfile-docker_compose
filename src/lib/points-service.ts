@@ -161,15 +161,21 @@ export async function setGiveawaysEnabled(enabled: boolean, updatedBy?: string):
 function rollFragmentDrop(dropConfig: FragmentDropConfig): number {
   if (Math.random() > dropConfig.dropChance) return 0;
 
-  // Trier les tranches par probabilité décroissante (rare en premier)
-  const sorted = [...dropConfig.tiers].sort((a, b) => a.probability - b.probability);
-  for (const tier of sorted) {
-    if (Math.random() < tier.probability) {
+  // Roue exclusive : chaque tranche représente un segment de [0,1].
+  // Les tranches sont normalisées pour sommer à 1.
+  const tiers = dropConfig.tiers;
+  const total = tiers.reduce((s, t) => s + t.probability, 0);
+  if (total <= 0 || tiers.length === 0) return 0;
+
+  let r = Math.random() * total;
+  for (const tier of tiers) {
+    r -= tier.probability;
+    if (r <= 0) {
       return Math.floor(Math.random() * (tier.maxFragments - tier.minFragments + 1)) + tier.minFragments;
     }
   }
-  // Fallback : tranche la plus commune
-  const last = dropConfig.tiers[dropConfig.tiers.length - 1];
+  // Fallback numérique (précision flottante)
+  const last = tiers[tiers.length - 1];
   return Math.floor(Math.random() * (last.maxFragments - last.minFragments + 1)) + last.minFragments;
 }
 
@@ -182,6 +188,15 @@ export async function awardTradePoints(
   tradeId: string,
   grossCents: number
 ): Promise<{ points: number; tickets: number; fragments: number; drop: number }> {
+  // Idempotence : ne pas attribuer deux fois pour le même trade
+  const alreadyAwarded = await prisma.pointTransaction.findFirst({
+    where: { userId, type: 'TRADE_SALE', metadata: { path: ['tradeId'], equals: tradeId } },
+  });
+  if (alreadyAwarded) {
+    console.warn(`[awardTradePoints] Already awarded for trade ${tradeId}, skipping`);
+    return { points: 0, tickets: 0, fragments: 0, drop: 0 };
+  }
+
   const config = await getPointsConfig();
   const euros = grossCents / 100;
   const points = Math.floor(euros * config.pointsPerEuro);
@@ -244,8 +259,9 @@ export async function claimDailyLogin(
   userId: string
 ): Promise<{ points: number; tickets: number; streak: number } | null> {
   const config = await getPointsConfig();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const now = new Date();
+  // Toujours en UTC pour cohérence avec le reste du système
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
   const existing = await prisma.dailyLogin.findUnique({
     where: { userId_loginDate: { userId, loginDate: today } },
@@ -255,7 +271,7 @@ export async function claimDailyLogin(
 
   // Calculer le streak
   const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
   const yesterdayLogin = await prisma.dailyLogin.findUnique({
     where: { userId_loginDate: { userId, loginDate: yesterday } },

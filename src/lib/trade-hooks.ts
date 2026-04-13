@@ -281,7 +281,6 @@ export class TradeHooks {
           `Trade ${tradeId} confirmé — fonds libérés par Skinplace`,
           { tradeId }
         );
-        await this.updateUserExperience(tradeId);
         await prisma.auditLog.create({
           data: {
             userId: trade.userId,

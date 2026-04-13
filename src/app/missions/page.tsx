@@ -27,6 +27,9 @@ type MissionRow = {
   periodKey: string;
   completed: boolean;
   eligible: boolean;
+  progressCurrent?: number;
+  progressTarget?: number;
+  thresholdCents?: number;
 };
 
 const MISSION_META: Record<string, { label: string; description: string; icon: React.ReactNode }> = {
@@ -173,11 +176,24 @@ function MissionCard({
             meta?.icon ?? <SparklesIcon className="w-5 h-5 text-amber-500" />
           )}
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="font-semibold text-sm">{meta?.label ?? mission.key.replace(/_/g, ' ')}</p>
           <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
             {meta?.description ?? ''}
           </p>
+          {!mission.completed && mission.progressTarget != null && mission.progressCurrent != null && (
+            <div className="mt-2 space-y-1">
+              <Progress
+                value={Math.min(100, (mission.progressCurrent / mission.progressTarget) * 100)}
+                className="h-1.5"
+              />
+              <p className="text-xs text-muted-foreground">
+                {mission.thresholdCents != null
+                  ? `${(mission.progressCurrent / 100).toFixed(0)} € / ${(mission.progressTarget / 100).toFixed(0)} €`
+                  : `${mission.progressCurrent} / ${mission.progressTarget}`}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
