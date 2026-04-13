@@ -29,30 +29,29 @@ interface SkinplaceTradeStatusResponse {
  * Mapper les statuts Skinplace/Steam vers nos statuts TradeStatus
  */
 function mapSkinplaceStatusToTradeStatus(skinplaceStatus: string): TradeStatus {
+  // Skinplace steamtrade.status enum: "active" | "pending" | "cancelled" | "finished"
+  // "pending"  = trade en cours de création côté bot
+  // "active"   = offre Steam envoyée par le bot, en attente d'acceptation par l'utilisateur
+  // "finished" = l'utilisateur a accepté l'offre Steam → en trade hold 7-8 jours
+  // "cancelled"= annulé (utilisateur ou bot)
   const statusMap: Record<string, TradeStatus> = {
-    // Offre créée, en attente d'acceptation
     'pending': 'CREATED',
-    'sent': 'CREATED',
-    
-    // Offre acceptée par l'utilisateur
-    'accepted': 'ACCEPTED_BY_BOT',
-    
-    // En période de trade hold Steam (7 jours)
-    'active': 'IN_TRADE_HOLD',
-    'trade_hold': 'IN_TRADE_HOLD',
-    
-    // Items reçus, disponibles pour paiement
-    'completed': 'AVAILABLE',
-    'finished': 'AVAILABLE',
-    'done': 'AVAILABLE',
-    
+    'sent':    'CREATED',
+
+    // Bot a envoyé l'offre, en attente d'acceptation utilisateur
+    'active':   'ACCEPTED_BY_BOT',
+
+    // Utilisateur a accepté → entre en trade hold Steam
+    'finished': 'IN_TRADE_HOLD',
+
     // Annulé
     'cancelled': 'CANCELLED',
     // Échecs techniques
-    'declined': 'FAILED',
-    'rejected': 'FAILED',
-    'expired': 'FAILED',
-    'failed': 'FAILED',
+    'declined':  'FAILED',
+    'rejected':  'FAILED',
+    'expired':   'FAILED',
+    'failed':    'FAILED',
+    'error':     'FAILED',
   };
 
   return statusMap[skinplaceStatus.toLowerCase()] || 'CREATED';
