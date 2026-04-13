@@ -42,11 +42,13 @@ export function Header() {
   const { locale, setLocale, messages } = useLocale();
   const { theme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const {data: session} = useSession();
+  const { data: session } = useSession();
 
-  const isAdmin = session?.user?.role === "ADMIN";
-  const isAffiliate = session?.user?.role === "AFFILIATE";
-  const isModerator = session?.user?.role === "MODERATOR";
+  // Profil API lit le rôle en DB ; la session Better Auth peut rester obsolète après un changement côté admin.
+  const effectiveRole = user?.role ?? session?.user?.role;
+  const isAdmin = effectiveRole === "ADMIN";
+  const isAffiliate = effectiveRole === "AFFILIATE";
+  const isModerator = effectiveRole === "MODERATOR";
 
   const navigation = [
     { name: messages.nav.home, href: "/", icon: HomeIcon },

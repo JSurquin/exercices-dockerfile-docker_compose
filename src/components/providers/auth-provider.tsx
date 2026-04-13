@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import { User } from '@/lib/types';
 import { signInWithDiscord, signOut, getSession } from '~/lib/auth-client';
 import { toast } from 'sonner';
@@ -20,8 +21,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { messages } = useLocale();
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const prevPathnameRef = useRef<string | undefined>(undefined);
+
+  const refreshUser = useCallback(async (): Promise<void> => {
+    try {
+      const response = await fetch('/api/user/profile');
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('Refresh user error:', error);
+    }
+  }, []);
 
   useEffect(() => {
     // Vérifier si l'utilisateur est connecté au montage
@@ -64,6 +79,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     checkSession();
   }, []);
+
+  // Après un promote / changement de rôle en admin, le profil doit être re-lu depuis la DB (rôle à jour dans la navbar).
+  useEffect(() => {
+    const prev = prevPathnameRef.current;
+    if (
+      prev != null &&
+      prev.startsWith('/admin') &&
+      pathname != null &&
+      !pathname.startsWith('/admin')
+    ) {
+      void refreshUser();
+    }
+    prevPathnameRef.current = pathname;
+  }, [pathname, refreshUser]);
 
   const loginWithSteam = async (): Promise<User> => {
     setIsLoading(true);
@@ -123,18 +152,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast.error(messages.authProvider.logoutError, {
         description: messages.authProvider.logoutErrorDesc,
       });
-    }
-  };
-
-  const refreshUser = async (): Promise<void> => {
-    try {
-      const response = await fetch('/api/user/profile');
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-      }
-    } catch (error) {
-      console.error('Refresh user error:', error);
     }
   };
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { UserRole } from '@prisma/client';
 import { auth } from '~/lib/auth';
 import type { AuthUser } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
@@ -24,6 +25,7 @@ export async function GET(request: NextRequest) {
       image: string | null;
       fragments: number;
       contactEmail: string | null;
+      role: UserRole;
     } | null = null;
 
     try {
@@ -39,6 +41,7 @@ export async function GET(request: NextRequest) {
           image: true,
           fragments: true,
           contactEmail: true,
+          role: true,
         },
       });
     } catch (error) {
@@ -60,7 +63,8 @@ export async function GET(request: NextRequest) {
       username: displayName,
       avatar: displayAvatar,
       contactEmail: dbRow?.contactEmail ?? null,
-      role: user.role || 'USER',
+      // Source de vérité : la ligne User en DB (la session Better Auth peut être en retard après un promote admin)
+      role: dbRow?.role ?? user.role ?? 'USER',
       twoFactorEnabled: dbRow?.twoFactorEnabled ?? false,
       tradeLink: dbRow?.tradeLink ?? null,
       level: user.level || 1,
