@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '~/prisma/prisma';
 import { z } from 'zod';
 
-const prisma = new PrismaClient();
 
 const unsubscribeSchema = z.object({
   token: z.string().min(1, 'Token requis'),

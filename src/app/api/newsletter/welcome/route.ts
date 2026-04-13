@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '~/prisma/prisma';
 import { newsletterService } from '@/lib/newsletter-service';
 import { z } from 'zod';
 
-const prisma = new PrismaClient();
 
 const welcomeEmailSchema = z.object({
   email: z.string().email('Adresse email invalide'),

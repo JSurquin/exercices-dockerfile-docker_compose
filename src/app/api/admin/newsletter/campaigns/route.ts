@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '~/prisma/prisma';
 import { auth } from '~/lib/auth';
 import { z } from 'zod';
 
-const prisma = new PrismaClient();
 
 const createCampaignSchema = z.object({
   title: z.string().min(1, 'Titre requis'),

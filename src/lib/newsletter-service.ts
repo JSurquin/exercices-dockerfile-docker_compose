@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '~/prisma/prisma';
 import {
   EmailTemplateConfig,
   EmailTemplateVariables,
@@ -11,7 +11,6 @@ import {
   newsletterWelcomeTemplate,
 } from './email-templates';
 
-const prisma = new PrismaClient();
 
 // Configuration du transporteur email
 const createTransporter = () => {
