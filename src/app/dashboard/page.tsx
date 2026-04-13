@@ -33,6 +33,8 @@ import {
   ArrowPathIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
+  SparklesIcon,
+  GiftIcon,
 } from "@heroicons/react/24/outline";
 import {
   LineChart,
@@ -197,6 +199,22 @@ export default function DashboardPage() {
   console.log("useSession data:", data);
   console.log("useSession isPending:", isPending);
   console.log("useSession error:", error);
+
+  // Auto-claim DAILY_VISIT silencieusement à l'ouverture du dashboard
+  useEffect(() => {
+    if (!data?.user) return;
+    fetch('/api/missions/daily-visit', { method: 'POST', credentials: 'include' })
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.ok && j.fragments) {
+          toast.success(`+${j.fragments} fragments`, {
+            description: 'Visite quotidienne réclamée !',
+            duration: 3000,
+          });
+        }
+      })
+      .catch(() => {});
+  }, [data?.user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Vérifier si c'est une connexion Steam réussie
   useEffect(() => {
@@ -573,6 +591,35 @@ export default function DashboardPage() {
                   <p className="text-2xl font-bold">{user?.tickets || 0}</p>
                 </div>
                 <TicketIcon className="w-8 h-8 text-purple-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-amber-200 dark:border-amber-800">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Fragments 💠</p>
+                  <p className="text-2xl font-bold text-amber-600">{(user as unknown as { fragments?: number })?.fragments ?? 0}</p>
+                  <Link href="/missions" className="text-xs text-orange-500 hover:underline">
+                    Voir les missions →
+                  </Link>
+                </div>
+                <SparklesIcon className="w-8 h-8 text-amber-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-orange-200 dark:border-orange-800">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Giveaways</p>
+                  <Link href="/giveaways" className="text-orange-500 hover:underline text-sm font-medium">
+                    Participer →
+                  </Link>
+                </div>
+                <GiftIcon className="w-8 h-8 text-orange-500" />
               </div>
             </CardContent>
           </Card>
