@@ -2,7 +2,7 @@ import { format, getISOWeek, getISOWeekYear } from 'date-fns';
 import type { FragmentTransactionType, Prisma } from '@prisma/client';
 import { prisma } from '../../prisma/prisma';
 
-export type MissionCategory = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'SOCIAL';
+export type MissionCategory = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'SOCIAL' | 'BONUS';
 
 export interface MissionDef {
   key: string;
@@ -13,6 +13,21 @@ export interface MissionDef {
   period: 'day' | 'week' | 'month' | 'once';
   thresholdCents?: number;
   minGiveawayParticipations?: number;
+  /** Mission bonus : récompense variable tirée aléatoirement entre min et max */
+  bonusRange?: { min: number; max: number };
+}
+
+/** Génère le reward aléatoire du jour pour la mission bonus, déterministe via seed date+userId */
+function getDailyBonusReward(userId: string, dateStr: string, range: { min: number; max: number }): number {
+  let hash = 0;
+  const seed = `${dateStr}:${userId}:bonus`;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash << 5) - hash + seed.charCodeAt(i);
+    hash |= 0;
+  }
+  const rand = Math.abs(hash) / 0x7fffffff;
+  const steps = Math.floor((range.max - range.min) / 5);
+  return range.min + Math.floor(rand * (steps + 1)) * 5;
 }
 
 export const MISSION_DEFINITIONS: MissionDef[] = [
@@ -35,6 +50,14 @@ export const MISSION_DEFINITIONS: MissionDef[] = [
   { key: 'SOCIAL_TWITTER', category: 'SOCIAL', rewardFragments: 15, fragmentType: 'GENERATED_MISSION_SOCIAL', period: 'once' },
   { key: 'SOCIAL_INSTAGRAM', category: 'SOCIAL', rewardFragments: 15, fragmentType: 'GENERATED_MISSION_SOCIAL', period: 'once' },
   { key: 'SOCIAL_DISCORD', category: 'SOCIAL', rewardFragments: 25, fragmentType: 'GENERATED_MISSION_SOCIAL', period: 'once' },
+  {
+    key: 'BONUS_DAILY_SURPRISE',
+    category: 'BONUS',
+    rewardFragments: 0, // override dynamique via bonusRange
+    fragmentType: 'GENERATED_MISSION_BONUS',
+    period: 'day',
+    bonusRange: { min: 20, max: 50 },
+  },
 ];
 
 function utcCalendarDate(at: Date): Date {
@@ -99,6 +122,7 @@ export async function isMissionEligible(userId: string, def: MissionDef, at = ne
 
   if (def.key === 'DAILY_CLAIM') return true;
   if (def.key === 'DAILY_VISIT') return true;
+  if (def.key === 'BONUS_DAILY_SURPRISE') return true;
 
   if (def.key === 'DAILY_SELL_SKIN') {
     const c = await prisma.trade.count({
@@ -143,7 +167,13 @@ export async function claimMission(userId: string, missionKey: string): Promise<
   const eligible = await isMissionEligible(userId, def);
   if (!eligible) return { ok: false, error: "Conditions non remplies" };
 
-  const meta: Prisma.InputJsonValue = { missionKey: def.key, periodKey: pKey };
+  // Calcul du reward : fixe ou aléatoire (mission bonus)
+  const dateStr = pKey.replace('day:', '');
+  const reward = def.bonusRange
+    ? getDailyBonusReward(userId, dateStr, def.bonusRange)
+    : def.rewardFragments;
+
+  const meta: Prisma.InputJsonValue = { missionKey: def.key, periodKey: pKey, reward };
 
   await prisma.$transaction(async (tx) => {
     await tx.userMissionCompletion.create({
@@ -151,25 +181,25 @@ export async function claimMission(userId: string, missionKey: string): Promise<
         userId,
         missionKey,
         periodKey: pKey,
-        rewardFragments: def.rewardFragments,
+        rewardFragments: reward,
       },
     });
     await tx.fragmentTransaction.create({
       data: {
         userId,
         type: def.fragmentType,
-        amount: def.rewardFragments,
+        amount: reward,
         reason: `Mission ${def.key}`,
         metadata: meta,
       },
     });
     await tx.user.update({
       where: { id: userId },
-      data: { fragments: { increment: def.rewardFragments } },
+      data: { fragments: { increment: reward } },
     });
   });
 
-  return { ok: true, fragments: def.rewardFragments };
+  return { ok: true, fragments: reward };
 }
 
 export async function listMissionsForUser(userId: string) {
@@ -184,8 +214,18 @@ export async function listMissionsForUser(userId: string) {
       },
     });
     const eligible = completed ? false : await isMissionEligible(userId, def, now);
+
+    // Reward dynamique pour la mission bonus
+    const dateStr = pKey.replace('day:', '');
+    const rewardFragments = def.bonusRange
+      ? completed
+        ? (completed.rewardFragments) // montant déjà réclamé
+        : getDailyBonusReward(userId, dateStr, def.bonusRange)
+      : def.rewardFragments;
+
     results.push({
       ...def,
+      rewardFragments,
       periodKey: pKey,
       completed: !!completed,
       eligible: !!eligible,
