@@ -305,22 +305,19 @@ class SkinplaceService {
       search?: string;
     }
   ): Promise<SkinplaceListingsResponse> {
-    const body: Record<string, unknown> = {
+    const params = new URLSearchParams({
       game: 'csgo',
-      limit,
-      offset: (page - 1) * limit,
-    };
+      limit: String(limit),
+      offset: String((page - 1) * limit),
+    });
 
     if (filters?.search) {
-      body.search = filters.search;
+      params.set('search', filters.search);
     }
 
     return this.makeRequest<SkinplaceListingsResponse>(
-      '/api/v3/items/listing',
-      {
-        method: 'POST',
-        body: JSON.stringify(body),
-      },
+      `/api/v3/items/listing?${params.toString()}`,
+      { method: 'GET' },
       true
     );
   }
