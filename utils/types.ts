@@ -70,6 +70,7 @@ export interface Messages {
     sell: string;
     dashboard: string;
     giveaways: string;
+    missions: string;
     support: string;
     login: string;
     logout: string;

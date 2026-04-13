@@ -31,6 +31,7 @@ import {
   ChatBubbleLeftRightIcon,
   BanknotesIcon,
   ShieldCheckIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { Locale, locales } from "@/lib/i18n";
 import { CS2Logo } from "@/components/ui/cs2-icons";
@@ -52,6 +53,7 @@ export function Header() {
     { name: messages.nav.sell, href: "/sell", icon: CurrencyDollarIcon },
     { name: messages.nav.dashboard, href: "/dashboard", icon: ChartBarIcon },
     { name: messages.nav.giveaways, href: "/giveaways", icon: GiftIcon },
+    { name: messages.nav.missions, href: "/missions", icon: SparklesIcon },
     ...(isAffiliate ? [{ name: messages.nav.affiliation, href: "/affiliate", icon: UserCircleIcon }] : []),
     ...(isModerator || isAdmin ? [{ name: messages.nav.moderation, href: "/moderation", icon: ChatBubbleLeftRightIcon }] : []),
     {
