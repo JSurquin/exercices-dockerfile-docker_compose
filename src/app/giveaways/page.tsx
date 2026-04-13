@@ -219,6 +219,24 @@ const GiveawayCard = ({
 
         {giveaway.status === 'ACTIVE' && !timeRemaining.expired && (
           <div className="border-t pt-4 space-y-3">
+            {/* Barre de progression vers la participation */}
+            {userFragments < giveaway.ticketPrice && (
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <SparklesIcon className="w-3.5 h-3.5 text-amber-500" />
+                    {userFragments} / {giveaway.ticketPrice} fragments
+                  </span>
+                  <span className="text-amber-500 font-medium">
+                    encore {giveaway.ticketPrice - userFragments} fragments
+                  </span>
+                </div>
+                <Progress
+                  value={Math.min(100, (userFragments / giveaway.ticketPrice) * 100)}
+                  className="h-1.5 bg-muted [&>div]:bg-amber-500"
+                />
+              </div>
+            )}
             <Label htmlFor={`entries-${giveaway.id}`} className="text-sm">
               {fg.entriesToBuy}
             </Label>
@@ -496,7 +514,28 @@ export default function GiveawaysPage() {
                       <span className="text-2xl font-bold">{userFragments}</span>
                       <span className="text-muted-foreground">fragments</span>
                     </div>
-                    <div className="flex flex-wrap justify-end gap-2 text-sm text-muted-foreground">
+                    {/* Progression vers le prochain giveaway actif le moins cher */}
+                    {(() => {
+                      const activeGiveaways = giveaways.filter((g) => g.status === 'ACTIVE');
+                      if (activeGiveaways.length === 0) return null;
+                      const cheapest = activeGiveaways.reduce((min, g) =>
+                        g.ticketPrice < min.ticketPrice ? g : min
+                      );
+                      if (userFragments >= cheapest.ticketPrice) return null;
+                      const pct = Math.min(100, (userFragments / cheapest.ticketPrice) * 100);
+                      return (
+                        <div className="mt-2 space-y-1 text-xs text-left min-w-[180px]">
+                          <div className="flex justify-between text-muted-foreground">
+                            <span>Prochain giveaway</span>
+                            <span className="text-amber-500 font-medium">
+                              encore {cheapest.ticketPrice - userFragments} 💠
+                            </span>
+                          </div>
+                          <Progress value={pct} className="h-1.5 bg-muted [&>div]:bg-amber-500" />
+                        </div>
+                      );
+                    })()}
+                    <div className="flex flex-wrap justify-end gap-2 text-sm text-muted-foreground mt-1">
                       <span>{messages.giveaways.userTickets.tickets}: {user.tickets ?? 0}</span>
                       <Link href="/missions" className="text-orange-600 hover:underline">
                         Missions

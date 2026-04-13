@@ -1,6 +1,19 @@
 import { prisma } from '../../prisma/prisma';
 import type { Prisma } from '@prisma/client';
 
+export interface FragmentDropTier {
+  probability: number; // probabilité de cette tranche (0–1)
+  minFragments: number;
+  maxFragments: number;
+}
+
+export interface FragmentDropConfig {
+  // Probabilité globale qu'un drop se déclenche à chaque vente (0–1)
+  dropChance: number;
+  // Tranches de drop (tirées séquentiellement, la première qui passe gagne)
+  tiers: FragmentDropTier[];
+}
+
 export interface PointsConfig {
   // Points gagnés par euro de vente (ex: 100 = 100 pts par €)
   pointsPerEuro: number;
@@ -18,10 +31,37 @@ export interface PointsConfig {
   levelUpBonusPoints: number;
   // Fragments gagnés par euro de vente (ex: 0.2 = 200 fragments pour 1000€)
   fragmentsPerEuro: number;
+  // Config des drops aléatoires de fragments à chaque vente
+  fragmentDrop: FragmentDropConfig;
+  // Coûts d'entrée en fragments par type de giveaway
+  giveawayCosts: {
+    DAILY: number;
+    WEEKLY: number;
+    MONTHLY: number;
+    YEARLY: number;
+    CUSTOM: number;
+  };
 }
 
 const POINTS_CONFIG_KEY = 'points_config';
 const GIVEAWAYS_ENABLED_KEY = 'giveaways_enabled';
+
+export const DEFAULT_FRAGMENT_DROP: FragmentDropConfig = {
+  dropChance: 0.25,
+  tiers: [
+    { probability: 0.05, minFragments: 100, maxFragments: 200 },
+    { probability: 0.15, minFragments: 50, maxFragments: 100 },
+    { probability: 0.50, minFragments: 20, maxFragments: 50 },
+  ],
+};
+
+export const DEFAULT_GIVEAWAY_COSTS = {
+  DAILY: 50,
+  WEEKLY: 150,
+  MONTHLY: 400,
+  YEARLY: 2000,
+  CUSTOM: 50,
+};
 
 export const DEFAULT_POINTS_CONFIG: PointsConfig = {
   pointsPerEuro: 100,
@@ -32,6 +72,8 @@ export const DEFAULT_POINTS_CONFIG: PointsConfig = {
   streakMaxDays: 7,
   levelUpBonusPoints: 500,
   fragmentsPerEuro: 0.2,
+  fragmentDrop: DEFAULT_FRAGMENT_DROP,
+  giveawayCosts: DEFAULT_GIVEAWAY_COSTS,
 };
 
 export async function getPointsConfig(): Promise<PointsConfig> {
@@ -42,6 +84,28 @@ export async function getPointsConfig(): Promise<PointsConfig> {
     return DEFAULT_POINTS_CONFIG;
   }
   const v = row.valueJson as Record<string, unknown>;
+
+  const rawDrop = v.fragmentDrop as Record<string, unknown> | undefined;
+  const fragmentDrop: FragmentDropConfig = {
+    dropChance:
+      rawDrop && typeof rawDrop.dropChance === 'number'
+        ? rawDrop.dropChance
+        : DEFAULT_FRAGMENT_DROP.dropChance,
+    tiers:
+      rawDrop && Array.isArray(rawDrop.tiers) && rawDrop.tiers.length > 0
+        ? (rawDrop.tiers as FragmentDropTier[])
+        : DEFAULT_FRAGMENT_DROP.tiers,
+  };
+
+  const rawCosts = v.giveawayCosts as Record<string, unknown> | undefined;
+  const giveawayCosts = {
+    DAILY: rawCosts && typeof rawCosts.DAILY === 'number' ? rawCosts.DAILY : DEFAULT_GIVEAWAY_COSTS.DAILY,
+    WEEKLY: rawCosts && typeof rawCosts.WEEKLY === 'number' ? rawCosts.WEEKLY : DEFAULT_GIVEAWAY_COSTS.WEEKLY,
+    MONTHLY: rawCosts && typeof rawCosts.MONTHLY === 'number' ? rawCosts.MONTHLY : DEFAULT_GIVEAWAY_COSTS.MONTHLY,
+    YEARLY: rawCosts && typeof rawCosts.YEARLY === 'number' ? rawCosts.YEARLY : DEFAULT_GIVEAWAY_COSTS.YEARLY,
+    CUSTOM: rawCosts && typeof rawCosts.CUSTOM === 'number' ? rawCosts.CUSTOM : DEFAULT_GIVEAWAY_COSTS.CUSTOM,
+  };
+
   return {
     pointsPerEuro: typeof v.pointsPerEuro === 'number' ? v.pointsPerEuro : DEFAULT_POINTS_CONFIG.pointsPerEuro,
     ticketsPerEuro: typeof v.ticketsPerEuro === 'number' ? v.ticketsPerEuro : DEFAULT_POINTS_CONFIG.ticketsPerEuro,
@@ -51,6 +115,8 @@ export async function getPointsConfig(): Promise<PointsConfig> {
     streakMaxDays: typeof v.streakMaxDays === 'number' ? v.streakMaxDays : DEFAULT_POINTS_CONFIG.streakMaxDays,
     levelUpBonusPoints: typeof v.levelUpBonusPoints === 'number' ? v.levelUpBonusPoints : DEFAULT_POINTS_CONFIG.levelUpBonusPoints,
     fragmentsPerEuro: typeof v.fragmentsPerEuro === 'number' ? v.fragmentsPerEuro : DEFAULT_POINTS_CONFIG.fragmentsPerEuro,
+    fragmentDrop,
+    giveawayCosts,
   };
 }
 
@@ -89,6 +155,25 @@ export async function setGiveawaysEnabled(enabled: boolean, updatedBy?: string):
 }
 
 /**
+ * Tire un drop aléatoire de fragments selon la config.
+ * Retourne 0 si aucun drop, sinon le montant tiré.
+ */
+function rollFragmentDrop(dropConfig: FragmentDropConfig): number {
+  if (Math.random() > dropConfig.dropChance) return 0;
+
+  // Trier les tranches par probabilité décroissante (rare en premier)
+  const sorted = [...dropConfig.tiers].sort((a, b) => a.probability - b.probability);
+  for (const tier of sorted) {
+    if (Math.random() < tier.probability) {
+      return Math.floor(Math.random() * (tier.maxFragments - tier.minFragments + 1)) + tier.minFragments;
+    }
+  }
+  // Fallback : tranche la plus commune
+  const last = dropConfig.tiers[dropConfig.tiers.length - 1];
+  return Math.floor(Math.random() * (last.maxFragments - last.minFragments + 1)) + last.minFragments;
+}
+
+/**
  * Attribution de points et tickets lors d'une vente réussie.
  * Appelé depuis TradeHooks.onTradeAccepted.
  */
@@ -96,12 +181,14 @@ export async function awardTradePoints(
   userId: string,
   tradeId: string,
   grossCents: number
-): Promise<{ points: number; tickets: number; fragments: number }> {
+): Promise<{ points: number; tickets: number; fragments: number; drop: number }> {
   const config = await getPointsConfig();
   const euros = grossCents / 100;
   const points = Math.floor(euros * config.pointsPerEuro);
   const tickets = Math.floor(euros * config.ticketsPerEuro);
   const fragments = Math.floor(euros * config.fragmentsPerEuro);
+  const drop = rollFragmentDrop(config.fragmentDrop);
+  const totalFragments = fragments + drop;
 
   await prisma.$transaction(async (tx) => {
     await tx.pointTransaction.create({
@@ -125,17 +212,28 @@ export async function awardTradePoints(
         },
       });
     }
+    if (drop > 0) {
+      await tx.fragmentTransaction.create({
+        data: {
+          userId,
+          type: 'GENERATED_DROP',
+          amount: drop,
+          reason: `Drop aléatoire (vente ${euros.toFixed(2)}€)`,
+          metadata: { tradeId, grossCents } as Prisma.InputJsonValue,
+        },
+      });
+    }
     await tx.user.update({
       where: { id: userId },
       data: {
         xp: { increment: points },
         tickets: { increment: tickets },
-        ...(fragments > 0 ? { fragments: { increment: fragments } } : {}),
+        ...(totalFragments > 0 ? { fragments: { increment: totalFragments } } : {}),
       },
     });
   });
 
-  return { points, tickets, fragments };
+  return { points, tickets, fragments, drop };
 }
 
 /**

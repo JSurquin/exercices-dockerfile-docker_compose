@@ -23,7 +23,8 @@ import {
   FireIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
-import type { PointsConfig, DEFAULT_POINTS_CONFIG } from '@/lib/points-service';
+import type { PointsConfig } from '@/lib/points-service';
+import { DEFAULT_FRAGMENT_DROP, DEFAULT_GIVEAWAY_COSTS } from '@/lib/points-service';
 
 interface Metrics {
   totals: { points: number; tickets: number };
@@ -328,6 +329,52 @@ export default function AdminPointsPage() {
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* Stats drops aléatoires */}
+                <Card className="bg-slate-800/50 border-slate-700">
+                  <CardHeader>
+                    <CardTitle className="text-white text-base flex items-center">
+                      <FireIcon className="w-5 h-5 mr-2 text-amber-400" />
+                      Drops aléatoires de fragments
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {(() => {
+                      const dropTx = metrics.byType.filter((t) =>
+                        String(t.type) === 'GENERATED_DROP'
+                      );
+                      const saleTx = metrics.byType.filter((t) =>
+                        String(t.type) === 'GENERATED_SALE'
+                      );
+                      const dropCount = dropTx.reduce((s, t) => s + t._count, 0);
+                      const dropTotal = dropTx.reduce((s, t) => s + (t._sum.points ?? 0), 0);
+                      const saleCount = saleTx.reduce((s, t) => s + t._count, 0);
+                      const dropRate = saleCount > 0 ? ((dropCount / saleCount) * 100).toFixed(1) : '0';
+                      return (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
+                            <p className="text-2xl font-bold text-amber-400">{dropCount.toLocaleString('fr-FR')}</p>
+                            <p className="text-xs text-slate-400 mt-1">Drops déclenchés</p>
+                          </div>
+                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
+                            <p className="text-2xl font-bold text-amber-400">{dropTotal.toLocaleString('fr-FR')}</p>
+                            <p className="text-xs text-slate-400 mt-1">Fragments distribués</p>
+                          </div>
+                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
+                            <p className="text-2xl font-bold text-amber-400">{dropRate}%</p>
+                            <p className="text-xs text-slate-400 mt-1">Taux de drop réel</p>
+                          </div>
+                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
+                            <p className="text-2xl font-bold text-amber-400">
+                              {dropCount > 0 ? Math.round(dropTotal / dropCount) : 0}
+                            </p>
+                            <p className="text-xs text-slate-400 mt-1">Moy. fragments/drop</p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
 
                 {/* Transactions récentes */}
                 <Card className="bg-slate-800/50 border-slate-700">
@@ -634,6 +681,183 @@ export default function AdminPointsPage() {
                         </div>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+
+                {/* Section fragments */}
+                <Card className="bg-slate-800/50 border-slate-700">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center">
+                      <FireIcon className="w-5 h-5 mr-2 text-amber-400" />
+                      Fragments — Génération & Drops aléatoires
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label className="text-slate-300">Fragments par euro vendu</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={editConfig.fragmentsPerEuro}
+                        onChange={(e) => updateField('fragmentsPerEuro', parseFloat(e.target.value) || 0)}
+                        className="bg-slate-700 border-slate-600 text-white"
+                      />
+                      <p className="text-xs text-slate-500">
+                        Formule : fragments = floor(euros × taux). Ex: 0.2 → 100€ = 20 fragments
+                      </p>
+                    </div>
+
+                    <Separator className="bg-slate-700" />
+
+                    <div>
+                      <p className="text-sm text-slate-300 font-medium mb-4">Drops aléatoires à chaque vente</p>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-slate-300">Probabilité globale de drop (0–1)</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            value={editConfig.fragmentDrop?.dropChance ?? DEFAULT_FRAGMENT_DROP.dropChance}
+                            onChange={(e) => {
+                              const v = Math.min(1, Math.max(0, parseFloat(e.target.value) || 0));
+                              setEditConfig((prev) =>
+                                prev
+                                  ? {
+                                      ...prev,
+                                      fragmentDrop: {
+                                        ...(prev.fragmentDrop ?? DEFAULT_FRAGMENT_DROP),
+                                        dropChance: v,
+                                      },
+                                    }
+                                  : prev
+                              );
+                            }}
+                            className="bg-slate-700 border-slate-600 text-white"
+                          />
+                          <p className="text-xs text-slate-500">0.25 = 25% de chance de drop par vente</p>
+                        </div>
+
+                        <div>
+                          <p className="text-xs text-slate-400 mb-3">Tranches de drop (tirées du plus rare au plus commun) :</p>
+                          <div className="space-y-3">
+                            {(editConfig.fragmentDrop?.tiers ?? DEFAULT_FRAGMENT_DROP.tiers).map((tier, i) => (
+                              <div key={i} className="grid grid-cols-3 gap-3 bg-slate-700/30 rounded-lg p-3">
+                                <div className="space-y-1">
+                                  <Label className="text-xs text-slate-400">Probabilité tranche</Label>
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    max="1"
+                                    step="0.01"
+                                    value={tier.probability}
+                                    onChange={(e) => {
+                                      const tiers = [...(editConfig.fragmentDrop?.tiers ?? DEFAULT_FRAGMENT_DROP.tiers)];
+                                      tiers[i] = { ...tiers[i], probability: parseFloat(e.target.value) || 0 };
+                                      setEditConfig((prev) =>
+                                        prev
+                                          ? { ...prev, fragmentDrop: { ...(prev.fragmentDrop ?? DEFAULT_FRAGMENT_DROP), tiers } }
+                                          : prev
+                                      );
+                                    }}
+                                    className="bg-slate-700 border-slate-600 text-white h-8 text-sm"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-xs text-slate-400">Min fragments</Label>
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    value={tier.minFragments}
+                                    onChange={(e) => {
+                                      const tiers = [...(editConfig.fragmentDrop?.tiers ?? DEFAULT_FRAGMENT_DROP.tiers)];
+                                      tiers[i] = { ...tiers[i], minFragments: parseInt(e.target.value) || 1 };
+                                      setEditConfig((prev) =>
+                                        prev
+                                          ? { ...prev, fragmentDrop: { ...(prev.fragmentDrop ?? DEFAULT_FRAGMENT_DROP), tiers } }
+                                          : prev
+                                      );
+                                    }}
+                                    className="bg-slate-700 border-slate-600 text-white h-8 text-sm"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-xs text-slate-400">Max fragments</Label>
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    value={tier.maxFragments}
+                                    onChange={(e) => {
+                                      const tiers = [...(editConfig.fragmentDrop?.tiers ?? DEFAULT_FRAGMENT_DROP.tiers)];
+                                      tiers[i] = { ...tiers[i], maxFragments: parseInt(e.target.value) || 1 };
+                                      setEditConfig((prev) =>
+                                        prev
+                                          ? { ...prev, fragmentDrop: { ...(prev.fragmentDrop ?? DEFAULT_FRAGMENT_DROP), tiers } }
+                                          : prev
+                                      );
+                                    }}
+                                    className="bg-slate-700 border-slate-600 text-white h-8 text-sm"
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Section coûts giveaways */}
+                <Card className="bg-slate-800/50 border-slate-700">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center">
+                      <TicketIcon className="w-5 h-5 mr-2 text-purple-400" />
+                      Coûts d&apos;entrée — Giveaways par type
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      {(['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'CUSTOM'] as const).map((type) => {
+                        const labels: Record<string, string> = {
+                          DAILY: 'Daily (50)',
+                          WEEKLY: 'Weekly (150)',
+                          MONTHLY: 'Monthly (400)',
+                          YEARLY: 'Yearly (2000)',
+                          CUSTOM: 'Custom (50)',
+                        };
+                        return (
+                          <div key={type} className="space-y-2">
+                            <Label className="text-slate-300 text-xs">{labels[type]}</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={(editConfig.giveawayCosts ?? DEFAULT_GIVEAWAY_COSTS)[type]}
+                              onChange={(e) => {
+                                const v = parseInt(e.target.value) || 1;
+                                setEditConfig((prev) =>
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        giveawayCosts: {
+                                          ...(prev.giveawayCosts ?? DEFAULT_GIVEAWAY_COSTS),
+                                          [type]: v,
+                                        },
+                                      }
+                                    : prev
+                                );
+                              }}
+                              className="bg-slate-700 border-slate-600 text-white"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-slate-500 mt-3">
+                      Ces valeurs sont utilisées par défaut lors de la création d&apos;un giveaway selon son type. L&apos;admin peut toujours surcharger manuellement.
+                    </p>
                   </CardContent>
                 </Card>
 

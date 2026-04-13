@@ -3,6 +3,7 @@ import { prisma } from '~/prisma/prisma';
 import { GiveawayDurationType, GiveawayStatus } from '@prisma/client';
 import { auth } from '~/lib/auth';
 import { enrichGiveawayForViewer } from '@/lib/giveaway-public';
+import { getPointsConfig } from '@/lib/points-service';
 
 export async function GET(request: NextRequest) {
   try {
@@ -82,15 +83,8 @@ export async function POST(request: NextRequest) {
       requiredAffiliateCode,
     } = body;
 
-    if (!title || !description || !prize || !ticketPrice || !maxTickets || !endDate) {
+    if (!title || !description || !prize || !maxTickets || !endDate) {
       return NextResponse.json({ error: 'Tous les champs sont requis' }, { status: 400 });
-    }
-
-    if (ticketPrice <= 0 || maxTickets <= 0) {
-      return NextResponse.json(
-        { error: 'Le coût en fragments et le nombre maximum d’entrées doivent être positifs' },
-        { status: 400 }
-      );
     }
 
     const allowed = Object.values(GiveawayDurationType) as string[];
@@ -99,6 +93,20 @@ export async function POST(request: NextRequest) {
         ? (durationType as GiveawayDurationType)
         : GiveawayDurationType.CUSTOM;
 
+    // Coût d'entrée : priorité au champ fourni, sinon valeur par défaut selon durationType
+    const config = await getPointsConfig();
+    const resolvedTicketPrice =
+      typeof ticketPrice === 'number' && ticketPrice > 0
+        ? ticketPrice
+        : config.giveawayCosts[dType] ?? config.giveawayCosts.CUSTOM;
+
+    if (resolvedTicketPrice <= 0 || maxTickets <= 0) {
+      return NextResponse.json(
+        { error: "Le coût en fragments et le nombre maximum d'entrées doivent être positifs" },
+        { status: 400 }
+      );
+    }
+
     const giveaway = await prisma.giveaway.create({
       data: {
         title,
@@ -106,7 +114,7 @@ export async function POST(request: NextRequest) {
         prize,
         prizeImageUrl: prizeImageUrl ?? null,
         steamMarketHashName: steamMarketHashName ?? null,
-        ticketPrice,
+        ticketPrice: resolvedTicketPrice,
         maxTickets,
         endDate: new Date(endDate),
         status: 'ACTIVE',
