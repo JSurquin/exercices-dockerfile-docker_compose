@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
+import { toast as sonnerToast } from 'sonner';
 
 export interface Toast {
   id: string;
@@ -10,43 +11,42 @@ export interface Toast {
   duration?: number;
 }
 
-const toasts: Toast[] = [];
-let toastId = 0;
-
+/**
+ * Délègue à Sonner (Toaster monté dans le layout) — l’ancienne implémentation
+ * mettait les toasts en mémoire sans aucun rendu UI.
+ */
 export function useToast() {
-  const [, forceUpdate] = useState({});
+  const toast = useCallback(
+    ({
+      title,
+      description,
+      variant = 'default',
+      duration = 5000,
+    }: Omit<Toast, 'id'>) => {
+      const headline = title?.trim();
+      const detail = description?.trim();
 
-  const toast = useCallback(({ title, description, variant = 'default', duration = 5000 }: Omit<Toast, 'id'>) => {
-    const id = (++toastId).toString();
-    const newToast: Toast = { id, title, description, variant, duration };
-    
-    toasts.push(newToast);
-    forceUpdate({});
+      if (variant === 'destructive') {
+        return sonnerToast.error(headline || 'Erreur', {
+          description: detail,
+          duration,
+        });
+      }
 
-    if (duration > 0) {
-      setTimeout(() => {
-        const index = toasts.findIndex(t => t.id === id);
-        if (index > -1) {
-          toasts.splice(index, 1);
-          forceUpdate({});
-        }
-      }, duration);
-    }
+      const message = headline || detail || 'Notification';
+      const sub = headline ? detail : undefined;
+      return sonnerToast(message, { description: sub, duration });
+    },
+    []
+  );
 
-    return id;
-  }, []);
-
-  const dismiss = useCallback((id: string) => {
-    const index = toasts.findIndex(t => t.id === id);
-    if (index > -1) {
-      toasts.splice(index, 1);
-      forceUpdate({});
-    }
+  const dismiss = useCallback((id?: string | number) => {
+    sonnerToast.dismiss(id);
   }, []);
 
   return {
     toast,
     dismiss,
-    toasts: [...toasts]
+    toasts: [] as Toast[],
   };
 }

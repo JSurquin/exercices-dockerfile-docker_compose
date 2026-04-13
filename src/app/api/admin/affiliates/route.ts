@@ -61,7 +61,8 @@ export async function GET(request: NextRequest) {
             }
           }
         },
-        orderBy: { totalCommissionCents: 'desc' },
+        // Les affiliés à 0 € de commission sinon en fin de liste (invisibles page 1)
+        orderBy: { createdAt: 'desc' },
         skip,
         take: limit
       }),

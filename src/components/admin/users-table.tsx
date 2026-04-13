@@ -197,6 +197,7 @@ export function AdminUsersTable() {
       });
       setPromoteDialog({ open: false, userId: '', username: '' });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'affiliates'] });
     } catch (err) {
       toast({
         title: messages.admin.promoteAffiliate.errorTitle,
