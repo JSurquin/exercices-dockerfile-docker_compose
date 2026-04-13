@@ -8,7 +8,7 @@ export interface User {
   acceptedTermsAt?: Date;
   kycStatus: 'PENDING' | 'IN_PROGRESS' | 'VERIFIED' | 'REJECTED' | 'KYCAID_PENDING' | 'KYCAID_VERIFIED' | 'KYCAID_REJECTED';
   role?: string;
-  /** Programme affilié actif (ligne AffiliateStats) — utile si role=MODERATOR ou USER après rétrogradation */
+  /** true si AffiliateStats.isActive (menu affilié ; ne pas se baser sur le seul role) */
   canAccessAffiliateDashboard?: boolean;
   twoFactorEnabled?: boolean;
   totalVolume: number; // en centimes

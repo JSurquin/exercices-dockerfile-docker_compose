@@ -60,9 +60,9 @@ export async function GET(request: NextRequest) {
     const displayAvatar = (steamAvatar?.trim() || accountImage?.trim() || '').trim();
 
     const dbRole = dbRow?.role ?? user.role ?? 'USER';
-    const affiliateActive = dbRow?.affiliateStats?.isActive === true;
-    const canAccessAffiliateDashboard =
-      dbRole === 'AFFILIATE' || affiliateActive;
+    // Un seul indicateur fiable pour le menu : programme actif (toggle admin). Sinon un rôle AFFILIATE
+    // résiduel après désactivation laissait le lien affiché.
+    const canAccessAffiliateDashboard = dbRow?.affiliateStats?.isActive === true;
 
     const responseUser = {
       id: user.id,
