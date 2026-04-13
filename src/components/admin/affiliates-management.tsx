@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,7 +35,8 @@ import {
   Settings,
   UserX,
   Check,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import AffiliateTools from './affiliate-tools';
 import { CreateAffiliateDialog } from './create-affiliate-dialog';
@@ -100,7 +101,7 @@ export default function AffiliatesManagement() {
     totalCommissions: 0
   };
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: queryKeys.adminAffiliates({ page, search: debouncedSearch, status: statusFilter }),
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -111,7 +112,8 @@ export default function AffiliatesManagement() {
       });
       const response = await fetch(`/api/admin/affiliates?${params}`);
       return response.json();
-    }
+    },
+    placeholderData: keepPreviousData
   });
 
   const affiliates: AffiliateData[] = data?.data?.affiliates ?? [];
@@ -206,7 +208,7 @@ export default function AffiliatesManagement() {
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString('fr-FR');
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -292,8 +294,11 @@ export default function AffiliatesManagement() {
                   placeholder="Rechercher par code, nom ou email..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 pr-10"
                 />
+                {isFetching && (
+                  <Loader2 className="absolute right-3 top-3 h-4 w-4 text-muted-foreground animate-spin" />
+                )}
               </div>
             </div>
             <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setPage(1); }}>

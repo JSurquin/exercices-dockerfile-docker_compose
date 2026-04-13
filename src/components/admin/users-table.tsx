@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -72,7 +72,7 @@ export function AdminUsersTable() {
   const [promoteCommission, setPromoteCommission] = useState('2');
   const [promoting, setPromoting] = useState(false);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, isFetching, error } = useQuery({
     queryKey: queryKeys.adminUsers({ ...filters, search: debouncedSearch }),
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -88,6 +88,7 @@ export function AdminUsersTable() {
       }
       return json;
     },
+    placeholderData: keepPreviousData,
   });
 
   const users: UserType[] = data?.users ?? [];
@@ -207,7 +208,7 @@ export function AdminUsersTable() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return <TableSkeleton />;
   }
 
@@ -235,8 +236,11 @@ export function AdminUsersTable() {
               placeholder="Rechercher par nom d'utilisateur, Steam ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-slate-700 border-slate-600 text-white"
+              className="pl-10 pr-10 bg-slate-700 border-slate-600 text-white"
             />
+            {isFetching && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 animate-spin" />
+            )}
           </div>
           
           <Select onValueChange={handleKYCFilter}>
