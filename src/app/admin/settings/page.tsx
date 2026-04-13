@@ -28,9 +28,11 @@ import {
   ExclamationTriangleIcon,
   EnvelopeIcon,
   ServerIcon,
+  AdjustmentsHorizontalIcon,
 } from '@heroicons/react/24/outline';
 import { useLocale } from '@/components/providers/locale-provider';
 import { queryKeys } from '@/lib/query-keys';
+import { PlatformConfigSettings } from '@/components/admin/platform-config-settings';
 
 interface AdminSettingsData {
   personalInfo: {
@@ -298,13 +300,14 @@ export default function AdminSettingsPage() {
       {/* Settings Tabs */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
         <Tabs defaultValue="personal" className="w-full">
-          <TabsList className="grid grid-cols-5 h-auto bg-slate-800/50 backdrop-blur-sm border border-slate-700 p-1">
+          <TabsList className="grid grid-cols-6 h-auto bg-slate-800/50 backdrop-blur-sm border border-slate-700 p-1">
             {[
               { value: 'personal', icon: UserIcon, label: messages.admin.settings.tabs.personal },
               { value: 'security', icon: ShieldCheckIcon, label: messages.admin.settings.tabs.security },
               { value: 'notifications', icon: BellIcon, label: messages.admin.settings.tabs.notifications },
               { value: 'preferences', icon: CogIcon, label: messages.admin.settings.tabs.preferences },
               { value: 'smtp', icon: EnvelopeIcon, label: messages.admin.settings.tabs.smtp },
+              { value: 'platform', icon: AdjustmentsHorizontalIcon, label: 'Plateforme' },
             ].map(({ value, icon: Icon, label }) => (
               <TabsTrigger
                 key={value}
@@ -709,6 +712,24 @@ export default function AdminSettingsPage() {
                     </div>
                   </>
                 ) : null}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Config plateforme */}
+          <TabsContent value="platform" className="mt-6">
+            <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <AdjustmentsHorizontalIcon className="w-5 h-5 text-orange-400" />
+                  Configuration plateforme
+                </CardTitle>
+                <p className="text-sm text-slate-400 mt-1">
+                  Paramètres opérationnels — écrasent les variables d&apos;environnement sans redéploiement.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <PlatformConfigSettings />
               </CardContent>
             </Card>
           </TabsContent>

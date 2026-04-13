@@ -4,8 +4,8 @@ import { skinplaceService } from '@/lib/skinplace';
 import {
   SKINPLACE_ITEMS_DEFAULT_LIMIT,
   SKINPLACE_ITEMS_MAX_LIMIT,
-  STEAM_CDN_IMAGE_BASE,
 } from '@/lib/admin-constants';
+import { getPlatformConfig } from '@/lib/platform-config-service';
 
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
   );
 
   try {
+    const { steamCdnUrl } = await getPlatformConfig();
     const result = await skinplaceService.getItemListings(1, limit, {
       search: search || undefined,
     });
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
       icon_url: s.icon_url
         ? s.icon_url.startsWith('http')
           ? s.icon_url
-          : `${STEAM_CDN_IMAGE_BASE}${s.icon_url}`
+          : `${steamCdnUrl}${s.icon_url}`
         : null,
       price: s.price ?? null,
       rarity: s.rarity ?? null,

@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
-import { ADMIN_SKINPLACE_REFETCH_INTERVAL_MS, SKINPLACE_DASHBOARD_URL } from '@/lib/admin-constants';
+import { ADMIN_SKINPLACE_REFETCH_INTERVAL_MS } from '@/lib/admin-constants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -40,6 +40,15 @@ interface SkinplaceMetrics {
 export function AdminSkinplaceMetrics() {
   const { messages } = useLocale();
   const queryClient = useQueryClient();
+
+  const { data: platformConfig } = useQuery({
+    queryKey: queryKeys.adminPlatformConfig,
+    queryFn: () => fetch('/api/admin/platform-config').then(r => r.json()),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const skinplaceDashboardUrl: string =
+    platformConfig?.config?.skinplaceDashboardUrl ?? 'https://skin.place';
 
   const { data: metrics, isLoading, error: queryError } = useQuery({
     queryKey: queryKeys.skinplaceBalance,
@@ -302,7 +311,7 @@ export function AdminSkinplaceMetrics() {
             {/* Liens utiles */}
             <div className="flex gap-2 pt-2">
               <Button variant="outline" size="sm" asChild>
-                <a href={SKINPLACE_DASHBOARD_URL} target="_blank" rel="noopener noreferrer">
+                <a href={skinplaceDashboardUrl} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Dashboard Skinplace
                 </a>

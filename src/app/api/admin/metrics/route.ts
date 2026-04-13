@@ -4,11 +4,7 @@ import { prisma } from '../../../../../prisma/prisma';
 import { skinplaceService } from '@/lib/skinplace';
 import { logger } from '@/lib/logger';
 import { subHours, subDays } from 'date-fns';
-import {
-  ALERT_THRESHOLD_FAILED_PAYOUTS,
-  ALERT_THRESHOLD_PENDING_KYC,
-  ALERT_THRESHOLD_PENDING_TRADES,
-} from '@/lib/admin-constants';
+import { getPlatformConfig } from '@/lib/platform-config-service';
 
 export async function GET(request: NextRequest) {
   try {
@@ -187,10 +183,11 @@ export async function GET(request: NextRequest) {
       logger.error('Error fetching Skinplace metrics', error);
     }
 
-    // Alertes système
+    // Alertes système (seuils configurables depuis l'admin)
+    const platformConfig = await getPlatformConfig();
     const alerts = [];
     
-    if (failedPayouts > ALERT_THRESHOLD_FAILED_PAYOUTS) {
+    if (failedPayouts > platformConfig.alertFailedPayouts) {
       alerts.push({
         type: 'error',
         message: `${failedPayouts} paiements échoués nécessitent une attention`,
@@ -198,7 +195,7 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    if (pendingKyc > ALERT_THRESHOLD_PENDING_KYC) {
+    if (pendingKyc > platformConfig.alertPendingKyc) {
       alerts.push({
         type: 'warning',
         message: `${pendingKyc} demandes KYC en attente de validation`,
@@ -206,7 +203,7 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    if (pendingTrades > ALERT_THRESHOLD_PENDING_TRADES) {
+    if (pendingTrades > platformConfig.alertPendingTrades) {
       alerts.push({
         type: 'info',
         message: `${pendingTrades} trades en cours de traitement`,

@@ -6,7 +6,7 @@ import { AffiliateService } from '@/lib/affiliate-service';
 import { AuditLogger, AuditAction } from '@/lib/security/audit-logger';
 import { headers } from 'next/headers';
 import crypto from 'crypto';
-import { AFFILIATE_DEFAULT_COMMISSION_RATE_PERCENT } from '@/lib/admin-constants';
+import { getPlatformConfig } from '@/lib/platform-config-service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,11 +24,12 @@ export async function POST(request: NextRequest) {
 
     // 2. Récupérer les données de la requête
     const body = await request.json();
+    const platformConfig = await getPlatformConfig();
     const { 
       email, 
       name, 
       code, 
-      commissionRate = AFFILIATE_DEFAULT_COMMISSION_RATE_PERCENT,
+      commissionRate = platformConfig.affiliateCommissionRate,
       sendEmail = true 
     } = body;
 
