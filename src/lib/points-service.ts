@@ -47,7 +47,10 @@ const POINTS_CONFIG_KEY = 'points_config';
 const GIVEAWAYS_ENABLED_KEY = 'giveaways_enabled';
 
 export const DEFAULT_FRAGMENT_DROP: FragmentDropConfig = {
+  // Probabilité globale qu'un drop tente de se déclencher à chaque vente
   dropChance: 0.25,
+  // Les tiers doivent sommer à ≤ 1. La probabilité manquante = "rien" parmi les drops.
+  // Spec : 50% → 20-50f | 15% → 50-100f | 5% → 100-200f | 30% → rien
   tiers: [
     { probability: 0.05, minFragments: 100, maxFragments: 200 },
     { probability: 0.15, minFragments: 50, maxFragments: 100 },
@@ -157,26 +160,30 @@ export async function setGiveawaysEnabled(enabled: boolean, updatedBy?: string):
 /**
  * Tire un drop aléatoire de fragments selon la config.
  * Retourne 0 si aucun drop, sinon le montant tiré.
+ *
+ * Logique en 2 temps :
+ *  1. La probabilité globale `dropChance` décide si un drop tente de se déclencher.
+ *  2. Les tiers doivent sommer à ≤ 1. La probabilité résiduelle (1 - somme) représente
+ *     "drop déclenché mais aucun tier gagné" → 0 fragment quand même.
+ *     Ex spec : 50%+15%+5% = 70% → 30% de "rien même si drop déclenché".
  */
 function rollFragmentDrop(dropConfig: FragmentDropConfig): number {
   if (Math.random() > dropConfig.dropChance) return 0;
 
-  // Roue exclusive : chaque tranche représente un segment de [0,1].
-  // Les tranches sont normalisées pour sommer à 1.
   const tiers = dropConfig.tiers;
-  const total = tiers.reduce((s, t) => s + t.probability, 0);
-  if (total <= 0 || tiers.length === 0) return 0;
+  if (tiers.length === 0) return 0;
 
-  let r = Math.random() * total;
+  // On tire dans [0, 1]. Si r dépasse la somme des tiers → "rien".
+  const r = Math.random();
+  let cursor = 0;
   for (const tier of tiers) {
-    r -= tier.probability;
-    if (r <= 0) {
+    cursor += tier.probability;
+    if (r < cursor) {
       return Math.floor(Math.random() * (tier.maxFragments - tier.minFragments + 1)) + tier.minFragments;
     }
   }
-  // Fallback numérique (précision flottante)
-  const last = tiers[tiers.length - 1];
-  return Math.floor(Math.random() * (last.maxFragments - last.minFragments + 1)) + last.minFragments;
+  // r ≥ somme des tiers → probabilité résiduelle = rien (conforme spec)
+  return 0;
 }
 
 /**
