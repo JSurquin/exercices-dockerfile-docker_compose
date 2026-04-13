@@ -84,23 +84,28 @@ export default function AffiliatePage() {
     enabled: !!affiliateData?.code,
   });
 
-  const { data: allCommissionsData } = useQuery({
-    queryKey: [...queryKeys.affiliateCommissions, 'all'],
+  const { data: pendingCommissionsData } = useQuery({
+    queryKey: [...queryKeys.affiliateCommissions, 'pending', userId],
     queryFn: async () => {
-      const [pending, paid] = await Promise.all([
-        fetch(`/api/affiliate/commissions?userId=${userId}&status=PENDING`).then((r) => r.json()),
-        fetch(`/api/affiliate/commissions?userId=${userId}&status=PAID`).then((r) => r.json()),
-      ]);
-      return {
-        pending: pending.success ? pending.data.commissions : [],
-        paid: paid.success ? paid.data.commissions : [],
-      };
+      const res = await fetch(`/api/affiliate/commissions?userId=${userId}&status=PENDING`);
+      const data = await res.json();
+      return data.success ? data.data.commissions : [];
     },
     enabled: !!affiliateData,
   });
 
-  const commissions = allCommissionsData?.pending ?? [];
-  const paidCommissions = allCommissionsData?.paid ?? [];
+  const { data: paidCommissionsData } = useQuery({
+    queryKey: [...queryKeys.affiliateCommissions, 'paid', userId],
+    queryFn: async () => {
+      const res = await fetch(`/api/affiliate/commissions?userId=${userId}&status=PAID`);
+      const data = await res.json();
+      return data.success ? data.data.commissions : [];
+    },
+    enabled: !!affiliateData,
+  });
+
+  const commissions = pendingCommissionsData ?? [];
+  const paidCommissions = paidCommissionsData ?? [];
 
   // Détecter si l'utilisateur a visité sa propre page avec son propre lien affilié
   useEffect(() => {
@@ -133,6 +138,7 @@ export default function AffiliatePage() {
     onSuccess: () => {
       toast.success(messages.affiliate.dashboard.payoutRequested, { description: messages.affiliate.dashboard.payoutRequestedDesc });
       queryClient.invalidateQueries({ queryKey: queryKeys.affiliateCommissions });
+      queryClient.invalidateQueries({ queryKey: queryKeys.affiliateStats });
     },
     onError: (err: Error) => {
       toast.error(messages.affiliate.dashboard.payoutError, { description: err.message });

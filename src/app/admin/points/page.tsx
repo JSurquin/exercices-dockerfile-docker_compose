@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -72,34 +73,40 @@ const EVENT_TYPE_COLORS: Record<string, string> = {
 };
 
 export default function AdminPointsPage() {
-  const [metrics, setMetrics] = useState<Metrics | null>(null);
-  const [config, setConfig] = useState<PointsConfig | null>(null);
-  const [loadingMetrics, setLoadingMetrics] = useState(true);
+  const queryClient = useQueryClient();
   const [savingConfig, setSavingConfig] = useState(false);
   const [editConfig, setEditConfig] = useState<PointsConfig | null>(null);
 
-  const fetchMetrics = useCallback(async () => {
-    setLoadingMetrics(true);
-    try {
-      const [metricsRes, configRes] = await Promise.all([
-        fetch('/api/admin/points?view=metrics'),
-        fetch('/api/admin/points'),
-      ]);
-      const metricsData = await metricsRes.json();
-      const configData = await configRes.json();
-      setMetrics(metricsData);
-      setConfig(configData);
-      setEditConfig(configData);
-    } catch {
-      toast.error('Erreur lors du chargement');
-    } finally {
-      setLoadingMetrics(false);
-    }
-  }, []);
+  const [metricsQuery, configQuery] = useQueries({
+    queries: [
+      {
+        queryKey: ['admin', 'points', 'metrics'],
+        queryFn: async () => {
+          const res = await fetch('/api/admin/points?view=metrics');
+          if (!res.ok) throw new Error('Erreur métriques');
+          return res.json() as Promise<Metrics>;
+        },
+      },
+      {
+        queryKey: ['admin', 'points', 'config'],
+        queryFn: async () => {
+          const res = await fetch('/api/admin/points');
+          if (!res.ok) throw new Error('Erreur config');
+          const data = await res.json() as PointsConfig;
+          setEditConfig((prev) => prev ?? data);
+          return data;
+        },
+      },
+    ],
+  });
 
-  useEffect(() => {
-    fetchMetrics();
-  }, [fetchMetrics]);
+  const metrics = metricsQuery.data ?? null;
+  const config = configQuery.data ?? null;
+  const loadingMetrics = metricsQuery.isLoading || configQuery.isLoading;
+
+  const fetchMetrics = () => {
+    queryClient.invalidateQueries({ queryKey: ['admin', 'points'] });
+  };
 
   const handleSaveConfig = async () => {
     if (!editConfig) return;
@@ -112,7 +119,7 @@ export default function AdminPointsPage() {
       });
       if (!res.ok) throw new Error();
       const updated = await res.json();
-      setConfig(updated);
+      queryClient.setQueryData(['admin', 'points', 'config'], updated);
       setEditConfig(updated);
       toast.success('Configuration sauvegardée');
     } catch {

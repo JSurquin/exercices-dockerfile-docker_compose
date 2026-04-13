@@ -69,7 +69,8 @@ export default function ConversationPage() {
       return response.json();
     },
     enabled: !!params.id,
-    refetchInterval: 5000,
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: false,
   });
 
   const sendMessage = async () => {

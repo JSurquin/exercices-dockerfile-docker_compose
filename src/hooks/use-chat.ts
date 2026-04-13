@@ -83,7 +83,8 @@ export function useChat() {
       return res.json();
     },
     enabled: !!conversationId,
-    refetchInterval: conversationId ? 5000 : false,
+    refetchInterval: conversationId ? 15_000 : false,
+    refetchIntervalInBackground: false,
   });
 
   const createConversationMutation = useMutation({

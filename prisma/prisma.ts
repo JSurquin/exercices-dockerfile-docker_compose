@@ -8,7 +8,6 @@ function createPrismaClient(): PrismaClient {
   const client = new PrismaClient({
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
-  // Connexion eager pour éviter "Engine is not yet connected" sur les premières requêtes
   client.$connect().catch((err) => {
     console.error("[Prisma] Failed to connect on startup:", err);
   });
@@ -17,4 +16,5 @@ function createPrismaClient(): PrismaClient {
 
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// Always persist the singleton to avoid "Engine is not yet connected" in production
+globalForPrisma.prisma = prisma;
