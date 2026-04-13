@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,17 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -22,7 +32,10 @@ import {
   ToggleRight,
   Eye,
   UserCheck,
-  Settings
+  Settings,
+  UserX,
+  Check,
+  X
 } from 'lucide-react';
 import AffiliateTools from './affiliate-tools';
 import { CreateAffiliateDialog } from './create-affiliate-dialog';
@@ -59,14 +72,26 @@ interface GlobalStats {
 }
 
 export default function AffiliatesManagement() {
-  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [selectedAffiliate, setSelectedAffiliate] = useState<AffiliateData | null>(null);
   const [editingCommissionRate, setEditingCommissionRate] = useState(false);
   const [newCommissionRate, setNewCommissionRate] = useState(0);
+  const [editingCode, setEditingCode] = useState(false);
+  const [newCode, setNewCode] = useState('');
+  const [removeConfirmAffiliate, setRemoveConfirmAffiliate] = useState<AffiliateData | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const defaultGlobalStats: GlobalStats = {
     totalAffiliates: 0,
@@ -76,12 +101,12 @@ export default function AffiliatesManagement() {
   };
 
   const { data, isLoading } = useQuery({
-    queryKey: queryKeys.adminAffiliates({ page, search, status: statusFilter }),
+    queryKey: queryKeys.adminAffiliates({ page, search: debouncedSearch, status: statusFilter }),
     queryFn: async () => {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '20',
-        search,
+        search: debouncedSearch,
         status: statusFilter
       });
       const response = await fetch(`/api/admin/affiliates?${params}`);
@@ -93,94 +118,93 @@ export default function AffiliatesManagement() {
   const globalStats: GlobalStats = data?.data?.globalStats ?? defaultGlobalStats;
   const totalPages: number = data?.data?.pagination?.pages ?? 1;
 
+  const invalidateAffiliates = () =>
+    queryClient.invalidateQueries({ queryKey: ['admin', 'affiliates'] });
+
+  const callAffiliateAction = async (action: string, affiliateId: string, extraData: Record<string, unknown>) => {
+    const response = await fetch('/api/admin/affiliates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, affiliateId, data: extraData })
+    });
+    return response.json();
+  };
+
   const toggleAffiliateStatus = async (affiliate: AffiliateData) => {
     try {
-      const response = await fetch('/api/admin/affiliates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'toggle_status',
-          affiliateId: affiliate.id,
-          data: { currentStatus: affiliate.isActive }
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast({
-          title: 'Succès',
-          description: `Affilié ${affiliate.isActive ? 'désactivé' : 'activé'} avec succès`
-        });
-        queryClient.invalidateQueries({ queryKey: ['admin', 'affiliates'] });
+      const result = await callAffiliateAction('toggle_status', affiliate.id, { currentStatus: affiliate.isActive });
+      if (result.success) {
+        toast({ title: 'Succès', description: `Affilié ${affiliate.isActive ? 'désactivé' : 'activé'} avec succès` });
+        invalidateAffiliates();
       } else {
-        toast({
-          title: 'Erreur',
-          description: data.error || 'Erreur lors du changement de statut',
-          variant: 'destructive'
-        });
+        toast({ title: 'Erreur', description: result.error || 'Erreur lors du changement de statut', variant: 'destructive' });
       }
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Erreur de connexion',
-        variant: 'destructive'
-      });
+    } catch {
+      toast({ title: 'Erreur', description: 'Erreur de connexion', variant: 'destructive' });
     }
   };
 
   const updateCommissionRate = async () => {
     if (!selectedAffiliate) return;
-
     try {
-      const response = await fetch('/api/admin/affiliates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'update_commission_rate',
-          affiliateId: selectedAffiliate.id,
-          data: {
-            oldRate: selectedAffiliate.commissionRate,
-            newRate: newCommissionRate / 100 // Convertir en décimal
-          }
-        })
+      const result = await callAffiliateAction('update_commission_rate', selectedAffiliate.id, {
+        oldRate: selectedAffiliate.commissionRate,
+        newRate: newCommissionRate / 100
       });
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast({
-          title: 'Succès',
-          description: 'Taux de commission mis à jour'
-        });
+      if (result.success) {
+        toast({ title: 'Succès', description: 'Taux de commission mis à jour' });
         setEditingCommissionRate(false);
-        queryClient.invalidateQueries({ queryKey: ['admin', 'affiliates'] });
+        setSelectedAffiliate(prev => prev ? { ...prev, commissionRate: newCommissionRate / 100 } : null);
+        invalidateAffiliates();
       } else {
-        toast({
-          title: 'Erreur',
-          description: data.error || 'Erreur lors de la mise à jour',
-          variant: 'destructive'
-        });
+        toast({ title: 'Erreur', description: result.error || 'Erreur lors de la mise à jour', variant: 'destructive' });
       }
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Erreur de connexion',
-        variant: 'destructive'
-      });
+    } catch {
+      toast({ title: 'Erreur', description: 'Erreur de connexion', variant: 'destructive' });
     }
   };
 
-  const formatCurrency = (cents: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(cents / 100);
+  const updateCode = async () => {
+    if (!selectedAffiliate) return;
+    try {
+      const result = await callAffiliateAction('update_code', selectedAffiliate.id, {
+        oldCode: selectedAffiliate.code,
+        newCode: newCode
+      });
+      if (result.success) {
+        toast({ title: 'Succès', description: 'Code affilié mis à jour' });
+        setEditingCode(false);
+        setSelectedAffiliate(prev => prev ? { ...prev, code: newCode.trim().toUpperCase() } : null);
+        invalidateAffiliates();
+      } else {
+        toast({ title: 'Erreur', description: result.error || 'Erreur lors de la mise à jour', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'Erreur', description: 'Erreur de connexion', variant: 'destructive' });
+    }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR');
+  const removeAffiliate = async (affiliate: AffiliateData) => {
+    try {
+      const result = await callAffiliateAction('remove_affiliate', affiliate.id, {});
+      if (result.success) {
+        toast({ title: 'Affiliation retirée', description: `${affiliate.user.steamUsername || affiliate.user.email} n'est plus affilié` });
+        setRemoveConfirmAffiliate(null);
+        setSelectedAffiliate(null);
+        invalidateAffiliates();
+      } else {
+        toast({ title: 'Erreur', description: result.error || 'Erreur lors de la suppression', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'Erreur', description: 'Erreur de connexion', variant: 'destructive' });
+    }
   };
+
+  const formatCurrency = (cents: number) =>
+    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100);
+
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString('fr-FR');
 
   if (isLoading) {
     return (
@@ -236,9 +260,7 @@ export default function AffiliatesManagement() {
             <TrendingUp className="h-4 w-4 text-slate-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {formatCurrency(globalStats.totalVolume)}
-            </div>
+            <div className="text-2xl font-bold text-white">{formatCurrency(globalStats.totalVolume)}</div>
           </CardContent>
         </Card>
 
@@ -248,9 +270,7 @@ export default function AffiliatesManagement() {
             <DollarSign className="h-4 w-4 text-slate-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
-              {formatCurrency(globalStats.totalCommissions)}
-            </div>
+            <div className="text-2xl font-bold text-white">{formatCurrency(globalStats.totalCommissions)}</div>
           </CardContent>
         </Card>
       </div>
@@ -270,13 +290,13 @@ export default function AffiliatesManagement() {
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Rechercher par code, nom ou email..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   className="pl-10"
                 />
               </div>
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setPage(1); }}>
               <SelectTrigger className="w-[180px]">
                 <Filter className="mr-2 h-4 w-4" />
                 <SelectValue placeholder="Statut" />
@@ -287,7 +307,7 @@ export default function AffiliatesManagement() {
                 <SelectItem value="inactive">Inactifs</SelectItem>
               </SelectContent>
             </Select>
-            <CreateAffiliateDialog onAffiliateCreated={() => queryClient.invalidateQueries({ queryKey: ['admin', 'affiliates'] })} />
+            <CreateAffiliateDialog onAffiliateCreated={invalidateAffiliates} />
           </div>
 
           {/* Tableau des affiliés */}
@@ -306,7 +326,13 @@ export default function AffiliatesManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {affiliates.map((affiliate) => (
+                {affiliates.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                      Aucun affilié trouvé
+                    </TableCell>
+                  </TableRow>
+                ) : affiliates.map((affiliate) => (
                   <TableRow key={affiliate.id}>
                     <TableCell>
                       <div className="flex items-center space-x-3">
@@ -340,13 +366,17 @@ export default function AffiliatesManagement() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-1">
                         <Button
                           variant="ghost"
                           size="sm"
+                          title="Voir les détails"
                           onClick={() => {
                             setSelectedAffiliate(affiliate);
                             setNewCommissionRate(affiliate.commissionRate * 100);
+                            setNewCode(affiliate.code);
+                            setEditingCommissionRate(false);
+                            setEditingCode(false);
                           }}
                         >
                           <Eye className="h-4 w-4" />
@@ -354,6 +384,7 @@ export default function AffiliatesManagement() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          title={affiliate.isActive ? 'Désactiver' : 'Activer'}
                           onClick={() => toggleAffiliateStatus(affiliate)}
                         >
                           {affiliate.isActive ? (
@@ -361,6 +392,14 @@ export default function AffiliatesManagement() {
                           ) : (
                             <ToggleLeft className="h-4 w-4 text-gray-400" />
                           )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Retirer l'affiliation"
+                          onClick={() => setRemoveConfirmAffiliate(affiliate)}
+                        >
+                          <UserX className="h-4 w-4 text-red-500" />
                         </Button>
                       </div>
                     </TableCell>
@@ -398,7 +437,7 @@ export default function AffiliatesManagement() {
       </Card>
 
       {/* Dialog de détails d'affilié */}
-      <Dialog open={!!selectedAffiliate} onOpenChange={() => setSelectedAffiliate(null)}>
+      <Dialog open={!!selectedAffiliate} onOpenChange={(open) => { if (!open) setSelectedAffiliate(null); }}>
         <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
           <DialogHeader>
             <DialogTitle className="text-white">Détails de l&apos;affilié</DialogTitle>
@@ -419,16 +458,6 @@ export default function AffiliatesManagement() {
                   <p className="font-medium">{selectedAffiliate.user.email}</p>
                 </div>
                 <div>
-                  <Label>Code d&apos;affiliation</Label>
-                  <p className="font-mono font-medium">{selectedAffiliate.code}</p>
-                </div>
-                <div>
-                  <Label>Statut KYC</Label>
-                  <Badge variant={selectedAffiliate.user.kycStatus === 'VERIFIED' ? 'default' : 'secondary'}>
-                    {selectedAffiliate.user.kycStatus}
-                  </Badge>
-                </div>
-                <div>
                   <Label>Membre depuis</Label>
                   <p className="font-medium">{formatDate(selectedAffiliate.user.createdAt)}</p>
                 </div>
@@ -436,20 +465,55 @@ export default function AffiliatesManagement() {
                   <Label>Affilié depuis</Label>
                   <p className="font-medium">{formatDate(selectedAffiliate.createdAt)}</p>
                 </div>
+                <div>
+                  <Label>Statut KYC</Label>
+                  <Badge variant={selectedAffiliate.user.kycStatus === 'VERIFIED' ? 'default' : 'secondary'}>
+                    {selectedAffiliate.user.kycStatus}
+                  </Badge>
+                </div>
               </div>
 
+              {/* Code d'affiliation */}
               <div className="border-t pt-4">
-                <div className="flex items-center justify-between mb-4">
-                  <Label>Taux de commission</Label>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setEditingCommissionRate(!editingCommissionRate)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Code d&apos;affiliation</Label>
+                  {!editingCode && (
+                    <Button variant="ghost" size="sm" onClick={() => { setNewCode(selectedAffiliate.code); setEditingCode(true); }}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
-                
+                {editingCode ? (
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      value={newCode}
+                      onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+                      maxLength={20}
+                      className="w-40 font-mono uppercase"
+                      placeholder="EX: MOON2024"
+                    />
+                    <Button size="sm" onClick={updateCode}>
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setEditingCode(false)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="font-mono font-medium text-lg">{selectedAffiliate.code}</p>
+                )}
+              </div>
+
+              {/* Taux de commission */}
+              <div className="border-t pt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Taux de commission</Label>
+                  {!editingCommissionRate && (
+                    <Button variant="ghost" size="sm" onClick={() => setEditingCommissionRate(true)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
                 {editingCommissionRate ? (
                   <div className="flex items-center space-x-2">
                     <Input
@@ -463,14 +527,10 @@ export default function AffiliatesManagement() {
                     />
                     <span>%</span>
                     <Button size="sm" onClick={updateCommissionRate}>
-                      Sauvegarder
+                      <Check className="h-4 w-4" />
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setEditingCommissionRate(false)}
-                    >
-                      Annuler
+                    <Button variant="ghost" size="sm" onClick={() => setEditingCommissionRate(false)}>
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
                 ) : (
@@ -486,22 +546,57 @@ export default function AffiliatesManagement() {
                   <p className="text-sm text-muted-foreground">Référrals</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold">
-                    {formatCurrency(selectedAffiliate.totalVolumeCents)}
-                  </p>
+                  <p className="text-2xl font-bold">{formatCurrency(selectedAffiliate.totalVolumeCents)}</p>
                   <p className="text-sm text-muted-foreground">Volume</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold">
-                    {formatCurrency(selectedAffiliate.totalCommissionCents)}
-                  </p>
+                  <p className="text-2xl font-bold">{formatCurrency(selectedAffiliate.totalCommissionCents)}</p>
                   <p className="text-sm text-muted-foreground">Commissions</p>
                 </div>
+              </div>
+
+              <div className="pt-4 border-t">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setRemoveConfirmAffiliate(selectedAffiliate)}
+                  className="w-full"
+                >
+                  <UserX className="h-4 w-4 mr-2" />
+                  Retirer l&apos;affiliation
+                </Button>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Confirmation suppression affiliation */}
+      <AlertDialog open={!!removeConfirmAffiliate} onOpenChange={(open) => { if (!open) setRemoveConfirmAffiliate(null); }}>
+        <AlertDialogContent className="bg-slate-900 border-slate-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Retirer l&apos;affiliation ?</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              L&apos;utilisateur{' '}
+              <span className="font-semibold text-white">
+                {removeConfirmAffiliate?.user.steamUsername || removeConfirmAffiliate?.user.email}
+              </span>{' '}
+              (code <code className="text-orange-400">{removeConfirmAffiliate?.code}</code>) perdra son statut d&apos;affilié et son rôle sera réinitialisé. L&apos;historique de ses commissions sera conservé.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-slate-600 text-white hover:bg-slate-700">
+              Annuler
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => removeConfirmAffiliate && removeAffiliate(removeConfirmAffiliate)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Retirer l&apos;affiliation
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

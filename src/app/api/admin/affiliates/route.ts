@@ -155,6 +155,68 @@ export async function POST(request: NextRequest) {
           }
         });
         break;
+
+      case 'update_code': {
+        const trimmedCode = (data.newCode as string)?.trim().toUpperCase();
+        if (!trimmedCode || trimmedCode.length < 3 || trimmedCode.length > 20) {
+          return NextResponse.json(
+            { success: false, error: 'Le code doit contenir entre 3 et 20 caractères' },
+            { status: 400 }
+          );
+        }
+        const existing = await prisma.affiliateStats.findFirst({
+          where: { code: trimmedCode, NOT: { id: affiliateId } }
+        });
+        if (existing) {
+          return NextResponse.json(
+            { success: false, error: 'Ce code est déjà utilisé par un autre affilié' },
+            { status: 409 }
+          );
+        }
+        await prisma.affiliateStats.update({
+          where: { id: affiliateId },
+          data: { code: trimmedCode }
+        });
+        await prisma.auditLog.create({
+          data: {
+            userId: adminUserId,
+            action: 'AFFILIATE_CODE_CHANGED',
+            details: { affiliateId, oldCode: data.oldCode, newCode: trimmedCode }
+          }
+        });
+        break;
+      }
+
+      case 'remove_affiliate': {
+        const affiliateRecord = await prisma.affiliateStats.findUnique({
+          where: { id: affiliateId },
+          select: { userId: true, code: true }
+        });
+        if (!affiliateRecord) {
+          return NextResponse.json(
+            { success: false, error: 'Affilié introuvable' },
+            { status: 404 }
+          );
+        }
+        await prisma.$transaction([
+          prisma.affiliateStats.update({
+            where: { id: affiliateId },
+            data: { isActive: false }
+          }),
+          prisma.user.update({
+            where: { id: affiliateRecord.userId },
+            data: { role: 'USER' }
+          })
+        ]);
+        await prisma.auditLog.create({
+          data: {
+            userId: adminUserId,
+            action: 'AFFILIATE_REMOVED',
+            details: { affiliateId, targetUserId: affiliateRecord.userId, code: affiliateRecord.code }
+          }
+        });
+        break;
+      }
         
       default:
         return NextResponse.json(
