@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,17 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -82,7 +72,9 @@ export default function AffiliatesManagement() {
   const [newCommissionRate, setNewCommissionRate] = useState(0);
   const [editingCode, setEditingCode] = useState(false);
   const [newCode, setNewCode] = useState('');
-  const [removeConfirmAffiliate, setRemoveConfirmAffiliate] = useState<AffiliateData | null>(null);
+  const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const affiliateToRemoveRef = useRef<AffiliateData | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -186,19 +178,34 @@ export default function AffiliatesManagement() {
     }
   };
 
-  const removeAffiliate = async (affiliate: AffiliateData) => {
+  const openRemoveConfirm = (affiliate: AffiliateData) => {
+    affiliateToRemoveRef.current = affiliate;
+    setRemoveConfirmOpen(true);
+  };
+
+  const removeAffiliate = async () => {
+    const affiliate = affiliateToRemoveRef.current;
+    if (!affiliate) return;
+
+    setIsRemoving(true);
     try {
       const result = await callAffiliateAction('remove_affiliate', affiliate.id, {});
       if (result.success) {
-        toast({ title: 'Affiliation retirée', description: `${affiliate.user.steamUsername || affiliate.user.email} n'est plus affilié` });
-        setRemoveConfirmAffiliate(null);
+        toast({
+          title: 'Affiliation retirée',
+          description: `${affiliate.user.steamUsername || affiliate.user.email} n'est plus affilié`
+        });
+        setRemoveConfirmOpen(false);
         setSelectedAffiliate(null);
+        affiliateToRemoveRef.current = null;
         invalidateAffiliates();
       } else {
         toast({ title: 'Erreur', description: result.error || 'Erreur lors de la suppression', variant: 'destructive' });
       }
     } catch {
       toast({ title: 'Erreur', description: 'Erreur de connexion', variant: 'destructive' });
+    } finally {
+      setIsRemoving(false);
     }
   };
 
@@ -402,7 +409,7 @@ export default function AffiliatesManagement() {
                           variant="ghost"
                           size="sm"
                           title="Retirer l'affiliation"
-                          onClick={() => setRemoveConfirmAffiliate(affiliate)}
+                          onClick={() => openRemoveConfirm(affiliate)}
                         >
                           <UserX className="h-4 w-4 text-red-500" />
                         </Button>
@@ -564,7 +571,7 @@ export default function AffiliatesManagement() {
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => setRemoveConfirmAffiliate(selectedAffiliate)}
+                  onClick={() => openRemoveConfirm(selectedAffiliate)}
                   className="w-full"
                 >
                   <UserX className="h-4 w-4 mr-2" />
@@ -577,31 +584,51 @@ export default function AffiliatesManagement() {
       </Dialog>
 
       {/* Confirmation suppression affiliation */}
-      <AlertDialog open={!!removeConfirmAffiliate} onOpenChange={(open) => { if (!open) setRemoveConfirmAffiliate(null); }}>
-        <AlertDialogContent className="bg-slate-900 border-slate-700">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Retirer l&apos;affiliation ?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+      <Dialog open={removeConfirmOpen} onOpenChange={(open) => { if (!open && !isRemoving) setRemoveConfirmOpen(false); }}>
+        <DialogContent className="max-w-md bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <UserX className="h-5 w-5 text-red-500" />
+              Retirer l&apos;affiliation ?
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
               L&apos;utilisateur{' '}
               <span className="font-semibold text-white">
-                {removeConfirmAffiliate?.user.steamUsername || removeConfirmAffiliate?.user.email}
+                {affiliateToRemoveRef.current?.user.steamUsername || affiliateToRemoveRef.current?.user.email}
               </span>{' '}
-              (code <code className="text-orange-400">{removeConfirmAffiliate?.code}</code>) perdra son statut d&apos;affilié et son rôle sera réinitialisé. L&apos;historique de ses commissions sera conservé.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-600 text-white hover:bg-slate-700">
+              (code <code className="text-orange-400">{affiliateToRemoveRef.current?.code}</code>) perdra son statut d&apos;affilié et son rôle sera réinitialisé. L&apos;historique des commissions est conservé.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setRemoveConfirmOpen(false)}
+              disabled={isRemoving}
+              className="border-slate-600 text-white hover:bg-slate-700"
+            >
               Annuler
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => removeConfirmAffiliate && removeAffiliate(removeConfirmAffiliate)}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={removeAffiliate}
+              disabled={isRemoving}
               className="bg-red-600 hover:bg-red-700"
             >
-              Retirer l&apos;affiliation
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              {isRemoving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Suppression...
+                </>
+              ) : (
+                <>
+                  <UserX className="h-4 w-4 mr-2" />
+                  Retirer l&apos;affiliation
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
