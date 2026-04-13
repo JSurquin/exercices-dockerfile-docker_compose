@@ -248,6 +248,17 @@ class SkinplaceService {
     );
   }
 
+  // Lookup par order_ids (notre ticketId)
+  async getInstantHistoryByOrderIds(orderIds: string[]): Promise<SkinplaceHistoryResponse> {
+    return this.makeRequest<SkinplaceHistoryResponse>(
+      '/api/v3/instant/history',
+      {
+        method: 'POST',
+        body: JSON.stringify({ order_ids: orderIds, limit: 1 }),
+      }
+    );
+  }
+
   // Hold orders
   async getHoldOrders(): Promise<SkinplaceHoldResponse> {
     return this.makeRequest<SkinplaceHoldResponse>(
