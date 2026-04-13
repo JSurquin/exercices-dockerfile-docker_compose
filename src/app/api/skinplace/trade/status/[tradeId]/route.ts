@@ -3,49 +3,18 @@ import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { TradeStatus } from '@prisma/client';
 import { skinplaceService } from '@/lib/skinplace';
+import { resolveMoonSkinTradeStatusFromSkinplaceApi } from '@/lib/skinplace-trade-status-resolve';
 
 /**
  * Endpoint pour récupérer et mettre à jour le statut d'un trade depuis Skinplace
- * 
+ *
  * GET /api/skinplace/trade/status/[tradeId]
- * 
+ *
  * Permet de :
  * - Vérifier le statut actuel d'un trade
  * - Synchroniser le statut avec Skinplace/Steam
  * - Mettre à jour la base de données
  */
-
-/**
- * Mapper les statuts Skinplace/Steam vers nos statuts TradeStatus
- */
-function mapSkinplaceStatusToTradeStatus(skinplaceStatus: string): TradeStatus {
-  // Skinplace steamtrade.status enum: "active" | "pending" | "cancelled" | "finished"
-  // "pending"  = trade en cours de création côté bot
-  // "active"   = offre Steam envoyée par le bot, en attente d'acceptation par l'utilisateur
-  // "finished" = l'utilisateur a accepté l'offre Steam → en trade hold 7-8 jours
-  // "cancelled"= annulé (utilisateur ou bot)
-  const statusMap: Record<string, TradeStatus> = {
-    'pending': 'CREATED',
-    'sent':    'CREATED',
-
-    // Bot a envoyé l'offre, en attente d'acceptation utilisateur
-    'active':   'ACCEPTED_BY_BOT',
-
-    // Utilisateur a accepté → entre en trade hold Steam
-    'finished': 'IN_TRADE_HOLD',
-
-    // Annulé
-    'cancelled': 'CANCELLED',
-    // Échecs techniques
-    'declined':  'FAILED',
-    'rejected':  'FAILED',
-    'expired':   'FAILED',
-    'failed':    'FAILED',
-    'error':     'FAILED',
-  };
-
-  return statusMap[skinplaceStatus.toLowerCase()] || 'CREATED';
-}
 
 export async function GET(
   request: NextRequest,
@@ -105,14 +74,13 @@ export async function GET(
       });
     }
 
-    let skinplaceStatus: string | null = null;
+    let skinplacePayload: unknown = null;
 
     // Stratégie 1 : lookup direct par skinplaceToken via skinplaceService (Bearer auth)
     if (trade.skinplaceToken) {
       try {
-        const data = await skinplaceService.getTradeStatus(trade.skinplaceToken);
-        skinplaceStatus = (data as any)?.steamtrade?.status || (data as any)?.payment?.status || null;
-        console.log(`📊 [strategy=token] Statut Skinplace pour trade ${trade.id}:`, skinplaceStatus);
+        skinplacePayload = await skinplaceService.getTradeStatus(trade.skinplaceToken);
+        console.log(`📊 [strategy=token] Payload Skinplace pour trade ${trade.id}`);
       } catch (e) {
         console.warn(`⚠️  [strategy=token] Exception pour trade ${trade.id}:`, e);
       }
@@ -121,14 +89,14 @@ export async function GET(
     }
 
     // Stratégie 2 : fallback via /instant/history avec order_ids (notre ticketId = order_id envoyé à Skinplace)
-    if (!skinplaceStatus && trade.ticketId) {
+    if (!skinplacePayload && trade.ticketId) {
       try {
         const historyData = await skinplaceService.getInstantHistoryByOrderIds([trade.ticketId]);
-        const entry = (historyData as any)?.data?.[0];
+        const entry = (historyData as { data?: unknown[] })?.data?.[0];
         if (entry) {
-          skinplaceStatus = entry?.steamtrade?.status || entry?.payment?.status || null;
+          skinplacePayload = entry;
           // Sauvegarder le token Skinplace pour éviter ce fallback aux prochains appels
-          const foundToken: string | undefined = entry?.token;
+          const foundToken: string | undefined = (entry as { token?: string }).token;
           if (foundToken && !trade.skinplaceToken) {
             await prisma.trade.update({
               where: { id: trade.id },
@@ -136,7 +104,7 @@ export async function GET(
             });
             console.log(`💾 skinplaceToken récupéré via history et sauvegardé pour trade ${trade.id}`);
           }
-          console.log(`📊 [strategy=history] Statut Skinplace pour trade ${trade.id}:`, skinplaceStatus);
+          console.log(`📊 [strategy=history] Entrée history pour trade ${trade.id}`);
         } else {
           console.warn(`⚠️  [strategy=history] Aucune entrée pour order_id ${trade.ticketId}`);
         }
@@ -145,9 +113,14 @@ export async function GET(
       }
     }
 
-    // Si on a un statut de Skinplace, mettre à jour le trade
-    if (skinplaceStatus) {
-      const newStatus = mapSkinplaceStatusToTradeStatus(skinplaceStatus);
+    const resolved = skinplacePayload
+      ? resolveMoonSkinTradeStatusFromSkinplaceApi(skinplacePayload)
+      : null;
+    const newStatus = resolved?.status ?? null;
+    const skinplaceDebug = resolved?.debug ?? null;
+
+    // Si on a un statut dérivé de Skinplace, mettre à jour le trade
+    if (newStatus && skinplaceDebug) {
       const oldStatus = trade.status;
 
       // Ordre de progression des statuts
@@ -194,7 +167,7 @@ export async function GET(
               tradeId: trade.id,
               oldStatus,
               newStatus,
-              skinplaceStatus,
+              skinplaceDebug,
               source: 'manual_check',
             },
             ipAddress: request.headers.get('x-forwarded-for') || 
@@ -203,7 +176,9 @@ export async function GET(
           },
         });
 
-        console.log(`✅ Trade ${trade.id} mis à jour: ${oldStatus} -> ${newStatus}`);
+        console.log(`✅ Trade ${trade.id} mis à jour: ${oldStatus} -> ${newStatus}`, skinplaceDebug);
+
+        const detailMsg = `Skinplace: ${skinplaceDebug.effectiveSource} (steamtrade=${skinplaceDebug.steamtradeStatus ?? '—'}, payment=${skinplaceDebug.paymentStatus ?? '—'})`;
 
         return NextResponse.json({
           success: true,
@@ -213,14 +188,30 @@ export async function GET(
             oldStatus,
             updatedAt: updatedTrade.updatedAt,
             availableAt: updatedTrade.availableAt,
-            skinplaceStatus,
-            message: 'Statut mis à jour depuis Skinplace',
+            skinplaceStatus: skinplaceDebug.effectiveSource,
+            skinplaceDebug,
+            message: `Statut mis à jour depuis Skinplace — ${detailMsg}`,
           },
         });
       }
+
+      // Résolu côté Skinplace mais pas d’évolution autorisée (ex. même palier)
+      const noMoveMsg = `Statut inchangé — local: ${trade.status}, Skinplace→${newStatus} (${skinplaceDebug.effectiveSource})`;
+      return NextResponse.json({
+        success: true,
+        trade: {
+          id: trade.id,
+          status: trade.status,
+          updatedAt: trade.updatedAt,
+          availableAt: trade.availableAt,
+          skinplaceStatus: skinplaceDebug.effectiveSource,
+          skinplaceDebug,
+          message: noMoveMsg,
+        },
+      });
     }
 
-    // Retourner le statut actuel si pas de mise à jour
+    // Pas de payload exploitable
     return NextResponse.json({
       success: true,
       trade: {
@@ -228,10 +219,10 @@ export async function GET(
         status: trade.status,
         updatedAt: trade.updatedAt,
         availableAt: trade.availableAt,
-        skinplaceStatus,
-        message: skinplaceStatus 
-          ? 'Statut inchangé'
-          : 'Statut Skinplace non disponible, statut local utilisé',
+        skinplaceStatus: null,
+        skinplaceDebug: null,
+        message:
+          'Statut Skinplace non disponible (vérifiez SKINPLACE_API_KEY et skinplaceToken / order_id). Statut local conservé.',
       },
     });
 

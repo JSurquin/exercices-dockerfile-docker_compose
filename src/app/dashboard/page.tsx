@@ -265,8 +265,11 @@ export default function DashboardPage() {
       const result = await response.json();
 
       if (result.success) {
+        const detail =
+          (result.trade as { message?: string }).message ||
+          messages.dashboard.toasts.statusVerified;
         toast.success(messages.dashboard.toasts.statusUpdated, {
-          description: result.trade.message || messages.dashboard.toasts.statusVerified,
+          description: detail,
         });
         // Recharger la liste des trades
         refetchTrades();
