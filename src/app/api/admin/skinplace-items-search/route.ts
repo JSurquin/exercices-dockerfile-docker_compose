@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   }
 
   const search = request.nextUrl.searchParams.get('search') ?? '';
-  const limit = Math.min(parseInt(request.nextUrl.searchParams.get('limit') ?? '30'), 50);
+  const limit = Math.min(parseInt(request.nextUrl.searchParams.get('limit') ?? '50'), 200);
 
   try {
     const result = await skinplaceService.getItemListings(1, limit, {

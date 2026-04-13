@@ -39,41 +39,54 @@ const RARITY_LABELS: Record<string, string> = {
 
 export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: SkinPickerModalProps) {
   const [search, setSearch] = useState('');
-  const [allItems, setAllItems] = useState<SkinItem[]>([]);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [items, setItems] = useState<SkinItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [highlighted, setHighlighted] = useState<string | null>(null);
-  const fetchedRef = useRef(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const fetchItems = useCallback(async () => {
+  // Debounce la recherche (350ms)
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 350);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [search]);
+
+  const fetchItems = useCallback(async (query: string) => {
     setLoading(true);
     try {
+      const params = new URLSearchParams({ limit: '100' });
+      if (query) params.set('search', query);
       const res = await fetch(
-        `/api/admin/skinplace-items-search?limit=500`,
+        `/api/admin/skinplace-items-search?${params.toString()}`,
         { credentials: 'include' }
       );
       const data = await res.json();
-      setAllItems(data.items ?? []);
+      setItems(data.items ?? []);
     } catch {
-      setAllItems([]);
+      setItems([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (open && !fetchedRef.current) {
-      fetchedRef.current = true;
-      fetchItems();
+    if (open) {
+      fetchItems(debouncedSearch);
     }
+  }, [open, debouncedSearch, fetchItems]);
+
+  useEffect(() => {
     if (!open) {
       setSearch('');
+      setDebouncedSearch('');
+      setItems([]);
     }
-  }, [open, fetchItems]);
-
-  const q = search.trim().toLowerCase();
-  const items = q
-    ? allItems.filter((s) => s.steam_market_hash_name.toLowerCase().includes(q))
-    : allItems;
+  }, [open]);
 
   const handleSelect = (skin: SkinItem) => {
     onSelect(skin);
@@ -114,7 +127,7 @@ export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: Skin
             <div className="flex flex-col items-center justify-center py-16 text-slate-400">
               <MagnifyingGlassIcon className="w-12 h-12 mb-3 opacity-40" />
               <p className="text-sm">
-                {q ? 'Aucun résultat pour cette recherche' : 'Aucun article disponible'}
+                {debouncedSearch ? 'Aucun résultat pour cette recherche' : 'Aucun article disponible'}
               </p>
             </div>
           )}
@@ -207,10 +220,8 @@ export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: Skin
 
         <div className="flex items-center justify-between px-6 py-4 border-t border-slate-700/60 bg-slate-900/80">
           <p className="text-xs text-slate-400">
-            {allItems.length > 0 && (
-              q
-                ? `${items.length} / ${allItems.length} article${allItems.length > 1 ? 's' : ''}`
-                : `${allItems.length} article${allItems.length > 1 ? 's' : ''}`
+            {!loading && items.length > 0 && (
+              `${items.length} article${items.length > 1 ? 's' : ''}${debouncedSearch ? ' trouvés' : ''}`
             )}
           </p>
           <Button
