@@ -13,6 +13,7 @@ interface AuthContextType {
   loginWithDiscord: () => Promise<void>;
   logout: () => void;
   updateUser: (updates: Partial<User>) => Promise<User>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -125,11 +126,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshUser = async (): Promise<void> => {
+    try {
+      const response = await fetch('/api/user/profile');
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('Refresh user error:', error);
+    }
+  };
+
   const updateUser = async (updates: Partial<User>): Promise<User> => {
     if (!user) throw new Error('No user to update');
     
     try {
-      // Mettre à jour via l'API Better Auth ou directement en base
       const response = await fetch('/api/user/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -148,7 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, loginWithSteam, loginWithDiscord, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, isLoading, loginWithSteam, loginWithDiscord, logout, updateUser, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

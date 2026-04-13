@@ -228,7 +228,7 @@ function MissionCard({
 }
 
 export default function MissionsPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, refreshUser } = useAuth();
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -253,8 +253,9 @@ export default function MissionsPage() {
       if (!r.ok) throw new Error(j.error || 'Erreur');
       return j;
     },
-    onSuccess: (j: { fragments?: number }) => {
+    onSuccess: async (j: { fragments?: number }) => {
       queryClient.invalidateQueries({ queryKey: ['missions'] });
+      await refreshUser();
       toast.success(`+${j.fragments ?? 0} fragments récupérés !`);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : 'Erreur'),
