@@ -151,7 +151,8 @@ export function SkinplaceInventoryViewer({
 
   // Appliquer les filtres
   useEffect(() => {
-    let filtered = [...inventory];
+    // Partir des items tradables Steam (incluant ceux bloqués par Skinplace)
+    let filtered = inventory.filter(item => item.tradable);
     
     // Filtrer par recherche
     filtered = filterBySearch(filtered, searchTerm);
@@ -187,9 +188,6 @@ export function SkinplaceInventoryViewer({
       filtered = filtered.filter((item) => item.price_centimes <= maxBound!);
     }
     
-    // Ne garder que les items tradables
-    filtered = filterTradableItems(filtered);
-    
     // Trier
     switch (sortBy) {
       case 'value_desc':
@@ -207,7 +205,7 @@ export function SkinplaceInventoryViewer({
     }
     
     setFilteredItems(filtered);
-  }, [inventory, searchTerm, selectedRarity, selectedExterior, statTrakOnly, sortBy, purchasableOnly, priceMinUsd, priceMaxUsd, filterBySearch, filterByRarity, filterByExterior, filterByStatTrak, filterTradableItems, sortItemsByValue, sortItemsByRarity]);
+  }, [inventory, searchTerm, selectedRarity, selectedExterior, statTrakOnly, sortBy, purchasableOnly, priceMinUsd, priceMaxUsd, filterBySearch, filterByRarity, filterByExterior, filterByStatTrak, sortItemsByValue, sortItemsByRarity]);
 
   useEffect(() => {
     if (currentSteamId) {
@@ -226,7 +224,8 @@ export function SkinplaceInventoryViewer({
   }, [steamId64]);
 
   const stats = calculateInventoryStats(inventory);
-  const tradableItems = filterTradableItems(inventory);
+  // Tous les items visibles (tradable Steam), incluant ceux bloqués par Skinplace
+  const visibleItems = inventory.filter(item => item.tradable);
   const selectedItemsData = inventory.filter(item => selectedItems.includes(item.id));
   const selectedValue = selectedItemsData.reduce((sum, item) => sum + item.price_centimes, 0);
 
@@ -251,8 +250,8 @@ export function SkinplaceInventoryViewer({
   }, [selectedValue, selectedCurrency, formatPriceSync]);
 
   // Obtenir les options de filtre uniques
-  const availableRarities = Array.from(new Set(tradableItems.map(item => item.rarity))).sort();
-  const availableExteriors = Array.from(new Set(tradableItems.map(item => item.exterior).filter(Boolean))).sort();
+  const availableRarities = Array.from(new Set(visibleItems.map(item => item.rarity))).sort();
+  const availableExteriors = Array.from(new Set(visibleItems.map(item => item.exterior).filter(Boolean))).sort();
 
   const handleItemClick = (item: NormalizedInventoryItem) => {
     if (!selectable || !item.tradable || item.skip_reason) return;

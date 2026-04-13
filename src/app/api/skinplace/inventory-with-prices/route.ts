@@ -298,8 +298,10 @@ export async function GET(request: NextRequest) {
       price_original_centimes: Math.round(item.price_original * 100),
       price_real_centimes: Math.round(item.price_real * 100),
       
-      // Statut : untouchable = Skinplace ne peut pas acheter cet item (hors stock)
-      tradable: !item.untouchable && !item.skip_reason,
+      // tradable = l'item est visible dans l'inventaire Steam (même si Skinplace ne peut pas l'acheter)
+      // Un item avec skip_reason reste "tradable" (affiché) mais non sélectionnable
+      // untouchable sans skip_reason = item Steam non tradable (ex: cadeau non ouvert)
+      tradable: !item.untouchable || !!item.skip_reason,
       marketable: true,
       // Si untouchable sans skip_reason explicite, on marque system_lock (overstock)
       skip_reason: item.skip_reason || (item.untouchable ? 'system_lock' : undefined),

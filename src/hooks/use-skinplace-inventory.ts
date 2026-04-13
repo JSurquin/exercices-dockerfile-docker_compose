@@ -53,8 +53,9 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
   }, [handleRequest]);
 
   // Utilitaires pour filtrer et trier les items
+  // Filtre les items réellement vendables (tradable ET sans skip_reason)
   const filterTradableItems = useCallback((items: NormalizedInventoryItem[]): NormalizedInventoryItem[] => {
-    return items.filter(item => item.tradable);
+    return items.filter(item => item.tradable && !item.skip_reason);
   }, []);
 
   const sortItemsByValue = useCallback((items: NormalizedInventoryItem[], ascending = false): NormalizedInventoryItem[] => {
