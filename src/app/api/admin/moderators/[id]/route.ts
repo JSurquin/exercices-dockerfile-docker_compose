@@ -35,6 +35,14 @@ export async function DELETE(
       return NextResponse.json({ error: 'Impossible de se rétrograder soi-même' }, { status: 400 });
     }
 
+    const affiliateRow = await prisma.affiliateStats.findUnique({
+      where: { userId: resolvedParams.id },
+      select: { isActive: true },
+    });
+
+    // Rétablir AFFILIATE si le compte a encore un programme affilié actif (promotion modérateur écrase le rôle)
+    const roleAfterDemote = affiliateRow?.isActive ? 'AFFILIATE' : 'USER';
+
     // Désassigner toutes les conversations assignées à ce modérateur
     await prisma.conversation.updateMany({
       where: { assignedTo: resolvedParams.id },
@@ -44,7 +52,7 @@ export async function DELETE(
     // Rétrograder l'utilisateur
     const updatedUser = await prisma.user.update({
       where: { id: resolvedParams.id },
-      data: { role: 'USER' },
+      data: { role: roleAfterDemote },
       select: {
         id: true,
         name: true,
@@ -62,7 +70,8 @@ export async function DELETE(
       targetUserId: resolvedParams.id,
       targetUserEmail: user.email,
       previousRole: 'MODERATOR',
-      newRole: 'USER',
+      newRole: roleAfterDemote,
+      restoredAffiliate: roleAfterDemote === 'AFFILIATE',
     });
 
     return NextResponse.json(updatedUser);

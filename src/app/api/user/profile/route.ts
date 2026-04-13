@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
       fragments: number;
       contactEmail: string | null;
       role: UserRole;
+      affiliateStats: { isActive: boolean } | null;
     } | null = null;
 
     try {
@@ -42,6 +43,7 @@ export async function GET(request: NextRequest) {
           fragments: true,
           contactEmail: true,
           role: true,
+          affiliateStats: { select: { isActive: true } },
         },
       });
     } catch (error) {
@@ -57,6 +59,11 @@ export async function GET(request: NextRequest) {
     const displayName = (steamUsername?.trim() || accountName?.trim() || 'User').trim();
     const displayAvatar = (steamAvatar?.trim() || accountImage?.trim() || '').trim();
 
+    const dbRole = dbRow?.role ?? user.role ?? 'USER';
+    const affiliateActive = dbRow?.affiliateStats?.isActive === true;
+    const canAccessAffiliateDashboard =
+      dbRole === 'AFFILIATE' || affiliateActive;
+
     const responseUser = {
       id: user.id,
       steamId64: steamId,
@@ -64,7 +71,8 @@ export async function GET(request: NextRequest) {
       avatar: displayAvatar,
       contactEmail: dbRow?.contactEmail ?? null,
       // Source de vérité : la ligne User en DB (la session Better Auth peut être en retard après un promote admin)
-      role: dbRow?.role ?? user.role ?? 'USER',
+      role: dbRole,
+      canAccessAffiliateDashboard,
       twoFactorEnabled: dbRow?.twoFactorEnabled ?? false,
       tradeLink: dbRow?.tradeLink ?? null,
       level: user.level || 1,

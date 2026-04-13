@@ -47,7 +47,12 @@ export function Header() {
   // Profil API lit le rôle en DB ; la session Better Auth peut rester obsolète après un changement côté admin.
   const effectiveRole = user?.role ?? session?.user?.role;
   const isAdmin = effectiveRole === "ADMIN";
-  const isAffiliate = effectiveRole === "AFFILIATE";
+  // Affiliation : rôle AFFILIATE ou programme actif (ex. affilié promu modérateur puis rétrogradé en USER par erreur)
+  const showAffiliateNav =
+    user?.canAccessAffiliateDashboard === true ||
+    (user?.canAccessAffiliateDashboard === undefined &&
+      effectiveRole === "AFFILIATE");
+  const isAffiliateBadge = showAffiliateNav;
   const isModerator = effectiveRole === "MODERATOR";
 
   const navigation = [
@@ -56,7 +61,7 @@ export function Header() {
     { name: messages.nav.dashboard, href: "/dashboard", icon: ChartBarIcon },
     { name: messages.nav.giveaways, href: "/giveaways", icon: GiftIcon },
     { name: messages.nav.missions, href: "/missions", icon: SparklesIcon },
-    ...(isAffiliate ? [{ name: messages.nav.affiliation, href: "/affiliate", icon: UserCircleIcon }] : []),
+    ...(showAffiliateNav ? [{ name: messages.nav.affiliation, href: "/affiliate", icon: UserCircleIcon }] : []),
     ...(isModerator || isAdmin ? [{ name: messages.nav.moderation, href: "/moderation", icon: ChatBubbleLeftRightIcon }] : []),
     {
       name: messages.nav.support,
@@ -202,7 +207,7 @@ export function Header() {
                   <div className="flex flex-col space-y-1">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium leading-none">{user.username}</p>
-                      {isAffiliate && (
+                      {isAffiliateBadge && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/20 border border-purple-500/40 px-1.5 py-0.5 text-[10px] font-semibold text-purple-400 leading-none">
                           <UserCircleIcon className="h-2.5 w-2.5" />
                           Affilié
