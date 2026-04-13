@@ -141,6 +141,15 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               <li className="wrap-break-word">{messages.components.onboarding.tradeLink.howTo.step4}</li>
             </ol>
           </div>
+          <a
+            href="https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full rounded-md border border-blue-500 bg-blue-500/10 px-4 py-2.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4 shrink-0" />
+            {locale === "en" ? "Open Steam Trade Link page" : locale === "cn" ? "打开Steam交易链接页面" : "Ouvrir la page Trade Link Steam"}
+          </a>
           <Badge variant="outline" className="text-orange-500 border-orange-500 text-xs sm:text-sm inline-block w-full sm:w-auto">
             <span className="wrap-break-word">{messages.components.onboarding.tradeLink.warning}</span>
           </Badge>
@@ -156,7 +165,18 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
             {messages.components.onboarding.enterTradeLink.description}
           </p>
           <div className="space-y-2">
-            <Label htmlFor="trade-url" className="text-sm sm:text-base">{messages.components.onboarding.enterTradeLink.label}</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="trade-url" className="text-sm sm:text-base">{messages.components.onboarding.enterTradeLink.label}</Label>
+              <a
+                href="https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 hover:underline transition-colors shrink-0"
+              >
+                <ExternalLink className="w-3 h-3" />
+                {locale === "en" ? "Get it here" : locale === "cn" ? "在这里获取" : "Obtenir ici"}
+              </a>
+            </div>
             <Input
               id="trade-url"
               placeholder={messages.components.onboarding.enterTradeLink.placeholder}

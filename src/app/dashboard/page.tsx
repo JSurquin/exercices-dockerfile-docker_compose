@@ -162,6 +162,7 @@ export default function DashboardPage() {
   const searchParams = useSearchParams();
   const { isFirstLogin, completeOnboarding } = useOnboarding();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const { data: tradesData, loading: tradesLoading, error: tradesError, refetch: refetchTrades } = useUserTrades();
   const [refreshingTradeId, setRefreshingTradeId] = useState<string | null>(null);
   const [refreshingKyc, setRefreshingKyc] = useState(false);
@@ -217,21 +218,21 @@ export default function DashboardPage() {
     // Afficher l'onboarding seulement si :
     // 1. L'utilisateur est connecté
     // 2. C'est sa première connexion
-    if (data?.user && isFirstLogin) {
-      // Petit délai pour laisser la page se charger
+    // 3. Il n'a pas déjà été fermé dans cette session
+    if (data?.user && isFirstLogin && !onboardingDismissed) {
       const timer = setTimeout(() => {
         setShowOnboarding(true);
       }, 1500);
       
       return () => clearTimeout(timer);
     }
-  }, [data, isFirstLogin]);
+  }, [data, isFirstLogin, onboardingDismissed]);
 
   const handleOnboardingComplete = async () => {
-    const success = await completeOnboarding();
-    if (success) {
-      setShowOnboarding(false);
-    }
+    // Fermer immédiatement pour l'UX, puis tenter l'appel API
+    setShowOnboarding(false);
+    setOnboardingDismissed(true);
+    await completeOnboarding();
   };
 
   // Rafraîchir le statut d'un trade manuellement
