@@ -11,12 +11,7 @@ export async function GET(
 ) {
   try {
     const resolvedParams = await params;
-    const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-    }
+    const session = await auth.api.getSession({ headers: request.headers });
 
     const conversation = await prisma.conversation.findUnique({
       where: { id: resolvedParams.id },
@@ -31,11 +26,7 @@ export async function GET(
           },
         },
         assignedModerator: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
+          select: { id: true, name: true, email: true },
         },
         messages: {
           include: {
@@ -58,30 +49,35 @@ export async function GET(
       return NextResponse.json({ error: 'Conversation non trouvée' }, { status: 404 });
     }
 
-    // Vérifier les permissions
-    const isAdmin = session.user.role === 'ADMIN';
-    const isModerator = session.user.role === 'MODERATOR';
-    const isOwner = conversation.userId === session.user.id;
-    const isAssigned = conversation.assignedTo === session.user.id;
+    // Contrôle d'accès :
+    // – Admin / modérateur → accès total
+    // – Utilisateur connecté → seulement ses propres conversations
+    // – Invité (non connecté) → autorisé si la conversation n'a pas de userId
+    //   (le UUID de la conversation sert de jeton secret pour les invités)
+    if (session?.user) {
+      const isAdmin = session.user.role === 'ADMIN';
+      const isModerator = session.user.role === 'MODERATOR';
+      const isOwner = conversation.userId === session.user.id;
+      const isAssigned = conversation.assignedTo === session.user.id;
 
-    if (!isAdmin && !isModerator && !isOwner && !isAssigned) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-    }
+      if (!isAdmin && !isModerator && !isOwner && !isAssigned) {
+        return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+      }
 
-    // Marquer les messages comme lus pour l'utilisateur connecté
-    if (isOwner || isAssigned || isModerator || isAdmin) {
+      // Marquer les messages comme lus
       await prisma.chatMessage.updateMany({
         where: {
           conversationId: resolvedParams.id,
           isRead: false,
-          NOT: {
-            userId: session.user.id, // Ne pas marquer ses propres messages comme lus
-          },
+          NOT: { userId: session.user.id },
         },
-        data: {
-          isRead: true,
-        },
+        data: { isRead: true },
       });
+    } else {
+      // Invité : accès uniquement aux conversations sans userId (guest)
+      if (conversation.userId !== null) {
+        return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+      }
     }
 
     return NextResponse.json(conversation);

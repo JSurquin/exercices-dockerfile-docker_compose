@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     // Vérifier les permissions
     let senderType = body.senderType || 'USER';
-    
+
     if (session?.user) {
       const isAdmin = session.user.role === 'ADMIN';
       const isModerator = session.user.role === 'MODERATOR';
@@ -46,12 +46,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
       }
 
-      // Déterminer le type d'expéditeur
-      if (isModerator || isAdmin) {
-        senderType = 'MODERATOR';
-      } else {
-        senderType = 'USER';
+      senderType = isModerator || isAdmin ? 'MODERATOR' : 'USER';
+    } else {
+      // Invité : autorisé uniquement sur les conversations sans userId
+      if (conversation.userId !== null) {
+        return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
       }
+      senderType = 'USER';
     }
 
     // Vérifier que la conversation n'est pas fermée
