@@ -1,83 +1,15 @@
 import { prisma } from '../../prisma/prisma';
 import type { Prisma } from '@prisma/client';
-
-export interface FragmentDropTier {
-  probability: number; // probabilité de cette tranche (0–1)
-  minFragments: number;
-  maxFragments: number;
-}
-
-export interface FragmentDropConfig {
-  // Probabilité globale qu'un drop se déclenche à chaque vente (0–1)
-  dropChance: number;
-  // Tranches de drop (tirées séquentiellement, la première qui passe gagne)
-  tiers: FragmentDropTier[];
-}
-
-export interface PointsConfig {
-  // Points gagnés par euro de vente (ex: 100 = 100 pts par €)
-  pointsPerEuro: number;
-  // Tickets gagnés par euro de vente (ex: 0.1 = 1 ticket par 10€)
-  ticketsPerEuro: number;
-  // Points pour la connexion quotidienne
-  dailyLoginPoints: number;
-  // Tickets pour la connexion quotidienne
-  dailyLoginTickets: number;
-  // Multiplicateur de streak (ex: 1.5 = +50% par jour consécutif, max streakMaxMultiplier)
-  streakMultiplier: number;
-  // Streak max pour le multiplicateur
-  streakMaxDays: number;
-  // Points bonus niveau supérieur
-  levelUpBonusPoints: number;
-  // Fragments gagnés par euro de vente (ex: 0.2 = 200 fragments pour 1000€)
-  fragmentsPerEuro: number;
-  // Config des drops aléatoires de fragments à chaque vente
-  fragmentDrop: FragmentDropConfig;
-  // Coûts d'entrée en fragments par type de giveaway
-  giveawayCosts: {
-    DAILY: number;
-    WEEKLY: number;
-    MONTHLY: number;
-    YEARLY: number;
-    CUSTOM: number;
-  };
-}
+import type { PointsConfig, FragmentDropConfig, FragmentDropTier } from './points-config';
+import {
+  DEFAULT_FRAGMENT_DROP,
+  DEFAULT_GIVEAWAY_COSTS,
+  DEFAULT_POINTS_CONFIG,
+} from './points-config';
+export type { FragmentDropTier, FragmentDropConfig, PointsConfig } from './points-config';
 
 const POINTS_CONFIG_KEY = 'points_config';
 const GIVEAWAYS_ENABLED_KEY = 'giveaways_enabled';
-
-export const DEFAULT_FRAGMENT_DROP: FragmentDropConfig = {
-  // Probabilité globale qu'un drop tente de se déclencher à chaque vente
-  dropChance: 0.25,
-  // Les tiers doivent sommer à ≤ 1. La probabilité manquante = "rien" parmi les drops.
-  // Spec : 50% → 20-50f | 15% → 50-100f | 5% → 100-200f | 30% → rien
-  tiers: [
-    { probability: 0.05, minFragments: 100, maxFragments: 200 },
-    { probability: 0.15, minFragments: 50, maxFragments: 100 },
-    { probability: 0.50, minFragments: 20, maxFragments: 50 },
-  ],
-};
-
-export const DEFAULT_GIVEAWAY_COSTS = {
-  DAILY: 50,
-  WEEKLY: 150,
-  MONTHLY: 400,
-  YEARLY: 2000,
-  CUSTOM: 50,
-};
-
-export const DEFAULT_POINTS_CONFIG: PointsConfig = {
-  pointsPerEuro: 100,
-  ticketsPerEuro: 0.1,
-  dailyLoginPoints: 50,
-  dailyLoginTickets: 0,
-  streakMultiplier: 1.1,
-  streakMaxDays: 7,
-  levelUpBonusPoints: 500,
-  fragmentsPerEuro: 0.2,
-  fragmentDrop: DEFAULT_FRAGMENT_DROP,
-  giveawayCosts: DEFAULT_GIVEAWAY_COSTS,
-};
 
 export async function getPointsConfig(): Promise<PointsConfig> {
   const row = await prisma.siteSettings.findUnique({

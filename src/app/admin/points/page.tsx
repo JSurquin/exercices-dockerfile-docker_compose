@@ -24,8 +24,8 @@ import {
   FireIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
-import type { PointsConfig } from '@/lib/points-service';
-import { DEFAULT_FRAGMENT_DROP, DEFAULT_GIVEAWAY_COSTS } from '@/lib/points-service';
+import type { PointsConfig } from '@/lib/points-config';
+import { DEFAULT_FRAGMENT_DROP, DEFAULT_GIVEAWAY_COSTS } from '@/lib/points-config';
 
 interface Metrics {
   totals: { points: number; tickets: number };
