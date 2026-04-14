@@ -146,7 +146,7 @@ function MissionCard({
 
   return (
     <div
-      className={`flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 rounded-xl border p-4 transition-all ${
+      className={`md:flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 rounded-xl border p-4 transition-all ${
         mission.completed
           ? 'bg-muted/40 opacity-70'
           : mission.category === 'BONUS'
@@ -307,7 +307,7 @@ export default function MissionsPage() {
       </div>
 
       {/* Résumé */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid md:grid-cols-3 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground mb-1">Fragments disponibles</p>

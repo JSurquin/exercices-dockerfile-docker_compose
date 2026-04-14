@@ -603,14 +603,14 @@ export default function GiveawaysPage() {
           transition={{ duration: 0.6, delay: 0.3 }}
         >
           <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4 sm:space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 gap-2 h-auto">
               <TabsTrigger value="active">
                 {messages.giveaways.tabs.active} ({activeGiveaways.length})
               </TabsTrigger>
               <TabsTrigger value="ended">
                 {messages.giveaways.tabs.ended} ({endedGiveaways.length})
               </TabsTrigger>
-              <TabsTrigger value="my-entries">
+              <TabsTrigger value="my-entries" className="col-span-2 sm:col-span-1">
                 {messages.giveaways.tabs.myEntries}
               </TabsTrigger>
             </TabsList>
