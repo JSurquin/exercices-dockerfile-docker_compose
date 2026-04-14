@@ -361,6 +361,8 @@ export interface Messages {
         network: string;
         /** Libellé quand aucun frais « réseau » n’est déduit sur le trade (frais au retrait) */
         payoutFeesAtWithdrawal: string;
+        /** Montant net crédité sur le solde (après frais cashout) */
+        netCredit: string;
         accepted: string;
         available: string;
         others: string;

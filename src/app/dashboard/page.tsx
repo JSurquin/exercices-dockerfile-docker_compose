@@ -52,6 +52,7 @@ import {
 } from "recharts";
 import CountUp from "react-countup";
 import { formatCentsToCurrency } from "@/lib/currency-converter";
+import { ConvertedPrice } from "@/components/ui/converted-price";
 
 const formatPrice = (centimes: number) => {
   return (centimes / 100).toFixed(2) + "€";
@@ -705,7 +706,11 @@ export default function DashboardPage() {
                           </div>
                           <div className="text-right">
                             <p className="font-bold text-lg">
-                              {formatPrice(trade.netCentimes)}
+                              <ConvertedPrice usdCents={trade.brutCentimes} fromCurrency="USD" />
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {messages.dashboard.tradeHistory.netCredit}{" "}
+                              <ConvertedPrice usdCents={trade.netCentimes} fromCurrency="USD" className="text-green-600 font-medium" />
                             </p>
                             <p className="text-sm text-muted-foreground">
                               {new Date(trade.créédLe).toLocaleDateString()}
@@ -727,11 +732,11 @@ export default function DashboardPage() {
                               <span className="text-muted-foreground text-xs block mb-1">
                                 {messages.dashboard.tradeHistory.fees}
                               </span>
-                              <p>{messages.dashboard.tradeHistory.cashout} {formatPrice(trade.frais.cashout)}</p>
+                              <p>{messages.dashboard.tradeHistory.cashout} <ConvertedPrice usdCents={trade.frais.cashout} fromCurrency="USD" /></p>
                               <p>
                                 {messages.dashboard.tradeHistory.network}{" "}
                                 {trade.frais.réseau > 0
-                                  ? formatPrice(trade.frais.réseau)
+                                  ? <ConvertedPrice usdCents={trade.frais.réseau} fromCurrency="USD" />
                                   : messages.dashboard.tradeHistory.payoutFeesAtWithdrawal}
                               </p>
                             </div>

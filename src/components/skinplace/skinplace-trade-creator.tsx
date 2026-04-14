@@ -372,7 +372,7 @@ export function SkinplaceTradeCreator({
                 <ConvertedPrice usdCents={grossValueCentimes} className="font-medium" />
               </div>
               
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <div className="flex items-center justify-between text-sm text-red-500">
                 <span className="flex items-center gap-1">
                   <Minus className="h-3 w-3" />
                   {messages.tradeCreator.cashoutFeesLabel.replace("{percent}", cashoutPercentDisplay)}
@@ -382,21 +382,21 @@ export function SkinplaceTradeCreator({
                 </span>
               </div>
 
-              <div className="flex items-start justify-between gap-2 text-xs text-muted-foreground border border-dashed border-muted-foreground/25 rounded-md p-2">
-                <span className="text-left">{messages.tradeCreator.payoutFeesIndicativeLine}</span>
-                <span className="shrink-0 font-medium text-foreground/80 tabular-nums">
-                  ~<ConvertedPrice usdCents={fees.indicative_payout_fees_centimes} />
-                </span>
-              </div>
-
               <Separator />
 
-              <div className="flex items-center justify-between text-lg font-bold">
+              <div className="flex items-center justify-between text-base font-bold">
                 <span>{messages.tradeCreator.youReceive}</span>
                 <ConvertedPrice
                   usdCents={netValueCentimes}
                   className={netValueCentimes > 0 ? 'text-green-600' : 'text-red-600'}
                 />
+              </div>
+
+              <div className="flex items-start justify-between gap-2 text-xs text-muted-foreground border border-dashed border-amber-400/40 bg-amber-50/30 dark:bg-amber-950/20 rounded-md p-2 mt-1">
+                <span className="text-left">{messages.tradeCreator.payoutFeesIndicativeLine}</span>
+                <span className="shrink-0 font-medium text-amber-700 dark:text-amber-400 tabular-nums">
+                  ~<ConvertedPrice usdCents={fees.indicative_payout_fees_centimes} />
+                </span>
               </div>
 
               {netValueCentimes <= 0 && (
