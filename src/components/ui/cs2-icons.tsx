@@ -117,12 +117,6 @@ export const CS2Background: React.FC<{ className?: string }> = ({
         >
           <rect width="20" height="20" fill="transparent" />
           <circle cx="10" cy="10" r="1" fill="currentColor" opacity="0.1" />
-          <path
-            d="M5 5l10 10M15 5l-10 10"
-            stroke="currentColor"
-            strokeWidth="0.5"
-            opacity="0.05"
-          />
         </pattern>
         <linearGradient
           id="cs2-bg-gradient"
