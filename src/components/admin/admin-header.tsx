@@ -33,6 +33,10 @@ import { Badge } from '@/components/ui/badge';
 import { useSession } from '~/lib/auth-client';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/components/providers/auth-provider';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface Breadcrumb {
   label: string;
@@ -45,12 +49,35 @@ interface AdminHeaderProps {
   actions?: React.ReactNode;
 }
 
+interface Notification {
+  id: string;
+  type: string;
+  priority: string;
+  titleFr: string;
+  messageFr: string;
+  read: boolean;
+  createdAt: string;
+  link?: string;
+}
+
 export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const { logout } = useAuth();
-  const [notificationsCount] = useState(3);
   const pathname = usePathname();
+
+  const { data: notificationsData } = useQuery({
+    queryKey: queryKeys.userNotifications,
+    queryFn: async () => {
+      const response = await fetch('/api/user/notifications?limit=5&unreadOnly=true');
+      if (!response.ok) return null;
+      return response.json();
+    },
+    refetchInterval: 30000,
+  });
+
+  const unreadCount = notificationsData?.unreadCount ?? 0;
+  const recentNotifications = notificationsData?.notifications ?? [];
 
   const defaultBreadcrumbs: Breadcrumb[] = [
     { label: 'Admin', href: '/admin' },
@@ -159,13 +186,13 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative text-slate-400 hover:text-white">
                 <Bell className="h-5 w-5" />
-                {notificationsCount > 0 && (
+                {unreadCount > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white"
                   >
-                    {notificationsCount}
+                    {unreadCount > 9 ? '9+' : unreadCount}
                   </motion.span>
                 )}
               </Button>
@@ -173,40 +200,59 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
             <DropdownMenuContent align="end" className="w-80 border-slate-700 bg-slate-900">
               <DropdownMenuLabel className="flex items-center justify-between">
                 <span className="text-slate-300">Notifications</span>
-                <Badge variant="secondary" className="text-xs">
-                  {notificationsCount} nouvelles
-                </Badge>
+                {unreadCount > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {unreadCount} {unreadCount > 1 ? 'nouvelles' : 'nouvelle'}
+                  </Badge>
+                )}
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-slate-700" />
               <div className="max-h-[300px] overflow-y-auto">
-                {/* Exemple de notifications */}
-                <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 text-slate-300 focus:bg-slate-800">
-                  <div className="flex w-full items-center justify-between">
-                    <span className="font-medium text-white">Nouveau KYC à valider</span>
-                    <Badge variant="destructive" className="h-5 text-xs">Urgent</Badge>
+                {recentNotifications.length === 0 ? (
+                  <div className="p-4 text-center text-sm text-slate-400">
+                    Aucune notification non lue
                   </div>
-                  <span className="text-xs text-slate-400">Il y a 5 minutes</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-slate-700" />
-                <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 text-slate-300 focus:bg-slate-800">
-                  <div className="flex w-full items-center justify-between">
-                    <span className="font-medium text-white">Paiement en attente</span>
-                    <Badge variant="secondary" className="h-5 text-xs">Info</Badge>
-                  </div>
-                  <span className="text-xs text-slate-400">Il y a 1 heure</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-slate-700" />
-                <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 text-slate-300 focus:bg-slate-800">
-                  <div className="flex w-full items-center justify-between">
-                    <span className="font-medium text-white">Giveaway terminé</span>
-                    <Badge variant="outline" className="h-5 text-xs">Système</Badge>
-                  </div>
-                  <span className="text-xs text-slate-400">Il y a 2 heures</span>
-                </DropdownMenuItem>
+                ) : (
+                  recentNotifications.map((notification: Notification, index: number) => (
+                    <div key={notification.id}>
+                      {index > 0 && <DropdownMenuSeparator className="bg-slate-700" />}
+                      <DropdownMenuItem 
+                        asChild
+                        className="flex flex-col items-start gap-1 p-3 text-slate-300 focus:bg-slate-800 cursor-pointer"
+                      >
+                        <Link href={notification.link || '/notifications'}>
+                          <div className="flex w-full items-center justify-between">
+                            <span className="font-medium text-white">{notification.titleFr}</span>
+                            <Badge 
+                              variant={
+                                notification.priority === 'URGENT' ? 'destructive' :
+                                notification.priority === 'HIGH' ? 'default' :
+                                'secondary'
+                              } 
+                              className="h-5 text-xs"
+                            >
+                              {notification.priority === 'URGENT' ? 'Urgent' :
+                               notification.priority === 'HIGH' ? 'Important' :
+                               notification.priority === 'NORMAL' ? 'Normal' : 'Info'}
+                            </Badge>
+                          </div>
+                          <span className="text-xs text-slate-400 line-clamp-1">
+                            {notification.messageFr}
+                          </span>
+                          <span className="text-xs text-slate-500">
+                            {format(new Date(notification.createdAt), 'dd/MM/yyyy à HH:mm', { locale: fr })}
+                          </span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </div>
+                  ))
+                )}
               </div>
               <DropdownMenuSeparator className="bg-slate-700" />
-              <DropdownMenuItem className="justify-center text-orange-400 focus:bg-slate-800 focus:text-orange-300">
-                Voir toutes les notifications
+              <DropdownMenuItem asChild className="justify-center text-orange-400 focus:bg-slate-800 focus:text-orange-300 cursor-pointer">
+                <Link href="/notifications">
+                  Voir toutes les notifications
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
