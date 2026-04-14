@@ -184,7 +184,7 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="space-y-3 sm:space-y-4"
+              className="space-y-3 sm:space-y-4 backdrop-blur-sm bg-black/20 border border-white/10 rounded-2xl px-5 py-4"
             >
               <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white text-gaming-title leading-tight">
                 {messages.hero.title.split("CS2")[0]}
@@ -193,7 +193,7 @@ export function HeroSection() {
                 </span>
                 {messages.hero.title.split("CS2")[1] || ""}
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-gaming-body text-muted-foreground text-white dark:text-gray-300 max-w-lg">
+              <p className="text-base sm:text-lg md:text-xl text-gaming-body text-white/80 max-w-lg">
                 {messages.hero.subtitle}
               </p>
             </motion.div>
@@ -203,7 +203,7 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4 backdrop-blur-sm bg-black/10 border border-white/5 rounded-xl px-4 py-3"
             >
               {features.map((feature, index) => (
                 <div
