@@ -87,11 +87,26 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
           <div className="bg-muted p-3 sm:p-4 rounded-lg space-y-2">
             <h4 className="font-semibold text-sm sm:text-base">Comment trouver votre Steam ID 64 ?</h4>
             <ol className="list-decimal list-inside space-y-1.5 text-xs sm:text-sm">
-              <li className="wrap-break-word">Allez sur <a href="https://steamid.io/" target="_blank" rel="noopener noreferrer" className="text-orange-500 underline break-all">steamid.io</a></li>
-              <li className="wrap-break-word">Entrez votre profil Steam</li>
-              <li className="wrap-break-word">Copiez le steamID64 (17 chiffres)</li>
+              <li className="wrap-break-word">Ouvrez Steam et allez sur votre profil</li>
+              <li className="wrap-break-word">Cliquez sur "Modifier le profil"</li>
+              <li className="wrap-break-word">Regardez l'URL : <code className="text-orange-500 bg-muted-foreground/10 px-1 rounded text-[10px] sm:text-xs">steamcommunity.com/profiles/VOTRE_ID</code></li>
+              <li className="wrap-break-word">Copiez les 17 chiffres après <code className="bg-muted-foreground/10 px-1 rounded text-[10px] sm:text-xs">/profiles/</code></li>
             </ol>
+            <div className="mt-2 pt-2 border-t border-border">
+              <p className="text-xs text-muted-foreground">
+                <strong>Alternative :</strong> Clic droit sur votre pseudo Steam → "Copier l'URL du profil" → les chiffres après /profiles/
+              </p>
+            </div>
           </div>
+          <a
+            href="https://steamcommunity.com/my/edit/settings"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full rounded-md border border-orange-500 bg-orange-500/10 px-4 py-2.5 text-sm font-medium text-orange-600 dark:text-orange-400 hover:bg-orange-500/20 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4 shrink-0" />
+            {locale === "en" ? "Open my Steam profile" : locale === "cn" ? "打开我的Steam个人资料" : "Ouvrir mon profil Steam"}
+          </a>
           <div className="space-y-2">
             <Label htmlFor="steam-id" className="text-sm sm:text-base">Steam ID 64</Label>
             <Input
