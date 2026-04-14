@@ -25,12 +25,23 @@ interface Conversation {
 
 const GUEST_CONVERSATION_KEY = 'guest_conversation_id';
 
-export function useChat() {
+export function useChat(isOpen = false) {
   const queryClient = useQueryClient();
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
+  const [hasLocalConversation, setHasLocalConversation] = useState(false);
 
-  // Charger la liste des conversations de l'utilisateur (connecté ou invité)
+  // Détecter si un conversationId existe en localStorage (sans déclencher de requête)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const savedId = localStorage.getItem(GUEST_CONVERSATION_KEY);
+    if (savedId) {
+      setHasLocalConversation(true);
+      setConversationId(savedId);
+    }
+  }, []);
+
+  // Charger la liste des conversations uniquement si le chat est ouvert
   const { data: conversationsData } = useQuery({
     queryKey: queryKeys.conversations,
     queryFn: async () => {
@@ -39,7 +50,8 @@ export function useChat() {
       const data = await res.json();
       return Array.isArray(data) ? { conversations: data } : data;
     },
-    staleTime: 10_000,
+    enabled: isOpen,
+    staleTime: 30_000,
   });
 
   const conversations: Conversation[] = useMemo(
@@ -47,13 +59,10 @@ export function useChat() {
     [conversationsData]
   );
 
-  // Initialiser l'ID de conversation : depuis l'API (utilisateur connecté) ou localStorage (invité)
+  // Initialiser l'ID de conversation depuis l'API une fois le chat ouvert
   useEffect(() => {
-    if (initialized) return;
+    if (!isOpen || initialized) return;
 
-    if (typeof window === 'undefined') return;
-
-    // Si l'utilisateur a des conversations côté serveur, prendre la plus récente active
     if (conversations.length > 0) {
       const active = conversations.find((c) => c.status === 'ACTIVE') ?? conversations[0];
       if (active) {
@@ -64,16 +73,10 @@ export function useChat() {
       }
     }
 
-    // Sinon fallback localStorage (invité)
-    const savedId = localStorage.getItem(GUEST_CONVERSATION_KEY);
-    if (savedId) {
-      setConversationId(savedId);
-    }
-
     setInitialized(true);
-  }, [conversations, initialized]);
+  }, [conversations, initialized, isOpen]);
 
-  // Charger la conversation courante avec polling
+  // Charger la conversation courante avec polling uniquement si le chat est ouvert
   const { data: currentConversation } = useQuery<Conversation>({
     queryKey: queryKeys.conversation(conversationId),
     queryFn: async () => {
@@ -82,8 +85,8 @@ export function useChat() {
       if (!res.ok) throw new Error('Failed to fetch conversation');
       return res.json();
     },
-    enabled: !!conversationId,
-    refetchInterval: conversationId ? 15_000 : false,
+    enabled: !!conversationId && isOpen,
+    refetchInterval: isOpen && conversationId ? 15_000 : false,
     refetchIntervalInBackground: false,
   });
 

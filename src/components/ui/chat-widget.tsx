@@ -105,7 +105,7 @@ export function ChatWidget() {
     sendMessage,
     getUnreadCount,
     isLoading,
-  } = useChat();
+  } = useChat(isOpen);
 
   const queryClient = useQueryClient();
   const [chatStep, setChatStep] = useState<ChatStep>("categories");
