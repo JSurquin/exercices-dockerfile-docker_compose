@@ -584,7 +584,7 @@ export function SkinplaceInventoryViewer({
       {/* Contrôles et filtres */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="md:flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Package className="h-5 w-5" />
               {messages.components.skinplace.yourInventory}
@@ -623,7 +623,7 @@ export function SkinplaceInventoryViewer({
         
         <CardContent className="space-y-4">
           {/* Barre de recherche */}
-          <div className="flex items-center gap-4">
+          <div className="md:flex grid items-center gap-4">
             <div className="flex-1">
               <Label htmlFor="search">{messages.components.skinplace.search}</Label>
               <div className="relative">
@@ -654,43 +654,57 @@ export function SkinplaceInventoryViewer({
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 rounded-lg border border-border/60 bg-muted/20 p-4 sm:flex-row sm:flex-wrap sm:items-end">
-            <div className="flex items-center space-x-2 sm:pt-0.5">
-              <Checkbox
-                id="purchasable-only"
-                checked={purchasableOnly}
-                onCheckedChange={(checked) => setPurchasableOnly(checked === true)}
-              />
-              <Label htmlFor="purchasable-only" className="text-sm font-normal leading-snug cursor-pointer">
-                {messages.components.skinplace.purchasableOnly}
-              </Label>
-            </div>
-            <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:min-w-[260px]">
-              <Label className="text-sm">{messages.components.skinplace.priceRange}</Label>
-              <div className="flex flex-wrap items-center gap-2">
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder={messages.components.skinplace.priceMin}
-                  value={priceMinUsd}
-                  onChange={(e) => setPriceMinUsd(e.target.value)}
-                  className="min-w-[6rem] flex-1 sm:max-w-[8rem]"
-                  aria-label={messages.components.skinplace.priceMin}
+          {/* Filtres avancés - Prix et options */}
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Checkbox Purchasable Only */}
+              <div className="flex items-start space-x-3 md:pt-2">
+                <Checkbox
+                  id="purchasable-only"
+                  checked={purchasableOnly}
+                  onCheckedChange={(checked) => setPurchasableOnly(checked === true)}
+                  className="mt-1"
                 />
-                <span className="text-muted-foreground shrink-0">–</span>
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder={messages.components.skinplace.priceMax}
-                  value={priceMaxUsd}
-                  onChange={(e) => setPriceMaxUsd(e.target.value)}
-                  className="min-w-[6rem] flex-1 sm:max-w-[8rem]"
-                  aria-label={messages.components.skinplace.priceMax}
-                />
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="purchasable-only" className="text-sm font-medium leading-none cursor-pointer">
+                    {messages.components.skinplace.purchasableOnly}
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Afficher uniquement les skins disponibles
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {messages.components.skinplace.priceRangeHint}
-              </p>
+
+              {/* Price Range */}
+              <div className="flex flex-col gap-2">
+                <Label className="text-sm font-medium">
+                  {messages.components.skinplace.priceRange}
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder={messages.components.skinplace.priceMin}
+                    value={priceMinUsd}
+                    onChange={(e) => setPriceMinUsd(e.target.value)}
+                    className="flex-1"
+                    aria-label={messages.components.skinplace.priceMin}
+                  />
+                  <span className="text-muted-foreground shrink-0 px-1">–</span>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder={messages.components.skinplace.priceMax}
+                    value={priceMaxUsd}
+                    onChange={(e) => setPriceMaxUsd(e.target.value)}
+                    className="flex-1"
+                    aria-label={messages.components.skinplace.priceMax}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {messages.components.skinplace.priceRangeHint}
+                </p>
+              </div>
             </div>
           </div>
 
