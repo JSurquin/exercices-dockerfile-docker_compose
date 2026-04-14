@@ -9,60 +9,62 @@ datasource db {
 }
 
 model User {
-  id                    String                  @id @default(cuid())
-  email                 String                  @unique
-  emailVerified         Boolean                 @default(false)
-  name                  String?
-  image                 String?
-  createdAt             DateTime                @default(now())
-  updatedAt             DateTime                @updatedAt
-  steamId               String?                 @unique
-  steamUsername         String?
-  steamAvatar           String?
-  level                 Int                     @default(1)
-  xp                    Int                     @default(0)
-  tickets               Int                     @default(0)
-  totalVolumeCents      Int                     @default(0)
-  kycStatus             KycStatus               @default(PENDING)
-  acceptedTermsAt       DateTime?
-  role                  UserRole                @default(USER)
-  referredByAffiliateId String?
-  isFirstLogin          Boolean                 @default(true)
-  tradeLink             String?                 @unique
-  kycaidApplicantId     String?                 @unique
-  balanceCents          Int                     @default(0)
-  frozenBalanceCents    Int                     @default(0)
-  accountFrozen         Boolean                 @default(false)
-  adminMetadata         Json?
-  pendingBalanceCents   Int                     @default(0)
-  fragments             Int                     @default(0)
-  twoFactorEnabled      Boolean                 @default(false)
-  banned                Boolean                 @default(false)
-  banReason             String?
-  banExpires            DateTime?
-  contactEmail          String?
-  reviewedApplications  AffiliateApplication[]  @relation("AffiliateApplicationReviewer")
-  affiliateApplications AffiliateApplication[]
-  referrals             AffiliateReferral[]     @relation("AffiliateReferrals")
-  affiliateStats        AffiliateStats?
-  giveawayEntries       GiveawayEntry[]
-  paymentMethods        PaymentMethod[]
-  payouts               Payout[]
-  trades                Trade[]
-  accounts              Account[]
-  balanceTransactions   BalanceTransaction[]
-  chatMessages          ChatMessage[]
-  assignedConversations Conversation[]          @relation("AssignedConversations")
-  conversations         Conversation[]
-  dailyLogins           DailyLogin[]
-  fragmentTransactions  FragmentTransaction[]
-  kycDocuments          KycDocument[]
-  kycVerifications      KycVerification[]
-  pointTransactions     PointTransaction[]
-  sessions              Session[]
-  twoFactor             TwoFactor?
-  missionCompletions    UserMissionCompletion[]
-  withdrawalLimit       WithdrawalLimit?
+  id                       String                  @id @default(cuid())
+  email                    String                  @unique
+  emailVerified            Boolean                 @default(false)
+  name                     String?
+  image                    String?
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+  steamId                  String?                 @unique
+  steamUsername            String?
+  steamAvatar              String?
+  level                    Int                     @default(1)
+  xp                       Int                     @default(0)
+  tickets                  Int                     @default(0)
+  totalVolumeCents         Int                     @default(0)
+  kycStatus                KycStatus               @default(PENDING)
+  acceptedTermsAt          DateTime?
+  role                     UserRole                @default(USER)
+  referredByAffiliateId    String?
+  isFirstLogin             Boolean                 @default(true)
+  tradeLink                String?                 @unique
+  kycaidApplicantId        String?                 @unique
+  balanceCents             Int                     @default(0)
+  frozenBalanceCents       Int                     @default(0)
+  accountFrozen            Boolean                 @default(false)
+  adminMetadata            Json?
+  pendingBalanceCents      Int                     @default(0)
+  fragments                Int                     @default(0)
+  twoFactorEnabled         Boolean                 @default(false)
+  banned                   Boolean                 @default(false)
+  banReason                String?
+  banExpires               DateTime?
+  contactEmail             String?
+  reviewedApplications     AffiliateApplication[]  @relation("AffiliateApplicationReviewer")
+  affiliateApplications    AffiliateApplication[]
+  referrals                AffiliateReferral[]     @relation("AffiliateReferrals")
+  affiliateStats           AffiliateStats?
+  giveawayEntries          GiveawayEntry[]
+  paymentMethods           PaymentMethod[]
+  payouts                  Payout[]
+  trades                   Trade[]
+  accounts                 Account[]
+  balanceTransactions      BalanceTransaction[]
+  chatMessages             ChatMessage[]
+  assignedConversations    Conversation[]          @relation("AssignedConversations")
+  conversations            Conversation[]
+  dailyLogins              DailyLogin[]
+  fragmentTransactions     FragmentTransaction[]
+  kycDocuments             KycDocument[]
+  kycVerifications         KycVerification[]
+  pointTransactions        PointTransaction[]
+  sessions                 Session[]
+  twoFactor                TwoFactor?
+  missionCompletions       UserMissionCompletion[]
+  withdrawalLimit          WithdrawalLimit?
+  notifications            Notification[]
+  notificationPreferences  NotificationPreferences?
 
   @@map("user")
 }
@@ -945,4 +947,69 @@ enum SenderType {
   BOT
   MODERATOR
   SYSTEM
+}
+
+enum NotificationType {
+  TRADE_UPDATE
+  PAYOUT_UPDATE
+  KYC_UPDATE
+  GIVEAWAY_WIN
+  MISSION_COMPLETED
+  LEVEL_UP
+  ADMIN_MESSAGE
+  SYSTEM_ANNOUNCEMENT
+  SECURITY_ALERT
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model Notification {
+  id          String               @id @default(cuid())
+  userId      String
+  type        NotificationType
+  priority    NotificationPriority @default(NORMAL)
+  titleFr     String
+  titleEn     String
+  messageFr   String
+  messageEn   String
+  titleCn     String?
+  messageCn   String?
+  link        String?
+  metadata    Json?
+  read        Boolean              @default(false)
+  readAt      DateTime?
+  createdAt   DateTime             @default(now())
+  expiresAt   DateTime?
+  createdBy   String?
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
+  @@index([type])
+  @@index([priority])
+  @@map("notification")
+}
+
+model NotificationPreferences {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  emailNotifications   Boolean  @default(true)
+  pushNotifications    Boolean  @default(false)
+  tradeAlerts          Boolean  @default(true)
+  payoutAlerts         Boolean  @default(true)
+  kycAlerts            Boolean  @default(true)
+  giveawayAlerts       Boolean  @default(true)
+  missionAlerts        Boolean  @default(true)
+  marketingEmails      Boolean  @default(false)
+  securityAlerts       Boolean  @default(true)
+  systemAnnouncements  Boolean  @default(true)
+  updatedAt            DateTime @updatedAt
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
 }

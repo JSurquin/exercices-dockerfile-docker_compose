@@ -4242,6 +4242,7 @@ export interface Messages {
         points?: string;
         gamificationEconomy?: string;
         newsletter: string;
+        notifications?: string;
         chatSupport: string;
         legalPages: string;
         audit: string;

@@ -106,4 +106,10 @@ export const queryKeys = {
 
   // Trade status
   tradeStatus: (tradeId: string) => ['trade', 'status', tradeId] as const,
+
+  // Notifications
+  adminNotifications: ['admin', 'notifications'] as const,
+  userNotifications: ['user', 'notifications'] as const,
+  userNotificationPreferences: ['user', 'notification-preferences'] as const,
+
 };
