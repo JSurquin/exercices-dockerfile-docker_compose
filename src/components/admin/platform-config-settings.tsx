@@ -20,8 +20,8 @@ import {
   InformationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { queryKeys } from '@/lib/query-keys';
-import type { PlatformConfig } from '@/lib/platform-config-service';
-import { PLATFORM_CONFIG_KEYS } from '@/lib/platform-config-service';
+import type { PlatformConfig } from '@/lib/platform-config-constants';
+import { PLATFORM_CONFIG_KEYS } from '@/lib/platform-config-constants';
 
 interface PlatformConfigResponse {
   config: PlatformConfig;
