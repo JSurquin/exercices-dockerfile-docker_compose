@@ -127,12 +127,12 @@ export default function SettingsPage() {
           transition={{ duration: 0.6, delay: 0.1 }}
         >
           <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-2 h-auto">
               <TabsTrigger value="profile">{messages.settings.tabs.profile}</TabsTrigger>
               <TabsTrigger value="security">{messages.settings.tabs.security}</TabsTrigger>
               <TabsTrigger value="notifications">{messages.settings.tabs.notifications}</TabsTrigger>
               <TabsTrigger value="payments">{messages.settings.tabs.payments}</TabsTrigger>
-              <TabsTrigger value="preferences">{messages.settings.tabs.preferences}</TabsTrigger>
+              <TabsTrigger value="preferences" className="col-span-2 sm:col-span-1">{messages.settings.tabs.preferences}</TabsTrigger>
             </TabsList>
 
             {/* Profile Tab */}
@@ -274,7 +274,7 @@ export default function SettingsPage() {
                   </CardHeader>
                   <CardContent className="space-y-4 sm:space-y-6">
                     {canUseTwoFactor && (
-                      <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="md:flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <h4 className="font-semibold">
                             {messages.settings.security.twoFactor.title}
@@ -359,7 +359,7 @@ export default function SettingsPage() {
                       <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
                         {messages.settings.security.gdpr.description}
                       </p>
-                      <div className="flex space-x-2">
+                      <div className="grid gap-y-2 md:gap-y-0 md:flex space-x-2">
                         <Button variant="outline" size="sm">
                           {messages.settings.security.gdpr.export}
                         </Button>
