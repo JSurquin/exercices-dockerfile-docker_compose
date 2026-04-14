@@ -88,13 +88,13 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
             <h4 className="font-semibold text-sm sm:text-base">Comment trouver votre Steam ID 64 ?</h4>
             <ol className="list-decimal list-inside space-y-1.5 text-xs sm:text-sm">
               <li className="wrap-break-word">Ouvrez Steam et allez sur votre profil</li>
-              <li className="wrap-break-word">Cliquez sur "Modifier le profil"</li>
-              <li className="wrap-break-word">Regardez l'URL : <code className="text-orange-500 bg-muted-foreground/10 px-1 rounded text-[10px] sm:text-xs">steamcommunity.com/profiles/VOTRE_ID</code></li>
+              <li className="wrap-break-word">Cliquez sur &ldquo;Modifier le profil&rdquo;</li>
+              <li className="wrap-break-word">Regardez l&rsquo;URL : <code className="text-orange-500 bg-muted-foreground/10 px-1 rounded text-[10px] sm:text-xs">steamcommunity.com/profiles/VOTRE_ID</code></li>
               <li className="wrap-break-word">Copiez les 17 chiffres après <code className="bg-muted-foreground/10 px-1 rounded text-[10px] sm:text-xs">/profiles/</code></li>
             </ol>
             <div className="mt-2 pt-2 border-t border-border">
               <p className="text-xs text-muted-foreground">
-                <strong>Alternative :</strong> Clic droit sur votre pseudo Steam → "Copier l'URL du profil" → les chiffres après /profiles/
+                <strong>Alternative :</strong> Clic droit sur votre pseudo Steam → &ldquo;Copier l&rsquo;URL du profil&rdquo; → les chiffres après /profiles/
               </p>
             </div>
           </div>
