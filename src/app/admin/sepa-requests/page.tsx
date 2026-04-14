@@ -268,9 +268,18 @@ export default function AdminSepaRequestsPage() {
                         </span>
                       </td>
                       <td className="py-4 pr-4">
-                        <span className="font-mono text-slate-200 text-xs">
-                          {req.beneficiary?.maskedIban ?? '—'}
-                        </span>
+                        <div>
+                          <span className="font-mono text-white text-xs font-semibold tracking-wide">
+                            {req.beneficiary?.fullIban
+                              ? req.beneficiary.fullIban.replace(/(.{4})/g, '$1 ').trim()
+                              : '—'}
+                          </span>
+                          {req.beneficiary?.firstName && (
+                            <p className="text-slate-400 text-xs mt-0.5">
+                              {req.beneficiary.firstName} {req.beneficiary.lastName}
+                            </p>
+                          )}
+                        </div>
                       </td>
                       <td className="py-4 pr-4">
                         <span className="font-mono text-slate-300 text-xs">
@@ -383,7 +392,31 @@ export default function AdminSepaRequestsPage() {
 
           {approveModal && (
             <div className="space-y-4 py-2">
-              <div className="bg-slate-800 rounded-lg p-4 space-y-2 text-sm">
+              {/* IBAN complet bien visible pour copier-coller */}
+              <div className="bg-slate-800 border border-orange-500/40 rounded-lg p-4 space-y-3">
+                <div className="space-y-1">
+                  <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">IBAN destinataire</p>
+                  <p className="font-mono text-orange-300 text-base font-bold tracking-widest select-all">
+                    {approveModal.beneficiary?.fullIban
+                      ? approveModal.beneficiary.fullIban.replace(/(.{4})/g, '$1 ').trim()
+                      : '—'}
+                  </p>
+                </div>
+                {approveModal.beneficiary?.bic && (
+                  <div className="space-y-1">
+                    <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">BIC / SWIFT</p>
+                    <p className="font-mono text-white font-semibold select-all">{approveModal.beneficiary.bic}</p>
+                  </div>
+                )}
+                {approveModal.beneficiary?.firstName && (
+                  <div className="space-y-1">
+                    <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">Bénéficiaire</p>
+                    <p className="text-white font-medium">{approveModal.beneficiary.firstName} {approveModal.beneficiary.lastName}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-slate-800 rounded-lg p-3 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-400">Utilisateur</span>
                   <span className="text-white font-medium">
@@ -391,35 +424,10 @@ export default function AdminSepaRequestsPage() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Montant</span>
-                  <span className="text-green-400 font-semibold">
+                  <span className="text-slate-400">Montant à virer</span>
+                  <span className="text-green-400 font-bold text-base">
                     {formatCentsToCurrency(approveModal.amountCents, 'EUR')}
                   </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">IBAN</span>
-                  <span className="font-mono text-slate-200 text-xs">{approveModal.beneficiary?.maskedIban ?? '—'}</span>
-                </div>
-                {approveModal.beneficiary?.bic && (
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">BIC</span>
-                    <span className="font-mono text-slate-200">{approveModal.beneficiary.bic}</span>
-                  </div>
-                )}
-                {approveModal.beneficiary?.firstName && (
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Bénéficiaire</span>
-                    <span className="text-slate-200">{approveModal.beneficiary.firstName} {approveModal.beneficiary.lastName}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-amber-950/30 border border-amber-700/50 rounded-lg p-3">
-                <div className="flex items-start gap-2">
-                  <InformationCircleIcon className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
-        <p className="text-amber-300 text-xs">
-                  L&apos;IBAN complet est : <span className="font-mono font-bold">{approveModal.beneficiary?.fullIban ?? '—'}</span>
-                </p>
                 </div>
               </div>
 

@@ -1049,6 +1049,33 @@ export default function PayoutPage() {
                       </div>
                     </div>
 
+                    {/* Notice frais 1% */}
+                    {amount && parseFloat(amount) > 0 && (() => {
+                      const gross = Math.round(parseFloat(amount) * 100);
+                      const fee = Math.round(gross * 0.01);
+                      const net = gross - fee;
+                      return (
+                        <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 space-y-2 text-sm">
+                          <p className="text-xs font-medium text-orange-600 dark:text-orange-400 uppercase tracking-wide">
+                            {text.request.feesPreview ?? 'Aperçu des frais'}
+                          </p>
+                          <div className="flex justify-between text-muted-foreground">
+                            <span>{text.request.grossAmount}</span>
+                            <span>{formatCentsToCurrency(gross, 'EUR')}</span>
+                          </div>
+                          <div className="flex justify-between text-orange-500">
+                            <span>Frais de retrait (1%)</span>
+                            <span>-{formatCentsToCurrency(fee, 'EUR')}</span>
+                          </div>
+                          <Separator />
+                          <div className="flex justify-between font-semibold">
+                            <span>{text.request.youReceive}</span>
+                            <span className="text-green-500">{formatCentsToCurrency(net, 'EUR')}</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     {sepaFrResult ? (
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
