@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/components/providers/auth-provider';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   SparklesIcon,
   CheckCircleIcon,
@@ -19,6 +21,7 @@ import {
   CalendarDaysIcon,
   StarIcon,
 } from '@heroicons/react/24/outline';
+import { queryKeys } from '@/lib/query-keys';
 
 type MissionRow = {
   key: string;
@@ -230,6 +233,9 @@ function MissionCard({
 export default function MissionsPage() {
   const { user, isLoading: authLoading, refreshUser } = useAuth();
   const queryClient = useQueryClient();
+  const [animatingFragments, setAnimatingFragments] = useState(false);
+  const [fragmentsEarned, setFragmentsEarned] = useState(0);
+  const [displayFragments, setDisplayFragments] = useState(0);
 
   const { data, isLoading } = useQuery({
     queryKey: ['missions'],
@@ -254,9 +260,38 @@ export default function MissionsPage() {
       return j;
     },
     onSuccess: async (j: { fragments?: number }) => {
+      const earned = j.fragments ?? 0;
+      setFragmentsEarned(earned);
+      setAnimatingFragments(true);
+      
+      // Animation du compteur rapide
+      const duration = 1500; // 1.5 secondes
+      const steps = 30;
+      const increment = earned / steps;
+      let current = 0;
+      
+      const interval = setInterval(() => {
+        current += increment;
+        if (current >= earned) {
+          setDisplayFragments(earned);
+          clearInterval(interval);
+          setTimeout(() => setAnimatingFragments(false), 1000);
+        } else {
+          setDisplayFragments(Math.floor(current));
+        }
+      }, duration / steps);
+
+      // Invalider les queries pour mettre à jour l'UI
       queryClient.invalidateQueries({ queryKey: ['missions'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.userDashboard });
+      queryClient.invalidateQueries({ queryKey: queryKeys.userBalanceHistory });
+      
       await refreshUser();
-      toast.success(`+${j.fragments ?? 0} fragments récupérés !`);
+      
+      toast.success(`+${earned} fragments récupérés !`, {
+        description: 'Tes fragments ont été ajoutés à ton compte',
+        duration: 3000,
+      });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : 'Erreur'),
   });
@@ -290,6 +325,94 @@ export default function MissionsPage() {
 
   return (
     <div className="container max-w-3xl mx-auto px-4 py-10 space-y-8">
+      {/* Animation overlay pour les fragments */}
+      <AnimatePresence>
+        {animatingFragments && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+          >
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0, y: 100 }}
+              animate={{ 
+                scale: [0.5, 1.2, 1],
+                opacity: [0, 1, 1],
+                y: [100, -20, 0],
+              }}
+              exit={{ 
+                scale: 0.5,
+                opacity: 0,
+                y: -100,
+              }}
+              transition={{
+                duration: 1.5,
+                ease: [0.34, 1.56, 0.64, 1],
+              }}
+              className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white rounded-3xl shadow-2xl p-8 backdrop-blur-xl border-4 border-amber-300"
+            >
+              <div className="flex flex-col items-center gap-4">
+                <motion.div
+                  animate={{
+                    rotate: [0, 360],
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{
+                    rotate: { duration: 2, repeat: Infinity, ease: "linear" },
+                    scale: { duration: 0.5, repeat: Infinity, repeatType: "reverse" },
+                  }}
+                >
+                  <SparklesIcon className="w-20 h-20" />
+                </motion.div>
+                <div className="text-center">
+                  <motion.p 
+                    className="text-6xl font-black tabular-nums"
+                    key={displayFragments}
+                  >
+                    +{displayFragments}
+                  </motion.p>
+                  <p className="text-2xl font-semibold mt-2">Fragments 💠</p>
+                  <p className="text-sm opacity-90 mt-1">Mission complétée !</p>
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* Particules de confettis */}
+            {[...Array(20)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{
+                  opacity: 1,
+                  x: 0,
+                  y: 0,
+                  scale: 1,
+                }}
+                animate={{
+                  opacity: [1, 0],
+                  x: Math.random() * 400 - 200,
+                  y: Math.random() * 400 - 200,
+                  scale: [1, 0],
+                  rotate: Math.random() * 360,
+                }}
+                transition={{
+                  duration: 1.5,
+                  delay: Math.random() * 0.3,
+                  ease: "easeOut",
+                }}
+                className={`absolute w-3 h-3 rounded-full ${
+                  i % 3 === 0 ? 'bg-amber-400' : i % 3 === 1 ? 'bg-orange-400' : 'bg-yellow-300'
+                }`}
+                style={{
+                  left: '50%',
+                  top: '50%',
+                }}
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -311,9 +434,15 @@ export default function MissionsPage() {
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground mb-1">Fragments disponibles</p>
-            <p className="text-2xl font-bold text-amber-600">
+            <motion.p 
+              key={user.fragments ?? 0}
+              initial={{ scale: 1 }}
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 0.3 }}
+              className="text-2xl font-bold text-amber-600"
+            >
               {user.fragments ?? 0} 💠
-            </p>
+            </motion.p>
           </CardContent>
         </Card>
         <Card>

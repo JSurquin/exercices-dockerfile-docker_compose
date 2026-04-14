@@ -603,7 +603,15 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Fragments 💠</p>
-                  <p className="text-2xl font-bold text-amber-600">{(user as unknown as { fragments?: number })?.fragments ?? 0}</p>
+                  <motion.p 
+                    key={(user as unknown as { fragments?: number })?.fragments ?? 0}
+                    initial={{ scale: 1 }}
+                    animate={{ scale: [1, 1.15, 1] }}
+                    transition={{ duration: 0.4 }}
+                    className="text-2xl font-bold text-amber-600"
+                  >
+                    {(user as unknown as { fragments?: number })?.fragments ?? 0}
+                  </motion.p>
                   <Link href="/missions" className="text-xs text-orange-500 hover:underline">
                     Voir les missions →
                   </Link>
