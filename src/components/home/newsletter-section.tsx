@@ -89,7 +89,7 @@ export function NewsletterSection() {
   }
 
   return (
-    <section className="py-16 px-4 bg-gradient-to-br from-orange-500/10 via-orange-600/5 to-red-500/10">
+    <section className="py-16 px-4">
       <div className="max-w-4xl mx-auto text-center">
         <div className="mb-8">
           <div className="flex items-center justify-center mb-4">
