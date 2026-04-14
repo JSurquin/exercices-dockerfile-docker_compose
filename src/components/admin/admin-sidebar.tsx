@@ -30,6 +30,7 @@ import {
   FileText,
   HelpCircle,
   Star,
+  Landmark,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -76,6 +77,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
         { title: t.items.users, href: '/admin/dashboard?tab=users', icon: Users },
         { title: t.items.trades, href: '/admin/dashboard?tab=trades', icon: ShoppingCart },
         { title: t.items.payouts, href: '/admin/dashboard?tab=payouts', icon: CreditCard, badge: 5, badgeVariant: 'destructive' as const },
+        { title: t.items.sepaRequests ?? 'SEPA France', href: '/admin/sepa-requests', icon: Landmark, badgeVariant: 'destructive' as const },
         { title: t.items.kyc, href: '/admin/dashboard?tab=kyc', icon: Shield, badge: 3, badgeVariant: 'destructive' as const },
       ],
     },

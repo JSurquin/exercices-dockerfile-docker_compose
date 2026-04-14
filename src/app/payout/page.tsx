@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-type PayoutMethod = 'card' | 'sepa' | 'crypto';
+type PayoutMethod = 'card' | 'sepa' | 'crypto' | 'sepa_fr';
 
 // Cryptos supportées par Whitepay
 const SUPPORTED_CRYPTOS = [
@@ -138,6 +138,17 @@ export default function PayoutPage() {
   const [useSavedWallet, setUseSavedWallet] = useState(false);
   const [selectedCryptoMethodId, setSelectedCryptoMethodId] = useState<string | null>(null);
   const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // SEPA France form state
+  const [sepaFrForm, setSepaFrForm] = useState({
+    iban: '',
+    bic: '',
+    firstName: '',
+    lastName: '',
+  });
+  const [sepaFrLoading, setSepaFrLoading] = useState(false);
+  const [sepaFrResult, setSepaFrResult] = useState<{ reference: string; amountCents: number } | null>(null);
+
   const [payoutResult, setPayoutResult] = useState<{
     id: string;
     reference: string;
@@ -695,24 +706,29 @@ export default function PayoutPage() {
                   </div>
                 </div>
 
-                {/* Méthode de paiement — SEPA masqué (non dispo France Flexify), décommenter pour réactiver */}
+                {/* Méthode de paiement */}
                 <Tabs value={payoutMethod} onValueChange={(v) => {
                   setPayoutResult(null);
                   setPayoutMethod(v as PayoutMethod);
                   setQuote(null);
+                  setSepaFrResult(null);
                 }}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="card" className="flex items-center gap-2">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="card" className="flex items-center gap-1 text-xs sm:text-sm">
                       <CreditCardIcon className="w-4 h-4" />
-                      {text.request.cardLabel ?? 'Carte'}
+                      <span className="hidden sm:inline">{text.request.cardLabel ?? 'Carte'}</span>
                     </TabsTrigger>
-                    <TabsTrigger value="sepa" className="flex items-center gap-2">
+                    <TabsTrigger value="sepa" className="flex items-center gap-1 text-xs sm:text-sm">
                       <BanknotesIcon className="w-4 h-4" />
-                      SEPA
+                      <span className="hidden sm:inline">SEPA</span>
                     </TabsTrigger>
-                    <TabsTrigger value="crypto" className="flex items-center gap-2">
+                    <TabsTrigger value="sepa_fr" className="flex items-center gap-1 text-xs sm:text-sm">
+                      <BanknotesIcon className="w-4 h-4" />
+                      <span>{text.sepaFr?.tabLabel ?? 'SEPA France'}</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="crypto" className="flex items-center gap-1 text-xs sm:text-sm">
                       <CurrencyDollarIcon className="w-4 h-4" />
-                      Crypto
+                      <span className="hidden sm:inline">Crypto</span>
                     </TabsTrigger>
                   </TabsList>
 
@@ -1017,6 +1033,178 @@ export default function PayoutPage() {
                     )}
                   </TabsContent>
 
+                  {/* ─── SEPA France (Manuel) ─── */}
+                  <TabsContent value="sepa_fr" className="space-y-4 mt-4">
+                    <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
+                        <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">
+                            {text.sepaFr?.infoTitle ?? 'Virement SEPA France (Manuel)'}
+                          </p>
+                          <p className="text-sm text-blue-600 dark:text-blue-400">
+                            {text.sepaFr?.infoDesc ?? 'Votre demande sera traitée manuellement par notre équipe sous 24-48h ouvrées.'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {sepaFrResult ? (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-lg border border-green-500/40 bg-green-500/5 p-4 space-y-3"
+                      >
+                        <h3 className="font-semibold flex items-center gap-2 text-green-600 dark:text-green-400">
+                          <CheckCircleIcon className="w-5 h-5" />
+                          {text.sepaFr?.successTitle ?? 'Demande soumise'}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {text.sepaFr?.successDesc ?? 'Notre équipe vous contactera par email sous 24-48h.'}
+                        </p>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Référence</span>
+                          <span className="font-mono text-xs">{sepaFrResult.reference}</span>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => { setSepaFrResult(null); setSepaFrForm({ iban: '', bic: '', firstName: '', lastName: '' }); }}
+                        >
+                          Nouvelle demande
+                        </Button>
+                      </motion.div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="sepaFrFirstName">{text.sepaFr?.firstNameLabel ?? 'Prénom'}</Label>
+                            <Input
+                              id="sepaFrFirstName"
+                              placeholder={text.sepaFr?.firstNamePlaceholder ?? 'Jean'}
+                              value={sepaFrForm.firstName}
+                              onChange={(e) => setSepaFrForm((p) => ({ ...p, firstName: e.target.value }))}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="sepaFrLastName">{text.sepaFr?.lastNameLabel ?? 'Nom'}</Label>
+                            <Input
+                              id="sepaFrLastName"
+                              placeholder={text.sepaFr?.lastNamePlaceholder ?? 'Dupont'}
+                              value={sepaFrForm.lastName}
+                              onChange={(e) => setSepaFrForm((p) => ({ ...p, lastName: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="sepaFrIban">{text.sepaFr?.ibanLabel ?? 'IBAN français'}</Label>
+                          <Input
+                            id="sepaFrIban"
+                            placeholder={text.sepaFr?.ibanPlaceholder ?? 'FR76 3000 6000 0112 3456 7890 189'}
+                            value={sepaFrForm.iban}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/\s/g, '').toUpperCase();
+                              const formatted = raw.match(/.{1,4}/g)?.join(' ') ?? raw;
+                              setSepaFrForm((p) => ({ ...p, iban: formatted }));
+                            }}
+                            maxLength={42}
+                          />
+                          {sepaFrForm.iban.replace(/\s/g, '').length >= 2 && !sepaFrForm.iban.replace(/\s/g, '').startsWith('FR') && (
+                            <p className="text-xs text-destructive">{text.sepaFr?.ibanError ?? 'IBAN doit commencer par FR'}</p>
+                          )}
+                          <p className="text-xs text-muted-foreground">{text.sepaFr?.ibanFrOnly ?? 'Réservé aux IBAN français (FR).'}</p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="sepaFrBic">{text.sepaFr?.bicLabel ?? 'BIC / SWIFT'}</Label>
+                          <Input
+                            id="sepaFrBic"
+                            placeholder={text.sepaFr?.bicPlaceholder ?? 'BNPAFRPP'}
+                            value={sepaFrForm.bic}
+                            onChange={(e) => setSepaFrForm((p) => ({ ...p, bic: e.target.value.toUpperCase() }))}
+                            maxLength={11}
+                          />
+                        </div>
+
+                        {/* Quote display if available */}
+                        {quote && payoutMethod === 'sepa_fr' && (
+                          <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">{text.request.grossAmount}</span>
+                              <span>{formatCentsToCurrency(quote.amountCents, 'EUR')}</span>
+                            </div>
+                            <Separator />
+                            <div className="flex justify-between font-semibold">
+                              <span>{text.request.youReceive}</span>
+                              <span className="text-green-500">{formatCentsToCurrency(quote.netCents, 'EUR')}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        <Button
+                          onClick={async () => {
+                            if (!amount || parseFloat(amount) <= 0) {
+                              toast.error(text.toast.amountTooLow);
+                              return;
+                            }
+                            const amountCents = Math.round(parseFloat(amount) * 100);
+                            if (amountCents < 1000) {
+                              toast.error(text.request.minAmount);
+                              return;
+                            }
+                            const ibanClean = sepaFrForm.iban.replace(/\s/g, '').toUpperCase();
+                            if (!ibanClean.startsWith('FR')) {
+                              toast.error(text.sepaFr?.ibanError ?? 'IBAN doit commencer par FR');
+                              return;
+                            }
+                            if (!sepaFrForm.firstName.trim() || !sepaFrForm.lastName.trim()) {
+                              toast.error('Prénom et nom requis');
+                              return;
+                            }
+                            setSepaFrLoading(true);
+                            try {
+                              const res = await fetch('/api/payouts/sepa-fr', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  amountCents,
+                                  iban: ibanClean,
+                                  bic: sepaFrForm.bic,
+                                  firstName: sepaFrForm.firstName.trim(),
+                                  lastName: sepaFrForm.lastName.trim(),
+                                }),
+                              });
+                              const data = await res.json();
+                              if (!res.ok) throw new Error(data.error ?? 'Erreur');
+                              toast.success(text.sepaFr?.successTitle ?? 'Demande soumise');
+                              setSepaFrResult({ reference: data.payout.reference, amountCents });
+                              setAmount('');
+                              queryClient.invalidateQueries({ queryKey: queryKeys.payoutHistory });
+                              queryClient.invalidateQueries({ queryKey: queryKeys.userBalance });
+                            } catch (err) {
+                              toast.error(err instanceof Error ? err.message : text.toast.payoutError);
+                            } finally {
+                              setSepaFrLoading(false);
+                            }
+                          }}
+                          disabled={sepaFrLoading || !amount || availableBalanceCents === null}
+                          className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                        >
+                          {sepaFrLoading ? (
+                            <>
+                              <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
+                              {text.sepaFr?.submitting ?? 'Envoi en cours...'}
+                            </>
+                          ) : (
+                            text.sepaFr?.submitButton ?? 'Soumettre la demande'
+                          )}
+                        </Button>
+                      </>
+                    )}
+                  </TabsContent>
+
                   <TabsContent value="crypto" className="space-y-4 mt-4">
                     <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
                       <div className="flex items-start space-x-3">
@@ -1197,8 +1385,8 @@ export default function PayoutPage() {
                   );
                 })()}
 
-                {/* Bouton Obtenir devis */}
-                {!quote && !payoutResult && (
+                {/* Bouton Obtenir devis — masqué pour SEPA France (formulaire autonome) */}
+                {!quote && !payoutResult && payoutMethod !== 'sepa_fr' && (
                   <Button
                     onClick={getQuote}
                     disabled={isLoadingQuote || !amount || availableBalanceCents === null}
@@ -1217,7 +1405,7 @@ export default function PayoutPage() {
                 )}
 
                 {/* Récapitulatif du devis */}
-                {quote && !payoutResult && (
+                {quote && !payoutResult && payoutMethod !== 'sepa_fr' && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1367,7 +1555,7 @@ export default function PayoutPage() {
                         <div className="text-right">
                           {getStatusBadge(payout.status)}
                           <p className="text-xs text-muted-foreground mt-1">
-                            {payout.method === 'FLEXIFY_SEPA' ? 'SEPA' : payout.method === 'WHITEPAY_CRYPTO' ? 'Crypto' : payout.method}
+                            {payout.method === 'FLEXIFY_SEPA' ? 'SEPA' : payout.method === 'WHITEPAY_CRYPTO' ? 'Crypto' : payout.method === 'SEPA_FR' ? 'SEPA France' : payout.method}
                           </p>
                         </div>
                       </div>

@@ -4233,6 +4233,7 @@ export interface Messages {
         users: string;
         trades: string;
         payouts: string;
+        sepaRequests?: string;
         kyc: string;
         applications: string;
         affiliates: string;
@@ -4512,6 +4513,25 @@ export interface Messages {
         cancelled: string;
       };
     };
+    sepaFr: {
+      tabLabel: string;
+      infoTitle: string;
+      infoDesc: string;
+      ibanFrOnly: string;
+      ibanLabel: string;
+      ibanPlaceholder: string;
+      ibanError: string;
+      bicLabel: string;
+      bicPlaceholder: string;
+      firstNameLabel: string;
+      lastNameLabel: string;
+      firstNamePlaceholder: string;
+      lastNamePlaceholder: string;
+      submitButton: string;
+      submitting: string;
+      successTitle: string;
+      successDesc: string;
+    };
     toast: {
       amountTooLow: string;
       insufficientBalance: string;
@@ -4519,6 +4539,60 @@ export interface Messages {
       payoutCreatedDesc: string;
       payoutError: string;
     };
+  };
+  adminSepaRequests: {
+    title: string;
+    subtitle: string;
+    emptyState: string;
+    columns: {
+      user: string;
+      amount: string;
+      iban: string;
+      bic: string;
+      date: string;
+      status: string;
+      actions: string;
+    };
+    status: {
+      pending: string;
+      approved: string;
+      rejected: string;
+      paid: string;
+    };
+    actions: {
+      approve: string;
+      reject: string;
+      markPaid: string;
+    };
+    approveModal: {
+      title: string;
+      description: string;
+      referenceLabel: string;
+      referencePlaceholder: string;
+      confirm: string;
+      cancel: string;
+    };
+    rejectModal: {
+      title: string;
+      description: string;
+      reasonLabel: string;
+      reasonPlaceholder: string;
+      confirm: string;
+      cancel: string;
+    };
+    toast: {
+      approveSuccess: string;
+      approveError: string;
+      rejectSuccess: string;
+      rejectError: string;
+    };
+    filters: {
+      all: string;
+      pending: string;
+      approved: string;
+      rejected: string;
+    };
+    badge: string;
   };
   kycPolicy: {
     title: string;
