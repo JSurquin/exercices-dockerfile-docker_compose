@@ -294,7 +294,7 @@ export default function SellPage() {
                           <ConvertedPrice usdCents={tradeData.total_value} />
                         </span>
                       </div>
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-orange-600">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-red-500">
                         <span>
                           {messages.sellPage.confirmation.cashoutFeesLine.replace(
                             "{percent}",
@@ -305,16 +305,16 @@ export default function SellPage() {
                           -<ConvertedPrice usdCents={tradeData.fees.cashout_fee} />
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed border-t border-border pt-3">
-                        {messages.sellPage.confirmation.payoutFeesReminder}
-                      </p>
                       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
-                        <span className="text-muted-foreground font-medium">
+                        <span className="font-medium">
                           {messages.sellPage.confirmation.youWillReceive}
                         </span>
                         <span className="font-bold text-green-600 text-base">
                           <ConvertedPrice usdCents={tradeData.net_value} />
                         </span>
+                      </div>
+                      <div className="flex flex-wrap items-start justify-between gap-2 border border-dashed border-amber-400/40 bg-amber-50/30 dark:bg-amber-950/20 rounded-md p-2 text-xs text-muted-foreground">
+                        <span className="flex-1">{messages.sellPage.confirmation.payoutFeesReminder}</span>
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
