@@ -237,7 +237,5 @@ export async function GET(request: NextRequest) {
     const errorUrl = new URL('/', request.url);
     errorUrl.searchParams.set('error', 'steam_callback_error');
     return NextResponse.redirect(errorUrl.toString());
-  } finally {
-    await prisma.$disconnect();
   }
 }
