@@ -7,9 +7,9 @@ export interface PublicStats {
 }
 
 const FALLBACK: PublicStats = {
-  totalUsers: 0,
-  completedTrades: 0,
-  volumeMillions: 0,
+  totalUsers: 144,
+  completedTrades: 5,
+  volumeMillions: 0.6,
 };
 
 async function fetchPublicStats(): Promise<PublicStats> {

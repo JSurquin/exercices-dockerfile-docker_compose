@@ -29,6 +29,73 @@ import {
   StarIcon,
 } from "@heroicons/react/24/outline";
 
+const UsdtIcon = () => (
+  <svg viewBox="0 0 32 32" className="w-7 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="16" fill="#26A17B"/>
+    <path d="M17.922 17.383v-.002c-.11.008-.677.042-1.942.042-1.01 0-1.721-.03-1.971-.042v.003c-3.888-.171-6.79-.848-6.79-1.658 0-.809 2.902-1.486 6.79-1.66v2.644c.254.018.982.061 1.988.061 1.207 0 1.812-.05 1.925-.06v-2.643c3.88.173 6.775.85 6.775 1.658 0 .81-2.895 1.485-6.775 1.657m0-3.59v-2.366h5.414V8H8.595v3.427h5.414v2.365c-4.4.202-7.709 1.074-7.709 2.126 0 1.053 3.309 1.924 7.709 2.126v7.6h3.913v-7.6c4.393-.202 7.694-1.073 7.694-2.124 0-1.051-3.301-1.923-7.694-2.127" fill="white"/>
+  </svg>
+);
+
+const BitcoinIcon = () => (
+  <svg viewBox="0 0 32 32" className="w-7 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="16" fill="#F7931A"/>
+    <path d="M22.56 14.624c.312-2.083-1.276-3.204-3.447-3.952l.703-2.822-1.718-.428-.686 2.75c-.451-.113-.915-.218-1.376-.323l.692-2.77-1.717-.428-.703 2.82c-.374-.085-.741-.17-1.097-.258l.002-.009-2.369-.592-.457 1.835s1.277.293 1.249.31c.697.174.823.635.802 1-.002.003-.004.006-.005.01l-.974 3.903c.058.015.134.036.218.069l-.221-.056-1.367 5.48c-.104.257-.366.643-.957.496.02.03-1.25-.312-1.25-.312l-.855 1.965 2.236.557c.416.104.824.213 1.224.316l-.71 2.847 1.716.428.704-2.823c.47.127.925.245 1.37.356l-.701 2.808 1.718.428.71-2.84c2.928.554 5.129.33 6.056-2.318.747-2.131-.038-3.36-1.578-4.162 1.123-.258 1.968-1 2.193-2.527zm-3.924 5.502c-.53 2.131-4.12.979-5.285.69l.943-3.777c1.165.29 4.9.865 4.342 3.087zm.53-5.533c-.485 1.943-3.477.955-4.448.714l.854-3.425c.971.242 4.098.693 3.594 2.71z" fill="white"/>
+  </svg>
+);
+
+const EthereumIcon = () => (
+  <svg viewBox="0 0 32 32" className="w-7 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="16" fill="#627EEA"/>
+    <path d="M16.498 4v8.87l7.497 3.35z" fill="white" fillOpacity="0.602"/>
+    <path d="M16.498 4L9 16.22l7.498-3.35z" fill="white"/>
+    <path d="M16.498 21.968v6.027L24 17.616z" fill="white" fillOpacity="0.602"/>
+    <path d="M16.498 27.995v-6.028L9 17.616z" fill="white"/>
+    <path d="M16.498 20.573l7.497-4.353-7.497-3.348z" fill="white" fillOpacity="0.2"/>
+    <path d="M9 16.22l7.498 4.353v-7.701z" fill="white" fillOpacity="0.602"/>
+  </svg>
+);
+
+const VisaIcon = () => (
+  <svg viewBox="0 0 48 32" className="w-10 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="48" height="32" rx="4" fill="#1A1F71"/>
+    <path d="M20.18 21.5h-2.8l1.75-10.82h2.8L20.18 21.5zM15.47 10.68l-2.67 7.44-.32-1.6-.95-4.84s-.11-.99-1.32-.99H6.03l-.05.18s1.33.28 2.89 1.2l2.4 9.39h2.87l4.38-10.78h-3.05zM35.73 21.5h2.53l-2.21-10.82h-2.21c-1.04 0-1.3.8-1.3.8L28.37 21.5h2.87l.57-1.58h3.5l.42 1.58zm-3.04-3.77l1.45-3.97.81 3.97h-2.26zM27.38 13.5l.39-2.27s-1.2-.46-2.45-.46c-1.35 0-4.56.59-4.56 3.46 0 2.7 3.76 2.73 3.76 4.15s-3.37 1.16-4.49.27l-.41 2.38s1.21.59 3.07.59c1.85 0 4.64-.96 4.64-3.58 0-2.72-3.79-2.97-3.79-4.15s2.65-1.06 3.84-.39z" fill="white"/>
+  </svg>
+);
+
+const SepaIcon = () => (
+  <svg viewBox="0 0 48 32" className="w-10 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="48" height="32" rx="4" fill="#003087"/>
+    <text x="24" y="21" textAnchor="middle" fill="white" fontSize="11" fontWeight="bold" fontFamily="Arial, sans-serif">SEPA</text>
+    <circle cx="8" cy="16" r="4" fill="#FFD700" opacity="0.8"/>
+    <circle cx="14" cy="16" r="4" fill="#FF6B35" opacity="0.8"/>
+  </svg>
+);
+
+const EuroIcon = () => (
+  <svg viewBox="0 0 32 32" className="w-7 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="16" fill="#003087"/>
+    <path d="M20 9.5c-3.59 0-6.5 2.91-6.5 6.5s2.91 6.5 6.5 6.5c1.39 0 2.68-.43 3.74-1.16l-1.28-1.77A4.47 4.47 0 0120 20.5c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5c.83 0 1.6.23 2.27.62l1.27-1.77A6.44 6.44 0 0020 9.5z" fill="white"/>
+    <path d="M10 15h9v2h-9zM10 12h8v2h-8z" fill="#FFD700"/>
+  </svg>
+);
+
+const UsdIcon = () => (
+  <svg viewBox="0 0 32 32" className="w-7 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="16" fill="#2E7D32"/>
+    <path d="M16.5 8v1.2c1.9.3 3.5 1.4 3.5 3.2 0 1.7-1.2 2.6-3 3.1l-.5.1v3.8c1.1-.2 1.9-.8 2.1-1.7h2c-.3 2-1.8 3.1-4.1 3.4V22h-1.5v-1.1c-2.1-.3-3.7-1.5-3.7-3.4h2c.2 1 .9 1.7 1.7 1.9v-3.9l-.6-.1c-1.7-.4-3.1-1.4-3.1-3.2 0-1.8 1.5-2.9 3.7-3.1V8h1.5zm-1.5 2.3c-1.1.2-1.8.7-1.8 1.6 0 .9.7 1.4 1.8 1.7v-3.3zm1.5 5.4v3.5c1.2-.2 1.9-.8 1.9-1.8 0-.9-.7-1.4-1.9-1.7z" fill="white"/>
+  </svg>
+);
+
+const PAYMENT_METHODS = [
+  { label: "USDT", icon: UsdtIcon },
+  { label: "Carte", icon: VisaIcon },
+  { label: "Virement", icon: SepaIcon },
+  { label: "EUR", icon: EuroIcon },
+  { label: "USD", icon: UsdIcon },
+  { label: "Bitcoin", icon: BitcoinIcon },
+  { label: "Ethereum", icon: EthereumIcon },
+];
+
 
 export function HeroSection() {
   const { messages } = useLocale();
@@ -54,9 +121,9 @@ export function HeroSection() {
   }, []);
 
   const stats = [
-    { value: publicStats?.totalUsers ?? 0, label: messages.hero.stats.users, prefix: "", suffix: "+" },
-    { value: publicStats?.volumeMillions ?? 0, label: messages.hero.stats.volume, prefix: "€", suffix: "M+" },
-    { value: publicStats?.completedTrades ?? 0, label: messages.hero.stats.trades, prefix: "", suffix: "+" },
+    { value: Math.max(publicStats?.totalUsers ?? 144, 144), label: messages.hero.stats.users, prefix: "", suffix: "+" },
+    { value: Math.max(publicStats?.volumeMillions ?? 0.6, 0.6), label: messages.hero.stats.volume, prefix: "€", suffix: "M+" },
+    { value: Math.max(publicStats?.completedTrades ?? 5, 5), label: messages.hero.stats.trades, prefix: "", suffix: "+" },
     { value: 99.8, label: messages.hero.stats.satisfaction, prefix: "", suffix: "%" },
   ];
 
@@ -155,7 +222,7 @@ export function HeroSection() {
         </motion.div>
       </div>
 
-      <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-28">
+      <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-18">
         <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
           {/* Left Column - Hero Content */}
           <motion.div
@@ -187,11 +254,21 @@ export function HeroSection() {
               className="space-y-3 sm:space-y-4 backdrop-blur-sm bg-black/20 border border-white/10 rounded-2xl px-5 py-4"
             >
               <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white text-gaming-title leading-tight">
-                {messages.hero.title.split("CS2")[0]}
-                <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
-                  CS2
-                </span>
-                {messages.hero.title.split("CS2")[1] || ""}
+                {messages.hero.title
+                  .split(/(CS2|MOONSKIN)/)
+                  .map((part, i) =>
+                    part === "CS2" ? (
+                      <span key={i} className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+                        CS2
+                      </span>
+                    ) : part === "MOONSKIN" ? (
+                      <span key={i} className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
+                        MOONSKIN
+                      </span>
+                    ) : (
+                      part
+                    )
+                  )}
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-gaming-body text-white/80 max-w-lg">
                 {messages.hero.subtitle}
@@ -240,6 +317,26 @@ export function HeroSection() {
               >
                 <Link href="#how-it-works">{messages.hero.secondaryCta}</Link>
               </Button>
+            </motion.div>
+
+            {/* Payment Methods */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
+              transition={{ duration: 0.6, delay: 0.65 }}
+              className="backdrop-blur-sm bg-black/20 border border-white/10 rounded-xl px-4 py-3"
+            >
+              <p className="text-xs text-white/50 mb-2 uppercase tracking-wider">Moyens de paiement acceptés</p>
+              <div className="flex flex-wrap items-center gap-3">
+                {PAYMENT_METHODS.map(({ label, icon: Icon }) => (
+                  <div key={label} className="flex flex-col items-center gap-1">
+                    <div className="rounded-lg bg-white/5 border border-white/10 p-1.5 hover:bg-white/10 transition-colors">
+                      <Icon />
+                    </div>
+                    <span className="text-[10px] text-white/50">{label}</span>
+                  </div>
+                ))}
+              </div>
             </motion.div>
 
             {/* Stats */}
