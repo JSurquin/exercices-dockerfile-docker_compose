@@ -39,18 +39,16 @@ import { TradeHooks } from '@/lib/trade-hooks';
 
 function mapSkinplaceStatusToTradeStatus(status: string): TradeStatus {
   const statusMap: Record<string, TradeStatus> = {
-    // IPN payment status
-    'complete': 'ACCEPTED_BY_BOT',
-    'active':   'IN_TRADE_HOLD',
-    // steamtrade status (used in sync polling)
-    'pending':  'CREATED',
-    'sent':     'CREATED',
-    'accepted': 'ACCEPTED_BY_BOT',
-    'trade_hold': 'IN_TRADE_HOLD',
-    'finished':  'AVAILABLE',
-    'completed': 'AVAILABLE',
-    'done':      'AVAILABLE',
-    // Annulé (par l'utilisateur ou par le bot)
+    // IPN payment.status (doc Skinplace)
+    // 'active'   = offre Steam envoyée, en attente d'acceptation utilisateur
+    // 'complete' = utilisateur a accepté, fonds en hold 8 jours chez Skinplace
+    'active':    'ACCEPTED_BY_BOT',
+    'complete':  'IN_TRADE_HOLD',
+    // steamtrade status (sync polling)
+    'pending':   'CREATED',
+    'sent':      'CREATED',
+    'finished':  'IN_TRADE_HOLD',
+    // Annulé
     'cancelled': 'CANCELLED',
     // Échecs techniques
     'declined':  'FAILED',
@@ -92,9 +90,11 @@ export async function GET(request: NextRequest) {
     const amount           = searchParams.get('amount') ?? '';
     const transactionId    = searchParams.get('transaction_id') ?? '';
 
-    console.log('📥 IPN Skinplace reçu:', {
-      type, status, token, orderId, protectionStatus, tradeOfferId, amount, transactionId,
-    });
+    console.log('[WEBHOOK] ========== IPN Skinplace reçu ==========');
+    console.log('[WEBHOOK] type=' + type + ' status=' + status + ' token=' + token);
+    console.log('[WEBHOOK] orderId=' + orderId + ' protectionStatus=' + protectionStatus);
+    console.log('[WEBHOOK] tradeOfferId=' + tradeOfferId + ' amount=' + amount + ' transactionId=' + transactionId);
+    console.log('[WEBHOOK] URL complète:', request.url);
 
     // Vérification de la signature IPN officielle
     // secret_key IPN = SKINPLACE_API_KEY_PRIVATE (confirmé dashboard skin.place)
@@ -127,11 +127,12 @@ export async function GET(request: NextRequest) {
     }
 
     if (!trade) {
-      console.error('❌ Trade non trouvé pour order_id/token:', orderId, token);
-      // Répondre "ok" pour éviter les retentatives si c'est un trade inconnu
+      console.error('[WEBHOOK] Trade introuvable — order_id="' + orderId + '" token="' + token + '"');
+      console.error('[WEBHOOK] Cherché d\'abord avec ticketId=orderId, puis ticketId=token');
       return new Response('ok', { status: 200 });
     }
 
+    console.log('[WEBHOOK] Trade trouvé: id="' + trade.id + '" status actuel="' + trade.status + '" ticketId="' + trade.ticketId + '"');
     const oldStatus = trade.status;
 
     // =========================================================================
@@ -196,7 +197,8 @@ export async function GET(request: NextRequest) {
     }
 
     const newStatus = mapSkinplaceStatusToTradeStatus(status);
-    console.log(`🔄 IPN #1 trade ${trade.id}: ${oldStatus} -> ${newStatus} (skinplace: ${status})`);
+    console.log('[WEBHOOK] IPN #1 mappage: skinplace.status="' + status + '" -> TradeStatus="' + newStatus + '"');
+    console.log('[WEBHOOK] IPN #1 trade ' + trade.id + ': ' + oldStatus + ' -> ' + newStatus);
 
     const statusOrder: TradeStatus[] = [
       'CREATED', 'ACCEPTED_BY_BOT', 'IN_TRADE_HOLD', 'AVAILABLE', 'PAYOUT_PENDING', 'PAID',
@@ -258,7 +260,7 @@ export async function GET(request: NextRequest) {
         console.error(`Trade ${trade.id} échoué pour user ${trade.userId}`);
       }
     } else {
-      console.log(`ℹ️  Statut ignoré (non progression): ${oldStatus} -> ${newStatus}`);
+      console.log('[WEBHOOK] Statut ignoré (pas de progression): ' + oldStatus + ' -> ' + newStatus + ' (old idx=' + statusOrder.indexOf(oldStatus) + ' new idx=' + statusOrder.indexOf(newStatus) + ')');
     }
 
     // Skinplace attend HTTP 200 avec body "ok"

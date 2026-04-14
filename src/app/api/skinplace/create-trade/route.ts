@@ -253,7 +253,10 @@ export async function POST(request: NextRequest) {
 
     const skinplaceData = await skinplaceResponse.json();
     
-    console.log('📦 Réponse Skinplace complète:', JSON.stringify(skinplaceData, null, 2));
+    console.log('[CREATE-TRADE] Réponse Skinplace complète:', JSON.stringify(skinplaceData, null, 2));
+    console.log('[CREATE-TRADE] skinplaceData.token (skinplaceToken):', skinplaceData.token ?? 'NULL');
+    console.log('[CREATE-TRADE] skinplaceData.steamtrade:', JSON.stringify(skinplaceData.steamtrade, null, 2));
+    console.log('[CREATE-TRADE] order_id envoyé (tradeToken2/ticketId):', tradeToken2);
 
     // Skinplace retourne { status: 'success' } au lieu de { success: true }
     if (skinplaceData.status !== 'success') {
@@ -274,15 +277,18 @@ export async function POST(request: NextRequest) {
     // Bot qui a récupéré le trade (peut être null si trade pas encore assigné)
     const botInfo: SkinplaceBotInfo | null = steamTrade?.bot || null;
     
-    console.log('✅ Trade créé avec succès:');
-    console.log('  - Trade Offer ID Steam:', tradeOfferId);
-    console.log('  - Token Skinplace:', skinplaceToken);
-    console.log('  - Prix total Skinplace:', steamTrade?.price, '€');
-    console.log('  - Status Skinplace:', skinplaceStatus);
+    console.log('[CREATE-TRADE] Trade Skinplace créé:');
+    console.log('[CREATE-TRADE]   tradeOfferId Steam:', tradeOfferId ?? 'NULL (async mode?)');
+    console.log('[CREATE-TRADE]   skinplaceToken:', skinplaceToken ?? 'NULL !!!');
+    console.log('[CREATE-TRADE]   steamtrade.status:', skinplaceStatus);
+    console.log('[CREATE-TRADE]   steamtrade.price:', steamTrade?.price);
+
+    if (!skinplaceToken) {
+      console.error('[CREATE-TRADE] ATTENTION: skinplaceToken NULL — la stratégie 1 du polling sera impossible, seul le fallback order_id fonctionnera');
+    }
     
-    // Mapper le statut Skinplace vers notre enum TradeStatus
     const tradeStatus = mapSkinplaceStatusToTradeStatus(skinplaceStatus);
-    console.log('  - Status mappé:', tradeStatus);
+    console.log('[CREATE-TRADE]   status mappé Prisma:', tradeStatus);
 
     // Générer un ID unique pour le trade
     const tradeId = `TRADE-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
@@ -404,7 +410,8 @@ export async function POST(request: NextRequest) {
       bot: botInfo,
     };
 
-    console.log('✅ Trade créé et sauvegardé avec succès:', trade.id);
+    console.log('[CREATE-TRADE] Trade sauvegardé en DB:', trade.id, '| skinplaceToken stocké:', trade.skinplaceToken ?? 'NULL');
+    console.log('[CREATE-TRADE] Réponse au client (tradeData):', JSON.stringify(tradeData, null, 2));
 
     return NextResponse.json({
       success: true,

@@ -18,7 +18,14 @@ export type SkinplaceTradeStatusDebug = {
 export function resolveMoonSkinTradeStatusFromSkinplaceApi(
   data: unknown
 ): { status: TradeStatus; debug: SkinplaceTradeStatusDebug } {
-  const d = data as Record<string, unknown> | null | undefined;
+  const root = data as Record<string, unknown> | null | undefined;
+
+  // L'endpoint GET /api/v3/instant/payment/trade/{token} enveloppe la réponse dans { data: {...}, status: "success" }
+  // Certaines entrées de /instant/history n'ont pas cette enveloppe — on gère les deux cas
+  const d = (root?.data != null
+    ? (root.data as Record<string, unknown>)
+    : root) as Record<string, unknown> | null | undefined;
+
   const steamtrade = d?.steamtrade as Record<string, unknown> | null | undefined;
   const payment = d?.payment as Record<string, unknown> | null | undefined;
 

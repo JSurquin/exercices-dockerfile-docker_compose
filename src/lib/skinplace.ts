@@ -249,14 +249,55 @@ class SkinplaceService {
   }
 
   // Lookup par order_ids (notre ticketId)
+  // La doc Skinplace indique GET avec body JSON.
+  // On tente d'abord GET+body (conforme à la doc), puis fallback GET sans body (pagination générale).
   async getInstantHistoryByOrderIds(orderIds: string[]): Promise<SkinplaceHistoryResponse> {
-    return this.makeRequest<SkinplaceHistoryResponse>(
-      '/api/v3/instant/history',
-      {
-        method: 'POST',
+    // Tentative 1 : GET avec body JSON (conforme doc Skinplace)
+    try {
+      const url = `${this.config.baseUrl}/api/v3/instant/history`;
+      const headers: Record<string, string> = {
+        'Authorization': `Bearer ${this.config.apiKey}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'MoonSkin/1.0',
+      };
+      logger.api('GET', '/api/v3/instant/history (body)', undefined, { order_ids: orderIds });
+      const resp = await fetch(url, {
+        method: 'GET',
+        headers,
         body: JSON.stringify({ order_ids: orderIds, limit: 1 }),
+        signal: AbortSignal.timeout(this.config.timeout),
+      });
+      logger.api('GET', '/api/v3/instant/history (body)', resp.status);
+      if (resp.ok) {
+        const data = await resp.json();
+        logger.api('GET', '/api/v3/instant/history (body)', resp.status, data);
+        return data as SkinplaceHistoryResponse;
       }
+      logger.warn(`GET+body retourné ${resp.status} — fallback sur GET sans body`);
+    } catch (e) {
+      logger.warn('GET+body /instant/history échoué:', (e as Error).message);
+    }
+
+    // Tentative 2 : GET sans body, on filtre côté client dans la réponse paginée
+    logger.api('GET', '/api/v3/instant/history (no-body fallback)');
+    const fallback = await this.makeRequest<SkinplaceHistoryResponse>(
+      '/api/v3/instant/history',
+      { method: 'GET' }
     );
+
+    // Filtrer manuellement l'entrée correspondant à l'order_id
+    const fallbackData = fallback as unknown as { data?: Array<{ payment?: { order_id?: string }; token?: string }> };
+    if (fallbackData?.data && orderIds.length > 0) {
+      const match = fallbackData.data.find(
+        (entry) => orderIds.includes(entry.payment?.order_id ?? '')
+      );
+      if (match) {
+        return { ...fallback, data: [match] } as unknown as SkinplaceHistoryResponse;
+      }
+      logger.warn(`Fallback GET /instant/history : order_id "${orderIds[0]}" absent des ${fallbackData.data.length} entrées retournées`);
+    }
+
+    return fallback;
   }
 
   // Hold orders

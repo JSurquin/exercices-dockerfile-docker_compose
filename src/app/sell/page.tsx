@@ -53,33 +53,55 @@ export default function SellPage() {
   const startPolling = useCallback((tradeId: string) => {
     stopPolling();
     pollAttemptsRef.current = 0;
+    console.log(`[POLL] 🚀 Démarrage polling pour tradeId="${tradeId}" — interval=${POLL_INTERVAL_MS}ms max=${POLL_MAX_ATTEMPTS} tentatives`);
 
     pollIntervalRef.current = setInterval(async () => {
       pollAttemptsRef.current += 1;
-      if (pollAttemptsRef.current > POLL_MAX_ATTEMPTS) {
+      const attempt = pollAttemptsRef.current;
+
+      if (attempt > POLL_MAX_ATTEMPTS) {
+        console.warn(`[POLL] ⏹ Polling arrêté après ${POLL_MAX_ATTEMPTS} tentatives sans statut terminal`);
         stopPolling();
         return;
       }
 
+      console.log(`[POLL] 🔄 Tentative #${attempt}/${POLL_MAX_ATTEMPTS} — tradeId="${tradeId}"`);
+
       try {
-        const res = await fetch(`/api/skinplace/trade/status/${tradeId}`);
-        if (!res.ok) return;
+        const url = `/api/skinplace/trade/status/${tradeId}`;
+        const res = await fetch(url);
+        console.log(`[POLL] 📡 HTTP ${res.status} pour ${url}`);
+
+        if (!res.ok) {
+          console.warn(`[POLL] ⚠️  Réponse non-OK (${res.status}), skip tentative #${attempt}`);
+          return;
+        }
+
         const data = await res.json();
+        console.log(`[POLL] 📦 Réponse JSON tentative #${attempt}:`, JSON.stringify(data, null, 2));
+
         const status: string = data?.trade?.status ?? "";
+        const skinplaceDebug = data?.trade?.skinplaceDebug ?? null;
+        const message = data?.trade?.message ?? "";
+
+        console.log(`[POLL] 🏷  status DB="${status}" | skinplaceDebug=${JSON.stringify(skinplaceDebug)} | message="${message}"`);
 
         if (status === "ACCEPTED_BY_BOT") {
-          // Le bot a envoyé l'offre Steam — en attente d'acceptation par l'utilisateur
+          console.log(`[POLL] ⏳ → modal PENDING (bot a envoyé l'offre, attente acceptation Steam)`);
           setModalStatus("pending");
         } else if (status === "IN_TRADE_HOLD" || status === "AVAILABLE") {
-          // L'utilisateur a vraiment accepté l'offre Steam → hold démarre
+          console.log(`[POLL] ✅ → modal ACCEPTED (trade accepté, hold démarre) — arrêt polling`);
           stopPolling();
           setModalStatus("accepted");
         } else if (status === "CANCELLED" || status === "FAILED") {
+          console.log(`[POLL] ❌ → modal CANCELLED (status=${status}) — arrêt polling`);
           stopPolling();
           setModalStatus("cancelled");
+        } else {
+          console.log(`[POLL] 🤷 Statut non reconnu ou inchangé ("${status}"), prochain tick dans ${POLL_INTERVAL_MS}ms`);
         }
-      } catch {
-        // Silencieux — on réessaie au prochain tick
+      } catch (err) {
+        console.error(`[POLL] 💥 Erreur tentative #${attempt}:`, err);
       }
     }, POLL_INTERVAL_MS);
   }, [stopPolling]);
@@ -99,11 +121,15 @@ export default function SellPage() {
   };
 
   const handleTradeCreated = (trade: TradeCreatedData) => {
+    console.log(`[POLL] 🆕 handleTradeCreated — trade_id="${trade.trade_id}" status="${(trade as any).status}"`);
+    console.log(`[POLL] 📋 TradeCreatedData complet:`, JSON.stringify(trade, null, 2));
     setTradeData(trade);
     setCurrentStep(2);
     toast.success(messages.sellPage.successMessages.tradeCreated);
     if (trade.trade_id) {
       startPolling(trade.trade_id);
+    } else {
+      console.error(`[POLL] ❌ trade_id manquant dans TradeCreatedData — polling non démarré !`);
     }
   };
 
