@@ -45,179 +45,195 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-muted/50 border-t">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 lg:gap-8">
-          {/* Logo & Description */}
-          <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center space-x-2 mb-4">
-              <div className="h-8 w-8 rounded bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">CS</span>
-              </div>
-              <span className="font-bold text-xl">MoonSkin</span>
-            </Link>
-            <p className="text-muted-foreground mb-4 max-w-md">
-              {messages.footer.description}
-            </p>
-            <div className="flex flex-wrap gap-3 mb-4">
-              <a
-                href={MOONSKIN_DISCORD_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300"
-              >
-                {messages.footer.socialLinks.discord}
-              </a>
-              <span className="text-muted-foreground">·</span>
-              <a
-                href={MOONSKIN_X_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300"
-              >
-                {messages.footer.socialLinks.x}
-              </a>
-            </div>
-            <div className="flex space-x-3 sm:space-x-4">
-              <div className="text-sm text-muted-foreground">
-                <p className="font-medium">{messages.footer.securedBy}</p>
-                <div className="flex items-center space-x-2 mt-1">
-                  <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-xs">
-                    SSL
-                  </span>
-                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">
-                    KYC
-                  </span>
-                  <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded text-xs">
-                    2FA
-                  </span>
+    <footer className="relative border-t overflow-hidden"
+      style={{
+        backgroundImage: "url('/images/cs2/footer/moonskin.webp')",
+        backgroundSize: "cover",
+        backgroundPosition: "100% 50%",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* Dark overlay to ensure readability */}
+      <div className="absolute inset-0 bg-black/70" />
+
+      {/* Glassmorphism content layer */}
+      <div className="relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+
+          {/* Main grid — glass card */}
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 lg:gap-8">
+              {/* Logo & Description */}
+              <div className="lg:col-span-2">
+                <Link href="/" className="flex items-center space-x-2 mb-4">
+                  <div className="h-8 w-8 rounded bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
+                    <span className="text-white font-bold text-sm">CS</span>
+                  </div>
+                  <span className="font-bold text-xl text-white">MoonSkin</span>
+                </Link>
+                <p className="text-white/70 mb-4 max-w-md text-sm leading-relaxed">
+                  {messages.footer.description}
+                </p>
+                <div className="flex flex-wrap gap-3 mb-4">
+                  <a
+                    href={MOONSKIN_DISCORD_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-colors"
+                  >
+                    {messages.footer.socialLinks.discord}
+                  </a>
+                  <span className="text-white/30">·</span>
+                  <a
+                    href={MOONSKIN_X_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-colors"
+                  >
+                    {messages.footer.socialLinks.x}
+                  </a>
+                </div>
+                <div className="text-sm text-white/60">
+                  <p className="font-medium text-white/80 mb-1">{messages.footer.securedBy}</p>
+                  <div className="flex items-center space-x-2">
+                    <span className="px-2 py-1 bg-green-500/20 border border-green-500/30 text-green-300 rounded text-xs backdrop-blur-sm">
+                      SSL
+                    </span>
+                    <span className="px-2 py-1 bg-blue-500/20 border border-blue-500/30 text-blue-300 rounded text-xs backdrop-blur-sm">
+                      KYC
+                    </span>
+                    <span className="px-2 py-1 bg-purple-500/20 border border-purple-500/30 text-purple-300 rounded text-xs backdrop-blur-sm">
+                      2FA
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Company */}
-          <div>
-            <h3 className="font-semibold mb-4">{messages.footer.company}</h3>
-            <ul className="space-y-2">
-              {links.company.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Support */}
-          <div>
-            <h3 className="font-semibold mb-4">{messages.footer.support}</h3>
-            <ul className="space-y-2">
-              {links.support.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Account */}
-          <div>
-            <h3 className="font-semibold mb-4">Compte</h3>
-            <ul className="space-y-2">
-              {links.account.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h3 className="font-semibold mb-4">{messages.footer.legal}</h3>
-            <ul className="space-y-2">
-              {links.legal.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Stats Section */}
-        <div className="border-t mt-8 pt-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-orange-600">{(publicStats?.totalUsers ?? 0).toLocaleString()}+</div>
-              <div className="text-sm text-muted-foreground">
-                {messages.footer.stats.activeUsers}
+              {/* Company */}
+              <div>
+                <h3 className="font-semibold mb-4 text-white">{messages.footer.company}</h3>
+                <ul className="space-y-2">
+                  {links.company.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        href={link.href}
+                        className="text-white/60 hover:text-white transition-colors text-sm"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-orange-600">€{publicStats?.volumeMillions ?? 0}M+</div>
-              <div className="text-sm text-muted-foreground">{messages.footer.stats.volumeProcessed}</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-orange-600">{(publicStats?.completedTrades ?? 0).toLocaleString()}+</div>
-              <div className="text-sm text-muted-foreground">
-                {messages.footer.stats.tradesCompleted}
+
+              {/* Support */}
+              <div>
+                <h3 className="font-semibold mb-4 text-white">{messages.footer.support}</h3>
+                <ul className="space-y-2">
+                  {links.support.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        href={link.href}
+                        className="text-white/60 hover:text-white transition-colors text-sm"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-orange-600">99.8%</div>
-              <div className="text-sm text-muted-foreground">
-                {messages.footer.stats.satisfactionRate}
+
+              {/* Account */}
+              <div>
+                <h3 className="font-semibold mb-4 text-white">Compte</h3>
+                <ul className="space-y-2">
+                  {links.account.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        href={link.href}
+                        className="text-white/60 hover:text-white transition-colors text-sm"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Legal */}
+              <div>
+                <h3 className="font-semibold mb-4 text-white">{messages.footer.legal}</h3>
+                <ul className="space-y-2">
+                  {links.legal.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        href={link.href}
+                        className="text-white/60 hover:text-white transition-colors text-sm"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Bottom Section */}
-        <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <div className="text-sm text-muted-foreground mb-4 md:mb-0">
-            {messages.footer.copyright}
+          {/* Stats Section — glass card */}
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div>
+                <div className="text-2xl font-bold text-orange-400 drop-shadow-lg">
+                  {(publicStats?.totalUsers ?? 0).toLocaleString()}+
+                </div>
+                <div className="text-sm text-white/60">{messages.footer.stats.activeUsers}</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-orange-400 drop-shadow-lg">
+                  €{publicStats?.volumeMillions ?? 0}M+
+                </div>
+                <div className="text-sm text-white/60">{messages.footer.stats.volumeProcessed}</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-orange-400 drop-shadow-lg">
+                  {(publicStats?.completedTrades ?? 0).toLocaleString()}+
+                </div>
+                <div className="text-sm text-white/60">{messages.footer.stats.tradesCompleted}</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-orange-400 drop-shadow-lg">99.8%</div>
+                <div className="text-sm text-white/60">{messages.footer.stats.satisfactionRate}</div>
+              </div>
+            </div>
           </div>
-          <div className="flex space-x-6">
-            {links.community.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-        </div>
 
-        {/* Disclaimer */}
-        <div className="mt-8 p-4 bg-muted rounded-lg">
-          <p className="text-xs text-muted-foreground">
-            {messages.footer.disclaimer}
-          </p>
+          {/* Bottom Section */}
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl px-6 py-4 mb-4 flex flex-col md:flex-row justify-between items-center gap-3">
+            <div className="text-sm text-white/50">
+              {messages.footer.copyright}
+            </div>
+            <div className="flex space-x-6">
+              {links.community.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-white/60 hover:text-orange-400 transition-colors text-sm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Disclaimer */}
+          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-4">
+            <p className="text-xs text-white/40 leading-relaxed">
+              {messages.footer.disclaimer}
+            </p>
+          </div>
+
         </div>
       </div>
     </footer>
