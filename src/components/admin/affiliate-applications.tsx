@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { SafeImg } from '@/components/ui/safe-image';
+import { UserCircleIcon } from '@heroicons/react/24/outline';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -263,10 +265,12 @@ export default function AffiliateApplications() {
                   <TableRow key={app.id}>
                     <TableCell>
                       <div className="flex items-center space-x-3">
-                        <img
+                        <SafeImg
                           src={app.user.steamAvatar || '/images/default-avatar.png'}
                           alt="Avatar"
                           className="w-8 h-8 rounded-full"
+                          fallbackClassName="w-8 h-8 rounded-full"
+                          fallbackIcon={<UserCircleIcon className="w-5 h-5" />}
                         />
                         <div>
                           <p className="font-medium">

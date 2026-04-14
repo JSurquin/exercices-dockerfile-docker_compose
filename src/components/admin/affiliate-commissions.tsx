@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
+import { SafeImg } from '@/components/ui/safe-image';
+import { UserCircleIcon } from '@heroicons/react/24/outline';
 import { useToast } from '@/hooks/use-toast';
 import { 
   DollarSign, 
@@ -316,10 +318,12 @@ export default function AffiliateCommissions() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-3">
-                        <img
+                        <SafeImg
                           src={commission.affiliate.user.steamAvatar || '/images/default-avatar.png'}
                           alt="Avatar"
                           className="w-8 h-8 rounded-full"
+                          fallbackClassName="w-8 h-8 rounded-full"
+                          fallbackIcon={<UserCircleIcon className="w-5 h-5" />}
                         />
                         <div>
                           <p className="font-medium">
@@ -337,10 +341,12 @@ export default function AffiliateCommissions() {
                     <TableCell>
                       {commission.referral ? (
                         <div className="flex items-center space-x-2">
-                          <img
+                          <SafeImg
                             src={commission.referral.referredUser.steamAvatar || '/images/default-avatar.png'}
                             alt="Avatar"
                             className="w-6 h-6 rounded-full"
+                            fallbackClassName="w-6 h-6 rounded-full"
+                            fallbackIcon={<UserCircleIcon className="w-4 h-4" />}
                           />
                           <span className="text-sm">
                             {commission.referral.referredUser.steamUsername || 'Utilisateur'}
