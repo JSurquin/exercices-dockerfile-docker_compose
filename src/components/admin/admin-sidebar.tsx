@@ -179,8 +179,8 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
       </div>
 
       {/* Navigation */}
-      <ScrollArea className="h-[calc(100vh-4rem)]">
-        <div className="space-y-6 p-4">
+      <ScrollArea className={cn("transition-all duration-300", collapsed ? "h-[calc(100vh-4rem)]" : "h-[calc(100vh-4rem-6.5rem)]")}>
+        <div className="space-y-6 p-4 pb-6">
           {navigationGroups.map((group, groupIndex) => (
             <div key={groupIndex}>
               <AnimatePresence mode="wait">
