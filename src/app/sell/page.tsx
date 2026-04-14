@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
 import { SkinplaceInventoryViewer } from "@/components/skinplace/skinplace-inventory-viewer";
+import { SafeImg } from "@/components/ui/safe-image";
 import { SkinplaceTradeCreator, TradeCreatedData } from "@/components/skinplace/skinplace-trade-creator";
 import { ConvertedPrice } from "@/components/ui/converted-price";
 import { NormalizedInventoryItem } from "@/hooks/use-skinplace-inventory";
@@ -353,17 +354,13 @@ export default function SellPage() {
                       {messages.sellPage.confirmation.moonSkinBotTitle}
                     </h3>
                     <div className="flex items-center gap-4">
-                      {tradeData.bot.avatar ? (
-                        <img
-                          src={tradeData.bot.avatar}
-                          alt={tradeData.bot.name}
-                          className="w-14 h-14 rounded-full border-2 border-orange-500/40 object-cover"
-                        />
-                      ) : (
-                        <div className="w-14 h-14 rounded-full border-2 border-orange-500/40 bg-muted flex items-center justify-center">
-                          <UserIcon className="w-7 h-7 text-muted-foreground" />
-                        </div>
-                      )}
+                      <SafeImg
+                        src={tradeData.bot.avatar}
+                        alt={tradeData.bot.name}
+                        className="w-14 h-14 rounded-full border-2 border-orange-500/40 object-cover"
+                        fallbackClassName="w-14 h-14 rounded-full border-2 border-orange-500/40"
+                        fallbackIcon={<UserIcon className="w-7 h-7 text-muted-foreground" />}
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-semibold text-base truncate">{tradeData.bot.name}</p>

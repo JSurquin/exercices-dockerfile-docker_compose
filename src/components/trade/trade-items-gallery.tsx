@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
+import { SafeImage } from '@/components/ui/safe-image';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { TradeItem } from '@/hooks/use-user-trades';
 import { MagnifyingGlassPlusIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
@@ -43,12 +44,13 @@ function ItemTile({
       onClick={onClick}
       className={`relative group ${dim} rounded-lg border-2 ${rarityBorder(item.rarity)} bg-slate-900/60 overflow-hidden hover:scale-105 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500`}
     >
-      <Image
+      <SafeImage
         src={item.iconUrl}
         alt={item.name}
-        fill
-        sizes="(max-width: 640px) 64px, 96px"
+        width={96}
+        height={96}
         className="object-contain p-1"
+        fallbackIcon={<Package className="w-12 h-12" />}
         unoptimized
       />
       {item.statTrak && (
@@ -161,13 +163,14 @@ export function TradeItemsGallery({ items }: TradeItemsGalleryProps) {
               )}
 
               {/* Image grande */}
-              <div className={`relative w-48 h-48 sm:w-56 sm:h-56 rounded-xl border-2 ${rarityBorder(zoomedItem.rarity)} bg-slate-800/80`}>
-                <Image
+              <div className={`relative w-48 h-48 sm:w-56 sm:h-56 rounded-xl border-2 ${rarityBorder(zoomedItem.rarity)} bg-slate-800/80 flex items-center justify-center`}>
+                <SafeImage
                   src={zoomedItem.iconUrl}
                   alt={zoomedItem.name}
-                  fill
-                  sizes="224px"
+                  width={224}
+                  height={224}
                   className="object-contain p-3"
+                  fallbackIcon={<Package className="w-20 h-20" />}
                   unoptimized
                 />
               </div>

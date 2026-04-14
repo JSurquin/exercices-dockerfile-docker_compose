@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import Image from 'next/image';
+import { SafeImage } from '@/components/ui/safe-image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MagnifyingGlassIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, CheckIcon, CubeIcon } from '@heroicons/react/24/outline';
 
 interface SkinItem {
   steam_market_hash_name: string;
@@ -168,18 +168,16 @@ export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: Skin
                     )}
 
                     <div className="w-full flex items-center justify-center h-16 relative">
-                      {skin.icon_url ? (
-                        <Image
-                          src={skin.icon_url}
-                          alt={skin.steam_market_hash_name}
-                          width={100}
-                          height={70}
-                          className="object-contain max-h-16 drop-shadow-lg"
-                          unoptimized
-                        />
-                      ) : (
-                        <div className="w-20 h-12 bg-slate-700 rounded opacity-40" />
-                      )}
+                      <SafeImage
+                        src={skin.icon_url}
+                        alt={skin.steam_market_hash_name}
+                        width={100}
+                        height={70}
+                        className="object-contain max-h-16 drop-shadow-lg"
+                        fallbackClassName="w-20 h-12 rounded opacity-40"
+                        fallbackIcon={<CubeIcon className="w-8 h-8" />}
+                        unoptimized
+                      />
                     </div>
 
                     <div className="w-full">

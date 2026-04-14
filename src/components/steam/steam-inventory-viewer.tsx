@@ -3,13 +3,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSteamInventory, SteamInventoryItem } from '@/hooks/use-steam-inventory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SafeImg } from '@/components/ui/safe-image';
+import { Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, RefreshCw, DollarSign, Package, AlertCircle } from 'lucide-react';
+import { Search, RefreshCw, DollarSign, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLocale } from '@/components/providers/locale-provider';
 import { getRarityHexColor } from '@/lib/cs2-constants';
@@ -232,10 +234,12 @@ export function SteamInventoryViewer({
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
                       <div className="relative">
-                        <img
+                        <SafeImg
                           src={item.icon_url}
                           alt={item.name}
                           className="w-16 h-16 object-contain"
+                          fallbackClassName="w-16 h-16"
+                          fallbackIcon={<Package className="w-8 h-8" />}
                         />
                         {!isItemTradable && (
                           <div className="absolute inset-0 bg-black/50 rounded flex items-center justify-center">

@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { SteamInventoryItem } from '@/hooks/use-steam-inventory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SafeImg } from '@/components/ui/safe-image';
+import { Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -248,10 +250,12 @@ export function SteamTradeCreator({
               {selectedItems.map((item) => (
                 <div key={item.id} className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <img 
+                    <SafeImg
                       src={item.icon_url} 
                       alt={item.name}
                       className="w-8 h-8 object-contain"
+                      fallbackClassName="w-8 h-8"
+                      fallbackIcon={<Package className="w-4 h-4" />}
                     />
                     <span className="truncate">{item.name}</span>
                     {item.stat_trak && (

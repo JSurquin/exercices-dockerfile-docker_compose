@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSkinplace } from '@/hooks/use-skinplace';
 import { SkinplaceInventoryItem } from '@/lib/types';
+import { SafeImg } from '@/components/ui/safe-image';
+import { Package } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -166,10 +168,12 @@ export function InventoryViewer({
               >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    <img
+                    <SafeImg
                       src={item.icon_url}
                       alt={item.name}
                       className="w-16 h-16 object-contain"
+                      fallbackClassName="w-16 h-16"
+                      fallbackIcon={<Package className="w-8 h-8" />}
                     />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-sm truncate">

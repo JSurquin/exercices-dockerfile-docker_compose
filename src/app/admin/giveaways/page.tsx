@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GiveawayAdmin } from '@/components/admin/giveaway-admin';
 import { useGiveaways } from '@/hooks/use-giveaways';
 import { useLocale } from '@/components/providers/locale-provider';
+import { SafeImage } from '@/components/ui/safe-image';
 import Image from 'next/image';
 import {
   GiftIcon,
@@ -368,16 +369,15 @@ export default function AdminGiveawaysPage() {
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-wrap items-center gap-2 mb-2">
-                              {giveaway.prizeImageUrl && (
-                                <Image
-                                  src={giveaway.prizeImageUrl}
-                                  alt={giveaway.prize}
-                                  width={52}
-                                  height={38}
-                                  className="object-contain rounded shrink-0"
-                                  unoptimized
-                                />
-                              )}
+                              <SafeImage
+                                src={giveaway.prizeImageUrl}
+                                alt={giveaway.prize}
+                                width={52}
+                                height={38}
+                                className="object-contain rounded shrink-0"
+                                fallbackIcon={<TrophyIcon className="w-8 h-8 text-orange-600" />}
+                                unoptimized
+                              />
                               <h3 className="text-base sm:text-lg font-semibold">{giveaway.title}</h3>
                               <Badge 
                                 variant={giveaway.status === 'ACTIVE' ? 'default' : 'secondary'}
@@ -494,16 +494,15 @@ export default function AdminGiveawaysPage() {
                         <Label>{messages.admin.giveaways.form.prizeLabel}</Label>
                         {selectedSkin ? (
                           <div className="flex items-center gap-3 mt-1 p-3 rounded-xl border border-orange-500/60 bg-slate-700/50">
-                            {selectedSkin.icon_url && (
-                              <Image
-                                src={selectedSkin.icon_url}
-                                alt={selectedSkin.steam_market_hash_name}
-                                width={64}
-                                height={48}
-                                className="object-contain rounded shrink-0 drop-shadow-lg"
-                                unoptimized
-                              />
-                            )}
+                            <SafeImage
+                              src={selectedSkin.icon_url}
+                              alt={selectedSkin.steam_market_hash_name}
+                              width={64}
+                              height={48}
+                              className="object-contain rounded shrink-0 drop-shadow-lg"
+                              fallbackIcon={<CubeIcon className="w-8 h-8" />}
+                              unoptimized
+                            />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold text-white truncate">{selectedSkin.steam_market_hash_name}</p>
                               <p className="text-xs text-slate-400 mt-0.5">

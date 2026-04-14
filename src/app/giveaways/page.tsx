@@ -16,6 +16,7 @@ import { useLocale } from '@/components/providers/locale-provider';
 import { Messages } from '~/utils/types';
 import { useGiveaways, GiveawayWithEntries } from '@/hooks/use-giveaways';
 import { GiveawayNotifications } from '@/components/giveaway/giveaway-notifications';
+import { SafeImage } from '@/components/ui/safe-image';
 import {
   GiftIcon,
   TicketIcon,
@@ -131,18 +132,16 @@ const GiveawayCard = ({
       <CardContent className="space-y-3 sm:space-y-4">
         <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 rounded-lg p-4 border">
           <div className="flex items-center space-x-3">
-            {giveaway.prizeImageUrl ? (
-              <Image
-                src={giveaway.prizeImageUrl}
-                alt={giveaway.prize}
-                width={72}
-                height={52}
-                className="object-contain rounded shrink-0 drop-shadow"
-                unoptimized
-              />
-            ) : (
-              <TrophyIcon className="w-8 h-8 text-orange-600 shrink-0" />
-            )}
+            <SafeImage
+              src={giveaway.prizeImageUrl}
+              alt={giveaway.prize}
+              width={72}
+              height={52}
+              className="object-contain rounded shrink-0 drop-shadow"
+              fallbackClassName="w-[72px] h-[52px] rounded shrink-0"
+              fallbackIcon={<TrophyIcon className="w-8 h-8 text-orange-600" />}
+              unoptimized
+            />
             <div>
               <h4 className="font-semibold text-orange-800 dark:text-orange-200">{messages.giveaways.card.prize}</h4>
               <p className="text-orange-700 dark:text-orange-300">{giveaway.prize}</p>

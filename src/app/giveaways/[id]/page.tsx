@@ -28,6 +28,7 @@ import {
   ChartBarIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { SafeImage } from '@/components/ui/safe-image';
 import Image from 'next/image';
 
 interface GiveawayDetails {
@@ -220,18 +221,16 @@ export default function GiveawayDetailsPage() {
               <CardContent className="p-6">
                 <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 rounded-lg p-6 border">
                   <div className="flex items-center gap-4">
-                    {giveaway.prizeImageUrl ? (
-                      <Image
-                        src={giveaway.prizeImageUrl}
-                        alt={giveaway.prize}
-                        width={140}
-                        height={100}
-                        className="object-contain rounded drop-shadow-lg shrink-0"
-                        unoptimized
-                      />
-                    ) : (
-                      <TrophyIcon className="w-16 h-16 text-orange-600 shrink-0" />
-                    )}
+                    <SafeImage
+                      src={giveaway.prizeImageUrl}
+                      alt={giveaway.prize}
+                      width={140}
+                      height={100}
+                      className="object-contain rounded drop-shadow-lg shrink-0"
+                      fallbackClassName="w-[140px] h-[100px] rounded shrink-0"
+                      fallbackIcon={<TrophyIcon className="w-16 h-16 text-orange-600" />}
+                      unoptimized
+                    />
                     <div>
                       <p className="text-sm font-medium text-orange-600 dark:text-orange-400 uppercase tracking-wider mb-1">
                         {messages.giveawaysPage.detail.prizeTitle}

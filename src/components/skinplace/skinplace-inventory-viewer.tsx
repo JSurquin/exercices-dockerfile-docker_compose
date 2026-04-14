@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { SafeImg } from '@/components/ui/safe-image';
 import { 
   Search, 
   RefreshCw, 
@@ -821,12 +822,14 @@ export function SkinplaceInventoryViewer({
                         <div className="space-y-3">
                           {/* Image et badges */}
                           <div className="relative">
-                            <img
+                            <SafeImg
                               src={item.icon_url}
                               alt={item.name}
                               className={`w-full h-24 object-contain mx-auto ${
                                 isDisabled ? 'grayscale' : ''
                               }`}
+                              fallbackClassName={`w-full h-24 ${isDisabled ? 'grayscale' : ''}`}
+                              fallbackIcon={<Package className="w-12 h-12 text-muted-foreground" />}
                             />
                             {badgeCfg && (
                               <div className="absolute top-0 right-0">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,24 +35,61 @@ import {
 import { toast } from "sonner";
 import TradeLinkConfig from "@/components/settings/trade-link-config";
 import SteamIdConfig from "@/components/settings/steam-id-config";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const { locale, setLocale, messages } = useLocale();
   const { theme, setTheme } = useTheme();
+  const queryClient = useQueryClient();
+  
   const [settings, setSettings] = useState({
     emailNotifications: true,
     pushNotifications: false,
     tradeAlerts: true,
     paymentAlerts: true,
+    kycAlerts: true,
+    giveawayAlerts: true,
+    missionAlerts: true,
     marketingEmails: false,
-    twoFactorEnabled: true,
+    securityAlerts: true,
+    systemAnnouncements: true,
     language: locale,
     theme: theme || "dark",
   });
   const [emailInput, setEmailInput] = useState(user?.contactEmail ?? "");
   const [isEmailSaving, setIsEmailSaving] = useState(false);
+  const [isSavingNotifications, setIsSavingNotifications] = useState(false);
   const canUseTwoFactor = user?.role !== "ADMIN" && user?.role !== "MODERATOR";
+
+  const { data: notificationPreferences, isLoading: loadingPreferences } = useQuery({
+    queryKey: queryKeys.userNotificationPreferences,
+    queryFn: async () => {
+      const response = await fetch("/api/user/notification-preferences");
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!user,
+  });
+
+  useEffect(() => {
+    if (notificationPreferences) {
+      setSettings((prev) => ({
+        ...prev,
+        emailNotifications: notificationPreferences.emailNotifications ?? true,
+        pushNotifications: notificationPreferences.pushNotifications ?? false,
+        tradeAlerts: notificationPreferences.tradeAlerts ?? true,
+        paymentAlerts: notificationPreferences.payoutAlerts ?? true,
+        kycAlerts: notificationPreferences.kycAlerts ?? true,
+        giveawayAlerts: notificationPreferences.giveawayAlerts ?? true,
+        missionAlerts: notificationPreferences.missionAlerts ?? true,
+        marketingEmails: notificationPreferences.marketingEmails ?? false,
+        securityAlerts: notificationPreferences.securityAlerts ?? true,
+        systemAnnouncements: notificationPreferences.systemAnnouncements ?? true,
+      }));
+    }
+  }, [notificationPreferences]);
 
   const handleEmailUpdate = async () => {
     if (!emailInput.trim()) return;
@@ -75,11 +112,41 @@ export default function SettingsPage() {
 
   const handleSaveSettings = async () => {
     try {
-      // Simulation de sauvegarde
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success(messages.toast.settingsSavedSuccess);
     } catch {
       toast.error(messages.toast.settingsSaveError || "Erreur lors de la sauvegarde");
+    }
+  };
+
+  const handleSaveNotificationSettings = async () => {
+    setIsSavingNotifications(true);
+    try {
+      const res = await fetch("/api/user/notification-preferences", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          emailNotifications: settings.emailNotifications,
+          pushNotifications: settings.pushNotifications,
+          tradeAlerts: settings.tradeAlerts,
+          payoutAlerts: settings.paymentAlerts,
+          kycAlerts: settings.kycAlerts,
+          giveawayAlerts: settings.giveawayAlerts,
+          missionAlerts: settings.missionAlerts,
+          marketingEmails: settings.marketingEmails,
+          securityAlerts: settings.securityAlerts,
+          systemAnnouncements: settings.systemAnnouncements,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Erreur");
+      
+      queryClient.invalidateQueries({ queryKey: queryKeys.userNotificationPreferences });
+      toast.success("Préférences de notifications sauvegardées avec succès");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Erreur lors de la sauvegarde");
+    } finally {
+      setIsSavingNotifications(false);
     }
   };
 
@@ -481,8 +548,15 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  <Button onClick={handleSaveSettings}>
-                    {messages.settings.notifications.save}
+                  <Button onClick={handleSaveNotificationSettings} disabled={isSavingNotifications || loadingPreferences}>
+                    {isSavingNotifications ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Sauvegarde...
+                      </>
+                    ) : (
+                      messages.settings.notifications.save
+                    )}
                   </Button>
                 </CardContent>
               </Card>

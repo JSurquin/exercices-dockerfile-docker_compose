@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,11 +33,14 @@ import {
   BanknotesIcon,
   ShieldCheckIcon,
   SparklesIcon,
+  BellIcon,
 } from "@heroicons/react/24/outline";
 import { Locale, locales } from "@/lib/i18n";
 import { CS2Logo } from "@/components/ui/cs2-icons";
 import { useSession } from "~/lib/auth-client";
 import Image from "next/image";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 export function Header() {
   const { user, loginWithSteam, loginWithDiscord, logout, isLoading } = useAuth();
@@ -44,6 +48,19 @@ export function Header() {
   const { theme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: session } = useSession();
+
+  const { data: notificationsData } = useQuery({
+    queryKey: queryKeys.userNotifications,
+    queryFn: async () => {
+      const response = await fetch("/api/user/notifications?limit=1&unreadOnly=true");
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!user,
+    refetchInterval: 30000, // Rafraîchir toutes les 30 secondes
+  });
+
+  const unreadCount = notificationsData?.unreadCount ?? 0;
 
   // Profil API lit le rôle en DB ; la session Better Auth peut rester obsolète après un changement côté admin.
   const effectiveRole = user?.role ?? session?.user?.role;
@@ -186,6 +203,25 @@ export function Header() {
               >
                 <SparklesIcon className="w-3.5 h-3.5" />
                 {(user as unknown as { fragments?: number })?.fragments ?? 0} 💠
+              </Link>
+
+              {/* Notifications */}
+              <Link href="/notifications">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 hover:bg-orange-500/10 hover:text-orange-500 relative"
+                >
+                  <BellIcon className="h-4 w-4" />
+                  {unreadCount > 0 && (
+                    <Badge
+                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-orange-500 text-white text-[10px] border-2 border-background"
+                    >
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </Badge>
+                  )}
+                  <span className="sr-only">Notifications</span>
+                </Button>
               </Link>
 
             <DropdownMenu>
@@ -368,6 +404,21 @@ export function Header() {
                     >
                       <ChartBarIcon className="h-5 w-5" />
                       <span>Dashboard</span>
+                    </Link>
+                    <Link
+                      href="/notifications"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center justify-between space-x-3 p-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <BellIcon className="h-5 w-5" />
+                        <span>Notifications</span>
+                      </div>
+                      {unreadCount > 0 && (
+                        <Badge className="bg-orange-500 text-white">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </Badge>
+                      )}
                     </Link>
                     <Link
                       href="/payout"
