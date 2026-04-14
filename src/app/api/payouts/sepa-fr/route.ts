@@ -6,7 +6,7 @@ import { canUserMakePayout } from '@/lib/kycaid';
 import { buildEncryptedSepaDetails } from '@/lib/payment-method-sepa';
 import { encrypt } from '@/lib/encryption';
 import { validateIban } from '@/lib/flexify';
-import { toCents } from '@/lib/currency-converter';
+import { getBalance } from '@/lib/balance-service';
 import crypto from 'crypto';
 
 const generateReference = () =>
@@ -66,22 +66,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email utilisateur requis' }, { status: 400 });
     }
 
-    // Check available balance
-    const balance = await prisma.balanceTransaction.aggregate({
-      where: { userId },
-      _sum: { amountCents: true },
-    });
-    const availableCents = balance._sum.amountCents ?? 0;
-
-    // Also subtract pending payouts
-    const pendingPayouts = await prisma.payout.aggregate({
-      where: { userId, status: { in: ['PENDING', 'PENDING_APPROVAL', 'PROCESSING', 'SCHEDULED', 'VERIFICATION_REQUIRED', 'VERIFIED'] } },
-      _sum: { amountCents: true },
-    });
-    const pendingCents = pendingPayouts._sum.amountCents ?? 0;
-    const realAvailable = availableCents - pendingCents;
-
-    if (amountCents > realAvailable) {
+    // Check available balance via the canonical balance service
+    const balance = await getBalance(userId);
+    if (amountCents > balance.availableCents) {
       return NextResponse.json({ error: 'Solde insuffisant' }, { status: 400 });
     }
 
