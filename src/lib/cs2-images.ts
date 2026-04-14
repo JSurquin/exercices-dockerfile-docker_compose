@@ -146,27 +146,31 @@ export const getHeaderBackgrounds = (theme: 'dark' | 'light' = 'dark') => {
   
   return {
     dust2: {
-      url: images.backgrounds.dust2,
+      url: "/images/cs2/backgrounds/artworksite.webp",
       fallback: "dust2",
       name: "Dust2",
     },
     mirage: {
-      url: images.backgrounds.mirage,
+      url: "/images/cs2/backgrounds/artworksite.webp",
+      //url: images.backgrounds.mirage,
       fallback: "mirage",
       name: "Mirage",
     },
     inferno: {
-      url: images.backgrounds.inferno,
+      //url: images.backgrounds.inferno,
+      url: "/images/cs2/backgrounds/artworksite.webp",
       fallback: "inferno",
       name: "Inferno",
     },
     community: {
-      url: images.backgrounds.community_1,
+      //url: images.backgrounds.community_1,
+      url: "/images/cs2/backgrounds/artworksite.webp",
       fallback: "default",
       name: "Community",
     },
     cs2_main: {
-      url: images.backgrounds.steam_bg_1,
+      //url: images.backgrounds.steam_bg_1,
+      url: "/images/cs2/backgrounds/artworksite.webp",
       fallback: "default",
       name: "CS2 Main",
     },

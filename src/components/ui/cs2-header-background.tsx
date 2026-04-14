@@ -22,18 +22,23 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   
-  // Utiliser le hook pour obtenir les images selon le thème
-  const { currentTheme } = useThemeAwareImages();
-  const headerBackgrounds = getHeaderBackgrounds(currentTheme);
+  // Image fixe pour tous les thèmes
+  const fixedBackgroundUrl = "/images/cs2/backgrounds/artworksite.webp";
   
-  const background = headerBackgrounds[variant];
-  const fallbackSrc = generateCS2Fallback(1920, 1080, currentTheme);
+  // Utiliser le hook pour obtenir les images selon le thème
+  // const { currentTheme } = useThemeAwareImages();
+  // const headerBackgrounds = getHeaderBackgrounds(currentTheme);
+  // const background = headerBackgrounds[variant];
+  // const fallbackSrc = generateCS2Fallback(1920, 1080, currentTheme);
+  
+  const background = { url: fixedBackgroundUrl, name: "CS2 Artwork" };
+  const fallbackSrc = fixedBackgroundUrl;
 
   // Réinitialiser l'état quand le thème change
-  useEffect(() => {
-    setImageLoaded(false);
-    setImageError(false);
-  }, [currentTheme]);
+  // useEffect(() => {
+  //   setImageLoaded(false);
+  //   setImageError(false);
+  // }, [currentTheme]);
 
   useEffect(() => {
     if (!background.url) {
@@ -131,8 +136,18 @@ export const CS2HeroBackground: React.FC<{
     useState<'dust2' | 'mirage' | 'inferno' | 'community' | 'cs2_main'>("cs2_main");
 
   // Utiliser le hook pour obtenir les images selon le thème
-  const { currentTheme } = useThemeAwareImages();
-  const headerBackgrounds = getHeaderBackgrounds(currentTheme);
+  // const { currentTheme } = useThemeAwareImages();
+  // const headerBackgrounds = getHeaderBackgrounds(currentTheme);
+
+  // Image fixe pour tous les thèmes
+  const fixedBackgroundUrl = "/images/cs2/backgrounds/artworksite.webp";
+  const headerBackgrounds = {
+    dust2: { url: fixedBackgroundUrl, name: "CS2 Artwork" },
+    mirage: { url: fixedBackgroundUrl, name: "CS2 Artwork" },
+    inferno: { url: fixedBackgroundUrl, name: "CS2 Artwork" },
+    community: { url: fixedBackgroundUrl, name: "CS2 Artwork" },
+    cs2_main: { url: fixedBackgroundUrl, name: "CS2 Artwork" },
+  };
 
   const backgrounds = Object.keys(headerBackgrounds) as Array<
     keyof typeof headerBackgrounds
@@ -195,17 +210,21 @@ export const CS2HeroBackground: React.FC<{
 
 // Hook pour précharger les images de fond
 export const usePreloadCS2Backgrounds = () => {
-  const { currentTheme } = useThemeAwareImages();
+  // const { currentTheme } = useThemeAwareImages();
   
   useEffect(() => {
-    const backgrounds = getHeaderBackgrounds(currentTheme);
-    Object.values(backgrounds).forEach((background) => {
-      if (background.url) {
-        const img = new Image();
-        img.src = background.url;
-      }
-    });
-  }, [currentTheme]);
+    // const backgrounds = getHeaderBackgrounds(currentTheme);
+    // Object.values(backgrounds).forEach((background) => {
+    //   if (background.url) {
+    //     const img = new Image();
+    //     img.src = background.url;
+    //   }
+    // });
+    
+    // Précharger l'image fixe
+    const img = new Image();
+    img.src = "/images/cs2/backgrounds/artworksite.webp";
+  }, []); // [currentTheme]
 };
 
 export default CS2HeaderBackground;

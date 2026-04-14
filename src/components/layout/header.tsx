@@ -36,6 +36,7 @@ import {
 import { Locale, locales } from "@/lib/i18n";
 import { CS2Logo } from "@/components/ui/cs2-icons";
 import { useSession } from "~/lib/auth-client";
+import Image from "next/image";
 
 export function Header() {
   const { user, loginWithSteam, loginWithDiscord, logout, isLoading } = useAuth();
@@ -92,10 +93,9 @@ export function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-3 mr-8">
           <div className="relative group">
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-orange-500 via-red-500 to-orange-600 flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-all duration-200 border border-orange-400/20">
-              <CS2Logo className="h-6 w-6 text-white" />
+            <div className="h-10 w-10 rounded-lg">
+              <Image src="/images/logo.webp" alt="MoonSkin" width={40} height={40} />
             </div>
-            <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-400 rounded-full border-2 border-background animate-pulse shadow-sm"></div>
           </div>
           <div className="flex flex-col">
             <span className="text-gaming-title text-xl bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
