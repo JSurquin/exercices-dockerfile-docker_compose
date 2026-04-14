@@ -118,9 +118,11 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               </Alert>
             )}
           </div>
-          <Badge variant="outline" className="text-orange-500 border-orange-500 text-xs sm:text-sm inline-block w-full sm:w-auto">
-            <span className="wrap-break-word">Vous pouvez aussi vous reconnecter avec Steam pour lier automatiquement votre compte</span>
-          </Badge>
+          <div className="bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-lg p-2.5 sm:p-3">
+            <p className="text-orange-700 dark:text-orange-300 text-xs sm:text-sm leading-relaxed">
+              Vous pouvez aussi vous reconnecter avec Steam pour lier automatiquement votre compte
+            </p>
+          </div>
         </div>
       )
     }] : []),
