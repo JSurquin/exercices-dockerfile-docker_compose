@@ -3762,6 +3762,16 @@ export interface Messages {
       steamId: {
         title: string;
         description: string;
+        howTo: {
+          title: string;
+          step1: string;
+          step2: string;
+          step3: string;
+          step4: string;
+        };
+        alternative: string;
+        openProfile: string;
+        reconnectInfo: string;
       };
       enterTradeLink: {
         title: string;
@@ -3821,10 +3831,12 @@ export interface Messages {
         saveError: string;
         invalidSteamId: string;
         steamIdSaveError: string;
+        invalidSteamIdFormat: string;
       };
       success: {
         tradeLinkSaved: string;
         steamIdSaved: string;
+        validSteamId: string;
       };
     };
     header: {

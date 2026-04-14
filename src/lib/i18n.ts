@@ -4057,7 +4057,17 @@ export const messages: Record<Locale, Messages> = {
         },
         steamId: {
           title: "Configurez votre Steam ID",
-          description: "Pour vendre vos skins CS2, nous avons besoin de votre Steam ID 64."
+          description: "Pour vendre vos skins CS2, nous avons besoin de votre Steam ID 64.",
+          howTo: {
+            title: "Comment trouver votre Steam ID 64 ?",
+            step1: "Ouvrez Steam et allez sur votre profil",
+            step2: "Cliquez sur &ldquo;Modifier le profil&rdquo;",
+            step3: "Regardez l&rsquo;URL : steamcommunity.com/profiles/VOTRE_ID",
+            step4: "Copiez les 17 chiffres après /profiles/"
+          },
+          alternative: "Alternative : Clic droit sur votre pseudo Steam → &ldquo;Copier l&rsquo;URL du profil&rdquo; → les chiffres après /profiles/",
+          openProfile: "Ouvrir mon profil Steam",
+          reconnectInfo: "Vous pouvez aussi vous reconnecter avec Steam pour lier automatiquement votre compte"
         },
         enterTradeLink: {
           title: "Saisissez votre Trade Link",
@@ -4116,11 +4126,13 @@ export const messages: Record<Locale, Messages> = {
           invalidTradeLink: "Veuillez saisir un Trade Link Steam valide",
           saveError: "Erreur lors de la sauvegarde du Trade Link",
           invalidSteamId: "Veuillez entrer un Steam ID valide",
-          steamIdSaveError: "Erreur lors de la sauvegarde du Steam ID"
+          steamIdSaveError: "Erreur lors de la sauvegarde du Steam ID",
+          invalidSteamIdFormat: "Le Steam ID doit être composé de 17 chiffres et commencer par 7656119."
         },
         success: {
           tradeLinkSaved: "Trade Link sauvegardé avec succès !",
-          steamIdSaved: "Steam ID enregistré avec succès !"
+          steamIdSaved: "Steam ID enregistré avec succès !",
+          validSteamId: "Steam ID valide !"
         }
       },
       header: {
@@ -9068,7 +9080,17 @@ export const messages: Record<Locale, Messages> = {
         },
         steamId: {
           title: "Set up your Steam ID",
-          description: "To sell your CS2 skins, we need your Steam ID 64."
+          description: "To sell your CS2 skins, we need your Steam ID 64.",
+          howTo: {
+            title: "How to find your Steam ID 64?",
+            step1: "Open Steam and go to your profile",
+            step2: "Click on &ldquo;Edit Profile&rdquo;",
+            step3: "Look at the URL: steamcommunity.com/profiles/YOUR_ID",
+            step4: "Copy the 17 digits after /profiles/"
+          },
+          alternative: "Alternative: Right-click on your Steam username → &ldquo;Copy Profile URL&rdquo; → digits after /profiles/",
+          openProfile: "Open my Steam profile",
+          reconnectInfo: "You can also reconnect with Steam to automatically link your account"
         },
         enterTradeLink: {
           title: "Enter your Trade Link",
@@ -9127,11 +9149,13 @@ export const messages: Record<Locale, Messages> = {
           invalidTradeLink: "Please enter a valid Steam Trade Link",
           saveError: "Error saving Trade Link",
           invalidSteamId: "Please enter a valid Steam ID",
-          steamIdSaveError: "Error saving Steam ID"
+          steamIdSaveError: "Error saving Steam ID",
+          invalidSteamIdFormat: "Steam ID must be 17 digits and start with 7656119."
         },
         success: {
           tradeLinkSaved: "Trade Link saved successfully!",
-          steamIdSaved: "Steam ID saved successfully!"
+          steamIdSaved: "Steam ID saved successfully!",
+          validSteamId: "Valid Steam ID!"
         }
       },
       header: {
@@ -13793,7 +13817,17 @@ export const messages: Record<Locale, Messages> = {
         },
         steamId: {
           title: "设置您的Steam ID",
-          description: "要出售您的CS2皮肤，我们需要您的Steam ID 64。"
+          description: "要出售您的CS2皮肤，我们需要您的Steam ID 64。",
+          howTo: {
+            title: "如何找到您的Steam ID 64？",
+            step1: "打开Steam并进入您的个人资料",
+            step2: "点击&ldquo;编辑个人资料&rdquo;",
+            step3: "查看URL：steamcommunity.com/profiles/您的ID",
+            step4: "复制/profiles/后的17位数字"
+          },
+          alternative: "替代方法：右键单击您的Steam用户名 → &ldquo;复制个人资料URL&rdquo; → /profiles/后的数字",
+          openProfile: "打开我的Steam个人资料",
+          reconnectInfo: "您也可以重新连接Steam以自动关联您的帐户"
         },
         enterTradeLink: {
           title: "输入您的交易链接",
@@ -13852,11 +13886,13 @@ export const messages: Record<Locale, Messages> = {
           invalidTradeLink: "请输入有效的Steam交易链接",
           saveError: "保存交易链接时出错",
           invalidSteamId: "请输入有效的Steam ID",
-          steamIdSaveError: "保存Steam ID时出错"
+          steamIdSaveError: "保存Steam ID时出错",
+          invalidSteamIdFormat: "Steam ID必须是17位数字且以7656119开头。"
         },
         success: {
           tradeLinkSaved: "交易链接保存成功！",
-          steamIdSaved: "Steam ID保存成功！"
+          steamIdSaved: "Steam ID保存成功！",
+          validSteamId: "Steam ID有效！"
         }
       },
       header: {

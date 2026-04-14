@@ -91,7 +91,23 @@ export class AuditLogger {
         await this.sendCriticalAlert(data);
       }
     } catch (error) {
-      logger.error('Failed to log audit entry', { error, data });
+      // Ne pas laisser les erreurs d'audit bloquer la requête principale
+      logger.error('Failed to log audit entry', { 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        action: data.action,
+        userId: data.userId
+      });
+      // En cas d'erreur Prisma, on log quand même dans les fichiers
+      if (error instanceof Error && error.message.includes('Engine')) {
+        const logLevel = this.getSeverityLogLevel(data.severity);
+        logger[logLevel]('Audit Log (fallback)', {
+          action: data.action,
+          userId: data.userId,
+          ipAddress: data.ipAddress,
+          details: data.details,
+          note: 'Database logging failed, logged to file only'
+        });
+      }
     }
   }
 

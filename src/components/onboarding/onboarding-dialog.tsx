@@ -85,27 +85,27 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
             {messages.components.onboarding.steamId.description}
           </p>
           <div className="bg-muted p-3 sm:p-4 rounded-lg space-y-2">
-            <h4 className="font-semibold text-sm sm:text-base">Comment trouver votre Steam ID 64 ?</h4>
+            <h4 className="font-semibold text-sm sm:text-base">{messages.components.onboarding.steamId.howTo.title}</h4>
             <ol className="list-decimal list-inside space-y-1.5 text-xs sm:text-sm">
-              <li className="wrap-break-word">Ouvrez Steam et allez sur votre profil</li>
-              <li className="wrap-break-word">Cliquez sur &ldquo;Modifier le profil&rdquo;</li>
-              <li className="wrap-break-word">Regardez l&rsquo;URL : <code className="text-orange-500 bg-muted-foreground/10 px-1 rounded text-[10px] sm:text-xs">steamcommunity.com/profiles/VOTRE_ID</code></li>
-              <li className="wrap-break-word">Copiez les 17 chiffres après <code className="bg-muted-foreground/10 px-1 rounded text-[10px] sm:text-xs">/profiles/</code></li>
+              <li className="wrap-break-word">{messages.components.onboarding.steamId.howTo.step1}</li>
+              <li className="wrap-break-word">{messages.components.onboarding.steamId.howTo.step2}</li>
+              <li className="wrap-break-word">{messages.components.onboarding.steamId.howTo.step3}</li>
+              <li className="wrap-break-word">{messages.components.onboarding.steamId.howTo.step4}</li>
             </ol>
             <div className="mt-2 pt-2 border-t border-border">
               <p className="text-xs text-muted-foreground">
-                <strong>Alternative :</strong> Clic droit sur votre pseudo Steam → &ldquo;Copier l&rsquo;URL du profil&rdquo; → les chiffres après /profiles/
+                <strong>{locale === "en" ? "Alternative:" : locale === "cn" ? "替代方法：" : "Alternative :"}</strong> {messages.components.onboarding.steamId.alternative}
               </p>
             </div>
           </div>
           <a
-            href="https://steamcommunity.com/my/edit/settings"
+            href="https://store.steampowered.com/account/"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full rounded-md border border-orange-500 bg-orange-500/10 px-4 py-2.5 text-sm font-medium text-orange-600 dark:text-orange-400 hover:bg-orange-500/20 transition-colors"
           >
             <ExternalLink className="w-4 h-4 shrink-0" />
-            {locale === "en" ? "Open my Steam profile" : locale === "cn" ? "打开我的Steam个人资料" : "Ouvrir mon profil Steam"}
+            {messages.components.onboarding.steamId.openProfile}
           </a>
           <div className="space-y-2">
             <Label htmlFor="steam-id" className="text-sm sm:text-base">Steam ID 64</Label>
@@ -120,7 +120,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               <Alert variant="destructive" className="text-xs sm:text-sm">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
                 <AlertDescription className="wrap-break-word">
-                  Le Steam ID doit être composé de 17 chiffres et commencer par 7656119.
+                  {messages.components.onboarding.errors.invalidSteamIdFormat}
                 </AlertDescription>
               </Alert>
             )}
@@ -128,14 +128,14 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               <Alert className="text-xs sm:text-sm">
                 <CheckCircle className="h-4 w-4 shrink-0" />
                 <AlertDescription>
-                  Steam ID valide !
+                  {messages.components.onboarding.success.validSteamId}
                 </AlertDescription>
               </Alert>
             )}
           </div>
           <div className="bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-lg p-2.5 sm:p-3">
             <p className="text-orange-700 dark:text-orange-300 text-xs sm:text-sm leading-relaxed">
-              Vous pouvez aussi vous reconnecter avec Steam pour lier automatiquement votre compte
+              {messages.components.onboarding.steamId.reconnectInfo}
             </p>
           </div>
         </div>
