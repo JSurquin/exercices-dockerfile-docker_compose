@@ -87,7 +87,7 @@ export function HowItWorks() {
   return (
     <section id="how-it-works" className="py-16 sm:py-20 lg:py-24 bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
+        {/* Section Header - Glass Effect */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -95,12 +95,14 @@ export function HowItWorks() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-            {messages.howItWorks.title}
-          </h2>
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            {messages.howItWorks.subtitle}
-          </p>
+          <div className="backdrop-blur-md bg-background/50 border border-white/10 dark:border-white/10 rounded-2xl p-6 sm:p-8 inline-block">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
+              {messages.howItWorks.title}
+            </h2>
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              {messages.howItWorks.subtitle}
+            </p>
+          </div>
         </motion.div>
 
         {/* Steps */}
@@ -114,11 +116,11 @@ export function HowItWorks() {
               viewport={{ once: true }}
               className="relative"
             >
-              <Card className="h-full hover:shadow-lg transition-shadow">
+              <Card className="h-full hover:shadow-lg transition-all backdrop-blur-md bg-background/60 border-white/10 dark:border-white/10">
                 <CardContent className="p-6 text-center">
                   {/* Step Number */}
                   <div className="mb-4">
-                    <div className="w-12 h-12 mx-auto bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center">
+                    <div className="w-12 h-12 mx-auto bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center shadow-lg shadow-orange-500/30">
                       <span className="text-white font-bold">{step.step}</span>
                     </div>
                   </div>
@@ -169,7 +171,7 @@ export function HowItWorks() {
           className="grid md:grid-cols-3 gap-8 mb-12"
         >
           {benefits.map((benefit, index) => (
-            <div key={index} className="text-center">
+            <div key={index} className="text-center backdrop-blur-md bg-background/60 border border-white/10 dark:border-white/10 rounded-2xl p-6 hover:bg-background/70 transition-all">
               <div className="mb-4">
                 <benefit.icon className="w-12 h-12 mx-auto text-orange-600" />
               </div>
@@ -187,7 +189,7 @@ export function HowItWorks() {
           viewport={{ once: true }}
           className="text-center"
         >
-          <div className="bg-gradient-to-br from-orange-500/10 to-red-600/10 rounded-2xl p-8 border">
+          <div className="backdrop-blur-md bg-background/60 rounded-2xl p-8 border border-white/10 dark:border-white/10">
             <h3 className="text-2xl font-bold mb-4">{messages.howItWorks.cta.title}</h3>
             <p className="text-muted-foreground mb-6">
               {messages.howItWorks.cta.description}
@@ -195,7 +197,7 @@ export function HowItWorks() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-lg shadow-orange-500/30"
                 onClick={handlePrimaryCta}
               >
                 {messages.howItWorks.cta.primary}
