@@ -1,6 +1,10 @@
-import { AffiliateService } from '@/lib/affiliate-service';
+import {
+  AffiliateService,
+  AFFILIATE_SELL_PROMO_FRAGMENTS,
+} from '@/lib/affiliate-service';
 import { creditBalance, creditPendingBalance, releasePendingToBalance, debitPendingBalance } from '@/lib/balance-service';
 import { awardTradePoints } from '@/lib/points-service';
+import { grantFragments } from '@/lib/fragment-service';
 import { prisma } from '../../prisma/prisma';
 
 /**
@@ -303,6 +307,24 @@ export class TradeHooks {
           details: { tradeId, amountCents: trade.netCents },
         },
       });
+
+      if (trade.affiliatePromoCode && !trade.affiliatePromoFragmentsGrantedAt) {
+        try {
+          await grantFragments(
+            trade.userId,
+            AFFILIATE_SELL_PROMO_FRAGMENTS,
+            'GENERATED_EVENT',
+            `Bonus code affilié — trade ${tradeId}`,
+            { tradeId, source: 'affiliate_sell_promo' }
+          );
+          await prisma.trade.update({
+            where: { id: tradeId },
+            data: { affiliatePromoFragmentsGrantedAt: new Date() },
+          });
+        } catch (fragErr) {
+          console.error(`[TradeHooks] Promo fragments for trade ${tradeId}:`, fragErr);
+        }
+      }
 
       console.log(`[TradeHooks] Trade ${tradeId} ready for payout`);
     } catch (error) {

@@ -4466,6 +4466,17 @@ export interface Messages {
     tradeFeesFootnote: string;
     youReceive: string;
     negativeNetAlert: string;
+    promoSectionTitle: string;
+    promoSectionDescription: string;
+    promoInputLabel: string;
+    promoPlaceholder: string;
+    promoAccepted: string;
+    promoErrorInvalid: string;
+    promoErrorSelf: string;
+    promoErrorOtherAffiliate: string;
+    promoErrorUnauthorized: string;
+    promoMustBeValid: string;
+    promoBonusLine: string;
   };
   paymentMethodsList: {
     loadingError: string;

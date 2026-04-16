@@ -1,32 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NormalizedInventoryItem } from '@/hooks/use-skinplace-inventory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SafeImg } from '@/components/ui/safe-image';
-import { Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { 
-  ExternalLink, 
-  CheckCircle, 
-  XCircle, 
+import {
+  ExternalLink,
+  CheckCircle,
+  XCircle,
   Clock,
   DollarSign,
   Handshake,
   Calculator,
   Minus,
-  AlertTriangle
+  AlertTriangle,
+  Gift,
+  Loader2,
+  Plus,
+  Package,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 import { usePlatformSettings } from '@/hooks/use-platform-settings';
+import {
+  AFFILIATE_SELL_PROMO_FRAGMENTS,
+  AFFILIATE_SELL_PROMO_GROSS_RATE,
+  computeSellPromoBonusCents,
+} from '@/lib/affiliate-sell-promo';
 
 export interface SkinplaceBotInfo {
   name: string;
@@ -67,6 +75,56 @@ export function SkinplaceTradeCreator({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditingTradeLink, setIsEditingTradeLink] = useState(!user?.tradeLink);
+  const [promoInput, setPromoInput] = useState('');
+  const [promoState, setPromoState] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
+  const [promoErrorCode, setPromoErrorCode] = useState<string | null>(null);
+  const [appliedPromoCode, setAppliedPromoCode] = useState<string | null>(null);
+  const promoAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const trimmed = promoInput.trim();
+    if (!trimmed) {
+      setPromoState('idle');
+      setPromoErrorCode(null);
+      setAppliedPromoCode(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      promoAbortRef.current?.abort();
+      const ctrl = new AbortController();
+      promoAbortRef.current = ctrl;
+      setPromoState('checking');
+      setPromoErrorCode(null);
+      try {
+        const res = await fetch(
+          `/api/affiliate/validate-sell-promo?code=${encodeURIComponent(trimmed)}`,
+          { signal: ctrl.signal, credentials: 'include' }
+        );
+        const data = (await res.json()) as {
+          valid?: boolean;
+          code?: string;
+          error?: string;
+        };
+        if (ctrl.signal.aborted) return;
+        if (data.valid && data.code) {
+          setPromoState('valid');
+          setAppliedPromoCode(data.code);
+        } else {
+          setPromoState('invalid');
+          setAppliedPromoCode(null);
+          setPromoErrorCode(data.error ?? 'invalid');
+        }
+      } catch (e) {
+        if ((e as Error).name === 'AbortError') return;
+        setPromoState('invalid');
+        setAppliedPromoCode(null);
+        setPromoErrorCode('invalid');
+      }
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [promoInput]);
 
   const validateTradeUrl = (url: string) => {
     const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
@@ -125,10 +183,23 @@ export function SkinplaceTradeCreator({
       // Calculer la valeur brute en centimes
       const grossValueCentimes = getTotalEstimatedValueCentimes();
       const fees = calculateFees(grossValueCentimes);
-      const netValueCentimes = fees.net_credited_centimes;
+      const promoBonus = appliedPromoCode
+        ? computeSellPromoBonusCents(grossValueCentimes)
+        : 0;
+      const netValueCentimes = fees.net_credited_centimes + promoBonus;
 
+      if (fees.net_credited_centimes <= 0) {
+        toast.error(messages.tradeCreator.negativeNetValue);
+        return;
+      }
       if (netValueCentimes <= 0) {
         toast.error(messages.tradeCreator.negativeNetValue);
+        return;
+      }
+
+      const trimmedPromo = promoInput.trim();
+      if (trimmedPromo && promoState !== 'valid') {
+        toast.error(messages.tradeCreator.promoMustBeValid);
         return;
       }
 
@@ -139,6 +210,7 @@ export function SkinplaceTradeCreator({
         body: JSON.stringify({
           steam_id: steamId64,
           trade_url: tradeUrl,
+          affiliate_promo_code: appliedPromoCode ?? undefined,
           items: selectedItems.map(item => ({
             asset_id: item.assetid,
             market_hash_name: item.market_hash_name,
@@ -202,8 +274,15 @@ export function SkinplaceTradeCreator({
 
   const grossValueCentimes = getTotalEstimatedValueCentimes();
   const fees = calculateFees(grossValueCentimes);
-  const netValueCentimes = fees.net_credited_centimes;
+  const promoBonusPreview = appliedPromoCode
+    ? computeSellPromoBonusCents(grossValueCentimes)
+    : 0;
+  const netValueCentimes = fees.net_credited_centimes + promoBonusPreview;
   const cashoutPercentDisplay = ((platformSettings?.cashoutFeeRate ?? 0.005) * 100).toFixed(2);
+  const promoPercentLabel = (AFFILIATE_SELL_PROMO_GROSS_RATE * 100).toFixed(1);
+  const trimmedPromoInput = promoInput.trim();
+  const promoBlocksSubmit =
+    Boolean(trimmedPromoInput) && promoState !== 'valid';
 
   return (
     <div className="space-y-6">
@@ -307,10 +386,68 @@ export function SkinplaceTradeCreator({
             )}
           </div>
 
+          <div className="rounded-lg border border-orange-500/25 bg-orange-500/[0.06] dark:bg-orange-950/20 p-4 space-y-3">
+            <div className="flex items-start gap-2">
+              <Gift className="h-5 w-5 text-orange-500 shrink-0 mt-0.5" />
+              <div className="space-y-1 min-w-0">
+                <p className="text-sm font-medium">{messages.tradeCreator.promoSectionTitle}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {messages.tradeCreator.promoSectionDescription
+                    .replace('{percent}', promoPercentLabel)
+                    .replace('{fragments}', String(AFFILIATE_SELL_PROMO_FRAGMENTS))}
+                </p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="affiliate-promo-code">{messages.tradeCreator.promoInputLabel}</Label>
+              <div className="relative">
+                <Input
+                  id="affiliate-promo-code"
+                  placeholder={messages.tradeCreator.promoPlaceholder}
+                  value={promoInput}
+                  onChange={(e) => setPromoInput(e.target.value)}
+                  className="pr-10"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                  {promoState === 'checking' ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ) : promoState === 'valid' ? (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  ) : promoState === 'invalid' && trimmedPromoInput ? (
+                    <XCircle className="h-4 w-4 text-destructive" />
+                  ) : null}
+                </div>
+              </div>
+              {promoState === 'valid' && (
+                <p className="text-xs text-green-600 dark:text-green-400">{messages.tradeCreator.promoAccepted}</p>
+              )}
+              {promoState === 'invalid' && promoErrorCode && (
+                <p className="text-xs text-destructive">
+                  {promoErrorCode === 'self'
+                    ? messages.tradeCreator.promoErrorSelf
+                    : promoErrorCode === 'other_affiliate'
+                      ? messages.tradeCreator.promoErrorOtherAffiliate
+                      : promoErrorCode === 'unauthorized'
+                        ? messages.tradeCreator.promoErrorUnauthorized
+                        : messages.tradeCreator.promoErrorInvalid}
+                </p>
+              )}
+            </div>
+          </div>
+
           <div className="flex items-center gap-2">
             <Button
               onClick={handleCreateTrade}
-              disabled={!isValidUrl || selectedItems.length === 0 || loading || netValueCentimes <= 0 || isEditingTradeLink}
+              disabled={
+                !isValidUrl ||
+                selectedItems.length === 0 ||
+                loading ||
+                netValueCentimes <= 0 ||
+                isEditingTradeLink ||
+                promoBlocksSubmit
+              }
               className="flex-1 bg-orange-500 hover:bg-orange-600"
             >
               {loading ? 'Création en cours...' : 'Créer la vente'}
@@ -381,6 +518,18 @@ export function SkinplaceTradeCreator({
                   -<ConvertedPrice usdCents={fees.cashout_fee} />
                 </span>
               </div>
+
+              {promoBonusPreview > 0 && (
+                <div className="flex items-center justify-between text-sm text-emerald-600 dark:text-emerald-400">
+                  <span className="flex items-center gap-1">
+                    <Plus className="h-3 w-3" />
+                    {messages.tradeCreator.promoBonusLine.replace('{percent}', promoPercentLabel)}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    +<ConvertedPrice usdCents={promoBonusPreview} />
+                  </span>
+                </div>
+              )}
 
               <Separator />
 

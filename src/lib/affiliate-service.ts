@@ -1,8 +1,18 @@
 import { cookies } from 'next/headers';
 import { prisma } from '../../prisma/prisma';
 import { AffiliateStats, AffiliateReferral, AffiliateCommission } from '@/lib/types';
+import { computeSellPromoBonusCents as computeSellPromoBonusCentsPure } from '@/lib/affiliate-sell-promo';
+
+export {
+  AFFILIATE_SELL_PROMO_FRAGMENTS,
+  AFFILIATE_SELL_PROMO_GROSS_RATE,
+  computeSellPromoBonusCents,
+} from '@/lib/affiliate-sell-promo';
 
 export class AffiliateService {
+  static computeSellPromoBonusCents(grossCents: number): number {
+    return computeSellPromoBonusCentsPure(grossCents);
+  }
   /**
    * Génère un code d'affiliation unique pour un utilisateur
    */
@@ -69,41 +79,147 @@ export class AffiliateService {
    * Associe un utilisateur à un affilié lors de l'inscription
    */
   static async associateUserToAffiliate(userId: string, affiliateCode?: string): Promise<void> {
-    const refCode = affiliateCode || await this.getAffiliateRefFromCookies();
-    
+    const refCode = affiliateCode || (await this.getAffiliateRefFromCookies());
     if (!refCode) return;
-    
-    const affiliate = await prisma.affiliateStats.findUnique({
-      where: { code: refCode, isActive: true }
+
+    const codeNormalized = refCode.trim().toLowerCase();
+    const affiliate = await prisma.affiliateStats.findFirst({
+      where: { code: codeNormalized, isActive: true },
     });
-    
     if (!affiliate) return;
-    
-    // Éviter l'auto-référencement
     if (affiliate.userId === userId) return;
-    
-    // Mettre à jour l'utilisateur avec la référence d'affilié
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { referredByAffiliateId: true },
+    });
+    if (!user) return;
+
+    if (user.referredByAffiliateId) {
+      if (user.referredByAffiliateId !== affiliate.id) {
+        return;
+      }
+      const existingRef = await prisma.affiliateReferral.findFirst({
+        where: { affiliateId: affiliate.id, referredUserId: userId },
+      });
+      if (!existingRef) {
+        await prisma.affiliateReferral.create({
+          data: {
+            affiliateId: affiliate.id,
+            referredUserId: userId,
+            volumeCents: 0,
+            commissionCents: 0,
+          },
+        });
+        await prisma.affiliateStats.update({
+          where: { id: affiliate.id },
+          data: { totalReferrals: { increment: 1 } },
+        });
+      }
+      return;
+    }
+
     await prisma.user.update({
       where: { id: userId },
-      data: { referredByAffiliateId: affiliate.id }
+      data: { referredByAffiliateId: affiliate.id },
     });
-    
-    // Créer un enregistrement de référence
     await prisma.affiliateReferral.create({
       data: {
         affiliateId: affiliate.id,
         referredUserId: userId,
         volumeCents: 0,
-        commissionCents: 0
-      }
+        commissionCents: 0,
+      },
     });
-    
-    // Mettre à jour les statistiques de l'affilié
     await prisma.affiliateStats.update({
       where: { id: affiliate.id },
-      data: {
-        totalReferrals: { increment: 1 }
+      data: { totalReferrals: { increment: 1 } },
+    });
+  }
+
+  /**
+   * Valide un code promo affilié pour la page vente (même code que le lien affilié).
+   */
+  static async validateAffiliateSellPromoCode(
+    userId: string,
+    rawCode: string
+  ): Promise<
+    | { ok: true; affiliateId: string; code: string }
+    | { ok: false; error: 'invalid' | 'self' | 'other_affiliate' }
+  > {
+    const code = rawCode.trim().toLowerCase();
+    if (!code) return { ok: false, error: 'invalid' };
+
+    const affiliate = await prisma.affiliateStats.findFirst({
+      where: { code, isActive: true },
+    });
+    if (!affiliate) return { ok: false, error: 'invalid' };
+    if (affiliate.userId === userId) return { ok: false, error: 'self' };
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { referredByAffiliateId: true },
+    });
+    if (user?.referredByAffiliateId && user.referredByAffiliateId !== affiliate.id) {
+      return { ok: false, error: 'other_affiliate' };
+    }
+
+    return { ok: true, affiliateId: affiliate.id, code: affiliate.code };
+  }
+
+  /**
+   * Rattache l’utilisateur à l’affilié du code promo (idempotent).
+   */
+  static async bindUserToAffiliateForSellPromo(
+    userId: string,
+    affiliateId: string
+  ): Promise<void> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { referredByAffiliateId: true },
+    });
+    if (!user) return;
+
+    if (user.referredByAffiliateId === affiliateId) {
+      const existingRef = await prisma.affiliateReferral.findFirst({
+        where: { affiliateId, referredUserId: userId },
+      });
+      if (!existingRef) {
+        await prisma.affiliateReferral.create({
+          data: {
+            affiliateId,
+            referredUserId: userId,
+            volumeCents: 0,
+            commissionCents: 0,
+          },
+        });
+        await prisma.affiliateStats.update({
+          where: { id: affiliateId },
+          data: { totalReferrals: { increment: 1 } },
+        });
       }
+      return;
+    }
+
+    if (user.referredByAffiliateId) {
+      return;
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { referredByAffiliateId: affiliateId },
+    });
+    await prisma.affiliateReferral.create({
+      data: {
+        affiliateId,
+        referredUserId: userId,
+        volumeCents: 0,
+        commissionCents: 0,
+      },
+    });
+    await prisma.affiliateStats.update({
+      where: { id: affiliateId },
+      data: { totalReferrals: { increment: 1 } },
     });
   }
   

@@ -120,6 +120,12 @@ model Trade {
   cashoutFees        Int
   networkFees        Int
   netCents           Int
+  /// Code affilié utilisé comme promo sur cette vente (si applicable)
+  affiliatePromoCode              String?
+  /// Bonus net (centimes) = 0,2 % de la valeur brute, crédité avec le trade
+  affiliatePromoBonusCents        Int       @default(0)
+  /// Horodatage crédit fragments promo (idempotence)
+  affiliatePromoFragmentsGrantedAt DateTime?
   ticketId           String              @unique
   tradeAcceptedAt    DateTime?
   availableAt        DateTime?

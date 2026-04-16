@@ -9,6 +9,7 @@ import {
   computeTradeLedgerFromGross,
   getCashoutFeeRate,
 } from '@/lib/trade-platform-fees';
+import { AffiliateService } from '@/lib/affiliate-service';
 
 interface CreateTradeRequest {
   steam_id: string;
@@ -30,6 +31,8 @@ interface CreateTradeRequest {
     total_fees: number;
   };
   net_value_centimes: number;
+  /** Code affilié = code promo (+0,2 % brut net + fragments à la confirmation) */
+  affiliate_promo_code?: string | null;
 }
 
 interface SkinplaceTradeResponse {
@@ -144,6 +147,48 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Récupérer l'utilisateur depuis la base de données (avant promo / Skinplace)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Utilisateur non trouvé' },
+        { status: 404 }
+      );
+    }
+
+    let affiliatePromoCode: string | null = null;
+    let affiliatePromoBonusCents = 0;
+    const rawPromo =
+      typeof body.affiliate_promo_code === 'string' ? body.affiliate_promo_code.trim() : '';
+    if (rawPromo) {
+      const promo = await AffiliateService.validateAffiliateSellPromoCode(user.id, rawPromo);
+      if (!promo.ok) {
+        const err =
+          promo.error === 'self'
+            ? 'Vous ne pouvez pas utiliser votre propre code affilié.'
+            : promo.error === 'other_affiliate'
+              ? 'Un autre partenaire est déjà associé à votre compte : ce code ne peut pas être appliqué.'
+              : 'Code promo invalide ou affilié inactif.';
+        return NextResponse.json({ success: false, error: err }, { status: 400 });
+      }
+      await AffiliateService.bindUserToAffiliateForSellPromo(user.id, promo.affiliateId);
+      affiliatePromoCode = promo.code;
+      affiliatePromoBonusCents = AffiliateService.computeSellPromoBonusCents(
+        body.gross_value_centimes
+      );
+    }
+
+    const netCentsWithPromo = ledger.netCents + affiliatePromoBonusCents;
+    if (netCentsWithPromo <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'La valeur nette après frais et code promo doit être positive' },
+        { status: 400 }
+      );
+    }
+
     // Récupérer les clés d'API depuis les variables d'environnement
     const privateKey = process.env.SKINPLACE_API_KEY_PRIVATE;
     const publicKey = process.env.SKINPLACE_API_KEY_PUBLIC;
@@ -153,18 +198,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Configuration API manquante' },
         { status: 500 }
-      );
-    }
-
-    // Récupérer l'utilisateur depuis la base de données
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Utilisateur non trouvé' },
-        { status: 404 }
       );
     }
 
@@ -326,7 +359,9 @@ export async function POST(request: NextRequest) {
         grossCents: body.gross_value_centimes,
         cashoutFees: ledger.cashoutFees,
         networkFees: ledger.networkFees,
-        netCents: ledger.netCents,
+        netCents: netCentsWithPromo,
+        affiliatePromoCode,
+        affiliatePromoBonusCents,
         availableAt: tradeStatus !== 'FAILED' ? availableAt : undefined,
         expiresAt: expiresAt,
         tradeAcceptedAt,
@@ -358,7 +393,9 @@ export async function POST(request: NextRequest) {
           tradeId: trade.id,
           itemsCount: body.items.length,
           grossValue: body.gross_value_centimes,
-          netValue: ledger.netCents,
+          netValue: netCentsWithPromo,
+          affiliatePromoCode,
+          affiliatePromoBonusCents,
           initialStatus: tradeStatus,
           skinplaceStatus,
           tradeOfferId,
@@ -383,7 +420,7 @@ export async function POST(request: NextRequest) {
             tradeId: trade.id,
             itemsCount: body.items.length,
             grossValue: body.gross_value_centimes,
-            netValue: ledger.netCents,
+            netValue: netCentsWithPromo,
             availableAt: trade.availableAt?.toISOString() || new Date().toISOString(),
           }
         );
