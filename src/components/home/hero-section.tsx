@@ -393,7 +393,7 @@ export function HeroSection() {
             className="relative"
           >
             {/* Main Card */}
-            <div className="relative bg-card rounded-2xl border p-4 sm:p-6 lg:p-8 shadow-2xl">
+            <div className="relative bg-card rounded-2xl -mt-48 border p-4 sm:p-6 lg:p-8 shadow-2xl">
               {/* Fake Trade Interface */}
               <div className="space-y-3 sm:space-y-4 lg:space-y-6">
                 <div className="flex items-center justify-between">
@@ -479,18 +479,6 @@ export function HeroSection() {
 
                 {/* Summary */}
                 <div className="border-t pt-4 space-y-2 bg-muted/30 rounded-lg p-3">
-                  <div className="flex justify-between text-sm">
-                    <span>{messages.hero.tradeInterface.totalBrut}</span>
-                    <span className="font-medium">{fmt(demoGrossCents)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>{messages.hero.tradeInterface.cashoutFees.replace('{rate}', ((platformSettings?.cashoutFeeRate ?? 0.005) * 100).toFixed(1))}</span>
-                    <span>-{fmt(demoCashoutFeeCents)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>{messages.hero.tradeInterface.sepafees}</span>
-                    <span>-{fmt(demoNetworkFeeCents)}</span>
-                  </div>
                   <div className="flex justify-between font-bold text-lg border-t pt-2 text-green-600">
                     <span>{messages.hero.tradeInterface.totalNet}</span>
                     <span className="bg-green-500/10 px-2 py-1 rounded">
