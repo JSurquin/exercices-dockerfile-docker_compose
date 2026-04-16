@@ -13,15 +13,12 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { queryKeys } from '@/lib/query-keys';
 import { CHART_COLORS, RECHARTS_TOOLTIP_STYLE } from '@/lib/chart-colors';
 import { useLocale } from '@/components/providers/locale-provider';
+import { ConvertedPrice } from '@/components/ui/converted-price';
 
 interface AdminStats {
   recentTrades: any[];
   monthlyStats: any[];
 }
-
-const formatPrice = (centimes: number) => {
-  return (centimes / 100).toFixed(2) + '€';
-};
 
 const getStatusColor = (status: string) => {
   const colors = {
@@ -187,7 +184,14 @@ export function DashboardOverview() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end">
-                  <p className="text-sm font-bold text-white sm:text-base">{formatPrice(trade.netCentimes)}</p>
+                  <p className="text-sm font-bold text-white sm:text-base">
+                    <ConvertedPrice
+                      usdCents={trade.netCentimes}
+                      fromCurrency="USD"
+                      showOriginal
+                      className="text-white"
+                    />
+                  </p>
                   <Badge className={`${getStatusColor(trade.status)} text-white text-xs`}>
                     {trade.status}
                   </Badge>

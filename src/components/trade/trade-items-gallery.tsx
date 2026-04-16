@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { TradeItem } from '@/hooks/use-user-trades';
+import { ConvertedPrice } from '@/components/ui/converted-price';
 import { MagnifyingGlassPlusIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 interface TradeItemsGalleryProps {
@@ -194,7 +195,11 @@ export function TradeItemsGallery({ items }: TradeItemsGalleryProps) {
                   </Badge>
                 </div>
                 <p className="text-orange-400 font-bold text-base">
-                  {(zoomedItem.prixCentimes / 100).toFixed(2)} €
+                  <ConvertedPrice
+                    usdCents={zoomedItem.prixCentimes}
+                    fromCurrency="USD"
+                    showOriginal
+                  />
                 </p>
               </div>
             </div>

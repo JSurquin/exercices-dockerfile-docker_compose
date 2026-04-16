@@ -8,6 +8,15 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { ConvertedPrice } from '@/components/ui/converted-price';
+import { TradeItemsGallery } from '@/components/trade/trade-items-gallery';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Search, 
@@ -37,6 +46,7 @@ export function AdminTradesTable() {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [syncingTradeIds, setSyncingTradeIds] = useState<Set<string>>(new Set());
+  const [detailTrade, setDetailTrade] = useState<Trade | null>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.adminTrades({ ...filters, search: searchTerm }),
@@ -94,13 +104,6 @@ export function AdminTradesTable() {
         {config.text}
       </Badge>
     );
-  };
-
-  const formatCurrency = (centimes: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(centimes / 100);
   };
 
   const formatDate = (date: Date | string) => {
@@ -262,7 +265,10 @@ export function AdminTradesTable() {
               <TableHead className="text-slate-300 whitespace-nowrap">Ticket ID</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">Utilisateur</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">Statut</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Montant</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">
+                Montant
+                <span className="block text-[10px] font-normal text-slate-500">Skinplace (USD)</span>
+              </TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">Items</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">Créé le</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">Actions</TableHead>
@@ -288,9 +294,21 @@ export function AdminTradesTable() {
                 </TableCell>
                 <TableCell className="text-white">
                   <div>
-                    <div className="font-medium">{formatCurrency(trade.netCentimes)}</div>
+                    <div className="font-medium">
+                      <ConvertedPrice
+                        usdCents={trade.netCentimes}
+                        fromCurrency="USD"
+                        showOriginal
+                        className="text-white"
+                      />
+                    </div>
                     <div className="text-xs text-slate-400">
-                      Brut: {formatCurrency(trade.brutCentimes)}
+                      Brut:{' '}
+                      <ConvertedPrice
+                        usdCents={trade.brutCentimes}
+                        fromCurrency="USD"
+                        showOriginal
+                      />
                     </div>
                   </div>
                 </TableCell>
@@ -306,6 +324,9 @@ export function AdminTradesTable() {
                       size="sm"
                       variant="outline"
                       className="border-slate-600 text-white hover:bg-slate-700"
+                      type="button"
+                      aria-label="Voir le détail du trade"
+                      onClick={() => setDetailTrade(trade)}
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -337,6 +358,108 @@ export function AdminTradesTable() {
           </CardContent>
         </Card>
       )}
+
+      <Dialog open={detailTrade !== null} onOpenChange={(open) => !open && setDetailTrade(null)}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-slate-700 bg-slate-900 text-slate-100">
+          {detailTrade && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-white">Trade {detailTrade.ticketId}</DialogTitle>
+                <DialogDescription className="text-slate-400">
+                  Montants issus de Skinplace en USD (conversion selon la devise sélectionnée sur le site).
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 pt-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  {getStatusBadge(detailTrade.status)}
+                </div>
+
+                <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4 text-sm">
+                  <p className="font-medium text-white">
+                    {detailTrade.userName || detailTrade.userId}
+                  </p>
+                  {detailTrade.userEmail && (
+                    <p className="text-slate-400">{detailTrade.userEmail}</p>
+                  )}
+                  <p className="mt-1 font-mono text-xs text-slate-500">{detailTrade.userId}</p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-3">
+                    <p className="text-xs text-slate-400">Net</p>
+                    <p className="text-lg font-semibold text-white">
+                      <ConvertedPrice
+                        usdCents={detailTrade.netCentimes}
+                        fromCurrency="USD"
+                        showOriginal
+                      />
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-3">
+                    <p className="text-xs text-slate-400">Brut</p>
+                    <p className="text-lg font-semibold text-white">
+                      <ConvertedPrice
+                        usdCents={detailTrade.brutCentimes}
+                        fromCurrency="USD"
+                        showOriginal
+                      />
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-3 sm:col-span-2">
+                    <p className="text-xs text-slate-400">Frais</p>
+                    <p className="text-sm text-slate-200">
+                      Cashout :{' '}
+                      <ConvertedPrice
+                        usdCents={detailTrade.frais.cashout}
+                        fromCurrency="USD"
+                        showOriginal
+                      />
+                      {' · '}
+                      Réseau :{' '}
+                      {detailTrade.frais.réseau > 0 ? (
+                        <ConvertedPrice
+                          usdCents={detailTrade.frais.réseau}
+                          fromCurrency="USD"
+                          showOriginal
+                        />
+                      ) : (
+                        <span className="text-slate-400">au retrait</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-1 text-sm text-slate-300">
+                  <p>
+                    <span className="text-slate-500">Créé le :</span>{' '}
+                    {formatDate(detailTrade.créédLe)}
+                  </p>
+                  {detailTrade.tradeAcceptéLe && (
+                    <p>
+                      <span className="text-slate-500">Accepté le :</span>{' '}
+                      {formatDate(detailTrade.tradeAcceptéLe)}
+                    </p>
+                  )}
+                  {detailTrade.disponibleLe && (
+                    <p>
+                      <span className="text-slate-500">Disponible le :</span>{' '}
+                      {formatDate(detailTrade.disponibleLe)}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Items ({detailTrade.items.length})
+                  </p>
+                  <TradeItemsGallery items={detailTrade.items} />
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
