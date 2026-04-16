@@ -60,6 +60,16 @@ export const messages: Record<Locale, Messages> = {
         comment: ["Super rapide ! J'ai vendu mes skins et reçu mon paiement en seulement 2 jours après le trade hold Steam. Interface très claire et support réactif.", "Meilleur site pour vendre ses skins ! Processus simple, estimation précise, et paiement SEPA ultra rapide. Je recommande à 100%.", "Interface magnifique et très professionnelle. J'ai pu suivre mon trade en temps réel et les notifications m'ont tenu informé. Top !"],
         amount: ["1,234€", "987€", "2,156€"]
       },
+      paymentMethods: {
+        title: "Moyens de paiement acceptés",
+        usdt: "USDT",
+        card: "Carte",
+        bankTransfer: "Virement",
+        eur: "EUR",
+        usd: "USD",
+        bitcoin: "Bitcoin",
+        ethereum: "Ethereum",
+      },
     },
     features: {
       title: "Pourquoi choisir MoonSkin ?",
@@ -717,6 +727,104 @@ export const messages: Record<Locale, Messages> = {
         winnerCount: "gagnants",
         entriesToBuy: "Nombre d’entrées",
         entriesAvailable: "fragments disponibles",
+      },
+    },
+    missions: {
+      loading: "Chargement…",
+      fetchError: "Erreur chargement missions",
+      genericError: "Erreur",
+      loginTitle: "Connecte-toi pour voir les missions",
+      loginSubtitle: "Gagne des fragments en accomplissant des missions quotidiennes.",
+      backToGiveaways: "Retour aux giveaways",
+      pageSubtitle: "Source secondaire de fragments — les ventes restent la priorité.",
+      statsFragments: "Fragments disponibles",
+      statsToClaim: "À réclamer",
+      statsCompleted: "Complétées",
+      globalProgress: "Progression globale",
+      noMissionsInCategory: "Aucune mission.",
+      claimed: "Réclamée",
+      claim: "Réclamer",
+      notAvailable: "Non disponible",
+      categoryAvailableBadge: "+{amount} 💠 disponibles",
+      celebrationFragments: "Fragments 💠",
+      celebrationComplete: "Mission complétée !",
+      toastEarnedTitle: "+{amount} fragments récupérés !",
+      toastEarnedDescription: "Tes fragments ont été ajoutés à ton compte",
+      items: {
+        DAILY_CLAIM: {
+          label: "Claim quotidien",
+          description: "Viens sur le site et récupère tes fragments du jour.",
+        },
+        DAILY_SELL_SKIN: {
+          label: "Vendre un skin",
+          description: "Réalise au moins 1 vente validée aujourd'hui.",
+        },
+        DAILY_VISIT: {
+          label: "Visite quotidienne",
+          description: "Ouvre ton dashboard pour valider ta présence du jour.",
+        },
+        WEEKLY_SELL_500: {
+          label: "Vendre 500 €",
+          description: "Atteins 500 € de volume vendu cette semaine.",
+        },
+        WEEKLY_SELL_1000: {
+          label: "Vendre 1 000 €",
+          description: "Atteins 1 000 € de volume vendu cette semaine.",
+        },
+        WEEKLY_GIVEAWAY_3: {
+          label: "Participer à 3 giveaways",
+          description: "Rejoins au moins 3 giveaways différents cette semaine.",
+        },
+        MONTHLY_SELL_5000: {
+          label: "Vendre 5 000 €",
+          description: "Atteins 5 000 € de volume vendu ce mois-ci.",
+        },
+        MONTHLY_SELL_10000: {
+          label: "Vendre 10 000 €",
+          description: "Atteins 10 000 € de volume vendu ce mois-ci.",
+        },
+        SOCIAL_NEWSLETTER: {
+          label: "Newsletter",
+          description: "Inscris-toi à notre newsletter pour rester informé.",
+        },
+        SOCIAL_TWITTER: {
+          label: "Suivre sur X (Twitter)",
+          description: "Suis notre compte Twitter officiel.",
+        },
+        SOCIAL_INSTAGRAM: {
+          label: "Suivre sur Instagram",
+          description: "Suis notre compte Instagram.",
+        },
+        SOCIAL_DISCORD: {
+          label: "Rejoindre Discord",
+          description: "Rejoins notre serveur Discord communautaire.",
+        },
+        BONUS_DAILY_SURPRISE: {
+          label: "Mission du jour",
+          description: "Récompense surprise du jour — montant aléatoire entre 20 et 50 fragments.",
+        },
+      },
+      categories: {
+        DAILY: {
+          label: "Missions quotidiennes",
+          description: "Se réinitialisent chaque jour à minuit UTC.",
+        },
+        WEEKLY: {
+          label: "Missions hebdomadaires",
+          description: "Se réinitialisent chaque lundi.",
+        },
+        MONTHLY: {
+          label: "Missions mensuelles",
+          description: "Se réinitialisent le 1er du mois.",
+        },
+        SOCIAL: {
+          label: "Missions sociales",
+          description: "À compléter une seule fois.",
+        },
+        BONUS: {
+          label: "Mission surprise",
+          description: "Récompense aléatoire du jour. Reviens chaque jour pour une nouvelle surprise !",
+        },
       },
     },
     chatWidget: {
@@ -3197,7 +3305,14 @@ export const messages: Record<Locale, Messages> = {
     sellPage: {
       title: "Vendre vos skins CS2",
       subtitle: "Vendez vos skins Counter-Strike 2 instantanément et recevez votre argent rapidement",
-      loginDescription: "Vous devez être connecté avec Steam pour vendre vos skins.",
+      loginDescription:
+        "Connectez-vous pour vendre vos skins. Si vous utilisez Discord, vous pourrez indiquer votre Trade Link Steam sur cette page pour charger l’inventaire.",
+      noSteamLinkedBanner: {
+        title: "Pas de compte Steam lié à votre profil",
+        description:
+          "C’est normal si vous vous connectez avec Discord. Pour afficher vos skins, utilisez l’encadré ci-dessous : collez votre Trade Link Steam (recommandé) ou votre SteamID64. Pensez aussi à enregistrer votre Trade Link dans les paramètres pour recevoir les offres d’échange.",
+        settings: "Ouvrir les paramètres",
+      },
       steps: {
         inventory: "Sélection des items",
         trade: "Création du trade",
@@ -4047,6 +4162,18 @@ export const messages: Record<Locale, Messages> = {
         priceMin: "Prix min",
         priceMax: "Prix max",
         priceRangeHint: "Montants en dollars US (prix brut inventaire). Laisser vide pour pas de limite.",
+        identifierGate: {
+          title: "Quel compte Steam contient vos skins ?",
+          description:
+            "La vente se fait sur Steam : nous devons charger l’inventaire du bon compte. Si vous vous êtes connecté avec Discord (sans Steam lié), collez votre Trade Link ou votre SteamID64 — les deux fonctionnent.",
+          label: "Trade Link Steam ou SteamID64",
+          placeholder:
+            "https://steamcommunity.com/tradeoffer/new/?partner=…&token=… ou 7656119…",
+          cta: "Charger mon inventaire",
+          openSettings: "Paramètres (Trade Link & compte)",
+          invalidPaste:
+            "Impossible de lire un identifiant Steam. Collez l’URL complète du Trade Link depuis Steam, ou votre SteamID64 (17 chiffres, commence par 7656119).",
+        },
       },
       steam: {
         searchPlaceholder: "Rechercher un skin...",
@@ -5105,6 +5232,16 @@ export const messages: Record<Locale, Messages> = {
         comment: ["Super fast! I sold my skins and received my payment in just 2 days after the Steam trade hold. Very clear interface and responsive support.", "Best site to sell skins! Simple process, accurate estimation, and ultra-fast SEPA payment. I recommend 100%.", "Magnificent and very professional interface. I was able to follow my trade in real time and the notifications kept me informed. Top notch!"],
         amount: ["1,234€", "987€", "2,156€"]
       },
+      paymentMethods: {
+        title: "Accepted payment methods",
+        usdt: "USDT",
+        card: "Card",
+        bankTransfer: "Bank transfer",
+        eur: "EUR",
+        usd: "USD",
+        bitcoin: "Bitcoin",
+        ethereum: "Ethereum",
+      },
     },
     features: {
       title: "Why choose MoonSkin?",
@@ -5761,6 +5898,104 @@ export const messages: Record<Locale, Messages> = {
         winnerCount: "winners",
         entriesToBuy: "Entries to buy",
         entriesAvailable: "fragments available",
+      },
+    },
+    missions: {
+      loading: "Loading…",
+      fetchError: "Could not load missions",
+      genericError: "Something went wrong",
+      loginTitle: "Sign in to view missions",
+      loginSubtitle: "Earn fragments by completing daily and weekly missions.",
+      backToGiveaways: "Back to giveaways",
+      pageSubtitle: "A secondary way to earn fragments — selling skins remains the main path.",
+      statsFragments: "Fragments available",
+      statsToClaim: "Ready to claim",
+      statsCompleted: "Completed",
+      globalProgress: "Overall progress",
+      noMissionsInCategory: "No missions in this category.",
+      claimed: "Claimed",
+      claim: "Claim",
+      notAvailable: "Locked",
+      categoryAvailableBadge: "+{amount} 💠 available",
+      celebrationFragments: "Fragments 💠",
+      celebrationComplete: "Mission complete!",
+      toastEarnedTitle: "+{amount} fragments claimed!",
+      toastEarnedDescription: "Fragments have been added to your account",
+      items: {
+        DAILY_CLAIM: {
+          label: "Daily claim",
+          description: "Visit the site and collect your daily fragments.",
+        },
+        DAILY_SELL_SKIN: {
+          label: "Sell a skin",
+          description: "Complete at least one successful sale today.",
+        },
+        DAILY_VISIT: {
+          label: "Daily visit",
+          description: "Open your dashboard to validate today’s visit.",
+        },
+        WEEKLY_SELL_500: {
+          label: "Sell €500",
+          description: "Reach €500 in sold volume this week.",
+        },
+        WEEKLY_SELL_1000: {
+          label: "Sell €1,000",
+          description: "Reach €1,000 in sold volume this week.",
+        },
+        WEEKLY_GIVEAWAY_3: {
+          label: "Join 3 giveaways",
+          description: "Enter at least 3 different giveaways this week.",
+        },
+        MONTHLY_SELL_5000: {
+          label: "Sell €5,000",
+          description: "Reach €5,000 in sold volume this month.",
+        },
+        MONTHLY_SELL_10000: {
+          label: "Sell €10,000",
+          description: "Reach €10,000 in sold volume this month.",
+        },
+        SOCIAL_NEWSLETTER: {
+          label: "Newsletter",
+          description: "Subscribe to our newsletter to stay updated.",
+        },
+        SOCIAL_TWITTER: {
+          label: "Follow on X (Twitter)",
+          description: "Follow our official Twitter account.",
+        },
+        SOCIAL_INSTAGRAM: {
+          label: "Follow on Instagram",
+          description: "Follow our Instagram account.",
+        },
+        SOCIAL_DISCORD: {
+          label: "Join Discord",
+          description: "Join our community Discord server.",
+        },
+        BONUS_DAILY_SURPRISE: {
+          label: "Mission of the day",
+          description: "Surprise reward — random amount between 20 and 50 fragments.",
+        },
+      },
+      categories: {
+        DAILY: {
+          label: "Daily missions",
+          description: "Reset every day at midnight UTC.",
+        },
+        WEEKLY: {
+          label: "Weekly missions",
+          description: "Reset every Monday.",
+        },
+        MONTHLY: {
+          label: "Monthly missions",
+          description: "Reset on the 1st of each month.",
+        },
+        SOCIAL: {
+          label: "Social missions",
+          description: "One-time tasks.",
+        },
+        BONUS: {
+          label: "Surprise mission",
+          description: "Random daily reward — come back each day for a new surprise!",
+        },
       },
     },
     about: {
@@ -7183,7 +7418,14 @@ export const messages: Record<Locale, Messages> = {
     sellPage: {
       title: "Sell your CS2 skins",
       subtitle: "Sell your Counter-Strike 2 skins instantly and receive your money quickly",
-      loginDescription: "You must be logged in with Steam to sell your skins.",
+      loginDescription:
+        "Sign in to sell your skins. If you use Discord, you can paste your Steam Trade Link on this page to load your inventory.",
+      noSteamLinkedBanner: {
+        title: "No Steam account linked to your profile",
+        description:
+          "That is expected when you sign in with Discord. To show your skins, use the box below: paste your Steam Trade Link (recommended) or your SteamID64. Save your Trade Link in settings so you can receive trade offers.",
+        settings: "Open settings",
+      },
       steps: {
         inventory: "Item selection",
         trade: "Trade creation",
@@ -9091,6 +9333,18 @@ export const messages: Record<Locale, Messages> = {
         priceMin: "Min price",
         priceMax: "Max price",
         priceRangeHint: "Amounts in US dollars (gross inventory price). Leave empty for no limit.",
+        identifierGate: {
+          title: "Which Steam account holds your skins?",
+          description:
+            "Selling happens on Steam — we need to load the correct inventory. If you signed in with Discord (no linked Steam), paste your Steam Trade Link or your SteamID64 — both work.",
+          label: "Steam Trade Link or SteamID64",
+          placeholder:
+            "https://steamcommunity.com/tradeoffer/new/?partner=…&token=… or 7656119…",
+          cta: "Load my inventory",
+          openSettings: "Settings (trade link & account)",
+          invalidPaste:
+            "We could not read a Steam identifier. Paste the full Trade Link URL from Steam, or your SteamID64 (17 digits starting with 7656119).",
+        },
       },
       steam: {
         searchPlaceholder: "Search for a skin...",
@@ -10149,6 +10403,16 @@ export const messages: Record<Locale, Messages> = {
         comment: ["超级快！我出售了皮肤，在Steam交易锁定后仅2天就收到了付款。界面非常清晰，客服响应迅速。", "出售皮肤的最佳网站！流程简单，估价准确，SEPA付款超快。100%推荐。", "界面精美且非常专业。我能够实时跟踪交易，通知让我随时了解情况。太棒了！"],
         amount: ["1,234€", "987€", "2,156€"]
       },
+      paymentMethods: {
+        title: "支持的支付方式",
+        usdt: "USDT",
+        card: "银行卡",
+        bankTransfer: "银行转账",
+        eur: "EUR",
+        usd: "USD",
+        bitcoin: "比特币",
+        ethereum: "以太坊",
+      },
     },
     features: {
       title: "为什么选择CashTrade？",
@@ -10789,6 +11053,104 @@ export const messages: Record<Locale, Messages> = {
         loginRequired: "您必须登录才能参与",
       },
       youHave: "您有",
+    },
+    missions: {
+      loading: "加载中…",
+      fetchError: "无法加载任务",
+      genericError: "出错了",
+      loginTitle: "登录后查看任务",
+      loginSubtitle: "完成每日与每周任务，赚取碎片。",
+      backToGiveaways: "返回抽奖",
+      pageSubtitle: "碎片的额外来源——出售饰品仍是主要途径。",
+      statsFragments: "可用碎片",
+      statsToClaim: "待领取",
+      statsCompleted: "已完成",
+      globalProgress: "总进度",
+      noMissionsInCategory: "此类别无任务。",
+      claimed: "已领取",
+      claim: "领取",
+      notAvailable: "未解锁",
+      categoryAvailableBadge: "+{amount} 💠 可领取",
+      celebrationFragments: "碎片 💠",
+      celebrationComplete: "任务完成！",
+      toastEarnedTitle: "已获得 +{amount} 碎片！",
+      toastEarnedDescription: "碎片已添加到你的账户",
+      items: {
+        DAILY_CLAIM: {
+          label: "每日领取",
+          description: "访问网站并领取当日碎片。",
+        },
+        DAILY_SELL_SKIN: {
+          label: "出售一件饰品",
+          description: "今天至少完成一笔成功出售。",
+        },
+        DAILY_VISIT: {
+          label: "每日访问",
+          description: "打开仪表盘以完成当日签到。",
+        },
+        WEEKLY_SELL_500: {
+          label: "出售 500 €",
+          description: "本周累计出售额达到 500 €。",
+        },
+        WEEKLY_SELL_1000: {
+          label: "出售 1 000 €",
+          description: "本周累计出售额达到 1 000 €。",
+        },
+        WEEKLY_GIVEAWAY_3: {
+          label: "参与 3 次抽奖",
+          description: "本周至少参加 3 个不同的抽奖。",
+        },
+        MONTHLY_SELL_5000: {
+          label: "出售 5 000 €",
+          description: "本月累计出售额达到 5 000 €。",
+        },
+        MONTHLY_SELL_10000: {
+          label: "出售 10 000 €",
+          description: "本月累计出售额达到 10 000 €。",
+        },
+        SOCIAL_NEWSLETTER: {
+          label: "邮件订阅",
+          description: "订阅简报以获取最新资讯。",
+        },
+        SOCIAL_TWITTER: {
+          label: "关注 X（推特）",
+          description: "关注我们的官方推特账号。",
+        },
+        SOCIAL_INSTAGRAM: {
+          label: "关注 Instagram",
+          description: "关注我们的 Instagram 账号。",
+        },
+        SOCIAL_DISCORD: {
+          label: "加入 Discord",
+          description: "加入我们的社区 Discord 服务器。",
+        },
+        BONUS_DAILY_SURPRISE: {
+          label: "每日惊喜任务",
+          description: "当日随机奖励——20 至 50 碎片之间。",
+        },
+      },
+      categories: {
+        DAILY: {
+          label: "每日任务",
+          description: "每天 UTC 零点重置。",
+        },
+        WEEKLY: {
+          label: "每周任务",
+          description: "每周一重置。",
+        },
+        MONTHLY: {
+          label: "每月任务",
+          description: "每月 1 日重置。",
+        },
+        SOCIAL: {
+          label: "社交任务",
+          description: "一次性完成。",
+        },
+        BONUS: {
+          label: "惊喜任务",
+          description: "每日随机奖励——每天回来都有新惊喜！",
+        },
+      },
     },
     about: {
       title: "关于",
@@ -11992,7 +12354,13 @@ export const messages: Record<Locale, Messages> = {
     sellPage: {
       title: "出售您的CS2皮肤",
       subtitle: "立即出售您的反恐精英2皮肤并快速收到您的资金",
-      loginDescription: "您必须使用Steam登录才能出售皮肤。",
+      loginDescription: "请登录以出售皮肤。若使用 Discord，可在本页粘贴 Steam 交易链接以加载库存。",
+      noSteamLinkedBanner: {
+        title: "个人资料未绑定 Steam 账户",
+        description:
+          "使用 Discord 登录时这是正常的。要显示皮肤，请在下方粘贴 Steam 交易链接（推荐）或 SteamID64，并在设置中保存交易链接以便接收报价。",
+        settings: "打开设置",
+      },
       steps: {
         inventory: "物品选择",
         trade: "交易创建",
@@ -13849,6 +14217,17 @@ export const messages: Record<Locale, Messages> = {
         priceMin: "最低价格",
         priceMax: "最高价格",
         priceRangeHint: "以美元计（库存毛价）。留空表示不限制。",
+        identifierGate: {
+          title: "您的皮肤在哪个 Steam 账户？",
+          description:
+            "交易在 Steam 上进行，我们需要加载正确的库存。若您使用 Discord 登录且未绑定 Steam，请粘贴 Steam 交易链接或 SteamID64，两者均可。",
+          label: "Steam 交易链接或 SteamID64",
+          placeholder: "https://steamcommunity.com/tradeoffer/new/?partner=…&token=… 或 7656119…",
+          cta: "加载我的库存",
+          openSettings: "设置（交易链接与账户）",
+          invalidPaste:
+            "无法识别 Steam 标识。请粘贴 Steam 中的完整交易链接，或 17 位 SteamID64（以 7656119 开头）。",
+        },
       },
       steam: {
         searchPlaceholder: "搜索皮肤...",

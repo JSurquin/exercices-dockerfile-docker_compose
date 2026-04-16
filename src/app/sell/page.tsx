@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -19,6 +20,7 @@ import {
   ShieldCheckIcon,
   CheckCircleIcon,
   UserIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
@@ -187,6 +189,28 @@ export default function SellPage() {
           <p className="text-muted-foreground">{messages.sellPage.subtitle}</p>
         </motion.div>
 
+        {user && !user.steamId64 && currentStep === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="max-w-4xl mx-auto mb-6"
+          >
+            <Alert className="border-orange-500/40 bg-orange-500/5 text-left">
+              <InformationCircleIcon className="h-5 w-5 text-orange-500" />
+              <AlertTitle className="text-foreground">
+                {messages.sellPage.noSteamLinkedBanner.title}
+              </AlertTitle>
+              <AlertDescription className="text-muted-foreground mt-1 space-y-3">
+                <p>{messages.sellPage.noSteamLinkedBanner.description}</p>
+                <Button variant="outline" size="sm" asChild>
+                  <a href="/settings">{messages.sellPage.noSteamLinkedBanner.settings}</a>
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
+
         {/* Progress Stepper */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -246,11 +270,12 @@ export default function SellPage() {
         >
           {currentStep === 0 && (
             <SkinplaceInventoryViewer
-              steamId64={user.steamId64}
-              linkedSteamIdentity={{
-                name: user.username,
-                avatarUrl: user.avatar,
-              }}
+              steamId64={user.steamId64 ?? ""}
+              linkedSteamIdentity={
+                user.steamId64
+                  ? { name: user.username, avatarUrl: user.avatar }
+                  : undefined
+              }
               onItemSelect={handleItemSelect}
               selectable={true}
               allowSteamIdChange={true}

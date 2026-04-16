@@ -118,6 +118,16 @@ export interface Messages {
       comment: string[];
       amount: string[];
     };
+    paymentMethods: {
+      title: string;
+      usdt: string;
+      card: string;
+      bankTransfer: string;
+      eur: string;
+      usd: string;
+      bitcoin: string;
+      ethereum: string;
+    };
   };
   trade: {
     title: string;
@@ -2057,6 +2067,11 @@ export interface Messages {
     title: string;
     subtitle: string;
     loginDescription: string;
+    noSteamLinkedBanner: {
+      title: string;
+      description: string;
+      settings: string;
+    };
     steps: {
       inventory: string;
       trade: string;
@@ -2357,6 +2372,50 @@ export interface Messages {
       winnerCount: string;
       entriesToBuy: string;
       entriesAvailable: string;
+    };
+  };
+  missions: {
+    loading: string;
+    fetchError: string;
+    genericError: string;
+    loginTitle: string;
+    loginSubtitle: string;
+    backToGiveaways: string;
+    pageSubtitle: string;
+    statsFragments: string;
+    statsToClaim: string;
+    statsCompleted: string;
+    globalProgress: string;
+    noMissionsInCategory: string;
+    claimed: string;
+    claim: string;
+    notAvailable: string;
+    categoryAvailableBadge: string;
+    celebrationFragments: string;
+    celebrationComplete: string;
+    toastEarnedTitle: string;
+    toastEarnedDescription: string;
+    items: {
+      DAILY_CLAIM: { label: string; description: string };
+      DAILY_SELL_SKIN: { label: string; description: string };
+      DAILY_VISIT: { label: string; description: string };
+      WEEKLY_SELL_500: { label: string; description: string };
+      WEEKLY_SELL_1000: { label: string; description: string };
+      WEEKLY_GIVEAWAY_3: { label: string; description: string };
+      MONTHLY_SELL_5000: { label: string; description: string };
+      MONTHLY_SELL_10000: { label: string; description: string };
+      SOCIAL_NEWSLETTER: { label: string; description: string };
+      SOCIAL_TWITTER: { label: string; description: string };
+      SOCIAL_INSTAGRAM: { label: string; description: string };
+      SOCIAL_DISCORD: { label: string; description: string };
+      BONUS_DAILY_SURPRISE: { label: string; description: string };
+    };
+    categories: {
+      DAILY: { label: string; description: string };
+      WEEKLY: { label: string; description: string };
+      MONTHLY: { label: string; description: string };
+      SOCIAL: { label: string; description: string };
+      BONUS: { label: string; description: string };
     };
   };
   chatWidget: {
@@ -3738,6 +3797,15 @@ export interface Messages {
       priceMin: string;
       priceMax: string;
       priceRangeHint: string;
+      identifierGate: {
+        title: string;
+        description: string;
+        label: string;
+        placeholder: string;
+        cta: string;
+        openSettings: string;
+        invalidPaste: string;
+      };
     };
     steam: {
       searchPlaceholder: string;

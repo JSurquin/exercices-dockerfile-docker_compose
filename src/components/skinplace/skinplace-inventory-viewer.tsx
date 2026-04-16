@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -24,13 +23,16 @@ import {
   Star,
   ExternalLink,
   User,
-  Edit
+  Edit,
+  Link2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLocale } from '@/components/providers/locale-provider';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 import { useCurrency } from '@/components/providers/currency-provider';
 import { currencyConverter } from '@/lib/currency-converter';
+import { isValidSteamId64, parseSteamId64FromUserInput } from '@/lib/steam-id';
+import Link from 'next/link';
 
 function isPurchasable(item: NormalizedInventoryItem): boolean {
   return item.tradable && !item.skip_reason;
@@ -46,8 +48,9 @@ function parseUsdDollarsToCents(s: string): number | null {
 }
 
 interface SkinplaceInventoryViewerProps {
-  steamId64: string;
-  /** Identité Steam du compte MoonSkin (affichée seulement si currentSteamId === steamId64) */
+  /** Vide si l’utilisateur n’a pas de Steam lié (ex. connexion Discord uniquement). */
+  steamId64?: string;
+  /** Identité Steam du compte MoonSkin (affichée seulement si currentSteamId === SteamID du profil) */
   linkedSteamIdentity?: { name: string; avatarUrl: string };
   onItemSelect?: (items: NormalizedInventoryItem[]) => void;
   selectable?: boolean;
@@ -56,13 +59,14 @@ interface SkinplaceInventoryViewerProps {
 }
 
 export function SkinplaceInventoryViewer({ 
-  steamId64,
+  steamId64: profileSteamId64Prop = '',
   linkedSteamIdentity,
   onItemSelect, 
   selectable = false,
   allowSteamIdChange = false,
   onSteamIdChange
 }: SkinplaceInventoryViewerProps) {
+  const profileSteamId64 = (profileSteamId64Prop ?? '').trim();
   const { messages } = useLocale();
   const { selectedCurrency } = useCurrency();
   const [searchTerm, setSearchTerm] = useState('');
@@ -73,8 +77,8 @@ export function SkinplaceInventoryViewer({
   
   // Steam ID change functionality
   const [showSteamIdInput, setShowSteamIdInput] = useState(false);
-  const [customSteamId, setCustomSteamId] = useState(steamId64);
-  const [currentSteamId, setCurrentSteamId] = useState(steamId64);
+  const [customSteamId, setCustomSteamId] = useState(profileSteamId64);
+  const [currentSteamId, setCurrentSteamId] = useState(profileSteamId64);
   
   // Filtres
   const [selectedRarity, setSelectedRarity] = useState<string>('');
@@ -120,34 +124,46 @@ export function SkinplaceInventoryViewer({
     }
   };
 
-  // Validate Steam ID format
-  const validateSteamId64 = (id: string): boolean => {
-    const steamId64Regex = /^7656119[0-9]{10}$/;
-    return steamId64Regex.test(id);
-  };
-
   // Handle Steam ID change
   const handleSteamIdChange = () => {
-    if (!validateSteamId64(customSteamId)) {
+    const resolved = parseSteamId64FromUserInput(customSteamId);
+    if (!resolved || !isValidSteamId64(resolved)) {
       toast.error(messages.settings?.steamId?.invalidFormat || 'Format Steam ID invalide');
       return;
     }
     
-    setCurrentSteamId(customSteamId);
+    setCurrentSteamId(resolved);
+    setCustomSteamId(resolved);
     setShowSteamIdInput(false);
     setSelectedItems([]); // Reset selection when changing Steam ID
-    onSteamIdChange?.(customSteamId);
-    loadInventory(customSteamId);
+    onSteamIdChange?.(resolved);
+    loadInventory(resolved);
   };
 
   // Reset to original Steam ID
   const handleResetSteamId = () => {
-    setCustomSteamId(steamId64);
-    setCurrentSteamId(steamId64);
+    const linked = profileSteamId64;
+    setCustomSteamId(linked);
+    setCurrentSteamId(linked);
     setShowSteamIdInput(false);
     setSelectedItems([]);
-    onSteamIdChange?.(steamId64);
-    loadInventory(steamId64);
+    onSteamIdChange?.(linked);
+    if (isValidSteamId64(linked)) {
+      loadInventory(linked);
+    }
+  };
+
+  const handleIdentifierGateSubmit = () => {
+    const ig = messages.components?.skinplace?.identifierGate;
+    const resolved = parseSteamId64FromUserInput(customSteamId);
+    if (!resolved || !isValidSteamId64(resolved)) {
+      toast.error(ig?.invalidPaste ?? messages.settings?.steamId?.invalidFormat ?? 'Invalid Steam identifier');
+      return;
+    }
+    setCurrentSteamId(resolved);
+    setCustomSteamId(resolved);
+    setSelectedItems([]);
+    onSteamIdChange?.(resolved);
   };
 
   // Appliquer les filtres
@@ -209,20 +225,22 @@ export function SkinplaceInventoryViewer({
   }, [inventory, searchTerm, selectedRarity, selectedExterior, statTrakOnly, sortBy, purchasableOnly, priceMinUsd, priceMaxUsd, filterBySearch, filterByRarity, filterByExterior, filterByStatTrak, sortItemsByValue, sortItemsByRarity]);
 
   useEffect(() => {
-    if (currentSteamId) {
+    if (isValidSteamId64(currentSteamId)) {
       loadInventory(currentSteamId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSteamId]);
 
-  // Sync when steamId64 prop changes
+  // Sync when le SteamID lié au profil change (ex. après liaison en paramètres)
   useEffect(() => {
-    if (steamId64 !== currentSteamId && !showSteamIdInput) {
-      setCurrentSteamId(steamId64);
-      setCustomSteamId(steamId64);
+    const linked = profileSteamId64;
+    if (!linked) return;
+    if (linked !== currentSteamId && !showSteamIdInput) {
+      setCurrentSteamId(linked);
+      setCustomSteamId(linked);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [steamId64]);
+  }, [profileSteamId64]);
 
   const stats = calculateInventoryStats(inventory);
   // Tous les items visibles (tradable Steam), incluant ceux bloqués par Skinplace
@@ -288,6 +306,60 @@ export function SkinplaceInventoryViewer({
       .replace('{reason}', reason);
     window.dispatchEvent(new CustomEvent('open-support-chat', { detail: { prefillMessage } }));
   };
+
+  const hasValidSteamId = isValidSteamId64(currentSteamId.trim());
+  const customSteamInputLooksValid = Boolean(parseSteamId64FromUserInput(customSteamId));
+
+  if (!hasValidSteamId && !loading) {
+    const ig = messages.components?.skinplace?.identifierGate;
+    return (
+      <Card className="border-orange-500/30 bg-orange-500/5">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Link2 className="h-5 w-5 text-orange-500" />
+            {ig?.title ?? 'Steam account'}
+          </CardTitle>
+          <CardDescription className="text-base text-muted-foreground">
+            {ig?.description ?? ''}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="steam-identifier-gate">{ig?.label ?? 'Trade Link or SteamID64'}</Label>
+            <Input
+              id="steam-identifier-gate"
+              placeholder={ig?.placeholder}
+              value={customSteamId}
+              onChange={(e) => setCustomSteamId(e.target.value)}
+              className={`font-mono text-sm ${
+                customSteamId && !customSteamInputLooksValid
+                  ? 'border-destructive/60 focus-visible:ring-destructive/40'
+                  : customSteamInputLooksValid
+                    ? 'border-green-500/60 focus-visible:ring-green-500/40'
+                    : ''
+              }`}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleIdentifierGateSubmit();
+              }}
+            />
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              type="button"
+              className="bg-orange-500 hover:bg-orange-600"
+              onClick={handleIdentifierGateSubmit}
+              disabled={!customSteamInputLooksValid}
+            >
+              {ig?.cta ?? 'Load inventory'}
+            </Button>
+            <Button type="button" variant="outline" asChild>
+              <Link href="/settings">{ig?.openSettings ?? 'Settings'}</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (loading) {
     return (
@@ -431,7 +503,7 @@ export function SkinplaceInventoryViewer({
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
-                {linkedSteamIdentity && currentSteamId === steamId64 && linkedSteamIdentity.avatarUrl ? (
+                {linkedSteamIdentity && currentSteamId === profileSteamId64 && linkedSteamIdentity.avatarUrl ? (
                   <Avatar className="h-11 w-11 border-2 border-primary/30 shrink-0">
                     <AvatarImage src={linkedSteamIdentity.avatarUrl} alt="" />
                     <AvatarFallback className="text-xs">
@@ -445,7 +517,7 @@ export function SkinplaceInventoryViewer({
                 )}
                 <div className="min-w-0">
                   <p className="text-sm text-muted-foreground">Inventaire chargé pour</p>
-                  {linkedSteamIdentity && currentSteamId === steamId64 && linkedSteamIdentity.name ? (
+                  {linkedSteamIdentity && currentSteamId === profileSteamId64 && linkedSteamIdentity.name ? (
                     <p className="font-semibold text-sm truncate" title={linkedSteamIdentity.name}>
                       {linkedSteamIdentity.name}
                     </p>
@@ -454,7 +526,7 @@ export function SkinplaceInventoryViewer({
                     {currentSteamId}
                   </p>
                 </div>
-                {currentSteamId !== steamId64 && (
+                {Boolean(profileSteamId64) && currentSteamId !== profileSteamId64 && (
                   <Badge variant="secondary" className="ml-2">
                     Compte secondaire
                   </Badge>
@@ -471,7 +543,7 @@ export function SkinplaceInventoryViewer({
                     <Edit className="h-4 w-4 mr-2" />
                     Changer de compte
                   </Button>
-                  {currentSteamId !== steamId64 && (
+                  {Boolean(profileSteamId64) && currentSteamId !== profileSteamId64 && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -488,9 +560,9 @@ export function SkinplaceInventoryViewer({
                     value={customSteamId}
                     onChange={(e) => setCustomSteamId(e.target.value)}
                     className={`flex-1 sm:w-64 ${
-                      customSteamId && !validateSteamId64(customSteamId) 
-                        ? 'border-destructive focus-visible:ring-destructive' 
-                        : customSteamId && validateSteamId64(customSteamId)
+                      customSteamId && !customSteamInputLooksValid
+                        ? 'border-destructive focus-visible:ring-destructive'
+                        : customSteamInputLooksValid
                           ? 'border-green-500 focus-visible:ring-green-500'
                           : ''
                     }`}
@@ -498,7 +570,7 @@ export function SkinplaceInventoryViewer({
                   <Button
                     size="sm"
                     onClick={handleSteamIdChange}
-                    disabled={!customSteamId || !validateSteamId64(customSteamId)}
+                    disabled={!customSteamId || !customSteamInputLooksValid}
                   >
                     Charger
                   </Button>
@@ -516,9 +588,10 @@ export function SkinplaceInventoryViewer({
               )}
             </div>
             
-            {showSteamIdInput && customSteamId && !validateSteamId64(customSteamId) && (
+            {showSteamIdInput && customSteamId && !customSteamInputLooksValid && (
               <p className="text-xs text-destructive mt-2">
-                Le Steam ID doit être au format 64-bit (commence par 7656119 suivi de 10 chiffres)
+                {messages.components?.skinplace?.identifierGate?.invalidPaste ??
+                  'Collez votre Trade Link Steam ou un SteamID64 (7656119…).'}
               </p>
             )}
           </CardContent>
