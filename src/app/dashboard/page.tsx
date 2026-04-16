@@ -587,18 +587,6 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{messages.dashboard.tickets}</p>
-                  <p className="text-2xl font-bold">{user?.tickets || 0}</p>
-                </div>
-                <TicketIcon className="w-8 h-8 text-purple-500" />
-              </div>
-            </CardContent>
-          </Card>
-
           <Card className="border-amber-200 dark:border-amber-800">
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
