@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { User, AdminFilters } from '@/lib/types';
 import { prisma } from '~/prisma/prisma';
+import { KycStatus } from '@prisma/client';
 import { 
   getRequestContext, 
   logUnauthorizedAccess, 
@@ -42,7 +43,17 @@ export async function GET(request: NextRequest) {
     const whereConditions: any = {};
 
     if (filters.status) {
-      whereConditions.kycStatus = filters.status;
+      const f = filters.status.toLowerCase();
+      // Les filtres UI sont en minuscules ; Prisma attend les enums KycStatus.
+      if (f === 'pending') {
+        whereConditions.kycStatus = { in: [KycStatus.PENDING, KycStatus.KYCAID_PENDING] };
+      } else if (f === 'in_progress') {
+        whereConditions.kycStatus = KycStatus.IN_PROGRESS;
+      } else if (f === 'verified') {
+        whereConditions.kycStatus = { in: [KycStatus.VERIFIED, KycStatus.KYCAID_VERIFIED] };
+      } else if (f === 'rejected') {
+        whereConditions.kycStatus = { in: [KycStatus.REJECTED, KycStatus.KYCAID_REJECTED] };
+      }
     }
 
     if (filters.search) {

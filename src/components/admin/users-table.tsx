@@ -34,6 +34,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { User as UserType, AdminFilters } from '@/lib/types';
+import { prismaKycStatusToAdminBadgeKey } from '@/lib/status-mapper';
 import { useLocale } from '@/components/providers/locale-provider';
 import { CreateUserDialog } from './create-user-dialog';
 import { queryKeys } from '@/lib/query-keys';
@@ -103,13 +104,14 @@ export function AdminUsersTable() {
 
   const getKYCBadge = (status: string) => {
     const statusConfig = {
-      'pending': { variant: 'secondary' as const, icon: Clock, text: 'En attente' },
-      'in_progress': { variant: 'default' as const, icon: Shield, text: 'En cours' },
-      'verified': { variant: 'default' as const, icon: CheckCircle, text: 'Vérifié' },
-      'rejected': { variant: 'destructive' as const, icon: XCircle, text: 'Rejeté' },
+      pending: { variant: 'secondary' as const, icon: Clock, text: 'En attente' },
+      in_progress: { variant: 'default' as const, icon: Shield, text: 'En cours' },
+      verified: { variant: 'default' as const, icon: CheckCircle, text: 'Vérifié' },
+      rejected: { variant: 'destructive' as const, icon: XCircle, text: 'Rejeté' },
     };
 
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['pending'];
+    const key = prismaKycStatusToAdminBadgeKey(status);
+    const config = statusConfig[key];
     const Icon = config.icon;
 
     return (

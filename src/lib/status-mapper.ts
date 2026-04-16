@@ -104,6 +104,21 @@ export function mapKycStatusToDb(displayStatus: string): string {
   return mapping[displayStatus] || displayStatus.toUpperCase();
 }
 
+/** Clés attendues par les badges / filtres admin (Select en minuscules). */
+export type AdminKycBadgeKey = 'pending' | 'in_progress' | 'verified' | 'rejected';
+
+/**
+ * Mappe un statut Prisma User.kycStatus vers la clé d’affichage admin (minuscules).
+ * Sans cela, `VERIFIED` ne matche pas `verified` et le badge retombe toujours sur « En attente ».
+ */
+export function prismaKycStatusToAdminBadgeKey(status: string): AdminKycBadgeKey {
+  const u = String(status || '').toUpperCase();
+  if (u === 'VERIFIED' || u === 'KYCAID_VERIFIED' || u === 'APPROVED') return 'verified';
+  if (u === 'REJECTED' || u === 'KYCAID_REJECTED') return 'rejected';
+  if (u === 'IN_PROGRESS') return 'in_progress';
+  return 'pending';
+}
+
 // Mapping pour les types de documents KYC
 type KycDocumentType = "id_card" | "passport" | "selfie" | "proof_of_address";
 
