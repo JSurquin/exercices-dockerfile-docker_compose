@@ -490,7 +490,7 @@ export function HeroSection() {
 
                 {/* Summary */}
                 <div className="border-t pt-4 space-y-2 bg-muted/30 rounded-lg p-3">
-                  <div className="flex justify-between font-bold text-lg border-t pt-2 text-green-600">
+                  <div className="flex justify-between font-bold text-lg pt-2 text-green-600">
                     <span>{messages.hero.tradeInterface.totalNet}</span>
                     <span className="bg-green-500/10 px-2 py-1 rounded">
                       {fmt(demoNetCents)}
