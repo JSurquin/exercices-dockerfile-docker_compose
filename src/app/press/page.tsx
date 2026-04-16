@@ -26,19 +26,19 @@ const getMediaKit = (messages: { press: { mediaKitItems: {
     title: messages.press.mediaKitItems.logos.title,
     description: messages.press.mediaKitItems.logos.description,
     icon: PhotoIcon,
-    downloadLink: "/media-kit/logos.zip",
+    downloadLink: null,
   },
   {
     title: messages.press.mediaKitItems.screenshots.title,
     description: messages.press.mediaKitItems.screenshots.description,
     icon: DocumentTextIcon,
-    downloadLink: "/media-kit/screenshots.zip",
+    downloadLink: null,
   },
   {
     title: messages.press.mediaKitItems.factsheet.title,
     description: messages.press.mediaKitItems.factsheet.description,
     icon: ChartBarIcon,
-    downloadLink: "/media-kit/factsheet.pdf",
+    downloadLink: null,
   },
 ];
 
@@ -210,9 +210,15 @@ export default function PressPage() {
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm">{item.title}</h4>
                         <p className="text-xs text-muted-foreground mb-2">{item.description}</p>
-                        <Button variant="outline" size="sm" className="text-xs" asChild>
-                          <a href={item.downloadLink}>{messages.press.download}</a>
-                        </Button>
+                        {item.downloadLink ? (
+                          <Button variant="outline" size="sm" className="text-xs" asChild>
+                            <a href={item.downloadLink}>{messages.press.download}</a>
+                          </Button>
+                        ) : (
+                          <Button variant="outline" size="sm" className="text-xs" disabled>
+                            {messages.press.comingSoon}
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
