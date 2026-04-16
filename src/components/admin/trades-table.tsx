@@ -170,8 +170,24 @@ export function AdminTradesTable() {
       if (searchTerm) params.append('search', searchTerm);
 
       const response = await fetch(`/api/admin/trades/export?${params}`);
+      if (!response.ok) {
+        let message = `Erreur ${response.status}`;
+        try {
+          const errJson = await response.json();
+          if (errJson?.message) message = errJson.message;
+          else if (errJson?.error) message = errJson.error;
+        } catch {
+          /* ignore */
+        }
+        toast({
+          title: 'Export impossible',
+          description: message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
       const blob = await response.blob();
-      
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -180,8 +196,18 @@ export function AdminTradesTable() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+
+      toast({
+        title: 'Export terminé',
+        description: 'Le fichier CSV a été téléchargé.',
+      });
     } catch (err) {
       console.error('Erreur lors de l\'export:', err);
+      toast({
+        title: 'Export impossible',
+        description: err instanceof Error ? err.message : 'Erreur réseau',
+        variant: 'destructive',
+      });
     }
   };
 
