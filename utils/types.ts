@@ -122,6 +122,7 @@ export interface Messages {
       title: string;
       usdt: string;
       card: string;
+      mastercard: string;
       bankTransfer: string;
       eur: string;
       usd: string;

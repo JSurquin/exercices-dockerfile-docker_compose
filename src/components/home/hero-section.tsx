@@ -63,6 +63,15 @@ const VisaIcon = () => (
   </svg>
 );
 
+const MastercardIcon = () => (
+  <svg viewBox="0 0 48 32" className="w-10 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="48" height="32" rx="4" fill="#000000"/>
+    <circle cx="18" cy="16" r="8" fill="#EB001B"/>
+    <circle cx="30" cy="16" r="8" fill="#F79E1B"/>
+    <path d="M24 9.6c-1.7 1.4-2.8 3.6-2.8 6s1.1 4.6 2.8 6c1.7-1.4 2.8-3.6 2.8-6s-1.1-4.6-2.8-6z" fill="#FF5F00"/>
+  </svg>
+);
+
 const SepaIcon = () => (
   <svg viewBox="0 0 48 32" className="w-10 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="48" height="32" rx="4" fill="#003087"/>
@@ -90,6 +99,7 @@ const UsdIcon = () => (
 const HERO_PAYMENT_METHOD_ORDER = [
   "usdt",
   "card",
+  "mastercard",
   "bankTransfer",
   "eur",
   "usd",
@@ -102,6 +112,7 @@ type HeroPaymentMethodKey = (typeof HERO_PAYMENT_METHOD_ORDER)[number];
 const HERO_PAYMENT_METHOD_ICONS: Record<HeroPaymentMethodKey, ComponentType> = {
   usdt: UsdtIcon,
   card: VisaIcon,
+  mastercard: MastercardIcon,
   bankTransfer: SepaIcon,
   eur: EuroIcon,
   usd: UsdIcon,
