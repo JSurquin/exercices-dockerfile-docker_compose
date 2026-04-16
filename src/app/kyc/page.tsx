@@ -13,6 +13,40 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
+
+const KYCAID_SUPPORTED_COUNTRIES = [
+  'AF','AX','AL','DZ','AS','AD','AO','AI','AQ','AG','AR','AM','AW','AU','AT',
+  'AZ','BS','BH','BD','BB','BY','BE','BZ','BJ','BM','BT','BO','BQ','BA','BW',
+  'BV','BR','IO','BN','BG','BF','BI','CV','KH','CM','CA','KY','CF','TD','CL',
+  'CN','CX','CC','CO','KM','CG','CD','CK','CR','CI','HR','CU','CW','CY','CZ',
+  'DK','DJ','DM','DO','EC','EG','SV','GQ','ER','EE','SZ','ET','FK','FO','FJ',
+  'FI','FR','GF','PF','TF','GA','GM','GE','DE','GH','GI','GR','GL','GD','GP',
+  'GU','GT','GG','GN','GW','GY','HT','HM','VA','HN','HK','HU','IS','IN','ID',
+  'IR','IQ','IE','IM','IL','IT','JM','JP','JE','JO','KZ','KE','KI','KP','KR',
+  'KW','KG','LA','LV','LB','LS','LR','LY','LI','LT','LU','MO','MG','MW','MY',
+  'MV','ML','MT','MH','MQ','MR','MU','YT','MX','FM','MD','MC','MN','ME','MS',
+  'MA','MZ','MM','NA','NR','NP','NL','NC','NZ','NI','NE','NG','NU','NF','MK',
+  'MP','NO','OM','PK','PW','PS','PA','PG','PY','PE','PH','PN','PL','PT','PR',
+  'QA','RE','RO','RU','RW','BL','SH','KN','LC','MF','PM','VC','WS','SM','ST',
+  'SA','SN','RS','SC','SL','SG','SX','SK','SI','SB','SO','ZA','GS','SS','ES',
+  'LK','SD','SR','SJ','SE','CH','SY','TW','TJ','TZ','TH','TL','TG','TK','TO',
+  'TT','TN','TR','TM','TC','TV','UG','UA','AE','GB','US','UM','UY','UZ','VU',
+  'VE','VN','VG','VI','WF','EH','YE','ZM','ZW',
+];
+
+function getCountryOptions(locale: string): { code: string; name: string }[] {
+  const displayLocale = locale === 'cn' ? 'zh' : locale;
+  try {
+    const displayNames = new Intl.DisplayNames([displayLocale], { type: 'region' });
+    return KYCAID_SUPPORTED_COUNTRIES
+      .map(code => ({ code, name: displayNames.of(code) ?? code }))
+      .sort((a, b) => a.name.localeCompare(b.name, displayLocale));
+  } catch {
+    return KYCAID_SUPPORTED_COUNTRIES
+      .map(code => ({ code, name: code }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+}
 import {
   ShieldCheckIcon,
   DocumentTextIcon,
@@ -53,7 +87,8 @@ interface PersonalInfo {
 
 export default function KYCPage() {
   const { user, updateUser } = useAuth();
-  const { messages } = useLocale();
+  const { messages, locale } = useLocale();
+  const countryOptions = getCountryOptions(locale);
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState<KYCStep>('info');
   const [isLoading, setIsLoading] = useState(false);
@@ -546,12 +581,10 @@ export default function KYCPage() {
                         <SelectTrigger>
                           <SelectValue placeholder={messages.common.selectPlaceholder} />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="FR">{messages.kycPage.info.countries.france}</SelectItem>
-                          <SelectItem value="BE">{messages.kycPage.info.countries.belgium}</SelectItem>
-                          <SelectItem value="CH">{messages.kycPage.info.countries.switzerland}</SelectItem>
-                          <SelectItem value="CA">{messages.kycPage.info.countries.canada}</SelectItem>
-                          <SelectItem value="US">{messages.kycPage.info.countries.usa}</SelectItem>
+                        <SelectContent className="max-h-60">
+                          {countryOptions.map(({ code, name }) => (
+                            <SelectItem key={code} value={code}>{name}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -593,11 +626,10 @@ export default function KYCPage() {
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="FR">{messages.kycPage.info.countries.france}</SelectItem>
-                            <SelectItem value="BE">{messages.kycPage.info.countries.belgium}</SelectItem>
-                            <SelectItem value="CH">{messages.kycPage.info.countries.switzerland}</SelectItem>
-                            <SelectItem value="CA">{messages.kycPage.info.countries.canada}</SelectItem>
+                          <SelectContent className="max-h-60">
+                            {countryOptions.map(({ code, name }) => (
+                              <SelectItem key={code} value={code}>{name}</SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -822,7 +854,9 @@ export default function KYCPage() {
                       </div>
                       <div className="p-3 rounded-lg bg-muted/40">
                         <span className="text-muted-foreground text-xs">{messages.kycPage.review.nationality}</span>
-                        <p className="font-medium mt-0.5">{personalInfo.nationality}</p>
+                        <p className="font-medium mt-0.5">
+                          {countryOptions.find(c => c.code === personalInfo.nationality)?.name ?? personalInfo.nationality}
+                        </p>
                       </div>
                       {personalInfo.address && (
                         <div className="p-3 rounded-lg bg-muted/40">
