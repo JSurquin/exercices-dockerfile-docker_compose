@@ -194,7 +194,7 @@ export default function SellPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="max-w-4xl mx-auto mb-6"
+            className="max-w-6xl mx-auto mb-6"
           >
             <Alert className="border-orange-500/40 bg-orange-500/5 text-left">
               <InformationCircleIcon className="h-5 w-5 text-orange-500" />
