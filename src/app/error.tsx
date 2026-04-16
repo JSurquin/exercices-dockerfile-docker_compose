@@ -108,7 +108,7 @@ export default function Error({ error, reset }: ErrorProps) {
                 </Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link href="/support">
+                <Link href="/help">
                   <ChatBubbleLeftRightIcon className="w-4 h-4 mr-2" />
                   {messages.error.contactSupport}
                 </Link>

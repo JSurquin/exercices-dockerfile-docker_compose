@@ -112,7 +112,7 @@ export default function NotFound() {
                     {t.giveaways}
                   </Link>
                   <Link
-                    href="/support"
+                    href="/help"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {t.support}

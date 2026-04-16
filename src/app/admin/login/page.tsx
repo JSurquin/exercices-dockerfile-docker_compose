@@ -243,7 +243,7 @@ export default function AdminLoginPage() {
           <p className="text-sm text-slate-500">
             Problème de connexion ?{' '}
             <Link 
-              href="/support" 
+              href="/help" 
               className="text-orange-400 hover:text-orange-300 underline"
             >
               Contactez le support

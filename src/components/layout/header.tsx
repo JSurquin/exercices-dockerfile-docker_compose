@@ -83,7 +83,7 @@ export function Header() {
     ...(isModerator || isAdmin ? [{ name: messages.nav.moderation, href: "/moderation", icon: ChatBubbleLeftRightIcon }] : []),
     {
       name: messages.nav.support,
-      href: "/support",
+      href: "/help",
       icon: QuestionMarkCircleIcon,
     },
   ];

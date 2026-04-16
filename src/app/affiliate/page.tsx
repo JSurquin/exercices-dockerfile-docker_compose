@@ -633,7 +633,7 @@ export default function AffiliatePage() {
                   <Button
                     variant="outline"
                     className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
-                    onClick={() => window.open('/support', '_blank')}
+                    onClick={() => window.open('/help', '_blank')}
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
                     {messages.affiliate.dashboard.contactSupport}
