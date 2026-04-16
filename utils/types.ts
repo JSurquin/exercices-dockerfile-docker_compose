@@ -519,6 +519,11 @@ export interface Messages {
   footer: {
     description: string;
     securedBy: string;
+    securityBadges: {
+      ssl: { label: string; title: string; description: string };
+      kyc: { label: string; title: string; description: string; link: string; linkLabel: string };
+      twofa: { label: string; title: string; description: string };
+    };
     company: string;
     support: string;
     legal: string;
@@ -3516,6 +3521,7 @@ export interface Messages {
     fundingValue: string;
     mediaKit: string;
     download: string;
+    comingSoon: string;
     managementTeam: string;
     pressContact: string;
     contactPress: string;

@@ -475,6 +475,25 @@ export const messages: Record<Locale, Messages> = {
     footer: {
       description: "La plateforme la plus rapide et sécurisée pour convertir vos skins CS2 en argent réel. Vendez vos skins en toute confiance avec notre système de paiement sécurisé.",
       securedBy: "Sécurisé par :",
+      securityBadges: {
+        ssl: {
+          label: "SSL",
+          title: "Chiffrement SSL 256-bit",
+          description: "Toutes les communications entre votre navigateur et nos serveurs sont chiffrées via TLS/SSL 256-bit. Vos données personnelles et financières ne peuvent pas être interceptées.",
+        },
+        kyc: {
+          label: "KYC",
+          title: "Vérification KYC obligatoire",
+          description: "Know Your Customer : nous vérifions l'identité de chaque utilisateur avant tout paiement, conformément à la réglementation européenne anti-blanchiment (AML/KYC). Cela protège la communauté contre la fraude.",
+          link: "/kyc-policy",
+          linkLabel: "En savoir plus →",
+        },
+        twofa: {
+          label: "2FA",
+          title: "Authentification à deux facteurs",
+          description: "La double authentification (2FA) ajoute une couche de sécurité supplémentaire à votre compte. Même si votre mot de passe est compromis, votre compte reste protégé.",
+        },
+      },
       company: "Entreprise",
       support: "Support",
       legal: "Légal",
@@ -3811,6 +3830,7 @@ export const messages: Record<Locale, Messages> = {
       fundingValue: "2M€ (Série A)",
       mediaKit: "Kit Média",
       download: "Télécharger",
+      comingSoon: "Bientôt disponible",
       managementTeam: "Équipe dirigeante",
       pressContact: "Contact Presse",
       contactPress: "Contacter la presse",
@@ -5499,6 +5519,25 @@ export const messages: Record<Locale, Messages> = {
     footer: {
       description: "The fastest and most secure platform to convert your CS2 skins into real money. Sell your skins with confidence using our secure payment system.",
       securedBy: "Secured by:",
+      securityBadges: {
+        ssl: {
+          label: "SSL",
+          title: "256-bit SSL Encryption",
+          description: "All communications between your browser and our servers are encrypted using TLS/SSL 256-bit. Your personal and financial data cannot be intercepted.",
+        },
+        kyc: {
+          label: "KYC",
+          title: "Mandatory KYC Verification",
+          description: "Know Your Customer: we verify every user's identity before any payment, in compliance with European anti-money laundering regulations (AML/KYC). This protects the community against fraud.",
+          link: "/kyc-policy",
+          linkLabel: "Learn more →",
+        },
+        twofa: {
+          label: "2FA",
+          title: "Two-Factor Authentication",
+          description: "Two-factor authentication (2FA) adds an extra layer of security to your account. Even if your password is compromised, your account remains protected.",
+        },
+      },
       company: "Company",
       support: "Support",
       legal: "Legal",
@@ -8835,6 +8874,7 @@ export const messages: Record<Locale, Messages> = {
       fundingValue: "€2M (Series A)",
       mediaKit: "Media Kit",
       download: "Download",
+      comingSoon: "Coming soon",
       managementTeam: "Management Team",
       pressContact: "Press Contact",
       contactPress: "Contact press",
@@ -10518,6 +10558,25 @@ export const messages: Record<Locale, Messages> = {
     footer: {
       description: "最快速、最安全的平台，将您的CS2皮肤转换为真钱。使用我们的安全支付系统放心出售您的皮肤。",
       securedBy: "安全保障：",
+      securityBadges: {
+        ssl: {
+          label: "SSL",
+          title: "256位SSL加密",
+          description: "您的浏览器与我们服务器之间的所有通信均通过TLS/SSL 256位加密保护。您的个人和财务数据无法被拦截。",
+        },
+        kyc: {
+          label: "KYC",
+          title: "强制KYC身份验证",
+          description: "了解您的客户：根据欧洲反洗钱法规（AML/KYC），我们在任何付款前验证每个用户的身份。这保护社区免受欺诈。",
+          link: "/kyc-policy",
+          linkLabel: "了解更多 →",
+        },
+        twofa: {
+          label: "2FA",
+          title: "双因素认证",
+          description: "双因素认证（2FA）为您的账户增加了额外的安全层。即使您的密码被泄露，您的账户仍然受到保护。",
+        },
+      },
       company: "公司",
       support: "客服",
       legal: "法律",
@@ -13573,6 +13632,7 @@ export const messages: Record<Locale, Messages> = {
       fundingValue: "200万欧元（A轮）",
       mediaKit: "媒体工具包",
       download: "下载",
+      comingSoon: "即将推出",
       managementTeam: "管理团队",
       pressContact: "新闻联系",
       contactPress: "联系新闻",

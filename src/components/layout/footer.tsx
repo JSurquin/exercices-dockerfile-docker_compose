@@ -4,6 +4,12 @@ import Link from "next/link";
 import { useLocale } from "@/components/providers/locale-provider";
 import { usePublicStats } from "@/hooks/use-public-stats";
 import { MOONSKIN_DISCORD_URL, MOONSKIN_X_URL } from "@/lib/moonskin-social";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function Footer() {
   const { messages } = useLocale();
@@ -95,17 +101,49 @@ export function Footer() {
                 </div>
                 <div className="text-sm text-white/60">
                   <p className="font-medium text-white/80 mb-1">{messages.footer.securedBy}</p>
-                  <div className="flex items-center space-x-2">
-                    <span className="px-2 py-1 bg-green-500/20 border border-green-500/30 text-green-300 rounded text-xs backdrop-blur-sm">
-                      SSL
-                    </span>
-                    <span className="px-2 py-1 bg-blue-500/20 border border-blue-500/30 text-blue-300 rounded text-xs backdrop-blur-sm">
-                      KYC
-                    </span>
-                    <span className="px-2 py-1 bg-purple-500/20 border border-purple-500/30 text-purple-300 rounded text-xs backdrop-blur-sm">
-                      2FA
-                    </span>
-                  </div>
+                  <TooltipProvider delayDuration={200}>
+                    <div className="flex items-center space-x-2">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="px-2 py-1 bg-green-500/20 border border-green-500/30 text-green-300 rounded text-xs backdrop-blur-sm cursor-help hover:bg-green-500/30 transition-colors">
+                            {messages.footer.securityBadges.ssl.label}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs p-3">
+                          <p className="font-semibold text-sm mb-1">{messages.footer.securityBadges.ssl.title}</p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{messages.footer.securityBadges.ssl.description}</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Link
+                            href={messages.footer.securityBadges.kyc.link}
+                            className="px-2 py-1 bg-blue-500/20 border border-blue-500/30 text-blue-300 rounded text-xs backdrop-blur-sm hover:bg-blue-500/30 transition-colors"
+                          >
+                            {messages.footer.securityBadges.kyc.label}
+                          </Link>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs p-3">
+                          <p className="font-semibold text-sm mb-1">{messages.footer.securityBadges.kyc.title}</p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{messages.footer.securityBadges.kyc.description}</p>
+                          <p className="text-xs text-blue-400 mt-2">{messages.footer.securityBadges.kyc.linkLabel}</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="px-2 py-1 bg-purple-500/20 border border-purple-500/30 text-purple-300 rounded text-xs backdrop-blur-sm cursor-help hover:bg-purple-500/30 transition-colors">
+                            {messages.footer.securityBadges.twofa.label}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs p-3">
+                          <p className="font-semibold text-sm mb-1">{messages.footer.securityBadges.twofa.title}</p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{messages.footer.securityBadges.twofa.description}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TooltipProvider>
                 </div>
               </div>
 
