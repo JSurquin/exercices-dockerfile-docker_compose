@@ -1,5 +1,6 @@
 "use client";
 
+import type { ComponentType } from "react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -86,15 +87,27 @@ const UsdIcon = () => (
   </svg>
 );
 
-const PAYMENT_METHODS = [
-  { label: "USDT", icon: UsdtIcon },
-  { label: "Carte", icon: VisaIcon },
-  { label: "Virement", icon: SepaIcon },
-  { label: "EUR", icon: EuroIcon },
-  { label: "USD", icon: UsdIcon },
-  { label: "Bitcoin", icon: BitcoinIcon },
-  { label: "Ethereum", icon: EthereumIcon },
-];
+const HERO_PAYMENT_METHOD_ORDER = [
+  "usdt",
+  "card",
+  "bankTransfer",
+  "eur",
+  "usd",
+  "bitcoin",
+  "ethereum",
+] as const;
+
+type HeroPaymentMethodKey = (typeof HERO_PAYMENT_METHOD_ORDER)[number];
+
+const HERO_PAYMENT_METHOD_ICONS: Record<HeroPaymentMethodKey, ComponentType> = {
+  usdt: UsdtIcon,
+  card: VisaIcon,
+  bankTransfer: SepaIcon,
+  eur: EuroIcon,
+  usd: UsdIcon,
+  bitcoin: BitcoinIcon,
+  ethereum: EthereumIcon,
+};
 
 
 export function HeroSection() {
@@ -326,16 +339,22 @@ export function HeroSection() {
               transition={{ duration: 0.6, delay: 0.65 }}
               className="backdrop-blur-sm bg-black/20 border border-white/10 rounded-xl px-4 py-3"
             >
-              <p className="text-xs text-white/50 mb-2 uppercase tracking-wider">Moyens de paiement acceptés</p>
+              <p className="text-xs text-white/50 mb-2 uppercase tracking-wider">
+                {messages.hero.paymentMethods.title}
+              </p>
               <div className="flex flex-wrap items-center gap-3">
-                {PAYMENT_METHODS.map(({ label, icon: Icon }) => (
-                  <div key={label} className="flex flex-col items-center gap-1">
+                {HERO_PAYMENT_METHOD_ORDER.map((key) => {
+                  const Icon = HERO_PAYMENT_METHOD_ICONS[key];
+                  const label = messages.hero.paymentMethods[key];
+                  return (
+                  <div key={key} className="flex flex-col items-center gap-1">
                     <div className="rounded-lg bg-white/5 border border-white/10 p-1.5 hover:bg-white/10 transition-colors">
                       <Icon />
                     </div>
                     <span className="text-[10px] text-white/50">{label}</span>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
 

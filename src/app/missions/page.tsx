@@ -1,5 +1,6 @@
 'use client';
 
+import type { ComponentType } from 'react';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/components/providers/auth-provider';
+import { useLocale } from '@/components/providers/locale-provider';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,6 +24,8 @@ import {
   StarIcon,
 } from '@heroicons/react/24/outline';
 import { queryKeys } from '@/lib/query-keys';
+import { cn } from '@/lib/utils';
+import type { Messages } from '~/utils/types';
 
 type MissionRow = {
   key: string;
@@ -35,117 +39,50 @@ type MissionRow = {
   thresholdCents?: number;
 };
 
-const MISSION_META: Record<string, { label: string; description: string; icon: React.ReactNode }> = {
-  DAILY_CLAIM: {
-    label: 'Claim quotidien',
-    description: 'Viens sur le site et récupère tes fragments du jour.',
-    icon: <SparklesIcon className="w-5 h-5 text-amber-500" />,
-  },
-  DAILY_SELL_SKIN: {
-    label: 'Vendre un skin',
-    description: 'Réalise au moins 1 vente validée aujourd\'hui.',
-    icon: <ChartBarIcon className="w-5 h-5 text-green-500" />,
-  },
-  DAILY_VISIT: {
-    label: 'Visite quotidienne',
-    description: 'Ouvre ton dashboard pour valider ta présence du jour.',
-    icon: <ClockIcon className="w-5 h-5 text-blue-500" />,
-  },
-  WEEKLY_SELL_500: {
-    label: 'Vendre 500 €',
-    description: 'Atteins 500 € de volume vendu cette semaine.',
-    icon: <ChartBarIcon className="w-5 h-5 text-emerald-500" />,
-  },
-  WEEKLY_SELL_1000: {
-    label: 'Vendre 1 000 €',
-    description: 'Atteins 1 000 € de volume vendu cette semaine.',
-    icon: <ChartBarIcon className="w-5 h-5 text-emerald-600" />,
-  },
-  WEEKLY_GIVEAWAY_3: {
-    label: 'Participer à 3 giveaways',
-    description: 'Rejoins au moins 3 giveaways différents cette semaine.',
-    icon: <GiftIcon className="w-5 h-5 text-purple-500" />,
-  },
-  MONTHLY_SELL_5000: {
-    label: 'Vendre 5 000 €',
-    description: 'Atteins 5 000 € de volume vendu ce mois-ci.',
-    icon: <ChartBarIcon className="w-5 h-5 text-orange-500" />,
-  },
-  MONTHLY_SELL_10000: {
-    label: 'Vendre 10 000 €',
-    description: 'Atteins 10 000 € de volume vendu ce mois-ci.',
-    icon: <ChartBarIcon className="w-5 h-5 text-red-500" />,
-  },
-  SOCIAL_NEWSLETTER: {
-    label: 'Newsletter',
-    description: 'Inscris-toi à notre newsletter pour rester informé.',
-    icon: <GlobeAltIcon className="w-5 h-5 text-sky-500" />,
-  },
-  SOCIAL_TWITTER: {
-    label: 'Suivre sur X (Twitter)',
-    description: 'Suis notre compte Twitter officiel.',
-    icon: <GlobeAltIcon className="w-5 h-5 text-sky-400" />,
-  },
-  SOCIAL_INSTAGRAM: {
-    label: 'Suivre sur Instagram',
-    description: 'Suis notre compte Instagram.',
-    icon: <GlobeAltIcon className="w-5 h-5 text-pink-500" />,
-  },
-  SOCIAL_DISCORD: {
-    label: 'Rejoindre Discord',
-    description: 'Rejoins notre serveur Discord communautaire.',
-    icon: <GlobeAltIcon className="w-5 h-5 text-indigo-500" />,
-  },
-  BONUS_DAILY_SURPRISE: {
-    label: 'Mission du jour',
-    description: 'Récompense surprise du jour — montant aléatoire entre 20 et 50 fragments.',
-    icon: <StarIcon className="w-5 h-5 text-yellow-400" />,
-  },
+const MISSION_ROW_STYLE: Record<string, { icon: ComponentType<{ className?: string }>; iconClass: string }> = {
+  DAILY_CLAIM: { icon: SparklesIcon, iconClass: 'text-amber-500' },
+  DAILY_SELL_SKIN: { icon: ChartBarIcon, iconClass: 'text-green-500' },
+  DAILY_VISIT: { icon: ClockIcon, iconClass: 'text-blue-500' },
+  WEEKLY_SELL_500: { icon: ChartBarIcon, iconClass: 'text-emerald-500' },
+  WEEKLY_SELL_1000: { icon: ChartBarIcon, iconClass: 'text-emerald-600' },
+  WEEKLY_GIVEAWAY_3: { icon: GiftIcon, iconClass: 'text-purple-500' },
+  MONTHLY_SELL_5000: { icon: ChartBarIcon, iconClass: 'text-orange-500' },
+  MONTHLY_SELL_10000: { icon: ChartBarIcon, iconClass: 'text-red-500' },
+  SOCIAL_NEWSLETTER: { icon: GlobeAltIcon, iconClass: 'text-sky-500' },
+  SOCIAL_TWITTER: { icon: GlobeAltIcon, iconClass: 'text-sky-400' },
+  SOCIAL_INSTAGRAM: { icon: GlobeAltIcon, iconClass: 'text-pink-500' },
+  SOCIAL_DISCORD: { icon: GlobeAltIcon, iconClass: 'text-indigo-500' },
+  BONUS_DAILY_SURPRISE: { icon: StarIcon, iconClass: 'text-yellow-400' },
 };
 
-const CATEGORY_META: Record<string, { label: string; description: string; icon: React.ReactNode; color: string }> = {
-  DAILY: {
-    label: 'Missions quotidiennes',
-    description: 'Se réinitialisent chaque jour à minuit UTC.',
-    icon: <ClockIcon className="w-5 h-5" />,
-    color: 'text-amber-500',
-  },
-  WEEKLY: {
-    label: 'Missions hebdomadaires',
-    description: 'Se réinitialisent chaque lundi.',
-    icon: <CalendarDaysIcon className="w-5 h-5" />,
-    color: 'text-emerald-500',
-  },
-  MONTHLY: {
-    label: 'Missions mensuelles',
-    description: 'Se réinitialisent le 1er du mois.',
-    icon: <ChartBarIcon className="w-5 h-5" />,
-    color: 'text-orange-500',
-  },
-  SOCIAL: {
-    label: 'Missions sociales',
-    description: 'À compléter une seule fois.',
-    icon: <GlobeAltIcon className="w-5 h-5" />,
-    color: 'text-purple-500',
-  },
-  BONUS: {
-    label: 'Mission surprise',
-    description: 'Récompense aléatoire du jour. Reviens chaque jour pour une nouvelle surprise !',
-    icon: <StarIcon className="w-5 h-5" />,
-    color: 'text-yellow-400',
-  },
+const CATEGORY_STYLE: Record<
+  'DAILY' | 'WEEKLY' | 'MONTHLY' | 'SOCIAL' | 'BONUS',
+  { icon: ComponentType<{ className?: string }>; color: string }
+> = {
+  DAILY: { icon: ClockIcon, color: 'text-amber-500' },
+  WEEKLY: { icon: CalendarDaysIcon, color: 'text-emerald-500' },
+  MONTHLY: { icon: ChartBarIcon, color: 'text-orange-500' },
+  SOCIAL: { icon: GlobeAltIcon, color: 'text-purple-500' },
+  BONUS: { icon: StarIcon, color: 'text-yellow-400' },
 };
+
+const CATEGORY_ORDER = ['BONUS', 'DAILY', 'WEEKLY', 'MONTHLY', 'SOCIAL'] as const;
 
 function MissionCard({
   mission,
   onClaim,
   isPending,
+  t,
 }: {
   mission: MissionRow;
   onClaim: (key: string) => void;
   isPending: boolean;
+  t: Messages['missions'];
 }) {
-  const meta = MISSION_META[mission.key];
+  const rowStyle = MISSION_ROW_STYLE[mission.key];
+  const IconComp = rowStyle?.icon ?? SparklesIcon;
+  const iconClass = rowStyle?.iconClass ?? 'text-amber-500';
+  const itemMeta = t.items[mission.key as keyof typeof t.items];
 
   return (
     <div
@@ -176,13 +113,15 @@ function MissionCard({
           ) : !mission.eligible ? (
             <LockClosedIcon className="w-5 h-5 text-muted-foreground" />
           ) : (
-            meta?.icon ?? <SparklesIcon className="w-5 h-5 text-amber-500" />
+            <IconComp className={cn('w-5 h-5', iconClass)} />
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-semibold text-sm">{meta?.label ?? mission.key.replace(/_/g, ' ')}</p>
+          <p className="font-semibold text-sm">
+            {itemMeta?.label ?? mission.key.replace(/_/g, ' ')}
+          </p>
           <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-            {meta?.description ?? ''}
+            {itemMeta?.description ?? ''}
           </p>
           {!mission.completed && mission.progressTarget != null && mission.progressCurrent != null && (
             <div className="mt-2 space-y-1">
@@ -208,7 +147,7 @@ function MissionCard({
         {mission.completed ? (
           <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800">
             <CheckCircleIcon className="w-3.5 h-3.5 mr-1" />
-            Réclamée
+            {t.claimed}
           </Badge>
         ) : mission.eligible ? (
           <Button
@@ -217,12 +156,12 @@ function MissionCard({
             onClick={() => onClaim(mission.key)}
             className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
           >
-            Réclamer
+            {t.claim}
           </Button>
         ) : (
           <Badge variant="outline" className="text-muted-foreground">
             <LockClosedIcon className="w-3.5 h-3.5 mr-1" />
-            Non disponible
+            {t.notAvailable}
           </Badge>
         )}
       </div>
@@ -232,16 +171,17 @@ function MissionCard({
 
 export default function MissionsPage() {
   const { user, isLoading: authLoading, refreshUser } = useAuth();
+  const { messages, locale } = useLocale();
+  const t = messages.missions;
   const queryClient = useQueryClient();
   const [animatingFragments, setAnimatingFragments] = useState(false);
-  const [fragmentsEarned, setFragmentsEarned] = useState(0);
   const [displayFragments, setDisplayFragments] = useState(0);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['missions'],
+    queryKey: ['missions', locale],
     queryFn: async () => {
       const r = await fetch('/api/missions', { credentials: 'include' });
-      if (!r.ok) throw new Error('Erreur chargement missions');
+      if (!r.ok) throw new Error(t.fetchError);
       return r.json() as Promise<{ missions: MissionRow[] }>;
     },
     enabled: !!user,
@@ -256,20 +196,18 @@ export default function MissionsPage() {
         body: JSON.stringify({ missionKey }),
       });
       const j = await r.json();
-      if (!r.ok) throw new Error(j.error || 'Erreur');
+      if (!r.ok) throw new Error(j.error || t.genericError);
       return j;
     },
     onSuccess: async (j: { fragments?: number }) => {
       const earned = j.fragments ?? 0;
-      setFragmentsEarned(earned);
       setAnimatingFragments(true);
-      
-      // Animation du compteur rapide
-      const duration = 1500; // 1.5 secondes
+
+      const duration = 1500;
       const steps = 30;
       const increment = earned / steps;
       let current = 0;
-      
+
       const interval = setInterval(() => {
         current += increment;
         if (current >= earned) {
@@ -281,24 +219,23 @@ export default function MissionsPage() {
         }
       }, duration / steps);
 
-      // Invalider les queries pour mettre à jour l'UI
       queryClient.invalidateQueries({ queryKey: ['missions'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.userDashboard });
       queryClient.invalidateQueries({ queryKey: queryKeys.userBalanceHistory });
-      
+
       await refreshUser();
-      
-      toast.success(`+${earned} fragments récupérés !`, {
-        description: 'Tes fragments ont été ajoutés à ton compte',
+
+      toast.success(t.toastEarnedTitle.replace('{amount}', String(earned)), {
+        description: t.toastEarnedDescription,
         duration: 3000,
       });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : 'Erreur'),
+    onError: (e) => toast.error(e instanceof Error ? e.message : t.genericError),
   });
 
   if (authLoading) {
     return (
-      <div className="container py-24 text-center text-muted-foreground">Chargement…</div>
+      <div className="container py-24 text-center text-muted-foreground">{t.loading}</div>
     );
   }
 
@@ -306,10 +243,10 @@ export default function MissionsPage() {
     return (
       <div className="container max-w-lg mx-auto py-24 text-center space-y-4">
         <SparklesIcon className="w-16 h-16 mx-auto text-amber-500" />
-        <p className="font-semibold text-lg">Connecte-toi pour voir les missions</p>
-        <p className="text-muted-foreground">Gagne des fragments en accomplissant des missions quotidiennes.</p>
+        <p className="font-semibold text-lg">{t.loginTitle}</p>
+        <p className="text-muted-foreground">{t.loginSubtitle}</p>
         <Link href="/giveaways">
-          <Button variant="outline">Retour aux giveaways</Button>
+          <Button variant="outline">{t.backToGiveaways}</Button>
         </Link>
       </div>
     );
@@ -325,7 +262,6 @@ export default function MissionsPage() {
 
   return (
     <div className="container max-w-3xl mx-auto px-4 py-10 space-y-8">
-      {/* Animation overlay pour les fragments */}
       <AnimatePresence>
         {animatingFragments && (
           <motion.div
@@ -336,12 +272,12 @@ export default function MissionsPage() {
           >
             <motion.div
               initial={{ scale: 0.5, opacity: 0, y: 100 }}
-              animate={{ 
+              animate={{
                 scale: [0.5, 1.2, 1],
                 opacity: [0, 1, 1],
                 y: [100, -20, 0],
               }}
-              exit={{ 
+              exit={{
                 scale: 0.5,
                 opacity: 0,
                 y: -100,
@@ -359,26 +295,25 @@ export default function MissionsPage() {
                     scale: [1, 1.1, 1],
                   }}
                   transition={{
-                    rotate: { duration: 2, repeat: Infinity, ease: "linear" },
-                    scale: { duration: 0.5, repeat: Infinity, repeatType: "reverse" },
+                    rotate: { duration: 2, repeat: Infinity, ease: 'linear' },
+                    scale: { duration: 0.5, repeat: Infinity, repeatType: 'reverse' },
                   }}
                 >
                   <SparklesIcon className="w-20 h-20" />
                 </motion.div>
                 <div className="text-center">
-                  <motion.p 
+                  <motion.p
                     className="text-6xl font-black tabular-nums"
                     key={displayFragments}
                   >
                     +{displayFragments}
                   </motion.p>
-                  <p className="text-2xl font-semibold mt-2">Fragments 💠</p>
-                  <p className="text-sm opacity-90 mt-1">Mission complétée !</p>
+                  <p className="text-2xl font-semibold mt-2">{t.celebrationFragments}</p>
+                  <p className="text-sm opacity-90 mt-1">{t.celebrationComplete}</p>
                 </div>
               </div>
             </motion.div>
-            
-            {/* Particules de confettis */}
+
             {[...Array(20)].map((_, i) => (
               <motion.div
                 key={i}
@@ -398,7 +333,7 @@ export default function MissionsPage() {
                 transition={{
                   duration: 1.5,
                   delay: Math.random() * 0.3,
-                  ease: "easeOut",
+                  ease: 'easeOut',
                 }}
                 className={`absolute w-3 h-3 rounded-full ${
                   i % 3 === 0 ? 'bg-amber-400' : i % 3 === 1 ? 'bg-orange-400' : 'bg-yellow-300'
@@ -413,28 +348,26 @@ export default function MissionsPage() {
         )}
       </AnimatePresence>
 
-      {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <SparklesIcon className="w-8 h-8 text-amber-500" />
-            Missions
+            {messages.nav.missions}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Source secondaire de fragments — les ventes restent la priorité.
+            {t.pageSubtitle}
           </p>
         </div>
         <Link href="/giveaways">
-          <Button variant="outline">Giveaways</Button>
+          <Button variant="outline">{messages.giveaways.title}</Button>
         </Link>
       </div>
 
-      {/* Résumé */}
       <div className="grid md:grid-cols-3 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground mb-1">Fragments disponibles</p>
-            <motion.p 
+            <p className="text-xs text-muted-foreground mb-1">{t.statsFragments}</p>
+            <motion.p
               key={user.fragments ?? 0}
               initial={{ scale: 1 }}
               animate={{ scale: [1, 1.2, 1] }}
@@ -447,13 +380,13 @@ export default function MissionsPage() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground mb-1">À réclamer</p>
+            <p className="text-xs text-muted-foreground mb-1">{t.statsToClaim}</p>
             <p className="text-2xl font-bold text-orange-500">+{totalClaimable}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground mb-1">Complétées</p>
+            <p className="text-xs text-muted-foreground mb-1">{t.statsCompleted}</p>
             <p className="text-2xl font-bold text-green-500">
               {totalCompleted}/{totalMissions}
             </p>
@@ -461,11 +394,10 @@ export default function MissionsPage() {
         </Card>
       </div>
 
-      {/* Barre de progression globale */}
       {totalMissions > 0 && (
         <div className="space-y-1.5">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Progression globale</span>
+            <span className="text-muted-foreground">{t.globalProgress}</span>
             <span className="font-medium">{Math.round((totalCompleted / totalMissions) * 100)}%</span>
           </div>
           <Progress value={(totalCompleted / totalMissions) * 100} className="h-2" />
@@ -480,9 +412,11 @@ export default function MissionsPage() {
         </div>
       ) : (
         <div className="space-y-8">
-          {(['BONUS', 'DAILY', 'WEEKLY', 'MONTHLY', 'SOCIAL'] as const).map((cat) => {
+          {CATEGORY_ORDER.map((cat) => {
             const catMissions = byCat(cat);
-            const catMeta = CATEGORY_META[cat];
+            const catStyle = CATEGORY_STYLE[cat];
+            const CatIcon = catStyle.icon;
+            const catCopy = t.categories[cat];
             const catCompleted = catMissions.filter((m) => m.completed).length;
             const catClaimable = catMissions.filter((m) => m.eligible && !m.completed)
               .reduce((s, m) => s + m.rewardFragments, 0);
@@ -490,15 +424,15 @@ export default function MissionsPage() {
             return (
               <Card key={cat}>
                 <CardHeader className="pb-3">
-                  <CardTitle className={`flex items-center justify-between text-base ${catMeta.color}`}>
+                  <CardTitle className={`flex items-center justify-between text-base ${catStyle.color}`}>
                     <div className="flex items-center gap-2">
-                      {catMeta.icon}
-                      {catMeta.label}
+                      <CatIcon className="w-5 h-5" />
+                      {catCopy.label}
                     </div>
                     <div className="flex items-center gap-2">
                       {catClaimable > 0 && (
                         <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 text-xs">
-                          +{catClaimable} 💠 disponibles
+                          {t.categoryAvailableBadge.replace('{amount}', String(catClaimable))}
                         </Badge>
                       )}
                       <span className="text-xs text-muted-foreground font-normal">
@@ -506,7 +440,7 @@ export default function MissionsPage() {
                       </span>
                     </div>
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground">{catMeta.description}</p>
+                  <p className="text-xs text-muted-foreground">{catCopy.description}</p>
                   {catMissions.length > 0 && (
                     <Progress
                       value={(catCompleted / catMissions.length) * 100}
@@ -516,7 +450,7 @@ export default function MissionsPage() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {catMissions.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-2">Aucune mission.</p>
+                    <p className="text-sm text-muted-foreground text-center py-2">{t.noMissionsInCategory}</p>
                   ) : (
                     catMissions.map((m) => (
                       <MissionCard
@@ -524,6 +458,7 @@ export default function MissionsPage() {
                         mission={m}
                         onClaim={(key) => claim.mutate(key)}
                         isPending={claim.isPending}
+                        t={t}
                       />
                     ))
                   )}
