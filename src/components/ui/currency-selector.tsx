@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, DollarSign } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useCurrency } from '@/components/providers/currency-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { SupportedCurrency } from '@/lib/currency-converter';
@@ -46,7 +46,7 @@ export function CurrencySelector({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant={variant} size={size} className={`gap-2 ${className}`}>
-          <DollarSign className="h-4 w-4" />
+          <span className="font-semibold text-base">{currentCurrency.symbol}</span>
           {showFlag && <span>{currentCurrency.flag}</span>}
           <span className="font-mono font-bold">{currentCurrency.code}</span>
           {showName && <span className="hidden sm:inline">{getCurrencyName(currentCurrency.nameKey)}</span>}
