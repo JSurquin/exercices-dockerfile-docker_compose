@@ -2340,7 +2340,11 @@ export const messages: Record<Locale, Messages> = {
         sameAccountSuccess: "✅ Ce Trade Link correspond à votre compte de connexion.",
         tipLabel: "Astuce :",
         deleteTipText: "Si vous supprimez votre Trade Link, l'inventaire de votre compte de connexion",
-        deleteTipText2: "sera automatiquement utilisé."
+        deleteTipText2: "sera automatiquement utilisé.",
+        configureTradeLinkTitle: "Configurer votre Trade Link",
+        hide: "Masquer",
+        modify: "Modifier",
+        configure: "Configurer"
       },
       steamId: {
         title: "Steam ID64",
@@ -9071,7 +9075,11 @@ export const messages: Record<Locale, Messages> = {
         sameAccountSuccess: "✅ This Trade Link corresponds to your login account.",
         tipLabel: "Tip:",
         deleteTipText: "If you delete your Trade Link, your login account's inventory",
-        deleteTipText2: "will be automatically used."
+        deleteTipText2: "will be automatically used.",
+        configureTradeLinkTitle: "Configure your Trade Link",
+        hide: "Hide",
+        modify: "Modify",
+        configure: "Configure"
       },
       steamId: {
         title: "Steam ID64",
@@ -13994,7 +14002,11 @@ export const messages: Record<Locale, Messages> = {
         sameAccountSuccess: "✅ 此交易链接对应您的登录账户。",
         tipLabel: "提示：",
         deleteTipText: "如果您删除交易链接，将自动使用您的登录账户库存",
-        deleteTipText2: "。"
+        deleteTipText2: "。",
+        configureTradeLinkTitle: "配置您的交易链接",
+        hide: "隐藏",
+        modify: "修改",
+        configure: "配置"
       },
       steamId: {
         title: "Steam ID64",

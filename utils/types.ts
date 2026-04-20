@@ -1106,6 +1106,10 @@ export interface Messages {
       tipLabel: string;
       deleteTipText: string;
       deleteTipText2: string;
+      configureTradeLinkTitle: string;
+      hide: string;
+      modify: string;
+      configure: string;
     };
     steamId: {
       title: string;

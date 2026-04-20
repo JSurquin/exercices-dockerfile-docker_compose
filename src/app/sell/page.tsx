@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -15,13 +14,13 @@ import { ConvertedPrice } from "@/components/ui/converted-price";
 import { NormalizedInventoryItem } from "@/hooks/use-skinplace-inventory";
 import { TradeStatusModal, TradeModalStatus } from "@/components/sell/trade-status-modal";
 import { parseSteamId64FromUserInput } from "@/lib/steam-id";
+import InlineTradeLinkEditor from "@/components/sell/inline-trade-link-editor";
 import {
   LinkIcon,
   CurrencyDollarIcon,
   ShieldCheckIcon,
   CheckCircleIcon,
   UserIcon,
-  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
@@ -66,6 +65,12 @@ export default function SellPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.tradeLink, user?.steamId64]);
+
+  // Callback pour rafraîchir après modification du Trade Link
+  const handleTradeLinkUpdate = () => {
+    const newSteamId = getInventorySteamId();
+    setActiveSteamId(newSteamId);
+  };
 
   const stopPolling = useCallback(() => {
     if (pollIntervalRef.current) {
@@ -211,25 +216,14 @@ export default function SellPage() {
           <p className="text-muted-foreground">{messages.sellPage.subtitle}</p>
         </motion.div>
 
-        {user && !user.tradeLink && currentStep === 0 && (
+        {user && currentStep === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="max-w-6xl mx-auto mb-6"
+            className="max-w-6xl mx-auto"
           >
-            <Alert className="border-orange-500/40 bg-orange-500/5 text-left">
-              <InformationCircleIcon className="h-5 w-5 text-orange-500" />
-              <AlertTitle className="text-foreground">
-                {messages.sellPage.noSteamLinkedBanner.title}
-              </AlertTitle>
-              <AlertDescription className="text-muted-foreground mt-1 space-y-3">
-                <p>{messages.sellPage.noSteamLinkedBanner.description}</p>
-                <Button variant="outline" size="sm" asChild>
-                  <a href="/settings">{messages.sellPage.noSteamLinkedBanner.settings}</a>
-                </Button>
-              </AlertDescription>
-            </Alert>
+            <InlineTradeLinkEditor onSuccess={handleTradeLinkUpdate} />
           </motion.div>
         )}
 
