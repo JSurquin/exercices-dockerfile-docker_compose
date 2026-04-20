@@ -439,14 +439,65 @@ export function SkinplaceInventoryViewer({
                   <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
                     {isPrivateError ? '2' : '1'}
                   </span>
-                  Essayer un autre Steam ID
+                  Utiliser votre compte de connexion
                 </h4>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Si vous avez plusieurs comptes Steam, vous pouvez charger l&apos;inventaire d&apos;un autre compte.
+                  Le Steam ID actuel provient de votre Trade Link. Pour charger votre compte de connexion à la place, cliquez ci-dessous.
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleResetSteamId}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Utiliser mon compte principal
+                  </Button>
+                </div>
+                {profileSteamId64 && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Votre compte principal : <code className="bg-muted px-1 rounded">{profileSteamId64}</code>
+                  </p>
+                )}
+              </div>
+            )}
+            
+            {(isPrivateError || isNotFoundError) && (
+              <div className="bg-background rounded-lg p-4 border">
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
+                    {isPrivateError && allowSteamIdChange ? '3' : '2'}
+                  </span>
+                  Modifier votre Trade Link
+                </h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Si le Trade Link actuel est incorrect ou pointe vers un compte privé, vous pouvez le modifier dans les paramètres.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.href = '/settings'}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Aller aux paramètres
+                </Button>
+              </div>
+            )}
+            
+            {allowSteamIdChange && (
+              <div className="bg-background rounded-lg p-4 border">
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
+                    {isPrivateError ? '4' : isNotFoundError ? '3' : '1'}
+                  </span>
+                  Essayer un autre Steam ID temporairement
+                </h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Vous pouvez temporairement charger l&apos;inventaire d&apos;un autre compte sans modifier vos paramètres.
                 </p>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="76561198123456789"
+                    placeholder="76561198123456789 ou Trade Link"
                     value={customSteamId}
                     onChange={(e) => setCustomSteamId(e.target.value)}
                     className="flex-1"

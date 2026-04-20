@@ -56,7 +56,8 @@ export function SteamTradeCreator({
   const [error, setError] = useState<string | null>(null);
 
   const validateTradeUrl = (url: string) => {
-    const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
+    // Accepte avec ou sans / après "new" (Steam peut renvoyer les deux formats)
+    const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/?\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
     return steamTradeUrlRegex.test(url);
   };
 

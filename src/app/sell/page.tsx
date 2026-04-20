@@ -14,6 +14,7 @@ import { SkinplaceTradeCreator, TradeCreatedData } from "@/components/skinplace/
 import { ConvertedPrice } from "@/components/ui/converted-price";
 import { NormalizedInventoryItem } from "@/hooks/use-skinplace-inventory";
 import { TradeStatusModal, TradeModalStatus } from "@/components/sell/trade-status-modal";
+import { parseSteamId64FromUserInput } from "@/lib/steam-id";
 import {
   LinkIcon,
   CurrencyDollarIcon,
@@ -40,10 +41,31 @@ export default function SellPage() {
   const steps = getSteps(messages);
   const [selectedItems, setSelectedItems] = useState<NormalizedInventoryItem[]>([]);
   const [tradeData, setTradeData] = useState<TradeCreatedData | null>(null);
-  const [activeSteamId, setActiveSteamId] = useState(user?.steamId64 || '');
+  
+  // Déterminer le Steam ID à utiliser pour l'inventaire
+  // Priorité : Trade Link > steamId64 de connexion
+  const getInventorySteamId = () => {
+    if (user?.tradeLink) {
+      const extractedId = parseSteamId64FromUserInput(user.tradeLink);
+      if (extractedId) return extractedId;
+    }
+    // Fallback sur le steamId64 de connexion
+    return user?.steamId64 || '';
+  };
+  
+  const [activeSteamId, setActiveSteamId] = useState(getInventorySteamId());
   const [modalStatus, setModalStatus] = useState<TradeModalStatus>(null);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollAttemptsRef = useRef(0);
+
+  // Mettre à jour activeSteamId quand le user ou son trade link change
+  useEffect(() => {
+    const newSteamId = getInventorySteamId();
+    if (newSteamId !== activeSteamId) {
+      setActiveSteamId(newSteamId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.tradeLink, user?.steamId64]);
 
   const stopPolling = useCallback(() => {
     if (pollIntervalRef.current) {
@@ -189,7 +211,7 @@ export default function SellPage() {
           <p className="text-muted-foreground">{messages.sellPage.subtitle}</p>
         </motion.div>
 
-        {user && !user.steamId64 && currentStep === 0 && (
+        {user && !user.tradeLink && currentStep === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -270,9 +292,9 @@ export default function SellPage() {
         >
           {currentStep === 0 && (
             <SkinplaceInventoryViewer
-              steamId64={user.steamId64 ?? ""}
+              steamId64={activeSteamId}
               linkedSteamIdentity={
-                user.steamId64
+                user.steamId64 && activeSteamId === user.steamId64
                   ? { name: user.username, avatarUrl: user.avatar }
                   : undefined
               }

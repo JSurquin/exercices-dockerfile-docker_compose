@@ -137,13 +137,40 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Vérifier que l'utilisateur demande son propre inventaire
-    if (steamId !== session.user.steamId) {
+    // Vérifier que l'utilisateur demande son propre inventaire OU celui de son trade link
+    const { prisma } = await import('~/prisma/prisma');
+    const { parseSteamId64FromUserInput } = await import('@/lib/steam-id');
+    
+    // Récupérer le trade link de l'utilisateur
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { steamId: true, tradeLink: true }
+    });
+    
+    const allowedSteamIds = [session.user.steamId];
+    
+    // Si l'utilisateur a un trade link, autoriser aussi le Steam ID qu'il contient
+    if (user?.tradeLink) {
+      const tradeLinkSteamId = parseSteamId64FromUserInput(user.tradeLink);
+      if (tradeLinkSteamId) {
+        allowedSteamIds.push(tradeLinkSteamId);
+      }
+    }
+    
+    if (!allowedSteamIds.includes(steamId)) {
+      console.log('🚫 Accès refusé:', {
+        demandé: steamId,
+        autorisés: allowedSteamIds,
+        session_steamId: session.user.steamId,
+        tradeLink: user?.tradeLink,
+      });
       return NextResponse.json(
         { success: false, error: 'Accès non autorisé' },
         { status: 403 }
       );
     }
+    
+    console.log('✅ Accès autorisé pour Steam ID:', steamId, '(compte connexion ou trade link)');
 
     // Récupérer les clés d'API depuis les variables d'environnement
     const privateKey = process.env.SKINPLACE_API_KEY_PRIVATE;

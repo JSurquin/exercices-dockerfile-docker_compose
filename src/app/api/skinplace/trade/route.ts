@@ -42,7 +42,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Valider le format du trade URL Steam
-    const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
+    // Accepte avec ou sans / après "new" (Steam peut renvoyer les deux formats)
+    const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/?\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
     if (!steamTradeUrlRegex.test(trade_url)) {
       return NextResponse.json(
         { error: 'Format de trade URL Steam invalide' },

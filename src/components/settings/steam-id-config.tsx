@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,80 +9,23 @@ import { Badge } from "@/components/ui/badge";
 import { 
   User, 
   CheckCircle, 
-  AlertTriangle, 
-  ExternalLink,
   Copy,
-  RefreshCw,
-  Info
+  Info,
+  Lock
 } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
 import { toast } from "sonner";
 
 export default function SteamIdConfig() {
-  const { user, updateUser } = useAuth();
+  const { user } = useAuth();
   const { messages } = useLocale();
-  const [steamId, setSteamId] = useState(user?.steamId64 || '');
-  const [isValidId, setIsValidId] = useState<boolean | null>(
-    user?.steamId64 ? validateSteamId64(user.steamId64) : null
-  );
-  const [loading, setLoading] = useState(false);
-  const [showInstructions, setShowInstructions] = useState(!user?.steamId64);
 
-  // Synchroniser avec les données utilisateur
-  useEffect(() => {
+  const copySteamId = () => {
     if (user?.steamId64) {
-      setSteamId(user.steamId64);
-      setIsValidId(validateSteamId64(user.steamId64));
-      setShowInstructions(false);
-    } else {
-      setSteamId('');
-      setIsValidId(null);
-      setShowInstructions(true);
+      navigator.clipboard.writeText(user.steamId64);
+      toast.success(messages.settings.steamId.copied);
     }
-  }, [user?.steamId64]);
-
-  function validateSteamId64(id: string): boolean {
-    const steamId64Regex = /^7656119[0-9]{10}$/;
-    return steamId64Regex.test(id);
-  }
-
-  const handleIdChange = (id: string) => {
-    setSteamId(id);
-    setIsValidId(id ? validateSteamId64(id) : null);
-  };
-
-  const handleSave = async () => {
-    if (!isValidId || !steamId) {
-      toast.error(messages.settings.steamId.invalidFormat);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await updateUser({ steamId64: steamId });
-      toast.success(messages.settings.steamId.savedSuccess);
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde du Steam ID:', error);
-      toast.error(messages.settings.steamId.saveError);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleClear = () => {
-    setSteamId('');
-    setIsValidId(null);
-  };
-
-  const copyExampleId = () => {
-    const exampleId = "76561198123456789";
-    navigator.clipboard.writeText(exampleId);
-    toast.success(messages.settings.steamId.copiedToClipboard);
-  };
-
-  const openSteamIdFinder = () => {
-    window.open('https://steamid.io/', '_blank');
   };
 
   return (
@@ -91,138 +33,65 @@ export default function SteamIdConfig() {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <User className="w-5 h-5" />
-          <span>{messages.settings.steamId.title}</span>
+          <span>{messages.settings.steamId.accountLoginTitle}</span>
           {user?.steamId64 && (
-            <Badge variant="secondary" className="bg-green-100 text-green-800">
+            <Badge variant="secondary" className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100">
               <CheckCircle className="w-3 h-3 mr-1" />
-              {messages.settings.steamId.configured}
+              {messages.settings.steamId.verified}
             </Badge>
           )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Instructions */}
-        {showInstructions && (
-          <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-              <div className="space-y-3">
-                <h4 className="font-semibold text-blue-900 dark:text-blue-100">
-                  {messages.settings.steamId.howToGetTitle}
-                </h4>
-                <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
-                  <p><strong>{messages.settings.steamId.method1Title}</strong></p>
-                  <ol className="list-decimal list-inside space-y-1 ml-4">
-                    {messages.settings.steamId.method1Steps.map((step, index) => (
-                      <li key={index}>{step}</li>
-                    ))}
-                  </ol>
-                  <p><strong>{messages.settings.steamId.method2Title}</strong></p>
-                  <p>{messages.settings.steamId.method2Desc}</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={openSteamIdFinder}
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    {messages.settings.steamId.findSteamId}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={copyExampleId}
-                  >
-                    <Copy className="w-4 h-4 mr-2" />
-                    {messages.settings.steamId.copyExample}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Configuration du Steam ID */}
+        {/* Affichage en lecture seule du Steam ID */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="steam-id">{messages.settings.steamId.label}</Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowInstructions(!showInstructions)}
-            >
-              {showInstructions ? messages.settings.steamId.hideInstructions : messages.settings.steamId.showInstructions}
-            </Button>
-          </div>
+          <Label htmlFor="steam-id">{messages.settings.steamId.labelLogin}</Label>
           
-          <Input
-            id="steam-id"
-            placeholder={messages.settings.steamId.placeholder}
-            value={steamId}
-            onChange={(e) => handleIdChange(e.target.value)}
-            className={isValidId === false ? 'border-red-500' : isValidId === true ? 'border-green-500' : ''}
-          />
-
-          {/* Validation feedback */}
-          {isValidId === false && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                {messages.settings.steamId.invalidFormatDesc}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {isValidId === true && (
-            <Alert>
-              <CheckCircle className="h-4 w-4" />
-              <AlertDescription>
-                {messages.settings.steamId.validFormat}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Current Steam ID */}
-          {user?.steamId64 && user.steamId64 !== steamId && (
-            <div className="bg-muted p-3 rounded-lg">
-              <p className="text-sm font-medium mb-1">{messages.settings.steamId.currentSteamId}</p>
-              <p className="text-xs text-muted-foreground font-mono">
-                {user.steamId64}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center space-x-2">
-          <Button
-            onClick={handleSave}
-            disabled={loading || !isValidId || !steamId || steamId === user?.steamId64}
-            className="flex items-center space-x-2"
-          >
-            {loading && <RefreshCw className="w-4 h-4 animate-spin" />}
-            <span>{loading ? messages.settings.steamId.saving : messages.settings.steamId.save}</span>
-          </Button>
-          
-          {steamId && (
+          <div className="flex items-center gap-2">
+            <Input
+              id="steam-id"
+              value={user?.steamId64 || ''}
+              disabled
+              className="font-mono bg-muted cursor-not-allowed"
+            />
             <Button
               variant="outline"
-              onClick={handleClear}
-              disabled={loading}
+              size="icon"
+              onClick={copySteamId}
+              title={messages.settings.steamId.copySteamId}
             >
-              {messages.settings.steamId.clear}
+              <Copy className="w-4 h-4" />
             </Button>
-          )}
+          </div>
         </div>
 
-        {/* Info */}
+        {/* Info sur le Steam ID */}
         <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            <strong>{messages.settings.steamId.whyTitle}</strong> {messages.settings.steamId.whyText}
+          <Lock className="h-4 w-4" />
+          <AlertDescription className="text-sm">
+            <strong>{messages.settings.steamId.lockedTitle}</strong> {messages.settings.steamId.lockedDescription}
+            <br /><br />
+            {messages.settings.steamId.lockedSubDescription}
           </AlertDescription>
         </Alert>
+
+        {/* Info complémentaire */}
+        <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
+              <p>
+                <strong>{messages.settings.steamId.infoTitle}</strong>
+              </p>
+              <p>
+                {messages.settings.steamId.infoText1}
+              </p>
+              <p>
+                {messages.settings.steamId.infoText2}
+              </p>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

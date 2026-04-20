@@ -13,11 +13,13 @@ import {
   AlertTriangle, 
   ExternalLink,
   Copy,
-  RefreshCw
+  RefreshCw,
+  Info
 } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
 import { toast } from "sonner";
+import { parseSteamId64FromUserInput } from "@/lib/steam-id";
 
 export default function TradeLinkConfig() {
   const { user, updateUser } = useAuth();
@@ -28,28 +30,47 @@ export default function TradeLinkConfig() {
   );
   const [loading, setLoading] = useState(false);
   const [showInstructions, setShowInstructions] = useState(!user?.tradeLink);
+  const [extractedSteamId, setExtractedSteamId] = useState<string | null>(null);
 
   // Synchroniser avec les données utilisateur
   useEffect(() => {
     if (user?.tradeLink) {
       setTradeUrl(user.tradeLink);
-      setIsValidUrl(validateTradeUrl(user.tradeLink));
+      const isValid = validateTradeUrl(user.tradeLink);
+      setIsValidUrl(isValid);
       setShowInstructions(false);
+      
+      // Extraire le SteamID du trade link existant
+      if (isValid) {
+        const steamId = parseSteamId64FromUserInput(user.tradeLink);
+        setExtractedSteamId(steamId);
+      }
     } else {
       setTradeUrl('');
       setIsValidUrl(null);
       setShowInstructions(true);
+      setExtractedSteamId(null);
     }
   }, [user?.tradeLink]);
 
   function validateTradeUrl(url: string): boolean {
-    const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
+    // Accepte avec ou sans / après "new" (Steam peut renvoyer les deux formats)
+    const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/?\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
     return steamTradeUrlRegex.test(url);
   }
 
   const handleUrlChange = (url: string) => {
     setTradeUrl(url);
-    setIsValidUrl(url ? validateTradeUrl(url) : null);
+    const isValid = url ? validateTradeUrl(url) : null;
+    setIsValidUrl(isValid);
+    
+    // Extraire le SteamID du trade link
+    if (isValid && url) {
+      const steamId = parseSteamId64FromUserInput(url);
+      setExtractedSteamId(steamId);
+    } else {
+      setExtractedSteamId(null);
+    }
   };
 
   const handleSave = async () => {
@@ -60,7 +81,10 @@ export default function TradeLinkConfig() {
 
     setLoading(true);
     try {
+      // On sauvegarde UNIQUEMENT le Trade Link
+      // Le Steam ID sera extrait à la volée quand nécessaire
       await updateUser({ tradeLink: tradeUrl });
+      
       toast.success(messages.settings.tradeLink.savedSuccess);
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du Trade Link:', error);
@@ -73,6 +97,25 @@ export default function TradeLinkConfig() {
   const handleClear = () => {
     setTradeUrl('');
     setIsValidUrl(null);
+    setExtractedSteamId(null);
+  };
+
+  const handleRemoveTradeLink = async () => {
+    if (!user?.tradeLink) return;
+    
+    setLoading(true);
+    try {
+      await updateUser({ tradeLink: '' });
+      setTradeUrl('');
+      setIsValidUrl(null);
+      setExtractedSteamId(null);
+      toast.success(messages.settings.tradeLink.deleteSuccess);
+    } catch (error) {
+      console.error('Erreur lors de la suppression du Trade Link:', error);
+      toast.error(messages.settings.tradeLink.deleteError);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copyExampleUrl = () => {
@@ -173,6 +216,43 @@ export default function TradeLinkConfig() {
             </Alert>
           )}
 
+          {/* Extracted Steam ID Display */}
+          {extractedSteamId && isValidUrl && (
+            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <Info className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                <div className="space-y-2 flex-1">
+                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                    {messages.settings.tradeLink.extractedSteamIdTitle}
+                  </p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300 font-mono bg-blue-100 dark:bg-blue-900/40 px-2 py-1 rounded">
+                    {extractedSteamId}
+                  </p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    {messages.settings.tradeLink.extractedSteamIdDesc}
+                  </p>
+                  {user?.steamId64 && extractedSteamId !== user.steamId64 && (
+                    <Alert className="mt-2">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription className="text-xs">
+                        <strong>{messages.settings.tradeLink.noteLabel}</strong> {messages.settings.tradeLink.differentAccountWarning} 
+                        (<code className="bg-muted px-1 rounded">{user.steamId64}</code>).
+                        {messages.settings.tradeLink.differentAccountNormal}
+                        <br /><br />
+                        <strong>{messages.settings.tradeLink.importantLabel}</strong> {messages.settings.tradeLink.inventoryPublicWarning}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  {user?.steamId64 && extractedSteamId === user.steamId64 && (
+                    <p className="text-xs text-green-700 dark:text-green-300 mt-2">
+                      {messages.settings.tradeLink.sameAccountSuccess}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Current Trade Link */}
           {user?.tradeLink && user.tradeLink !== tradeUrl && (
             <div className="bg-muted p-3 rounded-lg">
@@ -185,17 +265,17 @@ export default function TradeLinkConfig() {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <Button
             onClick={handleSave}
             disabled={loading || !isValidUrl || !tradeUrl || tradeUrl === user?.tradeLink}
-            className="flex items-center space-x-2"
+            className="flex items-center justify-center space-x-2"
           >
             {loading && <RefreshCw className="w-4 h-4 animate-spin" />}
             <span>{loading ? messages.settings.tradeLink.saving : messages.settings.tradeLink.save}</span>
           </Button>
           
-          {tradeUrl && (
+          {tradeUrl && !user?.tradeLink && (
             <Button
               variant="outline"
               onClick={handleClear}
@@ -204,7 +284,29 @@ export default function TradeLinkConfig() {
               {messages.settings.tradeLink.clear}
             </Button>
           )}
+          
+          {user?.tradeLink && (
+            <Button
+              variant="destructive"
+              onClick={handleRemoveTradeLink}
+              disabled={loading}
+              className="flex items-center justify-center space-x-2"
+            >
+              {loading && <RefreshCw className="w-4 h-4 animate-spin" />}
+              <span>{messages.settings.tradeLink.deleteButton}</span>
+            </Button>
+          )}
         </div>
+
+        {user?.tradeLink && user.steamId64 && (
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-xs">
+              <strong>{messages.settings.tradeLink.tipLabel}</strong> {messages.settings.tradeLink.deleteTipText} 
+              (<code className="bg-muted px-1 rounded">{user.steamId64}</code>) {messages.settings.tradeLink.deleteTipText2}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Warning */}
         <Alert>

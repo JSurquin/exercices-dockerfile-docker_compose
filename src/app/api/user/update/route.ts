@@ -30,9 +30,10 @@ export async function POST(request: NextRequest) {
 
     const updates = await request.json();
     
-    // Validation du trade link si fourni
-    if (updates.tradeLink) {
-      const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
+    // Validation du trade link si fourni (chaîne non vide)
+    if (updates.tradeLink && updates.tradeLink.trim() !== '') {
+      // Accepte avec ou sans / après "new" (Steam peut renvoyer les deux formats)
+      const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/?\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
       if (!steamTradeUrlRegex.test(updates.tradeLink)) {
         await logValidationFailure(
           context,
@@ -45,6 +46,11 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+    }
+    
+    // Si updates.tradeLink === '', on met null en BDD pour supprimer
+    if ('tradeLink' in updates && updates.tradeLink === '') {
+      updates.tradeLink = null;
     }
     
     // Validation du Steam ID si fourni
@@ -96,14 +102,18 @@ export async function POST(request: NextRequest) {
     });
 
     // Log des changements de données sensibles
-    if (currentUser && updates.tradeLink && currentUser.tradeLink !== updates.tradeLink) {
-      await logSensitiveDataChange(
-        context,
-        'tradeLink',
-        currentUser.tradeLink,
-        updates.tradeLink,
-        AuditAction.PAYMENT_METHOD_UPDATED
-      );
+    if (currentUser && ('tradeLink' in updates)) {
+      // Cas de suppression ou de modification
+      const newValue = updates.tradeLink === null ? null : updates.tradeLink;
+      if (currentUser.tradeLink !== newValue) {
+        await logSensitiveDataChange(
+          context,
+          'tradeLink',
+          currentUser.tradeLink,
+          newValue,
+          AuditAction.PAYMENT_METHOD_UPDATED
+        );
+      }
     }
 
     // Mettre à jour l'utilisateur
