@@ -114,13 +114,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Vérifier que l'utilisateur crée un trade pour lui-même
-    if (body.steam_id !== session.user.steamId) {
+    // Vérifier que l'utilisateur crée un trade pour lui-même OU avec son trade link
+    const { parseSteamId64FromUserInput } = await import('@/lib/steam-id');
+    
+    // Récupérer le user complet
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
+    
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Utilisateur non trouvé' },
+        { status: 404 }
+      );
+    }
+    
+    const allowedSteamIds = [session.user.steamId];
+    
+    // Si l'utilisateur a un trade link, autoriser aussi le Steam ID qu'il contient
+    if (user.tradeLink) {
+      const tradeLinkSteamId = parseSteamId64FromUserInput(user.tradeLink);
+      if (tradeLinkSteamId) {
+        allowedSteamIds.push(tradeLinkSteamId);
+      }
+    }
+    
+    if (!allowedSteamIds.includes(body.steam_id)) {
+      console.log('🚫 Accès refusé pour création trade:', {
+        demandé: body.steam_id,
+        autorisés: allowedSteamIds,
+        session_steamId: session.user.steamId,
+        tradeLink: user.tradeLink,
+      });
       return NextResponse.json(
         { success: false, error: 'Accès non autorisé' },
         { status: 403 }
       );
     }
+    
+    console.log('✅ Accès autorisé pour création trade avec Steam ID:', body.steam_id, '(compte connexion ou trade link)');
 
     // Validation de l'URL de trade Steam
     // Accepte avec ou sans / après "new" (Steam peut renvoyer les deux formats)
@@ -148,17 +180,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Récupérer l'utilisateur depuis la base de données (avant promo / Skinplace)
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Utilisateur non trouvé' },
-        { status: 404 }
-      );
-    }
+    // Note: user déjà récupéré au-dessus pour la vérification d'accès
 
     let affiliatePromoCode: string | null = null;
     let affiliatePromoBonusCents = 0;
