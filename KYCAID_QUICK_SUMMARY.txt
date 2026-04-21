@@ -1,0 +1,94 @@
+================================================================================
+                    ✅ KYCAID: POLLING DEV IMPLÉMENTÉ
+================================================================================
+
+🎯 PROBLÈME RÉSOLU
+-------------------
+En mode développement (localhost:3000), KYCAID ne peut pas envoyer de webhooks
+car localhost n'est pas accessible depuis internet.
+
+✅ SOLUTION IMPLÉMENTÉE
+------------------------
+Deux stratégies selon l'environnement:
+
+1. PRODUCTION: Webhooks (push)
+   - KYCAID envoie automatiquement les callbacks
+   - Instantané
+   - Configuré via KYCAID_CALLBACK_URL
+
+2. DÉVELOPPEMENT: Polling (pull)
+   - Frontend poll toutes les 10 secondes
+   - Route: GET /api/kycaid/poll/{verificationId}
+   - Pas de callback_url envoyé à KYCAID
+
+📁 FICHIERS MODIFIÉS
+--------------------
+✅ src/lib/kycaid.ts
+   - Détection automatique de l'environnement
+   - callback_url uniquement en production
+   
+✅ src/components/kyc/KycVerification.tsx
+   - Stockage du verificationId
+   - Polling adaptatif (10s en dev, 30s sinon)
+   - Détection automatique du mode
+   
+✅ src/app/api/kycaid/poll/[verificationId]/route.ts
+   - Nouvelle route de polling
+   - Interroge l'API KYCAID
+   - Met à jour la BDD
+   - Envoie les emails
+
+📚 DOCUMENTATION CRÉÉE
+-----------------------
+✅ KYCAID_DEV_VS_PROD.md (guide complet)
+
+🚀 UTILISATION
+--------------
+EN DEV:
+1. Initier le KYC normalement
+2. Le verificationId est stocké automatiquement
+3. Le frontend poll toutes les 10 secondes
+4. Compléter le formulaire KYCAID
+5. Statut détecté en max 10 secondes
+
+EN PROD:
+1. Configurer KYCAID_CALLBACK_URL dans .env
+2. Webhook configuré dans portail KYCAID
+3. Initier le KYC
+4. Webhook reçu instantanément
+
+🔍 LOGS À SURVEILLER
+--------------------
+DEV:
+⚠️  [KYCAID] Mode développement: Pas de callback URL
+[KYCAID Poll] Polling verification xxx...
+[KYCAID Poll] ✅ KYC VERIFIED for user yyy
+
+PROD:
+📡 [KYCAID] Callback URL configurée: https://moonskin.fun/api/kycaid/webhook
+[KYCAID Webhook] Received: { type: 'VERIFICATION_COMPLETED', verified: true }
+
+✅ AVANTAGES
+-------------
+✅ Aucune config manuelle nécessaire
+✅ Détection automatique de l'environnement
+✅ Même code pour dev et prod
+✅ Polling intelligent (s'arrête quand complété)
+✅ Emails envoyés dans les deux modes
+✅ Sécurité: session user en dev, HMAC en prod
+
+⚠️  À SAVOIR
+-------------
+- verificationId stocké en BDD: kycaidVerificationId
+- Polling uniquement si status === 'PENDING'
+- Intervalle: 10s en dev, 30s sinon
+- Le webhook est toujours prioritaire sur le polling
+
+📖 DOCUMENTATION
+----------------
+Tout est dans: KYCAID_DEV_VS_PROD.md
+
+STATUS: ✅ PRÊT POUR DEV & PROD
+Date: 12 février 2026
+
+================================================================================

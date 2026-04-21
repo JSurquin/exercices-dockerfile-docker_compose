@@ -1,0 +1,86 @@
+================================================================================
+               ✅ KYCAID POLLING INTÉGRÉ DANS /PAYOUT
+================================================================================
+
+🎯 SOLUTION FINALE
+-------------------
+Le polling KYCAID a été intégré DIRECTEMENT dans la page /payout,
+là où le message "Vérification d'identité requise" s'affiche.
+
+📍 OÙ ÇA SE PASSE
+------------------
+Page: /payout (src/app/payout/page.tsx)
+
+Quand tu n'es PAS vérifié, la page affiche:
+- ⚠️  "Vérification d'identité requise"
+- 🔄 Icône de spin (en dev seulement)
+- "Vérification automatique en cours... (polling toutes les 10s)"
+
+✅ COMMENT ÇA MARCHE
+---------------------
+1. Tu soumets ton KYC sur /kyc (ancien système qui marche bien)
+2. Le verificationId est stocké en BDD dans KycVerification
+3. Tu vas sur /payout
+4. Si tu n'es pas vérifié, le polling démarre automatiquement:
+   - Appelle /api/kycaid/status pour récupérer le verificationId
+   - Appelle /api/kycaid/poll/{verificationId} toutes les 10s
+   - Vérifie si KYCAID a approuvé ton KYC
+5. Dès que KYCAID approuve:
+   - Toast "KYC vérifié avec succès !"
+   - Page se recharge automatiquement
+   - Tu peux maintenant faire des payouts
+
+🔍 LOGS À SURVEILLER
+---------------------
+Console navigateur:
+[Payout] Polling KYC verification: xxx
+[Payout] ✅ KYC VERIFIED! Reloading page...
+
+Console serveur:
+[KYCAID Poll] Polling verification xxx for user yyy
+[KYCAID Poll] Status from API: { status: 'completed', verified: true }
+[KYCAID Poll] ✅ KYC VERIFIED for user yyy
+📧 [KYCAID] Envoi de l'email d'approbation KYC
+
+🚀 POUR TESTER
+---------------
+1. Va sur http://localhost:3000/kyc
+2. Soumets ton KYC
+3. Va sur http://localhost:3000/payout
+4. Tu verras l'icône de spin et le message de polling
+5. Complète ton KYC sur KYCAID
+6. Retourne sur /payout
+7. En max 10 secondes: ✅ Vérifié !
+
+📁 FICHIERS MODIFIÉS
+---------------------
+✅ src/app/payout/page.tsx
+   - Ajout du useEffect pour le polling automatique
+   - Icône de spin visible en dev
+   - Rechargement auto quand vérifié
+
+✅ src/app/api/kycaid/status/route.ts
+   - Retourne maintenant le verificationId
+   - Pour permettre le polling
+
+✅ src/app/api/kycaid/poll/[verificationId]/route.ts
+   - Route de polling existante (déjà créée)
+
+💡 AVANTAGES
+-------------
+✅ Pas besoin d'une nouvelle page
+✅ Fonctionne avec l'ancien système /kyc
+✅ Polling invisible en production (webhooks utilisés)
+✅ Détection automatique en max 10 secondes
+✅ Email envoyé automatiquement
+✅ UX fluide, pas besoin de rafraîchir manuellement
+
+⚠️  NOTE IMPORTANTE
+--------------------
+Le polling est VISIBLE en dev (icône + message) pour le debugging.
+En PRODUCTION, il est invisible car les webhooks sont utilisés.
+
+Le verificationId EST BIEN stocké en BDD (kycaidVerificationId).
+PAS BESOIN de reset la base de données !
+
+================================================================================

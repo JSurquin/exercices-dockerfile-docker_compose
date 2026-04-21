@@ -4495,6 +4495,8 @@ export interface Messages {
     tradeFeesFootnote: string;
     youReceive: string;
     negativeNetAlert: string;
+    minimumTradeValue: string;
+    minimumTradeValueAlert: string;
     promoSectionTitle: string;
     promoSectionDescription: string;
     promoInputLabel: string;

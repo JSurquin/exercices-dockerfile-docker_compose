@@ -600,7 +600,7 @@ export default function AffiliatesManagement() {
               <span className="font-semibold text-white">
                 {affiliateToRemoveRef.current?.user.steamUsername || affiliateToRemoveRef.current?.user.email}
               </span>{' '}
-              (code <code className="text-orange-400">{affiliateToRemoveRef.current?.code}</code>) perdra son statut d&apos;affilié et son rôle sera réinitialisé. L&apos;historique des commissions est conservé.
+              (code <code className="text-orange-400">{affiliateToRemoveRef.current?.code}</code>) sera définitivement supprimé du programme d&apos;affiliation. Son rôle sera réinitialisé et toutes ses données d&apos;affiliation seront effacées.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">

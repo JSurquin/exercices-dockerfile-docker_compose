@@ -1,0 +1,13 @@
+# Dépendances pour la génération du PDF du mémoire FEDE
+
+# Conversion Markdown vers HTML
+markdown==3.10.2
+
+# Extensions Markdown
+pymdown-extensions==10.20.1
+
+# Génération de PDF (WeasyPrint)
+weasyprint==68.1
+
+# Note: Aucune installation système supplémentaire nécessaire
+# WeasyPrint fonctionne directement avec Python

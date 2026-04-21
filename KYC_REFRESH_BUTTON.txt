@@ -1,0 +1,82 @@
+================================================================================
+                  ✅ BOUTON RAFRAÎCHIR KYC AJOUTÉ
+================================================================================
+
+🎯 PROBLÈME RÉSOLU
+-------------------
+Si KYCAID change le statut d'une vérification (ex: de "success" à "rejected"),
+le système ne le détectait pas automatiquement une fois que le user était
+déjà marqué comme VERIFIED.
+
+✅ SOLUTION
+------------
+Ajout d'un bouton "Rafraîchir le statut" dans le dashboard qui:
+1. Récupère le verificationId depuis /api/kycaid/status
+2. Force un appel à /api/kycaid/poll/{verificationId}
+3. Synchronise avec KYCAID en temps réel
+4. Met à jour la BDD et recharge la page
+
+📍 OÙ LE TROUVER
+-----------------
+Dashboard: /dashboard
+Section: "KYC Verification"
+Bouton: "🔄 Rafraîchir le statut" (en dessous de "Vérifier mon identité")
+
+🔧 AMÉLIORATION DE LA ROUTE DE POLLING
+---------------------------------------
+La route /api/kycaid/poll/[verificationId] met maintenant à jour le statut
+MÊME si l'utilisateur était déjà VERIFIED:
+
+- Si KYCAID dit verified=true → User devient VERIFIED
+- Si KYCAID dit verified=false → User devient REJECTED
+- Logs: "Status changed: true/false"
+
+🚀 UTILISATION
+---------------
+Scénario 1: Vérifier un nouveau KYC
+1. Soumets ton KYC sur /kyc
+2. Va sur /payout → Polling auto démarre
+3. En max 10s: Statut mis à jour
+
+Scénario 2: Re-vérifier un KYC existant
+1. Va sur /dashboard
+2. Clique sur "🔄 Rafraîchir le statut"
+3. Attend 1-2 secondes
+4. Page recharge avec le nouveau statut
+
+Scénario 3: Statut changé par KYCAID
+1. KYCAID révoque/rejette une vérification
+2. Clique sur "Rafraîchir le statut"
+3. Le nouveau statut est synchronisé
+
+📊 LOGS
+--------
+Console navigateur:
+Clique sur bouton → Appelle /api/kycaid/poll/xxx
+
+Console serveur:
+[KYCAID Poll] Current DB status: { status: 'COMPLETED', verified: true }
+[KYCAID Poll] Status from API: { status: 'completed', verified: false }
+[KYCAID Poll] Status changed: true
+[KYCAID Poll] ❌ KYC REJECTED for user yyy
+[KYCAID] User yyy KYC status updated to REJECTED
+📧 [KYCAID] Envoi de l'email de rejet KYC
+
+✅ FICHIERS MODIFIÉS
+---------------------
+✅ src/app/dashboard/page.tsx
+   - Bouton "Rafraîchir le statut" ajouté
+   - État refreshingKyc pour le loading
+
+✅ src/app/api/kycaid/poll/[verificationId]/route.ts
+   - Détection des changements de statut
+   - Mise à jour même si déjà COMPLETED
+
+💡 RÉSULTAT
+------------
+✅ Détecte les changements de statut KYCAID en temps réel
+✅ Permet de synchroniser manuellement à tout moment
+✅ Fonctionne même si l'utilisateur était déjà VERIFIED
+✅ Email envoyé automatiquement sur changement de statut
+
+================================================================================

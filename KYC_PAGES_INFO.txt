@@ -1,0 +1,69 @@
+================================================================================
+                        📍 PAGES KYC - INFORMATION
+================================================================================
+
+🔍 SITUATION ACTUELLE
+----------------------
+Il y a 2 systèmes KYC différents dans le projet:
+
+1. /kyc (ancien système manuel)
+   - Upload fichiers étape par étape
+   - Formulaire custom fait maison
+   - N'utilise PAS KYCAID
+   - Fichier: src/app/kyc/page.tsx
+
+2. Composant KycVerification (nouveau système KYCAID)
+   - Utilise l'API KYCAID
+   - Formulaire KYCAID hébergé
+   - Polling en dev / Webhooks en prod
+   - Fichier: src/components/kyc/KycVerification.tsx
+   - ⚠️  N'EST UTILISÉ NULLE PART !
+
+✅ SOLUTION CRÉÉE
+------------------
+Nouvelle page créée: /kyc-new
+
+Pour tester le système KYCAID avec polling:
+
+1. Aller sur: http://localhost:3000/kyc-new
+
+2. Le composant KycVerification va:
+   - Initier le KYC avec KYCAID
+   - Stocker le verificationId
+   - Poller toutes les 10 secondes
+   - Afficher le statut en temps réel
+
+3. Compléter le formulaire KYCAID (nouvel onglet)
+
+4. Retourner sur /kyc-new
+   - Le statut sera détecté en max 10 secondes
+   - Message de succès/échec affiché
+
+📊 LOGS À SURVEILLER
+--------------------
+Console navigateur:
+[KYC] Verification ID stored: xxx
+[KYC] Polling KYCAID API in dev mode...
+
+Console serveur:
+⚠️  [KYCAID] Mode développement: Pas de callback URL
+[KYCAID Poll] Polling verification xxx...
+[KYCAID Poll] Status from API: { status: 'pending', verified: false }
+[KYCAID Poll] ✅ KYC VERIFIED for user yyy
+
+🚀 RECOMMANDATION
+------------------
+Option A: Remplacer complètement /kyc par le nouveau système
+   - Renommer src/app/kyc/page.tsx en src/app/kyc-old/page.tsx
+   - Renommer src/app/kyc-new/page.tsx en src/app/kyc/page.tsx
+
+Option B: Garder les deux systèmes
+   - Ajouter un lien vers /kyc-new dans le menu
+   - Laisser /kyc pour legacy
+
+Option C (recommandée): Intégrer dans le dashboard
+   - Le composant KycVerification s'affiche automatiquement
+   - Quand kycStatus !== 'VERIFIED'
+   - Disparaît une fois vérifié
+
+================================================================================

@@ -4907,6 +4907,8 @@ export const messages: Record<Locale, Messages> = {
         "Seuls les frais plateforme sont déduits ici. Les frais Flexify / Whitepay s’appliquent uniquement quand vous demandez un retrait sur /payout.",
       youReceive: "Vous recevrez (net)",
       negativeNetAlert: "La valeur nette est négative ou nulle. Sélectionnez des items de plus grande valeur.",
+      minimumTradeValue: "La valeur brute totale doit être d'au moins 1,00 € (100 centimes) pour créer un trade. Valeur actuelle : {current}",
+      minimumTradeValueAlert: "Montant minimum requis : 1,00 €. Ajoutez des items pour atteindre le minimum.",
       promoSectionTitle: "Code promo affilié",
       promoSectionDescription:
         "Les partenaires MoonSkin partagent le même code que sur leur page affilié. Bonus : +{fragments} fragments quand le trade est confirmé (après le hold Steam), et +{percent} % du brut en plus sur votre net.",
@@ -10120,6 +10122,8 @@ export const messages: Record<Locale, Messages> = {
         "Only the platform fee is deducted here. Flexify / Whitepay fees apply only when you request a withdrawal on /payout.",
       youReceive: "You receive (net)",
       negativeNetAlert: "Net value is negative or zero. Select higher-value items.",
+      minimumTradeValue: "The total gross value must be at least €1.00 (100 cents) to create a trade. Current value: {current}",
+      minimumTradeValueAlert: "Minimum amount required: €1.00. Add items to reach the minimum.",
       promoSectionTitle: "Affiliate promo code",
       promoSectionDescription:
         "MoonSkin partners use the same code as on their affiliate page. Bonus: +{fragments} fragments when the trade is confirmed (after the Steam trade hold), and +{percent}% of gross added to your net.",
@@ -15042,6 +15046,8 @@ export const messages: Record<Locale, Messages> = {
         "此处仅扣除平台费。Flexify / Whitepay 费用仅在 /payout 提现时产生。",
       youReceive: "您将收到（净额）",
       negativeNetAlert: "净值为负或零。请选择价值更高的物品。",
+      minimumTradeValue: "总毛利必须至少为 1,00 €（100 欧分）才能创建交易。当前值：{current}",
+      minimumTradeValueAlert: "最低金额要求：1,00 €。请添加物品以达到最低要求。",
       promoSectionTitle: "联盟推广码",
       promoSectionDescription:
         "MoonSkin 合作伙伴的推广码与其联盟页面相同。奖励：交易确认后（Steam 交易冻结结束后）+{fragments} 碎片；净额另加毛利的 {percent}%。",

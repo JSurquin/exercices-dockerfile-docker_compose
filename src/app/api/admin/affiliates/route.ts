@@ -200,9 +200,8 @@ export async function POST(request: NextRequest) {
           );
         }
         await prisma.$transaction([
-          prisma.affiliateStats.update({
-            where: { id: affiliateId },
-            data: { isActive: false }
+          prisma.affiliateStats.delete({
+            where: { id: affiliateId }
           }),
           prisma.user.update({
             where: { id: affiliateRecord.userId },

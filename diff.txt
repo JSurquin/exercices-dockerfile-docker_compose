@@ -1,0 +1,1200 @@
+diff --git a/prisma/schema.prisma b/prisma/schema.prisma
+index 49d21dc..f8fa5cc 100644
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -1,7 +1,6 @@
+ generator client {
+   provider      = "prisma-client-js"
+   binaryTargets = ["native", "linux-musl", "rhel-openssl-3.0.x"]
+-  // output        = "../src/generated/prisma"
+ }
+ 
+ datasource db {
+@@ -10,56 +9,56 @@ datasource db {
+ }
+ 
+ model User {
+-  id                    String              @id @default(cuid())
+-  email                 String              @unique
+-  emailVerified         Boolean             @default(false)
++  id                    String                  @id @default(cuid())
++  email                 String                  @unique
++  emailVerified         Boolean                 @default(false)
+   name                  String?
+   image                 String?
+-  tradeLink             String?             @unique
+-  createdAt             DateTime            @default(now())
+-  updatedAt             DateTime            @updatedAt
+-  role                  UserRole            @default(USER)
+-  steamId               String?             @unique
++  createdAt             DateTime                @default(now())
++  updatedAt             DateTime                @updatedAt
++  steamId               String?                 @unique
+   steamUsername         String?
+   steamAvatar           String?
+-  level                 Int                 @default(1)
+-  xp                    Int                 @default(0)
+-  tickets               Int                 @default(0)
+-  fragments             Int                 @default(0)
+-  totalVolumeCents      Int                 @default(0)
+-  balanceCents          Int                 @default(0)
+-  pendingBalanceCents   Int                 @default(0)
+-  frozenBalanceCents     Int                 @default(0)
+-  accountFrozen          Boolean             @default(false)
+-  kycStatus             KycStatus           @default(PENDING)
+-  kycaidApplicantId     String?             @unique // KYCAID applicant ID
++  level                 Int                     @default(1)
++  xp                    Int                     @default(0)
++  tickets               Int                     @default(0)
++  totalVolumeCents      Int                     @default(0)
++  kycStatus             KycStatus               @default(PENDING)
+   acceptedTermsAt       DateTime?
+-  isFirstLogin          Boolean             @default(true)
+-  twoFactorEnabled      Boolean             @default(false)
++  role                  UserRole                @default(USER)
+   referredByAffiliateId String?
+-  adminMetadata         Json?               // Notifications, preferences, security settings for admin
+-  affiliateStats        AffiliateStats?
+-  balanceTransactions   BalanceTransaction[]
+-  withdrawalLimit        WithdrawalLimit?
++  isFirstLogin          Boolean                 @default(true)
++  tradeLink             String?                 @unique
++  kycaidApplicantId     String?                 @unique
++  balanceCents          Int                     @default(0)
++  frozenBalanceCents    Int                     @default(0)
++  accountFrozen         Boolean                 @default(false)
++  adminMetadata         Json?
++  pendingBalanceCents   Int                     @default(0)
++  fragments             Int                     @default(0)
++  twoFactorEnabled      Boolean                 @default(false)
++  reviewedApplications  AffiliateApplication[]  @relation("AffiliateApplicationReviewer")
+   affiliateApplications AffiliateApplication[]
+-  reviewedApplications  AffiliateApplication[] @relation("AffiliateApplicationReviewer")
++  referrals             AffiliateReferral[]     @relation("AffiliateReferrals")
++  affiliateStats        AffiliateStats?
+   giveawayEntries       GiveawayEntry[]
+-  fragmentTransactions  FragmentTransaction[]
+-  missionCompletions      UserMissionCompletion[]
+-  pointTransactions     PointTransaction[]
+-  dailyLogins           DailyLogin[]
+-  kycDocuments          KycDocument[]
+-  kycVerifications      KycVerification[]
+   paymentMethods        PaymentMethod[]
+   payouts               Payout[]
+   trades                Trade[]
+   accounts              Account[]
+-  sessions              Session[]
+-  referrals             AffiliateReferral[] @relation("AffiliateReferrals")
+-  conversations         Conversation[]
+-  assignedConversations Conversation[] @relation("AssignedConversations")
++  balanceTransactions   BalanceTransaction[]
+   chatMessages          ChatMessage[]
++  assignedConversations Conversation[]          @relation("AssignedConversations")
++  conversations         Conversation[]
++  dailyLogins           DailyLogin[]
++  fragmentTransactions  FragmentTransaction[]
++  kycDocuments          KycDocument[]
++  kycVerifications      KycVerification[]
++  pointTransactions     PointTransaction[]
++  sessions              Session[]
+   twoFactor             TwoFactor?
++  missionCompletions    UserMissionCompletion[]
++  withdrawalLimit       WithdrawalLimit?
+ 
+   @@map("user")
+ }
+@@ -79,16 +78,16 @@ model AuditLog {
+ }
+ 
+ model BalanceTransaction {
+-  id               String                   @id @default(cuid())
+-  userId           String
+-  type             BalanceTransactionType
+-  amountCents      Int
++  id                String                 @id @default(cuid())
++  userId            String
++  type              BalanceTransactionType
++  amountCents       Int
+   balanceAfterCents Int
+-  reason           String?
+-  createdBy        String?
+-  metadata         Json?
+-  createdAt        DateTime                @default(now())
+-  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
++  reason            String?
++  createdBy         String?
++  metadata          Json?
++  createdAt         DateTime               @default(now())
++  user              User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+   @@index([userId])
+   @@index([createdAt])
+@@ -97,12 +96,12 @@ model BalanceTransaction {
+ }
+ 
+ model WithdrawalLimit {
+-  id                 String   @id @default(cuid())
+-  userId             String   @unique
+-  monthlyLimitCents  Int
+-  updatedBy          String?
+-  updatedAt          DateTime @updatedAt
+-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
++  id                String   @id @default(cuid())
++  userId            String   @unique
++  monthlyLimitCents Int
++  updatedBy         String?
++  updatedAt         DateTime @updatedAt
++  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+   @@map("withdrawal_limit")
+ }
+@@ -114,20 +113,20 @@ model Trade {
+   grossCents         Int
+   cashoutFees        Int
+   networkFees        Int
+-  steamId            String
+   netCents           Int
+   ticketId           String              @unique
+-  skinplaceToken     String?
+   tradeAcceptedAt    DateTime?
+-  tradeUrl           String?
+-  expiresAt          DateTime?
+   availableAt        DateTime?
+   createdAt          DateTime            @default(now())
+   updatedAt          DateTime            @updatedAt
++  steamId            String
++  tradeUrl           String?
++  expiresAt          DateTime?
++  skinplaceToken     String?
++  affiliateReferrals AffiliateReferral[]
+   payouts            Payout[]
+   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+   items              TradeItem[]
+-  affiliateReferrals AffiliateReferral[]
+ 
+   @@index([userId])
+   @@index([status])
+@@ -165,42 +164,40 @@ model PaymentMethod {
+ }
+ 
+ model Payout {
+-  id                   String                @id @default(cuid())
+-  userId               String
+-  tradeId              String?
+-  status               PayoutStatus          @default(PENDING)
+-  amountCents          Int
+-  paymentMethodId      String
+-  paymentReference     String?
+-  txId                 String?
+-  gateFiOrderId        String?               @unique // Réutilisé pour Flexify orderId
+-  gateFiWidgetUrl      String?
+-  flexifyPayoutId      String?               @unique // ID Flexify du payout
+-  // Whitepay fields
+-  whitepayTransactionId String?              @unique // ID transaction Whitepay
+-  whitepayStatus        String?              // Statut brut Whitepay (WAITING_CONFIRMATION, etc.)
+-  whitepayExchangeRate  String?              // Taux de change appliqué
+-  whitepayTargetValue   String?              // Montant en crypto reçu
+-  whitepayTargetCurrency String?             // Ticker crypto (USDT, BTC, etc.)
+-  whitepayNetwork       String?              // Réseau blockchain (ERC20, TRC20, etc.)
+-  whitepayAddress       String?              // Adresse wallet destination
+-  whitepayMemo          String?              // Memo/tag si applicable
+-  whitepayTxHash        String?              // Hash de la transaction blockchain
+-  whitepayFee           String?              // Frais Whitepay
+-  whitepayEstimatedAt   DateTime?            // Timestamp estimation du taux
+-  whitepayConfirmedAt   DateTime?            // Timestamp confirmation
+-  processingFeeCents   Int?                  // Frais de traitement
+-  networkFeeCents      Int?                  // Frais réseau
+-  errorMessage         String?               // Message d'erreur si échec
+-  // Payload chiffré pour exécution différée (Flexify carte/SEPA en PENDING_APPROVAL)
+-  pendingFlexifyRequestEncrypted String?     // Données pour createCardPayout/createSepaPayout à l'approbation admin
+-  createdAt            DateTime              @default(now())
+-  updatedAt            DateTime              @updatedAt
+-  paidAt               DateTime?
+-  paymentMethod        PaymentMethod         @relation(fields: [paymentMethodId], references: [id])
+-  trade                Trade?                @relation(fields: [tradeId], references: [id])
+-  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+-  affiliateCommissions AffiliateCommission[]
++  id                             String                @id @default(cuid())
++  userId                         String
++  tradeId                        String?
++  status                         PayoutStatus          @default(PENDING)
++  amountCents                    Int
++  paymentMethodId                String
++  paymentReference               String?
++  txId                           String?
++  createdAt                      DateTime              @default(now())
++  updatedAt                      DateTime              @updatedAt
++  paidAt                         DateTime?
++  gateFiOrderId                  String?               @unique
++  gateFiWidgetUrl                String?
++  errorMessage                   String?
++  flexifyPayoutId                String?               @unique
++  networkFeeCents                Int?
++  processingFeeCents             Int?
++  whitepayAddress                String?
++  whitepayConfirmedAt            DateTime?
++  whitepayEstimatedAt            DateTime?
++  whitepayExchangeRate           String?
++  whitepayFee                    String?
++  whitepayMemo                   String?
++  whitepayNetwork                String?
++  whitepayStatus                 String?
++  whitepayTargetCurrency         String?
++  whitepayTargetValue            String?
++  whitepayTransactionId          String?               @unique
++  whitepayTxHash                 String?
++  pendingFlexifyRequestEncrypted String?
++  affiliateCommissions           AffiliateCommission[]
++  paymentMethod                  PaymentMethod         @relation(fields: [paymentMethodId], references: [id])
++  trade                          Trade?                @relation(fields: [tradeId], references: [id])
++  user                           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+   @@index([userId])
+   @@index([status])
+@@ -211,99 +208,70 @@ model Payout {
+ }
+ 
+ model KycDocument {
+-  id                  String          @id @default(cuid())
+-  userId              String
+-  type                KycDocumentType
+-  status              KycStatus       @default(PENDING)
+-  
+-  // KYCAID IDs (renommer providerId)
+-  kycaidApplicantId   String          // Applicant auquel appartient ce doc
+-  kycaidDocumentId    String?         @unique // ID du document côté KYCAID
+-  verificationId      String?         // ID de la vérification associée
+-  
+-  // Fichiers liés (relation)
+-  files               KycFile[]
+-  
+-  // Résultat de vérification
+-  isVerified          Boolean         @default(false)
+-  verifiedAt          DateTime?
+-  rejectionReason     String?
+-  
+-  // Métadonnées complètes KYCAID
+-  metadata            Json?           // Réponse API complète
+-  
+-  // Audit
+-  uploadedAt          DateTime        @default(now())
+-  reviewedAt          DateTime?
+-  
+-  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+-  
++  id                String          @id @default(cuid())
++  userId            String
++  type              KycDocumentType
++  status            KycStatus       @default(PENDING)
++  kycaidApplicantId String
++  uploadedAt        DateTime        @default(now())
++  reviewedAt        DateTime?
++  rejectionReason   String?
++  metadata          Json?
++  verificationId    String?
++  kycaidDocumentId  String?         @unique
++  isVerified        Boolean         @default(false)
++  verifiedAt        DateTime?
++  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
++  files             KycFile[]
++
+   @@index([userId])
+   @@index([status])
+   @@index([kycaidApplicantId])
+   @@index([kycaidDocumentId])
+   @@index([verificationId])
++  @@index([kycaidApplicantId], map: "KycDocument_providerId_idx")
++  @@index([verificationId], map: "KycDocument_verificationId_idx")
+   @@map("kyc_document")
+ }
+ 
+ model KycFile {
+-  id              String       @id @default(cuid())
+-  
+-  // Lien vers le document parent
+-  documentId      String
+-  document        KycDocument  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+-  
+-  // Métadonnées fichier
+-  fileName        String
+-  fileType        String       // jpg, png, pdf
+-  fileSize        Int
+-  side            KycFileSide  // FRONT, BACK, SELFIE
+-  
+-  // ID KYCAID
+-  kycaidFileId    String?      @unique // ID retourné après création
++  id               String      @id @default(cuid())
++  documentId       String
++  fileName         String
++  fileType         String
++  fileSize         Int
++  side             KycFileSide
++  kycaidFileId     String?     @unique
+   uploadedToKycaid Boolean     @default(false)
+-  
+-  // URLs (si stockage local temporaire)
+-  localPath       String?      // Chemin temporaire avant upload
+-  
+-  // Audit
+-  createdAt       DateTime     @default(now())
+-  uploadedAt      DateTime?
+-  
++  localPath        String?
++  createdAt        DateTime    @default(now())
++  uploadedAt       DateTime?
++  document         KycDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
++
+   @@index([documentId])
+   @@index([kycaidFileId])
+   @@map("kyc_file")
+ }
+ 
+ model KycAddress {
+-  id                String   @id @default(cuid())
+-  
+-  // Rattachement
+-  applicantId       String?  // User.kycaidApplicantId
+-  affiliatedPersonId String? // Pour KYB (futurs dirigeants)
+-  type              KycAddressType
+-  
+-  // Champs obligatoires KYCAID API
+-  country           String   // Code ISO 2 lettres
+-  city              String
+-  postalCode        String
+-  streetName        String
+-  buildingNumber    String
+-  
+-  // Champs optionnels
+-  unitNumber        String?
+-  stateOrProvince   String?
+-  fullAddress       String?
+-  
+-  // Métadonnées KYCAID
+-  kycaidAddressId   String?  @unique // ID retourné par l'API
+-  isVerified        Boolean  @default(false)
+-  verifiedAt        DateTime?
+-  
+-  // Audit
+-  createdAt         DateTime @default(now())
+-  updatedAt         DateTime @updatedAt
+-  
++  id                 String         @id @default(cuid())
++  applicantId        String?
++  affiliatedPersonId String?
++  type               KycAddressType
++  country            String
++  city               String
++  postalCode         String
++  streetName         String
++  buildingNumber     String
++  unitNumber         String?
++  stateOrProvince    String?
++  fullAddress        String?
++  kycaidAddressId    String?        @unique
++  isVerified         Boolean        @default(false)
++  verifiedAt         DateTime?
++  createdAt          DateTime       @default(now())
++  updatedAt          DateTime       @updatedAt
++
+   @@index([applicantId])
+   @@index([type])
+   @@index([kycaidAddressId])
+@@ -311,40 +279,28 @@ model KycAddress {
+ }
+ 
+ model KycVerification {
+-  id                    String   @id @default(cuid())
+-  userId                String
+-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+-  
+-  // IDs KYCAID
+-  kycaidVerificationId  String   @unique
+-  kycaidApplicantId     String
+-  
+-  // État global
+-  status                KycaidVerificationStatus
+-  verified              Boolean  @default(false)
+-  formUrl               String?  // URL du formulaire KYCAID
+-  
+-  // Résultats par composante
+-  documentStatus        String?
+-  documentVerified      Boolean?
+-  facialStatus          String?
+-  facialVerified        Boolean?
+-  addressStatus         String?
+-  addressVerified       Boolean?
+-  amlStatus             String?
+-  amlVerified           Boolean?
+-  
+-  // Raisons de refus
+-  declineReasons        Json?
+-  
+-  // Métadonnées complètes
+-  metadata              Json?
+-  
+-  // Dates
+-  createdAt             DateTime @default(now())
+-  updatedAt             DateTime @updatedAt
+-  completedAt           DateTime?
+-  
++  id                   String                   @id @default(cuid())
++  userId               String
++  kycaidVerificationId String                   @unique
++  kycaidApplicantId    String
++  status               KycaidVerificationStatus
++  verified             Boolean                  @default(false)
++  formUrl              String?
++  documentStatus       String?
++  documentVerified     Boolean?
++  facialStatus         String?
++  facialVerified       Boolean?
++  addressStatus        String?
++  addressVerified      Boolean?
++  amlStatus            String?
++  amlVerified          Boolean?
++  declineReasons       Json?
++  metadata             Json?
++  createdAt            DateTime                 @default(now())
++  updatedAt            DateTime                 @updatedAt
++  completedAt          DateTime?
++  user                 User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
++
+   @@index([userId])
+   @@index([kycaidVerificationId])
+   @@index([status])
+@@ -353,33 +309,21 @@ model KycVerification {
+ }
+ 
+ model KycAffiliatedPerson {
+-  id                    String              @id @default(cuid())
+-  
+-  // Lien vers l'entreprise (applicant parent)
+-  companyApplicantId    String
+-  
+-  // ID KYCAID
+-  kycaidAffiliatedId    String              @unique
+-  
+-  // Identité
+-  firstName             String
+-  lastName              String
+-  email                 String
+-  dob                   String              // YYYY-MM-DD
+-  nationality           String?
+-  residenceCountry      String?
+-  
+-  // Rôle dans l'entreprise
+-  role                  AffiliatedRole
+-  sharePercentage       Float?              // Pour UBO (bénéficiaires effectifs)
+-  
+-  // Adresse personnelle (peut pointer vers KycAddress si nécessaire)
+-  addressJson           Json?
+-  
+-  // Audit
+-  createdAt             DateTime            @default(now())
+-  updatedAt             DateTime            @updatedAt
+-  
++  id                 String         @id @default(cuid())
++  companyApplicantId String
++  kycaidAffiliatedId String         @unique
++  firstName          String
++  lastName           String
++  email              String
++  dob                String
++  nationality        String?
++  residenceCountry   String?
++  role               AffiliatedRole
++  sharePercentage    Float?
++  addressJson        Json?
++  createdAt          DateTime       @default(now())
++  updatedAt          DateTime       @updatedAt
++
+   @@index([companyApplicantId])
+   @@index([kycaidAffiliatedId])
+   @@map("kyc_affiliated_person")
+@@ -396,27 +340,26 @@ model AffiliateStats {
+   isActive             Boolean               @default(true)
+   createdAt            DateTime              @default(now())
+   updatedAt            DateTime              @updatedAt
+-  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+-  referrals            AffiliateReferral[]
+   commissions          AffiliateCommission[]
++  referrals            AffiliateReferral[]
++  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+   @@index([code])
+   @@index([isActive])
+ }
+ 
+ model AffiliateReferral {
+-  id              String   @id @default(cuid())
++  id              String                @id @default(cuid())
+   affiliateId     String
+   referredUserId  String
+   tradeId         String?
+-  volumeCents     Int      @default(0)
+-  commissionCents Int      @default(0)
+-  createdAt       DateTime @default(now())
+-
+-  affiliate    AffiliateStats        @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+-  referredUser User                  @relation("AffiliateReferrals", fields: [referredUserId], references: [id], onDelete: Cascade)
+-  trade        Trade?                @relation(fields: [tradeId], references: [id])
+-  commissions  AffiliateCommission[]
++  volumeCents     Int                   @default(0)
++  commissionCents Int                   @default(0)
++  createdAt       DateTime              @default(now())
++  commissions     AffiliateCommission[]
++  affiliate       AffiliateStats        @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
++  referredUser    User                  @relation("AffiliateReferrals", fields: [referredUserId], references: [id], onDelete: Cascade)
++  trade           Trade?                @relation(fields: [tradeId], references: [id])
+ 
+   @@index([affiliateId])
+   @@index([referredUserId])
+@@ -432,10 +375,9 @@ model AffiliateCommission {
+   payoutId    String?
+   createdAt   DateTime                  @default(now())
+   paidAt      DateTime?
+-
+-  affiliate AffiliateStats     @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+-  referral  AffiliateReferral? @relation(fields: [referralId], references: [id])
+-  payout    Payout?            @relation(fields: [payoutId], references: [id])
++  affiliate   AffiliateStats            @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
++  payout      Payout?                   @relation(fields: [payoutId], references: [id])
++  referral    AffiliateReferral?        @relation(fields: [referralId], references: [id])
+ 
+   @@index([affiliateId])
+   @@index([status])
+@@ -443,18 +385,18 @@ model AffiliateCommission {
+ }
+ 
+ model AffiliateApplication {
+-  id            String                      @id @default(cuid())
+-  userId        String
+-  motivation    String
+-  socialLinks   Json?
+-  status        AffiliateApplicationStatus  @default(PENDING)
+-  reviewedBy    String?
+-  reviewedAt    DateTime?
++  id              String                     @id @default(cuid())
++  userId          String
++  motivation      String
++  socialLinks     Json?
++  status          AffiliateApplicationStatus @default(PENDING)
++  reviewedBy      String?
++  reviewedAt      DateTime?
+   rejectionReason String?
+-  createdAt     DateTime                    @default(now())
+-  updatedAt     DateTime                    @updatedAt
+-  user          User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+-  reviewer      User?                       @relation("AffiliateApplicationReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
++  createdAt       DateTime                   @default(now())
++  updatedAt       DateTime                   @updatedAt
++  reviewer        User?                      @relation("AffiliateApplicationReviewer", fields: [reviewedBy], references: [id])
++  user            User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+   @@index([userId])
+   @@index([status])
+@@ -462,35 +404,38 @@ model AffiliateApplication {
+ }
+ 
+ model Giveaway {
+-  id                String               @id @default(cuid())
+-  title             String
+-  description       String
+-  prize             String
++  id                    String               @id @default(cuid())
++  title                 String
++  description           String
++  prize                 String
++  /// Coût d’une entrée en fragments (anciennement « ticket »)
++  ticketPrice           Int
++  maxTickets            Int
++  soldTickets           Int                  @default(0)
++  endDate               DateTime
++  status                GiveawayStatus       @default(ACTIVE)
++  winnerId              String?
++  randomSeed            String?
++  createdAt             DateTime             @default(now())
++  updatedAt             DateTime             @updatedAt
++  durationType          GiveawayDurationType @default(CUSTOM)
++  maxEntriesPerUser     Int?
++  /// Coût réel du lot en centimes (KPI admin)
++  rewardValueCents      Int                  @default(0)
++  winnerCount           Int                  @default(1)
+   /// URL image Steam (community.cloudflare.steamstatic.com) du lot
+   prizeImageUrl         String?
+   /// steam_market_hash_name du lot
+   steamMarketHashName   String?
+-  /// Coût d’une entrée en fragments (anciennement « ticket »)
+-  ticketPrice       Int
+-  maxTickets        Int
+-  soldTickets       Int                  @default(0)
+-  endDate           DateTime
+-  status            GiveawayStatus       @default(ACTIVE)
+-  winnerId          String?
+-  randomSeed        String?
+-  /// Coût réel du lot en centimes (KPI admin)
+-  rewardValueCents  Int                  @default(0)
+-  durationType      GiveawayDurationType @default(CUSTOM)
+-  winnerCount       Int                  @default(1)
+-  maxEntriesPerUser Int?
+-  createdAt         DateTime             @default(now())
+-  updatedAt         DateTime             @updatedAt
+-  entries           GiveawayEntry[]
+-  winners           GiveawayWinner[]
++  isPrivate             Boolean              @default(false)
++  requiredAffiliateCode String?
++  entries               GiveawayEntry[]
++  winners               GiveawayWinner[]
+ 
+   @@index([status])
+   @@index([endDate])
+   @@index([durationType])
++  @@index([isPrivate])
+ }
+ 
+ model GiveawayEntry {
+@@ -550,17 +495,16 @@ model UserMissionCompletion {
+   @@map("user_mission_completion")
+ }
+ 
+-// Historique des transactions de points (XP/tickets gamification)
+ model PointTransaction {
+-  id          String            @id @default(cuid())
+-  userId      String
+-  type        PointEventType
+-  points      Int               // Points gagnés (positif) ou dépensés (négatif)
+-  tickets     Int               @default(0) // Tickets gagnés
+-  reason      String?           // Libellé affiché à l'utilisateur
+-  metadata    Json?             // Données contextuelles (tradeId, etc.)
+-  createdAt   DateTime          @default(now())
+-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
++  id        String         @id @default(cuid())
++  userId    String
++  type      PointEventType
++  points    Int
++  tickets   Int            @default(0)
++  reason    String?
++  metadata  Json?
++  createdAt DateTime       @default(now())
++  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+   @@index([userId])
+   @@index([type])
+@@ -568,12 +512,11 @@ model PointTransaction {
+   @@map("point_transaction")
+ }
+ 
+-// Connexions quotidiennes pour le bonus daily login
+ model DailyLogin {
+   id        String   @id @default(cuid())
+   userId    String
+   loginDate DateTime @default(now()) @db.Date
+-  streak    Int      @default(1) // Nombre de jours consécutifs
++  streak    Int      @default(1)
+   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+   @@unique([userId, loginDate])
+@@ -638,6 +581,155 @@ model Account {
+   @@map("account")
+ }
+ 
++model NewsletterSubscriber {
++  id               String    @id @default(cuid())
++  email            String    @unique
++  isActive         Boolean   @default(true)
++  subscribedAt     DateTime  @default(now())
++  unsubscribedAt   DateTime?
++  unsubscribeToken String    @unique @default(cuid())
++
++  @@index([email])
++  @@index([isActive])
++  @@map("newsletter_subscriber")
++}
++
++model NewsletterCampaign {
++  id          String           @id @default(cuid())
++  title       String
++  subject     String
++  content     String
++  htmlContent String?
++  status      NewsletterStatus @default(DRAFT)
++  scheduledAt DateTime?
++  sentAt      DateTime?
++  createdAt   DateTime         @default(now())
++  updatedAt   DateTime         @updatedAt
++  createdBy   String
++  sends       NewsletterSend[]
++
++  @@index([status])
++  @@index([scheduledAt])
++  @@map("newsletter_campaign")
++}
++
++model NewsletterSend {
++  id           String               @id @default(cuid())
++  campaignId   String
++  email        String
++  status       NewsletterSendStatus @default(PENDING)
++  sentAt       DateTime?
++  openedAt     DateTime?
++  clickedAt    DateTime?
++  errorMessage String?
++  campaign     NewsletterCampaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
++
++  @@index([campaignId])
++  @@index([email])
++  @@index([status])
++  @@map("newsletter_send")
++}
++
++model Conversation {
++  id                String               @id @default(cuid())
++  userId            String?
++  status            ConversationStatus   @default(ACTIVE)
++  subject           String?
++  category          String?
++  priority          ConversationPriority @default(NORMAL)
++  assignedTo        String?
++  createdAt         DateTime             @default(now())
++  updatedAt         DateTime             @updatedAt
++  closedAt          DateTime?
++  messages          ChatMessage[]
++  assignedModerator User?                @relation("AssignedConversations", fields: [assignedTo], references: [id])
++  user              User?                @relation(fields: [userId], references: [id])
++
++  @@index([userId])
++  @@index([status])
++  @@index([assignedTo])
++  @@index([createdAt])
++  @@map("conversation")
++}
++
++model ChatMessage {
++  id             String       @id @default(cuid())
++  conversationId String
++  userId         String?
++  content        String
++  senderType     SenderType
++  isRead         Boolean      @default(false)
++  createdAt      DateTime     @default(now())
++  updatedAt      DateTime     @updatedAt
++  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
++  user           User?        @relation(fields: [userId], references: [id])
++
++  @@index([conversationId])
++  @@index([userId])
++  @@index([createdAt])
++  @@index([senderType])
++  @@map("chat_message")
++}
++
++model LegalPage {
++  id           String   @id @default(cuid())
++  slug         String   @unique
++  titleFr      String
++  subtitleFr   String?
++  contentFr    String
++  titleEn      String
++  subtitleEn   String?
++  contentEn    String
++  version      String   @default("1.0")
++  isPublished  Boolean  @default(true)
++  contactEmail String?
++  contactPhone String?
++  createdAt    DateTime @default(now())
++  updatedAt    DateTime @updatedAt
++  updatedBy    String?
++  contentCn    String?
++  subtitleCn   String?
++  titleCn      String?
++
++  @@index([slug])
++  @@index([isPublished])
++  @@map("legal_page")
++}
++
++model LegalPageHistory {
++  id            String   @id @default(cuid())
++  legalPageId   String
++  legalPageSlug String
++  titleFr       String
++  titleEn       String
++  contentFr     String
++  contentEn     String
++  version       String
++  changedBy     String
++  changedAt     DateTime @default(now())
++  changeReason  String?
++  contentCn     String?
++  titleCn       String?
++
++  @@index([legalPageId])
++  @@index([changedAt])
++  @@map("legal_page_history")
++}
++
++model SiteSettings {
++  id          String   @id @default(cuid())
++  key         String   @unique
++  valueFr     String?
++  valueEn     String?
++  valueJson   Json?
++  description String?
++  updatedAt   DateTime @updatedAt
++  updatedBy   String?
++
++  @@index([key])
++  @@map("site_settings")
++}
++
+ enum TradeStatus {
+   CREATED
+   ACCEPTED_BY_BOT
+@@ -651,46 +743,42 @@ enum TradeStatus {
+ 
+ enum PayoutStatus {
+   PENDING
+-  PENDING_APPROVAL
+   VERIFICATION_REQUIRED
+   VERIFIED
+   SCHEDULED
+   PROCESSING
+   PAID
+   FAILED
+-  // Flexify specific statuses
+   FLEXIFY_PENDING
+   FLEXIFY_PROCESSING
+   FLEXIFY_PAID
+   FLEXIFY_FAILED
+-  // Whitepay specific statuses
+   WHITEPAY_WAITING_CONFIRMATION
+   WHITEPAY_PENDING_WITHDRAWAL
+-  CANCELLED
+   WHITEPAY_PROCESSING_WITHDRAWAL
+   WHITEPAY_COMPLETE
+   WHITEPAY_DECLINED
++  CANCELLED
++  PENDING_APPROVAL
+ }
+ 
+ enum BalanceTransactionType {
+   TRADE_CREDIT
+-  TRADE_PENDING_CREDIT
+-  TRADE_PENDING_RELEASE
+   ADMIN_ADJUSTMENT
+   WITHDRAWAL
+   PAYOUT_REFUND
+   FROZEN
+   UNFROZEN
++  TRADE_PENDING_CREDIT
++  TRADE_PENDING_RELEASE
+ }
+ 
+ enum PaymentMethodType {
+   SEPA
+-  CARD
+   CRYPTO
+-  // Flexify specific types
++  CARD
+   FLEXIFY_SEPA
+   FLEXIFY_CARD
+-  // Whitepay specific type
+   WHITEPAY_CRYPTO
+ }
+ 
+@@ -699,30 +787,22 @@ enum KycStatus {
+   VERIFIED
+   REJECTED
+   IN_PROGRESS
+-  // KYCAID specific statuses
+   KYCAID_PENDING
+   KYCAID_VERIFIED
+   KYCAID_REJECTED
+ }
+ 
+ enum KycDocumentType {
+-  // Types standards
+   ID_CARD
+   PASSPORT
+   SELFIE
+   PROOF_OF_ADDRESS
+-  
+-  // Types KYCAID
+-  GOVERNMENT_ID
+-  DRIVERS_LICENSE
+   DOMESTIC_PASSPORT
+   PERMANENT_RESIDENCE_PERMIT
+   REFUGEE_CARD
+   FOREIGN_CITIZEN_PASSPORT
+-  SELFIE_IMAGE
+   SELFIE_WITH_DOCUMENT
+   SELFIE_WITH_CREDIT_CARD
+-  ADDRESS_DOCUMENT
+   FINANCIAL_DOCUMENT
+   TAX_ID_NUMBER
+   CREDIT_CARD
+@@ -732,36 +812,40 @@ enum KycDocumentType {
+   AUTHORISED_PERSON
+   COMPANY_OWNERSHIP
+   VIDEO
++  GOVERNMENT_ID
++  DRIVERS_LICENSE
++  SELFIE_IMAGE
++  ADDRESS_DOCUMENT
+ }
+ 
+ enum KycFileSide {
+-  FRONT    // Recto
+-  BACK     // Verso
+-  SELFIE   // Photo selfie/liveness
+-  PROOF    // Justificatif (adresse, etc.)
++  FRONT
++  BACK
++  SELFIE
++  PROOF
+ }
+ 
+ enum KycAddressType {
+-  REGISTERED   // Adresse principale/officielle
+-  BUSINESS     // Adresse d'exploitation (KYB)
+-  ADDITIONAL   // Adresse secondaire
++  REGISTERED
++  BUSINESS
++  ADDITIONAL
+ }
+ 
+ enum KycaidVerificationStatus {
+-  UNUSED       // Créé mais pas encore utilisé
+-  PENDING      // En attente de soumission utilisateur
+-  PROCESSING   // En cours de vérification
+-  COMPLETED    // Terminé (vérifié ou refusé)
+-  VERIFIED     // Vérifié avec succès (alias COMPLETED + verified=true)
+-  REJECTED     // Rejeté (alias DECLINED)
+-  DECLINED     // Refusé
++  UNUSED
++  PENDING
++  PROCESSING
++  COMPLETED
++  DECLINED
++  VERIFIED
++  REJECTED
+ }
+ 
+ enum AffiliatedRole {
+-  DIRECTOR          // Dirigeant
+-  UBO               // Bénéficiaire effectif (Ultimate Beneficial Owner)
+-  LEGAL_REP         // Représentant légal
+-  SHAREHOLDER       // Actionnaire
++  DIRECTOR
++  UBO
++  LEGAL_REP
++  SHAREHOLDER
+ }
+ 
+ enum GiveawayStatus {
+@@ -792,12 +876,12 @@ enum FragmentTransactionType {
+ }
+ 
+ enum PointEventType {
+-  TRADE_SALE         // Vente réussie
+-  DAILY_LOGIN        // Connexion quotidienne
+-  LEVEL_UP           // Passage de niveau
+-  ADMIN_ADJUSTMENT   // Ajustement manuel admin
+-  GIVEAWAY_ENTRY     // Participation à un giveaway (dépense de tickets)
+-  REFERRAL_BONUS     // Bonus parrainage
++  TRADE_SALE
++  DAILY_LOGIN
++  LEVEL_UP
++  ADMIN_ADJUSTMENT
++  GIVEAWAY_ENTRY
++  REFERRAL_BONUS
+ }
+ 
+ enum UserRole {
+@@ -820,100 +904,6 @@ enum AffiliateApplicationStatus {
+   REJECTED
+ }
+ 
+-model NewsletterSubscriber {
+-  id          String   @id @default(cuid())
+-  email       String   @unique
+-  isActive    Boolean  @default(true)
+-  subscribedAt DateTime @default(now())
+-  unsubscribedAt DateTime?
+-  unsubscribeToken String @unique @default(cuid())
+-  
+-  @@index([email])
+-  @@index([isActive])
+-  @@map("newsletter_subscriber")
+-}
+-
+-model NewsletterCampaign {
+-  id          String               @id @default(cuid())
+-  title       String
+-  subject     String
+-  content     String
+-  htmlContent String?
+-  status      NewsletterStatus     @default(DRAFT)
+-  scheduledAt DateTime?
+-  sentAt      DateTime?
+-  createdAt   DateTime             @default(now())
+-  updatedAt   DateTime             @updatedAt
+-  createdBy   String
+-  
+-  sends       NewsletterSend[]
+-  
+-  @@index([status])
+-  @@index([scheduledAt])
+-  @@map("newsletter_campaign")
+-}
+-
+-model NewsletterSend {
+-  id           String            @id @default(cuid())
+-  campaignId   String
+-  email        String
+-  status       NewsletterSendStatus @default(PENDING)
+-  sentAt       DateTime?
+-  openedAt     DateTime?
+-  clickedAt    DateTime?
+-  errorMessage String?
+-  
+-  campaign     NewsletterCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+-  
+-  @@index([campaignId])
+-  @@index([email])
+-  @@index([status])
+-  @@map("newsletter_send")
+-}
+-
+-model Conversation {
+-  id          String   @id @default(cuid())
+-  userId      String?  // Nullable pour les invités
+-  status      ConversationStatus @default(ACTIVE)
+-  subject     String?
+-  category    String?
+-  priority    ConversationPriority @default(NORMAL)
+-  assignedTo  String?  // ID du modérateur assigné
+-  createdAt   DateTime @default(now())
+-  updatedAt   DateTime @updatedAt
+-  closedAt    DateTime?
+-  
+-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+-  assignedModerator User? @relation("AssignedConversations", fields: [assignedTo], references: [id], onDelete: SetNull)
+-  messages    ChatMessage[]
+-  
+-  @@index([userId])
+-  @@index([status])
+-  @@index([assignedTo])
+-  @@index([createdAt])
+-  @@map("conversation")
+-}
+-
+-model ChatMessage {
+-  id             String      @id @default(cuid())
+-  conversationId String
+-  userId         String?     // Nullable pour les messages système
+-  content        String
+-  senderType     SenderType
+-  isRead         Boolean     @default(false)
+-  createdAt      DateTime    @default(now())
+-  updatedAt      DateTime    @updatedAt
+-  
+-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+-  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+-  
+-  @@index([conversationId])
+-  @@index([userId])
+-  @@index([createdAt])
+-  @@index([senderType])
+-  @@map("chat_message")
+-}
+-
+ enum NewsletterStatus {
+   DRAFT
+   SCHEDULED
+@@ -951,85 +941,3 @@ enum SenderType {
+   MODERATOR
+   SYSTEM
+ }
+-
+-// ==========================================
+-// PAGES LÉGALES DYNAMIQUES
+-// ==========================================
+-
+-model LegalPage {
+-  id          String   @id @default(cuid())
+-  slug        String   @unique // ex: "terms", "privacy", "kyc-policy", "aml-policy", "about", "press"
+-  
+-  // Contenu FR
+-  titleFr     String
+-  subtitleFr  String?
+-  contentFr   String   @db.Text
+-  
+-  // Contenu EN
+-  titleEn     String
+-  subtitleEn  String?
+-  contentEn   String   @db.Text
+-  
+-  // Contenu CN (Chinois)
+-  titleCn     String?
+-  subtitleCn  String?
+-  contentCn   String?  @db.Text
+-  
+-  // Métadonnées
+-  version     String   @default("1.0")
+-  isPublished Boolean  @default(true)
+-  
+-  // Informations de contact (optionnel, affiché en bas de page)
+-  contactEmail String?
+-  contactPhone String?
+-  
+-  // Audit
+-  createdAt   DateTime @default(now())
+-  updatedAt   DateTime @updatedAt
+-  updatedBy   String?  // ID de l'admin qui a fait la dernière modification
+-  
+-  @@index([slug])
+-  @@index([isPublished])
+-  @@map("legal_page")
+-}
+-
+-// Historique des modifications pour traçabilité
+-model LegalPageHistory {
+-  id            String   @id @default(cuid())
+-  legalPageId   String
+-  legalPageSlug String
+-  
+-  // Snapshot du contenu
+-  titleFr       String
+-  titleEn       String
+-  titleCn       String?
+-  contentFr     String   @db.Text
+-  contentEn     String   @db.Text
+-  contentCn     String?  @db.Text
+-  version       String
+-  
+-  // Audit
+-  changedBy     String
+-  changedAt     DateTime @default(now())
+-  changeReason  String?
+-  
+-  @@index([legalPageId])
+-  @@index([changedAt])
+-  @@map("legal_page_history")
+-}
+-
+-// Configuration du site (paramètres globaux modifiables par l'admin)
+-model SiteSettings {
+-  id                String   @id @default(cuid())
+-  key               String   @unique
+-  valueFr           String?  @db.Text
+-  valueEn           String?  @db.Text
+-  valueJson         Json?    // Pour les données structurées (ex: liens sociaux)
+-  description       String?
+-  
+-  updatedAt         DateTime @updatedAt
+-  updatedBy         String?
+-  
+-  @@index([key])
+-  @@map("site_settings")
+-}

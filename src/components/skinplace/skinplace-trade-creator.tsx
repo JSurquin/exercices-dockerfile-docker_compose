@@ -183,6 +183,15 @@ export function SkinplaceTradeCreator({
     try {
       // Calculer la valeur brute en centimes
       const grossValueCentimes = getTotalEstimatedValueCentimes();
+      
+      // Vérifier le minimum de 100 centimes (1 euro)
+      if (grossValueCentimes < 100) {
+        const currentValue = `${(grossValueCentimes / 100).toFixed(2)} €`;
+        toast.error(messages.tradeCreator.minimumTradeValue.replace('{current}', currentValue));
+        setLoading(false);
+        return;
+      }
+      
       const fees = calculateFees(grossValueCentimes);
       const promoBonus = appliedPromoCode
         ? computeSellPromoBonusCents(grossValueCentimes)
@@ -447,7 +456,8 @@ export function SkinplaceTradeCreator({
                 loading ||
                 netValueCentimes <= 0 ||
                 isEditingTradeLink ||
-                promoBlocksSubmit
+                promoBlocksSubmit ||
+                grossValueCentimes < 100
               }
               className="flex-1 bg-orange-500 hover:bg-orange-600"
             >
@@ -460,6 +470,15 @@ export function SkinplaceTradeCreator({
               <ExternalLink className="h-4 w-4" />
             </Button>
           </div>
+          
+          {grossValueCentimes > 0 && grossValueCentimes < 100 && (
+            <Alert variant="destructive" className="mt-2">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                {messages.tradeCreator.minimumTradeValueAlert}
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
 

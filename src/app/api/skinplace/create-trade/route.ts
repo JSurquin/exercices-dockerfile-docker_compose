@@ -170,6 +170,14 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    
+    // Vérifier le minimum de 100 centimes (1 euro) requis par Skinplace
+    if (body.gross_value_centimes < 100) {
+      return NextResponse.json(
+        { success: false, error: 'La valeur brute totale doit être d\'au moins 1,00 € (100 centimes) pour créer un trade' },
+        { status: 400 }
+      );
+    }
 
     const cashoutFeeRate = await getCashoutFeeRate();
     const ledger = computeTradeLedgerFromGross(body.gross_value_centimes, cashoutFeeRate);
