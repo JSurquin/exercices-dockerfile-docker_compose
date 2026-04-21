@@ -201,6 +201,7 @@ export default function SellPage() {
         status={modalStatus}
         onClose={handleModalClose}
         onSellAgain={handleSellAgain}
+        bot={tradeData?.bot}
       />
       <div className="max-w-4xl mx-auto">
         {/* Header */}
