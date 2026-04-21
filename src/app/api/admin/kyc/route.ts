@@ -1,108 +1,125 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
-import { KYCDocument, AdminFilters } from '@/lib/types';
 import { prisma } from '~/prisma/prisma';
-import { mapKycStatusFromDb, mapKycStatusToDb, mapKycDocumentTypeFromDb } from '@/lib/status-mapper';
+import { KycStatus } from '@prisma/client';
 
+/**
+ * GET /api/admin/kyc
+ *
+ * Retourne UN utilisateur par ligne (pas un document par ligne).
+ * Le statut affiché est User.kycStatus — la source de vérité.
+ */
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
-    const filters: AdminFilters = {
-      status: searchParams.get('status') || undefined,
-      userId: searchParams.get('userId') || undefined,
-      search: searchParams.get('search') || undefined,
-      page: parseInt(searchParams.get('page') || '1'),
-      limit: parseInt(searchParams.get('limit') || '20'),
-    };
+    const status = searchParams.get('status') || undefined;
+    const search = searchParams.get('search') || undefined;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
 
-    // Construire le where clause pour Prisma
     const where: any = {};
 
-    // Filtrer par statut
-    if (filters.status) {
-      where.status = mapKycStatusToDb(filters.status);
-    }
-
-    // Filtrer par userId
-    if (filters.userId) {
-      where.userId = filters.userId;
-    }
-
-    // Recherche textuelle (id, document KYCAID, nom, email, pseudo Steam)
-    if (filters.search) {
+    // Filtrer par kycStatus (source de vérité : User.kycStatus)
+    if (status) {
+      const s = status.toUpperCase();
+      if (s === 'PENDING') {
+        where.kycStatus = { in: [KycStatus.PENDING, KycStatus.KYCAID_PENDING, KycStatus.IN_PROGRESS] };
+      } else if (s === 'VERIFIED' || s === 'APPROVED') {
+        where.kycStatus = { in: [KycStatus.VERIFIED, KycStatus.KYCAID_VERIFIED] };
+      } else if (s === 'REJECTED') {
+        where.kycStatus = { in: [KycStatus.REJECTED, KycStatus.KYCAID_REJECTED] };
+      }
+    } else {
+      // Par défaut : uniquement les users qui ont au moins soumis un KYC
       where.OR = [
-        { id: { contains: filters.search, mode: 'insensitive' } },
-        { kycaidDocumentId: { contains: filters.search, mode: 'insensitive' } },
-        { user: { name: { contains: filters.search, mode: 'insensitive' } } },
-        { user: { email: { contains: filters.search, mode: 'insensitive' } } },
-        { user: { steamUsername: { contains: filters.search, mode: 'insensitive' } } },
-        { user: { steamId: { contains: filters.search, mode: 'insensitive' } } },
+        { kycaidApplicantId: { not: null } },
+        { kycDocuments: { some: {} } },
+        { kycVerifications: { some: {} } },
+        { kycStatus: { not: KycStatus.PENDING } },
       ];
     }
 
-    // Exécuter les requêtes en parallèle
-    const [documentsData, total] = await Promise.all([
-      prisma.kycDocument.findMany({
+    if (search) {
+      where.AND = [
+        ...(where.AND || []),
+        {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { steamUsername: { contains: search, mode: 'insensitive' } },
+            { steamId: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } },
+          ],
+        },
+      ];
+    }
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
         where,
-        include: {
-          user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          steamId: true,
+          steamUsername: true,
+          steamAvatar: true,
+          kycStatus: true,
+          kycaidApplicantId: true,
+          createdAt: true,
+          kycVerifications: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            select: {
+              kycaidVerificationId: true,
+              status: true,
+              verified: true,
+              createdAt: true,
+              completedAt: true,
+              declineReasons: true,
+            },
+          },
+          kycDocuments: {
+            orderBy: { uploadedAt: 'desc' },
+            take: 1,
             select: {
               id: true,
-              name: true,
-              email: true,
-              steamId: true,
-              steamUsername: true,
-              steamAvatar: true,
-              kycStatus: true,
+              type: true,
+              status: true,
+              uploadedAt: true,
+              reviewedAt: true,
+              rejectionReason: true,
             },
           },
         },
-        skip: ((filters.page || 1) - 1) * (filters.limit || 20),
-        take: filters.limit || 20,
-        orderBy: { uploadedAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
       }),
-      prisma.kycDocument.count({ where }),
+      prisma.user.count({ where }),
     ]);
 
-    // Transformer les données au format attendu (avec infos utilisateur pour affichage admin)
-    const documents: KYCDocument[] = documentsData.map(doc => ({
-      id: doc.id,
-      userId: doc.userId,
-      type: mapKycDocumentTypeFromDb(doc.type),
-      status: mapKycStatusFromDb(doc.status) as any,
-      providerId: doc.kycaidDocumentId || undefined,
-      uploadedAt: doc.uploadedAt,
-      reviewedAt: doc.reviewedAt || undefined,
-      rejectionReason: doc.rejectionReason || undefined,
-      user: doc.user ? {
-        steamUsername: doc.user.steamUsername ?? undefined,
-        steamId: doc.user.steamId ?? undefined,
-        steamAvatar: doc.user.steamAvatar ?? undefined,
-        name: doc.user.name ?? undefined,
-        email: doc.user.email,
-      } : undefined,
+    const result = users.map((u) => ({
+      userId: u.id,
+      steamUsername: u.steamUsername,
+      steamId: u.steamId,
+      steamAvatar: u.steamAvatar,
+      name: u.name,
+      email: u.email,
+      kycStatus: u.kycStatus,           // ← source de vérité
+      kycaidApplicantId: u.kycaidApplicantId,
+      createdAt: u.createdAt,
+      latestVerification: u.kycVerifications[0] ?? null,
+      latestDocument: u.kycDocuments[0] ?? null,
     }));
 
-    return NextResponse.json({
-      documents,
-      total,
-      page: filters.page || 1,
-      limit: filters.limit || 20,
-      totalPages: Math.ceil(total / (filters.limit || 20)),
-    });
+    return NextResponse.json({ users: result, total, page, limit, totalPages: Math.ceil(total / limit) });
   } catch (error) {
-    console.error('Erreur lors de la récupération des documents KYC:', error);
-    return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
-      { status: 500 }
-    );
+    console.error('[admin/kyc GET]', error);
+    return NextResponse.json({ error: 'Erreur interne du serveur' }, { status: 500 });
   }
 }

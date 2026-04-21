@@ -11,238 +11,174 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Search, 
-  Download, 
-  Eye, 
+import {
+  Search,
+  Download,
   AlertTriangle,
   CheckCircle,
   Clock,
   XCircle,
   RefreshCw,
   User,
-  FileText,
   CloudDownload,
+  ShieldCheck,
+  ShieldX,
+  Loader2,
 } from 'lucide-react';
-import { KYCDocument, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
+import { prismaKycStatusToAdminBadgeKey } from '@/lib/status-mapper';
+
+interface KycUser {
+  userId: string;
+  steamUsername: string | null;
+  steamId: string | null;
+  steamAvatar: string | null;
+  name: string | null;
+  email: string;
+  kycStatus: string;
+  kycaidApplicantId: string | null;
+  createdAt: string;
+  latestVerification: {
+    kycaidVerificationId: string;
+    status: string;
+    verified: boolean;
+    createdAt: string;
+    completedAt: string | null;
+    declineReasons: string[];
+  } | null;
+  latestDocument: {
+    id: string;
+    type: string;
+    status: string;
+    uploadedAt: string;
+    reviewedAt: string | null;
+    rejectionReason: string | null;
+  } | null;
+}
 
 export function AdminKYCManagement() {
   const { messages } = useLocale();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [filters, setFilters] = useState<AdminFilters>({
-    page: 1,
-    limit: 20,
-  });
+
+  const [statusFilter, setStatusFilter] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+
   const [syncing, setSyncing] = useState(false);
   const [syncingUserId, setSyncingUserId] = useState<string | null>(null);
 
+  const queryParams = { status: statusFilter, search: searchTerm, page };
+
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.adminKyc({ ...filters, search: searchTerm }),
+    queryKey: queryKeys.adminKyc(queryParams as any),
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (filters.status) params.append('status', filters.status);
-      if (filters.userId) params.append('userId', filters.userId);
-      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom.toISOString());
-      if (filters.dateTo) params.append('dateTo', filters.dateTo.toISOString());
-      if (filters.page) params.append('page', filters.page.toString());
-      if (filters.limit) params.append('limit', filters.limit.toString());
+      if (statusFilter) params.append('status', statusFilter);
       if (searchTerm) params.append('search', searchTerm);
-
-      const response = await fetch(`/api/admin/kyc?${params}`);
-      const json = await response.json();
-      if (!response.ok) throw new Error(json.error || 'Erreur lors du chargement des documents KYC');
+      params.append('page', String(page));
+      params.append('limit', '20');
+      const res = await fetch(`/api/admin/kyc?${params}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Erreur chargement KYC');
       return json;
     },
   });
 
-  const kycDocuments: KYCDocument[] = data?.documents ?? [];
+  const users: KycUser[] = data?.users ?? [];
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setFilters(prev => ({ ...prev, page: 1 }));
-  };
-
-  const handleStatusFilter = (status: string) => {
-    setFilters(prev => ({ 
-      ...prev, 
-      status: status === 'all' ? undefined : status,
-      page: 1 
-    }));
-  };
-
-  const handleApprove = async (documentId: string) => {
-    try {
-      const response = await fetch(`/api/admin/kyc/${documentId}/approve`, {
-        method: 'POST',
-      });
-      if (!response.ok) throw new Error('Erreur lors de l\'approbation');
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc({ ...filters, search: searchTerm }) });
-    } catch (err) {
-      console.error('Erreur:', err);
-    }
-  };
-
-  const handleReject = async (documentId: string, reason: string) => {
-    try {
-      const response = await fetch(`/api/admin/kyc/${documentId}/reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason }),
-      });
-      if (!response.ok) throw new Error('Erreur lors du rejet');
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc({ ...filters, search: searchTerm }) });
-    } catch (err) {
-      console.error('Erreur:', err);
-    }
-  };
-
+  // ─── Sync all pending ───────────────────────────────────────────────────────
   const handleSyncAllPending = async () => {
     setSyncing(true);
     try {
       const res = await fetch('/api/admin/kyc/sync-pending', { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur sync');
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Erreur sync');
       toast({
         title: 'Sync KYCAID terminée',
-        description: `${data.verified} vérifiés, ${data.rejected} rejetés, ${data.unchanged} inchangés sur ${data.total} utilisateurs.`,
+        description: `${d.verified} vérifiés · ${d.rejected} rejetés · ${d.unchanged} inchangés · ${d.errors} erreurs (sur ${d.total} utilisateurs).`,
       });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc({ ...filters, search: searchTerm }) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
     } catch (err) {
-      toast({
-        title: 'Erreur sync KYCAID',
-        description: err instanceof Error ? err.message : 'Erreur inconnue',
-        variant: 'destructive',
-      });
+      toast({ title: 'Erreur sync', description: err instanceof Error ? err.message : 'Erreur', variant: 'destructive' });
     } finally {
       setSyncing(false);
     }
   };
 
-  const handleForceVerifyUser = async (userId: string) => {
+  // ─── Sync one user ───────────────────────────────────────────────────────────
+  const handleSyncUser = async (userId: string) => {
     setSyncingUserId(userId);
     try {
       const res = await fetch(`/api/admin/kyc/force-verify/${userId}`, { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur');
-      if (data.success) {
-        toast({
-          title: 'Statut mis à jour',
-          description: `Nouveau statut : ${data.newStatus} (source : ${data.source})`,
-        });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Erreur');
+      if (d.success) {
+        toast({ title: 'Statut mis à jour', description: `→ ${d.newStatus} (source : ${d.source})` });
       } else {
-        toast({
-          title: 'Statut KYCAID non résolu',
-          description: data.message || `KYCAID status: ${data.kycaidStatus}`,
-          variant: 'destructive',
-        });
+        toast({ title: 'KYCAID non résolu', description: d.message || `Status KYCAID : ${d.kycaidStatus}`, variant: 'destructive' });
       }
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc({ ...filters, search: searchTerm }) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
     } catch (err) {
-      toast({
-        title: 'Erreur',
-        description: err instanceof Error ? err.message : 'Erreur inconnue',
-        variant: 'destructive',
-      });
+      toast({ title: 'Erreur', description: err instanceof Error ? err.message : 'Erreur', variant: 'destructive' });
     } finally {
       setSyncingUserId(null);
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      'pending': { variant: 'secondary' as const, icon: Clock, text: 'En attente' },
-      'approved': { variant: 'default' as const, icon: CheckCircle, text: 'Approuvé' },
-      'rejected': { variant: 'destructive' as const, icon: XCircle, text: 'Rejeté' },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['pending'];
-    const Icon = config.icon;
-
+  // ─── Helpers ─────────────────────────────────────────────────────────────────
+  const getKYCBadge = (kycStatus: string) => {
+    const key = prismaKycStatusToAdminBadgeKey(kycStatus);
+    const cfg = {
+      pending:     { variant: 'secondary' as const, icon: Clock,         label: 'En attente' },
+      in_progress: { variant: 'default'   as const, icon: ShieldCheck,   label: 'En cours'   },
+      verified:    { variant: 'default'   as const, icon: CheckCircle,   label: 'Vérifié'    },
+      rejected:    { variant: 'destructive' as const, icon: XCircle,     label: 'Rejeté'     },
+    }[key];
+    const Icon = cfg.icon;
     return (
-      <Badge variant={config.variant} className="flex items-center gap-1">
+      <Badge variant={cfg.variant} className={`flex items-center gap-1 ${key === 'verified' ? 'bg-green-600 hover:bg-green-700' : ''}`}>
         <Icon className="h-3 w-3" />
-        {config.text}
+        {cfg.label}
       </Badge>
     );
   };
 
   const getDocumentTypeLabel = (type: string) => {
-    const typeConfig = {
-      'id_card': 'Carte d\'identité',
-      'passport': 'Passeport',
-      'selfie': 'Selfie',
-      'proof_of_address': 'Justificatif de domicile',
+    const map: Record<string, string> = {
+      ID_CARD: "Carte d'identité",
+      PASSPORT: 'Passeport',
+      DOMESTIC_PASSPORT: 'Passeport',
+      SELFIE: 'Selfie',
+      PROOF_OF_ADDRESS: 'Justificatif de domicile',
     };
-
-    return typeConfig[type as keyof typeof typeConfig] || type;
+    return map[type?.toUpperCase()] ?? type ?? '—';
   };
 
-  const getDocumentIcon = (type: string) => {
-    switch (type) {
-      case 'id_card':
-      case 'passport':
-        return <FileText className="h-4 w-4" />;
-      case 'selfie':
-        return <User className="h-4 w-4" />;
-      case 'proof_of_address':
-        return <FileText className="h-4 w-4" />;
-      default:
-        return <FileText className="h-4 w-4" />;
-    }
-  };
+  const fmt = (d: string | null | undefined) =>
+    d ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(d)) : '—';
 
-  /** Libellé affiché pour l’utilisateur (pseudo Steam en priorité, puis nom, email, sinon userId) */
-  const getUserDisplayLabel = (doc: KYCDocument) => {
-    const u = doc.user;
-    if (u?.steamUsername) return u.steamUsername;
-    if (u?.name) return u.name;
-    if (u?.email) return u.email;
-    return doc.userId;
-  };
+  const displayName = (u: KycUser) =>
+    u.steamUsername || u.name || u.email || u.userId;
 
-  const formatDate = (date: Date | string) => {
-    return new Intl.DateTimeFormat('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(date));
-  };
-
-  const exportKYCDocuments = async () => {
+  const exportKYC = async () => {
     try {
       const params = new URLSearchParams();
-      if (filters.status) params.append('status', filters.status);
-      if (filters.userId) params.append('userId', filters.userId);
-      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom.toISOString());
-      if (filters.dateTo) params.append('dateTo', filters.dateTo.toISOString());
+      if (statusFilter) params.append('status', statusFilter);
       if (searchTerm) params.append('search', searchTerm);
-
-      const response = await fetch(`/api/admin/kyc/export?${params}`);
-      const blob = await response.blob();
-      
-      const url = window.URL.createObjectURL(blob);
+      const res = await fetch(`/api/admin/kyc/export?${params}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `kyc-documents-${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (err) {
-      console.error('Erreur lors de l\'export:', err);
-    }
+      a.href = url; a.download = `kyc-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a); a.click();
+      URL.revokeObjectURL(url); document.body.removeChild(a);
+    } catch { /* silent */ }
   };
 
-  if (isLoading) {
-    return <TableSkeleton />;
-  }
+  if (isLoading) return <TableSkeleton />;
 
   if (error) {
     return (
@@ -250,7 +186,7 @@ export function AdminKYCManagement() {
         <CardContent className="p-6">
           <div className="flex items-center gap-2 text-red-400">
             <AlertTriangle className="h-5 w-5" />
-            <span>Erreur: {error.message}</span>
+            <span>{(error as Error).message}</span>
           </div>
         </CardContent>
       </Card>
@@ -263,33 +199,31 @@ export function AdminKYCManagement() {
       <div className="flex flex-col gap-3">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              placeholder="Rechercher par pseudo Steam, email, ID..."
+              placeholder="Rechercher par pseudo Steam, email, Steam ID…"
               value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
               className="pl-10 bg-slate-700 border-slate-600 text-white"
             />
           </div>
-          
-          <Select onValueChange={handleStatusFilter}>
+          <Select value={statusFilter || 'all'} onValueChange={(v) => { setStatusFilter(v === 'all' ? '' : v); setPage(1); }}>
             <SelectTrigger className="w-full sm:w-48 bg-slate-700 border-slate-600 text-white">
               <SelectValue placeholder="Filtrer par statut" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous les statuts</SelectItem>
-              <SelectItem value="pending">En attente</SelectItem>
-              <SelectItem value="approved">Approuvé</SelectItem>
+              <SelectItem value="pending">En attente / En cours</SelectItem>
+              <SelectItem value="verified">Vérifié</SelectItem>
               <SelectItem value="rejected">Rejeté</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button 
-            onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc({ ...filters, search: searchTerm }) })}
-            variant="outline"
-            size="sm"
+          <Button
+            onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) })}
+            variant="outline" size="sm"
             className="border-slate-600 text-white hover:bg-slate-700"
           >
             <RefreshCw className="h-4 w-4 sm:mr-2" />
@@ -301,137 +235,171 @@ export function AdminKYCManagement() {
             disabled={syncing}
             size="sm"
             className="bg-amber-600 hover:bg-amber-700 text-white"
-            title="Interroge KYCAID pour tous les utilisateurs en attente et met à jour leur statut en base"
+            title="Interroge KYCAID pour tous les users en attente et met à jour la DB"
           >
-            {syncing ? (
-              <RefreshCw className="h-4 w-4 sm:mr-2 animate-spin" />
-            ) : (
-              <CloudDownload className="h-4 w-4 sm:mr-2" />
-            )}
-            <span className="hidden sm:inline">{syncing ? 'Sync en cours…' : 'Sync KYCAID (tous)'}</span>
+            {syncing ? <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" /> : <CloudDownload className="h-4 w-4 sm:mr-2" />}
+            <span className="hidden sm:inline">{syncing ? 'Sync…' : 'Sync KYCAID (tous)'}</span>
           </Button>
 
-          <Button 
-            onClick={exportKYCDocuments}
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700"
-          >
+          <Button onClick={exportKYC} size="sm" className="bg-blue-600 hover:bg-blue-700">
             <Download className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Exporter</span>
           </Button>
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table — 1 ligne par utilisateur */}
       <Card className="bg-slate-800/30 border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-slate-700">
-              <TableHead className="text-slate-300 whitespace-nowrap">Utilisateur</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Type</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Statut</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Uploadé le</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Révisé le</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {kycDocuments.map((doc) => (
-              <TableRow key={doc.id} className="border-slate-700 hover:bg-slate-800/50">
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={doc.user?.steamAvatar ?? undefined} alt={getUserDisplayLabel(doc)} />
-                      <AvatarFallback className="bg-slate-600 text-slate-300">
-                        {(doc.user?.steamUsername || doc.user?.name || doc.user?.email || doc.userId).slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium text-white">{getUserDisplayLabel(doc)}</div>
-                      <div className="text-xs text-slate-400">
-                        {doc.user?.steamId && <span>Steam: {doc.user.steamId}</span>}
-                        {doc.user?.steamId && doc.user?.email && ' · '}
-                        {doc.user?.email && <span>{doc.user.email}</span>}
-                        {!doc.user?.steamId && !doc.user?.email && `ID: ${doc.id}`}
+          <Table>
+            <TableHeader>
+              <TableRow className="border-slate-700">
+                <TableHead className="text-slate-300">Utilisateur</TableHead>
+                <TableHead className="text-slate-300 whitespace-nowrap">Statut KYC réel</TableHead>
+                <TableHead className="text-slate-300 whitespace-nowrap">Dernier doc</TableHead>
+                <TableHead className="text-slate-300 whitespace-nowrap">Soumis le</TableHead>
+                <TableHead className="text-slate-300 whitespace-nowrap">Complété le</TableHead>
+                <TableHead className="text-slate-300 whitespace-nowrap">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map((u) => (
+                <TableRow key={u.userId} className="border-slate-700 hover:bg-slate-800/50">
+                  {/* Utilisateur */}
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={u.steamAvatar ?? undefined} alt={displayName(u)} />
+                        <AvatarFallback className="bg-slate-600 text-slate-300">
+                          <User className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium text-white">{displayName(u)}</div>
+                        <div className="text-xs text-slate-400 space-x-1">
+                          {u.steamId && <span>Steam: {u.steamId}</span>}
+                          {u.steamId && u.email && <span>·</span>}
+                          <span>{u.email}</span>
+                        </div>
+                        {u.kycaidApplicantId && (
+                          <div className="text-xs text-slate-500 font-mono truncate max-w-[200px]" title={u.kycaidApplicantId}>
+                            {u.kycaidApplicantId}
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    {getDocumentIcon(doc.type)}
-                    <span className="text-slate-300">
-                      {getDocumentTypeLabel(doc.type)}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {getStatusBadge(doc.status)}
-                </TableCell>
-                <TableCell className="text-slate-300">
-                  {formatDate(doc.uploadedAt)}
-                </TableCell>
-                <TableCell className="text-slate-300">
-                  {doc.reviewedAt ? formatDate(doc.reviewedAt) : '-'}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2 flex-wrap">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-slate-600 text-white hover:bg-slate-700"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    {/* Sync depuis KYCAID pour cet utilisateur */}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={syncingUserId === doc.userId}
-                      onClick={() => handleForceVerifyUser(doc.userId)}
-                      className="border-amber-600 text-amber-400 hover:bg-amber-900/30"
-                      title="Interroger KYCAID et mettre à jour le statut"
-                    >
-                      {syncingUserId === doc.userId ? (
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <CloudDownload className="h-4 w-4" />
+                  </TableCell>
+
+                  {/* Statut réel depuis User.kycStatus */}
+                  <TableCell>{getKYCBadge(u.kycStatus)}</TableCell>
+
+                  {/* Dernier document */}
+                  <TableCell className="text-slate-300 text-sm">
+                    {u.latestDocument ? getDocumentTypeLabel(u.latestDocument.type) : '—'}
+                  </TableCell>
+
+                  {/* Date soumission */}
+                  <TableCell className="text-slate-300 text-sm whitespace-nowrap">
+                    {u.latestDocument ? fmt(u.latestDocument.uploadedAt) : (u.latestVerification ? fmt(u.latestVerification.createdAt) : '—')}
+                  </TableCell>
+
+                  {/* Date complétion */}
+                  <TableCell className="text-slate-300 text-sm whitespace-nowrap">
+                    {u.latestVerification?.completedAt
+                      ? fmt(u.latestVerification.completedAt)
+                      : u.latestDocument?.reviewedAt
+                      ? fmt(u.latestDocument.reviewedAt)
+                      : '—'}
+                  </TableCell>
+
+                  {/* Actions */}
+                  <TableCell>
+                    <div className="flex gap-2 flex-wrap">
+                      {/* Sync depuis KYCAID */}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={syncingUserId === u.userId}
+                        onClick={() => handleSyncUser(u.userId)}
+                        className="border-amber-600 text-amber-400 hover:bg-amber-900/30"
+                        title="Interroger KYCAID et mettre à jour le statut"
+                      >
+                        {syncingUserId === u.userId
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <CloudDownload className="h-4 w-4" />}
+                      </Button>
+
+                      {/* Force vérifié (override admin) */}
+                      {u.kycStatus !== 'VERIFIED' && u.kycStatus !== 'KYCAID_VERIFIED' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (confirm(`Forcer la vérification KYC de ${displayName(u)} sans passer par KYCAID ?`)) {
+                              fetch(`/api/admin/kyc/force-verify/${u.userId}?force=true`, { method: 'POST' })
+                                .then((r) => r.json())
+                                .then((d) => {
+                                  toast({ title: 'KYC forcé', description: `Statut → ${d.newStatus}` });
+                                  queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+                                  queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
+                                });
+                            }
+                          }}
+                          className="border-green-700 text-green-400 hover:bg-green-900/30"
+                          title="Forcer VERIFIED manuellement (override admin)"
+                        >
+                          <ShieldCheck className="h-4 w-4" />
+                        </Button>
                       )}
-                    </Button>
-                    {doc.status === 'pending' && (
-                      <>
+
+                      {/* Force rejeté */}
+                      {u.kycStatus !== 'REJECTED' && u.kycStatus !== 'KYCAID_REJECTED' && (
                         <Button
                           size="sm"
-                          onClick={() => handleApprove(doc.id)}
-                          className="bg-green-600 hover:bg-green-700"
+                          variant="outline"
+                          onClick={() => {
+                            if (confirm(`Rejeter manuellement le KYC de ${displayName(u)} ?`)) {
+                              fetch(`/api/admin/kyc/force-verify/${u.userId}`, { method: 'POST' })
+                                .then((r) => r.json())
+                                .then((d) => {
+                                  toast({ title: 'Résultat', description: d.newStatus === 'VERIFIED' ? 'KYCAID dit VERIFIED — pas rejeté' : `Statut → ${d.newStatus ?? 'inchangé'}` });
+                                  queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+                                  queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
+                                });
+                            }
+                          }}
+                          className="border-red-700 text-red-400 hover:bg-red-900/30"
+                          title="Vérifier depuis KYCAID (peut rejeter si KYCAID l'a décliné)"
                         >
-                          <CheckCircle className="h-4 w-4" />
+                          <ShieldX className="h-4 w-4" />
                         </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => handleReject(doc.id, 'Document non conforme')}
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          <XCircle className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </Card>
 
-      {kycDocuments.length === 0 && (
+      {users.length === 0 && (
         <Card className="bg-slate-800/30 border-slate-700">
           <CardContent className="p-8 text-center">
-            <p className="text-slate-300">Aucun document KYC trouvé</p>
+            <p className="text-slate-300">Aucun utilisateur KYC trouvé</p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Pagination */}
+      {data?.totalPages > 1 && (
+        <div className="flex justify-center gap-2">
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}
+            className="border-slate-600 text-white">Précédent</Button>
+          <span className="text-slate-400 text-sm self-center">Page {page} / {data.totalPages}</span>
+          <Button variant="outline" size="sm" disabled={page >= data.totalPages} onClick={() => setPage(p => p + 1)}
+            className="border-slate-600 text-white">Suivant</Button>
+        </div>
       )}
     </div>
   );
@@ -441,13 +409,13 @@ function TableSkeleton() {
   return (
     <div className="space-y-4">
       <div className="flex gap-4">
-        <div className="h-10 bg-slate-600 rounded w-1/3 animate-pulse"></div>
-        <div className="h-10 bg-slate-600 rounded w-32 animate-pulse"></div>
-        <div className="h-10 bg-slate-600 rounded w-24 animate-pulse"></div>
+        <div className="h-10 bg-slate-600 rounded w-1/3 animate-pulse" />
+        <div className="h-10 bg-slate-600 rounded w-32 animate-pulse" />
+        <div className="h-10 bg-slate-600 rounded w-24 animate-pulse" />
       </div>
       <div className="space-y-2">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-16 bg-slate-600 rounded animate-pulse"></div>
+          <div key={i} className="h-16 bg-slate-600 rounded animate-pulse" />
         ))}
       </div>
     </div>
