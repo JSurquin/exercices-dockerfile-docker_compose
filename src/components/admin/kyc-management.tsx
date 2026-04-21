@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Search, 
   Download, 
@@ -20,7 +21,8 @@ import {
   XCircle,
   RefreshCw,
   User,
-  FileText
+  FileText,
+  CloudDownload,
 } from 'lucide-react';
 import { KYCDocument, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
@@ -28,11 +30,14 @@ import { useLocale } from '@/components/providers/locale-provider';
 export function AdminKYCManagement() {
   const { messages } = useLocale();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [filters, setFilters] = useState<AdminFilters>({
     page: 1,
     limit: 20,
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [syncingUserId, setSyncingUserId] = useState<string | null>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.adminKyc({ ...filters, search: searchTerm }),
@@ -91,6 +96,60 @@ export function AdminKYCManagement() {
       queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc({ ...filters, search: searchTerm }) });
     } catch (err) {
       console.error('Erreur:', err);
+    }
+  };
+
+  const handleSyncAllPending = async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch('/api/admin/kyc/sync-pending', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur sync');
+      toast({
+        title: 'Sync KYCAID terminée',
+        description: `${data.verified} vérifiés, ${data.rejected} rejetés, ${data.unchanged} inchangés sur ${data.total} utilisateurs.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc({ ...filters, search: searchTerm }) });
+    } catch (err) {
+      toast({
+        title: 'Erreur sync KYCAID',
+        description: err instanceof Error ? err.message : 'Erreur inconnue',
+        variant: 'destructive',
+      });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleForceVerifyUser = async (userId: string) => {
+    setSyncingUserId(userId);
+    try {
+      const res = await fetch(`/api/admin/kyc/force-verify/${userId}`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur');
+      if (data.success) {
+        toast({
+          title: 'Statut mis à jour',
+          description: `Nouveau statut : ${data.newStatus} (source : ${data.source})`,
+        });
+      } else {
+        toast({
+          title: 'Statut KYCAID non résolu',
+          description: data.message || `KYCAID status: ${data.kycaidStatus}`,
+          variant: 'destructive',
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc({ ...filters, search: searchTerm }) });
+    } catch (err) {
+      toast({
+        title: 'Erreur',
+        description: err instanceof Error ? err.message : 'Erreur inconnue',
+        variant: 'destructive',
+      });
+    } finally {
+      setSyncingUserId(null);
     }
   };
 
@@ -237,6 +296,21 @@ export function AdminKYCManagement() {
             <span className="hidden sm:inline">Actualiser</span>
           </Button>
 
+          <Button
+            onClick={handleSyncAllPending}
+            disabled={syncing}
+            size="sm"
+            className="bg-amber-600 hover:bg-amber-700 text-white"
+            title="Interroge KYCAID pour tous les utilisateurs en attente et met à jour leur statut en base"
+          >
+            {syncing ? (
+              <RefreshCw className="h-4 w-4 sm:mr-2 animate-spin" />
+            ) : (
+              <CloudDownload className="h-4 w-4 sm:mr-2" />
+            )}
+            <span className="hidden sm:inline">{syncing ? 'Sync en cours…' : 'Sync KYCAID (tous)'}</span>
+          </Button>
+
           <Button 
             onClick={exportKYCDocuments}
             size="sm"
@@ -302,13 +376,28 @@ export function AdminKYCManagement() {
                   {doc.reviewedAt ? formatDate(doc.reviewedAt) : '-'}
                 </TableCell>
                 <TableCell>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <Button
                       size="sm"
                       variant="outline"
                       className="border-slate-600 text-white hover:bg-slate-700"
                     >
                       <Eye className="h-4 w-4" />
+                    </Button>
+                    {/* Sync depuis KYCAID pour cet utilisateur */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={syncingUserId === doc.userId}
+                      onClick={() => handleForceVerifyUser(doc.userId)}
+                      className="border-amber-600 text-amber-400 hover:bg-amber-900/30"
+                      title="Interroger KYCAID et mettre à jour le statut"
+                    >
+                      {syncingUserId === doc.userId ? (
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <CloudDownload className="h-4 w-4" />
+                      )}
                     </Button>
                     {doc.status === 'pending' && (
                       <>

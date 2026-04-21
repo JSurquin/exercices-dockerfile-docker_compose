@@ -31,7 +31,8 @@ import {
   User,
   Clock,
   UserCheck,
-  Loader2
+  Loader2,
+  CloudDownload,
 } from 'lucide-react';
 import { User as UserType, AdminFilters } from '@/lib/types';
 import { prismaKycStatusToAdminBadgeKey } from '@/lib/status-mapper';
@@ -72,6 +73,7 @@ export function AdminUsersTable() {
   const [promoteCode, setPromoteCode] = useState('');
   const [promoteCommission, setPromoteCommission] = useState('2');
   const [promoting, setPromoting] = useState(false);
+  const [syncingKycUserId, setSyncingKycUserId] = useState<string | null>(null);
 
   const { data, isLoading, isFetching, error } = useQuery({
     queryKey: queryKeys.adminUsers({ ...filters, search: debouncedSearch }),
@@ -208,6 +210,33 @@ export function AdminUsersTable() {
       });
     } finally {
       setPromoting(false);
+    }
+  };
+
+  const handleSyncKyc = async (userId: string) => {
+    setSyncingKycUserId(userId);
+    try {
+      const res = await fetch(`/api/admin/kyc/force-verify/${userId}`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur');
+      if (data.success) {
+        toast({ title: 'KYC mis à jour', description: `Statut → ${data.newStatus}` });
+      } else {
+        toast({
+          title: 'KYCAID non résolu',
+          description: data.message || `Status KYCAID : ${data.kycaidStatus ?? 'inconnu'}`,
+          variant: 'destructive',
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+    } catch (err) {
+      toast({
+        title: 'Erreur sync KYC',
+        description: err instanceof Error ? err.message : 'Erreur inconnue',
+        variant: 'destructive',
+      });
+    } finally {
+      setSyncingKycUserId(null);
     }
   };
 
@@ -351,7 +380,7 @@ export function AdminUsersTable() {
                   {formatDate(user.joinedAt)}
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Button
                       size="sm"
                       variant="outline"
@@ -362,6 +391,23 @@ export function AdminUsersTable() {
                         <Eye className="h-4 w-4" />
                       </Link>
                     </Button>
+                    {/* Sync KYC depuis KYCAID pour cet utilisateur */}
+                    {user.kycStatus !== 'VERIFIED' && user.kycStatus !== 'KYCAID_VERIFIED' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={syncingKycUserId === user.id}
+                        onClick={() => handleSyncKyc(user.id)}
+                        className="border-amber-600 text-amber-400 hover:bg-amber-900/30"
+                        title="Interroger KYCAID et mettre à jour le statut KYC"
+                      >
+                        {syncingKycUserId === user.id ? (
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <CloudDownload className="h-4 w-4" />
+                        )}
+                      </Button>
+                    )}
                     {user.role !== 'AFFILIATE' && user.role !== 'ADMIN' && (
                       <Button
                         size="sm"
