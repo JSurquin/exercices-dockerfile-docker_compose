@@ -9,6 +9,30 @@ import { prisma } from '../../prisma/prisma';
 
 /**
  * Service pour gérer les hooks et événements liés aux trades
+ * 
+ * ⚠️ SÉCURITÉ CRITIQUE: FAILLE DE MONTANT MANIPULABLE ⚠️
+ * 
+ * PROBLÈME: Les fonctions de ce service utilisent `trade.netCents` et `trade.grossCents`
+ * qui proviennent du montant CLIENT non vérifié (voir create-trade/route.ts).
+ * 
+ * RISQUE:
+ *   - creditPendingBalance() utilise trade.netCents (ligne ~79)
+ *   - releasePendingToBalance() utilise trade.netCents (ligne ~281)
+ *   - updateUserExperience() utilise trade.grossCents pour XP/volume (ligne ~105)
+ *   - Un attaquant peut gonfler ses montants et obtenir balance/XP/volume frauduleux
+ * 
+ * CORRECTIF REQUIS:
+ *   1. NE JAMAIS créditer avec trade.netCents avant validation Skinplace
+ *   2. ATTENDRE le montant d'autorité depuis:
+ *      - Réponse API Skinplace (champ `price` dans la réponse /trade)
+ *      - IPN webhook avec signature vérifiée + champ montant
+ *   3. AJOUTER un champ `skinplaceVerifiedAmountCents` dans le modèle Trade
+ *   4. UTILISER uniquement ce champ vérifié pour les crédits
+ *   5. BLOQUER tout crédit tant que skinplaceVerifiedAmountCents est NULL
+ * 
+ * STATUT: NON CORRIGÉ - Montants client utilisés dans toutes les fonctions
+ * 
+ * Voir rapport audit: Zone 2 - Routes Skinplace, section "Crédit solde basé sur montants client"
  */
 export class TradeHooks {
   /**
@@ -74,6 +98,8 @@ export class TradeHooks {
         return;
       }
 
+      // ⚠️ SÉCURITÉ: trade.netCents vient du montant CLIENT (non vérifié Skinplace)
+      // TODO: Remplacer par trade.skinplaceVerifiedAmountCents après validation API/IPN
       await creditPendingBalance(
         userId,
         trade.netCents,
@@ -278,6 +304,8 @@ export class TradeHooks {
       if (alreadyCredited) {
         console.warn(`[TradeHooks] Balance already credited for trade ${tradeId}, skipping`);
       } else {
+        // ⚠️ SÉCURITÉ: trade.netCents vient du montant CLIENT (non vérifié Skinplace)
+        // TODO: Remplacer par trade.skinplaceVerifiedAmountCents après validation API/IPN
         // Libère les fonds du solde en attente vers le solde disponible
         await releasePendingToBalance(
           trade.userId,

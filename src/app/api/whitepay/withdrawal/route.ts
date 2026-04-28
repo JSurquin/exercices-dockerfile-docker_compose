@@ -16,6 +16,8 @@ import {
 } from '@/lib/whitepay';
 import { canUserMakePayout } from '@/lib/kycaid';
 import crypto from 'crypto';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { whitepayPayoutRequestBodySchema } from '@/lib/validation/schemas/integrations';
 
 const generateOrderId = () => `WP-${crypto.randomUUID()}`;
 
@@ -57,10 +59,15 @@ export async function POST(request: NextRequest) {
     }
     LOG('✓ KYC OK');
 
-    const body = await request.json();
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, whitepayPayoutRequestBodySchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const body = parsed.data;
     LOG('Body reçu', { keys: Object.keys(body) });
     const {
-      amountCents,
+      amountCents: amountCentsRaw,
       tradeId,
       targetCurrency,
       network,
@@ -68,6 +75,7 @@ export async function POST(request: NextRequest) {
       memo,
       travelRule,
     } = body;
+    const amountCents = Number(amountCentsRaw);
 
     if (!amountCents || amountCents <= 0) {
       LOG('✗ Montant invalide', { amountCents });
@@ -180,19 +188,21 @@ export async function POST(request: NextRequest) {
     const orderId = generateOrderId();
     const amountEur = amountCents / 100;
 
+    const travelRuleObj = travelRule as Record<string, unknown> | null | undefined;
+
     // Travel Rule obligatoire pour l'EEE : fourni par le client ou construit depuis l'utilisateur
-    const travelRulePayload: WhitepayTravelRule | undefined = travelRule && typeof travelRule === 'object' && travelRule.type && travelRule.vasp && travelRule.name && travelRule.address
+    const travelRulePayload: WhitepayTravelRule | undefined = travelRuleObj && travelRuleObj.type && travelRuleObj.vasp && travelRuleObj.name && travelRuleObj.address
       ? {
-          type: travelRule.type === 'entity' ? 'entity' : 'individual',
-          vasp: String(travelRule.vasp),
-          name: String(travelRule.name),
-          address: String(travelRule.address),
+          type: travelRuleObj.type === 'entity' ? 'entity' : 'individual',
+          vasp: String(travelRuleObj.vasp),
+          name: String(travelRuleObj.name),
+          address: String(travelRuleObj.address),
         }
       : {
           type: 'individual' as const,
           vasp: 'Self-custody',
           name: (user.name || user.email || 'User').trim() || 'User',
-          address: (typeof travelRule === 'object' && travelRule?.address) ? String(travelRule.address) : 'N/A',
+          address: travelRuleObj?.address ? String(travelRuleObj.address) : 'N/A',
         };
 
     const withdrawalParams: WhitepayWithdrawalRequest = {

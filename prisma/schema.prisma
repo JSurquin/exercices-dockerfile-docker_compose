@@ -1019,3 +1019,18 @@ model NotificationPreferences {
 
   @@map("notification_preferences")
 }
+
+/// Idempotence des webhooks (Flexify, Skinplace, etc.)
+model WebhookEvent {
+  id           String    @id @default(cuid())
+  webhookId    String
+  handler      String
+  status       String    @default("processing")
+  receivedAt   DateTime  @default(now())
+  processedAt  DateTime?
+  errorMessage String?
+  metadata     Json?
+
+  @@unique([webhookId, handler])
+  @@map("webhook_event")
+}

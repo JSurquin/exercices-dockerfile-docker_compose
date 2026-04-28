@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { getGiveawaysEnabled, setGiveawaysEnabled } from '@/lib/points-service';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { adminGiveawaysSettingsPutSchema } from '@/lib/validation/schemas/admin-bodies';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
     const enabled = await getGiveawaysEnabled();
@@ -18,15 +20,16 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
-    const body = await request.json().catch(() => ({}));
-    if (typeof body.enabled !== 'boolean') {
-      return NextResponse.json({ error: 'Paramètre "enabled" (boolean) requis' }, { status: 400 });
+    const raw = await request.json().catch(() => ({}));
+    const parsed = safeParseJson(raw, adminGiveawaysSettingsPutSchema);
+    if (!parsed.ok) {
+      return parsed.response;
     }
-    const enabled = await setGiveawaysEnabled(body.enabled, session.user.id);
+    const enabled = await setGiveawaysEnabled(parsed.data.enabled, session.user.id);
     return NextResponse.json({ enabled });
   } catch (error) {
     console.error('[admin/giveaways-settings] PUT error:', error);

@@ -92,7 +92,6 @@ export async function GET(request: NextRequest) {
           txHash: tx.tx_hash,
           confirmations: tx.confirmations,
           network: tx.network,
-          address: tx.address,
           createdAt: tx.created_at,
           completedAt: tx.completed_at,
         };
@@ -108,7 +107,6 @@ export async function GET(request: NextRequest) {
           fee: payout.whitepayFee,
           txHash: payout.whitepayTxHash,
           network: payout.whitepayNetwork,
-          address: payout.whitepayAddress,
           cached: true,
         };
       }

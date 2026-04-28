@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { botSubcategoryPostSchema } from '@/lib/validation/schemas/chat-api';
 
 const BOT_MESSAGES: Record<string, (username: string) => string> = {
   'trade.pending': (u) => `Bonjour ${u} ! Si vous venez d'envoyer votre trade, le bot peut prendre jusqu'à 15 minutes pour l'accepter.
@@ -281,11 +283,17 @@ export async function POST(
     const resolvedParams = await params;
     const session = await auth.api.getSession({ headers: request.headers });
 
-    const body: { subcategoryKey: string } = await request.json();
-
-    if (!body.subcategoryKey) {
-      return NextResponse.json({ error: 'subcategoryKey requis' }, { status: 400 });
+    let raw: unknown;
+    try {
+      raw = await request.json();
+    } catch {
+      raw = {};
     }
+    const parsed = safeParseJson(raw, botSubcategoryPostSchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const body = parsed.data;
 
     const conversation = await prisma.conversation.findUnique({
       where: { id: resolvedParams.id },

@@ -7,6 +7,8 @@ import {
   type InitiateCryptoPayoutParams,
 } from '@/lib/gatefi-onramp';
 import { canUserMakePayout, getOrCreateSumsubToken } from '@/lib/gatefi-kyc';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { gatefiOrderBodySchema } from '@/lib/validation/schemas/integrations';
 
 /**
  * POST /api/gatefi/onramp/buy
@@ -27,7 +29,12 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
-    const body = await request.json();
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, gatefiOrderBodySchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const body = parsed.data as Record<string, any>;
     const {
       payoutId,
       amountCents,

@@ -1,20 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AffiliateService } from '@/lib/affiliate-service';
+import { requireUserSession } from '@/lib/require-session-user';
+import { safeParseJson, safeParseSearchParams } from '@/lib/validation/helpers';
+import {
+  affiliateCommissionsPostSchema,
+  affiliateCommissionsQuerySchema,
+} from '@/lib/validation/schemas/affiliate';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const status = searchParams.get('status') || 'PENDING';
-    
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'ID utilisateur requis' },
-        { status: 400 }
-      );
+    const session = await requireUserSession(request);
+    if (!session) {
+      return NextResponse.json({ success: false, error: 'Authentification requise' }, { status: 401 });
     }
+    const userId = session.user.id;
+    const { searchParams } = new URL(request.url);
+    const q = safeParseSearchParams(searchParams, affiliateCommissionsQuerySchema, {
+      errorStyle: 'affiliate',
+    });
+    if (!q.ok) {
+      return q.response;
+    }
+    const { status } = q.data;
     
-    // Récupérer l'affilié
     const affiliate = await AffiliateService.getAffiliateStats(userId);
     
     if (!affiliate) {
@@ -47,16 +55,17 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, action, commissionIds } = await request.json();
-    
-    if (!userId || !action) {
-      return NextResponse.json(
-        { success: false, error: 'Paramètres requis manquants' },
-        { status: 400 }
-      );
+    const session = await requireUserSession(request);
+    if (!session) {
+      return NextResponse.json({ success: false, error: 'Authentification requise' }, { status: 401 });
     }
-    
-    // Récupérer l'affilié
+    const userId = session.user.id;
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, affiliateCommissionsPostSchema, { errorStyle: 'affiliate' });
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const { action, commissionIds } = parsed.data;
     const affiliate = await AffiliateService.getAffiliateStats(userId);
     
     if (!affiliate) {

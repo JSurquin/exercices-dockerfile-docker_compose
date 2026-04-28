@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { prisma } from '~/prisma/prisma';
 import { 
   getRequestContext, 
@@ -11,17 +11,10 @@ export async function GET(request: NextRequest) {
   const context = getRequestContext(request);
   
   try {
-    // Vérifier l'authentification
-    const session = await auth.api.getSession({ headers: request.headers });
-    
-    if (!session?.user) {
-      await logUnauthorizedAccess(context, '/api/admin/audit/logs', 'No valid session');
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const session = await requireAdminSessionWithDbCheck(request);
 
-    // Vérifier les permissions admin (utiliser la session directement)
-    if (!session.user.role || session.user.role !== 'ADMIN') {
-      await logUnauthorizedAccess(context, '/api/admin/audit/logs', 'Insufficient permissions');
+    if (!session) {
+      await logUnauthorizedAccess(context, '/api/admin/audit/logs', 'Admin required');
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

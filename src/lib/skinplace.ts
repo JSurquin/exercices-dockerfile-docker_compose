@@ -206,16 +206,17 @@ class SkinplaceService {
   async getPurchaseHistory(
     page = 1,
     limit = 50,
-    customId?: string
+    customId?: string,
+    useCache = true
   ): Promise<SkinplaceHistoryResponse> {
-    const endpoint = customId 
+    const endpoint = customId
       ? `/api/v3/purchase/history/${customId}?page=${page}&limit=${limit}`
       : `/api/v3/purchase/history?page=${page}&limit=${limit}`;
-    
+
     return this.makeRequest<SkinplaceHistoryResponse>(
       endpoint,
       { method: 'GET' },
-      true
+      useCache
     );
   }
 

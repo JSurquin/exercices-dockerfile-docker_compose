@@ -5,6 +5,8 @@ import {
   resolveTwoFactorPassword,
   buildInternalHeaders,
 } from "@/lib/security/two-factor";
+import { safeParseJson } from "@/lib/validation/helpers";
+import { twoFactorPasswordBodySchema } from "@/lib/validation/schemas/payout-security";
 
 export async function POST(request: NextRequest) {
   const result = await getCurrentUserForTwoFactor(request.headers);
@@ -12,10 +14,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: result.error }, { status: result.status });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const raw = await request.json().catch(() => ({}));
+  const parsed = safeParseJson(raw, twoFactorPasswordBodySchema);
+  if (!parsed.ok) {
+    return parsed.response;
+  }
+  const pwd = parsed.data.password;
   const password = resolveTwoFactorPassword(
     result.user.steamId,
-    body?.password,
+    pwd === null || pwd === undefined ? undefined : String(pwd),
   );
 
   const internalRequest = new Request(

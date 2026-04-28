@@ -379,10 +379,27 @@ export class AffiliateService {
   
   /**
    * Génère un lien d'affiliation
+   * 
+   * SÉCURITÉ: Valide que le path est relatif pour éviter les open redirects.
+   * Bloque les URLs absolues qui pointeraient vers des domaines externes.
    */
   static generateAffiliateLink(code: string, path: string = ''): string {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://moonskin.fr';
-    const url = new URL(path, baseUrl);
+    
+    // SÉCURITÉ: Valider que path est relatif (commence par / ou est vide)
+    // Bloquer les URLs absolues (http://, https://, //, etc.)
+    const trimmedPath = path.trim();
+    if (trimmedPath && !trimmedPath.startsWith('/')) {
+      // Path ne commence pas par / → considéré comme invalide
+      throw new Error('Invalid path: must be relative (start with /)');
+    }
+    
+    // Bloquer les tentatives de protocol-relative URLs (//)
+    if (trimmedPath.startsWith('//')) {
+      throw new Error('Invalid path: protocol-relative URLs not allowed');
+    }
+    
+    const url = new URL(trimmedPath || '/', baseUrl);
     url.searchParams.set('ref', code);
     return url.toString();
   }

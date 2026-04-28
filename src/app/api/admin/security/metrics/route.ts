@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { prisma } from '~/prisma/prisma';
 import { withSecurity } from '@/lib/security';
 import { AuditLogger, AuditAction } from '@/lib/security';
 import { FraudDetector } from '@/lib/security';
 import { logger } from '@/lib/logger';
-import {headers} from 'next/headers';
-import { Session } from 'better-auth';
 import {
   PRISMA_SEQUENTIAL_DELAY_MS,
   PRISMA_HEAVY_QUERY_DELAY_MS,
@@ -29,16 +27,8 @@ async function safeQuery<T>(
 
 async function handleGetSecurityMetrics(req: NextRequest): Promise<NextResponse> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers() as Headers,
-    });
+    const session = await requireAdminSessionWithDbCheck(req);
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const user = session.user;
-
-    if (!user || user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

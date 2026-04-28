@@ -1,26 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SecurityManager, cleanupRateLimitStore } from '@/lib/security';
+import { cleanupRateLimitStore } from '@/lib/security';
 import { AuditLogger } from '@/lib/security';
 import { CooldownManager } from '@/lib/security';
 import { FraudDetector } from '@/lib/security';
 import { logger } from '@/lib/logger';
+import { requireCronSecret } from '@/lib/cron-auth';
 
 /**
  * Endpoint de maintenance de sécurité (à appeler via un cron job)
  * Nettoie les données expirées et effectue des vérifications de routine
  */
+function isCronAuthorized(req: NextRequest): { ok: true } | { ok: false; status: number; message: string } {
+  const r = requireCronSecret(req);
+  if (r.ok) {
+    return { ok: true };
+  }
+  // Compat : ancien nom de variable (à migrer vers CRON_SECRET)
+  const legacy = process.env.CRON_SECRET_TOKEN;
+  const bearer = req.headers.get('authorization');
+  if (legacy && bearer === `Bearer ${legacy}`) {
+    return { ok: true };
+  }
+  return r;
+}
+
 async function handleSecurityMaintenance(req: NextRequest): Promise<NextResponse> {
   try {
-    // Vérifier l'authentification du cron (token secret ou IP whitelist)
-    const authHeader = req.headers.get('authorization');
-    const expectedToken = process.env.CRON_SECRET_TOKEN;
-    
-    if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
+    const cronAuth = isCronAuthorized(req);
+    if (!cronAuth.ok) {
       logger.warn('Unauthorized cron access attempt', {
-        ip: req.headers.get('x-forwarded-for') || "Unknown",
+        ip: req.headers.get('x-forwarded-for') || 'Unknown',
         userAgent: req.headers.get('user-agent'),
       });
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: cronAuth.message },
+        { status: cronAuth.status }
+      );
     }
 
     logger.info('Starting security maintenance');

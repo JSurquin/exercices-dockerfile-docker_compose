@@ -1,21 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "~/lib/auth";
 import { prisma } from "~/prisma/prisma";
+import {
+  requireAdminOrModeratorSessionWithDbCheck,
+  requireAdminSessionWithDbCheck,
+} from "@/lib/require-admin";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
-    if (user?.role !== "ADMIN" && user?.role !== "MODERATOR") {
+    const session = await requireAdminOrModeratorSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 
@@ -77,18 +70,8 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
-
-    if (user?.role !== "ADMIN") {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 

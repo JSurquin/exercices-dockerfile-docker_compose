@@ -1,18 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AffiliateService } from '@/lib/affiliate-service';
+import { requireUserSession } from '@/lib/require-session-user';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { affiliateLinkPostSchema } from '@/lib/validation/schemas/affiliate';
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, path = '' } = await request.json();
-    
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'ID utilisateur requis' },
-        { status: 400 }
-      );
+    const session = await requireUserSession(request);
+    if (!session) {
+      return NextResponse.json({ success: false, error: 'Authentification requise' }, { status: 401 });
     }
+    const userId = session.user.id;
+    let raw: unknown;
+    try {
+      raw = await request.json();
+    } catch {
+      raw = {};
+    }
+    const parsed = safeParseJson(raw, affiliateLinkPostSchema, { errorStyle: 'affiliate' });
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const path = parsed.data.path ?? '';
     
-    // Récupérer le code d'affilié
     const affiliate = await AffiliateService.getAffiliateStats(userId);
     
     if (!affiliate) {
@@ -22,16 +32,26 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const affiliateLink = AffiliateService.generateAffiliateLink(affiliate.code, path);
-    
-    return NextResponse.json({
-      success: true,
-      data: {
-        link: affiliateLink,
-        code: affiliate.code,
-        shortLink: `${process.env.NEXT_PUBLIC_APP_URL || 'https://moonskin.fr'}?ref=${affiliate.code}`
-      }
-    });
+    // SÉCURITÉ: generateAffiliateLink valide maintenant que path est relatif
+    // Une erreur sera levée si path est une URL absolue (protection open redirect)
+    try {
+      const affiliateLink = AffiliateService.generateAffiliateLink(affiliate.code, path);
+      
+      return NextResponse.json({
+        success: true,
+        data: {
+          link: affiliateLink,
+          code: affiliate.code,
+          shortLink: `${process.env.NEXT_PUBLIC_APP_URL || 'https://moonskin.fr'}?ref=${affiliate.code}`
+        }
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid path';
+      return NextResponse.json(
+        { success: false, error: message },
+        { status: 400 }
+      );
+    }
     
   } catch (error) {
     console.error('Erreur génération lien affilié:', error);

@@ -6,6 +6,8 @@ import {
   getWhitepayLimits,
   centsToEur,
 } from '@/lib/whitepay';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { whitepayAmountBodySchema } from '@/lib/validation/schemas/integrations';
 
 const LOG = (msg: string, data?: object) => {
   if (process.env.NODE_ENV === 'development') {
@@ -33,7 +35,12 @@ export async function POST(request: NextRequest) {
     }
     LOG('✓ Session OK', { userId: session.user.id });
 
-    const body = await request.json();
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, whitepayAmountBodySchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const body = parsed.data;
     const amountCents = body.amountCents ?? body.amount;
 
     if (amountCents == null || Number(amountCents) <= 0) {

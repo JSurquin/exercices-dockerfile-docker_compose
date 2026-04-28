@@ -1,14 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '~/prisma/prisma';
-import { GiveawayDurationType, GiveawayStatus } from '@prisma/client';
+import { GiveawayDurationType } from '@prisma/client';
 import { auth } from '~/lib/auth';
-import { enrichGiveawayForViewer } from '@/lib/giveaway-public';
+import { enrichGiveawayForViewer, redactGiveawayForPublic } from '@/lib/giveaway-public';
+import { withPublicWinnerProfiles } from '@/lib/giveaway-winners-public';
 import { getPointsConfig } from '@/lib/points-service';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
+import { safeParseJson, safeParseSearchParams } from '@/lib/validation/helpers';
+import {
+  giveawayCreateBodySchema,
+  giveawaysPublicListQuerySchema,
+} from '@/lib/validation/schemas/integrations';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status') as GiveawayStatus | null;
+    const parsedQ = safeParseSearchParams(searchParams, giveawaysPublicListQuerySchema);
+    if (!parsedQ.ok) {
+      return parsedQ.response;
+    }
+    const status = parsedQ.data.status ?? null;
 
     const session = await auth.api.getSession({ headers: request.headers });
     const viewerId = session?.user?.id ?? null;
@@ -20,40 +32,57 @@ export async function GET(request: NextRequest) {
       .find((c) => c.trim().startsWith('ctf_affiliate_ref='))
       ?.split('=')[1]
       ?.trim();
-    const affiliateRef = searchParams.get('ref') ?? affiliateCookie ?? null;
+    const affiliateRef = parsedQ.data.ref ?? affiliateCookie ?? null;
 
-    const where = status ? { status } : {};
+    const accessOr: Prisma.GiveawayWhereInput[] = [
+      { isPrivate: false },
+      { isPrivate: true, requiredAffiliateCode: null },
+    ];
+    if (affiliateRef) {
+      accessOr.push({ isPrivate: true, requiredAffiliateCode: affiliateRef });
+    }
+    const where: Prisma.GiveawayWhereInput = {
+      AND: [
+        ...(status ? [{ status }] : []),
+        { OR: accessOr },
+      ],
+    };
 
     const giveaways = await prisma.giveaway.findMany({
       where,
       include: {
-        entries: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                steamUsername: true,
-                steamAvatar: true,
+        _count: { select: { entries: true } },
+        ...(viewerId
+          ? {
+              entries: {
+                where: { userId: viewerId },
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      steamUsername: true,
+                      steamAvatar: true,
+                    },
+                  },
+                },
               },
-            },
-          },
-        },
-        winners: {
-          select: { userId: true, rank: true },
-          orderBy: { rank: 'asc' },
-        },
+            }
+          : {}),
+        winners: { orderBy: { rank: 'asc' } },
       },
       orderBy: [{ status: 'asc' }, { endDate: 'asc' }],
     });
 
-    // Filtrer les giveaways privés : visibles uniquement si le code affilié correspond
-    const visible = giveaways.filter((g) => {
-      if (!g.isPrivate) return true;
-      if (!g.requiredAffiliateCode) return true;
-      return affiliateRef === g.requiredAffiliateCode;
-    });
+    const withWinners = await withPublicWinnerProfiles(giveaways);
 
-    return NextResponse.json(visible.map((g) => enrichGiveawayForViewer(g, viewerId)));
+    return NextResponse.json(
+      withWinners.map((g) =>
+        redactGiveawayForPublic(
+          enrichGiveawayForViewer(g, viewerId) as Record<string, unknown>,
+          'list'
+        )
+      )
+    );
   } catch (error) {
     console.error('Error fetching giveaways:', error);
     return NextResponse.json(
@@ -65,12 +94,17 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (session?.user?.role !== 'ADMIN') {
+    // SÉCURITÉ: Revalider le rôle admin depuis DB (session peut être obsolète)
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé — admin requis' }, { status: 403 });
     }
 
-    const body = await request.json();
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, giveawayCreateBodySchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
     const {
       title,
       description,
@@ -86,7 +120,7 @@ export async function POST(request: NextRequest) {
       maxEntriesPerUser,
       isPrivate,
       requiredAffiliateCode,
-    } = body;
+    } = parsed.data;
 
     if (!title || !description || !prize || !maxTickets || !endDate) {
       return NextResponse.json({ error: 'Tous les champs sont requis' }, { status: 400 });

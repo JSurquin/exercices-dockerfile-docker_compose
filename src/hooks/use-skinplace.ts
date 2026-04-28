@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { 
+import {
   SkinplaceInventoryResponse,
   SkinplaceMultipleInventoryResponse,
   SkinplaceTradeResponse,
@@ -11,6 +11,8 @@ import {
   SkinplaceListingsResponse,
   SkinplaceError
 } from '@/lib/types';
+
+const authFetch: RequestInit = { credentials: 'include' };
 
 interface UseSkinplaceOptions {
   onError?: (error: SkinplaceError) => void;
@@ -44,7 +46,7 @@ export function useSkinplace(options: UseSkinplaceOptions = {}) {
   // Inventaire
   const getInventory = useCallback(async (steamId: string) => {
     return handleRequest<SkinplaceInventoryResponse>(async () => {
-      const response = await fetch(`/api/skinplace/inventory?steam_id=${steamId}`);
+      const response = await fetch(`/api/skinplace/inventory?steam_id=${steamId}`, authFetch);
       if (!response.ok) {
         throw await response.json();
       }
@@ -59,6 +61,7 @@ export function useSkinplace(options: UseSkinplaceOptions = {}) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ steam_ids: steamIds }),
+        credentials: 'include',
       });
       if (!response.ok) {
         throw await response.json();
@@ -82,6 +85,7 @@ export function useSkinplace(options: UseSkinplaceOptions = {}) {
           items,
           trade_url: tradeUrl,
         }),
+        credentials: 'include',
       });
       if (!response.ok) {
         throw await response.json();
@@ -93,7 +97,7 @@ export function useSkinplace(options: UseSkinplaceOptions = {}) {
   // Statut du trade
   const getTradeStatus = useCallback(async (token: string) => {
     return handleRequest<SkinplaceTradeResponse>(async () => {
-      const response = await fetch(`/api/skinplace/trade/${token}`);
+      const response = await fetch(`/api/skinplace/trade/${token}`, authFetch);
       if (!response.ok) {
         throw await response.json();
       }
@@ -108,6 +112,7 @@ export function useSkinplace(options: UseSkinplaceOptions = {}) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request),
+        credentials: 'include',
       });
       if (!response.ok) {
         throw await response.json();
@@ -120,7 +125,8 @@ export function useSkinplace(options: UseSkinplaceOptions = {}) {
   const getPurchaseItems = useCallback(async (purchaseId: string, detailed = false) => {
     return handleRequest<SkinplaceInventoryResponse>(async () => {
       const response = await fetch(
-        `/api/skinplace/purchase/items?purchase_id=${purchaseId}&detailed=${detailed}`
+        `/api/skinplace/purchase/items?purchase_id=${purchaseId}&detailed=${detailed}`,
+        authFetch
       );
       if (!response.ok) {
         throw await response.json();
@@ -140,7 +146,7 @@ export function useSkinplace(options: UseSkinplaceOptions = {}) {
         ? `/api/skinplace/purchase/history/${customId}?page=${page}&limit=${limit}`
         : `/api/skinplace/purchase/history?page=${page}&limit=${limit}`;
       
-      const response = await fetch(url);
+      const response = await fetch(url, authFetch);
       if (!response.ok) {
         throw await response.json();
       }
@@ -151,7 +157,7 @@ export function useSkinplace(options: UseSkinplaceOptions = {}) {
   // Solde
   const getBalance = useCallback(async () => {
     return handleRequest<SkinplaceBalanceResponse>(async () => {
-      const response = await fetch('/api/skinplace/balance');
+      const response = await fetch('/api/skinplace/balance', authFetch);
       if (!response.ok) {
         throw await response.json();
       }
@@ -162,7 +168,7 @@ export function useSkinplace(options: UseSkinplaceOptions = {}) {
   // Recharges de solde
   const getBalanceRefills = useCallback(async () => {
     return handleRequest<SkinplaceHistoryResponse>(async () => {
-      const response = await fetch('/api/skinplace/balance/refills');
+      const response = await fetch('/api/skinplace/balance/refills', authFetch);
       if (!response.ok) {
         throw await response.json();
       }
@@ -173,7 +179,10 @@ export function useSkinplace(options: UseSkinplaceOptions = {}) {
   // Historique instantané
   const getInstantHistory = useCallback(async (page = 1, limit = 50) => {
     return handleRequest<SkinplaceHistoryResponse>(async () => {
-      const response = await fetch(`/api/skinplace/history?page=${page}&limit=${limit}`);
+      const response = await fetch(
+        `/api/skinplace/history?page=${page}&limit=${limit}`,
+        authFetch
+      );
       if (!response.ok) {
         throw await response.json();
       }
@@ -184,7 +193,7 @@ export function useSkinplace(options: UseSkinplaceOptions = {}) {
   // Hold orders
   const getHoldOrders = useCallback(async (type: 'orders' | 'grouped' | 'full' = 'orders') => {
     return handleRequest<SkinplaceHoldResponse>(async () => {
-      const response = await fetch(`/api/skinplace/hold?type=${type}`);
+      const response = await fetch(`/api/skinplace/hold?type=${type}`, authFetch);
       if (!response.ok) {
         throw await response.json();
       }
@@ -199,6 +208,7 @@ export function useSkinplace(options: UseSkinplaceOptions = {}) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order_id: orderId }),
+        credentials: 'include',
       });
       if (!response.ok) {
         throw await response.json();
@@ -234,7 +244,7 @@ export function useSkinplace(options: UseSkinplaceOptions = {}) {
         });
       }
 
-      const response = await fetch(`/api/skinplace/items/listing?${params}`);
+      const response = await fetch(`/api/skinplace/items/listing?${params}`, authFetch);
       if (!response.ok) {
         throw await response.json();
       }

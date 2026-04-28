@@ -1,25 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
-import { logger, logAudit } from '@/lib/logger';
-import { CreateMessageRequest } from '@/lib/types/chat';
+import { logger } from '@/lib/logger';
+import { resolveChatIdentity } from '@/lib/require-admin';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { createChatMessageSchema } from '@/lib/validation/schemas/chat-api';
 
 // POST /api/chat/messages - Créer un nouveau message
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-    const body: CreateMessageRequest = await request.json();
-
-    // Validation
-    if (!body.content?.trim()) {
-      return NextResponse.json({ error: 'Contenu du message requis' }, { status: 400 });
+    const identity = await resolveChatIdentity(request);
+    let raw: unknown;
+    try {
+      raw = await request.json();
+    } catch {
+      raw = {};
     }
-
-    if (!body.conversationId) {
-      return NextResponse.json({ error: 'ID de conversation requis' }, { status: 400 });
+    const parsed = safeParseJson(raw, createChatMessageSchema);
+    if (!parsed.ok) {
+      return parsed.response;
     }
+    const body = parsed.data;
 
     // Vérifier que la conversation existe
     const conversation = await prisma.conversation.findUnique({
@@ -33,12 +33,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Conversation non trouvée' }, { status: 404 });
     }
 
+    if (identity.kind === 'invalid') {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    }
+
     // Vérifier les permissions
     let senderType = body.senderType || 'USER';
 
-    if (session?.user) {
-      const isAdmin = session.user.role === 'ADMIN';
-      const isModerator = session.user.role === 'MODERATOR';
+    if (identity.kind === 'user') {
+      const session = identity.session;
+      const isAdmin = identity.role === 'ADMIN';
+      const isModerator = identity.role === 'MODERATOR';
       const isOwner = conversation.userId === session.user.id;
       const isAssigned = conversation.assignedTo === session.user.id;
 
@@ -57,8 +62,10 @@ export async function POST(request: NextRequest) {
 
     // Vérifier que la conversation n'est pas fermée
     if (conversation.status === 'CLOSED' || conversation.status === 'ARCHIVED') {
-      // Seuls les modérateurs et admins peuvent envoyer des messages dans une conversation fermée
-      if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'MODERATOR')) {
+      const staffOk =
+        identity.kind === 'user' &&
+        (identity.role === 'ADMIN' || identity.role === 'MODERATOR');
+      if (!staffOk) {
         return NextResponse.json({ error: 'Conversation fermée' }, { status: 400 });
       }
     }
@@ -67,7 +74,7 @@ export async function POST(request: NextRequest) {
     const message = await prisma.chatMessage.create({
       data: {
         conversationId: body.conversationId,
-        userId: session?.user?.id || null,
+        userId: identity.kind === 'user' ? identity.session.user.id : null,
         content: body.content,
         senderType,
         isRead: false,
@@ -122,8 +129,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Log de l'audit
-    if (session?.user) {
-      await logger.info(session.user.id, 'MESSAGE_SENT', {
+    if (identity.kind === 'user') {
+      await logger.info(identity.session.user.id, 'MESSAGE_SENT', {
         messageId: message.id,
         conversationId: body.conversationId,
         senderType,

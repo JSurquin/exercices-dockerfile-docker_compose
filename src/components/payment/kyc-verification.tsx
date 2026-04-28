@@ -24,7 +24,9 @@ export function KycVerification({ onVerificationComplete }: KycVerificationProps
   const { data: kycData, isLoading, refetch } = useQuery({
     queryKey: queryKeys.kycGatefi,
     queryFn: async () => {
-      const response = await fetch('/api/gatefi/kyc/status');
+      const response = await fetch('/api/gatefi/kyc/status', {
+        credentials: 'include',
+      });
       if (!response.ok) return null;
       return response.json() as Promise<{ kycStatus: string } | null>;
     },
@@ -48,6 +50,7 @@ export function KycVerification({ onVerificationComplete }: KycVerificationProps
     try {
       const response = await fetch('/api/gatefi/kyc/status', {
         method: 'POST',
+        credentials: 'include',
       });
 
       if (response.ok) {

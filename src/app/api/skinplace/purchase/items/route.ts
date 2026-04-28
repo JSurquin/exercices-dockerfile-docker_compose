@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { skinplaceService, handleSkinplaceError } from '@/lib/skinplace';
 import { auth } from '~/lib/auth';
+import { assertPurchaseIdBelongsToCustomId } from '@/lib/skinplace-purchase-guard';
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,7 +28,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const items = detailed 
+    const isAdmin = session.user.role === 'ADMIN';
+    if (!isAdmin) {
+      const ok = await assertPurchaseIdBelongsToCustomId(purchaseId, session.user.id);
+      if (!ok) {
+        return NextResponse.json(
+          { error: 'Accès non autorisé' },
+          { status: 403 }
+        );
+      }
+    }
+
+    const items = detailed
       ? await skinplaceService.getPurchaseItemsDetailed(purchaseId)
       : await skinplaceService.getPurchaseItems(purchaseId);
 

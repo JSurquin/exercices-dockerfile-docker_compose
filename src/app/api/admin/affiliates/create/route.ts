@@ -1,21 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
-import { auth } from '../../../../../../lib/auth';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { emailService } from '@/lib/email';
 import { AffiliateService } from '@/lib/affiliate-service';
 import { AuditLogger, AuditAction } from '@/lib/security/audit-logger';
-import { headers } from 'next/headers';
 import crypto from 'crypto';
+import { headers } from 'next/headers';
 import { getPlatformConfig } from '@/lib/platform-config-service';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { adminAffiliateCreateBodySchema } from '@/lib/validation/schemas/admin-bodies';
 
 export async function POST(request: NextRequest) {
   try {
     // 1. Vérifier que l'utilisateur est admin
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await requireAdminSessionWithDbCheck(request);
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized - Admin access required' },
         { status: 403 }
@@ -23,7 +23,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Récupérer les données de la requête
-    const body = await request.json();
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, adminAffiliateCreateBodySchema, { errorStyle: 'successFalse' });
+    if (!parsed.ok) {
+      return parsed.response;
+    }
     const platformConfig = await getPlatformConfig();
     const { 
       email, 
@@ -31,7 +35,7 @@ export async function POST(request: NextRequest) {
       code, 
       commissionRate = platformConfig.affiliateCommissionRate,
       sendEmail = true 
-    } = body;
+    } = parsed.data;
 
     // 3. Valider les données
     if (!email || typeof email !== 'string') {

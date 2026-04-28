@@ -1,18 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
 import { TradeHooks } from '@/lib/trade-hooks';
 import { prisma } from '../../../../../../prisma/prisma';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { adminAffiliateRecalculateSchema } from '@/lib/validation/schemas/admin-bodies';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ success: false, error: 'Accès refusé' }, { status: 403 });
     }
 
     const adminUserId = session.user.id;
-    const { action, affiliateId, tradeId } = await request.json();
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, adminAffiliateRecalculateSchema, { errorStyle: 'successFalse' });
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const { action, affiliateId, tradeId } = parsed.data;
     
     switch (action) {
       case 'recalculate_affiliate':

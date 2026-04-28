@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { z } from 'zod';
 import {
@@ -9,6 +8,7 @@ import {
   ADMIN_DEFAULT_LANGUAGE,
   ADMIN_DEFAULT_DASHBOARD_LAYOUT,
 } from '@/lib/admin-constants';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 const DEFAULT_METADATA = {
   notifications: {
@@ -31,8 +31,8 @@ const DEFAULT_METADATA = {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
@@ -115,8 +115,8 @@ const patchSchema = z.object({
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

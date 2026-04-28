@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { securityService } from '@/lib/security-service';
 import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await requireAdminSessionWithDbCheck(request);
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

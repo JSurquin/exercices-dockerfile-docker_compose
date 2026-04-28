@@ -15,6 +15,12 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Accès non autorisé' },
+        { status: 403 }
+      );
+    }
 
     const refills = await skinplaceService.getBalanceRefills();
 

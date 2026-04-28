@@ -81,7 +81,9 @@ export function useSteamInventory(options: UseSteamInventoryOptions = {}) {
     console.log('getSteamInventory');
     console.log('steamId64', steamId64);
     return handleRequest<SteamInventoryResponse>(async () => {
-      const response = await fetch(`/api/steam/inventory?steam_id=${steamId64}`);
+      const response = await fetch(`/api/steam/inventory?steam_id=${steamId64}`, {
+        credentials: 'include',
+      });
       console.log('response', response);
       if (!response.ok) {
         const errorData = await response.json();
@@ -105,6 +107,7 @@ export function useSteamInventory(options: UseSteamInventoryOptions = {}) {
       const response = await fetch('/api/steam/estimate-prices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ market_hash_names: marketHashNames }),
       });
 

@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "~/lib/auth";
 import { prisma } from "~/prisma/prisma";
+import { safeParseJson, safeParseSearchParams } from "@/lib/validation/helpers";
+import { notificationsListQuerySchema } from "@/lib/validation/schemas/common";
+import {
+  notificationMarkReadSchema,
+} from "@/lib/validation/schemas/user";
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,9 +16,11 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") ?? "1");
-    const limit = parseInt(searchParams.get("limit") ?? "20");
-    const unreadOnly = searchParams.get("unreadOnly") === "true";
+    const q = safeParseSearchParams(searchParams, notificationsListQuerySchema);
+    if (!q.ok) {
+      return q.response;
+    }
+    const { page, limit, unreadOnly } = q.data;
 
     const skip = (page - 1) * limit;
 
@@ -62,15 +69,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { notificationId } = body;
-
-    if (!notificationId) {
-      return NextResponse.json(
-        { error: "notificationId requis" },
-        { status: 400 }
-      );
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, notificationMarkReadSchema);
+    if (!parsed.ok) {
+      return parsed.response;
     }
+    const { notificationId } = parsed.data;
 
     const notification = await prisma.notification.findFirst({
       where: {

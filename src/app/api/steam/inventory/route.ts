@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '~/lib/auth';
 import { SteamInventoryItem, SteamInventoryResponse } from '@/hooks/use-steam-inventory';
 
 interface SteamAPIAsset {
@@ -60,6 +61,14 @@ interface SteamInventoryAPIResponse {
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: 'Non authentifié' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const steamId = searchParams.get('steam_id');
 
@@ -75,6 +84,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Format Steam ID64 invalide' },
         { status: 400 }
+      );
+    }
+
+    const isAdmin = session.user.role === 'ADMIN';
+    if (!isAdmin && session.user.steamId !== steamId) {
+      return NextResponse.json(
+        { success: false, error: 'Accès non autorisé' },
+        { status: 403 }
       );
     }
 

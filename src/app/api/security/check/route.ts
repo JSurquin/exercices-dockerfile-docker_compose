@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { securityService } from '@/lib/security-service';
 import { logger } from '@/lib/logger';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { securityCheckPostSchema } from '@/lib/validation/schemas/chat-api';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,8 +15,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { type, amountCents, paymentMethodId } = body;
+    let raw: unknown;
+    try {
+      raw = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'JSON invalide' }, { status: 400 });
+    }
+    const parsed = safeParseJson(raw, securityCheckPostSchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const body = parsed.data;
 
     // Récupère l'IP du client
     const ipAddress = request.headers.get('x-forwarded-for') || 
@@ -23,23 +34,15 @@ export async function POST(request: NextRequest) {
 
     let securityCheck;
 
-    if (type === 'trade') {
+    if (body.type === 'trade') {
       securityCheck = await securityService.checkTradeEligibility(session.user.id, ipAddress);
-    } else if (type === 'payout') {
-      if (!amountCents || !paymentMethodId) {
-        return NextResponse.json({ 
-          error: 'Montant et méthode de paiement requis pour vérification payout' 
-        }, { status: 400 });
-      }
-
+    } else {
       securityCheck = await securityService.checkPayoutEligibility(
         session.user.id,
-        amountCents,
-        paymentMethodId,
+        body.amountCents,
+        body.paymentMethodId,
         ipAddress
       );
-    } else {
-      return NextResponse.json({ error: 'Type de vérification invalide' }, { status: 400 });
     }
 
     // Vérifie aussi le statut de cooldown

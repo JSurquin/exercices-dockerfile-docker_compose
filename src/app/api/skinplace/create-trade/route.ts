@@ -10,6 +10,8 @@ import {
   getCashoutFeeRate,
 } from '@/lib/trade-platform-fees';
 import { AffiliateService } from '@/lib/affiliate-service';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { skinplaceCreateTradeBodySchema } from '@/lib/validation/schemas/integrations';
 
 interface CreateTradeRequest {
   steam_id: string;
@@ -104,17 +106,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body: CreateTradeRequest = await request.json();
-    
-    // Validation des données
-    if (!body.steam_id || !body.trade_url || !body.items || body.items.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Données manquantes' },
-        { status: 400 }
-      );
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, skinplaceCreateTradeBodySchema, {
+      errorStyle: 'successFalse',
+    });
+    if (!parsed.ok) {
+      return parsed.response;
     }
+    const body = parsed.data as unknown as CreateTradeRequest;
 
-    // Vérifier que l'utilisateur crée un trade pour lui-même OU avec son trade link
     const { parseSteamId64FromUserInput } = await import('@/lib/steam-id');
     
     // Récupérer le user complet
@@ -170,6 +170,28 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    
+    // ⚠️ SÉCURITÉ CRITIQUE: FAILLE DE MONTANT MANIPULABLE ⚠️
+    // 
+    // Le montant `body.gross_value_centimes` vient DIRECTEMENT du client et n'est PAS validé
+    // contre une source d'autorité (Skinplace API). Un attaquant peut envoyer un montant gonflé.
+    // 
+    // RISQUE: Ce montant est utilisé pour :
+    //   1. Calculer les frais et le net dans `computeTradeLedgerFromGross` (ci-dessous)
+    //   2. Créditer la pending balance dans TradeHooks.creditPendingBalance
+    //   3. Calculer le volume et l'XP utilisateur
+    // 
+    // CORRECTIF REQUIS:
+    //   - NE PAS utiliser ce montant pour créditer la balance/XP
+    //   - ATTENDRE le montant d'autorité depuis:
+    //     * La réponse Skinplace API (champ `price` ou équivalent)
+    //     * L'IPN webhook avec signature vérifiée
+    //   - REMPLACER le montant en base après vérification
+    // 
+    // STATUT: NON CORRIGÉ - Voir trade-hooks.ts pour l'impact complet
+    // TODO: Implémenter validation montant Skinplace avant tout crédit
+    // 
+    // Voir rapport audit: Zone 2 - Routes Skinplace
     
     // Vérifier le minimum de 100 centimes (1 euro) requis par Skinplace
     if (body.gross_value_centimes < 100) {

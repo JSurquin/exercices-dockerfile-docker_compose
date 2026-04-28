@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
+import { obfuscatePublicCount } from '@/lib/privacy-obfuscation';
 
 export const revalidate = 300; // 5 minutes
 
 export async function GET() {
   try {
-    const [totalUsers, completedTrades, volumeResult] = await Promise.all([
+    const [rawUsers, completedTrades, volumeResult] = await Promise.all([
       prisma.user.count(),
       prisma.trade.count({ where: { status: { in: ['PAID', 'PAYOUT_PENDING', 'AVAILABLE'] } } }),
       prisma.trade.aggregate({
@@ -16,9 +17,10 @@ export async function GET() {
 
     const volumeCents = volumeResult._sum.grossCents ?? 0;
 
+    // Pas de fuite d’effectif exact (énumération / veille concurrente)
     return NextResponse.json({
-      totalUsers,
-      completedTrades,
+      totalUsers: obfuscatePublicCount(rawUsers),
+      completedTrades: obfuscatePublicCount(completedTrades),
       volumeMillions: Math.round((volumeCents / 100_000) * 10) / 10,
     });
   } catch {

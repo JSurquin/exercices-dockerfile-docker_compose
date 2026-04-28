@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { headers } from 'next/headers';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { FraudDetector } from '@/lib/security/fraud-detector';
 import { logger } from '@/lib/logger';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 // Helper function pour encapsuler les requêtes Prisma avec gestion d'erreur
 async function safeQuery<T>(queryFn: () => Promise<T>, fallback: T, description: string): Promise<T> {
@@ -19,15 +18,9 @@ async function safeQuery<T>(queryFn: () => Promise<T>, fallback: T, description:
 
 async function handleGetDashboard(req: NextRequest): Promise<NextResponse> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers() as Headers,
-    });
+    const session = await requireAdminSessionWithDbCheck(req);
 
     if (!session) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-    }
-
-    if (session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

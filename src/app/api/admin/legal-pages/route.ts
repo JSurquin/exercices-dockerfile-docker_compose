@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
-import { auth } from '~/lib/auth';
-import { headers } from 'next/headers';
+import {
+  requireAdminOrModeratorSessionWithDbCheck,
+  requireAdminSessionWithDbCheck,
+} from '@/lib/require-admin';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { adminLegalPagePostSchema } from '@/lib/validation/schemas/admin-bodies';
 
 /**
  * GET /api/admin/legal-pages
@@ -9,11 +13,8 @@ import { headers } from 'next/headers';
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'MODERATOR')) {
+    const session = await requireAdminOrModeratorSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
@@ -37,15 +38,17 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const body = await request.json();
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, adminLegalPagePostSchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const d = parsed.data as Record<string, unknown>;
     const {
       slug,
       titleFr,
@@ -60,7 +63,7 @@ export async function POST(request: NextRequest) {
       contactEmail,
       contactPhone,
       isPublished = true,
-    } = body;
+    } = d;
 
     // Validation
     if (!slug || !titleFr || !titleEn || !contentFr || !contentEn) {
@@ -72,7 +75,7 @@ export async function POST(request: NextRequest) {
 
     // Vérifier si le slug existe déjà
     const existing = await prisma.legalPage.findUnique({
-      where: { slug },
+      where: { slug: String(slug) },
     });
 
     if (existing) {
@@ -84,19 +87,19 @@ export async function POST(request: NextRequest) {
 
     const legalPage = await prisma.legalPage.create({
       data: {
-        slug,
-        titleFr,
-        titleEn,
-        titleCn,
-        subtitleFr,
-        subtitleEn,
-        subtitleCn,
-        contentFr,
-        contentEn,
-        contentCn,
-        contactEmail,
-        contactPhone,
-        isPublished,
+        slug: String(slug),
+        titleFr: String(titleFr),
+        titleEn: String(titleEn),
+        titleCn: titleCn != null ? String(titleCn) : null,
+        subtitleFr: subtitleFr != null ? String(subtitleFr) : null,
+        subtitleEn: subtitleEn != null ? String(subtitleEn) : null,
+        subtitleCn: subtitleCn != null ? String(subtitleCn) : null,
+        contentFr: String(contentFr),
+        contentEn: String(contentEn),
+        contentCn: contentCn != null ? String(contentCn) : null,
+        contactEmail: contactEmail != null ? String(contactEmail) : null,
+        contactPhone: contactPhone != null ? String(contactPhone) : null,
+        isPublished: Boolean(isPublished),
         updatedBy: session.user.id,
       },
     });

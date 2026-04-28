@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { decrypt } from '@/lib/encryption';
 import { getPublicSepaDetails } from '@/lib/payment-method-sepa';
 import type { SepaDetailsStored } from '@/lib/payment-method-sepa';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 function maskIbanForAdmin(iban: string): string {
   if (!iban || iban.length < 8) return '****';
@@ -12,8 +12,8 @@ function maskIbanForAdmin(iban: string): string {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

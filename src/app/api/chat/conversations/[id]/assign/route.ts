@@ -1,32 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { logger, logAudit } from '@/lib/logger';
-import { AssignConversationRequest } from '@/lib/types/chat';
+import { requireAdminOrModeratorSessionWithDbCheck } from '@/lib/require-admin';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { assignConversationPostSchema } from '@/lib/validation/schemas/chat-api';
 
-// POST /api/chat/conversations/[id]/assign - Assigner une conversation à un modérateur
+// POST /api/chat/conversations/[id]/assign
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const resolvedParams = await params;
-    const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-    }
-
-    // Vérifier les permissions (admin ou modérateur)
-    const isAdmin = session.user.role === 'ADMIN';
-    const isModerator = session.user.role === 'MODERATOR';
-
-    if (!isAdmin && !isModerator) {
+    const session = await requireAdminOrModeratorSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
-    const body: AssignConversationRequest = await request.json();
+    let raw: unknown;
+    try {
+      raw = await request.json();
+    } catch {
+      raw = {};
+    }
+    const parsed = safeParseJson(raw, assignConversationPostSchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const body = parsed.data;
 
     // Vérifier que la conversation existe
     const conversation = await prisma.conversation.findUnique({
@@ -110,18 +111,8 @@ export async function DELETE(
 ) {
   try {
     const resolvedParams = await params;
-    const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-    }
-
-    // Vérifier les permissions (admin ou modérateur)
-    const isAdmin = session.user.role === 'ADMIN';
-    const isModerator = session.user.role === 'MODERATOR';
-
-    if (!isAdmin && !isModerator) {
+    const session = await requireAdminOrModeratorSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

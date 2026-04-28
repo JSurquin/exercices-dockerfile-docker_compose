@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
-import { headers } from 'next/headers';
 import { z } from 'zod';
 import {
   getPlatformConfig,
@@ -11,17 +9,12 @@ import {
   PlatformConfigKey,
 } from '@/lib/platform-config-service';
 import { prisma } from '~/prisma/prisma';
-
-async function requireAdmin() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user || session.user.role !== 'ADMIN') return null;
-  return session;
-}
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 // GET — retourne la config courante + indique si chaque valeur vient de la DB
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await requireAdmin();
+    const session = await requireAdminSessionWithDbCheck(request);
     if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
@@ -62,7 +55,7 @@ const resetSchema = z.object({
 // PATCH — met à jour une valeur  |  PATCH + reset:true — réinitialise sur env/constante
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await requireAdmin();
+    const session = await requireAdminSessionWithDbCheck(request);
     if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }

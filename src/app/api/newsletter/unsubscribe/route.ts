@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
+import { applyRateLimit } from '@/lib/security/rate-limiter';
+import { maskEmailForClientResponse } from '@/lib/newsletter-privacy';
 import { z } from 'zod';
 
 
@@ -9,6 +11,11 @@ const unsubscribeSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimited = await applyRateLimit(request, 'newsletterUnsubscribe');
+    if (rateLimited) {
+      return rateLimited;
+    }
+
     const body = await request.json();
     const { token } = unsubscribeSchema.parse(body);
 
@@ -45,6 +52,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Désabonnement réussi.',
+      email: maskEmailForClientResponse(subscriber.email),
     });
 
   } catch (error) {
@@ -67,6 +75,11 @@ export async function POST(request: NextRequest) {
 // Gestion du désabonnement via GET (lien dans l'email)
 export async function GET(request: NextRequest) {
   try {
+    const rateLimited = await applyRateLimit(request, 'newsletterUnsubscribe');
+    if (rateLimited) {
+      return rateLimited;
+    }
+
     const { searchParams } = new URL(request.url);
     const token = searchParams.get('token');
 
@@ -93,7 +106,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: 'Vous êtes déjà désabonné.',
-        email: subscriber.email,
+        email: maskEmailForClientResponse(subscriber.email),
       });
     }
 
@@ -111,7 +124,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Désabonnement réussi.',
-      email: subscriber.email,
+      email: maskEmailForClientResponse(subscriber.email),
     });
 
   } catch (error) {

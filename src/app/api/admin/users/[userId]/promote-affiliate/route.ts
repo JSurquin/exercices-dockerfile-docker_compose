@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
+import { headers } from 'next/headers';
 import { AffiliateService } from '@/lib/affiliate-service';
 import { AuditLogger, AuditAction } from '@/lib/security/audit-logger';
-import { headers } from 'next/headers';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { adminPromoteAffiliateBodySchema } from '@/lib/validation/schemas/admin-bodies';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await requireAdminSessionWithDbCheck(request);
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized - Admin access required' },
         { status: 403 }
@@ -29,8 +29,12 @@ export async function POST(
       );
     }
 
-    const body = await request.json().catch(() => ({}));
-    const { commissionRate = 2, code } = body;
+    const raw = await request.json().catch(() => ({}));
+    const parsed = safeParseJson(raw, adminPromoteAffiliateBodySchema, { errorStyle: 'successFalse' });
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const { commissionRate = 2, code } = parsed.data;
 
     const commissionRateDecimal = commissionRate / 100;
     if (commissionRateDecimal < 0 || commissionRateDecimal > 1) {

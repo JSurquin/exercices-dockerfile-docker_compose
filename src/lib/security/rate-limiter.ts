@@ -2,6 +2,27 @@ import { NextRequest } from 'next/server';
 import { AuditLogger, AuditAction } from './audit-logger';
 import { logger } from '@/lib/logger';
 
+/**
+ * ⚠️ LIMITATION: Rate limiting en mémoire (non distribué)
+ * 
+ * PROBLÈME:
+ *   - Le Map en mémoire est local à chaque instance serverless/container
+ *   - En environnement multi-instance (Vercel, AWS Lambda, K8s), chaque instance
+ *     a son propre compteur → les limites peuvent être contournées par parallélisme
+ *   - Pas de persistance entre les redémarrages
+ * 
+ * MIGRATION VERS REDIS:
+ *   1. Installer Upstash Redis: npm install @upstash/redis
+ *   2. Configurer UPSTASH_REDIS_REST_URL et UPSTASH_REDIS_REST_TOKEN dans .env
+ *   3. Utiliser redis-rate-limiter.ts qui contient l'implémentation Redis
+ *   4. Remplacer les appels à RateLimiter par RedisRateLimiter dans les routes
+ * 
+ * SOLUTION TEMPORAIRE:
+ *   - Ce rate limiter est mieux que rien pour le développement
+ *   - En production avec multi-instance, considérer l'activation de Redis
+ *   - Voir src/lib/redis-rate-limiter.ts pour l'implémentation distribuée
+ */
+
 interface RateLimitConfig {
   windowMs: number; // Fenêtre de temps en millisecondes
   maxRequests: number; // Nombre maximum de requêtes
@@ -61,6 +82,24 @@ export const RATE_LIMIT_CONFIGS = {
   TRADE_CREATION: {
     windowMs: 60 * 60 * 1000, // 1 heure
     maxRequests: 20, // 20 trades par heure
+  },
+
+  // Inscription newsletter (public, anti-spam / anti-énumération lourde)
+  NEWSLETTER_SUBSCRIBE: {
+    windowMs: 60 * 60 * 1000, // 1 heure
+    maxRequests: 10,
+  },
+
+  // Renvoi email de bienvenue
+  NEWSLETTER_RESEND_WELCOME: {
+    windowMs: 60 * 60 * 1000,
+    maxRequests: 5,
+  },
+
+  // Désabonnement (POST/GET, anti-bruteforce token)
+  NEWSLETTER_UNSUBSCRIBE: {
+    windowMs: 60 * 60 * 1000,
+    maxRequests: 40,
   },
 } as const;
 
@@ -227,6 +266,9 @@ export const rateLimiters = {
   payoutRequest: new RateLimiter('payout_request', RATE_LIMIT_CONFIGS.PAYOUT_REQUEST),
   kycUpload: new RateLimiter('kyc_upload', RATE_LIMIT_CONFIGS.KYC_UPLOAD),
   tradeCreation: new RateLimiter('trade_creation', RATE_LIMIT_CONFIGS.TRADE_CREATION),
+  newsletterSubscribe: new RateLimiter('newsletter_subscribe', RATE_LIMIT_CONFIGS.NEWSLETTER_SUBSCRIBE),
+  newsletterResendWelcome: new RateLimiter('newsletter_resend_welcome', RATE_LIMIT_CONFIGS.NEWSLETTER_RESEND_WELCOME),
+  newsletterUnsubscribe: new RateLimiter('newsletter_unsubscribe', RATE_LIMIT_CONFIGS.NEWSLETTER_UNSUBSCRIBE),
 };
 
 /**

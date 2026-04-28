@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
+import { requireUserSession } from '@/lib/require-session-user';
 
 /**
  * GET /api/giveaways/private?affiliateCode=CODE
- * Retourne les giveaways privés associés à un code affilié donné.
- * Utilisé par le dashboard affilié pour afficher les liens rapides.
+ * Giveaways privés : uniquement pour l’affilié connecté dont le code correspond.
  */
 export async function GET(request: NextRequest) {
   try {
+    const session = await requireUserSession(request);
+    if (!session) {
+      return NextResponse.json({ error: 'Authentification requise' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const affiliateCode = searchParams.get('affiliateCode');
 
@@ -15,10 +20,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'affiliateCode requis' }, { status: 400 });
     }
 
+    const withAffiliate = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        affiliateStats: { select: { code: true, isActive: true } },
+      },
+    });
+
+    const myCode = withAffiliate?.affiliateStats?.code;
+    if (
+      !myCode ||
+      withAffiliate?.affiliateStats?.isActive === false ||
+      myCode.toUpperCase() !== affiliateCode.trim().toUpperCase()
+    ) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
+    }
+
     const giveaways = await prisma.giveaway.findMany({
       where: {
         isPrivate: true,
-        requiredAffiliateCode: affiliateCode,
+        requiredAffiliateCode: myCode,
       },
       select: {
         id: true,

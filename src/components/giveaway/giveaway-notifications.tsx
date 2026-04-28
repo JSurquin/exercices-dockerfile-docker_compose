@@ -45,14 +45,11 @@ export function GiveawayNotifications() {
 
           seenIds.current.add(giveaway.id);
 
-          const winners = giveaway.winners.map((w) => {
-            const entry = giveaway.entries?.find((e) => e.userId === w.userId);
-            return {
-              steamUsername: entry?.user?.steamUsername ?? null,
-              steamAvatar: entry?.user?.steamAvatar ?? null,
-              rank: w.rank,
-            };
-          });
+          const winners = giveaway.winners.map((w) => ({
+            steamUsername: w.user?.steamUsername ?? null,
+            steamAvatar: w.user?.steamAvatar ?? null,
+            rank: w.rank,
+          }));
 
           const notification: DrawNotification = {
             id: giveaway.id,

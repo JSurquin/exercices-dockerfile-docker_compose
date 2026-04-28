@@ -8,6 +8,8 @@ import {
   centsToEur,
   flexifyLog,
 } from '@/lib/flexify';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { flexifyQuoteBodySchema } from '@/lib/validation/schemas/integrations';
 
 const LOG = (step: string, data?: object) => {
   flexifyLog(`QUOTE_API_${step}`, (data ?? {}) as Record<string, unknown>);
@@ -33,10 +35,18 @@ export async function POST(request: NextRequest) {
     }
     LOG('SESSION_OK', { userId: session.user.id });
 
-    const body = await request.json();
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, flexifyQuoteBodySchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const body = parsed.data as Record<string, any>;
     const rawMethod = body.method;
     const amountCents = body.amountCents ?? body.amount;
-    const method = typeof rawMethod === 'string' ? rawMethod.toUpperCase() : rawMethod;
+    const method =
+      typeof rawMethod === 'string'
+        ? rawMethod.toUpperCase()
+        : String(rawMethod ?? '').toUpperCase();
 
     LOG('BODY_RECEIVED', { method, amountCents, bodyKeys: Object.keys(body) });
 

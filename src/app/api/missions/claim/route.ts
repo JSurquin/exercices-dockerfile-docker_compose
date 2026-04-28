@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { claimMission } from '@/lib/missions';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { missionClaimPostSchema } from '@/lib/validation/schemas/payout-security';
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,13 +11,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const body = await request.json().catch(() => ({}));
-    const missionKey = typeof body.missionKey === 'string' ? body.missionKey : '';
-    if (!missionKey) {
-      return NextResponse.json({ error: 'missionKey requis' }, { status: 400 });
+    let raw: unknown = {};
+    try {
+      raw = await request.json();
+    } catch {
+      raw = {};
+    }
+    const parsed = safeParseJson(raw, missionClaimPostSchema);
+    if (!parsed.ok) {
+      return parsed.response;
     }
 
-    const result = await claimMission(session.user.id, missionKey);
+    const result = await claimMission(session.user.id, parsed.data.missionKey);
     if (!result.ok) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }

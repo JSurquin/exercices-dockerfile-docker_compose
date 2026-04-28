@@ -7,6 +7,8 @@ import {
   computeTradeLedgerFromGross,
   getCashoutFeeRate,
 } from '@/lib/trade-platform-fees';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { steamCreateTradeBodySchema } from '@/lib/validation/schemas/integrations';
 
 interface CreateTradeRequest {
   steam_id: string;
@@ -42,15 +44,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body: CreateTradeRequest = await request.json();
-
-    // Validation des données
-    if (!body.steam_id || !body.trade_url || !body.items || body.items.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Données manquantes' },
-        { status: 400 }
-      );
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, steamCreateTradeBodySchema, {
+      errorStyle: 'successFalse',
+    });
+    if (!parsed.ok) {
+      return parsed.response;
     }
+    const body: CreateTradeRequest = parsed.data;
 
     // Vérifier que l'utilisateur vend ses propres items
     if (body.steam_id !== session.user.id) {

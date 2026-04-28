@@ -1,23 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { Trade, AdminFilters } from '@/lib/types';
 import { prisma } from '~/prisma/prisma';
 import { mapTradeStatusFromDb, mapTradeStatusToDb } from '@/lib/status-mapper';
+import { requireAdminSession } from '@/lib/require-admin';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    const session = await requireAdminSession(request);
+    if (!session) {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
     }
-
-    // TODO: Vérifier que l'utilisateur est admin
-    // if (!session.user.isAdmin) {
-    //   return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
-    // }
 
     const { searchParams } = new URL(request.url);
     const filters: AdminFilters = {

@@ -33,7 +33,8 @@
     "test:e2e:performance": "playwright test performance-seo",
     "test:e2e:report": "playwright show-report",
     "test:e2e:install": "playwright install",
-    "test:e2e:cleanup": "tsx scripts/cleanup-test-users.ts"
+    "test:e2e:cleanup": "tsx scripts/cleanup-test-users.ts",
+    "security:owasp": "bash scripts/owasp-scan.sh"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

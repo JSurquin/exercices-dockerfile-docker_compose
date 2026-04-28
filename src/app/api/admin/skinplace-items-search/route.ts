@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { skinplaceService } from '@/lib/skinplace';
 import {
   SKINPLACE_ITEMS_DEFAULT_LIMIT,
   SKINPLACE_ITEMS_MAX_LIMIT,
 } from '@/lib/admin-constants';
 import { getPlatformConfig } from '@/lib/platform-config-service';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 export async function GET(request: NextRequest) {
-  const session = await auth.api.getSession({ headers: request.headers });
-  if (!session?.user || session.user.role !== 'ADMIN') {
+  const session = await requireAdminSessionWithDbCheck(request);
+  if (!session) {
     return NextResponse.json({ error: 'Admin requis' }, { status: 403 });
   }
 

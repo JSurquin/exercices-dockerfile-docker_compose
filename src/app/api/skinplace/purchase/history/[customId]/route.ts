@@ -20,6 +20,13 @@ export async function GET(
     }
 
     const { customId } = await params;
+    const isAdmin = session.user.role === 'ADMIN';
+    if (!isAdmin && customId !== session.user.id) {
+      return NextResponse.json(
+        { error: 'Accès non autorisé' },
+        { status: 403 }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');

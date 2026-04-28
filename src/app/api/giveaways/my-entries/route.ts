@@ -26,7 +26,6 @@ export async function GET(request: NextRequest) {
             endDate: true,
             status: true,
             winnerId: true,
-            randomSeed: true,
             rewardValueCents: true,
             durationType: true,
             winnerCount: true,

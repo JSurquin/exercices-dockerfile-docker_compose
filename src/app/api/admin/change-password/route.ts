@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { z } from 'zod';
 
 const changePasswordSchema = z.object({
@@ -13,10 +14,9 @@ const changePasswordSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Vérifier l'authentification et les permissions admin
-    const session = await auth.api.getSession({ headers: request.headers });
-    
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+
+    if (!session) {
       return NextResponse.json(
         { error: 'Accès non autorisé - Permissions administrateur requises' },
         { status: 403 }

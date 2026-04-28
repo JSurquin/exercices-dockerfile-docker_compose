@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/reports/
 
 # playwright
 /test-results/

@@ -7,6 +7,8 @@ import {
   isRateValid,
   convertWhitepayStatus,
 } from '@/lib/whitepay';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { whitepayPayoutTransactionBodySchema } from '@/lib/validation/schemas/integrations';
 
 // =============================================================================
 // POST - Confirmer un retrait Whitepay (dans les 30 secondes)
@@ -27,15 +29,12 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
-    const body = await request.json();
-    const { payoutId, transactionId } = body;
-
-    if (!payoutId || !transactionId) {
-      return NextResponse.json(
-        { error: 'payoutId et transactionId requis' },
-        { status: 400 }
-      );
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, whitepayPayoutTransactionBodySchema);
+    if (!parsed.ok) {
+      return parsed.response;
     }
+    const { payoutId, transactionId } = parsed.data;
 
     // 2. Trouver le payout
     const payout = await prisma.payout.findUnique({

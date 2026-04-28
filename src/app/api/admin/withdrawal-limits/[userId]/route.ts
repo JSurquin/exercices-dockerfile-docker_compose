@@ -3,6 +3,9 @@ import { auth } from '~/lib/auth';
 import { getRequestContext, getClientIP, logUnauthorizedAccess } from '@/lib/security/audit-helpers';
 import { updateWithdrawalLimit } from '@/lib/admin/balance-admin-service';
 import { getMonthlyWithdrawalLimitCents, getMonthlyWithdrawalUsedCents } from '@/lib/balance-service';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { adminWithdrawalLimitPutSchema } from '@/lib/validation/schemas/admin-bodies';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 export async function GET(
   request: NextRequest,
@@ -10,8 +13,8 @@ export async function GET(
 ) {
   const context = getRequestContext(request);
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       await logUnauthorizedAccess(context, '/api/admin/withdrawal-limits/[userId]', 'Admin required');
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
@@ -39,8 +42,8 @@ export async function PUT(
 ) {
   const context = getRequestContext(request);
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       await logUnauthorizedAccess(context, '/api/admin/withdrawal-limits/[userId]', 'Admin required');
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
@@ -48,8 +51,12 @@ export async function PUT(
     if (!userId) {
       return NextResponse.json({ error: 'userId requis' }, { status: 400 });
     }
-    const body = await request.json();
-    const { monthlyLimitCents } = body as { monthlyLimitCents?: number | null };
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, adminWithdrawalLimitPutSchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const { monthlyLimitCents } = parsed.data;
     if (monthlyLimitCents !== null && (typeof monthlyLimitCents !== 'number' || monthlyLimitCents < 0)) {
       return NextResponse.json(
         { error: 'monthlyLimitCents doit être un nombre positif ou null' },

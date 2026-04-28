@@ -3,6 +3,8 @@ import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { canUserMakePayout } from '@/lib/gatefi-kyc';
 import { checkWithdrawalLimit } from '@/lib/balance-service';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { payoutInitiatePostSchema } from '@/lib/validation/schemas/payout-security';
 
 /**
  * POST /api/payout/initiate
@@ -24,15 +26,12 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
-    const body = await request.json();
-    const { tradeId } = body;
-
-    if (!tradeId) {
-      return NextResponse.json(
-        { error: 'tradeId is required' },
-        { status: 400 }
-      );
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, payoutInitiatePostSchema);
+    if (!parsed.ok) {
+      return parsed.response;
     }
+    const { tradeId } = parsed.data;
 
     // Vérifier que le trade appartient à l'utilisateur
     const trade = await prisma.trade.findUnique({

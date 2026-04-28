@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { getOnRampQuote, type OnRampQuoteParams } from '@/lib/gatefi-onramp';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { gatefiQuoteBodySchema } from '@/lib/validation/schemas/integrations';
 
 /**
  * POST /api/gatefi/onramp/quote
@@ -20,23 +22,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { fiatAmount, crypto, region } = body;
-
-    // Validation
-    if (!fiatAmount || !crypto || !region) {
-      return NextResponse.json(
-        { error: 'Missing required fields: fiatAmount, crypto, region' },
-        { status: 400 }
-      );
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, gatefiQuoteBodySchema);
+    if (!parsed.ok) {
+      return parsed.response;
     }
-
-    if (typeof fiatAmount !== 'number' || fiatAmount <= 0) {
-      return NextResponse.json(
-        { error: 'fiatAmount must be a positive number (in cents)' },
-        { status: 400 }
-      );
-    }
+    const { fiatAmount, crypto, region } = parsed.data;
 
     // Obtenir le devis
     const params: OnRampQuoteParams = {

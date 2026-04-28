@@ -1,24 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
 import { ChatStats, ModeratorStats } from '@/lib/types/chat';
+import { requireAdminOrModeratorSessionWithDbCheck, requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 // GET /api/chat/stats - Récupérer les statistiques du chat
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-    }
-
-    // Vérifier les permissions (admin ou modérateur)
-    const isAdmin = session.user.role === 'ADMIN';
-    const isModerator = session.user.role === 'MODERATOR';
-
-    if (!isAdmin && !isModerator) {
+    const session = await requireAdminOrModeratorSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
@@ -157,15 +147,8 @@ export async function GET(request: NextRequest) {
 // GET /api/chat/stats/moderators - Statistiques des modérateurs
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-    }
-
-    // Vérifier les permissions (admin seulement)
-    if (session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
-import { UpdateConversationStatusRequest } from '@/lib/types/chat';
+import {
+  requireAdminOrModeratorSessionWithDbCheck,
+  requireAdminSessionWithDbCheck,
+  resolveChatIdentity,
+} from '@/lib/require-admin';
+import {
+  redactEmailsForNonStaffViewer,
+  redactEmailsInConversationForGuest,
+} from '@/lib/chat-response-redact';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { patchConversationSchema } from '@/lib/validation/schemas/chat-api';
 
 // GET /api/chat/conversations/[id] - Récupérer une conversation spécifique
 export async function GET(
@@ -11,7 +20,7 @@ export async function GET(
 ) {
   try {
     const resolvedParams = await params;
-    const session = await auth.api.getSession({ headers: request.headers });
+    const identity = await resolveChatIdentity(request);
 
     const conversation = await prisma.conversation.findUnique({
       where: { id: resolvedParams.id },
@@ -49,14 +58,14 @@ export async function GET(
       return NextResponse.json({ error: 'Conversation non trouvée' }, { status: 404 });
     }
 
-    // Contrôle d'accès :
-    // – Admin / modérateur → accès total
-    // – Utilisateur connecté → seulement ses propres conversations
-    // – Invité (non connecté) → autorisé si la conversation n'a pas de userId
-    //   (le UUID de la conversation sert de jeton secret pour les invités)
-    if (session?.user) {
-      const isAdmin = session.user.role === 'ADMIN';
-      const isModerator = session.user.role === 'MODERATOR';
+    if (identity.kind === 'invalid') {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    }
+
+    if (identity.kind === 'user') {
+      const session = identity.session;
+      const isAdmin = identity.role === 'ADMIN';
+      const isModerator = identity.role === 'MODERATOR';
       const isOwner = conversation.userId === session.user.id;
       const isAssigned = conversation.assignedTo === session.user.id;
 
@@ -80,7 +89,17 @@ export async function GET(
       }
     }
 
-    return NextResponse.json(conversation);
+    const isStaff =
+      identity.kind === 'user' &&
+      (identity.role === 'ADMIN' || identity.role === 'MODERATOR');
+    const raw = conversation as unknown as Record<string, unknown>;
+    let payload: Record<string, unknown> = raw;
+    if (identity.kind === 'guest') {
+      payload = redactEmailsInConversationForGuest(raw);
+    } else if (identity.kind === 'user' && !isStaff) {
+      payload = redactEmailsForNonStaffViewer(raw, identity.session.user.id);
+    }
+    return NextResponse.json(payload);
   } catch (error) {
     logger.error('Erreur lors de la récupération de la conversation:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
@@ -94,22 +113,22 @@ export async function PATCH(
 ) {
   try {
     const resolvedParams = await params;
-    const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-    }
-
-    const body: UpdateConversationStatusRequest = await request.json();
-
-    // Vérifier les permissions
-    const isAdmin = session.user.role === 'ADMIN';
-    const isModerator = session.user.role === 'MODERATOR';
-
-    if (!isAdmin && !isModerator) {
+    const session = await requireAdminOrModeratorSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
+
+    let raw: unknown;
+    try {
+      raw = await request.json();
+    } catch {
+      raw = {};
+    }
+    const parsed = safeParseJson(raw, patchConversationSchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const body = parsed.data;
 
     const conversation = await prisma.conversation.findUnique({
       where: { id: resolvedParams.id },
@@ -182,10 +201,8 @@ export async function DELETE(
 ) {
   try {
     const resolvedParams = await params;
-    const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

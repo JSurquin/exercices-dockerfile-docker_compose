@@ -41,7 +41,7 @@ export function PayoutStatusTracker({
   const { data: orderData, isRefetching: isRefreshing, refetch } = useQuery({
     queryKey: queryKeys.payoutStatus(endpoint),
     queryFn: async () => {
-      const response = await fetch(endpoint);
+      const response = await fetch(endpoint, { credentials: 'include' });
       if (!response.ok) return null;
       return response.json();
     },

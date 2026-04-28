@@ -12,6 +12,7 @@ import {
 import { createCardPayout, createSepaPayout, convertFlexifyStatus } from '@/lib/flexify';
 import { decrypt } from '@/lib/encryption';
 import crypto from 'crypto';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 const generateOrderId = () => `WPA-${crypto.randomUUID()}`;
 
@@ -24,8 +25,8 @@ export async function POST(
 ) {
   const context = getRequestContext(request);
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       await logUnauthorizedAccess(context, '/api/admin/payouts/[payoutId]/approve', 'Admin required');
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }

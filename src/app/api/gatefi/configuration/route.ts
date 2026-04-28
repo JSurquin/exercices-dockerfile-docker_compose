@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOffRampConfiguration } from '@/lib/gatefi-offramp';
 import { getOnRampConfiguration } from '@/lib/gatefi-onramp';
+import { auth } from '~/lib/auth';
 
 /**
  * GET /api/gatefi/configuration
- * Récupère les configurations OffRamp et OnRamp
+ * Récupère les configurations OffRamp et OnRamp (côté GateFi, authentifiées clé partenaire).
+ * Ici on exige un utilisateur connecté pour ne pas exposer le détail partenaire au monde entier.
  */
 export async function GET(request: NextRequest) {
   try {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type'); // 'offramp' | 'onramp' | 'all'
 

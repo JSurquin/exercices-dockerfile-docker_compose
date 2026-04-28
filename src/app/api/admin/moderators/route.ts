@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { prisma } from '~/prisma/prisma';
 import { logger, logAudit } from '@/lib/logger';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { adminModeratorPromoteSchema } from '@/lib/validation/schemas/admin-bodies';
 
 // GET /api/admin/moderators - Récupérer la liste des modérateurs
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
@@ -50,18 +50,17 @@ export async function GET(request: NextRequest) {
 // POST /api/admin/moderators - Promouvoir un utilisateur en modérateur
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
-    const { userId } = await request.json();
-
-    if (!userId) {
-      return NextResponse.json({ error: 'ID utilisateur requis' }, { status: 400 });
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, adminModeratorPromoteSchema);
+    if (!parsed.ok) {
+      return parsed.response;
     }
+    const { userId } = parsed.data;
 
     // Vérifier que l'utilisateur existe
     const user = await prisma.user.findUnique({

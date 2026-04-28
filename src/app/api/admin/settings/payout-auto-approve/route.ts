@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { getPayoutAutoApproveSettings, setPayoutAutoApproveSettings } from '@/lib/payout-settings';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { adminPayoutAutoApprovePutSchema } from '@/lib/validation/schemas/admin-bodies';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 /**
  * GET - Lecture du réglage d'auto-approbation des payouts (admin).
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
     const settings = await getPayoutAutoApproveSettings();
@@ -25,15 +27,21 @@ export async function GET(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
-    const body = await request.json().catch(() => ({}));
-    const enabled = typeof body.enabled === 'boolean' ? body.enabled : undefined;
-    const thresholdCents = typeof body.thresholdCents === 'number' ? body.thresholdCents : undefined;
+    const raw = await request.json().catch(() => ({}));
+    const parsed = safeParseJson(raw, adminPayoutAutoApprovePutSchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const { enabled: enabledRaw, thresholdCents } = parsed.data;
+    const enabled = typeof enabledRaw === 'boolean' ? enabledRaw : undefined;
+    const threshold =
+      typeof thresholdCents === 'number' ? thresholdCents : undefined;
     const settings = await setPayoutAutoApproveSettings(
-      { enabled, thresholdCents },
+      { enabled, thresholdCents: threshold },
       session.user.id
     );
     return NextResponse.json(settings);

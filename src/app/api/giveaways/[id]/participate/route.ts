@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '~/prisma/prisma';
 import { auth } from '~/lib/auth';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { giveawayParticipateBodySchema } from '@/lib/validation/schemas/integrations';
 
 export async function POST(
   request: NextRequest,
@@ -14,14 +16,28 @@ export async function POST(
     }
 
     const { id: giveawayId } = await Promise.resolve(params);
-    const body = await request.json().catch(() => ({}));
-    const raw = body.entriesToBuy ?? body.ticketsUsed ?? 1;
-    const entriesToBuy = Math.floor(Number(raw));
+    const raw = await request.json().catch(() => ({}));
+    const parsed = safeParseJson(raw, giveawayParticipateBodySchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const rawCount = parsed.data.entriesToBuy ?? parsed.data.ticketsUsed ?? 1;
+    const entriesToBuy = Math.floor(Number(rawCount));
     if (!Number.isFinite(entriesToBuy) || entriesToBuy < 1) {
       return NextResponse.json({ error: "Nombre d'entrées invalide" }, { status: 400 });
     }
 
     const userId = session.user.id;
+
+    // Lire le code affilié depuis le cookie ou le query param
+    const cookieHeader = request.headers.get('cookie') ?? '';
+    const affiliateCookie = cookieHeader
+      .split(';')
+      .find((c) => c.trim().startsWith('ctf_affiliate_ref='))
+      ?.split('=')[1]
+      ?.trim();
+    const { searchParams } = new URL(request.url);
+    const affiliateRef = searchParams.get('ref') ?? affiliateCookie ?? null;
 
     // Early-exit rapide hors transaction (non-ACTIVE ou inexistant)
     const giveaway = await prisma.giveaway.findUnique({ where: { id: giveawayId } });
@@ -33,6 +49,19 @@ export async function POST(
     }
     if (new Date() > giveaway.endDate) {
       return NextResponse.json({ error: 'Ce giveaway est terminé' }, { status: 400 });
+    }
+    
+    // SÉCURITÉ: Vérifier l'accès aux giveaways privés avec code affilié requis
+    if (giveaway.isPrivate && giveaway.requiredAffiliateCode) {
+      if (!affiliateRef || affiliateRef !== giveaway.requiredAffiliateCode) {
+        return NextResponse.json(
+          { 
+            error: 'Accès refusé : ce giveaway est réservé aux membres avec un code affilié spécifique',
+            code: 'PRIVATE_GIVEAWAY_ACCESS_DENIED' 
+          },
+          { status: 403 }
+        );
+      }
     }
 
     const costPerEntry = giveaway.ticketPrice;

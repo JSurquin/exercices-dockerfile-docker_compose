@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { TradeStatus } from '@prisma/client';
 import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
+import { requireCronSecret } from '@/lib/cron-auth';
 
 /**
  * Cron job pour mettre à jour les statuts des trades en attente
@@ -186,14 +187,11 @@ async function updateTradeStatus(trade: {
 
 export async function GET(request: NextRequest) {
   try {
-    // Vérifier le token d'autorisation pour le cron
-    const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET || 'dev-secret-change-in-prod';
-
-    if (authHeader !== `Bearer ${cronSecret}`) {
+    const cron = requireCronSecret(request);
+    if (!cron.ok) {
       return NextResponse.json(
-        { success: false, error: 'Non autorisé' },
-        { status: 401 }
+        { success: false, error: cron.message },
+        { status: cron.status }
       );
     }
 

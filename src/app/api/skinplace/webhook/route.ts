@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { TradeStatus } from '@prisma/client';
 import { TradeHooks } from '@/lib/trade-hooks';
+import { isProductionApp } from '@/lib/env-production';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { skinplaceWebhookPostBodySchema } from '@/lib/validation/schemas/integrations';
 
 // =============================================================================
 // Skinplace IPN (webhook)
@@ -96,16 +99,41 @@ export async function GET(request: NextRequest) {
     console.log('[WEBHOOK] tradeOfferId=' + tradeOfferId + ' amount=' + amount + ' transactionId=' + transactionId);
     console.log('[WEBHOOK] URL complète:', request.url);
 
-    // Vérification de la signature IPN officielle
+    // SÉCURITÉ: Vérification de la signature IPN (auth serveur-à-serveur)
     // secret_key IPN = SKINPLACE_API_KEY_PRIVATE (confirmé dashboard skin.place)
     const secretKey = process.env.SKINPLACE_SECRET_KEY ?? process.env.SKINPLACE_API_KEY_PRIVATE ?? '';
-    if (secretKey && receivedSignature) {
+    const inProd = isProductionApp();
+    
+    // En production : secret ET signature obligatoires
+    if (inProd) {
+      if (!secretKey) {
+        console.error('❌ IPN Skinplace: clé manquante en production');
+        return new Response('ipn not configured', { status: 503 });
+      }
+      if (!receivedSignature) {
+        return new Response('missing signature', { status: 401 });
+      }
       if (!verifySkinplaceSignature(token, receivedSignature, secretKey)) {
         console.error('❌ IPN Skinplace: signature invalide');
         return new Response('wrong signature', { status: 401 });
       }
-    } else if (!secretKey) {
-      console.warn('⚠️  SKINPLACE_API_KEY_PRIVATE non configurée — vérification signature IPN désactivée');
+    } 
+    // SÉCURITÉ: Hors production, BLOQUER si secret non configuré
+    // Ne JAMAIS accepter de webhooks non signés, même en dev
+    else {
+      if (!secretKey) {
+        console.error('❌ IPN Skinplace: SKINPLACE_API_KEY_PRIVATE non configurée');
+        console.error('   Le webhook est BLOQUÉ même hors prod pour éviter les failles de sécurité');
+        console.error('   Configurez SKINPLACE_API_KEY_PRIVATE dans .env pour activer les webhooks');
+        return new Response('webhook endpoint disabled (no secret key)', { status: 503 });
+      }
+      if (!receivedSignature) {
+        return new Response('missing signature', { status: 401 });
+      }
+      if (!verifySkinplaceSignature(token, receivedSignature, secretKey)) {
+        console.error('❌ IPN Skinplace: signature invalide');
+        return new Response('wrong signature', { status: 401 });
+      }
     }
 
     if (!token && !orderId) {
@@ -277,7 +305,9 @@ export async function POST(request: NextRequest) {
   // Rediriger vers GET avec les params du body si nécessaire
   // Skinplace envoie normalement en GET, mais on garde un fallback
   try {
-    const body = await request.json().catch(() => ({}));
+    const raw = await request.json().catch(() => ({}));
+    const parsed = safeParseJson(raw, skinplaceWebhookPostBodySchema);
+    const body = parsed.ok ? parsed.data : {};
     const url = new URL(request.url);
     for (const [key, value] of Object.entries(body as Record<string, string>)) {
       if (!url.searchParams.has(key)) url.searchParams.set(key, String(value));

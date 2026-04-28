@@ -5,6 +5,7 @@
 
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
+import { AuditAction } from '@/lib/security';
 
 export interface AuditLogRecord {
   id: string;
@@ -141,6 +142,10 @@ export class SecurityService {
 
       if (!paymentMethod) {
         return { allowed: false, reason: 'Méthode de paiement non trouvée' };
+      }
+
+      if (paymentMethod.userId !== userId) {
+        return { allowed: false, reason: 'Méthode de paiement non autorisée' };
       }
 
       // Compte les payouts du jour
@@ -305,10 +310,12 @@ export class SecurityService {
    * Vérifie les limites par IP
    */
   private async checkIpLimits(ipAddress: string): Promise<SecurityCheck> {
+    // SÉCURITÉ: Utiliser l'action correcte définie dans AuditAction enum
+    // (PAYOUT_REQUESTED = 'payout.requested', pas 'PAYOUT_CREATED')
     // Compte les payouts depuis cette IP dans les 24h
     const recentPayouts = await prisma.auditLog.count({
       where: {
-        action: 'PAYOUT_CREATED',
+        action: AuditAction.PAYOUT_REQUESTED,
         ipAddress,
         createdAt: {
           gte: new Date(Date.now() - 24 * 60 * 60 * 1000),

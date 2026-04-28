@@ -3,9 +3,11 @@ import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { z } from 'zod';
 
-const schema = z.object({
-  email: z.string().email('Adresse email invalide'),
-});
+const schema = z
+  .object({
+    email: z.string().email('Adresse email invalide'),
+  })
+  .strip();
 
 export async function POST(request: NextRequest) {
   try {

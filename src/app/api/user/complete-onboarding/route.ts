@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { emptyObjectBodySchema } from '@/lib/validation/schemas/user';
 
 export async function POST(request: NextRequest) {
   let session: any = null;
@@ -15,6 +17,17 @@ export async function POST(request: NextRequest) {
         { error: 'Non autorisé' },
         { status: 401 }
       );
+    }
+
+    let raw: unknown = {};
+    try {
+      raw = await request.json();
+    } catch {
+      raw = {};
+    }
+    const bodyParsed = safeParseJson(raw, emptyObjectBodySchema);
+    if (!bodyParsed.ok) {
+      return bodyParsed.response;
     }
 
     // Marquer l'onboarding comme terminé

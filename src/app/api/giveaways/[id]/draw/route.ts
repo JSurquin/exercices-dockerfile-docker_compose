@@ -3,20 +3,26 @@ import { auth } from '~/lib/auth';
 import { executeGiveawayDraw } from '@/lib/execute-giveaway-draw';
 import { prisma } from '~/prisma/prisma';
 import { emailService } from '@/lib/email';
+import { requireCronSecret } from '@/lib/cron-auth';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Seuls les admins peuvent déclencher un tirage manuel
+    // SÉCURITÉ: Seuls les admins ou les cron jobs authentifiés peuvent déclencher un tirage
     const session = await auth.api.getSession({ headers: request.headers });
     const isAdmin = session?.user?.role === 'ADMIN';
-    // Les cron jobs peuvent appeler sans session (header x-cron-job)
-    const isCron = request.headers.get('x-cron-job') === 'true';
+    
+    // Vérifier le secret cron au lieu du header forgeable x-cron-job
+    const cronAuth = requireCronSecret(request);
+    const isAuthorizedCron = cronAuth.ok;
 
-    if (!isAdmin && !isCron) {
-      return NextResponse.json({ error: 'Accès refusé — admin requis' }, { status: 403 });
+    if (!isAdmin && !isAuthorizedCron) {
+      return NextResponse.json(
+        { error: 'Accès refusé — admin ou cron authentifié requis' },
+        { status: 403 }
+      );
     }
 
     const { id } = await Promise.resolve(params);

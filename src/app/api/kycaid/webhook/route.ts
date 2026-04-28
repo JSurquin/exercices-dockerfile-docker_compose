@@ -4,31 +4,49 @@ import {
   processWebhook,
   type KycaidWebhookPayload,
 } from '@/lib/kycaid';
+import { isProductionApp } from '@/lib/env-production';
 
 // =============================================================================
-// POST - Recevoir les webhooks KYCAID
+// POST - Recevoir les webhooks KYCAID (auth par X-Signature + secret, pas de session)
 // =============================================================================
 
 export async function POST(request: NextRequest) {
   try {
     const rawBody = await request.text();
-    const signature = request.headers.get('X-Signature') || 
-                      request.headers.get('x-signature') || '';
+    const signature = request.headers.get('X-Signature') ||
+      request.headers.get('x-signature') ||
+      '';
 
     const webhookSecret = process.env.KYCAID_WEBHOOK_SECRET;
-    const isPlaceholderSecret = !webhookSecret || webhookSecret === 'your-kycaid-webhook-secret';
+    const isPlaceholderSecret =
+      !webhookSecret || webhookSecret === 'your-kycaid-webhook-secret';
 
-    if (!isPlaceholderSecret) {
-      // Valider la signature uniquement si un vrai secret est configuré
-      if (!validateWebhookSignature(rawBody, signature)) {
-        console.error('[KYCAID Webhook] Invalid signature — check KYCAID_WEBHOOK_SECRET in .env');
-        return NextResponse.json(
-          { error: 'Invalid signature' },
-          { status: 401 }
-        );
-      }
-    } else {
-      console.warn('[KYCAID Webhook] ⚠️  Signature validation skipped — KYCAID_WEBHOOK_SECRET not configured. Set the real secret from the KYCAID dashboard.');
+    // SÉCURITÉ: Bloquer le webhook si le secret n'est pas configuré, même hors prod
+    if (isPlaceholderSecret) {
+      console.error(
+        '[KYCAID Webhook] KYCAID_WEBHOOK_SECRET requis (production et développement).'
+      );
+      console.error(
+        '[KYCAID Webhook] Le webhook est BLOQUÉ pour éviter les failles de sécurité.'
+      );
+      console.error(
+        '[KYCAID Webhook] Configurez KYCAID_WEBHOOK_SECRET depuis le dashboard KYCAID.'
+      );
+      return NextResponse.json(
+        { error: 'Webhook not configured (secret required)' },
+        { status: 503 }
+      );
+    }
+    
+    // Vérifier la signature
+    if (!validateWebhookSignature(rawBody, signature)) {
+      console.error(
+        '[KYCAID Webhook] Invalid signature — check KYCAID_WEBHOOK_SECRET in .env'
+      );
+      return NextResponse.json(
+        { error: 'Invalid signature' },
+        { status: 401 }
+      );
     }
 
     const payload: KycaidWebhookPayload = JSON.parse(rawBody);

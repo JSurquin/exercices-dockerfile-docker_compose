@@ -1,23 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { decrypt } from '@/lib/encryption';
 import { emailService } from '@/lib/email';
 import { formatCentsToCurrency } from '@/lib/currency-converter';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { adminSepaRequestBodySchema } from '@/lib/validation/schemas/admin-bodies';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ payoutId: string }> }
 ) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     const { payoutId } = await params;
-    const body = await request.json();
-    const { action, reason, reference } = body;
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, adminSepaRequestBodySchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const { action, reason, reference } = parsed.data;
 
     if (!['approve', 'reject'].includes(action)) {
       return NextResponse.json({ error: 'Action invalide. Utiliser "approve" ou "reject".' }, { status: 400 });

@@ -19,7 +19,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
-    const customId = searchParams.get('custom_id');
+    // Ne jamais accepter un custom_id arbitraire côté client (sinon fuite d’historique inter-comptes).
+    const customId = session.user.id;
+    if (searchParams.get('custom_id') && searchParams.get('custom_id') !== customId) {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
+    }
 
     // Valider les paramètres
     if (page < 1 || limit < 1 || limit > 100) {
@@ -29,7 +33,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const history = await skinplaceService.getPurchaseHistory(page, limit, customId || undefined);
+    const history = await skinplaceService.getPurchaseHistory(page, limit, customId);
 
     return NextResponse.json(history);
   } catch (error) {

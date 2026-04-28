@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { TradeHooks } from '@/lib/trade-hooks';
+import { requireCronSecret } from '@/lib/cron-auth';
 
 /**
  * POST /api/cron/process-trades
@@ -9,14 +10,11 @@ import { TradeHooks } from '@/lib/trade-hooks';
  */
 export async function POST(request: NextRequest) {
   try {
-    // Vérification de l'authentification du cron (optionnel)
-    const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET;
-    
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    const cron = requireCronSecret(request);
+    if (!cron.ok) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: cron.message },
+        { status: cron.status }
       );
     }
 

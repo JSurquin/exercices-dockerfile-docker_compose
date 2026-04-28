@@ -15,7 +15,11 @@ export interface GiveawayEntryWithUser extends GiveawayEntry {
 
 export interface GiveawayWithEntries extends Giveaway {
   entries?: GiveawayEntryWithUser[];
-  winners?: { userId: string; rank: number }[];
+  /** API publique : gagnants avec profil, sans userId (anti-énumération) */
+  winners?: {
+    rank: number;
+    user?: { steamUsername: string | null; steamAvatar: string | null } | null;
+  }[];
 }
 
 export interface DrawResult {

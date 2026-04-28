@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "~/lib/auth";
 import { prisma } from "~/prisma/prisma";
+import { safeParseJson } from "@/lib/validation/helpers";
+import { notificationPreferencesPutSchema } from "@/lib/validation/schemas/user";
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,7 +52,11 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
 
-    const body = await request.json();
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, notificationPreferencesPutSchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
     const {
       emailNotifications,
       pushNotifications,
@@ -62,7 +68,7 @@ export async function PUT(request: NextRequest) {
       marketingEmails,
       securityAlerts,
       systemAnnouncements,
-    } = body;
+    } = parsed.data;
 
     const preferences = await prisma.notificationPreferences.upsert({
       where: { userId: session.user.id },

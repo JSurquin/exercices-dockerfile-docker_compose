@@ -4,6 +4,8 @@ import {
   getCurrentUserForTwoFactor,
   buildInternalHeaders,
 } from "@/lib/security/two-factor";
+import { safeParseJson } from "@/lib/validation/helpers";
+import { verifyTotpBodySchema } from "@/lib/validation/schemas/payout-security";
 
 export async function POST(request: NextRequest) {
   const result = await getCurrentUserForTwoFactor(request.headers);
@@ -11,7 +13,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: result.error }, { status: result.status });
   }
 
-  const body = await request.json();
+  let raw: unknown = {};
+  try {
+    raw = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+  const parsed = safeParseJson(raw, verifyTotpBodySchema);
+  if (!parsed.ok) {
+    return parsed.response;
+  }
+  const body = parsed.data;
 
   const internalRequest = new Request(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/two-factor/verify-totp`,

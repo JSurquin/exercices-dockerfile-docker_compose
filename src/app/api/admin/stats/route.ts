@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { AdminStats, type SEPADetails, type CryptoDetails } from '@/lib/types';
 import { prisma } from '~/prisma/prisma';
 import { mapTradeStatusFromDb, mapPayoutStatusFromDb, mapPaymentMethodTypeFromDb } from '@/lib/status-mapper';
@@ -8,15 +8,9 @@ import type { SepaDetailsStored } from '@/lib/payment-method-sepa';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await requireAdminSessionWithDbCheck(request);
 
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-    }
-
-    if (session.user.role !== 'ADMIN') {
+    if (!session) {
       return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
     }
 

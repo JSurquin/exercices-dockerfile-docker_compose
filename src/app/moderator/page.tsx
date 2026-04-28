@@ -45,8 +45,8 @@ export default function ModeratorLoginPage() {
 
       // Vérifier que l'utilisateur est bien modérateur ou admin
       if (data?.user) {
-        // Récupérer le rôle depuis la DB car Better Auth ne le retourne pas automatiquement
-        const userResponse = await fetch(`/api/user/${data.user.id}`);
+        // Rôle : source de vérité côté serveur (ne pas s’appuyer sur /api/user/[id]).
+        const userResponse = await fetch('/api/user/profile');
         const userData = await userResponse.json();
         
         if (userData.role === 'MODERATOR' || userData.role === 'ADMIN') {

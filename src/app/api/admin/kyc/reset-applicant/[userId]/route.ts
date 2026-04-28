@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { getRequestContext, logUnauthorizedAccess } from '@/lib/security/audit-helpers';
 import { prisma } from '~/prisma/prisma';
 import { createApplicant } from '@/lib/kycaid';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { adminKycApplicantResetBodySchema } from '@/lib/validation/schemas/admin-bodies';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 /**
  * POST /api/admin/kyc/reset-applicant/[userId]
@@ -20,8 +22,8 @@ export async function POST(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   const context = getRequestContext(request);
-  const session = await auth.api.getSession({ headers: request.headers });
-  if (!session?.user || session.user.role !== 'ADMIN') {
+  const session = await requireAdminSessionWithDbCheck(request);
+  if (!session) {
     await logUnauthorizedAccess(context, '/api/admin/kyc/reset-applicant/[userId]', 'Admin required');
     return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
   }
@@ -35,7 +37,11 @@ export async function POST(
   try {
     const contentType = request.headers.get('content-type') || '';
     if (contentType.includes('application/json')) {
-      body = (await request.json()) as typeof body;
+      const raw = await request.json();
+      const parsed = safeParseJson(raw, adminKycApplicantResetBodySchema);
+      if (parsed.ok) {
+        body = parsed.data;
+      }
     }
   } catch {
     // body reste {}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { Prisma, TradeStatus } from '@prisma/client';
-import { auth } from '~/lib/auth';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { prisma } from '~/prisma/prisma';
 import { mapTradeStatusFromDb, mapTradeStatusToDb } from '@/lib/status-mapper';
 
@@ -63,11 +63,9 @@ function buildWhere(searchParams: URLSearchParams): Prisma.TradeWhereInput {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await requireAdminSessionWithDbCheck(request);
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session) {
       return NextResponse.json(
         { error: 'UNAUTHORIZED', message: 'Accès non autorisé.' },
         { status: 401 }

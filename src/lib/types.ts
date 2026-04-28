@@ -137,7 +137,11 @@ export interface Giveaway {
   totalEntries?: number;
   myEntries?: number;
   myChancePercent?: number;
-  winners?: { userId: string; rank: number }[];
+  winners?: {
+    rank: number;
+    userId?: string;
+    user?: { steamUsername: string | null; steamAvatar: string | null } | null;
+  }[];
 }
 
 export interface GiveawayEntry {

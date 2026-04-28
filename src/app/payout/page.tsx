@@ -214,10 +214,9 @@ export default function PayoutPage() {
   const savedCryptoMethods = useMemo(
     () => allPaymentMethods
       .filter((m: { type: string }) => m.type === 'WHITEPAY_CRYPTO' || m.type === 'CRYPTO')
-      .map((m: { id: string; maskedAddress: string | null; address?: string; network: string | null; targetCurrency: string | null; memo: string | null }) => ({
+      .map((m: { id: string; maskedAddress: string | null; network: string | null; targetCurrency: string | null; memo: string | null }) => ({
         id: m.id,
         maskedAddress: m.maskedAddress ?? null,
-        address: m.address ?? '',
         network: m.network ?? null,
         targetCurrency: m.targetCurrency ?? null,
         memo: m.memo ?? null,
@@ -260,7 +259,7 @@ export default function PayoutPage() {
       setSelectedCryptoMethodId(first.id);
       setFormData(prev => ({
         ...prev,
-        walletAddress: first.address,
+        walletAddress: '',
         selectedCrypto: first.targetCurrency ?? prev.selectedCrypto,
         selectedNetwork: first.network ?? prev.selectedNetwork,
         memo: first.memo ?? '',
@@ -283,11 +282,12 @@ export default function PayoutPage() {
   }, [useSavedCard, selectedCardMethodId]);
   useEffect(() => {
     if (useSavedWallet && selectedCryptoMethodId) {
-      const w = savedCryptoMethodsRef.current.find((c: { id: string }) => c.id === selectedCryptoMethodId) as { id: string; maskedAddress: string | null; address: string; network: string | null; targetCurrency: string | null; memo: string | null } | undefined;
+      const w = savedCryptoMethodsRef.current.find((c: { id: string }) => c.id === selectedCryptoMethodId) as
+        { id: string; maskedAddress: string | null; network: string | null; targetCurrency: string | null; memo: string | null } | undefined;
       if (w) {
         setFormData(prev => ({
           ...prev,
-          walletAddress: w.address,
+          walletAddress: '',
           selectedCrypto: w.targetCurrency ?? prev.selectedCrypto,
           selectedNetwork: w.network ?? prev.selectedNetwork,
           memo: w.memo ?? '',
@@ -327,9 +327,10 @@ export default function PayoutPage() {
       }
     }
 
-    // Validation crypto (wallet, memo)
+    // Validation crypto (wallet, memo) — wallet chargé côté serveur si moyen enregistré
     if (payoutMethod === 'crypto') {
-      if (!formData.walletAddress) {
+      const useRegisteredWallet = useSavedWallet && selectedCryptoMethodId;
+      if (!useRegisteredWallet && !formData.walletAddress) {
         toast.error(text.request.cryptoWalletRequired || 'Adresse wallet requise');
         return;
       }
@@ -477,15 +478,26 @@ export default function PayoutPage() {
         };
       } else {
         apiUrl = '/api/whitepay/payout-request';
-        payload = {
-          quoteId: quote.quoteId,
-          method: 'crypto',
-          amountCents: quote.amountCents,
-          walletAddress: formData.walletAddress,
-          targetCurrency: formData.selectedCrypto,
-          network: formData.selectedNetwork,
-          memo: needsMemo ? formData.memo : undefined,
-        };
+        const useRegisteredWallet = useSavedWallet && selectedCryptoMethodId;
+        payload = useRegisteredWallet
+          ? {
+              quoteId: quote.quoteId,
+              method: 'crypto',
+              amountCents: quote.amountCents,
+              paymentMethodId: selectedCryptoMethodId,
+              targetCurrency: formData.selectedCrypto,
+              network: formData.selectedNetwork,
+              memo: needsMemo ? formData.memo : undefined,
+            }
+          : {
+              quoteId: quote.quoteId,
+              method: 'crypto',
+              amountCents: quote.amountCents,
+              walletAddress: formData.walletAddress,
+              targetCurrency: formData.selectedCrypto,
+              network: formData.selectedNetwork,
+              memo: needsMemo ? formData.memo : undefined,
+            };
       }
 
       if (process.env.NODE_ENV === 'development') {
@@ -1244,7 +1256,7 @@ export default function PayoutPage() {
                       <div className="space-y-2">
                         <Label>{text.request.savedWalletLabel ?? 'Wallet'}</Label>
                         <div className="flex flex-col gap-2">
-                          {savedCryptoMethods.map((pm: { id: string; maskedAddress: string | null; address: string; network: string | null; targetCurrency: string | null; memo: string | null }) => (
+                          {savedCryptoMethods.map((pm: { id: string; maskedAddress: string | null; network: string | null; targetCurrency: string | null; memo: string | null }) => (
                             <label key={pm.id} className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
                               <input
                                 type="radio"

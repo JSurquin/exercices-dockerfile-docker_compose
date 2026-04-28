@@ -2,35 +2,49 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { logger, logAudit } from '@/lib/logger';
-import { CreateConversationRequest, ConversationFilters } from '@/lib/types/chat';
+import { resolveChatIdentity } from '@/lib/require-admin';
+import { ConversationFilters } from '@/lib/types/chat';
 import { ConversationStatus, SenderType } from '@prisma/client';
+import { safeParseJson, safeParseSearchParams } from '@/lib/validation/helpers';
+import {
+  chatConversationsQuerySchema,
+  createConversationPostSchema,
+} from '@/lib/validation/schemas/chat-api';
 
 // GET /api/chat/conversations - Récupérer les conversations
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-    if (!session?.user) {
+    const identity = await resolveChatIdentity(request);
+    if (identity.kind === 'guest') {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
+    if (identity.kind === 'invalid') {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    }
+    const session = identity.session;
+    const role = identity.role;
 
     const { searchParams } = new URL(request.url);
+    const parsedQ = safeParseSearchParams(searchParams, chatConversationsQuerySchema);
+    if (!parsedQ.ok) {
+      return parsedQ.response;
+    }
+    const q = parsedQ.data;
     const filters: ConversationFilters = {
-      status: searchParams.get('status') as ConversationStatus || undefined,
-      assignedTo: searchParams.get('assignedTo') || undefined,
-      category: searchParams.get('category') || undefined,
-      priority: searchParams.get('priority') as any || undefined,
-      userId: searchParams.get('userId') || undefined,
-      search: searchParams.get('search') || undefined,
-      page: parseInt(searchParams.get('page') || '1'),
-      limit: parseInt(searchParams.get('limit') || '20'),
+      status: (q.status as ConversationStatus) || undefined,
+      assignedTo: q.assignedTo || undefined,
+      category: q.category || undefined,
+      priority: (q.priority as any) || undefined,
+      userId: q.userId || undefined,
+      search: q.search || undefined,
+      page: q.page,
+      limit: q.limit,
     };
 
-    // Vérifier les permissions
-    const isAdmin = session.user.role === 'ADMIN';
-    const isModerator = session.user.role === 'MODERATOR';
-    const isUser = session.user.role === 'USER' || session.user.role === 'AFFILIATE';
+    // Vérifier les permissions (rôle DB, pas seulement le cookie)
+    const isAdmin = role === 'ADMIN';
+    const isModerator = role === 'MODERATOR';
+    const isUser = role === 'USER' || role === 'AFFILIATE';
 
     const whereClause: any = {};
 
@@ -57,7 +71,8 @@ export async function GET(request: NextRequest) {
     if (filters.priority) {
       whereClause.priority = filters.priority;
     }
-    if (filters.userId && (isAdmin || isModerator)) {
+    // Filtre par userId : admin uniquement (évite fuite / abus côté modérateur)
+    if (filters.userId && isAdmin) {
       whereClause.userId = filters.userId;
     }
     if (filters.search) {
@@ -139,12 +154,18 @@ export async function POST(request: NextRequest) {
     const session = await auth.api.getSession({
       headers: request.headers,
     });
-    const body: CreateConversationRequest = await request.json();
 
-    // Validation
-    if (!body.initialMessage?.trim()) {
-      return NextResponse.json({ error: 'Message initial requis' }, { status: 400 });
+    let raw: unknown;
+    try {
+      raw = await request.json();
+    } catch {
+      raw = {};
     }
+    const parsed = safeParseJson(raw, createConversationPostSchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const body = parsed.data;
 
     // Créer la conversation
     const conversation = await prisma.conversation.create({

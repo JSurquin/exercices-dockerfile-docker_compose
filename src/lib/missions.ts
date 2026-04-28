@@ -157,49 +157,61 @@ export async function claimMission(userId: string, missionKey: string): Promise<
   if (!def) return { ok: false, error: 'Mission inconnue' };
 
   const pKey = periodKeyFor(def);
-  const existing = await prisma.userMissionCompletion.findUnique({
-    where: {
-      userId_missionKey_periodKey: { userId, missionKey, periodKey: pKey },
-    },
-  });
-  if (existing) return { ok: false, error: 'Déjà réclamée pour cette période' };
 
-  const eligible = await isMissionEligible(userId, def);
-  if (!eligible) return { ok: false, error: "Conditions non remplies" };
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const existing = await tx.userMissionCompletion.findUnique({
+        where: {
+          userId_missionKey_periodKey: { userId, missionKey, periodKey: pKey },
+        },
+      });
+      if (existing) {
+        return { ok: false as const, error: 'Déjà réclamée pour cette période' };
+      }
 
-  // Calcul du reward : fixe ou aléatoire (mission bonus)
-  const dateStr = pKey.replace('day:', '');
-  const reward = def.bonusRange
-    ? getDailyBonusReward(userId, dateStr, def.bonusRange)
-    : def.rewardFragments;
+      const eligible = await isMissionEligible(userId, def);
+      if (!eligible) {
+        return { ok: false as const, error: 'Conditions non remplies' };
+      }
 
-  const meta: Prisma.InputJsonValue = { missionKey: def.key, periodKey: pKey, reward };
+      const dateStr = pKey.replace('day:', '');
+      const reward = def.bonusRange
+        ? getDailyBonusReward(userId, dateStr, def.bonusRange)
+        : def.rewardFragments;
 
-  await prisma.$transaction(async (tx) => {
-    await tx.userMissionCompletion.create({
-      data: {
-        userId,
-        missionKey,
-        periodKey: pKey,
-        rewardFragments: reward,
-      },
+      const meta: Prisma.InputJsonValue = { missionKey: def.key, periodKey: pKey, reward };
+
+      await tx.userMissionCompletion.create({
+        data: {
+          userId,
+          missionKey,
+          periodKey: pKey,
+          rewardFragments: reward,
+        },
+      });
+      await tx.fragmentTransaction.create({
+        data: {
+          userId,
+          type: def.fragmentType,
+          amount: reward,
+          reason: `Mission ${def.key}`,
+          metadata: meta,
+        },
+      });
+      await tx.user.update({
+        where: { id: userId },
+        data: { fragments: { increment: reward } },
+      });
+
+      return { ok: true as const, fragments: reward };
     });
-    await tx.fragmentTransaction.create({
-      data: {
-        userId,
-        type: def.fragmentType,
-        amount: reward,
-        reason: `Mission ${def.key}`,
-        metadata: meta,
-      },
-    });
-    await tx.user.update({
-      where: { id: userId },
-      data: { fragments: { increment: reward } },
-    });
-  });
-
-  return { ok: true, fragments: reward };
+  } catch (error: unknown) {
+    const err = error as { code?: string };
+    if (err.code === 'P2002') {
+      return { ok: false, error: 'Déjà réclamée pour cette période' };
+    }
+    throw error;
+  }
 }
 
 export async function listMissionsForUser(userId: string) {

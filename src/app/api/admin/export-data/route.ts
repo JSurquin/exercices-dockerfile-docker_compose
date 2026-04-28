@@ -2,14 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { pdfGenerator, AdminReportData } from '@/lib/pdf-generator';
 import { logger } from '@/lib/logger';
+import { requireAdminSession } from '@/lib/require-admin';
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Ajouter la vérification d'authentification admin
-    // const session = await getServerSession(authOptions);
-    // if (!session?.user || session.user.role !== 'ADMIN') {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
+    if (!(await requireAdminSession(request))) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
 
     logger.info('Début de génération de l\'export PDF des données');
 

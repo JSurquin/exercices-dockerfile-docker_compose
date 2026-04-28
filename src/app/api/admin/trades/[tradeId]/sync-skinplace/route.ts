@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { prisma } from '~/prisma/prisma';
 import { TradeStatus } from '@prisma/client';
 import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
@@ -59,6 +60,12 @@ export async function POST(
 
     if (!trade) {
       return NextResponse.json({ error: 'Trade introuvable' }, { status: 404 });
+    }
+
+    const adminGate = await requireAdminSessionWithDbCheck(request);
+    const isAdmin = !!adminGate;
+    if (!isAdmin && trade.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     if (!SYNCABLE_STATUSES.includes(trade.status)) {

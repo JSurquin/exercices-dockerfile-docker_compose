@@ -2215,6 +2215,8 @@ export interface Messages {
       user: string;
       tickets: string;
       drawSeed: string;
+      participantCountPrivateHint: string;
+      yourEntryNone: string;
     };
   };
   support: {

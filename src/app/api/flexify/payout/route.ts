@@ -27,6 +27,10 @@ import {
 } from '@/lib/payment-method-sepa';
 import { getPayoutAutoApproveSettings } from '@/lib/payout-settings';
 import { encrypt, decrypt } from '@/lib/encryption';
+import { assertTradeOwnership } from '@/lib/trade-ownership';
+import { validateAmountCents } from '@/lib/amount-validation';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { flexifyPayoutBodySchema } from '@/lib/validation/schemas/integrations';
 
 const generateReference = () => `MOON-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
@@ -67,7 +71,12 @@ export async function POST(request: NextRequest) {
     }
     LOG('KYC_OK', {});
 
-    const body = await request.json();
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, flexifyPayoutBodySchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const body = parsed.data as Record<string, any>;
     LOG('BODY_RECEIVED', { keys: Object.keys(body) });
     const {
       method, // 'card' | 'sepa' — crypto → /api/whitepay/withdrawal
@@ -102,31 +111,52 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!amountCents || amountCents <= 0) {
+    // Validation stricte du montant (entier positif uniquement)
+    const validatedAmount = validateAmountCents(amountCents);
+    if (validatedAmount === null) {
       LOG('AMOUNT_INVALID', { amountCents });
       return NextResponse.json(
-        { error: 'Montant invalide' },
+        { error: 'Montant invalide (doit être un entier positif en centimes)' },
         { status: 400 }
       );
     }
+    
+    // SÉCURITÉ: Vérifier que le trade appartient bien à l'utilisateur
+    if (tradeId) {
+      const ownsTrade = await assertTradeOwnership(tradeId, userId);
+      if (!ownsTrade) {
+        LOG('TRADE_OWNERSHIP_VIOLATION', { tradeId, userId });
+        return NextResponse.json(
+          { error: 'Trade non trouvé ou accès non autorisé' },
+          { status: 403 }
+        );
+      }
+    }
 
     const limits = getPayoutLimits(methodNorm === 'card' ? 'card' : 'sepa');
-    if (amountCents < limits.minCents) {
+    if (validatedAmount < limits.minCents) {
       return NextResponse.json(
         { error: `Montant minimum: ${centsToEur(limits.minCents)}€` },
         { status: 400 }
       );
     }
-    if (amountCents > limits.maxCents) {
+    if (validatedAmount > limits.maxCents) {
       return NextResponse.json(
         { error: `Montant maximum: ${centsToEur(limits.maxCents)}€` },
         { status: 400 }
       );
     }
 
+    // SÉCURITÉ: Vérifier solde disponible et compte non gelé
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { email: true, name: true },
+      select: { 
+        email: true, 
+        name: true,
+        balanceCents: true,
+        frozenBalanceCents: true,
+        accountFrozen: true
+      },
     });
 
     if (!user?.email) {
@@ -136,7 +166,25 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    LOG('USER_OK', { email: user.email });
+    
+    if (user.accountFrozen) {
+      LOG('ACCOUNT_FROZEN', { userId });
+      return NextResponse.json(
+        { error: 'Compte suspendu' },
+        { status: 403 }
+      );
+    }
+    
+    const availableCents = Math.max(0, user.balanceCents - user.frozenBalanceCents);
+    if (availableCents < validatedAmount) {
+      LOG('INSUFFICIENT_BALANCE', { availableCents, requestedAmount: validatedAmount });
+      return NextResponse.json(
+        { error: `Solde insuffisant (disponible : ${centsToEur(availableCents)}€)` },
+        { status: 400 }
+      );
+    }
+    
+    LOG('USER_OK', { email: user.email, availableBalance: availableCents });
 
     const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] ||
                      request.headers.get('x-real-ip') ||
@@ -227,9 +275,9 @@ export async function POST(request: NextRequest) {
         cvvVal = cvv.toString();
       }
 
-      const fees = calculateCardFees(amountCents);
+      const fees = calculateCardFees(validatedAmount);
       const autoSettings = await getPayoutAutoApproveSettings();
-      const shouldAutoApprove = autoSettings.enabled && amountCents <= autoSettings.thresholdCents;
+      const shouldAutoApprove = autoSettings.enabled && validatedAmount <= autoSettings.thresholdCents;
 
       // Créer ou réutiliser le PaymentMethod (sans doublon)
       if (!cardPaymentMethod) {
@@ -285,7 +333,7 @@ export async function POST(request: NextRequest) {
         const cardPayload = {
           method: 'card' as const,
           reference,
-          amountCents,
+          amountCents: validatedAmount,
           customer: {
             identifier: userId,
             email: user.email,
@@ -306,7 +354,7 @@ export async function POST(request: NextRequest) {
             userId,
             tradeId: tradeId || null,
             status: 'PENDING_APPROVAL',
-            amountCents,
+            amountCents: validatedAmount,
             paymentMethodId: cardPaymentMethod.id,
             gateFiOrderId: reference,
             processingFeeCents: fees.processingFeeCents,
@@ -318,7 +366,7 @@ export async function POST(request: NextRequest) {
           data: {
             userId,
             action: 'FLEXIFY_PAYOUT_PENDING_APPROVAL',
-            details: { payoutId: payout.id, reference, method: 'CARD', amountCents, reason: 'above_threshold' },
+            details: { payoutId: payout.id, reference, method: 'CARD', amountCents: validatedAmount, reason: 'above_threshold' },
           },
         });
         LOG('DB_PAYOUT_CREATED_CARD_PENDING', { payoutId: payout.id });
@@ -331,23 +379,23 @@ export async function POST(request: NextRequest) {
             id: payout.id,
             reference,
             status: 'PENDING_APPROVAL',
-            amountCents,
+            amountCents: validatedAmount,
             fees: {
               processingCents: fees.processingFeeCents,
               networkCents: fees.networkFeeCents,
               totalCents: fees.totalFeeCents,
             },
-            netCents: amountCents - fees.totalFeeCents,
+            netCents: validatedAmount - fees.totalFeeCents,
             method: 'CARD',
             message: 'Demande enregistrée. Elle sera traitée sous 24 h.',
           },
         });
       }
 
-      LOG('CALL_CREATE_CARD_PAYOUT', { reference, amountCents });
+      LOG('CALL_CREATE_CARD_PAYOUT', { reference, amountCents: validatedAmount });
       const flexifyResponse = await createCardPayout({
         reference,
-        amountCents,
+        amountCents: validatedAmount,
         customer: {
           identifier: userId,
           email: user.email,
@@ -376,7 +424,7 @@ export async function POST(request: NextRequest) {
           userId,
           tradeId: tradeId || null,
           status: internalStatus,
-          amountCents,
+          amountCents: validatedAmount,
           paymentMethodId: cardPaymentMethod.id,
           gateFiOrderId: reference,
           flexifyPayoutId: flexifyResponse.transaction!.id,
@@ -391,10 +439,10 @@ export async function POST(request: NextRequest) {
           userId,
           action: 'FLEXIFY_PAYOUT_CREATED',
           details: {
-            payoutId: payout.id,
-            reference,
-            method: 'CARD',
-            amountCents,
+          payoutId: payout.id,
+          reference,
+          method: 'CARD',
+          amountCents: validatedAmount,
             fees,
             flexifyTransactionId: flexifyResponse.transaction!.id,
             flexifyStatus: flexifyResponse.transaction!.status,
@@ -409,13 +457,13 @@ export async function POST(request: NextRequest) {
           id: payout.id,
           reference,
           status: internalStatus,
-          amountCents,
+          amountCents: validatedAmount,
           fees: {
             processingCents: fees.processingFeeCents,
             networkCents: fees.networkFeeCents,
             totalCents: fees.totalFeeCents,
           },
-          netCents: amountCents - fees.totalFeeCents,
+          netCents: validatedAmount - fees.totalFeeCents,
           method: 'CARD',
           flexifyTransactionId: flexifyResponse.transaction!.id,
           flexifyStatus: flexifyResponse.transaction!.status,
@@ -507,7 +555,7 @@ export async function POST(request: NextRequest) {
       bicToUse = (bic || '').replace(/\s/g, '').toUpperCase();
     }
 
-    const fees = calculateSepaFees(amountCents);
+    const fees = calculateSepaFees(validatedAmount);
     const beneficiaryFirst = (firstName ?? user.name?.split(' ')[0] ?? 'User').trim();
     const beneficiaryLast = (lastName ?? user.name?.split(' ').slice(1).join(' ') ?? 'User').trim();
     const customerAddress = typeof addressStr === 'string' ? addressStr : '';
@@ -519,7 +567,7 @@ export async function POST(request: NextRequest) {
 
     LOG('SEPA_PAYOUT_PARAMS', {
       reference,
-      amountCents,
+      amountCents: validatedAmount,
       hasFirstName: !!beneficiaryFirst,
       hasLastName: !!beneficiaryLast,
       hasAddress: !!customerAddress,
@@ -530,14 +578,14 @@ export async function POST(request: NextRequest) {
     });
 
     const autoSettingsSepa = await getPayoutAutoApproveSettings();
-    const shouldAutoApproveSepa = autoSettingsSepa.enabled && amountCents <= autoSettingsSepa.thresholdCents;
+    const shouldAutoApproveSepa = autoSettingsSepa.enabled && validatedAmount <= autoSettingsSepa.thresholdCents;
 
     if (!shouldAutoApproveSepa) {
       // Au-dessus du seuil : créer le payout en PENDING_APPROVAL
       const sepaPayload = {
         method: 'sepa' as const,
         reference,
-        amountCents,
+        amountCents: validatedAmount,
         description: typeof description === 'string' ? description : undefined,
         customer: {
           identifier: userId,
@@ -582,7 +630,7 @@ export async function POST(request: NextRequest) {
           userId,
           tradeId: tradeId || null,
           status: 'PENDING_APPROVAL',
-          amountCents,
+          amountCents: validatedAmount,
           paymentMethodId: paymentMethod.id,
           gateFiOrderId: reference,
           processingFeeCents: fees.processingFeeCents,
@@ -594,7 +642,7 @@ export async function POST(request: NextRequest) {
         data: {
           userId,
           action: 'FLEXIFY_PAYOUT_PENDING_APPROVAL',
-          details: { payoutId: payoutPending.id, reference, method: 'SEPA', amountCents, reason: 'above_threshold' },
+          details: { payoutId: payoutPending.id, reference, method: 'SEPA', amountCents: validatedAmount, reason: 'above_threshold' },
         },
       });
       LOG('DB_PAYOUT_CREATED_SEPA_PENDING', { payoutId: payoutPending.id });
@@ -607,19 +655,19 @@ export async function POST(request: NextRequest) {
           id: payoutPending.id,
           reference,
           status: 'PENDING_APPROVAL',
-          amountCents,
+          amountCents: validatedAmount,
           fees,
-          netCents: amountCents - fees.totalFeeCents,
+          netCents: validatedAmount - fees.totalFeeCents,
           method: 'SEPA',
           message: 'Demande enregistrée. Elle sera traitée sous 24 h.',
         },
       });
     }
 
-    LOG('CALL_CREATE_SEPA_PAYOUT', { reference, amountCents });
+    LOG('CALL_CREATE_SEPA_PAYOUT', { reference, amountCents: validatedAmount });
     const flexifyResponse = await createSepaPayout({
       reference,
-      amountCents,
+      amountCents: validatedAmount,
       description: typeof description === 'string' ? description : undefined,
       customer: {
         identifier: userId,
@@ -685,7 +733,7 @@ export async function POST(request: NextRequest) {
         userId,
         tradeId: tradeId || null,
         status: internalStatusSepa,
-        amountCents,
+        amountCents: validatedAmount,
         paymentMethodId: paymentMethod.id,
         gateFiOrderId: reference, // Notre référence unique
         flexifyPayoutId: flexifyResponse.transaction.id, // ID Flexify de la transaction
@@ -704,7 +752,7 @@ export async function POST(request: NextRequest) {
           payoutId: payout.id,
           reference,
           method: 'SEPA',
-          amountCents,
+          amountCents: validatedAmount,
           fees,
           flexifyTransactionId: flexifyResponse.transaction.id,
           flexifyStatus: flexifyResponse.transaction.status,
@@ -719,9 +767,9 @@ export async function POST(request: NextRequest) {
         id: payout.id,
         reference,
         status: internalStatusSepa,
-        amountCents,
+        amountCents: validatedAmount,
         fees,
-        netCents: amountCents - fees.totalFeeCents,
+        netCents: validatedAmount - fees.totalFeeCents,
         method: 'SEPA',
         flexifyTransactionId: flexifyResponse.transaction.id,
         flexifyStatus: flexifyResponse.transaction.status,
@@ -811,7 +859,7 @@ export async function GET(request: NextRequest) {
       prisma.payout.count({ where }),
     ]);
 
-    // Ne jamais exposer IBAN/BIC en clair : ne renvoyer que les détails masqués
+    // Champs explicites uniquement — ne jamais renvoyer whitepayAddress, pendingFlexifyRequestEncrypted, détails SEPA/carte bruts, etc.
     const payouts = payoutsRaw.map((p) => {
       const pm = p.paymentMethod;
       const details = pm?.details as SepaDetailsStored | null;
@@ -819,7 +867,30 @@ export async function GET(request: NextRequest) {
         ? getPublicSepaDetails(details)
         : (pm?.details ? { type: pm.type, maskedIban: null, maskedBic: null } : null);
       return {
-        ...p,
+        id: p.id,
+        status: p.status,
+        amountCents: p.amountCents,
+        paymentReference: p.paymentReference,
+        txId: p.txId,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+        paidAt: p.paidAt,
+        errorMessage: p.errorMessage,
+        flexifyPayoutId: p.flexifyPayoutId,
+        gateFiOrderId: p.gateFiOrderId,
+        processingFeeCents: p.processingFeeCents,
+        networkFeeCents: p.networkFeeCents,
+        whitepayStatus: p.whitepayStatus,
+        whitepayTargetCurrency: p.whitepayTargetCurrency,
+        whitepayTargetValue: p.whitepayTargetValue,
+        whitepayNetwork: p.whitepayNetwork,
+        whitepayTxHash: p.whitepayTxHash,
+        whitepayTransactionId: p.whitepayTransactionId,
+        whitepayExchangeRate: p.whitepayExchangeRate,
+        whitepayFee: p.whitepayFee,
+        whitepayEstimatedAt: p.whitepayEstimatedAt,
+        whitepayConfirmedAt: p.whitepayConfirmedAt,
+        trade: p.trade,
         paymentMethod: pm
           ? { id: pm.id, type: pm.type, isVerified: pm.isVerified, details: publicDetails }
           : null,

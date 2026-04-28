@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
-import { auth } from '~/lib/auth';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 
 export async function GET(request: NextRequest) {
   try {
     // Vérifier l'authentification admin
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await requireAdminSessionWithDbCheck(request);
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session) {
       return NextResponse.json(
         { error: 'UNAUTHORIZED', message: 'Accès non autorisé.' },
         { status: 401 }

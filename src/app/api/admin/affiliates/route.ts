@@ -1,28 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
-import { headers } from 'next/headers';
 import { AffiliateService } from '@/lib/affiliate-service';
 import { prisma } from '../../../../../prisma/prisma';
-import { DEFAULT_PAGE_SIZE } from '@/lib/admin-constants';
-
-async function requireAdmin(request: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user || session.user.role !== 'ADMIN') return null;
-  return session;
-}
+import { requireAdminSession } from '@/lib/require-admin';
+import { safeParseJson, safeParseSearchParams } from '@/lib/validation/helpers';
+import { adminAffiliatePostSchema, adminAffiliatesListQuerySchema } from '@/lib/validation/schemas/admin-bodies';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await requireAdmin(request);
+    const session = await requireAdminSession(request);
     if (!session) {
       return NextResponse.json({ success: false, error: 'Accès refusé' }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || String(DEFAULT_PAGE_SIZE));
-    const search = searchParams.get('search') || '';
-    const status = searchParams.get('status') || 'all';
+    const parsedQ = safeParseSearchParams(searchParams, adminAffiliatesListQuerySchema);
+    if (!parsedQ.ok) {
+      return parsedQ.response;
+    }
+    const page = parsedQ.data.page;
+    const limit = parsedQ.data.limit;
+    const search = parsedQ.data.search ?? '';
+    const status = parsedQ.data.status ?? 'all';
     
     const skip = (page - 1) * limit;
     
@@ -111,13 +109,18 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireAdmin(request);
+    const session = await requireAdminSession(request);
     if (!session) {
       return NextResponse.json({ success: false, error: 'Accès refusé' }, { status: 403 });
     }
 
     const adminUserId = session.user.id;
-    const { action, affiliateId, data } = await request.json();
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, adminAffiliatePostSchema, { errorStyle: 'successFalse' });
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const { action, affiliateId, data } = parsed.data;
     
     switch (action) {
       case 'toggle_status':

@@ -17,9 +17,46 @@ import {
 } from '@/lib/whitepay';
 import { canUserMakePayout } from '@/lib/kycaid';
 import { getPayoutAutoApproveSettings } from '@/lib/payout-settings';
+import { assertTradeOwnership } from '@/lib/trade-ownership';
+import { validateAmountCents } from '@/lib/amount-validation';
 import crypto from 'crypto';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { whitepayPayoutRequestBodySchema } from '@/lib/validation/schemas/integrations';
 
 const generateOrderId = () => `WPR-${crypto.randomUUID()}`;
+
+function toWhitepayTravelRule(
+  travelRuleIn: unknown,
+  user: { name: string | null; email: string }
+): WhitepayTravelRule {
+  if (
+    travelRuleIn &&
+    typeof travelRuleIn === 'object' &&
+    'type' in travelRuleIn &&
+    'vasp' in travelRuleIn &&
+    'name' in travelRuleIn &&
+    'address' in travelRuleIn
+  ) {
+    const tr = travelRuleIn as Record<string, unknown>;
+    if (tr.vasp != null && tr.name != null && tr.address != null) {
+      return {
+        type: tr.type === 'entity' ? 'entity' : 'individual',
+        vasp: String(tr.vasp),
+        name: String(tr.name),
+        address: String(tr.address),
+      };
+    }
+  }
+  return {
+    type: 'individual',
+    vasp: 'Self-custody',
+    name: (user.name || user.email || 'User').trim() || 'User',
+    address:
+      travelRuleIn && typeof travelRuleIn === 'object' && 'address' in travelRuleIn
+        ? String((travelRuleIn as Record<string, unknown>).address)
+        : 'N/A',
+  };
+}
 
 // =============================================================================
 // POST - Demande de retrait crypto (unifiée : auto-instant si sous seuil, sinon PENDING_APPROVAL)
@@ -48,23 +85,84 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const {
-      amountCents,
-      tradeId,
-      targetCurrency,
-      network,
-      walletAddress,
-      memo,
-      travelRule,
-    } = body;
-
-    if (!amountCents || amountCents <= 0) {
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, whitepayPayoutRequestBodySchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const body = parsed.data;
+    
+    // Validation stricte du montant (entier positif uniquement)
+    const rawAmount = body.amountCents ?? body.amount;
+    const amountCents = validateAmountCents(rawAmount);
+    
+    if (amountCents === null) {
       return NextResponse.json(
-        { error: 'Montant invalide' },
+        { error: 'Montant invalide (doit être un entier positif en centimes)' },
         { status: 400 }
       );
     }
+
+    const tradeId = typeof body.tradeId === 'string' ? body.tradeId : undefined;
+    
+    // SÉCURITÉ: Vérifier que le trade appartient bien à l'utilisateur
+    if (tradeId) {
+      const ownsTrade = await assertTradeOwnership(tradeId, userId);
+      if (!ownsTrade) {
+        return NextResponse.json(
+          { error: 'Trade non trouvé ou accès non autorisé' },
+          { status: 403 }
+        );
+      }
+    }
+    const travelRuleRaw: unknown = body.travelRule;
+    let targetCurrency: string | undefined =
+      typeof body.targetCurrency === 'string' ? body.targetCurrency : undefined;
+    let network: string | undefined = typeof body.network === 'string' ? body.network : undefined;
+    let walletAddress: string | undefined =
+      typeof body.walletAddress === 'string' ? body.walletAddress : undefined;
+    let memo: string | null | undefined;
+    if (body.memo === null) {
+      memo = null;
+    } else if (typeof body.memo === 'string') {
+      memo = body.memo;
+    } else {
+      memo = undefined;
+    }
+
+    if (body.paymentMethodId && typeof body.paymentMethodId === 'string') {
+      const pm = await prisma.paymentMethod.findFirst({
+        where: {
+          id: body.paymentMethodId,
+          userId,
+          type: { in: ['WHITEPAY_CRYPTO', 'CRYPTO'] },
+        },
+      });
+      if (!pm) {
+        return NextResponse.json(
+          { error: 'Moyen de paiement introuvable' },
+          { status: 400 }
+        );
+      }
+      const details = pm.details as { address?: string; network?: string; targetCurrency?: string; memo?: string | null };
+      if (!details?.address || typeof details.address !== 'string') {
+        return NextResponse.json(
+          { error: 'Adresse enregistrée invalide' },
+          { status: 400 }
+        );
+      }
+      walletAddress = details.address;
+      if (typeof targetCurrency !== 'string' || !targetCurrency) {
+        targetCurrency = details.targetCurrency;
+      }
+      if (typeof network !== 'string' || !network) {
+        network = details.network;
+      }
+      if (memo === undefined && details.memo) {
+        memo = details.memo;
+      }
+    }
+
 
     const limits = getWhitepayLimits();
     if (amountCents < limits.minCents) {
@@ -80,31 +178,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!targetCurrency || !network) {
+    if (
+      typeof targetCurrency !== 'string' ||
+      typeof network !== 'string' ||
+      !targetCurrency.trim() ||
+      !network.trim()
+    ) {
       return NextResponse.json(
         { error: 'Crypto et réseau requis' },
         { status: 400 }
       );
     }
 
+    const targetCurrencyU = targetCurrency.toUpperCase();
+    const networkU = network.toUpperCase();
+
     const supportedCrypto = WHITEPAY_SUPPORTED_CRYPTOS.find(
-      (c) => c.ticker === targetCurrency.toUpperCase()
+      (c) => c.ticker === targetCurrencyU
     );
     if (!supportedCrypto) {
       return NextResponse.json(
-        { error: `Crypto non supportée: ${targetCurrency}` },
+        { error: `Crypto non supportée: ${targetCurrencyU}` },
         { status: 400 }
       );
     }
 
-    if (!supportedCrypto.networks.includes(network.toUpperCase() as never)) {
+    if (!supportedCrypto.networks.includes(networkU as never)) {
       return NextResponse.json(
-        { error: `Réseau ${network} non supporté pour ${targetCurrency}` },
+        { error: `Réseau ${networkU} non supporté pour ${targetCurrencyU}` },
         { status: 400 }
       );
     }
 
-    if (!walletAddress) {
+    targetCurrency = targetCurrencyU;
+    network = networkU;
+
+    if (typeof walletAddress !== 'string' || !walletAddress.trim()) {
       return NextResponse.json(
         { error: 'Adresse wallet requise' },
         { status: 400 }
@@ -153,19 +262,10 @@ export async function POST(request: NextRequest) {
     const fees = calculateWhitepayFees(amountCents);
     const amountEur = amountCents / 100;
 
-    const travelRulePayload: WhitepayTravelRule | undefined = travelRule && typeof travelRule === 'object' && travelRule.type && travelRule.vasp && travelRule.name && travelRule.address
-      ? {
-          type: travelRule.type === 'entity' ? 'entity' : 'individual',
-          vasp: String(travelRule.vasp),
-          name: String(travelRule.name),
-          address: String(travelRule.address),
-        }
-      : {
-          type: 'individual' as const,
-          vasp: 'Self-custody',
-          name: (user.name || user.email || 'User').trim() || 'User',
-          address: (typeof travelRule === 'object' && travelRule?.address) ? String(travelRule.address) : 'N/A',
-        };
+    const travelRulePayload = toWhitepayTravelRule(travelRuleRaw, {
+      name: user.name,
+      email: user.email,
+    });
 
     // Créer ou récupérer la méthode de paiement (commun aux deux branches)
     let paymentMethod = await prisma.paymentMethod.findFirst({

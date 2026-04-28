@@ -84,8 +84,8 @@ export async function GET() {
         maskedBic: null,
         last4: null,
         holderName: null,
+        // Ne jamais renvoyer l’adresse complète en clair côté client
         maskedAddress: maskWalletAddress(address),
-        address,
         network,
         targetCurrency,
         memo,

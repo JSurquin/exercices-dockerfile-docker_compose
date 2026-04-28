@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
+import { requireAdminSession } from '@/lib/require-admin';
 import { Payout, AdminFilters, type SEPADetails, type CryptoDetails } from '@/lib/types';
 import { prisma } from '~/prisma/prisma';
 import { mapPayoutStatusFromDb, mapPayoutStatusToDb, mapPaymentMethodTypeFromDb } from '@/lib/status-mapper';
@@ -8,12 +8,8 @@ import type { SepaDetailsStored } from '@/lib/payment-method-sepa';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    if (!(await requireAdminSession(request))) {
+      return NextResponse.json({ error: 'Accès réservé aux administrateurs' }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { skinplaceService, handleSkinplaceError } from '@/lib/skinplace';
 import { auth } from '~/lib/auth';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { skinplaceTradeInstantSchema } from '@/lib/validation/schemas/integrations';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,22 +18,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { steam_id, items, trade_url } = body;
-
-    if (!steam_id || !items || !trade_url) {
-      return NextResponse.json(
-        { error: 'steam_id, items et trade_url sont requis' },
-        { status: 400 }
-      );
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, skinplaceTradeInstantSchema);
+    if (!parsed.ok) {
+      return parsed.response;
     }
-
-    if (!Array.isArray(items) || items.length === 0) {
-      return NextResponse.json(
-        { error: 'items doit être un tableau non vide' },
-        { status: 400 }
-      );
-    }
+    const { steam_id, items, trade_url } = parsed.data;
 
     // Vérifier que l'utilisateur crée un trade pour son propre compte
     if (steam_id !== session.user.steamId) {

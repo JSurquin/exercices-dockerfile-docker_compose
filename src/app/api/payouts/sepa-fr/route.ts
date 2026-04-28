@@ -8,6 +8,8 @@ import { encrypt } from '@/lib/encryption';
 import { validateIban } from '@/lib/flexify';
 import { getBalance } from '@/lib/balance-service';
 import crypto from 'crypto';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { payoutsSepaFrBodySchema } from '@/lib/validation/schemas/integrations';
 
 const generateReference = () =>
   `MOON-SEPA-FR-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
@@ -26,8 +28,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: kycCheck.reason, code: 'KYC_REQUIRED' }, { status: 403 });
     }
 
-    const body = await request.json();
-    const { amountCents, iban, bic, firstName, lastName } = body;
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, payoutsSepaFrBodySchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const { amountCents, iban, bic, firstName, lastName } = parsed.data;
 
     if (!amountCents || amountCents <= 0) {
       return NextResponse.json({ error: 'Montant invalide' }, { status: 400 });

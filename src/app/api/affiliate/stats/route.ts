@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AffiliateService } from '@/lib/affiliate-service';
+import { requireUserSession } from '@/lib/require-session-user';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'ID utilisateur requis' },
-        { status: 400 }
-      );
+    const session = await requireUserSession(request);
+    if (!session) {
+      return NextResponse.json({ success: false, error: 'Authentification requise' }, { status: 401 });
     }
-    
+    const userId = session.user.id;
+
     const stats = await AffiliateService.getAffiliateStats(userId);
     
     if (!stats) {

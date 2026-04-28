@@ -3469,7 +3469,10 @@ export const messages: Record<Locale, Messages> = {
         noParticipants: "Aucun participant pour le moment",
         user: "Utilisateur",
         tickets: "fragment(s)",
-        drawSeed: "Seed de tirage"
+        drawSeed: "Seed de tirage",
+        participantCountPrivateHint:
+          "Connectez-vous et participez : seule votre participation est affichée ici (pas la liste de tous les joueurs).",
+        yourEntryNone: "Vous n'avez pas encore participé à ce giveaway."
       }
     },
     payoutPage: {
@@ -7597,7 +7600,10 @@ export const messages: Record<Locale, Messages> = {
         noParticipants: "No participants yet",
         user: "User",
         tickets: "fragment(s)",
-        drawSeed: "Draw seed"
+        drawSeed: "Draw seed",
+        participantCountPrivateHint:
+          "Log in and take part: only your own participation is shown here (not everyone else's).",
+        yourEntryNone: "You have not entered this giveaway yet."
       }
     },
     payoutPage: {
@@ -12573,7 +12579,9 @@ export const messages: Record<Locale, Messages> = {
         noParticipants: "暂无参与者",
         user: "用户",
         tickets: "碎片",
-        drawSeed: "抽奖种子"
+        drawSeed: "抽奖种子",
+        participantCountPrivateHint: "请登录并参与：此处只显示您本人的参与情况（不显示所有玩家名单）。",
+        yourEntryNone: "您尚未参与此抽奖。"
       }
     },
     payoutPage: {

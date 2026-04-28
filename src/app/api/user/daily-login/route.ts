@@ -2,12 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { claimDailyLogin } from '@/lib/points-service';
 import { prisma } from '~/prisma/prisma';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { emptyObjectBodySchema } from '@/lib/validation/schemas/user';
 
 export async function POST(request: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user) {
       return NextResponse.json({ error: 'Non connecté' }, { status: 401 });
+    }
+
+    let raw: unknown = {};
+    try {
+      raw = await request.json();
+    } catch {
+      raw = {};
+    }
+    const bodyParsed = safeParseJson(raw, emptyObjectBodySchema);
+    if (!bodyParsed.ok) {
+      return bodyParsed.response;
     }
 
     const result = await claimDailyLogin(session.user.id);

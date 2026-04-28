@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { skinplaceService, handleSkinplaceError } from '@/lib/skinplace';
 import { auth } from '~/lib/auth';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { skinplaceHoldWithdrawSchema } from '@/lib/validation/schemas/integrations';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,16 +17,19 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    const body = await request.json();
-    const { order_id } = body;
-
-    if (!order_id) {
+    if (session.user.role !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'order_id est requis' },
-        { status: 400 }
+        { error: 'Accès non autorisé' },
+        { status: 403 }
       );
     }
+
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, skinplaceHoldWithdrawSchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const { order_id } = parsed.data;
 
     const result = await skinplaceService.withdrawFromHold(order_id);
 

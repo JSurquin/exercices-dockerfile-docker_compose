@@ -1,15 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../../prisma/prisma';
+import { requireAdminSession } from '@/lib/require-admin';
+import { safeParseJson, safeParseSearchParams } from '@/lib/validation/helpers';
+import {
+  adminAffiliateCommissionsListQuerySchema,
+  adminAffiliateCommissionsPostSchema,
+} from '@/lib/validation/schemas/admin-bodies';
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Vérifier les permissions admin
-    
+    if (!(await requireAdminSession(request))) {
+      return NextResponse.json(
+        { success: false, error: 'Accès non autorisé' },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const status = searchParams.get('status') || 'PENDING';
-    const affiliateId = searchParams.get('affiliateId');
+    const parsedQ = safeParseSearchParams(searchParams, adminAffiliateCommissionsListQuerySchema, {
+      errorStyle: 'successFalse',
+    });
+    if (!parsedQ.ok) {
+      return parsedQ.response;
+    }
+    const page = parsedQ.data.page;
+    const limit = parsedQ.data.limit;
+    const status = parsedQ.data.status || 'PENDING';
+    const affiliateId = parsedQ.data.affiliateId;
     
     const skip = (page - 1) * limit;
     
@@ -110,15 +127,28 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Vérifier les permissions admin
-    
-    const { action, commissionIds, payoutData } = await request.json();
-    
+    const adminSession = await requireAdminSession(request);
+    if (!adminSession) {
+      return NextResponse.json(
+        { success: false, error: 'Accès non autorisé' },
+        { status: 403 }
+      );
+    }
+    const adminUserId = adminSession.user.id;
+
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, adminAffiliateCommissionsPostSchema, { errorStyle: 'successFalse' });
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const { action, commissionIds, payoutData } = parsed.data;
+    const ids = commissionIds ?? [];
+
     switch (action) {
       case 'approve':
         await prisma.affiliateCommission.updateMany({
           where: {
-            id: { in: commissionIds },
+            id: { in: ids },
             status: 'PENDING'
           },
           data: { status: 'APPROVED' }
@@ -127,11 +157,11 @@ export async function POST(request: NextRequest) {
         // Log de l'audit
         await prisma.auditLog.create({
           data: {
-            userId: 'admin', // TODO: ID admin réel
+            userId: adminUserId,
             action: 'AFFILIATE_COMMISSIONS_APPROVED',
             details: {
-              commissionIds,
-              count: commissionIds.length
+              commissionIds: ids,
+              count: ids.length
             }
           }
         });
@@ -140,7 +170,7 @@ export async function POST(request: NextRequest) {
       case 'reject':
         await prisma.affiliateCommission.updateMany({
           where: {
-            id: { in: commissionIds },
+            id: { in: ids },
             status: 'PENDING'
           },
           data: { status: 'CANCELLED' }
@@ -148,21 +178,25 @@ export async function POST(request: NextRequest) {
         
         await prisma.auditLog.create({
           data: {
-            userId: 'admin',
+            userId: adminUserId,
             action: 'AFFILIATE_COMMISSIONS_REJECTED',
             details: {
-              commissionIds,
-              count: commissionIds.length
+              commissionIds: ids,
+              count: ids.length
             }
           }
         });
         break;
         
-      case 'create_payout':
+      case 'create_payout': {
+        const payoutPayload = payoutData as {
+          affiliateUserId?: string;
+          paymentMethodId?: string;
+        };
         // Créer un payout pour les commissions approuvées
         const totalAmount = await prisma.affiliateCommission.aggregate({
           where: {
-            id: { in: commissionIds },
+            id: { in: ids },
             status: 'APPROVED'
           },
           _sum: { amountCents: true }
@@ -170,9 +204,9 @@ export async function POST(request: NextRequest) {
         
         const payout = await prisma.payout.create({
           data: {
-            userId: payoutData.affiliateUserId,
+            userId: payoutPayload.affiliateUserId!,
             amountCents: totalAmount._sum.amountCents || 0,
-            paymentMethodId: payoutData.paymentMethodId,
+            paymentMethodId: payoutPayload.paymentMethodId!,
             status: 'PENDING'
           }
         });
@@ -180,7 +214,7 @@ export async function POST(request: NextRequest) {
         // Marquer les commissions comme payées
         await prisma.affiliateCommission.updateMany({
           where: {
-            id: { in: commissionIds },
+            id: { in: ids },
             status: 'APPROVED'
           },
           data: {
@@ -192,17 +226,18 @@ export async function POST(request: NextRequest) {
         
         await prisma.auditLog.create({
           data: {
-            userId: 'admin',
+            userId: adminUserId,
             action: 'AFFILIATE_PAYOUT_CREATED',
             details: {
               payoutId: payout.id,
-              commissionIds,
+              commissionIds: ids,
               amount: totalAmount._sum.amountCents
             }
           }
         });
         break;
-        
+      }
+
       default:
         return NextResponse.json(
           { success: false, error: 'Action non reconnue' },

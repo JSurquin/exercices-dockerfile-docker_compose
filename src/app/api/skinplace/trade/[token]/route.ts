@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { skinplaceService, handleSkinplaceError } from '@/lib/skinplace';
 import { auth } from '~/lib/auth';
+import { prisma } from '~/prisma/prisma';
 
 export async function GET(
   request: NextRequest,
@@ -26,6 +27,20 @@ export async function GET(
         { error: 'Token requis' },
         { status: 400 }
       );
+    }
+
+    const isAdmin = session.user.role === 'ADMIN';
+    if (!isAdmin) {
+      const owned = await prisma.trade.findFirst({
+        where: { skinplaceToken: token, userId: session.user.id },
+        select: { id: true },
+      });
+      if (!owned) {
+        return NextResponse.json(
+          { error: 'Accès non autorisé' },
+          { status: 403 }
+        );
+      }
     }
 
     const tradeStatus = await skinplaceService.getTradeStatus(token);

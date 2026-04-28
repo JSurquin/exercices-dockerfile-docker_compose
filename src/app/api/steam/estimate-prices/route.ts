@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-interface PriceEstimationRequest {
-  market_hash_names: string[];
-}
+import { auth } from '~/lib/auth';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { steamEstimatePricesSchema } from '@/lib/validation/schemas/chat-api';
 
 interface SkinplacePriceResponse {
   success: boolean;
@@ -17,14 +16,19 @@ interface SkinplacePriceResponse {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: PriceEstimationRequest = await request.json();
-    
-    if (!body.market_hash_names || !Array.isArray(body.market_hash_names)) {
-      return NextResponse.json(
-        { success: false, error: 'market_hash_names requis (array)' },
-        { status: 400 }
-      );
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session?.user) {
+      return NextResponse.json({ success: false, error: 'Non authentifié' }, { status: 401 });
     }
+
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, steamEstimatePricesSchema, {
+      errorStyle: 'affiliate',
+    });
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const body = parsed.data;
 
     if (body.market_hash_names.length === 0) {
       return NextResponse.json({
@@ -140,7 +144,7 @@ export async function GET(request: NextRequest) {
       new NextRequest(request.url, {
         method: 'POST',
         body: JSON.stringify({ market_hash_names: [marketHashName] }),
-        headers: { 'Content-Type': 'application/json' },
+        headers: request.headers,
       })
     );
 

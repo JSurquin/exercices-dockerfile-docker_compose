@@ -3,6 +3,8 @@ import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
 import { createAddress } from '@/lib/kycaid';
 import { prisma } from '~/prisma/prisma';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { kycaidAddressBodySchema } from '@/lib/validation/schemas/integrations';
 
 /**
  * POST /api/kycaid/address
@@ -22,11 +24,13 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
-    const body = await request.json();
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, kycaidAddressBodySchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const { country, city, postalCode, streetName, buildingNumber, unitNumber } = parsed.data;
 
-    const { country, city, postalCode, streetName, buildingNumber, unitNumber } = body;
-
-    // Validation
     if (!country || !city || !postalCode || !streetName || !buildingNumber) {
       return NextResponse.json(
         { error: 'Tous les champs obligatoires doivent être remplis' },

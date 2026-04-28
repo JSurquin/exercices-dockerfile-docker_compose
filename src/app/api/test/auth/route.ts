@@ -12,11 +12,17 @@ import { auth } from '~/lib/auth';
  * await page.goto('/api/test/auth?role=user');
  * await page.goto('/api/test/auth?role=admin');
  */
+function isTestAuthAllowed(): boolean {
+  if (process.env.VERCEL_ENV === 'production') {
+    return false;
+  }
+  return process.env.NODE_ENV === 'test' || process.env.ENABLE_TEST_AUTH === 'true';
+}
+
 export async function GET(request: NextRequest) {
-  // Sécurité : vérifier qu'on est bien en mode test
-  if (process.env.NODE_ENV !== 'test' && process.env.ENABLE_TEST_AUTH !== 'true') {
+  if (!isTestAuthAllowed()) {
     return NextResponse.json(
-      { error: 'Endpoint not available in production' },
+      { error: 'Endpoint not available' },
       { status: 403 }
     );
   }
@@ -150,9 +156,9 @@ export async function GET(request: NextRequest) {
  * Ou : DELETE /api/test/auth
  */
 export async function DELETE(request: NextRequest) {
-  if (process.env.NODE_ENV !== 'test' && process.env.ENABLE_TEST_AUTH !== 'true') {
+  if (!isTestAuthAllowed()) {
     return NextResponse.json(
-      { error: 'Endpoint not available in production' },
+      { error: 'Endpoint not available' },
       { status: 403 }
     );
   }

@@ -2,15 +2,32 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AffiliateService } from '@/lib/affiliate-service';
 import { prisma } from '../../../../../prisma/prisma';
 import { emailService } from '@/lib/email';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
+import { safeParseJson, safeParseSearchParams } from '@/lib/validation/helpers';
+import {
+  adminAffiliateApplicationPostSchema,
+  adminAffiliateApplicationsListQuerySchema,
+} from '@/lib/validation/schemas/admin-bodies';
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Vérifier les permissions admin
-    
+    if (!(await requireAdminSessionWithDbCheck(request))) {
+      return NextResponse.json(
+        { success: false, error: 'Accès non autorisé' },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const status = searchParams.get('status') || 'all';
+    const parsedQ = safeParseSearchParams(searchParams, adminAffiliateApplicationsListQuerySchema, {
+      errorStyle: 'successFalse',
+    });
+    if (!parsedQ.ok) {
+      return parsedQ.response;
+    }
+    const page = parsedQ.data.page;
+    const limit = parsedQ.data.limit;
+    const status = parsedQ.data.status ?? 'all';
     
     const skip = (page - 1) * limit;
     
@@ -81,10 +98,21 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Vérifier les permissions admin et récupérer l'ID de l'admin
-    const adminId = 'admin'; // TODO: Récupérer l'ID réel de l'admin connecté
-    
-    const { action, applicationId, data } = await request.json();
+    const adminSession = await requireAdminSessionWithDbCheck(request);
+    if (!adminSession) {
+      return NextResponse.json(
+        { success: false, error: 'Accès non autorisé' },
+        { status: 403 }
+      );
+    }
+    const adminId = adminSession.user.id;
+
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, adminAffiliateApplicationPostSchema, { errorStyle: 'successFalse' });
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const { action, applicationId, data } = parsed.data;
     
     if (!applicationId) {
       return NextResponse.json(

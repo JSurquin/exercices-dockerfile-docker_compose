@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { z } from 'zod';
 import { emailService } from '@/lib/email';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 const SMTP_KEYS = [
   'smtp_host',
@@ -32,7 +33,7 @@ export interface SmtpSettingsResponse {
   host: string;
   port: number;
   user: string;
-  password: string;
+  password: string; // Masqué dans GET pour sécurité
   from: string;
   secure: boolean;
   alertEmailTo: string;
@@ -64,18 +65,20 @@ async function getSmtpFromDb(): Promise<Partial<SmtpSettingsResponse> & { isFrom
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     const dbSettings = await getSmtpFromDb();
 
+    // SÉCURITÉ: Masquer le mot de passe SMTP dans la réponse GET
+    // Un admin compromis ne doit pas pouvoir exfiltrer le mot de passe via l'API
     const merged: SmtpSettingsResponse = {
       host: dbSettings.host ?? process.env.SMTP_HOST ?? '',
       port: dbSettings.port ?? parseInt(process.env.SMTP_PORT ?? '587'),
       user: dbSettings.user ?? process.env.SMTP_USER ?? '',
-      password: dbSettings.password ?? process.env.SMTP_PASSWORD ?? '',
+      password: '***HIDDEN***', // Masqué pour sécurité
       from: dbSettings.from ?? process.env.SMTP_FROM ?? '',
       secure: dbSettings.secure ?? process.env.SMTP_SECURE === 'true',
       alertEmailTo: dbSettings.alertEmailTo ?? process.env.ALERT_EMAIL_TO ?? '',
@@ -92,13 +95,17 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
-    const body = await request.json();
-    const patch = smtpSchema.parse(body);
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, smtpSchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const patch = parsed.data;
 
     const upserts: Promise<unknown>[] = [];
 
@@ -168,8 +175,8 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

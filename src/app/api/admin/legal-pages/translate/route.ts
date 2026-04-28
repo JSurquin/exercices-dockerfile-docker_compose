@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
-import { headers } from 'next/headers';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { translateLegalPageContent, type SupportedLanguage } from '@/lib/translation';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { adminLegalPageTranslateRequestSchema } from '@/lib/validation/schemas/admin-bodies';
 
 /**
  * POST /api/admin/legal-pages/translate
@@ -9,33 +10,17 @@ import { translateLegalPageContent, type SupportedLanguage } from '@/lib/transla
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { title, subtitle, content, sourceLang, targetLang } = body;
-
-    // Validation
-    if (!title || !content || !sourceLang || !targetLang) {
-      return NextResponse.json(
-        { error: 'Champs obligatoires manquants: title, content, sourceLang, targetLang' },
-        { status: 400 }
-      );
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, adminLegalPageTranslateRequestSchema);
+    if (!parsed.ok) {
+      return parsed.response;
     }
-
-    // Valider les langues supportées
-    const supportedLangs: SupportedLanguage[] = ['fr', 'en', 'cn'];
-    if (!supportedLangs.includes(sourceLang) || !supportedLangs.includes(targetLang)) {
-      return NextResponse.json(
-        { error: 'Langues non supportées. Langues disponibles: fr, en, cn' },
-        { status: 400 }
-      );
-    }
+    const { title, subtitle, content, sourceLang, targetLang } = parsed.data;
 
     // Effectuer la traduction
     const result = await translateLegalPageContent(

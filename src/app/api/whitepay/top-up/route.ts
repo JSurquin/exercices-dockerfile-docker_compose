@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminSession } from '@/lib/require-admin';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://moonskin.fun';
 
@@ -6,15 +7,13 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://moonskin.fun';
  * GET /api/whitepay/top-up?amount=35
  *
  * Retourne l’URL de webhook à configurer chez WhitePay pour le test 35 USDC
- * et les infos pour envoyer le paiement test.
- *
- * Comment WhitePay nous contacte :
- * 1. Tu configures dans le dashboard WhitePay (ou à la création d’invoice) l’URL de callback.
- * 2. Quand un paiement (ex. 35 USDC) est reçu sur l’adresse/wallet fournie par WhitePay,
- *    WhitePay envoie une requête HTTP POST sur cette URL avec le payload signé.
- * 3. Notre webhook traite le callback (idempotence par transaction.id) et crédite le solde.
+ * (documentation interne — **admin uniquement** pour éviter la cartographie publique de l’infra).
  */
 export async function GET(request: NextRequest) {
+  if (!(await requireAdminSession(request))) {
+    return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+  }
+
   const { searchParams } = new URL(request.url);
   const amount = searchParams.get('amount') || '35';
 

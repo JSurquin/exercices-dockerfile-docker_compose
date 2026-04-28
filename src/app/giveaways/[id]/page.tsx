@@ -51,7 +51,7 @@ interface GiveawayDetails {
   totalEntries: number;
   myEntries: number;
   myChancePercent: number;
-  entries: {
+  entries?: {
     id: string;
     userId: string;
     ticketsUsed: number;
@@ -62,7 +62,10 @@ interface GiveawayDetails {
       steamAvatar: string | null;
     };
   }[];
-  winners: { userId: string; rank: number }[];
+  winners: {
+    rank: number;
+    user?: { steamUsername: string | null; steamAvatar: string | null } | null;
+  }[];
 }
 
 function getTimeRemaining(endDate: string) {
@@ -441,12 +444,10 @@ export default function GiveawayDetailsPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {giveaway.winners.map((w) => {
-                    const entry = giveaway.entries.find((e) => e.userId === w.userId);
-                    const winnerEntry = entry ?? { userId: w.userId, ticketsUsed: 0, user: null };
-                    const u = (winnerEntry as typeof entry)?.user;
+                    const u = w.user;
                     return (
                       <div
-                        key={w.userId}
+                        key={`w-${w.rank}`}
                         className="flex items-center gap-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 rounded-lg border border-yellow-200 dark:border-yellow-800"
                       >
                         <div className="flex items-center justify-center w-8 h-8 bg-yellow-500 rounded-full text-white text-sm font-bold shrink-0">
@@ -460,17 +461,8 @@ export default function GiveawayDetailsPage() {
                         </Avatar>
                         <div className="flex-1">
                           <p className="font-semibold text-yellow-800 dark:text-yellow-200">
-                            {u?.steamUsername ?? `Utilisateur ${w.userId.slice(-6)}`}
+                            {u?.steamUsername ?? 'Gagnant'}
                           </p>
-                          {entry && (
-                            <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                              {entry.ticketsUsed} entrées •{' '}
-                              {totalEntries > 0
-                                ? ((entry.ticketsUsed / totalEntries) * 100).toFixed(2)
-                                : '0'}
-                              % de chance
-                            </p>
-                          )}
                         </div>
                         <CheckCircleIcon className="w-7 h-7 text-yellow-600 shrink-0" />
                       </div>
@@ -527,52 +519,53 @@ export default function GiveawayDetailsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">
-                  {messages.giveawaysPage.detail.participantsCount} ({giveaway.entries.length})
+                  {messages.giveawaysPage.detail.participantsCount} ({totalParticipants})
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-                  {giveaway.entries.length === 0 ? (
+                  {!user && (
                     <p className="text-sm text-center text-muted-foreground py-4">
-                      {messages.giveawaysPage.detail.noParticipants}
+                      {messages.giveawaysPage.detail.participantCountPrivateHint}
                     </p>
-                  ) : (
-                    [...giveaway.entries]
-                      .sort((a, b) => b.ticketsUsed - a.ticketsUsed)
-                      .map((entry, idx) => {
-                        const isWinner = giveaway.winners?.some((w) => w.userId === entry.userId);
-                        const chance = totalEntries > 0 ? ((entry.ticketsUsed / totalEntries) * 100).toFixed(1) : '0';
-                        return (
-                          <div
-                            key={entry.id}
-                            className={`flex items-center gap-2 p-2 rounded-lg ${
-                              isWinner
-                                ? 'bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800'
-                                : 'hover:bg-muted/50'
-                            }`}
-                          >
-                            <span className="text-xs text-muted-foreground w-5 text-right shrink-0">
-                              #{idx + 1}
-                            </span>
-                            <Avatar className="w-7 h-7 shrink-0">
-                              <AvatarImage src={entry.user.steamAvatar ?? undefined} />
-                              <AvatarFallback className="text-xs">
-                                {(entry.user.steamUsername ?? 'U').slice(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">
-                                {entry.user.steamUsername ?? `User ${entry.userId.slice(-4)}`}
-                                {isWinner && <StarIcon className="w-3.5 h-3.5 inline-block ml-1 text-yellow-500" />}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {entry.ticketsUsed} entrées • {chance}%
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })
                   )}
+                  {user && (!giveaway.entries || giveaway.entries.length === 0) && (
+                    <p className="text-sm text-center text-muted-foreground py-4">
+                      {messages.giveawaysPage.detail.yourEntryNone}
+                    </p>
+                  )}
+                  {user &&
+                    giveaway.entries &&
+                    giveaway.entries.map((entry) => {
+                      const isWinner = giveaway.winnerId === user.id;
+                      const chance = totalEntries > 0 ? ((entry.ticketsUsed / totalEntries) * 100).toFixed(1) : '0';
+                      return (
+                        <div
+                          key={entry.id}
+                          className={`flex items-center gap-2 p-2 rounded-lg ${
+                            isWinner
+                              ? 'bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800'
+                              : 'hover:bg-muted/50'
+                          }`}
+                        >
+                          <Avatar className="w-7 h-7 shrink-0">
+                            <AvatarImage src={entry.user.steamAvatar ?? undefined} />
+                            <AvatarFallback className="text-xs">
+                              {(entry.user.steamUsername ?? 'U').slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {entry.user.steamUsername ?? `User ${entry.userId.slice(-4)}`}
+                              {isWinner && <StarIcon className="w-3.5 h-3.5 inline-block ml-1 text-yellow-500" />}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {entry.ticketsUsed} entrées • {chance}%
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               </CardContent>
             </Card>

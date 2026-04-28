@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
-import { auth } from '~/lib/auth';
-import { headers } from 'next/headers';
+import {
+  requireAdminOrModeratorSessionWithDbCheck,
+  requireAdminSessionWithDbCheck,
+} from '@/lib/require-admin';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { adminLegalPagePatchSchema } from '@/lib/validation/schemas/admin-bodies';
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -14,11 +18,8 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { slug } = await params;
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'MODERATOR')) {
+    const session = await requireAdminOrModeratorSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
@@ -50,15 +51,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const { slug } = await params;
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const body = await request.json();
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, adminLegalPagePatchSchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const body = parsed.data as Record<string, unknown>;
     const {
       titleFr,
       titleEn,
@@ -96,18 +99,18 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const updatedPage = await prisma.legalPage.update({
       where: { slug },
       data: {
-        titleFr: titleFr ?? existingPage.titleFr,
-        titleEn: titleEn ?? existingPage.titleEn,
-        titleCn: titleCn !== undefined ? titleCn : existingPage.titleCn,
-        subtitleFr: subtitleFr ?? existingPage.subtitleFr,
-        subtitleEn: subtitleEn ?? existingPage.subtitleEn,
-        subtitleCn: subtitleCn !== undefined ? subtitleCn : existingPage.subtitleCn,
-        contentFr: contentFr ?? existingPage.contentFr,
-        contentEn: contentEn ?? existingPage.contentEn,
-        contentCn: contentCn !== undefined ? contentCn : existingPage.contentCn,
-        contactEmail: contactEmail ?? existingPage.contactEmail,
-        contactPhone: contactPhone ?? existingPage.contactPhone,
-        isPublished: isPublished ?? existingPage.isPublished,
+        titleFr: (titleFr as string | undefined) ?? existingPage.titleFr,
+        titleEn: (titleEn as string | undefined) ?? existingPage.titleEn,
+        titleCn: titleCn !== undefined ? (titleCn as string | null) : existingPage.titleCn,
+        subtitleFr: (subtitleFr as string | undefined) ?? existingPage.subtitleFr,
+        subtitleEn: (subtitleEn as string | undefined) ?? existingPage.subtitleEn,
+        subtitleCn: subtitleCn !== undefined ? (subtitleCn as string | null) : existingPage.subtitleCn,
+        contentFr: (contentFr as string | undefined) ?? existingPage.contentFr,
+        contentEn: (contentEn as string | undefined) ?? existingPage.contentEn,
+        contentCn: contentCn !== undefined ? (contentCn as string | null) : existingPage.contentCn,
+        contactEmail: (contactEmail as string | null | undefined) ?? existingPage.contactEmail,
+        contactPhone: (contactPhone as string | null | undefined) ?? existingPage.contactPhone,
+        isPublished: (isPublished as boolean | undefined) ?? existingPage.isPublished,
         version: newVersion,
         updatedBy: session.user.id,
       },
@@ -126,7 +129,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         contentCn: updatedPage.contentCn,
         version: updatedPage.version,
         changedBy: session.user.id,
-        changeReason: changeReason || 'Mise à jour',
+        changeReason: (typeof changeReason === 'string' && changeReason) ? changeReason : 'Mise à jour',
       },
     });
 
@@ -147,11 +150,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { slug } = await params;
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 

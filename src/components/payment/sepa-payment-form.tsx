@@ -31,6 +31,7 @@ export function SepaPaymentForm({
     try {
       const response = await fetch('/api/gatefi/offramp/quote', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fiatAmount: amountCents,
@@ -64,6 +65,7 @@ export function SepaPaymentForm({
     try {
       const response = await fetch('/api/gatefi/offramp/sell', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           payoutId,

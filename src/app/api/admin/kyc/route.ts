@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { KycStatus } from '@prisma/client';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 /**
  * GET /api/admin/kyc
@@ -11,8 +11,8 @@ import { KycStatus } from '@prisma/client';
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

@@ -3,6 +3,9 @@ import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { logger, logAudit } from '@/lib/logger';
 import { emailService } from '@/lib/email';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { adminModeratorInviteSchema } from '@/lib/validation/schemas/admin-bodies';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 function generateTempPassword(length = 12): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
@@ -13,12 +16,17 @@ function generateTempPassword(length = 12): string {
 // Crée un compte modérateur via email (sans écraser la session admin courante)
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
-    const { email, name } = await request.json();
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, adminModeratorInviteSchema);
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const { email, name } = parsed.data;
 
     if (!email || !email.includes('@')) {
       return NextResponse.json({ error: 'Adresse email invalide' }, { status: 400 });

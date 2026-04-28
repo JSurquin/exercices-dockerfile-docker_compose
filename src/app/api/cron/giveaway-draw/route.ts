@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireCronSecret } from '@/lib/cron-auth';
 
 /**
  * CRON Job pour effectuer automatiquement le tirage des giveaways expirés
@@ -7,33 +8,36 @@ import { NextRequest, NextResponse } from 'next/server';
  * - Path: /api/cron/giveaway-draw
  * - Schedule: chaque 15 minutes
  * 
- * Sécurité:
- * - Protégé par CRON_SECRET dans les variables d'environnement
- * - Seuls les appels avec le bon token Authorization sont autorisés
+ * Sécurité: Bearer CRON_SECRET (obligatoire en production, voir cron-auth)
  */
 export async function GET(request: NextRequest) {
   try {
-    // Vérifier le secret CRON pour sécuriser l'endpoint
-    const authHeader = request.headers.get('authorization');
-    const expectedAuth = `Bearer ${process.env.CRON_SECRET || 'default-secret-change-me'}`;
-    
-    if (authHeader !== expectedAuth) {
-      console.error('[CRON] Tentative d\'accès non autorisée au cron giveaway-draw');
+    const cron = requireCronSecret(request);
+    if (!cron.ok) {
       return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
+        { error: cron.message },
+        { status: cron.status }
       );
     }
 
     console.log('[CRON] Démarrage du tirage automatique des giveaways...');
 
-    // Appeler l'API auto-draw
+    // SÉCURITÉ: Passer le CRON_SECRET à l'API auto-draw pour authentification
+    const cronSecret = process.env.CRON_SECRET;
+    if (!cronSecret) {
+      return NextResponse.json(
+        { error: 'CRON_SECRET non configuré' },
+        { status: 500 }
+      );
+    }
+
+    // Appeler l'API auto-draw avec authentification Bearer
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const response = await fetch(`${baseUrl}/api/giveaways/auto-draw`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-cron-job': 'true'
+        'Authorization': `Bearer ${cronSecret}`
       }
     });
 

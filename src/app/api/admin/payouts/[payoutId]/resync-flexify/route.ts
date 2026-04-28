@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { getRequestContext, getClientIP, logUnauthorizedAccess } from '@/lib/security/audit-helpers';
 import { prisma } from '~/prisma/prisma';
 import {
@@ -20,8 +20,8 @@ export async function POST(
 ) {
   const context = getRequestContext(_request);
   try {
-    const session = await auth.api.getSession({ headers: _request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(_request);
+    if (!session) {
       await logUnauthorizedAccess(context, '/api/admin/payouts/[payoutId]/resync-flexify', 'Admin required');
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }

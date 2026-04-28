@@ -3,6 +3,8 @@ import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
 import { initiateKyc, checkKycStatus } from '@/lib/kycaid';
 import { prisma } from '~/prisma/prisma';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { kycaidInitiateBodySchema } from '@/lib/validation/schemas/integrations';
 
 // =============================================================================
 // POST - Initier le processus KYC
@@ -29,8 +31,10 @@ export async function POST(request: NextRequest) {
     console.log('[KYCAID Initiate] User ID:', userId);
 
     // Récupérer l'adresse du body (optionnel)
-    const body = await request.json().catch(() => ({}));
-    const { address } = body; // { country, city, postalCode, streetName, buildingNumber, unitNumber }
+    const raw = await request.json().catch(() => ({}));
+    const parsed = safeParseJson(raw, kycaidInitiateBodySchema);
+    const body = parsed.ok ? parsed.data : {};
+    const { address } = body;
     console.log('[KYCAID Initiate] Address provided:', !!address);
 
     // Vérifier si l'utilisateur est déjà vérifié

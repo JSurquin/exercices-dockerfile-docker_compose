@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import {
   listApplicantVerifications,
   updateUserKycStatus,
 } from '@/lib/kycaid';
 import { getRequestContext, logUnauthorizedAccess } from '@/lib/security/audit-helpers';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 /**
  * POST /api/admin/kyc/force-verify/[userId]
@@ -23,8 +23,8 @@ export async function POST(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   const context = getRequestContext(request);
-  const session = await auth.api.getSession({ headers: request.headers });
-  if (!session?.user || session.user.role !== 'ADMIN') {
+  const session = await requireAdminSessionWithDbCheck(request);
+  if (!session) {
     await logUnauthorizedAccess(context, '/api/admin/kyc/force-verify/[userId]', 'Admin required');
     return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
   }

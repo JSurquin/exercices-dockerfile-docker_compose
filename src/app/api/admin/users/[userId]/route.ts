@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { getRequestContext, logUnauthorizedAccess } from '@/lib/security/audit-helpers';
 import { prisma } from '~/prisma/prisma';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 export async function GET(
   request: NextRequest,
@@ -9,8 +10,8 @@ export async function GET(
 ) {
   const context = getRequestContext(request);
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       await logUnauthorizedAccess(context, '/api/admin/users/[userId]', 'Admin required');
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }

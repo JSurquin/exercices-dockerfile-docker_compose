@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
-import { auth } from '~/lib/auth';
-import { headers } from 'next/headers';
+import { requireAdminOrModeratorSessionWithDbCheck } from '@/lib/require-admin';
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -14,11 +13,8 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { slug } = await params;
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'MODERATOR')) {
+    const session = await requireAdminOrModeratorSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { prisma } from '~/prisma/prisma';
 import { logger, logAudit } from '@/lib/logger';
 
@@ -10,10 +10,8 @@ export async function DELETE(
 ) {
   try {
     const resolvedParams = await params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
@@ -88,10 +86,8 @@ export async function GET(
 ) {
   try {
     const resolvedParams = await params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    const session = await requireAdminSessionWithDbCheck(request);
+    if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

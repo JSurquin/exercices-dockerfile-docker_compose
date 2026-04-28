@@ -1,19 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../prisma/prisma';
 import { emailService } from '@/lib/email';
+import { requireUserSession } from '@/lib/require-session-user';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { affiliateApplyPostSchema } from '@/lib/validation/schemas/affiliate';
+import type { Prisma } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, motivation, socialLinks } = await request.json();
-    
-    if (!userId || !motivation) {
-      return NextResponse.json(
-        { success: false, error: 'Données requises manquantes' },
-        { status: 400 }
-      );
+    const session = await requireUserSession(request);
+    if (!session) {
+      return NextResponse.json({ success: false, error: 'Authentification requise' }, { status: 401 });
     }
-    
-    // Vérifier que l'utilisateur existe et n'est pas déjà affilié
+    const userId = session.user.id;
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, affiliateApplyPostSchema, { errorStyle: 'affiliate' });
+    if (!parsed.ok) {
+      return parsed.response;
+    }
+    const { motivation, socialLinks } = parsed.data;
+    const socialLinksJson: Prisma.InputJsonValue =
+      (socialLinks ?? {}) as Prisma.InputJsonValue;
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: { 
@@ -69,7 +76,7 @@ export async function POST(request: NextRequest) {
       data: {
         userId,
         motivation,
-        socialLinks: socialLinks || {},
+        socialLinks: socialLinksJson,
         status: 'PENDING'
       }
     });
@@ -82,8 +89,8 @@ export async function POST(request: NextRequest) {
         details: {
           applicationId: application.id,
           motivation,
-          socialLinks
-        }
+          socialLinks: socialLinksJson,
+        } as Prisma.InputJsonValue,
       }
     });
     
@@ -123,17 +130,12 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'ID utilisateur requis' },
-        { status: 400 }
-      );
+    const session = await requireUserSession(request);
+    if (!session) {
+      return NextResponse.json({ success: false, error: 'Authentification requise' }, { status: 401 });
     }
+    const userId = session.user.id;
     
-    // Récupérer les demandes de l'utilisateur
     const applications = await prisma.affiliateApplication.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' }

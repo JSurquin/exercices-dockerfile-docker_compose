@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { prisma } from '../../../../../prisma/prisma';
 import { skinplaceService } from '@/lib/skinplace';
 import { logger } from '@/lib/logger';
@@ -9,12 +9,9 @@ export async function GET(request: NextRequest) {
   try {
     logger.info('Analytics API called');
     
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await requireAdminSessionWithDbCheck(request);
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
-      logger.warn('Unauthorized analytics access attempt');
+    if (!session) {
       return NextResponse.json(
         { success: false, error: 'Accès refusé' },
         { status: 403 }

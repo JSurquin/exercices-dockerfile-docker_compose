@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { skinplaceService, handleSkinplaceError } from '@/lib/skinplace';
 import { auth } from '~/lib/auth';
+import { safeParseJson } from '@/lib/validation/helpers';
+import { skinplaceInventoryMultipleSchema } from '@/lib/validation/schemas/integrations';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,32 +18,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { steam_ids } = body;
-
-    if (!steam_ids || !Array.isArray(steam_ids) || steam_ids.length === 0) {
-      return NextResponse.json(
-        { error: 'steam_ids est requis et doit être un tableau non vide' },
-        { status: 400 }
-      );
+    const raw = await request.json();
+    const parsed = safeParseJson(raw, skinplaceInventoryMultipleSchema);
+    if (!parsed.ok) {
+      return parsed.response;
     }
+    const { steam_ids } = parsed.data;
 
-    // Limiter le nombre d'IDs pour éviter les abus
-    if (steam_ids.length > 10) {
-      return NextResponse.json(
-        { error: 'Maximum 10 steam_ids autorisés' },
-        { status: 400 }
-      );
-    }
-
-    // Vérifier que l'utilisateur demande son propre inventaire ou a les permissions
-    const hasOwnSteamId = steam_ids.includes(session.user.steamId);
-    if (!hasOwnSteamId) {
-      // TODO: Vérifier les permissions admin
-      return NextResponse.json(
-        { error: 'Accès non autorisé' },
-        { status: 403 }
-      );
+    // Exiger uniquement l’inventaire du compte connecté (pas de mélange avec d’autres steam_id).
+    const isAdmin = session.user.role === 'ADMIN';
+    if (!isAdmin) {
+      if (
+        !session.user.steamId ||
+        steam_ids.length !== 1 ||
+        steam_ids[0] !== session.user.steamId
+      ) {
+        return NextResponse.json(
+          { error: 'Accès non autorisé' },
+          { status: 403 }
+        );
+      }
     }
 
     const inventories = await skinplaceService.getMultipleInventory(steam_ids);

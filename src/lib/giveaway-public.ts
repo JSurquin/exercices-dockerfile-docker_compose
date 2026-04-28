@@ -1,13 +1,39 @@
-export function enrichGiveawayForViewer<T extends { entries?: { userId: string; ticketsUsed: number }[]; soldTickets: number; winnerId?: string | null; winners?: { userId: string; rank: number }[] }>(
+type GiveawayWithOptionalCount<T> = T & { _count?: { entries: number } };
+
+/**
+ * Métadonnées publiques : pas de seed sur la liste ; détail = seed uniquement si le tirage a eu lieu (statut ≠ ACTIVE).
+ */
+export function redactGiveawayForPublic<T extends Record<string, unknown>>(
   g: T,
-  viewerUserId?: string | null
-): T & {
+  mode: 'list' | 'detail'
+): T {
+  if (mode === 'list') {
+    const { randomSeed: _r, ...rest } = g;
+    void _r;
+    return rest as T;
+  }
+  if (g.status === 'ACTIVE' && 'randomSeed' in g) {
+    const { randomSeed: _r, ...rest } = g;
+    void _r;
+    return rest as T;
+  }
+  return g;
+}
+
+export function enrichGiveawayForViewer<
+  T extends {
+    entries?: { userId: string; ticketsUsed: number }[];
+    soldTickets: number;
+    winnerId?: string | null;
+    winners?: { rank: number; userId?: string; user?: { steamUsername?: string | null; steamAvatar?: string | null } | null }[];
+  },
+>(g: GiveawayWithOptionalCount<T>, viewerUserId?: string | null): T & {
   totalParticipants: number;
   totalEntries: number;
   myEntries: number;
   myChancePercent: number;
 } {
-  const totalParticipants = g.entries?.length ?? 0;
+  const totalParticipants = g._count?.entries ?? g.entries?.length ?? 0;
   const totalEntries = g.soldTickets;
   let myEntries = 0;
   if (viewerUserId && g.entries) {
@@ -15,11 +41,18 @@ export function enrichGiveawayForViewer<T extends { entries?: { userId: string; 
     myEntries = row?.ticketsUsed ?? 0;
   }
   const myChancePercent = totalEntries > 0 ? (100 * myEntries) / totalEntries : 0;
+  const { _count, ...gWithoutCount } = g;
+  void _count;
   return {
-    ...g,
+    ...gWithoutCount,
     totalParticipants,
     totalEntries,
     myEntries,
     myChancePercent: Math.round(myChancePercent * 100) / 100,
+  } as T & {
+    totalParticipants: number;
+    totalEntries: number;
+    myEntries: number;
+    myChancePercent: number;
   };
 }

@@ -26,9 +26,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Vérifier que l'utilisateur demande son propre inventaire ou a les permissions
-    if (steamId !== session.user.steamId) {
-      // TODO: Vérifier les permissions admin
+    const isAdmin = session.user.role === 'ADMIN';
+    if (steamId !== session.user.steamId && !isAdmin) {
       return NextResponse.json(
         { error: 'Accès non autorisé' },
         { status: 403 }
