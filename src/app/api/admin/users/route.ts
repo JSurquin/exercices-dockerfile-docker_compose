@@ -24,11 +24,12 @@ export async function GET(request: NextRequest) {
     context.userId = session.user.id;
 
     const { searchParams } = new URL(request.url);
+    const rawLimit = parseInt(searchParams.get('limit') || '20');
     const filters: AdminFilters = {
       status: searchParams.get('status') || undefined,
       search: searchParams.get('search') || undefined,
-      page: parseInt(searchParams.get('page') || '1'),
-      limit: parseInt(searchParams.get('limit') || '20'),
+      page: Math.max(1, parseInt(searchParams.get('page') || '1') || 1),
+      limit: Math.min(Math.max(1, rawLimit || 20), 100),
     };
 
     // Construire les conditions de filtrage Prisma

@@ -51,12 +51,13 @@ export async function POST(request: NextRequest) {
       '';
     const contentLengthHeader = request.headers.get('Content-Length') || String(Buffer.byteLength(rawBody, 'utf8'));
 
-    const skipVerify = process.env.FLEXIFY_WEBHOOK_SKIP_VERIFY === 'true';
+    const isDeployedEnv = isProductionApp() || process.env.VERCEL_ENV === 'preview';
+    const skipVerify = process.env.FLEXIFY_WEBHOOK_SKIP_VERIFY === 'true' && !isDeployedEnv;
 
-    if (isProductionApp() && skipVerify) {
+    if (isDeployedEnv && process.env.FLEXIFY_WEBHOOK_SKIP_VERIFY === 'true') {
       flexifyLog(
-        'WEBHOOK_SKIP_VERIFY_IN_PROD',
-        { message: 'FLEXIFY_WEBHOOK_SKIP_VERIFY interdit en production' },
+        'WEBHOOK_SKIP_VERIFY_BLOCKED',
+        { message: 'FLEXIFY_WEBHOOK_SKIP_VERIFY interdit sur les environnements déployés' },
         'error'
       );
       return NextResponse.json(

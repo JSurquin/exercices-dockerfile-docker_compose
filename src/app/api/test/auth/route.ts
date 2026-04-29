@@ -13,10 +13,10 @@ import { auth } from '~/lib/auth';
  * await page.goto('/api/test/auth?role=admin');
  */
 function isTestAuthAllowed(): boolean {
-  if (process.env.VERCEL_ENV === 'production') {
+  if (process.env.VERCEL_ENV === 'production' || process.env.VERCEL_ENV === 'preview') {
     return false;
   }
-  return process.env.NODE_ENV === 'test' || process.env.ENABLE_TEST_AUTH === 'true';
+  return process.env.NODE_ENV === 'test' && process.env.ENABLE_TEST_AUTH === 'true';
 }
 
 export async function GET(request: NextRequest) {

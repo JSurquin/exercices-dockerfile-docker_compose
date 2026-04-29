@@ -32,8 +32,10 @@ export const adminAffiliateApplicationPostSchema = z.object({
   data: z
     .object({
       rejectionReason: z.string().optional(),
+      commissionRate: z.coerce.number().optional(),
+      code: z.string().optional(),
     })
-    .passthrough()
+    .strip()
     .optional(),
 });
 

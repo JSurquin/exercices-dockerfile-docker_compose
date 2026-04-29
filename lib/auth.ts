@@ -44,7 +44,7 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false,
+    requireEmailVerification: true,
     sendResetPassword: async ({ user, url, token }, request) => {
       const account = await prisma.account.findFirst({
         where: { userId: user.id, providerId: "credential" },

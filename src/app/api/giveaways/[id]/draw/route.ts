@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { executeGiveawayDraw } from '@/lib/execute-giveaway-draw';
 import { prisma } from '~/prisma/prisma';
 import { emailService } from '@/lib/email';
@@ -10,11 +10,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // SÉCURITÉ: Seuls les admins ou les cron jobs authentifiés peuvent déclencher un tirage
-    const session = await auth.api.getSession({ headers: request.headers });
-    const isAdmin = session?.user?.role === 'ADMIN';
+    const adminSession = await requireAdminSessionWithDbCheck(request);
+    const isAdmin = !!adminSession;
     
-    // Vérifier le secret cron au lieu du header forgeable x-cron-job
     const cronAuth = requireCronSecret(request);
     const isAuthorizedCron = cronAuth.ok;
 

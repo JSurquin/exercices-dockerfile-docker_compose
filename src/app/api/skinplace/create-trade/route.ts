@@ -164,45 +164,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (body.gross_value_centimes <= 0) {
+    // SÉCURITÉ: Recalculer le montant brut côté serveur à partir des items
+    // Ne JAMAIS faire confiance au gross_value_centimes envoyé par le client
+    const serverGrossCentimes = body.items.reduce((sum, item) => sum + item.price_centimes, 0);
+
+    if (serverGrossCentimes <= 0) {
       return NextResponse.json(
         { success: false, error: 'La valeur brute doit être positive' },
         { status: 400 }
       );
     }
-    
-    // ⚠️ SÉCURITÉ CRITIQUE: FAILLE DE MONTANT MANIPULABLE ⚠️
-    // 
-    // Le montant `body.gross_value_centimes` vient DIRECTEMENT du client et n'est PAS validé
-    // contre une source d'autorité (Skinplace API). Un attaquant peut envoyer un montant gonflé.
-    // 
-    // RISQUE: Ce montant est utilisé pour :
-    //   1. Calculer les frais et le net dans `computeTradeLedgerFromGross` (ci-dessous)
-    //   2. Créditer la pending balance dans TradeHooks.creditPendingBalance
-    //   3. Calculer le volume et l'XP utilisateur
-    // 
-    // CORRECTIF REQUIS:
-    //   - NE PAS utiliser ce montant pour créditer la balance/XP
-    //   - ATTENDRE le montant d'autorité depuis:
-    //     * La réponse Skinplace API (champ `price` ou équivalent)
-    //     * L'IPN webhook avec signature vérifiée
-    //   - REMPLACER le montant en base après vérification
-    // 
-    // STATUT: NON CORRIGÉ - Voir trade-hooks.ts pour l'impact complet
-    // TODO: Implémenter validation montant Skinplace avant tout crédit
-    // 
-    // Voir rapport audit: Zone 2 - Routes Skinplace
-    
-    // Vérifier le minimum de 100 centimes (1 euro) requis par Skinplace
-    if (body.gross_value_centimes < 100) {
+
+    if (serverGrossCentimes < 100) {
       return NextResponse.json(
         { success: false, error: 'La valeur brute totale doit être d\'au moins 1,00 € (100 centimes) pour créer un trade' },
         { status: 400 }
       );
     }
 
+    if (Math.abs(serverGrossCentimes - body.gross_value_centimes) > 1) {
+      console.warn(`[CREATE-TRADE] Montant client (${body.gross_value_centimes}) != serveur (${serverGrossCentimes}) — utilisation du montant serveur`);
+    }
+
     const cashoutFeeRate = await getCashoutFeeRate();
-    const ledger = computeTradeLedgerFromGross(body.gross_value_centimes, cashoutFeeRate);
+    const ledger = computeTradeLedgerFromGross(serverGrossCentimes, cashoutFeeRate);
     if (ledger.netCents <= 0) {
       return NextResponse.json(
         { success: false, error: 'La valeur nette après frais plateforme doit être positive' },
@@ -230,7 +215,7 @@ export async function POST(request: NextRequest) {
       await AffiliateService.bindUserToAffiliateForSellPromo(user.id, promo.affiliateId);
       affiliatePromoCode = promo.code;
       affiliatePromoBonusCents = AffiliateService.computeSellPromoBonusCents(
-        body.gross_value_centimes
+        serverGrossCentimes
       );
     }
 
@@ -265,12 +250,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // if (tradesCountToday >= 5) {
-    //   return NextResponse.json(
-    //     { success: false, error: 'Limite de trades quotidienne atteinte (5 max)' },
-    //     { status: 429 }
-    //   );
-    // }
+    if (tradesCountToday >= 10) {
+      return NextResponse.json(
+        { success: false, error: 'Limite de trades quotidienne atteinte (10 max)' },
+        { status: 429 }
+      );
+    }
 
     // Générer la signature pour l'API Skinplace
     const signature = generateSkinplaceSignature(body.steam_id, privateKey);
@@ -297,17 +282,16 @@ export async function POST(request: NextRequest) {
       steamid: body.steam_id,
       trade_token: tradeToken,
       offers: body.items.map(item => item.asset_id), // Asset IDs des items à vendre
-      ipn_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/skinplace/webhook?secret=${process.env.SKINPLACE_WEBHOOK_SECRET || ''}`, // URL de callback avec secret
+      ipn_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/skinplace/webhook`,
       order_id: tradeToken2,
       send_offer_sync: 1, // Envoyer l'offre de manière synchrone
     };
 
-    console.log('🔄 Création de trade Skinplace:');
-    console.log('  - Steam ID:', body.steam_id);
-    console.log('  - Nombre d\'items:', body.items.length);
-    console.log('  - Items (asset IDs):', body.items.map(item => item.asset_id));
-    console.log('  - Trade token:', tradeToken);
-    console.log('  - Payload complet:', JSON.stringify(skinplacePayload, null, 2));
+    console.log('🔄 Création de trade Skinplace:', {
+      steamId: body.steam_id,
+      itemsCount: body.items.length,
+      grossCentimes: serverGrossCentimes,
+    });
 
     // Appeler l'API Skinplace pour créer le trade instantané
     const skinplaceResponse = await fetch('https://api.skin.place/api/v3/instant/inventory', {
@@ -339,10 +323,7 @@ export async function POST(request: NextRequest) {
 
     const skinplaceData = await skinplaceResponse.json();
     
-    console.log('[CREATE-TRADE] Réponse Skinplace complète:', JSON.stringify(skinplaceData, null, 2));
-    console.log('[CREATE-TRADE] skinplaceData.token (skinplaceToken):', skinplaceData.token ?? 'NULL');
-    console.log('[CREATE-TRADE] skinplaceData.steamtrade:', JSON.stringify(skinplaceData.steamtrade, null, 2));
-    console.log('[CREATE-TRADE] order_id envoyé (tradeToken2/ticketId):', tradeToken2);
+    console.log('[CREATE-TRADE] Skinplace response status:', skinplaceData.status, '| token:', skinplaceData.token ? 'present' : 'NULL');
 
     // Skinplace retourne { status: 'success' } au lieu de { success: true }
     if (skinplaceData.status !== 'success') {
@@ -363,11 +344,7 @@ export async function POST(request: NextRequest) {
     // Bot qui a récupéré le trade (peut être null si trade pas encore assigné)
     const botInfo: SkinplaceBotInfo | null = steamTrade?.bot || null;
     
-    console.log('[CREATE-TRADE] Trade Skinplace créé:');
-    console.log('[CREATE-TRADE]   tradeOfferId Steam:', tradeOfferId ?? 'NULL (async mode?)');
-    console.log('[CREATE-TRADE]   skinplaceToken:', skinplaceToken ?? 'NULL !!!');
-    console.log('[CREATE-TRADE]   steamtrade.status:', skinplaceStatus);
-    console.log('[CREATE-TRADE]   steamtrade.price:', steamTrade?.price);
+    console.log('[CREATE-TRADE] tradeOfferId:', tradeOfferId ?? 'NULL', '| status:', skinplaceStatus);
 
     if (!skinplaceToken) {
       console.error('[CREATE-TRADE] ATTENTION: skinplaceToken NULL — la stratégie 1 du polling sera impossible, seul le fallback order_id fonctionnera');
@@ -409,7 +386,7 @@ export async function POST(request: NextRequest) {
         steamId: body.steam_id,
         tradeUrl: body.trade_url,
         status: tradeStatus, // États: CREATED -> ACCEPTED_BY_BOT -> IN_TRADE_HOLD -> AVAILABLE -> PAYOUT_PENDING -> PAID -> FAILED
-        grossCents: body.gross_value_centimes,
+        grossCents: serverGrossCentimes,
         cashoutFees: ledger.cashoutFees,
         networkFees: ledger.networkFees,
         netCents: netCentsWithPromo,
@@ -445,7 +422,7 @@ export async function POST(request: NextRequest) {
         details: {
           tradeId: trade.id,
           itemsCount: body.items.length,
-          grossValue: body.gross_value_centimes,
+          grossValue: serverGrossCentimes,
           netValue: netCentsWithPromo,
           affiliatePromoCode,
           affiliatePromoBonusCents,
@@ -472,7 +449,7 @@ export async function POST(request: NextRequest) {
           {
             tradeId: trade.id,
             itemsCount: body.items.length,
-            grossValue: body.gross_value_centimes,
+            grossValue: serverGrossCentimes,
             netValue: netCentsWithPromo,
             availableAt: trade.availableAt?.toISOString() || new Date().toISOString(),
           }
@@ -500,8 +477,7 @@ export async function POST(request: NextRequest) {
       bot: botInfo,
     };
 
-    console.log('[CREATE-TRADE] Trade sauvegardé en DB:', trade.id, '| skinplaceToken stocké:', trade.skinplaceToken ?? 'NULL');
-    console.log('[CREATE-TRADE] Réponse au client (tradeData):', JSON.stringify(tradeData, null, 2));
+    console.log('[CREATE-TRADE] Trade saved:', trade.id);
 
     return NextResponse.json({
       success: true,

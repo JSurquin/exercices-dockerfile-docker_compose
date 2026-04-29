@@ -112,9 +112,6 @@ export async function PATCH(
       'winnerCount',
       'isPrivate',
       'requiredAffiliateCode',
-      'winnerId',
-      'randomSeed',
-      'soldTickets',
     ]);
     const data: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(body)) {

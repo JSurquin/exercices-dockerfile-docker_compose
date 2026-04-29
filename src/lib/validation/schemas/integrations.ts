@@ -89,7 +89,7 @@ export const whitepayAmountBodySchema = z
     message: 'Montant invalide',
   });
 
-/** Whitepay payout-request — champs connus + passthrough pour extensions */
+/** Whitepay payout-request */
 export const whitepayPayoutRequestBodySchema = z
   .object({
     amountCents: z.union([z.number(), z.string()]).optional(),
@@ -100,8 +100,9 @@ export const whitepayPayoutRequestBodySchema = z
     walletAddress: z.string().optional(),
     memo: z.union([z.string(), z.null()]).optional(),
     travelRule: z.unknown().optional(),
+    paymentMethodId: z.string().optional(),
   })
-  .passthrough();
+  .strip();
 
 /** GateFi onramp/offramp quote */
 export const gatefiQuoteBodySchema = z
@@ -127,12 +128,12 @@ export const kycaidAddressBodySchema = z
   })
   .strip();
 
-/** KYC initiate — adresse optionnelle */
+/** KYC initiate */
 export const kycaidInitiateBodySchema = z
   .object({
     address: kycaidAddressBodySchema.optional(),
   })
-  .passthrough();
+  .strip();
 
 /** Payouts SEPA FR */
 export const payoutsSepaFrBodySchema = z
@@ -208,8 +209,26 @@ export const giveawayParticipateBodySchema = z
   })
   .strip();
 
-/** Giveaway PATCH admin — champs filtrés côté handler */
-export const giveawayPatchBodySchema = z.record(z.string(), z.unknown());
+/** Giveaway PATCH admin */
+export const giveawayPatchBodySchema = z
+  .object({
+    title: z.string().optional(),
+    description: z.string().optional(),
+    prize: z.string().optional(),
+    prizeImageUrl: z.string().nullable().optional(),
+    steamMarketHashName: z.string().nullable().optional(),
+    ticketPrice: z.union([z.number(), z.string()]).optional(),
+    maxTickets: z.coerce.number().int().positive().optional(),
+    endDate: z.union([z.string(), z.number()]).optional(),
+    status: z.string().optional(),
+    durationType: z.string().optional(),
+    maxEntriesPerUser: z.union([z.coerce.number(), z.null()]).optional(),
+    rewardValueCents: z.coerce.number().optional(),
+    winnerCount: z.coerce.number().optional(),
+    isPrivate: z.boolean().optional(),
+    requiredAffiliateCode: z.string().nullable().optional(),
+  })
+  .strip();
 
 /** GET /api/giveaways — liste publique */
 export const giveawaysPublicListQuerySchema = z
