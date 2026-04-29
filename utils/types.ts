@@ -444,6 +444,8 @@ export interface Messages {
         error: string;
         statusCheckFailed: string;
         statusCheckError: string;
+        balanceCredited?: string;
+        fundsReleased?: string;
       };
       kycVerification: string;
       kycVerified: string;

@@ -102,6 +102,20 @@ export function resolveMoonSkinTradeStatusFromSkinplaceApi(
 
   // ─── Chemins « positifs » (doc Skinplace : payment complete = trade réussi, fonds en hold) ───
 
+  // protection_status=confirmed signifie que le hold de 8 jours est terminé,
+  // les fonds sont définitivement libérés -> le trade est AVAILABLE pour payout
+  if (prot === 'confirmed' && (ps === 'complete' || st === 'finished')) {
+    return {
+      status: 'AVAILABLE',
+      debug: {
+        steamtradeStatus: st,
+        paymentStatus: ps,
+        protectionStatus: prot,
+        effectiveSource: 'protection_status=confirmed',
+      },
+    };
+  }
+
   if (ps === 'complete') {
     return {
       status: 'IN_TRADE_HOLD',

@@ -4,6 +4,7 @@ import { prisma } from '~/prisma/prisma';
 import { TradeStatus } from '@prisma/client';
 import { skinplaceService } from '@/lib/skinplace';
 import { resolveMoonSkinTradeStatusFromSkinplaceApi } from '@/lib/skinplace-trade-status-resolve';
+import { TradeHooks } from '@/lib/trade-hooks';
 
 /**
  * Endpoint pour récupérer et mettre à jour le statut d'un trade depuis Skinplace
@@ -176,7 +177,7 @@ export async function GET(
               oldStatus,
               newStatus,
               skinplaceDebug,
-              source: 'manual_check',
+              source: 'polling_check',
             },
             ipAddress:
               request.headers.get('x-forwarded-for') ||
@@ -187,7 +188,19 @@ export async function GET(
 
         console.log(`[STATUS] Trade ${trade.id} mis a jour: ${oldStatus} -> ${newStatus}`, skinplaceDebug);
 
+        // Déclencher les hooks de balance (même logique que le webhook IPN)
+        try {
+          if (newStatus === 'ACCEPTED_BY_BOT' && oldStatus !== 'ACCEPTED_BY_BOT') {
+            await TradeHooks.onTradeAccepted(trade.userId, trade.id);
+          } else if (newStatus === 'AVAILABLE' && oldStatus !== 'AVAILABLE') {
+            await TradeHooks.onTradeAvailable(trade.id);
+          }
+        } catch (hookError) {
+          console.error(`[STATUS] TradeHooks error for trade ${trade.id}:`, hookError);
+        }
+
         const detailMsg = `Skinplace: ${skinplaceDebug.effectiveSource} (steamtrade=${skinplaceDebug.steamtradeStatus ?? '?'}, payment=${skinplaceDebug.paymentStatus ?? '?'})`;
+        const balanceCredited = newStatus === 'AVAILABLE' && oldStatus !== 'AVAILABLE';
 
         return NextResponse.json({
           success: true,
@@ -199,7 +212,10 @@ export async function GET(
             availableAt: updatedTrade.availableAt,
             skinplaceStatus: skinplaceDebug.effectiveSource,
             skinplaceDebug,
-            message: `Statut mis a jour depuis Skinplace — ${detailMsg}`,
+            balanceCredited,
+            message: balanceCredited
+              ? `Statut mis a jour — fonds libérés et solde crédité`
+              : `Statut mis a jour depuis Skinplace — ${detailMsg}`,
           },
         });
       }

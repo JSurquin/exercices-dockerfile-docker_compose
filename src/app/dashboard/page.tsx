@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -169,6 +169,8 @@ export default function DashboardPage() {
   const { data: tradesData, loading: tradesLoading, error: tradesError, refetch: refetchTrades } = useUserTrades();
   const [refreshingTradeId, setRefreshingTradeId] = useState<string | null>(null);
   const [refreshingKyc, setRefreshingKyc] = useState(false);
+  const autoPollingDone = useRef(false);
+  const queryClient = useQueryClient();
   const { data: dashboardStats, isLoading: statsLoading } = useQuery({
     queryKey: queryKeys.userDashboard,
     queryFn: async () => {
@@ -266,13 +268,29 @@ export default function DashboardPage() {
       const result = await response.json();
 
       if (result.success) {
-        const detail =
-          (result.trade as { message?: string }).message ||
-          messages.dashboard.toasts.statusVerified;
-        toast.success(messages.dashboard.toasts.statusUpdated, {
-          description: detail,
-        });
-        // Recharger la liste des trades
+        const tradeResult = result.trade as {
+          message?: string;
+          balanceCredited?: boolean;
+        };
+
+        if (tradeResult.balanceCredited) {
+          toast.success(
+            messages.dashboard.toasts?.balanceCredited ?? 'Solde mis à jour !',
+            {
+              description:
+                messages.dashboard.toasts?.fundsReleased ??
+                'Les fonds ont été libérés et votre solde a été crédité.',
+            }
+          );
+          queryClient.invalidateQueries({ queryKey: queryKeys.userBalanceHistory });
+          queryClient.invalidateQueries({ queryKey: queryKeys.userDashboard });
+        } else {
+          toast.success(messages.dashboard.toasts.statusUpdated, {
+            description:
+              tradeResult.message || messages.dashboard.toasts.statusVerified,
+          });
+        }
+
         refetchTrades();
       } else {
         toast.error(messages.dashboard.toasts.error, {
@@ -288,6 +306,56 @@ export default function DashboardPage() {
       setRefreshingTradeId(null);
     }
   };
+
+  // Double polling automatique : quand les trades sont chargés, on vérifie
+  // automatiquement ceux en IN_TRADE_HOLD ou ACCEPTED_BY_BOT auprès de Skinplace.
+  // Si le webhook IPN #2 n'a pas fonctionné, ce polling rattrape le coup et
+  // crédite le solde quand protection_status=confirmed.
+  useEffect(() => {
+    if (autoPollingDone.current || !tradesData?.trades?.length || !data?.user) return;
+    autoPollingDone.current = true;
+
+    const PENDING_STATUSES = new Set(['accepté_par_bot', 'en_trade_hold', 'créé']);
+    const tradesToPoll = tradesData.trades.filter((t) => PENDING_STATUSES.has(t.status));
+
+    if (tradesToPoll.length === 0) return;
+
+    (async () => {
+      let anyUpdated = false;
+      for (const trade of tradesToPoll) {
+        try {
+          const res = await fetch(`/api/skinplace/trade/status/${trade.id}`, {
+            method: 'GET',
+            credentials: 'include',
+          });
+          if (!res.ok) continue;
+          const result = await res.json();
+          if (result.success && result.trade?.balanceCredited) {
+            anyUpdated = true;
+            toast.success(
+              messages.dashboard.toasts?.balanceCredited
+                ?? 'Solde mis à jour',
+              {
+                description: `${trade.ticketId} — ${
+                  messages.dashboard.toasts?.fundsReleased
+                    ?? 'Fonds libérés par Skinplace'
+                }`,
+              }
+            );
+          } else if (result.success && result.trade?.oldStatus && result.trade.oldStatus !== result.trade.status) {
+            anyUpdated = true;
+          }
+        } catch {
+          // Silently ignore polling errors
+        }
+      }
+      if (anyUpdated) {
+        refetchTrades();
+        queryClient.invalidateQueries({ queryKey: queryKeys.userBalanceHistory });
+        queryClient.invalidateQueries({ queryKey: queryKeys.userDashboard });
+      }
+    })();
+  }, [tradesData, data?.user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data: payoutsPayload, isLoading: payoutsLoading, error: payoutsQueryError, refetch: refetchPayouts } = useQuery({
     queryKey: queryKeys.userPayouts,

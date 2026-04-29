@@ -126,6 +126,12 @@ model Trade {
   affiliatePromoBonusCents        Int       @default(0)
   /// Horodatage crédit fragments promo (idempotence)
   affiliatePromoFragmentsGrantedAt DateTime?
+  /// Horodatage du crédit pending balance (IPN #1) — sert de verrou d'idempotence
+  pendingCreditedAt  DateTime?
+  /// Horodatage du crédit balance réel (IPN #2 confirmed) — sert de verrou d'idempotence
+  balanceCreditedAt  DateTime?
+  /// Horodatage du revert pending balance (IPN #2 rollback) — sert de verrou d'idempotence
+  pendingRevertedAt  DateTime?
   ticketId           String              @unique
   tradeAcceptedAt    DateTime?
   availableAt        DateTime?
