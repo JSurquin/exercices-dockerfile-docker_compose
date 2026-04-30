@@ -245,14 +245,18 @@ export class TradeHooks {
   }
   
   /**
-   * Hook appelé lors de l'IPN #2 Skinplace : protection_status=confirmed.
-   * Les fonds sont définitivement libérés chez Skinplace (~8 jours après l'échange).
-   * C'est ICI et UNIQUEMENT ICI que l'on crédite la balance de l'utilisateur.
-   * Cela empêche la fraude : accepter le trade -> payout immédiat -> remboursement Steam.
+   * Hook appelé lors de l'IPN #2 Skinplace : protection_status=confirmed,
+   * ou par le polling quand on rattrape un trade confirmé.
    *
-   * Idempotence : on utilise balanceCreditedAt comme verrou atomique.
-   * updateMany avec WHERE balanceCreditedAt IS NULL garantit qu'un seul appel
-   * réussit, même en cas de webhook rejoué ou de polling concurrent.
+   * C'est ICI et UNIQUEMENT ICI que l'on crédite la balance de l'utilisateur.
+   *
+   * Deux chemins possibles :
+   *   A) Le flux normal (IPN #1 puis IPN #2) : onTradeAccepted a déjà crédité
+   *      le pendingBalance → on fait releasePendingToBalance.
+   *   B) Le rattrapage (polling/IPN #1 raté) : pendingCreditedAt est null, donc
+   *      pendingBalanceCents = 0 → on fait un creditBalance direct.
+   *
+   * Idempotence : balanceCreditedAt sert de verrou atomique via updateMany.
    */
   static async onTradeAvailable(tradeId: string): Promise<void> {
     try {
@@ -275,12 +279,27 @@ export class TradeHooks {
       if (lockResult.count === 0) {
         console.warn(`[TradeHooks] Balance already credited for trade ${tradeId}, skipping`);
       } else {
-        await releasePendingToBalance(
-          trade.userId,
-          trade.netCents,
-          `Trade ${tradeId} confirmé — fonds libérés par Skinplace`,
-          { tradeId }
-        );
+        if (trade.pendingCreditedAt) {
+          // Chemin A : pending avait été crédité à l'IPN #1 → on libère vers balance
+          await releasePendingToBalance(
+            trade.userId,
+            trade.netCents,
+            `Trade ${tradeId} confirmé — fonds libérés par Skinplace`,
+            { tradeId }
+          );
+          console.log(`[TradeHooks] Balance released from pending for trade ${tradeId}: ${trade.netCents} centimes`);
+        } else {
+          // Chemin B : IPN #1 raté, pas de pending → crédit direct sur balanceCents
+          console.warn(`[TradeHooks] No pending credit found for trade ${tradeId} — direct credit to balance`);
+          await creditBalance(
+            trade.userId,
+            trade.netCents,
+            `Trade ${tradeId} confirmé — crédit direct (rattrapage polling)`,
+            { type: 'TRADE_CREDIT', tradeId }
+          );
+          console.log(`[TradeHooks] Balance directly credited for trade ${tradeId}: ${trade.netCents} centimes`);
+        }
+
         await prisma.auditLog.create({
           data: {
             userId: trade.userId,
@@ -289,11 +308,11 @@ export class TradeHooks {
               tradeId,
               netCents: trade.netCents,
               grossCents: trade.grossCents,
-              source: 'skinplace_confirmed',
+              hadPendingCredit: !!trade.pendingCreditedAt,
+              source: trade.pendingCreditedAt ? 'release_pending' : 'direct_credit_catchup',
             },
           },
         });
-        console.log(`[TradeHooks] Balance released from pending for trade ${tradeId}: ${trade.netCents} centimes`);
       }
 
       if (trade.affiliatePromoCode && !trade.affiliatePromoFragmentsGrantedAt) {

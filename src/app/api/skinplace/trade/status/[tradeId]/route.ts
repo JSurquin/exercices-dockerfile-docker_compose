@@ -59,12 +59,39 @@ export async function GET(
 
     console.log(`[STATUS] Trade trouvé: id="${trade.id}" status="${trade.status}" skinplaceToken="${trade.skinplaceToken ?? 'NULL'}" ticketId="${trade.ticketId ?? 'NULL'}"`);
 
+    // Si le trade est AVAILABLE mais que le solde n'a jamais été crédité,
+    // on rattrape le crédit sans re-appeler Skinplace.
+    if (trade.status === 'AVAILABLE' && !trade.balanceCreditedAt) {
+      console.log(`[STATUS] Trade ${trade.id} déjà AVAILABLE mais balanceCreditedAt=null — rattrapage crédit`);
+      let balanceCredited = false;
+      try {
+        await TradeHooks.onTradeAvailable(trade.id);
+        balanceCredited = true;
+      } catch (hookError) {
+        console.error(`[STATUS] TradeHooks.onTradeAvailable error for trade ${trade.id}:`, hookError);
+      }
+      return NextResponse.json({
+        success: true,
+        trade: {
+          id: trade.id,
+          status: trade.status,
+          updatedAt: trade.updatedAt,
+          availableAt: trade.availableAt,
+          balanceCredited,
+          message: balanceCredited
+            ? 'Solde crédité (rattrapage)'
+            : 'Erreur lors du rattrapage du crédit',
+        },
+      });
+    }
+
     // Statuts terminaux : retourner directement le statut DB sans appel Skinplace
     if (
       trade.status === 'PAID' ||
       trade.status === 'PAYOUT_PENDING' ||
       trade.status === 'CANCELLED' ||
-      trade.status === 'FAILED'
+      trade.status === 'FAILED' ||
+      trade.status === 'AVAILABLE'
     ) {
       console.log(`[STATUS] Statut terminal "${trade.status}" — pas d'appel Skinplace`);
       return NextResponse.json({
@@ -189,18 +216,20 @@ export async function GET(
         console.log(`[STATUS] Trade ${trade.id} mis a jour: ${oldStatus} -> ${newStatus}`, skinplaceDebug);
 
         // Déclencher les hooks de balance (même logique que le webhook IPN)
+        let balanceCredited = false;
         try {
-          if (newStatus === 'ACCEPTED_BY_BOT' && oldStatus !== 'ACCEPTED_BY_BOT') {
+          if (newStatus === 'ACCEPTED_BY_BOT') {
             await TradeHooks.onTradeAccepted(trade.userId, trade.id);
-          } else if (newStatus === 'AVAILABLE' && oldStatus !== 'AVAILABLE') {
+          } else if (newStatus === 'AVAILABLE') {
             await TradeHooks.onTradeAvailable(trade.id);
+            balanceCredited = true;
           }
         } catch (hookError) {
           console.error(`[STATUS] TradeHooks error for trade ${trade.id}:`, hookError);
+          balanceCredited = false;
         }
 
         const detailMsg = `Skinplace: ${skinplaceDebug.effectiveSource} (steamtrade=${skinplaceDebug.steamtradeStatus ?? '?'}, payment=${skinplaceDebug.paymentStatus ?? '?'})`;
-        const balanceCredited = newStatus === 'AVAILABLE' && oldStatus !== 'AVAILABLE';
 
         return NextResponse.json({
           success: true,
