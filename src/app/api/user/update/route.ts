@@ -39,8 +39,21 @@ export async function POST(request: NextRequest) {
 
     const data = parsed.data;
 
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 404 });
+    }
+
     const steamIdValue = data.steamId64 ?? data.steamId;
-    if (steamIdValue !== undefined) {
+
+    // Le steamId ne peut être défini qu'une seule fois (onboarding Discord).
+    // Si l'user a déjà un steamId, on refuse silencieusement l'écrasement.
+    const canSetSteamId = steamIdValue !== undefined && !currentUser.steamId;
+
+    if (canSetSteamId) {
       const existingUser = await prisma.user.findUnique({
         where: { steamId: steamIdValue },
         select: { id: true },
@@ -61,13 +74,9 @@ export async function POST(request: NextRequest) {
     if (data.tradeLink !== undefined) {
       filteredUpdates.tradeLink = data.tradeLink === '' ? null : data.tradeLink;
     }
-    if (steamIdValue !== undefined) {
+    if (canSetSteamId) {
       filteredUpdates.steamId = steamIdValue;
     }
-
-    const currentUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    });
 
     if (currentUser && data.tradeLink !== undefined) {
       const newValue = data.tradeLink === '' ? null : data.tradeLink;

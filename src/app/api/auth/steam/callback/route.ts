@@ -57,13 +57,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(errorUrl.toString());
     }
 
-    // Vérifier si l'utilisateur existe déjà
+    const email = `steam_${steamUser.steamid}@moonskin.local`;
+    const password = 'steam-auth-' + steamUser.steamid;
+
+    // Chercher par steamId, puis fallback par email si le steamId a été corrompu
     let user = await prisma.user.findUnique({
       where: { steamId: steamUser.steamid }
     });
 
-    const email = `steam_${steamUser.steamid}@moonskin.local`;
-    const password = 'steam-auth-' + steamUser.steamid;
+    if (!user) {
+      const userByEmail = await prisma.user.findFirst({ where: { email } });
+      if (userByEmail) {
+        console.log(`[Steam] steamId mismatch corrigé pour ${userByEmail.name}: ${userByEmail.steamId} -> ${steamUser.steamid}`);
+        user = await prisma.user.update({
+          where: { id: userByEmail.id },
+          data: { steamId: steamUser.steamid },
+        });
+      }
+    }
 
     if (!user) {
       // Log de création d'un nouvel utilisateur

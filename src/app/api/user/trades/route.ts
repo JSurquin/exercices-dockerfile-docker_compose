@@ -66,6 +66,7 @@ export async function GET(request: NextRequest) {
       tradeAcceptéLe: trade.tradeAcceptedAt,
       disponibleLe: trade.availableAt,
       créédLe: trade.createdAt,
+      balanceCreditedAt: trade.balanceCreditedAt ?? null,
       items: trade.items.map(item => ({
         id: item.id,
         name: item.name,

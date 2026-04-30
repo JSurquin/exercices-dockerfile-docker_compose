@@ -28,6 +28,7 @@ export interface Trade {
   tradeAcceptéLe?: Date;
   disponibleLe?: Date;
   créédLe: Date;
+  balanceCreditedAt?: string | null;
   items: TradeItem[];
 }
 

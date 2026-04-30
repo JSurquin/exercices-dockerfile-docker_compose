@@ -316,7 +316,10 @@ export default function DashboardPage() {
     autoPollingDone.current = true;
 
     const PENDING_STATUSES = new Set(['accepté_par_bot', 'en_trade_hold', 'créé']);
-    const tradesToPoll = tradesData.trades.filter((t) => PENDING_STATUSES.has(t.status));
+    const tradesToPoll = tradesData.trades.filter((t) =>
+      PENDING_STATUSES.has(t.status) ||
+      (t.status === 'disponible' && !t.balanceCreditedAt)
+    );
 
     if (tradesToPoll.length === 0) return;
 
