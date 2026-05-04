@@ -104,7 +104,8 @@ export async function unfreezeAccount(
 
 /**
  * Met à jour le plafond de retrait mensuel (en centimes).
- * Passer null pour supprimer la limite.
+ * Passer null pour supprimer la limite (stocke 0 = illimité).
+ * Passer un nombre > 0 pour fixer un plafond personnalisé.
  */
 export async function updateWithdrawalLimit(
   adminId: string,
@@ -112,15 +113,12 @@ export async function updateWithdrawalLimit(
   monthlyLimitCents: number | null,
   ipAddress?: string
 ): Promise<void> {
-  if (monthlyLimitCents === null) {
-    await prisma.withdrawalLimit.deleteMany({ where: { userId } });
-  } else {
-    await prisma.withdrawalLimit.upsert({
-      where: { userId },
-      create: { userId, monthlyLimitCents, updatedBy: adminId },
-      update: { monthlyLimitCents, updatedBy: adminId },
-    });
-  }
+  const valueToStore = monthlyLimitCents === null ? 0 : monthlyLimitCents;
+  await prisma.withdrawalLimit.upsert({
+    where: { userId },
+    create: { userId, monthlyLimitCents: valueToStore, updatedBy: adminId },
+    update: { monthlyLimitCents: valueToStore, updatedBy: adminId },
+  });
   await auditLog(
     adminId,
     AUDIT_ACTIONS.ADMIN_WITHDRAWAL_LIMIT_UPDATE,

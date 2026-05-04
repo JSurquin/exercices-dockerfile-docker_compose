@@ -45,7 +45,8 @@ export function WithdrawalLimits({
     enabled: !!userId,
   });
 
-  const limitCents: number | null = limitsData?.monthlyLimitCents ?? initialLimit;
+  const DEFAULT_LIMIT = 500000; // 5000€
+  const limitCents: number | null = limitsData?.monthlyLimitCents ?? initialLimit ?? DEFAULT_LIMIT;
   const usedCents: number = limitsData?.monthlyUsedCents ?? initialUsed;
 
   const handleSave = async () => {
@@ -103,7 +104,7 @@ export function WithdrawalLimits({
           <div>
             <p className="text-xs text-slate-400">Plafond</p>
             <p className="text-lg font-semibold text-slate-300">
-              {limitCents == null ? 'Aucune limite' : formatCents(limitCents)}
+              {limitCents == null ? 'Illimité (débloqué)' : formatCents(limitCents)}
             </p>
           </div>
         </div>
@@ -115,7 +116,7 @@ export function WithdrawalLimits({
         )}
         <div className="flex flex-wrap gap-2 items-end">
           <div>
-            <Label className="text-slate-300">Nouveau plafond (€) — vide = pas de limite</Label>
+            <Label className="text-slate-300">Nouveau plafond (€) — vide = illimité (débloquer)</Label>
             <Input
               type="text"
               inputMode="decimal"

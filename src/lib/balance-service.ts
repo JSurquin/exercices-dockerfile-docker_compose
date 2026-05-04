@@ -258,13 +258,22 @@ export async function getMonthlyWithdrawalUsedCents(userId: string): Promise<num
   return result._sum.amountCents ?? 0;
 }
 
-/** Plafond mensuel en centimes (null = pas de limite) */
+export const DEFAULT_MONTHLY_WITHDRAWAL_LIMIT_CENTS = 500_000; // 5000€
+
+/**
+ * Plafond mensuel en centimes.
+ * - Pas d'enregistrement → DEFAULT (5000€)
+ * - monthlyLimitCents = 0 → pas de limite (illimité, débloqué par admin)
+ * - monthlyLimitCents > 0 → limite personnalisée
+ */
 export async function getMonthlyWithdrawalLimitCents(userId: string): Promise<number | null> {
   const limit = await prisma.withdrawalLimit.findUnique({
     where: { userId },
     select: { monthlyLimitCents: true },
   });
-  return limit?.monthlyLimitCents ?? null;
+  if (!limit) return DEFAULT_MONTHLY_WITHDRAWAL_LIMIT_CENTS;
+  if (limit.monthlyLimitCents === 0) return null;
+  return limit.monthlyLimitCents;
 }
 
 export async function checkWithdrawalLimit(
