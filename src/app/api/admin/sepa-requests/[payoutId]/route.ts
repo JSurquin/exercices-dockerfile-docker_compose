@@ -128,29 +128,29 @@ export async function PATCH(
       return NextResponse.json({ error: 'La raison du refus est requise' }, { status: 400 });
     }
 
-    const [updatedPayout] = await prisma.$transaction([
-      prisma.payout.update({
-        where: { id: payoutId },
-        data: {
-          status: 'CANCELLED',
-          errorMessage: reason.trim(),
-        },
-      }),
-      prisma.auditLog.create({
-        data: {
-          userId: session.user.id,
-          action: 'ADMIN_SEPA_FR_REJECTED',
-          details: {
-            payoutId,
-            reason: reason.trim(),
-            amountCents: payout.amountCents,
-            adminId: session.user.id,
-          },
-        },
-      }),
-    ]);
+    await PayoutLifecycle.onFailed(payout.user!.id, payoutId, payout.amountCents, {
+      finalStatus: 'CANCELLED',
+    });
 
-    await PayoutLifecycle.onFailed(payout.user!.id, payoutId, payout.amountCents);
+    const updatedPayout = await prisma.payout.update({
+      where: { id: payoutId },
+      data: {
+        errorMessage: reason.trim(),
+      },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: session.user.id,
+        action: 'ADMIN_SEPA_FR_REJECTED',
+        details: {
+          payoutId,
+          reason: reason.trim(),
+          amountCents: payout.amountCents,
+          adminId: session.user.id,
+        },
+      },
+    });
 
     // Send rejection email to user
     if (userEmail) {

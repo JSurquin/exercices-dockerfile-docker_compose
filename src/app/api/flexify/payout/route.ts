@@ -437,6 +437,13 @@ export async function POST(request: NextRequest) {
       });
       await PayoutLifecycle.onCreated(userId, payout.id, validatedAmount);
 
+      if (isTransactionCompleted(txStatus)) {
+        await PayoutLifecycle.onCompleted(
+          userId, payout.id, validatedAmount,
+          { tradeId: tradeId || null, updateXp: true, reason: `Payout Flexify carte ${payout.id} complété (instant)` },
+        );
+      }
+
       await prisma.auditLog.create({
         data: {
           userId,
@@ -746,6 +753,13 @@ export async function POST(request: NextRequest) {
       },
     });
     await PayoutLifecycle.onCreated(userId, payout.id, validatedAmount);
+
+    if (isTransactionCompleted(txStatusSepa)) {
+      await PayoutLifecycle.onCompleted(
+        userId, payout.id, validatedAmount,
+        { tradeId: tradeId || null, updateXp: true, reason: `Payout Flexify SEPA ${payout.id} complété (instant)` },
+      );
+    }
 
     await prisma.auditLog.create({
       data: {
