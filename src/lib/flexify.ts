@@ -537,9 +537,9 @@ export function calculateSepaFees(amountCents: number): {
   networkFeeCents: number;
   totalFeeCents: number;
 } {
-  // Frais SEPA typiques: 0.5% + 0.25€ fixe
-  const processingFeeCents = Math.ceil(amountCents * 0.005); // 0.5%
-  const networkFeeCents = 25; // 0.25€ fixe
+  // Frais SEPA : 2% + 3.50€ fixe
+  const processingFeeCents = Math.ceil(amountCents * 0.02); // 2%
+  const networkFeeCents = 350; // 3.50€ fixe
 
   return {
     processingFeeCents,
@@ -558,8 +558,8 @@ export function calculateCardFees(amountCents: number): {
   networkFeeCents: number;
   totalFeeCents: number;
 } {
-  // Frais Carte typiques: 1.5% + 0.50€ fixe
-  const processingFeeCents = Math.ceil(amountCents * 0.015); // 1.5%
+  // Frais Carte : 4.2% + 0.50€ fixe
+  const processingFeeCents = Math.ceil(amountCents * 0.042); // 4.2%
   const networkFeeCents = 50; // 0.50€ fixe
 
   return {

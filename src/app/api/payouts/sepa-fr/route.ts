@@ -6,7 +6,7 @@ import { canUserMakePayout } from '@/lib/kycaid';
 import { buildEncryptedSepaDetails } from '@/lib/payment-method-sepa';
 import { encrypt } from '@/lib/encryption';
 import { validateIban } from '@/lib/flexify';
-import { getBalance } from '@/lib/balance-service';
+import { getBalance, freezeBalance } from '@/lib/balance-service';
 import crypto from 'crypto';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { payoutsSepaFrBodySchema } from '@/lib/validation/schemas/integrations';
@@ -107,6 +107,10 @@ export async function POST(request: NextRequest) {
       userEmail: user.email,
     }));
 
+    // Frais SEPA Premium : 1.7%
+    const processingFeeCents = Math.ceil(amountCents * 0.017);
+    const networkFeeCents = 0;
+
     const payout = await prisma.payout.create({
       data: {
         userId,
@@ -114,11 +118,13 @@ export async function POST(request: NextRequest) {
         amountCents,
         paymentMethodId: paymentMethod.id,
         gateFiOrderId: reference,
-        processingFeeCents: 0,
-        networkFeeCents: 0,
+        processingFeeCents,
+        networkFeeCents,
         pendingFlexifyRequestEncrypted: sepaFrPayload,
+        balanceFrozenAt: new Date(),
       },
     });
+    await freezeBalance(userId, amountCents);
 
     await prisma.auditLog.create({
       data: {
@@ -142,8 +148,8 @@ export async function POST(request: NextRequest) {
         reference,
         status: 'PENDING_APPROVAL',
         amountCents,
-        fees: { processingCents: 0, networkCents: 0, totalCents: 0 },
-        netCents: amountCents,
+        fees: { processingCents: processingFeeCents, networkCents: 0, totalCents: processingFeeCents },
+        netCents: amountCents - processingFeeCents,
         method: 'SEPA_FR',
       },
     });

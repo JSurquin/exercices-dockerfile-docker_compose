@@ -5,6 +5,7 @@ import {
 import { creditBalance, creditPendingBalance, releasePendingToBalance, debitPendingBalance } from '@/lib/balance-service';
 import { awardTradePoints } from '@/lib/points-service';
 import { grantFragments } from '@/lib/fragment-service';
+import { currencyConverter } from '@/lib/currency-converter';
 import { prisma } from '../../prisma/prisma';
 
 /**
@@ -75,9 +76,12 @@ export class TradeHooks {
         return;
       }
 
+      const eurCents = await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
+      const rate = await currencyConverter.getUsdToEurRate();
+
       await creditPendingBalance(
         userId,
-        trade.netCents,
+        eurCents,
         `Trade ${tradeId} accepté — en attente de confirmation (~8j)`,
         { tradeId }
       );
@@ -86,11 +90,11 @@ export class TradeHooks {
         data: {
           userId,
           action: 'TRADE_PENDING_BALANCE_CREDITED',
-          details: { tradeId, netCents: trade.netCents, source: 'skinplace_ipn1' },
+          details: { tradeId, netCentsUsd: trade.netCents, eurCents, usdToEurRate: rate, source: 'skinplace_ipn1' },
         },
       });
 
-      console.log(`[TradeHooks] Pending balance credited for trade ${tradeId}: ${trade.netCents} centimes`);
+      console.log(`[TradeHooks] Pending balance credited for trade ${tradeId}: ${trade.netCents} USD cents -> ${eurCents} EUR cents (rate=${rate})`);
     } catch (error) {
       console.error(`[TradeHooks] Error in onTradeAccepted for trade ${tradeId}:`, error);
       throw error;
@@ -187,9 +191,11 @@ export class TradeHooks {
         return;
       }
 
+      const eurCents = await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
+
       await debitPendingBalance(
         userId,
-        trade.netCents,
+        eurCents,
         `Trade ${tradeId} annulé (rollback Skinplace) — solde en attente annulé`,
         { tradeId }
       );
@@ -198,11 +204,11 @@ export class TradeHooks {
         data: {
           userId,
           action: 'TRADE_PENDING_BALANCE_REVERTED',
-          details: { tradeId, netCents: trade.netCents, source: 'skinplace_ipn2_rollback' },
+          details: { tradeId, netCentsUsd: trade.netCents, eurCents, source: 'skinplace_ipn2_rollback' },
         },
       });
 
-      console.log(`[TradeHooks] Pending balance reverted for trade ${tradeId}: -${trade.netCents} centimes`);
+      console.log(`[TradeHooks] Pending balance reverted for trade ${tradeId}: -${eurCents} EUR cents`);
     } catch (error) {
       console.error(`[TradeHooks] Error reverting pending balance for trade ${tradeId}:`, error);
       throw error;
@@ -279,25 +285,30 @@ export class TradeHooks {
       if (lockResult.count === 0) {
         console.warn(`[TradeHooks] Balance already credited for trade ${tradeId}, skipping`);
       } else {
+        const eurCents = await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
+        const rate = await currencyConverter.getUsdToEurRate();
+
         if (trade.pendingCreditedAt) {
           // Chemin A : pending avait été crédité à l'IPN #1 → on libère vers balance
+          // On utilise le même montant EUR qui avait été crédité en pending
+          const pendingEurCents = await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
           await releasePendingToBalance(
             trade.userId,
-            trade.netCents,
+            pendingEurCents,
             `Trade ${tradeId} confirmé — fonds libérés par Skinplace`,
             { tradeId }
           );
-          console.log(`[TradeHooks] Balance released from pending for trade ${tradeId}: ${trade.netCents} centimes`);
+          console.log(`[TradeHooks] Balance released from pending for trade ${tradeId}: ${trade.netCents} USD -> ${pendingEurCents} EUR cents (rate=${rate})`);
         } else {
           // Chemin B : IPN #1 raté, pas de pending → crédit direct sur balanceCents
           console.warn(`[TradeHooks] No pending credit found for trade ${tradeId} — direct credit to balance`);
           await creditBalance(
             trade.userId,
-            trade.netCents,
+            eurCents,
             `Trade ${tradeId} confirmé — crédit direct (rattrapage polling)`,
             { type: 'TRADE_CREDIT', tradeId }
           );
-          console.log(`[TradeHooks] Balance directly credited for trade ${tradeId}: ${trade.netCents} centimes`);
+          console.log(`[TradeHooks] Balance directly credited for trade ${tradeId}: ${trade.netCents} USD -> ${eurCents} EUR cents (rate=${rate})`);
         }
 
         await prisma.auditLog.create({
@@ -306,7 +317,9 @@ export class TradeHooks {
             action: 'TRADE_BALANCE_CREDITED',
             details: {
               tradeId,
-              netCents: trade.netCents,
+              netCentsUsd: trade.netCents,
+              eurCents,
+              usdToEurRate: rate,
               grossCents: trade.grossCents,
               hadPendingCredit: !!trade.pendingCreditedAt,
               source: trade.pendingCreditedAt ? 'release_pending' : 'direct_credit_catchup',

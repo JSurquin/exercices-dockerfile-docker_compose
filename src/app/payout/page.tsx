@@ -1061,10 +1061,10 @@ export default function PayoutPage() {
                       </div>
                     </div>
 
-                    {/* Notice frais 1% */}
+                    {/* Notice frais SEPA Premium 1.7% */}
                     {amount && parseFloat(amount) > 0 && (() => {
                       const gross = Math.round(parseFloat(amount) * 100);
-                      const fee = Math.round(gross * 0.01);
+                      const fee = Math.ceil(gross * 0.017);
                       const net = gross - fee;
                       return (
                         <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 space-y-2 text-sm">
@@ -1076,7 +1076,7 @@ export default function PayoutPage() {
                             <span>{formatCentsToCurrency(gross, 'EUR')}</span>
                           </div>
                           <div className="flex justify-between text-orange-500">
-                            <span>Frais de retrait (1%)</span>
+                            <span>Frais SEPA Premium (1,7%)</span>
                             <span>-{formatCentsToCurrency(fee, 'EUR')}</span>
                           </div>
                           <Separator />
@@ -1594,7 +1594,7 @@ export default function PayoutPage() {
                         <div className="text-right">
                           {getStatusBadge(payout.status)}
                           <p className="text-xs text-muted-foreground mt-1">
-                            {payout.method === 'FLEXIFY_SEPA' ? 'SEPA' : payout.method === 'WHITEPAY_CRYPTO' ? 'Crypto' : payout.method === 'SEPA_FR' ? 'SEPA France' : payout.method}
+                            {payout.method === 'FLEXIFY_SEPA' ? 'SEPA' : payout.method === 'WHITEPAY_CRYPTO' ? 'Crypto' : payout.method === 'SEPA_FR' ? 'SEPA Premium' : payout.method}
                           </p>
                         </div>
                       </div>

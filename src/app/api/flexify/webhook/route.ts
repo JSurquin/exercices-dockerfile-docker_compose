@@ -9,7 +9,7 @@ import {
   flexifyLog,
   type FlexifyWebhookPayload,
 } from '@/lib/flexify';
-import { debitBalance } from '@/lib/balance-service';
+import { debitBalance, unfreezeBalance } from '@/lib/balance-service';
 import { 
   ensureWebhookIdempotency, 
   markWebhookProcessed 
@@ -168,9 +168,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Si le payout est complété
+    // Si le payout est complété — débit + dégel avec idempotence
     if (isTransactionCompleted(payload.status)) {
-      // Mettre à jour le trade uniquement s'il y en a un associé
       if (payout.tradeId) {
         await prisma.trade.update({
           where: { id: payout.tradeId },
@@ -178,39 +177,58 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Débiter le solde utilisateur dans tous les cas (avec ou sans tradeId)
-      try {
-        await debitBalance(
-          payout.userId,
-          payout.amountCents,
-          `Payout Flexify ${payout.id} complété`,
-          { type: 'WITHDRAWAL', payoutId: payout.id }
-        );
-      } catch (balanceErr) {
-        flexifyLog('WEBHOOK_DEBIT_BALANCE_ERROR', { payoutId: payout.id, error: String(balanceErr) }, 'error');
-        // Ne pas bloquer le webhook — le payout est déjà marqué PAID côté Flexify
+      // Verrou atomique : balanceDebitedAt empêche le double débit
+      const debitLock = await prisma.payout.updateMany({
+        where: { id: payout.id, balanceDebitedAt: null },
+        data: { balanceDebitedAt: new Date() },
+      });
+
+      if (debitLock.count > 0) {
+        try {
+          await debitBalance(
+            payout.userId,
+            payout.amountCents,
+            `Payout Flexify ${payout.id} complété`,
+            { type: 'WITHDRAWAL', payoutId: payout.id }
+          );
+          if (payout.balanceFrozenAt) {
+            await unfreezeBalance(payout.userId, payout.amountCents);
+          }
+        } catch (balanceErr) {
+          flexifyLog('WEBHOOK_DEBIT_BALANCE_ERROR', { payoutId: payout.id, error: String(balanceErr) }, 'error');
+        }
+      } else {
+        flexifyLog('WEBHOOK_DEBIT_ALREADY_DONE', { payoutId: payout.id }, 'info');
       }
 
-      // Mettre à jour le volume total de l'utilisateur
       await prisma.user.update({
         where: { id: payout.userId },
         data: {
-          totalVolumeCents: {
-            increment: payout.amountCents,
-          },
-          xp: {
-            increment: Math.floor(payout.amountCents / 100),
-          },
+          totalVolumeCents: { increment: payout.amountCents },
+          xp: { increment: Math.floor(payout.amountCents / 100) },
         },
       });
     }
 
-    // Si le payout a échoué
-    if (isTransactionFailed(payload.status) && payout.tradeId) {
-      await prisma.trade.update({
-        where: { id: payout.tradeId },
-        data: { status: 'FAILED' },
-      });
+    // Si le payout a échoué — dégel seulement (pas de débit)
+    if (isTransactionFailed(payload.status)) {
+      if (payout.balanceFrozenAt && !payout.balanceDebitedAt) {
+        const unfreezeLock = await prisma.payout.updateMany({
+          where: { id: payout.id, balanceDebitedAt: null },
+          data: { balanceDebitedAt: new Date() },
+        });
+        if (unfreezeLock.count > 0) {
+          await unfreezeBalance(payout.userId, payout.amountCents);
+          flexifyLog('WEBHOOK_UNFREEZE_ON_FAIL', { payoutId: payout.id, amount: payout.amountCents });
+        }
+      }
+
+      if (payout.tradeId) {
+        await prisma.trade.update({
+          where: { id: payout.tradeId },
+          data: { status: 'FAILED' },
+        });
+      }
     }
 
     // Logger l'événement

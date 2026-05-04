@@ -13,6 +13,7 @@ import { createCardPayout, createSepaPayout, convertFlexifyStatus } from '@/lib/
 import { decrypt } from '@/lib/encryption';
 import crypto from 'crypto';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
+import { unfreezeBalance } from '@/lib/balance-service';
 
 const generateOrderId = () => `WPA-${crypto.randomUUID()}`;
 
@@ -167,6 +168,16 @@ export async function POST(
             errorMessage: err instanceof Error ? err.message : 'Erreur Flexify',
           },
         });
+        // Dégeler le montant car le paiement a échoué
+        if (payout.balanceFrozenAt && !payout.balanceDebitedAt) {
+          const lock = await prisma.payout.updateMany({
+            where: { id: payoutId, balanceDebitedAt: null },
+            data: { balanceDebitedAt: new Date() },
+          });
+          if (lock.count > 0) {
+            await unfreezeBalance(payout.userId, payout.amountCents);
+          }
+        }
         return NextResponse.json(
           { error: 'Échec de l\'appel Flexify. Payout marqué en échec.', details: err instanceof Error ? err.message : String(err) },
           { status: 502 }
@@ -227,6 +238,15 @@ export async function POST(
           errorMessage: err instanceof Error ? err.message : 'Erreur WhitePay',
         },
       });
+      if (payout.balanceFrozenAt && !payout.balanceDebitedAt) {
+        const lock = await prisma.payout.updateMany({
+          where: { id: payoutId, balanceDebitedAt: null },
+          data: { balanceDebitedAt: new Date() },
+        });
+        if (lock.count > 0) {
+          await unfreezeBalance(payout.userId, payout.amountCents);
+        }
+      }
       return NextResponse.json(
         { error: 'Échec de l\'appel WhitePay. Payout marqué en échec.', details: err instanceof Error ? err.message : String(err) },
         { status: 502 }

@@ -173,6 +173,28 @@ export async function releasePendingToBalance(
   });
 }
 
+export async function freezeBalance(
+  userId: string,
+  amountCents: number,
+): Promise<void> {
+  if (amountCents <= 0) throw new Error('freezeBalance: amountCents must be positive');
+  await prisma.user.update({
+    where: { id: userId },
+    data: { frozenBalanceCents: { increment: amountCents } },
+  });
+}
+
+export async function unfreezeBalance(
+  userId: string,
+  amountCents: number,
+): Promise<void> {
+  if (amountCents <= 0) throw new Error('unfreezeBalance: amountCents must be positive');
+  await prisma.user.update({
+    where: { id: userId },
+    data: { frozenBalanceCents: { decrement: amountCents } },
+  });
+}
+
 export function getAvailableBalanceCents(balanceCents: number, frozenBalanceCents: number): number {
   return Math.max(0, balanceCents - frozenBalanceCents);
 }

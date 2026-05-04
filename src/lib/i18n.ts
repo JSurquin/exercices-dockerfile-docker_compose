@@ -3599,9 +3599,9 @@ export const messages: Record<Locale, Messages> = {
         }
       },
       sepaFr: {
-        tabLabel: 'SEPA France',
-        infoTitle: 'Virement SEPA France (Manuel)',
-        infoDesc: 'Votre demande sera traitée manuellement par notre équipe sous 24-48h ouvrées. Un email de confirmation vous sera envoyé à chaque étape.',
+        tabLabel: 'SEPA Premium',
+        infoTitle: 'Virement SEPA Premium',
+        infoDesc: 'Votre demande sera traitée manuellement par notre équipe sous 24-48h ouvrées. Frais : 1,7%. Un email de confirmation vous sera envoyé à chaque étape.',
         ibanFrOnly: 'Cette option est réservée aux IBAN français (FR).',
         ibanLabel: 'IBAN français',
         ibanPlaceholder: 'FR76 3000 6000 0112 3456 7890 189',
@@ -3615,7 +3615,7 @@ export const messages: Record<Locale, Messages> = {
         submitButton: 'Soumettre la demande',
         submitting: 'Envoi en cours...',
         successTitle: 'Demande soumise',
-        successDesc: 'Votre demande de virement SEPA France a été enregistrée. Notre équipe vous contactera par email sous 24-48h.',
+        successDesc: 'Votre demande de virement SEPA Premium a été enregistrée. Notre équipe vous contactera par email sous 24-48h.',
       },
       toast: {
         amountTooLow: 'Montant trop faible',
@@ -3626,9 +3626,9 @@ export const messages: Record<Locale, Messages> = {
       }
     },
     adminSepaRequests: {
-      title: 'Demandes SEPA France',
-      subtitle: 'Virements SEPA manuels vers des IBAN français',
-      emptyState: 'Aucune demande SEPA France pour le moment.',
+      title: 'Demandes SEPA Premium',
+      subtitle: 'Virements SEPA Premium vers des IBAN français',
+      emptyState: 'Aucune demande SEPA Premium pour le moment.',
       columns: {
         user: 'Utilisateur',
         amount: 'Montant',
@@ -4745,7 +4745,7 @@ export const messages: Record<Locale, Messages> = {
         users: "Utilisateurs",
         trades: "Trades",
         payouts: "Paiements",
-        sepaRequests: "SEPA France",
+        sepaRequests: "SEPA Premium",
         kyc: "KYC",
         applications: "Demandes",
         affiliates: "Affiliés",
@@ -7732,9 +7732,9 @@ export const messages: Record<Locale, Messages> = {
         }
       },
       sepaFr: {
-        tabLabel: 'SEPA France',
-        infoTitle: 'France SEPA Transfer (Manual)',
-        infoDesc: 'Your request will be processed manually by our team within 24-48 business hours. A confirmation email will be sent to you at each step.',
+        tabLabel: 'SEPA Premium',
+        infoTitle: 'SEPA Premium Transfer',
+        infoDesc: 'Your request will be processed manually by our team within 24-48 business hours. Fees: 1.7%. A confirmation email will be sent to you at each step.',
         ibanFrOnly: 'This option is reserved for French IBANs (FR).',
         ibanLabel: 'French IBAN',
         ibanPlaceholder: 'FR76 3000 6000 0112 3456 7890 189',
@@ -9965,7 +9965,7 @@ export const messages: Record<Locale, Messages> = {
         users: "Users",
         trades: "Trades",
         payouts: "Payouts",
-        sepaRequests: "SEPA France",
+        sepaRequests: "SEPA Premium",
         kyc: "KYC",
         applications: "Applications",
         affiliates: "Affiliates",
@@ -12712,9 +12712,9 @@ export const messages: Record<Locale, Messages> = {
         }
       },
       sepaFr: {
-        tabLabel: 'SEPA法国',
-        infoTitle: '法国SEPA转账（人工处理）',
-        infoDesc: '您的请求将由我们的团队在24-48个工作小时内人工处理。每个步骤都会向您发送确认邮件。',
+        tabLabel: 'SEPA Premium',
+        infoTitle: 'SEPA Premium 转账',
+        infoDesc: '您的请求将由我们的团队在24-48个工作小时内人工处理。费用：1.7%。每个步骤都会向您发送确认邮件。',
         ibanFrOnly: '此选项仅适用于法国IBAN（FR）。',
         ibanLabel: '法国IBAN',
         ibanPlaceholder: 'FR76 3000 6000 0112 3456 7890 189',

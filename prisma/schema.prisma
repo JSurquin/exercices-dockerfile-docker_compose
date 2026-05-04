@@ -212,6 +212,10 @@ model Payout {
   whitepayTransactionId          String?               @unique
   whitepayTxHash                 String?
   pendingFlexifyRequestEncrypted String?
+  /// Horodatage du gel de balance à la création du payout — verrou d'idempotence
+  balanceFrozenAt                DateTime?
+  /// Horodatage du débit de balance au webhook succès — verrou d'idempotence
+  balanceDebitedAt               DateTime?
   affiliateCommissions           AffiliateCommission[]
   paymentMethod                  PaymentMethod         @relation(fields: [paymentMethodId], references: [id])
   trade                          Trade?                @relation(fields: [tradeId], references: [id])

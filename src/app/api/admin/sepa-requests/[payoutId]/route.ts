@@ -6,6 +6,7 @@ import { formatCentsToCurrency } from '@/lib/currency-converter';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { adminSepaRequestBodySchema } from '@/lib/validation/schemas/admin-bodies';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
+import { debitBalance, unfreezeBalance } from '@/lib/balance-service';
 
 export async function PATCH(
   request: NextRequest,
@@ -89,7 +90,23 @@ export async function PATCH(
         }),
       ]);
 
-      // Send approval email to user
+      // Debit + unfreeze avec idempotence
+      const debitLock = await prisma.payout.updateMany({
+        where: { id: payoutId, balanceDebitedAt: null },
+        data: { balanceDebitedAt: new Date() },
+      });
+      if (debitLock.count > 0) {
+        await debitBalance(
+          payout.user!.id,
+          payout.amountCents,
+          `Payout SEPA Premium ${payoutId} approuvé`,
+          { type: 'WITHDRAWAL', payoutId }
+        );
+        if (payout.balanceFrozenAt) {
+          await unfreezeBalance(payout.user!.id, payout.amountCents);
+        }
+      }
+
       if (userEmail) {
         await emailService.sendEmail({
           to: userEmail,
@@ -134,6 +151,17 @@ export async function PATCH(
         },
       }),
     ]);
+
+    // Dégeler le montant si gelé (pas de débit car refus)
+    if (payout.balanceFrozenAt && !payout.balanceDebitedAt) {
+      const unfreezeLock = await prisma.payout.updateMany({
+        where: { id: payoutId, balanceDebitedAt: null },
+        data: { balanceDebitedAt: new Date() },
+      });
+      if (unfreezeLock.count > 0) {
+        await unfreezeBalance(payout.user!.id, payout.amountCents);
+      }
+    }
 
     // Send rejection email to user
     if (userEmail) {
