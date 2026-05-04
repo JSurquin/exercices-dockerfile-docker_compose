@@ -33,7 +33,7 @@ const WHITEPAY_STATUSES = [
 
 async function reconcileFlexifyPayout(
   userId: string,
-  payout: { id: string; flexifyPayoutId: string | null; amountCents: number; tradeId: string | null; balanceFrozenAt: Date | null },
+  payout: { id: string; flexifyPayoutId: string | null; amountCents: number; tradeId: string | null },
 ): Promise<ReconcileResult> {
   const flexifyData = await getFlexifyTransactionStatus(payout.flexifyPayoutId!);
   const flexifyStatus = flexifyData.transaction?.status ?? flexifyData.status;
@@ -43,17 +43,17 @@ async function reconcileFlexifyPayout(
   }
 
   if (isFlexifyCompleted(flexifyStatus)) {
-    return applyDebit(userId, payout, flexifyStatus, 'flexify');
+    return applyDebit(userId, payout, 'flexify');
   }
   if (isFlexifyFailed(flexifyStatus)) {
-    return applyFailed(userId, payout, flexifyStatus, 'flexify');
+    return applyFailed(userId, payout, 'flexify');
   }
   return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'flexify' };
 }
 
 async function reconcileWhitepayPayout(
   userId: string,
-  payout: { id: string; whitepayTransactionId: string | null; amountCents: number; tradeId: string | null; balanceFrozenAt: Date | null },
+  payout: { id: string; whitepayTransactionId: string | null; amountCents: number; tradeId: string | null },
 ): Promise<ReconcileResult> {
   const wpData = await getWhitepayTransactionStatus(payout.whitepayTransactionId!);
   const wpStatus = wpData.transaction?.status;
@@ -63,48 +63,47 @@ async function reconcileWhitepayPayout(
   }
 
   if (isWhitepayComplete(wpStatus)) {
-    return applyDebit(userId, payout, wpStatus, 'whitepay');
+    return applyDebit(userId, payout, 'whitepay');
   }
   if (isWhitepayFailed(wpStatus)) {
-    return applyFailed(userId, payout, wpStatus, 'whitepay');
+    return applyFailed(userId, payout, 'whitepay');
   }
   return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'whitepay' };
 }
 
 async function applyDebit(
   userId: string,
-  payout: { id: string; amountCents: number; tradeId: string | null; balanceFrozenAt: Date | null },
-  remoteStatus: string,
+  payout: { id: string; amountCents: number; tradeId: string | null },
   provider: 'flexify' | 'whitepay',
 ): Promise<ReconcileResult> {
   const { debited } = await PayoutLifecycle.onCompleted(
     userId, payout.id, payout.amountCents,
-    { tradeId: payout.tradeId, reason: `Payout ${provider} ${payout.id} complété (rattrapage polling)` },
+    {
+      tradeId: payout.tradeId,
+      updateXp: true,
+      reason: `Payout ${provider} ${payout.id} complété (rattrapage polling)`,
+      finalStatus: 'PAID',
+      paidAt: new Date(),
+    },
   );
   if (!debited) {
     return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider };
   }
-  await prisma.payout.update({
-    where: { id: payout.id },
-    data: { status: 'PAID', paidAt: new Date() },
-  });
   return { payoutId: payout.id, action: 'debited', amountCents: payout.amountCents, provider };
 }
 
 async function applyFailed(
   userId: string,
-  payout: { id: string; amountCents: number; tradeId: string | null; balanceFrozenAt: Date | null },
-  remoteStatus: string,
+  payout: { id: string; amountCents: number; tradeId: string | null },
   provider: 'flexify' | 'whitepay',
 ): Promise<ReconcileResult> {
-  const { unfrozen } = await PayoutLifecycle.onFailed(userId, payout.id, payout.amountCents, { tradeId: payout.tradeId });
+  const { unfrozen } = await PayoutLifecycle.onFailed(
+    userId, payout.id, payout.amountCents,
+    { tradeId: payout.tradeId, finalStatus: 'FAILED' },
+  );
   if (!unfrozen) {
     return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider };
   }
-  await prisma.payout.update({
-    where: { id: payout.id },
-    data: { status: 'FAILED' },
-  });
   return { payoutId: payout.id, action: 'failed', amountCents: payout.amountCents, provider };
 }
 
@@ -125,7 +124,7 @@ export async function GET() {
         flexifyPayoutId: { not: null },
         balanceDebitedAt: null,
       },
-      select: { id: true, flexifyPayoutId: true, amountCents: true, tradeId: true, balanceFrozenAt: true },
+      select: { id: true, flexifyPayoutId: true, amountCents: true, tradeId: true },
     });
 
     // WhitePay payouts bloqués
@@ -136,7 +135,7 @@ export async function GET() {
         whitepayTransactionId: { not: null },
         balanceDebitedAt: null,
       },
-      select: { id: true, whitepayTransactionId: true, amountCents: true, tradeId: true, balanceFrozenAt: true },
+      select: { id: true, whitepayTransactionId: true, amountCents: true, tradeId: true },
     });
 
     if (flexifyPayouts.length === 0 && whitepayPayouts.length === 0) {

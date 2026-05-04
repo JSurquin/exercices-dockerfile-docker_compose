@@ -35,11 +35,22 @@ export class PayoutLifecycle {
     userId: string,
     payoutId: string,
     amountCents: number,
-    options: { tradeId?: string | null; updateXp?: boolean; reason?: string } = {},
+    options: {
+      tradeId?: string | null;
+      updateXp?: boolean;
+      reason?: string;
+      finalStatus?: string;
+      paidAt?: Date;
+    } = {},
   ): Promise<{ debited: boolean }> {
+    const now = new Date();
+    const lockData: Record<string, unknown> = { balanceDebitedAt: now };
+    if (options.finalStatus) lockData.status = options.finalStatus;
+    if (options.paidAt) lockData.paidAt = options.paidAt;
+
     const lock = await prisma.payout.updateMany({
       where: { id: payoutId, balanceDebitedAt: null },
-      data: { balanceDebitedAt: new Date() },
+      data: lockData,
     });
 
     if (lock.count === 0) return { debited: false };
@@ -57,7 +68,15 @@ export class PayoutLifecycle {
         payoutId,
       });
     } catch (err) {
-      console.error(`[PayoutLifecycle] debitBalance failed for payout ${payoutId}:`, err);
+      const rollback: Record<string, unknown> = { balanceDebitedAt: null };
+      if (options.finalStatus) rollback.status = 'PROCESSING';
+      if (options.paidAt) rollback.paidAt = null;
+      await prisma.payout.update({
+        where: { id: payoutId },
+        data: rollback,
+      });
+      console.error(`[PayoutLifecycle] debitBalance failed, lock rolled back for ${payoutId}:`, err);
+      return { debited: false };
     }
 
     if (payout?.balanceFrozenAt) {
@@ -100,11 +119,14 @@ export class PayoutLifecycle {
     userId: string,
     payoutId: string,
     amountCents: number,
-    options: { tradeId?: string | null } = {},
+    options: { tradeId?: string | null; finalStatus?: string } = {},
   ): Promise<{ unfrozen: boolean }> {
+    const lockData: Record<string, unknown> = { balanceDebitedAt: new Date() };
+    if (options.finalStatus) lockData.status = options.finalStatus;
+
     const lock = await prisma.payout.updateMany({
       where: { id: payoutId, balanceDebitedAt: null },
-      data: { balanceDebitedAt: new Date() },
+      data: lockData,
     });
 
     if (lock.count === 0) return { unfrozen: false };
