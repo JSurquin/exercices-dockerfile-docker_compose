@@ -137,7 +137,15 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      await PayoutLifecycle.onCreated(userId, payout.id, trade.netCents);
+      try {
+        await PayoutLifecycle.onCreated(userId, payout.id, trade.netCents);
+      } catch (freezeErr) {
+        await prisma.payout.update({ where: { id: payout.id }, data: { status: 'FAILED', errorMessage: 'freeze_failed' } });
+        if (freezeErr instanceof Error && freezeErr.message === 'INSUFFICIENT_AVAILABLE_BALANCE') {
+          return NextResponse.json({ error: 'Solde insuffisant' }, { status: 409 });
+        }
+        throw freezeErr;
+      }
 
       // Mettre à jour le trade
       await prisma.trade.update({

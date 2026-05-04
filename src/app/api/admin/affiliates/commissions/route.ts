@@ -218,7 +218,15 @@ export async function POST(request: NextRequest) {
             status: 'PENDING'
           }
         });
-        await PayoutLifecycle.onCreated(payoutPayload.affiliateUserId, payout.id, payoutAmountCents);
+        try {
+          await PayoutLifecycle.onCreated(payoutPayload.affiliateUserId, payout.id, payoutAmountCents);
+        } catch (freezeErr) {
+          await prisma.payout.update({ where: { id: payout.id }, data: { status: 'FAILED', errorMessage: 'freeze_failed' } });
+          if (freezeErr instanceof Error && freezeErr.message === 'INSUFFICIENT_AVAILABLE_BALANCE') {
+            return NextResponse.json({ error: 'Solde affilié insuffisant pour le gel' }, { status: 409 });
+          }
+          throw freezeErr;
+        }
 
         // Marquer les commissions comme payées
         await prisma.affiliateCommission.updateMany({

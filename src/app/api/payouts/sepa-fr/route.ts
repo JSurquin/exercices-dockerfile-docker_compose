@@ -124,7 +124,15 @@ export async function POST(request: NextRequest) {
         pendingFlexifyRequestEncrypted: sepaFrPayload,
       },
     });
-    await PayoutLifecycle.onCreated(userId, payout.id, amountCents);
+    try {
+      await PayoutLifecycle.onCreated(userId, payout.id, amountCents);
+    } catch (freezeErr) {
+      await prisma.payout.update({ where: { id: payout.id }, data: { status: 'FAILED', errorMessage: 'freeze_failed' } });
+      if (freezeErr instanceof Error && freezeErr.message === 'INSUFFICIENT_AVAILABLE_BALANCE') {
+        return NextResponse.json({ error: 'Solde insuffisant' }, { status: 409 });
+      }
+      throw freezeErr;
+    }
 
     await prisma.auditLog.create({
       data: {

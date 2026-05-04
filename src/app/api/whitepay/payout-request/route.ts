@@ -300,8 +300,35 @@ export async function POST(request: NextRequest) {
     const shouldAutoApprove = autoSettings.enabled && amountCents <= autoSettings.thresholdCents;
 
     if (shouldAutoApprove) {
-      // Appel WhitePay instant et création du payout avec statut WhitePay
       const orderId = generateOrderId();
+      const fees = calculateWhitepayFees(amountCents);
+
+      // Create payout in DB BEFORE calling WhitePay API (prevents orphaned payments)
+      const payout = await prisma.payout.create({
+        data: {
+          userId,
+          tradeId: tradeId || null,
+          status: 'PROCESSING',
+          amountCents,
+          paymentMethodId: paymentMethod.id,
+          whitepayTargetCurrency: targetCurrency.toUpperCase(),
+          whitepayNetwork: network.toUpperCase(),
+          whitepayAddress: walletAddress,
+          whitepayMemo: memo || null,
+          processingFeeCents: fees.processingFeeCents,
+          networkFeeCents: fees.networkFeeCents,
+        },
+      });
+      try {
+        await PayoutLifecycle.onCreated(userId, payout.id, amountCents);
+      } catch (freezeErr) {
+        await prisma.payout.update({ where: { id: payout.id }, data: { status: 'FAILED', errorMessage: 'freeze_failed' } });
+        if (freezeErr instanceof Error && freezeErr.message === 'INSUFFICIENT_AVAILABLE_BALANCE') {
+          return NextResponse.json({ error: 'Solde insuffisant' }, { status: 409 });
+        }
+        throw freezeErr;
+      }
+
       const instantParams: WhitepayInstantWithdrawalRequest = {
         amount: amountEur,
         currency: 'EUR',
@@ -313,28 +340,33 @@ export async function POST(request: NextRequest) {
         order_id: orderId,
       };
 
-      const whitepayResponse = await createInstantWithdrawal(instantParams);
-      const tx = whitepayResponse.transaction;
-      const internalStatus = convertWhitepayStatus(tx.status);
+      let tx;
+      try {
+        const whitepayResponse = await createInstantWithdrawal(instantParams);
+        tx = whitepayResponse.transaction;
+      } catch (apiErr) {
+        await PayoutLifecycle.onFailed(userId, payout.id, amountCents, {
+          tradeId: tradeId || null,
+          finalStatus: 'FAILED',
+        });
+        await prisma.payout.update({
+          where: { id: payout.id },
+          data: { errorMessage: apiErr instanceof Error ? apiErr.message : 'Erreur WhitePay' },
+        });
+        throw apiErr;
+      }
 
-      // Utiliser les frais réels retournés par Whitepay (tx.fee = total EUR)
+      const internalStatus = convertWhitepayStatus(tx.status);
       const realFees = parseWhitepayFeesFromResponse(tx.fee);
 
-      const payout = await prisma.payout.create({
+      await prisma.payout.update({
+        where: { id: payout.id },
         data: {
-          userId,
-          tradeId: tradeId || null,
           status: internalStatus as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED' | 'WHITEPAY_PENDING_WITHDRAWAL' | 'WHITEPAY_PROCESSING_WITHDRAWAL' | 'WHITEPAY_COMPLETE' | 'WHITEPAY_DECLINED',
-          amountCents,
-          paymentMethodId: paymentMethod.id,
           whitepayTransactionId: tx.id,
           whitepayStatus: tx.status,
           whitepayExchangeRate: tx.exchange_rate,
           whitepayTargetValue: tx.target_value,
-          whitepayTargetCurrency: targetCurrency.toUpperCase(),
-          whitepayNetwork: network.toUpperCase(),
-          whitepayAddress: walletAddress,
-          whitepayMemo: memo || null,
           whitepayFee: tx.fee,
           whitepayEstimatedAt: new Date(tx.estimated_at),
           whitepayConfirmedAt: new Date(),
@@ -342,7 +374,6 @@ export async function POST(request: NextRequest) {
           networkFeeCents: realFees.networkFeeCents,
         },
       });
-      await PayoutLifecycle.onCreated(userId, payout.id, amountCents);
 
       if (tradeId) {
         await prisma.trade.update({
@@ -414,7 +445,15 @@ export async function POST(request: NextRequest) {
         networkFeeCents: fees.networkFeeCents,
       },
     });
-    await PayoutLifecycle.onCreated(userId, payout.id, amountCents);
+    try {
+      await PayoutLifecycle.onCreated(userId, payout.id, amountCents);
+    } catch (freezeErr) {
+      await prisma.payout.update({ where: { id: payout.id }, data: { status: 'FAILED', errorMessage: 'freeze_failed' } });
+      if (freezeErr instanceof Error && freezeErr.message === 'INSUFFICIENT_AVAILABLE_BALANCE') {
+        return NextResponse.json({ error: 'Solde insuffisant' }, { status: 409 });
+      }
+      throw freezeErr;
+    }
 
     if (tradeId) {
       await prisma.trade.update({
