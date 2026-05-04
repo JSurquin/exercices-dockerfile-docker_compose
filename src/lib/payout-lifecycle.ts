@@ -1,5 +1,5 @@
 import { prisma } from '~/prisma/prisma';
-import { debitBalance, freezeBalance, unfreezeBalance } from '@/lib/balance-service';
+import { debitBalance, unfreezeBalance } from '@/lib/balance-service';
 
 /**
  * Service centralisé pour le cycle de vie des payouts.
@@ -16,11 +16,16 @@ export class PayoutLifecycle {
    * À appeler immédiatement après le prisma.payout.create.
    */
   static async onCreated(userId: string, payoutId: string, amountCents: number): Promise<void> {
-    await prisma.payout.update({
-      where: { id: payoutId },
-      data: { balanceFrozenAt: new Date() },
+    await prisma.$transaction(async (tx) => {
+      await tx.payout.update({
+        where: { id: payoutId },
+        data: { balanceFrozenAt: new Date() },
+      });
+      await tx.user.update({
+        where: { id: userId },
+        data: { frozenBalanceCents: { increment: amountCents } },
+      });
     });
-    await freezeBalance(userId, amountCents);
   }
 
   /**
@@ -82,33 +87,41 @@ export class PayoutLifecycle {
     }
 
     if (pre?.balanceFrozenAt) {
-      await unfreezeBalance(userId, amountCents);
+      try {
+        await unfreezeBalance(userId, amountCents);
+      } catch (err) {
+        console.error(`[PayoutLifecycle] CRITICAL: unfreezeBalance failed after debit for ${payoutId}, manual fix needed:`, err);
+      }
     }
 
-    if (options.tradeId) {
-      await prisma.trade.update({
-        where: { id: options.tradeId },
-        data: { status: 'PAID' },
-      });
-    }
+    try {
+      if (options.tradeId) {
+        await prisma.trade.update({
+          where: { id: options.tradeId },
+          data: { status: 'PAID' },
+        });
+      }
 
-    if (options.updateXp) {
-      await prisma.user.update({
-        where: { id: userId },
+      if (options.updateXp) {
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            totalVolumeCents: { increment: amountCents },
+            xp: { increment: Math.floor(amountCents / 100) },
+          },
+        });
+      }
+
+      await prisma.auditLog.create({
         data: {
-          totalVolumeCents: { increment: amountCents },
-          xp: { increment: Math.floor(amountCents / 100) },
+          userId,
+          action: 'PAYOUT_BALANCE_DEBITED',
+          details: { payoutId, amountCents, reason },
         },
       });
+    } catch (err) {
+      console.error(`[PayoutLifecycle] Post-debit side-effects failed for ${payoutId}:`, err);
     }
-
-    await prisma.auditLog.create({
-      data: {
-        userId,
-        action: 'PAYOUT_BALANCE_DEBITED',
-        details: { payoutId, amountCents, reason },
-      },
-    });
 
     return { debited: true };
   }
@@ -139,23 +152,31 @@ export class PayoutLifecycle {
     });
 
     if (payout?.balanceFrozenAt) {
-      await unfreezeBalance(userId, amountCents);
+      try {
+        await unfreezeBalance(userId, amountCents);
+      } catch (err) {
+        console.error(`[PayoutLifecycle] CRITICAL: unfreezeBalance failed for failed payout ${payoutId}, manual fix needed:`, err);
+      }
     }
 
-    if (options.tradeId) {
-      await prisma.trade.update({
-        where: { id: options.tradeId },
-        data: { status: 'FAILED' },
+    try {
+      if (options.tradeId) {
+        await prisma.trade.update({
+          where: { id: options.tradeId },
+          data: { status: 'FAILED' },
+        });
+      }
+
+      await prisma.auditLog.create({
+        data: {
+          userId,
+          action: 'PAYOUT_BALANCE_UNFROZEN',
+          details: { payoutId, amountCents, reason: 'payout_failed' },
+        },
       });
+    } catch (err) {
+      console.error(`[PayoutLifecycle] Post-failure side-effects failed for ${payoutId}:`, err);
     }
-
-    await prisma.auditLog.create({
-      data: {
-        userId,
-        action: 'PAYOUT_BALANCE_UNFROZEN',
-        details: { payoutId, amountCents, reason: 'payout_failed' },
-      },
-    });
 
     return { unfrozen: true };
   }

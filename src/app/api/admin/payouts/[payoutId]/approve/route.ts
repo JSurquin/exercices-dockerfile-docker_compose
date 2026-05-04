@@ -9,7 +9,7 @@ import {
   type WhitepayTravelRule,
   type WhitepayTransactionStatus,
 } from '@/lib/whitepay';
-import { createCardPayout, createSepaPayout, convertFlexifyStatus } from '@/lib/flexify';
+import { createCardPayout, createSepaPayout, convertFlexifyStatus, isTransactionCompleted } from '@/lib/flexify';
 import { decrypt } from '@/lib/encryption';
 import crypto from 'crypto';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
@@ -97,6 +97,12 @@ export async function POST(
               pendingFlexifyRequestEncrypted: null,
             },
           });
+          if (isTransactionCompleted(res.transaction.status)) {
+            await PayoutLifecycle.onCompleted(
+              payout.userId, payoutId, payout.amountCents,
+              { updateXp: true, reason: `Payout Flexify carte ${payoutId} complété (instant)` },
+            );
+          }
           await prisma.auditLog.create({
             data: {
               userId: session.user.id,
@@ -138,6 +144,12 @@ export async function POST(
               pendingFlexifyRequestEncrypted: null,
             },
           });
+          if (isTransactionCompleted(res.transaction.status)) {
+            await PayoutLifecycle.onCompleted(
+              payout.userId, payoutId, payout.amountCents,
+              { updateXp: true, reason: `Payout Flexify SEPA ${payoutId} complété (instant)` },
+            );
+          }
           await prisma.auditLog.create({
             data: {
               userId: session.user.id,

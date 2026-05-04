@@ -189,9 +189,16 @@ export async function unfreezeBalance(
   amountCents: number,
 ): Promise<void> {
   if (amountCents <= 0) throw new Error('unfreezeBalance: amountCents must be positive');
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { frozenBalanceCents: true },
+  });
+  const currentFrozen = user?.frozenBalanceCents ?? 0;
+  const decrementBy = Math.min(amountCents, currentFrozen);
+  if (decrementBy <= 0) return;
   await prisma.user.update({
     where: { id: userId },
-    data: { frozenBalanceCents: { decrement: amountCents } },
+    data: { frozenBalanceCents: { decrement: decrementBy } },
   });
 }
 

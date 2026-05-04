@@ -194,7 +194,9 @@ export async function POST(request: NextRequest) {
           affiliateUserId?: string;
           paymentMethodId?: string;
         };
-        // Créer un payout pour les commissions approuvées
+        if (!payoutPayload.affiliateUserId || !payoutPayload.paymentMethodId) {
+          return NextResponse.json({ error: 'affiliateUserId et paymentMethodId requis' }, { status: 400 });
+        }
         const totalAmount = await prisma.affiliateCommission.aggregate({
           where: {
             id: { in: ids },
@@ -210,13 +212,13 @@ export async function POST(request: NextRequest) {
 
         const payout = await prisma.payout.create({
           data: {
-            userId: payoutPayload.affiliateUserId!,
+            userId: payoutPayload.affiliateUserId,
             amountCents: payoutAmountCents,
-            paymentMethodId: payoutPayload.paymentMethodId!,
+            paymentMethodId: payoutPayload.paymentMethodId,
             status: 'PENDING'
           }
         });
-        await PayoutLifecycle.onCreated(payoutPayload.affiliateUserId!, payout.id, payoutAmountCents);
+        await PayoutLifecycle.onCreated(payoutPayload.affiliateUserId, payout.id, payoutAmountCents);
 
         // Marquer les commissions comme payées
         await prisma.affiliateCommission.updateMany({
