@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../../prisma/prisma';
 import { requireAdminSession } from '@/lib/require-admin';
+import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import { safeParseJson, safeParseSearchParams } from '@/lib/validation/helpers';
 import {
   adminAffiliateCommissionsListQuerySchema,
@@ -202,15 +203,21 @@ export async function POST(request: NextRequest) {
           _sum: { amountCents: true }
         });
         
+        const payoutAmountCents = totalAmount._sum.amountCents || 0;
+        if (payoutAmountCents <= 0) {
+          return NextResponse.json({ error: 'Aucun montant à payer' }, { status: 400 });
+        }
+
         const payout = await prisma.payout.create({
           data: {
             userId: payoutPayload.affiliateUserId!,
-            amountCents: totalAmount._sum.amountCents || 0,
+            amountCents: payoutAmountCents,
             paymentMethodId: payoutPayload.paymentMethodId!,
             status: 'PENDING'
           }
         });
-        
+        await PayoutLifecycle.onCreated(payoutPayload.affiliateUserId!, payout.id, payoutAmountCents);
+
         // Marquer les commissions comme payées
         await prisma.affiliateCommission.updateMany({
           where: {

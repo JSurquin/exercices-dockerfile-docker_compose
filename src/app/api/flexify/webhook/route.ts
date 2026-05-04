@@ -157,8 +157,11 @@ export async function POST(request: NextRequest) {
       newStatus,
     });
 
-    await prisma.payout.update({
-      where: { id: payout.id },
+    const statusUpdate = await prisma.payout.updateMany({
+      where: {
+        id: payout.id,
+        status: { notIn: ['PAID', 'FAILED'] },
+      },
       data: {
         status: newStatus as 'PENDING' | 'PENDING_APPROVAL' | 'VERIFICATION_REQUIRED' | 'VERIFIED' | 'SCHEDULED' | 'PROCESSING' | 'PAID' | 'FAILED',
         txId: flexifyId,
@@ -167,6 +170,15 @@ export async function POST(request: NextRequest) {
         ...(isTransactionCompleted(payload.status) && { paidAt: new Date() }),
       },
     });
+
+    if (statusUpdate.count === 0) {
+      flexifyLog('WEBHOOK_ALREADY_FINAL', { payoutId: payout.id, currentStatus: payout.status, incomingStatus: payload.status }, 'info');
+      await markWebhookProcessed(webhookId, 'flexify_payout', {
+        success: true,
+        data: { payoutId: payout.id, skipped: true, reason: 'already_final' },
+      });
+      return NextResponse.json({ received: true, processed: true });
+    }
 
     if (isTransactionCompleted(payload.status)) {
       const { debited } = await PayoutLifecycle.onCompleted(

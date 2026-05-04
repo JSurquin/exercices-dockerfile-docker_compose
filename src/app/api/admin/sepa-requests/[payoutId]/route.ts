@@ -66,34 +66,44 @@ export async function PATCH(
     }
 
     if (action === 'approve') {
-      const [updatedPayout] = await prisma.$transaction([
-        prisma.payout.update({
-          where: { id: payoutId },
-          data: {
-            status: 'PAID',
-            paidAt: new Date(),
-            paymentReference: reference ?? null,
-            errorMessage: null,
-          },
-        }),
-        prisma.auditLog.create({
-          data: {
-            userId: session.user.id,
-            action: 'ADMIN_SEPA_FR_APPROVED',
-            details: {
-              payoutId,
-              reference: reference ?? null,
-              amountCents: payout.amountCents,
-              adminId: session.user.id,
-            },
-          },
-        }),
-      ]);
+      await prisma.payout.update({
+        where: { id: payoutId },
+        data: {
+          paymentReference: reference ?? null,
+          errorMessage: null,
+        },
+      });
 
-      await PayoutLifecycle.onCompleted(
+      await prisma.auditLog.create({
+        data: {
+          userId: session.user.id,
+          action: 'ADMIN_SEPA_FR_APPROVED',
+          details: {
+            payoutId,
+            reference: reference ?? null,
+            amountCents: payout.amountCents,
+            adminId: session.user.id,
+          },
+        },
+      });
+
+      const { debited } = await PayoutLifecycle.onCompleted(
         payout.user!.id, payoutId, payout.amountCents,
-        { reason: `Payout SEPA Premium ${payoutId} approuvé` },
+        {
+          reason: `Payout SEPA Premium ${payoutId} approuvé`,
+          finalStatus: 'PAID',
+          paidAt: new Date(),
+        },
       );
+
+      const updatedPayout = await prisma.payout.findUnique({ where: { id: payoutId } });
+
+      if (!debited) {
+        return NextResponse.json(
+          { error: 'Impossible de débiter le solde. Le payout n\'a pas été finalisé.' },
+          { status: 400 }
+        );
+      }
 
       if (userEmail) {
         await emailService.sendEmail({

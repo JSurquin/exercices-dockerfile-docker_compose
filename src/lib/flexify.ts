@@ -1133,7 +1133,7 @@ export function isTransactionCompleted(status: FlexifyTransactionStatus): boolea
  * Vérifie si une transaction a échoué
  */
 export function isTransactionFailed(status: FlexifyTransactionStatus): boolean {
-  return status === 'declined' || status === 'failed' || status === 'expired';
+  return status === 'declined' || status === 'failed' || status === 'expired' || status === 'error';
 }
 
 /**

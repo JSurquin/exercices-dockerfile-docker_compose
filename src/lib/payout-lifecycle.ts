@@ -43,6 +43,11 @@ export class PayoutLifecycle {
       paidAt?: Date;
     } = {},
   ): Promise<{ debited: boolean }> {
+    const pre = await prisma.payout.findUnique({
+      where: { id: payoutId },
+      select: { status: true, paidAt: true, balanceFrozenAt: true },
+    });
+
     const now = new Date();
     const lockData: Record<string, unknown> = { balanceDebitedAt: now };
     if (options.finalStatus) lockData.status = options.finalStatus;
@@ -55,11 +60,6 @@ export class PayoutLifecycle {
 
     if (lock.count === 0) return { debited: false };
 
-    const payout = await prisma.payout.findUnique({
-      where: { id: payoutId },
-      select: { balanceFrozenAt: true },
-    });
-
     const reason = options.reason ?? `Payout ${payoutId} complété`;
 
     try {
@@ -69,8 +69,10 @@ export class PayoutLifecycle {
       });
     } catch (err) {
       const rollback: Record<string, unknown> = { balanceDebitedAt: null };
-      if (options.finalStatus) rollback.status = 'PROCESSING';
-      if (options.paidAt) rollback.paidAt = null;
+      if (options.finalStatus && pre) {
+        rollback.status = pre.status;
+        rollback.paidAt = pre.paidAt;
+      }
       await prisma.payout.update({
         where: { id: payoutId },
         data: rollback,
@@ -79,7 +81,7 @@ export class PayoutLifecycle {
       return { debited: false };
     }
 
-    if (payout?.balanceFrozenAt) {
+    if (pre?.balanceFrozenAt) {
       await unfreezeBalance(userId, amountCents);
     }
 
