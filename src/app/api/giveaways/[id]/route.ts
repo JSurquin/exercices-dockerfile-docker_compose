@@ -150,21 +150,13 @@ export async function PATCH(
       where: { id },
       data: data as Prisma.GiveawayUpdateInput,
       include: {
-        entries: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                steamUsername: true,
-                steamAvatar: true,
-              },
-            },
-          },
-        },
+        _count: { select: { entries: true } },
+        winners: { orderBy: { rank: 'asc' } },
       },
     });
 
-    return NextResponse.json(giveaway);
+    const { _count, ...rest } = giveaway;
+    return NextResponse.json({ ...rest, totalParticipants: _count.entries });
   } catch (error) {
     console.error('Error updating giveaway:', error);
     return NextResponse.json(

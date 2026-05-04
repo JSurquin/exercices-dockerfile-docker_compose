@@ -51,8 +51,15 @@ export async function GET(request: NextRequest) {
         participationStatus = won ? 'won' : 'lost';
       }
 
+      const { winners: _w, winnerId: _wid, ...safeGiveaway } = g;
+      void _w;
+      void _wid;
+
       return {
-        ...entry,
+        id: entry.id,
+        ticketsUsed: entry.ticketsUsed,
+        enteredAt: entry.enteredAt,
+        giveaway: safeGiveaway,
         participationStatus,
       };
     });

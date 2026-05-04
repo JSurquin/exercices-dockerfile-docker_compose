@@ -132,7 +132,7 @@ export async function POST(
     });
 
     return NextResponse.json({
-      entry,
+      ticketsUsed: entry.ticketsUsed,
       fragmentsSpent: totalCost,
       entriesAdded: entriesToBuy,
       newFragmentBalance,

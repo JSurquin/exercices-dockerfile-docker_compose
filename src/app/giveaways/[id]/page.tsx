@@ -51,17 +51,7 @@ interface GiveawayDetails {
   totalEntries: number;
   myEntries: number;
   myChancePercent: number;
-  entries?: {
-    id: string;
-    userId: string;
-    ticketsUsed: number;
-    enteredAt: string;
-    user: {
-      id: string;
-      steamUsername: string | null;
-      steamAvatar: string | null;
-    };
-  }[];
+  entries?: never[];
   winners: {
     rank: number;
     user?: { steamUsername: string | null; steamAvatar: string | null } | null;
@@ -529,43 +519,35 @@ export default function GiveawayDetailsPage() {
                       {messages.giveawaysPage.detail.participantCountPrivateHint}
                     </p>
                   )}
-                  {user && (!giveaway.entries || giveaway.entries.length === 0) && (
+                  {user && myEntries === 0 && (
                     <p className="text-sm text-center text-muted-foreground py-4">
                       {messages.giveawaysPage.detail.yourEntryNone}
                     </p>
                   )}
-                  {user &&
-                    giveaway.entries &&
-                    giveaway.entries.map((entry) => {
-                      const isWinner = giveaway.winnerId === user.id;
-                      const chance = totalEntries > 0 ? ((entry.ticketsUsed / totalEntries) * 100).toFixed(1) : '0';
-                      return (
-                        <div
-                          key={entry.id}
-                          className={`flex items-center gap-2 p-2 rounded-lg ${
-                            isWinner
-                              ? 'bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800'
-                              : 'hover:bg-muted/50'
-                          }`}
-                        >
-                          <Avatar className="w-7 h-7 shrink-0">
-                            <AvatarImage src={entry.user.steamAvatar ?? undefined} />
-                            <AvatarFallback className="text-xs">
-                              {(entry.user.steamUsername ?? 'U').slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">
-                              {entry.user.steamUsername ?? `User ${entry.userId.slice(-4)}`}
-                              {isWinner && <StarIcon className="w-3.5 h-3.5 inline-block ml-1 text-yellow-500" />}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {entry.ticketsUsed} entrées • {chance}%
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
+                  {user && myEntries > 0 && (
+                    <div
+                      className={`flex items-center gap-2 p-2 rounded-lg ${
+                        giveaway.winners?.some((w) => w.user?.steamUsername === user.username)
+                          ? 'bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800'
+                          : 'hover:bg-muted/50'
+                      }`}
+                    >
+                      <Avatar className="w-7 h-7 shrink-0">
+                        <AvatarImage src={user.avatar ?? undefined} />
+                        <AvatarFallback className="text-xs">
+                          {(user.username ?? 'U').slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {user.username}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {myEntries} entrées • {myChance.toFixed(1)}%
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
