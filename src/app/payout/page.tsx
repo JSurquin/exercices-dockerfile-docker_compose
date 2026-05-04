@@ -884,7 +884,7 @@ export default function PayoutPage() {
                       <div className="flex items-start space-x-3">
                         <ExclamationTriangleIcon className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                         <p className="text-sm text-amber-700 dark:text-amber-300">
-                          Les paiements SEPA vers des IBAN français (FR) ne sont pas pris en charge par notre prestataire de paiement. Veuillez utiliser un IBAN d’un autre pays européen ou choisir la méthode Carte ou Crypto.
+                          {text.request.security.sepaFrIbanWarning ?? "Les paiements SEPA vers des IBAN français (FR) ne sont pas pris en charge par notre prestataire de paiement. Veuillez utiliser un IBAN d'un autre pays européen ou choisir la méthode Carte ou Crypto."}
                         </p>
                       </div>
                     </div>

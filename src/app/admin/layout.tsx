@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSession } from '~/lib/auth-client';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -78,13 +79,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <div className="dark min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Mobile Navigation */}
-      <AdminMobileNav />
+      <Suspense fallback={null}>
+        <AdminMobileNav />
+      </Suspense>
 
       {/* Desktop Layout */}
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar - Hidden on mobile */}
         <div className="hidden lg:block">
-          <AdminSidebar />
+          <Suspense fallback={null}>
+            <AdminSidebar />
+          </Suspense>
         </div>
 
         {/* Main Content Area */}

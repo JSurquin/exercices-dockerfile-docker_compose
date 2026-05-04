@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/components/providers/locale-provider';
@@ -54,6 +54,7 @@ interface NavGroup {
 export function AdminMobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const { messages } = useLocale();
   const t = messages.adminNav;
@@ -119,9 +120,12 @@ export function AdminMobileNav() {
   const isActive = (href: string) => {
     if (href.includes('?tab=')) {
       const [path, query] = href.split('?');
-      const searchParams = new URLSearchParams(query);
-      const tab = searchParams.get('tab');
-      return pathname === path && window.location.search.includes(`tab=${tab}`);
+      const hrefParams = new URLSearchParams(query);
+      const tab = hrefParams.get('tab');
+      return pathname === path && searchParams.get('tab') === tab;
+    }
+    if (href === '/admin/dashboard') {
+      return pathname === href && !searchParams.get('tab');
     }
     return pathname === href;
   };

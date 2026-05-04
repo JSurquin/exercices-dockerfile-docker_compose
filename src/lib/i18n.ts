@@ -21,6 +21,8 @@ export const messages: Record<Locale, Messages> = {
       darkMode: "Mode Sombre",
       affiliation: "Affiliation",
       moderation: "Modération",
+      withdrawFunds: "Retirer mes fonds",
+      kycVerification: "Vérification KYC",
       platform: "Plateforme de trading CS2"
     },
     user: {
@@ -3570,6 +3572,7 @@ export const messages: Record<Locale, Messages> = {
         security: {
           title: 'Sécurité',
           sepaInfo: 'Virement bancaire en 1-3 jours ouvrés',
+          sepaFrIbanWarning: 'Les paiements SEPA vers des IBAN français (FR) ne sont pas pris en charge par notre prestataire de paiement. Veuillez utiliser un IBAN d\'un autre pays européen ou choisir la méthode Carte ou Crypto.',
           cryptoInfo: 'Retrait crypto via Whitepay, généralement en quelques minutes',
           cardInfo: 'Retrait vers votre carte bancaire (Flexify). Généralement crédité sous 24h.'
         }
@@ -5242,6 +5245,8 @@ export const messages: Record<Locale, Messages> = {
       darkMode: "Dark Mode",
       affiliation: "Affiliate",
       moderation: "Moderation",
+      withdrawFunds: "Withdraw funds",
+      kycVerification: "KYC Verification",
       platform: "CS2 Trading Platform"
     },
     user: {
@@ -7703,6 +7708,7 @@ export const messages: Record<Locale, Messages> = {
         security: {
           title: 'Security',
           sepaInfo: 'Bank transfer in 1-3 business days',
+          sepaFrIbanWarning: 'SEPA payments to French IBANs (FR) are not supported by our payment provider. Please use an IBAN from another European country or choose the Card or Crypto method.',
           cryptoInfo: 'Crypto withdrawal via Whitepay, usually within minutes',
           cardInfo: 'Withdrawal to your card (Flexify). Usually credited within 24h.'
         }
@@ -10462,6 +10468,8 @@ export const messages: Record<Locale, Messages> = {
       darkMode: "深色模式",
       affiliation: "推广联盟",
       moderation: "管理审核",
+      withdrawFunds: "提取资金",
+      kycVerification: "KYC 身份验证",
       platform: "CS2交易平台"
     },
     user: {
@@ -12683,6 +12691,7 @@ export const messages: Record<Locale, Messages> = {
         security: {
           title: '安全',
           sepaInfo: '1-3个工作日内到账',
+          sepaFrIbanWarning: '我们的支付服务商不支持向法国IBAN（FR）发起SEPA付款。请使用其他欧洲国家的IBAN，或选择银行卡或加密货币方式。',
           cryptoInfo: '通过Whitepay加密货币提款，通常几分钟内到账',
           cardInfo: '提款到银行卡（Flexify），通常24小时内到账。'
         }

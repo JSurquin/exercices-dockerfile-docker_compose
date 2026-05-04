@@ -80,6 +80,8 @@ export interface Messages {
     darkMode: string;
     affiliation: string;
     moderation: string;
+    withdrawFunds: string;
+    kycVerification: string;
     platform: string;
   };
   user: {
@@ -4620,6 +4622,7 @@ export interface Messages {
         security: {
           title: string;
           sepaInfo: string;
+          sepaFrIbanWarning: string;
           cryptoInfo: string;
           cardInfo: string;
         };

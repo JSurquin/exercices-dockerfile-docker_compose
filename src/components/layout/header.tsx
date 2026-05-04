@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,7 @@ export function Header() {
   const { locale, setLocale, messages } = useLocale();
   const { theme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
   const { data: session } = useSession();
 
   const { data: notificationsData } = useQuery({
@@ -124,17 +126,26 @@ export function Header() {
         {/* Navigation Desktop - Centered */}
         <nav className="hidden lg:flex flex-1 items-center justify-center">
           <div className="flex items-center space-x-8">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="group relative flex items-center space-x-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-all duration-200"
-              >
-                <item.icon className="h-4 w-4 group-hover:text-orange-500 transition-colors" />
-                <span>{item.name}</span>
-                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-red-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></div>
-              </Link>
-            ))}
+            {navigation.map((item) => {
+              const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`group relative flex items-center space-x-2 text-xs font-medium transition-all duration-200 ${
+                    isActive
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <item.icon className={`h-4 w-4 transition-colors ${isActive ? "text-orange-500" : "group-hover:text-orange-500"}`} />
+                  <span>{item.name}</span>
+                  <div className={`absolute -bottom-[21px] left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-red-600 transition-transform duration-200 ${
+                    isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                  }`}></div>
+                </Link>
+              );
+            })}
           </div>
         </nav>
 
@@ -267,13 +278,13 @@ export function Header() {
                 <DropdownMenuItem asChild>
                   <Link href="/payout" className="flex items-center">
                     <BanknotesIcon className="h-4 w-4 mr-2" />
-                    Retirer mes fonds
+                    {messages.nav.withdrawFunds}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/kyc" className="flex items-center">
                     <ShieldCheckIcon className="h-4 w-4 mr-2" />
-                    Vérification KYC
+                    {messages.nav.kycVerification}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -378,17 +389,24 @@ export function Header() {
 
                 {/* Navigation */}
                 <nav className="flex flex-col space-y-2">
-                  {navigation.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center space-x-3 p-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
-                    >
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.name}</span>
-                    </Link>
-                  ))}
+                  {navigation.map((item) => {
+                    const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        onClick={() => setIsMenuOpen(false)}
+                        className={`flex items-center space-x-3 p-3 text-sm font-medium rounded-md transition-colors ${
+                          isActive
+                            ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-l-2 border-orange-500"
+                            : "hover:bg-accent"
+                        }`}
+                      >
+                        <item.icon className={`h-5 w-5 ${isActive ? "text-orange-500" : ""}`} />
+                        <span>{item.name}</span>
+                      </Link>
+                    );
+                  })}
                 </nav>
 
                 {/* Compte utilisateur (mobile) */}
@@ -426,7 +444,7 @@ export function Header() {
                       className="flex items-center space-x-3 p-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
                     >
                       <BanknotesIcon className="h-5 w-5" />
-                      <span>Retirer mes fonds</span>
+                      <span>{messages.nav.withdrawFunds}</span>
                     </Link>
                     <Link
                       href="/kyc"
@@ -434,7 +452,7 @@ export function Header() {
                       className="flex items-center space-x-3 p-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
                     >
                       <ShieldCheckIcon className="h-5 w-5" />
-                      <span>Vérification KYC</span>
+                      <span>{messages.nav.kycVerification}</span>
                     </Link>
                     <Link
                       href={isAdmin ? "/admin/settings" : "/settings"}
