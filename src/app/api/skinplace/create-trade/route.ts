@@ -219,7 +219,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const netCentsWithPromo = ledger.netCents + affiliatePromoBonusCents;
+    const vipBonusCents = Math.round(serverGrossCentimes * (user.bonusRatePercent ?? 0) / 100);
+    const netCentsWithPromo = ledger.netCents + affiliatePromoBonusCents + vipBonusCents;
     if (netCentsWithPromo <= 0) {
       return NextResponse.json(
         { success: false, error: 'La valeur nette après frais et code promo doit être positive' },
@@ -392,6 +393,7 @@ export async function POST(request: NextRequest) {
         netCents: netCentsWithPromo,
         affiliatePromoCode,
         affiliatePromoBonusCents,
+        vipBonusCents,
         availableAt: tradeStatus !== 'FAILED' ? availableAt : undefined,
         expiresAt: expiresAt,
         tradeAcceptedAt,
@@ -426,6 +428,7 @@ export async function POST(request: NextRequest) {
           netValue: netCentsWithPromo,
           affiliatePromoCode,
           affiliatePromoBonusCents,
+          vipBonusCents,
           initialStatus: tradeStatus,
           skinplaceStatus,
           tradeOfferId,

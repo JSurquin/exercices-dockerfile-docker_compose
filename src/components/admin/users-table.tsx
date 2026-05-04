@@ -324,6 +324,7 @@ export function AdminUsersTable() {
               <TableHead className="text-slate-300 whitespace-nowrap">KYC</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">Niveau</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">Volume</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">Vol. en attente</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">Tickets</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">Inscrit le</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">Actions</TableHead>
@@ -349,6 +350,17 @@ export function AdminUsersTable() {
                             Affilié
                           </span>
                         )}
+                        {user.userTag && (
+                          <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none ${
+                            user.userTag === 'VIP'
+                              ? 'bg-amber-500/20 border border-amber-500/40 text-amber-300'
+                              : user.userTag === 'MERCHANT'
+                                ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300'
+                                : 'bg-blue-500/20 border border-blue-500/40 text-blue-300'
+                          }`}>
+                            {user.userTag}
+                          </span>
+                        )}
                       </div>
                       <div className="text-xs text-slate-400">ID: {user.id}</div>
                     </div>
@@ -372,6 +384,9 @@ export function AdminUsersTable() {
                 </TableCell>
                 <TableCell className="text-white">
                   {formatCurrency(user.totalVolume)}
+                </TableCell>
+                <TableCell className="text-blue-400">
+                  {user.pendingVolume ? formatCurrency(user.pendingVolume) : '—'}
                 </TableCell>
                 <TableCell className="text-slate-300">
                   {user.tickets}

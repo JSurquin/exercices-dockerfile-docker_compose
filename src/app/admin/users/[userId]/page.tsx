@@ -1,17 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, User, Mail, Hash, RefreshCw } from 'lucide-react';
+import { ArrowLeft, User, Mail, Hash, RefreshCw, Crown, Save } from 'lucide-react';
 import { BalanceManagement } from '@/components/admin/balance-management';
 import { WithdrawalLimits } from '@/components/admin/withdrawal-limits';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
+import { useToast } from '@/hooks/use-toast';
 
 interface UserDetail {
   id: string;
@@ -26,9 +30,12 @@ interface UserDetail {
   xp: number;
   tickets: number;
   totalVolumeCents: number;
+  pendingBalanceCents: number;
   balanceCents: number;
   frozenBalanceCents: number;
   accountFrozen: boolean;
+  bonusRatePercent: number;
+  userTag: string | null;
   createdAt: string;
   role: string;
 }
@@ -36,8 +43,14 @@ interface UserDetail {
 export default function AdminUserDetailPage() {
   const params = useParams();
   const userId = params?.userId as string | undefined;
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [resetKycLoading, setResetKycLoading] = useState(false);
   const [resetKycMessage, setResetKycMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [bonusRate, setBonusRate] = useState('');
+  const [userTag, setUserTag] = useState('');
+  const [bonusSaving, setBonusSaving] = useState(false);
+  const [bonusInitialized, setBonusInitialized] = useState(false);
 
   const { data: user, isLoading: loading, error: queryError, refetch: refetchUser } = useQuery({
     queryKey: queryKeys.adminUser(userId ?? ''),
@@ -53,6 +66,42 @@ export default function AdminUserDetailPage() {
     enabled: !!userId,
   });
   const error = queryError instanceof Error ? queryError.message : null;
+
+  useEffect(() => {
+    if (user && !bonusInitialized) {
+      setBonusRate(String(user.bonusRatePercent ?? 0));
+      setUserTag(user.userTag ?? '');
+      setBonusInitialized(true);
+    }
+  }, [user, bonusInitialized]);
+
+  const handleSaveBonus = async () => {
+    if (!userId) return;
+    setBonusSaving(true);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/bonus`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bonusRatePercent: parseFloat(bonusRate) || 0,
+          userTag: userTag || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur');
+      toast({ title: 'Bonus mis à jour', description: `Rate: ${data.bonusRatePercent}% | Tag: ${data.userTag || 'aucun'}` });
+      await refetchUser();
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+    } catch (e) {
+      toast({
+        title: 'Erreur',
+        description: e instanceof Error ? e.message : 'Impossible de sauvegarder',
+        variant: 'destructive',
+      });
+    } finally {
+      setBonusSaving(false);
+    }
+  };
 
   const handleResetKycApplicant = async () => {
     if (!userId || !user) return;
@@ -142,6 +191,17 @@ export default function AdminUserDetailPage() {
                 <Badge variant="outline" className="text-xs">
                   {user.role}
                 </Badge>
+                {user.userTag && (
+                  <Badge className={
+                    user.userTag === 'VIP'
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                      : user.userTag === 'MERCHANT'
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                        : 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                  }>
+                    {user.userTag}
+                  </Badge>
+                )}
                 {user.accountFrozen && (
                   <Badge variant="destructive">Compte gelé</Badge>
                 )}
@@ -214,6 +274,66 @@ export default function AdminUserDetailPage() {
         <BalanceManagement userId={userId} onUpdate={() => {}} />
         <WithdrawalLimits userId={userId} onUpdate={() => {}} />
       </div>
+
+      <Card className="bg-slate-800/30 border-slate-700">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-white flex items-center gap-2">
+            <Crown className="h-5 w-5 text-amber-400" />
+            VIP / Bonus
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="text-slate-300">Bonus rate (%)</Label>
+              <Input
+                type="number"
+                step="0.1"
+                min="0"
+                max="100"
+                placeholder="Ex: 2.0 = +2% sur valeur brute"
+                value={bonusRate}
+                onChange={(e) => setBonusRate(e.target.value)}
+                className="bg-slate-700 border-slate-600 text-white"
+              />
+              <p className="text-xs text-slate-500">
+                Bonus ajouté au net du trade (% de la valeur brute)
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-slate-300">Tag utilisateur</Label>
+              <Select value={userTag || 'none'} onValueChange={(v) => setUserTag(v === 'none' ? '' : v)}>
+                <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                  <SelectValue placeholder="Aucun tag" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Aucun</SelectItem>
+                  <SelectItem value="VIP">VIP</SelectItem>
+                  <SelectItem value="MERCHANT">MERCHANT</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-slate-500">
+                Affiché sur le profil et dans l&apos;admin
+              </p>
+            </div>
+            <div className="flex items-end">
+              <Button
+                onClick={handleSaveBonus}
+                disabled={bonusSaving}
+                className="bg-amber-600 hover:bg-amber-700"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {bonusSaving ? 'Sauvegarde...' : 'Sauvegarder'}
+              </Button>
+            </div>
+          </div>
+          {user.bonusRatePercent > 0 && (
+            <p className="text-sm text-amber-300">
+              Bonus actif : +{user.bonusRatePercent}% sur chaque trade
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

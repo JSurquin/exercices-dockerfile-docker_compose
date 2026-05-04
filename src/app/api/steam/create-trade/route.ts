@@ -132,6 +132,9 @@ export async function POST(request: NextRequest) {
     const availableAt = new Date();
     availableAt.setDate(availableAt.getDate() + 7);
 
+    const vipBonusCents = Math.round(body.gross_value * (user.bonusRatePercent ?? 0) / 100);
+    const netCentsWithBonus = ledger.netCents + vipBonusCents;
+
     // Créer le trade en base de données
     const trade = await prisma.trade.create({
       data: {
@@ -139,11 +142,12 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         steamId: body.steam_id,
         tradeUrl: body.trade_url,
-        status: 'CREATED', // États: created -> accepted_by_bot -> in_trade_hold -> available -> payment_in_progress -> paid -> failed
+        status: 'CREATED',
         grossCents: body.gross_value,
         cashoutFees: ledger.cashoutFees,
         networkFees: ledger.networkFees,
-        netCents: ledger.netCents,
+        netCents: netCentsWithBonus,
+        vipBonusCents,
         availableAt: availableAt,
         ticketId: token,
         items: {
@@ -178,7 +182,8 @@ export async function POST(request: NextRequest) {
           tradeId: trade.id,
           itemsCount: body.items.length,
           grossValue: body.gross_value,
-          netValue: ledger.netCents,
+          netValue: netCentsWithBonus,
+          vipBonusCents,
         },
         ipAddress: request.headers.get('x-forwarded-for') || 
                    request.headers.get('x-real-ip') || 

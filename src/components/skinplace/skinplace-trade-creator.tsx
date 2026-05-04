@@ -287,7 +287,8 @@ export function SkinplaceTradeCreator({
   const promoBonusPreview = appliedPromoCode
     ? computeSellPromoBonusCents(grossValueCentimes)
     : 0;
-  const netValueCentimes = fees.net_credited_centimes + promoBonusPreview;
+  const vipBonusPreview = Math.round(grossValueCentimes * (user?.bonusRatePercent ?? 0) / 100);
+  const netValueCentimes = fees.net_credited_centimes + promoBonusPreview + vipBonusPreview;
   const cashoutPercentDisplay = ((platformSettings?.cashoutFeeRate ?? 0.005) * 100).toFixed(2);
   const promoPercentLabel = (AFFILIATE_SELL_PROMO_GROSS_RATE * 100).toFixed(1);
   const trimmedPromoInput = promoInput.trim();
@@ -547,6 +548,18 @@ export function SkinplaceTradeCreator({
                   </span>
                   <span className="flex items-center gap-1">
                     +<ConvertedPrice usdCents={promoBonusPreview} />
+                  </span>
+                </div>
+              )}
+
+              {vipBonusPreview > 0 && (
+                <div className="flex items-center justify-between text-sm text-amber-600 dark:text-amber-400">
+                  <span className="flex items-center gap-1">
+                    <Plus className="h-3 w-3" />
+                    Bonus {user?.userTag || 'VIP'} (+{user?.bonusRatePercent}%)
+                  </span>
+                  <span className="flex items-center gap-1">
+                    +<ConvertedPrice usdCents={vipBonusPreview} />
                   </span>
                 </div>
               )}

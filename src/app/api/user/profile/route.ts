@@ -26,6 +26,8 @@ export async function GET(request: NextRequest) {
       fragments: number;
       contactEmail: string | null;
       role: UserRole;
+      bonusRatePercent: number;
+      userTag: string | null;
       affiliateStats: { isActive: boolean } | null;
     } | null = null;
 
@@ -43,6 +45,8 @@ export async function GET(request: NextRequest) {
           fragments: true,
           contactEmail: true,
           role: true,
+          bonusRatePercent: true,
+          userTag: true,
           affiliateStats: { select: { isActive: true } },
         },
       });
@@ -70,7 +74,6 @@ export async function GET(request: NextRequest) {
       username: displayName,
       avatar: displayAvatar,
       contactEmail: dbRow?.contactEmail ?? null,
-      // Source de vérité : la ligne User en DB (la session Better Auth peut être en retard après un promote admin)
       role: dbRole,
       canAccessAffiliateDashboard,
       twoFactorEnabled: dbRow?.twoFactorEnabled ?? false,
@@ -80,6 +83,8 @@ export async function GET(request: NextRequest) {
       tickets: user.tickets || 0,
       fragments: dbRow?.fragments ?? (user as { fragments?: number }).fragments ?? 0,
       totalVolume: (user.totalVolumeCents || 0) / 100,
+      bonusRatePercent: dbRow?.bonusRatePercent ?? 0,
+      userTag: dbRow?.userTag ?? null,
       kycStatus: user.kycStatus || 'PENDING',
       acceptedTermsAt: user.acceptedTermsAt,
       joinedAt: user.createdAt || new Date(),

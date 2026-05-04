@@ -41,6 +41,10 @@ model User {
   banReason                String?
   banExpires               DateTime?
   contactEmail             String?
+  /// Bonus VIP en % sur la valeur brute du trade (ex: 2.0 = +2%)
+  bonusRatePercent         Float                   @default(0)
+  /// Tag affiché dans l'admin et sur le profil (VIP, MERCHANT, etc.)
+  userTag                  String?
   reviewedApplications     AffiliateApplication[]  @relation("AffiliateApplicationReviewer")
   affiliateApplications    AffiliateApplication[]
   referrals                AffiliateReferral[]     @relation("AffiliateReferrals")
@@ -124,6 +128,8 @@ model Trade {
   affiliatePromoCode              String?
   /// Bonus net (centimes) = 0,2 % de la valeur brute, crédité avec le trade
   affiliatePromoBonusCents        Int       @default(0)
+  /// Bonus VIP (centimes) = bonusRatePercent % de la valeur brute
+  vipBonusCents                    Int       @default(0)
   /// Horodatage crédit fragments promo (idempotence)
   affiliatePromoFragmentsGrantedAt DateTime?
   /// Horodatage du crédit pending balance (IPN #1) — sert de verrou d'idempotence

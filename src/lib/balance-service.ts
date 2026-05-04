@@ -179,6 +179,43 @@ export async function releasePendingToBalance(
   });
 }
 
+/**
+ * Débit forcé (admin uniquement) — autorise le solde négatif.
+ * Ne vérifie PAS que balanceCents >= amountCents.
+ */
+export async function forceDebitBalance(
+  userId: string,
+  amountCents: number,
+  reason: string | null,
+  metadata: { type: BalanceTransactionType; createdBy?: string; [key: string]: unknown } = { type: 'ADMIN_ADJUSTMENT' }
+): Promise<{ balanceAfterCents: number }> {
+  if (amountCents <= 0) {
+    throw new Error('forceDebitBalance: amountCents must be positive');
+  }
+  return prisma.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({ where: { id: userId }, select: { id: true } });
+    if (!user) throw new Error('User not found');
+    await tx.user.update({
+      where: { id: userId },
+      data: { balanceCents: { decrement: amountCents } },
+    });
+    const updated = await tx.user.findUniqueOrThrow({ where: { id: userId }, select: { balanceCents: true } });
+    const balanceAfterCents = updated.balanceCents;
+    await tx.balanceTransaction.create({
+      data: {
+        userId,
+        type: metadata.type,
+        amountCents: -amountCents,
+        balanceAfterCents,
+        reason,
+        createdBy: metadata.createdBy ?? undefined,
+        metadata: metadata ? (Object.keys(metadata).length > 1 ? (metadata as Prisma.InputJsonValue) : undefined) : undefined,
+      },
+    });
+    return { balanceAfterCents };
+  });
+}
+
 export async function freezeBalance(
   userId: string,
   amountCents: number,

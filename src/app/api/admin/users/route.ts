@@ -73,6 +73,9 @@ export async function GET(request: NextRequest) {
           xp: true,
           tickets: true,
           totalVolumeCents: true,
+          pendingBalanceCents: true,
+          bonusRatePercent: true,
+          userTag: true,
           acceptedTermsAt: true,
           createdAt: true,
           role: true,
@@ -84,6 +87,20 @@ export async function GET(request: NextRequest) {
       prisma.user.count({ where: whereConditions }),
     ]);
 
+    // Calculer le volume en attente par utilisateur (trades actifs non payés/échoués)
+    const userIds = users.map(u => u.id);
+    const pendingVolumeRows = await prisma.trade.groupBy({
+      by: ['userId'],
+      where: {
+        userId: { in: userIds },
+        status: { in: ['CREATED', 'ACCEPTED_BY_BOT', 'IN_TRADE_HOLD', 'AVAILABLE', 'PAYOUT_PENDING'] },
+      },
+      _sum: { grossCents: true },
+    });
+    const pendingVolumeMap = new Map(
+      pendingVolumeRows.map(r => [r.userId, r._sum.grossCents ?? 0])
+    );
+
     // Transformer les données pour correspondre au format User
     const formattedUsers: User[] = users.map(user => ({
       id: user.id,
@@ -94,6 +111,10 @@ export async function GET(request: NextRequest) {
       kycStatus: user.kycStatus as 'PENDING' | 'IN_PROGRESS' | 'VERIFIED' | 'REJECTED' | 'KYCAID_PENDING' | 'KYCAID_VERIFIED' | 'KYCAID_REJECTED',
       role: user.role,
       totalVolume: user.totalVolumeCents,
+      pendingVolume: pendingVolumeMap.get(user.id) ?? 0,
+      pendingBalanceCents: user.pendingBalanceCents,
+      bonusRatePercent: user.bonusRatePercent,
+      userTag: user.userTag,
       xp: user.xp,
       level: user.level,
       tickets: user.tickets,

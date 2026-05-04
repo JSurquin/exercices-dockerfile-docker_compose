@@ -26,6 +26,7 @@ const formatDate = (d: Date | string) =>
 
 export interface BalanceContext {
   balanceCents: number;
+  pendingBalanceCents: number;
   frozenBalanceCents: number;
   availableCents: number;
   accountFrozen: boolean;
@@ -197,6 +198,10 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
             <div>
               <p className="text-xs text-slate-400">Solde total</p>
               <p className="text-lg font-semibold text-white">{formatCents(context.balanceCents)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">En attente</p>
+              <p className="text-lg font-semibold text-blue-400">{formatCents(context.pendingBalanceCents)}</p>
             </div>
             <div>
               <p className="text-xs text-slate-400">Solde gelé</p>

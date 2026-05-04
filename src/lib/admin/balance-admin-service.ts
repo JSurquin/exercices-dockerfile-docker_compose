@@ -2,6 +2,7 @@ import { prisma } from '~/prisma/prisma';
 import {
   creditBalance,
   debitBalance,
+  forceDebitBalance,
   getBalance,
   getRecentBalanceTransactions,
   getMonthlyWithdrawalLimitCents,
@@ -53,7 +54,7 @@ export async function adjustUserBalance(
     return result;
   }
   if (amountCents < 0) {
-    const result = await debitBalance(userId, -amountCents, reason, metadata);
+    const result = await forceDebitBalance(userId, -amountCents, reason, metadata);
     await auditLog(
       adminId,
       AUDIT_ACTIONS.ADMIN_BALANCE_ADJUSTMENT,
@@ -172,6 +173,7 @@ export async function cancelPayout(
  */
 export async function getBalanceContext(userId: string): Promise<{
   balanceCents: number;
+  pendingBalanceCents: number;
   frozenBalanceCents: number;
   availableCents: number;
   accountFrozen: boolean;

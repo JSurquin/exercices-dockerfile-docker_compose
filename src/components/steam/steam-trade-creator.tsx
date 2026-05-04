@@ -25,6 +25,7 @@ import {
 import { toast } from 'sonner';
 import { useLocale } from '@/components/providers/locale-provider';
 import { usePlatformSettings } from '@/hooks/use-platform-settings';
+import { useAuth } from '@/components/providers/auth-provider';
 
 interface SteamTradeCreatorProps {
   steamId64: string;
@@ -48,6 +49,7 @@ export function SteamTradeCreator({
   selectedItems, 
   onTradeCreated 
 }: SteamTradeCreatorProps) {
+  const { user } = useAuth();
   const { messages } = useLocale();
   const { data: platformSettings } = usePlatformSettings();
   const [tradeUrl, setTradeUrl] = useState('');
@@ -167,7 +169,8 @@ export function SteamTradeCreator({
 
   const grossValue = getTotalEstimatedValue();
   const fees = calculateFees(grossValue);
-  const netValue = fees.net_credited_centimes;
+  const vipBonusPreview = Math.round(grossValue * (user?.bonusRatePercent ?? 0) / 100);
+  const netValue = fees.net_credited_centimes + vipBonusPreview;
   const cashoutPercentDisplay = ((platformSettings?.cashoutFeeRate ?? 0.005) * 100).toFixed(2);
 
   return (
@@ -286,6 +289,15 @@ export function SteamTradeCreator({
                 </span>
                 <span>-{formatPrice(fees.cashout_fee)}</span>
               </div>
+
+              {vipBonusPreview > 0 && (
+                <div className="flex items-center justify-between text-sm text-amber-600 dark:text-amber-400">
+                  <span className="flex items-center gap-1">
+                    + Bonus {user?.userTag || 'VIP'} (+{user?.bonusRatePercent}%)
+                  </span>
+                  <span>+{formatPrice(vipBonusPreview)}</span>
+                </div>
+              )}
 
               <div className="flex items-start justify-between gap-2 text-xs text-muted-foreground border border-dashed border-muted-foreground/25 rounded-md p-2">
                 <span className="text-left">{messages.tradeCreator.payoutFeesIndicativeLine}</span>

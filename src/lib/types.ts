@@ -12,6 +12,10 @@ export interface User {
   canAccessAffiliateDashboard?: boolean;
   twoFactorEnabled?: boolean;
   totalVolume: number; // en centimes
+  pendingVolume?: number; // volume en attente (trades actifs) en centimes
+  pendingBalanceCents?: number; // solde en attente (pending balance)
+  bonusRatePercent?: number; // bonus VIP en %
+  userTag?: string | null; // tag VIP/MERCHANT
   xp: number;
   level: number;
   tickets: number;
