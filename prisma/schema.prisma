@@ -28,7 +28,7 @@ model User {
   role                     UserRole                @default(USER)
   referredByAffiliateId    String?
   isFirstLogin             Boolean                 @default(true)
-  tradeLink                String?                 @unique
+  tradeLink                String?
   kycaidApplicantId        String?                 @unique
   balanceCents             Int                     @default(0)
   frozenBalanceCents       Int                     @default(0)
