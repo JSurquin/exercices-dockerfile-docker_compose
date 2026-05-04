@@ -6,7 +6,8 @@ import { canUserMakePayout } from '@/lib/kycaid';
 import { buildEncryptedSepaDetails } from '@/lib/payment-method-sepa';
 import { encrypt } from '@/lib/encryption';
 import { validateIban } from '@/lib/flexify';
-import { getBalance, freezeBalance } from '@/lib/balance-service';
+import { getBalance } from '@/lib/balance-service';
+import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import crypto from 'crypto';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { payoutsSepaFrBodySchema } from '@/lib/validation/schemas/integrations';
@@ -121,10 +122,9 @@ export async function POST(request: NextRequest) {
         processingFeeCents,
         networkFeeCents,
         pendingFlexifyRequestEncrypted: sepaFrPayload,
-        balanceFrozenAt: new Date(),
       },
     });
-    await freezeBalance(userId, amountCents);
+    await PayoutLifecycle.onCreated(userId, payout.id, amountCents);
 
     await prisma.auditLog.create({
       data: {

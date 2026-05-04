@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '~/prisma/prisma';
-import { freezeBalance } from '@/lib/balance-service';
+import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import {
   createInstantWithdrawal,
   parseWhitepayFeesFromResponse,
@@ -256,10 +256,9 @@ export async function POST(request: NextRequest) {
         whitepayConfirmedAt: new Date(),
         processingFeeCents: realFees.processingFeeCents,
         networkFeeCents: realFees.networkFeeCents,
-        balanceFrozenAt: new Date(),
       },
     });
-    await freezeBalance(userId, amountCents);
+    await PayoutLifecycle.onCreated(userId, payout.id, amountCents);
 
     // 14. Mettre à jour le trade si associé
     if (tradeId) {

@@ -13,7 +13,7 @@ import {
   isTransactionComplete as isWhitepayComplete,
   isTransactionFailed as isWhitepayFailed,
 } from '@/lib/whitepay';
-import { debitBalance, unfreezeBalance } from '@/lib/balance-service';
+import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 
 interface ReconcileResult {
   payoutId: string;
@@ -77,31 +77,16 @@ async function applyDebit(
   remoteStatus: string,
   provider: 'flexify' | 'whitepay',
 ): Promise<ReconcileResult> {
-  const debitLock = await prisma.payout.updateMany({
-    where: { id: payout.id, balanceDebitedAt: null },
-    data: { balanceDebitedAt: new Date(), status: 'PAID', paidAt: new Date() },
-  });
-
-  if (debitLock.count === 0) {
+  const { debited } = await PayoutLifecycle.onCompleted(
+    userId, payout.id, payout.amountCents,
+    { tradeId: payout.tradeId, reason: `Payout ${provider} ${payout.id} complété (rattrapage polling)` },
+  );
+  if (!debited) {
     return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider };
   }
-
-  await debitBalance(userId, payout.amountCents, `Payout ${provider} ${payout.id} complété (rattrapage polling)`, {
-    type: 'WITHDRAWAL',
-    payoutId: payout.id,
-  });
-  if (payout.balanceFrozenAt) {
-    await unfreezeBalance(userId, payout.amountCents);
-  }
-  if (payout.tradeId) {
-    await prisma.trade.update({ where: { id: payout.tradeId }, data: { status: 'PAID' } });
-  }
-  await prisma.auditLog.create({
-    data: {
-      userId,
-      action: 'PAYOUT_RECONCILE_DEBITED',
-      details: { payoutId: payout.id, remoteStatus, amountCents: payout.amountCents, provider, source: 'user_polling' },
-    },
+  await prisma.payout.update({
+    where: { id: payout.id },
+    data: { status: 'PAID', paidAt: new Date() },
   });
   return { payoutId: payout.id, action: 'debited', amountCents: payout.amountCents, provider };
 }
@@ -112,22 +97,13 @@ async function applyFailed(
   remoteStatus: string,
   provider: 'flexify' | 'whitepay',
 ): Promise<ReconcileResult> {
-  const unfreezeLock = await prisma.payout.updateMany({
-    where: { id: payout.id, balanceDebitedAt: null },
-    data: { balanceDebitedAt: new Date(), status: 'FAILED' },
-  });
-  if (unfreezeLock.count > 0 && payout.balanceFrozenAt) {
-    await unfreezeBalance(userId, payout.amountCents);
+  const { unfrozen } = await PayoutLifecycle.onFailed(userId, payout.id, payout.amountCents, { tradeId: payout.tradeId });
+  if (!unfrozen) {
+    return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider };
   }
-  if (payout.tradeId) {
-    await prisma.trade.update({ where: { id: payout.tradeId }, data: { status: 'FAILED' } });
-  }
-  await prisma.auditLog.create({
-    data: {
-      userId,
-      action: 'PAYOUT_RECONCILE_FAILED',
-      details: { payoutId: payout.id, remoteStatus, amountCents: payout.amountCents, provider, source: 'user_polling' },
-    },
+  await prisma.payout.update({
+    where: { id: payout.id },
+    data: { status: 'FAILED' },
   });
   return { payoutId: payout.id, action: 'failed', amountCents: payout.amountCents, provider };
 }

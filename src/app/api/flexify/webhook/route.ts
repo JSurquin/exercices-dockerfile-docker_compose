@@ -9,7 +9,7 @@ import {
   flexifyLog,
   type FlexifyWebhookPayload,
 } from '@/lib/flexify';
-import { debitBalance, unfreezeBalance } from '@/lib/balance-service';
+import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import { 
   ensureWebhookIdempotency, 
   markWebhookProcessed 
@@ -168,67 +168,18 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Si le payout est complété — débit + dégel avec idempotence
     if (isTransactionCompleted(payload.status)) {
-      if (payout.tradeId) {
-        await prisma.trade.update({
-          where: { id: payout.tradeId },
-          data: { status: 'PAID' },
-        });
-      }
-
-      // Verrou atomique : balanceDebitedAt empêche le double débit
-      const debitLock = await prisma.payout.updateMany({
-        where: { id: payout.id, balanceDebitedAt: null },
-        data: { balanceDebitedAt: new Date() },
-      });
-
-      if (debitLock.count > 0) {
-        try {
-          await debitBalance(
-            payout.userId,
-            payout.amountCents,
-            `Payout Flexify ${payout.id} complété`,
-            { type: 'WITHDRAWAL', payoutId: payout.id }
-          );
-          if (payout.balanceFrozenAt) {
-            await unfreezeBalance(payout.userId, payout.amountCents);
-          }
-        } catch (balanceErr) {
-          flexifyLog('WEBHOOK_DEBIT_BALANCE_ERROR', { payoutId: payout.id, error: String(balanceErr) }, 'error');
-        }
-      } else {
+      const { debited } = await PayoutLifecycle.onCompleted(
+        payout.userId, payout.id, payout.amountCents,
+        { tradeId: payout.tradeId, updateXp: true, reason: `Payout Flexify ${payout.id} complété (webhook)` },
+      );
+      if (!debited) {
         flexifyLog('WEBHOOK_DEBIT_ALREADY_DONE', { payoutId: payout.id }, 'info');
       }
-
-      await prisma.user.update({
-        where: { id: payout.userId },
-        data: {
-          totalVolumeCents: { increment: payout.amountCents },
-          xp: { increment: Math.floor(payout.amountCents / 100) },
-        },
-      });
     }
 
-    // Si le payout a échoué — dégel seulement (pas de débit)
     if (isTransactionFailed(payload.status)) {
-      if (payout.balanceFrozenAt && !payout.balanceDebitedAt) {
-        const unfreezeLock = await prisma.payout.updateMany({
-          where: { id: payout.id, balanceDebitedAt: null },
-          data: { balanceDebitedAt: new Date() },
-        });
-        if (unfreezeLock.count > 0) {
-          await unfreezeBalance(payout.userId, payout.amountCents);
-          flexifyLog('WEBHOOK_UNFREEZE_ON_FAIL', { payoutId: payout.id, amount: payout.amountCents });
-        }
-      }
-
-      if (payout.tradeId) {
-        await prisma.trade.update({
-          where: { id: payout.tradeId },
-          data: { status: 'FAILED' },
-        });
-      }
+      await PayoutLifecycle.onFailed(payout.userId, payout.id, payout.amountCents, { tradeId: payout.tradeId });
     }
 
     // Logger l'événement

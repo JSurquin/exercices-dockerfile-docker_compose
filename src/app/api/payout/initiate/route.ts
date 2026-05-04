@@ -5,6 +5,7 @@ import { canUserMakePayout } from '@/lib/gatefi-kyc';
 import { checkWithdrawalLimit } from '@/lib/balance-service';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { payoutInitiatePostSchema } from '@/lib/validation/schemas/payout-security';
+import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 
 /**
  * POST /api/payout/initiate
@@ -134,6 +135,8 @@ export async function POST(request: NextRequest) {
           paymentMethod: true,
         },
       });
+
+      await PayoutLifecycle.onCreated(userId, payout.id, trade.netCents);
 
       // Mettre à jour le trade
       await prisma.trade.update({

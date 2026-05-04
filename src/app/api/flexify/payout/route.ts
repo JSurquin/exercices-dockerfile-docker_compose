@@ -31,7 +31,7 @@ import { assertTradeOwnership } from '@/lib/trade-ownership';
 import { validateAmountCents } from '@/lib/amount-validation';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { flexifyPayoutBodySchema } from '@/lib/validation/schemas/integrations';
-import { freezeBalance } from '@/lib/balance-service';
+import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 
 const generateReference = () => `MOON-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
@@ -361,10 +361,9 @@ export async function POST(request: NextRequest) {
             processingFeeCents: fees.processingFeeCents,
             networkFeeCents: fees.networkFeeCents,
             pendingFlexifyRequestEncrypted: encryptedPayload,
-            balanceFrozenAt: new Date(),
           },
         });
-        await freezeBalance(userId, validatedAmount);
+        await PayoutLifecycle.onCreated(userId, payout.id, validatedAmount);
         await prisma.auditLog.create({
           data: {
             userId,
@@ -433,11 +432,10 @@ export async function POST(request: NextRequest) {
           flexifyPayoutId: flexifyResponse.transaction!.id,
           processingFeeCents: fees.processingFeeCents,
           networkFeeCents: fees.networkFeeCents,
-          balanceFrozenAt: new Date(),
           ...(isTransactionCompleted(txStatus) && { paidAt: new Date() }),
         },
       });
-      await freezeBalance(userId, validatedAmount);
+      await PayoutLifecycle.onCreated(userId, payout.id, validatedAmount);
 
       await prisma.auditLog.create({
         data: {
@@ -641,10 +639,9 @@ export async function POST(request: NextRequest) {
           processingFeeCents: fees.processingFeeCents,
           networkFeeCents: fees.networkFeeCents,
           pendingFlexifyRequestEncrypted: encryptedPayloadSepa,
-          balanceFrozenAt: new Date(),
         },
       });
-      await freezeBalance(userId, validatedAmount);
+      await PayoutLifecycle.onCreated(userId, payoutPending.id, validatedAmount);
       await prisma.auditLog.create({
         data: {
           userId,
@@ -745,11 +742,10 @@ export async function POST(request: NextRequest) {
         flexifyPayoutId: flexifyResponse.transaction.id,
         processingFeeCents: fees.processingFeeCents,
         networkFeeCents: fees.networkFeeCents,
-        balanceFrozenAt: new Date(),
         ...(isTransactionCompleted(txStatusSepa) && { paidAt: new Date() }),
       },
     });
-    await freezeBalance(userId, validatedAmount);
+    await PayoutLifecycle.onCreated(userId, payout.id, validatedAmount);
 
     await prisma.auditLog.create({
       data: {

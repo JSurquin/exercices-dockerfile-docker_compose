@@ -10,7 +10,7 @@ import {
   isWhitepayTopUpEvent,
   type WhitepayWebhookPayload,
 } from '@/lib/whitepay';
-import { unfreezeBalance } from '@/lib/balance-service';
+import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 
 // =============================================================================
 // POST - Webhook Whitepay (general webhooks : withdrawals & conversion_withdrawals)
@@ -134,67 +134,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (isTransactionComplete(tx.status)) {
-      if (payout.tradeId) {
-        await prisma.trade.update({
-          where: { id: payout.tradeId },
-          data: { status: 'PAID' },
-        });
-      }
-
-      // Verrou atomique : balanceDebitedAt empêche le double débit
-      const debitLock = await prisma.payout.updateMany({
-        where: { id: payout.id, balanceDebitedAt: null },
-        data: { balanceDebitedAt: new Date() },
-      });
-
-      if (debitLock.count > 0) {
-        const user = await prisma.user.findUnique({
-          where: { id: payout.userId },
-          select: { balanceCents: true },
-        });
-        if (user) {
-          const balanceAfterCents = Math.max(0, user.balanceCents - payout.amountCents);
-          await prisma.user.update({
-            where: { id: payout.userId },
-            data: {
-              balanceCents: balanceAfterCents,
-              totalVolumeCents: { increment: payout.amountCents },
-              xp: { increment: Math.floor(payout.amountCents / 100) },
-            },
-          });
-          await prisma.balanceTransaction.create({
-            data: {
-              userId: payout.userId,
-              type: 'WITHDRAWAL',
-              amountCents: -payout.amountCents,
-              balanceAfterCents,
-              reason: `Payout Whitepay ${payout.id} complété`,
-              metadata: { type: 'WITHDRAWAL', payoutId: payout.id },
-            },
-          });
-        }
-        if (payout.balanceFrozenAt) {
-          await unfreezeBalance(payout.userId, payout.amountCents);
-        }
-      }
+      await PayoutLifecycle.onCompleted(
+        payout.userId, payout.id, payout.amountCents,
+        { tradeId: payout.tradeId, updateXp: true, reason: `Payout Whitepay ${payout.id} complété (webhook)` },
+      );
     }
 
     if (isTransactionFailed(tx.status)) {
-      if (payout.balanceFrozenAt && !payout.balanceDebitedAt) {
-        const unfreezeLock = await prisma.payout.updateMany({
-          where: { id: payout.id, balanceDebitedAt: null },
-          data: { balanceDebitedAt: new Date() },
-        });
-        if (unfreezeLock.count > 0) {
-          await unfreezeBalance(payout.userId, payout.amountCents);
-        }
-      }
-      if (payout.tradeId) {
-        await prisma.trade.update({
-          where: { id: payout.tradeId },
-          data: { status: 'FAILED' },
-        });
-      }
+      await PayoutLifecycle.onFailed(payout.userId, payout.id, payout.amountCents, { tradeId: payout.tradeId });
     }
 
     await prisma.auditLog.create({
