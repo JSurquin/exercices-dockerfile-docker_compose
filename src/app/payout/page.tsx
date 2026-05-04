@@ -25,6 +25,7 @@ import {
 import { CurrencyDollarIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { formatCentsToCurrency, toCents } from '@/lib/currency-converter';
+import { FeePreview } from '@/components/payout/FeePreview';
 import {
   Select,
   SelectContent,
@@ -1387,44 +1388,20 @@ export default function PayoutPage() {
                   </TabsContent>
                 </Tabs>
 
-                {/* Prévisualisation des frais Whitepay (crypto) — affichée dès que le montant est valide */}
-                {payoutMethod === 'crypto' && !quote && !payoutResult && amount && parseFloat(amount) > 0 && (() => {
-                  const amtCents = toCents(parseFloat(amount));
-                  const WHITEPAY_PROCESSING = 22;
-                  const WHITEPAY_NETWORK = 200;
-                  const WHITEPAY_TOTAL = WHITEPAY_PROCESSING + WHITEPAY_NETWORK;
-                  const netCents = amtCents - WHITEPAY_TOTAL;
-                  return (
-                    <motion.div
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-muted/40 border border-border rounded-lg p-4 space-y-2 text-sm"
-                    >
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">{text.request.feesPreview ?? 'Aperçu des frais'}</p>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">{text.request.grossAmount}</span>
-                        <span>{formatCentsToCurrency(amtCents, 'EUR')}</span>
-                      </div>
-                      <div className="flex justify-between text-orange-500">
-                        <span>Frais de traitement</span>
-                        <span>-{formatCentsToCurrency(WHITEPAY_PROCESSING, 'EUR')}</span>
-                      </div>
-                      <div className="flex justify-between text-orange-500">
-                        <span>Frais réseau</span>
-                        <span>-{formatCentsToCurrency(WHITEPAY_NETWORK, 'EUR')}</span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between font-semibold">
-                        <span>{text.request.youReceive}</span>
-                        <span className={netCents > 0 ? 'text-green-500' : 'text-destructive'}>
-                          {netCents > 0 ? formatCentsToCurrency(netCents, 'EUR') : '—'}
-                        </span>
-                      </div>
-                    </motion.div>
-                  );
-                })()}
+                {/* Aperçu des frais inline — affiché dès qu'un montant est saisi */}
+                {!payoutResult && payoutMethod !== 'sepa_fr' && amount && parseFloat(amount) > 0 && (
+                  <FeePreview
+                    method={payoutMethod as 'card' | 'sepa' | 'crypto'}
+                    amountCents={toCents(parseFloat(amount))}
+                    labels={{
+                      feesPreview: text.request.feesPreview ?? 'Aperçu des frais',
+                      grossAmount: text.request.grossAmount,
+                      youReceive: text.request.youReceive,
+                    }}
+                  />
+                )}
 
-                {/* Bouton Obtenir devis — masqué pour SEPA France (formulaire autonome) */}
+                {/* Bouton de confirmation — fetch le quote en background puis affiche le récap */}
                 {!quote && !payoutResult && payoutMethod !== 'sepa_fr' && (
                   <Button
                     onClick={getQuote}
@@ -1438,12 +1415,12 @@ export default function PayoutPage() {
                         {text.request.submitting}
                       </>
                     ) : (
-                      text.request.getQuoteButton
+                      text.request.submitButton
                     )}
                   </Button>
                 )}
 
-                {/* Récapitulatif du devis */}
+                {/* Confirmation finale après validation du quote */}
                 {quote && !payoutResult && payoutMethod !== 'sepa_fr' && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -1452,7 +1429,7 @@ export default function PayoutPage() {
                   >
                     <h3 className="font-semibold flex items-center gap-2">
                       <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                      Récapitulatif
+                      {text.request.confirmTitle}
                     </h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
@@ -1460,11 +1437,11 @@ export default function PayoutPage() {
                         <span>{formatCentsToCurrency(quote.amountCents, 'EUR')}</span>
                       </div>
                       <div className="flex justify-between text-orange-500">
-                        <span>Frais de traitement</span>
+                        <span>{text.request.processingFee}</span>
                         <span>-{formatCentsToCurrency(quote.fees.processingCents, 'EUR')}</span>
                       </div>
                       <div className="flex justify-between text-orange-500">
-                        <span>Frais réseau</span>
+                        <span>{text.request.networkFee}</span>
                         <span>-{formatCentsToCurrency(quote.fees.networkCents, 'EUR')}</span>
                       </div>
                       <Separator />

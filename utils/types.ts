@@ -332,6 +332,7 @@ export interface Messages {
       comment: string[];
       amount: string[];
       items: string[];
+      transaction: string[];
       date: string[];
     };
     trustStats: {
@@ -575,6 +576,10 @@ export interface Messages {
       twitter: string;
       reddit: string;
       youtube: string;
+      instagram: string;
+      tiktok: string;
+      telegram: string;
+      steamGroup: string;
     };
   };
   about: {
@@ -2425,6 +2430,9 @@ export interface Messages {
     noMissionsInCategory: string;
     claimed: string;
     claim: string;
+    socialVisit: string;
+    socialConfirm: string;
+    socialWaiting: string;
     notAvailable: string;
     categoryAvailableBadge: string;
     celebrationFragments: string;
@@ -2444,6 +2452,10 @@ export interface Messages {
       SOCIAL_TWITTER: { label: string; description: string };
       SOCIAL_INSTAGRAM: { label: string; description: string };
       SOCIAL_DISCORD: { label: string; description: string };
+      SOCIAL_TIKTOK: { label: string; description: string };
+      SOCIAL_YOUTUBE: { label: string; description: string };
+      SOCIAL_TELEGRAM: { label: string; description: string };
+      SOCIAL_STEAM_GROUP: { label: string; description: string };
       BONUS_DAILY_SURPRISE: { label: string; description: string };
     };
     categories: {
@@ -4555,6 +4567,7 @@ export interface Messages {
         amountPlaceholder: string;
         feesInfo: string;
         feesPreview: string;
+        confirmTitle: string;
         processingFee: string;
         networkFee: string;
         youReceive: string;
