@@ -26,80 +26,35 @@ export function TestimonialsSection() {
   const { messages } = useLocale();
   const { data: publicStats } = usePublicStats();
   
-  const testimonials = [
-    {
-      id: 1,
-      name: messages.testimonials.items.name[0],
-      username: `@${messages.testimonials.items.name[0].toLowerCase()}`,
-      avatar: 'https://avatars.steamstatic.com/c5d56249ee5d28a07db4ac9f7f60af961fab5426_full.jpg',
-      rating: 5,
-      comment: messages.testimonials.items.comment[0],
-      amount: messages.testimonials.items.amount[0],
-      items: messages.testimonials.items.items[0],
-      date: messages.testimonials.items.date[0],
-      verified: true,
-    },
-    {
-      id: 2,
-      name: messages.testimonials.items.name[1],
-      username: `@${messages.testimonials.items.name[1].toLowerCase()}`,
-      avatar: 'https://avatars.steamstatic.com/185f21c3f1e8e55b1ff2f5dc1e8d3d2f5c6e7f8a_full.jpg',
-      rating: 5,
-      comment: messages.testimonials.items.comment[1],
-      amount: messages.testimonials.items.amount[1],
-      items: messages.testimonials.items.items[1],
-      date: messages.testimonials.items.date[1],
-      verified: true,
-    },
-    {
-      id: 3,
-      name: messages.testimonials.items.name[2],
-      username: `@${messages.testimonials.items.name[2].toLowerCase()}`,
-      avatar: 'https://avatars.steamstatic.com/8f3d5c1e9a2b4f6d8e7c9a1b2f4e6d8c7a9b1e2f_full.jpg',
-      rating: 5,
-      comment: messages.testimonials.items.comment[2],
-      amount: messages.testimonials.items.amount[2],
-      items: messages.testimonials.items.items[2],
-      date: messages.testimonials.items.date[2],
-      verified: true,
-    },
-    {
-      id: 4,
-      name: messages.testimonials.items.name[3],
-      username: `@${messages.testimonials.items.name[3].toLowerCase()}`,
-      avatar: 'https://avatars.steamstatic.com/2f4e6d8c7a9b1e2f4e6d8c7a9b1e2f4e6d8c7a9b_full.jpg',
-      rating: 5,
-      comment: messages.testimonials.items.comment[3],
-      amount: messages.testimonials.items.amount[3],
-      items: messages.testimonials.items.items[3],
-      date: messages.testimonials.items.date[3],
-      verified: true,
-    },
-    {
-      id: 5,
-      name: messages.testimonials.items.name[4],
-      username: `@${messages.testimonials.items.name[4].toLowerCase()}`,
-      avatar: 'https://avatars.steamstatic.com/4e6d8c7a9b1e2f4e6d8c7a9b1e2f4e6d8c7a9b1e_full.jpg',
-      rating: 5,
-      comment: messages.testimonials.items.comment[4],
-      amount: messages.testimonials.items.amount[4],
-      items: messages.testimonials.items.items[4],
-      date: messages.testimonials.items.date[4],
-      verified: true,
-    },
-    {
-      id: 6,
-      name: messages.testimonials.items.name[5],
-      username: `@${messages.testimonials.items.name[5].toLowerCase()}`,
-      avatar: 'https://avatars.steamstatic.com/6d8c7a9b1e2f4e6d8c7a9b1e2f4e6d8c7a9b1e2f4_full.jpg',
-      rating: 5,
-      comment: messages.testimonials.items.comment[5],
-      amount: messages.testimonials.items.amount[5],
-      items: messages.testimonials.items.items[5],
-      date: messages.testimonials.items.date[5],
-      verified: true,
-    },
+  const avatars = [
+    'https://avatars.steamstatic.com/8707319fd87ef78f9c3166d44d5a928d72230415_full.jpg',
+    'https://avatars.steamstatic.com/ddce018ed952993af326e8724b47384fcae6a10f_full.jpg',
+    'https://avatars.steamstatic.com/19e7c4f5d57f662bc37925422efa31aeaebbd9e2_full.jpg',
+    'https://avatars.steamstatic.com/cefaaaad35c70dd51850d509c6916b42743e8d98_full.jpg',
+    'https://avatars.steamstatic.com/d13c71aa50fa3bc9a4ef543138e362fffbdebf93_full.jpg',
+    'https://avatars.steamstatic.com/f77faaef3023f24ec09a5398c650f552bd4a7b6a_full.jpg',
   ];
+
+  const steamIds = [
+    '76561198354097387',
+    '76561198980987936',
+    '76561199496067896',
+    '76561198061376237',
+    '76561198067621699',
+    '76561198001122376',
+  ];
+
+  const testimonials = Array.from({ length: 6 }, (_, i) => ({
+    id: i + 1,
+    name: messages.testimonials.items.name[i],
+    steamId: steamIds[i],
+    avatar: avatars[i],
+    rating: 5,
+    comment: messages.testimonials.items.comment[i],
+    amount: messages.testimonials.items.amount[i],
+    date: messages.testimonials.items.date?.[i] ?? '',
+    verified: true,
+  }));
 
   return (
     <section className="py-24 bg-muted/30">
@@ -128,7 +83,9 @@ export function TestimonialsSection() {
             </div>
             <div className="h-6 w-px bg-border" />
             <div className="text-muted-foreground">
-              {messages.testimonials.basedOn} <strong>{(publicStats?.totalUsers ?? 0).toLocaleString()}</strong> {messages.testimonials.reviews}
+              <a href="https://csgo-rep.com/profile/76561199040420116" target="_blank" rel="noopener noreferrer" className="hover:text-orange-500 transition-colors">
+                {messages.testimonials.basedOn} <strong>806+</strong> {messages.testimonials.reviews} CSGO-Rep
+              </a>
             </div>
           </div>
         </motion.div>
@@ -148,29 +105,32 @@ export function TestimonialsSection() {
                   {/* Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
-                      <Avatar className="w-10 h-10">
-                        <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                        <AvatarFallback>
-                          {testimonial.name.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                      <a href={`https://csgo-rep.com/profile/${testimonial.steamId}`} target="_blank" rel="noopener noreferrer">
+                        <Avatar className="w-10 h-10 ring-2 ring-transparent hover:ring-orange-500 transition-all">
+                          <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                          <AvatarFallback>
+                            {testimonial.name.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </a>
                       <div>
                         <div className="flex items-center space-x-2">
-                          <h4 className="font-semibold text-sm">{testimonial.name}</h4>
+                          <a href={`https://csgo-rep.com/profile/${testimonial.steamId}`} target="_blank" rel="noopener noreferrer" className="hover:text-orange-500 transition-colors">
+                            <h4 className="font-semibold text-sm">{testimonial.name}</h4>
+                          </a>
                           {testimonial.verified && (
-                            <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                            <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center" title="CSGO-Rep verified">
                               <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
                             </div>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground">{testimonial.username}</p>
+                        <p className="text-xs text-muted-foreground">{testimonial.date}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold text-green-600">{testimonial.amount}</div>
-                      <div className="text-xs text-muted-foreground">{testimonial.date}</div>
                     </div>
                   </div>
 
@@ -184,15 +144,37 @@ export function TestimonialsSection() {
                     &quot;{testimonial.comment}&quot;
                   </p>
 
-                  {/* Items */}
+                  {testimonial.date && (
                   <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
-                    <span className="font-medium">Items vendus:</span> {testimonial.items}
+                    <span className="font-medium">{testimonial.date}</span>
                   </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
           ))}
         </div>
+
+        {/* CSGO-Rep Link */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mt-10"
+        >
+          <a
+            href="https://csgo-rep.com/profile/76561199040420116"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center space-x-2 text-sm text-orange-600 hover:text-orange-500 transition-colors font-medium"
+          >
+            <span>{messages.testimonials.basedOn} 806+ {messages.testimonials.reviews} CSGO-Rep</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </motion.div>
 
         {/* Trust Indicators */}
         <motion.div

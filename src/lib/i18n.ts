@@ -58,9 +58,9 @@ export const messages: Record<Locale, Messages> = {
         totalNet: "Total net",
       },
       testimonials: {
-        name: ["ProGamer2024", "SkinMaster", "CSGOKing"],
-        comment: ["Super rapide ! J'ai vendu mes skins et reçu mon paiement en seulement 2 jours après le trade hold Steam. Interface très claire et support réactif.", "Meilleur site pour vendre ses skins ! Processus simple, estimation précise, et paiement SEPA ultra rapide. Je recommande à 100%.", "Interface magnifique et très professionnelle. J'ai pu suivre mon trade en temps réel et les notifications m'ont tenu informé. Top !"],
-        amount: ["1,234€", "987€", "2,156€"]
+        name: ["deft", "mETR1CKZ", "々"],
+        comment: ["Gift for him, fast and smooth trade", "Tu peux lui faire confiance à 100%. Je trade avec lui depuis des années sans jamais de problème. Il propose toujours les meilleurs prix possibles.", "Ty again for this trade, perfect inventory"],
+        amount: ["$98,744", "$30,000", "$18,000"]
       },
       paymentMethods: {
         title: "Moyens de paiement acceptés",
@@ -197,23 +197,24 @@ export const messages: Record<Locale, Messages> = {
     },
     testimonials: {
       title: "Ce que disent nos utilisateurs",
-      subtitle: "Plus de 15,000 utilisateurs nous font confiance pour vendre leurs skins",
-      rating: "4.9",
+      subtitle: "Plus de 800 avis positifs sur CSGO-Rep",
+      rating: "5.0",
       basedOn: "Basé sur",
       reviews: "avis",
       items: {
-        name: ["ProGamer2024", "SkinMaster", "CSGOKing", "FrenchTrader", "TechSavvy", "CryptoFan"],
+        name: ["deft", "mETR1CKZ", "々", "-GoV-Yurchik*", "Slaeman", "ukozor"],
         comment: [
-          "Super rapide ! J'ai vendu mes skins et reçu mon paiement en seulement 2 jours après le trade hold Steam. Interface très claire et support réactif.",
-          "Meilleur site pour vendre ses skins ! Processus simple, estimation précise, et paiement SEPA ultra rapide. Je recommande à 100%.",
-          "Interface magnifique et très professionnelle. J'ai pu suivre mon trade en temps réel et les notifications m'ont tenu informé. Top !",
-          "Parfait pour les français ! Support en français, paiement SEPA, et conformité européenne. Enfin une plateforme sérieuse.",
-          "J'adore le système de gamification ! Gagner de l'XP et des fragments à chaque trade, c'est génial. En plus les giveaways sont top.",
-          "Support crypto excellent ! Bitcoin, Ethereum, USDT... tout y est. Frais transparents et pas de mauvaises surprises."
+          "Gift for him, fast and smooth trade",
+          "Tu peux lui faire confiance à 100%. Je trade avec lui depuis des années sans jamais de problème. Il propose toujours les meilleurs prix possibles.",
+          "Ty again for this trade, perfect inventory",
+          "+rep, have supplied his customers with 100k+ rmb, I went first, got money at the end of the day.",
+          "Bought 8k eur worth of buff ball and 2k usdt from him, I can only recommend him for not taking advantage of my trust!",
+          "I sold him $1,100 worth of skins, and he bought $5,500 worth of skins from me on Youpin. It was really fast! Skins were in my account that same day!"
         ],
-        amount: ["1,234€", "987€", "2,156€", "675€", "445€", "1,789€"],
-        items: ["AK-47 Redline + AWP Asiimov", "Glock Fade StatTrak™", "Karambit Fade + M4A4 Howl", "USP-S Kill Confirmed", "AK-47 Vulcan", "Dragon Lore Factory New"],
-        date: ["Il y a 2 jours", "Il y a 5 jours", "Il y a 1 semaine", "Il y a 1 semaine", "Il y a 2 semaines", "Il y a 2 semaines"]
+        amount: ["$98,744", "$30,000", "$18,000", "$13,000", "$10,000", "$6,600"],
+        items: ["Skin CS2", "Skin CS2", "Skin CS2", "RMB", "Balance USDT", "Skin CS2"],
+        transaction: ["Achat skin CS2 par virement", "Achat skin CS2 par USDT", "Achat skin CS2 par virement", "Vente RMB par virement", "Achat balance par USDT", "Achat skin CS2 par crypto"],
+        date: ["10 Nov 2025", "3 Mar 2026", "12 Avr 2025", "15 Nov 2025", "11 Jan 2024", "13 Avr 2026"]
       },
       trustStats: {
         satisfaction: "Taux de satisfaction",
@@ -545,6 +546,10 @@ export const messages: Record<Locale, Messages> = {
         twitter: "Twitter",
         reddit: "Reddit",
         youtube: "YouTube",
+        instagram: "Instagram",
+        tiktok: "TikTok",
+        telegram: "Telegram",
+        steamGroup: "Groupe Steam",
       },
     },
     support: {
@@ -749,6 +754,9 @@ export const messages: Record<Locale, Messages> = {
       noMissionsInCategory: "Aucune mission.",
       claimed: "Réclamée",
       claim: "Réclamer",
+      socialVisit: "Visiter",
+      socialConfirm: "Confirmer & Réclamer",
+      socialWaiting: "Vérifie...",
       notAvailable: "Non disponible",
       categoryAvailableBadge: "+{amount} 💠 disponibles",
       celebrationFragments: "Fragments 💠",
@@ -803,6 +811,22 @@ export const messages: Record<Locale, Messages> = {
         SOCIAL_DISCORD: {
           label: "Rejoindre Discord",
           description: "Rejoins notre serveur Discord communautaire.",
+        },
+        SOCIAL_TIKTOK: {
+          label: "Suivre sur TikTok",
+          description: "Suis notre compte TikTok officiel.",
+        },
+        SOCIAL_YOUTUBE: {
+          label: "S'abonner sur YouTube",
+          description: "Abonne-toi à notre chaîne YouTube.",
+        },
+        SOCIAL_TELEGRAM: {
+          label: "Rejoindre Telegram",
+          description: "Rejoins notre groupe Telegram communautaire.",
+        },
+        SOCIAL_STEAM_GROUP: {
+          label: "Rejoindre le groupe Steam",
+          description: "Rejoins notre groupe Steam officiel.",
         },
         BONUS_DAILY_SURPRISE: {
           label: "Mission du jour",
@@ -3505,6 +3529,7 @@ export const messages: Record<Locale, Messages> = {
         amountPlaceholder: 'Entrez le montant',
         feesInfo: 'Frais inclus',
         feesPreview: 'Aperçu des frais',
+        confirmTitle: 'Confirmer le retrait',
         processingFee: 'Frais de traitement',
         networkFee: 'Frais réseau',
         youReceive: 'Vous recevrez',
@@ -5282,9 +5307,9 @@ export const messages: Record<Locale, Messages> = {
         totalNet: "Net total",
       },
       testimonials: {
-        name: ["ProGamer2024", "SkinMaster", "CSGOKing"],
-        comment: ["Super fast! I sold my skins and received my payment in just 2 days after the Steam trade hold. Very clear interface and responsive support.", "Best site to sell skins! Simple process, accurate estimation, and ultra-fast SEPA payment. I recommend 100%.", "Magnificent and very professional interface. I was able to follow my trade in real time and the notifications kept me informed. Top notch!"],
-        amount: ["1,234€", "987€", "2,156€"]
+        name: ["deft", "mETR1CKZ", "々"],
+        comment: ["Gift for him, fast and smooth trade", "You can trust him 100%. I have been trading with him for several years and have never had any problems. He always offers the best possible prices.", "Ty again for this trade, perfect inventory"],
+        amount: ["$98,744", "$30,000", "$18,000"]
       },
       paymentMethods: {
         title: "Accepted payment methods",
@@ -5421,23 +5446,24 @@ export const messages: Record<Locale, Messages> = {
     },
     testimonials: {
       title: "What our users say",
-      subtitle: "Over 15,000 users trust us to sell their skins",
-      rating: "4.9",
+      subtitle: "Over 800 positive reviews on CSGO-Rep",
+      rating: "5.0",
       basedOn: "Based on",
       reviews: "reviews",
       items: {
-        name: ["ProGamer2024", "SkinMaster", "CSGOKing", "FrenchTrader", "TechSavvy", "CryptoFan"],
+        name: ["deft", "mETR1CKZ", "々", "-GoV-Yurchik*", "Slaeman", "ukozor"],
         comment: [
-          "Super fast! I sold my skins and received my payment in just 2 days after the Steam trade hold. Very clear interface and responsive support.",
-          "Best site to sell skins! Simple process, accurate estimation, and ultra-fast SEPA payment. I recommend 100%.",
-          "Magnificent and very professional interface. I was able to follow my trade in real time and notifications kept me informed. Top notch!",
-          "Perfect for French! French support, SEPA payment, and European compliance. Finally, a serious platform.",
-          "I love the gamification system! Earning XP and fragments on each trade, it's great. Plus the giveaways are awesome.",
-          "Excellent crypto support! Bitcoin, Ethereum, USDT... everything is there. Transparent fees and no surprises."
+          "Gift for him, fast and smooth trade",
+          "You can trust him 100%. I have been trading with him for several years and have never had any problems. He always offers the best possible prices.",
+          "Ty again for this trade, perfect inventory",
+          "+rep, have supplied his customers with 100k+ rmb, I went first, got money at the end of the day.",
+          "Bought 8k eur worth of buff ball and 2k usdt from him, I can only recommend him for not taking advantage of my trust!",
+          "I sold him $1,100 worth of skins, and he bought $5,500 worth of skins from me on Youpin. It was really fast! Skins were in my account that same day!"
         ],
-        amount: ["1,234€", "987€", "2,156€", "675€", "445€", "1,789€"],
-        items: ["AK-47 Redline + AWP Asiimov", "Glock Fade StatTrak™", "Karambit Fade + M4A4 Howl", "USP-S Kill Confirmed", "AK-47 Vulcan", "Dragon Lore Factory New"],
-        date: ["2 days ago", "5 days ago", "1 week ago", "1 week ago", "2 weeks ago", "2 weeks ago"]
+        amount: ["$98,744", "$30,000", "$18,000", "$13,000", "$10,000", "$6,600"],
+        items: ["CS2 Skin", "CS2 Skin", "CS2 Skin", "RMB", "USDT Balance", "CS2 Skin"],
+        transaction: ["Bought CS2 skin by bank wire", "Bought CS2 skin by USDT", "Bought CS2 skin by bank wire", "Sold RMB by bank wire", "Bought balance by USDT", "Bought CS2 skin by crypto"],
+        date: ["Nov 10, 2025", "Mar 3, 2026", "Apr 12, 2025", "Nov 15, 2025", "Jan 11, 2024", "Apr 13, 2026"]
       },
       trustStats: {
         satisfaction: "Satisfaction rate",
@@ -5768,6 +5794,10 @@ export const messages: Record<Locale, Messages> = {
         twitter: "Twitter",
         reddit: "Reddit",
         youtube: "YouTube",
+        instagram: "Instagram",
+        tiktok: "TikTok",
+        telegram: "Telegram",
+        steamGroup: "Steam Group",
       },
     },
     support: {
@@ -5972,6 +6002,9 @@ export const messages: Record<Locale, Messages> = {
       noMissionsInCategory: "No missions in this category.",
       claimed: "Claimed",
       claim: "Claim",
+      socialVisit: "Visit",
+      socialConfirm: "Confirm & Claim",
+      socialWaiting: "Verifying...",
       notAvailable: "Locked",
       categoryAvailableBadge: "+{amount} 💠 available",
       celebrationFragments: "Fragments 💠",
@@ -6026,6 +6059,22 @@ export const messages: Record<Locale, Messages> = {
         SOCIAL_DISCORD: {
           label: "Join Discord",
           description: "Join our community Discord server.",
+        },
+        SOCIAL_TIKTOK: {
+          label: "Follow on TikTok",
+          description: "Follow our official TikTok account.",
+        },
+        SOCIAL_YOUTUBE: {
+          label: "Subscribe on YouTube",
+          description: "Subscribe to our YouTube channel.",
+        },
+        SOCIAL_TELEGRAM: {
+          label: "Join Telegram",
+          description: "Join our community Telegram group.",
+        },
+        SOCIAL_STEAM_GROUP: {
+          label: "Join Steam Group",
+          description: "Join our official Steam group.",
         },
         BONUS_DAILY_SURPRISE: {
           label: "Mission of the day",
@@ -7641,6 +7690,7 @@ export const messages: Record<Locale, Messages> = {
         amountPlaceholder: 'Enter amount',
         feesInfo: 'Fees included',
         feesPreview: 'Fee preview',
+        confirmTitle: 'Confirm withdrawal',
         processingFee: 'Processing fee',
         networkFee: 'Network fee',
         youReceive: 'You will receive',
@@ -10505,9 +10555,9 @@ export const messages: Record<Locale, Messages> = {
         totalNet: "净额",
       },
       testimonials: {
-        name: ["职业玩家2024", "皮肤大师", "CSGO之王"],
-        comment: ["超级快！我出售了皮肤，在Steam交易锁定后仅2天就收到了付款。界面非常清晰，客服响应迅速。", "出售皮肤的最佳网站！流程简单，估价准确，SEPA付款超快。100%推荐。", "界面精美且非常专业。我能够实时跟踪交易，通知让我随时了解情况。太棒了！"],
-        amount: ["1,234€", "987€", "2,156€"]
+        name: ["deft", "mETR1CKZ", "々"],
+        comment: ["Gift for him, fast and smooth trade", "100%值得信赖。我和他交易了好几年，从来没有出过任何问题。他总是提供最优惠的价格。", "Ty again for this trade, perfect inventory"],
+        amount: ["$98,744", "$30,000", "$18,000"]
       },
       paymentMethods: {
         title: "支持的支付方式",
@@ -10644,23 +10694,24 @@ export const messages: Record<Locale, Messages> = {
     },
     testimonials: {
       title: "用户评价",
-      subtitle: "超过15,000名用户信任我们出售他们的皮肤",
-      rating: "4.9",
+      subtitle: "CSGO-Rep上超过800条好评",
+      rating: "5.0",
       basedOn: "基于",
       reviews: "评价",
       items: {
-        name: ["职业玩家2024", "皮肤大师", "CSGO之王", "法国交易员", "技术达人", "加密粉丝"],
+        name: ["deft", "mETR1CKZ", "々", "-GoV-Yurchik*", "Slaeman", "ukozor"],
         comment: [
-          "超级快！我出售了皮肤，在Steam交易锁定后仅2天就收到了付款。界面非常清晰，客服响应迅速。",
-          "出售皮肤的最佳网站！流程简单，估价准确，SEPA付款超快。100%推荐。",
-          "界面精美且非常专业。我能够实时跟踪交易，通知让我随时了解情况。太棒了！",
-          "对法国人来说很完美！法语客服、SEPA付款和欧洲合规。终于有了一个认真的平台。",
-          "我喜欢游戏化系统！每次交易获得经验值和票券，太棒了。而且抽奖也很不错。",
-          "出色的加密货币支持！比特币、以太坊、USDT...应有尽有。费用透明，没有意外。"
+          "Gift for him, fast and smooth trade",
+          "100%值得信赖。我和他交易了好几年，从来没有出过任何问题。他总是提供最优惠的价格。",
+          "Ty again for this trade, perfect inventory",
+          "+rep, have supplied his customers with 100k+ rmb, I went first, got money at the end of the day.",
+          "Bought 8k eur worth of buff ball and 2k usdt from him, I can only recommend him for not taking advantage of my trust!",
+          "I sold him $1,100 worth of skins, and he bought $5,500 worth of skins from me on Youpin. It was really fast! Skins were in my account that same day!"
         ],
-        amount: ["1,234€", "987€", "2,156€", "675€", "445€", "1,789€"],
-        items: ["AK-47 红线 + AWP 亚洲二元", "格洛克 渐变 StatTrak™", "卡拉曼比特 渐变 + M4A4 怒吼", "USP-S 死亡确认", "AK-47 火神", "Dragon Lore 崭新出厂"],
-        date: ["2天前", "5天前", "1周前", "1周前", "2周前", "2周前"]
+        amount: ["$98,744", "$30,000", "$18,000", "$13,000", "$10,000", "$6,600"],
+        items: ["CS2皮肤", "CS2皮肤", "CS2皮肤", "人民币", "USDT余额", "CS2皮肤"],
+        transaction: ["通过银行转账购买CS2皮肤", "通过USDT购买CS2皮肤", "通过银行转账购买CS2皮肤", "通过银行转账出售人民币", "通过USDT购买余额", "通过加密货币购买CS2皮肤"],
+        date: ["2025年11月10日", "2026年3月3日", "2025年4月12日", "2025年11月15日", "2024年1月11日", "2026年4月13日"]
       },
       trustStats: {
         satisfaction: "满意度",
@@ -10986,6 +11037,10 @@ export const messages: Record<Locale, Messages> = {
         twitter: "Twitter",
         reddit: "Reddit",
         youtube: "YouTube",
+        instagram: "Instagram",
+        tiktok: "TikTok",
+        telegram: "Telegram",
+        steamGroup: "Steam 群组",
       },
     },
     support: {
@@ -11178,6 +11233,9 @@ export const messages: Record<Locale, Messages> = {
       noMissionsInCategory: "此类别无任务。",
       claimed: "已领取",
       claim: "领取",
+      socialVisit: "访问",
+      socialConfirm: "确认并领取",
+      socialWaiting: "验证中...",
       notAvailable: "未解锁",
       categoryAvailableBadge: "+{amount} 💠 可领取",
       celebrationFragments: "碎片 💠",
@@ -11232,6 +11290,22 @@ export const messages: Record<Locale, Messages> = {
         SOCIAL_DISCORD: {
           label: "加入 Discord",
           description: "加入我们的社区 Discord 服务器。",
+        },
+        SOCIAL_TIKTOK: {
+          label: "关注 TikTok",
+          description: "关注我们的官方 TikTok 账号。",
+        },
+        SOCIAL_YOUTUBE: {
+          label: "订阅 YouTube",
+          description: "订阅我们的 YouTube 频道。",
+        },
+        SOCIAL_TELEGRAM: {
+          label: "加入 Telegram",
+          description: "加入我们的 Telegram 社区群组。",
+        },
+        SOCIAL_STEAM_GROUP: {
+          label: "加入 Steam 群组",
+          description: "加入我们的官方 Steam 群组。",
         },
         BONUS_DAILY_SURPRISE: {
           label: "每日惊喜任务",
@@ -12624,6 +12698,7 @@ export const messages: Record<Locale, Messages> = {
         amountPlaceholder: '输入金额',
         feesInfo: '含费用',
         feesPreview: '费用预览',
+        confirmTitle: '确认提款',
         processingFee: '处理费',
         networkFee: '网络费',
         youReceive: '您将收到',
