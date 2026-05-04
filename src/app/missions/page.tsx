@@ -1,7 +1,7 @@
 'use client';
 
 import type { ComponentType } from 'react';
-import { useState } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,10 +22,14 @@ import {
   GlobeAltIcon,
   CalendarDaysIcon,
   StarIcon,
+  ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline';
 import { queryKeys } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
+import { SOCIAL_MISSION_URLS } from '@/lib/moonskin-social';
 import type { Messages } from '~/utils/types';
+
+const SOCIAL_VISIT_DELAY_MS = 10_000;
 
 type MissionRow = {
   key: string;
@@ -52,6 +56,10 @@ const MISSION_ROW_STYLE: Record<string, { icon: ComponentType<{ className?: stri
   SOCIAL_TWITTER: { icon: GlobeAltIcon, iconClass: 'text-sky-400' },
   SOCIAL_INSTAGRAM: { icon: GlobeAltIcon, iconClass: 'text-pink-500' },
   SOCIAL_DISCORD: { icon: GlobeAltIcon, iconClass: 'text-indigo-500' },
+  SOCIAL_TIKTOK: { icon: GlobeAltIcon, iconClass: 'text-gray-800 dark:text-gray-200' },
+  SOCIAL_YOUTUBE: { icon: GlobeAltIcon, iconClass: 'text-red-500' },
+  SOCIAL_TELEGRAM: { icon: GlobeAltIcon, iconClass: 'text-blue-400' },
+  SOCIAL_STEAM_GROUP: { icon: GlobeAltIcon, iconClass: 'text-gray-500' },
   BONUS_DAILY_SURPRISE: { icon: StarIcon, iconClass: 'text-yellow-400' },
 };
 
@@ -68,6 +76,90 @@ const CATEGORY_STYLE: Record<
 
 const CATEGORY_ORDER = ['BONUS', 'DAILY', 'WEEKLY', 'MONTHLY', 'SOCIAL'] as const;
 
+function SocialMissionActions({
+  mission,
+  onClaim,
+  isPending,
+  t,
+}: {
+  mission: MissionRow;
+  onClaim: (key: string) => void;
+  isPending: boolean;
+  t: Messages['missions'];
+}) {
+  const socialUrl = SOCIAL_MISSION_URLS[mission.key];
+  const [visited, setVisited] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const handleVisit = useCallback(() => {
+    if (!socialUrl) return;
+    window.open(socialUrl, '_blank', 'noopener,noreferrer');
+    setVisited(true);
+    setCountdown(Math.ceil(SOCIAL_VISIT_DELAY_MS / 1000));
+  }, [socialUrl]);
+
+  useEffect(() => {
+    if (!visited || countdown <= 0) return;
+    timerRef.current = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [visited, countdown > 0]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!socialUrl) {
+    return (
+      <Button
+        size="sm"
+        disabled={isPending}
+        onClick={() => onClaim(mission.key)}
+        className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+      >
+        {t.claim}
+      </Button>
+    );
+  }
+
+  if (!visited) {
+    return (
+      <Button
+        size="sm"
+        onClick={handleVisit}
+        className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 gap-1.5"
+      >
+        <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+        {t.socialVisit}
+      </Button>
+    );
+  }
+
+  if (countdown > 0) {
+    return (
+      <Button size="sm" disabled className="gap-1.5 min-w-[140px]">
+        <ClockIcon className="w-4 h-4 animate-spin" />
+        {t.socialWaiting} ({countdown}s)
+      </Button>
+    );
+  }
+
+  return (
+    <Button
+      size="sm"
+      disabled={isPending}
+      onClick={() => onClaim(mission.key)}
+      className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+    >
+      {t.socialConfirm}
+    </Button>
+  );
+}
+
 function MissionCard({
   mission,
   onClaim,
@@ -83,6 +175,8 @@ function MissionCard({
   const IconComp = rowStyle?.icon ?? SparklesIcon;
   const iconClass = rowStyle?.iconClass ?? 'text-amber-500';
   const itemMeta = t.items[mission.key as keyof typeof t.items];
+
+  const isSocial = mission.category === 'SOCIAL' && mission.key !== 'SOCIAL_NEWSLETTER';
 
   return (
     <div
@@ -149,6 +243,13 @@ function MissionCard({
             <CheckCircleIcon className="w-3.5 h-3.5 mr-1" />
             {t.claimed}
           </Badge>
+        ) : mission.eligible && isSocial ? (
+          <SocialMissionActions
+            mission={mission}
+            onClaim={onClaim}
+            isPending={isPending}
+            t={t}
+          />
         ) : mission.eligible ? (
           <Button
             size="sm"

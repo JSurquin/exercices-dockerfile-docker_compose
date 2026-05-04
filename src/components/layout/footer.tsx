@@ -3,7 +3,15 @@
 import Link from "next/link";
 import { useLocale } from "@/components/providers/locale-provider";
 import { usePublicStats } from "@/hooks/use-public-stats";
-import { MOONSKIN_DISCORD_URL, MOONSKIN_X_URL } from "@/lib/moonskin-social";
+import {
+  MOONSKIN_DISCORD_URL,
+  MOONSKIN_X_URL,
+  MOONSKIN_INSTAGRAM_URL,
+  MOONSKIN_TIKTOK_URL,
+  MOONSKIN_YOUTUBE_URL,
+  MOONSKIN_TELEGRAM_URL,
+  MOONSKIN_STEAM_GROUP_URL,
+} from "@/lib/moonskin-social";
 import {
   Tooltip,
   TooltipContent,
@@ -41,12 +49,11 @@ export function Footer() {
     community: [
       { name: messages.footer.socialLinks.discord, href: MOONSKIN_DISCORD_URL },
       { name: messages.footer.socialLinks.x, href: MOONSKIN_X_URL },
-      ...(process.env.NEXT_PUBLIC_REDDIT_URL
-        ? [{ name: messages.footer.socialLinks.reddit, href: process.env.NEXT_PUBLIC_REDDIT_URL }]
-        : []),
-      ...(process.env.NEXT_PUBLIC_YOUTUBE_URL
-        ? [{ name: messages.footer.socialLinks.youtube, href: process.env.NEXT_PUBLIC_YOUTUBE_URL }]
-        : []),
+      { name: messages.footer.socialLinks.instagram, href: MOONSKIN_INSTAGRAM_URL },
+      { name: messages.footer.socialLinks.tiktok, href: MOONSKIN_TIKTOK_URL },
+      { name: messages.footer.socialLinks.youtube, href: MOONSKIN_YOUTUBE_URL },
+      { name: messages.footer.socialLinks.telegram, href: MOONSKIN_TELEGRAM_URL },
+      { name: messages.footer.socialLinks.steamGroup, href: MOONSKIN_STEAM_GROUP_URL },
     ],
   };
 
@@ -81,23 +88,27 @@ export function Footer() {
                   {messages.footer.description}
                 </p>
                 <div className="flex flex-wrap gap-3 mb-4">
-                  <a
-                    href={MOONSKIN_DISCORD_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-colors"
-                  >
-                    {messages.footer.socialLinks.discord}
-                  </a>
-                  <span className="text-white/30">·</span>
-                  <a
-                    href={MOONSKIN_X_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-colors"
-                  >
-                    {messages.footer.socialLinks.x}
-                  </a>
+                  {[
+                    { label: messages.footer.socialLinks.discord, href: MOONSKIN_DISCORD_URL },
+                    { label: messages.footer.socialLinks.x, href: MOONSKIN_X_URL },
+                    { label: messages.footer.socialLinks.instagram, href: MOONSKIN_INSTAGRAM_URL },
+                    { label: messages.footer.socialLinks.tiktok, href: MOONSKIN_TIKTOK_URL },
+                    { label: messages.footer.socialLinks.youtube, href: MOONSKIN_YOUTUBE_URL },
+                    { label: messages.footer.socialLinks.telegram, href: MOONSKIN_TELEGRAM_URL },
+                    { label: messages.footer.socialLinks.steamGroup, href: MOONSKIN_STEAM_GROUP_URL },
+                  ].map((social, i, arr) => (
+                    <span key={social.label} className="flex items-center gap-3">
+                      <a
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-colors"
+                      >
+                        {social.label}
+                      </a>
+                      {i < arr.length - 1 && <span className="text-white/30">·</span>}
+                    </span>
+                  ))}
                 </div>
                 <div className="text-sm text-white/60">
                   <p className="font-medium text-white/80 mb-1">{messages.footer.securedBy}</p>

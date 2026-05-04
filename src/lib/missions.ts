@@ -50,6 +50,10 @@ export const MISSION_DEFINITIONS: MissionDef[] = [
   { key: 'SOCIAL_TWITTER', category: 'SOCIAL', rewardFragments: 15, fragmentType: 'GENERATED_MISSION_SOCIAL', period: 'once' },
   { key: 'SOCIAL_INSTAGRAM', category: 'SOCIAL', rewardFragments: 15, fragmentType: 'GENERATED_MISSION_SOCIAL', period: 'once' },
   { key: 'SOCIAL_DISCORD', category: 'SOCIAL', rewardFragments: 25, fragmentType: 'GENERATED_MISSION_SOCIAL', period: 'once' },
+  { key: 'SOCIAL_TIKTOK', category: 'SOCIAL', rewardFragments: 15, fragmentType: 'GENERATED_MISSION_SOCIAL', period: 'once' },
+  { key: 'SOCIAL_YOUTUBE', category: 'SOCIAL', rewardFragments: 15, fragmentType: 'GENERATED_MISSION_SOCIAL', period: 'once' },
+  { key: 'SOCIAL_TELEGRAM', category: 'SOCIAL', rewardFragments: 20, fragmentType: 'GENERATED_MISSION_SOCIAL', period: 'once' },
+  { key: 'SOCIAL_STEAM_GROUP', category: 'SOCIAL', rewardFragments: 20, fragmentType: 'GENERATED_MISSION_SOCIAL', period: 'once' },
   {
     key: 'BONUS_DAILY_SURPRISE',
     category: 'BONUS',
