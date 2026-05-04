@@ -90,6 +90,8 @@ export async function PATCH(
       const { debited } = await PayoutLifecycle.onCompleted(
         payout.user!.id, payoutId, payout.amountCents,
         {
+          tradeId: payout.tradeId,
+          updateXp: true,
           reason: `Payout SEPA Premium ${payoutId} approuvé`,
           finalStatus: 'PAID',
           paidAt: new Date(),
@@ -129,6 +131,7 @@ export async function PATCH(
     }
 
     await PayoutLifecycle.onFailed(payout.user!.id, payoutId, payout.amountCents, {
+      tradeId: payout.tradeId,
       finalStatus: 'CANCELLED',
     });
 

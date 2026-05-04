@@ -100,7 +100,7 @@ export async function POST(
           if (isTransactionCompleted(res.transaction.status)) {
             await PayoutLifecycle.onCompleted(
               payout.userId, payoutId, payout.amountCents,
-              { updateXp: true, reason: `Payout Flexify carte ${payoutId} complété (instant)` },
+              { tradeId: payout.tradeId, updateXp: true, reason: `Payout Flexify carte ${payoutId} complété (instant)` },
             );
           }
           await prisma.auditLog.create({
@@ -147,7 +147,7 @@ export async function POST(
           if (isTransactionCompleted(res.transaction.status)) {
             await PayoutLifecycle.onCompleted(
               payout.userId, payoutId, payout.amountCents,
-              { updateXp: true, reason: `Payout Flexify SEPA ${payoutId} complété (instant)` },
+              { tradeId: payout.tradeId, updateXp: true, reason: `Payout Flexify SEPA ${payoutId} complété (instant)` },
             );
           }
           await prisma.auditLog.create({
@@ -173,14 +173,14 @@ export async function POST(
         }
       } catch (err) {
         console.error('[admin/payouts/approve] Flexify error:', err);
+        await PayoutLifecycle.onFailed(payout.userId, payoutId, payout.amountCents, {
+          tradeId: payout.tradeId,
+          finalStatus: 'FAILED',
+        });
         await prisma.payout.update({
           where: { id: payoutId },
-          data: {
-            status: 'FAILED',
-            errorMessage: err instanceof Error ? err.message : 'Erreur Flexify',
-          },
+          data: { errorMessage: err instanceof Error ? err.message : 'Erreur Flexify' },
         });
-        await PayoutLifecycle.onFailed(payout.userId, payoutId, payout.amountCents);
         return NextResponse.json(
           { error: 'Échec de l\'appel Flexify. Payout marqué en échec.', details: err instanceof Error ? err.message : String(err) },
           { status: 502 }
@@ -234,14 +234,14 @@ export async function POST(
       tx = whitepayResponse.transaction;
     } catch (err) {
       console.error('[admin/payouts/approve] WhitePay error:', err);
+      await PayoutLifecycle.onFailed(payout.userId, payoutId, payout.amountCents, {
+        tradeId: payout.tradeId,
+        finalStatus: 'FAILED',
+      });
       await prisma.payout.update({
         where: { id: payoutId },
-        data: {
-          status: 'FAILED',
-          errorMessage: err instanceof Error ? err.message : 'Erreur WhitePay',
-        },
+        data: { errorMessage: err instanceof Error ? err.message : 'Erreur WhitePay' },
       });
-      await PayoutLifecycle.onFailed(payout.userId, payoutId, payout.amountCents);
       return NextResponse.json(
         { error: 'Échec de l\'appel WhitePay. Payout marqué en échec.', details: err instanceof Error ? err.message : String(err) },
         { status: 502 }

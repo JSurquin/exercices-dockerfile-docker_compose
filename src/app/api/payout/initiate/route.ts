@@ -95,6 +95,7 @@ export async function POST(request: NextRequest) {
       where: {
         tradeId,
         userId,
+        status: { notIn: ['FAILED', 'CANCELLED'] },
       },
       include: {
         paymentMethod: true,

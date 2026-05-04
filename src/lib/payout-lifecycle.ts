@@ -16,7 +16,16 @@ export class PayoutLifecycle {
    * À appeler immédiatement après le prisma.payout.create.
    */
   static async onCreated(userId: string, payoutId: string, amountCents: number): Promise<void> {
+    if (amountCents <= 0) throw new Error('onCreated: amountCents must be positive');
     await prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUniqueOrThrow({
+        where: { id: userId },
+        select: { balanceCents: true, frozenBalanceCents: true },
+      });
+      const available = user.balanceCents - user.frozenBalanceCents;
+      if (available < amountCents) {
+        throw new Error('INSUFFICIENT_AVAILABLE_BALANCE');
+      }
       await tx.payout.update({
         where: { id: payoutId },
         data: { balanceFrozenAt: new Date() },
@@ -94,15 +103,19 @@ export class PayoutLifecycle {
       }
     }
 
-    try {
-      if (options.tradeId) {
+    if (options.tradeId) {
+      try {
         await prisma.trade.update({
           where: { id: options.tradeId },
           data: { status: 'PAID' },
         });
+      } catch (err) {
+        console.error(`[PayoutLifecycle] trade.update PAID failed for ${payoutId}:`, err);
       }
+    }
 
-      if (options.updateXp) {
+    if (options.updateXp) {
+      try {
         await prisma.user.update({
           where: { id: userId },
           data: {
@@ -110,8 +123,12 @@ export class PayoutLifecycle {
             xp: { increment: Math.floor(amountCents / 100) },
           },
         });
+      } catch (err) {
+        console.error(`[PayoutLifecycle] XP update failed for ${payoutId}:`, err);
       }
+    }
 
+    try {
       await prisma.auditLog.create({
         data: {
           userId,
@@ -120,7 +137,7 @@ export class PayoutLifecycle {
         },
       });
     } catch (err) {
-      console.error(`[PayoutLifecycle] Post-debit side-effects failed for ${payoutId}:`, err);
+      console.error(`[PayoutLifecycle] auditLog failed for ${payoutId}:`, err);
     }
 
     return { debited: true };

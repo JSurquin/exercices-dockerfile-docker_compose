@@ -136,12 +136,21 @@ export async function POST(request: NextRequest) {
     if (isTransactionComplete(tx.status)) {
       await PayoutLifecycle.onCompleted(
         payout.userId, payout.id, payout.amountCents,
-        { tradeId: payout.tradeId, updateXp: true, reason: `Payout Whitepay ${payout.id} complété (webhook)` },
+        {
+          tradeId: payout.tradeId,
+          updateXp: true,
+          reason: `Payout Whitepay ${payout.id} complété (webhook)`,
+          finalStatus: newInternalStatus,
+          paidAt: new Date(),
+        },
       );
     }
 
     if (isTransactionFailed(tx.status)) {
-      await PayoutLifecycle.onFailed(payout.userId, payout.id, payout.amountCents, { tradeId: payout.tradeId });
+      await PayoutLifecycle.onFailed(payout.userId, payout.id, payout.amountCents, {
+        tradeId: payout.tradeId,
+        finalStatus: newInternalStatus,
+      });
     }
 
     await prisma.auditLog.create({
