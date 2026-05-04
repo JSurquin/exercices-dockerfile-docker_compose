@@ -98,10 +98,13 @@ export async function POST(
             },
           });
           if (isTransactionCompleted(res.transaction.status)) {
-            await PayoutLifecycle.onCompleted(
+            const { debited } = await PayoutLifecycle.onCompleted(
               payout.userId, payoutId, payout.amountCents,
-              { tradeId: payout.tradeId, updateXp: true, reason: `Payout Flexify carte ${payoutId} complété (instant)` },
+              { tradeId: payout.tradeId, reason: `Payout Flexify carte ${payoutId} complété (instant)`, finalStatus: internalStatus, paidAt: new Date() },
             );
+            if (!debited) {
+              return NextResponse.json({ error: 'Débit du solde échoué, payout non finalisé.' }, { status: 400 });
+            }
           }
           await prisma.auditLog.create({
             data: {
@@ -145,10 +148,13 @@ export async function POST(
             },
           });
           if (isTransactionCompleted(res.transaction.status)) {
-            await PayoutLifecycle.onCompleted(
+            const { debited } = await PayoutLifecycle.onCompleted(
               payout.userId, payoutId, payout.amountCents,
-              { tradeId: payout.tradeId, updateXp: true, reason: `Payout Flexify SEPA ${payoutId} complété (instant)` },
+              { tradeId: payout.tradeId, reason: `Payout Flexify SEPA ${payoutId} complété (instant)`, finalStatus: internalStatus, paidAt: new Date() },
             );
+            if (!debited) {
+              return NextResponse.json({ error: 'Débit du solde échoué, payout non finalisé.' }, { status: 400 });
+            }
           }
           await prisma.auditLog.create({
             data: {

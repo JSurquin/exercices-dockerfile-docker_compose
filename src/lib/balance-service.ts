@@ -16,13 +16,14 @@ export async function creditBalance(
     throw new Error('creditBalance: amountCents must be positive');
   }
   return prisma.$transaction(async (tx) => {
-    const user = await tx.user.findUnique({ where: { id: userId }, select: { balanceCents: true } });
+    const user = await tx.user.findUnique({ where: { id: userId }, select: { id: true } });
     if (!user) throw new Error('User not found');
-    const balanceAfterCents = user.balanceCents + amountCents;
     await tx.user.update({
       where: { id: userId },
-      data: { balanceCents: balanceAfterCents },
+      data: { balanceCents: { increment: amountCents } },
     });
+    const updated = await tx.user.findUniqueOrThrow({ where: { id: userId }, select: { balanceCents: true } });
+    const balanceAfterCents = updated.balanceCents;
     await tx.balanceTransaction.create({
       data: {
         userId,
@@ -48,16 +49,18 @@ export async function debitBalance(
     throw new Error('debitBalance: amountCents must be positive');
   }
   return prisma.$transaction(async (tx) => {
-    const user = await tx.user.findUnique({ where: { id: userId }, select: { balanceCents: true } });
-    if (!user) throw new Error('User not found');
-    const balanceAfterCents = user.balanceCents - amountCents;
-    if (balanceAfterCents < 0) {
+    // Atomic check-and-decrement: only update if balance is sufficient
+    const result = await tx.user.updateMany({
+      where: { id: userId, balanceCents: { gte: amountCents } },
+      data: { balanceCents: { decrement: amountCents } },
+    });
+    if (result.count === 0) {
+      const user = await tx.user.findUnique({ where: { id: userId }, select: { balanceCents: true } });
+      if (!user) throw new Error('User not found');
       throw new Error('Insufficient balance');
     }
-    await tx.user.update({
-      where: { id: userId },
-      data: { balanceCents: balanceAfterCents },
-    });
+    const user = await tx.user.findUnique({ where: { id: userId }, select: { balanceCents: true } });
+    const balanceAfterCents = user!.balanceCents;
     await tx.balanceTransaction.create({
       data: {
         userId,
@@ -86,10 +89,11 @@ export async function creditPendingBalance(
 ): Promise<{ pendingBalanceCents: number }> {
   if (amountCents <= 0) throw new Error('creditPendingBalance: amountCents must be positive');
   return prisma.$transaction(async (tx) => {
-    const user = await tx.user.findUnique({ where: { id: userId }, select: { pendingBalanceCents: true } });
+    const user = await tx.user.findUnique({ where: { id: userId }, select: { id: true } });
     if (!user) throw new Error('User not found');
-    const pendingBalanceCents = user.pendingBalanceCents + amountCents;
-    await tx.user.update({ where: { id: userId }, data: { pendingBalanceCents } });
+    await tx.user.update({ where: { id: userId }, data: { pendingBalanceCents: { increment: amountCents } } });
+    const updated = await tx.user.findUniqueOrThrow({ where: { id: userId }, select: { pendingBalanceCents: true } });
+    const pendingBalanceCents = updated.pendingBalanceCents;
     await tx.balanceTransaction.create({
       data: {
         userId,
@@ -117,9 +121,12 @@ export async function debitPendingBalance(
 ): Promise<{ pendingBalanceCents: number }> {
   if (amountCents <= 0) throw new Error('debitPendingBalance: amountCents must be positive');
   return prisma.$transaction(async (tx) => {
-    const user = await tx.user.findUnique({ where: { id: userId }, select: { pendingBalanceCents: true } });
-    if (!user) throw new Error('User not found');
-    const pendingBalanceCents = Math.max(0, user.pendingBalanceCents - amountCents);
+    // Lock the row to prevent concurrent debit race conditions
+    const rows = await tx.$queryRaw<{ pendingBalanceCents: number }[]>`
+      SELECT "pendingBalanceCents" FROM "user" WHERE "id" = ${userId} FOR UPDATE
+    `;
+    if (!rows.length) throw new Error('User not found');
+    const pendingBalanceCents = Math.max(0, rows[0].pendingBalanceCents - amountCents);
     await tx.user.update({ where: { id: userId }, data: { pendingBalanceCents } });
     await tx.balanceTransaction.create({
       data: {
@@ -147,16 +154,15 @@ export async function releasePendingToBalance(
 ): Promise<{ balanceCents: number; pendingBalanceCents: number }> {
   if (amountCents <= 0) throw new Error('releasePendingToBalance: amountCents must be positive');
   return prisma.$transaction(async (tx) => {
-    const user = await tx.user.findUnique({
-      where: { id: userId },
-      select: { balanceCents: true, pendingBalanceCents: true },
-    });
-    if (!user) throw new Error('User not found');
+    // Lock the row to prevent concurrent release race conditions
+    const rows = await tx.$queryRaw<{ balanceCents: number; pendingBalanceCents: number }[]>`
+      SELECT "balanceCents", "pendingBalanceCents" FROM "user" WHERE "id" = ${userId} FOR UPDATE
+    `;
+    if (!rows.length) throw new Error('User not found');
 
-    // On ne peut libérer que ce qui est en pending (protection contre les incohérences)
-    const releaseAmount = Math.min(amountCents, user.pendingBalanceCents);
-    const balanceCents = user.balanceCents + releaseAmount;
-    const pendingBalanceCents = user.pendingBalanceCents - releaseAmount;
+    const releaseAmount = Math.min(amountCents, rows[0].pendingBalanceCents);
+    const balanceCents = rows[0].balanceCents + releaseAmount;
+    const pendingBalanceCents = rows[0].pendingBalanceCents - releaseAmount;
 
     await tx.user.update({ where: { id: userId }, data: { balanceCents, pendingBalanceCents } });
     await tx.balanceTransaction.create({
@@ -189,16 +195,23 @@ export async function unfreezeBalance(
   amountCents: number,
 ): Promise<void> {
   if (amountCents <= 0) throw new Error('unfreezeBalance: amountCents must be positive');
+  // Atomic: try to decrement the full amount first, clamping if frozen < amount
+  const full = await prisma.user.updateMany({
+    where: { id: userId, frozenBalanceCents: { gte: amountCents } },
+    data: { frozenBalanceCents: { decrement: amountCents } },
+  });
+  if (full.count > 0) return;
+  // Frozen was less than amountCents — clamp to zero inside a transaction
   await prisma.$transaction(async (tx) => {
     const user = await tx.user.findUnique({
       where: { id: userId },
       select: { frozenBalanceCents: true },
     });
     const currentFrozen = user?.frozenBalanceCents ?? 0;
+    if (currentFrozen <= 0) return;
     const decrementBy = Math.min(amountCents, currentFrozen);
-    if (decrementBy <= 0) return;
-    await tx.user.update({
-      where: { id: userId },
+    await tx.user.updateMany({
+      where: { id: userId, frozenBalanceCents: { gte: decrementBy } },
       data: { frozenBalanceCents: { decrement: decrementBy } },
     });
   });

@@ -19,6 +19,8 @@ import { canUserMakePayout } from '@/lib/kycaid';
 import crypto from 'crypto';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { whitepayPayoutRequestBodySchema } from '@/lib/validation/schemas/integrations';
+import { assertTradeOwnership } from '@/lib/trade-ownership';
+import { validateAmountCents } from '@/lib/amount-validation';
 
 const generateOrderId = () => `WPI-${crypto.randomUUID()}`;
 
@@ -68,14 +70,23 @@ export async function POST(request: NextRequest) {
       memo,
       travelRule,
     } = body;
-    const amountCents = Number(amountCentsRaw);
+    const amountCents = validateAmountCents(amountCentsRaw);
 
-    // 4. Validation du montant
-    if (!amountCents || amountCents <= 0) {
+    if (amountCents === null) {
       return NextResponse.json(
-        { error: 'Montant invalide' },
+        { error: 'Montant invalide (doit être un entier positif en centimes)' },
         { status: 400 }
       );
+    }
+
+    if (tradeId) {
+      const ownsTrade = await assertTradeOwnership(tradeId, userId);
+      if (!ownsTrade) {
+        return NextResponse.json(
+          { error: 'Trade non trouvé ou accès non autorisé' },
+          { status: 403 }
+        );
+      }
     }
 
     const limits = getWhitepayLimits();
@@ -186,7 +197,49 @@ export async function POST(request: NextRequest) {
           address: travelRuleObj?.address ? String(travelRuleObj.address) : 'N/A',
         };
 
-    // 10. Appeler Whitepay API - Instant Flow
+    // Create payment method + payout in DB BEFORE calling WhitePay API
+    let paymentMethod = await prisma.paymentMethod.findFirst({
+      where: {
+        userId,
+        type: 'WHITEPAY_CRYPTO',
+        details: { path: ['address'], equals: walletAddress },
+      },
+    });
+
+    if (!paymentMethod) {
+      paymentMethod = await prisma.paymentMethod.create({
+        data: {
+          userId,
+          type: 'WHITEPAY_CRYPTO',
+          details: { address: walletAddress, network, targetCurrency, memo: memo || null },
+          isVerified: true,
+        },
+      });
+    }
+
+    const payout = await prisma.payout.create({
+      data: {
+        userId,
+        tradeId: tradeId || null,
+        status: 'PROCESSING',
+        amountCents,
+        paymentMethodId: paymentMethod.id,
+        whitepayTargetCurrency: targetCurrency.toUpperCase(),
+        whitepayNetwork: network.toUpperCase(),
+        whitepayAddress: walletAddress,
+        whitepayMemo: memo || null,
+      },
+    });
+    try {
+      await PayoutLifecycle.onCreated(userId, payout.id, amountCents);
+    } catch (freezeErr) {
+      await prisma.payout.update({ where: { id: payout.id }, data: { status: 'FAILED', errorMessage: 'freeze_failed' } });
+      if (freezeErr instanceof Error && freezeErr.message === 'INSUFFICIENT_AVAILABLE_BALANCE') {
+        return NextResponse.json({ error: 'Solde insuffisant' }, { status: 409 });
+      }
+      throw freezeErr;
+    }
+
     const instantParams: WhitepayInstantWithdrawalRequest = {
       amount: amountEur,
       currency: 'EUR',
@@ -198,59 +251,33 @@ export async function POST(request: NextRequest) {
       order_id: orderId,
     };
 
-    const whitepayResponse = await createInstantWithdrawal(instantParams);
-    const tx = whitepayResponse.transaction;
-
-    // 11. Créer ou récupérer la méthode de paiement
-    let paymentMethod = await prisma.paymentMethod.findFirst({
-      where: {
-        userId,
-        type: 'WHITEPAY_CRYPTO',
-        details: {
-          path: ['address'],
-          equals: walletAddress,
-        },
-      },
-    });
-
-    if (!paymentMethod) {
-      paymentMethod = await prisma.paymentMethod.create({
-        data: {
-          userId,
-          type: 'WHITEPAY_CRYPTO',
-          details: {
-            address: walletAddress,
-            network,
-            targetCurrency,
-            memo: memo || null,
-          },
-          isVerified: true,
-        },
+    let tx;
+    try {
+      const whitepayResponse = await createInstantWithdrawal(instantParams);
+      tx = whitepayResponse.transaction;
+    } catch (apiErr) {
+      await PayoutLifecycle.onFailed(userId, payout.id, amountCents, {
+        tradeId: tradeId || null,
+        finalStatus: 'FAILED',
       });
+      await prisma.payout.update({
+        where: { id: payout.id },
+        data: { errorMessage: apiErr instanceof Error ? apiErr.message : 'Erreur WhitePay' },
+      });
+      throw apiErr;
     }
 
-    // 12. Convertir le statut Whitepay
     const internalStatus = convertWhitepayStatus(tx.status);
-
-    // Utiliser les frais réels retournés par Whitepay (tx.fee = total EUR)
     const realFees = parseWhitepayFeesFromResponse(tx.fee);
 
-    // 13. Créer le payout en base + geler la balance
-    const payout = await prisma.payout.create({
+    await prisma.payout.update({
+      where: { id: payout.id },
       data: {
-        userId,
-        tradeId: tradeId || null,
         status: internalStatus as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED' | 'WHITEPAY_PENDING_WITHDRAWAL' | 'WHITEPAY_PROCESSING_WITHDRAWAL' | 'WHITEPAY_COMPLETE' | 'WHITEPAY_DECLINED',
-        amountCents,
-        paymentMethodId: paymentMethod.id,
         whitepayTransactionId: tx.id,
         whitepayStatus: tx.status,
         whitepayExchangeRate: tx.exchange_rate,
         whitepayTargetValue: tx.target_value,
-        whitepayTargetCurrency: targetCurrency.toUpperCase(),
-        whitepayNetwork: network.toUpperCase(),
-        whitepayAddress: walletAddress,
-        whitepayMemo: memo || null,
         whitepayFee: tx.fee,
         whitepayEstimatedAt: new Date(tx.estimated_at),
         whitepayConfirmedAt: new Date(),
@@ -258,7 +285,6 @@ export async function POST(request: NextRequest) {
         networkFeeCents: realFees.networkFeeCents,
       },
     });
-    await PayoutLifecycle.onCreated(userId, payout.id, amountCents);
 
     // 14. Mettre à jour le trade si associé
     if (tradeId) {
@@ -314,8 +340,11 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('[Whitepay Instant] Error:', error);
+    if (error instanceof Error && error.message === 'INSUFFICIENT_AVAILABLE_BALANCE') {
+      return NextResponse.json({ error: 'Solde insuffisant' }, { status: 409 });
+    }
     return NextResponse.json(
-      { error: 'Erreur lors du retrait crypto instantané' },
+      { error: error instanceof Error ? error.message : 'Erreur lors du retrait crypto instantané' },
       { status: 500 }
     );
   }

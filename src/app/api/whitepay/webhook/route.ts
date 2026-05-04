@@ -134,16 +134,19 @@ export async function POST(request: NextRequest) {
     }
 
     if (isTransactionComplete(tx.status)) {
-      await PayoutLifecycle.onCompleted(
+      const { debited } = await PayoutLifecycle.onCompleted(
         payout.userId, payout.id, payout.amountCents,
         {
           tradeId: payout.tradeId,
-          updateXp: true,
+          
           reason: `Payout Whitepay ${payout.id} complété (webhook)`,
           finalStatus: newInternalStatus,
           paidAt: new Date(),
         },
       );
+      if (!debited) {
+        console.warn(`[WhitePay Webhook] Debit already done or failed for payout ${payout.id}`);
+      }
     }
 
     if (isTransactionFailed(tx.status)) {

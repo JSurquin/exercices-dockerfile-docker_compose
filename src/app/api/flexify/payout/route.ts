@@ -363,7 +363,15 @@ export async function POST(request: NextRequest) {
             pendingFlexifyRequestEncrypted: encryptedPayload,
           },
         });
-        await PayoutLifecycle.onCreated(userId, payout.id, validatedAmount);
+        try {
+          await PayoutLifecycle.onCreated(userId, payout.id, validatedAmount);
+        } catch (freezeErr) {
+          await prisma.payout.update({ where: { id: payout.id }, data: { status: 'FAILED', errorMessage: 'freeze_failed' } });
+          if (freezeErr instanceof Error && freezeErr.message === 'INSUFFICIENT_AVAILABLE_BALANCE') {
+            return NextResponse.json({ error: 'Solde insuffisant' }, { status: 409 });
+          }
+          throw freezeErr;
+        }
         await prisma.auditLog.create({
           data: {
             userId,
@@ -394,54 +402,86 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      LOG('CALL_CREATE_CARD_PAYOUT', { reference, amountCents: validatedAmount });
-      const flexifyResponse = await createCardPayout({
-        reference,
-        amountCents: validatedAmount,
-        customer: {
-          identifier: userId,
-          email: user.email,
-          country: (beneficiaryCountry && typeof beneficiaryCountry === 'string') ? beneficiaryCountry : 'FR',
-          ip: clientIp,
-        },
-        card: {
-          number: cardNum,
-          holderName: cardHolderName,
-          expireMonth: expMonth,
-          expireYear: expYearFull,
-          cvv: cvvVal,
+      // Create payout in DB BEFORE calling Flexify API (prevents orphaned payments)
+      const payout = await prisma.payout.create({
+        data: {
+          userId,
+          tradeId: tradeId || null,
+          status: 'PROCESSING',
+          amountCents: validatedAmount,
+          paymentMethodId: cardPaymentMethod.id,
+          gateFiOrderId: reference,
+          processingFeeCents: fees.processingFeeCents,
+          networkFeeCents: fees.networkFeeCents,
         },
       });
+      try {
+        await PayoutLifecycle.onCreated(userId, payout.id, validatedAmount);
+      } catch (freezeErr) {
+        await prisma.payout.update({ where: { id: payout.id }, data: { status: 'FAILED', errorMessage: 'freeze_failed' } });
+        if (freezeErr instanceof Error && freezeErr.message === 'INSUFFICIENT_AVAILABLE_BALANCE') {
+          return NextResponse.json({ error: 'Solde insuffisant' }, { status: 409 });
+        }
+        throw freezeErr;
+      }
 
-      if (flexifyResponse.code !== 0 || !flexifyResponse.transaction) {
-        LOG('CARD_PAYOUT_REJECTED', { code: flexifyResponse.code, error_message: flexifyResponse.error_message });
-        throw new Error(flexifyResponse.error_message || 'Échec de la création du payout carte');
+      LOG('CALL_CREATE_CARD_PAYOUT', { reference, amountCents: validatedAmount });
+      let flexifyResponse;
+      try {
+        flexifyResponse = await createCardPayout({
+          reference,
+          amountCents: validatedAmount,
+          customer: {
+            identifier: userId,
+            email: user.email,
+            country: (beneficiaryCountry && typeof beneficiaryCountry === 'string') ? beneficiaryCountry : 'FR',
+            ip: clientIp,
+          },
+          card: {
+            number: cardNum,
+            holderName: cardHolderName,
+            expireMonth: expMonth,
+            expireYear: expYearFull,
+            cvv: cvvVal,
+          },
+        });
+
+        if (flexifyResponse.code !== 0 || !flexifyResponse.transaction) {
+          LOG('CARD_PAYOUT_REJECTED', { code: flexifyResponse.code, error_message: flexifyResponse.error_message });
+          throw new Error(flexifyResponse.error_message || 'Échec de la création du payout carte');
+        }
+      } catch (apiErr) {
+        await PayoutLifecycle.onFailed(userId, payout.id, validatedAmount, {
+          tradeId: tradeId || null,
+          finalStatus: 'FAILED',
+        });
+        await prisma.payout.update({
+          where: { id: payout.id },
+          data: { errorMessage: apiErr instanceof Error ? apiErr.message : 'Erreur Flexify' },
+        });
+        throw apiErr;
       }
       LOG('CARD_PAYOUT_OK', { transactionId: flexifyResponse.transaction?.id });
 
       const txStatus = flexifyResponse.transaction!.status;
       const internalStatus = convertFlexifyStatus(txStatus) as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
-      const payout = await prisma.payout.create({
+      await prisma.payout.update({
+        where: { id: payout.id },
         data: {
-          userId,
-          tradeId: tradeId || null,
           status: internalStatus,
-          amountCents: validatedAmount,
-          paymentMethodId: cardPaymentMethod.id,
-          gateFiOrderId: reference,
           flexifyPayoutId: flexifyResponse.transaction!.id,
-          processingFeeCents: fees.processingFeeCents,
-          networkFeeCents: fees.networkFeeCents,
           ...(isTransactionCompleted(txStatus) && { paidAt: new Date() }),
         },
       });
-      await PayoutLifecycle.onCreated(userId, payout.id, validatedAmount);
 
       if (isTransactionCompleted(txStatus)) {
-        await PayoutLifecycle.onCompleted(
+        const { debited } = await PayoutLifecycle.onCompleted(
           userId, payout.id, validatedAmount,
-          { tradeId: tradeId || null, updateXp: true, reason: `Payout Flexify carte ${payout.id} complété (instant)` },
+          { tradeId: tradeId || null, reason: `Payout Flexify carte ${payout.id} complété (instant)`, finalStatus: internalStatus, paidAt: new Date() },
         );
+        if (!debited) {
+          LOG('CARD_PAYOUT_DEBIT_FAILED', { payoutId: payout.id });
+        }
       }
 
       await prisma.auditLog.create({
@@ -648,14 +688,22 @@ export async function POST(request: NextRequest) {
           pendingFlexifyRequestEncrypted: encryptedPayloadSepa,
         },
       });
-      await PayoutLifecycle.onCreated(userId, payoutPending.id, validatedAmount);
+      try {
+        await PayoutLifecycle.onCreated(userId, payoutPending.id, validatedAmount);
+      } catch (freezeErr) {
+        await prisma.payout.update({ where: { id: payoutPending.id }, data: { status: 'FAILED', errorMessage: 'freeze_failed' } });
+        if (freezeErr instanceof Error && freezeErr.message === 'INSUFFICIENT_AVAILABLE_BALANCE') {
+          return NextResponse.json({ error: 'Solde insuffisant' }, { status: 409 });
+        }
+        throw freezeErr;
+      }
       await prisma.auditLog.create({
-        data: {
-          userId,
-          action: 'FLEXIFY_PAYOUT_PENDING_APPROVAL',
-          details: { payoutId: payoutPending.id, reference, method: 'SEPA', amountCents: validatedAmount, reason: 'above_threshold' },
-        },
-      });
+          data: {
+            userId,
+            action: 'FLEXIFY_PAYOUT_PENDING_APPROVAL',
+            details: { payoutId: payoutPending.id, reference, method: 'SEPA', amountCents: validatedAmount, reason: 'above_threshold' },
+          },
+        });
       LOG('DB_PAYOUT_CREATED_SEPA_PENDING', { payoutId: payoutPending.id });
       return NextResponse.json({
         success: true,
@@ -675,40 +723,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    LOG('CALL_CREATE_SEPA_PAYOUT', { reference, amountCents: validatedAmount });
-    const flexifyResponse = await createSepaPayout({
-      reference,
-      amountCents: validatedAmount,
-      description: typeof description === 'string' ? description : undefined,
-      customer: {
-        identifier: userId,
-        email: user.email,
-        phone: phoneVal,
-        first_name: beneficiaryFirst,
-        last_name: beneficiaryLast,
-        address: customerAddress,
-        country: beneficiaryCountryVal,
-        ip: clientIp,
-      },
-      sepa: {
-        iban: ibanToUse,
-        bic: bicToUse || undefined,
-        beneficiary_first_name: beneficiaryFirst,
-        beneficiary_last_name: beneficiaryLast,
-        beneficiary_country: beneficiaryCountryVal,
-        beneficiary_city: beneficiaryCityVal,
-        beneficiary_address: beneficiaryAddr,
-        beneficiary_email: beneficiaryEmailVal,
-      },
-    });
-
-    if (flexifyResponse.code !== 0 || !flexifyResponse.transaction) {
-      LOG('SEPA_PAYOUT_REJECTED', { code: flexifyResponse.code, error_message: flexifyResponse.error_message });
-      throw new Error(flexifyResponse.error_message || 'Échec de la création du payout');
-    }
-    LOG('SEPA_PAYOUT_OK', { transactionId: flexifyResponse.transaction?.id });
-
-    // Créer ou récupérer la méthode de paiement (stockage chiffré)
+    // Créer ou récupérer la méthode de paiement (stockage chiffré) BEFORE API call
     if (!paymentMethod) {
       const encryptedDetails = buildEncryptedSepaDetails(ibanToUse, bicToUse);
       paymentMethod = await prisma.paymentMethod.findFirst({
@@ -728,7 +743,6 @@ export async function POST(request: NextRequest) {
           },
         });
       } else {
-        // Mettre à jour avec IBAN chiffré (même utilisateur, on écrase le moyen SEPA existant)
         await prisma.paymentMethod.update({
           where: { id: paymentMethod.id },
           data: { details: encryptedDetails as object },
@@ -736,29 +750,94 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const txStatusSepa = flexifyResponse.transaction.status;
-    const internalStatusSepa = convertFlexifyStatus(txStatusSepa) as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
+    // Create payout in DB BEFORE calling Flexify API (prevents orphaned payments)
     const payout = await prisma.payout.create({
       data: {
         userId,
         tradeId: tradeId || null,
-        status: internalStatusSepa,
+        status: 'PROCESSING',
         amountCents: validatedAmount,
         paymentMethodId: paymentMethod.id,
         gateFiOrderId: reference,
-        flexifyPayoutId: flexifyResponse.transaction.id,
         processingFeeCents: fees.processingFeeCents,
         networkFeeCents: fees.networkFeeCents,
+      },
+    });
+    try {
+      await PayoutLifecycle.onCreated(userId, payout.id, validatedAmount);
+    } catch (freezeErr) {
+      await prisma.payout.update({ where: { id: payout.id }, data: { status: 'FAILED', errorMessage: 'freeze_failed' } });
+      if (freezeErr instanceof Error && freezeErr.message === 'INSUFFICIENT_AVAILABLE_BALANCE') {
+        return NextResponse.json({ error: 'Solde insuffisant' }, { status: 409 });
+      }
+      throw freezeErr;
+    }
+
+    LOG('CALL_CREATE_SEPA_PAYOUT', { reference, amountCents: validatedAmount });
+    let flexifyResponse;
+    try {
+      flexifyResponse = await createSepaPayout({
+        reference,
+        amountCents: validatedAmount,
+        description: typeof description === 'string' ? description : undefined,
+        customer: {
+          identifier: userId,
+          email: user.email,
+          phone: phoneVal,
+          first_name: beneficiaryFirst,
+          last_name: beneficiaryLast,
+          address: customerAddress,
+          country: beneficiaryCountryVal,
+          ip: clientIp,
+        },
+        sepa: {
+          iban: ibanToUse,
+          bic: bicToUse || undefined,
+          beneficiary_first_name: beneficiaryFirst,
+          beneficiary_last_name: beneficiaryLast,
+          beneficiary_country: beneficiaryCountryVal,
+          beneficiary_city: beneficiaryCityVal,
+          beneficiary_address: beneficiaryAddr,
+          beneficiary_email: beneficiaryEmailVal,
+        },
+      });
+
+      if (flexifyResponse.code !== 0 || !flexifyResponse.transaction) {
+        LOG('SEPA_PAYOUT_REJECTED', { code: flexifyResponse.code, error_message: flexifyResponse.error_message });
+        throw new Error(flexifyResponse.error_message || 'Échec de la création du payout');
+      }
+    } catch (apiErr) {
+      await PayoutLifecycle.onFailed(userId, payout.id, validatedAmount, {
+        tradeId: tradeId || null,
+        finalStatus: 'FAILED',
+      });
+      await prisma.payout.update({
+        where: { id: payout.id },
+        data: { errorMessage: apiErr instanceof Error ? apiErr.message : 'Erreur Flexify' },
+      });
+      throw apiErr;
+    }
+    LOG('SEPA_PAYOUT_OK', { transactionId: flexifyResponse.transaction?.id });
+
+    const txStatusSepa = flexifyResponse.transaction.status;
+    const internalStatusSepa = convertFlexifyStatus(txStatusSepa) as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
+    await prisma.payout.update({
+      where: { id: payout.id },
+      data: {
+        status: internalStatusSepa,
+        flexifyPayoutId: flexifyResponse.transaction.id,
         ...(isTransactionCompleted(txStatusSepa) && { paidAt: new Date() }),
       },
     });
-    await PayoutLifecycle.onCreated(userId, payout.id, validatedAmount);
 
     if (isTransactionCompleted(txStatusSepa)) {
-      await PayoutLifecycle.onCompleted(
+      const { debited } = await PayoutLifecycle.onCompleted(
         userId, payout.id, validatedAmount,
-        { tradeId: tradeId || null, updateXp: true, reason: `Payout Flexify SEPA ${payout.id} complété (instant)` },
+        { tradeId: tradeId || null, reason: `Payout Flexify SEPA ${payout.id} complété (instant)`, finalStatus: internalStatusSepa, paidAt: new Date() },
       );
+      if (!debited) {
+        LOG('SEPA_PAYOUT_DEBIT_FAILED', { payoutId: payout.id });
+      }
     }
 
     await prisma.auditLog.create({

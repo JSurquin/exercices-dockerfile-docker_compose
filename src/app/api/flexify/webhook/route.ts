@@ -183,7 +183,13 @@ export async function POST(request: NextRequest) {
     if (isTransactionCompleted(payload.status)) {
       const { debited } = await PayoutLifecycle.onCompleted(
         payout.userId, payout.id, payout.amountCents,
-        { tradeId: payout.tradeId, updateXp: true, reason: `Payout Flexify ${payout.id} complété (webhook)` },
+        {
+          tradeId: payout.tradeId,
+          
+          reason: `Payout Flexify ${payout.id} complété (webhook)`,
+          finalStatus: newStatus,
+          paidAt: new Date(),
+        },
       );
       if (!debited) {
         flexifyLog('WEBHOOK_DEBIT_ALREADY_DONE', { payoutId: payout.id }, 'info');
@@ -191,28 +197,35 @@ export async function POST(request: NextRequest) {
     }
 
     if (isTransactionFailed(payload.status)) {
-      await PayoutLifecycle.onFailed(payout.userId, payout.id, payout.amountCents, { tradeId: payout.tradeId });
+      await PayoutLifecycle.onFailed(payout.userId, payout.id, payout.amountCents, {
+        tradeId: payout.tradeId,
+        finalStatus: newStatus,
+      });
     }
 
-    // Logger l'événement
-    await prisma.auditLog.create({
-      data: {
-        userId: payout.userId,
-        action: `FLEXIFY_WEBHOOK_${payload.status.toUpperCase()}`,
-        details: {
-          payoutId: payout.id,
-          reference: payload.reference,
-          flexifyTransactionId: flexifyId,
-          oldStatus: payout.status,
-          newStatus,
-          amount: payload.amount,
-          method: payload.method,
-          errorCode: payload.error_code,
-          errorReason: payload.error_reason,
-          sepaDetails: payload.sepa,
+    // Logger l'événement (non-critique : ne doit pas bloquer le webhook)
+    try {
+      await prisma.auditLog.create({
+        data: {
+          userId: payout.userId,
+          action: `FLEXIFY_WEBHOOK_${payload.status.toUpperCase()}`,
+          details: {
+            payoutId: payout.id,
+            reference: payload.reference,
+            flexifyTransactionId: flexifyId,
+            oldStatus: payout.status,
+            newStatus,
+            amount: payload.amount,
+            method: payload.method,
+            errorCode: payload.error_code,
+            errorReason: payload.error_reason,
+            sepaDetails: payload.sepa,
+          },
         },
-      },
-    });
+      });
+    } catch (auditErr) {
+      console.error(`[Flexify Webhook] auditLog.create failed for payout ${payout.id}:`, auditErr);
+    }
 
     // SÉCURITÉ: Marquer le webhook comme traité avec succès (idempotence)
     await markWebhookProcessed(webhookId, 'flexify_payout', {

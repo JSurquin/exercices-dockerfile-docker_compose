@@ -132,6 +132,8 @@ model Trade {
   balanceCreditedAt  DateTime?
   /// Horodatage du revert pending balance (IPN #2 rollback) — sert de verrou d'idempotence
   pendingRevertedAt  DateTime?
+  /// Horodatage du traitement post-PAID (XP, volume, commissions) — verrou d'idempotence
+  paidProcessedAt    DateTime?
   ticketId           String              @unique
   tradeAcceptedAt    DateTime?
   availableAt        DateTime?

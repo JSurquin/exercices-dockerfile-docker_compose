@@ -80,7 +80,7 @@ async function applyDebit(
     userId, payout.id, payout.amountCents,
     {
       tradeId: payout.tradeId,
-      updateXp: true,
+      
       reason: `Payout ${provider} ${payout.id} complété (rattrapage polling)`,
       finalStatus: 'PAID',
       paidAt: new Date(),

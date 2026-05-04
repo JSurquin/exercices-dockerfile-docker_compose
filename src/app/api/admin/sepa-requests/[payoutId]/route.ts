@@ -66,14 +66,6 @@ export async function PATCH(
     }
 
     if (action === 'approve') {
-      await prisma.payout.update({
-        where: { id: payoutId },
-        data: {
-          paymentReference: reference ?? null,
-          errorMessage: null,
-        },
-      });
-
       await prisma.auditLog.create({
         data: {
           userId: session.user.id,
@@ -91,14 +83,12 @@ export async function PATCH(
         payout.user!.id, payoutId, payout.amountCents,
         {
           tradeId: payout.tradeId,
-          updateXp: true,
+          
           reason: `Payout SEPA Premium ${payoutId} approuvé`,
           finalStatus: 'PAID',
           paidAt: new Date(),
         },
       );
-
-      const updatedPayout = await prisma.payout.findUnique({ where: { id: payoutId } });
 
       if (!debited) {
         return NextResponse.json(
@@ -106,6 +96,17 @@ export async function PATCH(
           { status: 400 }
         );
       }
+
+      // Only update reference/clear errorMessage AFTER successful debit
+      await prisma.payout.update({
+        where: { id: payoutId },
+        data: {
+          paymentReference: reference ?? null,
+          errorMessage: null,
+        },
+      });
+
+      const updatedPayout = await prisma.payout.findUnique({ where: { id: payoutId } });
 
       if (userEmail) {
         await emailService.sendEmail({

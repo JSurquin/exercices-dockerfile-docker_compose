@@ -1,5 +1,6 @@
 import { prisma } from '~/prisma/prisma';
 import { debitBalance, unfreezeBalance } from '@/lib/balance-service';
+import { TradeHooks } from '@/lib/trade-hooks';
 
 /**
  * Service centralisé pour le cycle de vie des payouts.
@@ -18,18 +19,23 @@ export class PayoutLifecycle {
   static async onCreated(userId: string, payoutId: string, amountCents: number): Promise<void> {
     if (amountCents <= 0) throw new Error('onCreated: amountCents must be positive');
     await prisma.$transaction(async (tx) => {
-      const user = await tx.user.findUniqueOrThrow({
-        where: { id: userId },
-        select: { balanceCents: true, frozenBalanceCents: true },
+      // Idempotence: skip if already frozen
+      const lock = await tx.payout.updateMany({
+        where: { id: payoutId, balanceFrozenAt: null },
+        data: { balanceFrozenAt: new Date() },
       });
-      const available = user.balanceCents - user.frozenBalanceCents;
+      if (lock.count === 0) return; // already frozen — idempotent no-op
+
+      // SELECT ... FOR UPDATE to prevent concurrent freeze race condition
+      const rows = await tx.$queryRaw<{ balanceCents: number; frozenBalanceCents: number }[]>`
+        SELECT "balanceCents", "frozenBalanceCents" FROM "user" WHERE "id" = ${userId} FOR UPDATE
+      `;
+      if (!rows.length) throw new Error('User not found');
+      const { balanceCents, frozenBalanceCents } = rows[0];
+      const available = balanceCents - frozenBalanceCents;
       if (available < amountCents) {
         throw new Error('INSUFFICIENT_AVAILABLE_BALANCE');
       }
-      await tx.payout.update({
-        where: { id: payoutId },
-        data: { balanceFrozenAt: new Date() },
-      });
       await tx.user.update({
         where: { id: userId },
         data: { frozenBalanceCents: { increment: amountCents } },
@@ -41,8 +47,7 @@ export class PayoutLifecycle {
    * Débite la balance + dégèle après confirmation du paiement.
    * Idempotent : utilise balanceDebitedAt comme verrou atomique.
    *
-   * @param options.tradeId   — si présent, marque le trade PAID
-   * @param options.updateXp  — si true, incrémente totalVolumeCents et xp
+   * @param options.tradeId   — si présent, marque le trade PAID + déclenche TradeHooks.onTradePaid
    * @param options.reason    — raison libre pour le log
    */
   static async onCompleted(
@@ -51,7 +56,6 @@ export class PayoutLifecycle {
     amountCents: number,
     options: {
       tradeId?: string | null;
-      updateXp?: boolean;
       reason?: string;
       finalStatus?: string;
       paidAt?: Date;
@@ -82,6 +86,15 @@ export class PayoutLifecycle {
         payoutId,
       });
     } catch (err) {
+      console.error(`[PayoutLifecycle] debitBalance failed for ${payoutId}:`, err);
+      // Unfreeze the funds so they aren't stuck forever
+      if (pre?.balanceFrozenAt) {
+        try {
+          await unfreezeBalance(userId, amountCents);
+        } catch (unfreezeErr) {
+          console.error(`[PayoutLifecycle] CRITICAL: unfreezeBalance also failed for ${payoutId}, manual fix needed:`, unfreezeErr);
+        }
+      }
       const rollback: Record<string, unknown> = { balanceDebitedAt: null };
       if (options.finalStatus && pre) {
         rollback.status = pre.status;
@@ -91,10 +104,10 @@ export class PayoutLifecycle {
         where: { id: payoutId },
         data: rollback,
       });
-      console.error(`[PayoutLifecycle] debitBalance failed, lock rolled back for ${payoutId}:`, err);
       return { debited: false };
     }
 
+    // Debit succeeded — unfreeze the reserved amount
     if (pre?.balanceFrozenAt) {
       try {
         await unfreezeBalance(userId, amountCents);
@@ -109,22 +122,10 @@ export class PayoutLifecycle {
           where: { id: options.tradeId },
           data: { status: 'PAID' },
         });
+        // XP, volume, commissions affilié — centralisé dans TradeHooks
+        await TradeHooks.onTradePaid(options.tradeId);
       } catch (err) {
-        console.error(`[PayoutLifecycle] trade.update PAID failed for ${payoutId}:`, err);
-      }
-    }
-
-    if (options.updateXp) {
-      try {
-        await prisma.user.update({
-          where: { id: userId },
-          data: {
-            totalVolumeCents: { increment: amountCents },
-            xp: { increment: Math.floor(amountCents / 100) },
-          },
-        });
-      } catch (err) {
-        console.error(`[PayoutLifecycle] XP update failed for ${payoutId}:`, err);
+        console.error(`[PayoutLifecycle] trade.update PAID / onTradePaid failed for ${payoutId}:`, err);
       }
     }
 
@@ -176,14 +177,18 @@ export class PayoutLifecycle {
       }
     }
 
-    try {
-      if (options.tradeId) {
+    if (options.tradeId) {
+      try {
         await prisma.trade.update({
           where: { id: options.tradeId },
           data: { status: 'FAILED' },
         });
+      } catch (err) {
+        console.error(`[PayoutLifecycle] trade.update FAILED failed for ${payoutId}:`, err);
       }
+    }
 
+    try {
       await prisma.auditLog.create({
         data: {
           userId,
@@ -192,7 +197,7 @@ export class PayoutLifecycle {
         },
       });
     } catch (err) {
-      console.error(`[PayoutLifecycle] Post-failure side-effects failed for ${payoutId}:`, err);
+      console.error(`[PayoutLifecycle] auditLog failed for failed payout ${payoutId}:`, err);
     }
 
     return { unfrozen: true };

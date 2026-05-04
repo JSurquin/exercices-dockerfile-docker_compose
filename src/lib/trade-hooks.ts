@@ -20,18 +20,30 @@ export class TradeHooks {
    */
   static async onTradePaid(tradeId: string): Promise<void> {
     try {
-      console.log(`[TradeHooks] Processing trade ${tradeId} for affiliate commissions`);
+      // Idempotence: skip if already processed
+      const lock = await prisma.trade.updateMany({
+        where: { id: tradeId, paidProcessedAt: null },
+        data: { paidProcessedAt: new Date() },
+      });
+      if (lock.count === 0) {
+        console.warn(`[TradeHooks] onTradePaid already processed for trade ${tradeId}, skipping`);
+        return;
+      }
+
+      console.log(`[TradeHooks] Processing trade ${tradeId} for affiliate commissions + XP`);
       
-      // Calculer les commissions d'affiliation
       await AffiliateService.calculateCommissionForTrade(tradeId);
-      
-      // Mettre à jour les XP et niveaux de l'utilisateur
       await this.updateUserExperience(tradeId);
       
       console.log(`[TradeHooks] Successfully processed trade ${tradeId}`);
     } catch (error) {
       console.error(`[TradeHooks] Error processing trade ${tradeId}:`, error);
-      // Ne pas faire échouer le trade si le calcul des commissions échoue
+      // Rollback the lock so the trade can be reprocessed on next attempt
+      try {
+        await prisma.trade.update({ where: { id: tradeId }, data: { paidProcessedAt: null } });
+      } catch (rollbackErr) {
+        console.error(`[TradeHooks] CRITICAL: Failed to rollback paidProcessedAt for trade ${tradeId}:`, rollbackErr);
+      }
     }
   }
   
