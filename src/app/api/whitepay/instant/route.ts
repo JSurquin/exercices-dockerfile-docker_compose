@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '~/prisma/prisma';
+import { freezeBalance } from '@/lib/balance-service';
 import {
   createInstantWithdrawal,
   parseWhitepayFeesFromResponse,
@@ -234,7 +235,7 @@ export async function POST(request: NextRequest) {
     // Utiliser les frais réels retournés par Whitepay (tx.fee = total EUR)
     const realFees = parseWhitepayFeesFromResponse(tx.fee);
 
-    // 13. Créer le payout en base
+    // 13. Créer le payout en base + geler la balance
     const payout = await prisma.payout.create({
       data: {
         userId,
@@ -252,11 +253,13 @@ export async function POST(request: NextRequest) {
         whitepayMemo: memo || null,
         whitepayFee: tx.fee,
         whitepayEstimatedAt: new Date(tx.estimated_at),
-        whitepayConfirmedAt: new Date(), // Instant flow = confirmé immédiatement
+        whitepayConfirmedAt: new Date(),
         processingFeeCents: realFees.processingFeeCents,
         networkFeeCents: realFees.networkFeeCents,
+        balanceFrozenAt: new Date(),
       },
     });
+    await freezeBalance(userId, amountCents);
 
     // 14. Mettre à jour le trade si associé
     if (tradeId) {

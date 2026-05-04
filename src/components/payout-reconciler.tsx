@@ -10,6 +10,7 @@ interface ReconcileResult {
   payoutId: string;
   action: 'debited' | 'failed' | 'unchanged' | 'error';
   amountCents: number;
+  provider?: 'flexify' | 'whitepay';
 }
 
 interface ReconcileResponse {

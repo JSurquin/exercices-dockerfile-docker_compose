@@ -10,6 +10,7 @@ import {
   isWhitepayTopUpEvent,
   type WhitepayWebhookPayload,
 } from '@/lib/whitepay';
+import { unfreezeBalance } from '@/lib/balance-service';
 
 // =============================================================================
 // POST - Webhook Whitepay (general webhooks : withdrawals & conversion_withdrawals)
@@ -107,50 +108,53 @@ export async function POST(request: NextRequest) {
     const newInternalStatus = convertWhitepayStatus(tx.status);
 
     // 4. Idempotence atomique : on tente l'update uniquement si le payout n'est pas déjà final.
-    //    updateMany retourne { count: 0 } si la condition WHERE ne matche pas → aucun doublon possible.
-    await prisma.$transaction(async (dbTx) => {
-      const updated = await dbTx.payout.updateMany({
-        where: {
-          id: payout.id,
-          whitepayStatus: { notIn: ['COMPLETE', 'DECLINED'] },
-        },
-        data: {
-          status: newInternalStatus as never,
-          whitepayStatus: tx.status,
-          whitepayTxHash: tx.tx_hash || payout.whitepayTxHash,
-          whitepayExchangeRate: tx.exchange_rate,
-          whitepayTargetValue: tx.target_value,
-          whitepayFee: tx.fee,
-          txId: tx.tx_hash || payout.txId,
-          ...(isTransactionComplete(tx.status) && { paidAt: new Date() }),
-        },
-      });
+    const updated = await prisma.payout.updateMany({
+      where: {
+        id: payout.id,
+        whitepayStatus: { notIn: ['COMPLETE', 'DECLINED'] },
+      },
+      data: {
+        status: newInternalStatus as never,
+        whitepayStatus: tx.status,
+        whitepayTxHash: tx.tx_hash || payout.whitepayTxHash,
+        whitepayExchangeRate: tx.exchange_rate,
+        whitepayTargetValue: tx.target_value,
+        whitepayFee: tx.fee,
+        txId: tx.tx_hash || payout.txId,
+        ...(isTransactionComplete(tx.status) && { paidAt: new Date() }),
+      },
+    });
 
-      // Si count = 0 → déjà traité, on sort proprement sans re-débiter
-      if (updated.count === 0) {
-        console.log('[Whitepay Webhook] Already in final state (atomic check), skipping:', {
-          payoutId: payout.id,
-          incomingStatus: tx.status,
+    if (updated.count === 0) {
+      console.log('[Whitepay Webhook] Already in final state, skipping:', {
+        payoutId: payout.id,
+        incomingStatus: tx.status,
+      });
+      return NextResponse.json({ received: true, processed: true });
+    }
+
+    if (isTransactionComplete(tx.status)) {
+      if (payout.tradeId) {
+        await prisma.trade.update({
+          where: { id: payout.tradeId },
+          data: { status: 'PAID' },
         });
-        return;
       }
 
-      if (isTransactionComplete(tx.status)) {
-        if (payout.tradeId) {
-          await dbTx.trade.update({
-            where: { id: payout.tradeId },
-            data: { status: 'PAID' },
-          });
-        }
+      // Verrou atomique : balanceDebitedAt empêche le double débit
+      const debitLock = await prisma.payout.updateMany({
+        where: { id: payout.id, balanceDebitedAt: null },
+        data: { balanceDebitedAt: new Date() },
+      });
 
-        // Débiter le solde et mettre à jour le volume/XP dans la même transaction
-        const user = await dbTx.user.findUnique({
+      if (debitLock.count > 0) {
+        const user = await prisma.user.findUnique({
           where: { id: payout.userId },
           select: { balanceCents: true },
         });
         if (user) {
           const balanceAfterCents = Math.max(0, user.balanceCents - payout.amountCents);
-          await dbTx.user.update({
+          await prisma.user.update({
             where: { id: payout.userId },
             data: {
               balanceCents: balanceAfterCents,
@@ -158,7 +162,7 @@ export async function POST(request: NextRequest) {
               xp: { increment: Math.floor(payout.amountCents / 100) },
             },
           });
-          await dbTx.balanceTransaction.create({
+          await prisma.balanceTransaction.create({
             data: {
               userId: payout.userId,
               type: 'WITHDRAWAL',
@@ -169,33 +173,47 @@ export async function POST(request: NextRequest) {
             },
           });
         }
+        if (payout.balanceFrozenAt) {
+          await unfreezeBalance(payout.userId, payout.amountCents);
+        }
       }
+    }
 
-      if (isTransactionFailed(tx.status) && payout.tradeId) {
-        await dbTx.trade.update({
+    if (isTransactionFailed(tx.status)) {
+      if (payout.balanceFrozenAt && !payout.balanceDebitedAt) {
+        const unfreezeLock = await prisma.payout.updateMany({
+          where: { id: payout.id, balanceDebitedAt: null },
+          data: { balanceDebitedAt: new Date() },
+        });
+        if (unfreezeLock.count > 0) {
+          await unfreezeBalance(payout.userId, payout.amountCents);
+        }
+      }
+      if (payout.tradeId) {
+        await prisma.trade.update({
           where: { id: payout.tradeId },
           data: { status: 'FAILED' },
         });
       }
+    }
 
-      await dbTx.auditLog.create({
-        data: {
-          userId: payout.userId,
-          action: `WHITEPAY_WEBHOOK_${tx.status}`,
-          details: {
-            payoutId: payout.id,
-            whitepayTransactionId: tx.id,
-            oldStatus: payout.whitepayStatus,
-            newStatus: tx.status,
-            internalStatus: newInternalStatus,
-            txHash: tx.tx_hash,
-            confirmations: tx.confirmations,
-            exchangeRate: tx.exchange_rate,
-            targetValue: tx.target_value,
-            fee: tx.fee,
-          },
+    await prisma.auditLog.create({
+      data: {
+        userId: payout.userId,
+        action: `WHITEPAY_WEBHOOK_${tx.status}`,
+        details: {
+          payoutId: payout.id,
+          whitepayTransactionId: tx.id,
+          oldStatus: payout.whitepayStatus,
+          newStatus: tx.status,
+          internalStatus: newInternalStatus,
+          txHash: tx.tx_hash,
+          confirmations: tx.confirmations,
+          exchangeRate: tx.exchange_rate,
+          targetValue: tx.target_value,
+          fee: tx.fee,
         },
-      });
+      },
     });
 
     return NextResponse.json({ received: true, processed: true });
