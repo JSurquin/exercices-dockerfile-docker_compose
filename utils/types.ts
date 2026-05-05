@@ -3959,17 +3959,30 @@ export interface Messages {
         start: string;
         saving: string;
       };
+      email: {
+        title: string;
+        description: string;
+        label: string;
+        placeholder: string;
+        invalidEmail: string;
+        validEmail: string;
+        tip: string;
+        alreadySet: string;
+      };
       errors: {
         invalidTradeLink: string;
         saveError: string;
         invalidSteamId: string;
         steamIdSaveError: string;
         invalidSteamIdFormat: string;
+        invalidEmail: string;
+        emailSaveError: string;
       };
       success: {
         tradeLinkSaved: string;
         steamIdSaved: string;
         validSteamId: string;
+        emailSaved: string;
       };
     };
     header: {

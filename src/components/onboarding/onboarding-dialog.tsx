@@ -19,7 +19,8 @@ import {
   CheckCircle,
   ExternalLink,
   Coins,
-  AlertTriangle
+  AlertTriangle,
+  Mail
 } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -34,14 +35,18 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [tradeUrl, setTradeUrl] = useState('');
   const [steamId, setSteamId] = useState('');
+  const [email, setEmail] = useState('');
   const [isValidUrl, setIsValidUrl] = useState<boolean | null>(null);
   const [isValidSteamId, setIsValidSteamId] = useState<boolean | null>(null);
+  const [isValidEmail, setIsValidEmail] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   const { locale, messages } = useLocale();
   const { user } = useAuth();
   
   // Vérifier si l'utilisateur a déjà un Steam ID
   const hasSteamId = user?.steamId64;
+  // Vérifier si l'utilisateur a déjà un email de contact
+  const hasEmail = !!user?.contactEmail;
 
   // Créer les étapes dynamiquement en fonction de si l'utilisateur a un Steam ID
   const allSteps = [
@@ -74,6 +79,53 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
         </div>
       )
     },
+    // Étape Email (conditionnelle - seulement si l'utilisateur n'a pas encore d'email de contact)
+    ...(!hasEmail ? [{
+      title: messages.components.onboarding.email.title,
+      icon: <Mail className="w-12 h-12 text-blue-500" />,
+      isEmailStep: true,
+      content: (
+        <div className="space-y-3 sm:space-y-4">
+          <p className="text-muted-foreground text-sm sm:text-base">
+            {messages.components.onboarding.email.description}
+          </p>
+          <div className="space-y-2">
+            <Label htmlFor="contact-email" className="text-sm sm:text-base">
+              {messages.components.onboarding.email.label}
+            </Label>
+            <Input
+              id="contact-email"
+              type="email"
+              placeholder={messages.components.onboarding.email.placeholder}
+              value={email}
+              onChange={(e) => handleEmailChange(e.target.value)}
+              className={`text-sm sm:text-base w-full ${isValidEmail === false ? 'border-red-500' : ''}`}
+            />
+            {isValidEmail === false && (
+              <Alert variant="destructive" className="text-xs sm:text-sm">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <AlertDescription>
+                  {messages.components.onboarding.email.invalidEmail}
+                </AlertDescription>
+              </Alert>
+            )}
+            {isValidEmail === true && (
+              <Alert className="text-xs sm:text-sm">
+                <CheckCircle className="h-4 w-4 shrink-0" />
+                <AlertDescription>
+                  {messages.components.onboarding.email.validEmail}
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+          <div className="bg-blue-50 dark:bg-blue-950 p-3 sm:p-4 rounded-lg">
+            <p className="text-xs sm:text-sm text-blue-800 dark:text-blue-200">
+              {messages.components.onboarding.email.tip}
+            </p>
+          </div>
+        </div>
+      )
+    }] : []),
     // Étape Steam ID (conditionnelle - seulement si l'utilisateur n'a pas de Steam ID)
     ...(!hasSteamId ? [{
       title: messages.components.onboarding.steamId.title,
@@ -306,6 +358,15 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
   const isLastStep = currentStep === steps.length - 1;
   const progress = ((currentStep + 1) / steps.length) * 100;
 
+  const validateEmail = (value: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    setIsValidEmail(value ? validateEmail(value) : null);
+  };
+
   const validateTradeUrl = (url: string) => {
     // Accepte avec ou sans / après "new" (Steam peut renvoyer les deux formats)
     const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/?\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
@@ -329,7 +390,37 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
   };
 
   const handleNext = async () => {
-    // Vérifier si c'est l'étape Steam ID (si l'utilisateur n'avait pas de Steam ID)
+    // Étape email
+    if (!hasEmail && currentStepData.isEmailStep) {
+      if (!isValidEmail || !email) {
+        toast.error(messages.components.onboarding.errors.invalidEmail);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const response = await fetch('/api/user/update-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Erreur lors de la sauvegarde');
+        }
+
+        toast.success(messages.components.onboarding.success.emailSaved);
+      } catch (error) {
+        console.error('Erreur lors de la sauvegarde de l\'email:', error);
+        toast.error(error instanceof Error ? error.message : messages.components.onboarding.errors.emailSaveError);
+        setLoading(false);
+        return;
+      }
+      setLoading(false);
+    }
+
+    // Étape Steam ID (si l'utilisateur n'avait pas de Steam ID)
     if (!hasSteamId && currentStepData.isSteamIdStep) {
       if (!isValidSteamId || !steamId) {
         toast.error(messages.components.onboarding.errors.invalidSteamId);
@@ -338,7 +429,6 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
 
       setLoading(true);
       try {
-        // Appel direct à l'API au lieu d'utiliser updateUser du contexte
         const response = await fetch('/api/user/update', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -360,10 +450,9 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
       setLoading(false);
     }
 
-    // Si on est sur l'étape de saisie du trade link
-    // L'index change selon si on a l'étape Steam ID ou pas
-    const tradeLinkStepIndex = hasSteamId ? 2 : 3;
-    if (currentStep === tradeLinkStepIndex) {
+    // Étape saisie du trade link — détectée via le contenu de l'étape courante
+    const isEnterTradeLinkStep = currentStepData.title === messages.components.onboarding.enterTradeLink.title;
+    if (isEnterTradeLinkStep) {
       if (!isValidUrl || !tradeUrl) {
         toast.error(messages.components.onboarding.errors.invalidTradeLink);
         return;
@@ -371,7 +460,6 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
 
       setLoading(true);
       try {
-        // Appel direct à l'API
         const response = await fetch('/api/user/update', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -481,8 +569,9 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               onClick={handleNext}
               disabled={
                 loading || 
+                (!hasEmail && currentStepData.isEmailStep && (!isValidEmail || !email)) ||
                 (!hasSteamId && currentStepData.isSteamIdStep && (!isValidSteamId || !steamId)) ||
-                ((hasSteamId ? currentStep === 2 : currentStep === 3) && (!isValidUrl || !tradeUrl))
+                (currentStepData.title === messages.components.onboarding.enterTradeLink.title && (!isValidUrl || !tradeUrl))
               }
               className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm px-2 sm:px-4"
             >

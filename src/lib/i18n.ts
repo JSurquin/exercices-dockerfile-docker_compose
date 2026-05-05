@@ -4342,17 +4342,30 @@ export const messages: Record<Locale, Messages> = {
           start: "Commencer",
           saving: "Sauvegarde..."
         },
+        email: {
+          title: "Votre adresse email",
+          description: "Nous avons besoin de votre email pour vous envoyer les confirmations de paiement et les notifications importantes.",
+          label: "Adresse email",
+          placeholder: "votre@email.com",
+          invalidEmail: "Veuillez saisir une adresse email valide.",
+          validEmail: "Adresse email valide ✓",
+          tip: "💡 Votre email ne sera jamais partagé et sert uniquement aux communications liées à vos transactions.",
+          alreadySet: "Email déjà enregistré"
+        },
         errors: {
           invalidTradeLink: "Veuillez saisir un Trade Link Steam valide",
           saveError: "Erreur lors de la sauvegarde du Trade Link",
           invalidSteamId: "Veuillez entrer un Steam ID valide",
           steamIdSaveError: "Erreur lors de la sauvegarde du Steam ID",
-          invalidSteamIdFormat: "Le Steam ID doit être composé de 17 chiffres et commencer par 7656119."
+          invalidSteamIdFormat: "Le Steam ID doit être composé de 17 chiffres et commencer par 7656119.",
+          invalidEmail: "Veuillez saisir une adresse email valide",
+          emailSaveError: "Erreur lors de la sauvegarde de l'email"
         },
         success: {
           tradeLinkSaved: "Trade Link sauvegardé avec succès !",
           steamIdSaved: "Steam ID enregistré avec succès !",
-          validSteamId: "Steam ID valide !"
+          validSteamId: "Steam ID valide !",
+          emailSaved: "Email enregistré avec succès !"
         }
       },
       header: {
@@ -9599,17 +9612,30 @@ export const messages: Record<Locale, Messages> = {
           start: "Start",
           saving: "Saving..."
         },
+        email: {
+          title: "Your email address",
+          description: "We need your email to send you payment confirmations and important notifications.",
+          label: "Email address",
+          placeholder: "your@email.com",
+          invalidEmail: "Please enter a valid email address.",
+          validEmail: "Valid email address ✓",
+          tip: "💡 Your email will never be shared and is only used for communications related to your transactions.",
+          alreadySet: "Email already registered"
+        },
         errors: {
           invalidTradeLink: "Please enter a valid Steam Trade Link",
           saveError: "Error saving Trade Link",
           invalidSteamId: "Please enter a valid Steam ID",
           steamIdSaveError: "Error saving Steam ID",
-          invalidSteamIdFormat: "Steam ID must be 17 digits and start with 7656119."
+          invalidSteamIdFormat: "Steam ID must be 17 digits and start with 7656119.",
+          invalidEmail: "Please enter a valid email address",
+          emailSaveError: "Error saving email"
         },
         success: {
           tradeLinkSaved: "Trade Link saved successfully!",
           steamIdSaved: "Steam ID saved successfully!",
-          validSteamId: "Valid Steam ID!"
+          validSteamId: "Valid Steam ID!",
+          emailSaved: "Email saved successfully!"
         }
       },
       header: {
@@ -14567,17 +14593,30 @@ export const messages: Record<Locale, Messages> = {
           start: "开始",
           saving: "保存中..."
         },
+        email: {
+          title: "您的电子邮件地址",
+          description: "我们需要您的电子邮件来发送付款确认和重要通知。",
+          label: "电子邮件地址",
+          placeholder: "您的@邮箱.com",
+          invalidEmail: "请输入有效的电子邮件地址。",
+          validEmail: "有效的电子邮件地址 ✓",
+          tip: "💡 您的电子邮件不会被共享，仅用于与您交易相关的通讯。",
+          alreadySet: "邮箱已注册"
+        },
         errors: {
           invalidTradeLink: "请输入有效的Steam交易链接",
           saveError: "保存交易链接时出错",
           invalidSteamId: "请输入有效的Steam ID",
           steamIdSaveError: "保存Steam ID时出错",
-          invalidSteamIdFormat: "Steam ID必须是17位数字且以7656119开头。"
+          invalidSteamIdFormat: "Steam ID必须是17位数字且以7656119开头。",
+          invalidEmail: "请输入有效的电子邮件地址",
+          emailSaveError: "保存电子邮件时出错"
         },
         success: {
           tradeLinkSaved: "交易链接保存成功！",
           steamIdSaved: "Steam ID保存成功！",
-          validSteamId: "Steam ID有效！"
+          validSteamId: "Steam ID有效！",
+          emailSaved: "电子邮件保存成功！"
         }
       },
       header: {
