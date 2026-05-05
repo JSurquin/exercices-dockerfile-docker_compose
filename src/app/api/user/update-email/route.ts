@@ -2,12 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { z } from 'zod';
+import { applyRateLimit, RateLimiter } from '@/lib/security/rate-limiter';
 
 const schema = z
   .object({
-    email: z.string().email('Adresse email invalide'),
+    email: z
+      .string()
+      .email('Adresse email invalide')
+      .max(254, 'Adresse email trop longue')
+      .transform((v) => v.toLowerCase().trim()),
   })
   .strip();
+
+// 5 changements d'email par heure par utilisateur/IP
+const emailUpdateLimiter = new RateLimiter('email_update', {
+  windowMs: 60 * 60 * 1000,
+  maxRequests: 5,
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,8 +28,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { email } = schema.parse(body);
+    // Rate limiting par utilisateur + IP
+    const rateLimitResponse = await emailUpdateLimiter.checkLimit(request, session.user.id);
+    if (!rateLimitResponse.allowed) {
+      return NextResponse.json(
+        { error: 'Trop de tentatives. Réessayez dans une heure.' },
+        { status: 429 }
+      );
+    }
+
+    let raw: unknown;
+    try {
+      raw = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Corps de requête invalide' }, { status: 400 });
+    }
+
+    const parsed = schema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? 'Données invalides' },
+        { status: 400 }
+      );
+    }
+
+    const { email } = parsed.data;
 
     // Vérifier si l'email est déjà utilisé comme contactEmail par un autre utilisateur
     const existing = await prisma.user.findFirst({
@@ -27,6 +61,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existing) {
+      // Réponse volontairement générique pour éviter l'énumération d'emails
       return NextResponse.json({ error: 'Cette adresse email est déjà utilisée' }, { status: 409 });
     }
 
@@ -36,6 +71,11 @@ export async function POST(request: NextRequest) {
       data: { contactEmail: email },
     });
 
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+      request.headers.get('x-real-ip') ??
+      'unknown';
+
     await prisma.auditLog.create({
       data: {
         userId: session.user.id,
@@ -44,18 +84,12 @@ export async function POST(request: NextRequest) {
           severity: 'medium',
           timestamp: new Date().toISOString(),
         },
-        ipAddress:
-          request.headers.get('x-forwarded-for') ??
-          request.headers.get('x-real-ip') ??
-          'unknown',
+        ipAddress: ip,
       },
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues[0]?.message ?? 'Données invalides' }, { status: 400 });
-    }
     console.error('update-email error:', error);
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 });
   }

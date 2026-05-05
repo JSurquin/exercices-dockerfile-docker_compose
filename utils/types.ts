@@ -3968,6 +3968,13 @@ export interface Messages {
         validEmail: string;
         tip: string;
         alreadySet: string;
+        benefits: {
+          title: string;
+          trade: string;
+          payment: string;
+          kyc: string;
+          security: string;
+        };
       };
       errors: {
         invalidTradeLink: string;

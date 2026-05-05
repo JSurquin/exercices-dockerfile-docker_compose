@@ -20,7 +20,11 @@ import {
   ExternalLink,
   Coins,
   AlertTriangle,
-  Mail
+  Mail,
+  ShieldCheck,
+  Banknote,
+  BadgeCheck,
+  RefreshCw
 } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -89,6 +93,33 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
           <p className="text-muted-foreground text-sm sm:text-base">
             {messages.components.onboarding.email.description}
           </p>
+
+          {/* Avantages */}
+          <div className="bg-muted rounded-lg p-3 sm:p-4 space-y-2">
+            <p className="font-semibold text-xs sm:text-sm text-foreground">
+              {messages.components.onboarding.email.benefits.title}
+            </p>
+            <div className="grid grid-cols-1 gap-2">
+              <div className="flex items-center gap-2">
+                <RefreshCw className="w-4 h-4 text-blue-500 shrink-0" />
+                <span className="text-xs sm:text-sm">{messages.components.onboarding.email.benefits.trade}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Banknote className="w-4 h-4 text-green-500 shrink-0" />
+                <span className="text-xs sm:text-sm">{messages.components.onboarding.email.benefits.payment}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <BadgeCheck className="w-4 h-4 text-purple-500 shrink-0" />
+                <span className="text-xs sm:text-sm">{messages.components.onboarding.email.benefits.kyc}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-orange-500 shrink-0" />
+                <span className="text-xs sm:text-sm">{messages.components.onboarding.email.benefits.security}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Champ email */}
           <div className="space-y-2">
             <Label htmlFor="contact-email" className="text-sm sm:text-base">
               {messages.components.onboarding.email.label}
@@ -99,7 +130,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               placeholder={messages.components.onboarding.email.placeholder}
               value={email}
               onChange={(e) => handleEmailChange(e.target.value)}
-              className={`text-sm sm:text-base w-full ${isValidEmail === false ? 'border-red-500' : ''}`}
+              className={`text-sm sm:text-base w-full ${isValidEmail === false ? 'border-red-500' : isValidEmail === true ? 'border-green-500' : ''}`}
             />
             {isValidEmail === false && (
               <Alert variant="destructive" className="text-xs sm:text-sm">
@@ -110,19 +141,19 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               </Alert>
             )}
             {isValidEmail === true && (
-              <Alert className="text-xs sm:text-sm">
-                <CheckCircle className="h-4 w-4 shrink-0" />
+              <Alert className="text-xs sm:text-sm border-green-500/50 bg-green-50 dark:bg-green-950 text-green-800 dark:text-green-200">
+                <CheckCircle className="h-4 w-4 shrink-0 text-green-500" />
                 <AlertDescription>
                   {messages.components.onboarding.email.validEmail}
                 </AlertDescription>
               </Alert>
             )}
           </div>
-          <div className="bg-blue-50 dark:bg-blue-950 p-3 sm:p-4 rounded-lg">
-            <p className="text-xs sm:text-sm text-blue-800 dark:text-blue-200">
-              {messages.components.onboarding.email.tip}
-            </p>
-          </div>
+
+          {/* Note confidentialité */}
+          <p className="text-xs text-muted-foreground text-center">
+            {messages.components.onboarding.email.tip}
+          </p>
         </div>
       )
     }] : []),

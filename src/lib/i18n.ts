@@ -4343,14 +4343,21 @@ export const messages: Record<Locale, Messages> = {
           saving: "Sauvegarde..."
         },
         email: {
-          title: "Votre adresse email",
-          description: "Nous avons besoin de votre email pour vous envoyer les confirmations de paiement et les notifications importantes.",
+          title: "Restez informé à chaque étape",
+          description: "Steam ne nous transmet pas votre email. Ajoutez-le pour ne manquer aucune notification importante.",
           label: "Adresse email",
           placeholder: "votre@email.com",
           invalidEmail: "Veuillez saisir une adresse email valide.",
           validEmail: "Adresse email valide ✓",
-          tip: "💡 Votre email ne sera jamais partagé et sert uniquement aux communications liées à vos transactions.",
-          alreadySet: "Email déjà enregistré"
+          tip: "🔒 Votre email reste confidentiel. Aucun spam, uniquement les notifications liées à vos activités.",
+          alreadySet: "Email déjà enregistré",
+          benefits: {
+            title: "Vous recevrez des notifications pour :",
+            trade: "Chaque étape de votre trade (accepté, en hold, disponible)",
+            payment: "Confirmation et virement de vos paiements",
+            kyc: "Validation ou rejet de votre KYC",
+            security: "Alertes de sécurité sur votre compte"
+          }
         },
         errors: {
           invalidTradeLink: "Veuillez saisir un Trade Link Steam valide",
@@ -9613,14 +9620,21 @@ export const messages: Record<Locale, Messages> = {
           saving: "Saving..."
         },
         email: {
-          title: "Your email address",
-          description: "We need your email to send you payment confirmations and important notifications.",
+          title: "Stay informed at every step",
+          description: "Steam does not share your email with us. Add it so you never miss an important notification.",
           label: "Email address",
           placeholder: "your@email.com",
           invalidEmail: "Please enter a valid email address.",
           validEmail: "Valid email address ✓",
-          tip: "💡 Your email will never be shared and is only used for communications related to your transactions.",
-          alreadySet: "Email already registered"
+          tip: "🔒 Your email stays private. No spam, only notifications related to your activity.",
+          alreadySet: "Email already registered",
+          benefits: {
+            title: "You will receive notifications for:",
+            trade: "Every trade update (accepted, on hold, available)",
+            payment: "Payment confirmation and transfer",
+            kyc: "KYC approval or rejection",
+            security: "Security alerts on your account"
+          }
         },
         errors: {
           invalidTradeLink: "Please enter a valid Steam Trade Link",
@@ -14594,14 +14608,21 @@ export const messages: Record<Locale, Messages> = {
           saving: "保存中..."
         },
         email: {
-          title: "您的电子邮件地址",
-          description: "我们需要您的电子邮件来发送付款确认和重要通知。",
+          title: "随时掌握每个步骤",
+          description: "Steam不会向我们提供您的电子邮件。请添加以便接收重要通知。",
           label: "电子邮件地址",
           placeholder: "您的@邮箱.com",
           invalidEmail: "请输入有效的电子邮件地址。",
           validEmail: "有效的电子邮件地址 ✓",
-          tip: "💡 您的电子邮件不会被共享，仅用于与您交易相关的通讯。",
-          alreadySet: "邮箱已注册"
+          tip: "🔒 您的电子邮件保密。无垃圾邮件，仅与您的活动相关的通知。",
+          alreadySet: "邮箱已注册",
+          benefits: {
+            title: "您将收到以下通知：",
+            trade: "每个交易步骤（已接受、锁定中、可用）",
+            payment: "付款确认和转账",
+            kyc: "KYC批准或拒绝",
+            security: "账户安全警报"
+          }
         },
         errors: {
           invalidTradeLink: "请输入有效的Steam交易链接",
