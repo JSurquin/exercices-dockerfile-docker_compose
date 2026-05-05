@@ -9,6 +9,8 @@ import {
   logSystemError 
 } from '@/lib/security/audit-helpers';
 import { AuditAction } from '@/lib/security';
+import crypto from 'crypto';
+import { hashPassword } from 'better-auth/crypto';
 
 export async function GET(request: NextRequest) {
   const context = getRequestContext(request);
@@ -58,7 +60,7 @@ export async function GET(request: NextRequest) {
     }
 
     const email = `steam_${steamUser.steamid}@moonskin.local`;
-    const password = 'steam-auth-' + steamUser.steamid;
+    const password = crypto.randomUUID();
 
     // Chercher par steamId, puis fallback par email si le steamId a été corrompu
     let user = await prisma.user.findUnique({
@@ -153,10 +155,13 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Connecter l'utilisateur via Better Auth en utilisant le handler complet
-    console.log('Connexion utilisateur:', user.email);
-    
-    // Connexion via l'email interne @moonskin.local — jamais le contactEmail
+    // Mettre à jour le hash du password avec le nouveau random pour cet utilisateur
+    const hashedPassword = await hashPassword(password);
+    await prisma.account.updateMany({
+      where: { userId: user.id, providerId: 'credential' },
+      data: { password: hashedPassword },
+    });
+
     const signInRequest = new Request(`${request.nextUrl.origin}/api/auth/sign-in/email`, {
       method: 'POST',
       headers: {
@@ -172,8 +177,7 @@ export async function GET(request: NextRequest) {
     // Utiliser le handler Better Auth directement
     const signInResponse = await auth.handler(signInRequest);
     
-    console.log('signInResponse status:', signInResponse.status);
-    console.log('signInResponse headers:', Object.fromEntries(signInResponse.headers.entries()));
+    console.log('[Steam] signIn status:', signInResponse.status);
 
     if (!signInResponse.ok) {
       const errorText = await signInResponse.text();

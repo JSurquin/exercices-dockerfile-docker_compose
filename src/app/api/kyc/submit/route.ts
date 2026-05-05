@@ -95,13 +95,7 @@ export async function POST(request: NextRequest) {
     // Mapper le type de document vers le format KYCAID
     const kycaidDocumentType = mapDocumentTypeToKycaid(documentType);
 
-    console.log('📄 [KYC SUBMIT] Données reçues :');
-    console.log(`  - Document Type (frontend): ${documentType}`);
-    console.log(`  - Document Type (KYCAID): ${kycaidDocumentType}`);
-    console.log(`  - Identity File: ${identityFile?.name || 'N/A'} (${identityFile?.size || 0} bytes)`);
-    console.log(`  - Identity Back File: ${identityBackFile?.name || 'N/A'} (${identityBackFile?.size || 0} bytes)`);
-    console.log(`  - Selfie File: ${selfieFile?.name || 'N/A'} (${selfieFile?.size || 0} bytes)`);
-    console.log(`  - Address File: ${addressFile?.name || 'N/A'} (${addressFile?.size || 0} bytes)`);
+    console.log(`📄 [KYC SUBMIT] Données reçues : type=${kycaidDocumentType}, fichiers=${[identityFile, identityBackFile, selfieFile, addressFile].filter(Boolean).length}`);
 
     if (!personalInfoStr || !documentType || !identityFile || !selfieFile) {
       console.error('❌ [KYC SUBMIT] Données manquantes');
@@ -112,11 +106,6 @@ export async function POST(request: NextRequest) {
     }
 
     const personalInfo = JSON.parse(personalInfoStr);
-    console.log('👤 [KYC SUBMIT] Informations personnelles :');
-    console.log(`  - Nom: ${personalInfo.firstName} ${personalInfo.lastName}`);
-    console.log(`  - Date de naissance: ${personalInfo.dateOfBirth}`);
-    console.log(`  - Nationalité: ${personalInfo.nationality}`);
-    console.log(`  - Adresse: ${personalInfo.address}, ${personalInfo.city} ${personalInfo.postalCode}, ${personalInfo.country}`);
 
     // =========================================================================
     // ÉTAPE 3 : VÉRIFIER SI KYC DÉJÀ EN COURS OU VÉRIFIÉ
@@ -270,7 +259,7 @@ export async function POST(request: NextRequest) {
       identityFile.name,
       identityFile.type
     );
-    console.log(`  ✓ Fichier uploadé : ${identityFile.name} (${identityFile.size} bytes) → file_id: ${frontFileObj.file_id}`);
+    console.log(`  ✓ Document recto uploadé (${identityFile.size} bytes)`);
 
     // 6.2 - Document d'identité (verso si présent)
     let backFileId: string | undefined;
@@ -283,7 +272,7 @@ export async function POST(request: NextRequest) {
         identityBackFile.type
       );
       backFileId = backFileObj.file_id;
-      console.log(`  ✓ Fichier uploadé : ${identityBackFile.name} (${identityBackFile.size} bytes) → file_id: ${backFileId}`);
+      console.log(`  ✓ Document verso uploadé (${identityBackFile.size} bytes)`);
     }
 
     // 6.3 - Créer le document d'identité dans KYCAID
@@ -395,7 +384,7 @@ export async function POST(request: NextRequest) {
       selfieFile.name,
       selfieFile.type
     );
-    console.log(`  ✓ Fichier uploadé : ${selfieFile.name} (${selfieFile.size} bytes) → file_id: ${selfieFileObj.file_id}`);
+    console.log(`  ✓ Selfie uploadé (${selfieFile.size} bytes)`);
 
     // Créer le document selfie
     const selfieDoc = await createDocument({
@@ -437,7 +426,7 @@ export async function POST(request: NextRequest) {
         addressFile.name,
         addressFile.type
       );
-      console.log(`  ✓ Fichier uploadé : ${addressFile.name} (${addressFile.size} bytes) → file_id: ${addressFileObj.file_id}`);
+      console.log(`  ✓ Justificatif domicile uploadé (${addressFile.size} bytes)`);
 
       const addressDoc = await createDocument({
         applicant_id: applicantId,
@@ -563,7 +552,7 @@ export async function POST(request: NextRequest) {
           user.steamUsername || 'Utilisateur',
           submissionDate
         );
-        console.log(`✅ [KYC SUBMIT] Email de confirmation envoyé à ${user.email}`);
+        console.log(`✅ [KYC SUBMIT] Email de confirmation envoyé`);
       } else {
         console.warn('⚠️  [KYC SUBMIT] Impossible d\'envoyer l\'email : email utilisateur non trouvé');
       }

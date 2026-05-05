@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { adminPreferencesBodySchema } from '@/lib/validation/schemas/admin-bodies';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
-// Redirected to PATCH /api/admin/settings
 export async function POST(request: NextRequest) {
+  const adminSession = await requireAdminSessionWithDbCheck(request);
+  if (!adminSession) {
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
+  }
+
   const raw = await request.json();
   const parsed = safeParseJson(raw, adminPreferencesBodySchema);
   if (!parsed.ok) {
