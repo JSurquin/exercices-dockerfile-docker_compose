@@ -64,10 +64,7 @@ export async function POST(request: NextRequest) {
     // Vérifier que le trade est disponible pour payout
     if (trade.status !== 'AVAILABLE' && trade.status !== 'PAYOUT_PENDING') {
       return NextResponse.json(
-        {
-          error: 'Trade is not ready for payout',
-          currentStatus: trade.status,
-        },
+        { error: 'Trade is not ready for payout' },
         { status: 400 }
       );
     }
@@ -190,10 +187,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[Payout Initiate] Error:', error);
     return NextResponse.json(
-      {
-        error: 'Failed to initiate payout',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { error: 'Failed to initiate payout' },
       { status: 500 }
     );
   }

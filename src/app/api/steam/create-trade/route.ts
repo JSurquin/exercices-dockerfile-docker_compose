@@ -168,18 +168,16 @@ export async function POST(request: NextRequest) {
     const netCentsWithBonus = ledger.netCents + vipBonusCents;
 
     // Stocker les items avec les données vérifiées depuis Skinplace (jamais le client)
-    const itemsData = assetIds.map((assetId, index) => {
+    const itemsData = assetIds.map((assetId) => {
       const verified = verifiedItems.get(assetId)!;
       return {
-        assetId: verified.asset_id,
-        marketHashName: verified.market_hash_name,
         name: verified.market_hash_name,
+        marketHashName: verified.market_hash_name,
         priceCents: verified.price_centimes,
         iconUrl: verified.icon_url,
         rarity: verified.rarity,
         exterior: verified.exterior || '',
         statTrak: verified.is_stattrak,
-        position: index,
       };
     });
 

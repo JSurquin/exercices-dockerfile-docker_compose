@@ -114,8 +114,6 @@ export async function GET(request: NextRequest) {
       signal: AbortSignal.timeout(10000),
     });
 
-    console.log('response de lapi', response);
-
     if (!response.ok) {
       if (response.status === 403) {
         return NextResponse.json(
@@ -134,8 +132,6 @@ export async function GET(request: NextRequest) {
 
     const data: SteamInventoryAPIResponse = await response.json();
 
-    console.log('data de lapi', data);
-
     // Vérifier si Steam a retourné une erreur
     if (data.Error || data.error) {
       return NextResponse.json(
@@ -152,16 +148,11 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    console.log('data.assets de lapi', data.assets);
-    console.log('data.descriptions de lapi', data.descriptions);
-
     // Mapper les assets avec leurs descriptions
     const items = data.assets.map((asset, index) => {
       const description = data.descriptions?.find(
         desc => desc.classid === asset.classid && desc.instanceid === asset.instanceid
       );
-
-      console.log('items de lapi', description);
 
       if (!description) {
         return null;

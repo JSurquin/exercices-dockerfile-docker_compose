@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[SEPA_FR] POST error', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Erreur lors de la création de la demande' },
+      { error: 'Erreur lors de la création de la demande' },
       { status: 500 }
     );
   }

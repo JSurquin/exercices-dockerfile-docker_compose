@@ -373,7 +373,7 @@ export class AffiliateService {
         status: 'PENDING',
       },
       data: {
-        status: 'PAYOUT_REQUESTED' as any,
+        status: 'PAYOUT_REQUESTED',
       },
     });
   }
@@ -386,7 +386,7 @@ export class AffiliateService {
       where: {
         id: { in: commissionIds },
         affiliateId,
-        status: { in: ['PENDING', 'PAYOUT_REQUESTED'] as any },
+        status: { in: ['PENDING', 'PAYOUT_REQUESTED'] },
       },
       data: {
         status: 'APPROVED',

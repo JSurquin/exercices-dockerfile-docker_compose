@@ -924,6 +924,7 @@ enum UserRole {
 
 enum AffiliateCommissionStatus {
   PENDING
+  PAYOUT_REQUESTED
   APPROVED
   PAID
   CANCELLED
