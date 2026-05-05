@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useLocale } from '@/components/providers/locale-provider';
 import { Snowflake, Sun, Plus, Minus, RefreshCw, Wallet } from 'lucide-react';
 
 const formatCents = (cents: number) =>
@@ -49,6 +50,9 @@ interface BalanceManagementProps {
 }
 
 export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceManagementProps) {
+  const { messages } = useLocale();
+  const t = messages.admin.balanceManagement;
+
   const queryClient = useQueryClient();
   const [adjusting, setAdjusting] = useState(false);
   const [freezing, setFreezing] = useState(false);
@@ -77,8 +81,8 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
     const raw = parseInt(adjustAmount, 10);
     if (isNaN(raw) || raw <= 0 || !adjustReason.trim()) {
       toast({
-        title: 'Saisie invalide',
-        description: 'Montant (positif) et raison requis.',
+        title: t.invalidInput,
+        description: t.invalidInputDesc,
         variant: 'destructive',
       });
       return;
@@ -92,16 +96,19 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
         body: JSON.stringify({ userId, amountCents, reason: adjustReason.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur');
-      toast({ title: 'Solde mis à jour', description: `Nouveau solde: ${formatCents(data.balanceAfterCents)}` });
+      if (!res.ok) throw new Error(data.error || t.error);
+      toast({
+        title: t.balanceUpdated,
+        description: t.balanceUpdatedDesc.replace('{balance}', formatCents(data.balanceAfterCents))
+      });
       setAdjustAmount('');
       setAdjustReason('');
       await queryClient.invalidateQueries({ queryKey: queryKeys.adminBalance(userId) });
       onUpdate?.();
     } catch (e) {
       toast({
-        title: 'Erreur',
-        description: e instanceof Error ? e.message : 'Ajustement impossible',
+        title: t.error,
+        description: e instanceof Error ? e.message : t.adjustmentError,
         variant: 'destructive',
       });
     } finally {
@@ -111,7 +118,7 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
 
   const handleFreeze = async () => {
     if (!freezeReason.trim()) {
-      toast({ title: 'Raison requise', variant: 'destructive' });
+      toast({ title: t.reasonRequired, variant: 'destructive' });
       return;
     }
     setFreezing(true);
@@ -123,16 +130,16 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Erreur');
+        throw new Error(data.error || t.error);
       }
-      toast({ title: 'Compte gelé' });
+      toast({ title: t.accountFrozen });
       setFreezeReason('');
       await queryClient.invalidateQueries({ queryKey: queryKeys.adminBalance(userId) });
       onUpdate?.();
     } catch (e) {
       toast({
-        title: 'Erreur',
-        description: e instanceof Error ? e.message : 'Impossible de geler',
+        title: t.error,
+        description: e instanceof Error ? e.message : t.cannotFreeze,
         variant: 'destructive',
       });
     } finally {
@@ -150,15 +157,15 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Erreur');
+        throw new Error(data.error || t.error);
       }
-      toast({ title: 'Compte dégelé' });
+      toast({ title: t.accountUnfrozen });
       await queryClient.invalidateQueries({ queryKey: queryKeys.adminBalance(userId) });
       onUpdate?.();
     } catch (e) {
       toast({
-        title: 'Erreur',
-        description: e instanceof Error ? e.message : 'Impossible de dégeler',
+        title: t.error,
+        description: e instanceof Error ? e.message : t.cannotUnfreeze,
         variant: 'destructive',
       });
     } finally {
@@ -170,7 +177,7 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
     return (
       <Card className="bg-slate-800/30 border-slate-700">
         <CardContent className="p-6">
-          <p className="text-slate-400">Chargement du solde…</p>
+          <p className="text-slate-400">{t.loading}</p>
         </CardContent>
       </Card>
     );
@@ -184,11 +191,11 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
         <CardHeader className="pb-2">
           <CardTitle className="text-white flex items-center gap-2">
             <Wallet className="h-5 w-5" />
-            Solde
+            {t.title}
             {context.accountFrozen && (
               <Badge variant="destructive" className="ml-2">
                 <Snowflake className="h-3 w-3 mr-1" />
-                Compte gelé
+                {t.frozen}
               </Badge>
             )}
           </CardTitle>
@@ -196,19 +203,19 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
-              <p className="text-xs text-slate-400">Solde total</p>
+              <p className="text-xs text-slate-400">{t.totalBalance}</p>
               <p className="text-lg font-semibold text-white">{formatCents(context.balanceCents)}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-400">En attente</p>
+              <p className="text-xs text-slate-400">{t.pending}</p>
               <p className="text-lg font-semibold text-blue-400">{formatCents(context.pendingBalanceCents)}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-400">Solde gelé</p>
+              <p className="text-xs text-slate-400">{t.frozenBalance}</p>
               <p className="text-lg font-semibold text-amber-400">{formatCents(context.frozenBalanceCents)}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-400">Disponible</p>
+              <p className="text-xs text-slate-400">{t.available}</p>
               <p className="text-lg font-semibold text-green-400">{formatCents(context.availableCents)}</p>
             </div>
           </div>
@@ -216,19 +223,19 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
           <div className="flex flex-wrap gap-2">
             <div className="flex items-end gap-2 flex-1 min-w-[200px]">
               <div className="flex-1">
-                <Label className="text-slate-300">Montant (centimes ou €)</Label>
+                <Label className="text-slate-300">{t.amountLabel}</Label>
                 <Input
                   type="number"
-                  placeholder="Centimes (ex: 1000 = 10€)"
+                  placeholder={t.amountPlaceholder}
                   value={adjustAmount}
                   onChange={(e) => setAdjustAmount(e.target.value)}
                   className="bg-slate-700 border-slate-600 text-white mt-1"
                 />
               </div>
               <div className="flex-1">
-                <Label className="text-slate-300">Raison</Label>
+                <Label className="text-slate-300">{t.reasonLabel}</Label>
                 <Input
-                  placeholder="Raison de l’ajustement"
+                  placeholder={t.reasonPlaceholder}
                   value={adjustReason}
                   onChange={(e) => setAdjustReason(e.target.value)}
                   className="bg-slate-700 border-slate-600 text-white mt-1"
@@ -243,7 +250,7 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
                 className="bg-green-600 hover:bg-green-700"
               >
                 <Plus className="h-4 w-4 mr-1" />
-                Créditer
+                {t.credit}
               </Button>
               <Button
                 size="sm"
@@ -252,7 +259,7 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
                 disabled={adjusting}
               >
                 <Minus className="h-4 w-4 mr-1" />
-                Débiter
+                {t.debit}
               </Button>
             </div>
           </div>
@@ -267,12 +274,12 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
                 className="border-emerald-600 text-emerald-400 hover:bg-emerald-900/30"
               >
                 <Sun className="h-4 w-4 mr-2" />
-                Dégeler le compte
+                {t.unfreezeButton}
               </Button>
             ) : (
               <>
                 <Input
-                  placeholder="Raison du gel"
+                  placeholder={t.freezeReasonPlaceholder}
                   value={freezeReason}
                   onChange={(e) => setFreezeReason(e.target.value)}
                   className="max-w-xs bg-slate-700 border-slate-600 text-white mr-2 mb-2 sm:mb-0 sm:inline-flex"
@@ -284,7 +291,7 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
                   disabled={freezing || !freezeReason.trim()}
                 >
                   <Snowflake className="h-4 w-4 mr-2" />
-                  Geler le compte
+                  {t.freezeButton}
                 </Button>
               </>
             )}
@@ -294,7 +301,7 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
 
       <Card className="bg-slate-800/30 border-slate-700">
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-white text-base">Historique des transactions</CardTitle>
+          <CardTitle className="text-white text-base">{t.transactionsTitle}</CardTitle>
           <Button variant="ghost" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminBalance(userId) })} className="text-slate-400">
             <RefreshCw className="h-4 w-4" />
           </Button>
@@ -304,18 +311,18 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
           <Table>
             <TableHeader>
               <TableRow className="border-slate-700">
-                <TableHead className="text-slate-400 whitespace-nowrap">Date</TableHead>
-                <TableHead className="text-slate-400 whitespace-nowrap">Type</TableHead>
-                <TableHead className="text-slate-400 whitespace-nowrap">Montant</TableHead>
-                <TableHead className="text-slate-400 whitespace-nowrap">Solde après</TableHead>
-                <TableHead className="text-slate-400 whitespace-nowrap">Raison</TableHead>
+                <TableHead className="text-slate-400 whitespace-nowrap">{t.colDate}</TableHead>
+                <TableHead className="text-slate-400 whitespace-nowrap">{t.colType}</TableHead>
+                <TableHead className="text-slate-400 whitespace-nowrap">{t.colAmount}</TableHead>
+                <TableHead className="text-slate-400 whitespace-nowrap">{t.colBalanceAfter}</TableHead>
+                <TableHead className="text-slate-400 whitespace-nowrap">{t.colReason}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {context.transactions.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-slate-500 text-center py-4">
-                    Aucune transaction
+                    {t.noTransactions}
                   </TableCell>
                 </TableRow>
               ) : (

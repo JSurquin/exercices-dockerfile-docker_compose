@@ -38,6 +38,7 @@ const SYNCABLE_STATUSES = ['créé', 'accepté_par_bot', 'en_trade_hold', 'dispo
 
 export function AdminTradesTable() {
   const { messages } = useLocale();
+  const t = messages.components.admin.trades;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<AdminFilters>({
@@ -63,7 +64,7 @@ export function AdminTradesTable() {
       const response = await fetch(`/api/admin/trades?${params}`);
       const json = await response.json();
       if (!response.ok) {
-        throw new Error(json.error || 'Erreur lors du chargement des trades');
+        throw new Error(json.error || t.loadError);
       }
       return json;
     },
@@ -86,13 +87,13 @@ export function AdminTradesTable() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      'créé': { variant: 'secondary' as const, icon: Clock, text: 'Créé' },
-      'accepté_par_bot': { variant: 'default' as const, icon: CheckCircle, text: 'Accepté' },
-      'en_trade_hold': { variant: 'default' as const, icon: Clock, text: 'Trade Hold' },
-      'disponible': { variant: 'default' as const, icon: CheckCircle, text: 'Disponible' },
-      'paiement_en_cours': { variant: 'default' as const, icon: Clock, text: 'Paiement' },
-      'payé': { variant: 'default' as const, icon: CheckCircle, text: 'Payé' },
-      'échoué': { variant: 'destructive' as const, icon: XCircle, text: 'Échoué' },
+      'créé': { variant: 'secondary' as const, icon: Clock, text: t.created },
+      'accepté_par_bot': { variant: 'default' as const, icon: CheckCircle, text: t.accepted },
+      'en_trade_hold': { variant: 'default' as const, icon: Clock, text: t.tradeHold },
+      'disponible': { variant: 'default' as const, icon: CheckCircle, text: t.available },
+      'paiement_en_cours': { variant: 'default' as const, icon: Clock, text: t.payment },
+      'payé': { variant: 'default' as const, icon: CheckCircle, text: t.paid },
+      'échoué': { variant: 'destructive' as const, icon: XCircle, text: t.failed },
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['créé'];
@@ -126,8 +127,8 @@ export function AdminTradesTable() {
 
       if (!response.ok) {
         toast({
-          title: 'Erreur de synchronisation',
-          description: json.error || 'Impossible de contacter Skinplace',
+          title: t.syncError,
+          description: json.error || t.syncErrorDesc,
           variant: 'destructive',
         });
         return;
@@ -135,20 +136,20 @@ export function AdminTradesTable() {
 
       if (json.synced) {
         toast({
-          title: 'Statut mis à jour',
+          title: t.syncUpdated,
           description: json.message,
         });
         queryClient.invalidateQueries({ queryKey: ['admin', 'trades'] });
       } else {
         toast({
-          title: 'Aucun changement',
+          title: t.syncNoChange,
           description: json.message,
         });
       }
     } catch {
       toast({
-        title: 'Erreur réseau',
-        description: 'Impossible de joindre l\'API',
+        title: t.networkError,
+        description: t.networkErrorDesc,
         variant: 'destructive',
       });
     } finally {
@@ -180,7 +181,7 @@ export function AdminTradesTable() {
           /* ignore */
         }
         toast({
-          title: 'Export impossible',
+          title: t.exportError,
           description: message,
           variant: 'destructive',
         });
@@ -198,14 +199,14 @@ export function AdminTradesTable() {
       document.body.removeChild(a);
 
       toast({
-        title: 'Export terminé',
-        description: 'Le fichier CSV a été téléchargé.',
+        title: t.exportDone,
+        description: t.exportDoneDesc,
       });
     } catch (err) {
-      console.error('Erreur lors de l\'export:', err);
+      console.error('export error:', err);
       toast({
-        title: 'Export impossible',
-        description: err instanceof Error ? err.message : 'Erreur réseau',
+        title: t.exportError,
+        description: err instanceof Error ? err.message : t.networkError,
         variant: 'destructive',
       });
     }
@@ -221,7 +222,7 @@ export function AdminTradesTable() {
         <CardContent className="p-6">
           <div className="flex items-center gap-2 text-red-400">
             <AlertTriangle className="h-5 w-5" />
-            <span>Erreur: {error.message}</span>
+            <span>{error.message}</span>
           </div>
         </CardContent>
       </Card>
@@ -236,7 +237,7 @@ export function AdminTradesTable() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              placeholder="Rechercher par ticket ID, utilisateur..."
+              placeholder={t.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-10 bg-slate-700 border-slate-600 text-white"
@@ -245,17 +246,17 @@ export function AdminTradesTable() {
           
           <Select onValueChange={handleStatusFilter}>
             <SelectTrigger className="w-full sm:w-48 bg-slate-700 border-slate-600 text-white">
-              <SelectValue placeholder="Filtrer par statut" />
+              <SelectValue placeholder={t.allStatuses} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les statuts</SelectItem>
-              <SelectItem value="créé">{messages.components.admin.trades.created}</SelectItem>
-              <SelectItem value="accepté_par_bot">{messages.components.admin.trades.accepted}</SelectItem>
-              <SelectItem value="en_trade_hold">Trade Hold</SelectItem>
-              <SelectItem value="disponible">Disponible</SelectItem>
-              <SelectItem value="paiement_en_cours">Paiement</SelectItem>
-              <SelectItem value="payé">{messages.components.admin.trades.paid}</SelectItem>
-              <SelectItem value="échoué">{messages.components.admin.trades.failed}</SelectItem>
+              <SelectItem value="all">{t.allStatuses}</SelectItem>
+              <SelectItem value="créé">{t.created}</SelectItem>
+              <SelectItem value="accepté_par_bot">{t.accepted}</SelectItem>
+              <SelectItem value="en_trade_hold">{t.tradeHold}</SelectItem>
+              <SelectItem value="disponible">{t.available}</SelectItem>
+              <SelectItem value="paiement_en_cours">{t.payment}</SelectItem>
+              <SelectItem value="payé">{t.paid}</SelectItem>
+              <SelectItem value="échoué">{t.failed}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -268,7 +269,7 @@ export function AdminTradesTable() {
             className="border-slate-600 text-white hover:bg-slate-700"
           >
             <RefreshCw className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Actualiser</span>
+            <span className="hidden sm:inline">{t.refresh}</span>
           </Button>
 
           <Button 
@@ -277,7 +278,7 @@ export function AdminTradesTable() {
             className="bg-blue-600 hover:bg-blue-700"
           >
             <Download className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Exporter</span>
+            <span className="hidden sm:inline">{t.export}</span>
           </Button>
         </div>
       </div>
@@ -288,16 +289,16 @@ export function AdminTradesTable() {
         <Table>
           <TableHeader>
             <TableRow className="border-slate-700">
-              <TableHead className="text-slate-300 whitespace-nowrap">Ticket ID</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Utilisateur</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Statut</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.colTicket}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.colUser}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.colStatus}</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">
-                Montant
-                <span className="block text-[10px] font-normal text-slate-500">Skinplace (USD)</span>
+                {t.colAmount}
+                <span className="block text-[10px] font-normal text-slate-500">{t.colAmountSub}</span>
               </TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Items</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Créé le</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Actions</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.colItems}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.colCreatedAt}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.colActions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -329,7 +330,7 @@ export function AdminTradesTable() {
                       />
                     </div>
                     <div className="text-xs text-slate-400">
-                      Brut:{' '}
+                      {t.labelGross}:{' '}
                       <ConvertedPrice
                         usdCents={trade.brutCentimes}
                         fromCurrency="USD"
@@ -351,7 +352,7 @@ export function AdminTradesTable() {
                       variant="outline"
                       className="border-slate-600 text-white hover:bg-slate-700"
                       type="button"
-                      aria-label="Voir le détail du trade"
+                      aria-label={t.viewTradeAriaLabel}
                       onClick={() => setDetailTrade(trade)}
                     >
                       <Eye className="h-4 w-4" />
@@ -363,7 +364,7 @@ export function AdminTradesTable() {
                         disabled={syncingTradeIds.has(trade.id)}
                         onClick={() => syncTrade(trade.id)}
                         className="border-orange-600 text-orange-400 hover:bg-orange-900/30"
-                        title="Interroger Skinplace pour mettre à jour le statut"
+                        title={t.syncTooltip}
                       >
                         <RotateCcw className={`h-4 w-4 ${syncingTradeIds.has(trade.id) ? 'animate-spin' : ''}`} />
                       </Button>
@@ -380,7 +381,7 @@ export function AdminTradesTable() {
       {trades.length === 0 && (
         <Card className="bg-slate-800/30 border-slate-700">
           <CardContent className="p-8 text-center">
-            <p className="text-slate-300">Aucun trade trouvé</p>
+            <p className="text-slate-300">{t.noTrades}</p>
           </CardContent>
         </Card>
       )}
@@ -392,7 +393,7 @@ export function AdminTradesTable() {
               <DialogHeader>
                 <DialogTitle className="text-white">Trade {detailTrade.ticketId}</DialogTitle>
                 <DialogDescription className="text-slate-400">
-                  Montants issus de Skinplace en USD (conversion selon la devise sélectionnée sur le site).
+                  {t.detailDescAmounts}
                 </DialogDescription>
               </DialogHeader>
 
@@ -413,7 +414,7 @@ export function AdminTradesTable() {
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-3">
-                    <p className="text-xs text-slate-400">Net</p>
+                    <p className="text-xs text-slate-400">{t.labelNet}</p>
                     <p className="text-lg font-semibold text-white">
                       <ConvertedPrice
                         usdCents={detailTrade.netCentimes}
@@ -423,7 +424,7 @@ export function AdminTradesTable() {
                     </p>
                   </div>
                   <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-3">
-                    <p className="text-xs text-slate-400">Brut</p>
+                    <p className="text-xs text-slate-400">{t.labelGross}</p>
                     <p className="text-lg font-semibold text-white">
                       <ConvertedPrice
                         usdCents={detailTrade.brutCentimes}
@@ -433,16 +434,16 @@ export function AdminTradesTable() {
                     </p>
                   </div>
                   <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-3 sm:col-span-2">
-                    <p className="text-xs text-slate-400">Frais</p>
+                    <p className="text-xs text-slate-400">{t.labelFees}</p>
                     <p className="text-sm text-slate-200">
-                      Cashout :{' '}
+                      {t.labelCashout} :{' '}
                       <ConvertedPrice
                         usdCents={detailTrade.frais.cashout}
                         fromCurrency="USD"
                         showOriginal
                       />
                       {' · '}
-                      Réseau :{' '}
+                      {t.labelNetwork} :{' '}
                       {detailTrade.frais.réseau > 0 ? (
                         <ConvertedPrice
                           usdCents={detailTrade.frais.réseau}
@@ -450,7 +451,7 @@ export function AdminTradesTable() {
                           showOriginal
                         />
                       ) : (
-                        <span className="text-slate-400">au retrait</span>
+                        <span className="text-slate-400">{t.labelAtWithdrawal}</span>
                       )}
                     </p>
                   </div>
@@ -458,18 +459,18 @@ export function AdminTradesTable() {
 
                 <div className="space-y-1 text-sm text-slate-300">
                   <p>
-                    <span className="text-slate-500">Créé le :</span>{' '}
+                    <span className="text-slate-500">{t.labelCreatedAt} :</span>{' '}
                     {formatDate(detailTrade.créédLe)}
                   </p>
                   {detailTrade.tradeAcceptéLe && (
                     <p>
-                      <span className="text-slate-500">Accepté le :</span>{' '}
+                      <span className="text-slate-500">{t.labelAcceptedAt} :</span>{' '}
                       {formatDate(detailTrade.tradeAcceptéLe)}
                     </p>
                   )}
                   {detailTrade.disponibleLe && (
                     <p>
-                      <span className="text-slate-500">Disponible le :</span>{' '}
+                      <span className="text-slate-500">{t.labelAvailableAt} :</span>{' '}
                       {formatDate(detailTrade.disponibleLe)}
                     </p>
                   )}
@@ -477,7 +478,7 @@ export function AdminTradesTable() {
 
                 <div>
                   <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-                    Items ({detailTrade.items.length})
+                    {t.labelItemsCount} ({detailTrade.items.length})
                   </p>
                   <TradeItemsGallery items={detailTrade.items} />
                 </div>

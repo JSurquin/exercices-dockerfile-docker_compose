@@ -24,6 +24,7 @@ import {
   FireIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import { useLocale } from '@/components/providers/locale-provider';
 import type { PointsConfig } from '@/lib/points-config';
 import { DEFAULT_FRAGMENT_DROP, DEFAULT_GIVEAWAY_COSTS } from '@/lib/points-config';
 
@@ -54,15 +55,6 @@ interface Metrics {
   streakStats: { maxStreak: number; avgStreak: number };
 }
 
-const EVENT_TYPE_LABELS: Record<string, string> = {
-  TRADE_SALE: 'Vente de skins',
-  DAILY_LOGIN: 'Connexion quotidienne',
-  LEVEL_UP: 'Passage de niveau',
-  ADMIN_ADJUSTMENT: 'Ajustement admin',
-  GIVEAWAY_ENTRY: 'Participation giveaway',
-  REFERRAL_BONUS: 'Bonus parrainage',
-};
-
 const EVENT_TYPE_COLORS: Record<string, string> = {
   TRADE_SALE: 'bg-green-500/20 text-green-400 border-green-500/30',
   DAILY_LOGIN: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
@@ -73,6 +65,9 @@ const EVENT_TYPE_COLORS: Record<string, string> = {
 };
 
 export default function AdminPointsPage() {
+  const { messages } = useLocale();
+  const t = messages.admin.points;
+
   const queryClient = useQueryClient();
   const [savingConfig, setSavingConfig] = useState(false);
   const [editConfig, setEditConfig] = useState<PointsConfig | null>(null);
@@ -83,7 +78,7 @@ export default function AdminPointsPage() {
         queryKey: ['admin', 'points', 'metrics'],
         queryFn: async () => {
           const res = await fetch('/api/admin/points?view=metrics');
-          if (!res.ok) throw new Error('Erreur métriques');
+          if (!res.ok) throw new Error('metrics error');
           return res.json() as Promise<Metrics>;
         },
       },
@@ -91,7 +86,7 @@ export default function AdminPointsPage() {
         queryKey: ['admin', 'points', 'config'],
         queryFn: async () => {
           const res = await fetch('/api/admin/points');
-          if (!res.ok) throw new Error('Erreur config');
+          if (!res.ok) throw new Error('config error');
           const data = await res.json() as PointsConfig;
           setEditConfig((prev) => prev ?? data);
           return data;
@@ -121,9 +116,9 @@ export default function AdminPointsPage() {
       const updated = await res.json();
       queryClient.setQueryData(['admin', 'points', 'config'], updated);
       setEditConfig(updated);
-      toast.success('Configuration sauvegardée');
+      toast.success(t.configSaved);
     } catch {
-      toast.error('Erreur lors de la sauvegarde');
+      toast.error(t.configSaveError);
     } finally {
       setSavingConfig(false);
     }
@@ -145,19 +140,19 @@ export default function AdminPointsPage() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-white flex items-center gap-2">
                 <StarIcon className="w-7 h-7 text-yellow-400 shrink-0" />
-                Système de Points & Gamification
+                {t.title}
               </h1>
               <p className="text-slate-400">
-                Configurez les règles d&apos;attribution de points, consultez les métriques et gérez la progression des joueurs.
+                {t.description}
               </p>
             </div>
             <Button onClick={fetchMetrics} variant="outline" disabled={loadingMetrics}>
-              {loadingMetrics ? 'Chargement...' : 'Actualiser'}
+              {loadingMetrics ? t.loading : t.refresh}
             </Button>
           </div>
         </motion.div>
 
-        {/* Stats rapides */}
+        {/* Quick stats */}
         {metrics && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="bg-slate-800/50 border-slate-700">
@@ -167,7 +162,7 @@ export default function AdminPointsPage() {
                     <StarIcon className="w-5 h-5 text-yellow-400" />
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400">Total Points</p>
+                    <p className="text-xs text-slate-400">{t.totalPoints}</p>
                     <p className="text-xl font-bold text-white">
                       {(metrics.totals.points ?? 0).toLocaleString('fr-FR')}
                     </p>
@@ -183,7 +178,7 @@ export default function AdminPointsPage() {
                     <TicketIcon className="w-5 h-5 text-purple-400" />
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400">Total Fragments</p>
+                    <p className="text-xs text-slate-400">{t.totalFragments}</p>
                     <p className="text-xl font-bold text-white">
                       {(metrics.totals.tickets ?? 0).toLocaleString('fr-FR')}
                     </p>
@@ -199,11 +194,11 @@ export default function AdminPointsPage() {
                     <BoltIcon className="w-5 h-5 text-green-400" />
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400">Via Ventes</p>
+                    <p className="text-xs text-slate-400">{t.viaSales}</p>
                     <p className="text-xl font-bold text-white">
                       {(metrics.bySource.tradeSale.count ?? 0).toLocaleString('fr-FR')}
                     </p>
-                    <p className="text-xs text-slate-500">transactions</p>
+                    <p className="text-xs text-slate-500">{t.transactions}</p>
                   </div>
                 </div>
               </CardContent>
@@ -216,11 +211,11 @@ export default function AdminPointsPage() {
                     <FireIcon className="w-5 h-5 text-orange-400" />
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400">Streak Max</p>
+                    <p className="text-xs text-slate-400">{t.streakMax}</p>
                     <p className="text-xl font-bold text-white">
-                      {metrics.streakStats.maxStreak}j
+                      {metrics.streakStats.maxStreak}{t.streakDays}
                     </p>
-                    <p className="text-xs text-slate-500">moy. {metrics.streakStats.avgStreak}j</p>
+                    <p className="text-xs text-slate-500">{t.streakAvg} {metrics.streakStats.avgStreak}{t.streakDays}</p>
                   </div>
                 </div>
               </CardContent>
@@ -232,35 +227,34 @@ export default function AdminPointsPage() {
           <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border-slate-700">
             <TabsTrigger value="metrics" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               <ChartBarIcon className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Métriques</span>
+              <span className="hidden sm:inline">{t.tabMetrics}</span>
             </TabsTrigger>
             <TabsTrigger value="leaderboard" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               <TrophyIcon className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Classement</span>
+              <span className="hidden sm:inline">{t.tabLeaderboard}</span>
             </TabsTrigger>
             <TabsTrigger value="config" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               <Cog6ToothIcon className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Configuration</span>
+              <span className="hidden sm:inline">{t.tabConfig}</span>
             </TabsTrigger>
           </TabsList>
 
-          {/* Métriques */}
+          {/* Metrics tab */}
           <TabsContent value="metrics" className="space-y-6">
             {loadingMetrics ? (
               <Card className="bg-slate-800/50 border-slate-700">
                 <CardContent className="p-8 text-center">
-                  <p className="text-slate-400">Chargement des métriques...</p>
+                  <p className="text-slate-400">{t.loadingMetrics}</p>
                 </CardContent>
               </Card>
             ) : metrics ? (
               <>
-                {/* Répartition par source */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <Card className="bg-slate-800/50 border-slate-700">
                     <CardHeader>
                       <CardTitle className="text-white text-base flex items-center">
                         <BoltIcon className="w-5 h-5 mr-2 text-green-400" />
-                        Points par type d&apos;événement
+                        {t.eventTypeTitle}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -272,17 +266,17 @@ export default function AdminPointsPage() {
                                 variant="outline"
                                 className={`text-xs ${EVENT_TYPE_COLORS[item.type] ?? 'bg-slate-700 text-slate-300'}`}
                               >
-                                {EVENT_TYPE_LABELS[item.type] ?? item.type}
+                                {t.eventTypes[item.type as keyof typeof t.eventTypes] ?? item.type}
                               </Badge>
-                              <span className="text-xs text-slate-500">{item._count} fois</span>
+                              <span className="text-xs text-slate-500">{item._count} {t.times}</span>
                             </div>
                             <div className="text-right">
                               <p className="text-sm font-semibold text-yellow-400">
-                                {(item._sum.points ?? 0).toLocaleString('fr-FR')} pts
+                                {(item._sum.points ?? 0).toLocaleString('fr-FR')} {t.pts}
                               </p>
                               {(item._sum.tickets ?? 0) > 0 && (
                                 <p className="text-xs text-purple-400">
-                                  +{item._sum.tickets} fragments
+                                  +{item._sum.tickets} {t.fragments}
                                 </p>
                               )}
                             </div>
@@ -290,7 +284,7 @@ export default function AdminPointsPage() {
                         ))}
                         {metrics.byType.length === 0 && (
                           <p className="text-sm text-slate-500 text-center py-4">
-                            Aucune transaction encore
+                            {t.noTransactions}
                           </p>
                         )}
                       </div>
@@ -301,7 +295,7 @@ export default function AdminPointsPage() {
                     <CardHeader>
                       <CardTitle className="text-white text-base flex items-center">
                         <CalendarDaysIcon className="w-5 h-5 mr-2 text-blue-400" />
-                        Activité Daily Login
+                        {t.dailyLoginTitle}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -311,25 +305,25 @@ export default function AdminPointsPage() {
                             <p className="text-2xl font-bold text-blue-400">
                               {(metrics.bySource.dailyLogin.count ?? 0).toLocaleString('fr-FR')}
                             </p>
-                            <p className="text-xs text-slate-400 mt-1">Connexions totales</p>
+                            <p className="text-xs text-slate-400 mt-1">{t.totalLogins}</p>
                           </div>
                           <div className="bg-slate-700/50 rounded-lg p-4 text-center">
                             <p className="text-2xl font-bold text-yellow-400">
                               {(metrics.bySource.dailyLogin.points ?? 0).toLocaleString('fr-FR')}
                             </p>
-                            <p className="text-xs text-slate-400 mt-1">Points distribués</p>
+                            <p className="text-xs text-slate-400 mt-1">{t.pointsDistributed}</p>
                           </div>
                           <div className="bg-slate-700/50 rounded-lg p-4 text-center">
                             <p className="text-2xl font-bold text-orange-400">
                               {metrics.streakStats.maxStreak}
                             </p>
-                            <p className="text-xs text-slate-400 mt-1">Streak record (jours)</p>
+                            <p className="text-xs text-slate-400 mt-1">{t.streakRecord}</p>
                           </div>
                           <div className="bg-slate-700/50 rounded-lg p-4 text-center">
                             <p className="text-2xl font-bold text-green-400">
                               {metrics.streakStats.avgStreak}
                             </p>
-                            <p className="text-xs text-slate-400 mt-1">Streak moyen (jours)</p>
+                            <p className="text-xs text-slate-400 mt-1">{t.streakAverage}</p>
                           </div>
                         </div>
                       </div>
@@ -337,45 +331,40 @@ export default function AdminPointsPage() {
                   </Card>
                 </div>
 
-                {/* Stats drops aléatoires */}
                 <Card className="bg-slate-800/50 border-slate-700">
                   <CardHeader>
                     <CardTitle className="text-white text-base flex items-center">
                       <FireIcon className="w-5 h-5 mr-2 text-amber-400" />
-                      Drops aléatoires de fragments
+                      {t.randomDropsTitle}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {(() => {
-                      const dropTx = metrics.byType.filter((t) =>
-                        String(t.type) === 'GENERATED_DROP'
-                      );
-                      const saleTx = metrics.byType.filter((t) =>
-                        String(t.type) === 'GENERATED_SALE'
-                      );
-                      const dropCount = dropTx.reduce((s, t) => s + t._count, 0);
-                      const dropTotal = dropTx.reduce((s, t) => s + (t._sum.points ?? 0), 0);
-                      const saleCount = saleTx.reduce((s, t) => s + t._count, 0);
+                      const dropTx = metrics.byType.filter((tx) => String(tx.type) === 'GENERATED_DROP');
+                      const saleTx = metrics.byType.filter((tx) => String(tx.type) === 'GENERATED_SALE');
+                      const dropCount = dropTx.reduce((s, tx) => s + tx._count, 0);
+                      const dropTotal = dropTx.reduce((s, tx) => s + (tx._sum.points ?? 0), 0);
+                      const saleCount = saleTx.reduce((s, tx) => s + tx._count, 0);
                       const dropRate = saleCount > 0 ? ((dropCount / saleCount) * 100).toFixed(1) : '0';
                       return (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
                             <p className="text-2xl font-bold text-amber-400">{dropCount.toLocaleString('fr-FR')}</p>
-                            <p className="text-xs text-slate-400 mt-1">Drops déclenchés</p>
+                            <p className="text-xs text-slate-400 mt-1">{t.dropsTriggered}</p>
                           </div>
                           <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
                             <p className="text-2xl font-bold text-amber-400">{dropTotal.toLocaleString('fr-FR')}</p>
-                            <p className="text-xs text-slate-400 mt-1">Fragments distribués</p>
+                            <p className="text-xs text-slate-400 mt-1">{t.fragmentsDistributed}</p>
                           </div>
                           <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
                             <p className="text-2xl font-bold text-amber-400">{dropRate}%</p>
-                            <p className="text-xs text-slate-400 mt-1">Taux de drop réel</p>
+                            <p className="text-xs text-slate-400 mt-1">{t.realDropRate}</p>
                           </div>
                           <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
                             <p className="text-2xl font-bold text-amber-400">
                               {dropCount > 0 ? Math.round(dropTotal / dropCount) : 0}
                             </p>
-                            <p className="text-xs text-slate-400 mt-1">Moy. fragments/drop</p>
+                            <p className="text-xs text-slate-400 mt-1">{t.avgFragmentsPerDrop}</p>
                           </div>
                         </div>
                       );
@@ -383,12 +372,11 @@ export default function AdminPointsPage() {
                   </CardContent>
                 </Card>
 
-                {/* Transactions récentes */}
                 <Card className="bg-slate-800/50 border-slate-700">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center">
                       <ArrowTrendingUpIcon className="w-5 h-5 mr-2 text-orange-400" />
-                      Transactions récentes
+                      {t.recentTransactionsTitle}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -404,9 +392,9 @@ export default function AdminPointsPage() {
                             </Avatar>
                             <div>
                               <p className="text-sm font-medium text-white">
-                                {tx.user.steamUsername ?? 'Joueur anonyme'}
+                                {tx.user.steamUsername ?? t.anonymousPlayer}
                               </p>
-                              <p className="text-xs text-slate-400">{tx.reason ?? EVENT_TYPE_LABELS[tx.type]}</p>
+                              <p className="text-xs text-slate-400">{tx.reason ?? t.eventTypes[tx.type as keyof typeof t.eventTypes]}</p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-3">
@@ -414,12 +402,12 @@ export default function AdminPointsPage() {
                               variant="outline"
                               className={`text-xs ${EVENT_TYPE_COLORS[tx.type] ?? ''}`}
                             >
-                              {EVENT_TYPE_LABELS[tx.type] ?? tx.type}
+                              {t.eventTypes[tx.type as keyof typeof t.eventTypes] ?? tx.type}
                             </Badge>
                             <div className="text-right">
-                              <p className="text-sm font-bold text-yellow-400">+{tx.points} pts</p>
+                              <p className="text-sm font-bold text-yellow-400">+{tx.points} {t.pts}</p>
                               {tx.tickets > 0 && (
-                                <p className="text-xs text-purple-400">+{tx.tickets} fragments</p>
+                                <p className="text-xs text-purple-400">+{tx.tickets} {t.fragments}</p>
                               )}
                             </div>
                             <p className="text-xs text-slate-500 w-20 text-right">
@@ -430,7 +418,7 @@ export default function AdminPointsPage() {
                       ))}
                       {metrics.recentTransactions.length === 0 && (
                         <p className="text-sm text-slate-500 text-center py-6">
-                          Aucune transaction pour le moment
+                          {t.noTransactionsYet}
                         </p>
                       )}
                     </div>
@@ -440,18 +428,18 @@ export default function AdminPointsPage() {
             ) : null}
           </TabsContent>
 
-          {/* Classement */}
+          {/* Leaderboard tab */}
           <TabsContent value="leaderboard">
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
                   <TrophyIcon className="w-5 h-5 mr-2 text-yellow-400" />
-                  Top 10 Joueurs — XP & Fragments
+                  {t.leaderboardTitle}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {loadingMetrics ? (
-                  <p className="text-slate-400 text-center py-8">Chargement...</p>
+                  <p className="text-slate-400 text-center py-8">{t.loadingLeaderboard}</p>
                 ) : (
                   <div className="space-y-3">
                     {metrics?.topUsers.map((user, index) => (
@@ -484,9 +472,9 @@ export default function AdminPointsPage() {
                           </Avatar>
                           <div>
                             <p className="text-sm font-semibold text-white">
-                              {user.steamUsername ?? 'Joueur anonyme'}
+                              {user.steamUsername ?? t.anonymousPlayer}
                             </p>
-                            <p className="text-xs text-slate-400">Niveau {user.level}</p>
+                            <p className="text-xs text-slate-400">{t.level} {user.level}</p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-4">
@@ -494,14 +482,14 @@ export default function AdminPointsPage() {
                             <p className="text-sm font-bold text-yellow-400">
                               {(user.xp ?? 0).toLocaleString('fr-FR')} XP
                             </p>
-                            <p className="text-xs text-purple-400">{user.tickets} fragments</p>
+                            <p className="text-xs text-purple-400">{user.tickets} {t.fragments}</p>
                           </div>
                         </div>
                       </div>
                     ))}
                     {(!metrics?.topUsers || metrics.topUsers.length === 0) && (
                       <p className="text-center text-slate-500 py-8">
-                        Aucun joueur avec des points pour le moment
+                        {t.noPlayersYet}
                       </p>
                     )}
                   </div>
@@ -510,22 +498,21 @@ export default function AdminPointsPage() {
             </Card>
           </TabsContent>
 
-          {/* Configuration */}
+          {/* Config tab */}
           <TabsContent value="config">
             {editConfig && (
               <div className="space-y-6">
-                {/* Section ventes */}
                 <Card className="bg-slate-800/50 border-slate-700">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center">
                       <BoltIcon className="w-5 h-5 mr-2 text-green-400" />
-                      Règles — Ventes de skins
+                      {t.configSalesTitle}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label className="text-slate-300">Points par euro vendu</Label>
+                        <Label className="text-slate-300">{t.pointsPerEuroLabel}</Label>
                         <Input
                           type="number"
                           min="0"
@@ -534,12 +521,10 @@ export default function AdminPointsPage() {
                           onChange={(e) => updateField('pointsPerEuro', parseFloat(e.target.value) || 0)}
                           className="bg-slate-700 border-slate-600 text-white"
                         />
-                        <p className="text-xs text-slate-500">
-                          Ex: 100 = 100 pts par euro. Vente de 50€ → 5 000 pts
-                        </p>
+                        <p className="text-xs text-slate-500">{t.pointsPerEuroHelp}</p>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-slate-300">Fragments par euro vendu</Label>
+                        <Label className="text-slate-300">{t.fragmentsPerEuroSaleLabel}</Label>
                         <Input
                           type="number"
                           min="0"
@@ -548,37 +533,34 @@ export default function AdminPointsPage() {
                           onChange={(e) => updateField('ticketsPerEuro', parseFloat(e.target.value) || 0)}
                           className="bg-slate-700 border-slate-600 text-white"
                         />
-                        <p className="text-xs text-slate-500">
-                          Ex: 0.1 = 1 fragment par 10€. Vente de 50€ → 5 fragments
-                        </p>
+                        <p className="text-xs text-slate-500">{t.fragmentsPerEuroSaleHelp}</p>
                       </div>
                     </div>
 
                     <Separator className="my-4 bg-slate-700" />
 
                     <div className="bg-slate-700/30 rounded-lg p-4">
-                      <p className="text-sm text-slate-300 font-medium mb-2">Simulation</p>
+                      <p className="text-sm text-slate-300 font-medium mb-2">{t.simulationTitle}</p>
                       <p className="text-xs text-slate-400">
-                        Pour une vente de <span className="text-white font-semibold">100€</span> :
-                        {' '}<span className="text-yellow-400 font-semibold">{Math.floor(100 * editConfig.pointsPerEuro)} pts</span>
-                        {' '}et <span className="text-purple-400 font-semibold">{Math.floor(100 * editConfig.ticketsPerEuro)} fragments</span>
+                        {t.simulationText}
+                        {' '}<span className="text-yellow-400 font-semibold">{Math.floor(100 * editConfig.pointsPerEuro)} {t.pts}</span>
+                        {' '}{t.fragments === 'fragments' ? 'et' : '和'} <span className="text-purple-400 font-semibold">{Math.floor(100 * editConfig.ticketsPerEuro)} {t.fragments}</span>
                       </p>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Section daily login */}
                 <Card className="bg-slate-800/50 border-slate-700">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center">
                       <CalendarDaysIcon className="w-5 h-5 mr-2 text-blue-400" />
-                      Règles — Connexion quotidienne
+                      {t.configDailyTitle}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label className="text-slate-300">Points par connexion</Label>
+                        <Label className="text-slate-300">{t.pointsPerLoginLabel}</Label>
                         <Input
                           type="number"
                           min="0"
@@ -586,10 +568,10 @@ export default function AdminPointsPage() {
                           onChange={(e) => updateField('dailyLoginPoints', parseInt(e.target.value) || 0)}
                           className="bg-slate-700 border-slate-600 text-white"
                         />
-                        <p className="text-xs text-slate-500">Points de base (avant multiplicateur streak)</p>
+                        <p className="text-xs text-slate-500">{t.pointsPerLoginHelp}</p>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-slate-300">Fragments par connexion</Label>
+                        <Label className="text-slate-300">{t.fragmentsPerLoginLabel}</Label>
                         <Input
                           type="number"
                           min="0"
@@ -597,7 +579,7 @@ export default function AdminPointsPage() {
                           onChange={(e) => updateField('dailyLoginTickets', parseInt(e.target.value) || 0)}
                           className="bg-slate-700 border-slate-600 text-white"
                         />
-                        <p className="text-xs text-slate-500">Mettre à 0 pour ne pas donner de fragments</p>
+                        <p className="text-xs text-slate-500">{t.fragmentsPerLoginHelp}</p>
                       </div>
                     </div>
 
@@ -605,7 +587,7 @@ export default function AdminPointsPage() {
 
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label className="text-slate-300">Multiplicateur streak (par jour)</Label>
+                        <Label className="text-slate-300">{t.streakMultiplierLabel}</Label>
                         <Input
                           type="number"
                           min="1"
@@ -614,12 +596,10 @@ export default function AdminPointsPage() {
                           onChange={(e) => updateField('streakMultiplier', parseFloat(e.target.value) || 1)}
                           className="bg-slate-700 border-slate-600 text-white"
                         />
-                        <p className="text-xs text-slate-500">
-                          1.1 = +10% par jour consécutif
-                        </p>
+                        <p className="text-xs text-slate-500">{t.streakMultiplierHelp}</p>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-slate-300">Streak maximum (jours)</Label>
+                        <Label className="text-slate-300">{t.streakMaxDaysLabel}</Label>
                         <Input
                           type="number"
                           min="1"
@@ -627,14 +607,14 @@ export default function AdminPointsPage() {
                           onChange={(e) => updateField('streakMaxDays', parseInt(e.target.value) || 1)}
                           className="bg-slate-700 border-slate-600 text-white"
                         />
-                        <p className="text-xs text-slate-500">Le multiplicateur est plafonné à ce nombre de jours</p>
+                        <p className="text-xs text-slate-500">{t.streakMaxDaysHelp}</p>
                       </div>
                     </div>
 
                     <Separator className="my-4 bg-slate-700" />
 
                     <div className="bg-slate-700/30 rounded-lg p-4">
-                      <p className="text-sm text-slate-300 font-medium mb-2">Simulation du streak</p>
+                      <p className="text-sm text-slate-300 font-medium mb-2">{t.streakSimulationTitle}</p>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                         {[1, 3, 7, editConfig.streakMaxDays].map((day) => {
                           const eff = Math.min(day, editConfig.streakMaxDays);
@@ -642,8 +622,8 @@ export default function AdminPointsPage() {
                           const pts = Math.round(editConfig.dailyLoginPoints * mult);
                           return (
                             <div key={day} className="bg-slate-700/50 rounded p-2 text-center">
-                              <p className="text-slate-400">Jour {day}</p>
-                              <p className="text-yellow-400 font-bold">{pts} pts</p>
+                              <p className="text-slate-400">{t.day} {day}</p>
+                              <p className="text-yellow-400 font-bold">{pts} {t.pts}</p>
                               <p className="text-slate-500">×{mult.toFixed(2)}</p>
                             </div>
                           );
@@ -653,18 +633,17 @@ export default function AdminPointsPage() {
                   </CardContent>
                 </Card>
 
-                {/* Section niveau */}
                 <Card className="bg-slate-800/50 border-slate-700">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center">
                       <TrophyIcon className="w-5 h-5 mr-2 text-purple-400" />
-                      Règles — Progression de niveau
+                      {t.configLevelTitle}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label className="text-slate-300">Bonus points passage de niveau</Label>
+                        <Label className="text-slate-300">{t.levelUpBonusLabel}</Label>
                         <Input
                           type="number"
                           min="0"
@@ -672,36 +651,29 @@ export default function AdminPointsPage() {
                           onChange={(e) => updateField('levelUpBonusPoints', parseInt(e.target.value) || 0)}
                           className="bg-slate-700 border-slate-600 text-white"
                         />
-                        <p className="text-xs text-slate-500">
-                          Points bonus accordés automatiquement à chaque passage de niveau
-                        </p>
+                        <p className="text-xs text-slate-500">{t.levelUpBonusHelp}</p>
                       </div>
                       <div className="bg-slate-700/30 rounded-lg p-4 flex items-center">
                         <div>
-                          <p className="text-sm text-slate-300 font-medium mb-1">Formule de niveau</p>
-                          <p className="text-xs text-slate-400 font-mono">
-                            niveau = √(XP / 100) + 1
-                          </p>
-                          <p className="text-xs text-slate-500 mt-2">
-                            Niveau 2 = 100 XP · Niveau 5 = 1 600 XP · Niveau 10 = 8 100 XP
-                          </p>
+                          <p className="text-sm text-slate-300 font-medium mb-1">{t.levelFormulaTitle}</p>
+                          <p className="text-xs text-slate-400 font-mono">{t.levelFormula}</p>
+                          <p className="text-xs text-slate-500 mt-2">{t.levelFormulaDesc}</p>
                         </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Section fragments */}
                 <Card className="bg-slate-800/50 border-slate-700">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center">
                       <FireIcon className="w-5 h-5 mr-2 text-amber-400" />
-                      Fragments — Génération & Drops aléatoires
+                      {t.configFragmentsTitle}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-2">
-                      <Label className="text-slate-300">Fragments par euro vendu</Label>
+                      <Label className="text-slate-300">{t.fragmentsPerEuroLabel}</Label>
                       <Input
                         type="number"
                         min="0"
@@ -710,18 +682,16 @@ export default function AdminPointsPage() {
                         onChange={(e) => updateField('fragmentsPerEuro', parseFloat(e.target.value) || 0)}
                         className="bg-slate-700 border-slate-600 text-white"
                       />
-                      <p className="text-xs text-slate-500">
-                        Formule : fragments = floor(euros × taux). Ex: 0.2 → 100€ = 20 fragments
-                      </p>
+                      <p className="text-xs text-slate-500">{t.fragmentsPerEuroHelp}</p>
                     </div>
 
                     <Separator className="bg-slate-700" />
 
                     <div>
-                      <p className="text-sm text-slate-300 font-medium mb-4">Drops aléatoires à chaque vente</p>
+                      <p className="text-sm text-slate-300 font-medium mb-4">{t.randomDropsConfigTitle}</p>
                       <div className="space-y-4">
                         <div className="space-y-2">
-                          <Label className="text-slate-300">Probabilité globale de drop (0–1)</Label>
+                          <Label className="text-slate-300">{t.dropChanceLabel}</Label>
                           <Input
                             type="number"
                             min="0"
@@ -744,16 +714,16 @@ export default function AdminPointsPage() {
                             }}
                             className="bg-slate-700 border-slate-600 text-white"
                           />
-                          <p className="text-xs text-slate-500">0.25 = 25% de chance de drop par vente</p>
+                          <p className="text-xs text-slate-500">{t.dropChanceHelp}</p>
                         </div>
 
                         <div>
-                          <p className="text-xs text-slate-400 mb-3">Tranches de drop (tirées du plus rare au plus commun) :</p>
+                          <p className="text-xs text-slate-400 mb-3">{t.tierRangesTitle}</p>
                           <div className="space-y-3">
                             {(editConfig.fragmentDrop?.tiers ?? DEFAULT_FRAGMENT_DROP.tiers).map((tier, i) => (
                               <div key={i} className="grid grid-cols-3 gap-3 bg-slate-700/30 rounded-lg p-3">
                                 <div className="space-y-1">
-                                  <Label className="text-xs text-slate-400">Probabilité tranche</Label>
+                                  <Label className="text-xs text-slate-400">{t.tierProbabilityLabel}</Label>
                                   <Input
                                     type="number"
                                     min="0"
@@ -773,7 +743,7 @@ export default function AdminPointsPage() {
                                   />
                                 </div>
                                 <div className="space-y-1">
-                                  <Label className="text-xs text-slate-400">Min fragments</Label>
+                                  <Label className="text-xs text-slate-400">{t.tierMinLabel}</Label>
                                   <Input
                                     type="number"
                                     min="1"
@@ -791,7 +761,7 @@ export default function AdminPointsPage() {
                                   />
                                 </div>
                                 <div className="space-y-1">
-                                  <Label className="text-xs text-slate-400">Max fragments</Label>
+                                  <Label className="text-xs text-slate-400">{t.tierMaxLabel}</Label>
                                   <Input
                                     type="number"
                                     min="1"
@@ -817,12 +787,11 @@ export default function AdminPointsPage() {
                   </CardContent>
                 </Card>
 
-                {/* Section coûts giveaways */}
                 <Card className="bg-slate-800/50 border-slate-700">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center">
                       <TicketIcon className="w-5 h-5 mr-2 text-purple-400" />
-                      Coûts d&apos;entrée — Giveaways par type
+                      {t.configGiveawayTitle}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -862,9 +831,7 @@ export default function AdminPointsPage() {
                         );
                       })}
                     </div>
-                    <p className="text-xs text-slate-500 mt-3">
-                      Ces valeurs sont utilisées par défaut lors de la création d&apos;un giveaway selon son type. L&apos;admin peut toujours surcharger manuellement.
-                    </p>
+                    <p className="text-xs text-slate-500 mt-3">{t.giveawayNote}</p>
                   </CardContent>
                 </Card>
 
@@ -874,14 +841,14 @@ export default function AdminPointsPage() {
                     onClick={() => setEditConfig(config)}
                     disabled={savingConfig}
                   >
-                    Annuler les modifications
+                    {t.cancelButton}
                   </Button>
                   <Button
                     onClick={handleSaveConfig}
                     disabled={savingConfig}
                     className="bg-orange-500 hover:bg-orange-600 text-white"
                   >
-                    {savingConfig ? 'Sauvegarde...' : 'Sauvegarder la configuration'}
+                    {savingConfig ? t.saving : t.saveButton}
                   </Button>
                 </div>
               </div>

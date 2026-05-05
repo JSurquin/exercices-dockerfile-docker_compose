@@ -19,6 +19,7 @@ import {
   CreditCard,
   Filter
 } from 'lucide-react';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface CommissionData {
   id: string;
@@ -61,6 +62,9 @@ interface StatusTotals {
 }
 
 export default function AffiliateCommissions() {
+  const { messages } = useLocale();
+  const t = messages.admin.affiliateCommissions;
+
   const [statusFilter, setStatusFilter] = useState('PENDING');
   const [page, setPage] = useState(1);
   const [selectedCommissions, setSelectedCommissions] = useState<string[]>([]);
@@ -84,8 +88,8 @@ export default function AffiliateCommissions() {
   const handleCommissionAction = async (action: 'approve' | 'reject') => {
     if (selectedCommissions.length === 0) {
       toast({
-        title: 'Erreur',
-        description: 'Aucune commission sélectionnée',
+        title: t.errorTitle,
+        description: t.errorNoSelection,
         variant: 'destructive'
       });
       return;
@@ -105,22 +109,22 @@ export default function AffiliateCommissions() {
       const data = await response.json();
 
       if (data.success) {
-        toast({
-          title: 'Succès',
-          description: `${selectedCommissions.length} commission(s) ${action === 'approve' ? 'approuvée(s)' : 'rejetée(s)'}`
-        });
+        const desc = action === 'approve'
+          ? t.successActionApproved.replace('{count}', String(selectedCommissions.length))
+          : t.successActionRejected.replace('{count}', String(selectedCommissions.length));
+        toast({ title: t.successTitle, description: desc });
         queryClient.invalidateQueries({ queryKey: ['admin', 'affiliate-commissions'] });
       } else {
         toast({
-          title: 'Erreur',
-          description: data.error || 'Erreur lors de l\'action',
+          title: t.errorTitle,
+          description: data.error || t.errorAction,
           variant: 'destructive'
         });
       }
-    } catch (error) {
+    } catch {
       toast({
-        title: 'Erreur',
-        description: 'Erreur de connexion',
+        title: t.errorTitle,
+        description: t.errorConnection,
         variant: 'destructive'
       });
     } finally {
@@ -131,8 +135,8 @@ export default function AffiliateCommissions() {
   const createPayout = async () => {
     if (selectedCommissions.length === 0) {
       toast({
-        title: 'Erreur',
-        description: 'Aucune commission sélectionnée',
+        title: t.errorTitle,
+        description: t.errorNoSelection,
         variant: 'destructive'
       });
       return;
@@ -140,8 +144,8 @@ export default function AffiliateCommissions() {
 
     // TODO: Implémenter la création de payout
     toast({
-      title: 'Info',
-      description: 'Création de payout - À implémenter',
+      title: t.infoPayoutTitle,
+      description: t.infoPayoutDesc,
       variant: 'default'
     });
   };
@@ -179,6 +183,16 @@ export default function AffiliateCommissions() {
     });
   };
 
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      PENDING: t.statusPending,
+      APPROVED: t.statusApproved,
+      PAID: t.statusPaid,
+      CANCELLED: t.statusCancelled,
+    };
+    return labels[status] ?? status;
+  };
+
   const getStatusBadge = (status: string) => {
     const variants = {
       PENDING: { variant: 'secondary' as const, icon: Clock },
@@ -193,7 +207,7 @@ export default function AffiliateCommissions() {
     return (
       <Badge variant={config.variant} className="flex items-center gap-1">
         <Icon className="h-3 w-3" />
-        {status}
+        {getStatusLabel(status)}
       </Badge>
     );
   };
@@ -208,35 +222,34 @@ export default function AffiliateCommissions() {
 
   return (
     <div className="space-y-6">
-      {/* Métriques par statut */}
+      {/* Status metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {Object.entries(statusTotals).map(([status, data]) => (
           <Card key={status}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                {status === 'PENDING' && 'En Attente'}
-                {status === 'APPROVED' && 'Approuvées'}
-                {status === 'PAID' && 'Payées'}
-                {status === 'CANCELLED' && 'Annulées'}
+                {getStatusLabel(status)}
               </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(data.total)}</div>
               <p className="text-xs text-muted-foreground">
-                {data.count} commission{data.count > 1 ? 's' : ''}
+                {data.count > 1
+                  ? t.commissionCountPlural.replace('{count}', String(data.count))
+                  : t.commissionCount.replace('{count}', String(data.count))}
               </p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Gestion des commissions */}
+      {/* Commission management */}
       <Card>
         <CardHeader>
-          <CardTitle>Commissions d&apos;Affiliation</CardTitle>
+          <CardTitle>{t.managementTitle}</CardTitle>
           <CardDescription>
-            Gérez les commissions générées par les affiliés
+            {t.managementDesc}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -244,13 +257,13 @@ export default function AffiliateCommissions() {
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]">
                 <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Statut" />
+                <SelectValue placeholder={t.filterStatus} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="PENDING">En Attente</SelectItem>
-                <SelectItem value="APPROVED">Approuvées</SelectItem>
-                <SelectItem value="PAID">Payées</SelectItem>
-                <SelectItem value="CANCELLED">Annulées</SelectItem>
+                <SelectItem value="PENDING">{t.statusPending}</SelectItem>
+                <SelectItem value="APPROVED">{t.statusApproved}</SelectItem>
+                <SelectItem value="PAID">{t.statusPaid}</SelectItem>
+                <SelectItem value="CANCELLED">{t.statusCancelled}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -262,7 +275,7 @@ export default function AffiliateCommissions() {
                   size="sm"
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
-                  Approuver ({selectedCommissions.length})
+                  {t.approveBtn.replace('{count}', String(selectedCommissions.length))}
                 </Button>
                 <Button
                   variant="destructive"
@@ -271,7 +284,7 @@ export default function AffiliateCommissions() {
                   size="sm"
                 >
                   <XCircle className="mr-2 h-4 w-4" />
-                  Rejeter ({selectedCommissions.length})
+                  {t.rejectBtn.replace('{count}', String(selectedCommissions.length))}
                 </Button>
               </div>
             )}
@@ -283,12 +296,12 @@ export default function AffiliateCommissions() {
                 size="sm"
               >
                 <CreditCard className="mr-2 h-4 w-4" />
-                Créer Payout ({selectedCommissions.length})
+                {t.createPayoutBtn.replace('{count}', String(selectedCommissions.length))}
               </Button>
             )}
           </div>
 
-          {/* Tableau des commissions */}
+          {/* Commissions table */}
           <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
@@ -299,12 +312,12 @@ export default function AffiliateCommissions() {
                       onCheckedChange={toggleAllCommissions}
                     />
                   </TableHead>
-                  <TableHead>Affilié</TableHead>
-                  <TableHead>Montant</TableHead>
-                  <TableHead>Référral</TableHead>
-                  <TableHead>Trade</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Statut</TableHead>
+                  <TableHead>{t.colAffiliate}</TableHead>
+                  <TableHead>{t.colAmount}</TableHead>
+                  <TableHead>{t.colReferral}</TableHead>
+                  <TableHead>{t.colTrade}</TableHead>
+                  <TableHead>{t.colDate}</TableHead>
+                  <TableHead>{t.colStatus}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -327,7 +340,7 @@ export default function AffiliateCommissions() {
                         />
                         <div>
                           <p className="font-medium">
-                            {commission.affiliate.user.steamUsername || 'Utilisateur'}
+                            {commission.affiliate.user.steamUsername || t.defaultUser}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {commission.affiliate.code}
@@ -349,7 +362,7 @@ export default function AffiliateCommissions() {
                             fallbackIcon={<UserCircleIcon className="w-4 h-4" />}
                           />
                           <span className="text-sm">
-                            {commission.referral.referredUser.steamUsername || 'Utilisateur'}
+                            {commission.referral.referredUser.steamUsername || t.defaultUser}
                           </span>
                         </div>
                       ) : (
@@ -375,7 +388,7 @@ export default function AffiliateCommissions() {
                         <p className="text-sm">{formatDate(commission.createdAt)}</p>
                         {commission.paidAt && (
                           <p className="text-xs text-muted-foreground">
-                            Payé: {formatDate(commission.paidAt)}
+                            {t.paidAt.replace('{date}', formatDate(commission.paidAt))}
                           </p>
                         )}
                       </div>
@@ -392,7 +405,7 @@ export default function AffiliateCommissions() {
           {/* Pagination */}
           <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-muted-foreground">
-              Page {page} sur {totalPages}
+              {t.page.replace('{page}', String(page)).replace('{total}', String(totalPages))}
             </p>
             <div className="flex space-x-2">
               <Button
@@ -401,7 +414,7 @@ export default function AffiliateCommissions() {
                 onClick={() => setPage(page - 1)}
                 disabled={page <= 1}
               >
-                Précédent
+                {t.previous}
               </Button>
               <Button
                 variant="outline"
@@ -409,7 +422,7 @@ export default function AffiliateCommissions() {
                 onClick={() => setPage(page + 1)}
                 disabled={page >= totalPages}
               >
-                Suivant
+                {t.next}
               </Button>
             </div>
           </div>

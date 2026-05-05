@@ -33,6 +33,7 @@ import {
 import AffiliateTools from './affiliate-tools';
 import { CreateAffiliateDialog } from './create-affiliate-dialog';
 import { queryKeys } from '@/lib/query-keys';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface AffiliateData {
   id: string;
@@ -65,6 +66,9 @@ interface GlobalStats {
 }
 
 export default function AffiliatesManagement() {
+  const { messages } = useLocale();
+  const t = messages.admin.affiliatesManagement;
+
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -130,13 +134,14 @@ export default function AffiliatesManagement() {
     try {
       const result = await callAffiliateAction('toggle_status', affiliate.id, { currentStatus: affiliate.isActive });
       if (result.success) {
-        toast({ title: 'Succès', description: `Affilié ${affiliate.isActive ? 'désactivé' : 'activé'} avec succès` });
+        const status = affiliate.isActive ? t.successToggleDeactivated : t.successToggleActivated;
+        toast({ title: t.successTitle, description: t.successToggle.replace('{status}', status) });
         invalidateAffiliates();
       } else {
-        toast({ title: 'Erreur', description: result.error || 'Erreur lors du changement de statut', variant: 'destructive' });
+        toast({ title: t.errorTitle, description: result.error || t.errorStatus, variant: 'destructive' });
       }
     } catch {
-      toast({ title: 'Erreur', description: 'Erreur de connexion', variant: 'destructive' });
+      toast({ title: t.errorTitle, description: t.errorConnection, variant: 'destructive' });
     }
   };
 
@@ -148,15 +153,15 @@ export default function AffiliatesManagement() {
         newRate: newCommissionRate / 100
       });
       if (result.success) {
-        toast({ title: 'Succès', description: 'Taux de commission mis à jour' });
+        toast({ title: t.successTitle, description: t.successCommissionRate });
         setEditingCommissionRate(false);
         setSelectedAffiliate(prev => prev ? { ...prev, commissionRate: newCommissionRate / 100 } : null);
         invalidateAffiliates();
       } else {
-        toast({ title: 'Erreur', description: result.error || 'Erreur lors de la mise à jour', variant: 'destructive' });
+        toast({ title: t.errorTitle, description: result.error || t.errorUpdate, variant: 'destructive' });
       }
     } catch {
-      toast({ title: 'Erreur', description: 'Erreur de connexion', variant: 'destructive' });
+      toast({ title: t.errorTitle, description: t.errorConnection, variant: 'destructive' });
     }
   };
 
@@ -168,15 +173,15 @@ export default function AffiliatesManagement() {
         newCode: newCode
       });
       if (result.success) {
-        toast({ title: 'Succès', description: 'Code affilié mis à jour' });
+        toast({ title: t.successTitle, description: t.successCode });
         setEditingCode(false);
         setSelectedAffiliate(prev => prev ? { ...prev, code: newCode.trim().toUpperCase() } : null);
         invalidateAffiliates();
       } else {
-        toast({ title: 'Erreur', description: result.error || 'Erreur lors de la mise à jour', variant: 'destructive' });
+        toast({ title: t.errorTitle, description: result.error || t.errorUpdate, variant: 'destructive' });
       }
     } catch {
-      toast({ title: 'Erreur', description: 'Erreur de connexion', variant: 'destructive' });
+      toast({ title: t.errorTitle, description: t.errorConnection, variant: 'destructive' });
     }
   };
 
@@ -193,19 +198,20 @@ export default function AffiliatesManagement() {
     try {
       const result = await callAffiliateAction('remove_affiliate', affiliate.id, {});
       if (result.success) {
+        const userName = affiliate.user.steamUsername || affiliate.user.email;
         toast({
-          title: 'Affiliation retirée',
-          description: `${affiliate.user.steamUsername || affiliate.user.email} n'est plus affilié`
+          title: t.affiliationRemovedTitle,
+          description: t.affiliationRemovedDesc.replace('{user}', userName)
         });
         setRemoveConfirmOpen(false);
         setSelectedAffiliate(null);
         affiliateToRemoveRef.current = null;
         invalidateAffiliates();
       } else {
-        toast({ title: 'Erreur', description: result.error || 'Erreur lors de la suppression', variant: 'destructive' });
+        toast({ title: t.errorTitle, description: result.error || t.errorRemove, variant: 'destructive' });
       }
     } catch {
-      toast({ title: 'Erreur', description: 'Erreur de connexion', variant: 'destructive' });
+      toast({ title: t.errorTitle, description: t.errorConnection, variant: 'destructive' });
     } finally {
       setIsRemoving(false);
     }
@@ -227,15 +233,15 @@ export default function AffiliatesManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Outils d'administration */}
+      {/* Admin tools */}
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
             <Settings className="h-5 w-5" />
-            Outils d&apos;Administration
+            {t.adminToolsTitle}
           </CardTitle>
           <CardDescription className="text-slate-400">
-            Outils de maintenance et de recalcul pour le système d&apos;affiliation
+            {t.adminToolsDesc}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -243,11 +249,11 @@ export default function AffiliatesManagement() {
         </CardContent>
       </Card>
 
-      {/* Métriques globales */}
+      {/* Global metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-300">Affiliés Actifs</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-300">{t.statActiveAffiliates}</CardTitle>
             <UserCheck className="h-4 w-4 text-slate-400" />
           </CardHeader>
           <CardContent>
@@ -257,7 +263,7 @@ export default function AffiliatesManagement() {
 
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-300">Référrals Total</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-300">{t.statTotalReferrals}</CardTitle>
             <Users className="h-4 w-4 text-slate-400" />
           </CardHeader>
           <CardContent>
@@ -267,7 +273,7 @@ export default function AffiliatesManagement() {
 
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-300">Volume Généré</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-300">{t.statGeneratedVolume}</CardTitle>
             <TrendingUp className="h-4 w-4 text-slate-400" />
           </CardHeader>
           <CardContent>
@@ -277,7 +283,7 @@ export default function AffiliatesManagement() {
 
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-300">Commissions Totales</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-300">{t.statTotalCommissions}</CardTitle>
             <DollarSign className="h-4 w-4 text-slate-400" />
           </CardHeader>
           <CardContent>
@@ -286,12 +292,12 @@ export default function AffiliatesManagement() {
         </Card>
       </div>
 
-      {/* Filtres et recherche */}
+      {/* Filters and search */}
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader>
-          <CardTitle className="text-white">Gestion des Affiliés</CardTitle>
+          <CardTitle className="text-white">{t.managementTitle}</CardTitle>
           <CardDescription className="text-slate-400">
-            Gérez les comptes affiliés, leurs commissions et leurs performances
+            {t.managementDesc}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -300,7 +306,7 @@ export default function AffiliatesManagement() {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher par code, nom ou email..."
+                  placeholder={t.searchPlaceholder}
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   className="pl-10 pr-10"
@@ -313,37 +319,37 @@ export default function AffiliatesManagement() {
             <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setPage(1); }}>
               <SelectTrigger className="w-[180px]">
                 <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Statut" />
+                <SelectValue placeholder={t.filterAll} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous</SelectItem>
-                <SelectItem value="active">Actifs</SelectItem>
-                <SelectItem value="inactive">Inactifs</SelectItem>
+                <SelectItem value="all">{t.filterAll}</SelectItem>
+                <SelectItem value="active">{t.filterActive}</SelectItem>
+                <SelectItem value="inactive">{t.filterInactive}</SelectItem>
               </SelectContent>
             </Select>
             <CreateAffiliateDialog onAffiliateCreated={invalidateAffiliates} />
           </div>
 
-          {/* Tableau des affiliés */}
+          {/* Affiliates table */}
           <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Affilié</TableHead>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Référrals</TableHead>
-                  <TableHead>Volume</TableHead>
-                  <TableHead>Commissions</TableHead>
-                  <TableHead>Taux</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t.colAffiliate}</TableHead>
+                  <TableHead>{t.colCode}</TableHead>
+                  <TableHead>{t.colReferrals}</TableHead>
+                  <TableHead>{t.colVolume}</TableHead>
+                  <TableHead>{t.colCommissions}</TableHead>
+                  <TableHead>{t.colRate}</TableHead>
+                  <TableHead>{t.colStatus}</TableHead>
+                  <TableHead>{t.colActions}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {affiliates.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                      Aucun affilié trouvé
+                      {t.noAffiliates}
                     </TableCell>
                   </TableRow>
                 ) : affiliates.map((affiliate) => (
@@ -359,7 +365,7 @@ export default function AffiliatesManagement() {
                         />
                         <div>
                           <p className="font-medium">
-                            {affiliate.user.steamUsername || 'Utilisateur'}
+                            {affiliate.user.steamUsername || t.defaultUser}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {affiliate.user.email}
@@ -378,7 +384,7 @@ export default function AffiliatesManagement() {
                     <TableCell>{(affiliate.commissionRate * 100).toFixed(1)}%</TableCell>
                     <TableCell>
                       <Badge variant={affiliate.isActive ? 'default' : 'secondary'}>
-                        {affiliate.isActive ? 'Actif' : 'Inactif'}
+                        {affiliate.isActive ? t.statusActive : t.statusInactive}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -386,7 +392,7 @@ export default function AffiliatesManagement() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          title="Voir les détails"
+                          title={t.tooltipViewDetails}
                           onClick={() => {
                             setSelectedAffiliate(affiliate);
                             setNewCommissionRate(affiliate.commissionRate * 100);
@@ -400,7 +406,7 @@ export default function AffiliatesManagement() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          title={affiliate.isActive ? 'Désactiver' : 'Activer'}
+                          title={affiliate.isActive ? t.successToggleDeactivated : t.successToggleActivated}
                           onClick={() => toggleAffiliateStatus(affiliate)}
                         >
                           {affiliate.isActive ? (
@@ -412,7 +418,7 @@ export default function AffiliatesManagement() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          title="Retirer l'affiliation"
+                          title={t.tooltipRemoveAffiliate}
                           onClick={() => openRemoveConfirm(affiliate)}
                         >
                           <UserX className="h-4 w-4 text-red-500" />
@@ -428,7 +434,7 @@ export default function AffiliatesManagement() {
           {/* Pagination */}
           <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-muted-foreground">
-              Page {page} sur {totalPages}
+              {t.page.replace('{page}', String(page)).replace('{total}', String(totalPages))}
             </p>
             <div className="flex space-x-2">
               <Button
@@ -437,7 +443,7 @@ export default function AffiliatesManagement() {
                 onClick={() => setPage(page - 1)}
                 disabled={page <= 1}
               >
-                Précédent
+                {t.previous}
               </Button>
               <Button
                 variant="outline"
@@ -445,20 +451,20 @@ export default function AffiliatesManagement() {
                 onClick={() => setPage(page + 1)}
                 disabled={page >= totalPages}
               >
-                Suivant
+                {t.next}
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Dialog de détails d'affilié */}
+      {/* Affiliate details dialog */}
       <Dialog open={!!selectedAffiliate} onOpenChange={(open) => { if (!open) setSelectedAffiliate(null); }}>
         <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
           <DialogHeader>
-            <DialogTitle className="text-white">Détails de l&apos;affilié</DialogTitle>
+            <DialogTitle className="text-white">{t.detailsTitle}</DialogTitle>
             <DialogDescription className="text-slate-400">
-              Gérer les paramètres et voir les détails de l&apos;affilié
+              {t.detailsDesc}
             </DialogDescription>
           </DialogHeader>
           
@@ -466,33 +472,33 @@ export default function AffiliatesManagement() {
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Nom d&apos;utilisateur</Label>
+                  <Label>{t.labelUsername}</Label>
                   <p className="font-medium">{selectedAffiliate.user.steamUsername}</p>
                 </div>
                 <div>
-                  <Label>Email</Label>
+                  <Label>{t.labelEmail}</Label>
                   <p className="font-medium">{selectedAffiliate.user.email}</p>
                 </div>
                 <div>
-                  <Label>Membre depuis</Label>
+                  <Label>{t.labelMemberSince}</Label>
                   <p className="font-medium">{formatDate(selectedAffiliate.user.createdAt)}</p>
                 </div>
                 <div>
-                  <Label>Affilié depuis</Label>
+                  <Label>{t.labelAffiliateSince}</Label>
                   <p className="font-medium">{formatDate(selectedAffiliate.createdAt)}</p>
                 </div>
                 <div>
-                  <Label>Statut KYC</Label>
+                  <Label>{t.labelKycStatus}</Label>
                   <Badge variant={selectedAffiliate.user.kycStatus === 'VERIFIED' ? 'default' : 'secondary'}>
                     {selectedAffiliate.user.kycStatus}
                   </Badge>
                 </div>
               </div>
 
-              {/* Code d'affiliation */}
+              {/* Affiliate code */}
               <div className="border-t pt-4">
                 <div className="flex items-center justify-between mb-2">
-                  <Label>Code d&apos;affiliation</Label>
+                  <Label>{t.labelAffiliateCode}</Label>
                   {!editingCode && (
                     <Button variant="ghost" size="sm" onClick={() => { setNewCode(selectedAffiliate.code); setEditingCode(true); }}>
                       <Edit className="h-4 w-4" />
@@ -520,10 +526,10 @@ export default function AffiliatesManagement() {
                 )}
               </div>
 
-              {/* Taux de commission */}
+              {/* Commission rate */}
               <div className="border-t pt-4">
                 <div className="flex items-center justify-between mb-2">
-                  <Label>Taux de commission</Label>
+                  <Label>{t.labelCommissionRate}</Label>
                   {!editingCommissionRate && (
                     <Button variant="ghost" size="sm" onClick={() => setEditingCommissionRate(true)}>
                       <Edit className="h-4 w-4" />
@@ -559,15 +565,15 @@ export default function AffiliatesManagement() {
               <div className="grid grid-cols-3 gap-4 pt-4 border-t">
                 <div className="text-center">
                   <p className="text-2xl font-bold">{selectedAffiliate.totalReferrals}</p>
-                  <p className="text-sm text-muted-foreground">Référrals</p>
+                  <p className="text-sm text-muted-foreground">{t.labelReferrals}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold">{formatCurrency(selectedAffiliate.totalVolumeCents)}</p>
-                  <p className="text-sm text-muted-foreground">Volume</p>
+                  <p className="text-sm text-muted-foreground">{t.labelVolume}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold">{formatCurrency(selectedAffiliate.totalCommissionCents)}</p>
-                  <p className="text-sm text-muted-foreground">Commissions</p>
+                  <p className="text-sm text-muted-foreground">{t.labelCommissions}</p>
                 </div>
               </div>
 
@@ -579,7 +585,7 @@ export default function AffiliatesManagement() {
                   className="w-full"
                 >
                   <UserX className="h-4 w-4 mr-2" />
-                  Retirer l&apos;affiliation
+                  {t.removeAffiliation}
                 </Button>
               </div>
             </div>
@@ -587,20 +593,18 @@ export default function AffiliatesManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* Confirmation suppression affiliation */}
+      {/* Remove affiliation confirmation */}
       <Dialog open={removeConfirmOpen} onOpenChange={(open) => { if (!open && !isRemoving) setRemoveConfirmOpen(false); }}>
         <DialogContent className="max-w-md bg-slate-900 border-slate-700">
           <DialogHeader>
             <DialogTitle className="text-white flex items-center gap-2">
               <UserX className="h-5 w-5 text-red-500" />
-              Retirer l&apos;affiliation ?
+              {t.removeTitle}
             </DialogTitle>
             <DialogDescription className="text-slate-400">
-              L&apos;utilisateur{' '}
-              <span className="font-semibold text-white">
-                {affiliateToRemoveRef.current?.user.steamUsername || affiliateToRemoveRef.current?.user.email}
-              </span>{' '}
-              (code <code className="text-orange-400">{affiliateToRemoveRef.current?.code}</code>) sera définitivement supprimé du programme d&apos;affiliation. Son rôle sera réinitialisé et toutes ses données d&apos;affiliation seront effacées.
+              {t.removeDesc
+                .replace('{user}', affiliateToRemoveRef.current?.user.steamUsername || affiliateToRemoveRef.current?.user.email || '')
+                .replace('{code}', affiliateToRemoveRef.current?.code || '')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
@@ -610,7 +614,7 @@ export default function AffiliatesManagement() {
               disabled={isRemoving}
               className="border-slate-600 text-white hover:bg-slate-700"
             >
-              Annuler
+              {t.cancel}
             </Button>
             <Button
               variant="destructive"
@@ -621,12 +625,12 @@ export default function AffiliatesManagement() {
               {isRemoving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Suppression...
+                  {t.removing}
                 </>
               ) : (
                 <>
                   <UserX className="h-4 w-4 mr-2" />
-                  Retirer l&apos;affiliation
+                  {t.removeAffiliation}
                 </>
               )}
             </Button>

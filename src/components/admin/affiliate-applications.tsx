@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useLocale } from '@/components/providers/locale-provider';
 import { 
   FileText, 
   Check, 
@@ -55,6 +56,9 @@ interface AffiliateApplication {
 }
 
 export default function AffiliateApplications() {
+  const { messages } = useLocale();
+  const t = messages.admin.affiliateApplications;
+
   const [statusFilter, setStatusFilter] = useState('pending');
   const [page, setPage] = useState(1);
   const [selectedApp, setSelectedApp] = useState<AffiliateApplication | null>(null);
@@ -83,7 +87,7 @@ export default function AffiliateApplications() {
   const pendingCount: number = data?.data?.pendingCount ?? 0;
 
   const handleApprove = async (applicationId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir approuver cette demande ?')) {
+    if (!confirm(t.confirmApprove)) {
       return;
     }
 
@@ -102,21 +106,21 @@ export default function AffiliateApplications() {
 
       if (data.success) {
         toast({
-          title: 'Succès',
-          description: 'Demande approuvée et compte affilié créé'
+          title: t.success,
+          description: t.approveSuccess
         });
         queryClient.invalidateQueries({ queryKey: ['admin', 'affiliate-applications'] });
       } else {
         toast({
-          title: 'Erreur',
-          description: data.error || 'Erreur lors de l\'approbation',
+          title: t.error,
+          description: data.error || t.approveError,
           variant: 'destructive'
         });
       }
-    } catch (error) {
+    } catch {
       toast({
-        title: 'Erreur',
-        description: 'Erreur de connexion',
+        title: t.error,
+        description: t.connectionError,
         variant: 'destructive'
       });
     } finally {
@@ -127,8 +131,8 @@ export default function AffiliateApplications() {
   const handleReject = async () => {
     if (!selectedApp || !rejectionReason.trim()) {
       toast({
-        title: 'Erreur',
-        description: 'Veuillez fournir une raison de rejet',
+        title: t.error,
+        description: t.rejectReasonRequired,
         variant: 'destructive'
       });
       return;
@@ -150,8 +154,8 @@ export default function AffiliateApplications() {
 
       if (data.success) {
         toast({
-          title: 'Succès',
-          description: 'Demande rejetée'
+          title: t.success,
+          description: t.rejectSuccess
         });
         setShowRejectDialog(false);
         setRejectionReason('');
@@ -159,15 +163,15 @@ export default function AffiliateApplications() {
         queryClient.invalidateQueries({ queryKey: ['admin', 'affiliate-applications'] });
       } else {
         toast({
-          title: 'Erreur',
-          description: data.error || 'Erreur lors du rejet',
+          title: t.error,
+          description: data.error || t.rejectError,
           variant: 'destructive'
         });
       }
-    } catch (error) {
+    } catch {
       toast({
-        title: 'Erreur',
-        description: 'Erreur de connexion',
+        title: t.error,
+        description: t.connectionError,
         variant: 'destructive'
       });
     } finally {
@@ -188,11 +192,11 @@ export default function AffiliateApplications() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'PENDING':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">En attente</Badge>;
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">{t.statusPending}</Badge>;
       case 'APPROVED':
-        return <Badge variant="default" className="bg-green-500">Approuvée</Badge>;
+        return <Badge variant="default" className="bg-green-500">{t.statusApproved}</Badge>;
       case 'REJECTED':
-        return <Badge variant="destructive">Rejetée</Badge>;
+        return <Badge variant="destructive">{t.statusRejected}</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -208,56 +212,53 @@ export default function AffiliateApplications() {
 
   return (
     <div className="space-y-6">
-      {/* Header avec badge de demandes en attente */}
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 text-white">
                 <FileText className="h-5 w-5" />
-                Demandes d&apos;Affiliation
+                {t.title}
               </CardTitle>
               <CardDescription className="text-slate-400">
-                Examinez et validez les demandes d&apos;affiliation
+                {t.description}
               </CardDescription>
             </div>
             {pendingCount > 0 && (
               <Badge className="bg-orange-500 text-white">
                 <Clock className="h-4 w-4 mr-1" />
-                {pendingCount} en attente
+                {pendingCount} {t.pendingBadge}
               </Badge>
             )}
           </div>
         </CardHeader>
         <CardContent>
-          {/* Filtres */}
           <div className="flex gap-4 mb-6">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Statut" />
+                <SelectValue placeholder={t.colStatus} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Toutes</SelectItem>
-                <SelectItem value="pending">En attente</SelectItem>
-                <SelectItem value="approved">Approuvées</SelectItem>
-                <SelectItem value="rejected">Rejetées</SelectItem>
+                <SelectItem value="all">{t.filterAll}</SelectItem>
+                <SelectItem value="pending">{t.filterPending}</SelectItem>
+                <SelectItem value="approved">{t.filterApproved}</SelectItem>
+                <SelectItem value="rejected">{t.filterRejected}</SelectItem>
               </SelectContent>
             </Select>
             <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['admin', 'affiliate-applications'] })} variant="outline">
-              Actualiser
+              {t.refresh}
             </Button>
           </div>
 
-          {/* Tableau des demandes */}
           <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Utilisateur</TableHead>
-                  <TableHead>Date de demande</TableHead>
-                  <TableHead>KYC</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t.colUser}</TableHead>
+                  <TableHead>{t.colDate}</TableHead>
+                  <TableHead>{t.colKyc}</TableHead>
+                  <TableHead>{t.colStatus}</TableHead>
+                  <TableHead>{t.colActions}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -274,7 +275,7 @@ export default function AffiliateApplications() {
                         />
                         <div>
                           <p className="font-medium">
-                            {app.user.steamUsername || 'Utilisateur'}
+                            {app.user.steamUsername || t.defaultUsername}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {app.user.email}
@@ -340,14 +341,13 @@ export default function AffiliateApplications() {
 
           {applications.length === 0 && (
             <div className="text-center py-8 text-slate-400">
-              Aucune demande trouvée
+              {t.noApplications}
             </div>
           )}
 
-          {/* Pagination */}
           <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-muted-foreground">
-              Page {page} sur {totalPages}
+              {t.pageOf.replace('{page}', String(page)).replace('{total}', String(totalPages))}
             </p>
             <div className="flex space-x-2">
               <Button
@@ -356,7 +356,7 @@ export default function AffiliateApplications() {
                 onClick={() => setPage(page - 1)}
                 disabled={page <= 1}
               >
-                Précédent
+                {t.previous}
               </Button>
               <Button
                 variant="outline"
@@ -364,59 +364,55 @@ export default function AffiliateApplications() {
                 onClick={() => setPage(page + 1)}
                 disabled={page >= totalPages}
               >
-                Suivant
+                {t.next}
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Dialog de détails */}
       <Dialog open={!!selectedApp && !showRejectDialog} onOpenChange={() => setSelectedApp(null)}>
         <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
           <DialogHeader>
-            <DialogTitle className="text-white">Détails de la demande</DialogTitle>
+            <DialogTitle className="text-white">{t.detailsTitle}</DialogTitle>
             <DialogDescription className="text-slate-400">
-              Informations complètes sur la demande d&apos;affiliation
+              {t.detailsDescription}
             </DialogDescription>
           </DialogHeader>
           
           {selectedApp && (
             <div className="space-y-6">
-              {/* Informations utilisateur */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-slate-300">Utilisateur</Label>
+                  <Label className="text-slate-300">{t.labelUser}</Label>
                   <p className="font-medium">{selectedApp.user.steamUsername}</p>
                 </div>
                 <div>
-                  <Label className="text-slate-300">Email</Label>
+                  <Label className="text-slate-300">{t.labelEmail}</Label>
                   <p className="font-medium">{selectedApp.user.email}</p>
                 </div>
                 <div>
-                  <Label className="text-slate-300">Statut KYC</Label>
+                  <Label className="text-slate-300">{t.labelKycStatus}</Label>
                   <Badge variant={selectedApp.user.kycStatus === 'VERIFIED' ? 'default' : 'secondary'}>
                     {selectedApp.user.kycStatus}
                   </Badge>
                 </div>
                 <div>
-                  <Label className="text-slate-300">Membre depuis</Label>
+                  <Label className="text-slate-300">{t.labelMemberSince}</Label>
                   <p className="font-medium">{formatDate(selectedApp.user.createdAt)}</p>
                 </div>
               </div>
 
-              {/* Motivation */}
               <div>
-                <Label className="text-slate-300">Motivation</Label>
+                <Label className="text-slate-300">{t.labelMotivation}</Label>
                 <div className="mt-2 p-4 bg-slate-800 rounded-lg border border-slate-700">
                   <p className="text-sm whitespace-pre-wrap">{selectedApp.motivation}</p>
                 </div>
               </div>
 
-              {/* Liens sociaux */}
               {selectedApp.socialLinks && Object.keys(selectedApp.socialLinks).length > 0 && (
                 <div>
-                  <Label className="text-slate-300">Liens sociaux</Label>
+                  <Label className="text-slate-300">{t.labelSocialLinks}</Label>
                   <div className="mt-2 space-y-2">
                     {Object.entries(selectedApp.socialLinks).map(([platform, url]) => (
                       url && (
@@ -428,7 +424,7 @@ export default function AffiliateApplications() {
                             rel="noopener noreferrer"
                             className="flex items-center text-blue-400 hover:text-blue-300"
                           >
-                            Visiter
+                            {t.visitLink}
                             <ExternalLink className="h-4 w-4 ml-1" />
                           </a>
                         </div>
@@ -438,30 +434,29 @@ export default function AffiliateApplications() {
                 </div>
               )}
 
-              {/* Statut de révision */}
               {selectedApp.status !== 'PENDING' && (
                 <div className="border-t border-slate-700 pt-4">
-                  <Label className="text-slate-300">Statut</Label>
+                  <Label className="text-slate-300">{t.labelStatus}</Label>
                   <div className="mt-2 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span>État:</span>
+                      <span>{t.labelState}</span>
                       {getStatusBadge(selectedApp.status)}
                     </div>
                     {selectedApp.reviewedAt && (
                       <div className="flex items-center justify-between">
-                        <span>Révisé le:</span>
+                        <span>{t.labelReviewedAt}</span>
                         <span>{formatDate(selectedApp.reviewedAt)}</span>
                       </div>
                     )}
                     {selectedApp.reviewer && (
                       <div className="flex items-center justify-between">
-                        <span>Par:</span>
+                        <span>{t.labelReviewedBy}</span>
                         <span>{selectedApp.reviewer.steamUsername || selectedApp.reviewer.email}</span>
                       </div>
                     )}
                     {selectedApp.rejectionReason && (
                       <div className="mt-2">
-                        <Label className="text-slate-300">Raison du rejet:</Label>
+                        <Label className="text-slate-300">{t.labelRejectionReason}</Label>
                         <p className="mt-1 p-3 bg-red-900/20 rounded-lg border border-red-800 text-sm">
                           {selectedApp.rejectionReason}
                         </p>
@@ -475,24 +470,23 @@ export default function AffiliateApplications() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog de rejet */}
       <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
         <DialogContent className="bg-slate-900 border-slate-700">
           <DialogHeader>
-            <DialogTitle className="text-white">Rejeter la demande</DialogTitle>
+            <DialogTitle className="text-white">{t.rejectDialogTitle}</DialogTitle>
             <DialogDescription className="text-slate-400">
-              Veuillez fournir une raison pour le rejet de cette demande
+              {t.rejectDialogDescription}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
             <div>
-              <Label htmlFor="rejection-reason">Raison du rejet *</Label>
+              <Label htmlFor="rejection-reason">{t.rejectionReasonLabel}</Label>
               <Textarea
                 id="rejection-reason"
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Expliquez pourquoi cette demande est rejetée..."
+                placeholder={t.rejectionReasonPlaceholder}
                 rows={4}
                 className="mt-2"
               />
@@ -508,14 +502,14 @@ export default function AffiliateApplications() {
               }}
               disabled={processing}
             >
-              Annuler
+              {t.cancel}
             </Button>
             <Button
               variant="destructive"
               onClick={handleReject}
               disabled={processing || !rejectionReason.trim()}
             >
-              {processing ? 'Traitement...' : 'Rejeter la demande'}
+              {processing ? t.processing : t.rejectButton}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -523,4 +517,3 @@ export default function AffiliateApplications() {
     </div>
   );
 }
-

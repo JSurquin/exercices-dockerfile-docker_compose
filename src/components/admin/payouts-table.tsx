@@ -36,6 +36,7 @@ const APPROVABLE_STATUS = 'en_attente_approbation';
 
 export function AdminPayoutsTable() {
   const { messages } = useLocale();
+  const tp = messages.components.admin.payouts;
   const queryClient = useQueryClient();
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [filters, setFilters] = useState<AdminFilters>({
@@ -93,7 +94,7 @@ export function AdminPayoutsTable() {
     try {
       const thresholdCents = Math.round(parseFloat(autoApproveThresholdEur.replace(',', '.')) * 100);
       if (Number.isNaN(thresholdCents) || thresholdCents < 0) {
-        toast.error('Seuil invalide');
+        toast.error(tp.invalidThreshold ?? 'Seuil invalide');
         return;
       }
       const res = await fetch('/api/admin/settings/payout-auto-approve', {
@@ -102,7 +103,7 @@ export function AdminPayoutsTable() {
         body: JSON.stringify({ enabled: autoApproveEnabled, thresholdCents }),
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Erreur');
-      toast.success(messages.components.admin.payouts?.autoApproveSaved ?? 'Paramètres enregistrés');
+      toast.success(tp.autoApproveSaved ?? 'Paramètres enregistrés');
     } catch (e) {
       toast.error('Erreur', {
         description: e instanceof Error ? e.message : 'Impossible d\'enregistrer',
@@ -118,7 +119,7 @@ export function AdminPayoutsTable() {
       const res = await fetch(`/api/admin/payouts/${payoutId}/approve`, { method: 'POST' });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Erreur');
-      toast.success(messages.components.admin.payouts?.approveSuccess ?? 'Payout approuvé');
+      toast.success(tp.approveSuccess ?? 'Payout approuvé');
       queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) });
     } catch (e) {
       toast.error('Erreur', {
@@ -144,15 +145,15 @@ export function AdminPayoutsTable() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      'en_attente': { variant: 'secondary' as const, icon: Clock, text: messages.components.admin.payouts?.pending ?? 'En attente' },
-      'en_attente_approbation': { variant: 'default' as const, icon: AlertTriangle, text: messages.components.admin.payouts?.pendingApproval ?? 'En attente d\'approbation' },
-      'vérification_requise': { variant: 'default' as const, icon: AlertTriangle, text: messages.components.admin.payouts?.verificationRequired ?? 'Vérification requise' },
-      'vérifié': { variant: 'default' as const, icon: CheckCircle, text: messages.components.admin.payouts?.verified ?? 'Vérifié' },
-      'planifié': { variant: 'default' as const, icon: Clock, text: messages.components.admin.payouts?.scheduled ?? 'Planifié' },
-      'exécuté': { variant: 'default' as const, icon: CheckCircle, text: messages.components.admin.payouts?.executed ?? 'Exécuté' },
-      'payé': { variant: 'default' as const, icon: CheckCircle, text: messages.components.admin.payouts?.paid ?? 'Payé' },
-      'échoué': { variant: 'destructive' as const, icon: XCircle, text: messages.components.admin.payouts?.failed ?? 'Échoué' },
-      'annulé': { variant: 'outline' as const, icon: Ban, text: 'Annulé' },
+      'en_attente': { variant: 'secondary' as const, icon: Clock, text: tp.pending ?? 'En attente' },
+      'en_attente_approbation': { variant: 'default' as const, icon: AlertTriangle, text: tp.pendingApproval ?? 'En attente d\'approbation' },
+      'vérification_requise': { variant: 'default' as const, icon: AlertTriangle, text: tp.verificationRequired },
+      'vérifié': { variant: 'default' as const, icon: CheckCircle, text: tp.verified },
+      'planifié': { variant: 'default' as const, icon: Clock, text: tp.scheduled },
+      'exécuté': { variant: 'default' as const, icon: CheckCircle, text: tp.executed },
+      'payé': { variant: 'default' as const, icon: CheckCircle, text: tp.paid },
+      'échoué': { variant: 'destructive' as const, icon: XCircle, text: tp.failed },
+      'annulé': { variant: 'outline' as const, icon: Ban, text: tp.cancelled ?? 'Annulé' },
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['en_attente'];
@@ -201,7 +202,7 @@ export function AdminPayoutsTable() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Erreur');
       toast.success(
-        messages.components.admin.payouts?.resyncSuccess ?? 'Statut resynchronisé avec Flexify',
+        tp.resyncSuccess ?? 'Statut resynchronisé avec Flexify',
         { description: `${data.previousStatus} → ${data.newStatus}` }
       );
       queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) });
@@ -224,7 +225,7 @@ export function AdminPayoutsTable() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Erreur');
-      toast.success('Payout annulé');
+      toast.success(tp.cancelSuccess ?? 'Payout annulé');
       queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) });
     } catch (e) {
       toast.error('Erreur', {
@@ -270,7 +271,7 @@ export function AdminPayoutsTable() {
         <CardContent className="p-6">
           <div className="flex items-center gap-2 text-red-400">
             <AlertTriangle className="h-5 w-5" />
-            <span>Erreur: {error.message}</span>
+            <span>{error.message}</span>
           </div>
         </CardContent>
       </Card>
@@ -292,13 +293,13 @@ export function AdminPayoutsTable() {
                 className="h-4 w-4 rounded border-slate-600 bg-slate-700 text-orange-500"
               />
               <label htmlFor="auto-approve-enabled" className="text-sm text-slate-300">
-                {messages.components.admin.payouts?.autoApproveLabel ?? 'Activer le paiement automatique pour les montants sous le seuil'}
+                {tp.autoApproveLabel ?? 'Activer le paiement automatique pour les montants sous le seuil'}
               </label>
             </div>
             <div className="flex items-center gap-2">
               <Settings2 className="h-4 w-4 text-slate-400" />
               <label htmlFor="auto-approve-threshold" className="text-sm text-slate-400">
-                {messages.components.admin.payouts?.autoApproveThresholdLabel ?? 'Seuil (€)'}
+                {tp.autoApproveThresholdLabel ?? 'Seuil (€)'}
               </label>
               <Input
                 id="auto-approve-threshold"
@@ -316,7 +317,7 @@ export function AdminPayoutsTable() {
               disabled={autoApproveSaving}
               className="bg-orange-600 hover:bg-orange-700"
             >
-              {autoApproveSaving ? '...' : (messages.components.admin.payouts?.save ?? 'Enregistrer')}
+              {autoApproveSaving ? '...' : (tp.save ?? 'Enregistrer')}
             </Button>
           </div>
         </CardContent>
@@ -328,7 +329,7 @@ export function AdminPayoutsTable() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              placeholder={messages.components.admin.payouts.searchPlaceholder}
+              placeholder={tp.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-10 bg-slate-700 border-slate-600 text-white"
@@ -337,18 +338,18 @@ export function AdminPayoutsTable() {
           
           <Select onValueChange={handleStatusFilter}>
             <SelectTrigger className="w-full sm:w-48 bg-slate-700 border-slate-600 text-white">
-              <SelectValue placeholder="Filtrer par statut" />
+              <SelectValue placeholder={tp.filterByStatus ?? 'Filtrer par statut'} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les statuts</SelectItem>
-              <SelectItem value="en_attente">{messages.components.admin.payouts?.pending ?? 'En attente'}</SelectItem>
-              <SelectItem value="en_attente_approbation">{messages.components.admin.payouts?.pendingApproval ?? 'En attente d\'approbation'}</SelectItem>
-              <SelectItem value="vérification_requise">{messages.components.admin.payouts?.verificationRequired ?? 'Vérification requise'}</SelectItem>
-              <SelectItem value="vérifié">{messages.components.admin.payouts?.verified ?? 'Vérifié'}</SelectItem>
-              <SelectItem value="planifié">{messages.components.admin.payouts?.scheduled ?? 'Planifié'}</SelectItem>
-              <SelectItem value="exécuté">{messages.components.admin.payouts?.executed ?? 'Exécuté'}</SelectItem>
-              <SelectItem value="payé">{messages.components.admin.payouts?.paid ?? 'Payé'}</SelectItem>
-              <SelectItem value="échoué">{messages.components.admin.payouts?.failed ?? 'Échoué'}</SelectItem>
+              <SelectItem value="all">{tp.allStatuses ?? 'Tous les statuts'}</SelectItem>
+              <SelectItem value="en_attente">{tp.pending ?? 'En attente'}</SelectItem>
+              <SelectItem value="en_attente_approbation">{tp.pendingApproval ?? 'En attente d\'approbation'}</SelectItem>
+              <SelectItem value="vérification_requise">{tp.verificationRequired}</SelectItem>
+              <SelectItem value="vérifié">{tp.verified}</SelectItem>
+              <SelectItem value="planifié">{tp.scheduled}</SelectItem>
+              <SelectItem value="exécuté">{tp.executed}</SelectItem>
+              <SelectItem value="payé">{tp.paid}</SelectItem>
+              <SelectItem value="échoué">{tp.failed}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -361,7 +362,7 @@ export function AdminPayoutsTable() {
             className="border-slate-600 text-white hover:bg-slate-700"
           >
             <RefreshCw className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Actualiser</span>
+            <span className="hidden sm:inline">{tp.refresh ?? 'Actualiser'}</span>
           </Button>
 
           <Button 
@@ -370,7 +371,7 @@ export function AdminPayoutsTable() {
             className="bg-blue-600 hover:bg-blue-700"
           >
             <Download className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Exporter</span>
+            <span className="hidden sm:inline">{tp.export ?? 'Exporter'}</span>
           </Button>
         </div>
       </div>
@@ -381,14 +382,14 @@ export function AdminPayoutsTable() {
         <Table>
           <TableHeader>
             <TableRow className="border-slate-700">
-              <TableHead className="text-slate-300 whitespace-nowrap">ID</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Utilisateur</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Statut</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Montant</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Méthode</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Référence</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Créé le</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Actions</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{tp.colId ?? 'ID'}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{tp.colUser ?? 'Utilisateur'}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{tp.colStatus ?? 'Statut'}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{tp.colAmount ?? 'Montant'}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{tp.colMethod ?? 'Méthode'}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{tp.colReference ?? 'Référence'}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{tp.colCreatedAt ?? 'Créé le'}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{tp.colActions ?? 'Actions'}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -444,7 +445,7 @@ export function AdminPayoutsTable() {
                         className="border-green-600 text-green-400 hover:bg-green-900/30"
                         onClick={() => handleApprovePayout(payout.id)}
                         disabled={approvingId === payout.id}
-                        title={messages.components.admin.payouts?.approve ?? 'Approuver'}
+                        title={tp.approve ?? 'Approuver'}
                       >
                         <Check className="h-4 w-4" />
                       </Button>
@@ -467,7 +468,7 @@ export function AdminPayoutsTable() {
                         className="border-amber-600 text-amber-400 hover:bg-amber-900/30"
                         onClick={() => handleResyncFlexify(payout.id)}
                         disabled={resyncingId === payout.id}
-                        title={messages.components.admin.payouts?.resyncFlexify ?? 'Resync statut Flexify'}
+                        title={tp.resyncFlexify ?? 'Resync statut Flexify'}
                       >
                         <RotateCw className={`h-4 w-4 ${resyncingId === payout.id ? 'animate-spin' : ''}`} />
                       </Button>
@@ -494,7 +495,7 @@ export function AdminPayoutsTable() {
       {payouts.length === 0 && (
         <Card className="bg-slate-800/30 border-slate-700">
           <CardContent className="p-8 text-center">
-            <p className="text-slate-300">Aucun paiement trouvé</p>
+            <p className="text-slate-300">{tp.noPayouts ?? 'Aucun paiement trouvé'}</p>
           </CardContent>
         </Card>
       )}

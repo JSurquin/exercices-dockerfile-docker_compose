@@ -134,7 +134,7 @@ export default function AdminSepaRequestsPage() {
   const handleReject = async () => {
     if (!rejectModal) return;
     if (!rejectReason.trim()) {
-      toast.error('La raison du refus est requise');
+      toast.error(t.rejectReasonRequired);
       return;
     }
     setIsSubmitting(true);
@@ -182,7 +182,7 @@ export default function AdminSepaRequestsPage() {
           className="border-slate-600 text-slate-300 hover:bg-slate-800"
         >
           <ArrowPathIcon className="w-4 h-4 mr-2" />
-          Actualiser
+          {t.refresh}
         </Button>
       </motion.div>
 
@@ -190,7 +190,7 @@ export default function AdminSepaRequestsPage() {
       <Card className="bg-slate-800/50 border-slate-700">
         <CardContent className="pt-4 pb-4">
           <div className="flex items-center gap-4">
-            <Label className="text-slate-300 text-sm shrink-0">Statut :</Label>
+            <Label className="text-slate-300 text-sm shrink-0">{t.statusLabel} :</Label>
             <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
               <SelectTrigger className="w-48 bg-slate-900 border-slate-600 text-slate-200">
                 <SelectValue />
@@ -331,13 +331,13 @@ export default function AdminSepaRequestsPage() {
                         {req.status === 'PAID' && (
                           <div className="flex items-center gap-1 text-green-400 text-xs">
                             <CheckCircleIcon className="w-4 h-4" />
-                            <span>{req.paidAt ? new Date(req.paidAt).toLocaleDateString('fr-FR') : 'Payé'}</span>
+                            <span>{req.paidAt ? new Date(req.paidAt).toLocaleDateString('fr-FR') : t.statusPaid}</span>
                           </div>
                         )}
                         {req.status === 'CANCELLED' && (
                           <div className="flex items-center gap-1 text-red-400 text-xs">
                             <XCircleIcon className="w-4 h-4" />
-                            <span>Refusé</span>
+                            <span>{t.statusRejected}</span>
                           </div>
                         )}
                       </td>
@@ -358,10 +358,10 @@ export default function AdminSepaRequestsPage() {
                 disabled={page === 1}
                 className="border-slate-600 text-slate-300"
               >
-                ← Précédent
+                {t.paginationPrev}
               </Button>
               <span className="text-slate-400 text-sm">
-                Page {page} / {totalPages}
+                {t.paginationPage} {page} {t.paginationOf} {totalPages}
               </span>
               <Button
                 variant="outline"
@@ -370,7 +370,7 @@ export default function AdminSepaRequestsPage() {
                 disabled={page === totalPages}
                 className="border-slate-600 text-slate-300"
               >
-                Suivant →
+                {t.paginationNext}
               </Button>
             </div>
           )}
@@ -395,7 +395,7 @@ export default function AdminSepaRequestsPage() {
               {/* IBAN complet bien visible pour copier-coller */}
               <div className="bg-slate-800 border border-orange-500/40 rounded-lg p-4 space-y-3">
                 <div className="space-y-1">
-                  <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">IBAN destinataire</p>
+                  <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">{t.modalLabelIban}</p>
                   <p className="font-mono text-orange-300 text-base font-bold tracking-widest select-all">
                     {approveModal.beneficiary?.fullIban
                       ? approveModal.beneficiary.fullIban.replace(/(.{4})/g, '$1 ').trim()
@@ -404,13 +404,13 @@ export default function AdminSepaRequestsPage() {
                 </div>
                 {approveModal.beneficiary?.bic && (
                   <div className="space-y-1">
-                    <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">BIC / SWIFT</p>
+                    <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">{t.modalLabelBic}</p>
                     <p className="font-mono text-white font-semibold select-all">{approveModal.beneficiary.bic}</p>
                   </div>
                 )}
                 {approveModal.beneficiary?.firstName && (
                   <div className="space-y-1">
-                    <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">Bénéficiaire</p>
+                    <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">{t.modalLabelBeneficiary}</p>
                     <p className="text-white font-medium">{approveModal.beneficiary.firstName} {approveModal.beneficiary.lastName}</p>
                   </div>
                 )}
@@ -418,13 +418,13 @@ export default function AdminSepaRequestsPage() {
 
               <div className="bg-slate-800 rounded-lg p-3 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Utilisateur</span>
+                  <span className="text-slate-400">{t.modalLabelUser}</span>
                   <span className="text-white font-medium">
                     {approveModal.user?.name ?? approveModal.user?.steamUsername ?? '—'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Montant à virer</span>
+                  <span className="text-slate-400">{t.modalLabelAmountToTransfer}</span>
                   <span className="text-green-400 font-bold text-base">
                     {formatCentsToCurrency(approveModal.amountCents, 'EUR')}
                   </span>
@@ -485,13 +485,13 @@ export default function AdminSepaRequestsPage() {
             <div className="space-y-4 py-2">
               <div className="bg-slate-800 rounded-lg p-4 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Utilisateur</span>
+                  <span className="text-slate-400">{t.modalLabelUser}</span>
                   <span className="text-white font-medium">
                     {rejectModal.user?.name ?? rejectModal.user?.steamUsername ?? '—'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Montant</span>
+                  <span className="text-slate-400">{t.modalLabelAmount}</span>
                   <span className="text-white font-semibold">
                     {formatCentsToCurrency(rejectModal.amountCents, 'EUR')}
                   </span>

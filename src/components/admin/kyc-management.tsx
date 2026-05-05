@@ -58,6 +58,7 @@ interface KycUser {
 
 export function AdminKYCManagement() {
   const { messages } = useLocale();
+  const t = messages.admin.kycManagement;
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -93,15 +94,20 @@ export function AdminKYCManagement() {
     try {
       const res = await fetch('/api/admin/kyc/sync-pending', { method: 'POST' });
       const d = await res.json();
-      if (!res.ok) throw new Error(d.error || 'Erreur sync');
+      if (!res.ok) throw new Error(d.error || t.syncErrorDesc);
       toast({
-        title: 'Sync KYCAID terminée',
-        description: `${d.verified} vérifiés · ${d.rejected} rejetés · ${d.unchanged} inchangés · ${d.errors} erreurs (sur ${d.total} utilisateurs).`,
+        title: t.syncDoneTitle,
+        description: t.syncDoneDesc
+          .replace('{verified}', String(d.verified))
+          .replace('{rejected}', String(d.rejected))
+          .replace('{unchanged}', String(d.unchanged))
+          .replace('{errors}', String(d.errors))
+          .replace('{total}', String(d.total)),
       });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
     } catch (err) {
-      toast({ title: 'Erreur sync', description: err instanceof Error ? err.message : 'Erreur', variant: 'destructive' });
+      toast({ title: t.syncErrorTitle, description: err instanceof Error ? err.message : t.syncErrorDesc, variant: 'destructive' });
     } finally {
       setSyncing(false);
     }
@@ -113,16 +119,16 @@ export function AdminKYCManagement() {
     try {
       const res = await fetch(`/api/admin/kyc/force-verify/${userId}`, { method: 'POST' });
       const d = await res.json();
-      if (!res.ok) throw new Error(d.error || 'Erreur');
+      if (!res.ok) throw new Error(d.error || t.syncErrorDesc);
       if (d.success) {
-        toast({ title: 'Statut mis à jour', description: `→ ${d.newStatus} (source : ${d.source})` });
+        toast({ title: t.statusUpdatedTitle, description: `→ ${d.newStatus} (source : ${d.source})` });
       } else {
-        toast({ title: 'KYCAID non résolu', description: d.message || `Status KYCAID : ${d.kycaidStatus}`, variant: 'destructive' });
+        toast({ title: t.kycaidUnresolvedTitle, description: d.message || `Status KYCAID : ${d.kycaidStatus}`, variant: 'destructive' });
       }
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
     } catch (err) {
-      toast({ title: 'Erreur', description: err instanceof Error ? err.message : 'Erreur', variant: 'destructive' });
+      toast({ title: t.errorTitle, description: err instanceof Error ? err.message : t.syncErrorDesc, variant: 'destructive' });
     } finally {
       setSyncingUserId(null);
     }
@@ -132,10 +138,10 @@ export function AdminKYCManagement() {
   const getKYCBadge = (kycStatus: string) => {
     const key = prismaKycStatusToAdminBadgeKey(kycStatus);
     const cfg = {
-      pending:     { variant: 'secondary' as const, icon: Clock,         label: 'En attente' },
-      in_progress: { variant: 'default'   as const, icon: ShieldCheck,   label: 'En cours'   },
-      verified:    { variant: 'default'   as const, icon: CheckCircle,   label: 'Vérifié'    },
-      rejected:    { variant: 'destructive' as const, icon: XCircle,     label: 'Rejeté'     },
+      pending:     { variant: 'secondary' as const, icon: Clock,         label: t.statusPending    },
+      in_progress: { variant: 'default'   as const, icon: ShieldCheck,   label: t.statusInProgress },
+      verified:    { variant: 'default'   as const, icon: CheckCircle,   label: t.statusVerified   },
+      rejected:    { variant: 'destructive' as const, icon: XCircle,     label: t.statusRejected   },
     }[key];
     const Icon = cfg.icon;
     return (
@@ -148,11 +154,11 @@ export function AdminKYCManagement() {
 
   const getDocumentTypeLabel = (type: string) => {
     const map: Record<string, string> = {
-      ID_CARD: "Carte d'identité",
-      PASSPORT: 'Passeport',
-      DOMESTIC_PASSPORT: 'Passeport',
-      SELFIE: 'Selfie',
-      PROOF_OF_ADDRESS: 'Justificatif de domicile',
+      ID_CARD: t.docIdCard,
+      PASSPORT: t.docPassport,
+      DOMESTIC_PASSPORT: t.docPassport,
+      SELFIE: t.docSelfie,
+      PROOF_OF_ADDRESS: t.docProofOfAddress,
     };
     return map[type?.toUpperCase()] ?? type ?? '—';
   };
@@ -201,7 +207,7 @@ export function AdminKYCManagement() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              placeholder="Rechercher par pseudo Steam, email, Steam ID…"
+              placeholder={t.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
               className="pl-10 bg-slate-700 border-slate-600 text-white"
@@ -209,13 +215,13 @@ export function AdminKYCManagement() {
           </div>
           <Select value={statusFilter || 'all'} onValueChange={(v) => { setStatusFilter(v === 'all' ? '' : v); setPage(1); }}>
             <SelectTrigger className="w-full sm:w-48 bg-slate-700 border-slate-600 text-white">
-              <SelectValue placeholder="Filtrer par statut" />
+              <SelectValue placeholder={t.filterByStatus} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les statuts</SelectItem>
-              <SelectItem value="pending">En attente / En cours</SelectItem>
-              <SelectItem value="verified">Vérifié</SelectItem>
-              <SelectItem value="rejected">Rejeté</SelectItem>
+              <SelectItem value="all">{t.allStatuses}</SelectItem>
+              <SelectItem value="pending">{t.pendingInProgress}</SelectItem>
+              <SelectItem value="verified">{t.verified}</SelectItem>
+              <SelectItem value="rejected">{t.rejected}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -227,7 +233,7 @@ export function AdminKYCManagement() {
             className="border-slate-600 text-white hover:bg-slate-700"
           >
             <RefreshCw className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Actualiser</span>
+            <span className="hidden sm:inline">{t.refresh}</span>
           </Button>
 
           <Button
@@ -238,34 +244,33 @@ export function AdminKYCManagement() {
             title="Interroge KYCAID pour tous les users en attente et met à jour la DB"
           >
             {syncing ? <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" /> : <CloudDownload className="h-4 w-4 sm:mr-2" />}
-            <span className="hidden sm:inline">{syncing ? 'Sync…' : 'Sync KYCAID (tous)'}</span>
+            <span className="hidden sm:inline">{syncing ? t.syncing : t.syncAll}</span>
           </Button>
 
           <Button onClick={exportKYC} size="sm" className="bg-blue-600 hover:bg-blue-700">
             <Download className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Exporter</span>
+            <span className="hidden sm:inline">{t.export}</span>
           </Button>
         </div>
       </div>
 
-      {/* Table — 1 ligne par utilisateur */}
+      {/* Table */}
       <Card className="bg-slate-800/30 border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="border-slate-700">
-                <TableHead className="text-slate-300">Utilisateur</TableHead>
-                <TableHead className="text-slate-300 whitespace-nowrap">Statut KYC réel</TableHead>
-                <TableHead className="text-slate-300 whitespace-nowrap">Dernier doc</TableHead>
-                <TableHead className="text-slate-300 whitespace-nowrap">Soumis le</TableHead>
-                <TableHead className="text-slate-300 whitespace-nowrap">Complété le</TableHead>
-                <TableHead className="text-slate-300 whitespace-nowrap">Actions</TableHead>
+                <TableHead className="text-slate-300">{t.colUser}</TableHead>
+                <TableHead className="text-slate-300 whitespace-nowrap">{t.colKycStatus}</TableHead>
+                <TableHead className="text-slate-300 whitespace-nowrap">{t.colLastDoc}</TableHead>
+                <TableHead className="text-slate-300 whitespace-nowrap">{t.colSubmittedAt}</TableHead>
+                <TableHead className="text-slate-300 whitespace-nowrap">{t.colCompletedAt}</TableHead>
+                <TableHead className="text-slate-300 whitespace-nowrap">{t.colActions}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.map((u) => (
                 <TableRow key={u.userId} className="border-slate-700 hover:bg-slate-800/50">
-                  {/* Utilisateur */}
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
@@ -290,20 +295,16 @@ export function AdminKYCManagement() {
                     </div>
                   </TableCell>
 
-                  {/* Statut réel depuis User.kycStatus */}
                   <TableCell>{getKYCBadge(u.kycStatus)}</TableCell>
 
-                  {/* Dernier document */}
                   <TableCell className="text-slate-300 text-sm">
                     {u.latestDocument ? getDocumentTypeLabel(u.latestDocument.type) : '—'}
                   </TableCell>
 
-                  {/* Date soumission */}
                   <TableCell className="text-slate-300 text-sm whitespace-nowrap">
                     {u.latestDocument ? fmt(u.latestDocument.uploadedAt) : (u.latestVerification ? fmt(u.latestVerification.createdAt) : '—')}
                   </TableCell>
 
-                  {/* Date complétion */}
                   <TableCell className="text-slate-300 text-sm whitespace-nowrap">
                     {u.latestVerification?.completedAt
                       ? fmt(u.latestVerification.completedAt)
@@ -312,64 +313,60 @@ export function AdminKYCManagement() {
                       : '—'}
                   </TableCell>
 
-                  {/* Actions */}
                   <TableCell>
                     <div className="flex gap-2 flex-wrap">
-                      {/* Sync depuis KYCAID */}
                       <Button
                         size="sm"
                         variant="outline"
                         disabled={syncingUserId === u.userId}
                         onClick={() => handleSyncUser(u.userId)}
                         className="border-amber-600 text-amber-400 hover:bg-amber-900/30"
-                        title="Interroger KYCAID et mettre à jour le statut"
+                        title={t.tooltipSyncKycaid}
                       >
                         {syncingUserId === u.userId
                           ? <Loader2 className="h-4 w-4 animate-spin" />
                           : <CloudDownload className="h-4 w-4" />}
                       </Button>
 
-                      {/* Force vérifié (override admin) */}
                       {u.kycStatus !== 'VERIFIED' && u.kycStatus !== 'KYCAID_VERIFIED' && (
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            if (confirm(`Forcer la vérification KYC de ${displayName(u)} sans passer par KYCAID ?`)) {
+                            if (confirm(t.forceVerifyConfirm.replace('{name}', displayName(u)))) {
                               fetch(`/api/admin/kyc/force-verify/${u.userId}?force=true`, { method: 'POST' })
                                 .then((r) => r.json())
                                 .then((d) => {
-                                  toast({ title: 'KYC forcé', description: `Statut → ${d.newStatus}` });
+                                  toast({ title: t.kycForcedTitle, description: t.kycForcedDesc.replace('{status}', d.newStatus) });
                                   queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
                                   queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
                                 });
                             }
                           }}
                           className="border-green-700 text-green-400 hover:bg-green-900/30"
-                          title="Forcer VERIFIED manuellement (override admin)"
+                          title={t.tooltipForceVerify}
                         >
                           <ShieldCheck className="h-4 w-4" />
                         </Button>
                       )}
 
-                      {/* Force rejeté */}
                       {u.kycStatus !== 'REJECTED' && u.kycStatus !== 'KYCAID_REJECTED' && (
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            if (confirm(`Rejeter manuellement le KYC de ${displayName(u)} ?`)) {
+                            if (confirm(t.rejectConfirm.replace('{name}', displayName(u)))) {
                               fetch(`/api/admin/kyc/force-verify/${u.userId}`, { method: 'POST' })
                                 .then((r) => r.json())
                                 .then((d) => {
-                                  toast({ title: 'Résultat', description: d.newStatus === 'VERIFIED' ? 'KYCAID dit VERIFIED — pas rejeté' : `Statut → ${d.newStatus ?? 'inchangé'}` });
+                                  toast({ title: t.rejectResultTitle, description: d.newStatus === 'VERIFIED' ? 'KYCAID dit VERIFIED — pas rejeté' : `Statut → ${d.newStatus ?? 'inchangé'}` });
                                   queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
                                   queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
                                 });
                             }
                           }}
                           className="border-red-700 text-red-400 hover:bg-red-900/30"
-                          title="Vérifier depuis KYCAID (peut rejeter si KYCAID l'a décliné)"
+                          title={t.tooltipForceReject}
                         >
                           <ShieldX className="h-4 w-4" />
                         </Button>
@@ -386,7 +383,7 @@ export function AdminKYCManagement() {
       {users.length === 0 && (
         <Card className="bg-slate-800/30 border-slate-700">
           <CardContent className="p-8 text-center">
-            <p className="text-slate-300">Aucun utilisateur KYC trouvé</p>
+            <p className="text-slate-300">{t.noUsers}</p>
           </CardContent>
         </Card>
       )}
@@ -395,10 +392,12 @@ export function AdminKYCManagement() {
       {data?.totalPages > 1 && (
         <div className="flex justify-center gap-2">
           <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}
-            className="border-slate-600 text-white">Précédent</Button>
-          <span className="text-slate-400 text-sm self-center">Page {page} / {data.totalPages}</span>
+            className="border-slate-600 text-white">{t.previous}</Button>
+          <span className="text-slate-400 text-sm self-center">
+            {t.page.replace('{page}', String(page)).replace('{total}', String(data.totalPages))}
+          </span>
           <Button variant="outline" size="sm" disabled={page >= data.totalPages} onClick={() => setPage(p => p + 1)}
-            className="border-slate-600 text-white">Suivant</Button>
+            className="border-slate-600 text-white">{t.next}</Button>
         </div>
       )}
     </div>

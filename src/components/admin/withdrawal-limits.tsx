@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
+import { useLocale } from '@/components/providers/locale-provider';
 import { TrendingUp, RefreshCw } from 'lucide-react';
 
 const formatCents = (cents: number) =>
@@ -26,6 +27,9 @@ export function WithdrawalLimits({
   monthlyUsedCents: initialUsed = 0,
   onUpdate,
 }: WithdrawalLimitsProps) {
+  const { messages } = useLocale();
+  const t = messages.admin.withdrawalLimits;
+
   const [inputValue, setInputValue] = useState(
     initialLimit != null ? String(initialLimit / 100) : ''
   );
@@ -37,7 +41,7 @@ export function WithdrawalLimits({
     queryKey: ['admin', 'withdrawal-limits', userId],
     queryFn: async () => {
       const res = await fetch(`/api/admin/withdrawal-limits/${userId}`);
-      if (!res.ok) throw new Error('Erreur chargement');
+      if (!res.ok) throw new Error(t.loadingError);
       const data = await res.json();
       onUpdate?.();
       return data;
@@ -52,7 +56,7 @@ export function WithdrawalLimits({
   const handleSave = async () => {
     const raw = inputValue.trim() === '' ? null : Math.round(parseFloat(inputValue.replace(',', '.')) * 100);
     if (raw !== null && (isNaN(raw) || raw < 0)) {
-      toast({ title: 'Montant invalide', variant: 'destructive' });
+      toast({ title: t.invalidAmount, variant: 'destructive' });
       return;
     }
     setSaving(true);
@@ -64,16 +68,16 @@ export function WithdrawalLimits({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Erreur');
+        throw new Error(data.error || t.error);
       }
-      toast({ title: 'Plafond mis à jour' });
+      toast({ title: t.limitUpdated });
       if (raw != null) setInputValue(String(raw / 100));
       else setInputValue('');
       await queryClient.invalidateQueries({ queryKey: ['admin', 'withdrawal-limits'] });
     } catch (e) {
       toast({
-        title: 'Erreur',
-        description: e instanceof Error ? e.message : 'Impossible de sauvegarder',
+        title: t.error,
+        description: e instanceof Error ? e.message : t.cannotSave,
         variant: 'destructive',
       });
     } finally {
@@ -89,7 +93,7 @@ export function WithdrawalLimits({
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <CardTitle className="text-white flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
-          Plafond de retrait mensuel
+          {t.title}
         </CardTitle>
         <Button variant="ghost" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['admin', 'withdrawal-limits'] })} disabled={loading} className="text-slate-400">
           <RefreshCw className="h-4 w-4" />
@@ -98,36 +102,36 @@ export function WithdrawalLimits({
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-xs text-slate-400">Utilisé ce mois</p>
+            <p className="text-xs text-slate-400">{t.usedThisMonth}</p>
             <p className="text-lg font-semibold text-white">{formatCents(usedCents)}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-400">Plafond</p>
+            <p className="text-xs text-slate-400">{t.limit}</p>
             <p className="text-lg font-semibold text-slate-300">
-              {limitCents == null ? 'Illimité (débloqué)' : formatCents(limitCents)}
+              {limitCents == null ? t.unlimited : formatCents(limitCents)}
             </p>
           </div>
         </div>
         {limitCents != null && limitCents > 0 && (
           <div>
-            <p className="text-xs text-slate-400 mb-1">Progression</p>
+            <p className="text-xs text-slate-400 mb-1">{t.progress}</p>
             <Progress value={progress} className="h-2" />
           </div>
         )}
         <div className="flex flex-wrap gap-2 items-end">
           <div>
-            <Label className="text-slate-300">Nouveau plafond (€) — vide = illimité (débloquer)</Label>
+            <Label className="text-slate-300">{t.newLimitLabel}</Label>
             <Input
               type="text"
               inputMode="decimal"
-              placeholder="Ex: 5000"
+              placeholder={t.placeholder}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               className="bg-slate-700 border-slate-600 text-white mt-1 w-40"
             />
           </div>
           <Button size="sm" onClick={handleSave} disabled={saving}>
-            Enregistrer
+            {t.save}
           </Button>
         </div>
       </CardContent>
