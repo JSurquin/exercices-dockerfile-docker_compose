@@ -211,7 +211,7 @@ export default function DashboardPage() {
       .then((j) => {
         if (j.ok && j.fragments) {
           toast.success(`+${j.fragments} fragments`, {
-            description: 'Visite quotidienne réclamée !',
+            description: messages.dashboard.dailyVisitClaimed,
             duration: 3000,
           });
         }
@@ -222,7 +222,7 @@ export default function DashboardPage() {
   // Vérifier si c'est une connexion Steam réussie
   useEffect(() => {
     if (searchParams.get('steam_login') === 'success') {
-      toast.success(messages.toast.steamLoginSuccess || 'Connexion Steam réussie !', {
+      toast.success(messages.toast.steamLoginSuccess, {
         description: `${messages.dashboard.welcome} ${data?.user?.name || 'sur MoonSkin'} !`,
         duration: 4000,
       });
@@ -275,11 +275,9 @@ export default function DashboardPage() {
 
         if (tradeResult.balanceCredited) {
           toast.success(
-            messages.dashboard.toasts?.balanceCredited ?? 'Solde mis à jour !',
+            messages.dashboard.toasts.balanceCredited,
             {
-              description:
-                messages.dashboard.toasts?.fundsReleased ??
-                'Les fonds ont été libérés et votre solde a été crédité.',
+              description: messages.dashboard.toasts.fundsReleased,
             }
           );
           queryClient.invalidateQueries({ queryKey: queryKeys.userBalanceHistory });
@@ -336,13 +334,9 @@ export default function DashboardPage() {
           if (result.success && result.trade?.balanceCredited) {
             anyUpdated = true;
             toast.success(
-              messages.dashboard.toasts?.balanceCredited
-                ?? 'Solde mis à jour',
+              messages.dashboard.toasts.balanceCredited,
               {
-                description: `${trade.ticketId} — ${
-                  messages.dashboard.toasts?.fundsReleased
-                    ?? 'Fonds libérés par Skinplace'
-                }`,
+                description: `${trade.ticketId} — ${messages.dashboard.toasts.fundsReleased}`,
               }
             );
           } else if (result.success && result.trade?.oldStatus && result.trade.oldStatus !== result.trade.status) {
@@ -478,7 +472,7 @@ export default function DashboardPage() {
                         <BanknotesIcon className="w-5 h-5 text-green-500" />
                       </div>
                       <span className="text-sm font-medium text-muted-foreground">
-                        {messages.dashboard.balance?.title ?? "Solde disponible"}
+                        {messages.dashboard.balance.title}
                       </span>
                     </div>
                     {balanceHistoryData && (
@@ -494,7 +488,7 @@ export default function DashboardPage() {
                         {balanceHistoryData.variationPct >= 0 ? "+" : ""}
                         {balanceHistoryData.variationPct}%
                         <span className="text-muted-foreground font-normal ml-0.5">
-                          {messages.dashboard.balance?.last7days ?? "7j"}
+                          {messages.dashboard.balance.last7days}
                         </span>
                       </div>
                     )}
@@ -522,7 +516,7 @@ export default function DashboardPage() {
                       }`}>
                         {balanceHistoryData.variationCents >= 0 ? "+" : ""}
                         {formatCentsToCurrency(balanceHistoryData.variationCents, "EUR")}{" "}
-                        {messages.dashboard.balance?.vsLastWeek ?? "vs semaine dernière"}
+                        {messages.dashboard.balance.vsLastWeek}
                       </p>
                     )}
                   </div>
@@ -541,13 +535,13 @@ export default function DashboardPage() {
                 {/* Graphique de variation */}
                 <div className="p-5 sm:p-6 flex flex-col gap-2">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    {messages.dashboard.balance?.chart30days ?? "Évolution sur 30 jours"}
+                    {messages.dashboard.balance.chart30days}
                   </p>
                   {balanceHistoryLoading ? (
                     <div className="flex-1 min-h-[120px] animate-pulse bg-muted rounded-lg" />
                   ) : !balanceHistoryData?.history?.length ? (
                     <div className="flex-1 min-h-[120px] flex items-center justify-center text-sm text-muted-foreground">
-                      {messages.dashboard.balance?.noData ?? "Pas de données"}
+                      {messages.dashboard.balance.noData}
                     </div>
                   ) : (
                     <ResponsiveContainer width="100%" height={140}>
@@ -585,7 +579,7 @@ export default function DashboardPage() {
                           }}
                           formatter={(value: number) => [
                             `${value.toFixed(2)} €`,
-                            messages.dashboard.balance?.title ?? "Solde",
+                            messages.dashboard.balance.title,
                           ]}
                         />
                         <Area
@@ -662,7 +656,7 @@ export default function DashboardPage() {
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Fragments 💠</p>
+                  <p className="text-sm text-muted-foreground">{messages.dashboard.fragmentsLabel}</p>
                   <motion.p 
                     key={(user as unknown as { fragments?: number })?.fragments ?? 0}
                     initial={{ scale: 1 }}
@@ -673,7 +667,7 @@ export default function DashboardPage() {
                     {(user as unknown as { fragments?: number })?.fragments ?? 0}
                   </motion.p>
                   <Link href="/missions" className="text-xs text-orange-500 hover:underline">
-                    Voir les missions →
+                    {messages.dashboard.viewMissions}
                   </Link>
                 </div>
                 <SparklesIcon className="w-8 h-8 text-amber-500" />
@@ -685,9 +679,9 @@ export default function DashboardPage() {
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Giveaways</p>
+                  <p className="text-sm text-muted-foreground">{messages.dashboard.giveawaysLabel}</p>
                   <Link href="/giveaways" className="text-orange-500 hover:underline text-sm font-medium">
-                    Participer →
+                    {messages.dashboard.participateGiveaway}
                   </Link>
                 </div>
                 <GiftIcon className="w-8 h-8 text-orange-500" />

@@ -111,7 +111,7 @@ export default function GiveawayDetailsPage() {
       setUserFragments(data.newFragmentBalance);
       queryClient.invalidateQueries({ queryKey: ['giveaway', giveawayId] });
       queryClient.invalidateQueries({ queryKey: ['giveaways'] });
-      toast.success((messages.giveawaysPage.detail.entriesAddedToast ?? '').replace('{count}', String(data.entriesAdded)).replace('{spent}', String(data.fragmentsSpent)));
+      toast.success(messages.giveawaysPage.detail.entriesAddedToast.replace('{count}', String(data.entriesAdded)).replace('{spent}', String(data.fragmentsSpent)));
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : messages.giveawaysPage.detail.errorGeneric),
   });
@@ -314,7 +314,7 @@ export default function GiveawayDetailsPage() {
                           <div className="flex justify-between text-xs text-muted-foreground">
                             <span>{messages.giveawaysPage.detail.fragmentsAvailable}</span>
                             <span className="text-amber-500 font-medium">
-                              {(messages.giveawaysPage.detail.fragmentsMissing ?? '').replace('{count}', String(giveaway.ticketPrice - fragments))}
+                              {messages.giveawaysPage.detail.fragmentsMissing.replace('{count}', String(giveaway.ticketPrice - fragments))}
                             </span>
                           </div>
                           <Progress
@@ -338,7 +338,7 @@ export default function GiveawayDetailsPage() {
                               {messages.giveawaysPage.detail.entriesToBuyLabel}
                             </Label>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {(messages.giveawaysPage.detail.maxEntriesAvailable ?? '').replace('{count}', String(maxSelectable))}
+                              {messages.giveawaysPage.detail.maxEntriesAvailable.replace('{count}', String(maxSelectable))}
                             </p>
                           </div>
                           <div className="flex gap-2">
@@ -365,7 +365,7 @@ export default function GiveawayDetailsPage() {
                               }
                               className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shrink-0"
                             >
-                              {participateMutation.isPending ? messages.giveawaysPage.detail.participating : (messages.giveawaysPage.detail.participateWithCost ?? '').replace('{cost}', String(totalCost))}
+                              {participateMutation.isPending ? messages.giveawaysPage.detail.participating : messages.giveawaysPage.detail.participateWithCost.replace('{cost}', String(totalCost))}
                             </Button>
                           </div>
 
@@ -374,9 +374,9 @@ export default function GiveawayDetailsPage() {
                             <div className="rounded-lg bg-muted/50 px-4 py-2.5 text-sm flex items-center justify-between">
                               <span className="text-muted-foreground">{messages.giveawaysPage.detail.afterPurchase}</span>
                               <div className="flex gap-4 font-medium">
-                                <span>{(messages.giveawaysPage.detail.entriesCount ?? '').replace('{count}', String(previewMyEntries))}</span>
+                                <span>{messages.giveawaysPage.detail.entriesCount.replace('{count}', String(previewMyEntries))}</span>
                                 <span className="text-green-600">
-                                  {(messages.giveawaysPage.detail.chancePercent ?? '').replace('{percent}', previewChance.toFixed(2))}
+                                  {messages.giveawaysPage.detail.chancePercent.replace('{percent}', previewChance.toFixed(2))}
                                 </span>
                               </div>
                             </div>
@@ -384,7 +384,7 @@ export default function GiveawayDetailsPage() {
 
                           {giveaway.maxEntriesPerUser != null && (
                             <p className="text-xs text-muted-foreground">
-                              {(messages.giveawaysPage.detail.userEntryLimit ?? '').replace('{max}', String(giveaway.maxEntriesPerUser)).replace('{remaining}', String(maxPerUser))}
+                              {messages.giveawaysPage.detail.userEntryLimit.replace('{max}', String(giveaway.maxEntriesPerUser)).replace('{remaining}', String(maxPerUser))}
                             </p>
                           )}
                         </div>
@@ -409,7 +409,7 @@ export default function GiveawayDetailsPage() {
                   <GiftIcon className="w-12 h-12 mx-auto mb-3 text-orange-500" />
                   <p className="font-medium mb-1">{messages.giveawaysPage.detail.loginToParticipate}</p>
                   <p className="text-sm text-muted-foreground mb-4">
-                    {(messages.giveawaysPage.detail.costPerEntry ?? '').replace('{price}', String(giveaway.ticketPrice))}
+                    {messages.giveawaysPage.detail.costPerEntry.replace('{price}', String(giveaway.ticketPrice))}
                   </p>
                   <Link href="/">
                     <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
@@ -542,7 +542,7 @@ export default function GiveawayDetailsPage() {
                           {user.username}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {(messages.giveawaysPage.detail.entriesAndChance ?? '').replace('{entries}', String(myEntries)).replace('{chance}', myChance.toFixed(1))}
+                          {messages.giveawaysPage.detail.entriesAndChance.replace('{entries}', String(myEntries)).replace('{chance}', myChance.toFixed(1))}
                         </p>
                       </div>
                     </div>

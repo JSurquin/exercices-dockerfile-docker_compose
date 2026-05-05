@@ -227,7 +227,7 @@ const GiveawayCard = ({
                     {userFragments} / {giveaway.ticketPrice} {messages.giveaways.card.fragmentsLabel}
                   </span>
                   <span className="text-amber-500 font-medium">
-                    {(messages.giveaways.card.fragmentsRemaining ?? '').replace('{count}', String(giveaway.ticketPrice - userFragments))}
+                    {messages.giveaways.card.fragmentsRemaining.replace('{count}', String(giveaway.ticketPrice - userFragments))}
                   </span>
                 </div>
                 <Progress
@@ -265,8 +265,8 @@ const GiveawayCard = ({
                 {messages.giveaways.card.participate}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {messages.giveaways.youHave} {userFragments} {fg.entriesAvailable} — {(messages.giveaways.card.costLabel ?? '').replace('{cost}', String(totalCost))}
+              <p className="text-xs text-muted-foreground">
+                {messages.giveaways.youHave} {userFragments} {fg.entriesAvailable} — {messages.giveaways.card.costLabel.replace('{cost}', String(totalCost))}
             </p>
           </div>
         )}
@@ -526,7 +526,7 @@ export default function GiveawaysPage() {
                           <div className="flex justify-between text-muted-foreground">
                             <span>{messages.giveaways.card.nextGiveaway}</span>
                             <span className="text-amber-500 font-medium">
-                              {(messages.giveaways.card.moreNeeded ?? '').replace('{count}', String(cheapest.ticketPrice - userFragments))}
+                              {messages.giveaways.card.moreNeeded.replace('{count}', String(cheapest.ticketPrice - userFragments))}
                             </span>
                           </div>
                           <Progress value={pct} className="h-1.5 bg-muted [&>div]:bg-amber-500" />

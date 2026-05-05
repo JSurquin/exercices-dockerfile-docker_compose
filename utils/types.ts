@@ -456,12 +456,12 @@ export interface Messages {
       kycRequired: string;
       withdrawFunds: string;
       sepaOrCard: string;
-      dailyVisitClaimed?: string;
-      fragmentsLabel?: string;
-      viewMissions?: string;
-      giveawaysLabel?: string;
-      participateGiveaway?: string;
-      balance?: {
+      dailyVisitClaimed: string;
+      fragmentsLabel: string;
+      viewMissions: string;
+      giveawaysLabel: string;
+      participateGiveaway: string;
+      balance: {
         title: string;
         last7days: string;
         vsLastWeek: string;
@@ -1045,6 +1045,7 @@ export interface Messages {
         description: string;
       };
       save: string;
+      saving: string;
     };
     payments: {
       title: string;
@@ -2026,6 +2027,9 @@ export interface Messages {
         license: string;
       };
       uploaded: string;
+      idCardBack?: string;
+      idCardBackDescription?: string;
+      frontSuffix?: string;
     };
     selfie: {
       title: string;
@@ -2094,7 +2098,15 @@ export interface Messages {
       uploaded: string;
       submitted: string;
       error: string;
+      identityVerifiedSuccess?: string;
+      verificationRejected?: string;
+      fileTooLarge?: string;
+      compressing?: string;
+      compressed?: string;
+      submissionError?: string;
     };
+    inProgressPolling?: string;
+    submitNewVerification?: string;
     privacy: {
       badge: string;
       title: string;
@@ -2229,32 +2241,32 @@ export interface Messages {
       user: string;
       tickets: string;
       drawSeed: string;
-      totalEntries?: string;
-      winnersLabel?: string;
-      yourParticipation?: string;
-      myEntries?: string;
-      myChance?: string;
-      myFragments?: string;
-      fragmentsAvailable?: string;
-      fragmentsMissing?: string;
-      sellSkinsHint?: string;
-      viewMissions?: string;
-      entriesToBuyLabel?: string;
-      maxEntriesAvailable?: string;
-      participating?: string;
-      participateWithCost?: string;
-      afterPurchase?: string;
-      entriesCount?: string;
-      chancePercent?: string;
-      userEntryLimit?: string;
-      giveawayEnded?: string;
-      loginToParticipate?: string;
-      costPerEntry?: string;
-      loginViaSteam?: string;
-      winnerFallback?: string;
-      entriesAndChance?: string;
-      errorGeneric?: string;
-      entriesAddedToast?: string;
+      totalEntries: string;
+      winnersLabel: string;
+      yourParticipation: string;
+      myEntries: string;
+      myChance: string;
+      myFragments: string;
+      fragmentsAvailable: string;
+      fragmentsMissing: string;
+      sellSkinsHint: string;
+      viewMissions: string;
+      entriesToBuyLabel: string;
+      maxEntriesAvailable: string;
+      participating: string;
+      participateWithCost: string;
+      afterPurchase: string;
+      entriesCount: string;
+      chancePercent: string;
+      userEntryLimit: string;
+      giveawayEnded: string;
+      loginToParticipate: string;
+      costPerEntry: string;
+      loginViaSteam: string;
+      winnerFallback: string;
+      entriesAndChance: string;
+      errorGeneric: string;
+      entriesAddedToast: string;
       participantCountPrivateHint: string;
       yourEntryNone: string;
     };
@@ -2411,14 +2423,14 @@ export interface Messages {
       ticketsToUse: string;
       participate: string;
       ticketsAvailable: string;
-      privateLabel?: string;
-      winnersCount?: string;
-      fragmentsLabel?: string;
-      fragmentsRemaining?: string;
-      costLabel?: string;
-      nextGiveaway?: string;
-      moreNeeded?: string;
-      missionsLink?: string;
+      privateLabel: string;
+      winnersCount: string;
+      fragmentsLabel: string;
+      fragmentsRemaining: string;
+      costLabel: string;
+      nextGiveaway: string;
+      moreNeeded: string;
+      missionsLink: string;
     };
     empty: {
       noActive: string;
@@ -2438,18 +2450,18 @@ export interface Messages {
     participation: {
       success: string;
       notEnoughTickets: string;
-      notEnoughFragments?: string;
+      notEnoughFragments: string;
       loginRequired: string;
     };
     youHave: string;
-    notifications?: {
+    notifications: {
       winnerToast: string;
       winnerFallback: string;
       newWinners: string;
       newWinner: string;
       anonymousPlayer: string;
     };
-    fragments?: {
+    fragments: {
       costPerEntry: string;
       totalEntries: string;
       participants: string;
@@ -4554,6 +4566,7 @@ export interface Messages {
     cancel: string;
     updating: string;
     reset: string;
+    securityNote: string;
   };
   authProvider: {
     steamLoginInProgress: string;
@@ -4709,6 +4722,7 @@ export interface Messages {
         firstLastNameRequired: string;
         autoVerification: string;
         ibanFrWarningToast: string;
+        sepaFrFeeLabel: string;
         security: {
           title: string;
           description: string;
@@ -5055,6 +5069,7 @@ export interface Messages {
       previous: string;
       next: string;
       page: string;
+      cardPrefix: string;
     };
   };
   addressForm: {

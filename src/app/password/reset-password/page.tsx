@@ -119,7 +119,7 @@ export default function ResetPasswordPage() {
           </p>
           {userEmail && (
             <p className="text-sm text-slate-500 mt-2">
-              Compte : <span className="text-orange-400">{userEmail}</span>
+              {text.accountLabel} : <span className="text-orange-400">{userEmail}</span>
             </p>
           )}
         </div>
@@ -208,7 +208,7 @@ export default function ResetPasswordPage() {
               {/* Indicateur de force du mot de passe */}
               {password && (
                 <div className="space-y-2">
-                  <div className="text-xs text-slate-400">Force du mot de passe :</div>
+                  <div className="text-xs text-slate-400">{text.strength} :</div>
                   <div className="flex gap-1">
                     <div className={`h-1 flex-1 rounded ${password.length >= 8 ? 'bg-green-500' : 'bg-slate-600'}`} />
                     <div className={`h-1 flex-1 rounded ${password.length >= 12 && /[A-Z]/.test(password) ? 'bg-green-500' : 'bg-slate-600'}`} />
@@ -216,11 +216,11 @@ export default function ResetPasswordPage() {
                     <div className={`h-1 flex-1 rounded ${password.length >= 12 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password) ? 'bg-green-500' : 'bg-slate-600'}`} />
                   </div>
                   <div className="text-xs text-slate-500">
-                    {password.length < 8 && 'Trop court'}
-                    {password.length >= 8 && password.length < 12 && 'Faible'}
-                    {password.length >= 12 && /[A-Z]/.test(password) && 'Moyen'}
-                    {password.length >= 12 && /[A-Z]/.test(password) && /[0-9]/.test(password) && 'Fort'}
-                    {password.length >= 12 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password) && 'Très fort'}
+                    {password.length < 8 && text.strengthTooShort}
+                    {password.length >= 8 && password.length < 12 && text.strengthWeak}
+                    {password.length >= 12 && /[A-Z]/.test(password) && text.strengthMedium}
+                    {password.length >= 12 && /[A-Z]/.test(password) && /[0-9]/.test(password) && text.strengthStrong}
+                    {password.length >= 12 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password) && text.strengthVeryStrong}
                   </div>
                 </div>
               )}
@@ -234,7 +234,7 @@ export default function ResetPasswordPage() {
                 >
                   <Link href="/admin/login">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Annuler
+                    {text.cancel}
                   </Link>
                 </Button>
                 <Button
@@ -262,7 +262,7 @@ export default function ResetPasswordPage() {
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-xs text-slate-600">
-            Votre nouveau mot de passe sera chiffré et stocké de manière sécurisée
+            {text.securityNote}
           </p>
         </div>
       </div>

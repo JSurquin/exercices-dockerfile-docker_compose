@@ -101,10 +101,10 @@ export default function SettingsPage() {
         body: JSON.stringify({ email: emailInput.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Erreur");
+      if (!res.ok) throw new Error(data.error ?? messages.common.error);
       toast.success(messages.settings.profile.emailSuccess);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Erreur");
+      toast.error(err instanceof Error ? err.message : messages.common.error);
     } finally {
       setIsEmailSaving(false);
     }
@@ -115,7 +115,7 @@ export default function SettingsPage() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success(messages.toast.settingsSavedSuccess);
     } catch {
-      toast.error(messages.toast.settingsSaveError || "Erreur lors de la sauvegarde");
+      toast.error(messages.toast.settingsSaveError);
     }
   };
 
@@ -139,12 +139,12 @@ export default function SettingsPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Erreur");
+      if (!res.ok) throw new Error(data.error ?? messages.common.error);
       
       queryClient.invalidateQueries({ queryKey: queryKeys.userNotificationPreferences });
-      toast.success("Préférences de notifications sauvegardées avec succès");
+      toast.success(messages.settings.notifications.save);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Erreur lors de la sauvegarde");
+      toast.error(err instanceof Error ? err.message : messages.toast.settingsSaveError);
     } finally {
       setIsSavingNotifications(false);
     }
@@ -552,7 +552,7 @@ export default function SettingsPage() {
                     {isSavingNotifications ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Sauvegarde...
+                        {messages.settings.notifications.saving}
                       </>
                     ) : (
                       messages.settings.notifications.save

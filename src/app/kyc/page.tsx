@@ -134,13 +134,12 @@ export default function KYCPage() {
     prevStatusRef.current = newStatus;
 
     if (newStatus === 'VERIFIED') {
-      toast.success('🎉 Identité vérifiée avec succès !');
+      toast.success(messages.kycPage.toasts.identityVerifiedSuccess ?? '🎉');
       updateUser({ kycStatus: 'VERIFIED' }).catch(() => null);
-      // Invalider les queries dépendantes
       queryClient.invalidateQueries({ queryKey: queryKeys.userProfile });
       queryClient.invalidateQueries({ queryKey: queryKeys.userDashboard });
     } else if (newStatus === 'REJECTED') {
-      toast.error('Vérification refusée. Vous pouvez réessayer.');
+      toast.error(messages.kycPage.toasts.verificationRejected ?? messages.kycPage.toasts.error);
       updateUser({ kycStatus: 'REJECTED' }).catch(() => null);
     }
   }, [kycData, updateUser, queryClient]);
@@ -168,19 +167,19 @@ export default function KYCPage() {
 
   const handleFileUpload = async (type: string, file: File) => {
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      toast.error(`Le fichier "${file.name}" dépasse la limite de ${MAX_FILE_SIZE_MB} Mo. Veuillez utiliser un fichier plus petit.`);
+      toast.error((messages.kycPage.toasts.fileTooLarge ?? '').replace('{name}', file.name).replace('{max}', String(MAX_FILE_SIZE_MB)));
       return;
     }
 
     let processedFile = file;
 
     if (file.type.startsWith('image/') && file.size > 2 * 1024 * 1024) {
-      toast.info(`Compression de "${file.name}" en cours...`);
+      toast.info((messages.kycPage.toasts.compressing ?? '').replace('{name}', file.name));
       try {
         processedFile = await compressImageFile(file);
         const savedMb = ((file.size - processedFile.size) / 1024 / 1024).toFixed(1);
         if (processedFile.size < file.size) {
-          toast.success(`Image compressée : ${(processedFile.size / 1024 / 1024).toFixed(1)} Mo (−${savedMb} Mo)`);
+          toast.success((messages.kycPage.toasts.compressed ?? '').replace('{size}', (processedFile.size / 1024 / 1024).toFixed(1)).replace('{saved}', savedMb));
         }
       } catch {
         processedFile = file;
@@ -259,7 +258,7 @@ export default function KYCPage() {
 
       if (!response.ok) {
         console.error('❌ [KYC FRONTEND] Erreur de l\'API:', data);
-        throw new Error(data.error || 'Erreur lors de la soumission');
+        throw new Error(data.error || messages.kycPage.toasts.submissionError || messages.kycPage.toasts.error);
       }
 
       console.log('✅ [KYC FRONTEND] Réponse de l\'API:', data);
@@ -356,7 +355,7 @@ export default function KYCPage() {
             </p>
             {process.env.NODE_ENV === 'development' && (
               <p className="text-xs text-blue-500 mb-4">
-                Vérification automatique en cours... (polling toutes les 10s)
+                {messages.kycPage.inProgressPolling ?? 'Vérification automatique en cours...'}
               </p>
             )}
             <div className="flex flex-col gap-2">
@@ -371,7 +370,7 @@ export default function KYCPage() {
                   setForceShowForm(true);
                 }}
               >
-                Soumettre une nouvelle vérification
+                {messages.kycPage.submitNewVerification ?? 'Soumettre une nouvelle vérification'}
               </Button>
             </div>
           </CardContent>
@@ -658,7 +657,7 @@ export default function KYCPage() {
                   {/* Recto du document */}
                   <div className="border-2 border-dashed border-muted rounded-lg p-4 sm:p-6 text-center">
                     <DocumentTextIcon className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-muted-foreground" />
-                    <h4 className="font-semibold mb-1 text-sm sm:text-base">{messages.kycPage.documents.upload} (Recto) *</h4>
+                    <h4 className="font-semibold mb-1 text-sm sm:text-base">{messages.kycPage.documents.upload} {messages.kycPage.documents.frontSuffix ?? '(Recto) *'}</h4>
                     <p className="text-muted-foreground mb-4 text-xs sm:text-sm">
                       {messages.kycPage.documents.description}
                     </p>
@@ -685,9 +684,9 @@ export default function KYCPage() {
                   {documentType === 'id_card' && (
                     <div className="border-2 border-dashed border-muted rounded-lg p-4 sm:p-6 text-center">
                       <DocumentTextIcon className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-muted-foreground" />
-                      <h4 className="font-semibold mb-1 text-sm sm:text-base">Verso de la carte d&apos;identité</h4>
+                      <h4 className="font-semibold mb-1 text-sm sm:text-base">{messages.kycPage.documents.idCardBack ?? 'Verso'}</h4>
                       <p className="text-muted-foreground mb-4 text-xs sm:text-sm">
-                        Upload le verso de votre carte d&apos;identité (optionnel mais recommandé)
+                        {messages.kycPage.documents.idCardBackDescription ?? ''}
                       </p>
                       <Input
                         type="file"

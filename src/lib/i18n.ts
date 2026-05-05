@@ -710,6 +710,20 @@ export const messages: Record<Locale, Messages> = {
         participate: "Participer",
         ticketsAvailable: "fragments disponibles",
         privateLabel: "🔒 Privé",
+        fragmentsLabel: "fragments",
+        fragmentsRemaining: "{count} fragments manquants",
+        costLabel: "Coût total : {cost} fragments",
+        nextGiveaway: "Prochain giveaway",
+        moreNeeded: "{count} fragments manquants",
+        missionsLink: "Gagner des fragments →",
+        winnersCount: "gagnants",
+      },
+      notifications: {
+        newWinner: "Nouveau gagnant !",
+        newWinners: "Nouveaux gagnants !",
+        winnerToast: "🎉 Tirage terminé : {title} — Gagnant : {name}",
+        winnerFallback: "Joueur",
+        anonymousPlayer: "Joueur anonyme",
       },
       empty: {
         noActive: "Aucun giveaway actif",
@@ -2293,7 +2307,8 @@ export const messages: Record<Locale, Messages> = {
           title: "Emails marketing",
           description: "Recevoir des informations sur les nouveautés et promotions"
         },
-        save: "Sauvegarder les préférences"
+        save: "Sauvegarder les préférences",
+        saving: "Sauvegarde..."
       },
       payments: {
         title: "Méthodes de paiement",
@@ -3283,7 +3298,10 @@ export const messages: Record<Locale, Messages> = {
           passport: "Passeport",
           license: "Permis de conduire"
         },
-        uploaded: "téléchargé"
+        uploaded: "téléchargé",
+        idCardBack: "Verso de la carte d'identité",
+        idCardBackDescription: "Upload le verso de votre carte d'identité (optionnel mais recommandé)",
+        frontSuffix: "(Recto) *",
       },
       selfie: {
         title: "Selfie de vérification",
@@ -3351,8 +3369,16 @@ export const messages: Record<Locale, Messages> = {
       toasts: {
         uploaded: "téléchargé avec succès",
         submitted: "Dossier KYC soumis avec succès ! Vous recevrez une réponse sous 24-48h.",
-        error: "Erreur lors de la soumission du dossier KYC"
+        error: "Erreur lors de la soumission du dossier KYC",
+        identityVerifiedSuccess: "🎉 Identité vérifiée avec succès !",
+        verificationRejected: "Vérification refusée. Vous pouvez réessayer.",
+        fileTooLarge: "Le fichier \"{name}\" dépasse la limite de {max} Mo. Veuillez utiliser un fichier plus petit.",
+        compressing: "Compression de \"{name}\" en cours...",
+        compressed: "Image compressée : {size} Mo (−{saved} Mo)",
+        submissionError: "Erreur lors de la soumission"
       },
+      inProgressPolling: "Vérification automatique en cours... (polling toutes les 10s)",
+      submitNewVerification: "Soumettre une nouvelle vérification",
       privacy: {
         badge: "Confidentialité garantie",
         title: "Vos fichiers ne sont jamais stockés par nous",
@@ -3505,7 +3531,33 @@ export const messages: Record<Locale, Messages> = {
         drawSeed: "Seed de tirage",
         participantCountPrivateHint:
           "Connectez-vous et participez : seule votre participation est affichée ici (pas la liste de tous les joueurs).",
-        yourEntryNone: "Vous n'avez pas encore participé à ce giveaway."
+        yourEntryNone: "Vous n'avez pas encore participé à ce giveaway.",
+        totalEntries: "Entrées totales",
+        winnersLabel: "Gagnants",
+        yourParticipation: "Ma participation",
+        myEntries: "Mes entrées",
+        myChance: "Ma chance",
+        myFragments: "Mes fragments",
+        fragmentsAvailable: "Fragments disponibles",
+        fragmentsMissing: "{count} fragments manquants",
+        sellSkinsHint: "Vendez vos skins pour gagner des fragments",
+        viewMissions: "Voir les missions",
+        entriesToBuyLabel: "Nombre d'entrées à acheter",
+        maxEntriesAvailable: "Max disponible : {count}",
+        participating: "Participation en cours...",
+        participateWithCost: "Participer ({cost} 💠)",
+        afterPurchase: "Après achat :",
+        entriesCount: "{count} entrées",
+        chancePercent: "{percent}% de chances",
+        userEntryLimit: "Limite : {max} entrées max — il vous reste {remaining}",
+        giveawayEnded: "Ce giveaway est terminé.",
+        loginToParticipate: "Connectez-vous pour participer",
+        costPerEntry: "{price} 💠 par entrée",
+        loginViaSteam: "Connexion via Steam",
+        winnerFallback: "Joueur inconnu",
+        entriesAndChance: "{entries} entrée(s) · {chance}% de chances",
+        errorGeneric: "Une erreur est survenue",
+        entriesAddedToast: "{count} entrée(s) ajoutée(s) · {spent} 💠 dépensés"
       }
     },
     payoutPage: {
@@ -3602,6 +3654,7 @@ export const messages: Record<Locale, Messages> = {
         firstLastNameRequired: 'Le prénom et le nom sont requis.',
         autoVerification: 'Vérification automatique activée (mode développement)',
         ibanFrWarningToast: 'Les IBAN français ne sont pas pris en charge par Flexify. Utilisez l\'option SEPA Premium ci-dessous.',
+        sepaFrFeeLabel: 'Frais SEPA Premium (1,7%)',
         security: {
           title: 'Sécurité',
           description: 'Informations de sécurité pour vos retraits',
@@ -4957,6 +5010,7 @@ export const messages: Record<Locale, Messages> = {
       updating: "Mise à jour...",
       reset: "Réinitialiser",
       loginNow: "Se connecter maintenant",
+      securityNote: "Votre nouveau mot de passe sera chiffré et stocké de manière sécurisée",
     },
     authProvider: {
       steamLoginInProgress: "Connexion Steam en cours...",
@@ -5370,6 +5424,7 @@ export const messages: Record<Locale, Messages> = {
         previous: 'Précédent',
         next: 'Suivant',
         page: 'Page',
+        cardPrefix: 'Carte',
       },
     },
     addressForm: {
@@ -6208,6 +6263,20 @@ export const messages: Record<Locale, Messages> = {
         participate: "Participate",
         ticketsAvailable: "fragments available",
         privateLabel: "🔒 Private",
+        fragmentsLabel: "fragments",
+        fragmentsRemaining: "{count} fragments missing",
+        costLabel: "Total cost: {cost} fragments",
+        nextGiveaway: "Next giveaway",
+        moreNeeded: "{count} more fragments needed",
+        missionsLink: "Earn fragments →",
+        winnersCount: "winners",
+      },
+      notifications: {
+        newWinner: "New winner!",
+        newWinners: "New winners!",
+        winnerToast: "🎉 Draw complete: {title} — Winner: {name}",
+        winnerFallback: "Player",
+        anonymousPlayer: "Anonymous player",
       },
       empty: {
         noActive: "No active giveaways",
@@ -7694,7 +7763,10 @@ export const messages: Record<Locale, Messages> = {
           passport: "Passport",
           license: "Driving license"
         },
-        uploaded: "uploaded"
+        uploaded: "uploaded",
+        idCardBack: "Back of the identity card",
+        idCardBackDescription: "Upload the back of your identity card (optional but recommended)",
+        frontSuffix: "(Front) *",
       },
       selfie: {
         title: "Verification selfie",
@@ -7762,8 +7834,16 @@ export const messages: Record<Locale, Messages> = {
       toasts: {
         uploaded: "uploaded successfully",
         submitted: "KYC file submitted successfully! You will receive a response within 24-48h.",
-        error: "Error submitting KYC file"
+        error: "Error submitting KYC file",
+        identityVerifiedSuccess: "🎉 Identity verified successfully!",
+        verificationRejected: "Verification refused. You can try again.",
+        fileTooLarge: "The file \"{name}\" exceeds the {max} MB limit. Please use a smaller file.",
+        compressing: "Compressing \"{name}\"...",
+        compressed: "Image compressed: {size} MB (−{saved} MB)",
+        submissionError: "Error submitting the file"
       },
+      inProgressPolling: "Automatic verification in progress... (polling every 10s)",
+      submitNewVerification: "Submit a new verification",
       privacy: {
         badge: "Privacy guaranteed",
         title: "Your files are never stored by us",
@@ -7916,7 +7996,33 @@ export const messages: Record<Locale, Messages> = {
         drawSeed: "Draw seed",
         participantCountPrivateHint:
           "Log in and take part: only your own participation is shown here (not everyone else's).",
-        yourEntryNone: "You have not entered this giveaway yet."
+        yourEntryNone: "You have not entered this giveaway yet.",
+        totalEntries: "Total entries",
+        winnersLabel: "Winners",
+        yourParticipation: "My participation",
+        myEntries: "My entries",
+        myChance: "My odds",
+        myFragments: "My fragments",
+        fragmentsAvailable: "Fragments available",
+        fragmentsMissing: "{count} fragments missing",
+        sellSkinsHint: "Sell your skins to earn fragments",
+        viewMissions: "View missions",
+        entriesToBuyLabel: "Number of entries to buy",
+        maxEntriesAvailable: "Max available: {count}",
+        participating: "Participating...",
+        participateWithCost: "Participate ({cost} 💠)",
+        afterPurchase: "After purchase:",
+        entriesCount: "{count} entries",
+        chancePercent: "{percent}% chance",
+        userEntryLimit: "Limit: {max} max entries — {remaining} remaining",
+        giveawayEnded: "This giveaway has ended.",
+        loginToParticipate: "Log in to participate",
+        costPerEntry: "{price} 💠 per entry",
+        loginViaSteam: "Log in with Steam",
+        winnerFallback: "Unknown player",
+        entriesAndChance: "{entries} entry(ies) · {chance}% chance",
+        errorGeneric: "An error occurred",
+        entriesAddedToast: "{count} entry(ies) added · {spent} 💠 spent"
       }
     },
     payoutPage: {
@@ -8013,6 +8119,7 @@ export const messages: Record<Locale, Messages> = {
         firstLastNameRequired: 'First name and last name are required.',
         autoVerification: 'Automatic verification enabled (development mode)',
         ibanFrWarningToast: 'French IBANs are not supported by Flexify. Use the SEPA Premium option below.',
+        sepaFrFeeLabel: 'SEPA Premium fees (1.7%)',
         security: {
           title: 'Security',
           description: 'Security information for your withdrawals',
@@ -9334,7 +9441,8 @@ export const messages: Record<Locale, Messages> = {
           title: "Marketing emails",
           description: "Receive news and promotions information"
         },
-        save: "Save preferences"
+        save: "Save preferences",
+        saving: "Saving..."
       },
       preferences: {
         title: "Display preferences",
@@ -10455,6 +10563,7 @@ export const messages: Record<Locale, Messages> = {
       updating: "Updating...",
       reset: "Reset",
       loginNow: "Login now",
+      securityNote: "Your new password will be encrypted and stored securely",
     },
     authProvider: {
       steamLoginInProgress: "Steam login in progress...",
@@ -10868,6 +10977,7 @@ export const messages: Record<Locale, Messages> = {
         previous: 'Previous',
         next: 'Next',
         page: 'Page',
+        cardPrefix: 'Card',
       },
     },
     addressForm: {
@@ -11700,6 +11810,21 @@ export const messages: Record<Locale, Messages> = {
         ticketsToUse: "使用碎片数量：",
         participate: "参与",
         ticketsAvailable: "碎片可用",
+        privateLabel: "🔒 私密",
+        fragmentsLabel: "碎片",
+        fragmentsRemaining: "还需 {count} 碎片",
+        costLabel: "总费用：{cost} 碎片",
+        nextGiveaway: "下一个抽奖",
+        moreNeeded: "还需 {count} 碎片",
+        missionsLink: "获取碎片 →",
+        winnersCount: "获胜者",
+      },
+      notifications: {
+        newWinner: "新获胜者！",
+        newWinners: "新获胜者！",
+        winnerToast: "🎉 抽奖结束：{title} — 获胜者：{name}",
+        winnerFallback: "玩家",
+        anonymousPlayer: "匿名玩家",
       },
       empty: {
         noActive: "没有进行中的抽奖",
@@ -11718,10 +11843,21 @@ export const messages: Record<Locale, Messages> = {
       },
       participation: {
         success: "参与已记录！",
-        notEnoughTickets: "您没有足够的票券",
+        notEnoughTickets: "您没有足够的碎片",
+        notEnoughFragments: "您没有足够的碎片",
         loginRequired: "您必须登录才能参与",
       },
       youHave: "您有",
+      fragments: {
+        costPerEntry: "碎片 / 条目",
+        totalEntries: "总条目",
+        participants: "参与者",
+        yourEntries: "您的条目",
+        yourChance: "您的几率",
+        winnerCount: "获胜者",
+        entriesToBuy: "购买条目数",
+        entriesAvailable: "可用碎片",
+      },
     },
     missions: {
       loading: "加载中…",
@@ -13030,14 +13166,26 @@ export const messages: Record<Locale, Messages> = {
       subtitle: "验证您的身份以获得安全支付",
       steps: { info: "", documents: "", selfie: "", address: "", review: "" },
       info: { title: "", description: "", firstName: "", lastName: "", dateOfBirth: "", nationality: "", address: "", city: "", postalCode: "", country: "", firstNamePlaceholder: "", lastNamePlaceholder: "", addressPlaceholder: "", cityPlaceholder: "", postalCodePlaceholder: "", countries: { france: "", belgium: "", switzerland: "", canada: "", usa: "" } },
-      documents: { type: "", upload: "", description: "", tips: { title: "", lighting: "", readable: "", reflection: "", complete: "" }, types: { id: "", passport: "", license: "" }, uploaded: "" },
-      selfie: { title: "", description: "", uploaded: "", instructions: { title: "", camera: "", visible: "", accessories: "", lighting: "" } },
-      addressDoc: { title: "", optional: "", description: "", uploaded: "", skip: "" },
-      review: { complete: "", description: "", personalInfo: "", documents: "", identity: "", selfie: "", addressDocument: "", delay: { title: "", description: "" }, fullName: "", nationality: "", address: "" },
-      navigation: { previous: "", next: "", submit: "", loading: "" },
-      status: { verified: { title: "", description: "", dashboard: "" }, inProgress: { title: "", description: "", dashboard: "" }, rejected: { title: "", description: "", restart: "" }, loginRequired: { title: "", description: "", login: "" } },
-      toasts: { uploaded: "", submitted: "", error: "" },
-      privacy: { badge: "", title: "", description: "", points: { noStorage: "", directTransfer: "", certifiedPartner: "", referenceOnly: "" } }
+      documents: { type: "文件类型", upload: "上传您的身份证件", description: "确保文件清晰可读，所有信息均可见", tips: { title: "拍照技巧", lighting: "在光线充足的地方拍照", readable: "确保所有文字清晰可读", reflection: "避免反光和阴影", complete: "文件必须完整可见" }, types: { id: "身份证", passport: "护照", license: "驾驶证" }, uploaded: "已上传", idCardBack: "身份证背面", idCardBackDescription: "上传您的身份证背面（可选但推荐）", frontSuffix: "（正面）*" },
+      selfie: { title: "验证自拍", description: "拍摄清晰的面部自拍以验证您的身份", uploaded: "自拍已上传", instructions: { title: "自拍说明", camera: "直视摄像头", visible: "您的脸必须完全可见", accessories: "避免戴太阳镜或帽子", lighting: "光线应自然均匀" } },
+      addressDoc: { title: "地址证明", optional: "地址证明（可选）", description: "此步骤为可选，但可加快验证速度。接受文件：水电气账单、银行账单、税务通知（3个月内）。", uploaded: "已上传", skip: "跳过此步骤" },
+      review: { complete: "文件完整", description: "在提交KYC文件之前，请核实您的信息。", personalInfo: "个人信息", documents: "已上传文件", identity: "身份证件：", selfie: "验证自拍", addressDocument: "地址证明：", delay: { title: "验证时间", description: "您的文件将在24-48个工作小时内审核完毕。审核完成后您将收到邮件通知。" }, fullName: "全名：", nationality: "国籍：", address: "地址：" },
+      navigation: { previous: "上一步", next: "下一步", submit: "提交文件", loading: "加载中..." },
+      status: { verified: { title: "KYC已验证", description: "您的身份已成功验证。您现在可以进行支付。", dashboard: "返回控制台" }, inProgress: { title: "KYC验证中", description: "您的KYC文件正在审核中，将在24-48小时内收到回复。", dashboard: "返回控制台" }, rejected: { title: "KYC已拒绝", description: "您的KYC文件已被拒绝。请使用有效文件重新提交。", restart: "重新开始KYC" }, loginRequired: { title: "需要登录", description: "您必须登录才能访问KYC流程。", login: "使用Steam登录" } },
+      toasts: {
+        uploaded: "上传成功",
+        submitted: "KYC文件提交成功！您将在24-48小时内收到回复。",
+        error: "提交KYC文件时出错",
+        identityVerifiedSuccess: "🎉 身份验证成功！",
+        verificationRejected: "验证被拒绝。您可以重试。",
+        fileTooLarge: "文件 \"{name}\" 超过 {max} MB 的限制，请使用较小的文件。",
+        compressing: "正在压缩 \"{name}\"...",
+        compressed: "图片已压缩：{size} MB（−{saved} MB）",
+        submissionError: "提交文件时出错"
+      },
+      inProgressPolling: "自动验证中...（每10秒轮询一次）",
+      submitNewVerification: "提交新的验证",
+      privacy: { badge: "隐私保障", title: "您的文件从未被我们存储", description: "您的文件直接安全地传输给我们认证的身份验证合作伙伴KYCAID。我们不在服务器上存储任何文件。", points: { noStorage: "我们不存储文件", directTransfer: "直接加密传输至KYCAID", certifiedPartner: "符合GDPR的认证合作伙伴", referenceOnly: "仅保留数字参考ID" } }
     },
     sellPage: {
       title: "出售您的CS2皮肤",
@@ -13174,7 +13322,33 @@ export const messages: Record<Locale, Messages> = {
         tickets: "碎片",
         drawSeed: "抽奖种子",
         participantCountPrivateHint: "请登录并参与：此处只显示您本人的参与情况（不显示所有玩家名单）。",
-        yourEntryNone: "您尚未参与此抽奖。"
+        yourEntryNone: "您尚未参与此抽奖。",
+        totalEntries: "总条目",
+        winnersLabel: "获胜者",
+        yourParticipation: "我的参与",
+        myEntries: "我的条目",
+        myChance: "我的几率",
+        myFragments: "我的碎片",
+        fragmentsAvailable: "可用碎片",
+        fragmentsMissing: "还需 {count} 碎片",
+        sellSkinsHint: "出售皮肤以获取碎片",
+        viewMissions: "查看任务",
+        entriesToBuyLabel: "购买条目数",
+        maxEntriesAvailable: "最多可选：{count}",
+        participating: "参与中...",
+        participateWithCost: "参与（{cost} 💠）",
+        afterPurchase: "购买后：",
+        entriesCount: "{count} 条目",
+        chancePercent: "{percent}% 几率",
+        userEntryLimit: "限制：最多 {max} 条目 — 剩余 {remaining}",
+        giveawayEnded: "此抽奖已结束。",
+        loginToParticipate: "登录以参与",
+        costPerEntry: "每条目 {price} 💠",
+        loginViaSteam: "通过Steam登录",
+        winnerFallback: "未知玩家",
+        entriesAndChance: "{entries} 条目 · {chance}% 几率",
+        errorGeneric: "发生错误",
+        entriesAddedToast: "已添加 {count} 条目 · 已用 {spent} 💠"
       }
     },
     payoutPage: {
@@ -13271,7 +13445,8 @@ export const messages: Record<Locale, Messages> = {
                 firstLastNameRequired: '姓名和名字是必填的。',
         autoVerification: '自动验证已启用（开发模式）',
         ibanFrWarningToast: 'Flexify不支持法国IBAN。请使用下方的SEPA Premium选项。',
-security: {
+        sepaFrFeeLabel: 'SEPA Premium费用（1.7%）',
+        security: {
           title: '安全',
           description: '提款安全信息',
           sepaInfo: '1-3个工作日内到账',
@@ -14545,7 +14720,8 @@ security: {
           title: "营销邮件",
           description: "接收新闻和促销信息"
         },
-        save: "保存偏好"
+        save: "保存偏好",
+        saving: "保存中..."
       },
       preferences: {
         title: "显示偏好",
@@ -15661,6 +15837,7 @@ security: {
       updating: "更新中...",
       reset: "重置",
       loginNow: "立即登录",
+      securityNote: "您的新密码将被加密并安全存储",
     },
     authProvider: {
       steamLoginInProgress: "Steam 登录进行中...",
@@ -16074,6 +16251,7 @@ security: {
         previous: '上一页',
         next: '下一页',
         page: '页',
+        cardPrefix: '银行卡',
       },
     },
     addressForm: {

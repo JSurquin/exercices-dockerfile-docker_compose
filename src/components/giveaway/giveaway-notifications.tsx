@@ -66,9 +66,9 @@ export function GiveawayNotifications() {
           const firstWinner = winners[0];
           const n = m.giveaways.notifications;
           toast.success(
-            (n?.winnerToast ?? '')
+            n.winnerToast
               .replace('{title}', giveaway.title)
-              .replace('{name}', firstWinner?.steamUsername ?? (n?.winnerFallback ?? 'Player'))
+              .replace('{name}', firstWinner?.steamUsername ?? n.winnerFallback)
           );
 
           setNotifications((prev) => [notification, ...prev.slice(0, 2)]);
@@ -104,7 +104,7 @@ export function GiveawayNotifications() {
                   <div className="flex items-center space-x-2">
                     <TrophyIcon className="w-5 h-5 text-yellow-600" />
                     <span className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
-                      {notification.winners.length > 1 ? messages.giveaways.notifications?.newWinners : messages.giveaways.notifications?.newWinner}
+                      {notification.winners.length > 1 ? messages.giveaways.notifications.newWinners : messages.giveaways.notifications.newWinner}
                     </span>
                   </div>
                   <button
@@ -125,7 +125,7 @@ export function GiveawayNotifications() {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200 truncate">
-                        {winner.steamUsername ?? messages.giveaways.notifications?.anonymousPlayer}
+                        {winner.steamUsername ?? messages.giveaways.notifications.anonymousPlayer}
                         {notification.winners.length > 1 && (
                           <span className="ml-1 text-xs text-yellow-600">#{winner.rank}</span>
                         )}

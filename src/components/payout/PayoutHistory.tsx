@@ -129,7 +129,7 @@ export function PayoutHistory() {
       return `SEPA ••••${iban.slice(-4)}`;
     }
     if (type === 'CARD' && details && 'lastFourDigits' in details) {
-      return `Carte ••••${(details as { lastFourDigits: string }).lastFourDigits}`;
+      return `${t.cardPrefix} ••••${(details as { lastFourDigits: string }).lastFourDigits}`;
     }
     return type;
   };
