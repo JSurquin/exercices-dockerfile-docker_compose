@@ -33,6 +33,7 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
   const [isDevelopment] = useState(() => process.env.NODE_ENV === 'development');
   const [error, setError] = useState<string | null>(null);
   const previousStatusRef = useRef<KycStatus | null>(null);
+  const lastInitiateTimeRef = useRef<number>(0);
 
   const { data: kycStatus, isLoading: loading, error: queryFetchError, refetch } = useQuery<KycStatus | null>({
     queryKey: queryKeys.kycStatus,
@@ -101,6 +102,15 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
   };
 
   const handleInitiateKyc = async () => {
+    // Anti-spam : empêcher les clics multiples (cooldown 10s côté client)
+    const now = Date.now();
+    if (now - lastInitiateTimeRef.current < 10_000) {
+      setError('Veuillez patienter avant de réessayer.');
+      return;
+    }
+    if (initiating) return;
+
+    lastInitiateTimeRef.current = now;
     console.log('[KYC] Initiating KYC process...');
     setInitiating(true);
     setError(null);
@@ -118,7 +128,11 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
       console.log('[KYC] Response data:', data);
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de l\'initialisation du KYC');
+        if (response.status === 429) {
+          setError(data.message || data.error || 'Une vérification est déjà en cours. Veuillez patienter.');
+          return;
+        }
+        throw new Error(data.error || data.details || 'Erreur lors de l\'initialisation du KYC');
       }
 
       // Stocker le verificationId pour le polling en mode dev

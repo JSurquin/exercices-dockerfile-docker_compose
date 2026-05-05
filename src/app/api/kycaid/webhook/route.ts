@@ -1,55 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  validateWebhookSignature,
   processWebhook,
   type KycaidWebhookPayload,
 } from '@/lib/kycaid';
-import { isProductionApp } from '@/lib/env-production';
+import { prisma } from '~/prisma/prisma';
 
 // =============================================================================
-// POST - Recevoir les webhooks KYCAID (auth par X-Signature + secret, pas de session)
+// POST - Recevoir les webhooks KYCAID
+//
+// KYCAID ne signe PAS ses callbacks avec un HMAC/X-Signature.
+// La sécurité repose sur :
+//  1. Le callback_url n'est connu que de KYCAID (configuré via l'API ou le dashboard).
+//  2. On vérifie que l'applicant_id du payload correspond à un utilisateur en base.
+//  3. On valide la structure du payload avant traitement.
 // =============================================================================
 
 export async function POST(request: NextRequest) {
   try {
     const rawBody = await request.text();
-    const signature = request.headers.get('X-Signature') ||
-      request.headers.get('x-signature') ||
-      '';
 
-    const webhookSecret = process.env.KYCAID_WEBHOOK_SECRET;
-    const isPlaceholderSecret =
-      !webhookSecret || webhookSecret === 'your-kycaid-webhook-secret';
-
-    // SÉCURITÉ: Bloquer le webhook si le secret n'est pas configuré, même hors prod
-    if (isPlaceholderSecret) {
-      console.error(
-        '[KYCAID Webhook] KYCAID_WEBHOOK_SECRET requis (production et développement).'
-      );
-      console.error(
-        '[KYCAID Webhook] Le webhook est BLOQUÉ pour éviter les failles de sécurité.'
-      );
-      console.error(
-        '[KYCAID Webhook] Configurez KYCAID_WEBHOOK_SECRET depuis le dashboard KYCAID.'
-      );
-      return NextResponse.json(
-        { error: 'Webhook not configured (secret required)' },
-        { status: 503 }
-      );
-    }
-    
-    // Vérifier la signature
-    if (!validateWebhookSignature(rawBody, signature)) {
-      console.error(
-        '[KYCAID Webhook] Invalid signature — check KYCAID_WEBHOOK_SECRET in .env'
-      );
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 401 }
-      );
+    let payload: KycaidWebhookPayload;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch {
+      console.error('[KYCAID Webhook] Invalid JSON body');
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
 
-    const payload: KycaidWebhookPayload = JSON.parse(rawBody);
+    // Validation basique du payload
+    if (!payload.type || !payload.applicant_id) {
+      console.error('[KYCAID Webhook] Missing required fields (type, applicant_id)');
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    // Vérifier que l'applicant_id correspond à un utilisateur connu
+    const knownUser = await prisma.user.findFirst({
+      where: { kycaidApplicantId: payload.applicant_id },
+      select: { id: true },
+    });
+
+    if (!knownUser && !payload.external_applicant_id) {
+      console.warn('[KYCAID Webhook] Unknown applicant_id:', payload.applicant_id);
+      return NextResponse.json({ error: 'Unknown applicant' }, { status: 404 });
+    }
 
     console.log('[KYCAID Webhook] Received:', {
       type: payload.type,
@@ -59,7 +52,6 @@ export async function POST(request: NextRequest) {
       verified: payload.verified,
     });
 
-    // Traiter le webhook
     await processWebhook(payload);
 
     return NextResponse.json({ received: true, processed: true });

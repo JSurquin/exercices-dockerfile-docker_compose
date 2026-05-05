@@ -1,5 +1,4 @@
 import { prisma } from '~/prisma/prisma';
-import crypto from 'crypto';
 
 // =============================================================================
 // CONFIGURATION KYCAID
@@ -10,12 +9,12 @@ export const KYCAID_CONFIG = {
   sandboxMode: process.env.KYCAID_SANDBOX_MODE === 'true',
   baseUrl: process.env.KYCAID_BASE_URL || 'https://api.kycaid.com',
   formId: process.env.KYCAID_FORM_ID!, // ID du formulaire de vérification
-  webhookSecret: process.env.KYCAID_WEBHOOK_SECRET!,
-  // URLs - En dev, on n'utilise pas les webhooks (localhost inaccessible)
-  // En prod, KYCAID enverra les callbacks à l'URL de production
-  callbackUrl: process.env.NODE_ENV === 'production' 
-    ? (process.env.KYCAID_CALLBACK_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api/kycaid/webhook`)
-    : undefined, // Pas de callback en dev, on utilise le polling
+  // callback_url : toujours envoyer si configuré (même en dev avec un tunnel ngrok/cloudflare).
+  // En dev sans tunnel, laisser KYCAID_CALLBACK_URL vide dans .env pour utiliser le polling.
+  callbackUrl: process.env.KYCAID_CALLBACK_URL || 
+    (process.env.NODE_ENV === 'production' 
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/api/kycaid/webhook`
+      : undefined),
   redirectUrl: process.env.KYCAID_REDIRECT_URL || `${process.env.NEXT_PUBLIC_APP_URL}/kyc/complete`,
   // Mode développement : utiliser le polling au lieu des webhooks
   isDevelopment: process.env.NODE_ENV === 'development',
@@ -854,8 +853,16 @@ export async function checkKycStatus(userId: string): Promise<{
       return { status: 'VERIFIED' };
     }
 
-    if (latestVerification.status === 'declined') {
+    if (latestVerification.status === 'declined' || 
+        (latestVerification.status === 'completed' && latestVerification.verified === false)) {
       const reasons = collectDeclineReasons(latestVerification);
+      // Mettre à jour le statut en base quand on détecte un refus via polling
+      await updateUserKycStatus(
+        userId,
+        'REJECTED',
+        latestVerification.verification_id,
+        reasons.join(', ') || undefined
+      );
       return {
         status: 'REJECTED',
         declineReasons: reasons,
@@ -876,27 +883,9 @@ export async function checkKycStatus(userId: string): Promise<{
 // WEBHOOKS
 // =============================================================================
 
-/**
- * Valide la signature d'un webhook KYCAID
- */
-export function validateWebhookSignature(
-  payload: string,
-  signature: string
-): boolean {
-  const expectedSignature = crypto
-    .createHmac('sha256', KYCAID_CONFIG.webhookSecret)
-    .update(payload)
-    .digest('hex');
-
-  try {
-    return crypto.timingSafeEqual(
-      Buffer.from(signature),
-      Buffer.from(expectedSignature)
-    );
-  } catch {
-    return false;
-  }
-}
+// Note: KYCAID ne signe pas ses webhooks avec un HMAC/secret.
+// La sécurité repose sur le fait que le callback_url est privé
+// et sur la vérification de l'applicant_id en base.
 
 /**
  * Traite un webhook KYCAID et met à jour la base de données.

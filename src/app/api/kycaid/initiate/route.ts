@@ -50,6 +50,26 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Anti-spam : bloquer si une vérification PENDING existe et a été créée il y a moins de 5 min
+    const recentPendingVerification = await prisma.kycVerification.findFirst({
+      where: {
+        userId,
+        status: { in: ['PENDING', 'UNUSED'] },
+        createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (recentPendingVerification) {
+      console.log('[KYCAID Initiate] Blocked: recent pending verification exists', recentPendingVerification.kycaidVerificationId);
+      return NextResponse.json({
+        success: false,
+        status: 'PENDING',
+        message: 'Une vérification est déjà en cours. Veuillez patienter avant de réessayer.',
+        verificationId: recentPendingVerification.kycaidVerificationId,
+      }, { status: 429 });
+    }
+
     // Si rejeté, on peut relancer le processus
     if (currentStatus.status === 'REJECTED') {
       console.log('[KYCAID Initiate] ♻️  Re-initiating KYC for rejected user:', userId);

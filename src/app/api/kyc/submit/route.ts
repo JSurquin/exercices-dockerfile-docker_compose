@@ -152,6 +152,27 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Anti-spam : bloquer si une soumission KYC est déjà en cours (< 5 min)
+    const recentPending = await prisma.kycVerification.findFirst({
+      where: {
+        userId,
+        status: { in: ['PENDING', 'UNUSED'] },
+        createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (recentPending) {
+      console.log('⛔ [KYC SUBMIT] Blocked: KYC submission already in progress', recentPending.kycaidVerificationId);
+      return NextResponse.json(
+        {
+          error: 'Une vérification KYC est déjà en cours. Veuillez patienter avant de réessayer.',
+          status: 'IN_PROGRESS',
+        },
+        { status: 429 }
+      );
+    }
+
     // =========================================================================
     // ÉTAPE 4 : CRÉER OU RÉCUPÉRER L'APPLICANT KYCAID
     // =========================================================================
