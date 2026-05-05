@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { steamEstimatePricesSchema } from '@/lib/validation/schemas/chat-api';
+import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+
+const rateLimiter = new RateLimiter('ESTIMATE_PRICES', RATE_LIMIT_CONFIGS.API_GENERAL);
 
 interface SkinplacePriceResponse {
   success: boolean;
@@ -19,6 +22,11 @@ export async function POST(request: NextRequest) {
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user) {
       return NextResponse.json({ success: false, error: 'Non authentifié' }, { status: 401 });
+    }
+
+    const rateCheck = await rateLimiter.checkLimit(request, session.user.id);
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ success: false, error: 'Trop de requêtes. Réessayez plus tard.' }, { status: 429 });
     }
 
     const raw = await request.json();

@@ -96,6 +96,13 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    if (user.accountFrozen) {
+      return NextResponse.json(
+        { success: false, error: 'Votre compte est gelé. Contactez le support.' },
+        { status: 403 }
+      );
+    }
     
     const allowedSteamIds = [session.user.steamId];
     if (user.tradeLink) {

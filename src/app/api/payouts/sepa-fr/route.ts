@@ -11,6 +11,9 @@ import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import crypto from 'crypto';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { payoutsSepaFrBodySchema } from '@/lib/validation/schemas/integrations';
+import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+
+const payoutRateLimiter = new RateLimiter('PAYOUT_SEPA_FR', RATE_LIMIT_CONFIGS.PAYOUT_REQUEST);
 
 const generateReference = () =>
   `MOON-SEPA-FR-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
@@ -23,6 +26,22 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
+
+    const rateCheck = await payoutRateLimiter.checkLimit(request, userId);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Trop de requêtes. Réessayez plus tard.' },
+        { status: 429 }
+      );
+    }
+
+    const frozenCheck = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { accountFrozen: true },
+    });
+    if (frozenCheck?.accountFrozen) {
+      return NextResponse.json({ error: 'Votre compte est gelé. Contactez le support.' }, { status: 403 });
+    }
 
     const kycCheck = await canUserMakePayout(userId);
     if (!kycCheck.allowed) {
@@ -97,6 +116,15 @@ export async function POST(request: NextRequest) {
         where: { id: paymentMethod.id },
         data: { details: encryptedDetails as object },
       });
+    }
+
+    // Vérification IBAN cooldown + limites quotidiennes
+    const { SecurityService } = await import('@/lib/security-service');
+    const securityService = new SecurityService();
+    const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined;
+    const secCheck = await securityService.checkPayoutEligibility(userId, amountCents, paymentMethod.id, ipAddress);
+    if (!secCheck.allowed) {
+      return NextResponse.json({ error: secCheck.reason }, { status: 403 });
     }
 
     // Store beneficiary info encrypted for admin view

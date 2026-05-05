@@ -6,11 +6,19 @@ import {
 } from "@/lib/security/two-factor";
 import { safeParseJson } from "@/lib/validation/helpers";
 import { verifyTotpBodySchema } from "@/lib/validation/schemas/payout-security";
+import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+
+const rateLimiter = new RateLimiter('TOTP_VERIFY', RATE_LIMIT_CONFIGS.LOGIN);
 
 export async function POST(request: NextRequest) {
   const result = await getCurrentUserForTwoFactor(request.headers);
   if ("error" in result) {
     return NextResponse.json({ error: result.error }, { status: result.status });
+  }
+
+  const rateCheck = await rateLimiter.checkLimit(request, result.user.id);
+  if (!rateCheck.allowed) {
+    return NextResponse.json({ success: false, error: 'Trop de requêtes. Réessayez plus tard.' }, { status: 429 });
   }
 
   let raw: unknown = {};

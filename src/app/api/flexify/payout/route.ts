@@ -32,6 +32,9 @@ import { validateAmountCents } from '@/lib/amount-validation';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { flexifyPayoutBodySchema } from '@/lib/validation/schemas/integrations';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
+import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+
+const payoutRateLimiter = new RateLimiter('PAYOUT_FLEXIFY', RATE_LIMIT_CONFIGS.PAYOUT_REQUEST);
 
 const generateReference = () => `MOON-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
@@ -60,6 +63,15 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
+
+    const rateCheck = await payoutRateLimiter.checkLimit(request, userId);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Trop de requêtes. Réessayez plus tard.' },
+        { status: 429 }
+      );
+    }
+
     LOG('SESSION_OK', { userId });
 
     const kycCheck = await canUserMakePayout(userId);
@@ -883,11 +895,10 @@ export async function POST(request: NextRequest) {
         error_fields: error.errorFields,
         data: error.response.data,
       }, 'error');
-      // 400 Invalid params : renvoyer les champs invalides pour le debug / UX
       const status = error.response.status === 400 ? 400 : 500;
       return NextResponse.json(
         {
-          error: message,
+          error: status === 400 ? 'Paramètres invalides' : 'Erreur interne du serveur',
           ...(error.errorFields?.length ? { error_fields: error.errorFields } : {}),
         },
         { status }
@@ -898,7 +909,7 @@ export async function POST(request: NextRequest) {
       name: error instanceof Error ? error.name : undefined,
     }, 'error');
     return NextResponse.json(
-      { error: message },
+      { error: 'Erreur interne du serveur' },
       { status: 500 }
     );
   }

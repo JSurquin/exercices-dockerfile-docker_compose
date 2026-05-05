@@ -93,11 +93,7 @@ export async function GET(request: NextRequest) {
     const amount           = searchParams.get('amount') ?? '';
     const transactionId    = searchParams.get('transaction_id') ?? '';
 
-    console.log('[WEBHOOK] ========== IPN Skinplace reçu ==========');
-    console.log('[WEBHOOK] type=' + type + ' status=' + status + ' token=' + token);
-    console.log('[WEBHOOK] orderId=' + orderId + ' protectionStatus=' + protectionStatus);
-    console.log('[WEBHOOK] tradeOfferId=' + tradeOfferId + ' amount=' + amount + ' transactionId=' + transactionId);
-    console.log('[WEBHOOK] URL complète:', request.url);
+    console.log('[WEBHOOK] IPN received:', { type, status, orderId, protectionStatus });
 
     // SÉCURITÉ: Vérification de la signature IPN (auth serveur-à-serveur)
     // secret_key IPN = SKINPLACE_API_KEY_PRIVATE (confirmé dashboard skin.place)
@@ -161,6 +157,16 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('[WEBHOOK] Trade trouvé: id="' + trade.id + '" status actuel="' + trade.status + '" ticketId="' + trade.ticketId + '"');
+
+    // Cross-validation: compare webhook amount with stored trade amount
+    const webhookAmountCents = Math.round(parseFloat(amount) * 100);
+    if (webhookAmountCents > 0 && trade.grossCents > 0) {
+      const drift = Math.abs(webhookAmountCents - trade.grossCents) / trade.grossCents;
+      if (drift > 0.1) {
+        console.warn('[WEBHOOK][SECURITY] Amount mismatch:', { tradeId: trade.id, expected: trade.grossCents, received: webhookAmountCents, drift: `${(drift * 100).toFixed(1)}%` });
+      }
+    }
+
     const oldStatus = trade.status;
 
     // =========================================================================

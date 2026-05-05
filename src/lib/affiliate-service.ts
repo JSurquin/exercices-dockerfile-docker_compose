@@ -362,18 +362,35 @@ export class AffiliateService {
   }
   
   /**
-   * Approuve les commissions d'un affilié pour paiement
+   * L'affilié demande un payout — passe en PAYOUT_REQUESTED (pas APPROVED).
+   * L'approbation réelle reste une action admin.
+   */
+  static async requestCommissionPayout(affiliateId: string, commissionIds: string[]): Promise<void> {
+    await prisma.affiliateCommission.updateMany({
+      where: {
+        id: { in: commissionIds },
+        affiliateId,
+        status: 'PENDING',
+      },
+      data: {
+        status: 'PAYOUT_REQUESTED' as any,
+      },
+    });
+  }
+
+  /**
+   * Approuve les commissions d'un affilié pour paiement (ADMIN ONLY)
    */
   static async approveCommissions(affiliateId: string, commissionIds: string[]): Promise<void> {
     await prisma.affiliateCommission.updateMany({
       where: {
         id: { in: commissionIds },
         affiliateId,
-        status: 'PENDING'
+        status: { in: ['PENDING', 'PAYOUT_REQUESTED'] as any },
       },
       data: {
-        status: 'APPROVED'
-      }
+        status: 'APPROVED',
+      },
     });
   }
   

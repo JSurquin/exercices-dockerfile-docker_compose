@@ -2,21 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { executeGiveawayDraw } from '@/lib/execute-giveaway-draw';
 import { emailService } from '@/lib/email';
-import { auth } from '~/lib/auth';
-
-function isAuthorized(request: NextRequest, session: { user?: { role?: string } } | null): boolean {
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = request.headers.get('authorization');
-  if (cronSecret && authHeader === `Bearer ${cronSecret}`) return true;
-  if (session?.user?.role === 'ADMIN') return true;
-  return false;
-}
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!isAuthorized(request, session)) {
-      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 401 });
+    const cronSecret = process.env.CRON_SECRET;
+    const authHeader = request.headers.get('authorization');
+    const isCron = cronSecret && authHeader === `Bearer ${cronSecret}`;
+
+    if (!isCron) {
+      const session = await requireAdminSessionWithDbCheck(request);
+      if (!session) {
+        return NextResponse.json({ error: 'Accès non autorisé' }, { status: 401 });
+      }
     }
 
     const now = new Date();
@@ -121,9 +119,15 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!isAuthorized(request, session)) {
-      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 401 });
+    const cronSecret = process.env.CRON_SECRET;
+    const authHeader = request.headers.get('authorization');
+    const isCron = cronSecret && authHeader === `Bearer ${cronSecret}`;
+
+    if (!isCron) {
+      const session = await requireAdminSessionWithDbCheck(request);
+      if (!session) {
+        return NextResponse.json({ error: 'Accès non autorisé' }, { status: 401 });
+      }
     }
 
     const now = new Date();

@@ -7,35 +7,18 @@ import { createHash } from 'crypto';
  * @returns La signature SHA256 en hexadécimal
  */
 export function generateSkinplaceSignature(steamId: string, privateKey: string): string {
-  console.log('🔐 Génération signature Skinplace:');
-  console.log('  - steamId:', steamId);
-  console.log('  - privateKey (longueur):', privateKey?.length || 'undefined');
-  console.log('  - privateKey (premiers 10 chars):', privateKey?.substring(0, 10) + '...' || 'undefined');
-  
   if (!steamId || !privateKey) {
-    console.error('❌ Paramètres manquants pour la signature');
     throw new Error('steamId et privateKey sont requis pour générer la signature');
   }
 
-  // Validation du format Steam ID64
   if (!/^\d{17}$/.test(steamId)) {
-    console.error('❌ Format Steam ID64 invalide:', steamId);
     throw new Error('Format Steam ID64 invalide');
   }
 
-  // Concaténer steamId + privateKey et générer le hash SHA256
   const data = steamId + privateKey;
-  console.log('  - Données à hasher (longueur):', data.length);
-  console.log('  - Données à hasher (aperçu):', data.substring(0, 20) + '...');
-  
   const hash = createHash('sha256');
   hash.update(data);
-  const signature = hash.digest('hex');
-  
-  console.log('  - Signature générée (longueur):', signature.length);
-  console.log('  - Signature générée (premiers 16 chars):', signature.substring(0, 16) + '...');
-  
-  return signature;
+  return hash.digest('hex');
 }
 
 /**

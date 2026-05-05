@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { generateSkinplaceSignature, validateSkinplaceParams } from '@/utils/skinplace-signature';
+import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+
+const rateLimiter = new RateLimiter('INVENTORY_FETCH', RATE_LIMIT_CONFIGS.API_GENERAL);
 
 // Interface pour la réponse de l'API Skin.place
 interface SkinplaceInventoryItem {
@@ -127,6 +130,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const rateCheck = await rateLimiter.checkLimit(request, session.user.id);
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ success: false, error: 'Trop de requêtes. Réessayez plus tard.' }, { status: 429 });
+    }
+
     const { searchParams } = new URL(request.url);
     const steamId = searchParams.get('steam_id');
 
@@ -176,15 +184,8 @@ export async function GET(request: NextRequest) {
     const privateKey = process.env.SKINPLACE_API_KEY_PRIVATE;
     const publicKey = process.env.SKINPLACE_API_KEY_PUBLIC;
 
-    console.log('🔑 Variables d\'environnement Skinplace:');
-    console.log('  - SKINPLACE_API_KEY_PRIVATE définie:', !!privateKey);
-    console.log('  - SKINPLACE_API_KEY_PRIVATE longueur:', privateKey?.length || 0);
-    console.log('  - SKINPLACE_API_KEY_PUBLIC définie:', !!publicKey);
-    console.log('  - SKINPLACE_API_KEY_PUBLIC:', publicKey);
-
     if (!privateKey || !publicKey) {
-      console.error('❌ Clés API Skinplace manquantes');
-      console.error('  - Variables d\'environnement disponibles:', Object.keys(process.env).filter(key => key.includes('SKINPLACE')));
+      console.error('[INVENTORY] Skinplace API keys missing');
       return NextResponse.json(
         { success: false, error: 'Configuration API manquante' },
         { status: 500 }
@@ -219,21 +220,6 @@ export async function GET(request: NextRequest) {
     
     const finalUrl = `${baseUrl}?${urlParams.toString()}`;
 
-    console.log('🔗 URL construite (méthode alternative):');
-    console.log('  - URL complète:', finalUrl.replace(signature, '[SIGNATURE_HIDDEN]'));
-    console.log('  - Paramètres individuels:');
-    urlParams.forEach((value, key) => {
-      console.log(`    ${key}: ${key === 'signature' ? value.substring(0, 10) + '...' : value}`);
-    });
-
-    console.log('🔍 DEBUG - Paramètres générés:');
-    console.log('  - steamId:', steamId);
-    console.log('  - signature (premiers 10 chars):', signature.substring(0, 10) + '...');
-    console.log('  - signature (longueur):', signature.length);
-    console.log('  - publicKey:', publicKey);
-    console.log('  - privateKey (définie):', !!privateKey);
-    
-    console.log('🌐 Appel API Skin.place:', finalUrl.replace(signature, '[SIGNATURE_HIDDEN]'));
 
     // Appeler l'API Skin.place
     const response = await fetch(finalUrl, {
@@ -246,10 +232,6 @@ export async function GET(request: NextRequest) {
       signal: AbortSignal.timeout(15000),
     });
 
-    console.log('📡 Réponse API Skin.place:');
-    console.log('  - Status:', response.status);
-    console.log('  - Status Text:', response.statusText);
-    console.log('  - Headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       console.error(`Erreur API Skin.place: ${response.status} ${response.statusText}`);
@@ -275,21 +257,6 @@ export async function GET(request: NextRequest) {
     }
 
     const data: SkinplaceInventoryResponse = await response.json();
-    
-    console.log('📦 Données brutes reçues de Skin.place:');
-    console.log('  - Type de data:', typeof data);
-    console.log('  - Clés disponibles:', Object.keys(data));
-    console.log('  - data.inventory existe:', !!data.inventory);
-    console.log('  - Type de data.inventory:', typeof data.inventory);
-    console.log('  - Longueur inventory:', data.inventory?.length || 'undefined');
-    
-    if (data.inventory && data.inventory.length > 0) {
-      console.log('  - Premier item exemple:', JSON.stringify(data.inventory[0], null, 2));
-    } else {
-      console.log('  - Données complètes reçues:', JSON.stringify(data, null, 2));
-    }
-    
-    console.log(`📊 Inventaire récupéré: ${data.inventory?.length || 0} items`);
 
     // Normaliser les données pour notre application
     const normalizedItems: NormalizedInventoryItem[] = (data.inventory || []).map(item => ({

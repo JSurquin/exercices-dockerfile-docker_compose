@@ -76,12 +76,11 @@ export async function POST(request: NextRequest) {
     }
     
     if (action === 'request_payout' && commissionIds) {
-      // Demander un paiement pour les commissions sélectionnées
-      await AffiliateService.approveCommissions(affiliate.id, commissionIds);
+      await AffiliateService.requestCommissionPayout(affiliate.id, commissionIds);
       
       return NextResponse.json({
         success: true,
-        message: 'Demande de paiement envoyée'
+        message: 'Demande de paiement envoyée — en attente de validation admin'
       });
     }
     

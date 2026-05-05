@@ -64,6 +64,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (user.accountFrozen) {
+      return NextResponse.json(
+        { success: false, error: 'Votre compte est gelé. Contactez le support.' },
+        { status: 403 }
+      );
+    }
+
     // Vérifier ownership du steam_id
     const allowedSteamIds = [session.user.steamId];
     if (user.tradeLink) {

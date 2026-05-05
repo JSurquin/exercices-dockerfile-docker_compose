@@ -12,7 +12,6 @@ const KEY_LENGTH = 32;
 
 function getKey(): Buffer {
   const raw = process.env.ENCRYPTION_KEY?.trim();
-  console.log('getKey raw:', raw, 'length:', raw?.length);
   if (!raw) {
     throw new Error('ENCRYPTION_KEY absente');
   }

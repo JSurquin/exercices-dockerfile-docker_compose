@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { SteamInventoryItem, SteamInventoryResponse } from '@/hooks/use-steam-inventory';
+import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+
+const rateLimiter = new RateLimiter('INVENTORY_FETCH', RATE_LIMIT_CONFIGS.API_GENERAL);
 
 interface SteamAPIAsset {
   appid: number;
@@ -67,6 +70,11 @@ export async function GET(request: NextRequest) {
         { success: false, error: 'Non authentifié' },
         { status: 401 }
       );
+    }
+
+    const rateCheck = await rateLimiter.checkLimit(request, session.user.id);
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ success: false, error: 'Trop de requêtes. Réessayez plus tard.' }, { status: 429 });
     }
 
     const { searchParams } = new URL(request.url);

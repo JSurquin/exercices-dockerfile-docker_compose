@@ -597,10 +597,7 @@ export async function POST(request: NextRequest) {
     console.error('');
 
     return NextResponse.json(
-      { 
-        error: 'Erreur lors de la soumission du KYC',
-        details: error.message,
-      },
+      { error: 'Erreur interne du serveur' },
       { status: 500 }
     );
   }

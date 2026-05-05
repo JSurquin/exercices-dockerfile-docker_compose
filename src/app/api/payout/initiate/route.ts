@@ -6,6 +6,9 @@ import { checkWithdrawalLimit } from '@/lib/balance-service';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { payoutInitiatePostSchema } from '@/lib/validation/schemas/payout-security';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
+import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+
+const payoutRateLimiter = new RateLimiter('PAYOUT_INITIATE', RATE_LIMIT_CONFIGS.PAYOUT_REQUEST);
 
 /**
  * POST /api/payout/initiate
@@ -23,6 +26,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    const rateCheck = await payoutRateLimiter.checkLimit(request, session.user.id);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Trop de requêtes. Réessayez plus tard.' },
+        { status: 429 }
       );
     }
 

@@ -20,16 +20,13 @@ export const KYCAID_CONFIG = {
   isDevelopment: process.env.NODE_ENV === 'development',
 };
 
-// Log de la config au démarrage (masquer la clé API)
 if (typeof window === 'undefined') {
-  console.log('');
-  console.log('🔑 [KYCAID CONFIG] Configuration chargée :');
-  console.log(`  - Base URL: ${KYCAID_CONFIG.baseUrl}`);
-  console.log(`  - Sandbox Mode: ${KYCAID_CONFIG.sandboxMode}`);
-  console.log(`  - API Token: ${KYCAID_CONFIG.apiToken ? `${KYCAID_CONFIG.apiToken.substring(0, 10)}...` : '❌ MISSING'}`);
-  console.log(`  - Form ID: ${KYCAID_CONFIG.formId || '❌ MISSING'}`);
-  console.log(`  - Auth Header: API-Key (nouveau format)`);
-  console.log('');
+  console.log('[KYCAID] Config loaded:', {
+    baseUrl: KYCAID_CONFIG.baseUrl,
+    sandbox: KYCAID_CONFIG.sandboxMode,
+    apiTokenConfigured: !!KYCAID_CONFIG.apiToken,
+    formIdConfigured: !!KYCAID_CONFIG.formId,
+  });
 }
 
 // =============================================================================

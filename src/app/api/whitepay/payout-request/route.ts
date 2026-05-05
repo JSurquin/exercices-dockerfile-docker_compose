@@ -23,6 +23,9 @@ import { validateAmountCents } from '@/lib/amount-validation';
 import crypto from 'crypto';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { whitepayPayoutRequestBodySchema } from '@/lib/validation/schemas/integrations';
+import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+
+const payoutRateLimiter = new RateLimiter('PAYOUT_WHITEPAY', RATE_LIMIT_CONFIGS.PAYOUT_REQUEST);
 
 const generateOrderId = () => `WPR-${crypto.randomUUID()}`;
 
@@ -77,6 +80,14 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
+
+    const rateCheck = await payoutRateLimiter.checkLimit(request, userId);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Trop de requêtes. Réessayez plus tard.' },
+        { status: 429 }
+      );
+    }
 
     const kycCheck = await canUserMakePayout(userId);
     if (!kycCheck.allowed) {
