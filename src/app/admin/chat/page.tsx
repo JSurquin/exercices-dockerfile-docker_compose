@@ -166,7 +166,7 @@ export default function AdminChatPage() {
 
   const inviteModerator = async () => {
     if (!inviteEmail || !inviteEmail.includes('@')) {
-      toast.error('Adresse email invalide');
+      toast.error(t.invalidEmail);
       return;
     }
     setInviting(true);
@@ -182,7 +182,7 @@ export default function AdminChatPage() {
       }
       const data = await response.json();
       if (data.emailError) {
-        toast.warning('Compte créé mais l\'email n\'a pas pu être envoyé.');
+        toast.warning(t.accountCreatedEmailFailed);
       } else {
         toast.success(data.invited ? t.successInvite : t.successInviteExisting);
       }

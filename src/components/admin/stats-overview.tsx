@@ -19,6 +19,7 @@ import { queryKeys } from '@/lib/query-keys';
 
 export function AdminStatsOverview() {
   const { messages } = useLocale();
+  const t = messages.adminNav.statsOverview;
 
   const { data: stats, isLoading, error } = useQuery<AdminStats>({
     queryKey: queryKeys.adminStats,
@@ -53,7 +54,7 @@ export function AdminStatsOverview() {
         <CardContent className="p-6">
           <div className="flex items-center gap-2 text-red-400">
             <AlertTriangle className="h-5 w-5" />
-            <span>Erreur: {error.message}</span>
+            <span>{t.errorPrefix} {error.message}</span>
           </div>
         </CardContent>
       </Card>
@@ -70,7 +71,7 @@ export function AdminStatsOverview() {
       <Card className="bg-slate-800/50 border-2 border-blue-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
-            Total Utilisateurs
+            {t.totalUsers}
           </CardTitle>
           <Users className="h-4 w-4 text-blue-400" />
         </CardHeader>
@@ -79,7 +80,7 @@ export function AdminStatsOverview() {
             {formatNumber(stats.totalUsers)}
           </div>
           <p className="text-xs text-slate-400">
-            +{stats.monthlyStats[stats.monthlyStats.length - 1]?.newUsers || 0} ce mois
+            {t.totalUsersMonth.replace('{count}', String(stats.monthlyStats[stats.monthlyStats.length - 1]?.newUsers || 0))}
           </p>
         </CardContent>
       </Card>
@@ -88,7 +89,7 @@ export function AdminStatsOverview() {
       <Card className="bg-slate-800/50 border-2 border-emerald-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
-            Total Trades
+            {t.totalTrades}
           </CardTitle>
           <ShoppingCart className="h-4 w-4 text-emerald-400" />
         </CardHeader>
@@ -98,7 +99,7 @@ export function AdminStatsOverview() {
           </div>
           <div className="flex items-center gap-2 mt-1">
             <Badge variant="secondary" className="text-xs">
-              {stats.activeTrades} actifs
+              {t.activeTrades.replace('{count}', String(stats.activeTrades))}
             </Badge>
           </div>
         </CardContent>
@@ -108,7 +109,7 @@ export function AdminStatsOverview() {
       <Card className="bg-slate-800/50 border-2 border-yellow-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
-            Volume Total
+            {t.totalVolume}
           </CardTitle>
           <Euro className="h-4 w-4 text-yellow-400" />
         </CardHeader>
@@ -117,7 +118,7 @@ export function AdminStatsOverview() {
             {formatCurrency(stats.totalVolumeCentimes)}
           </div>
           <p className="text-xs text-slate-400">
-            +{formatCurrency(stats.monthlyStats[stats.monthlyStats.length - 1]?.volumeCentimes || 0)} ce mois
+            {t.totalVolumeMonth.replace('{amount}', formatCurrency(stats.monthlyStats[stats.monthlyStats.length - 1]?.volumeCentimes || 0))}
           </p>
         </CardContent>
       </Card>
@@ -126,7 +127,7 @@ export function AdminStatsOverview() {
       <Card className="bg-slate-800/50 border-2 border-purple-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
-            Paiements
+            {t.payments}
           </CardTitle>
           <TrendingUp className="h-4 w-4 text-purple-400" />
         </CardHeader>
@@ -139,7 +140,7 @@ export function AdminStatsOverview() {
               variant={stats.pendingPayouts > 0 ? "destructive" : "secondary"}
               className="text-xs"
             >
-              {stats.pendingPayouts} en attente
+              {t.pendingPayouts.replace('{count}', String(stats.pendingPayouts))}
             </Badge>
           </div>
         </CardContent>
@@ -149,7 +150,7 @@ export function AdminStatsOverview() {
       <Card className="bg-slate-800/50 border-2 border-red-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-red-500/20 hover:shadow-red-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
-            KYC En Attente
+            {t.kycPending}
           </CardTitle>
           <Shield className="h-4 w-4 text-red-400" />
         </CardHeader>
@@ -161,12 +162,12 @@ export function AdminStatsOverview() {
             {stats.kycPending > 0 ? (
               <Badge variant="destructive" className="text-xs">
                 <Clock className="h-3 w-3 mr-1" />
-                À traiter
+                {t.kycToProcess}
               </Badge>
             ) : (
               <Badge variant="secondary" className="text-xs">
                 <CheckCircle className="h-3 w-3 mr-1" />
-                À jour
+                {t.kycUpToDate}
               </Badge>
             )}
           </div>
@@ -177,7 +178,7 @@ export function AdminStatsOverview() {
       <Card className="bg-slate-800/50 border-2 border-green-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-green-500/20 hover:shadow-green-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
-            Taux de Réussite
+            {t.successRate}
           </CardTitle>
           <CheckCircle className="h-4 w-4 text-green-400" />
         </CardHeader>
@@ -188,7 +189,7 @@ export function AdminStatsOverview() {
               : 0}%
           </div>
           <p className="text-xs text-slate-400">
-            Trades réussis
+            {t.successRateSub}
           </p>
         </CardContent>
       </Card>
@@ -197,7 +198,7 @@ export function AdminStatsOverview() {
       <Card className="bg-slate-800/50 border-2 border-orange-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
-            Top Utilisateur
+            {t.topUser}
           </CardTitle>
           <Users className="h-4 w-4 text-orange-400" />
         </CardHeader>
@@ -215,7 +216,7 @@ export function AdminStatsOverview() {
       <Card className="bg-slate-800/50 border-2 border-cyan-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
-            Trades Récents
+            {t.recentTrades}
           </CardTitle>
           <Clock className="h-4 w-4 text-cyan-400" />
         </CardHeader>
@@ -224,7 +225,7 @@ export function AdminStatsOverview() {
             {stats.recentTrades.length}
           </div>
           <p className="text-xs text-slate-400">
-            5 derniers trades
+            {t.recentTradesSub}
           </p>
         </CardContent>
       </Card>

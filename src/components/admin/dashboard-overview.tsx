@@ -35,11 +35,13 @@ const getStatusColor = (status: string) => {
 
 export function DashboardOverview() {
   const { messages } = useLocale();
+  const t = messages.adminNav.dashboardOverview;
+
   const { data: stats, isLoading } = useQuery<AdminStats>({
     queryKey: queryKeys.adminStats,
     queryFn: async () => {
       const response = await fetch('/api/admin/stats');
-      if (!response.ok) throw new Error('Erreur lors du chargement des stats');
+      if (!response.ok) throw new Error(t.loadError);
       return response.json();
     },
   });
@@ -55,23 +57,21 @@ export function DashboardOverview() {
   if (!stats) {
     return (
       <div className="text-center py-12 text-red-500">
-        <p>{messages.adminDashboard.overview.loadError}</p>
+        <p>{t.loadError}</p>
       </div>
     );
   }
 
-  // Préparer les données pour le graphique de volume
   const volumeData = stats.monthlyStats.map(stat => ({
     date: new Date(stat.month).toLocaleDateString('fr-FR', { month: 'short' }),
     volume: stat.volumeCentimes,
   }));
 
-  // Préparer les données pour le graphique de statuts
   const statusData = [
-    { status: 'Payés', count: stats.recentTrades.filter(t => t.status === 'payé').length, color: '#10B981' },
-    { status: 'En cours', count: stats.recentTrades.filter(t => t.status === 'paiement_en_cours').length, color: '#F59E0B' },
-    { status: 'Hold', count: stats.recentTrades.filter(t => t.status === 'en_trade_hold').length, color: '#EF4444' },
-    { status: 'Créés', count: stats.recentTrades.filter(t => t.status === 'créé').length, color: '#3B82F6' }
+    { status: t.statusPaid, count: stats.recentTrades.filter(tr => tr.status === 'payé').length, color: '#10B981' },
+    { status: t.statusInProgress, count: stats.recentTrades.filter(tr => tr.status === 'paiement_en_cours').length, color: '#F59E0B' },
+    { status: t.statusHold, count: stats.recentTrades.filter(tr => tr.status === 'en_trade_hold').length, color: '#EF4444' },
+    { status: t.statusCreated, count: stats.recentTrades.filter(tr => tr.status === 'créé').length, color: '#3B82F6' },
   ];
 
   return (
@@ -161,7 +161,7 @@ export function DashboardOverview() {
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2 text-base md:text-lg">
             <ClockIcon className="h-5 w-5 text-emerald-400" />
-              {messages.adminDashboard.overview.recentActivity}
+            {messages.adminDashboard.overview.recentActivity}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -204,4 +204,3 @@ export function DashboardOverview() {
     </div>
   );
 }
-

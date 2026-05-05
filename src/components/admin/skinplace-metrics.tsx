@@ -39,6 +39,7 @@ interface SkinplaceMetrics {
 
 export function AdminSkinplaceMetrics() {
   const { messages } = useLocale();
+  const t = messages.adminNav.skinplaceMetrics;
   const queryClient = useQueryClient();
 
   const { data: platformConfig } = useQuery({
@@ -101,7 +102,9 @@ export function AdminSkinplaceMetrics() {
     refetchInterval: ADMIN_SKINPLACE_REFETCH_INTERVAL_MS
   });
 
-  const error: string | null = queryError ? (queryError instanceof Error ? queryError.message : 'Erreur lors de la récupération des métriques Skinplace') : null;
+  const error: string | null = queryError
+    ? (queryError instanceof Error ? queryError.message : t.fetchError)
+    : null;
   const loading = isLoading;
 
   const getStatusColor = (status: string) => {
@@ -122,6 +125,24 @@ export function AdminSkinplaceMetrics() {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'online': return t.statusOnline;
+      case 'offline': return t.statusOffline;
+      case 'error': return t.statusError;
+      default: return t.statusOffline;
+    }
+  };
+
+  const getStatusOperationalLabel = (status: string) => {
+    switch (status) {
+      case 'online': return t.statusOperational;
+      case 'offline': return t.statusUnavailable;
+      case 'error': return t.statusError;
+      default: return t.statusUnavailable;
+    }
+  };
+
   if (loading) {
     return (
       <Card className="bg-slate-800/50 border-slate-700">
@@ -129,7 +150,7 @@ export function AdminSkinplaceMetrics() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-slate-100 flex items-center gap-2">
               <Wallet className="h-5 w-5" />
-              Métriques Skinplace
+              {t.title}
             </CardTitle>
             <div className="flex items-center gap-2">
               <Skeleton className="h-4 w-4 bg-slate-600" />
@@ -138,12 +159,11 @@ export function AdminSkinplaceMetrics() {
             </div>
           </div>
           <CardDescription className="text-slate-400">
-            Chargement des données Skinplace...
+            {t.loadingDesc}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {/* Métriques principales */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="text-center p-4 bg-slate-900/50 rounded-lg">
@@ -154,7 +174,6 @@ export function AdminSkinplaceMetrics() {
               ))}
             </div>
 
-            {/* Hold Orders */}
             <div>
               <Skeleton className="h-5 w-24 bg-slate-600 mb-3" />
               <div className="grid grid-cols-3 gap-4">
@@ -167,7 +186,6 @@ export function AdminSkinplaceMetrics() {
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-700">
               <Skeleton className="h-6 w-32 bg-slate-600" />
               <Skeleton className="h-6 w-24 bg-slate-600" />
@@ -184,13 +202,12 @@ export function AdminSkinplaceMetrics() {
         <div className="flex items-center justify-between">
           <CardTitle className="text-slate-100 flex items-center gap-2">
             <Wallet className="h-5 w-5" />
-            Métriques Skinplace
+            {t.title}
           </CardTitle>
           <div className="flex items-center gap-2">
             {getStatusIcon(metrics?.apiStatus || 'offline')}
             <span className={`text-sm font-medium ${getStatusColor(metrics?.apiStatus || 'offline')}`}>
-              {metrics?.apiStatus === 'online' ? 'En ligne' : 
-               metrics?.apiStatus === 'offline' ? 'Hors ligne' : 'Erreur'}
+              {getStatusLabel(metrics?.apiStatus || 'offline')}
             </span>
             <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.skinplaceBalance })} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4" />
@@ -198,7 +215,7 @@ export function AdminSkinplaceMetrics() {
           </div>
         </div>
         <CardDescription className="text-slate-400">
-          Intégration API Skinplace en temps réel
+          {t.realtimeDesc}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -207,7 +224,7 @@ export function AdminSkinplaceMetrics() {
             <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
             <p className="text-red-400 text-sm">{error}</p>
             <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.skinplaceBalance })} variant="outline" size="sm" className="mt-3">
-              Réessayer
+              {t.retry}
             </Button>
           </div>
         ) : (
@@ -216,28 +233,28 @@ export function AdminSkinplaceMetrics() {
             {metrics?.balance && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center p-4 bg-slate-900/50 rounded-lg border-l-4 border-green-500">
-                  <p className="text-sm text-slate-400 mb-1">Solde Total</p>
+                  <p className="text-sm text-slate-400 mb-1">{t.totalBalance}</p>
                   <p className="text-2xl font-bold text-green-400">
                     {metrics.balance.balance?.toFixed(2) || '0.00'} €
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">Disponible</p>
+                  <p className="text-xs text-slate-500 mt-1">{t.balanceAvailable}</p>
                 </div>
 
                 <div className="text-center p-4 bg-slate-900/50 rounded-lg border-l-4 border-yellow-500">
-                  <p className="text-sm text-slate-400 mb-1">En Hold</p>
+                  <p className="text-sm text-slate-400 mb-1">{t.holdBalance}</p>
                   <p className="text-2xl font-bold text-yellow-400">
                     {metrics.balance.pending_balance?.toFixed(2) || '0.00'} €
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">En attente</p>
+                  <p className="text-xs text-slate-500 mt-1">{t.holdBalanceSub}</p>
                 </div>
 
                 <div className="text-center p-4 bg-slate-900/50 rounded-lg border-l-4 border-blue-500">
-                  <p className="text-sm text-slate-400 mb-1">Dépôts</p>
+                  <p className="text-sm text-slate-400 mb-1">{t.deposits}</p>
                   <p className="text-2xl font-bold text-blue-400">
                     {metrics.balance.available_balance?.toFixed(2) || '0.00'} €
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
-                    MAJ: {new Date(metrics.balance.last_updated).toLocaleString('fr-FR')}
+                    {t.depositsUpdated} {new Date(metrics.balance.last_updated).toLocaleString('fr-FR')}
                   </p>
                 </div>
               </div>
@@ -246,20 +263,19 @@ export function AdminSkinplaceMetrics() {
             {/* Métriques supplémentaires */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="text-center p-4 bg-slate-900/50 rounded-lg">
-                <p className="text-sm text-slate-400 mb-1">Transactions Récentes</p>
+                <p className="text-sm text-slate-400 mb-1">{t.recentTransactions}</p>
                 <p className="text-2xl font-bold text-slate-100">
                   {metrics?.recentTransactions || 0}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">Dernières 24h</p>
+                <p className="text-xs text-slate-500 mt-1">{t.recentTransactionsSub}</p>
               </div>
 
               <div className="text-center p-4 bg-slate-900/50 rounded-lg">
-                <p className="text-sm text-slate-400 mb-1">Statut API</p>
+                <p className="text-sm text-slate-400 mb-1">{t.apiStatus}</p>
                 <div className="flex items-center justify-center gap-2 mt-2">
                   {getStatusIcon(metrics?.apiStatus || 'offline')}
                   <span className={`text-sm font-medium ${getStatusColor(metrics?.apiStatus || 'offline')}`}>
-                    {metrics?.apiStatus === 'online' ? 'Opérationnel' : 
-                     metrics?.apiStatus === 'offline' ? 'Indisponible' : 'Erreur'}
+                    {getStatusOperationalLabel(metrics?.apiStatus || 'offline')}
                   </span>
                 </div>
               </div>
@@ -268,19 +284,19 @@ export function AdminSkinplaceMetrics() {
             {/* Hold Orders */}
             {metrics?.holdOrders && (
               <div>
-                <h4 className="text-sm font-medium text-slate-300 mb-3">Hold Orders</h4>
+                <h4 className="text-sm font-medium text-slate-300 mb-3">{t.holdOrdersTitle}</h4>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="text-center p-3 bg-slate-900/30 rounded">
                     <p className="text-lg font-bold text-slate-100">{metrics.holdOrders.total}</p>
-                    <p className="text-xs text-slate-400">Total</p>
+                    <p className="text-xs text-slate-400">{t.holdTotal}</p>
                   </div>
                   <div className="text-center p-3 bg-slate-900/30 rounded">
                     <p className="text-lg font-bold text-yellow-400">{metrics.holdOrders.pending}</p>
-                    <p className="text-xs text-slate-400">En attente</p>
+                    <p className="text-xs text-slate-400">{t.holdPending}</p>
                   </div>
                   <div className="text-center p-3 bg-slate-900/30 rounded">
                     <p className="text-lg font-bold text-green-400">{metrics.holdOrders.completed}</p>
-                    <p className="text-xs text-slate-400">Terminés</p>
+                    <p className="text-xs text-slate-400">{t.holdCompleted}</p>
                   </div>
                 </div>
               </div>
@@ -290,20 +306,20 @@ export function AdminSkinplaceMetrics() {
             <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-700">
               <Badge variant="outline" className="text-xs">
                 <Clock className="h-3 w-3 mr-1" />
-                Dernière sync: {new Date(metrics?.lastSync || '').toLocaleTimeString('fr-FR')}
+                {t.lastSync} {new Date(metrics?.lastSync || '').toLocaleTimeString('fr-FR')}
               </Badge>
               
               {metrics?.apiStatus === 'online' && (
                 <Badge variant="secondary" className="text-xs">
                   <CheckCircle className="h-3 w-3 mr-1" />
-                  API fonctionnelle
+                  {t.apiFunctional}
                 </Badge>
               )}
               
               {metrics?.apiStatus === 'error' && (
                 <Badge variant="destructive" className="text-xs">
                   <AlertCircle className="h-3 w-3 mr-1" />
-                  Problème de connexion
+                  {t.connectionIssue}
                 </Badge>
               )}
             </div>
@@ -313,7 +329,7 @@ export function AdminSkinplaceMetrics() {
               <Button variant="outline" size="sm" asChild>
                 <a href={skinplaceDashboardUrl} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4 mr-2" />
-                  Dashboard Skinplace
+                  {t.dashboardLink}
                 </a>
               </Button>
             </div>

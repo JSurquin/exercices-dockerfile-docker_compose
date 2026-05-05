@@ -72,7 +72,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
   const handleSaveDraft = async () => {
     const contentToSave = getContentForSave();
     if (!title || !subject || !contentToSave) {
-      toast.error('Veuillez remplir tous les champs obligatoires');
+      toast.error(messages.admin.newsletter.campaignCreator.errorRequired);
       return;
     }
 
@@ -97,15 +97,15 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('Campagne sauvegardée avec succès');
+        toast.success(messages.admin.newsletter.campaignCreator.saveSuccess);
         resetForm();
         onCampaignCreated?.();
       } else {
-        toast.error(data.message || 'Erreur lors de la sauvegarde');
+        toast.error(data.message || messages.admin.newsletter.campaignCreator.saveError);
       }
     } catch (error) {
       console.error('Error saving campaign:', error);
-      toast.error('Erreur lors de la sauvegarde');
+      toast.error(messages.admin.newsletter.campaignCreator.saveError);
     } finally {
       setIsLoading(false);
     }
@@ -114,11 +114,11 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
   const handleSendNow = async () => {
     const contentToSave = getContentForSave();
     if (!title || !subject || !contentToSave) {
-      toast.error('Veuillez remplir tous les champs obligatoires');
+      toast.error(messages.admin.newsletter.campaignCreator.errorRequired);
       return;
     }
 
-    if (!confirm('Êtes-vous sûr de vouloir envoyer cette campagne maintenant à tous les abonnés ?')) {
+    if (!confirm(messages.admin.newsletter.campaignCreator.confirmSend)) {
       return;
     }
 
@@ -143,7 +143,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
       const createData = await createResponse.json();
 
       if (!createResponse.ok) {
-        throw new Error(createData.message || 'Erreur lors de la création');
+        throw new Error(createData.message || messages.admin.newsletter.campaignCreator.saveError);
       }
 
       // Puis l'envoyer
@@ -160,15 +160,15 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
       const sendData = await sendResponse.json();
 
       if (sendResponse.ok) {
-        toast.success(`Campagne envoyée avec succès à ${sendData.stats.totalSent} abonnés`);
+        toast.success(`${messages.admin.newsletter.campaignCreator.sendSuccess} ${sendData.stats.totalSent}`);
         resetForm();
         onCampaignCreated?.();
       } else {
-        toast.error(sendData.message || 'Erreur lors de l\'envoi');
+        toast.error(sendData.message || messages.admin.newsletter.campaignCreator.sendError);
       }
     } catch (error) {
       console.error('Error sending campaign:', error);
-      toast.error('Erreur lors de l\'envoi de la campagne');
+      toast.error(messages.admin.newsletter.campaignCreator.sendCampaignError);
     } finally {
       setIsSending(false);
     }
@@ -206,10 +206,10 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
             <div>
               <CardTitle className="text-white flex items-center gap-2">
                 <Eye className="h-5 w-5 text-blue-400" />
-                Aperçu de la campagne
+                {messages.admin.newsletter.campaignCreator.previewTitle}
               </CardTitle>
               <CardDescription>
-                Prévisualisation de l&apos;email qui sera envoyé
+                {messages.admin.newsletter.campaignCreator.previewSubtitle}
               </CardDescription>
             </div>
             <Button 
@@ -217,7 +217,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
               onClick={() => setPreviewMode(false)}
               className="border-slate-600 text-slate-300"
             >
-              Retour à l&apos;édition
+              {messages.admin.newsletter.campaignCreator.backToEdit}
             </Button>
           </div>
         </CardHeader>
@@ -232,8 +232,8 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
               dangerouslySetInnerHTML={{ __html: getPreviewHtml() }}
             />
             <div className="mt-8 pt-4 border-t text-center text-xs text-gray-500">
-              <p>Vous recevez cet email car vous êtes abonné à notre newsletter.</p>
-              <p><a href="#" className="text-gray-500">Se désabonner</a></p>
+              <p>{messages.admin.newsletter.campaignCreator.unsubscribeNotice}</p>
+              <p><a href="#" className="text-gray-500">{messages.admin.newsletter.campaignCreator.unsubscribeLink}</a></p>
             </div>
           </div>
         </CardContent>
@@ -246,21 +246,21 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
           <Mail className="h-5 w-5 text-orange-400" />
-          Créer une campagne newsletter
+          {messages.admin.newsletter.campaignCreator.title}
         </CardTitle>
         <CardDescription>
-          Créez et envoyez une nouvelle campagne d&apos;emailing
+          {messages.admin.newsletter.campaignCreator.subtitle}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Titre de la campagne */}
         <div className="space-y-2">
           <Label htmlFor="title" className="text-slate-300">
-            Titre de la campagne *
+            {messages.admin.newsletter.campaignCreator.campaignTitleLabel}
           </Label>
           <Input
             id="title"
-            placeholder="Ex: Newsletter Novembre 2024"
+            placeholder={messages.admin.newsletter.campaignCreator.campaignTitlePlaceholder}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="bg-slate-700 border-slate-600 text-white"
@@ -270,11 +270,11 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
         {/* Sujet de l'email */}
         <div className="space-y-2">
           <Label htmlFor="subject" className="text-slate-300">
-            Sujet de l&apos;email *
+            {messages.admin.newsletter.campaignCreator.emailSubjectLabel}
           </Label>
           <Input
             id="subject"
-            placeholder="Ex: 🎮 Nouvelles offres CS2 et giveaways exclusifs !"
+            placeholder={messages.admin.newsletter.campaignCreator.emailSubjectPlaceholder}
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             className="bg-slate-700 border-slate-600 text-white"
@@ -284,22 +284,22 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
         {/* Contenu */}
         <div className="space-y-4">
           <Label className="text-slate-300">
-            Contenu de l&apos;email *
+            {messages.admin.newsletter.campaignCreator.emailContentLabel}
           </Label>
           
           <Tabs value={contentMode} onValueChange={(value) => setContentMode(value as 'template' | 'wysiwyg' | 'text')}>
             <TabsList className="bg-slate-800 border-slate-700">
               <TabsTrigger value="template" className="data-[state=active]:bg-orange-500">
                 <Palette className="h-4 w-4 mr-2" />
-                Templates
+                {messages.admin.newsletter.campaignCreator.tabTemplates}
               </TabsTrigger>
               <TabsTrigger value="wysiwyg" className="data-[state=active]:bg-orange-500">
                 <FileText className="h-4 w-4 mr-2" />
-                Éditeur Visuel
+                {messages.admin.newsletter.campaignCreator.tabVisual}
               </TabsTrigger>
               <TabsTrigger value="text" className="data-[state=active]:bg-orange-500">
                 <Code className="h-4 w-4 mr-2" />
-                Texte Simple
+                {messages.admin.newsletter.campaignCreator.tabText}
               </TabsTrigger>
             </TabsList>
 
@@ -311,7 +311,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
               {selectedTemplate && (
                 <div className="space-y-2">
                   <Label className="text-slate-300">
-                    Personnaliser le template (optionnel)
+                    {messages.admin.newsletter.campaignCreator.customizeTemplate}
                   </Label>
                   <WysiwygEditor
                     value={htmlContent}
@@ -331,7 +331,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
                 height="500px"
               />
               <p className="text-xs text-slate-400">
-                Utilisez l&apos;éditeur visuel pour créer un contenu riche avec mise en forme, images et liens.
+                {messages.admin.newsletter.campaignCreator.visualEditorHint}
               </p>
             </TabsContent>
 
@@ -344,7 +344,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
                 className="bg-slate-700 border-slate-600 text-white resize-none"
               />
               <p className="text-xs text-slate-400">
-                Utilisez des doubles retours à la ligne pour séparer les paragraphes.
+                {messages.admin.newsletter.campaignCreator.textEditorHint}
               </p>
             </TabsContent>
           </Tabs>
@@ -353,7 +353,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
         {/* Planification (optionnelle) */}
         <div className="space-y-2">
           <Label className="text-slate-300">
-            Planification (optionnel)
+            {messages.admin.newsletter.campaignCreator.schedulingLabel}
           </Label>
           <Popover>
             <PopoverTrigger asChild>
@@ -365,7 +365,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
                 {scheduledDate ? (
                   format(scheduledDate, 'PPP à HH:mm', { locale: fr })
                 ) : (
-                  <span>Envoyer maintenant ou planifier</span>
+                  <span>{messages.admin.newsletter.campaignCreator.schedulingPlaceholder}</span>
                 )}
               </Button>
             </PopoverTrigger>
@@ -391,7 +391,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
             disabled={!title || !subject || !getContentForSave()}
           >
             <Eye className="h-4 w-4 mr-2" />
-            Aperçu
+            {messages.admin.newsletter.campaignCreator.previewButton}
           </Button>
 
           <Button
@@ -403,12 +403,12 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
             {isLoading ? (
               <div className="flex items-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Sauvegarde...
+                {messages.admin.newsletter.campaignCreator.savingButton}
               </div>
             ) : (
               <>
                 <Save className="h-4 w-4 mr-2" />
-                {scheduledDate ? 'Planifier' : 'Sauvegarder'}
+                {scheduledDate ? messages.admin.newsletter.campaignCreator.scheduleButton : messages.admin.newsletter.campaignCreator.saveButton}
               </>
             )}
           </Button>
@@ -421,12 +421,12 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
             {isSending ? (
               <div className="flex items-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Envoi en cours...
+                {messages.admin.newsletter.campaignCreator.sendingButton}
               </div>
             ) : (
               <>
                 <Send className="h-4 w-4 mr-2" />
-                Envoyer maintenant
+                {messages.admin.newsletter.campaignCreator.sendNowButton}
               </>
             )}
           </Button>
@@ -436,12 +436,12 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
         <div className="bg-slate-700/50 p-4 rounded-lg border border-slate-600">
           <div className="flex items-center gap-2 text-slate-300 text-sm">
             <Users className="h-4 w-4" />
-            <span>Cette campagne sera envoyée à tous les abonnés actifs</span>
+            <span>{messages.admin.newsletter.campaignCreator.audienceInfo}</span>
           </div>
           {scheduledDate && (
             <div className="flex items-center gap-2 text-slate-300 text-sm mt-2">
               <Clock className="h-4 w-4" />
-              <span>Envoi programmé le {format(scheduledDate, 'PPP à HH:mm', { locale: fr })}</span>
+              <span>{messages.admin.newsletter.campaignCreator.scheduledOn} {format(scheduledDate, 'PPP à HH:mm', { locale: fr })}</span>
             </div>
           )}
         </div>

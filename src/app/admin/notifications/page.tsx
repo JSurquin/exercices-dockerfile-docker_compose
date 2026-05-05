@@ -33,13 +33,9 @@ import { useLocale } from "@/components/providers/locale-provider";
 import {
   Bell,
   Send,
-  Users,
-  Search,
-  Filter,
-  Trash2,
-  AlertCircle,
   BarChart3,
   Plus,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -68,32 +64,32 @@ interface Notification {
   };
 }
 
-const notificationTypes = [
-  { value: "TRADE_UPDATE", label: "Mise à jour trade" },
-  { value: "PAYOUT_UPDATE", label: "Mise à jour payout" },
-  { value: "KYC_UPDATE", label: "Mise à jour KYC" },
-  { value: "GIVEAWAY_WIN", label: "Giveaway gagné" },
-  { value: "MISSION_COMPLETED", label: "Mission complétée" },
-  { value: "LEVEL_UP", label: "Niveau augmenté" },
-  { value: "ADMIN_MESSAGE", label: "Message admin" },
-  { value: "SYSTEM_ANNOUNCEMENT", label: "Annonce système" },
-  { value: "SECURITY_ALERT", label: "Alerte sécurité" },
-];
-
-const notificationPriorities = [
-  { value: "LOW", label: "Basse", color: "text-slate-400" },
-  { value: "NORMAL", label: "Normale", color: "text-blue-400" },
-  { value: "HIGH", label: "Haute", color: "text-orange-400" },
-  { value: "URGENT", label: "Urgente", color: "text-red-400" },
-];
-
 export default function AdminNotificationsPage() {
   const { messages } = useLocale();
+  const t = messages.admin.adminNotifications;
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+
+  const notificationTypes = [
+    { value: "TRADE_UPDATE", label: t.types.TRADE_UPDATE },
+    { value: "PAYOUT_UPDATE", label: t.types.PAYOUT_UPDATE },
+    { value: "KYC_UPDATE", label: t.types.KYC_UPDATE },
+    { value: "GIVEAWAY_WIN", label: t.types.GIVEAWAY_WIN },
+    { value: "MISSION_COMPLETED", label: t.types.MISSION_COMPLETED },
+    { value: "LEVEL_UP", label: t.types.LEVEL_UP },
+    { value: "ADMIN_MESSAGE", label: t.types.ADMIN_MESSAGE },
+    { value: "SYSTEM_ANNOUNCEMENT", label: t.types.SYSTEM_ANNOUNCEMENT },
+    { value: "SECURITY_ALERT", label: t.types.SECURITY_ALERT },
+  ];
+
+  const notificationPriorities = [
+    { value: "LOW", label: t.priorities.LOW, color: "text-slate-400" },
+    { value: "NORMAL", label: t.priorities.NORMAL, color: "text-blue-400" },
+    { value: "HIGH", label: t.priorities.HIGH, color: "text-orange-400" },
+    { value: "URGENT", label: t.priorities.URGENT, color: "text-red-400" },
+  ];
 
   const [newNotification, setNewNotification] = useState({
     type: "SYSTEM_ANNOUNCEMENT",
@@ -141,7 +137,7 @@ export default function AdminNotificationsPage() {
       !newNotification.messageFr ||
       !newNotification.messageEn
     ) {
-      toast.error("Veuillez remplir tous les champs obligatoires (FR et EN)");
+      toast.error(t.toasts.requiredFields);
       return;
     }
 
@@ -167,7 +163,7 @@ export default function AdminNotificationsPage() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success(data.message ?? "Notification(s) créée(s) avec succès");
+        toast.success(data.message ?? t.toasts.createSuccess);
         setNewNotification({
           type: "SYSTEM_ANNOUNCEMENT",
           priority: "NORMAL",
@@ -183,18 +179,18 @@ export default function AdminNotificationsPage() {
         });
         queryClient.invalidateQueries({ queryKey: queryKeys.adminNotifications });
       } else {
-        toast.error(data.error ?? "Erreur lors de la création");
+        toast.error(data.error ?? t.toasts.createError);
       }
     } catch (error) {
       console.error("Error creating notification:", error);
-      toast.error("Erreur lors de la création de la notification");
+      toast.error(t.toasts.createNetworkError);
     } finally {
       setIsSending(false);
     }
   };
 
   const deleteNotification = async (notificationId: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cette notification ?")) {
+    if (!confirm(t.toasts.deleteConfirm)) {
       return;
     }
 
@@ -207,14 +203,14 @@ export default function AdminNotificationsPage() {
       );
 
       if (response.ok) {
-        toast.success("Notification supprimée avec succès");
+        toast.success(t.toasts.deleteSuccess);
         queryClient.invalidateQueries({ queryKey: queryKeys.adminNotifications });
       } else {
-        toast.error("Erreur lors de la suppression");
+        toast.error(t.toasts.deleteError);
       }
     } catch (error) {
       console.error("Error deleting notification:", error);
-      toast.error("Erreur lors de la suppression");
+      toast.error(t.toasts.deleteError);
     }
   };
 
@@ -231,10 +227,10 @@ export default function AdminNotificationsPage() {
   };
 
   const getTypeBadge = (type: string) => {
-    const t = notificationTypes.find((nt) => nt.value === type);
+    const typeDef = notificationTypes.find((nt) => nt.value === type);
     return (
       <Badge variant="secondary" className="bg-slate-700 text-slate-200">
-        {t?.label ?? type}
+        {typeDef?.label ?? type}
       </Badge>
     );
   };
@@ -244,7 +240,7 @@ export default function AdminNotificationsPage() {
       <div className="flex items-center justify-center py-20">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="text-slate-300">Chargement...</p>
+          <p className="text-slate-300">{t.loading}</p>
         </div>
       </div>
     );
@@ -256,11 +252,9 @@ export default function AdminNotificationsPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
             <Bell className="h-7 w-7 text-orange-500 shrink-0" />
-            Gestion des Notifications
+            {t.title}
           </h1>
-          <p className="text-slate-400 mt-1">
-            Créez et gérez les notifications utilisateur
-          </p>
+          <p className="text-slate-400 mt-1">{t.subtitle}</p>
         </div>
       </div>
 
@@ -281,7 +275,7 @@ export default function AdminNotificationsPage() {
           <Card key={stat.type} className="border-slate-700 bg-slate-800/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-slate-300">
-                {notificationTypes.find((t) => t.value === stat.type)?.label ??
+                {notificationTypes.find((tp) => tp.value === stat.type)?.label ??
                   stat.type}
               </CardTitle>
               <BarChart3 className="h-4 w-4 text-orange-400" />
@@ -302,14 +296,14 @@ export default function AdminNotificationsPage() {
             className="flex items-center gap-2 py-2 text-xs sm:text-sm data-[state=active]:bg-orange-500"
           >
             <Bell className="h-4 w-4 shrink-0" />
-            <span>Liste des notifications</span>
+            <span>{t.tabs.list}</span>
           </TabsTrigger>
           <TabsTrigger
             value="create"
             className="flex items-center gap-2 py-2 text-xs sm:text-sm data-[state=active]:bg-orange-500"
           >
             <Plus className="h-4 w-4 shrink-0" />
-            <span>Créer une notification</span>
+            <span>{t.tabs.create}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -318,7 +312,7 @@ export default function AdminNotificationsPage() {
             <CardHeader>
               <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
                 <CardTitle className="text-white text-lg sm:text-xl">
-                  Toutes les notifications
+                  {t.list.title}
                 </CardTitle>
                 <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                   <Select value={typeFilter} onValueChange={setTypeFilter}>
@@ -326,7 +320,7 @@ export default function AdminNotificationsPage() {
                       <SelectValue placeholder="Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Tous les types</SelectItem>
+                      <SelectItem value="all">{t.list.allTypes}</SelectItem>
                       {notificationTypes.map((type) => (
                         <SelectItem key={type.value} value={type.value}>
                           {type.label}
@@ -343,7 +337,7 @@ export default function AdminNotificationsPage() {
                       <SelectValue placeholder="Priorité" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Toutes priorités</SelectItem>
+                      <SelectItem value="all">{t.list.allPriorities}</SelectItem>
                       {notificationPriorities.map((priority) => (
                         <SelectItem key={priority.value} value={priority.value}>
                           {priority.label}
@@ -359,14 +353,14 @@ export default function AdminNotificationsPage() {
                 <Table>
                   <TableHeader className="bg-slate-700/50">
                     <TableRow>
-                      <TableHead className="text-slate-300">Utilisateur</TableHead>
-                      <TableHead className="text-slate-300">Type</TableHead>
-                      <TableHead className="text-slate-300">Priorité</TableHead>
-                      <TableHead className="text-slate-300">Titre (FR)</TableHead>
-                      <TableHead className="text-slate-300">Lu</TableHead>
-                      <TableHead className="text-slate-300">Date</TableHead>
+                      <TableHead className="text-slate-300">{t.list.colUser}</TableHead>
+                      <TableHead className="text-slate-300">{t.list.colType}</TableHead>
+                      <TableHead className="text-slate-300">{t.list.colPriority}</TableHead>
+                      <TableHead className="text-slate-300">{t.list.colTitle}</TableHead>
+                      <TableHead className="text-slate-300">{t.list.colRead}</TableHead>
+                      <TableHead className="text-slate-300">{t.list.colDate}</TableHead>
                       <TableHead className="text-slate-300 text-right">
-                        Actions
+                        {t.list.colActions}
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -377,7 +371,7 @@ export default function AdminNotificationsPage() {
                           colSpan={7}
                           className="text-center text-slate-400 py-8"
                         >
-                          Aucune notification trouvée
+                          {t.list.noNotifications}
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -403,14 +397,14 @@ export default function AdminNotificationsPage() {
                                 variant="outline"
                                 className="text-green-400 border-green-400"
                               >
-                                Lu
+                                {t.list.read}
                               </Badge>
                             ) : (
                               <Badge
                                 variant="outline"
                                 className="text-slate-400 border-slate-400"
                               >
-                                Non lu
+                                {t.list.unread}
                               </Badge>
                             )}
                           </TableCell>
@@ -446,10 +440,10 @@ export default function AdminNotificationsPage() {
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
                   >
-                    Précédent
+                    {t.list.previous}
                   </Button>
                   <span className="text-slate-300 px-4 py-2">
-                    Page {currentPage}
+                    {t.list.page} {currentPage}
                   </span>
                   <Button
                     variant="outline"
@@ -457,7 +451,7 @@ export default function AdminNotificationsPage() {
                     onClick={() => setCurrentPage((p) => p + 1)}
                     disabled={notifications.length < 50}
                   >
-                    Suivant
+                    {t.list.next}
                   </Button>
                 </div>
               )}
@@ -469,17 +463,17 @@ export default function AdminNotificationsPage() {
           <Card className="border-slate-700 bg-slate-800/50">
             <CardHeader>
               <CardTitle className="text-white text-lg sm:text-xl">
-                Créer une nouvelle notification
+                {t.create.title}
               </CardTitle>
               <CardDescription className="text-slate-400">
-                Envoyez une notification à tous les utilisateurs ou à une sélection
+                {t.create.subtitle}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="type" className="text-slate-300">
-                    Type de notification
+                    {t.create.typeLabel}
                   </Label>
                   <Select
                     value={newNotification.type}
@@ -505,7 +499,7 @@ export default function AdminNotificationsPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="priority" className="text-slate-300">
-                    Priorité
+                    {t.create.priorityLabel}
                   </Label>
                   <Select
                     value={newNotification.priority}
@@ -533,7 +527,7 @@ export default function AdminNotificationsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="titleFr" className="text-slate-300">
-                    Titre (Français) <span className="text-red-400">*</span>
+                    {t.create.titleFrLabel} <span className="text-red-400">{t.create.required}</span>
                   </Label>
                   <Input
                     id="titleFr"
@@ -544,14 +538,14 @@ export default function AdminNotificationsPage() {
                         titleFr: e.target.value,
                       })
                     }
-                    placeholder="Ex: Nouvelle fonctionnalité"
+                    placeholder={t.create.titleFrPlaceholder}
                     className="bg-slate-700 border-slate-600"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="titleEn" className="text-slate-300">
-                    Titre (Anglais) <span className="text-red-400">*</span>
+                    {t.create.titleEnLabel} <span className="text-red-400">{t.create.required}</span>
                   </Label>
                   <Input
                     id="titleEn"
@@ -562,7 +556,7 @@ export default function AdminNotificationsPage() {
                         titleEn: e.target.value,
                       })
                     }
-                    placeholder="Ex: New feature"
+                    placeholder={t.create.titleEnPlaceholder}
                     className="bg-slate-700 border-slate-600"
                   />
                 </div>
@@ -571,7 +565,7 @@ export default function AdminNotificationsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="messageFr" className="text-slate-300">
-                    Message (Français) <span className="text-red-400">*</span>
+                    {t.create.messageFrLabel} <span className="text-red-400">{t.create.required}</span>
                   </Label>
                   <Textarea
                     id="messageFr"
@@ -582,14 +576,14 @@ export default function AdminNotificationsPage() {
                         messageFr: e.target.value,
                       })
                     }
-                    placeholder="Décrivez votre notification..."
+                    placeholder={t.create.messageFrPlaceholder}
                     className="bg-slate-700 border-slate-600 min-h-[100px]"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="messageEn" className="text-slate-300">
-                    Message (Anglais) <span className="text-red-400">*</span>
+                    {t.create.messageEnLabel} <span className="text-red-400">{t.create.required}</span>
                   </Label>
                   <Textarea
                     id="messageEn"
@@ -600,7 +594,7 @@ export default function AdminNotificationsPage() {
                         messageEn: e.target.value,
                       })
                     }
-                    placeholder="Describe your notification..."
+                    placeholder={t.create.messageEnPlaceholder}
                     className="bg-slate-700 border-slate-600 min-h-[100px]"
                   />
                 </div>
@@ -609,7 +603,7 @@ export default function AdminNotificationsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="titleCn" className="text-slate-300">
-                    Titre (Chinois) <span className="text-slate-400">(Optionnel)</span>
+                    {t.create.titleCnLabel} <span className="text-slate-400">{t.create.optional}</span>
                   </Label>
                   <Input
                     id="titleCn"
@@ -620,14 +614,14 @@ export default function AdminNotificationsPage() {
                         titleCn: e.target.value,
                       })
                     }
-                    placeholder="标题"
+                    placeholder={t.create.titleCnPlaceholder}
                     className="bg-slate-700 border-slate-600"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="messageCn" className="text-slate-300">
-                    Message (Chinois) <span className="text-slate-400">(Optionnel)</span>
+                    {t.create.messageCnLabel} <span className="text-slate-400">{t.create.optional}</span>
                   </Label>
                   <Textarea
                     id="messageCn"
@@ -638,7 +632,7 @@ export default function AdminNotificationsPage() {
                         messageCn: e.target.value,
                       })
                     }
-                    placeholder="消息"
+                    placeholder={t.create.messageCnPlaceholder}
                     className="bg-slate-700 border-slate-600"
                   />
                 </div>
@@ -646,7 +640,7 @@ export default function AdminNotificationsPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="link" className="text-slate-300">
-                  Lien (Optionnel)
+                  {t.create.linkLabel}
                 </Label>
                 <Input
                   id="link"
@@ -657,7 +651,7 @@ export default function AdminNotificationsPage() {
                       link: e.target.value,
                     })
                   }
-                  placeholder="/dashboard ou https://..."
+                  placeholder={t.create.linkPlaceholder}
                   className="bg-slate-700 border-slate-600"
                 />
               </div>
@@ -677,14 +671,14 @@ export default function AdminNotificationsPage() {
                     className="w-4 h-4"
                   />
                   <Label htmlFor="targetAllUsers" className="text-slate-300">
-                    Envoyer à tous les utilisateurs
+                    {t.create.targetAllUsers}
                   </Label>
                 </div>
 
                 {!newNotification.targetAllUsers && (
                   <div className="space-y-2">
                     <Label htmlFor="userIds" className="text-slate-300">
-                      IDs utilisateurs (séparés par des virgules)
+                      {t.create.userIdsLabel}
                     </Label>
                     <Textarea
                       id="userIds"
@@ -695,7 +689,7 @@ export default function AdminNotificationsPage() {
                           userIds: e.target.value,
                         })
                       }
-                      placeholder="user_id_1, user_id_2, user_id_3"
+                      placeholder={t.create.userIdsPlaceholder}
                       className="bg-slate-700 border-slate-600"
                     />
                   </div>
@@ -722,7 +716,7 @@ export default function AdminNotificationsPage() {
                   }
                   className="border-slate-600 text-slate-300 hover:bg-slate-700"
                 >
-                  Réinitialiser
+                  {t.create.reset}
                 </Button>
                 <Button
                   onClick={handleCreateNotification}
@@ -732,12 +726,12 @@ export default function AdminNotificationsPage() {
                   {isSending ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Envoi en cours...
+                      {t.create.sending}
                     </>
                   ) : (
                     <>
                       <Send className="h-4 w-4 mr-2" />
-                      Envoyer la notification
+                      {t.create.send}
                     </>
                   )}
                 </Button>

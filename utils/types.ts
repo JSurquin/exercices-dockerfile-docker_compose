@@ -2124,6 +2124,8 @@ export interface Messages {
         successInviteExisting: string;
         errorInvite: string;
         inviteEmailWarning: string;
+        invalidEmail: string;
+        accountCreatedEmailFailed: string;
         deleteTicket: string;
         closeTicket: string;
         reopenTicket: string;
@@ -2148,6 +2150,116 @@ export interface Messages {
       };
       category: {
         title: string;
+      };
+    };
+    adminNotifications: {
+      title: string;
+      subtitle: string;
+      loading: string;
+      types: {
+        TRADE_UPDATE: string;
+        PAYOUT_UPDATE: string;
+        KYC_UPDATE: string;
+        GIVEAWAY_WIN: string;
+        MISSION_COMPLETED: string;
+        LEVEL_UP: string;
+        ADMIN_MESSAGE: string;
+        SYSTEM_ANNOUNCEMENT: string;
+        SECURITY_ALERT: string;
+      };
+      priorities: {
+        LOW: string;
+        NORMAL: string;
+        HIGH: string;
+        URGENT: string;
+      };
+      tabs: {
+        list: string;
+        create: string;
+      };
+      list: {
+        title: string;
+        allTypes: string;
+        allPriorities: string;
+        colUser: string;
+        colType: string;
+        colPriority: string;
+        colTitle: string;
+        colRead: string;
+        colDate: string;
+        colActions: string;
+        noNotifications: string;
+        read: string;
+        unread: string;
+        previous: string;
+        next: string;
+        page: string;
+      };
+      create: {
+        title: string;
+        subtitle: string;
+        typeLabel: string;
+        priorityLabel: string;
+        titleFrLabel: string;
+        titleEnLabel: string;
+        messageFrLabel: string;
+        messageEnLabel: string;
+        titleCnLabel: string;
+        messageCnLabel: string;
+        optional: string;
+        required: string;
+        titleFrPlaceholder: string;
+        titleEnPlaceholder: string;
+        messageFrPlaceholder: string;
+        messageEnPlaceholder: string;
+        titleCnPlaceholder: string;
+        messageCnPlaceholder: string;
+        linkLabel: string;
+        linkPlaceholder: string;
+        targetAllUsers: string;
+        userIdsLabel: string;
+        userIdsPlaceholder: string;
+        reset: string;
+        sending: string;
+        send: string;
+      };
+      toasts: {
+        requiredFields: string;
+        createSuccess: string;
+        createError: string;
+        createNetworkError: string;
+        deleteConfirm: string;
+        deleteSuccess: string;
+        deleteError: string;
+      };
+    };
+    aide: {
+      title: string;
+      subtitle: string;
+      howToUseTitle: string;
+      howToUseDesc: string;
+      openButton: string;
+      remindersTitle: string;
+      reminders: string[];
+      sections: {
+        dashboard: { title: string; desc: string };
+        analytics: { title: string; desc: string };
+        users: { title: string; desc: string };
+        userDetail: { title: string; desc: string };
+        trades: { title: string; desc: string };
+        payouts: { title: string; desc: string };
+        kyc: { title: string; desc: string };
+        applications: { title: string; desc: string };
+        affiliates: { title: string; desc: string };
+        commissions: { title: string; desc: string };
+        performance: { title: string; desc: string };
+        giveaways: { title: string; desc: string };
+        newsletter: { title: string; desc: string };
+        chatSupport: { title: string; desc: string };
+        legalPages: { title: string; desc: string };
+        audit: { title: string; desc: string };
+        exports: { title: string; desc: string };
+        settings: { title: string; desc: string };
       };
     };
     errors: {
@@ -2177,6 +2289,23 @@ export interface Messages {
       reportError: {
         title: string;
         description: string;
+      };
+    };
+    giveawayAdmin: {
+      title: string;
+      description: string;
+      drawing: string;
+      draw: string;
+      point1: string;
+      point2: string;
+      point3: string;
+      toasts: {
+        processed: string;
+        drawn: string;
+        cancelled: string;
+        none: string;
+        error: string;
+        drawError: string;
       };
     };
     giveaways: {
@@ -2268,6 +2397,9 @@ export interface Messages {
         affiliateCodePlaceholder: string;
         affiliateCodeHint: string;
         priceUnknown: string;
+      changeSkin: string;
+      chooseSkin: string;
+      browseSkinplace: string;
       };
       info: {
         title: string;
@@ -2324,6 +2456,43 @@ export interface Messages {
         statusSent: string;
         statusScheduled: string;
         statusDraft: string;
+      };
+      campaignCreator: {
+        title: string;
+        subtitle: string;
+        previewTitle: string;
+        previewSubtitle: string;
+        backToEdit: string;
+        unsubscribeNotice: string;
+        unsubscribeLink: string;
+        campaignTitleLabel: string;
+        campaignTitlePlaceholder: string;
+        emailSubjectLabel: string;
+        emailSubjectPlaceholder: string;
+        emailContentLabel: string;
+        tabTemplates: string;
+        tabVisual: string;
+        tabText: string;
+        customizeTemplate: string;
+        visualEditorHint: string;
+        textEditorHint: string;
+        schedulingLabel: string;
+        schedulingPlaceholder: string;
+        scheduledOn: string;
+        previewButton: string;
+        savingButton: string;
+        scheduleButton: string;
+        saveButton: string;
+        sendingButton: string;
+        sendNowButton: string;
+        audienceInfo: string;
+        errorRequired: string;
+        saveSuccess: string;
+        saveError: string;
+        sendSuccess: string;
+        sendError: string;
+        sendCampaignError: string;
+        confirmSend: string;
       };
     };
     exports2: {
@@ -5131,6 +5300,150 @@ export interface Messages {
         system: string;
         online: string;
         uptime: string;
+      };
+      gamificationEconomy: {
+        title: string;
+        subtitle: string;
+        loadError: string;
+        finance: {
+          title: string;
+          volumeSold7d: string;
+          volumeSold30d: string;
+          grossMargin7d: string;
+          grossMargin30d: string;
+          giveawayCost7d: string;
+          giveawayCost30d: string;
+          ratio7d: string;
+          ratio30d: string;
+        };
+        kpi: {
+          title: string;
+          ratioLabel: string;
+          utilRate30d: string;
+          statusDangerous: string;
+          statusExpensive: string;
+          statusWatch: string;
+          statusIdeal: string;
+          statusTooHard: string;
+          utilUnder: string;
+          utilHealthy: string;
+          utilHigh: string;
+          utilOver: string;
+        };
+        fragments: {
+          title: string;
+          generatedTotal: string;
+          spentTotal: string;
+          circulation: string;
+          circulationSub: string;
+          unused: string;
+          unusedSub: string;
+          generated24h: string;
+          generated7d: string;
+          generated30d: string;
+          spent30d: string;
+        };
+        giveaways: {
+          title: string;
+          active: string;
+          ended: string;
+          totalEntries: string;
+          uniqueParticipants: string;
+          uniqueParticipantsSub: string;
+          avgEntries: string;
+          costEnded: string;
+          cost7d: string;
+          cost30d: string;
+          costByType: string;
+          giveawayCount: string;
+        };
+        gauge: {
+          rangeLabel0: string;
+          rangeIdeal: string;
+          rangeDanger: string;
+          rangeMax: string;
+        };
+        recommendation: {
+          increasePrices: string;
+          increasePricesDesc: string;
+          decreasePrices: string;
+          decreasePricesDesc: string;
+          balanced: string;
+          balancedDesc: string;
+        };
+        decisionGrid: {
+          title: string;
+          range1: string;
+          label1: string;
+          desc1: string;
+          range2: string;
+          label2: string;
+          desc2: string;
+          range3: string;
+          label3: string;
+          desc3: string;
+          range4: string;
+          label4: string;
+          desc4: string;
+          range5: string;
+          label5: string;
+          desc5: string;
+        };
+      };
+      statsOverview: {
+        totalUsers: string;
+        totalUsersMonth: string;
+        totalTrades: string;
+        activeTrades: string;
+        totalVolume: string;
+        totalVolumeMonth: string;
+        payments: string;
+        pendingPayouts: string;
+        kycPending: string;
+        kycToProcess: string;
+        kycUpToDate: string;
+        successRate: string;
+        successRateSub: string;
+        topUser: string;
+        recentTrades: string;
+        recentTradesSub: string;
+        errorPrefix: string;
+      };
+      dashboardOverview: {
+        loadError: string;
+        statusPaid: string;
+        statusInProgress: string;
+        statusHold: string;
+        statusCreated: string;
+      };
+      skinplaceMetrics: {
+        title: string;
+        loadingDesc: string;
+        realtimeDesc: string;
+        statusOnline: string;
+        statusOffline: string;
+        statusError: string;
+        statusOperational: string;
+        statusUnavailable: string;
+        totalBalance: string;
+        balanceAvailable: string;
+        holdBalance: string;
+        holdBalanceSub: string;
+        deposits: string;
+        depositsUpdated: string;
+        recentTransactions: string;
+        recentTransactionsSub: string;
+        apiStatus: string;
+        holdOrdersTitle: string;
+        holdTotal: string;
+        holdPending: string;
+        holdCompleted: string;
+        lastSync: string;
+        apiFunctional: string;
+        connectionIssue: string;
+        retry: string;
+        dashboardLink: string;
+        fetchError: string;
       };
     };
   error: {

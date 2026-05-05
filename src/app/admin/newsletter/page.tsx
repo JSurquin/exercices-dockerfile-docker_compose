@@ -83,7 +83,7 @@ export default function NewsletterAdminPage() {
   const campaigns = campaignsData ?? [];
 
   const deleteSubscriber = async (subscriberId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cet abonné ?')) {
+    if (!confirm(messages.admin.newsletter.subscribers.deleteConfirm)) {
       return;
     }
 
@@ -93,14 +93,14 @@ export default function NewsletterAdminPage() {
       });
 
       if (response.ok) {
-        toast.success('Abonné supprimé avec succès');
+        toast.success(messages.admin.newsletter.subscribers.deleteSuccess);
         queryClient.invalidateQueries({ queryKey: queryKeys.adminNewsletterSubscribers });
       } else {
-        toast.error('Erreur lors de la suppression');
+        toast.error(messages.admin.newsletter.subscribers.deleteError);
       }
     } catch (error) {
       console.error('Error deleting subscriber:', error);
-      toast.error('Erreur lors de la suppression');
+      toast.error(messages.admin.newsletter.subscribers.deleteError);
     }
   };
 
@@ -118,10 +118,10 @@ export default function NewsletterAdminPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       
-      toast.success('Export réussi');
+      toast.success(messages.admin.newsletter.subscribers.exportSuccess);
     } catch (error) {
       console.error('Error exporting subscribers:', error);
-      toast.error('Erreur lors de l\'export');
+      toast.error(messages.admin.newsletter.subscribers.exportError);
     }
   };
 
@@ -130,7 +130,7 @@ export default function NewsletterAdminPage() {
       <div className="flex items-center justify-center py-20">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="text-slate-300">Chargement...</p>
+          <p className="text-slate-300">{messages.admin.newsletter.loading}</p>
         </div>
       </div>
     );
@@ -143,10 +143,10 @@ export default function NewsletterAdminPage() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
               <Mail className="h-7 w-7 text-orange-500 shrink-0" />
-              Gestion Newsletter
+              {messages.admin.newsletter.title}
             </h1>
             <p className="text-slate-400 mt-1">
-              Gérez vos abonnés et campagnes d&apos;emailing
+              {messages.admin.newsletter.subtitle}
             </p>
           </div>
         </div>
@@ -156,7 +156,7 @@ export default function NewsletterAdminPage() {
           <Card className="border-slate-700 bg-slate-800/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-slate-300">
-                Total Abonnés
+                {messages.admin.newsletter.stats.total}
               </CardTitle>
               <Users className="h-4 w-4 text-slate-400" />
             </CardHeader>
@@ -168,7 +168,7 @@ export default function NewsletterAdminPage() {
           <Card className="border-slate-700 bg-slate-800/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-slate-300">
-                Abonnés Actifs
+                {messages.admin.newsletter.stats.active}
               </CardTitle>
               <BarChart3 className="h-4 w-4 text-green-400" />
             </CardHeader>
@@ -180,7 +180,7 @@ export default function NewsletterAdminPage() {
           <Card className="border-slate-700 bg-slate-800/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-slate-300">
-                Désabonnés
+                {messages.admin.newsletter.stats.unsubscribed}
               </CardTitle>
               <BarChart3 className="h-4 w-4 text-red-400" />
             </CardHeader>
@@ -195,13 +195,11 @@ export default function NewsletterAdminPage() {
           <TabsList className="grid w-full grid-cols-2 bg-slate-800 border-slate-700 h-auto">
             <TabsTrigger value="subscribers" className="flex items-center gap-2 py-2 text-xs sm:text-sm data-[state=active]:bg-orange-500">
               <Users className="h-4 w-4 shrink-0" />
-              <span className="hidden sm:inline">Abonnés</span>
-              <span className="sm:hidden">Abonnés</span>
+              <span>{messages.admin.newsletter.tabs.subscribers}</span>
             </TabsTrigger>
             <TabsTrigger value="campaigns" className="flex items-center gap-2 py-2 text-xs sm:text-sm data-[state=active]:bg-orange-500">
               <Send className="h-4 w-4 shrink-0" />
-              <span className="hidden sm:inline">Campagnes</span>
-              <span className="sm:hidden">Campagnes</span>
+              <span>{messages.admin.newsletter.tabs.campaigns}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -211,9 +209,9 @@ export default function NewsletterAdminPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
-                    <CardTitle className="text-white">Liste des Abonnés</CardTitle>
+                    <CardTitle className="text-white">{messages.admin.newsletter.subscribers.title}</CardTitle>
                     <CardDescription>
-                      Gérez vos abonnés à la newsletter
+                      {messages.admin.newsletter.subscribers.subtitle}
                     </CardDescription>
                   </div>
                   <Button 
@@ -223,7 +221,7 @@ export default function NewsletterAdminPage() {
                     className="border-slate-600 text-slate-300 hover:bg-slate-700 self-start sm:self-auto"
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Exporter CSV
+                    {messages.admin.newsletter.subscribers.exportCSV}
                   </Button>
                 </div>
               </CardHeader>
@@ -246,9 +244,9 @@ export default function NewsletterAdminPage() {
                     onChange={(e) => setStatusFilter(e.target.value)}
                     className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white"
                   >
-                    <option value="all">Tous les statuts</option>
-                    <option value="active">Actifs</option>
-                    <option value="inactive">Désabonnés</option>
+                    <option value="all">{messages.admin.newsletter.subscribers.allStatuses}</option>
+                    <option value="active">{messages.admin.newsletter.subscribers.active}</option>
+                    <option value="inactive">{messages.admin.newsletter.subscribers.inactive}</option>
                   </select>
                 </div>
 
@@ -257,10 +255,10 @@ export default function NewsletterAdminPage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-slate-700">
-                        <TableHead className="text-slate-300">Email</TableHead>
-                        <TableHead className="text-slate-300">Statut</TableHead>
-                        <TableHead className="text-slate-300">Date d&apos;inscription</TableHead>
-                        <TableHead className="text-slate-300">Actions</TableHead>
+                        <TableHead className="text-slate-300">{messages.admin.newsletter.subscribers.email}</TableHead>
+                        <TableHead className="text-slate-300">{messages.admin.newsletter.subscribers.status}</TableHead>
+                        <TableHead className="text-slate-300">{messages.admin.newsletter.subscribers.subscriptionDate}</TableHead>
+                        <TableHead className="text-slate-300">{messages.admin.newsletter.subscribers.actions}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -274,7 +272,7 @@ export default function NewsletterAdminPage() {
                               variant={subscriber.isActive ? "default" : "secondary"}
                               className={subscriber.isActive ? "bg-green-500" : "bg-red-500"}
                             >
-                              {subscriber.isActive ? 'Actif' : 'Désabonné'}
+                              {subscriber.isActive ? messages.admin.newsletter.subscribers.statusActive : messages.admin.newsletter.subscribers.statusInactive}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-slate-300">
@@ -298,7 +296,7 @@ export default function NewsletterAdminPage() {
 
                 {subscribers.length === 0 && (
                   <div className="text-center py-8 text-slate-400">
-                    Aucun abonné trouvé
+                    {messages.admin.newsletter.subscribers.noSubscribers}
                   </div>
                 )}
               </CardContent>
@@ -312,9 +310,9 @@ export default function NewsletterAdminPage() {
             {campaigns.length > 0 && (
               <Card className="border-slate-700 bg-slate-800/50">
                 <CardHeader>
-                  <CardTitle className="text-white">Campagnes existantes</CardTitle>
+                  <CardTitle className="text-white">{messages.admin.newsletter.campaigns.title}</CardTitle>
                   <CardDescription>
-                    Historique de vos campagnes d&apos;emailing
+                    {messages.admin.newsletter.campaigns.subtitle}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -328,7 +326,7 @@ export default function NewsletterAdminPage() {
                           <h4 className="text-white font-medium">{campaign.title}</h4>
                           <p className="text-slate-400 text-sm">{campaign.subject}</p>
                           <p className="text-slate-500 text-xs mt-1">
-                            Créée le {format(new Date(campaign.createdAt), 'dd/MM/yyyy HH:mm', { locale: fr })}
+                            {messages.admin.newsletter.campaigns.createdOn} {format(new Date(campaign.createdAt), 'dd/MM/yyyy HH:mm', { locale: fr })}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -342,8 +340,8 @@ export default function NewsletterAdminPage() {
                                 : 'bg-gray-500'
                             }
                           >
-                            {campaign.status === 'SENT' ? 'Envoyée' : 
-                             campaign.status === 'SCHEDULED' ? 'Planifiée' : 'Brouillon'}
+                            {campaign.status === 'SENT' ? messages.admin.newsletter.campaigns.statusSent : 
+                             campaign.status === 'SCHEDULED' ? messages.admin.newsletter.campaigns.statusScheduled : messages.admin.newsletter.campaigns.statusDraft}
                           </Badge>
                           {campaign.sentAt && (
                             <span className="text-xs text-slate-500">

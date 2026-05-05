@@ -331,17 +331,17 @@ export default function AdminGiveawaysPage() {
             <TabsTrigger value="list" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               <TrophyIcon className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline truncate">{messages.admin.giveaways.tabs.list}</span>
-              <span className="sm:hidden text-[10px] leading-tight text-center">Liste</span>
+              <span className="sm:hidden text-[10px] leading-tight text-center">{messages.admin.giveaways.tabs.list}</span>
             </TabsTrigger>
             <TabsTrigger value="create" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               <PlusIcon className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline truncate">{messages.admin.giveaways.tabs.create}</span>
-              <span className="sm:hidden text-[10px] leading-tight text-center">Créer</span>
+              <span className="sm:hidden text-[10px] leading-tight text-center">{messages.admin.giveaways.tabs.create}</span>
             </TabsTrigger>
             <TabsTrigger value="manage" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               <UserGroupIcon className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline truncate">{messages.admin.giveaways.tabs.manage}</span>
-              <span className="sm:hidden text-[10px] leading-tight text-center">Gestion</span>
+              <span className="sm:hidden text-[10px] leading-tight text-center">{messages.admin.giveaways.tabs.manage}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -517,7 +517,7 @@ export default function AdminGiveawaysPage() {
                                 onClick={() => setSkinPickerOpen(true)}
                                 className="text-xs text-orange-400 hover:text-orange-300 transition-colors px-2 py-1 rounded border border-orange-500/40 hover:border-orange-400"
                               >
-                                Changer
+                                {messages.admin.giveaways.form.changeSkin}
                               </button>
                               <button type="button" onClick={handleClearSkin} className="text-slate-400 hover:text-red-400 transition-colors">
                                 <XMarkIcon className="w-4 h-4" />
@@ -535,10 +535,10 @@ export default function AdminGiveawaysPage() {
                             </div>
                             <div className="text-left">
                               <p className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
-                                Choisir un article
+                                {messages.admin.giveaways.form.chooseSkin}
                               </p>
                               <p className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors">
-                                Parcourir le catalogue Skinplace
+                                {messages.admin.giveaways.form.browseSkinplace}
                               </p>
                             </div>
                           </button>

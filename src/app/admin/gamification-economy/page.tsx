@@ -5,6 +5,7 @@ import { ADMIN_GAMIFICATION_REFETCH_INTERVAL_MS } from '@/lib/admin-constants';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useLocale } from '@/components/providers/locale-provider';
 import {
   SparklesIcon,
   GiftIcon,
@@ -86,7 +87,7 @@ function KpiCard({
   );
 }
 
-function RatioGauge({ ratio, label }: { ratio: number; label: string }) {
+function RatioGauge({ ratio, label, t }: { ratio: number; label: string; t: Record<string, string> }) {
   const pct = Math.min(100, ratio * 100);
   const color =
     ratio > 0.15 ? 'bg-red-500' :
@@ -96,11 +97,11 @@ function RatioGauge({ ratio, label }: { ratio: number; label: string }) {
     'bg-blue-500';
 
   const status =
-    ratio > 0.15 ? { label: 'Dangereux', color: 'text-red-400' } :
-    ratio > 0.12 ? { label: 'Coûteux', color: 'text-orange-400' } :
-    ratio > 0.08 ? { label: 'À surveiller', color: 'text-yellow-400' } :
-    ratio > 0.03 ? { label: 'Idéal', color: 'text-green-400' } :
-    { label: 'Trop dur', color: 'text-blue-400' };
+    ratio > 0.15 ? { label: t.statusDangerous, color: 'text-red-400' } :
+    ratio > 0.12 ? { label: t.statusExpensive, color: 'text-orange-400' } :
+    ratio > 0.08 ? { label: t.statusWatch, color: 'text-yellow-400' } :
+    ratio > 0.03 ? { label: t.statusIdeal, color: 'text-green-400' } :
+    { label: t.statusTooHard, color: 'text-blue-400' };
 
   return (
     <div className="space-y-2">
@@ -120,16 +121,16 @@ function RatioGauge({ ratio, label }: { ratio: number; label: string }) {
         />
       </div>
       <div className="flex justify-between text-xs text-slate-600">
-        <span>0%</span>
-        <span className="text-green-600">3–8% idéal</span>
-        <span className="text-red-600">+12% danger</span>
-        <span>20%+</span>
+        <span>{t.rangeLabel0}</span>
+        <span className="text-green-600">{t.rangeIdeal}</span>
+        <span className="text-red-600">{t.rangeDanger}</span>
+        <span>{t.rangeMax}</span>
       </div>
     </div>
   );
 }
 
-function UtilRateGauge({ rate }: { rate: number }) {
+function UtilRateGauge({ rate, t }: { rate: number; t: Record<string, string> }) {
   const pct = rate * 100;
   const color =
     pct < 25 ? 'bg-blue-500' :
@@ -138,15 +139,15 @@ function UtilRateGauge({ rate }: { rate: number }) {
     'bg-red-500';
 
   const status =
-    pct < 25 ? 'Fragments sous-utilisés' :
-    pct < 60 ? 'Zone saine' :
-    pct < 85 ? 'Très bonne consommation' :
-    'Sur-consommation';
+    pct < 25 ? t.utilUnder :
+    pct < 60 ? t.utilHealthy :
+    pct < 85 ? t.utilHigh :
+    t.utilOver;
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-sm">
-        <span className="text-slate-400">Taux d&apos;utilisation 30j</span>
+        <span className="text-slate-400">{t.utilRate30d}</span>
         <span className="font-bold text-white">{pct.toFixed(1)}%</span>
       </div>
       <Progress value={pct} className={`h-3 bg-slate-700 [&>div]:${color}`} />
@@ -155,7 +156,15 @@ function UtilRateGauge({ rate }: { rate: number }) {
   );
 }
 
-function Recommendation({ ratio30, utilRate }: { ratio30: number | null; utilRate: number }) {
+function Recommendation({
+  ratio30,
+  utilRate,
+  t,
+}: {
+  ratio30: number | null;
+  utilRate: number;
+  t: Record<string, string>;
+}) {
   if (ratio30 === null) return null;
 
   if (ratio30 > 0.12) {
@@ -163,10 +172,10 @@ function Recommendation({ ratio30, utilRate }: { ratio30: number | null; utilRat
       <div className="rounded-lg border border-orange-700/50 bg-orange-950/30 p-4 space-y-1">
         <p className="text-orange-400 font-semibold text-sm flex items-center gap-2">
           <ArrowTrendingUpIcon className="w-4 h-4" />
-          Recommandation : augmenter les prix
+          {t.increasePrices}
         </p>
         <p className="text-slate-400 text-xs">
-          Ratio {(ratio30 * 100).toFixed(1)}% → dépasse le seuil de 12%. Augmenter le prix d&apos;entrée de +15% sur les prochains giveaways.
+          {t.increasePricesDesc.replace('{ratio}', (ratio30 * 100).toFixed(1))}
         </p>
       </div>
     );
@@ -177,10 +186,12 @@ function Recommendation({ ratio30, utilRate }: { ratio30: number | null; utilRat
       <div className="rounded-lg border border-blue-700/50 bg-blue-950/30 p-4 space-y-1">
         <p className="text-blue-400 font-semibold text-sm flex items-center gap-2">
           <ArrowTrendingDownIcon className="w-4 h-4" />
-          Recommandation : baisser les prix
+          {t.decreasePrices}
         </p>
         <p className="text-slate-400 text-xs">
-          Ratio faible ({(ratio30 * 100).toFixed(1)}%) + utilisation faible ({(utilRate * 100).toFixed(1)}%). Baisser le prix d&apos;entrée de −15% ou augmenter le nombre de gagnants.
+          {t.decreasePricesDesc
+            .replace('{ratio}', (ratio30 * 100).toFixed(1))
+            .replace('{util}', (utilRate * 100).toFixed(1))}
         </p>
       </div>
     );
@@ -190,21 +201,24 @@ function Recommendation({ ratio30, utilRate }: { ratio30: number | null; utilRat
     <div className="rounded-lg border border-green-700/50 bg-green-950/30 p-4 space-y-1">
       <p className="text-green-400 font-semibold text-sm flex items-center gap-2">
         <CheckCircleIcon className="w-4 h-4" />
-        Économie équilibrée
+        {t.balanced}
       </p>
       <p className="text-slate-400 text-xs">
-        Ratio {(ratio30 * 100).toFixed(1)}% dans la zone cible (3–8%). Aucun ajustement urgent.
+        {t.balancedDesc.replace('{ratio}', (ratio30 * 100).toFixed(1))}
       </p>
     </div>
   );
 }
 
 export default function AdminGamificationEconomyPage() {
+  const { messages } = useLocale();
+  const ge = messages.adminNav.gamificationEconomy;
+
   const { data, isLoading, error } = useQuery<EconomyData>({
     queryKey: ['admin', 'gamification-economy'],
     queryFn: async () => {
       const r = await fetch('/api/admin/gamification-economy', { credentials: 'include' });
-      if (!r.ok) throw new Error('Accès refusé ou erreur');
+      if (!r.ok) throw new Error(ge.loadError);
       return r.json();
     },
     refetchInterval: ADMIN_GAMIFICATION_REFETCH_INTERVAL_MS,
@@ -223,7 +237,7 @@ export default function AdminGamificationEconomyPage() {
   if (error || !data) {
     return (
       <div className="text-red-400 py-12 text-center">
-        Impossible de charger les métriques (droits admin requis).
+        {ge.loadError}
       </div>
     );
   }
@@ -231,17 +245,24 @@ export default function AdminGamificationEconomyPage() {
   const ratio30 = data.finance.ratioGiveawayCostToBenefit30d;
   const utilRate = data.fragments.utilizationRate30d;
 
+  const decisionRows = [
+    { range: ge.decisionGrid.range1, label: ge.decisionGrid.label1, desc: ge.decisionGrid.desc1, color: 'border-blue-700 bg-blue-950/30 text-blue-300' },
+    { range: ge.decisionGrid.range2, label: ge.decisionGrid.label2, desc: ge.decisionGrid.desc2, color: 'border-green-700 bg-green-950/30 text-green-300' },
+    { range: ge.decisionGrid.range3, label: ge.decisionGrid.label3, desc: ge.decisionGrid.desc3, color: 'border-yellow-700 bg-yellow-950/30 text-yellow-300' },
+    { range: ge.decisionGrid.range4, label: ge.decisionGrid.label4, desc: ge.decisionGrid.desc4, color: 'border-orange-700 bg-orange-950/30 text-orange-300' },
+    { range: ge.decisionGrid.range5, label: ge.decisionGrid.label5, desc: ge.decisionGrid.desc5, color: 'border-red-700 bg-red-950/30 text-red-300' },
+  ];
+
   return (
     <div className="space-y-8">
       {/* Titre */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 flex items-center gap-2">
           <ChartBarIcon className="w-7 h-7 text-orange-500" />
-          Économie fragments & giveaways
+          {ge.title}
         </h1>
         <p className="text-slate-400 text-sm">
-          Marge brute estimée : {((data.marginRateAssumption ?? 0) * 100).toFixed(0)}% du volume vendu.
-          Rafraîchissement auto toutes les 60 s.
+          {ge.subtitle.replace('{rate}', ((data.marginRateAssumption ?? 0) * 100).toFixed(0))}
         </p>
       </div>
 
@@ -261,51 +282,51 @@ export default function AdminGamificationEconomyPage() {
       )}
 
       {/* Recommandation */}
-      <Recommendation ratio30={ratio30} utilRate={utilRate} />
+      <Recommendation ratio30={ratio30} utilRate={utilRate} t={ge.recommendation as unknown as Record<string, string>} />
 
       {/* Bloc 1 — Finance */}
       <div>
         <h2 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
           <ChartBarIcon className="w-4 h-4 text-orange-500" />
-          Vue d&apos;ensemble financière
+          {ge.finance.title}
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <KpiCard
-            label="Volume vendu 7j"
+            label={ge.finance.volumeSold7d}
             value={fmtEur(data.finance.volumeSoldCents7d / 100)}
             icon={<ChartBarIcon className="w-4 h-4" />}
           />
           <KpiCard
-            label="Volume vendu 30j"
+            label={ge.finance.volumeSold30d}
             value={fmtEur(data.finance.volumeSoldCents30d / 100)}
             icon={<ChartBarIcon className="w-4 h-4" />}
           />
           <KpiCard
-            label="Marge brute 7j"
+            label={ge.finance.grossMargin7d}
             value={fmtEur(data.finance.estimatedGrossBenefitEur7d)}
             icon={<ArrowTrendingUpIcon className="w-4 h-4" />}
             color="text-green-400"
           />
           <KpiCard
-            label="Marge brute 30j"
+            label={ge.finance.grossMargin30d}
             value={fmtEur(data.finance.estimatedGrossBenefitEur30d)}
             icon={<ArrowTrendingUpIcon className="w-4 h-4" />}
             color="text-green-400"
           />
           <KpiCard
-            label="Coût giveaways 7j"
+            label={ge.finance.giveawayCost7d}
             value={fmtEur(data.finance.giveawayCostEur7d)}
             icon={<GiftIcon className="w-4 h-4" />}
             color="text-orange-400"
           />
           <KpiCard
-            label="Coût giveaways 30j"
+            label={ge.finance.giveawayCost30d}
             value={fmtEur(data.finance.giveawayCostEur30d)}
             icon={<GiftIcon className="w-4 h-4" />}
             color="text-orange-400"
           />
           <KpiCard
-            label="Ratio giveaways/marge 7j"
+            label={ge.finance.ratio7d}
             value={data.finance.ratioGiveawayCostToBenefit7d != null
               ? `${(data.finance.ratioGiveawayCostToBenefit7d * 100).toFixed(2)}%`
               : '—'}
@@ -317,7 +338,7 @@ export default function AdminGamificationEconomyPage() {
             }
           />
           <KpiCard
-            label="Ratio giveaways/marge 30j"
+            label={ge.finance.ratio30d}
             value={ratio30 != null ? `${(ratio30 * 100).toFixed(2)}%` : '—'}
             icon={<ChartBarIcon className="w-4 h-4" />}
             color={
@@ -334,12 +355,18 @@ export default function AdminGamificationEconomyPage() {
         <CardHeader>
           <CardTitle className="text-white text-base flex items-center gap-2">
             <ChartBarIcon className="w-4 h-4 text-orange-500" />
-            KPI principaux
+            {ge.kpi.title}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {ratio30 != null && <RatioGauge ratio={ratio30} label="Ratio coût giveaways / marge brute (30j)" />}
-          <UtilRateGauge rate={utilRate} />
+          {ratio30 != null && (
+            <RatioGauge
+              ratio={ratio30}
+              label={ge.kpi.ratioLabel}
+              t={ge.kpi as unknown as Record<string, string>}
+            />
+          )}
+          <UtilRateGauge rate={utilRate} t={ge.kpi as unknown as Record<string, string>} />
         </CardContent>
       </Card>
 
@@ -347,50 +374,50 @@ export default function AdminGamificationEconomyPage() {
       <div>
         <h2 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
           <SparklesIcon className="w-4 h-4 text-amber-500" />
-          Fragments
+          {ge.fragments.title}
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <KpiCard
-            label="Générés (total)"
+            label={ge.fragments.generatedTotal}
             value={fmtNum(data.fragments.generatedTotal)}
             icon={<SparklesIcon className="w-4 h-4" />}
             color="text-amber-400"
           />
           <KpiCard
-            label="Brûlés (total)"
+            label={ge.fragments.spentTotal}
             value={fmtNum(data.fragments.spentTotalGiveaways)}
             icon={<SparklesIcon className="w-4 h-4" />}
             color="text-orange-400"
           />
           <KpiCard
-            label="En circulation"
+            label={ge.fragments.circulation}
             value={fmtNum(data.fragments.circulationTheoretical)}
-            sub="généré − brûlé"
+            sub={ge.fragments.circulationSub}
             icon={<SparklesIcon className="w-4 h-4" />}
           />
           <KpiCard
-            label="Inutilisés (soldes)"
+            label={ge.fragments.unused}
             value={fmtNum(data.fragments.unusedOnBalances)}
-            sub="somme des soldes"
+            sub={ge.fragments.unusedSub}
             icon={<SparklesIcon className="w-4 h-4" />}
           />
           <KpiCard
-            label="Générés 24h"
+            label={ge.fragments.generated24h}
             value={fmtNum(data.fragments.generated24h)}
             icon={<SparklesIcon className="w-4 h-4" />}
           />
           <KpiCard
-            label="Générés 7j"
+            label={ge.fragments.generated7d}
             value={fmtNum(data.fragments.generated7d)}
             icon={<SparklesIcon className="w-4 h-4" />}
           />
           <KpiCard
-            label="Générés 30j"
+            label={ge.fragments.generated30d}
             value={fmtNum(data.fragments.generated30d)}
             icon={<SparklesIcon className="w-4 h-4" />}
           />
           <KpiCard
-            label="Dépensés 30j"
+            label={ge.fragments.spent30d}
             value={fmtNum(data.fragments.spent30dAbs)}
             icon={<SparklesIcon className="w-4 h-4" />}
           />
@@ -401,49 +428,49 @@ export default function AdminGamificationEconomyPage() {
       <div>
         <h2 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
           <GiftIcon className="w-4 h-4 text-purple-400" />
-          Giveaways
+          {ge.giveaways.title}
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <KpiCard
-            label="Actifs"
+            label={ge.giveaways.active}
             value={fmtNum(data.giveaways.countByStatus['ACTIVE'] ?? 0)}
             icon={<GiftIcon className="w-4 h-4" />}
             color="text-green-400"
           />
           <KpiCard
-            label="Terminés"
+            label={ge.giveaways.ended}
             value={fmtNum(data.giveaways.endedCount)}
             icon={<GiftIcon className="w-4 h-4" />}
           />
           <KpiCard
-            label="Entrées totales"
+            label={ge.giveaways.totalEntries}
             value={fmtNum(data.giveaways.totalEntries)}
             icon={<GiftIcon className="w-4 h-4" />}
           />
           <KpiCard
-            label="Participants uniques"
+            label={ge.giveaways.uniqueParticipants}
             value={fmtNum(data.giveaways.approxUniqueParticipants)}
-            sub="approx."
+            sub={ge.giveaways.uniqueParticipantsSub}
             icon={<GiftIcon className="w-4 h-4" />}
           />
           <KpiCard
-            label="Moy. entrées / giveaway"
+            label={ge.giveaways.avgEntries}
             value={(data.giveaways.avgEntriesPerEndedGiveaway ?? 0).toFixed(1)}
             icon={<ChartBarIcon className="w-4 h-4" />}
           />
           <KpiCard
-            label="Coût lots terminés"
+            label={ge.giveaways.costEnded}
             value={fmtEur(data.giveaways.totalEndedRewardCostCents / 100)}
             icon={<GiftIcon className="w-4 h-4" />}
             color="text-orange-400"
           />
           <KpiCard
-            label="Coût giveaways 7j"
+            label={ge.giveaways.cost7d}
             value={fmtEur(data.giveaways.costLast7dCents / 100)}
             icon={<GiftIcon className="w-4 h-4" />}
           />
           <KpiCard
-            label="Coût giveaways 30j"
+            label={ge.giveaways.cost30d}
             value={fmtEur(data.giveaways.costLast30dCents / 100)}
             icon={<GiftIcon className="w-4 h-4" />}
           />
@@ -453,7 +480,7 @@ export default function AdminGamificationEconomyPage() {
         {data.giveaways.costByDurationType.length > 0 && (
           <Card className="mt-4 bg-slate-900/80 border-slate-700">
             <CardHeader className="pb-2">
-              <CardTitle className="text-white text-sm">Coût par type de durée (terminés)</CardTitle>
+              <CardTitle className="text-white text-sm">{ge.giveaways.costByType}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid sm:grid-cols-2 gap-3">
@@ -461,7 +488,9 @@ export default function AdminGamificationEconomyPage() {
                   <div key={row.durationType} className="flex items-center justify-between bg-slate-800/60 rounded-lg px-4 py-3">
                     <div>
                       <p className="text-white text-sm font-medium capitalize">{row.durationType.toLowerCase()}</p>
-                      <p className="text-slate-500 text-xs">{row._count} giveaway(s)</p>
+                      <p className="text-slate-500 text-xs">
+                        {ge.giveaways.giveawayCount.replace('{count}', String(row._count))}
+                      </p>
                     </div>
                     <p className="text-orange-400 font-bold">{fmtEur((row._sum.rewardValueCents ?? 0) / 100)}</p>
                   </div>
@@ -477,18 +506,12 @@ export default function AdminGamificationEconomyPage() {
         <CardHeader>
           <CardTitle className="text-white text-sm flex items-center gap-2">
             <ExclamationTriangleIcon className="w-4 h-4 text-amber-500" />
-            Grille de décision — ratio giveaways / marge brute
+            {ge.decisionGrid.title}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2 text-xs">
-            {[
-              { range: '< 3%', label: 'Trop dur', desc: '→ baisser prix entrées ou augmenter nb gagnants', color: 'border-blue-700 bg-blue-950/30 text-blue-300' },
-              { range: '3% – 8%', label: 'Idéal ✓', desc: '→ ne rien changer', color: 'border-green-700 bg-green-950/30 text-green-300' },
-              { range: '8% – 12%', label: 'À surveiller', desc: '→ petits ajustements éventuels', color: 'border-yellow-700 bg-yellow-950/30 text-yellow-300' },
-              { range: '> 12%', label: 'Trop généreux', desc: '→ augmenter prix entrées de +15%', color: 'border-orange-700 bg-orange-950/30 text-orange-300' },
-              { range: '> 15%', label: 'Dangereux !', desc: '→ correction obligatoire', color: 'border-red-700 bg-red-950/30 text-red-300' },
-            ].map((row) => (
+            {decisionRows.map((row) => (
               <div key={row.range} className={`flex items-center justify-between rounded-lg border px-3 py-2 ${row.color}`}>
                 <span className="font-bold w-20">{row.range}</span>
                 <span className="font-medium w-28">{row.label}</span>
