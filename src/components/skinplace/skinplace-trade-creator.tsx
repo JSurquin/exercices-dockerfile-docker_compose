@@ -213,7 +213,8 @@ export function SkinplaceTradeCreator({
         return;
       }
 
-      // Créer le trade via notre API Skinplace
+      // Payload minimal : seuls les asset_id sont envoyés.
+      // Les prix/fees sont recalculés intégralement côté serveur.
       const response = await fetch('/api/skinplace/create-trade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -223,51 +224,40 @@ export function SkinplaceTradeCreator({
           affiliate_promo_code: appliedPromoCode ?? undefined,
           items: selectedItems.map(item => ({
             asset_id: item.assetid,
-            market_hash_name: item.market_hash_name,
-            icon_url: item.icon_url,
-            rarity: item.rarity,
-            exterior: item.exterior,
-            is_stattrak: item.is_stattrak,
-            is_souvenir: item.is_souvenir,
-            price_centimes: item.price_centimes,
           })),
-          gross_value_centimes: grossValueCentimes,
-          fees: {
-            cashout_fee: fees.cashout_fee,
-            network_fee: 0,
-            total_fees: fees.cashout_fee,
-          },
-          net_value_centimes: netValueCentimes,
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la création du trade');
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Erreur lors de la création du trade');
       }
 
-      const result = await response.json();
-      
-      if (result.success) {
-        const tradeData: TradeCreatedData = {
-          trade_id: result.data.trade_id,
-          token: result.data.token,
-          status: result.data.status,
-          total_value: result.data.gross_value_centimes,
-          net_value: result.data.net_value_centimes,
-          fees: {
-            cashout_fee: result.data.fees.cashout_fee,
-            network_fee: result.data.fees.network_fee,
-          },
-          expires_at: new Date(result.data.expires_at),
-          bot: result.data.bot || null,
-        };
-        
-        onTradeCreated?.(tradeData);
-        toast.success(messages.tradeCreator.tradeCreatedSuccess);
-      } else {
-        throw new Error(result.error || messages.tradeCreator.tradeCreationError);
+      // Vérifier si le prix serveur diffère de l'estimation affichée au client
+      const serverGross = result.data.gross_value_centimes;
+      if (Math.abs(serverGross - grossValueCentimes) > 1) {
+        toast.warning(
+          `Le prix a été mis à jour par le serveur : ${(serverGross / 100).toFixed(2)} $ au lieu de ${(grossValueCentimes / 100).toFixed(2)} $. Le trade a été créé avec le prix vérifié.`
+        );
       }
+
+      const tradeData: TradeCreatedData = {
+        trade_id: result.data.trade_id,
+        token: result.data.token,
+        status: result.data.status,
+        total_value: serverGross,
+        net_value: result.data.net_value_centimes,
+        fees: {
+          cashout_fee: result.data.fees.cashout_fee,
+          network_fee: result.data.fees.network_fee,
+        },
+        expires_at: new Date(result.data.expires_at),
+        bot: result.data.bot || null,
+      };
+      
+      onTradeCreated?.(tradeData);
+      toast.success(messages.tradeCreator.tradeCreatedSuccess);
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';

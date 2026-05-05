@@ -12,39 +12,14 @@ import {
 import { AffiliateService } from '@/lib/affiliate-service';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { skinplaceCreateTradeBodySchema } from '@/lib/validation/schemas/integrations';
+import { verifyAndPriceItems } from '@/lib/skinplace-price-verifier';
+import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
 
-interface CreateTradeRequest {
+interface CreateTradeBody {
   steam_id: string;
   trade_url: string;
-  items: Array<{
-    asset_id: string;
-    market_hash_name: string;
-    icon_url: string;
-    rarity: string;
-    exterior: string;
-    is_stattrak: boolean;
-    is_souvenir: boolean;
-    price_centimes: number;
-  }>;
-  gross_value_centimes: number;
-  fees: {
-    cashout_fee: number;
-    network_fee: number;
-    total_fees: number;
-  };
-  net_value_centimes: number;
-  /** Code affilié = code promo (+0,2 % brut net + fragments à la confirmation) */
+  items: Array<{ asset_id: string }>;
   affiliate_promo_code?: string | null;
-}
-
-interface SkinplaceTradeResponse {
-  success: boolean;
-  trade_id?: string;
-  token?: string;
-  status?: string;
-  expires_at?: string;
-  error?: string;
-  message?: string;
 }
 
 interface SkinplaceBotInfo {
@@ -56,31 +31,17 @@ interface SkinplaceBotInfo {
   steamid: string;
 }
 
-/**
- * Mapper les statuts Skinplace/Steam vers nos statuts TradeStatus
- */
+const tradeRateLimiter = new RateLimiter('TRADE_CREATION', RATE_LIMIT_CONFIGS.TRADE_CREATION);
+
 function mapSkinplaceStatusToTradeStatus(skinplaceStatus: string): TradeStatus {
-  // Source: skinplace3.md — steamtrade.status enum
-  // "pending"   = trade en cours de création côté bot (pas encore envoyé)
-  // "active"    = offre Steam envoyée par le bot, en ATTENTE d'acceptation utilisateur
-  // "finished"  = l'utilisateur a accepté → entre en trade hold 7 jours
-  // "cancelled" = annulé
   const statusMap: Record<string, TradeStatus> = {
     'pending':    'CREATED',
     'sent':       'CREATED',
     'created':    'CREATED',
-
-    // Offre envoyée, en attente d'acceptation utilisateur
     'active':     'ACCEPTED_BY_BOT',
-
-    // Utilisateur a accepté → hold démarre
     'finished':   'IN_TRADE_HOLD',
-
-    // Items disponibles
     'completed':  'AVAILABLE',
     'done':       'AVAILABLE',
-
-    // Annulé / échecs
     'cancelled':  'CANCELLED',
     'declined':   'FAILED',
     'rejected':   'FAILED',
@@ -94,7 +55,6 @@ function mapSkinplaceStatusToTradeStatus(skinplaceStatus: string): TradeStatus {
 
 export async function POST(request: NextRequest) {
   try {
-    // Vérifier l'authentification
     const session = await auth.api.getSession({
       headers: request.headers,
     });
@@ -106,6 +66,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Rate limiting
+    const rateCheck = await tradeRateLimiter.checkLimit(request, session.user.id);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Trop de requêtes. Réessayez plus tard.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((rateCheck.resetTime - Date.now()) / 1000)) } }
+      );
+    }
+
     const raw = await request.json();
     const parsed = safeParseJson(raw, skinplaceCreateTradeBodySchema, {
       errorStyle: 'successFalse',
@@ -113,11 +82,10 @@ export async function POST(request: NextRequest) {
     if (!parsed.ok) {
       return parsed.response;
     }
-    const body = parsed.data as unknown as CreateTradeRequest;
+    const body = parsed.data as unknown as CreateTradeBody;
 
     const { parseSteamId64FromUserInput } = await import('@/lib/steam-id');
     
-    // Récupérer le user complet
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
     });
@@ -130,8 +98,6 @@ export async function POST(request: NextRequest) {
     }
     
     const allowedSteamIds = [session.user.steamId];
-    
-    // Si l'utilisateur a un trade link, autoriser aussi le Steam ID qu'il contient
     if (user.tradeLink) {
       const tradeLinkSteamId = parseSteamId64FromUserInput(user.tradeLink);
       if (tradeLinkSteamId) {
@@ -140,22 +106,12 @@ export async function POST(request: NextRequest) {
     }
     
     if (!allowedSteamIds.includes(body.steam_id)) {
-      console.log('🚫 Accès refusé pour création trade:', {
-        demandé: body.steam_id,
-        autorisés: allowedSteamIds,
-        session_steamId: session.user.steamId,
-        tradeLink: user.tradeLink,
-      });
       return NextResponse.json(
         { success: false, error: 'Accès non autorisé' },
         { status: 403 }
       );
     }
-    
-    console.log('✅ Accès autorisé pour création trade avec Steam ID:', body.steam_id, '(compte connexion ou trade link)');
 
-    // Validation de l'URL de trade Steam
-    // Accepte avec ou sans / après "new" (Steam peut renvoyer les deux formats)
     const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/?\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
     if (!steamTradeUrlRegex.test(body.trade_url)) {
       return NextResponse.json(
@@ -164,9 +120,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // SÉCURITÉ: Recalculer le montant brut côté serveur à partir des items
-    // Ne JAMAIS faire confiance au gross_value_centimes envoyé par le client
-    const serverGrossCentimes = body.items.reduce((sum, item) => sum + item.price_centimes, 0);
+    // SECURITE: Vérifier ownership + récupérer les prix réels depuis Skinplace
+    const assetIds = body.items.map(i => i.asset_id);
+    const verification = await verifyAndPriceItems(body.steam_id, assetIds);
+
+    if (!verification.ok) {
+      const status = verification.code === 'ITEMS_NOT_FOUND' ? 400 : 502;
+      return NextResponse.json(
+        { success: false, error: verification.error },
+        { status }
+      );
+    }
+
+    const verifiedItems = verification.items;
+
+    // Calcul du gross à partir des prix serveur uniquement
+    const serverGrossCentimes = Array.from(verifiedItems.values()).reduce(
+      (sum, item) => sum + item.price_centimes, 0
+    );
 
     if (serverGrossCentimes <= 0) {
       return NextResponse.json(
@@ -182,10 +153,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (Math.abs(serverGrossCentimes - body.gross_value_centimes) > 1) {
-      console.warn(`[CREATE-TRADE] Montant client (${body.gross_value_centimes}) != serveur (${serverGrossCentimes}) — utilisation du montant serveur`);
-    }
-
     const cashoutFeeRate = await getCashoutFeeRate();
     const ledger = computeTradeLedgerFromGross(serverGrossCentimes, cashoutFeeRate);
     if (ledger.netCents <= 0) {
@@ -194,8 +161,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Note: user déjà récupéré au-dessus pour la vérification d'accès
 
     let affiliatePromoCode: string | null = null;
     let affiliatePromoBonusCents = 0;
@@ -228,19 +193,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Récupérer les clés d'API depuis les variables d'environnement
     const privateKey = process.env.SKINPLACE_API_KEY_PRIVATE;
     const publicKey = process.env.SKINPLACE_API_KEY_PUBLIC;
 
     if (!privateKey || !publicKey) {
-      console.error('Clés API Skinplace manquantes');
       return NextResponse.json(
         { success: false, error: 'Configuration API manquante' },
         { status: 500 }
       );
     }
 
-    // Vérifier les limites de trade (AVANT l'appel Skinplace pour éviter les trades orphelins)
+    // Vérifier les limites de trade quotidiennes
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -258,10 +221,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Générer la signature pour l'API Skinplace
     const signature = generateSkinplaceSignature(body.steam_id, privateKey);
 
-    // Extraire le token de trade depuis l'URL Steam
     const tradeUrlMatch = body.trade_url.match(/partner=(\d+)&token=([a-zA-Z0-9_-]+)/);
     if (!tradeUrlMatch) {
       return NextResponse.json(
@@ -271,30 +232,26 @@ export async function POST(request: NextRequest) {
     }
     const tradeToken = tradeUrlMatch[2];
 
-    // Générer le token ici pour l'utiliser à la fois dans le payload Skinplace (order_id)
-    // et comme ticketId du trade en DB — c'est la clé de lookup dans le webhook IPN
     const tradeToken2 = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-    // Préparer les données pour l'API Skinplace selon la nouvelle structure
     const skinplacePayload = {
-      signature: signature,
+      signature,
       public_key: publicKey,
       project: 'csgo',
       steamid: body.steam_id,
       trade_token: tradeToken,
-      offers: body.items.map(item => item.asset_id), // Asset IDs des items à vendre
+      offers: assetIds,
       ipn_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/skinplace/webhook`,
       order_id: tradeToken2,
-      send_offer_sync: 1, // Envoyer l'offre de manière synchrone
+      send_offer_sync: 1,
     };
 
-    console.log('🔄 Création de trade Skinplace:', {
+    console.log('[CREATE-TRADE] Creating Skinplace trade:', {
       steamId: body.steam_id,
-      itemsCount: body.items.length,
+      itemsCount: assetIds.length,
       grossCentimes: serverGrossCentimes,
     });
 
-    // Appeler l'API Skinplace pour créer le trade instantané
     const skinplaceResponse = await fetch('https://api.skin.place/api/v3/instant/inventory', {
       method: 'POST',
       headers: {
@@ -303,20 +260,16 @@ export async function POST(request: NextRequest) {
         'Accept': 'application/json',
       },
       body: JSON.stringify(skinplacePayload),
-      // Timeout de 15 secondes
       signal: AbortSignal.timeout(15000),
     });
 
     if (!skinplaceResponse.ok) {
-      console.error(`Erreur API Skinplace: ${skinplaceResponse.status} ${skinplaceResponse.statusText}`);
-      
       const errorData = await skinplaceResponse.json().catch(() => ({}));
-      console.error('Détails erreur Skinplace:', errorData);
-      
+      console.error('[CREATE-TRADE] Skinplace error:', skinplaceResponse.status, errorData);
       return NextResponse.json(
         { 
           success: false, 
-          error: `Erreur Skinplace: ${errorData.message || 'Erreur lors de la création du trade'}` 
+          error: `Erreur Skinplace: ${(errorData as { message?: string }).message || 'Erreur lors de la création du trade'}` 
         },
         { status: skinplaceResponse.status }
       );
@@ -324,9 +277,6 @@ export async function POST(request: NextRequest) {
 
     const skinplaceData = await skinplaceResponse.json();
     
-    console.log('[CREATE-TRADE] Skinplace response status:', skinplaceData.status, '| token:', skinplaceData.token ? 'present' : 'NULL');
-
-    // Skinplace retourne { status: 'success' } au lieu de { success: true }
     if (skinplaceData.status !== 'success') {
       return NextResponse.json(
         { 
@@ -337,56 +287,50 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extraire les données importantes de la réponse Skinplace
     const steamTrade = skinplaceData.steamtrade;
     const tradeOfferId = steamTrade?.tradeofferid;
     const skinplaceToken = skinplaceData.token;
     const skinplaceStatus = steamTrade?.status || skinplaceData.status || 'pending';
-    // Bot qui a récupéré le trade (peut être null si trade pas encore assigné)
     const botInfo: SkinplaceBotInfo | null = steamTrade?.bot || null;
     
-    console.log('[CREATE-TRADE] tradeOfferId:', tradeOfferId ?? 'NULL', '| status:', skinplaceStatus);
-
-    if (!skinplaceToken) {
-      console.error('[CREATE-TRADE] ATTENTION: skinplaceToken NULL — la stratégie 1 du polling sera impossible, seul le fallback order_id fonctionnera');
-    }
-    
     const tradeStatus = mapSkinplaceStatusToTradeStatus(skinplaceStatus);
-    console.log('[CREATE-TRADE]   status mappé Prisma:', tradeStatus);
 
-    // Générer un ID unique pour le trade
     const tradeId = `TRADE-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    // tradeToken2 a déjà été généré avant le payload Skinplace et utilisé comme order_id
     const token = tradeToken2;
 
-    // Date d'expiration (7 jours selon les règles Steam)
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    // Date de disponibilité (dépend du statut)
     const availableAt = new Date();
     if (tradeStatus === 'ACCEPTED_BY_BOT' || tradeStatus === 'IN_TRADE_HOLD') {
-      // 7 jours de trade hold si accepté
       availableAt.setDate(availableAt.getDate() + 7);
-    } else if (tradeStatus === 'AVAILABLE') {
-      // Disponible immédiatement si déjà complété
-      // (cas rare mais possible)
     }
 
-    // Date d'acceptation du trade (si accepté)
     const tradeAcceptedAt = (tradeStatus === 'ACCEPTED_BY_BOT' || tradeStatus === 'IN_TRADE_HOLD' || tradeStatus === 'AVAILABLE') 
       ? new Date() 
       : undefined;
 
-    // Enregistrer le trade en base de données selon les règles CTF
-    // Le statut est maintenant basé sur la réponse réelle de Skinplace
+    // Stocker les items avec les données vérifiées depuis Skinplace (jamais le client)
+    const itemsData = assetIds.map((assetId) => {
+      const verified = verifiedItems.get(assetId)!;
+      return {
+        name: verified.market_hash_name,
+        marketHashName: verified.market_hash_name,
+        priceCents: verified.price_centimes,
+        iconUrl: verified.icon_url,
+        rarity: verified.rarity,
+        exterior: verified.exterior || '',
+        statTrak: verified.is_stattrak,
+      };
+    });
+
     const trade = await prisma.trade.create({
       data: {
         id: tradeId,
         userId: user.id,
         steamId: body.steam_id,
         tradeUrl: body.trade_url,
-        status: tradeStatus, // États: CREATED -> ACCEPTED_BY_BOT -> IN_TRADE_HOLD -> AVAILABLE -> PAYOUT_PENDING -> PAID -> FAILED
+        status: tradeStatus,
         grossCents: serverGrossCentimes,
         cashoutFees: ledger.cashoutFees,
         networkFees: ledger.networkFees,
@@ -395,20 +339,12 @@ export async function POST(request: NextRequest) {
         affiliatePromoBonusCents,
         vipBonusCents,
         availableAt: tradeStatus !== 'FAILED' ? availableAt : undefined,
-        expiresAt: expiresAt,
+        expiresAt,
         tradeAcceptedAt,
         ticketId: token,
         skinplaceToken: skinplaceToken || null,
         items: {
-          create: body.items.map((item) => ({
-            name: item.market_hash_name,
-            marketHashName: item.market_hash_name,
-            priceCents: item.price_centimes,
-            iconUrl: item.icon_url,
-            rarity: item.rarity,
-            exterior: item.exterior || '',
-            statTrak: item.is_stattrak,
-          })),
+          create: itemsData,
         },
       },
       include: {
@@ -416,14 +352,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Journaliser l'action
     await prisma.auditLog.create({
       data: {
         userId: user.id,
         action: 'TRADE_CREATED',
         details: {
           tradeId: trade.id,
-          itemsCount: body.items.length,
+          itemsCount: assetIds.length,
           grossValue: serverGrossCentimes,
           netValue: netCentsWithPromo,
           affiliatePromoCode,
@@ -439,10 +374,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Appeler les hooks de trade
     await TradeHooks.onTradeCreated(user.id, trade.id);
 
-    // Envoyer l'email de confirmation de trade (en arrière-plan)
     const notificationEmail = (user as { contactEmail?: string | null }).contactEmail || user.email;
     if (notificationEmail) {
       try {
@@ -451,44 +384,37 @@ export async function POST(request: NextRequest) {
           user.name || notificationEmail,
           {
             tradeId: trade.id,
-            itemsCount: body.items.length,
+            itemsCount: assetIds.length,
             grossValue: serverGrossCentimes,
             netValue: netCentsWithPromo,
             availableAt: trade.availableAt?.toISOString() || new Date().toISOString(),
           }
         );
-        console.log(`✅ Email de confirmation de trade envoyé à ${notificationEmail}`);
       } catch (emailError) {
-        console.error('❌ Erreur envoi email trade:', emailError);
-        // Ne pas faire échouer la création du trade si l'email échoue
+        console.error('[CREATE-TRADE] Email send failed:', emailError);
       }
     }
 
-    const tradeData = {
-      trade_id: trade.id,
-      token: trade.ticketId,
-      status: trade.status,
-      expires_at: trade.expiresAt?.toISOString() || null,
-      gross_value_centimes: trade.grossCents,
-      net_value_centimes: trade.netCents,
-      fees: {
-        cashout_fee: trade.cashoutFees,
-        network_fee: trade.networkFees,
-      },
-      items_count: trade.items?.length || 0,
-      // Infos du bot Skinplace qui a récupéré le trade
-      bot: botInfo,
-    };
-
-    console.log('[CREATE-TRADE] Trade saved:', trade.id);
-
     return NextResponse.json({
       success: true,
-      data: tradeData,
+      data: {
+        trade_id: trade.id,
+        token: trade.ticketId,
+        status: trade.status,
+        expires_at: trade.expiresAt?.toISOString() || null,
+        gross_value_centimes: trade.grossCents,
+        net_value_centimes: trade.netCents,
+        fees: {
+          cashout_fee: trade.cashoutFees,
+          network_fee: trade.networkFees,
+        },
+        items_count: trade.items?.length || 0,
+        bot: botInfo,
+      },
     });
 
   } catch (error) {
-    console.error('Erreur lors de la création du trade:', error);
+    console.error('[CREATE-TRADE] Unexpected error:', error);
     
     if (error instanceof Error && error.name === 'AbortError') {
       return NextResponse.json(

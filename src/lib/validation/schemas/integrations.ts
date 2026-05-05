@@ -33,39 +33,19 @@ export const skinplaceTradeInstantSchema = z
   })
   .strip();
 
-const tradeItemLoose = z.object({
-  asset_id: z.string(),
-  market_hash_name: z.string(),
-  icon_url: z.string(),
-  rarity: z.string(),
-  exterior: z.string(),
-  is_stattrak: z.boolean(),
-  is_souvenir: z.boolean(),
-  price_centimes: z.coerce.number(),
+const tradeItemMinimal = z.object({
+  asset_id: z.string().min(1),
 });
 
-/** Skinplace POST create-trade — aligné sur CreateTradeRequest + refine historique */
+/** Skinplace POST create-trade — payload minimal, prix recalculés server-side */
 export const skinplaceCreateTradeBodySchema = z
   .object({
-    steam_id: z.string().optional(),
-    trade_url: z.string().optional(),
-    items: z.array(tradeItemLoose).optional(),
-    gross_value_centimes: z.coerce.number().optional(),
-    fees: z
-      .object({
-        cashout_fee: z.coerce.number(),
-        network_fee: z.coerce.number(),
-        total_fees: z.coerce.number(),
-      })
-      .optional(),
-    net_value_centimes: z.coerce.number().optional(),
+    steam_id: z.string().min(1),
+    trade_url: z.string().min(1),
+    items: z.array(tradeItemMinimal).min(1).max(50),
     affiliate_promo_code: z.string().nullable().optional(),
   })
-  .strip()
-  .refine(
-    (d) => !!(d.steam_id && d.trade_url && d.items && d.items.length > 0),
-    { message: 'Données manquantes' }
-  );
+  .strip();
 
 /** Skinplace webhook POST fallback — corps fusionné en query */
 export const skinplaceWebhookPostBodySchema = z.record(z.string(), z.unknown());
@@ -152,29 +132,13 @@ export const flexifyQuoteBodySchema = z.record(z.string(), z.unknown());
 /** GateFi buy/sell — corps polymorphe */
 export const gatefiOrderBodySchema = z.record(z.string(), z.unknown());
 
-/** Steam POST create-trade — corps distinct du flux Skinplace */
-const steamTradeItemSchema = z.object({
-  asset_id: z.string(),
-  icon_url: z.string(),
-  rarity: z.string(),
-  class_id: z.string(),
-  instance_id: z.string(),
-  market_hash_name: z.string(),
-  estimated_price: z.coerce.number(),
-});
-
+/** Steam POST create-trade — payload minimal, prix recalculés server-side */
 export const steamCreateTradeBodySchema = z
   .object({
-    steam_id: z.string(),
-    trade_url: z.string(),
-    items: z.array(steamTradeItemSchema).min(1),
-    gross_value: z.coerce.number(),
-    fees: z.object({
-      cashout_fee: z.coerce.number(),
-      network_fee: z.coerce.number(),
-      total_fees: z.coerce.number(),
-    }),
-    net_value: z.coerce.number(),
+    steam_id: z.string().min(1),
+    trade_url: z.string().min(1),
+    items: z.array(z.object({ asset_id: z.string().min(1) })).min(1).max(50),
+    affiliate_promo_code: z.string().nullable().optional(),
   })
   .strip();
 

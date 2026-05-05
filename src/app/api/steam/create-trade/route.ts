@@ -9,31 +9,20 @@ import {
 } from '@/lib/trade-platform-fees';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { steamCreateTradeBodySchema } from '@/lib/validation/schemas/integrations';
+import { verifyAndPriceItems } from '@/lib/skinplace-price-verifier';
+import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
 
-interface CreateTradeRequest {
+interface CreateTradeBody {
   steam_id: string;
   trade_url: string;
-  items: Array<{
-    asset_id: string;
-    icon_url: string;
-    rarity: string;
-    class_id: string;
-    instance_id: string;
-    market_hash_name: string;
-    estimated_price: number; // En centimes
-  }>;
-  gross_value: number; // En centimes
-  fees: {
-    cashout_fee: number;
-    network_fee: number;
-    total_fees: number;
-  };
-  net_value: number; // En centimes
+  items: Array<{ asset_id: string }>;
+  affiliate_promo_code?: string | null;
 }
+
+const tradeRateLimiter = new RateLimiter('STEAM_TRADE_CREATION', RATE_LIMIT_CONFIGS.TRADE_CREATION);
 
 export async function POST(request: NextRequest) {
   try {
-    // Vérifier l'authentification
     const session = await auth.api.getSession({
       headers: request.headers,
     });
@@ -44,6 +33,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Rate limiting
+    const rateCheck = await tradeRateLimiter.checkLimit(request, session.user.id);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Trop de requêtes. Réessayez plus tard.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((rateCheck.resetTime - Date.now()) / 1000)) } }
+      );
+    }
+
     const raw = await request.json();
     const parsed = safeParseJson(raw, steamCreateTradeBodySchema, {
       errorStyle: 'successFalse',
@@ -51,43 +49,10 @@ export async function POST(request: NextRequest) {
     if (!parsed.ok) {
       return parsed.response;
     }
-    const body: CreateTradeRequest = parsed.data;
+    const body = parsed.data as unknown as CreateTradeBody;
 
-    // Vérifier que l'utilisateur vend ses propres items
-    if (body.steam_id !== session.user.id) {
-      return NextResponse.json(
-        { success: false, error: 'Vous ne pouvez vendre que vos propres items' },
-        { status: 403 }
-      );
-    }
+    const { parseSteamId64FromUserInput } = await import('@/lib/steam-id');
 
-    // Validation de l'URL de trade
-    // Accepte avec ou sans / après "new" (Steam peut renvoyer les deux formats)
-    const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/?\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
-    if (!steamTradeUrlRegex.test(body.trade_url)) {
-      return NextResponse.json(
-        { success: false, error: 'URL de trade Steam invalide' },
-        { status: 400 }
-      );
-    }
-
-    if (body.gross_value <= 0) {
-      return NextResponse.json(
-        { success: false, error: 'La valeur brute doit être positive' },
-        { status: 400 }
-      );
-    }
-
-    const cashoutFeeRate = await getCashoutFeeRate();
-    const ledger = computeTradeLedgerFromGross(body.gross_value, cashoutFeeRate);
-    if (ledger.netCents <= 0) {
-      return NextResponse.json(
-        { success: false, error: 'La valeur nette après frais plateforme doit être positive' },
-        { status: 400 }
-      );
-    }
-
-    // Récupérer l'utilisateur depuis la base de données
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
     });
@@ -99,43 +64,118 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Vérifier les limites de trade (selon les règles CTF)
+    // Vérifier ownership du steam_id
+    const allowedSteamIds = [session.user.steamId];
+    if (user.tradeLink) {
+      const tradeLinkSteamId = parseSteamId64FromUserInput(user.tradeLink);
+      if (tradeLinkSteamId) {
+        allowedSteamIds.push(tradeLinkSteamId);
+      }
+    }
+
+    if (!allowedSteamIds.includes(body.steam_id)) {
+      return NextResponse.json(
+        { success: false, error: 'Vous ne pouvez vendre que vos propres items' },
+        { status: 403 }
+      );
+    }
+
+    const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/?\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
+    if (!steamTradeUrlRegex.test(body.trade_url)) {
+      return NextResponse.json(
+        { success: false, error: 'URL de trade Steam invalide' },
+        { status: 400 }
+      );
+    }
+
+    // SECURITE: Vérifier ownership + récupérer les prix réels depuis Skinplace
+    const assetIds = body.items.map(i => i.asset_id);
+    const verification = await verifyAndPriceItems(body.steam_id, assetIds);
+
+    if (!verification.ok) {
+      const status = verification.code === 'ITEMS_NOT_FOUND' ? 400 : 502;
+      return NextResponse.json(
+        { success: false, error: verification.error },
+        { status }
+      );
+    }
+
+    const verifiedItems = verification.items;
+
+    // Calcul du gross à partir des prix serveur uniquement
+    const serverGrossCentimes = Array.from(verifiedItems.values()).reduce(
+      (sum, item) => sum + item.price_centimes, 0
+    );
+
+    if (serverGrossCentimes <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'La valeur brute doit être positive' },
+        { status: 400 }
+      );
+    }
+
+    if (serverGrossCentimes < 100) {
+      return NextResponse.json(
+        { success: false, error: 'La valeur brute totale doit être d\'au moins 1,00 € (100 centimes) pour créer un trade' },
+        { status: 400 }
+      );
+    }
+
+    const cashoutFeeRate = await getCashoutFeeRate();
+    const ledger = computeTradeLedgerFromGross(serverGrossCentimes, cashoutFeeRate);
+    if (ledger.netCents <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'La valeur nette après frais plateforme doit être positive' },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier les limites de trade quotidiennes
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     const tradesCountToday = await prisma.trade.count({
       where: {
         userId: user.id,
-        createdAt: {
-          gte: today,
-        },
+        createdAt: { gte: today },
       },
     });
 
-    // Limite de 5 trades par jour par utilisateur
-    // if (tradesCountToday >= 5) {
-    //   return NextResponse.json(
-    //     { success: false, error: 'Limite de trades quotidienne atteinte (5 max)' },
-    //     { status: 429 }
-    //   );
-    // }
+    if (tradesCountToday >= 10) {
+      return NextResponse.json(
+        { success: false, error: 'Limite de trades quotidienne atteinte (10 max)' },
+        { status: 429 }
+      );
+    }
 
-    // Générer un ID unique pour le trade
     const tradeId = `TRADE-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-    // Date d'expiration (7 jours selon les règles Steam)
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    // Date de disponibilité (7 jours de trade hold)
     const availableAt = new Date();
     availableAt.setDate(availableAt.getDate() + 7);
 
-    const vipBonusCents = Math.round(body.gross_value * (user.bonusRatePercent ?? 0) / 100);
+    const vipBonusCents = Math.round(serverGrossCentimes * (user.bonusRatePercent ?? 0) / 100);
     const netCentsWithBonus = ledger.netCents + vipBonusCents;
 
-    // Créer le trade en base de données
+    // Stocker les items avec les données vérifiées depuis Skinplace (jamais le client)
+    const itemsData = assetIds.map((assetId, index) => {
+      const verified = verifiedItems.get(assetId)!;
+      return {
+        assetId: verified.asset_id,
+        marketHashName: verified.market_hash_name,
+        name: verified.market_hash_name,
+        priceCents: verified.price_centimes,
+        iconUrl: verified.icon_url,
+        rarity: verified.rarity,
+        exterior: verified.exterior || '',
+        statTrak: verified.is_stattrak,
+        position: index,
+      };
+    });
+
     const trade = await prisma.trade.create({
       data: {
         id: tradeId,
@@ -143,26 +183,15 @@ export async function POST(request: NextRequest) {
         steamId: body.steam_id,
         tradeUrl: body.trade_url,
         status: 'CREATED',
-        grossCents: body.gross_value,
+        grossCents: serverGrossCentimes,
         cashoutFees: ledger.cashoutFees,
         networkFees: ledger.networkFees,
         netCents: netCentsWithBonus,
         vipBonusCents,
-        availableAt: availableAt,
+        availableAt,
         ticketId: token,
         items: {
-          create: body.items.map((item, index) => ({
-            assetId: item.asset_id,
-            classId: item.class_id,
-            instanceId: item.instance_id,
-            marketHashName: item.market_hash_name,
-            name: item.market_hash_name,
-            priceCents: item.estimated_price,
-            iconUrl: item.icon_url,
-            rarity: item.rarity,
-            estimatedPriceCentimes: item.estimated_price,
-            position: index,
-          })),
+          create: itemsData,
         },
       },
       include: {
@@ -170,18 +199,14 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // TODO: Ici, intégrer avec l'API Skinplace pour créer le trade réel
-    // Pour l'instant, on simule la création du trade
-    
-    // Journaliser l'action
     await prisma.auditLog.create({
       data: {
         userId: user.id,
         action: 'TRADE_CREATED',
         details: {
           tradeId: trade.id,
-          itemsCount: body.items.length,
-          grossValue: body.gross_value,
+          itemsCount: assetIds.length,
+          grossValue: serverGrossCentimes,
           netValue: netCentsWithBonus,
           vipBonusCents,
         },
@@ -191,10 +216,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Appeler les hooks de trade
     await TradeHooks.onTradeCreated(user.id, trade.id);
 
-    // Envoyer l'email de confirmation de trade (en arrière-plan)
     const notificationEmail = (user as { contactEmail?: string | null }).contactEmail || user.email;
     if (notificationEmail) {
       try {
@@ -203,16 +226,14 @@ export async function POST(request: NextRequest) {
           user.name || notificationEmail,
           {
             tradeId: trade.id,
-            itemsCount: body.items.length,
-            grossValue: body.gross_value,
-            netValue: ledger.netCents,
+            itemsCount: assetIds.length,
+            grossValue: serverGrossCentimes,
+            netValue: netCentsWithBonus,
             availableAt: trade.availableAt?.toISOString() || new Date().toISOString(),
           }
         );
-        console.log(`✅ Email de confirmation de trade envoyé à ${notificationEmail}`);
       } catch (emailError) {
-        console.error('❌ Erreur envoi email trade:', emailError);
-        // Ne pas faire échouer la création du trade si l'email échoue
+        console.error('[STEAM-TRADE] Email send failed:', emailError);
       }
     }
 
@@ -222,20 +243,20 @@ export async function POST(request: NextRequest) {
         trade_id: trade.id,
         token: trade.ticketId,
         status: trade.status,
-        gross_value: trade.grossCents,
-        net_value: trade.netCents,
+        gross_value_centimes: trade.grossCents,
+        net_value_centimes: trade.netCents,
         fees: {
           cashout_fee: trade.cashoutFees,
           network_fee: trade.networkFees,
         },
         expires_at: trade.expiresAt?.toISOString() || null,
         available_at: trade.availableAt?.toISOString() || null,
-        items_count: trade.items?.length || 0 || null,
+        items_count: trade.items?.length || 0,
       },
     });
 
   } catch (error) {
-    console.error('Erreur lors de la création du trade:', error);
+    console.error('[STEAM-TRADE] Unexpected error:', error);
     
     return NextResponse.json(
       { success: false, error: 'Erreur interne du serveur' },
