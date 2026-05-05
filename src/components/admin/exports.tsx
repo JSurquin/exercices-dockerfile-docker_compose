@@ -23,6 +23,8 @@ import { useLocale } from '@/components/providers/locale-provider';
 
 export function AdminExports() {
   const { messages } = useLocale();
+  const t = messages.admin.exports;
+
   const [selectedType, setSelectedType] = useState<string>('');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
@@ -33,43 +35,43 @@ export function AdminExports() {
   const exportTypes = [
     {
       id: 'trades',
-      name: 'Trades',
-      description: 'Export de tous les trades avec détails',
+      name: t.tradesExport,
+      description: t.tradesDescription,
       icon: <TrendingUp className="h-5 w-5" />,
       color: 'bg-blue-500',
     },
     {
       id: 'users',
-      name: 'Utilisateurs',
-      description: 'Export des données utilisateurs',
+      name: t.usersExport,
+      description: t.usersDescription,
       icon: <Users className="h-5 w-5" />,
       color: 'bg-green-500',
     },
     {
       id: 'payouts',
-      name: 'Paiements',
-      description: 'Export des paiements SEPA et crypto',
+      name: t.payoutsExport,
+      description: t.payoutsDescription,
       icon: <CreditCard className="h-5 w-5" />,
       color: 'bg-purple-500',
     },
     {
       id: 'kyc',
-      name: 'Documents KYC',
-      description: 'Export des documents de vérification',
+      name: t.kycExport,
+      description: t.kycDescription,
       icon: <Shield className="h-5 w-5" />,
       color: 'bg-orange-500',
     },
     {
       id: 'affiliates',
-      name: 'Affiliés',
-      description: 'Export des données d\'affiliation',
+      name: t.affiliatesExport,
+      description: t.affiliatesDescription,
       icon: <Users className="h-5 w-5" />,
       color: 'bg-cyan-500',
     },
     {
       id: 'giveaways',
-      name: 'Giveaways',
-      description: 'Export des giveaways et participations',
+      name: t.giveawaysExport,
+      description: t.giveawaysDescription,
       icon: <FileText className="h-5 w-5" />,
       color: 'bg-pink-500',
     },
@@ -90,7 +92,7 @@ export function AdminExports() {
       const response = await fetch(`/api/admin/exports?${params}`);
       
       if (!response.ok) {
-        throw new Error('Erreur lors de l\'export');
+        throw new Error('export error');
       }
 
       const blob = await response.blob();
@@ -103,7 +105,6 @@ export function AdminExports() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      // Ajouter à l'historique
       setExportHistory(prev => [{
         id: Date.now().toString(),
         type: selectedType,
@@ -115,7 +116,7 @@ export function AdminExports() {
       }, ...prev]);
 
     } catch (error) {
-      console.error('Erreur lors de l\'export:', error);
+      console.error('Export error:', error);
     } finally {
       setIsExporting(false);
     }
@@ -131,21 +132,19 @@ export function AdminExports() {
 
   return (
     <div className="space-y-6">
-      {/* Export Configuration */}
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <Database className="h-5 w-5" />
-            Configuration d&apos;Export
+            {t.configuration}
           </CardTitle>
           <CardDescription className="text-slate-300">
-            Sélectionnez le type de données à exporter et configurez les filtres
+            {t.configurationDescription}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Type d'export */}
           <div className="space-y-3">
-            <Label className="text-slate-300">Type de données</Label>
+            <Label className="text-slate-300">{t.dataType}</Label>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {exportTypes.map((type) => (
                 <Card
@@ -173,10 +172,9 @@ export function AdminExports() {
             </div>
           </div>
 
-          {/* Filtres de date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-slate-300">Date de début</Label>
+              <Label className="text-slate-300">{t.dateFrom}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -184,7 +182,7 @@ export function AdminExports() {
                     className="w-full justify-start text-left font-normal bg-slate-700 border-slate-600 text-white hover:bg-slate-600"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateFrom ? formatDate(dateFrom, 'dd/MM/yyyy', { locale: fr }) : 'Sélectionner'}
+                    {dateFrom ? formatDate(dateFrom, 'dd/MM/yyyy', { locale: fr }) : t.selectDate}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 bg-slate-800 border-slate-700">
@@ -200,7 +198,7 @@ export function AdminExports() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-slate-300">Date de fin</Label>
+              <Label className="text-slate-300">{t.dateTo}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -208,7 +206,7 @@ export function AdminExports() {
                     className="w-full justify-start text-left font-normal bg-slate-700 border-slate-600 text-white hover:bg-slate-600"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateTo ? formatDate(dateTo, 'dd/MM/yyyy', { locale: fr }) : 'Sélectionner'}
+                    {dateTo ? formatDate(dateTo, 'dd/MM/yyyy', { locale: fr }) : t.selectDate}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 bg-slate-800 border-slate-700">
@@ -224,21 +222,19 @@ export function AdminExports() {
             </div>
           </div>
 
-          {/* Format d'export */}
           <div className="space-y-2">
-            <Label className="text-slate-300">Format d&apos;export</Label>
+            <Label className="text-slate-300">{t.exportFormat}</Label>
             <Select value={exportFormat} onValueChange={(value: 'csv' | 'excel') => setExportFormat(value)}>
               <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="csv">CSV (Comma Separated Values)</SelectItem>
-                <SelectItem value="excel">Excel (.xlsx)</SelectItem>
+                <SelectItem value="csv">{t.csv}</SelectItem>
+                <SelectItem value="excel">{t.excel}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* Bouton d'export */}
           <Button
             onClick={handleExport}
             disabled={!selectedType || isExporting}
@@ -247,28 +243,27 @@ export function AdminExports() {
             {isExporting ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Export en cours...
+                {t.exporting}
               </>
             ) : (
               <>
                 <Download className="h-4 w-4 mr-2" />
-                Exporter les données
+                {t.exportData}
               </>
             )}
           </Button>
         </CardContent>
       </Card>
 
-      {/* Historique des exports */}
       {exportHistory.length > 0 && (
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Historique des Exports
+              {t.history}
             </CardTitle>
             <CardDescription className="text-slate-300">
-              Derniers exports effectués
+              {t.historyDescription}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -289,7 +284,7 @@ export function AdminExports() {
                       <p className="text-xs text-slate-400">
                         {item.dateFrom && item.dateTo
                           ? `${formatDate(item.dateFrom, 'dd/MM/yyyy')} - ${formatDate(item.dateTo, 'dd/MM/yyyy')}`
-                          : 'Toutes les données'
+                          : t.allData
                         }
                       </p>
                     </div>

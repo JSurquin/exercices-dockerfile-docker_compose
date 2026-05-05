@@ -19,6 +19,7 @@ import {
   EmailTemplateConfig,
   getCategoryLabel,
 } from '@/lib/email-templates';
+import { useLocale } from '@/components/providers/locale-provider';
 
 // Re-export the EmailTemplate interface for backwards compatibility
 export interface EmailTemplate {
@@ -63,6 +64,9 @@ interface EmailTemplateSelectorProps {
 }
 
 export function EmailTemplateSelector({ selectedTemplate, onTemplateSelect }: EmailTemplateSelectorProps) {
+  const { messages } = useLocale();
+  const t = messages.admin.emailTemplateSelector;
+
   const [previewTemplate, setPreviewTemplate] = useState<EmailTemplate | null>(null);
 
   // Tailwind class mapping for categories
@@ -88,10 +92,8 @@ export function EmailTemplateSelector({ selectedTemplate, onTemplateSelect }: Em
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-white mb-2">Choisir un template</h3>
-        <p className="text-slate-400 text-sm">
-          Sélectionnez un template pré-conçu ou partez d&apos;une page vierge
-        </p>
+        <h3 className="text-lg font-semibold text-white mb-2">{t.title}</h3>
+        <p className="text-slate-400 text-sm">{t.subtitle}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -135,10 +137,10 @@ export function EmailTemplateSelector({ selectedTemplate, onTemplateSelect }: Em
                   {selectedTemplate?.id === template.id ? (
                     <>
                       <Check className="h-3 w-3 mr-1" />
-                      Sélectionné
+                      {t.selected}
                     </>
                   ) : (
-                    'Utiliser'
+                    t.use
                   )}
                 </Button>
                 
@@ -157,7 +159,7 @@ export function EmailTemplateSelector({ selectedTemplate, onTemplateSelect }: Em
                     <DialogHeader>
                       <DialogTitle className="text-white flex items-center gap-2">
                         {template.icon}
-                        Aperçu: {template.name}
+                        {t.preview.replace('{name}', template.name)}
                       </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
@@ -192,7 +194,7 @@ export function EmailTemplateSelector({ selectedTemplate, onTemplateSelect }: Em
                       </div>
                       {template.variables.length > 0 && (
                         <div className="bg-slate-900/50 p-3 rounded-lg">
-                          <h4 className="text-white text-sm font-medium mb-2">Variables disponibles:</h4>
+                          <h4 className="text-white text-sm font-medium mb-2">{t.availableVariables}</h4>
                           <div className="flex flex-wrap gap-2">
                             {template.variables.map((variable) => (
                               <Badge key={variable} variant="outline" className="text-xs border-slate-600 text-slate-300">
@@ -217,7 +219,7 @@ export function EmailTemplateSelector({ selectedTemplate, onTemplateSelect }: Em
             <div className="text-orange-500">
               {selectedTemplate.icon}
             </div>
-            <h4 className="text-white font-medium">Template sélectionné: {selectedTemplate.name}</h4>
+            <h4 className="text-white font-medium">{t.selectedTemplate.replace('{name}', selectedTemplate.name)}</h4>
             <Badge className={`${getTailwindCategoryColor(selectedTemplate.category)} text-white`}>
               {getLocalCategoryLabel(selectedTemplate.category)}
             </Badge>
@@ -225,7 +227,7 @@ export function EmailTemplateSelector({ selectedTemplate, onTemplateSelect }: Em
           <p className="text-slate-400 text-sm mb-3">{selectedTemplate.description}</p>
           {selectedTemplate.variables.length > 0 && (
             <div>
-              <p className="text-slate-300 text-sm mb-2">Variables disponibles:</p>
+              <p className="text-slate-300 text-sm mb-2">{t.availableVariables}</p>
               <div className="flex flex-wrap gap-2">
                 {selectedTemplate.variables.map((variable) => (
                   <Badge key={variable} variant="outline" className="text-xs border-slate-600 text-slate-300">

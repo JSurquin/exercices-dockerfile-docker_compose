@@ -123,57 +123,57 @@ const getEndpoints = (messages: any) => [
   },
 ];
 
-const sdkExamples = {
-  javascript: `// Installation
+const getSdkExamples = (messages: any) => ({
+  javascript: `// ${messages.apiDocs.sdkComments.installation}
 npm install @moonskin/sdk
 
-// Utilisation
+// ${messages.apiDocs.sdkComments.usage}
 import MoonSkin from '@moonskin/sdk';
 
 const client = new MoonSkin({
   apiKey: 'your_api_key',
-  environment: 'production' // ou 'sandbox'
+  environment: 'production' // ${messages.apiDocs.sdkComments.orSandbox}
 });
 
-// Estimation de prix
+// ${messages.apiDocs.sdkComments.priceEstimation}
 const estimate = await client.estimatePrices([
   { market_hash_name: 'AK-47 | Redline (Field-Tested)' }
 ]);
 
-// Créer un trade
+// ${messages.apiDocs.sdkComments.createTrade}
 const trade = await client.createTrade({
   items: estimate.items,
   tradeLink: 'https://steamcommunity.com/tradeoffer/new/?partner=...'
 });`,
 
-  python: `# Installation
+  python: `# ${messages.apiDocs.sdkComments.installation}
 pip install moonskin-sdk
 
-# Utilisation
+# ${messages.apiDocs.sdkComments.usage}
 from moonskin import MoonSkin
 
 client = MoonSkin(
     api_key='your_api_key',
-    environment='production'  # ou 'sandbox'
+    environment='production'  # ${messages.apiDocs.sdkComments.orSandbox}
 )
 
-# Estimation de prix
+# ${messages.apiDocs.sdkComments.priceEstimation}
 estimate = client.estimate_prices([
     {'market_hash_name': 'AK-47 | Redline (Field-Tested)'}
 ])
 
-# Créer un trade
+# ${messages.apiDocs.sdkComments.createTrade}
 trade = client.create_trade({
     'items': estimate['items'],
     'trade_link': 'https://steamcommunity.com/tradeoffer/new/?partner=...'
 })`,
 
-  curl: `# Authentification
+  curl: `# ${messages.apiDocs.sdkComments.authentication}
 curl -X POST https://api.moonskin.gg/auth/steam \\
   -H "Content-Type: application/json" \\
   -d '{"return_url": "https://yourapp.com/callback"}'
 
-# Estimation de prix
+# ${messages.apiDocs.sdkComments.priceEstimation}
 curl -X POST https://api.moonskin.gg/steam/estimate-prices \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
@@ -183,7 +183,7 @@ curl -X POST https://api.moonskin.gg/steam/estimate-prices \\
     ]
   }'
 
-# Créer un trade
+# ${messages.apiDocs.sdkComments.createTrade}
 curl -X POST https://api.moonskin.gg/steam/create-trade \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
@@ -191,7 +191,7 @@ curl -X POST https://api.moonskin.gg/steam/create-trade \\
     "items": [...],
     "trade_link": "https://steamcommunity.com/tradeoffer/new/?partner=..."
   }'`
-};
+});
 
 const responseExamples = {
   estimate: `{
@@ -262,19 +262,19 @@ function ApiDocsComingSoon({ messages }: { messages: any }) {
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-            {messages.apiDocs.comingSoon?.title ?? "API bientôt disponible"}
+            {messages.apiDocs.comingSoon.title}
           </h1>
 
           <p className="text-lg text-muted-foreground max-w-md mx-auto mb-8">
-            {messages.apiDocs.comingSoon?.description ?? "Notre API publique est en cours de finalisation. Revenez bientôt pour accéder à la documentation complète."}
+            {messages.apiDocs.comingSoon.description}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 px-4 py-1.5 text-sm">
-              {messages.apiDocs.comingSoon?.badge ?? "En développement"}
+              {messages.apiDocs.comingSoon.badge}
             </Badge>
             <Badge variant="outline" className="px-4 py-1.5 text-sm">
-              {messages.apiDocs.comingSoon?.version ?? "Version 1.0 — Prochainement"}
+              {messages.apiDocs.comingSoon.version}
             </Badge>
           </div>
 
@@ -282,15 +282,15 @@ function ApiDocsComingSoon({ messages }: { messages: any }) {
             {[
               {
                 icon: CodeBracketIcon,
-                label: messages.apiDocs.comingSoon?.feature1 ?? "REST & SDK",
+                label: messages.apiDocs.comingSoon.feature1,
               },
               {
                 icon: ShieldCheckIcon,
-                label: messages.apiDocs.comingSoon?.feature2 ?? "Authentification sécurisée",
+                label: messages.apiDocs.comingSoon.feature2,
               },
               {
                 icon: CubeIcon,
-                label: messages.apiDocs.comingSoon?.feature3 ?? "Webhooks & Events",
+                label: messages.apiDocs.comingSoon.feature3,
               },
             ].map(({ icon: Icon, label }, i) => (
               <motion.div
@@ -314,6 +314,7 @@ function ApiDocsComingSoon({ messages }: { messages: any }) {
 export default function ApiDocsPage() {
   const { messages } = useLocale();
   const endpoints = getEndpoints(messages);
+  const sdkExamples = getSdkExamples(messages);
   const [isEnabled, setIsEnabled] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -708,7 +709,7 @@ export default function ApiDocsPage() {
                       📧 api-support@moonskin.gg
                     </Button>
                     <Button variant="outline" size="sm" className="w-full">
-                      💬 Discord développeurs
+                      💬 {messages.apiDocs.discordDevs}
                     </Button>
                   </div>
                 </CardContent>

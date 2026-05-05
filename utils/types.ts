@@ -1569,6 +1569,15 @@ export interface Messages {
       giveawaysExport: string;
       giveawaysDescription: string;
     };
+    emailTemplateSelector: {
+      title: string;
+      subtitle: string;
+      use: string;
+      selected: string;
+      preview: string;
+      availableVariables: string;
+      selectedTemplate: string;
+    };
     affiliates: {
       title: string;
       description: string;
@@ -2623,6 +2632,111 @@ export interface Messages {
         medium: string;
         high: string;
         critical: string;
+      };
+      noLogsInPeriod: string;
+    };
+    skinPicker: {
+      title: string;
+      searchPlaceholder: string;
+      loading: string;
+      loadingItems: string;
+      noResults: string;
+      noItems: string;
+      cancel: string;
+      itemCount_one: string;
+      itemCount_other: string;
+      itemCountFound_one: string;
+      itemCountFound_other: string;
+      rarity: {
+        common: string;
+        uncommon: string;
+        rare: string;
+        mythical: string;
+        legendary: string;
+        ancient: string;
+        immortal: string;
+        arcana: string;
+      };
+    };
+    currencyRate: {
+      title: string;
+      error: string;
+      currentRate: string;
+      loading: string;
+      lastUpdate: string;
+      cacheStatus: string;
+      cacheActive: string;
+      cacheEmpty: string;
+      cacheAge: string;
+      refresh: string;
+      clearCache: string;
+      conversionExample: string;
+      apiStatus: string;
+      apiOk: string;
+      apiError: string;
+    };
+    legalPages: {
+      title: string;
+      subtitle: string;
+      refresh: string;
+      newPage: string;
+      create: string;
+      autoTranslateInfo: string;
+      autoTranslateTitle: string;
+      stats: {
+        published: string;
+        unpublished: string;
+        total: string;
+        languages: string;
+      };
+      list: {
+        title: string;
+        subtitle: string;
+        empty: string;
+        emptyDesc: string;
+        createFirst: string;
+        updatedAt: string;
+        published: string;
+        draft: string;
+      };
+      suggested: {
+        title: string;
+        subtitle: string;
+      };
+      dialog: {
+        createTitle: string;
+        editTitle: string;
+        slugLabel: string;
+        slugUrl: string;
+        contactEmail: string;
+        contactPhone: string;
+        publishSwitch: string;
+        changeReason: string;
+        changeReasonPlaceholder: string;
+        changeReasonHelp: string;
+        requiredFields: string;
+        cancel: string;
+        saving: string;
+        save: string;
+        createBtn: string;
+        titleLabel: string;
+        subtitleLabel: string;
+        contentLabel: string;
+      };
+      toasts: {
+        missingFields: string;
+        created: string;
+        updated: string;
+        saveError: string;
+        deleteConfirm: string;
+        deleted: string;
+        deleteError: string;
+        unpublished: string;
+        published: string;
+        updateError: string;
+        translateFillFirst: string;
+        translateSuccess: string;
+        translateError: string;
       };
     };
   };
@@ -4464,6 +4578,15 @@ export interface Messages {
       estimate: string;
       trade: string;
       error: string;
+    };
+    discordDevs: string;
+    sdkComments: {
+      installation: string;
+      usage: string;
+      priceEstimation: string;
+      createTrade: string;
+      authentication: string;
+      orSandbox: string;
     };
     comingSoon: {
       title: string;

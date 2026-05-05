@@ -97,6 +97,7 @@ const emptyForm: LegalPageForm = {
 
 export default function AdminLegalPagesPage() {
   const { messages } = useLocale();
+  const t = messages.admin.legalPages;
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [translating, setTranslating] = useState(false);
@@ -150,9 +151,9 @@ export default function AdminLegalPagesPage() {
   // Traduction automatique
   const handleTranslate = async (sourceLang: 'fr' | 'en' | 'cn', targetLang: 'fr' | 'en' | 'cn') => {
     const langNames: Record<string, string> = {
-      fr: 'français',
-      en: 'anglais',
-      cn: '中文 (chinois)'
+      fr: 'Français',
+      en: 'English',
+      cn: '中文'
     };
 
     // Récupérer le contenu source selon la langue
@@ -168,7 +169,7 @@ export default function AdminLegalPagesPage() {
     const source = getSourceContent(sourceLang);
 
     if (!source.title || !source.content) {
-      toast.error(`Veuillez d'abord remplir le contenu en ${langNames[sourceLang]}`);
+      toast.error(`${t.toasts.translateFillFirst} ${langNames[sourceLang]}`);
       return;
     }
 
@@ -188,13 +189,12 @@ export default function AdminLegalPagesPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Erreur de traduction');
+        throw new Error(error.error || t.toasts.translateError);
       }
 
       const data = await response.json();
       const { translation } = data;
 
-      // Mettre à jour le formulaire avec la traduction selon la langue cible
       setForm(prev => {
         const updates: Partial<LegalPageForm> = {};
         if (targetLang === 'fr') {
@@ -213,11 +213,11 @@ export default function AdminLegalPagesPage() {
         return { ...prev, ...updates };
       });
 
-      toast.success(`Traduction vers ${langNames[targetLang]} effectuée`);
+      toast.success(t.toasts.translateSuccess.replace('{{lang}}', langNames[targetLang]));
       setActiveTab(targetLang);
     } catch (error: any) {
       console.error('Translation error:', error);
-      toast.error(error.message || 'Erreur lors de la traduction');
+      toast.error(error.message || t.toasts.translateError);
     } finally {
       setTranslating(false);
     }
@@ -226,7 +226,7 @@ export default function AdminLegalPagesPage() {
   // Sauvegarder
   const handleSave = async () => {
     if (!form.slug || !form.titleFr || !form.titleEn || !form.contentFr || !form.contentEn) {
-      toast.error('Veuillez remplir tous les champs obligatoires (slug, titres et contenus)');
+      toast.error(t.toasts.missingFields);
       return;
     }
 
@@ -249,15 +249,15 @@ export default function AdminLegalPagesPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Erreur lors de la sauvegarde');
+        throw new Error(error.error || t.toasts.saveError);
       }
 
-      toast.success(editMode === 'create' ? 'Page créée avec succès' : 'Page mise à jour avec succès');
+      toast.success(editMode === 'create' ? t.toasts.created : t.toasts.updated);
       setDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: queryKeys.adminLegalPages });
     } catch (error: any) {
       console.error('Save error:', error);
-      toast.error(error.message || 'Erreur lors de la sauvegarde');
+      toast.error(error.message || t.toasts.saveError);
     } finally {
       setSaving(false);
     }
@@ -265,7 +265,7 @@ export default function AdminLegalPagesPage() {
 
   // Supprimer
   const handleDelete = async (slug: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette page ? Cette action est irréversible.')) {
+    if (!confirm(t.toasts.deleteConfirm)) {
       return;
     }
 
@@ -275,14 +275,14 @@ export default function AdminLegalPagesPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la suppression');
+        throw new Error(t.toasts.deleteError);
       }
 
-      toast.success('Page supprimée avec succès');
+      toast.success(t.toasts.deleted);
       queryClient.invalidateQueries({ queryKey: queryKeys.adminLegalPages });
     } catch (error) {
       console.error('Delete error:', error);
-      toast.error('Erreur lors de la suppression');
+      toast.error(t.toasts.deleteError);
     }
   };
 
@@ -294,19 +294,19 @@ export default function AdminLegalPagesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           isPublished: !page.isPublished,
-          changeReason: page.isPublished ? 'Dépublication' : 'Publication',
+          changeReason: page.isPublished ? t.list.published : t.list.draft,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la mise à jour');
+        throw new Error(t.toasts.updateError);
       }
 
-      toast.success(page.isPublished ? 'Page dépubliée' : 'Page publiée');
+      toast.success(page.isPublished ? t.toasts.unpublished : t.toasts.published);
       queryClient.invalidateQueries({ queryKey: queryKeys.adminLegalPages });
     } catch (error) {
       console.error('Toggle publish error:', error);
-      toast.error('Erreur lors de la mise à jour');
+      toast.error(t.toasts.updateError);
     }
   };
 
@@ -321,10 +321,10 @@ export default function AdminLegalPagesPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-              Pages Légales
+              {t.title}
             </h1>
             <p className="text-slate-300 text-sm sm:text-base">
-              Gérez les CGU, politique de confidentialité et autres pages légales du site
+              {t.subtitle}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -336,7 +336,7 @@ export default function AdminLegalPagesPage() {
               className="border-slate-600"
             >
               <ArrowPathIcon className={`w-4 h-4 sm:mr-2 ${loading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Actualiser</span>
+              <span className="hidden sm:inline">{t.refresh}</span>
             </Button>
             <Button
               size="sm"
@@ -344,8 +344,8 @@ export default function AdminLegalPagesPage() {
               className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
             >
               <PlusIcon className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Nouvelle page</span>
-              <span className="sm:hidden">Créer</span>
+              <span className="hidden sm:inline">{t.newPage}</span>
+              <span className="sm:hidden">{t.create}</span>
             </Button>
           </div>
         </div>
@@ -355,9 +355,7 @@ export default function AdminLegalPagesPage() {
       <Alert className="border-blue-500/50 bg-blue-500/10">
         <LanguageIcon className="h-4 w-4 text-blue-400" />
         <AlertDescription className="text-blue-200">
-          <strong>Traduction automatique :</strong> Rédigez le contenu dans une langue (FR, EN ou CN), puis utilisez les boutons 
-          de traduction pour générer automatiquement les versions dans les autres langues. 
-          La traduction utilise DeepL ou LibreTranslate.
+          <strong>{t.autoTranslateTitle}</strong> {t.autoTranslateInfo}
         </AlertDescription>
       </Alert>
 
@@ -370,7 +368,7 @@ export default function AdminLegalPagesPage() {
                 <CheckCircleIcon className="w-5 h-5 text-green-400" />
               </div>
               <div>
-                <p className="text-sm text-slate-400">Publiées</p>
+                <p className="text-sm text-slate-400">{t.stats.published}</p>
                 <p className="text-xl font-bold text-white">
                   {pages.filter((p: LegalPage) => p.isPublished).length}
                 </p>
@@ -386,7 +384,7 @@ export default function AdminLegalPagesPage() {
                 <ArchiveBoxIcon className="w-5 h-5 text-yellow-400" />
               </div>
               <div>
-                <p className="text-sm text-slate-400">Non publiées</p>
+                <p className="text-sm text-slate-400">{t.stats.unpublished}</p>
                 <p className="text-xl font-bold text-white">
                   {pages.filter((p: LegalPage) => !p.isPublished).length}
                 </p>
@@ -402,7 +400,7 @@ export default function AdminLegalPagesPage() {
                 <DocumentTextIcon className="w-5 h-5 text-blue-400" />
               </div>
               <div>
-                <p className="text-sm text-slate-400">Total pages</p>
+                <p className="text-sm text-slate-400">{t.stats.total}</p>
                 <p className="text-xl font-bold text-white">{pages.length}</p>
               </div>
             </div>
@@ -416,7 +414,7 @@ export default function AdminLegalPagesPage() {
                 <LanguageIcon className="w-5 h-5 text-purple-400" />
               </div>
               <div>
-                <p className="text-sm text-slate-400">Langues</p>
+                <p className="text-sm text-slate-400">{t.stats.languages}</p>
                 <p className="text-xl font-bold text-white">FR / EN</p>
               </div>
             </div>
@@ -434,10 +432,10 @@ export default function AdminLegalPagesPage() {
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <DocumentTextIcon className="w-5 h-5 text-orange-400" />
-              Toutes les pages légales
+              {t.list.title}
             </CardTitle>
             <CardDescription className="text-slate-400">
-              Cliquez sur une page pour la modifier
+              {t.list.subtitle}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -448,13 +446,13 @@ export default function AdminLegalPagesPage() {
             ) : pages.length === 0 ? (
               <div className="text-center py-12">
                 <DocumentTextIcon className="w-16 h-16 mx-auto mb-4 text-slate-500" />
-                <h3 className="text-xl font-semibold mb-2 text-white">Aucune page légale</h3>
+                <h3 className="text-xl font-semibold mb-2 text-white">{t.list.empty}</h3>
                 <p className="text-slate-400 mb-6">
-                  Créez votre première page pour commencer
+                  {t.list.emptyDesc}
                 </p>
                 <Button onClick={() => openEditDialog()}>
                   <PlusIcon className="w-4 h-4 mr-2" />
-                  Créer une page
+                  {t.list.createFirst}
                 </Button>
               </div>
             ) : (
@@ -472,11 +470,11 @@ export default function AdminLegalPagesPage() {
                         </Badge>
                         {page.isPublished ? (
                           <Badge className="bg-green-500/20 text-green-400 border-green-500/50">
-                            Publiée
+                            {t.list.published}
                           </Badge>
                         ) : (
                           <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
-                            Brouillon
+                            {t.list.draft}
                           </Badge>
                         )}
                       </div>
@@ -486,7 +484,7 @@ export default function AdminLegalPagesPage() {
                       <div className="flex items-center space-x-4 mt-2 text-xs text-slate-500">
                         <span className="flex items-center">
                           <ClockIcon className="w-3 h-3 mr-1" />
-                          Mise à jour: {new Date(page.updatedAt).toLocaleDateString('fr-FR')}
+                          {t.list.updatedAt} {new Date(page.updatedAt).toLocaleDateString('fr-FR')}
                         </span>
                       </div>
                     </div>
@@ -541,9 +539,9 @@ export default function AdminLegalPagesPage() {
       {pages.length < defaultPages.length && (
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-white text-lg">Pages suggérées</CardTitle>
+            <CardTitle className="text-white text-lg">{t.suggested.title}</CardTitle>
             <CardDescription className="text-slate-400">
-              Pages légales recommandées que vous n&apos;avez pas encore créées
+              {t.suggested.subtitle}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -581,7 +579,7 @@ export default function AdminLegalPagesPage() {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
           <DialogHeader>
             <DialogTitle className="text-white text-xl">
-              {editMode === 'create' ? 'Créer une nouvelle page' : `Modifier: ${selectedPage?.titleFr}`}
+              {editMode === 'create' ? t.dialog.createTitle : `${t.dialog.editTitle} ${selectedPage?.titleFr}`}
             </DialogTitle>
           </DialogHeader>
 
@@ -589,7 +587,7 @@ export default function AdminLegalPagesPage() {
             {/* Slug and metadata */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label className="text-slate-200">Slug (URL) *</Label>
+                <Label className="text-slate-200">{t.dialog.slugLabel}</Label>
                 <Input
                   value={form.slug}
                   onChange={(e) => setForm(prev => ({ ...prev, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') }))}
@@ -597,11 +595,11 @@ export default function AdminLegalPagesPage() {
                   disabled={editMode === 'edit'}
                   className="bg-slate-800 border-slate-600 text-white"
                 />
-                <p className="text-xs text-slate-500">L&apos;URL sera: /{form.slug || 'slug'}</p>
+                <p className="text-xs text-slate-500">{t.dialog.slugUrl} /{form.slug || 'slug'}</p>
               </div>
               
               <div className="space-y-2">
-                <Label className="text-slate-200">Email de contact</Label>
+                <Label className="text-slate-200">{t.dialog.contactEmail}</Label>
                 <Input
                   type="email"
                   value={form.contactEmail}
@@ -612,7 +610,7 @@ export default function AdminLegalPagesPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-slate-200">Téléphone de contact</Label>
+                <Label className="text-slate-200">{t.dialog.contactPhone}</Label>
                 <Input
                   value={form.contactPhone}
                   onChange={(e) => setForm(prev => ({ ...prev, contactPhone: e.target.value }))}
@@ -629,7 +627,7 @@ export default function AdminLegalPagesPage() {
                 onCheckedChange={(checked: boolean) => setForm(prev => ({ ...prev, isPublished: checked }))}
               />
               <Label htmlFor="published" className="text-slate-200">
-                Publier cette page
+                {t.dialog.publishSwitch}
               </Label>
             </div>
 
@@ -716,7 +714,7 @@ export default function AdminLegalPagesPage() {
 
               <TabsContent value="fr" className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-slate-200">Titre *</Label>
+                  <Label className="text-slate-200">{t.dialog.titleLabel}</Label>
                   <Input
                     value={form.titleFr}
                     onChange={(e) => setForm(prev => ({ ...prev, titleFr: e.target.value }))}
@@ -726,7 +724,7 @@ export default function AdminLegalPagesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-slate-200">Sous-titre</Label>
+                  <Label className="text-slate-200">{t.dialog.subtitleLabel}</Label>
                   <Input
                     value={form.subtitleFr}
                     onChange={(e) => setForm(prev => ({ ...prev, subtitleFr: e.target.value }))}
@@ -736,7 +734,7 @@ export default function AdminLegalPagesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-slate-200">Contenu * (Markdown supporté)</Label>
+                  <Label className="text-slate-200">{t.dialog.contentLabel}</Label>
                   <Textarea
                     value={form.contentFr}
                     onChange={(e) => setForm(prev => ({ ...prev, contentFr: e.target.value }))}
@@ -749,7 +747,7 @@ export default function AdminLegalPagesPage() {
 
               <TabsContent value="en" className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-slate-200">Title *</Label>
+                  <Label className="text-slate-200">{t.dialog.titleLabel}</Label>
                   <Input
                     value={form.titleEn}
                     onChange={(e) => setForm(prev => ({ ...prev, titleEn: e.target.value }))}
@@ -759,7 +757,7 @@ export default function AdminLegalPagesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-slate-200">Subtitle</Label>
+                  <Label className="text-slate-200">{t.dialog.subtitleLabel}</Label>
                   <Input
                     value={form.subtitleEn}
                     onChange={(e) => setForm(prev => ({ ...prev, subtitleEn: e.target.value }))}
@@ -769,7 +767,7 @@ export default function AdminLegalPagesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-slate-200">Content * (Markdown supported)</Label>
+                  <Label className="text-slate-200">{t.dialog.contentLabel}</Label>
                   <Textarea
                     value={form.contentEn}
                     onChange={(e) => setForm(prev => ({ ...prev, contentEn: e.target.value }))}
@@ -782,7 +780,7 @@ export default function AdminLegalPagesPage() {
 
               <TabsContent value="cn" className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-slate-200">标题 (Titre)</Label>
+                  <Label className="text-slate-200">{t.dialog.titleLabel}</Label>
                   <Input
                     value={form.titleCn}
                     onChange={(e) => setForm(prev => ({ ...prev, titleCn: e.target.value }))}
@@ -792,7 +790,7 @@ export default function AdminLegalPagesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-slate-200">副标题 (Sous-titre)</Label>
+                  <Label className="text-slate-200">{t.dialog.subtitleLabel}</Label>
                   <Input
                     value={form.subtitleCn}
                     onChange={(e) => setForm(prev => ({ ...prev, subtitleCn: e.target.value }))}
@@ -802,7 +800,7 @@ export default function AdminLegalPagesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-slate-200">内容 (Contenu) - Markdown supporté</Label>
+                  <Label className="text-slate-200">{t.dialog.contentLabel}</Label>
                   <Textarea
                     value={form.contentCn}
                     onChange={(e) => setForm(prev => ({ ...prev, contentCn: e.target.value }))}
@@ -817,15 +815,15 @@ export default function AdminLegalPagesPage() {
             {/* Change reason (edit mode) */}
             {editMode === 'edit' && (
               <div className="space-y-2">
-                <Label className="text-slate-200">Raison de la modification</Label>
+                <Label className="text-slate-200">{t.dialog.changeReason}</Label>
                 <Input
                   value={changeReason}
                   onChange={(e) => setChangeReason(e.target.value)}
-                  placeholder="Ex: Mise à jour suite à nouvelle réglementation"
+                  placeholder={t.dialog.changeReasonPlaceholder}
                   className="bg-slate-800 border-slate-600 text-white"
                 />
                 <p className="text-xs text-slate-500">
-                  Optionnel, sera enregistré dans l&apos;historique des modifications
+                  {t.dialog.changeReasonHelp}
                 </p>
               </div>
             )}
@@ -833,7 +831,7 @@ export default function AdminLegalPagesPage() {
 
           <DialogFooter className="flex items-center justify-between">
             <div className="text-xs text-slate-500">
-              * Champs obligatoires
+              {t.dialog.requiredFields}
             </div>
             <div className="flex items-center space-x-3">
               <Button
@@ -841,7 +839,7 @@ export default function AdminLegalPagesPage() {
                 onClick={() => setDialogOpen(false)}
                 className="border-slate-600"
               >
-                Annuler
+                {t.dialog.cancel}
               </Button>
               <Button
                 onClick={handleSave}
@@ -851,12 +849,12 @@ export default function AdminLegalPagesPage() {
                 {saving ? (
                   <>
                     <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
-                    Enregistrement...
+                    {t.dialog.saving}
                   </>
                 ) : (
                   <>
                     <CheckCircleIcon className="w-4 h-4 mr-2" />
-                    {editMode === 'create' ? 'Créer' : 'Enregistrer'}
+                    {editMode === 'create' ? t.dialog.createBtn : t.dialog.save}
                   </>
                 )}
               </Button>

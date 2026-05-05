@@ -87,89 +87,7 @@ export default function AuditPage() {
   const metrics = dashboardData?.metrics ?? null;
   const logs = dashboardData?.logs ?? [];
 
-  // Vérification de sécurité pour les traductions audit
-  const auditMessages = messages.admin?.audit || {
-    title: 'Audit & Sécurité',
-    subtitle: 'Surveillance des activités et métriques de sécurité',
-    loading: 'Chargement des données d\'audit...',
-    refresh: 'Actualiser',
-    export: 'Exporter',
-    metrics: {
-      totalLogs: 'Total Logs',
-      criticalAlerts: 'Alertes Critiques',
-      suspiciousActivities: 'Activités Suspectes',
-      failedLogins: 'Échecs Connexion',
-      last24h: 'Dernières 24h',
-      needsAttention: 'Nécessitent attention',
-      detectedAutomatically: 'Détectées automatiquement',
-      failedAttempts: 'Tentatives échouées',
-    },
-    tabs: {
-      logs: 'Logs d\'Audit',
-      analytics: 'Analyses',
-      alerts: 'Alertes',
-    },
-    filters: {
-      title: 'Filtres',
-      action: 'Action',
-      severity: 'Sévérité',
-      user: 'Utilisateur',
-      period: 'Période',
-      allActions: 'Toutes les actions',
-      allSeverities: 'Toutes les sévérités',
-      userIdPlaceholder: 'ID utilisateur',
-      lastHour: 'Dernière heure',
-      last24h: 'Dernières 24h',
-      last7days: '7 derniers jours',
-      last30days: '30 derniers jours',
-    },
-    table: {
-      date: 'Date',
-      user: 'Utilisateur',
-      action: 'Action',
-      severity: 'Sévérité',
-      ip: 'IP',
-      details: 'Détails',
-      system: 'Système',
-      entriesFound: 'entrées trouvées',
-    },
-    analytics: {
-      title: 'Analyses de Sécurité',
-      subtitle: 'Graphiques et tendances des activités',
-      topIPs: 'Top IPs',
-      activeUsers: 'Utilisateurs actifs',
-      fraudTrend: 'Tendance fraude',
-      activitySpike: 'Pic d\'activité détecté',
-      currentActivity: 'Activité actuelle',
-      threshold: 'seuil',
-      requests: 'requêtes',
-      actions: 'actions',
-      vsPreviousPeriod: 'vs période précédente',
-    },
-    alerts: {
-      title: 'Configuration des Alertes',
-      subtitle: 'Paramétrage des notifications de sécurité',
-      inDevelopment: 'Configuration des alertes en cours de développement',
-    },
-    actions: {
-      'user.login': 'Connexion',
-      'user.logout': 'Déconnexion',
-      'user.login_failed': 'Échec connexion',
-      'trade.created': 'Trade créé',
-      'trade.completed': 'Trade terminé',
-      'payout.requested': 'Paiement demandé',
-      'payout.processed': 'Paiement traité',
-      'admin.action': 'Action admin',
-      'security.suspicious_activity': 'Activité suspecte',
-      'security.rate_limit_exceeded': 'Rate limit dépassé',
-    },
-    severity: {
-      low: 'FAIBLE',
-      medium: 'MOYENNE',
-      high: 'ÉLEVÉE',
-      critical: 'CRITIQUE',
-    },
-  };
+  const auditMessages = messages.admin.audit;
 
   // Helper pour obtenir la locale date-fns
   const getDateFnsLocale = () => {
@@ -425,7 +343,7 @@ export default function AuditPage() {
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-12 text-slate-400">
                           <Activity className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                          <p className="text-sm">Aucun log d&apos;audit sur cette période</p>
+                          <p className="text-sm">{auditMessages.noLogsInPeriod}</p>
                         </TableCell>
                       </TableRow>
                     ) : logs.map((log) => (
