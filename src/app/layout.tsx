@@ -12,6 +12,7 @@ import { Footer } from "@/components/layout/footer";
 import { ChatWidget } from "@/components/ui/chat-widget";
 import { Toaster } from "@/components/ui/sonner";
 import { PayoutReconciler } from "@/components/payout-reconciler";
+import UpdateNotifier from "@/components/update-notifier";
 import type { Metadata } from "next";
 import { usePathname } from "next/navigation";
 
@@ -90,6 +91,7 @@ export default function RootLayout({
                   {!isAdminRoute && <ChatWidget />}
                   
                   <PayoutReconciler />
+                  <UpdateNotifier />
                   <Toaster />
                 </AuthProvider>
               </QueryProvider>

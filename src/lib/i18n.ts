@@ -6799,6 +6799,10 @@ export const messages: Record<Locale, Messages> = {
         sendMessageError: "Erreur lors de l'envoi du message",
       },
     },
+    updateNotifier: {
+      title: 'Nouvelle version disponible !',
+      countdown: 'Rechargement automatique dans {seconds} seconde(s)...',
+    },
   },
   en: {
     nav: {
@@ -13593,6 +13597,10 @@ export const messages: Record<Locale, Messages> = {
         sendMessageError: 'Failed to send message',
       },
     },
+    updateNotifier: {
+      title: 'New version available!',
+      countdown: 'Automatic reload in {seconds} second(s)...',
+    },
   },
   cn: {
     nav: {
@@ -20108,6 +20116,10 @@ export const messages: Record<Locale, Messages> = {
         createConversationError: '创建对话失败',
         sendMessageError: '发送消息失败',
       },
+    },
+    updateNotifier: {
+      title: '新版本已发布！',
+      countdown: '将在 {seconds} 秒后自动刷新...',
     },
   },
 };

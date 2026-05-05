@@ -6387,4 +6387,8 @@ export interface Messages {
       sendMessageError: string;
     };
   };
+  updateNotifier: {
+    title: string;
+    countdown: string;
+  };
 }
