@@ -84,7 +84,7 @@ export default function GiveawayDetailsPage() {
     queryKey: ['giveaway', giveawayId],
     queryFn: async () => {
       const r = await fetch(`/api/giveaways/${giveawayId}`, { credentials: 'include' });
-      if (!r.ok) throw new Error('Giveaway introuvable');
+      if (!r.ok) throw new Error(messages.giveawaysPage.giveawayNotFound);
       return r.json();
     },
     refetchInterval: (query) => {
@@ -104,16 +104,16 @@ export default function GiveawayDetailsPage() {
         body: JSON.stringify({ entriesToBuy: entries }),
       });
       const json = await r.json();
-      if (!r.ok) throw new Error(json.error || 'Erreur');
+      if (!r.ok) throw new Error(json.error || messages.giveawaysPage.detail.errorGeneric);
       return json as { newFragmentBalance: number; entriesAdded: number; fragmentsSpent: number };
     },
     onSuccess: (data) => {
       setUserFragments(data.newFragmentBalance);
       queryClient.invalidateQueries({ queryKey: ['giveaway', giveawayId] });
       queryClient.invalidateQueries({ queryKey: ['giveaways'] });
-      toast.success(`+${data.entriesAdded} entrée(s) ajoutée(s) — ${data.fragmentsSpent} fragments dépensés`);
+      toast.success((messages.giveawaysPage.detail.entriesAddedToast ?? '').replace('{count}', String(data.entriesAdded)).replace('{spent}', String(data.fragmentsSpent)));
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : 'Erreur'),
+    onError: (err) => toast.error(err instanceof Error ? err.message : messages.giveawaysPage.detail.errorGeneric),
   });
 
   if (isLoading) {
@@ -247,12 +247,12 @@ export default function GiveawayDetailsPage() {
                   </div>
                   <div className="text-center p-3 bg-muted rounded-lg">
                     <TicketIcon className="w-5 h-5 mx-auto mb-1 text-purple-500" />
-                    <p className="text-xs text-muted-foreground">Entrées totales</p>
+                    <p className="text-xs text-muted-foreground">{messages.giveawaysPage.detail.totalEntries}</p>
                     <p className="font-bold">{totalEntries}</p>
                   </div>
                   <div className="text-center p-3 bg-muted rounded-lg">
                     <TrophyIcon className="w-5 h-5 mx-auto mb-1 text-yellow-500" />
-                    <p className="text-xs text-muted-foreground">Gagnants</p>
+                    <p className="text-xs text-muted-foreground">{messages.giveawaysPage.detail.winnersLabel}</p>
                     <p className="font-bold">{giveaway.winnerCount}</p>
                   </div>
                 </div>
@@ -288,21 +288,21 @@ export default function GiveawayDetailsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
                     <ChartBarIcon className="w-5 h-5 text-orange-500" />
-                    Ta participation
+                    {messages.giveawaysPage.detail.yourParticipation}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-3 gap-3">
                     <div className="text-center p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                      <p className="text-xs text-muted-foreground mb-1">Mes entrées</p>
+                      <p className="text-xs text-muted-foreground mb-1">{messages.giveawaysPage.detail.myEntries}</p>
                       <p className="text-xl font-bold text-amber-600">{myEntries}</p>
                     </div>
                     <div className="text-center p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                      <p className="text-xs text-muted-foreground mb-1">Ma chance</p>
+                      <p className="text-xs text-muted-foreground mb-1">{messages.giveawaysPage.detail.myChance}</p>
                       <p className="text-xl font-bold text-orange-600">{myChance.toFixed(2)}%</p>
                     </div>
                     <div className="text-center p-3 bg-muted rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">Mes fragments</p>
+                      <p className="text-xs text-muted-foreground mb-1">{messages.giveawaysPage.detail.myFragments}</p>
                       <p className="text-xl font-bold">{fragments} 💠</p>
                     </div>
                   </div>
@@ -312,9 +312,9 @@ export default function GiveawayDetailsPage() {
                       {fragments < giveaway.ticketPrice ? (
                         <div className="space-y-1.5">
                           <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>Fragments disponibles</span>
+                            <span>{messages.giveawaysPage.detail.fragmentsAvailable}</span>
                             <span className="text-amber-500 font-medium">
-                              encore {giveaway.ticketPrice - fragments} 💠 manquants
+                              {(messages.giveawaysPage.detail.fragmentsMissing ?? '').replace('{count}', String(giveaway.ticketPrice - fragments))}
                             </span>
                           </div>
                           <Progress
@@ -322,12 +322,12 @@ export default function GiveawayDetailsPage() {
                             className="h-1.5 bg-muted [&>div]:bg-amber-500"
                           />
                           <p className="text-xs text-muted-foreground text-center">
-                            Vends des skins pour gagner des fragments
+                            {messages.giveawaysPage.detail.sellSkinsHint}
                           </p>
                           <Link href="/missions">
                             <Button variant="outline" size="sm" className="w-full text-xs">
                               <SparklesIcon className="w-3.5 h-3.5 mr-1.5" />
-                              Voir les missions
+                              {messages.giveawaysPage.detail.viewMissions}
                             </Button>
                           </Link>
                         </div>
@@ -335,10 +335,10 @@ export default function GiveawayDetailsPage() {
                         <div className="space-y-3">
                           <div>
                             <Label htmlFor="entries-count" className="text-sm font-medium">
-                              Nombre d&apos;entrées à acheter
+                              {messages.giveawaysPage.detail.entriesToBuyLabel}
                             </Label>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              Max : {maxSelectable} entrée(s) disponibles
+                              {(messages.giveawaysPage.detail.maxEntriesAvailable ?? '').replace('{count}', String(maxSelectable))}
                             </p>
                           </div>
                           <div className="flex gap-2">
@@ -365,18 +365,18 @@ export default function GiveawayDetailsPage() {
                               }
                               className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shrink-0"
                             >
-                              {participateMutation.isPending ? 'En cours…' : `Participer — ${totalCost} 💠`}
+                              {participateMutation.isPending ? messages.giveawaysPage.detail.participating : (messages.giveawaysPage.detail.participateWithCost ?? '').replace('{cost}', String(totalCost))}
                             </Button>
                           </div>
 
                           {/* Aperçu de la chance après participation */}
                           {entriesToBuy > 0 && (
                             <div className="rounded-lg bg-muted/50 px-4 py-2.5 text-sm flex items-center justify-between">
-                              <span className="text-muted-foreground">Après achat :</span>
+                              <span className="text-muted-foreground">{messages.giveawaysPage.detail.afterPurchase}</span>
                               <div className="flex gap-4 font-medium">
-                                <span>{previewMyEntries} entrées</span>
+                                <span>{(messages.giveawaysPage.detail.entriesCount ?? '').replace('{count}', String(previewMyEntries))}</span>
                                 <span className="text-green-600">
-                                  {previewChance.toFixed(2)}% de chance
+                                  {(messages.giveawaysPage.detail.chancePercent ?? '').replace('{percent}', previewChance.toFixed(2))}
                                 </span>
                               </div>
                             </div>
@@ -384,8 +384,7 @@ export default function GiveawayDetailsPage() {
 
                           {giveaway.maxEntriesPerUser != null && (
                             <p className="text-xs text-muted-foreground">
-                              Limite par utilisateur : {giveaway.maxEntriesPerUser} entrées
-                              ({maxPerUser} restantes)
+                              {(messages.giveawaysPage.detail.userEntryLimit ?? '').replace('{max}', String(giveaway.maxEntriesPerUser)).replace('{remaining}', String(maxPerUser))}
                             </p>
                           )}
                         </div>
@@ -395,7 +394,7 @@ export default function GiveawayDetailsPage() {
 
                   {!isActive && giveaway.status === 'ENDED' && (
                     <p className="text-sm text-muted-foreground text-center pt-1">
-                      Ce giveaway est terminé.
+                      {messages.giveawaysPage.detail.giveawayEnded}
                     </p>
                   )}
                 </CardContent>
@@ -408,13 +407,13 @@ export default function GiveawayDetailsPage() {
               <Card className="border-orange-500/30">
                 <CardContent className="p-6 text-center">
                   <GiftIcon className="w-12 h-12 mx-auto mb-3 text-orange-500" />
-                  <p className="font-medium mb-1">Connecte-toi pour participer</p>
+                  <p className="font-medium mb-1">{messages.giveawaysPage.detail.loginToParticipate}</p>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Coût : {giveaway.ticketPrice} fragments par entrée
+                    {(messages.giveawaysPage.detail.costPerEntry ?? '').replace('{price}', String(giveaway.ticketPrice))}
                   </p>
                   <Link href="/">
                     <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
-                      Se connecter via Steam
+                      {messages.giveawaysPage.detail.loginViaSteam}
                     </Button>
                   </Link>
                 </CardContent>
@@ -451,7 +450,7 @@ export default function GiveawayDetailsPage() {
                         </Avatar>
                         <div className="flex-1">
                           <p className="font-semibold text-yellow-800 dark:text-yellow-200">
-                            {u?.steamUsername ?? 'Gagnant'}
+                            {u?.steamUsername ?? messages.giveawaysPage.detail.winnerFallback}
                           </p>
                         </div>
                         <CheckCircleIcon className="w-7 h-7 text-yellow-600 shrink-0" />
@@ -483,7 +482,7 @@ export default function GiveawayDetailsPage() {
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Entrées totales</span>
+                  <span className="text-muted-foreground">{messages.giveawaysPage.detail.totalEntries}</span>
                   <span className="font-semibold">{totalEntries}</span>
                 </div>
                 <div className="flex justify-between">
@@ -543,7 +542,7 @@ export default function GiveawayDetailsPage() {
                           {user.username}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {myEntries} entrées • {myChance.toFixed(1)}%
+                          {(messages.giveawaysPage.detail.entriesAndChance ?? '').replace('{entries}', String(myEntries)).replace('{chance}', myChance.toFixed(1))}
                         </p>
                       </div>
                     </div>

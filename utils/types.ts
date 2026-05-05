@@ -456,6 +456,11 @@ export interface Messages {
       kycRequired: string;
       withdrawFunds: string;
       sepaOrCard: string;
+      dailyVisitClaimed?: string;
+      fragmentsLabel?: string;
+      viewMissions?: string;
+      giveawaysLabel?: string;
+      participateGiveaway?: string;
       balance?: {
         title: string;
         last7days: string;
@@ -2224,6 +2229,32 @@ export interface Messages {
       user: string;
       tickets: string;
       drawSeed: string;
+      totalEntries?: string;
+      winnersLabel?: string;
+      yourParticipation?: string;
+      myEntries?: string;
+      myChance?: string;
+      myFragments?: string;
+      fragmentsAvailable?: string;
+      fragmentsMissing?: string;
+      sellSkinsHint?: string;
+      viewMissions?: string;
+      entriesToBuyLabel?: string;
+      maxEntriesAvailable?: string;
+      participating?: string;
+      participateWithCost?: string;
+      afterPurchase?: string;
+      entriesCount?: string;
+      chancePercent?: string;
+      userEntryLimit?: string;
+      giveawayEnded?: string;
+      loginToParticipate?: string;
+      costPerEntry?: string;
+      loginViaSteam?: string;
+      winnerFallback?: string;
+      entriesAndChance?: string;
+      errorGeneric?: string;
+      entriesAddedToast?: string;
       participantCountPrivateHint: string;
       yourEntryNone: string;
     };
@@ -2381,6 +2412,13 @@ export interface Messages {
       participate: string;
       ticketsAvailable: string;
       privateLabel?: string;
+      winnersCount?: string;
+      fragmentsLabel?: string;
+      fragmentsRemaining?: string;
+      costLabel?: string;
+      nextGiveaway?: string;
+      moreNeeded?: string;
+      missionsLink?: string;
     };
     empty: {
       noActive: string;
@@ -2404,6 +2442,13 @@ export interface Messages {
       loginRequired: string;
     };
     youHave: string;
+    notifications?: {
+      winnerToast: string;
+      winnerFallback: string;
+      newWinners: string;
+      newWinner: string;
+      anonymousPlayer: string;
+    };
     fragments?: {
       costPerEntry: string;
       totalEntries: string;
@@ -4661,19 +4706,33 @@ export interface Messages {
         useSavedWallet?: string;
         enterNewWallet?: string;
         saveWalletHint?: string;
+        firstLastNameRequired: string;
+        autoVerification: string;
+        ibanFrWarningToast: string;
         security: {
           title: string;
+          description: string;
           sepaInfo: string;
           sepaFrIbanWarning: string;
           cryptoInfo: string;
           cardInfo: string;
+          ibanVerificationDesc: string;
         };
       };
+    result: {
+      requestRegistered: string;
+      paymentInitiated: string;
+      reference: string;
+      processingFee: string;
+      networkFee: string;
+      newWithdrawal: string;
+    };
     history: {
       title: string;
       noPayout: string;
       noPayoutDesc: string;
       requestPayout: string;
+      sepaPremiumLabel: string;
       columns: {
         date: string;
         amount: string;
@@ -4711,6 +4770,8 @@ export interface Messages {
       submitting: string;
       successTitle: string;
       successDesc: string;
+      reference: string;
+      newRequest: string;
     };
     toast: {
       amountTooLow: string;
@@ -4925,6 +4986,206 @@ export interface Messages {
       tradeDistribution: string;
       recentActivity: string;
       loadError: string;
+    };
+  };
+  payoutComponents: {
+    reconciler: {
+      confirmedTitle: string;
+      confirmedDescription: string;
+      failedTitle: string;
+      failedDescription: string;
+    };
+    fees: {
+      cardLabel: string;
+      sepaLabel: string;
+      cryptoLabel: string;
+      cardDelay: string;
+      sepaDelay: string;
+    };
+    form: {
+      quoteError: string;
+      kycRequired: string;
+      paymentError: string;
+      unknownError: string;
+      successTitle: string;
+      successSepa: string;
+      successCrypto: string;
+      title: string;
+      description: string;
+      errorLabel: string;
+      sepaTitle: string;
+      crypto: string;
+      grossAmount: string;
+      processingFees: string;
+      networkFees: string;
+      netAmount: string;
+      firstName: string;
+      firstNamePlaceholder: string;
+      lastName: string;
+      lastNamePlaceholder: string;
+      iban: string;
+      bicSwift: string;
+      sepaInfo: string;
+      cryptoCurrency: string;
+      chooseCrypto: string;
+      blockchainNetwork: string;
+      chooseNetwork: string;
+      walletAddress: string;
+      walletAddressWarning: string;
+      memoTag: string;
+      memoRequired: string;
+      memoPlaceholder: string;
+      memoWarning: string;
+      cryptoInfo: string;
+      loading: string;
+      submit: string;
+      terms: string;
+    };
+    history: {
+      title: string;
+      description: string;
+      total: string;
+      empty: string;
+      statusPaid: string;
+      statusFailed: string;
+      statusProcessing: string;
+      statusVerification: string;
+      statusPending: string;
+      paidAt: string;
+      previous: string;
+      next: string;
+      page: string;
+    };
+  };
+  addressForm: {
+    title: string;
+    country: string;
+    city: string;
+    postalCode: string;
+    street: string;
+    buildingNumber: string;
+    unitNumber: string;
+    saving: string;
+    save: string;
+  };
+  kycVerification: {
+    error: string;
+    title: string;
+    description: string;
+    status: {
+      verified: string;
+      rejected: string;
+      pending: string;
+    };
+    declineReasons: string;
+    verified: {
+      title: string;
+      description: string;
+    };
+    continue: string;
+    loading: string;
+    retry: string;
+    start: string;
+    steps: {
+      title: string;
+      step1: { title: string; description: string };
+      step2: { title: string; description: string };
+      step3: { title: string; description: string };
+    };
+    privacy: string;
+    errors: {
+      addressSave: string;
+      unknown: string;
+      pleaseWait: string;
+      alreadyInProgress: string;
+      kycInitError: string;
+      noVerificationUrl: string;
+    };
+  };
+  notificationsPage: {
+    toastMarkedRead: string;
+    toastError: string;
+    toastAllMarkedRead: string;
+    loginRequired: string;
+    loginDescription: string;
+    loginButton: string;
+    loading: string;
+    title: string;
+    unreadCount: string;
+    unreadCountPlural: string;
+    noUnread: string;
+    markAllRead: string;
+    tabAll: string;
+    tabUnread: string;
+    noNotifications: string;
+    noUnreadNotifications: string;
+    noNotificationsYet: string;
+    badgeNew: string;
+    viewDetails: string;
+    markAsRead: string;
+    previous: string;
+    pageOf: string;
+    next: string;
+  };
+  twoFactorPage: {
+    verifyTitle: string;
+    verifyDescription: string;
+    codeLabel: string;
+    trustDevice: string;
+    validateAndContinue: string;
+    invalidCode: string;
+    manageTitle: string;
+    enabledDescription: string;
+    strengthenDescription: string;
+    authenticatorPrompt: string;
+    passwordLabel: string;
+    passwordEmailOnly: string;
+    passwordPlaceholder: string;
+    enable2FA: string;
+    accountProtected: string;
+    passwordOnly: string;
+    disable2FA: string;
+    enableError: string;
+    disableError: string;
+    step1Title: string;
+    step1Instructions: string;
+    showUri: string;
+    step2Title: string;
+    step2Warning: string;
+    step3Title: string;
+    step3Instructions: string;
+    confirmActivation: string;
+    verifyError: string;
+    enabledSuccess: string;
+    doneTitle: string;
+    doneDescription: string;
+    disabledSuccess: string;
+    notAvailable: string;
+    loading: string;
+  };
+  loginPage: {
+    subtitle: string;
+    title: string;
+    chooseMethod: string;
+    continueWithDiscord: string;
+    continueWithSteam: string;
+    orContinueWithEmail: string;
+    emailLabel: string;
+    passwordLabel: string;
+    forgotPassword: string;
+    loggingIn: string;
+    login: string;
+    noAccountYet: string;
+    loginWithSteam: string;
+    legalNotice: string;
+    termsOfService: string;
+    and: string;
+    privacyPolicy: string;
+    errors: {
+      loginError: string;
+      invalidCredentials: string;
+      steamError: string;
+      discordError: string;
     };
   };
 }

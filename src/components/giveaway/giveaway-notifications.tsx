@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrophyIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { GiveawayWithEntries } from '@/hooks/use-giveaways';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface DrawNotification {
   id: string;
@@ -23,8 +24,11 @@ interface DrawNotification {
 const POLL_INTERVAL_MS = 30_000;
 
 export function GiveawayNotifications() {
+  const { messages } = useLocale();
   const [notifications, setNotifications] = useState<DrawNotification[]>([]);
   const seenIds = useRef<Set<string>>(new Set());
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   useEffect(() => {
     const checkForDraws = async () => {
@@ -32,6 +36,7 @@ export function GiveawayNotifications() {
         const response = await fetch('/api/giveaways?status=ENDED', { credentials: 'include' });
         if (!response.ok) return;
         const giveaways: GiveawayWithEntries[] = await response.json();
+        const m = messagesRef.current;
 
         giveaways.forEach((giveaway) => {
           if (seenIds.current.has(giveaway.id)) return;
@@ -40,7 +45,6 @@ export function GiveawayNotifications() {
 
           const drawTime = new Date(giveaway.updatedAt);
           const timeDiff = Date.now() - drawTime.getTime();
-          // Notifier seulement si le tirage date de moins de 5 minutes
           if (timeDiff > 5 * 60 * 1000) return;
 
           seenIds.current.add(giveaway.id);
@@ -60,14 +64,17 @@ export function GiveawayNotifications() {
           };
 
           const firstWinner = winners[0];
+          const n = m.giveaways.notifications;
           toast.success(
-            `🎉 ${giveaway.title} — Gagnant : ${firstWinner?.steamUsername ?? 'Joueur'}`
+            (n?.winnerToast ?? '')
+              .replace('{title}', giveaway.title)
+              .replace('{name}', firstWinner?.steamUsername ?? (n?.winnerFallback ?? 'Player'))
           );
 
           setNotifications((prev) => [notification, ...prev.slice(0, 2)]);
         });
       } catch (error) {
-        console.error('[GiveawayNotifications] Erreur polling:', error);
+        console.error('[GiveawayNotifications] polling error:', error);
       }
     };
 
@@ -97,7 +104,7 @@ export function GiveawayNotifications() {
                   <div className="flex items-center space-x-2">
                     <TrophyIcon className="w-5 h-5 text-yellow-600" />
                     <span className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
-                      {notification.winners.length > 1 ? 'Nouveaux Gagnants !' : 'Nouveau Gagnant !'}
+                      {notification.winners.length > 1 ? messages.giveaways.notifications?.newWinners : messages.giveaways.notifications?.newWinner}
                     </span>
                   </div>
                   <button
@@ -118,7 +125,7 @@ export function GiveawayNotifications() {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200 truncate">
-                        {winner.steamUsername ?? 'Joueur anonyme'}
+                        {winner.steamUsername ?? messages.giveaways.notifications?.anonymousPlayer}
                         {notification.winners.length > 1 && (
                           <span className="ml-1 text-xs text-yellow-600">#{winner.rank}</span>
                         )}

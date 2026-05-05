@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Loader2, Wallet, Building2, AlertCircle, CheckCircle, Euro, Clock, Shield } from 'lucide-react';
+import { useLocale } from '@/components/providers/locale-provider';
 
 // Cryptos supportées par Whitepay
 const SUPPORTED_CRYPTOS = [
@@ -63,8 +64,8 @@ interface QuoteData {
 }
 
 export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }: PayoutFormProps) {
-  // Simple translation fallback
-  const t = (key: string) => key;
+  const { messages } = useLocale();
+  const t = messages.payoutComponents.form;
   const [method, setMethod] = useState<'SEPA' | 'CRYPTO'>('SEPA');
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -117,7 +118,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
         }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Erreur lors du calcul du devis');
+      if (!response.ok) throw new Error(data.error || t.quoteError);
       return data.quote as QuoteData;
     },
     enabled: availableAmountCents > 0,
@@ -171,17 +172,17 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
 
       if (!response.ok) {
         if (data.code === 'KYC_REQUIRED') {
-          setSubmitError('Veuillez vérifier votre identité avant de demander un paiement.');
+          setSubmitError(t.kycRequired);
           onError?.('KYC_REQUIRED');
           return;
         }
-        throw new Error(data.error || 'Erreur lors de la création du paiement');
+        throw new Error(data.error || t.paymentError);
       }
 
       setSuccess(true);
       onSuccess?.(data.payout);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erreur inconnue';
+      const message = err instanceof Error ? err.message : t.unknownError;
       setSubmitError(message);
       onError?.(message);
     } finally {
@@ -196,12 +197,10 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
           <div className="flex flex-col items-center text-center gap-4">
             <CheckCircle className="w-16 h-16 text-green-500" />
             <h3 className="text-xl font-bold text-green-500">
-              {t('payout.success.title') || 'Paiement initié avec succès !'}
+              {t.successTitle}
             </h3>
             <p className="text-muted-foreground">
-              {method === 'SEPA'
-                ? t('payout.success.sepa') || 'Votre virement sera traité dans 1-2 jours ouvrés.'
-                : t('payout.success.crypto') || 'Votre retrait crypto est en cours de traitement.'}
+              {method === 'SEPA' ? t.successSepa : t.successCrypto}
             </p>
           </div>
         </CardContent>
@@ -214,10 +213,10 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Euro className="w-5 h-5" />
-          {t('payout.title') || 'Demander un paiement'}
+          {t.title}
         </CardTitle>
         <CardDescription>
-          {t('payout.description') || 'Choisissez votre méthode de paiement préférée'}
+          {t.description}
         </CardDescription>
       </CardHeader>
 
@@ -225,7 +224,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
         {error && (
           <Alert variant="destructive" className="mb-4">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>{t('common.error') || 'Erreur'}</AlertTitle>
+            <AlertTitle>{t.errorLabel}</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -234,11 +233,11 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="SEPA" className="gap-2">
               <Building2 className="w-4 h-4" />
-              {t('payout.sepa.title') || 'Virement SEPA'}
+              {t.sepaTitle}
             </TabsTrigger>
             <TabsTrigger value="CRYPTO" className="gap-2">
               <Wallet className="w-4 h-4" />
-              Crypto
+              {t.crypto}
             </TabsTrigger>
           </TabsList>
 
@@ -246,20 +245,20 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
           {quote && !quoteLoading && (
             <div className="bg-muted/50 rounded-lg p-4 mb-6 space-y-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('payout.amount') || 'Montant brut'}</span>
+                <span className="text-muted-foreground">{t.grossAmount}</span>
                 <span className="font-medium">{formatCents(quote.amountCents)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t('payout.fees.processing') || 'Frais de traitement'}</span>
+                <span className="text-muted-foreground">{t.processingFees}</span>
                 <span className="text-destructive">-{formatCents(quote.fees.processingCents)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t('payout.fees.network') || 'Frais réseau'}</span>
+                <span className="text-muted-foreground">{t.networkFees}</span>
                 <span className="text-destructive">-{formatCents(quote.fees.networkCents)}</span>
               </div>
               <hr className="border-border" />
               <div className="flex justify-between font-bold">
-                <span>{t('payout.netAmount') || 'Montant net'}</span>
+                <span>{t.netAmount}</span>
                 <span className="text-green-500">{formatCents(quote.netCents)}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
@@ -279,22 +278,22 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
             {/* Common fields */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">{t('payout.firstName') || 'Prénom'}</Label>
+                <Label htmlFor="firstName">{t.firstName}</Label>
                 <Input
                   id="firstName"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Jean"
+                  placeholder={t.firstNamePlaceholder}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">{t('payout.lastName') || 'Nom'}</Label>
+                <Label htmlFor="lastName">{t.lastName}</Label>
                 <Input
                   id="lastName"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Dupont"
+                  placeholder={t.lastNamePlaceholder}
                   required
                 />
               </div>
@@ -302,7 +301,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
 
             <TabsContent value="SEPA" className="space-y-4 mt-0">
               <div className="space-y-2">
-                <Label htmlFor="iban">{t('payout.sepa.iban') || 'IBAN'}</Label>
+                <Label htmlFor="iban">{t.iban}</Label>
                 <Input
                   id="iban"
                   value={formatIban(iban)}
@@ -314,7 +313,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="bic">{t('payout.sepa.bic') || 'BIC/SWIFT (optionnel)'}</Label>
+                <Label htmlFor="bic">{t.bicSwift}</Label>
                 <Input
                   id="bic"
                   value={bic}
@@ -327,7 +326,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
               <Alert>
                 <Shield className="h-4 w-4" />
                 <AlertDescription>
-                  {t('payout.sepa.info') || 'Les virements SEPA sont sécurisés et arrivent sous 1-2 jours ouvrés.'}
+                  {t.sepaInfo}
                 </AlertDescription>
               </Alert>
             </TabsContent>
@@ -335,10 +334,10 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
             <TabsContent value="CRYPTO" className="space-y-4 mt-0">
               {/* Sélection de la crypto */}
               <div className="space-y-2">
-                <Label htmlFor="crypto-select">Crypto-monnaie</Label>
+                <Label htmlFor="crypto-select">{t.cryptoCurrency}</Label>
                 <Select value={selectedCrypto} onValueChange={setSelectedCrypto}>
                   <SelectTrigger id="crypto-select">
-                    <SelectValue placeholder="Choisir une crypto" />
+                    <SelectValue placeholder={t.chooseCrypto} />
                   </SelectTrigger>
                   <SelectContent>
                     {SUPPORTED_CRYPTOS.map((c) => (
@@ -352,10 +351,10 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
 
               {/* Sélection du réseau */}
               <div className="space-y-2">
-                <Label htmlFor="network-select">Réseau blockchain</Label>
+                <Label htmlFor="network-select">{t.blockchainNetwork}</Label>
                 <Select value={selectedNetwork} onValueChange={setSelectedNetwork}>
                   <SelectTrigger id="network-select">
-                    <SelectValue placeholder="Choisir un réseau" />
+                    <SelectValue placeholder={t.chooseNetwork} />
                   </SelectTrigger>
                   <SelectContent>
                     {availableNetworks.map((net) => (
@@ -369,7 +368,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
 
               {/* Adresse wallet */}
               <div className="space-y-2">
-                <Label htmlFor="walletAddress">Adresse du wallet</Label>
+                <Label htmlFor="walletAddress">{t.walletAddress}</Label>
                 <Input
                   id="walletAddress"
                   value={walletAddress}
@@ -378,7 +377,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
                   required={method === 'CRYPTO'}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Vérifiez bien l&apos;adresse, les transactions crypto sont irréversibles.
+                  {t.walletAddressWarning}
                 </p>
               </div>
 
@@ -386,18 +385,18 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
               {needsMemo && (
                 <div className="space-y-2">
                   <Label htmlFor="memo" className="flex items-center gap-2">
-                    Memo / Tag
-                    <span className="text-[10px] bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-1.5 py-0.5 rounded font-medium">Obligatoire</span>
+                    {t.memoTag}
+                    <span className="text-[10px] bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-1.5 py-0.5 rounded font-medium">{t.memoRequired}</span>
                   </Label>
                   <Input
                     id="memo"
                     value={memo}
                     onChange={(e) => setMemo(e.target.value)}
-                    placeholder="Entrez le memo/tag"
+                    placeholder={t.memoPlaceholder}
                     required
                   />
                   <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                    Sans memo correct, vos fonds pourraient être perdus définitivement.
+                    {t.memoWarning}
                   </p>
                 </div>
               )}
@@ -405,7 +404,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
               <Alert>
                 <Shield className="h-4 w-4" />
                 <AlertDescription>
-                  Les retraits crypto sont traités via Whitepay. Le paiement arrive généralement en quelques minutes.
+                  {t.cryptoInfo}
                 </AlertDescription>
               </Alert>
             </TabsContent>
@@ -419,7 +418,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {t('common.loading') || 'Chargement...'}
+                  {t.loading}
                 </>
               ) : (
                 <>
@@ -428,13 +427,13 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
                   ) : (
                     <Wallet className="w-4 h-4 mr-2" />
                   )}
-                  {t('payout.submit') || 'Recevoir'} {quote && formatCents(quote.netCents)}
+                  {t.submit} {quote && formatCents(quote.netCents)}
                 </>
               )}
             </Button>
 
             <p className="text-xs text-center text-muted-foreground">
-              {t('payout.terms') || 'En confirmant, vous acceptez nos conditions de paiement.'}
+              {t.terms}
             </p>
           </form>
         </Tabs>

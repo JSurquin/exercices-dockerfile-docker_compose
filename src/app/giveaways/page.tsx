@@ -61,14 +61,14 @@ const formatTimeRemaining = (timeRemaining: ReturnType<typeof getTimeRemaining>,
 };
 
 const defaultFragmentLabels = {
-  costPerEntry: 'fragments / entrée',
-  totalEntries: 'entrées',
+  costPerEntry: 'fragments / entry',
+  totalEntries: 'entries',
   participants: 'participants',
-  yourEntries: 'Tes entrées',
-  yourChance: 'Ta chance',
-  winnerCount: 'gagnants',
-  entriesToBuy: 'Nombre d’entrées',
-  entriesAvailable: 'fragments disponibles',
+  yourEntries: 'Your entries',
+  yourChance: 'Your odds',
+  winnerCount: 'winners',
+  entriesToBuy: 'Entries to buy',
+  entriesAvailable: 'fragments available',
 };
 
 const GiveawayCard = ({
@@ -203,7 +203,7 @@ const GiveawayCard = ({
                 <span className="text-sm font-medium text-green-800 dark:text-green-200 truncate">
                   {messages.giveaways.card.winner}{' '}
                   {giveaway.winners && giveaway.winners.length > 0
-                    ? `${giveaway.winners.length} gagnant(s)`
+                    ? `${giveaway.winners.length} ${messages.giveaways.card.winnersCount}`
                     : giveaway.winnerId?.slice(-6)}
                 </span>
               </div>
@@ -224,10 +224,10 @@ const GiveawayCard = ({
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <SparklesIcon className="w-3.5 h-3.5 text-amber-500" />
-                    {userFragments} / {giveaway.ticketPrice} fragments
+                    {userFragments} / {giveaway.ticketPrice} {messages.giveaways.card.fragmentsLabel}
                   </span>
                   <span className="text-amber-500 font-medium">
-                    encore {giveaway.ticketPrice - userFragments} fragments
+                    {(messages.giveaways.card.fragmentsRemaining ?? '').replace('{count}', String(giveaway.ticketPrice - userFragments))}
                   </span>
                 </div>
                 <Progress
@@ -266,8 +266,7 @@ const GiveawayCard = ({
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              {messages.giveaways.youHave} {userFragments} {fg.entriesAvailable} — coût : {totalCost}{' '}
-              fragments
+              {messages.giveaways.youHave} {userFragments} {fg.entriesAvailable} — {(messages.giveaways.card.costLabel ?? '').replace('{cost}', String(totalCost))}
             </p>
           </div>
         )}
@@ -427,7 +426,7 @@ export default function GiveawaysPage() {
                       <div className="mt-3 flex items-center space-x-2">
                         <SparklesIcon className="w-4 h-4 text-amber-500" />
                         <span className="font-bold text-amber-700 dark:text-amber-300">
-                          {user.fragments ?? 0} fragments
+                          {user.fragments ?? 0} {messages.giveaways.card.fragmentsLabel}
                         </span>
                       </div>
                     )}
@@ -511,7 +510,7 @@ export default function GiveawaysPage() {
                     <div className="flex items-center justify-end space-x-2 mb-1">
                       <SparklesIcon className="w-5 h-5 text-amber-500" />
                       <span className="text-2xl font-bold">{userFragments}</span>
-                      <span className="text-muted-foreground">fragments</span>
+                      <span className="text-muted-foreground">{messages.giveaways.card.fragmentsLabel}</span>
                     </div>
                     {/* Progression vers le prochain giveaway actif le moins cher */}
                     {(() => {
@@ -525,9 +524,9 @@ export default function GiveawaysPage() {
                       return (
                         <div className="mt-2 space-y-1 text-xs text-left min-w-[180px]">
                           <div className="flex justify-between text-muted-foreground">
-                            <span>Prochain giveaway</span>
+                            <span>{messages.giveaways.card.nextGiveaway}</span>
                             <span className="text-amber-500 font-medium">
-                              encore {cheapest.ticketPrice - userFragments} 💠
+                              {(messages.giveaways.card.moreNeeded ?? '').replace('{count}', String(cheapest.ticketPrice - userFragments))}
                             </span>
                           </div>
                           <Progress value={pct} className="h-1.5 bg-muted [&>div]:bg-amber-500" />
@@ -537,7 +536,7 @@ export default function GiveawaysPage() {
                     <div className="flex flex-wrap justify-end gap-2 text-sm text-muted-foreground mt-1">
                       <span>{messages.giveaways.userTickets.tickets}: {user.tickets ?? 0}</span>
                       <Link href="/missions" className="text-orange-600 hover:underline">
-                        Missions
+                        {messages.giveaways.card.missionsLink}
                       </Link>
                     </div>
                   </div>

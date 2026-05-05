@@ -323,7 +323,7 @@ export default function PayoutPage() {
     // Validation crypto : minimum 21,20 € (exigence API Whitepay)
     if (payoutMethod === 'crypto') {
       if (amountCents < CRYPTO_MIN_CENTS) {
-        toast.error(text.request.cryptoMinAmount ?? `Montant minimum pour la crypto : 21,20 €`);
+        toast.error(text.request.cryptoMinAmount ?? 'Minimum amount for crypto: €21.20');
         return;
       }
     }
@@ -332,11 +332,11 @@ export default function PayoutPage() {
     if (payoutMethod === 'crypto') {
       const useRegisteredWallet = useSavedWallet && selectedCryptoMethodId;
       if (!useRegisteredWallet && !formData.walletAddress) {
-        toast.error(text.request.cryptoWalletRequired || 'Adresse wallet requise');
+        toast.error(text.request.cryptoWalletRequired || 'Wallet address required');
         return;
       }
       if (needsMemo && !formData.memo) {
-        toast.error(text.request.cryptoMemoRequired || 'Memo/Tag requis pour ce réseau');
+        toast.error(text.request.cryptoMemoRequired || 'Memo/Tag required for this network');
         return;
       }
     }
@@ -399,36 +399,36 @@ export default function PayoutPage() {
       if (!useSavedCard || !selectedCardMethodId) {
         const cardNum = formData.cardNumber.replace(/\s/g, '');
         if (!cardNum || cardNum.length < 13) {
-          toast.error(text.request.cardNumberRequired ?? 'Numéro de carte requis');
+          toast.error(text.request.cardNumberRequired ?? 'Card number required');
           return;
         }
         if (!formData.cardHolder.trim()) {
-          toast.error(text.request.cardHolderRequired ?? 'Titulaire de la carte requis');
+          toast.error(text.request.cardHolderRequired ?? 'Cardholder name required');
           return;
         }
         if (!formData.expireMonth || !formData.expireYear) {
-          toast.error(text.request.cardExpiryRequired ?? 'Date d\'expiration requise');
+          toast.error(text.request.cardExpiryRequired ?? 'Expiry date required');
           return;
         }
         if (!formData.cvv || formData.cvv.length < 3) {
-          toast.error(text.request.cardCvvRequired ?? 'CVV requis');
+          toast.error(text.request.cardCvvRequired ?? 'CVV required');
           return;
         }
       }
     }
     if (payoutMethod === 'sepa') {
       if (!formData.firstName?.trim()) {
-        toast.error(text.request.firstNameLabel ? `${text.request.firstNameLabel} requis` : 'Prénom requis');
+        toast.error(text.request.firstLastNameRequired);
         return;
       }
       if (!formData.lastName?.trim()) {
-        toast.error(text.request.lastNameLabel ? `${text.request.lastNameLabel} requis` : 'Nom requis');
+        toast.error(text.request.firstLastNameRequired);
         return;
       }
       if (useSavedIban && selectedPaymentMethodId) {
         // OK : on envoie paymentMethodId, l'API déchiffre l'IBAN côté serveur
       } else if (!formData.iban.replace(/\s/g, '')) {
-        toast.error(text.request.ibanLabel ? `${text.request.ibanLabel} requis` : 'IBAN requis');
+        toast.error(text.request.ibanLabel ? `${text.request.ibanLabel} required` : 'IBAN required');
         return;
       }
     }
@@ -517,7 +517,7 @@ export default function PayoutPage() {
         if (data?.whitepayErrors) {
           console.error('[PAYOUT] Whitepay validation errors', data.whitepayErrors);
           if (process.env.NODE_ENV === 'development') {
-            errorMessage += ` — Détails: ${JSON.stringify(data.whitepayErrors)}`;
+            errorMessage += ` — Details: ${JSON.stringify(data.whitepayErrors)}`;
           }
         }
         if (process.env.NODE_ENV === 'development') {
@@ -611,7 +611,7 @@ export default function PayoutPage() {
             <p className="text-muted-foreground mb-6">{text.kyc.description}</p>
             {process.env.NODE_ENV === 'development' && (
               <p className="text-xs text-blue-500 mb-4">
-                🔄 Vérification automatique en cours... (polling toutes les 10s)
+                🔄 {text.request.autoVerification}
               </p>
             )}
             <Button 
@@ -729,7 +729,7 @@ export default function PayoutPage() {
                   <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="card" className="flex items-center gap-1 text-xs sm:text-sm">
                       <CreditCardIcon className="w-4 h-4" />
-                      <span className="hidden sm:inline">{text.request.cardLabel ?? 'Carte'}</span>
+                      <span className="hidden sm:inline">{text.request.cardLabel ?? 'Card'}</span>
                     </TabsTrigger>
                     <TabsTrigger value="sepa" className="flex items-center gap-1 text-xs sm:text-sm">
                       <BanknotesIcon className="w-4 h-4" />
@@ -737,7 +737,7 @@ export default function PayoutPage() {
                     </TabsTrigger>
                     <TabsTrigger value="sepa_fr" className="flex items-center gap-1 text-xs sm:text-sm">
                       <BanknotesIcon className="w-4 h-4" />
-                      <span>{text.sepaFr?.tabLabel ?? 'SEPA France'}</span>
+                      <span>{text.sepaFr?.tabLabel ?? 'SEPA Premium'}</span>
                     </TabsTrigger>
                     <TabsTrigger value="crypto" className="flex items-center gap-1 text-xs sm:text-sm">
                       <CurrencyDollarIcon className="w-4 h-4" />
@@ -749,12 +749,12 @@ export default function PayoutPage() {
                     <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
                       <div className="flex items-start space-x-3">
                         <InformationCircleIcon className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-emerald-700 dark:text-emerald-300">{text.request.security.cardInfo ?? 'Retrait vers votre carte bancaire (Flexify). Généralement crédité sous 24h.'}</p>
+                        <p className="text-sm text-emerald-700 dark:text-emerald-300">{text.request.security.cardInfo ?? 'Withdrawal to your card (Flexify). Usually credited within 24h.'}</p>
                       </div>
                     </div>
                     {savedCardMethods.length > 0 && (
                       <div className="space-y-2">
-                        <Label>{text.request.savedCardLabel ?? 'Carte'}</Label>
+                        <Label>{text.request.savedCardLabel ?? 'Card'}</Label>
                         <div className="flex flex-col gap-2">
                           {savedCardMethods.map((pm: { id: string; last4: string | null; holderName: string | null }) => (
                             <label key={pm.id} className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
@@ -769,7 +769,7 @@ export default function PayoutPage() {
                                 className="h-4 w-4"
                               />
                               <span className="text-sm">
-                                {text.request.useSavedCard ?? 'Utiliser la carte enregistrée'}: **** {pm.last4 ?? '••••'}
+                                {text.request.useSavedCard ?? 'Use saved card'}: **** {pm.last4 ?? '••••'}
                                 {pm.holderName ? ` — ${pm.holderName}` : ''}
                               </span>
                             </label>
@@ -785,16 +785,16 @@ export default function PayoutPage() {
                               }}
                               className="h-4 w-4"
                             />
-                            <span className="text-sm">{text.request.enterNewCard ?? 'Saisir une nouvelle carte'}</span>
+                            <span className="text-sm">{text.request.enterNewCard ?? 'Enter a new card'}</span>
                           </label>
                         </div>
-                        <p className="text-xs text-muted-foreground">{text.request.savedCardHint ?? 'Le titulaire sera pré-rempli ; saisissez le numéro de carte pour ce retrait.'}</p>
+                        <p className="text-xs text-muted-foreground">{text.request.savedCardHint ?? 'Cardholder will be pre-filled; enter the card number for this withdrawal.'}</p>
                       </div>
                     )}
                     {(!useSavedCard || savedCardMethods.length === 0) && (
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="cardNumber">{text.request.cardNumberLabel ?? 'Numéro de carte'}</Label>
+                        <Label htmlFor="cardNumber">{text.request.cardNumberLabel ?? 'Card number'}</Label>
                         <Input
                           id="cardNumber"
                           type="text"
@@ -810,7 +810,7 @@ export default function PayoutPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="cardHolder">{text.request.cardHolderLabel ?? 'Titulaire de la carte'}</Label>
+                        <Label htmlFor="cardHolder">{text.request.cardHolderLabel ?? 'Cardholder name'}</Label>
                         <Input
                           id="cardHolder"
                           autoComplete="cc-name"
@@ -824,7 +824,7 @@ export default function PayoutPage() {
                       </div>
                       <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="expireMonth">{text.request.cardExpireMonthLabel ?? 'Mois'}</Label>
+                          <Label htmlFor="expireMonth">{text.request.cardExpireMonthLabel ?? 'Month'}</Label>
                           <Select
                             value={formData.expireMonth}
                             onValueChange={(v) => {
@@ -843,7 +843,7 @@ export default function PayoutPage() {
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="expireYear">{text.request.cardExpireYearLabel ?? 'Année'}</Label>
+                          <Label htmlFor="expireYear">{text.request.cardExpireYearLabel ?? 'Year'}</Label>
                           <Input
                             id="expireYear"
                             placeholder="AA"
@@ -876,7 +876,7 @@ export default function PayoutPage() {
                     </div>
                     )}
                     {(!useSavedCard || savedCardMethods.length === 0) && (
-                      <p className="text-xs text-muted-foreground">{text.request.saveCardHint ?? 'Cette carte sera enregistrée après ce retrait pour vos prochains retraits.'}</p>
+                      <p className="text-xs text-muted-foreground">{text.request.saveCardHint ?? 'This card will be saved after this withdrawal for your next withdrawals.'}</p>
                     )}
                   </TabsContent>
 
@@ -885,32 +885,32 @@ export default function PayoutPage() {
                       <div className="flex items-start space-x-3">
                         <ExclamationTriangleIcon className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                         <p className="text-sm text-amber-700 dark:text-amber-300">
-                          {text.request.security.sepaFrIbanWarning ?? "Les paiements SEPA vers des IBAN français (FR) ne sont pas pris en charge par notre prestataire de paiement. Veuillez utiliser un IBAN d'un autre pays européen ou choisir la méthode Carte ou Crypto."}
+                          {text.request.security.sepaFrIbanWarning ?? "SEPA payments to French IBANs (FR) are not supported by our payment provider. Please use an IBAN from another European country or choose the Card or Crypto method."}
                         </p>
                       </div>
                     </div>
                     <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                       <div className="flex items-start space-x-3">
                         <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-blue-700 dark:text-blue-300">{text.request.security.sepaInfo ?? 'Virement bancaire en 1-3 jours ouvrés'}</p>
+                        <p className="text-sm text-blue-700 dark:text-blue-300">{text.request.security.sepaInfo ?? 'Bank transfer in 1-3 business days'}</p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="sepaFirstName">{text.request.firstNameLabel ?? 'Prénom'}</Label>
+                        <Label htmlFor="sepaFirstName">{text.request.firstNameLabel ?? 'First name'}</Label>
                         <Input
                           id="sepaFirstName"
-                          placeholder={text.request.firstNamePlaceholder ?? 'Jean'}
+                          placeholder={text.request.firstNamePlaceholder ?? 'John'}
                           value={formData.firstName}
                           onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="sepaLastName">{text.request.lastNameLabel ?? 'Nom'}</Label>
+                        <Label htmlFor="sepaLastName">{text.request.lastNameLabel ?? 'Last name'}</Label>
                         <Input
                           id="sepaLastName"
-                          placeholder={text.request.lastNamePlaceholder ?? 'Dupont'}
+                          placeholder={text.request.lastNamePlaceholder ?? 'Doe'}
                           value={formData.lastName}
                           onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
                         />
@@ -934,7 +934,7 @@ export default function PayoutPage() {
                                 className="h-4 w-4"
                               />
                               <span className="text-sm">
-                                {text.request.useSavedIban ?? "Utiliser l'IBAN enregistré"}: <strong>{String(pm.maskedIban ?? '••••••••••••').slice(-4).padStart(12, '•')}</strong>
+                                {text.request.useSavedIban ?? "Use saved IBAN"}: <strong>{String(pm.maskedIban ?? '••••••••••••').slice(-4).padStart(12, '•')}</strong>
                                 {pm.holderName ? ` — ${pm.holderName}` : ''}
                               </span>
                             </label>
@@ -950,7 +950,7 @@ export default function PayoutPage() {
                               }}
                               className="h-4 w-4"
                             />
-                            <span className="text-sm">{text.request.enterNewIban ?? 'Saisir un nouvel IBAN'}</span>
+                            <span className="text-sm">{text.request.enterNewIban ?? 'Enter a new IBAN'}</span>
                           </label>
                         </div>
                       </div>
@@ -970,7 +970,7 @@ export default function PayoutPage() {
                             setFormData(prev => ({ ...prev, iban: formatted }));
                             setQuote(null);
                             if (raw.startsWith('FR') && raw.length >= 4) {
-                              toast.warning('IBAN français détecté : les paiements SEPA vers des IBAN FR ne sont pas pris en charge par notre prestataire. Veuillez utiliser la méthode Carte ou Crypto.', { duration: 6000 });
+                              toast.warning(text.request.ibanFrWarningToast, { duration: 6000 });
                             }
                           }}
                           maxLength={42}
@@ -991,27 +991,27 @@ export default function PayoutPage() {
 
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="sepaPhone">{text.request.phoneLabel ?? 'Téléphone'}</Label>
+                        <Label htmlFor="sepaPhone">{text.request.phoneLabel ?? 'Phone'}</Label>
                         <Input
                           id="sepaPhone"
                           type="tel"
-                          placeholder={text.request.phonePlaceholder ?? '+33 6 12 34 56 78'}
+                          placeholder={text.request.phonePlaceholder ?? '+1 234 567 8900'}
                           value={formData.phone}
                           onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="sepaAddress">{text.request.addressLabel ?? 'Adresse'}</Label>
+                        <Label htmlFor="sepaAddress">{text.request.addressLabel ?? 'Address'}</Label>
                         <Input
                           id="sepaAddress"
-                          placeholder={text.request.addressPlaceholder ?? '123 rue Example, 75001 Paris'}
+                          placeholder={text.request.addressPlaceholder ?? '123 Main St, City, Country'}
                           value={formData.address}
                           onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="sepaCity">{text.request.cityLabel ?? 'Ville'}</Label>
+                          <Label htmlFor="sepaCity">{text.request.cityLabel ?? 'City'}</Label>
                           <Input
                             id="sepaCity"
                             placeholder={text.request.cityPlaceholder ?? 'Paris'}
@@ -1020,7 +1020,7 @@ export default function PayoutPage() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="sepaCountry">{text.request.countryLabel ?? 'Pays'}</Label>
+                          <Label htmlFor="sepaCountry">{text.request.countryLabel ?? 'Country'}</Label>
                           <Input
                             id="sepaCountry"
                             placeholder="DE"
@@ -1031,7 +1031,7 @@ export default function PayoutPage() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="sepaEmail">{text.request.beneficiaryEmailLabel ?? 'Email du bénéficiaire'}</Label>
+                        <Label htmlFor="sepaEmail">{text.request.beneficiaryEmailLabel ?? 'Beneficiary email'}</Label>
                         <Input
                           id="sepaEmail"
                           type="email"
@@ -1042,7 +1042,7 @@ export default function PayoutPage() {
                       </div>
                     </div>
                     {(!useSavedIban || savedSepaMethods.length === 0) && (
-                      <p className="text-xs text-muted-foreground">{text.request.saveIbanHint ?? "Cet IBAN sera enregistré après ce retrait pour vos prochains retraits."}</p>
+                      <p className="text-xs text-muted-foreground">{text.request.saveIbanHint ?? "This IBAN will be saved after this withdrawal for your next withdrawals."}</p>
                     )}
                   </TabsContent>
 
@@ -1053,10 +1053,10 @@ export default function PayoutPage() {
                         <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                         <div>
                           <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">
-                            {text.sepaFr?.infoTitle ?? 'Virement SEPA France (Manuel)'}
+                            {text.sepaFr?.infoTitle ?? 'SEPA Premium Transfer'}
                           </p>
                           <p className="text-sm text-blue-600 dark:text-blue-400">
-                            {text.sepaFr?.infoDesc ?? 'Votre demande sera traitée manuellement par notre équipe sous 24-48h ouvrées.'}
+                            {text.sepaFr?.infoDesc ?? 'Your request will be processed manually by our team within 24-48 business hours.'}
                           </p>
                         </div>
                       </div>
@@ -1070,7 +1070,7 @@ export default function PayoutPage() {
                       return (
                         <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 space-y-2 text-sm">
                           <p className="text-xs font-medium text-orange-600 dark:text-orange-400 uppercase tracking-wide">
-                            {text.request.feesPreview ?? 'Aperçu des frais'}
+                            {text.request.feesPreview ?? 'Fee preview'}
                           </p>
                           <div className="flex justify-between text-muted-foreground">
                             <span>{text.request.grossAmount}</span>
@@ -1097,13 +1097,13 @@ export default function PayoutPage() {
                       >
                         <h3 className="font-semibold flex items-center gap-2 text-green-600 dark:text-green-400">
                           <CheckCircleIcon className="w-5 h-5" />
-                          {text.sepaFr?.successTitle ?? 'Demande soumise'}
+                          {text.sepaFr?.successTitle ?? 'Request submitted'}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          {text.sepaFr?.successDesc ?? 'Notre équipe vous contactera par email sous 24-48h.'}
+                          {text.sepaFr?.successDesc ?? 'Our team will contact you by email within 24-48 hours.'}
                         </p>
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Référence</span>
+                          <span className="text-muted-foreground">{text.sepaFr?.reference ?? 'Reference'}</span>
                           <span className="font-mono text-xs">{sepaFrResult.reference}</span>
                         </div>
                         <Button
@@ -1112,26 +1112,26 @@ export default function PayoutPage() {
                           className="w-full"
                           onClick={() => { setSepaFrResult(null); setSepaFrForm({ iban: '', bic: '', firstName: '', lastName: '' }); }}
                         >
-                          Nouvelle demande
+                          {text.sepaFr?.newRequest ?? 'New request'}
                         </Button>
                       </motion.div>
                     ) : (
                       <>
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="sepaFrFirstName">{text.sepaFr?.firstNameLabel ?? 'Prénom'}</Label>
+                            <Label htmlFor="sepaFrFirstName">{text.sepaFr?.firstNameLabel ?? 'First name'}</Label>
                             <Input
                               id="sepaFrFirstName"
-                              placeholder={text.sepaFr?.firstNamePlaceholder ?? 'Jean'}
+                              placeholder={text.sepaFr?.firstNamePlaceholder ?? 'John'}
                               value={sepaFrForm.firstName}
                               onChange={(e) => setSepaFrForm((p) => ({ ...p, firstName: e.target.value }))}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="sepaFrLastName">{text.sepaFr?.lastNameLabel ?? 'Nom'}</Label>
+                            <Label htmlFor="sepaFrLastName">{text.sepaFr?.lastNameLabel ?? 'Last name'}</Label>
                             <Input
                               id="sepaFrLastName"
-                              placeholder={text.sepaFr?.lastNamePlaceholder ?? 'Dupont'}
+                              placeholder={text.sepaFr?.lastNamePlaceholder ?? 'Doe'}
                               value={sepaFrForm.lastName}
                               onChange={(e) => setSepaFrForm((p) => ({ ...p, lastName: e.target.value }))}
                             />
@@ -1139,7 +1139,7 @@ export default function PayoutPage() {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="sepaFrIban">{text.sepaFr?.ibanLabel ?? 'IBAN français'}</Label>
+                          <Label htmlFor="sepaFrIban">{text.sepaFr?.ibanLabel ?? 'French IBAN'}</Label>
                           <Input
                             id="sepaFrIban"
                             placeholder={text.sepaFr?.ibanPlaceholder ?? 'FR76 3000 6000 0112 3456 7890 189'}
@@ -1152,9 +1152,9 @@ export default function PayoutPage() {
                             maxLength={42}
                           />
                           {sepaFrForm.iban.replace(/\s/g, '').length >= 2 && !sepaFrForm.iban.replace(/\s/g, '').startsWith('FR') && (
-                            <p className="text-xs text-destructive">{text.sepaFr?.ibanError ?? 'IBAN doit commencer par FR'}</p>
+                            <p className="text-xs text-destructive">{text.sepaFr?.ibanError ?? 'IBAN must start with FR'}</p>
                           )}
-                          <p className="text-xs text-muted-foreground">{text.sepaFr?.ibanFrOnly ?? 'Réservé aux IBAN français (FR).'}</p>
+                          <p className="text-xs text-muted-foreground">{text.sepaFr?.ibanFrOnly ?? 'Reserved for French IBANs (FR).'}</p>
                         </div>
 
                         <div className="space-y-2">
@@ -1196,11 +1196,11 @@ export default function PayoutPage() {
                             }
                             const ibanClean = sepaFrForm.iban.replace(/\s/g, '').toUpperCase();
                             if (!ibanClean.startsWith('FR')) {
-                              toast.error(text.sepaFr?.ibanError ?? 'IBAN doit commencer par FR');
+                              toast.error(text.sepaFr?.ibanError ?? 'IBAN must start with FR');
                               return;
                             }
                             if (!sepaFrForm.firstName.trim() || !sepaFrForm.lastName.trim()) {
-                              toast.error('Prénom et nom requis');
+                              toast.error(text.request.firstLastNameRequired);
                               return;
                             }
                             setSepaFrLoading(true);
@@ -1217,8 +1217,8 @@ export default function PayoutPage() {
                                 }),
                               });
                               const data = await res.json();
-                              if (!res.ok) throw new Error(data.error ?? 'Erreur');
-                              toast.success(text.sepaFr?.successTitle ?? 'Demande soumise');
+                              if (!res.ok) throw new Error(data.error ?? 'Error');
+                              toast.success(text.sepaFr?.successTitle ?? 'Request submitted');
                               setSepaFrResult({ reference: data.payout.reference, amountCents });
                               setAmount('');
                               queryClient.invalidateQueries({ queryKey: queryKeys.payoutHistory });
@@ -1235,10 +1235,10 @@ export default function PayoutPage() {
                           {sepaFrLoading ? (
                             <>
                               <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
-                              {text.sepaFr?.submitting ?? 'Envoi en cours...'}
+                              {text.sepaFr?.submitting ?? 'Submitting...'}
                             </>
                           ) : (
-                            text.sepaFr?.submitButton ?? 'Soumettre la demande'
+                            text.sepaFr?.submitButton ?? 'Submit request'
                           )}
                         </Button>
                       </>
@@ -1270,7 +1270,7 @@ export default function PayoutPage() {
                                 className="h-4 w-4"
                               />
                               <span className="text-sm">
-                                {text.request.useSavedWallet ?? 'Utiliser le wallet enregistré'}: <strong>{pm.maskedAddress ?? '••••'}</strong>
+                                {text.request.useSavedWallet ?? 'Use saved wallet'}: <strong>{pm.maskedAddress ?? '••••'}</strong>
                                 {pm.network ? ` (${pm.network})` : ''} {pm.targetCurrency ? ` — ${pm.targetCurrency}` : ''}
                               </span>
                             </label>
@@ -1286,7 +1286,7 @@ export default function PayoutPage() {
                               }}
                               className="h-4 w-4"
                             />
-                            <span className="text-sm">{text.request.enterNewWallet ?? 'Saisir un nouveau wallet'}</span>
+                            <span className="text-sm">{text.request.enterNewWallet ?? 'Enter a new wallet'}</span>
                           </label>
                         </div>
                       </div>
@@ -1382,7 +1382,7 @@ export default function PayoutPage() {
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground">{text.request.saveWalletHint ?? 'Ce wallet sera enregistré après ce retrait pour vos prochains retraits.'}</p>
+                    <p className="text-xs text-muted-foreground">{text.request.saveWalletHint ?? 'This wallet will be saved after this withdrawal for your next withdrawals.'}</p>
                     </>
                     )}
                   </TabsContent>
@@ -1394,7 +1394,7 @@ export default function PayoutPage() {
                     method={payoutMethod as 'card' | 'sepa' | 'crypto'}
                     amountCents={toCents(parseFloat(amount))}
                     labels={{
-                      feesPreview: text.request.feesPreview ?? 'Aperçu des frais',
+                      feesPreview: text.request.feesPreview ?? 'Fee preview',
                       grossAmount: text.request.grossAmount,
                       youReceive: text.request.youReceive,
                     }}
@@ -1486,11 +1486,11 @@ export default function PayoutPage() {
                   >
                     <h3 className="font-semibold flex items-center gap-2 text-green-600 dark:text-green-400">
                       <CheckCircleIcon className="w-5 h-5" />
-                      {payoutResult.pendingApproval ? 'Demande enregistrée' : 'Paiement initié'}
+                      {payoutResult.pendingApproval ? text.result.requestRegistered : text.result.paymentInitiated}
                     </h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Référence</span>
+                        <span className="text-muted-foreground">{text.result.reference}</span>
                         <span className="font-mono text-xs">{payoutResult.reference}</span>
                       </div>
                       <div className="flex justify-between">
@@ -1498,11 +1498,11 @@ export default function PayoutPage() {
                         <span>{formatCentsToCurrency(payoutResult.amountCents, 'EUR')}</span>
                       </div>
                       <div className="flex justify-between text-orange-500">
-                        <span>Frais de traitement</span>
+                        <span>{text.result.processingFee}</span>
                         <span>-{formatCentsToCurrency(payoutResult.fees.processingCents, 'EUR')}</span>
                       </div>
                       <div className="flex justify-between text-orange-500">
-                        <span>Frais réseau</span>
+                        <span>{text.result.networkFee}</span>
                         <span>-{formatCentsToCurrency(payoutResult.fees.networkCents, 'EUR')}</span>
                       </div>
                       <Separator />
@@ -1517,7 +1517,7 @@ export default function PayoutPage() {
                       className="w-full"
                       onClick={() => setPayoutResult(null)}
                     >
-                      Nouveau retrait
+                      {text.result.newWithdrawal}
                     </Button>
                   </motion.div>
                 )}
@@ -1542,7 +1542,7 @@ export default function PayoutPage() {
                       queryClient.invalidateQueries({ queryKey: queryKeys.payoutHistory });
                       queryClient.invalidateQueries({ queryKey: queryKeys.userBalance });
                     }}
-                    title={locale === 'fr' ? 'Actualiser' : 'Refresh'}
+                    title={messages.ui?.refresh ?? 'Refresh'}
                     className="h-8 w-8"
                   >
                     <ArrowPathIcon className="h-4 w-4" />
@@ -1571,7 +1571,7 @@ export default function PayoutPage() {
                         <div className="text-right">
                           {getStatusBadge(payout.status)}
                           <p className="text-xs text-muted-foreground mt-1">
-                            {payout.method === 'FLEXIFY_SEPA' ? 'SEPA' : payout.method === 'WHITEPAY_CRYPTO' ? 'Crypto' : payout.method === 'SEPA_FR' ? 'SEPA Premium' : payout.method}
+                            {payout.method === 'FLEXIFY_SEPA' ? 'SEPA' : payout.method === 'WHITEPAY_CRYPTO' ? 'Crypto' : payout.method === 'SEPA_FR' ? text.history.sepaPremiumLabel : payout.method}
                           </p>
                         </div>
                       </div>
@@ -1590,7 +1590,7 @@ export default function PayoutPage() {
                     <div>
                       <p className="font-medium text-sm">{text.request.security.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        Tous les paiements sont traités de manière sécurisée
+                        {text.request.security.description}
                       </p>
                     </div>
                   </div>
@@ -1599,7 +1599,7 @@ export default function PayoutPage() {
                     <div>
                       <p className="font-medium text-sm">{text.request.ibanVerificationTitle}</p>
                       <p className="text-xs text-muted-foreground">
-                        Un changement d&apos;IBAN peut nécessiter une vérification supplémentaire
+                        {text.request.security.ibanVerificationDesc}
                       </p>
                     </div>
                   </div>

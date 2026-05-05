@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, History, CreditCard, Building2, ChevronLeft, ChevronRight, ArrowDownRight, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface Payout {
   id: string;
@@ -32,8 +33,8 @@ interface Payout {
 }
 
 export function PayoutHistory() {
-  // Simple translation fallback
-  const t = (key: string) => key;
+  const { messages, locale } = useLocale();
+  const t = messages.payoutComponents.history;
   const [offset, setOffset] = useState(0);
   const limit = 10;
 
@@ -53,8 +54,9 @@ export function PayoutHistory() {
     return (cents / 100).toFixed(2) + ' €';
   };
 
+  const dateLocaleMap = { fr: 'fr-FR', en: 'en-US', cn: 'zh-CN' } as const;
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+    return new Date(dateString).toLocaleDateString(dateLocaleMap[locale], {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -69,14 +71,14 @@ export function PayoutHistory() {
         return (
           <Badge className="bg-green-500/20 text-green-500 border-green-500/50">
             <CheckCircle className="w-3 h-3 mr-1" />
-            {t('payout.status.paid') || 'Payé'}
+            {t.statusPaid}
           </Badge>
         );
       case 'FAILED':
         return (
           <Badge variant="destructive">
             <XCircle className="w-3 h-3 mr-1" />
-            {t('payout.status.failed') || 'Échoué'}
+            {t.statusFailed}
           </Badge>
         );
       case 'PROCESSING':
@@ -84,21 +86,21 @@ export function PayoutHistory() {
         return (
           <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/50">
             <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-            {t('payout.status.processing') || 'En cours'}
+            {t.statusProcessing}
           </Badge>
         );
       case 'VERIFICATION_REQUIRED':
         return (
           <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
             <AlertCircle className="w-3 h-3 mr-1" />
-            {t('payout.status.verification') || 'Vérification requise'}
+            {t.statusVerification}
           </Badge>
         );
       default:
         return (
           <Badge className="bg-gray-500/20 text-gray-500 border-gray-500/50">
             <Clock className="w-3 h-3 mr-1" />
-            {t('payout.status.pending') || 'En attente'}
+            {t.statusPending}
           </Badge>
         );
     }
@@ -141,14 +143,14 @@ export function PayoutHistory() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <History className="w-5 h-5" />
-            <CardTitle>{t('payout.history.title') || 'Historique des paiements'}</CardTitle>
+            <CardTitle>{t.title}</CardTitle>
           </div>
           {total > 0 && (
-            <Badge variant="secondary">{total} {t('payout.history.total') || 'paiement(s)'}</Badge>
+            <Badge variant="secondary">{total} {t.total}</Badge>
           )}
         </div>
         <CardDescription>
-          {t('payout.history.description') || 'Tous vos paiements reçus et en cours'}
+          {t.description}
         </CardDescription>
       </CardHeader>
 
@@ -161,7 +163,7 @@ export function PayoutHistory() {
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <ArrowDownRight className="w-12 h-12 text-muted-foreground/50 mb-4" />
             <p className="text-muted-foreground">
-              {t('payout.history.empty') || 'Aucun paiement pour le moment'}
+              {t.empty}
             </p>
           </div>
         ) : (
@@ -196,7 +198,7 @@ export function PayoutHistory() {
                     </div>
                     {payout.paidAt && (
                       <div className="text-xs text-green-500">
-                        {t('payout.history.paidAt') || 'Payé le'} {formatDate(payout.paidAt)}
+                        {t.paidAt} {formatDate(payout.paidAt)}
                       </div>
                     )}
                   </div>
@@ -214,11 +216,11 @@ export function PayoutHistory() {
                   disabled={offset === 0}
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
-                  {t('common.previous') || 'Précédent'}
+                  {t.previous}
                 </Button>
 
                 <span className="text-sm text-muted-foreground">
-                  {t('common.page') || 'Page'} {currentPage} / {totalPages}
+                  {t.page} {currentPage} / {totalPages}
                 </span>
 
                 <Button
@@ -227,7 +229,7 @@ export function PayoutHistory() {
                   onClick={() => setOffset(offset + limit)}
                   disabled={offset + limit >= total}
                 >
-                  {t('common.next') || 'Suivant'}
+                  {t.next}
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>

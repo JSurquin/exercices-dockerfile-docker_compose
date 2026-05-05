@@ -4,27 +4,26 @@ import { motion } from 'framer-motion';
 import { ClockIcon } from '@heroicons/react/24/outline';
 import { Separator } from '@/components/ui/separator';
 import { formatCentsToCurrency } from '@/lib/currency-converter';
+import { useLocale } from '@/components/providers/locale-provider';
 
 type PayoutMethod = 'card' | 'sepa' | 'crypto';
 
-interface FeeConfig {
+interface FeeNumericConfig {
   rate: number;
   fixedCents: number;
-  label: string;
-  delay?: string;
 }
 
-const FEE_CONFIG: Record<PayoutMethod, FeeConfig> = {
-  card:   { rate: 0.042, fixedCents: 50,  label: 'Frais carte (4,2% + 0,50€)',  delay: 'Instantané à 24h' },
-  sepa:   { rate: 0.02,  fixedCents: 350, label: 'Frais SEPA (2% + 3,50€)',     delay: '1-2 jours ouvrés' },
-  crypto: { rate: 0,     fixedCents: 222, label: 'Frais crypto',                 },
+const FEE_CONFIG: Record<PayoutMethod, FeeNumericConfig> = {
+  card:   { rate: 0.042, fixedCents: 50 },
+  sepa:   { rate: 0.02,  fixedCents: 350 },
+  crypto: { rate: 0,     fixedCents: 222 },
 };
 
 export function computeFees(method: PayoutMethod, amountCents: number) {
   const cfg = FEE_CONFIG[method];
   const proportional = cfg.rate > 0 ? Math.ceil(amountCents * cfg.rate) : 0;
   const totalCents = proportional + cfg.fixedCents;
-  return { totalCents, netCents: amountCents - totalCents, label: cfg.label, delay: cfg.delay };
+  return { totalCents, netCents: amountCents - totalCents };
 }
 
 interface FeePreviewProps {
@@ -38,7 +37,24 @@ interface FeePreviewProps {
 }
 
 export function FeePreview({ method, amountCents, labels }: FeePreviewProps) {
-  const { totalCents, netCents, label, delay } = computeFees(method, amountCents);
+  const { messages } = useLocale();
+  const fees = messages.payoutComponents.fees;
+  const { totalCents, netCents } = computeFees(method, amountCents);
+
+  const labelMap: Record<PayoutMethod, string> = {
+    card: fees.cardLabel,
+    sepa: fees.sepaLabel,
+    crypto: fees.cryptoLabel,
+  };
+
+  const delayMap: Record<PayoutMethod, string | undefined> = {
+    card: fees.cardDelay,
+    sepa: fees.sepaDelay,
+    crypto: undefined,
+  };
+
+  const label = labelMap[method];
+  const delay = delayMap[method];
 
   return (
     <motion.div

@@ -32,21 +32,18 @@ export default function LoginPage() {
       });
 
       if (result.error) {
-        setError(result.error.message || 'Erreur de connexion');
+        setError(result.error.message || messages.loginPage.errors.loginError);
         setLoading(false);
         return;
       }
 
-      // Better Auth injecte twoFactorRedirect dynamiquement (non typé statiquement)
       if ((result.data as Record<string, unknown>)?.twoFactorRedirect) {
-        // onTwoFactorRedirect dans auth-client gère la redirection automatiquement
         return;
       }
 
-      // Redirection selon le rôle
       if (result.data?.user) {
         const role = (result.data.user as any).role;
-        
+
         switch (role) {
           case 'ADMIN':
             router.push('/admin/dashboard');
@@ -64,7 +61,7 @@ export default function LoginPage() {
         router.push('/dashboard');
       }
     } catch (err) {
-      setError('Erreur de connexion. Vérifiez vos identifiants.');
+      setError(messages.loginPage.errors.invalidCredentials);
       setLoading(false);
     }
   };
@@ -73,7 +70,7 @@ export default function LoginPage() {
     try {
       window.location.href = '/api/auth/steam/login';
     } catch (error) {
-      setError('Erreur lors de la connexion Steam');
+      setError(messages.loginPage.errors.steamError);
     }
   };
 
@@ -81,14 +78,13 @@ export default function LoginPage() {
     try {
       await signInWithDiscord();
     } catch (error) {
-      setError('Erreur lors de la connexion Discord');
+      setError(messages.loginPage.errors.discordError);
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
-        {/* Logo */}
         <div className="text-center">
           <Link href="/" className="inline-flex items-center space-x-2 mb-2">
             <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
@@ -96,20 +92,19 @@ export default function LoginPage() {
             </div>
             <span className="font-bold text-3xl text-white">MoonSkin</span>
           </Link>
-          <p className="text-slate-400 mt-2">Connexion à votre compte</p>
+          <p className="text-slate-400 mt-2">{messages.loginPage.subtitle}</p>
         </div>
 
         <Card className="bg-slate-800/50 border-slate-700 backdrop-blur">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center text-white">
-              Connexion
+              {messages.loginPage.title}
             </CardTitle>
             <CardDescription className="text-center text-slate-400">
-              Choisissez votre méthode de connexion
+              {messages.loginPage.chooseMethod}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Social Login Buttons */}
             <div className="space-y-3">
               <Button
                 variant="outline"
@@ -117,7 +112,7 @@ export default function LoginPage() {
                 onClick={handleDiscordLogin}
               >
                 <MessageSquare className="mr-2 h-5 w-5" />
-                Continuer avec Discord
+                {messages.loginPage.continueWithDiscord}
               </Button>
 
               <Button
@@ -128,23 +123,21 @@ export default function LoginPage() {
                 <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
                 </svg>
-                Continuer avec Steam
+                {messages.loginPage.continueWithSteam}
               </Button>
             </div>
 
-            {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-slate-700" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-slate-800 px-2 text-slate-400">
-                  Ou continuer avec email
+                  {messages.loginPage.orContinueWithEmail}
                 </span>
               </div>
             </div>
 
-            {/* Error Alert */}
             {error && (
               <Alert variant="destructive" className="bg-red-900/20 border-red-900">
                 <AlertCircle className="h-4 w-4" />
@@ -152,11 +145,10 @@ export default function LoginPage() {
               </Alert>
             )}
 
-            {/* Email/Password Form */}
             <form onSubmit={handleEmailLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-slate-300">
-                  Email
+                  {messages.loginPage.emailLabel}
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
@@ -175,13 +167,13 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password" className="text-slate-300">
-                    Mot de passe
+                    {messages.loginPage.passwordLabel}
                   </Label>
                   <Link
                     href="/password/forgot"
                     className="text-xs text-orange-400 hover:text-orange-300 transition-colors"
                   >
-                    Mot de passe oublié ?
+                    {messages.loginPage.forgotPassword}
                   </Link>
                 </div>
                 <div className="relative">
@@ -206,34 +198,32 @@ export default function LoginPage() {
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Connexion en cours...
+                    {messages.loginPage.loggingIn}
                   </>
                 ) : (
-                  'Se connecter'
+                  messages.loginPage.login
                 )}
               </Button>
             </form>
 
-            {/* Footer */}
             <div className="text-center text-sm text-slate-400">
-              Pas encore de compte ?{' '}
+              {messages.loginPage.noAccountYet}{' '}
               <Link href="/" className="text-orange-400 hover:text-orange-300 transition-colors">
-                Connectez-vous avec Steam
+                {messages.loginPage.loginWithSteam}
               </Link>
             </div>
           </CardContent>
         </Card>
 
-        {/* Additional Info */}
         <div className="text-center text-xs text-slate-500">
           <p>
-            En vous connectant, vous acceptez nos{' '}
+            {messages.loginPage.legalNotice}{' '}
             <Link href="/terms" className="text-orange-400 hover:text-orange-300">
-              Conditions d&apos;utilisation
+              {messages.loginPage.termsOfService}
             </Link>
-            {' et notre '}
+            {' '}{messages.loginPage.and}{' '}
             <Link href="/privacy" className="text-orange-400 hover:text-orange-300">
-              Politique de confidentialité
+              {messages.loginPage.privacyPolicy}
             </Link>
           </p>
         </div>

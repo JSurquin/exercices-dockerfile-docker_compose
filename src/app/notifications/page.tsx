@@ -68,6 +68,7 @@ const priorityColors: Record<string, string> = {
 export default function NotificationsPage() {
   const { user } = useAuth();
   const { locale, messages } = useLocale();
+  const t = messages.notificationsPage;
   const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
   const [filter, setFilter] = useState<"all" | "unread">("all");
@@ -102,13 +103,13 @@ export default function NotificationsPage() {
 
       if (response.ok) {
         queryClient.invalidateQueries({ queryKey: queryKeys.userNotifications });
-        toast.success("Notification marquée comme lue");
+        toast.success(t.toastMarkedRead);
       } else {
-        toast.error("Erreur lors de la mise à jour");
+        toast.error(t.toastError);
       }
     } catch (error) {
       console.error("Error marking notification as read:", error);
-      toast.error("Erreur lors de la mise à jour");
+      toast.error(t.toastError);
     }
   };
 
@@ -120,13 +121,13 @@ export default function NotificationsPage() {
 
       if (response.ok) {
         queryClient.invalidateQueries({ queryKey: queryKeys.userNotifications });
-        toast.success("Toutes les notifications ont été marquées comme lues");
+        toast.success(t.toastAllMarkedRead);
       } else {
-        toast.error("Erreur lors de la mise à jour");
+        toast.error(t.toastError);
       }
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
-      toast.error("Erreur lors de la mise à jour");
+      toast.error(t.toastError);
     }
   };
 
@@ -156,12 +157,12 @@ export default function NotificationsPage() {
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
             <BellIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">Connexion requise</h2>
+            <h2 className="text-xl font-semibold mb-2">{t.loginRequired}</h2>
             <p className="text-muted-foreground mb-6">
-              Connectez-vous pour voir vos notifications
+              {t.loginDescription}
             </p>
             <Button onClick={() => (window.location.href = "/")}>
-              Se connecter
+              {t.loginButton}
             </Button>
           </CardContent>
         </Card>
@@ -175,7 +176,7 @@ export default function NotificationsPage() {
         <div className="flex items-center justify-center py-20">
           <div className="text-center space-y-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-            <p className="text-muted-foreground">Chargement...</p>
+            <p className="text-muted-foreground">{t.loading}</p>
           </div>
         </div>
       </div>
@@ -195,12 +196,12 @@ export default function NotificationsPage() {
             <div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 flex items-center gap-3">
                 <BellIcon className="w-8 h-8 text-orange-500" />
-                Notifications
+                {t.title}
               </h1>
               <p className="text-muted-foreground">
                 {unreadCount > 0
-                  ? `Vous avez ${unreadCount} notification${unreadCount > 1 ? "s" : ""} non lue${unreadCount > 1 ? "s" : ""}`
-                  : "Aucune notification non lue"}
+                  ? (unreadCount > 1 ? t.unreadCountPlural : t.unreadCount).replace("{count}", String(unreadCount))
+                  : t.noUnread}
               </p>
             </div>
             {unreadCount > 0 && (
@@ -211,7 +212,7 @@ export default function NotificationsPage() {
                 className="hidden sm:flex"
               >
                 <CheckIcon className="w-4 h-4 mr-2" />
-                Tout marquer comme lu
+                {t.markAllRead}
               </Button>
             )}
           </div>
@@ -219,10 +220,10 @@ export default function NotificationsPage() {
           <Tabs value={filter} onValueChange={(v) => setFilter(v as "all" | "unread")} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="all">
-                Toutes ({total})
+                {t.tabAll} ({total})
               </TabsTrigger>
               <TabsTrigger value="unread">
-                Non lues ({unreadCount})
+                {t.tabUnread} ({unreadCount})
               </TabsTrigger>
             </TabsList>
 
@@ -232,12 +233,12 @@ export default function NotificationsPage() {
                   <CardContent className="p-12 text-center">
                     <BellIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
                     <h3 className="text-lg font-semibold mb-2">
-                      Aucune notification
+                      {t.noNotifications}
                     </h3>
                     <p className="text-muted-foreground">
                       {filter === "unread"
-                        ? "Vous n'avez aucune notification non lue"
-                        : "Vous n'avez reçu aucune notification pour le moment"}
+                        ? t.noUnreadNotifications
+                        : t.noNotificationsYet}
                     </p>
                   </CardContent>
                 </Card>
@@ -288,7 +289,7 @@ export default function NotificationsPage() {
                                       variant="secondary"
                                       className="bg-orange-500/20 text-orange-500 border-orange-500/40 shrink-0"
                                     >
-                                      Nouveau
+                                      {t.badgeNew}
                                     </Badge>
                                   )}
                                 </div>
@@ -312,7 +313,7 @@ export default function NotificationsPage() {
                                       href={notification.link}
                                       className="text-orange-500 hover:text-orange-400 font-medium"
                                     >
-                                      Voir détails →
+                                      {t.viewDetails}
                                     </Link>
                                   )}
 
@@ -324,7 +325,7 @@ export default function NotificationsPage() {
                                       className="text-xs h-7 px-2"
                                     >
                                       <CheckIcon className="w-3.5 h-3.5 mr-1" />
-                                      Marquer comme lu
+                                      {t.markAsRead}
                                     </Button>
                                   )}
                                 </div>
@@ -344,10 +345,10 @@ export default function NotificationsPage() {
                         onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                         disabled={currentPage === 1}
                       >
-                        Précédent
+                        {t.previous}
                       </Button>
                       <span className="px-4 py-2 text-sm text-muted-foreground">
-                        Page {currentPage} sur {totalPages}
+                        {t.pageOf.replace("{current}", String(currentPage)).replace("{total}", String(totalPages))}
                       </span>
                       <Button
                         variant="outline"
@@ -355,7 +356,7 @@ export default function NotificationsPage() {
                         onClick={() => setCurrentPage((p) => p + 1)}
                         disabled={currentPage >= totalPages}
                       >
-                        Suivant
+                        {t.next}
                       </Button>
                     </div>
                   )}
