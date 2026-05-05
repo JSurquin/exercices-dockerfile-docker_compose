@@ -11,6 +11,7 @@ export const PLATFORM_CONFIG_KEYS = {
   GAMIFICATION_MARGIN_RATE: 'platform.gamification_margin_rate',
   SKINPLACE_DASHBOARD_URL:  'platform.skinplace_dashboard_url',
   STEAM_CDN_URL:            'platform.steam_cdn_url',
+  API_DOCS_ENABLED:         'platform.api_docs_enabled',
 } as const;
 
 export type PlatformConfigKey = typeof PLATFORM_CONFIG_KEYS[keyof typeof PLATFORM_CONFIG_KEYS];
@@ -23,4 +24,5 @@ export interface PlatformConfig {
   gamificationMarginRate: number;
   skinplaceDashboardUrl:  string;
   steamCdnUrl:            string;
+  apiDocsEnabled:         boolean;
 }

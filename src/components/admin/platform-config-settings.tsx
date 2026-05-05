@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
+import { Switch } from '@/components/ui/switch';
 import {
   BellAlertIcon,
   UserGroupIcon,
@@ -18,6 +19,7 @@ import {
   LinkIcon,
   ArrowPathIcon,
   InformationCircleIcon,
+  CodeBracketIcon,
 } from '@heroicons/react/24/outline';
 import { queryKeys } from '@/lib/query-keys';
 import type { PlatformConfig } from '@/lib/platform-config-constants';
@@ -35,7 +37,7 @@ async function fetchPlatformConfig(): Promise<PlatformConfigResponse> {
   return res.json();
 }
 
-async function patchConfig(payload: { key: string; value: unknown } | { key: string; reset: true }) {
+async function patchConfig(payload: { key: string; value: unknown } | { key: string; reset: true; value?: never }) {
   const res = await fetch('/api/admin/platform-config', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -213,7 +215,7 @@ export function PlatformConfigSettings() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const handleSave = (key: string, value: unknown) => mutation.mutate({ key, value });
+  const handleSave = (key: string, value: unknown) => mutation.mutate({ key, value } as { key: string; value: unknown });
   const handleReset = (key: string) => mutation.mutate({ key, reset: true } as { key: string; reset: true });
 
   if (isLoading || !data) {
@@ -376,6 +378,34 @@ export function PlatformConfigSettings() {
             onReset={handleReset}
             isPending={mutation.isPending}
           />
+        </CardContent>
+      </Card>
+
+      {/* Visibilité des pages */}
+      <Card className="bg-slate-800/50 border-slate-700">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-white flex items-center gap-2 text-base">
+            <CodeBracketIcon className="w-5 h-5 text-blue-400" />
+            Visibilité des pages
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <Label className="text-slate-200">Documentation API</Label>
+                <SourceBadge source={s(PLATFORM_CONFIG_KEYS.API_DOCS_ENABLED)} />
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Afficher la documentation API publique sur /api-docs. Si désactivé, un message &quot;API bientôt disponible&quot; sera affiché.
+              </p>
+            </div>
+            <Switch
+              checked={config.apiDocsEnabled}
+              onCheckedChange={(checked) => handleSave(PLATFORM_CONFIG_KEYS.API_DOCS_ENABLED, checked)}
+              disabled={mutation.isPending}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>

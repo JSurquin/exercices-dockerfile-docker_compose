@@ -4093,6 +4093,15 @@ export const messages: Record<Locale, Messages> = {
         estimate: "Estimation",
         trade: "Trade",
         error: "Erreur"
+      },
+      comingSoon: {
+        title: "API bientôt disponible",
+        description: "Notre API publique est en cours de finalisation. Revenez bientôt pour accéder à la documentation complète.",
+        badge: "En développement",
+        version: "Version 1.0 — Prochainement",
+        feature1: "REST & SDK",
+        feature2: "Authentification sécurisée",
+        feature3: "Webhooks & Events"
       }
     },
     policies: {
@@ -9341,6 +9350,15 @@ export const messages: Record<Locale, Messages> = {
         estimate: "Estimate",
         trade: "Trade",
         error: "Error"
+      },
+      comingSoon: {
+        title: "API Coming Soon",
+        description: "Our public API is being finalized. Check back soon for full documentation.",
+        badge: "In Development",
+        version: "Version 1.0 — Coming Soon",
+        feature1: "REST & SDK",
+        feature2: "Secure Authentication",
+        feature3: "Webhooks & Events"
       }
     },
     policies: {
@@ -14301,6 +14319,15 @@ export const messages: Record<Locale, Messages> = {
         estimate: "估算",
         trade: "交易",
         error: "错误"
+      },
+      comingSoon: {
+        title: "API 即将推出",
+        description: "我们的公共 API 正在最后完善中。请稍后回来查看完整文档。",
+        badge: "开发中",
+        version: "版本 1.0 — 即将推出",
+        feature1: "REST & SDK",
+        feature2: "安全认证",
+        feature3: "Webhooks 和事件"
       }
     },
     policies: {

@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
 const patchSchema = z.object({
   key: z.enum(Object.values(PLATFORM_CONFIG_KEYS) as [PlatformConfigKey, ...PlatformConfigKey[]]),
-  value: z.union([z.number(), z.string()]),
+  value: z.union([z.number(), z.string(), z.boolean()]),
 });
 
 const resetSchema = z.object({

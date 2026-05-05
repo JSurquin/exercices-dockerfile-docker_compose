@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   CubeIcon,
+  RocketLaunchIcon,
 } from "@heroicons/react/24/outline";
 import { useLocale } from "@/components/providers/locale-provider";
 
@@ -242,10 +244,99 @@ const responseExamples = {
 }`
 };
 
+function ApiDocsComingSoon({ messages }: { messages: any }) {
+  return (
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="max-w-2xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className="text-center py-20"
+        >
+          <div className="relative mx-auto w-24 h-24 mb-8">
+            <div className="absolute inset-0 bg-orange-500/20 rounded-full animate-ping" />
+            <div className="relative flex items-center justify-center w-24 h-24 bg-gradient-to-br from-orange-500/30 to-orange-600/10 rounded-full border border-orange-500/30">
+              <RocketLaunchIcon className="w-12 h-12 text-orange-500" />
+            </div>
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+            {messages.apiDocs.comingSoon?.title ?? "API bientôt disponible"}
+          </h1>
+
+          <p className="text-lg text-muted-foreground max-w-md mx-auto mb-8">
+            {messages.apiDocs.comingSoon?.description ?? "Notre API publique est en cours de finalisation. Revenez bientôt pour accéder à la documentation complète."}
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 px-4 py-1.5 text-sm">
+              {messages.apiDocs.comingSoon?.badge ?? "En développement"}
+            </Badge>
+            <Badge variant="outline" className="px-4 py-1.5 text-sm">
+              {messages.apiDocs.comingSoon?.version ?? "Version 1.0 — Prochainement"}
+            </Badge>
+          </div>
+
+          <div className="mt-12 grid gap-4 sm:grid-cols-3 max-w-xl mx-auto">
+            {[
+              {
+                icon: CodeBracketIcon,
+                label: messages.apiDocs.comingSoon?.feature1 ?? "REST & SDK",
+              },
+              {
+                icon: ShieldCheckIcon,
+                label: messages.apiDocs.comingSoon?.feature2 ?? "Authentification sécurisée",
+              },
+              {
+                icon: CubeIcon,
+                label: messages.apiDocs.comingSoon?.feature3 ?? "Webhooks & Events",
+              },
+            ].map(({ icon: Icon, label }, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 + i * 0.15 }}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border/50 bg-muted/30"
+              >
+                <Icon className="w-6 h-6 text-orange-500" />
+                <span className="text-sm font-medium text-muted-foreground">{label}</span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
 export default function ApiDocsPage() {
   const { messages } = useLocale();
   const endpoints = getEndpoints(messages);
-  
+  const [isEnabled, setIsEnabled] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch("/api/settings/api-docs-enabled")
+      .then((r) => r.json())
+      .then((data) => setIsEnabled(data.enabled))
+      .catch(() => setIsEnabled(false));
+  }, []);
+
+  if (isEnabled === null) {
+    return (
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="max-w-6xl mx-auto flex items-center justify-center min-h-[50vh]">
+          <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!isEnabled) {
+    return <ApiDocsComingSoon messages={messages} />;
+  }
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-6xl mx-auto">

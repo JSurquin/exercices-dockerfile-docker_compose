@@ -32,6 +32,7 @@ const DEFAULTS: PlatformConfig = {
   gamificationMarginRate: GAMIFICATION_DEFAULT_MARGIN_RATE,
   skinplaceDashboardUrl:  SKINPLACE_DASHBOARD_URL,
   steamCdnUrl:            STEAM_CDN_IMAGE_BASE,
+  apiDocsEnabled:         false,
 };
 
 // ─── Cache mémoire ───────────────────────────────────────────────────────────
@@ -76,6 +77,7 @@ export async function getPlatformConfig(): Promise<PlatformConfig> {
     gamificationMarginRate: get(PLATFORM_CONFIG_KEYS.GAMIFICATION_MARGIN_RATE, DEFAULTS.gamificationMarginRate),
     skinplaceDashboardUrl:  get(PLATFORM_CONFIG_KEYS.SKINPLACE_DASHBOARD_URL,  DEFAULTS.skinplaceDashboardUrl) as string,
     steamCdnUrl:            get(PLATFORM_CONFIG_KEYS.STEAM_CDN_URL,            DEFAULTS.steamCdnUrl) as string,
+    apiDocsEnabled:         get(PLATFORM_CONFIG_KEYS.API_DOCS_ENABLED,         DEFAULTS.apiDocsEnabled) as boolean,
   };
 
   cache = { config, expiresAt: Date.now() + CACHE_TTL_MS };
@@ -85,7 +87,7 @@ export async function getPlatformConfig(): Promise<PlatformConfig> {
 // ─── Écriture ─────────────────────────────────────────────────────────────────
 export async function setPlatformConfigValue(
   key: PlatformConfigKey,
-  value: string | number,
+  value: string | number | boolean,
   updatedBy: string,
   description?: string,
 ): Promise<void> {

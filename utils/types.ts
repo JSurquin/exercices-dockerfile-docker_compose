@@ -3714,6 +3714,15 @@ export interface Messages {
       trade: string;
       error: string;
     };
+    comingSoon: {
+      title: string;
+      description: string;
+      badge: string;
+      version: string;
+      feature1: string;
+      feature2: string;
+      feature3: string;
+    };
   };
   policies: {
     kyc: {
