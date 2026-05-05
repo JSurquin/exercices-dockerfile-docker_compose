@@ -13,6 +13,7 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { messages } = useLocale();
+  const t = messages.hooks.inventory;
 
   const handleRequest = useCallback(async <T>(
     requestFn: () => Promise<T>
@@ -25,14 +26,14 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
       options.onSuccess?.(result as NormalizedInventoryResponse);
       return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';
+      const errorMessage = err instanceof Error ? err.message : t.unknownError;
       setError(errorMessage);
       options.onError?.(errorMessage);
       return null;
     } finally {
       setLoading(false);
     }
-  }, [options]);
+  }, [options, t]);
 
   // Récupérer l'inventaire avec les prix depuis Skin.place
   const getSkinplaceInventory = useCallback(async (steamId64: string) => {
@@ -43,7 +44,7 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la récupération de l\'inventaire');
+        throw new Error(errorData.error || t.fetchError);
       }
       
       const data = await response.json();

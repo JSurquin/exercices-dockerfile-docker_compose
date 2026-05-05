@@ -42,8 +42,8 @@ export function SteamInventoryViewer({
     isTradableAndMarketable
   } = useSteamInventory({
     onError: (err) => {
-      console.error('Erreur Steam Inventory:', err);
-      toast.error(`Erreur: ${err}`);
+      console.error('Steam Inventory error:', err);
+      toast.error(`${messages.components.steam.errorPrefix}: ${err}`);
     },
   });
 
@@ -116,7 +116,7 @@ export function SteamInventoryViewer({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <RefreshCw className="h-5 w-5 animate-spin" />
-            Chargement de votre inventaire Steam...
+            {messages.components.steam.loadingInventory}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -131,24 +131,25 @@ export function SteamInventoryViewer({
   }
 
   if (error) {
+    const st = messages.components.steam;
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
           {error === 'Inventaire privé ou inaccessible' ? (
             <>
-              Votre inventaire Steam est privé. 
+              {st.inventoryPrivate}
               <a 
                 href="https://steamcommunity.com/my/edit/settings" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="underline ml-1"
               >
-                Rendez-le public pour continuer
+                {st.makePublic}
               </a>
             </>
           ) : (
-            `Erreur: ${error}`
+            `${st.errorPrefix}: ${error}`
           )}
         </AlertDescription>
       </Alert>
@@ -161,11 +162,11 @@ export function SteamInventoryViewer({
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
-            Votre inventaire CS2
+            {messages.components.steam.yourCs2Inventory}
             {estimatingPrices && (
               <Badge variant="secondary" className="ml-2">
                 <RefreshCw className="h-3 w-3 animate-spin mr-1" />
-                Estimation des prix...
+                {messages.components.steam.estimatingPrices}
               </Badge>
             )}
           </CardTitle>
@@ -181,7 +182,7 @@ export function SteamInventoryViewer({
         
         <div className="flex items-center gap-4">
           <div className="flex-1">
-            <Label htmlFor="search">Rechercher</Label>
+            <Label htmlFor="search">{messages.components.steam.search}</Label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -195,7 +196,7 @@ export function SteamInventoryViewer({
           </div>
           <div className="text-right">
             <div className="text-sm text-muted-foreground">
-              {tradableItems.length} items vendables
+              {messages.components.steam.tradableItemsCount.replace('{count}', tradableItems.length.toString())}
             </div>
             <div className="text-2xl font-bold text-green-600">
               {formatPrice(totalEstimatedValue)}
@@ -207,7 +208,7 @@ export function SteamInventoryViewer({
       <CardContent>
         {filteredItems.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            {searchTerm ? 'Aucun item trouvé' : 'Aucun item CS2 dans votre inventaire'}
+            {searchTerm ? messages.components.steam.noItemsFound : messages.components.steam.noCs2Items}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -277,7 +278,7 @@ export function SteamInventoryViewer({
                           )}
                           {!isItemTradable && (
                             <Badge variant="destructive" className="text-xs">
-                              Non tradable
+                              {messages.components.steam.notTradable}
                             </Badge>
                           )}
                         </div>
@@ -289,12 +290,12 @@ export function SteamInventoryViewer({
                             </span>
                           ) : (
                             <span className="text-sm text-muted-foreground">
-                              {estimatingPrices ? 'Estimation...' : 'Prix non disponible'}
+                              {estimatingPrices ? messages.components.steam.estimating : messages.components.steam.priceUnavailable}
                             </span>
                           )}
                           {selectable && isSelected && (
                             <Badge className="bg-blue-500 text-white">
-                              Sélectionné
+                              {messages.components.steam.selected}
                             </Badge>
                           )}
                         </div>
@@ -312,10 +313,10 @@ export function SteamInventoryViewer({
             <div className="flex items-center justify-between">
               <div>
                 <span className="font-medium">
-                  {selectedItems.length} item(s) sélectionné(s)
+                  {messages.components.steam.itemsSelected.replace('{count}', selectedItems.length.toString())}
                 </span>
                 <div className="text-sm text-muted-foreground">
-                  Valeur estimée: {formatPrice(
+                  {messages.components.steam.estimatedValue}: {formatPrice(
                     inventory
                       .filter(item => selectedItems.includes(item.id))
                       .reduce((sum, item) => sum + (item.estimated_price || 0), 0)
@@ -328,12 +329,12 @@ export function SteamInventoryViewer({
                     selectedItems.includes(item.id)
                   );
                   if (selectedItemsData.length > 0) {
-                    onItemSelect?.(selectedItemsData[0]); // Pour l'exemple, on prend le premier
+                    onItemSelect?.(selectedItemsData[0]);
                   }
                 }}
                 disabled={selectedItems.length === 0}
               >
-                Continuer
+                {messages.components.steam.continueButton}
               </Button>
             </div>
           </div>

@@ -177,7 +177,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
             </ol>
             <div className="mt-2 pt-2 border-t border-border">
               <p className="text-xs text-muted-foreground">
-                <strong>{locale === "en" ? "Alternative:" : locale === "cn" ? "替代方法：" : "Alternative :"}</strong> {messages.components.onboarding.steamId.alternative}
+                <strong>{messages.components.onboarding.steamId.alternativeLabel}</strong> {messages.components.onboarding.steamId.alternative}
               </p>
             </div>
           </div>
@@ -248,7 +248,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
             className="flex items-center justify-center gap-2 w-full rounded-md border border-blue-500 bg-blue-500/10 px-4 py-2.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-colors"
           >
             <ExternalLink className="w-4 h-4 shrink-0" />
-            {locale === "en" ? "Open Steam Trade Link page" : locale === "cn" ? "打开Steam交易链接页面" : "Ouvrir la page Trade Link Steam"}
+            {messages.components.onboarding.tradeLink.openSteamTradeLinkPage}
           </a>
           <Badge variant="outline" className="text-orange-500 border-orange-500 text-xs sm:text-sm inline-block w-full sm:w-auto">
             <span className="wrap-break-word">{messages.components.onboarding.tradeLink.warning}</span>
@@ -274,7 +274,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
                 className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 hover:underline transition-colors shrink-0"
               >
                 <ExternalLink className="w-3 h-3" />
-                {locale === "en" ? "Get it here" : locale === "cn" ? "在这里获取" : "Obtenir ici"}
+                {messages.components.onboarding.enterTradeLink.getItHere}
               </a>
             </div>
             <Input
@@ -578,7 +578,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
             >
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">{messages.components.onboarding.navigation.previous}</span>
-              <span className="sm:hidden">Préc.</span>
+              <span className="sm:hidden">{messages.components.onboarding.navigation.previousShort}</span>
             </Button>
 
             <div className="flex space-x-1 shrink-0">

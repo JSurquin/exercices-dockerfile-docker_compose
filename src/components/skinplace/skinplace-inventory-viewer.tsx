@@ -385,6 +385,7 @@ export function SkinplaceInventoryViewer({
     const isPrivateError = error === 'Inventaire privé ou inaccessible';
     const isNotFoundError = error.includes('introuvable') || error.includes('not found');
     
+    const sp = messages.components.skinplace;
     return (
       <Card className="border-destructive/50 bg-destructive/5">
         <CardHeader>
@@ -395,32 +396,31 @@ export function SkinplaceInventoryViewer({
             <div>
               <CardTitle className="text-lg text-destructive">
                 {isPrivateError 
-                  ? (messages.components?.skinplace?.inventoryPrivate || 'Inventaire privé') 
+                  ? sp.inventoryPrivateTitle
                   : isNotFoundError 
-                    ? 'Steam ID introuvable'
-                    : (messages.components?.skinplace?.error || 'Erreur')}
+                    ? sp.steamIdNotFound
+                    : sp.error}
               </CardTitle>
               <CardDescription className="text-destructive/80">
                 {isPrivateError 
-                  ? 'Votre inventaire Steam doit être public pour être chargé'
+                  ? sp.inventoryPrivateDesc
                   : isNotFoundError
-                    ? 'Le Steam ID spécifié ne correspond à aucun compte'
+                    ? sp.steamIdNotFoundDesc
                     : error}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Solutions proposées */}
           <div className="space-y-3">
             {isPrivateError && (
               <div className="bg-background rounded-lg p-4 border">
                 <h4 className="font-medium mb-2 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">1</span>
-                  Rendez votre inventaire public
+                  {sp.makePublicStep}
                 </h4>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Allez dans les paramètres de confidentialité Steam et définissez votre inventaire comme &quot;Public&quot;.
+                  {sp.makePublicDesc}
                 </p>
                 <Button
                   variant="outline"
@@ -428,7 +428,7 @@ export function SkinplaceInventoryViewer({
                   onClick={() => window.open('https://steamcommunity.com/my/edit/settings', '_blank')}
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
-                  Ouvrir les paramètres Steam
+                  {sp.openSteamSettings}
                 </Button>
               </div>
             )}
@@ -439,10 +439,10 @@ export function SkinplaceInventoryViewer({
                   <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
                     {isPrivateError ? '2' : '1'}
                   </span>
-                  Utiliser votre compte de connexion
+                  {sp.useLoginAccount}
                 </h4>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Le Steam ID actuel provient de votre Trade Link. Pour charger votre compte de connexion à la place, cliquez ci-dessous.
+                  {sp.useLoginAccountDesc}
                 </p>
                 <div className="flex gap-2">
                   <Button
@@ -451,12 +451,12 @@ export function SkinplaceInventoryViewer({
                     className="flex-1"
                   >
                     <User className="h-4 w-4 mr-2" />
-                    Utiliser mon compte principal
+                    {sp.useMainAccount}
                   </Button>
                 </div>
                 {profileSteamId64 && (
                   <p className="text-xs text-muted-foreground mt-2">
-                    Votre compte principal : <code className="bg-muted px-1 rounded">{profileSteamId64}</code>
+                    {sp.mainAccount} : <code className="bg-muted px-1 rounded">{profileSteamId64}</code>
                   </p>
                 )}
               </div>
@@ -468,10 +468,10 @@ export function SkinplaceInventoryViewer({
                   <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
                     {isPrivateError && allowSteamIdChange ? '3' : '2'}
                   </span>
-                  Modifier votre Trade Link
+                  {sp.editTradeLink}
                 </h4>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Si le Trade Link actuel est incorrect ou pointe vers un compte privé, vous pouvez le modifier dans les paramètres.
+                  {sp.editTradeLinkDesc}
                 </p>
                 <Button
                   variant="outline"
@@ -479,7 +479,7 @@ export function SkinplaceInventoryViewer({
                   onClick={() => window.location.href = '/settings'}
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
-                  Aller aux paramètres
+                  {sp.goToSettings}
                 </Button>
               </div>
             )}
@@ -490,14 +490,14 @@ export function SkinplaceInventoryViewer({
                   <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
                     {isPrivateError ? '4' : isNotFoundError ? '3' : '1'}
                   </span>
-                  Essayer un autre Steam ID temporairement
+                  {sp.tryOtherSteamId}
                 </h4>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Vous pouvez temporairement charger l&apos;inventaire d&apos;un autre compte sans modifier vos paramètres.
+                  {sp.tryOtherSteamIdDesc}
                 </p>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="76561198123456789 ou Trade Link"
+                    placeholder="76561198123456789"
                     value={customSteamId}
                     onChange={(e) => setCustomSteamId(e.target.value)}
                     className="flex-1"
@@ -507,7 +507,7 @@ export function SkinplaceInventoryViewer({
                     disabled={!customSteamId || customSteamId === currentSteamId}
                   >
                     <User className="h-4 w-4 mr-2" />
-                    Charger
+                    {sp.loadButton}
                   </Button>
                 </div>
               </div>
@@ -518,10 +518,10 @@ export function SkinplaceInventoryViewer({
                 <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
                   {isPrivateError && allowSteamIdChange ? '3' : isNotFoundError && allowSteamIdChange ? '2' : '1'}
                 </span>
-                Réessayer
+                {sp.retryStep}
               </h4>
               <p className="text-sm text-muted-foreground mb-3">
-                Parfois Steam peut être temporairement indisponible. Essayez de recharger.
+                {sp.retryDesc}
               </p>
               <Button
                 variant="outline"
@@ -530,15 +530,14 @@ export function SkinplaceInventoryViewer({
                 disabled={loading}
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                {loading ? 'Chargement...' : 'Réessayer'}
+                {loading ? sp.loadingButton : sp.retryButton}
               </Button>
             </div>
           </div>
 
-          {/* Info Steam ID actuel */}
           <div className="flex items-center gap-2 pt-2 border-t text-sm text-muted-foreground">
             <User className="h-4 w-4" />
-            <span>Steam ID utilisé: <code className="bg-muted px-1 rounded">{currentSteamId}</code></span>
+            <span>{sp.steamIdUsed}: <code className="bg-muted px-1 rounded">{currentSteamId}</code></span>
           </div>
         </CardContent>
       </Card>
@@ -567,7 +566,7 @@ export function SkinplaceInventoryViewer({
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-sm text-muted-foreground">Inventaire chargé pour</p>
+                  <p className="text-sm text-muted-foreground">{messages.components.skinplace.inventoryLoadedFor}</p>
                   {linkedSteamIdentity && currentSteamId === profileSteamId64 && linkedSteamIdentity.name ? (
                     <p className="font-semibold text-sm truncate" title={linkedSteamIdentity.name}>
                       {linkedSteamIdentity.name}
@@ -579,7 +578,7 @@ export function SkinplaceInventoryViewer({
                 </div>
                 {Boolean(profileSteamId64) && currentSteamId !== profileSteamId64 && (
                   <Badge variant="secondary" className="ml-2">
-                    Compte secondaire
+                    {messages.components.skinplace.secondaryAccount}
                   </Badge>
                 )}
               </div>
@@ -592,7 +591,7 @@ export function SkinplaceInventoryViewer({
                     onClick={() => setShowSteamIdInput(true)}
                   >
                     <Edit className="h-4 w-4 mr-2" />
-                    Changer de compte
+                    {messages.components.skinplace.changeAccount}
                   </Button>
                   {Boolean(profileSteamId64) && currentSteamId !== profileSteamId64 && (
                     <Button
@@ -600,7 +599,7 @@ export function SkinplaceInventoryViewer({
                       size="sm"
                       onClick={handleResetSteamId}
                     >
-                      Réinitialiser
+                      {messages.components.skinplace.resetAccount}
                     </Button>
                   )}
                 </div>
@@ -623,7 +622,7 @@ export function SkinplaceInventoryViewer({
                     onClick={handleSteamIdChange}
                     disabled={!customSteamId || !customSteamInputLooksValid}
                   >
-                    Charger
+                    {messages.components.skinplace.loadButton}
                   </Button>
                   <Button
                     variant="ghost"
@@ -633,7 +632,7 @@ export function SkinplaceInventoryViewer({
                       setCustomSteamId(currentSteamId);
                     }}
                   >
-                    Annuler
+                    {messages.components.skinplace.cancelButton}
                   </Button>
                 </div>
               )}
@@ -795,7 +794,7 @@ export function SkinplaceInventoryViewer({
                     {messages.components.skinplace.purchasableOnly}
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Afficher uniquement les skins disponibles
+                    {messages.components.skinplace.purchasableOnlyDesc}
                   </p>
                 </div>
               </div>

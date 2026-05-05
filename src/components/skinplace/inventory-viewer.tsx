@@ -84,7 +84,7 @@ export function InventoryViewer({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <RefreshCw className="h-5 w-5 animate-spin" />
-                Chargement de l&apos;inventaire...
+            {messages.components.skinplace.loadingInventory}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -102,7 +102,7 @@ export function InventoryViewer({
     return (
       <Alert variant="destructive">
         <AlertDescription>
-          Erreur lors du chargement de l&apos;inventaire: {error.error}
+          {messages.components.skinplace.error} {error.error}
         </AlertDescription>
       </Alert>
     );
@@ -114,7 +114,7 @@ export function InventoryViewer({
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            Inventaire Steam
+            {messages.components.skinplace.yourInventory}
           </CardTitle>
           <Button
             variant="outline"
@@ -128,7 +128,7 @@ export function InventoryViewer({
         
         <div className="flex items-center gap-4">
           <div className="flex-1">
-            <Label htmlFor="search">Rechercher</Label>
+            <Label htmlFor="search">{messages.components.skinplace.search}</Label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -141,7 +141,7 @@ export function InventoryViewer({
             </div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-muted-foreground">Valeur totale</div>
+            <div className="text-sm text-muted-foreground">{messages.components.skinplace.totalValue}</div>
             <div className="text-2xl font-bold text-green-600">
               {formatPrice(totalValue)}
             </div>
@@ -152,7 +152,7 @@ export function InventoryViewer({
       <CardContent>
         {filteredItems.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            {searchTerm ? 'Aucun item trouvé' : 'Inventaire vide'}
+            {searchTerm ? messages.components.skinplace.noItemsFiltered : messages.components.skinplace.noTradableItems}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -209,7 +209,7 @@ export function InventoryViewer({
                         </span>
                         {selectable && selectedItems.includes(item.id) && (
                           <Badge className="bg-blue-500 text-white">
-                            Sélectionné
+                            {messages.components.skinplace.selected}
                           </Badge>
                         )}
                       </div>
@@ -225,17 +225,17 @@ export function InventoryViewer({
           <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
             <div className="flex items-center justify-between">
               <span className="font-medium">
-                {selectedItems.length} item(s) sélectionné(s)
+                {messages.components.skinplace.itemsSelected.replace('{count}', selectedItems.length.toString())}
               </span>
               <Button
                 onClick={() => {
                   const selectedItemsData = inventory.filter(item => 
                     selectedItems.includes(item.id)
                   );
-                  onItemSelect?.(selectedItemsData[0]); // Pour l'exemple, on prend le premier
+                  onItemSelect?.(selectedItemsData[0]);
                 }}
               >
-                Continuer
+                {messages.components.skinplace.continueWithSelection}
               </Button>
             </div>
           </div>

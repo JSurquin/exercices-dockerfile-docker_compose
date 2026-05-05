@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Giveaway, GiveawayEntry } from '@/lib/types';
 import { queryKeys } from '@/lib/query-keys';
+import { useLocale } from '@/components/providers/locale-provider';
 
 export interface GiveawayEntryWithUser extends GiveawayEntry {
   user?: {
@@ -46,6 +47,8 @@ export interface DrawResult {
 
 export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
   const queryClient = useQueryClient();
+  const { messages } = useLocale();
+  const t = messages.hooks.giveaways;
 
   const {
     data: giveaways = [],
@@ -58,7 +61,7 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
       const url = status ? `/api/giveaways?status=${status}` : '/api/giveaways';
       const response = await fetch(url, { credentials: 'include' });
       if (!response.ok) {
-        throw new Error('Erreur lors de la récupération des giveaways');
+        throw new Error(t.fetchError);
       }
       return response.json();
     },
@@ -67,7 +70,7 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
   const error = queryError
     ? queryError instanceof Error
       ? queryError.message
-      : 'Une erreur est survenue'
+      : t.unknownError
     : null;
 
   const participateMutation = useMutation({
@@ -86,7 +89,7 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la participation');
+        throw new Error(errorData.error || t.participationError);
       }
       return response.json() as Promise<{
         newFragmentBalance: number;
@@ -97,11 +100,13 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.giveaways() });
       toast.success(
-        `Participation enregistrée : ${data.entriesAdded} entrée(s) (${data.fragmentsSpent} fragments)`
+        t.participationSuccess
+          .replace('{entries}', String(data.entriesAdded))
+          .replace('{fragments}', String(data.fragmentsSpent))
       );
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : 'Une erreur est survenue');
+      toast.error(err instanceof Error ? err.message : t.unknownError);
     },
   });
 
@@ -113,7 +118,7 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors du tirage');
+        throw new Error(errorData.error || t.drawError);
       }
       return response.json();
     },
@@ -121,7 +126,7 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
       queryClient.invalidateQueries({ queryKey: queryKeys.giveaways() });
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : 'Une erreur est survenue');
+      toast.error(err instanceof Error ? err.message : t.unknownError);
     },
   });
 
@@ -150,16 +155,16 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la création');
+        throw new Error(errorData.error || t.creationError);
       }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.giveaways() });
-      toast.success('Giveaway créé avec succès !');
+      toast.success(t.creationSuccess);
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : 'Une erreur est survenue');
+      toast.error(err instanceof Error ? err.message : t.unknownError);
     },
   });
 

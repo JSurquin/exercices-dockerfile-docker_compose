@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface UseAffiliateApplicationsResult {
   pendingCount: number;
@@ -15,6 +16,9 @@ interface UseAffiliateApplicationsResult {
  * Auto-refresh toutes les 30 secondes via TanStack Query refetchInterval.
  */
 export function useAffiliateApplications(): UseAffiliateApplicationsResult {
+  const { messages } = useLocale();
+  const t = messages.hooks.affiliateApplications;
+
   const {
     data,
     isLoading: loading,
@@ -28,7 +32,7 @@ export function useAffiliateApplications(): UseAffiliateApplicationsResult {
       );
       const json = await response.json();
       if (!json.success) {
-        throw new Error('Erreur lors du chargement');
+        throw new Error(t.loadingError);
       }
       return json.data.pendingCount as number;
     },
@@ -38,7 +42,7 @@ export function useAffiliateApplications(): UseAffiliateApplicationsResult {
   const error = queryError
     ? queryError instanceof Error
       ? queryError.message
-      : 'Erreur de connexion'
+      : t.connectionError
     : null;
 
   return {

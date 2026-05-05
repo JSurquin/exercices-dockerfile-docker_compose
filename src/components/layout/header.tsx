@@ -257,7 +257,7 @@ export function Header() {
                       {isAffiliateBadge && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/20 border border-purple-500/40 px-1.5 py-0.5 text-[10px] font-semibold text-purple-400 leading-none">
                           <UserCircleIcon className="h-2.5 w-2.5" />
-                          Affilié
+                          {messages.nav.affiliateBadge}
                         </span>
                       )}
                       {isAdmin && (
@@ -413,7 +413,7 @@ export function Header() {
                 {user && (
                   <div className="border-t pt-3 flex flex-col space-y-1">
                     <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                      Mon compte
+                      {messages.nav.myAccount}
                     </p>
                     <Link
                       href={isAdmin ? "/admin/dashboard" : "/dashboard"}
@@ -421,7 +421,7 @@ export function Header() {
                       className="flex items-center space-x-3 p-3 text-sm font-medium rounded-md hover:bg-accent transition-colors"
                     >
                       <ChartBarIcon className="h-5 w-5" />
-                      <span>Dashboard</span>
+                      <span>{messages.nav.dashboard}</span>
                     </Link>
                     <Link
                       href="/notifications"
@@ -430,7 +430,7 @@ export function Header() {
                     >
                       <div className="flex items-center space-x-3">
                         <BellIcon className="h-5 w-5" />
-                        <span>Notifications</span>
+                        <span>{messages.ui.notifications}</span>
                       </div>
                       {unreadCount > 0 && (
                         <Badge className="bg-orange-500 text-white">

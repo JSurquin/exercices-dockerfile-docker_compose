@@ -194,7 +194,7 @@ export function Footer() {
 
               {/* Account */}
               <div>
-                <h3 className="font-semibold mb-4 text-white">Compte</h3>
+                <h3 className="font-semibold mb-4 text-white">{messages.footer.account}</h3>
                 <ul className="space-y-2">
                   {links.account.map((link) => (
                     <li key={link.name}>

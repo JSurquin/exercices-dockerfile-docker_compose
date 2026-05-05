@@ -3,17 +3,20 @@
 import { useState } from 'react';
 import { useSession } from '~/lib/auth-client';
 import { useToast } from '@/hooks/use-toast';
+import { useLocale } from '@/components/providers/locale-provider';
 
 export const useOnboarding = () => {
   const { data: session, refetch } = useSession();
-  const { toast } = useToast(); 
+  const { toast } = useToast();
+  const { messages } = useLocale();
+  const t = messages.hooks.onboarding;
   const [isCompleting, setIsCompleting] = useState(false);
 
   const completeOnboarding = async () => {
     if (!session?.user?.id) {
       toast({
-        title: "Erreur",
-        description: "Vous devez être connecté pour terminer l'onboarding",
+        title: t.errorTitle,
+        description: t.notLoggedIn,
         variant: "destructive"
       });
       return false;
@@ -32,23 +35,22 @@ export const useOnboarding = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de la completion de l\'onboarding');
+        throw new Error(data.error || t.completionError);
       }
 
-      // Rafraîchir la session pour récupérer isFirstLogin mis à jour
       await refetch();
 
       toast({
-        title: "Bienvenue !",
-        description: "Votre onboarding est terminé. Vous pouvez maintenant utiliser toutes les fonctionnalités de MoonSkin.",
+        title: t.successTitle,
+        description: t.successDescription,
       });
 
       return true;
     } catch (error) {
       console.error('Erreur lors de la completion de l\'onboarding:', error);
       toast({
-        title: "Erreur",
-        description: error instanceof Error ? error.message : "Une erreur est survenue",
+        title: t.errorTitle,
+        description: error instanceof Error ? error.message : t.unknownError,
         variant: "destructive"
       });
       return false;

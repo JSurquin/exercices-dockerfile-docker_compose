@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
+import { useLocale } from '@/components/providers/locale-provider';
 
 export interface TradeItem {
   id: string;
@@ -39,6 +40,9 @@ export interface UserTradesData {
 }
 
 export function useUserTrades() {
+  const { messages } = useLocale();
+  const t = messages.hooks.userTrades;
+
   const {
     data,
     isLoading: loading,
@@ -49,7 +53,7 @@ export function useUserTrades() {
     queryFn: async () => {
       const response = await fetch('/api/user/trades');
       if (!response.ok) {
-        throw new Error('Erreur lors de la récupération des trades');
+        throw new Error(t.fetchError);
       }
       return response.json();
     },
@@ -58,7 +62,7 @@ export function useUserTrades() {
   const error = queryError
     ? queryError instanceof Error
       ? queryError.message
-      : 'Une erreur est survenue'
+      : t.unknownError
     : null;
 
   return {

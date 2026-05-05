@@ -1,4 +1,7 @@
+'use client';
+
 import { useState, useCallback } from 'react';
+import { useLocale } from '@/components/providers/locale-provider';
 
 export interface SteamInventoryItem {
   id: string;
@@ -55,6 +58,8 @@ interface UseSteamInventoryOptions {
 export function useSteamInventory(options: UseSteamInventoryOptions = {}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { messages } = useLocale();
+  const t = messages.hooks.inventory;
 
   const handleRequest = useCallback(async <T>(
     requestFn: () => Promise<T>
@@ -67,14 +72,14 @@ export function useSteamInventory(options: UseSteamInventoryOptions = {}) {
       options.onSuccess?.(result as SteamInventoryResponse);
       return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';
+      const errorMessage = err instanceof Error ? err.message : t.unknownError;
       setError(errorMessage);
       options.onError?.(errorMessage);
       return null;
     } finally {
       setLoading(false);
     }
-  }, [options]);
+  }, [options, t]);
 
   // Récupérer l'inventaire Steam d'un utilisateur
   const getSteamInventory = useCallback(async (steamId64: string) => {
@@ -87,11 +92,11 @@ export function useSteamInventory(options: UseSteamInventoryOptions = {}) {
       console.log('response', response);
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la récupération de l\'inventaire');
+        throw new Error(errorData.error || t.fetchError);
       }
       return response.json();
     });
-  }, [handleRequest]);
+  }, [handleRequest, t]);
 
   // Estimer le prix des items via Skinplace
   const estimateItemsPrices = useCallback(async (items: SteamInventoryItem[]) => {
@@ -113,11 +118,11 @@ export function useSteamInventory(options: UseSteamInventoryOptions = {}) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de l\'estimation des prix');
+        throw new Error(errorData.error || t.estimationError);
       }
       return response.json();
     });
-  }, [handleRequest]);
+  }, [handleRequest, t]);
 
   // Utilitaires pour parser les données Steam
   const parseItemRarity = useCallback((item: SteamInventoryItem): string => {

@@ -114,14 +114,15 @@ export function SteamTradeCreator({
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Erreur lors de la création du trade');
+        throw new Error(result.error || messages.tradeCreator.tradeCreationError);
       }
 
-      // Vérifier si le prix serveur diffère de l'estimation affichée au client
       const serverGross = result.data.gross_value_centimes;
       if (Math.abs(serverGross - grossValue) > 1) {
         toast.warning(
-          `Le prix a été mis à jour par le serveur : ${(serverGross / 100).toFixed(2)} $ au lieu de ${(grossValue / 100).toFixed(2)} $. Le trade a été créé avec le prix vérifié.`
+          messages.tradeCreator.priceUpdatedByServer
+            .replace('{server}', (serverGross / 100).toFixed(2))
+            .replace('{client}', (grossValue / 100).toFixed(2))
         );
       }
 
@@ -142,7 +143,7 @@ export function SteamTradeCreator({
       toast.success(messages.tradeCreator.tradeCreatedSuccess);
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';
+      const errorMessage = err instanceof Error ? err.message : messages.tradeCreator.errorUnknown;
       setError(errorMessage);
       toast.error(errorMessage || messages.tradeCreator.tradeCreationError);
     } finally {
@@ -164,19 +165,20 @@ export function SteamTradeCreator({
   const netValue = fees.net_credited_centimes + vipBonusPreview;
   const cashoutPercentDisplay = ((platformSettings?.cashoutFeeRate ?? 0.005) * 100).toFixed(2);
 
+  const tc = messages.tradeCreator;
+
   return (
     <div className="space-y-6">
-      {/* Configuration du trade */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Handshake className="h-5 w-5" />
-            Créer votre vente
+            {tc.createYourSale}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="trade-url">URL de Trade Steam</Label>
+            <Label htmlFor="trade-url">{tc.tradeUrlLabel}</Label>
             <div className="space-y-2">
               <Input
                 id="trade-url"
@@ -189,14 +191,14 @@ export function SteamTradeCreator({
                 <Alert variant="destructive">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
-                    URL de trade Steam invalide. 
+                    {tc.tradeUrlInvalid}
                     <a 
                       href="https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="underline ml-1"
                     >
-                      Obtenez votre URL ici
+                      {tc.tradeUrlGetHere}
                     </a>
                   </AlertDescription>
                 </Alert>
@@ -205,7 +207,7 @@ export function SteamTradeCreator({
                 <Alert>
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>
-                    URL de trade Steam valide ✓
+                    {tc.tradeUrlValid}
                   </AlertDescription>
                 </Alert>
               )}
@@ -218,7 +220,7 @@ export function SteamTradeCreator({
               disabled={!isValidUrl || selectedItems.length === 0 || loading || netValue <= 0}
               className="flex-1"
             >
-              {loading ? 'Création en cours...' : 'Créer la vente'}
+              {loading ? tc.creatingButton : tc.createSaleButton}
             </Button>
             <Button
               variant="outline"
@@ -230,12 +232,11 @@ export function SteamTradeCreator({
         </CardContent>
       </Card>
 
-      {/* Calcul des prix */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
-            Calcul de votre paiement
+            {tc.paymentCalcTitle}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -284,7 +285,9 @@ export function SteamTradeCreator({
               {vipBonusPreview > 0 && (
                 <div className="flex items-center justify-between text-sm text-amber-600 dark:text-amber-400">
                   <span className="flex items-center gap-1">
-                    + Bonus {user?.userTag || 'VIP'} (+{user?.bonusRatePercent}%)
+                    + {tc.vipBonus
+                        .replace('{tag}', user?.userTag || 'VIP')
+                        .replace('{percent}', String(user?.bonusRatePercent))}
                   </span>
                   <span>+{formatPrice(vipBonusPreview)}</span>
                 </div>
@@ -319,8 +322,8 @@ export function SteamTradeCreator({
             <p className="text-xs text-muted-foreground px-1">{messages.tradeCreator.tradeFeesFootnote}</p>
 
             <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
-              <p className="mb-1">ℹ️ <strong>Délai de paiement :</strong> 7 jours (Trade Hold Steam)</p>
-              <p>Le paiement sera automatiquement effectué après validation du trade par Steam.</p>
+              <p className="mb-1">ℹ️ <strong>{tc.paymentDelayTitle} :</strong> {tc.paymentDelayInfo}</p>
+              <p>{tc.paymentDelayDetail}</p>
             </div>
           </div>
         </CardContent>
@@ -331,7 +334,7 @@ export function SteamTradeCreator({
         <Alert variant="destructive">
           <XCircle className="h-4 w-4" />
           <AlertDescription>
-            Erreur: {error}
+            {tc.errorPrefix}: {error}
           </AlertDescription>
         </Alert>
       )}

@@ -83,6 +83,8 @@ export interface Messages {
     withdrawFunds: string;
     kycVerification: string;
     platform: string;
+    affiliateBadge: string;
+    myAccount: string;
   };
   user: {
     level: string;
@@ -548,6 +550,7 @@ export interface Messages {
     company: string;
     support: string;
     legal: string;
+    account: string;
     links: {
       about: string;
       blog: string;
@@ -2527,6 +2530,12 @@ export interface Messages {
     support: string;
     online: string;
     responseTime: string;
+    greeting: string;
+    greetingSuffix: string;
+    problemQuestion: string;
+    moderatorLabel: string;
+    botLabel: string;
+    sendHint: string;
     quickActions: string;
     tradeProblem: string;
     urgentSupport: string;
@@ -2545,6 +2554,43 @@ export interface Messages {
     poweredBy: string;
     responseTimeInfo: string;
     tooltip: string;
+    categories: {
+      trade: {
+        label: string;
+        description: string;
+        subcategories: {
+          pending: string;
+          blocked: string;
+          itemMissing: string;
+          lock: string;
+          botIssue: string;
+        };
+      };
+      payment: {
+        label: string;
+        description: string;
+        subcategories: {
+          card: string;
+          sepaFr: string;
+          sepaEu: string;
+          crypto: string;
+          delayCard: string;
+          delaySepaFr: string;
+          delaySepaEu: string;
+          delayCrypto: string;
+        };
+      };
+      support: {
+        label: string;
+        description: string;
+        subcategories: {
+          bug: string;
+          partnership: string;
+          kyc: string;
+          other: string;
+        };
+      };
+    };
   };
   ui: {
     search: string;
@@ -3920,9 +3966,54 @@ export interface Messages {
         openSettings: string;
         invalidPaste: string;
       };
+      inventoryLoadedFor: string;
+      secondaryAccount: string;
+      changeAccount: string;
+      resetAccount: string;
+      loadButton: string;
+      cancelButton: string;
+      steamIdUsed: string;
+      steamIdNotFound: string;
+      steamIdNotFoundDesc: string;
+      inventoryPrivateTitle: string;
+      inventoryPrivateDesc: string;
+      makePublicStep: string;
+      makePublicDesc: string;
+      openSteamSettings: string;
+      useLoginAccount: string;
+      useLoginAccountDesc: string;
+      useMainAccount: string;
+      mainAccount: string;
+      editTradeLink: string;
+      editTradeLinkDesc: string;
+      goToSettings: string;
+      tryOtherSteamId: string;
+      tryOtherSteamIdDesc: string;
+      retryStep: string;
+      retryDesc: string;
+      retryButton: string;
+      loadingButton: string;
+      purchasableOnlyDesc: string;
     };
     steam: {
       searchPlaceholder: string;
+      loadingInventory: string;
+      yourCs2Inventory: string;
+      estimatingPrices: string;
+      search: string;
+      tradableItemsCount: string;
+      noItemsFound: string;
+      noCs2Items: string;
+      notTradable: string;
+      estimating: string;
+      priceUnavailable: string;
+      selected: string;
+      itemsSelected: string;
+      estimatedValue: string;
+      continueButton: string;
+      inventoryPrivate: string;
+      makePublic: string;
+      errorPrefix: string;
     };
     onboarding: {
       step2: string;
@@ -3947,6 +4038,7 @@ export interface Messages {
           step3: string;
           step4: string;
         };
+        openSteamTradeLinkPage: string;
         warning: string;
       };
       steamId: {
@@ -3959,6 +4051,7 @@ export interface Messages {
           step3: string;
           step4: string;
         };
+        alternativeLabel: string;
         alternative: string;
         openProfile: string;
         reconnectInfo: string;
@@ -3970,6 +4063,7 @@ export interface Messages {
         placeholder: string;
         invalidUrl: string;
         getUrlHere: string;
+        getItHere: string;
         validUrl: string;
         tip: string;
       };
@@ -4012,6 +4106,7 @@ export interface Messages {
         of: string;
         skip: string;
         previous: string;
+        previousShort: string;
         next: string;
         start: string;
         saving: string;
@@ -4613,6 +4708,47 @@ export interface Messages {
     promoErrorUnauthorized: string;
     promoMustBeValid: string;
     promoBonusLine: string;
+    createYourSale: string;
+    tradeUrlLabel: string;
+    tradeLinkConfigured: string;
+    tradeLinkValid: string;
+    tradeUrlModify: string;
+    tradeUrlSaving: string;
+    tradeUrlSave: string;
+    tradeUrlCancel: string;
+    tradeUrlInvalid: string;
+    tradeUrlGetHere: string;
+    tradeUrlValid: string;
+    createSaleButton: string;
+    creatingButton: string;
+    paymentCalcTitle: string;
+    paymentDelayTitle: string;
+    paymentDelayInfo: string;
+    paymentDelayDetail: string;
+    errorPrefix: string;
+    tradeSummaryTitle: string;
+    tradeStatusTitle: string;
+    tradeIdLabel: string;
+    tokenLabel: string;
+    statusLabel: string;
+    expiresLabel: string;
+    totalValueLabel: string;
+    refreshButton: string;
+    refreshingButton: string;
+    statusPending: string;
+    statusAccepted: string;
+    statusDeclined: string;
+    statusExpired: string;
+    statusUnknown: string;
+    tradeAccepted: string;
+    tradeDeclined: string;
+    tradeExpired: string;
+    tradeCreating: string;
+    tradeCreate: string;
+    tradeSummaryItems: string;
+    vipBonus: string;
+    priceUpdatedByServer: string;
+    errorUnknown: string;
   };
   paymentMethodsList: {
     loadingError: string;
@@ -5201,6 +5337,47 @@ export interface Messages {
       invalidCredentials: string;
       steamError: string;
       discordError: string;
+    };
+  };
+  hooks: {
+    affiliateApplications: {
+      loadingError: string;
+      connectionError: string;
+    };
+    giveaways: {
+      fetchError: string;
+      unknownError: string;
+      participationError: string;
+      participationSuccess: string;
+      drawError: string;
+      creationError: string;
+      creationSuccess: string;
+    };
+    onboarding: {
+      errorTitle: string;
+      notLoggedIn: string;
+      successTitle: string;
+      successDescription: string;
+      unknownError: string;
+      completionError: string;
+    };
+    userTrades: {
+      fetchError: string;
+      unknownError: string;
+    };
+    currency: {
+      unknownError: string;
+    };
+    inventory: {
+      unknownError: string;
+      fetchError: string;
+      estimationError: string;
+    };
+    chat: {
+      noConversationId: string;
+      fetchConversationError: string;
+      createConversationError: string;
+      sendMessageError: string;
     };
   };
 }

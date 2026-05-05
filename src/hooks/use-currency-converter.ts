@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { currencyConverter } from '@/lib/currency-converter';
 import { queryKeys } from '@/lib/query-keys';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface UseCurrencyConverterOptions {
   autoRefresh?: boolean;
@@ -12,6 +13,7 @@ interface UseCurrencyConverterOptions {
 
 export function useCurrencyConverter(options: UseCurrencyConverterOptions = {}) {
   const { autoRefresh = false, refreshInterval = 5 * 60 * 1000 } = options;
+  const { messages } = useLocale();
 
   const {
     data: exchangeRate = null,
@@ -29,7 +31,7 @@ export function useCurrencyConverter(options: UseCurrencyConverterOptions = {}) 
   const error = queryError
     ? queryError instanceof Error
       ? queryError.message
-      : 'Erreur inconnue'
+      : messages.hooks.currency.unknownError
     : null;
 
   const lastUpdate = dataUpdatedAt ? new Date(dataUpdatedAt) : null;

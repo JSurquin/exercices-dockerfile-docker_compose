@@ -40,49 +40,6 @@ interface Category {
   subcategories: Subcategory[];
 }
 
-const CATEGORIES: Category[] = [
-  {
-    key: "trade",
-    label: "Trade & Transactions",
-    emoji: "🔄",
-    description: "Problèmes liés aux trades Steam",
-    subcategories: [
-      { key: "trade.pending", label: "Trade en attente", emoji: "⏳" },
-      { key: "trade.blocked", label: "Trade bloqué / erreur", emoji: "🚫" },
-      { key: "trade.item_missing", label: "Item non reçu / envoyé", emoji: "📦" },
-      { key: "trade.lock", label: "Trade lock", emoji: "🔒" },
-      { key: "trade.bot_issue", label: "Problème avec le bot", emoji: "🤖" },
-    ],
-  },
-  {
-    key: "payment",
-    label: "Paiement & Cashout",
-    emoji: "💰",
-    description: "Questions sur vos paiements",
-    subcategories: [
-      { key: "payment.card", label: "💳 Problème carte bancaire", emoji: "💳" },
-      { key: "payment.sepa_fr", label: "🏦 Problème SEPA France", emoji: "🏦" },
-      { key: "payment.sepa_eu", label: "🌍 Problème SEPA Europe", emoji: "🌍" },
-      { key: "payment.crypto", label: "🪙 Problème crypto", emoji: "🪙" },
-      { key: "delay.card", label: "💳 Délai carte bancaire", emoji: "⏱️" },
-      { key: "delay.sepa_fr", label: "🏦 Délai SEPA France", emoji: "⏱️" },
-      { key: "delay.sepa_eu", label: "🌍 Délai SEPA Europe", emoji: "⏱️" },
-      { key: "delay.crypto", label: "🪙 Délai crypto", emoji: "⏱️" },
-    ],
-  },
-  {
-    key: "support",
-    label: "Support & Autre",
-    emoji: "🛠️",
-    description: "Aide générale et autres demandes",
-    subcategories: [
-      { key: "support.bug", label: "Bug du site", emoji: "🐛" },
-      { key: "support.partnership", label: "Partenariat", emoji: "🤝" },
-      { key: "support.kyc", label: "Vérification KYC", emoji: "🪪" },
-      { key: "support.other", label: "Autre demande", emoji: "💬" },
-    ],
-  },
-];
 
 /* ─────────────────────────────────────────────
  * Types
@@ -98,6 +55,50 @@ export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const { messages } = useLocale();
+
+  const CATEGORIES: Category[] = [
+    {
+      key: "trade",
+      label: messages.chatWidget.categories.trade.label,
+      emoji: "🔄",
+      description: messages.chatWidget.categories.trade.description,
+      subcategories: [
+        { key: "trade.pending", label: messages.chatWidget.categories.trade.subcategories.pending, emoji: "⏳" },
+        { key: "trade.blocked", label: messages.chatWidget.categories.trade.subcategories.blocked, emoji: "🚫" },
+        { key: "trade.item_missing", label: messages.chatWidget.categories.trade.subcategories.itemMissing, emoji: "📦" },
+        { key: "trade.lock", label: messages.chatWidget.categories.trade.subcategories.lock, emoji: "🔒" },
+        { key: "trade.bot_issue", label: messages.chatWidget.categories.trade.subcategories.botIssue, emoji: "🤖" },
+      ],
+    },
+    {
+      key: "payment",
+      label: messages.chatWidget.categories.payment.label,
+      emoji: "💰",
+      description: messages.chatWidget.categories.payment.description,
+      subcategories: [
+        { key: "payment.card", label: messages.chatWidget.categories.payment.subcategories.card, emoji: "💳" },
+        { key: "payment.sepa_fr", label: messages.chatWidget.categories.payment.subcategories.sepaFr, emoji: "🏦" },
+        { key: "payment.sepa_eu", label: messages.chatWidget.categories.payment.subcategories.sepaEu, emoji: "🌍" },
+        { key: "payment.crypto", label: messages.chatWidget.categories.payment.subcategories.crypto, emoji: "🪙" },
+        { key: "delay.card", label: messages.chatWidget.categories.payment.subcategories.delayCard, emoji: "⏱️" },
+        { key: "delay.sepa_fr", label: messages.chatWidget.categories.payment.subcategories.delaySepaFr, emoji: "⏱️" },
+        { key: "delay.sepa_eu", label: messages.chatWidget.categories.payment.subcategories.delaySepaEu, emoji: "⏱️" },
+        { key: "delay.crypto", label: messages.chatWidget.categories.payment.subcategories.delayCrypto, emoji: "⏱️" },
+      ],
+    },
+    {
+      key: "support",
+      label: messages.chatWidget.categories.support.label,
+      emoji: "🛠️",
+      description: messages.chatWidget.categories.support.description,
+      subcategories: [
+        { key: "support.bug", label: messages.chatWidget.categories.support.subcategories.bug, emoji: "🐛" },
+        { key: "support.partnership", label: messages.chatWidget.categories.support.subcategories.partnership, emoji: "🤝" },
+        { key: "support.kyc", label: messages.chatWidget.categories.support.subcategories.kyc, emoji: "🪪" },
+        { key: "support.other", label: messages.chatWidget.categories.support.subcategories.other, emoji: "💬" },
+      ],
+    },
+  ];
   const { user } = useAuth();
   const {
     currentConversation,
@@ -263,8 +264,8 @@ export function ChatWidget() {
               <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-400 rounded-full border-2 border-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-sm">Support Moonskin</h3>
-              <p className="text-xs text-white/80">En ligne · Répond rapidement</p>
+              <h3 className="font-semibold text-sm">{messages.chatWidget.support}</h3>
+              <p className="text-xs text-white/80">{messages.chatWidget.online} · {messages.chatWidget.responseTime}</p>
             </div>
           </div>
           <button
@@ -282,7 +283,7 @@ export function ChatWidget() {
           {chatStep === "categories" && (
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               <p className="text-sm text-muted-foreground text-center pb-1">
-                👋 Bonjour{user ? ` ${user.username}` : ""} ! Comment pouvons-nous vous aider ?
+                {messages.chatWidget.greeting}{user ? ` ${user.username}` : ""}{messages.chatWidget.greetingSuffix}
               </p>
               {CATEGORIES.map((cat) => (
                 <button
@@ -307,7 +308,7 @@ export function ChatWidget() {
           {chatStep === "subcategories" && selectedCategory && (
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               <p className="text-sm text-muted-foreground pb-1">
-                {selectedCategory.emoji} <strong>{selectedCategory.label}</strong> — Quel est votre problème ?
+                {selectedCategory.emoji} <strong>{selectedCategory.label}</strong> — {messages.chatWidget.problemQuestion}
               </p>
               {selectedCategory.subcategories.map((sub) => (
                 <button
@@ -339,7 +340,7 @@ export function ChatWidget() {
                 {!currentConversation && (
                   <div className="flex justify-start">
                     <div className="max-w-[85%] rounded-2xl rounded-tl-sm px-4 py-2.5 bg-muted border text-sm">
-                      Bonjour ! Comment pouvons-nous vous aider ?
+                      {messages.chatWidget.responses.welcomeMessage}
                     </div>
                   </div>
                 )}
@@ -368,10 +369,10 @@ export function ChatWidget() {
                         }`}
                       >
                         {isModerator && (
-                          <p className="text-[10px] text-white/80 font-medium mb-0.5">👨‍💼 Modérateur</p>
+                          <p className="text-[10px] text-white/80 font-medium mb-0.5">👨‍💼 {messages.chatWidget.moderatorLabel}</p>
                         )}
                         {isBot && (
-                          <p className="text-[10px] text-muted-foreground font-medium mb-0.5">🤖 Support Bot</p>
+                          <p className="text-[10px] text-muted-foreground font-medium mb-0.5">🤖 {messages.chatWidget.botLabel}</p>
                         )}
                         <p className="text-sm whitespace-pre-wrap leading-relaxed">
                           {resolveContent(msg.content)}
@@ -419,7 +420,7 @@ export function ChatWidget() {
                       e.target.style.height = Math.min(e.target.scrollHeight, 100) + "px";
                     }}
                     onKeyDown={handleKeyDown}
-                    placeholder="Écrivez votre message..."
+                    placeholder={messages.chatWidget.placeholder}
                     disabled={isLoading}
                     rows={1}
                     className="flex-1 resize-none rounded-xl border bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:opacity-50 transition-all min-h-[38px] max-h-[100px] leading-relaxed"
@@ -439,7 +440,7 @@ export function ChatWidget() {
                   </Button>
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-1.5 text-center select-none">
-                  Entrée pour envoyer · Shift+Entrée pour nouvelle ligne
+                  {messages.chatWidget.sendHint}
                 </p>
               </div>
             </>

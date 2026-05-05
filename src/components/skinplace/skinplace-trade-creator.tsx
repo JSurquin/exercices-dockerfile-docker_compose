@@ -231,14 +231,16 @@ export function SkinplaceTradeCreator({
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Erreur lors de la création du trade');
+        throw new Error(result.error || messages.tradeCreator.tradeCreationError);
       }
 
       // Vérifier si le prix serveur diffère de l'estimation affichée au client
       const serverGross = result.data.gross_value_centimes;
       if (Math.abs(serverGross - grossValueCentimes) > 1) {
         toast.warning(
-          `Le prix a été mis à jour par le serveur : ${(serverGross / 100).toFixed(2)} $ au lieu de ${(grossValueCentimes / 100).toFixed(2)} $. Le trade a été créé avec le prix vérifié.`
+          messages.tradeCreator.priceUpdatedByServer
+            .replace('{server}', (serverGross / 100).toFixed(2))
+            .replace('{client}', (grossValueCentimes / 100).toFixed(2))
         );
       }
 
@@ -260,7 +262,7 @@ export function SkinplaceTradeCreator({
       toast.success(messages.tradeCreator.tradeCreatedSuccess);
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';
+      const errorMessage = err instanceof Error ? err.message : messages.tradeCreator.errorUnknown;
       setError(errorMessage);
       toast.error(errorMessage || messages.tradeCreator.tradeCreationError);
     } finally {
@@ -292,20 +294,20 @@ export function SkinplaceTradeCreator({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Handshake className="h-5 w-5" />
-            Créer votre vente
+            {messages.tradeCreator.createYourSale}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="trade-url">URL de Trade Steam</Label>
+              <Label htmlFor="trade-url">{messages.tradeCreator.tradeUrlLabel}</Label>
               {user?.tradeLink && !isEditingTradeLink && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setIsEditingTradeLink(true)}
                 >
-                  Modifier
+                  {messages.tradeCreator.tradeUrlModify}
                 </Button>
               )}
             </div>
@@ -313,13 +315,13 @@ export function SkinplaceTradeCreator({
             {!isEditingTradeLink && user?.tradeLink ? (
               <div className="space-y-2">
                 <div className="p-3 bg-muted/50 rounded-lg border">
-                  <p className="text-sm text-muted-foreground mb-1">Trade Link configuré :</p>
+                  <p className="text-sm text-muted-foreground mb-1">{messages.tradeCreator.tradeLinkConfigured}</p>
                   <p className="text-sm font-mono break-all">{user.tradeLink}</p>
                 </div>
                 <Alert>
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Trade Link configuré et valide ✓
+                    {messages.tradeCreator.tradeLinkValid}
                   </AlertDescription>
                 </Alert>
               </div>
@@ -340,7 +342,7 @@ export function SkinplaceTradeCreator({
                         disabled={!isValidUrl || !tradeUrl || loading}
                         size="sm"
                       >
-                        {loading ? 'Sauvegarde...' : 'Sauvegarder'}
+                        {loading ? messages.tradeCreator.tradeUrlSaving : messages.tradeCreator.tradeUrlSave}
                       </Button>
                       {user?.tradeLink && (
                         <Button
@@ -352,7 +354,7 @@ export function SkinplaceTradeCreator({
                             setIsEditingTradeLink(false);
                           }}
                         >
-                          Annuler
+                          {messages.tradeCreator.tradeUrlCancel}
                         </Button>
                       )}
                     </div>
@@ -363,14 +365,14 @@ export function SkinplaceTradeCreator({
                   <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>
-                      URL de trade Steam invalide. 
+                      {messages.tradeCreator.tradeUrlInvalid}
                       <a 
                         href="https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url" 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="underline ml-1"
                       >
-                        Obtenez votre URL ici
+                        {messages.tradeCreator.tradeUrlGetHere}
                       </a>
                     </AlertDescription>
                   </Alert>
@@ -379,7 +381,7 @@ export function SkinplaceTradeCreator({
                   <Alert>
                     <CheckCircle className="h-4 w-4" />
                     <AlertDescription>
-                      URL de trade Steam valide ✓
+                      {messages.tradeCreator.tradeUrlValid}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -452,7 +454,7 @@ export function SkinplaceTradeCreator({
               }
               className="flex-1 bg-orange-500 hover:bg-orange-600"
             >
-              {loading ? 'Création en cours...' : 'Créer la vente'}
+              {loading ? messages.tradeCreator.creatingButton : messages.tradeCreator.createSaleButton}
             </Button>
             <Button
               variant="outline"
@@ -478,7 +480,7 @@ export function SkinplaceTradeCreator({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
-            Calcul de votre paiement
+            {messages.tradeCreator.paymentCalcTitle}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -546,7 +548,9 @@ export function SkinplaceTradeCreator({
                 <div className="flex items-center justify-between text-sm text-amber-600 dark:text-amber-400">
                   <span className="flex items-center gap-1">
                     <Plus className="h-3 w-3" />
-                    Bonus {user?.userTag || 'VIP'} (+{user?.bonusRatePercent}%)
+                    {messages.tradeCreator.vipBonus
+                      .replace('{tag}', user?.userTag || 'VIP')
+                      .replace('{percent}', String(user?.bonusRatePercent))}
                   </span>
                   <span className="flex items-center gap-1">
                     +<ConvertedPrice usdCents={vipBonusPreview} />
@@ -584,8 +588,8 @@ export function SkinplaceTradeCreator({
             <p className="text-xs text-muted-foreground px-1">{messages.tradeCreator.tradeFeesFootnote}</p>
 
             <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
-              <p className="mb-1">ℹ️ <strong>Délai de paiement :</strong> 7 jours (Trade Hold Steam)</p>
-              <p>Le paiement sera automatiquement effectué après validation du trade par Steam.</p>
+              <p className="mb-1">ℹ️ <strong>{messages.tradeCreator.paymentDelayTitle} :</strong> {messages.tradeCreator.paymentDelayInfo}</p>
+              <p>{messages.tradeCreator.paymentDelayDetail}</p>
             </div>
           </div>
         </CardContent>
@@ -596,7 +600,7 @@ export function SkinplaceTradeCreator({
         <Alert variant="destructive">
           <XCircle className="h-4 w-4" />
           <AlertDescription>
-            Erreur: {error}
+            {messages.tradeCreator.errorPrefix}: {error}
           </AlertDescription>
         </Alert>
       )}

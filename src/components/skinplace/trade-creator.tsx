@@ -17,6 +17,7 @@ import {
   DollarSign,
   Handshake
 } from 'lucide-react';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface TradeCreatorProps {
   steamId: string;
@@ -29,6 +30,7 @@ export function TradeCreator({
   selectedItems, 
   onTradeCreated 
 }: TradeCreatorProps) {
+  const { messages } = useLocale();
   const [tradeUrl, setTradeUrl] = useState('');
   const [isValidUrl, setIsValidUrl] = useState<boolean | null>(null);
   const [tradeData, setTradeData] = useState<{ trade_id: string; token: string; status: string; total_value: number; expires_at: Date } | null>(null);
@@ -40,7 +42,7 @@ export function TradeCreator({
     createTrade, 
     getTradeStatus 
   } = useSkinplace({
-    onError: (err) => console.error('Erreur Skinplace:', err),
+    onError: (err) => console.error('Skinplace error:', err),
   });
 
   const validateTradeUrl = (url: string) => {
@@ -105,33 +107,30 @@ export function TradeCreator({
   };
 
   const getStatusText = (status: string) => {
+    const tc = messages.tradeCreator;
     switch (status) {
-      case 'pending':
-        return 'En attente';
-      case 'accepted':
-        return 'Accepté';
-      case 'declined':
-        return 'Refusé';
-      case 'expired':
-        return 'Expiré';
-      default:
-        return 'Inconnu';
+      case 'pending': return tc.statusPending;
+      case 'accepted': return tc.statusAccepted;
+      case 'declined': return tc.statusDeclined;
+      case 'expired': return tc.statusExpired;
+      default: return tc.statusUnknown;
     }
   };
 
+  const tc = messages.tradeCreator;
+
   return (
     <div className="space-y-6">
-      {/* Configuration du trade */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Handshake className="h-5 w-5" />
-            Créer un trade
+            {tc.tradeCreate}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="trade-url">URL du Trade Steam</Label>
+            <Label htmlFor="trade-url">{tc.tradeUrlLabel}</Label>
             <div className="space-y-2">
               <Input
                 id="trade-url"
@@ -143,8 +142,15 @@ export function TradeCreator({
               {isValidUrl === false && (
                 <Alert variant="destructive">
                   <AlertDescription>
-                    URL de trade Steam invalide. Format attendu: 
-                    https://steamcommunity.com/tradeoffer/new/?partner=...&token=...
+                    {tc.tradeUrlInvalid}
+                    <a
+                      href="https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline ml-1"
+                    >
+                      {tc.tradeUrlGetHere}
+                    </a>
                   </AlertDescription>
                 </Alert>
               )}
@@ -152,7 +158,7 @@ export function TradeCreator({
                 <Alert>
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>
-                    URL de trade Steam valide
+                    {tc.tradeUrlValid}
                   </AlertDescription>
                 </Alert>
               )}
@@ -165,7 +171,7 @@ export function TradeCreator({
               disabled={!isValidUrl || selectedItems.length === 0 || loading}
               className="flex-1"
             >
-              {loading ? 'Création...' : 'Créer le trade'}
+              {loading ? tc.tradeCreating : tc.tradeCreate}
             </Button>
             <Button
               variant="outline"
@@ -177,19 +183,18 @@ export function TradeCreator({
         </CardContent>
       </Card>
 
-      {/* Résumé des items */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            Résumé du trade
+            {tc.tradeSummaryTitle}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
-                {selectedItems.length} item(s) sélectionné(s)
+                {tc.tradeSummaryItems.replace('{count}', selectedItems.length.toString())}
               </span>
               <span className="text-lg font-bold text-green-600">
                 {formatPrice(getTotalValue())}
@@ -212,41 +217,40 @@ export function TradeCreator({
         </CardContent>
       </Card>
 
-      {/* Statut du trade */}
       {tradeData && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               {getStatusIcon(tradeData.status)}
-              Statut du trade
+              {tc.tradeStatusTitle}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-muted-foreground">ID du trade:</span>
+                <span className="text-muted-foreground">{tc.tradeIdLabel}:</span>
                 <p className="font-mono">{tradeData.trade_id}</p>
               </div>
               <div>
-                <span className="text-muted-foreground">Token:</span>
+                <span className="text-muted-foreground">{tc.tokenLabel}:</span>
                 <p className="font-mono truncate">{tradeData.token}</p>
               </div>
               <div>
-                <span className="text-muted-foreground">Statut:</span>
+                <span className="text-muted-foreground">{tc.statusLabel}:</span>
                 <div className="flex items-center gap-2">
                   {getStatusIcon(tradeData.status)}
                   <span>{getStatusText(tradeData.status)}</span>
                 </div>
               </div>
               <div>
-                <span className="text-muted-foreground">Expire le:</span>
-                <p>{new Date(tradeData.expires_at).toLocaleString('fr-FR')}</p>
+                <span className="text-muted-foreground">{tc.expiresLabel}:</span>
+                <p>{new Date(tradeData.expires_at).toLocaleString()}</p>
               </div>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="text-sm">
-                <span className="text-muted-foreground">Valeur totale:</span>
+                <span className="text-muted-foreground">{tc.totalValueLabel}:</span>
                 <span className="ml-2 text-lg font-bold text-green-600">
                   {formatPrice(tradeData.total_value)}
                 </span>
@@ -257,46 +261,39 @@ export function TradeCreator({
                 onClick={checkTradeStatus}
                 disabled={isCheckingStatus}
               >
-                {isCheckingStatus ? 'Vérification...' : 'Actualiser'}
+                {isCheckingStatus ? tc.refreshingButton : tc.refreshButton}
               </Button>
             </div>
 
             {tradeData.status === 'accepted' && (
               <Alert>
                 <CheckCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Le trade a été accepté ! Les items sont maintenant en cours de traitement.
-                </AlertDescription>
+                <AlertDescription>{tc.tradeAccepted}</AlertDescription>
               </Alert>
             )}
 
             {tradeData.status === 'declined' && (
               <Alert variant="destructive">
                 <XCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Le trade a été refusé. Veuillez créer un nouveau trade.
-                </AlertDescription>
+                <AlertDescription>{tc.tradeDeclined}</AlertDescription>
               </Alert>
             )}
 
             {tradeData.status === 'expired' && (
               <Alert variant="destructive">
                 <XCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Le trade a expiré. Veuillez créer un nouveau trade.
-                </AlertDescription>
+                <AlertDescription>{tc.tradeExpired}</AlertDescription>
               </Alert>
             )}
           </CardContent>
         </Card>
       )}
 
-      {/* Erreur */}
       {error && (
         <Alert variant="destructive">
           <XCircle className="h-4 w-4" />
           <AlertDescription>
-            Erreur: {error.error}
+            {tc.errorPrefix}: {error.error}
           </AlertDescription>
         </Alert>
       )}

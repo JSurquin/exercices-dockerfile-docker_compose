@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useMemo } from 'react';
 import { queryKeys } from '@/lib/query-keys';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface ChatMessage {
   id: string;
@@ -27,6 +28,8 @@ const GUEST_CONVERSATION_KEY = 'guest_conversation_id';
 
 export function useChat(isOpen = false) {
   const queryClient = useQueryClient();
+  const { messages } = useLocale();
+  const t = messages.hooks.chat;
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [hasLocalConversation, setHasLocalConversation] = useState(false);
@@ -80,9 +83,9 @@ export function useChat(isOpen = false) {
   const { data: currentConversation } = useQuery<Conversation>({
     queryKey: queryKeys.conversation(conversationId),
     queryFn: async () => {
-      if (!conversationId) throw new Error('No conversation ID');
+      if (!conversationId) throw new Error(t.noConversationId);
       const res = await fetch(`/api/chat/conversations/${conversationId}`);
-      if (!res.ok) throw new Error('Failed to fetch conversation');
+      if (!res.ok) throw new Error(t.fetchConversationError);
       return res.json();
     },
     enabled: !!conversationId && isOpen,
@@ -101,7 +104,7 @@ export function useChat(isOpen = false) {
           initialMessage,
         }),
       });
-      if (!res.ok) throw new Error('Failed to create conversation');
+      if (!res.ok) throw new Error(t.createConversationError);
       return res.json();
     },
     onSuccess: (data) => {
@@ -125,7 +128,7 @@ export function useChat(isOpen = false) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ conversationId, content }),
       });
-      if (!res.ok) throw new Error('Failed to send message');
+      if (!res.ok) throw new Error(t.sendMessageError);
       return res.json();
     },
     onSuccess: () => {
