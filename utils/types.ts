@@ -5366,6 +5366,7 @@ export interface Messages {
         overview: string;
         management: string;
         affiliation: string;
+        vipMerchant?: string;
         marketing: string;
         communication: string;
         content: string;
@@ -5383,6 +5384,8 @@ export interface Messages {
         affiliates: string;
         commissions: string;
         performance: string;
+        vip?: string;
+        merchants?: string;
         giveaways: string;
         points: string;
         gamificationEconomy: string;

@@ -31,6 +31,8 @@ import {
   HelpCircle,
   Star,
   Landmark,
+  Crown,
+  Store,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -89,6 +91,13 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
         { title: t.items.affiliates, href: '/admin/dashboard?tab=affiliates', icon: UserCheck },
         { title: t.items.commissions, href: '/admin/dashboard?tab=commissions', icon: Percent },
         { title: t.items.performance, href: '/admin/dashboard?tab=affiliate-performance', icon: TrendingUp },
+      ],
+    },
+    {
+      title: t.groups.vipMerchant ?? 'VIP & Merchants',
+      items: [
+        { title: t.items.vip ?? 'VIP', href: '/admin/dashboard?tab=vip', icon: Crown },
+        { title: t.items.merchants ?? 'Merchants', href: '/admin/dashboard?tab=merchants', icon: Store },
       ],
     },
     {
