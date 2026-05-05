@@ -24,6 +24,7 @@ import {
 import { queryKeys } from '@/lib/query-keys';
 import type { PlatformConfig } from '@/lib/platform-config-constants';
 import { PLATFORM_CONFIG_KEYS } from '@/lib/platform-config-constants';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface PlatformConfigResponse {
   config: PlatformConfig;
@@ -76,12 +77,14 @@ interface NumberFieldProps {
   onSave: (key: string, value: number) => void;
   onReset: (key: string) => void;
   isPending: boolean;
+  saveLabel: string;
+  resetTitle: string;
 }
 
 function NumberField({
   label, description, dbKey, value, defaultValue, source,
   min = 0, max, step = 1, unit,
-  onSave, onReset, isPending,
+  onSave, onReset, isPending, saveLabel, resetTitle,
 }: NumberFieldProps) {
   const [draft, setDraft] = useState<string>(String(value));
   const isDirty = parseFloat(draft) !== value;
@@ -118,7 +121,7 @@ function NumberField({
           onClick={() => onSave(dbKey, parseFloat(draft))}
           className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shrink-0"
         >
-          Sauvegarder
+          {saveLabel}
         </Button>
         {source === 'db' && (
           <Button
@@ -127,7 +130,7 @@ function NumberField({
             disabled={isPending}
             onClick={() => { onReset(dbKey); setDraft(String(defaultValue)); }}
             className="border-slate-600 text-slate-400 hover:text-white shrink-0"
-            title={`Réinitialiser (défaut : ${defaultValue}${unit ?? ''})`}
+            title={resetTitle.replace('{value}', `${defaultValue}${unit ?? ''}`)}
           >
             <ArrowPathIcon className="w-4 h-4" />
           </Button>
@@ -147,11 +150,13 @@ interface UrlFieldProps {
   onSave: (key: string, value: string) => void;
   onReset: (key: string) => void;
   isPending: boolean;
+  saveLabel: string;
+  resetTitle: string;
 }
 
 function UrlField({
   label, description, dbKey, value, defaultValue, source,
-  onSave, onReset, isPending,
+  onSave, onReset, isPending, saveLabel, resetTitle,
 }: UrlFieldProps) {
   const [draft, setDraft] = useState(value);
   const isDirty = draft !== value;
@@ -179,7 +184,7 @@ function UrlField({
           onClick={() => onSave(dbKey, draft)}
           className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shrink-0"
         >
-          Sauvegarder
+          {saveLabel}
         </Button>
         {source === 'db' && (
           <Button
@@ -188,7 +193,7 @@ function UrlField({
             disabled={isPending}
             onClick={() => { onReset(dbKey); setDraft(defaultValue); }}
             className="border-slate-600 text-slate-400 hover:text-white shrink-0"
-            title={`Réinitialiser (défaut : ${defaultValue})`}
+            title={resetTitle.replace('{value}', defaultValue)}
           >
             <ArrowPathIcon className="w-4 h-4" />
           </Button>
@@ -200,6 +205,8 @@ function UrlField({
 
 export function PlatformConfigSettings() {
   const queryClient = useQueryClient();
+  const { messages } = useLocale();
+  const t = messages.admin.platformConfig;
 
   const { data, isLoading } = useQuery({
     queryKey: queryKeys.adminPlatformConfig,
@@ -209,7 +216,7 @@ export function PlatformConfigSettings() {
   const mutation = useMutation({
     mutationFn: patchConfig,
     onSuccess: () => {
-      toast.success('Configuration mise à jour');
+      toast.success(t.configUpdated);
       queryClient.invalidateQueries({ queryKey: queryKeys.adminPlatformConfig });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -234,77 +241,81 @@ export function PlatformConfigSettings() {
       <Alert className="border-blue-500/50 bg-blue-500/10">
         <InformationCircleIcon className="h-4 w-4 text-blue-400" />
         <AlertDescription className="text-blue-200 text-sm">
-          Les valeurs marquées <span className="font-semibold text-green-400">DB</span> écrasent les variables d&apos;environnement.
-          Les valeurs <span className="font-semibold text-yellow-400">env</span> viennent du <code>.env</code> ou de la constante par défaut.
-          Cliquer sur <ArrowPathIcon className="w-3 h-3 inline" /> remet la valeur par défaut.
+          {t.infoText}
         </AlertDescription>
       </Alert>
 
-      {/* Alertes système */}
+      {/* System Alerts */}
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader className="pb-3">
           <CardTitle className="text-white flex items-center gap-2 text-base">
             <BellAlertIcon className="w-5 h-5 text-red-400" />
-            Seuils d&apos;alerte système
+            {t.alertsTitle}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <NumberField
-            label="Paiements échoués"
-            description="Nombre de payouts échoués déclenchant une alerte rouge"
+            label={t.failedPayoutsLabel}
+            description={t.failedPayoutsDesc}
             dbKey={PLATFORM_CONFIG_KEYS.ALERT_FAILED_PAYOUTS}
             value={config.alertFailedPayouts}
             defaultValue={defaults.alertFailedPayouts}
             source={s(PLATFORM_CONFIG_KEYS.ALERT_FAILED_PAYOUTS)}
             min={1}
-            unit=" payouts"
+            unit={t.failedPayoutsUnit}
             onSave={handleSave}
             onReset={handleReset}
             isPending={mutation.isPending}
+            saveLabel={t.save}
+            resetTitle={t.resetTitle}
           />
           <Separator className="bg-slate-700" />
           <NumberField
-            label="KYC en attente"
-            description="Nombre de dossiers KYC en attente déclenchant une alerte orange"
+            label={t.pendingKycLabel}
+            description={t.pendingKycDesc}
             dbKey={PLATFORM_CONFIG_KEYS.ALERT_PENDING_KYC}
             value={config.alertPendingKyc}
             defaultValue={defaults.alertPendingKyc}
             source={s(PLATFORM_CONFIG_KEYS.ALERT_PENDING_KYC)}
             min={1}
-            unit=" dossiers"
+            unit={t.pendingKycUnit}
             onSave={handleSave}
             onReset={handleReset}
             isPending={mutation.isPending}
+            saveLabel={t.save}
+            resetTitle={t.resetTitle}
           />
           <Separator className="bg-slate-700" />
           <NumberField
-            label="Trades en cours"
-            description="Nombre de trades en cours déclenchant une alerte bleue"
+            label={t.pendingTradesLabel}
+            description={t.pendingTradesDesc}
             dbKey={PLATFORM_CONFIG_KEYS.ALERT_PENDING_TRADES}
             value={config.alertPendingTrades}
             defaultValue={defaults.alertPendingTrades}
             source={s(PLATFORM_CONFIG_KEYS.ALERT_PENDING_TRADES)}
             min={1}
-            unit=" trades"
+            unit={t.pendingTradesUnit}
             onSave={handleSave}
             onReset={handleReset}
             isPending={mutation.isPending}
+            saveLabel={t.save}
+            resetTitle={t.resetTitle}
           />
         </CardContent>
       </Card>
 
-      {/* Affiliés */}
+      {/* Affiliates */}
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader className="pb-3">
           <CardTitle className="text-white flex items-center gap-2 text-base">
             <UserGroupIcon className="w-5 h-5 text-cyan-400" />
-            Affiliés
+            {t.affiliatesTitle}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <NumberField
-            label="Commission par défaut"
-            description="Taux de commission appliqué lors de la création d'un nouvel affilié"
+            label={t.defaultCommissionLabel}
+            description={t.defaultCommissionDesc}
             dbKey={PLATFORM_CONFIG_KEYS.AFFILIATE_COMMISSION_RATE}
             value={config.affiliateCommissionRate}
             defaultValue={defaults.affiliateCommissionRate}
@@ -316,6 +327,8 @@ export function PlatformConfigSettings() {
             onSave={handleSave}
             onReset={handleReset}
             isPending={mutation.isPending}
+            saveLabel={t.save}
+            resetTitle={t.resetTitle}
           />
         </CardContent>
       </Card>
@@ -325,13 +338,13 @@ export function PlatformConfigSettings() {
         <CardHeader className="pb-3">
           <CardTitle className="text-white flex items-center gap-2 text-base">
             <SparklesIcon className="w-5 h-5 text-purple-400" />
-            Gamification
+            {t.gamificationTitle}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <NumberField
-            label="Taux de marge par défaut"
-            description="Taux utilisé dans le dashboard économie gamification (ex : 0.05 = 5 %)"
+            label={t.marginRateLabel}
+            description={t.marginRateDesc}
             dbKey={PLATFORM_CONFIG_KEYS.GAMIFICATION_MARGIN_RATE}
             value={config.gamificationMarginRate}
             defaultValue={defaults.gamificationMarginRate}
@@ -342,22 +355,24 @@ export function PlatformConfigSettings() {
             onSave={handleSave}
             onReset={handleReset}
             isPending={mutation.isPending}
+            saveLabel={t.save}
+            resetTitle={t.resetTitle}
           />
         </CardContent>
       </Card>
 
-      {/* URLs externes */}
+      {/* External URLs */}
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader className="pb-3">
           <CardTitle className="text-white flex items-center gap-2 text-base">
             <LinkIcon className="w-5 h-5 text-orange-400" />
-            URLs externes
+            {t.externalUrlsTitle}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <UrlField
-            label="Dashboard Skinplace"
-            description="URL du dashboard Skinplace affiché dans le lien externe de la section métriques"
+            label={t.skinplaceDashboardLabel}
+            description={t.skinplaceDashboardDesc}
             dbKey={PLATFORM_CONFIG_KEYS.SKINPLACE_DASHBOARD_URL}
             value={config.skinplaceDashboardUrl}
             defaultValue={defaults.skinplaceDashboardUrl}
@@ -365,11 +380,13 @@ export function PlatformConfigSettings() {
             onSave={handleSave}
             onReset={handleReset}
             isPending={mutation.isPending}
+            saveLabel={t.save}
+            resetTitle={t.resetTitle}
           />
           <Separator className="bg-slate-700" />
           <UrlField
-            label="Base URL Steam CDN"
-            description="URL de base pour les images Steam (préfixe des icon_url Skinplace)"
+            label={t.steamCdnLabel}
+            description={t.steamCdnDesc}
             dbKey={PLATFORM_CONFIG_KEYS.STEAM_CDN_URL}
             value={config.steamCdnUrl}
             defaultValue={defaults.steamCdnUrl}
@@ -377,27 +394,29 @@ export function PlatformConfigSettings() {
             onSave={handleSave}
             onReset={handleReset}
             isPending={mutation.isPending}
+            saveLabel={t.save}
+            resetTitle={t.resetTitle}
           />
         </CardContent>
       </Card>
 
-      {/* Visibilité des pages */}
+      {/* Page Visibility */}
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader className="pb-3">
           <CardTitle className="text-white flex items-center gap-2 text-base">
             <CodeBracketIcon className="w-5 h-5 text-blue-400" />
-            Visibilité des pages
+            {t.pageVisibilityTitle}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <Label className="text-slate-200">Documentation API</Label>
+                <Label className="text-slate-200">{t.apiDocsLabel}</Label>
                 <SourceBadge source={s(PLATFORM_CONFIG_KEYS.API_DOCS_ENABLED)} />
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Afficher la documentation API publique sur /api-docs. Si désactivé, un message &quot;API bientôt disponible&quot; sera affiché.
+                {t.apiDocsDesc}
               </p>
             </div>
             <Switch

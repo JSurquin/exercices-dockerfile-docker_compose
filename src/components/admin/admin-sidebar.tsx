@@ -78,7 +78,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
         { title: t.items.users, href: '/admin/dashboard?tab=users', icon: Users },
         { title: t.items.trades, href: '/admin/dashboard?tab=trades', icon: ShoppingCart },
         { title: t.items.payouts, href: '/admin/dashboard?tab=payouts', icon: CreditCard, badge: 5, badgeVariant: 'destructive' as const },
-        { title: t.items.sepaRequests ?? 'SEPA France', href: '/admin/sepa-requests', icon: Landmark, badgeVariant: 'destructive' as const },
+        { title: t.items.sepaRequests, href: '/admin/sepa-requests', icon: Landmark, badgeVariant: 'destructive' as const },
         { title: t.items.kyc, href: '/admin/dashboard?tab=kyc', icon: Shield, badge: 3, badgeVariant: 'destructive' as const },
       ],
     },
@@ -95,10 +95,10 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
       title: t.groups.marketing,
       items: [
         { title: t.items.giveaways, href: '/admin/giveaways', icon: Gift },
-        { title: t.items.gamificationEconomy ?? 'Économie gamification', href: '/admin/gamification-economy', icon: TrendingUp },
-        { title: t.items.points ?? 'Points & Gamification', href: '/admin/points', icon: Star },
+        { title: t.items.gamificationEconomy, href: '/admin/gamification-economy', icon: TrendingUp },
+        { title: t.items.points, href: '/admin/points', icon: Star },
         { title: t.items.newsletter, href: '/admin/newsletter', icon: Mail },
-        { title: t.items.notifications ?? 'Notifications', href: '/admin/notifications', icon: MessageSquare },
+        { title: t.items.notifications, href: '/admin/notifications', icon: MessageSquare },
       ],
     },
     {

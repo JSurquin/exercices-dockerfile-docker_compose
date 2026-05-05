@@ -74,13 +74,13 @@ interface SmtpSettingsData {
 
 async function fetchSettings(): Promise<AdminSettingsData> {
   const res = await fetch('/api/admin/settings');
-  if (!res.ok) throw new Error('Erreur lors du chargement des paramètres');
+  if (!res.ok) throw new Error('Failed to load settings');
   return res.json();
 }
 
 async function fetchSmtpSettings(): Promise<SmtpSettingsData> {
   const res = await fetch('/api/admin/smtp-settings');
-  if (!res.ok) throw new Error('Erreur lors du chargement des paramètres SMTP');
+  if (!res.ok) throw new Error('Failed to load SMTP settings');
   return res.json();
 }
 
@@ -92,7 +92,7 @@ async function patchSmtpSettings(data: Partial<Omit<SmtpSettingsData, 'isFromDb'
   });
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(err.error ?? 'Erreur lors de la sauvegarde SMTP');
+    throw new Error(err.error ?? 'Failed to save SMTP settings');
   }
   return res.json();
 }
@@ -101,7 +101,7 @@ async function resetSmtpSettings() {
   const res = await fetch('/api/admin/smtp-settings', { method: 'DELETE' });
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(err.error ?? 'Erreur lors de la réinitialisation SMTP');
+    throw new Error(err.error ?? 'Failed to reset SMTP settings');
   }
   return res.json();
 }
@@ -110,7 +110,7 @@ async function testSmtpConnection() {
   const res = await fetch('/api/admin/smtp-settings/test', { method: 'POST' });
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(err.error ?? 'Connexion SMTP échouée');
+    throw new Error(err.error ?? 'SMTP connection failed');
   }
   return res.json();
 }
@@ -123,7 +123,7 @@ async function patchSettings(patch: Partial<Omit<AdminSettingsData, 'personalInf
   });
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(err.error ?? 'Erreur lors de la sauvegarde');
+    throw new Error(err.error ?? 'Failed to save settings');
   }
   return res.json();
 }
@@ -136,7 +136,7 @@ async function updateProfile(data: { name: string; email: string }) {
   });
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(err.error ?? 'Erreur lors de la mise à jour du profil');
+    throw new Error(err.error ?? 'Failed to update profile');
   }
   return res.json();
 }
@@ -149,7 +149,7 @@ async function changePassword(data: { currentPassword: string; newPassword: stri
   });
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(err.error ?? 'Erreur lors du changement de mot de passe');
+    throw new Error(err.error ?? 'Failed to change password');
   }
   return res.json();
 }
@@ -278,7 +278,7 @@ export default function AdminSettingsPage() {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <h2 className="text-xl sm:text-2xl font-bold text-white truncate">{settings.personalInfo.name || 'Administrateur'}</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-white truncate">{settings.personalInfo.name || messages.admin.settings.badge}</h2>
                 <p className="text-slate-300 truncate">{settings.personalInfo.email}</p>
                 <div className="flex flex-wrap items-center gap-2 mt-2">
                   <Badge variant="outline" className="bg-green-500/10 border-green-500/50 text-green-400">
@@ -307,7 +307,7 @@ export default function AdminSettingsPage() {
               { value: 'notifications', icon: BellIcon, label: messages.admin.settings.tabs.notifications },
               { value: 'preferences', icon: CogIcon, label: messages.admin.settings.tabs.preferences },
               { value: 'smtp', icon: EnvelopeIcon, label: messages.admin.settings.tabs.smtp },
-              { value: 'platform', icon: AdjustmentsHorizontalIcon, label: 'Plateforme' },
+              { value: 'platform', icon: AdjustmentsHorizontalIcon, label: messages.admin.settings.tabs.platform },
             ].map(({ value, icon: Icon, label }) => (
               <TabsTrigger
                 key={value}
@@ -722,10 +722,10 @@ export default function AdminSettingsPage() {
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <AdjustmentsHorizontalIcon className="w-5 h-5 text-orange-400" />
-                  Configuration plateforme
+                  {messages.admin.settings.platformConfig?.title}
                 </CardTitle>
                 <p className="text-sm text-slate-400 mt-1">
-                  Paramètres opérationnels — écrasent les variables d&apos;environnement sans redéploiement.
+                  {messages.admin.settings.platformConfig?.description}
                 </p>
               </CardHeader>
               <CardContent>

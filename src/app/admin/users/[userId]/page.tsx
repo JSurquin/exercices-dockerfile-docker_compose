@@ -17,6 +17,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { useToast } from '@/hooks/use-toast';
 import { UserRoleBadge } from '@/components/ui/user-role-badge';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface UserDetail {
   id: string;
@@ -46,6 +47,8 @@ export default function AdminUserDetailPage() {
   const userId = params?.userId as string | undefined;
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { messages } = useLocale();
+  const t = messages.admin.userDetail;
   const [resetKycLoading, setResetKycLoading] = useState(false);
   const [resetKycMessage, setResetKycMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [bonusRate, setBonusRate] = useState('');
@@ -89,14 +92,14 @@ export default function AdminUserDetailPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur');
-      toast({ title: 'Bonus mis à jour', description: `Rate: ${data.bonusRatePercent}% | Tag: ${data.userTag || 'aucun'}` });
+      if (!res.ok) throw new Error(data.error || t.errorTitle);
+      toast({ title: t.bonusUpdatedTitle, description: t.bonusUpdatedDesc.replace('{rate}', String(data.bonusRatePercent)).replace('{tag}', data.userTag || t.noTagLabel) });
       await refetchUser();
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
     } catch (e) {
       toast({
-        title: 'Erreur',
-        description: e instanceof Error ? e.message : 'Impossible de sauvegarder',
+        title: t.errorTitle,
+        description: e instanceof Error ? e.message : t.errorSave,
         variant: 'destructive',
       });
     } finally {
@@ -112,7 +115,7 @@ export default function AdminUserDetailPage() {
       const res = await fetch(`/api/admin/kyc/reset-applicant/${userId}`, { method: 'POST' });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || res.statusText);
-      setResetKycMessage({ type: 'success', text: data.message ?? "Applicant réinitialisé." });
+      setResetKycMessage({ type: 'success', text: data.message ?? t.resetKyc });
       await refetchUser();
     } catch (e) {
       setResetKycMessage({ type: 'error', text: e instanceof Error ? e.message : 'Erreur' });
@@ -123,7 +126,7 @@ export default function AdminUserDetailPage() {
 
   if (!userId) {
     return (
-      <div className="text-slate-400">Identifiant utilisateur manquant.</div>
+      <div className="text-slate-400">{t.missingId}</div>
     );
   }
 
@@ -142,12 +145,12 @@ export default function AdminUserDetailPage() {
         <Button variant="outline" size="sm" asChild className="border-slate-600 text-slate-300">
           <Link href="/admin/dashboard?tab=users" className="flex items-center gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Retour aux utilisateurs
+            {t.backToUsers}
           </Link>
         </Button>
         <Card className="bg-slate-800/30 border-slate-700">
           <CardContent className="p-6">
-            <p className="text-red-400">{error || 'Utilisateur non trouvé'}</p>
+            <p className="text-red-400">{error || t.userNotFound}</p>
           </CardContent>
         </Card>
       </div>
@@ -162,7 +165,7 @@ export default function AdminUserDetailPage() {
         <Button variant="outline" size="sm" asChild className="border-slate-600 text-slate-300 w-fit">
           <Link href="/admin/dashboard?tab=users" className="flex items-center gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Retour aux utilisateurs
+            {t.backToUsers}
           </Link>
         </Button>
       </div>
@@ -194,7 +197,7 @@ export default function AdminUserDetailPage() {
                 </Badge>
                 <UserRoleBadge userTag={user.userTag} size="sm" />
                 {user.accountFrozen && (
-                  <Badge variant="destructive">Compte gelé</Badge>
+                  <Badge variant="destructive">{t.frozenAccount}</Badge>
                 )}
               </div>
             </div>
@@ -214,7 +217,7 @@ export default function AdminUserDetailPage() {
           )}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
           <div>
-            <p className="text-slate-400">KYC</p>
+            <p className="text-slate-400">{t.kycLabel}</p>
             <p className="text-white">{user.kycStatus}</p>
             {user.kycaidApplicantId && (
               <p className="text-xs text-slate-500 mt-0.5 truncate max-w-[180px]" title={user.kycaidApplicantId}>
@@ -223,15 +226,15 @@ export default function AdminUserDetailPage() {
             )}
           </div>
           <div>
-            <p className="text-slate-400">Niveau / XP</p>
+            <p className="text-slate-400">{t.levelXp}</p>
             <p className="text-white">{user.level} — {user.xp} XP</p>
           </div>
           <div>
-            <p className="text-slate-400">Fragments</p>
+            <p className="text-slate-400">{t.fragments}</p>
             <p className="text-white">{user.tickets}</p>
           </div>
           <div>
-            <p className="text-slate-400">Volume total</p>
+            <p className="text-slate-400">{t.totalVolume}</p>
             <p className="text-white">
               {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(user.totalVolumeCents / 100)}
             </p>
@@ -248,12 +251,12 @@ export default function AdminUserDetailPage() {
               {resetKycLoading ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                  Réinitialisation…
+                  {t.resettingKyc}
                 </>
               ) : (
                 <>
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Réinitialiser l&apos;applicant KYC
+                  {t.resetKyc}
                 </>
               )}
             </Button>
@@ -270,41 +273,41 @@ export default function AdminUserDetailPage() {
         <CardHeader className="pb-2">
           <CardTitle className="text-white flex items-center gap-2">
             <Crown className="h-5 w-5 text-amber-400" />
-            VIP / Bonus
+            {t.bonusSectionTitle}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label className="text-slate-300">Bonus rate (%)</Label>
+              <Label className="text-slate-300">{t.bonusRateLabel}</Label>
               <Input
                 type="number"
                 step="0.1"
                 min="0"
                 max="100"
-                placeholder="Ex: 2.0 = +2% sur valeur brute"
+                placeholder={t.bonusRatePlaceholder}
                 value={bonusRate}
                 onChange={(e) => setBonusRate(e.target.value)}
                 className="bg-slate-700 border-slate-600 text-white"
               />
               <p className="text-xs text-slate-500">
-                Bonus ajouté au net du trade (% de la valeur brute)
+                {t.bonusRateHelp}
               </p>
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300">Tag utilisateur</Label>
+              <Label className="text-slate-300">{t.userTagLabel}</Label>
               <Select value={userTag || 'none'} onValueChange={(v) => setUserTag(v === 'none' ? '' : v)}>
                 <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                  <SelectValue placeholder="Aucun tag" />
+                  <SelectValue placeholder={t.noTag} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Aucun</SelectItem>
+                  <SelectItem value="none">{t.noTag}</SelectItem>
                   <SelectItem value="VIP">VIP</SelectItem>
                   <SelectItem value="MERCHANT">MERCHANT</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-slate-500">
-                Affiché sur le profil et dans l&apos;admin
+                {t.tagHelp}
               </p>
             </div>
             <div className="flex items-end">
@@ -314,13 +317,13 @@ export default function AdminUserDetailPage() {
                 className="bg-amber-600 hover:bg-amber-700"
               >
                 <Save className="h-4 w-4 mr-2" />
-                {bonusSaving ? 'Sauvegarde...' : 'Sauvegarder'}
+                {bonusSaving ? t.saving : t.save}
               </Button>
             </div>
           </div>
           {user.bonusRatePercent > 0 && (
             <p className="text-sm text-amber-300">
-              Bonus actif : +{user.bonusRatePercent}% sur chaque trade
+              {t.bonusActive.replace('{rate}', String(user.bonusRatePercent))}
             </p>
           )}
         </CardContent>

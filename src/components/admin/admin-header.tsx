@@ -33,6 +33,7 @@ import { Badge } from '@/components/ui/badge';
 import { useSession } from '~/lib/auth-client';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/components/providers/auth-provider';
+import { useLocale } from '@/components/providers/locale-provider';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { format } from 'date-fns';
@@ -65,6 +66,8 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
   const { theme, setTheme } = useTheme();
   const { logout } = useAuth();
   const pathname = usePathname();
+  const { messages } = useLocale();
+  const t = messages.adminNav.header;
 
   const { data: notificationsData } = useQuery({
     queryKey: queryKeys.userNotifications,
@@ -132,7 +135,7 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               type="search"
-              placeholder="Rechercher..."
+              placeholder={t.searchPlaceholder}
               className="h-9 w-full border-slate-700 bg-slate-800/50 pl-9 text-sm text-white placeholder:text-slate-400 focus-visible:ring-orange-500"
             />
           </div>
@@ -152,19 +155,19 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 border-slate-700 bg-slate-900">
-                <DropdownMenuLabel className="text-slate-300">Actions rapides</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-slate-300">{t.quickActions}</DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-slate-700" />
                 <DropdownMenuItem className="text-slate-300 focus:bg-slate-800 focus:text-white">
                   <Download className="mr-2 h-4 w-4" />
-                  Exporter données
+                  {t.exportData}
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-slate-300 focus:bg-slate-800 focus:text-white">
                   <FileText className="mr-2 h-4 w-4" />
-                  Générer rapport
+                  {t.generateReport}
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-slate-300 focus:bg-slate-800 focus:text-white">
                   <HelpCircle className="mr-2 h-4 w-4" />
-                  Documentation
+                  {t.documentation}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -199,10 +202,10 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80 border-slate-700 bg-slate-900">
               <DropdownMenuLabel className="flex items-center justify-between">
-                <span className="text-slate-300">Notifications</span>
+                <span className="text-slate-300">{t.notifications}</span>
                 {unreadCount > 0 && (
                   <Badge variant="secondary" className="text-xs">
-                    {unreadCount} {unreadCount > 1 ? 'nouvelles' : 'nouvelle'}
+                    {unreadCount} {unreadCount > 1 ? t.newNotificationPlural : t.newNotificationSingular}
                   </Badge>
                 )}
               </DropdownMenuLabel>
@@ -210,7 +213,7 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
               <div className="max-h-[300px] overflow-y-auto">
                 {recentNotifications.length === 0 ? (
                   <div className="p-4 text-center text-sm text-slate-400">
-                    Aucune notification non lue
+                    {t.noUnreadNotifications}
                   </div>
                 ) : (
                   recentNotifications.map((notification: Notification, index: number) => (
@@ -231,9 +234,9 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
                               } 
                               className="h-5 text-xs"
                             >
-                              {notification.priority === 'URGENT' ? 'Urgent' :
-                               notification.priority === 'HIGH' ? 'Important' :
-                               notification.priority === 'NORMAL' ? 'Normal' : 'Info'}
+                              {notification.priority === 'URGENT' ? t.priorityUrgent :
+                               notification.priority === 'HIGH' ? t.priorityHigh :
+                               notification.priority === 'NORMAL' ? t.priorityNormal : t.priorityInfo}
                             </Badge>
                           </div>
                           <span className="text-xs text-slate-400 line-clamp-1">
@@ -251,7 +254,7 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
               <DropdownMenuSeparator className="bg-slate-700" />
               <DropdownMenuItem asChild className="justify-center text-orange-400 focus:bg-slate-800 focus:text-orange-300 cursor-pointer">
                 <Link href="/notifications">
-                  Voir toutes les notifications
+                  {t.viewAllNotifications}
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -282,26 +285,26 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
               <DropdownMenuItem asChild className="text-slate-300 focus:bg-slate-800 focus:text-white">
                 <Link href="/admin/settings">
                   <User className="mr-2 h-4 w-4" />
-                  Mon Profil
+                  {t.myProfile}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="text-slate-300 focus:bg-slate-800 focus:text-white">
                 <Link href="/admin/settings">
                   <Settings className="mr-2 h-4 w-4" />
-                  Paramètres
+                  {t.settings}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-slate-700" />
               <DropdownMenuItem asChild className="text-slate-300 focus:bg-slate-800 focus:text-white">
                 <Link href="/">
                   <Shield className="mr-2 h-4 w-4" />
-                  Retour au Site
+                  {t.backToSite}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-slate-700" />
               <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-400 focus:bg-red-500/10 focus:text-red-300">
                 <LogOut className="mr-2 h-4 w-4" />
-                Déconnexion
+                {t.logout}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

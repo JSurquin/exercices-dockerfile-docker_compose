@@ -273,7 +273,7 @@ function DashboardContent() {
               </CardHeader>
               <CardContent>
                 <div className="flex h-64 items-center justify-center text-slate-400">
-                  Section en cours de développement
+                  {messages.admin.dashboard.sectionInDevelopment}
                 </div>
               </CardContent>
             </Card>
@@ -289,9 +289,9 @@ function DashboardContent() {
           >
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">{messages.admin.dashboard.vipManagement ?? 'Gestion VIP'}</CardTitle>
+                <CardTitle className="text-white">{messages.admin.dashboard.vipManagement}</CardTitle>
                 <p className="text-sm text-slate-400">
-                  {messages.admin.dashboard.vipDescription ?? 'Gérer les utilisateurs VIP et leurs bonus'}
+                  {messages.admin.dashboard.vipDescription}
                 </p>
               </CardHeader>
               <CardContent>
@@ -310,9 +310,9 @@ function DashboardContent() {
           >
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">{messages.admin.dashboard.merchantManagement ?? 'Gestion Merchants'}</CardTitle>
+                <CardTitle className="text-white">{messages.admin.dashboard.merchantManagement}</CardTitle>
                 <p className="text-sm text-slate-400">
-                  {messages.admin.dashboard.merchantDescription ?? 'Gérer les Merchants et leurs bonus'}
+                  {messages.admin.dashboard.merchantDescription}
                 </p>
               </CardHeader>
               <CardContent>

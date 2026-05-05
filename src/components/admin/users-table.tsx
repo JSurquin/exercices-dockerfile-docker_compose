@@ -49,6 +49,7 @@ interface PromoteDialogState {
 
 export function AdminUsersTable() {
   const { messages } = useLocale();
+  const t = messages.admin.usersTable;
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [filters, setFilters] = useState<AdminFilters>({
@@ -90,7 +91,7 @@ export function AdminUsersTable() {
       const response = await fetch(`/api/admin/users?${params}`);
       const json = await response.json();
       if (!response.ok) {
-        throw new Error(json.error || 'Erreur lors du chargement des utilisateurs');
+        throw new Error(json.error || t.errorLoading);
       }
       return json;
     },
@@ -119,10 +120,10 @@ export function AdminUsersTable() {
 
   const getKYCBadge = (status: string) => {
     const statusConfig = {
-      pending: { variant: 'secondary' as const, icon: Clock, text: 'En attente' },
-      in_progress: { variant: 'default' as const, icon: Shield, text: 'En cours' },
-      verified: { variant: 'default' as const, icon: CheckCircle, text: 'Vérifié' },
-      rejected: { variant: 'destructive' as const, icon: XCircle, text: 'Rejeté' },
+      pending: { variant: 'secondary' as const, icon: Clock, text: t.kycPending },
+      in_progress: { variant: 'default' as const, icon: Shield, text: t.kycInProgress },
+      verified: { variant: 'default' as const, icon: CheckCircle, text: t.kycVerified },
+      rejected: { variant: 'destructive' as const, icon: XCircle, text: t.kycRejected },
     };
 
     const key = prismaKycStatusToAdminBadgeKey(status);
@@ -233,19 +234,19 @@ export function AdminUsersTable() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erreur');
       if (data.success) {
-        toast({ title: 'KYC mis à jour', description: `Statut → ${data.newStatus}` });
+        toast({ title: t.kycUpdated, description: `Statut → ${data.newStatus}` });
       } else {
         toast({
-          title: 'KYCAID non résolu',
-          description: data.message || `Status KYCAID : ${data.kycaidStatus ?? 'inconnu'}`,
+          title: t.kycUpdateFailed,
+          description: data.message || `Status KYCAID : ${data.kycaidStatus ?? t.kycUnknown}`,
           variant: 'destructive',
         });
       }
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
     } catch (err) {
       toast({
-        title: 'Erreur sync KYC',
-        description: err instanceof Error ? err.message : 'Erreur inconnue',
+        title: t.kycSyncError,
+        description: err instanceof Error ? err.message : t.errorUnknown,
         variant: 'destructive',
       });
     } finally {
@@ -263,7 +264,7 @@ export function AdminUsersTable() {
         <CardContent className="p-6">
           <div className="flex items-center gap-2 text-red-400">
             <AlertTriangle className="h-5 w-5" />
-            <span>Erreur: {error.message}</span>
+            <span>{t.errorTitle}: {error.message}</span>
           </div>
         </CardContent>
       </Card>
@@ -278,7 +279,7 @@ export function AdminUsersTable() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              placeholder="Rechercher par nom d'utilisateur, Steam ID..."
+              placeholder={t.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-10 bg-slate-700 border-slate-600 text-white"
@@ -290,29 +291,29 @@ export function AdminUsersTable() {
           
           <Select onValueChange={handleKYCFilter}>
             <SelectTrigger className="w-full sm:w-48 bg-slate-700 border-slate-600 text-white">
-              <SelectValue placeholder="Filtrer par KYC" />
+              <SelectValue placeholder={t.filterByKyc} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les statuts KYC</SelectItem>
-              <SelectItem value="pending">En attente</SelectItem>
-              <SelectItem value="in_progress">En cours</SelectItem>
-              <SelectItem value="verified">Vérifié</SelectItem>
-              <SelectItem value="rejected">Rejeté</SelectItem>
+              <SelectItem value="all">{t.allKycStatuses}</SelectItem>
+              <SelectItem value="pending">{t.kycPending}</SelectItem>
+              <SelectItem value="in_progress">{t.kycInProgress}</SelectItem>
+              <SelectItem value="verified">{t.kycVerified}</SelectItem>
+              <SelectItem value="rejected">{t.kycRejected}</SelectItem>
             </SelectContent>
           </Select>
 
           <Select onValueChange={handleRoleFilter}>
             <SelectTrigger className="w-full sm:w-48 bg-slate-700 border-slate-600 text-white">
-              <SelectValue placeholder="Filtrer par rôle" />
+              <SelectValue placeholder={t.filterByRole} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les rôles</SelectItem>
+              <SelectItem value="all">{t.allRoles}</SelectItem>
               <SelectItem value="USER">User</SelectItem>
               <SelectItem value="ADMIN">Admin</SelectItem>
-              <SelectItem value="AFFILIATE">Affilié</SelectItem>
-              <SelectItem value="MODERATOR">Modérateur</SelectItem>
-              <SelectItem value="tag:VIP">VIP (tag)</SelectItem>
-              <SelectItem value="tag:MERCHANT">Merchant (tag)</SelectItem>
+              <SelectItem value="AFFILIATE">{t.filterAffiliate}</SelectItem>
+              <SelectItem value="MODERATOR">{t.filterModerator}</SelectItem>
+              <SelectItem value="tag:VIP">{t.filterVip}</SelectItem>
+              <SelectItem value="tag:MERCHANT">{t.filterMerchant}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -325,7 +326,7 @@ export function AdminUsersTable() {
             className="border-slate-600 text-white hover:bg-slate-700"
           >
             <RefreshCw className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Actualiser</span>
+            <span className="hidden sm:inline">{t.refresh}</span>
           </Button>
 
           <Button 
@@ -334,7 +335,7 @@ export function AdminUsersTable() {
             className="bg-blue-600 hover:bg-blue-700"
           >
             <Download className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Exporter</span>
+            <span className="hidden sm:inline">{t.export}</span>
           </Button>
 
           <CreateUserDialog onUserCreated={() => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })} />
@@ -347,15 +348,15 @@ export function AdminUsersTable() {
         <Table>
           <TableHeader>
             <TableRow className="border-slate-700">
-              <TableHead className="text-slate-300 whitespace-nowrap">Utilisateur</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Steam ID</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">KYC</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Niveau</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Volume</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Vol. en attente</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Tickets</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Inscrit le</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">Actions</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.tableUser}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.tableSteamId}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.tableKyc}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.tableLevel}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.tableVolume}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.tablePendingVol}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.tableTickets}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.tableJoined}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.tableActions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -387,7 +388,7 @@ export function AdminUsersTable() {
                 <TableCell className="text-white">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="text-xs">
-                      Niveau {user.level}
+                      {t.levelLabel} {user.level}
                     </Badge>
                     <span className="text-xs text-slate-400">
                       {user.xp} XP
@@ -458,7 +459,7 @@ export function AdminUsersTable() {
       {users.length === 0 && (
         <Card className="bg-slate-800/30 border-slate-700">
           <CardContent className="p-8 text-center">
-            <p className="text-slate-300">Aucun utilisateur trouvé</p>
+            <p className="text-slate-300">{t.noUsers}</p>
           </CardContent>
         </Card>
       )}

@@ -47,7 +47,7 @@ export default function AdminLoginPage() {
       }
 
       if ((result.data as Record<string, unknown>)?.twoFactorRedirect) {
-        setError("La 2FA n'est pas disponible pour les comptes administrateurs.");
+        setError(messages.admin.login.twoFactorUnavailable);
         await authClient.signOut();
         return;
       }
@@ -81,19 +81,19 @@ export default function AdminLoginPage() {
       });
 
       if (data) {
-        toast.success('Email envoyé !', {
-          description: 'Vérifiez votre boîte mail pour réinitialiser votre mot de passe',
+        toast.success(messages.admin.login.emailSent, {
+          description: messages.admin.login.checkEmailReset,
         });
         setShowForgotPassword(false);
         setForgotPasswordEmail('');
       } else {
-        toast.error('Erreur', {
-          description: error.message || 'Impossible d\'envoyer l\'email',
+        toast.error(messages.admin.login.errorLabel, {
+          description: error.message || messages.admin.login.cannotSendEmail,
         });
       }
     } catch (error) {
-      toast.error('Erreur', {
-        description: 'Impossible d\'envoyer l\'email de réinitialisation',
+      toast.error(messages.admin.login.errorLabel, {
+        description: messages.admin.login.cannotSendResetEmail,
       });
     } finally {
       setForgotPasswordLoading(false);
@@ -136,7 +136,7 @@ export default function AdminLoginPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-slate-300">
-                  Email administrateur
+                  {messages.admin.login.emailLabel}
                 </Label>
                 <Input
                   id="email"
@@ -151,7 +151,7 @@ export default function AdminLoginPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-slate-300">
-                  Mot de passe
+                  {messages.admin.login.passwordLabel}
                 </Label>
                 <div className="relative">
                   <Input
@@ -187,12 +187,12 @@ export default function AdminLoginPage() {
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Connexion...
+                    {messages.admin.login.loggingIn}
                   </>
                 ) : (
                   <>
                     <Shield className="mr-2 h-4 w-4" />
-                    Se connecter
+                    {messages.admin.login.loginButton}
                   </>
                 )}
               </Button>
@@ -206,7 +206,7 @@ export default function AdminLoginPage() {
                   onClick={() => setShowForgotPassword(true)}
                   className="text-slate-400 hover:text-slate-300 text-sm"
                 >
-                  Mot de passe oublié ?
+                  {messages.admin.login.forgotPassword}
                 </Button>
               </div>
             </form>
@@ -217,7 +217,7 @@ export default function AdminLoginPage() {
                 <span className="w-full border-t border-slate-600" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-slate-800 px-2 text-slate-400">Ou</span>
+                <span className="bg-slate-800 px-2 text-slate-400">{messages.admin.login.or}</span>
               </div>
             </div>
 
@@ -230,7 +230,7 @@ export default function AdminLoginPage() {
               <Link href="/api/auth/steam/login">
                 <img 
                   src="https://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_small.png" 
-                  alt="Se connecter via Steam"
+                  alt={messages.admin.login.steamLogin}
                   className="h-5"
                 />
               </Link>
@@ -241,16 +241,16 @@ export default function AdminLoginPage() {
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-sm text-slate-500">
-            Problème de connexion ?{' '}
+            {messages.admin.login.loginProblem}{' '}
             <Link 
               href="/help" 
               className="text-orange-400 hover:text-orange-300 underline"
             >
-              Contactez le support
+              {messages.admin.login.contactSupport}
             </Link>
           </p>
           <p className="text-xs text-slate-600 mt-2">
-            Accès sécurisé - Toutes les connexions sont enregistrées
+            {messages.admin.login.secureAccess}
           </p>
         </div>
       </div>
@@ -263,7 +263,7 @@ export default function AdminLoginPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Mail className="h-5 w-5 text-orange-500" />
-                  <CardTitle className="text-white">Mot de passe oublié</CardTitle>
+                  <CardTitle className="text-white">{messages.admin.login.forgotPasswordTitle}</CardTitle>
                 </div>
                 <Button
                   variant="ghost"
@@ -275,14 +275,14 @@ export default function AdminLoginPage() {
                 </Button>
               </div>
               <CardDescription className="text-slate-400">
-                Entrez votre adresse email pour recevoir un lien de réinitialisation
+                {messages.admin.login.forgotPasswordDesc}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="forgot-email" className="text-slate-300">
-                    Email administrateur
+                    {messages.admin.login.emailLabel}
                   </Label>
                   <Input
                     id="forgot-email"
@@ -303,7 +303,7 @@ export default function AdminLoginPage() {
                     className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Annuler
+                    {messages.admin.login.cancel}
                   </Button>
                   <Button
                     type="submit"
@@ -313,12 +313,12 @@ export default function AdminLoginPage() {
                     {forgotPasswordLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Envoi...
+                        {messages.admin.login.sending}
                       </>
                     ) : (
                       <>
                         <Mail className="mr-2 h-4 w-4" />
-                        Envoyer
+                        {messages.admin.login.send}
                       </>
                     )}
                   </Button>
