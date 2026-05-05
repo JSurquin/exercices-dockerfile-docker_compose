@@ -293,6 +293,8 @@ export interface AdminFilters {
   dateFrom?: Date;
   dateTo?: Date;
   status?: string;
+  role?: string;
+  tag?: string;
   userId?: string;
   search?: string;
   page?: number;

@@ -16,6 +16,7 @@ import { WithdrawalLimits } from '@/components/admin/withdrawal-limits';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { useToast } from '@/hooks/use-toast';
+import { UserRoleBadge } from '@/components/ui/user-role-badge';
 
 interface UserDetail {
   id: string;
@@ -191,17 +192,7 @@ export default function AdminUserDetailPage() {
                 <Badge variant="outline" className="text-xs">
                   {user.role}
                 </Badge>
-                {user.userTag && (
-                  <Badge className={
-                    user.userTag === 'VIP'
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                      : user.userTag === 'MERCHANT'
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                        : 'bg-blue-500/20 text-blue-300 border-blue-500/40'
-                  }>
-                    {user.userTag}
-                  </Badge>
-                )}
+                <UserRoleBadge userTag={user.userTag} size="sm" />
                 {user.accountFrozen && (
                   <Badge variant="destructive">Compte gelé</Badge>
                 )}

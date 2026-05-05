@@ -23,6 +23,7 @@ import {
   UserIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
+import { UserRoleBadge } from "@/components/ui/user-role-badge";
 
 const getSteps = (messages: any) => [
   { id: "inventory", title: messages.sellPage.steps.inventory, icon: LinkIcon },
@@ -216,6 +217,23 @@ export default function SellPage() {
           </h1>
           <p className="text-muted-foreground">{messages.sellPage.subtitle}</p>
         </motion.div>
+
+        {user && (user.bonusRatePercent ?? 0) > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="max-w-6xl mx-auto mb-4"
+          >
+            <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-2.5">
+              <UserRoleBadge userTag={user.userTag} size="sm" />
+              <span className="text-sm text-amber-600 dark:text-amber-400">
+                {messages.sellPage.bonusBanner?.replace('{percent}', String(user.bonusRatePercent)) 
+                  ?? `Bonus +${user.bonusRatePercent}% appliqué sur chaque item`}
+              </span>
+            </div>
+          </motion.div>
+        )}
 
         {user && currentStep === 0 && (
           <motion.div

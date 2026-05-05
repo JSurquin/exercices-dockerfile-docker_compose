@@ -32,6 +32,7 @@ import { ConvertedPrice } from '@/components/ui/converted-price';
 import { useCurrency } from '@/components/providers/currency-provider';
 import { currencyConverter } from '@/lib/currency-converter';
 import { isValidSteamId64, parseSteamId64FromUserInput } from '@/lib/steam-id';
+import { useAuth } from '@/components/providers/auth-provider';
 import Link from 'next/link';
 
 function isPurchasable(item: NormalizedInventoryItem): boolean {
@@ -69,6 +70,8 @@ export function SkinplaceInventoryViewer({
   const profileSteamId64 = (profileSteamId64Prop ?? '').trim();
   const { messages } = useLocale();
   const { selectedCurrency } = useCurrency();
+  const { user } = useAuth();
+  const bonusRatePercent = user?.bonusRatePercent ?? 0;
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [inventory, setInventory] = useState<NormalizedInventoryItem[]>([]);
@@ -1004,13 +1007,30 @@ export function SkinplaceInventoryViewer({
                           
                           {/* Prix + actions */}
                           <div className="flex items-center justify-between gap-2">
-                            <ConvertedPrice 
-                              usdCents={item.price_centimes}
-                              className={`text-lg font-bold ${
-                                isDisabled ? 'text-muted-foreground' : 'text-green-600'
-                              }`}
-                              showOriginal={false}
-                            />
+                            <div className="flex flex-col">
+                              {bonusRatePercent > 0 && !isDisabled ? (
+                                <>
+                                  <ConvertedPrice
+                                    usdCents={item.price_centimes + Math.round(item.price_centimes * bonusRatePercent / 100)}
+                                    className="text-lg font-bold text-amber-500"
+                                    showOriginal={false}
+                                  />
+                                  <ConvertedPrice
+                                    usdCents={item.price_centimes}
+                                    className="text-xs text-muted-foreground line-through"
+                                    showOriginal={false}
+                                  />
+                                </>
+                              ) : (
+                                <ConvertedPrice
+                                  usdCents={item.price_centimes}
+                                  className={`text-lg font-bold ${
+                                    isDisabled ? 'text-muted-foreground' : 'text-green-600'
+                                  }`}
+                                  showOriginal={false}
+                                />
+                              )}
+                            </div>
                             {selectable && isSelected && (
                               <Badge className="bg-orange-500 text-white">
                                 {messages.components.skinplace.selected}

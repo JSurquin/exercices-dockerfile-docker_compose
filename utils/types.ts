@@ -1235,6 +1235,10 @@ export interface Messages {
       affiliatesDescription: string;
       commissionsManagement: string;
       commissionsDescription: string;
+      vipManagement?: string;
+      vipDescription?: string;
+      merchantManagement?: string;
+      merchantDescription?: string;
     };
     userCreation: {
       title: string;
@@ -2182,6 +2186,7 @@ export interface Messages {
       tradeCreated: string;
       followInstructions: string;
     };
+    bonusBanner?: string;
   };
   giveawaysPage: {
     participationSuccess: string;

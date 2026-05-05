@@ -27,6 +27,8 @@ export async function GET(request: NextRequest) {
     const rawLimit = parseInt(searchParams.get('limit') || '20');
     const filters: AdminFilters = {
       status: searchParams.get('status') || undefined,
+      role: searchParams.get('role') || undefined,
+      tag: searchParams.get('tag') || undefined,
       search: searchParams.get('search') || undefined,
       page: Math.max(1, parseInt(searchParams.get('page') || '1') || 1),
       limit: Math.min(Math.max(1, rawLimit || 20), 100),
@@ -47,6 +49,14 @@ export async function GET(request: NextRequest) {
       } else if (f === 'rejected') {
         whereConditions.kycStatus = { in: [KycStatus.REJECTED, KycStatus.KYCAID_REJECTED] };
       }
+    }
+
+    if (filters.role) {
+      whereConditions.role = filters.role;
+    }
+
+    if (filters.tag) {
+      whereConditions.userTag = filters.tag;
     }
 
     if (filters.search) {

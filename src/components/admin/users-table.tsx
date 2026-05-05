@@ -39,6 +39,7 @@ import { prismaKycStatusToAdminBadgeKey } from '@/lib/status-mapper';
 import { useLocale } from '@/components/providers/locale-provider';
 import { CreateUserDialog } from './create-user-dialog';
 import { queryKeys } from '@/lib/query-keys';
+import { UserRoleBadge } from '@/components/ui/user-role-badge';
 
 interface PromoteDialogState {
   open: boolean;
@@ -80,6 +81,8 @@ export function AdminUsersTable() {
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filters.status) params.append('status', filters.status);
+      if (filters.role) params.append('role', filters.role);
+      if (filters.tag) params.append('tag', filters.tag);
       if (debouncedSearch) params.append('search', debouncedSearch);
       if (filters.page) params.append('page', filters.page.toString());
       if (filters.limit) params.append('limit', filters.limit.toString());
@@ -102,6 +105,16 @@ export function AdminUsersTable() {
       status: status === 'all' ? undefined : status,
       page: 1 
     }));
+  };
+
+  const handleRoleFilter = (value: string) => {
+    if (value === 'all') {
+      setFilters(prev => ({ ...prev, role: undefined, tag: undefined, page: 1 }));
+    } else if (value.startsWith('tag:')) {
+      setFilters(prev => ({ ...prev, role: undefined, tag: value.replace('tag:', ''), page: 1 }));
+    } else {
+      setFilters(prev => ({ ...prev, role: value, tag: undefined, page: 1 }));
+    }
   };
 
   const getKYCBadge = (status: string) => {
@@ -287,6 +300,21 @@ export function AdminUsersTable() {
               <SelectItem value="rejected">Rejeté</SelectItem>
             </SelectContent>
           </Select>
+
+          <Select onValueChange={handleRoleFilter}>
+            <SelectTrigger className="w-full sm:w-48 bg-slate-700 border-slate-600 text-white">
+              <SelectValue placeholder="Filtrer par rôle" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les rôles</SelectItem>
+              <SelectItem value="USER">User</SelectItem>
+              <SelectItem value="ADMIN">Admin</SelectItem>
+              <SelectItem value="AFFILIATE">Affilié</SelectItem>
+              <SelectItem value="MODERATOR">Modérateur</SelectItem>
+              <SelectItem value="tag:VIP">VIP (tag)</SelectItem>
+              <SelectItem value="tag:MERCHANT">Merchant (tag)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -344,23 +372,7 @@ export function AdminUsersTable() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-white">{user.username}</span>
-                        {user.role === 'AFFILIATE' && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/20 border border-purple-500/40 px-1.5 py-0.5 text-[10px] font-semibold text-purple-300 leading-none">
-                            <UserCheck className="h-2.5 w-2.5" />
-                            Affilié
-                          </span>
-                        )}
-                        {user.userTag && (
-                          <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none ${
-                            user.userTag === 'VIP'
-                              ? 'bg-amber-500/20 border border-amber-500/40 text-amber-300'
-                              : user.userTag === 'MERCHANT'
-                                ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300'
-                                : 'bg-blue-500/20 border border-blue-500/40 text-blue-300'
-                          }`}>
-                            {user.userTag}
-                          </span>
-                        )}
+                        <UserRoleBadge role={user.role} userTag={user.userTag} />
                       </div>
                       <div className="text-xs text-slate-400">ID: {user.id}</div>
                     </div>

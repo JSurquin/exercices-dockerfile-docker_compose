@@ -42,6 +42,7 @@ import { useSession } from "~/lib/auth-client";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
+import { UserRoleBadge } from "@/components/ui/user-role-badge";
 
 export function Header() {
   const { user, loginWithSteam, loginWithDiscord, logout, isLoading } = useAuth();
@@ -260,6 +261,7 @@ export function Header() {
                           {messages.nav.affiliateBadge}
                         </span>
                       )}
+                      <UserRoleBadge userTag={user.userTag} />
                       {isAdmin && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/20 border border-orange-500/40 px-1.5 py-0.5 text-[10px] font-semibold text-orange-400 leading-none">
                           Admin

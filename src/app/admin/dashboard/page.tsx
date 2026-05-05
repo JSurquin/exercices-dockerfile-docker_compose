@@ -24,6 +24,7 @@ import { AdminAnalyticsCharts } from '@/components/admin/analytics-charts';
 import { AdminSkinplaceMetrics } from '@/components/admin/skinplace-metrics';
 import AffiliatesManagement from '@/components/admin/affiliates-management';
 import AffiliateCommissions from '@/components/admin/affiliate-commissions';
+import { VipMerchantManagement } from '@/components/admin/vip-merchant-management';
 import { GiveawayAdmin } from '@/components/admin/giveaway-admin';
 import { DashboardOverview } from '@/components/admin/dashboard-overview';
 
@@ -274,6 +275,48 @@ function DashboardContent() {
                 <div className="flex h-64 items-center justify-center text-slate-400">
                   Section en cours de développement
                 </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      
+      case 'vip':
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">{messages.admin.dashboard.vipManagement ?? 'Gestion VIP'}</CardTitle>
+                <p className="text-sm text-slate-400">
+                  {messages.admin.dashboard.vipDescription ?? 'Gérer les utilisateurs VIP et leurs bonus'}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <VipMerchantManagement tag="VIP" />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      
+      case 'merchants':
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">{messages.admin.dashboard.merchantManagement ?? 'Gestion Merchants'}</CardTitle>
+                <p className="text-sm text-slate-400">
+                  {messages.admin.dashboard.merchantDescription ?? 'Gérer les Merchants et leurs bonus'}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <VipMerchantManagement tag="MERCHANT" />
               </CardContent>
             </Card>
           </motion.div>
