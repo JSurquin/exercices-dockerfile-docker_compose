@@ -158,7 +158,7 @@ export async function isMissionEligible(userId: string, def: MissionDef, at = ne
 
 export async function claimMission(userId: string, missionKey: string): Promise<{ ok: true; fragments: number } | { ok: false; error: string }> {
   const def = MISSION_DEFINITIONS.find((m) => m.key === missionKey);
-  if (!def) return { ok: false, error: 'Mission inconnue' };
+  if (!def) return { ok: false, error: 'Unknown mission' };
 
   const pKey = periodKeyFor(def);
 
@@ -170,12 +170,12 @@ export async function claimMission(userId: string, missionKey: string): Promise<
         },
       });
       if (existing) {
-        return { ok: false as const, error: 'Déjà réclamée pour cette période' };
+        return { ok: false as const, error: 'Already claimed for this period' };
       }
 
       const eligible = await isMissionEligible(userId, def);
       if (!eligible) {
-        return { ok: false as const, error: 'Conditions non remplies' };
+        return { ok: false as const, error: 'Requirements not met' };
       }
 
       const dateStr = pKey.replace('day:', '');
@@ -212,7 +212,7 @@ export async function claimMission(userId: string, missionKey: string): Promise<
   } catch (error: unknown) {
     const err = error as { code?: string };
     if (err.code === 'P2002') {
-      return { ok: false, error: 'Déjà réclamée pour cette période' };
+      return { ok: false, error: 'Already claimed for this period' };
     }
     throw error;
   }

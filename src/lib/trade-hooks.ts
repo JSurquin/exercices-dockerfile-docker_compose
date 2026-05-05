@@ -94,7 +94,7 @@ export class TradeHooks {
       await creditPendingBalance(
         userId,
         eurCents,
-        `Trade ${tradeId} accepté — en attente de confirmation (~8j)`,
+        `Trade ${tradeId} accepted — awaiting confirmation (~8d)`,
         { tradeId }
       );
 
@@ -154,7 +154,7 @@ export class TradeHooks {
           type: 'LEVEL_UP',
           points: 500,
           tickets: 0,
-          reason: `Passage au niveau ${newLevel}`,
+          reason: `Reached level ${newLevel}`,
           metadata: { oldLevel: updatedUser.level, newLevel, tradeId },
         },
       });
@@ -208,7 +208,7 @@ export class TradeHooks {
       await debitPendingBalance(
         userId,
         eurCents,
-        `Trade ${tradeId} annulé (rollback Skinplace) — solde en attente annulé`,
+        `Trade ${tradeId} cancelled (Skinplace rollback) — pending balance reverted`,
         { tradeId }
       );
 
@@ -307,7 +307,7 @@ export class TradeHooks {
           await releasePendingToBalance(
             trade.userId,
             pendingEurCents,
-            `Trade ${tradeId} confirmé — fonds libérés par Skinplace`,
+            `Trade ${tradeId} confirmed — funds released by Skinplace`,
             { tradeId }
           );
           console.log(`[TradeHooks] Balance released from pending for trade ${tradeId}: ${trade.netCents} USD -> ${pendingEurCents} EUR cents (rate=${rate})`);
@@ -317,7 +317,7 @@ export class TradeHooks {
           await creditBalance(
             trade.userId,
             eurCents,
-            `Trade ${tradeId} confirmé — crédit direct (rattrapage polling)`,
+            `Trade ${tradeId} confirmed — direct credit (polling catchup)`,
             { type: 'TRADE_CREDIT', tradeId }
           );
           console.log(`[TradeHooks] Balance directly credited for trade ${tradeId}: ${trade.netCents} USD -> ${eurCents} EUR cents (rate=${rate})`);
@@ -346,7 +346,7 @@ export class TradeHooks {
             trade.userId,
             AFFILIATE_SELL_PROMO_FRAGMENTS,
             'GENERATED_EVENT',
-            `Bonus code affilié — trade ${tradeId}`,
+            `Affiliate promo bonus — trade ${tradeId}`,
             { tradeId, source: 'affiliate_sell_promo' }
           );
           await prisma.trade.update({

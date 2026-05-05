@@ -151,7 +151,7 @@ export async function awardTradePoints(
         type: 'TRADE_SALE',
         points,
         tickets,
-        reason: `Vente de skins CS2 (${euros.toFixed(2)}€)`,
+        reason: `CS2 skin sale (${euros.toFixed(2)}€)`,
         metadata: { tradeId, grossCents },
       },
     });
@@ -161,7 +161,7 @@ export async function awardTradePoints(
           userId,
           type: 'GENERATED_SALE',
           amount: fragments,
-          reason: `Fragments vente (${euros.toFixed(2)}€)`,
+          reason: `Sale fragments (${euros.toFixed(2)}€)`,
           metadata: { tradeId, grossCents } as Prisma.InputJsonValue,
         },
       });
@@ -172,7 +172,7 @@ export async function awardTradePoints(
           userId,
           type: 'GENERATED_DROP',
           amount: drop,
-          reason: `Drop aléatoire (vente ${euros.toFixed(2)}€)`,
+          reason: `Random drop (sale ${euros.toFixed(2)}€)`,
           metadata: { tradeId, grossCents } as Prisma.InputJsonValue,
         },
       });
@@ -234,7 +234,7 @@ export async function claimDailyLogin(
         type: 'DAILY_LOGIN',
         points,
         tickets,
-        reason: `Connexion quotidienne (Jour ${streak})`,
+        reason: `Daily login (Day ${streak})`,
         metadata: { streak, multiplier },
       },
     });

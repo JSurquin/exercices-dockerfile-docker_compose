@@ -83,7 +83,7 @@ export class SecurityService {
       if (todayTrades >= this.limits.maxTradesPerDay) {
         return {
           allowed: false,
-          reason: `Limite de ${this.limits.maxTradesPerDay} trades par jour atteinte`,
+          reason: `Daily trade limit reached (${this.limits.maxTradesPerDay}/day)`,
           currentUsage: { tradesCount: todayTrades, payoutsCount: 0, payoutAmount: 0 },
         };
       }
@@ -109,14 +109,14 @@ export class SecurityService {
 
         return {
           allowed: false,
-          reason: 'Activité suspecte détectée - veuillez patienter',
+          reason: 'Suspicious activity detected — please wait before trying again',
         };
       }
 
       return { allowed: true };
     } catch (error) {
-      logger.error('Erreur lors de la vérification d\'éligibilité trade', { error, userId });
-      return { allowed: false, reason: 'Erreur de vérification de sécurité' };
+      logger.error('Failed to check trade eligibility', { error, userId });
+      return { allowed: false, reason: 'Security check failed' };
     }
   }
 
@@ -141,11 +141,11 @@ export class SecurityService {
       });
 
       if (!paymentMethod) {
-        return { allowed: false, reason: 'Méthode de paiement non trouvée' };
+        return { allowed: false, reason: 'Payment method not found' };
       }
 
       if (paymentMethod.userId !== userId) {
-        return { allowed: false, reason: 'Méthode de paiement non autorisée' };
+        return { allowed: false, reason: 'Payment method not authorized' };
       }
 
       // Compte les payouts du jour
@@ -166,7 +166,7 @@ export class SecurityService {
       if (payoutsCount >= this.limits.maxPayoutsPerDay) {
         return {
           allowed: false,
-          reason: `Limite de ${this.limits.maxPayoutsPerDay} payouts par jour atteinte`,
+          reason: `Daily payout limit reached (${this.limits.maxPayoutsPerDay}/day)`,
           currentUsage: { tradesCount: 0, payoutsCount, payoutAmount },
         };
       }
@@ -174,7 +174,7 @@ export class SecurityService {
       if (payoutAmount + amountCents > this.limits.maxPayoutAmountPerDay) {
         return {
           allowed: false,
-          reason: `Limite de montant quotidien atteinte (${this.limits.maxPayoutAmountPerDay / 100}€)`,
+          reason: `Daily payout amount limit reached (${this.limits.maxPayoutAmountPerDay / 100}€)`,
           currentUsage: { tradesCount: 0, payoutsCount, payoutAmount },
         };
       }
@@ -220,7 +220,7 @@ export class SecurityService {
 
         return {
           allowed: false,
-          reason: 'Montant inhabituel détecté - vérification manuelle requise',
+          reason: 'Unusual amount detected — manual verification required',
         };
       }
 
@@ -229,8 +229,8 @@ export class SecurityService {
         currentUsage: { tradesCount: 0, payoutsCount, payoutAmount },
       };
     } catch (error) {
-      logger.error('Erreur lors de la vérification d\'éligibilité payout', { error, userId });
-      return { allowed: false, reason: 'Erreur de vérification de sécurité' };
+      logger.error('Failed to check payout eligibility', { error, userId });
+      return { allowed: false, reason: 'Security check failed' };
     }
   }
 
@@ -243,7 +243,7 @@ export class SecurityService {
     });
 
     if (!paymentMethod) {
-      return { allowed: false, reason: 'Méthode de paiement non trouvée' };
+      return { allowed: false, reason: 'Payment method not found' };
     }
 
     const recentPayouts = await prisma.payout.findMany({
@@ -266,7 +266,7 @@ export class SecurityService {
       if (new Date() < cooldownEnd) {
         return {
           allowed: false,
-          reason: `Cooldown actif après changement d'IBAN`,
+          reason: `IBAN change cooldown active`,
           cooldownUntil: cooldownEnd,
         };
       }
@@ -284,7 +284,7 @@ export class SecurityService {
     });
 
     if (!paymentMethod) {
-      return { allowed: false, reason: 'Méthode de paiement non trouvée' };
+      return { allowed: false, reason: 'Payment method not found' };
     }
 
     const recentPayouts = await prisma.payout.count({
@@ -299,7 +299,7 @@ export class SecurityService {
     if (recentPayouts >= this.limits.maxPayoutsPerIban) {
       return {
         allowed: false,
-        reason: `Limite de payouts par IBAN atteinte (${this.limits.maxPayoutsPerIban}/24h)`,
+        reason: `IBAN payout limit reached (${this.limits.maxPayoutsPerIban}/24h)`,
       };
     }
 
@@ -326,7 +326,7 @@ export class SecurityService {
     if (recentPayouts >= this.limits.maxPayoutsPerIp) {
       return {
         allowed: false,
-        reason: `Limite de payouts par IP atteinte (${this.limits.maxPayoutsPerIp}/24h)`,
+        reason: `IP payout limit reached (${this.limits.maxPayoutsPerIp}/24h)`,
       };
     }
 
@@ -370,7 +370,7 @@ export class SecurityService {
         },
       });
 
-      logger.warn('Alerte de fraude créée', {
+      logger.warn('Fraud alert created', {
         userId: alert.userId,
         type: alert.type,
         severity: alert.severity,
@@ -379,10 +379,10 @@ export class SecurityService {
 
       // En production, on pourrait envoyer une notification aux admins
       if (alert.severity === 'HIGH') {
-        logger.error('Alerte de fraude critique', alert);
+        logger.error('Critical fraud alert', alert);
       }
     } catch (error) {
-      logger.error('Erreur lors de la création d\'alerte de fraude', { error, alert });
+      logger.error('Failed to create fraud alert', { error, alert });
     }
   }
 
@@ -408,7 +408,7 @@ export class SecurityService {
         };
       });
     } catch (error) {
-      logger.error('Erreur lors de la récupération des alertes de fraude', { error });
+      logger.error('Failed to retrieve fraud alerts', { error });
       return [];
     }
   }
@@ -436,13 +436,13 @@ export class SecurityService {
         },
       });
 
-      logger.info('Événement de sécurité journalisé', {
+      logger.info('Security event logged', {
         userId,
         action,
         ipAddress,
       });
     } catch (error) {
-      logger.error('Erreur lors de la journalisation de sécurité', { error });
+      logger.error('Failed to log security event', { error });
     }
   }
 
@@ -470,14 +470,14 @@ export class SecurityService {
         const cooldownEnd = new Date(Date.now() + 60 * 60 * 1000); // 1 heure
         return {
           inCooldown: true,
-          reason: 'Trop de tentatives échouées',
+          reason: 'Too many failed attempts',
           endsAt: cooldownEnd,
         };
       }
 
       return { inCooldown: false };
     } catch (error) {
-      logger.error('Erreur lors de la vérification du cooldown', { error, userId });
+      logger.error('Failed to check cooldown status', { error, userId });
       return { inCooldown: false };
     }
   }

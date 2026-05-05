@@ -23,7 +23,7 @@ export class AffiliateService {
     });
     
     if (!user) {
-      throw new Error('Utilisateur non trouvé');
+      throw new Error('User not found');
     }
     
     // Générer un code basé sur le nom d'utilisateur Steam ou l'ID

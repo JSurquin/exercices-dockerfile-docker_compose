@@ -328,7 +328,7 @@ export async function checkWithdrawalLimit(
       allowed: false,
       usedCents,
       limitCents,
-      reason: `Plafond mensuel dépassé (utilisé: ${usedCents / 100}€, limite: ${limitCents / 100}€)`,
+      reason: `Monthly withdrawal limit exceeded (used: ${usedCents / 100}€, limit: ${limitCents / 100}€)`,
     };
   }
   return { allowed: true, usedCents, limitCents };
