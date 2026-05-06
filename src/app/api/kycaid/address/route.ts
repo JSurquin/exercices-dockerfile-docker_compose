@@ -5,7 +5,7 @@ import { createAddress } from '@/lib/kycaid';
 import { prisma } from '~/prisma/prisma';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { kycaidAddressBodySchema } from '@/lib/validation/schemas/integrations';
-import { encrypt } from '@/lib/encryption';
+import { encrypt, decrypt } from '@/lib/encryption';
 
 /**
  * POST /api/kycaid/address
@@ -126,7 +126,25 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ address });
+    if (!address) {
+      return NextResponse.json({ address: null });
+    }
+
+    const safeDecrypt = (val: string | null) => {
+      if (!val) return val;
+      try { return decrypt(val); } catch { return val; }
+    };
+
+    return NextResponse.json({
+      address: {
+        ...address,
+        city: safeDecrypt(address.city),
+        postalCode: safeDecrypt(address.postalCode),
+        streetName: safeDecrypt(address.streetName),
+        buildingNumber: safeDecrypt(address.buildingNumber),
+        unitNumber: safeDecrypt(address.unitNumber),
+      },
+    });
   } catch (error) {
     console.error('[KYCAID Address GET] Error:', error);
     return NextResponse.json(

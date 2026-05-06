@@ -63,7 +63,7 @@ export function decrypt(ciphertextBase64: string): string {
   const enc = buf.subarray(IV_LENGTH + AUTH_TAG_LENGTH);
   const decipher = crypto.createDecipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH });
   decipher.setAuthTag(authTag);
-  return decipher.update(enc) + decipher.final('utf8');
+  return decipher.update(enc).toString('utf8') + decipher.final('utf8');
 }
 
 /**

@@ -633,7 +633,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
         
         <div style="background: #f7fafc; padding: 30px; border-radius: 0 0 10px 10px;">
           <p style="font-size: 16px; margin-bottom: 20px;">
-            Bonjour ${user.steamUsername || ''},
+            Bonjour ${escapeHtml(user.steamUsername || '')},
           </p>
           
           <p style="font-size: 16px; margin-bottom: 20px;">
