@@ -5,6 +5,7 @@ import { createAddress } from '@/lib/kycaid';
 import { prisma } from '~/prisma/prisma';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { kycaidAddressBodySchema } from '@/lib/validation/schemas/integrations';
+import { encrypt } from '@/lib/encryption';
 
 /**
  * POST /api/kycaid/address
@@ -63,17 +64,17 @@ export async function POST(request: NextRequest) {
       unit_number: unitNumber,
     });
 
-    // Sauvegarder en base
+    // Sauvegarder en base (champs sensibles chiffrés)
     const savedAddress = await prisma.kycAddress.create({
       data: {
         applicantId: user.kycaidApplicantId,
         type: 'REGISTERED',
         country,
-        city,
-        postalCode,
-        streetName,
-        buildingNumber,
-        unitNumber,
+        city: encrypt(city),
+        postalCode: encrypt(postalCode),
+        streetName: encrypt(streetName),
+        buildingNumber: encrypt(buildingNumber),
+        unitNumber: unitNumber ? encrypt(unitNumber) : null,
         kycaidAddressId: address.address_id,
       },
     });

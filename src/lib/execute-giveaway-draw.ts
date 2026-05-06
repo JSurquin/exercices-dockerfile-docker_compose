@@ -21,6 +21,16 @@ export async function executeGiveawayDraw(giveawayId: string) {
   const winnerIds = pickWeightedUniqueWinners(weights, want, randomSeed);
 
   const updated = await prisma.$transaction(async (tx) => {
+    // Optimistic lock : ne mettre à jour que si le giveaway est encore ACTIVE
+    // Évite le double tirage en cas d'appels concurrents
+    const locked = await tx.giveaway.updateMany({
+      where: { id: giveawayId, status: 'ACTIVE' },
+      data: { status: 'ENDED', winnerId: winnerIds[0] ?? null, randomSeed },
+    });
+    if (locked.count === 0) {
+      throw new Error('Tirage déjà effectué ou giveaway non actif');
+    }
+
     for (let i = 0; i < winnerIds.length; i++) {
       await tx.giveawayWinner.create({
         data: {
@@ -30,13 +40,8 @@ export async function executeGiveawayDraw(giveawayId: string) {
         },
       });
     }
-    return tx.giveaway.update({
+    return tx.giveaway.findUniqueOrThrow({
       where: { id: giveawayId },
-      data: {
-        status: 'ENDED',
-        winnerId: winnerIds[0] ?? null,
-        randomSeed,
-      },
       include: {
         entries: {
           include: {
@@ -45,7 +50,9 @@ export async function executeGiveawayDraw(giveawayId: string) {
             },
           },
         },
-        winners: true,
+        winners: {
+          select: { id: true, userId: true, rank: true },
+        },
       },
     });
   });

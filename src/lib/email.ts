@@ -3,6 +3,15 @@ import { logger } from './logger';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { prisma } from '~/prisma/prisma';
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 interface EmailConfig {
   host: string;
   port: number;
@@ -229,7 +238,7 @@ class EmailService {
           </div>
 
           <div class="content">
-            <p>Bonjour <strong>${username}</strong>,</p>
+            <p>Bonjour <strong>${escapeHtml(username)}</strong>,</p>
             
             <p>Votre mot de passe a été réinitialisé avec succès.</p>
           </div>
@@ -253,7 +262,7 @@ class EmailService {
     return `
       MoonSkin - Mot de passe réinitialisé avec succès
       
-      Bonjour ${username},
+      Bonjour ${escapeHtml(username)},
 
       Votre mot de passe a été réinitialisé avec succès.
       
@@ -269,8 +278,6 @@ class EmailService {
   async sendPasswordResetEmail(email: string, resetToken: string, username?: string): Promise<boolean> {
     const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL}password/reset-password?token=${resetToken}`;
  
-    console.log("email reçu", resetUrl)
-
     const html = this.generatePasswordResetHTML(resetUrl, username || email);
     const text = this.generatePasswordResetText(resetUrl, username || email);
 
@@ -376,7 +383,7 @@ class EmailService {
           </div>
 
           <div class="content">
-            <p>Bonjour <strong>${username}</strong>,</p>
+            <p>Bonjour <strong>${escapeHtml(username)}</strong>,</p>
             
             <p>Vous avez demandé la réinitialisation de votre mot de passe pour accéder au panel d'administration MoonSkin.</p>
             
@@ -426,7 +433,7 @@ class EmailService {
     return `
 MoonSkin - Réinitialisation de mot de passe
 
-Bonjour ${username},
+Bonjour ${escapeHtml(username)},
 
 Vous avez demandé la réinitialisation de votre mot de passe pour accéder au panel d'administration MoonSkin.
 
@@ -512,7 +519,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
           
           <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
             <h3 style="margin-top: 0; color: #667eea;">Motivation</h3>
-            <p style="white-space: pre-wrap;">${application.motivation}</p>
+            <p style="white-space: pre-wrap;">${escapeHtml(application.motivation)}</p>
           </div>
           
           <div style="text-align: center;">
@@ -636,7 +643,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
           
           <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #fc8181;">
             <h3 style="margin-top: 0; color: #fc8181;">Raison du rejet</h3>
-            <p style="white-space: pre-wrap;">${reason}</p>
+            <p style="white-space: pre-wrap;">${escapeHtml(reason)}</p>
           </div>
           
           <div style="background: #edf2f7; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
@@ -1140,7 +1147,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
           </div>
 
           <div class="content">
-            <p>Bonjour <strong>${username}</strong>,</p>
+            <p>Bonjour <strong>${escapeHtml(username)}</strong>,</p>
             
             <p>Nous avons bien reçu votre demande de vérification d'identité (KYC).</p>
             
@@ -1207,7 +1214,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
     const text = `
 MoonSkin - Vérification KYC en cours
 
-Bonjour ${username},
+Bonjour ${escapeHtml(username)},
 
 Nous avons bien reçu votre demande de vérification d'identité (KYC).
 
@@ -1317,7 +1324,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
           </div>
 
           <div style="margin: 30px 0;">
-            <p>Bonjour <strong>${username}</strong>,</p>
+            <p>Bonjour <strong>${escapeHtml(username)}</strong>,</p>
             
             <p>Excellente nouvelle ! Votre vérification d'identité (KYC) a été <strong style="color: #10b981;">approuvée avec succès</strong>.</p>
             
@@ -1369,7 +1376,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
     const text = `
 MoonSkin - KYC Approuvé
 
-Bonjour ${username},
+Bonjour ${escapeHtml(username)},
 
 Félicitations ! Votre vérification d'identité (KYC) a été approuvée avec succès.
 
@@ -1478,13 +1485,13 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
           </div>
 
           <div style="margin: 30px 0;">
-            <p>Bonjour <strong>${username}</strong>,</p>
+            <p>Bonjour <strong>${escapeHtml(username)}</strong>,</p>
             
             <p>Nous avons examiné votre demande de vérification d'identité mais nous ne pouvons malheureusement pas la valider pour le moment.</p>
             
             <div style="background: #fee2e2; border: 2px solid #ef4444; border-radius: 8px; padding: 20px; margin: 20px 0;">
               <h3 style="margin-top: 0; color: #991b1b;">📋 Raison du rejet</h3>
-              <p style="margin: 0; color: #991b1b; font-weight: 500;">${reason}</p>
+              <p style="margin: 0; color: #991b1b; font-weight: 500;">${escapeHtml(reason)}</p>
             </div>
 
             <div style="background: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 20px; margin: 30px 0;">
@@ -1535,7 +1542,7 @@ Cet email a été envoyé automatiquement, merci de ne pas y répondre.
     const text = `
 MoonSkin - Vérification KYC
 
-Bonjour ${username},
+Bonjour ${escapeHtml(username)},
 
 Nous avons examiné votre demande de vérification d'identité mais nous ne pouvons malheureusement pas la valider pour le moment.
 

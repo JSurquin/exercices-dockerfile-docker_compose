@@ -41,6 +41,18 @@ export async function POST() {
 
     for (const row of overdue) {
       try {
+        // Sécurité : ne passer en AVAILABLE que si availableAt est dépassé depuis au moins 1h
+        // pour absorber les délais de livraison des webhooks Skinplace (IPN #2)
+        const GRACE_PERIOD_MS = 60 * 60 * 1000; // 1 heure
+        const trade = await prisma.trade.findUnique({
+          where: { id: row.id },
+          select: { availableAt: true, status: true },
+        });
+        if (!trade || trade.status !== 'IN_TRADE_HOLD') continue;
+        if (!trade.availableAt || now.getTime() - trade.availableAt.getTime() < GRACE_PERIOD_MS) {
+          continue;
+        }
+
         await prisma.trade.update({
           where: { id: row.id },
           data: { status: 'AVAILABLE' },

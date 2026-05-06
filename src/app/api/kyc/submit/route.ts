@@ -15,6 +15,7 @@ import {
 } from '@/lib/kycaid';
 import { prisma } from '~/prisma/prisma';
 import { emailService } from '@/lib/email';
+import { encrypt } from '@/lib/encryption';
 
 /**
  * Mapper les types de documents du frontend vers les types KYCAID
@@ -222,16 +223,17 @@ export async function POST(request: NextRequest) {
 
         console.log(`✅ [KYC SUBMIT] Adresse créée : ${addressData.address_id}`);
 
-        // Sauvegarder en base
+        // Sauvegarder en base (champs sensibles chiffrés)
         await prisma.kycAddress.create({
           data: {
             applicantId,
             type: 'REGISTERED',
-            country: personalInfo.country,
-            city: personalInfo.city,
-            postalCode: personalInfo.postalCode,
-            streetName: personalInfo.address,
-            buildingNumber: '',
+            country: String(personalInfo.country ?? ''),
+            city: encrypt(String(personalInfo.city ?? '')),
+            postalCode: encrypt(String(personalInfo.postalCode ?? '')),
+            streetName: encrypt(String(personalInfo.address ?? '')),
+            buildingNumber: encrypt(''),
+            unitNumber: null,
             kycaidAddressId: addressData.address_id,
           },
         });

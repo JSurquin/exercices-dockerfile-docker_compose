@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
+import { logger } from '@/lib/logger';
 
 
 export async function GET(request: NextRequest) {
@@ -26,19 +27,40 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    function escapeCsvField(value: string): string {
+      const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+      return `"${safe.replace(/"/g, '""')}"`;
+    }
+
     // Créer le contenu CSV
-    const csvHeader = 'Email,Statut,Date d\'inscription,Date de désabonnement\n';
+    const csvHeader = [
+      escapeCsvField('Email'),
+      escapeCsvField('Statut'),
+      escapeCsvField("Date d'inscription"),
+      escapeCsvField('Date de désabonnement'),
+    ].join(',') + '\n';
     const csvContent = subscribers.map(subscriber => {
       const status = subscriber.isActive ? 'Actif' : 'Désabonné';
       const subscribedDate = subscriber.subscribedAt.toISOString().split('T')[0];
-      const unsubscribedDate = subscriber.unsubscribedAt 
+      const unsubscribedDate = subscriber.unsubscribedAt
         ? subscriber.unsubscribedAt.toISOString().split('T')[0]
         : '';
-      
-      return `"${subscriber.email}","${status}","${subscribedDate}","${unsubscribedDate}"`;
+
+      return [
+        escapeCsvField(subscriber.email),
+        escapeCsvField(status),
+        escapeCsvField(subscribedDate),
+        escapeCsvField(unsubscribedDate),
+      ].join(',');
     }).join('\n');
 
     const csv = csvHeader + csvContent;
+
+    logger.info('Admin newsletter export', {
+      adminId: session.user.id,
+      subscriberCount: subscribers.length,
+      ip: request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? 'unknown',
+    });
 
     // Retourner le fichier CSV
     return new NextResponse(csv, {

@@ -66,6 +66,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Vérification de fraîcheur : rejeter les webhooks de plus de 5 minutes (anti-replay)
+    if (!skipVerify && dateHeader) {
+      const webhookDate = new Date(dateHeader).getTime();
+      if (Number.isNaN(webhookDate) || Math.abs(Date.now() - webhookDate) > 5 * 60 * 1000) {
+        flexifyLog('WEBHOOK_STALE_DATE', { dateHeader }, 'error');
+        return NextResponse.json({ error: 'Webhook expired or invalid date' }, { status: 401 });
+      }
+    }
+
     const isValid = skipVerify || validateWebhookSignature(
       rawBody,
       authorizationHeader,

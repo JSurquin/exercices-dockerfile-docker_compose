@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { prisma } from '~/prisma/prisma';
+import { logger } from '@/lib/logger';
 
 type DateFilter = { createdAt?: { gte?: Date; lte?: Date } };
 
@@ -70,6 +71,13 @@ export async function GET(request: NextRequest) {
     const dateStr = new Date().toISOString().split('T')[0];
     filename = `${filename}-${dateStr}.${format}`;
 
+    logger.info('Admin export', {
+      adminId: session.user.id,
+      type,
+      format,
+      ip: request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? 'unknown',
+    });
+
     const contentType =
       format === 'excel'
         ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -89,10 +97,12 @@ export async function GET(request: NextRequest) {
 
 function escapeCsv(value: unknown): string {
   const str = value === null || value === undefined ? '' : String(value);
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-    return `"${str.replace(/"/g, '""')}"`;
+  // Neutraliser les formules CSV (Excel/LibreOffice injection)
+  const safe = /^[=+\-@\t\r]/.test(str) ? `'${str}` : str;
+  if (safe.includes(',') || safe.includes('"') || safe.includes('\n')) {
+    return `"${safe.replace(/"/g, '""')}"`;
   }
-  return str;
+  return safe;
 }
 
 function rowToCSV(row: unknown[]): string {

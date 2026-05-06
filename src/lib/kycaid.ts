@@ -1,4 +1,5 @@
 import { prisma } from '~/prisma/prisma';
+import { encrypt } from '@/lib/encryption';
 
 // =============================================================================
 // CONFIGURATION KYCAID
@@ -745,17 +746,17 @@ export async function initiateKyc(
         unit_number: addressData.unitNumber,
       });
 
-      // Sauvegarder en base
+      // Sauvegarder en base — champs sensibles chiffrés AES-256-GCM
       await prisma.kycAddress.create({
         data: {
           applicantId,
           type: 'REGISTERED',
           country: addressData.country,
-          city: addressData.city,
-          postalCode: addressData.postalCode,
-          streetName: addressData.streetName,
-          buildingNumber: addressData.buildingNumber,
-          unitNumber: addressData.unitNumber,
+          city: encrypt(addressData.city),
+          postalCode: encrypt(addressData.postalCode),
+          streetName: encrypt(addressData.streetName),
+          buildingNumber: encrypt(addressData.buildingNumber ?? ''),
+          unitNumber: addressData.unitNumber ? encrypt(addressData.unitNumber) : null,
           kycaidAddressId: address.address_id,
         },
       });

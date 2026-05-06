@@ -280,21 +280,23 @@ export class TradeHooks {
     try {
       console.log(`[TradeHooks] Trade ${tradeId} is now AVAILABLE — crediting balance`);
 
-      const trade = await prisma.trade.findUnique({
-        where: { id: tradeId },
-        include: { user: true },
+      // Verrou atomique : read + lock dans une seule transaction pour éviter le double-crédit
+      const { trade, locked } = await prisma.$transaction(async (tx) => {
+        const t = await tx.trade.findUnique({
+          where: { id: tradeId },
+          include: { user: true },
+        });
+        if (!t) throw new Error('Trade not found');
+
+        const lockResult = await tx.trade.updateMany({
+          where: { id: tradeId, balanceCreditedAt: null },
+          data: { balanceCreditedAt: new Date() },
+        });
+
+        return { trade: t, locked: lockResult.count > 0 };
       });
 
-      if (!trade) {
-        throw new Error('Trade not found');
-      }
-
-      const lockResult = await prisma.trade.updateMany({
-        where: { id: tradeId, balanceCreditedAt: null },
-        data: { balanceCreditedAt: new Date() },
-      });
-
-      if (lockResult.count === 0) {
+      if (!locked) {
         console.warn(`[TradeHooks] Balance already credited for trade ${tradeId}, skipping`);
       } else {
         const eurCents = await currencyConverter.convertUsdCentsToEurCents(trade.netCents);

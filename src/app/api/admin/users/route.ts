@@ -131,12 +131,10 @@ export async function GET(request: NextRequest) {
       joinedAt: user.createdAt,
     }));
 
-    // Log de l'accès admin - DÉSACTIVÉ pour éviter les boucles
-    // await logAdminAccess(context, 'users_list_accessed', undefined, {
-    //   filters,
-    //   resultCount: formattedUsers.length,
-    //   totalUsers: totalUsers
-    // });
+    await logAdminAccess(context, 'users_list_accessed', undefined, {
+      resultCount: formattedUsers.length,
+      totalUsers: totalUsers,
+    }).catch(() => {});
 
     return NextResponse.json({
       users: formattedUsers,

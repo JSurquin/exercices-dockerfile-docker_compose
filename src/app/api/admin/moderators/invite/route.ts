@@ -7,9 +7,11 @@ import { safeParseJson } from '@/lib/validation/helpers';
 import { adminModeratorInviteSchema } from '@/lib/validation/schemas/admin-bodies';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
-function generateTempPassword(length = 12): string {
+function generateTempPassword(length = 16): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
-  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  const buf = new Uint32Array(length);
+  crypto.getRandomValues(buf);
+  return Array.from(buf, (n) => chars[n % chars.length]).join('');
 }
 
 // POST /api/admin/moderators/invite

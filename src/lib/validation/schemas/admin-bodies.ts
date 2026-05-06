@@ -16,8 +16,8 @@ export const adminBalanceUserReasonSchema = z.object({
 
 export const adminBalanceAdjustSchema = z.object({
   userId: z.string().min(1),
-  amountCents: z.coerce.number(),
-  reason: z.string().min(1),
+  amountCents: z.coerce.number().int().min(-1_000_000_00).max(1_000_000_00), // ±1 000 000 €
+  reason: z.string().min(1).max(500),
 });
 
 export const adminAffiliatePostSchema = z.object({

@@ -442,10 +442,12 @@ function TwoFactorContent() {
   const { messages } = useLocale();
   const t = messages.twoFactorPage;
 
-  const redirectTo = useMemo(
-    () => searchParams.get("redirect") || "/dashboard",
-    [searchParams],
-  );
+  const redirectTo = useMemo(() => {
+    const raw = searchParams.get("redirect") || "/dashboard";
+    // Autoriser uniquement les chemins relatifs pour éviter les open redirects
+    if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
+    return "/dashboard";
+  }, [searchParams]);
 
   // Mode "verify" : paramètre explicite OU pas encore de session complète (login en cours)
   const isVerifyMode = searchParams.get("mode") === "verify";

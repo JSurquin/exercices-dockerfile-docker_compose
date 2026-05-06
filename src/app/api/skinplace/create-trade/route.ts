@@ -239,7 +239,7 @@ export async function POST(request: NextRequest) {
     }
     const tradeToken = tradeUrlMatch[2];
 
-    const tradeToken2 = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const tradeToken2 = crypto.randomUUID().replace(/-/g, '');
 
     const skinplacePayload = {
       signature,
@@ -302,7 +302,7 @@ export async function POST(request: NextRequest) {
     
     const tradeStatus = mapSkinplaceStatusToTradeStatus(skinplaceStatus);
 
-    const tradeId = `TRADE-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const tradeId = `TRADE-${Date.now()}-${crypto.randomUUID().replace(/-/g, '').substring(0, 6).toUpperCase()}`;
     const token = tradeToken2;
 
     const expiresAt = new Date();
