@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
+import { LoginRequiredBlock } from '@/components/auth/require-auth';
 
 const KYCAID_SUPPORTED_COUNTRIES = [
   'AF','AX','AL','DZ','AS','AD','AO','AI','AQ','AG','AR','AM','AW','AU','AT',
@@ -108,6 +109,7 @@ export default function KYCPage() {
   const steps = getSteps(messages);
 
   const isPolling = user?.kycStatus === 'IN_PROGRESS';
+  const isRejected = user?.kycStatus === 'REJECTED';
   const prevStatusRef = useRef<string | null>(null);
 
   const { data: kycData } = useQuery({
@@ -117,10 +119,8 @@ export default function KYCPage() {
       if (!response.ok) return null;
       return response.json();
     },
-    enabled: isPolling,
-    // Polling toutes les 10s tant que IN_PROGRESS
+    enabled: isPolling || isRejected,
     refetchInterval: isPolling ? 10_000 : false,
-    // Dès que l'utilisateur revient sur l'onglet → refetch immédiat
     refetchOnWindowFocus: isPolling,
     staleTime: 0,
   });
@@ -300,20 +300,12 @@ export default function KYCPage() {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        <Card className="max-w-md mx-auto text-center">
-          <CardContent className="p-6 sm:p-8">
-            <ShieldCheckIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">{messages.kycPage.status.loginRequired.title}</h2>
-            <p className="text-muted-foreground mb-6">
-              {messages.kycPage.status.loginRequired.description}
-            </p>
-            <Button onClick={() => window.location.href = '/'}>
-              {messages.kycPage.status.loginRequired.login}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <LoginRequiredBlock
+        icon={<ShieldCheckIcon className="w-16 h-16" />}
+        title={messages.kycPage.status.loginRequired.title}
+        description={messages.kycPage.status.loginRequired.description}
+        buttonLabel={messages.kycPage.status.loginRequired.login}
+      />
     );
   }
 
@@ -381,26 +373,51 @@ export default function KYCPage() {
 
   // Si KYC rejeté (et qu'on ne force pas l'affichage du formulaire)
   if (user.kycStatus === 'REJECTED' && !forceShowForm) {
+    const declineReasons: string[] = kycData?.declineReasons ?? [];
+    const reasonsMap = messages.kycPage.status.rejected.declineReasonsMap;
+
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        <Card className="max-w-md mx-auto text-center">
+        <Card className="max-w-lg mx-auto">
           <CardContent className="p-6 sm:p-8">
-            <XCircleIcon className="w-16 h-16 mx-auto mb-4 text-red-500" />
-            <h2 className="text-xl font-semibold mb-2">{messages.kycPage.status.rejected.title}</h2>
-            <p className="text-muted-foreground mb-6">
-              {messages.kycPage.status.rejected.description}
-            </p>
-            <Button 
-              onClick={() => {
-                console.log('[KYC] Recommencer button clicked - forcing form display');
-                setForceShowForm(true);
-                setCurrentStep('info');
-                // Reset les fichiers uploadés
-                setUploadedFiles({});
-              }}
-            >
-              {messages.kycPage.status.rejected.restart}
-            </Button>
+            <div className="text-center">
+              <XCircleIcon className="w-16 h-16 mx-auto mb-4 text-red-500" />
+              <h2 className="text-xl font-semibold mb-2">{messages.kycPage.status.rejected.title}</h2>
+              <p className="text-muted-foreground mb-6">
+                {messages.kycPage.status.rejected.description}
+              </p>
+            </div>
+
+            {declineReasons.length > 0 && (
+              <div className="mb-6 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <ExclamationTriangleIcon className="w-5 h-5 text-red-500 flex-shrink-0" />
+                  <h3 className="font-semibold text-red-900 dark:text-red-100 text-sm">
+                    {messages.kycPage.status.rejected.reasonsTitle}
+                  </h3>
+                </div>
+                <ul className="space-y-2">
+                  {declineReasons.map((reason) => (
+                    <li key={reason} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+                      <span>{reasonsMap[reason] ?? reason}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="text-center">
+              <Button 
+                onClick={() => {
+                  setForceShowForm(true);
+                  setCurrentStep('info');
+                  setUploadedFiles({});
+                }}
+              >
+                {messages.kycPage.status.rejected.restart}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

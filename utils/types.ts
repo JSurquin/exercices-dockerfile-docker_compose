@@ -2854,6 +2854,8 @@ export interface Messages {
         title: string;
         description: string;
         restart: string;
+        reasonsTitle: string;
+        declineReasonsMap: Record<string, string>;
       };
       loginRequired: {
         title: string;
