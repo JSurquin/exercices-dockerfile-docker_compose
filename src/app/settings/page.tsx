@@ -26,11 +26,11 @@ import {
   CogIcon,
   ShieldCheckIcon,
   BellIcon,
-  CreditCardIcon,
   MoonIcon,
   SunIcon,
-  ExclamationTriangleIcon,
   EnvelopeIcon,
+  EyeIcon,
+  EyeSlashIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 import TradeLinkConfig from "@/components/settings/trade-link-config";
@@ -59,6 +59,7 @@ export default function SettingsPage() {
     theme: theme || "dark",
   });
   const [emailInput, setEmailInput] = useState(user?.contactEmail ?? "");
+  const [showEmail, setShowEmail] = useState(false);
   const [isEmailSaving, setIsEmailSaving] = useState(false);
   const [isSavingNotifications, setIsSavingNotifications] = useState(false);
   const canUseTwoFactor = user?.role !== "ADMIN" && user?.role !== "MODERATOR";
@@ -194,12 +195,11 @@ export default function SettingsPage() {
           transition={{ duration: 0.6, delay: 0.1 }}
         >
           <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-2 h-auto">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 h-auto">
               <TabsTrigger value="profile">{messages.settings.tabs.profile}</TabsTrigger>
               <TabsTrigger value="security">{messages.settings.tabs.security}</TabsTrigger>
               <TabsTrigger value="notifications">{messages.settings.tabs.notifications}</TabsTrigger>
-              <TabsTrigger value="payments">{messages.settings.tabs.payments}</TabsTrigger>
-              <TabsTrigger value="preferences" className="col-span-2 sm:col-span-1">{messages.settings.tabs.preferences}</TabsTrigger>
+              <TabsTrigger value="preferences">{messages.settings.tabs.preferences}</TabsTrigger>
             </TabsList>
 
             {/* Profile Tab */}
@@ -269,13 +269,26 @@ export default function SettingsPage() {
                       {messages.settings.profile.emailHelp}
                     </p>
                     <div className="flex gap-2 max-w-md">
-                      <Input
-                        type="email"
-                        value={emailInput}
-                        onChange={(e) => setEmailInput(e.target.value)}
-                        placeholder={messages.settings.profile.emailPlaceholder}
-                        className="flex-1"
-                      />
+                      <div className="relative flex-1">
+                        <Input
+                          type={showEmail ? "text" : "password"}
+                          value={emailInput}
+                          onChange={(e) => setEmailInput(e.target.value)}
+                          placeholder={messages.settings.profile.emailPlaceholder}
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowEmail((v) => !v)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showEmail ? (
+                            <EyeSlashIcon className="w-4 h-4" />
+                          ) : (
+                            <EyeIcon className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
                       <Button
                         onClick={handleEmailUpdate}
                         disabled={isEmailSaving || !emailInput.trim() || emailInput.trim() === (user.contactEmail ?? "")}
@@ -558,77 +571,6 @@ export default function SettingsPage() {
                       messages.settings.notifications.save
                     )}
                   </Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Payments Tab */}
-            <TabsContent value="payments">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <CreditCardIcon className="w-5 h-5" />
-                    <span>{messages.settings.payments.title}</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 sm:space-y-4">
-                  <div className="space-y-3 sm:space-y-4">
-                    <div className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                            <CreditCardIcon className="w-5 h-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{messages.settings.payments.flexify}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {messages.settings.payments.flexifyDesc}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button variant="outline" size="sm" onClick={() => window.location.href = "/dashboard?tab=payouts"}>
-                            {messages.settings.payments.modify}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
-                            <span className="text-purple-600 font-bold text-xs">₿</span>
-                          </div>
-                          <div>
-                            <p className="font-medium">{messages.settings.payments.whitepay}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {messages.settings.payments.whitepayDesc}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button variant="outline" size="sm" onClick={() => window.location.href = "/dashboard?tab=payouts"}>
-                            {messages.settings.payments.modify}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                    <div className="flex items-start space-x-3">
-                      <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-                      <div className="text-sm">
-                        <p className="font-medium text-yellow-900 dark:text-yellow-100 mb-1">
-                          {messages.settings.payments.important}
-                        </p>
-                        <p className="text-yellow-700 dark:text-yellow-300">
-                          {messages.settings.payments.ibanWarning}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
