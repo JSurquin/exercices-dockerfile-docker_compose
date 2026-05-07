@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
+import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import { Messages } from '~/utils/types';
 import { useGiveaways, GiveawayWithEntries } from '@/hooks/use-giveaways';
 import { GiveawayNotifications } from '@/components/giveaway/giveaway-notifications';
@@ -373,6 +374,17 @@ export default function GiveawaysPage() {
       <div className="container mx-auto px-4 py-24 flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">{messages.giveawaysPage.loading}</div>
       </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <LoginRequiredBlock
+        icon={<GiftIcon className="w-16 h-16" />}
+        title={messages.giveaways.empty.loginRequired}
+        description={messages.giveaways.empty.loginRequiredDescription}
+        buttonLabel={messages.giveaways.empty.loginButton}
+      />
     );
   }
 

@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLocale } from '@/components/providers/locale-provider';
 import { useAuth } from '@/components/providers/auth-provider';
+import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import { toast } from 'sonner';
 import {
   GiftIcon,
@@ -115,6 +116,17 @@ export default function GiveawayDetailsPage() {
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : messages.giveawaysPage.detail.errorGeneric),
   });
+
+  if (!user) {
+    return (
+      <LoginRequiredBlock
+        icon={<GiftIcon className="w-16 h-16" />}
+        title={messages.giveawaysPage.detail.loginToParticipate}
+        description={messages.giveaways.empty.loginRequiredDescription}
+        buttonLabel={messages.giveawaysPage.detail.loginViaSteam}
+      />
+    );
+  }
 
   if (isLoading) {
     return (
