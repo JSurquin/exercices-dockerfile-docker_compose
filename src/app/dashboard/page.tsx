@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // import { useAuth } from "@/components/providers/auth-provider";
 import { useSession } from "~/lib/auth-client";
 import { useLocale } from "@/components/providers/locale-provider";
+import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import OnboardingDialog from "@/components/onboarding/onboarding-dialog";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { Messages } from "~/utils/types";
@@ -374,22 +375,12 @@ export default function DashboardPage() {
 
   if (!data || !user) {
     return (
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        <Card className="max-w-md mx-auto text-center">
-          <CardContent className="p-6 sm:p-8">
-            <ChartBarIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">
-              {messages.dashboard.loginRequired}
-            </h2>
-            <p className="text-muted-foreground mb-6">
-              {messages.dashboard.loginSubtitle}
-            </p>
-            <Button onClick={() => (window.location.href = "/")}>
-              {messages.common.steamLogin}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <LoginRequiredBlock
+        icon={<ChartBarIcon className="w-16 h-16" />}
+        title={messages.dashboard.loginRequired}
+        description={messages.dashboard.loginSubtitle}
+        buttonLabel={messages.common.steamLogin}
+      />
     );
   }
 
@@ -847,12 +838,19 @@ export default function DashboardPage() {
                                 {messages.dashboard.tradeHistory.fees}
                               </span>
                               <p>{messages.dashboard.tradeHistory.cashout} <ConvertedPrice usdCents={trade.frais.cashout} fromCurrency="USD" /></p>
-                              <p>
-                                {messages.dashboard.tradeHistory.network}{" "}
-                                {trade.frais.réseau > 0
-                                  ? <ConvertedPrice usdCents={trade.frais.réseau} fromCurrency="USD" />
-                                  : messages.dashboard.tradeHistory.payoutFeesAtWithdrawal}
-                              </p>
+                            </div>
+                            <div>
+                              {trade.status === 'en_trade_hold' && trade.disponibleLe && (
+                                <div className="flex items-center gap-1.5 mt-1 px-2 py-1.5 rounded-md bg-amber-500/10 border border-amber-500/20">
+                                  <ClockIcon className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                  <p className="text-xs text-amber-700 dark:text-amber-300">
+                                    {messages.dashboard.tradeHistory.tradeHoldReminder}{" "}
+                                    <span className="font-semibold">
+                                      {new Date(trade.disponibleLe).toLocaleDateString()}
+                                    </span>
+                                  </p>
+                                </div>
+                              )}
                             </div>
                             <div>
                               <span className="text-muted-foreground text-xs block mb-1">
