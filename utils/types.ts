@@ -465,6 +465,9 @@ export interface Messages {
       participateGiveaway: string;
       balance: {
         title: string;
+        pendingTitle: string;
+        pendingTooltip: string;
+        projected: string;
         last7days: string;
         vsLastWeek: string;
         chart30days: string;

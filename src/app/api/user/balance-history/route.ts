@@ -21,12 +21,12 @@ export async function GET(request: NextRequest) {
     startDate.setDate(startDate.getDate() - (days - 1));
     startDate.setHours(0, 0, 0, 0);
 
-    // Solde courant de l'utilisateur
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { balanceCents: true },
+      select: { balanceCents: true, pendingBalanceCents: true },
     });
     const currentBalance = user?.balanceCents ?? 0;
+    const pendingBalance = user?.pendingBalanceCents ?? 0;
 
     // Toutes les transactions depuis le début de la fenêtre (uniquement les transactions
     // qui affectent balanceCents : TRADE_CREDIT et WITHDRAWAL)
@@ -84,6 +84,7 @@ export async function GET(request: NextRequest) {
       variationCents,
       variationPct: Math.round(variationPct * 10) / 10,
       currentBalanceCents: currentBalance,
+      pendingBalanceCents: pendingBalance,
     });
   } catch (error) {
     console.error('[api/user/balance-history]', error);

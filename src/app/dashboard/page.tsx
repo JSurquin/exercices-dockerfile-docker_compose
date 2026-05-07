@@ -35,6 +35,7 @@ import {
   ArrowTrendingDownIcon,
   SparklesIcon,
   GiftIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import {
   LineChart,
@@ -191,6 +192,7 @@ export default function DashboardPage() {
         variationCents: number;
         variationPct: number;
         currentBalanceCents: number;
+        pendingBalanceCents: number;
       }>;
     },
     enabled: !!data?.user,
@@ -520,6 +522,65 @@ export default function DashboardPage() {
                       </p>
                     )}
                   </div>
+
+                  {/* Pending Balance */}
+                  {!balanceHistoryLoading && (balanceHistoryData?.pendingBalanceCents ?? 0) > 0 && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                      <ClockIcon className="w-4 h-4 text-amber-500 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                            {messages.dashboard.balance.pendingTitle}
+                          </span>
+                          <span className="text-sm font-bold text-amber-600 dark:text-amber-400 tabular-nums">
+                            +<CountUp
+                              end={(balanceHistoryData?.pendingBalanceCents ?? 0) / 100}
+                              duration={1.5}
+                              decimals={2}
+                              suffix="€"
+                              separator=" "
+                            />
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-amber-600/70 dark:text-amber-400/70 mt-0.5">
+                          {messages.dashboard.balance.pendingTooltip}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Balance progress bar with projected pending */}
+                  {!balanceHistoryLoading && (() => {
+                    const available = balanceHistoryData?.currentBalanceCents ?? 0;
+                    const pending = balanceHistoryData?.pendingBalanceCents ?? 0;
+                    const total = available + pending;
+                    if (total <= 0) return null;
+                    const availablePct = (available / total) * 100;
+                    return (
+                      <div className="space-y-1.5">
+                        <div className="relative h-2.5 w-full rounded-full bg-muted/40 overflow-hidden">
+                          <div
+                            className="absolute inset-y-0 left-0 rounded-full bg-green-500 transition-all"
+                            style={{ width: `${availablePct}%` }}
+                          />
+                          {pending > 0 && (
+                            <div
+                              className="absolute inset-y-0 rounded-full bg-amber-500/40 animate-pulse transition-all"
+                              style={{ left: `${availablePct}%`, width: `${100 - availablePct}%` }}
+                            />
+                          )}
+                        </div>
+                        {pending > 0 && (
+                          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                            <span>{messages.dashboard.balance.title}</span>
+                            <span className="text-amber-600 dark:text-amber-400">
+                              {messages.dashboard.balance.projected}: {formatCentsToCurrency(total, "EUR")}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   <Link href="/payout">
                     <Button
