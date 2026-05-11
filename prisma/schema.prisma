@@ -45,6 +45,8 @@ model User {
   bonusRatePercent         Float                   @default(0)
   /// Tag affiché dans l'admin et sur le profil (VIP, MERCHANT, etc.)
   userTag                  String?
+  /// Crédit instantané : si activé, le solde est crédité immédiatement (sans attendre le trade hold 7j)
+  instantCreditEnabled     Boolean                 @default(false)
   reviewedApplications     AffiliateApplication[]  @relation("AffiliateApplicationReviewer")
   affiliateApplications    AffiliateApplication[]
   referrals                AffiliateReferral[]     @relation("AffiliateReferrals")
@@ -140,6 +142,8 @@ model Trade {
   pendingRevertedAt  DateTime?
   /// Horodatage du traitement post-PAID (XP, volume, commissions) — verrou d'idempotence
   paidProcessedAt    DateTime?
+  /// Horodatage du crédit instantané (verrou d'idempotence pour éviter le double-crédit avec onTradeAvailable)
+  instantCreditedAt  DateTime?
   ticketId           String              @unique
   tradeAcceptedAt    DateTime?
   availableAt        DateTime?
@@ -1037,6 +1041,22 @@ model NotificationPreferences {
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notification_preferences")
+}
+
+/// Taux de change journaliers sauvegardés pour fallback en cas d'indisponibilité de l'API Frankfurter
+model ExchangeRate {
+  id           String   @id @default(cuid())
+  fromCurrency String
+  toCurrency   String
+  rate         Float
+  date         String   // YYYY-MM-DD
+  source       String   @default("frankfurter") // "frankfurter" | "fallback"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([fromCurrency, toCurrency, date])
+  @@index([fromCurrency, toCurrency, createdAt])
+  @@map("exchange_rates")
 }
 
 /// Idempotence des webhooks (Flexify, Skinplace, etc.)

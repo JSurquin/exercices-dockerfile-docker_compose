@@ -1,6 +1,11 @@
 /**
  * Service de conversion de devises utilisant l'API Frankfurter
- * Convertit les prix USD vers EUR, CNY et autres devises avec cache pour optimiser les performances
+ * avec fallback BDD (taux J-1) puis taux hardcodés en dernier recours.
+ *
+ * Chaîne de résolution :
+ *   1. API Frankfurter (temps réel, cache 5 min)
+ *   2. Dernier taux sauvegardé en BDD (via /api/exchange-rate)
+ *   3. Taux hardcodés (mis à jour manuellement, dernier recours)
  */
 
 export type SupportedCurrency = 'USD' | 'EUR' | 'CNY';
@@ -30,17 +35,29 @@ interface CachedRate {
   rate: number;
   timestamp: number;
   date: string;
+  source: 'api' | 'db' | 'hardcoded';
 }
 
 interface CachedRates {
   [currencyPair: string]: CachedRate;
 }
 
+// Taux hardcodés de dernier recours — mis à jour mai 2026
+const HARDCODED_FALLBACK_RATES: Record<string, number> = {
+  'USD_EUR': 0.855,
+  'USD_CNY': 7.25,
+  'EUR_USD': 1.17,
+  'EUR_CNY': 8.48,
+  'CNY_USD': 0.138,
+  'CNY_EUR': 0.118,
+};
+
 class CurrencyConverter {
   private static instance: CurrencyConverter;
   private cache = new Map<string, CachedRate>();
-  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes en millisecondes
+  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 min
   private readonly API_BASE_URL = 'https://api.frankfurter.dev/v1';
+  private persistPromises = new Map<string, Promise<void>>();
 
   private constructor() {}
 
@@ -52,243 +69,272 @@ class CurrencyConverter {
   }
 
   /**
-   * Récupère les taux de change depuis l'API Frankfurter
+   * Sauvegarde le taux en BDD via l'API interne (fire-and-forget, côté client).
+   * Côté serveur, appelle directement Prisma.
    */
-  private async fetchExchangeRates(fromCurrency: SupportedCurrency, toCurrencies: SupportedCurrency[]): Promise<Record<string, number>> {
-    try {
-      const symbols = toCurrencies.filter(c => c !== fromCurrency).join(',');
-      const response = await fetch(`${this.API_BASE_URL}/latest?base=${fromCurrency}&symbols=${symbols}`);
-      
-      if (!response.ok) {
-        throw new Error(`Erreur API Frankfurter: ${response.status}`);
-      }
+  private persistRate(fromCurrency: string, toCurrency: string, rate: number, date: string): void {
+    const key = `${fromCurrency}_${toCurrency}_${date}`;
+    if (this.persistPromises.has(key)) return;
 
-      const data: ExchangeRateResponse = await response.json();
-      
-      // Ajouter le taux de base (1.0 pour la devise de base)
-      const rates = { ...data.rates };
-      rates[fromCurrency] = 1.0;
-      
-      return rates;
-    } catch (error) {
-      console.error('Erreur lors de la récupération des taux de change:', error);
-      // Taux de fallback approximatifs
-      const fallbackRates: Record<string, number> = {
-        'USD_EUR': 0.92,
-        'USD_CNY': 7.25,
-        'EUR_USD': 1.09,
-        'EUR_CNY': 7.89,
-        'CNY_USD': 0.14,
-        'CNY_EUR': 0.13,
-      };
-      
-      const result: Record<string, number> = {};
-      toCurrencies.forEach(toCurrency => {
-        if (toCurrency === fromCurrency) {
-          result[toCurrency] = 1.0;
+    const promise = (async () => {
+      try {
+        if (typeof window !== 'undefined') {
+          await fetch('/api/exchange-rate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fromCurrency, toCurrency, rate, date }),
+          });
         } else {
-          const key = `${fromCurrency}_${toCurrency}`;
-          result[toCurrency] = fallbackRates[key] || 1.0;
+          const { prisma } = await import('~/prisma/prisma');
+          await prisma.exchangeRate.upsert({
+            where: {
+              fromCurrency_toCurrency_date: { fromCurrency, toCurrency, date },
+            },
+            update: { rate, source: 'frankfurter', updatedAt: new Date() },
+            create: { fromCurrency, toCurrency, rate, date, source: 'frankfurter' },
+          });
         }
-      });
-      
-      return result;
+      } catch (err) {
+        console.warn('Failed to persist exchange rate:', err);
+      } finally {
+        this.persistPromises.delete(key);
+      }
+    })();
+
+    this.persistPromises.set(key, promise);
+  }
+
+  /**
+   * Récupère le dernier taux connu en BDD.
+   */
+  private async getDbFallbackRate(fromCurrency: string, toCurrency: string): Promise<number | null> {
+    try {
+      if (typeof window !== 'undefined') {
+        const res = await fetch(`/api/exchange-rate?from=${fromCurrency}&to=${toCurrency}`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data?.rate ?? null;
+      } else {
+        const { prisma } = await import('~/prisma/prisma');
+        const record = await prisma.exchangeRate.findFirst({
+          where: { fromCurrency, toCurrency },
+          orderBy: { createdAt: 'desc' },
+        });
+        return record?.rate ?? null;
+      }
+    } catch (err) {
+      console.warn('Failed to fetch DB fallback rate:', err);
+      return null;
     }
   }
 
   /**
-   * Obtient le taux de change entre deux devises avec cache
+   * Récupère les taux de change depuis l'API Frankfurter.
+   * En cas d'échec, retourne null (le caller gère le fallback).
    */
-  public async getExchangeRate(fromCurrency: SupportedCurrency, toCurrency: SupportedCurrency): Promise<number> {
+  private async fetchExchangeRates(
+    fromCurrency: SupportedCurrency,
+    toCurrencies: SupportedCurrency[]
+  ): Promise<Record<string, number> | null> {
+    try {
+      const symbols = toCurrencies.filter(c => c !== fromCurrency).join(',');
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+
+      const response = await fetch(
+        `${this.API_BASE_URL}/latest?base=${fromCurrency}&symbols=${symbols}`,
+        { signal: controller.signal }
+      );
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        throw new Error(`Frankfurter API error: ${response.status}`);
+      }
+
+      const data: ExchangeRateResponse = await response.json();
+      const rates = { ...data.rates };
+      rates[fromCurrency] = 1.0;
+
+      // Persist each fetched rate to DB (fire-and-forget)
+      const today = data.date || new Date().toISOString().split('T')[0];
+      for (const [currency, rate] of Object.entries(rates)) {
+        if (currency !== fromCurrency) {
+          this.persistRate(fromCurrency, currency, rate, today);
+        }
+      }
+
+      return rates;
+    } catch (error) {
+      console.error('Frankfurter API fetch failed:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Obtient le taux de change avec la chaîne de fallback complète :
+   * API Frankfurter → BDD (taux J-1) → hardcodé
+   */
+  public async getExchangeRate(
+    fromCurrency: SupportedCurrency,
+    toCurrency: SupportedCurrency
+  ): Promise<number> {
     if (fromCurrency === toCurrency) return 1.0;
-    
+
     const cacheKey = `${fromCurrency}_${toCurrency}`;
     const cached = this.cache.get(cacheKey);
     const now = Date.now();
 
-    // Vérifier si le cache est valide
     if (cached && (now - cached.timestamp) < this.CACHE_DURATION) {
-      console.log(`Utilisation du taux de change en cache: 1 ${fromCurrency} = ${cached.rate} ${toCurrency} (${cached.date})`);
       return cached.rate;
     }
 
-    // Récupérer de nouveaux taux
-    try {
-      const rates = await this.fetchExchangeRates(fromCurrency, [toCurrency]);
-      const rate = rates[toCurrency];
-      
-      if (!rate) {
-        throw new Error(`Taux ${toCurrency} non disponible`);
-      }
-      
-      // Mettre en cache
+    // 1) Try Frankfurter API
+    const apiRates = await this.fetchExchangeRates(fromCurrency, [toCurrency]);
+    if (apiRates && apiRates[toCurrency]) {
+      const rate = apiRates[toCurrency];
       this.cache.set(cacheKey, {
         rate,
         timestamp: now,
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        source: 'api',
       });
-
-      console.log(`Nouveau taux de change récupéré: 1 ${fromCurrency} = ${rate} ${toCurrency}`);
+      console.log(`[CurrencyConverter] API rate: 1 ${fromCurrency} = ${rate} ${toCurrency}`);
       return rate;
-    } catch (error) {
-      // Si on a un cache expiré, l'utiliser quand même
-      if (cached) {
-        console.warn(`Utilisation du taux de change expiré en cas d'erreur: 1 ${fromCurrency} = ${cached.rate} ${toCurrency}`);
-        return cached.rate;
-      }
-      
-      // Sinon, utiliser les taux de fallback
-      const fallbackRates: Record<string, number> = {
-        'USD_EUR': 0.92, 'USD_CNY': 7.25,
-        'EUR_USD': 1.09, 'EUR_CNY': 7.89,
-        'CNY_USD': 0.14, 'CNY_EUR': 0.13,
-      };
-      
-      const fallbackRate = fallbackRates[cacheKey] || 1.0;
-      console.warn(`Utilisation du taux de fallback: 1 ${fromCurrency} = ${fallbackRate} ${toCurrency}`);
-      return fallbackRate;
     }
+
+    // 2) API failed — use expired cache if available (still better than fallback)
+    if (cached) {
+      console.warn(`[CurrencyConverter] API down, using expired cache (${cached.source}): 1 ${fromCurrency} = ${cached.rate} ${toCurrency}`);
+      // Refresh cache timestamp to avoid hammering the API on every request
+      this.cache.set(cacheKey, { ...cached, timestamp: now });
+      return cached.rate;
+    }
+
+    // 3) No cache at all — try DB fallback (last known rate)
+    const dbRate = await this.getDbFallbackRate(fromCurrency, toCurrency);
+    if (dbRate) {
+      this.cache.set(cacheKey, {
+        rate: dbRate,
+        timestamp: now,
+        date: 'db-fallback',
+        source: 'db',
+      });
+      console.warn(`[CurrencyConverter] Using DB fallback: 1 ${fromCurrency} = ${dbRate} ${toCurrency}`);
+      return dbRate;
+    }
+
+    // 4) Last resort — hardcoded rates
+    const hardcodedRate = HARDCODED_FALLBACK_RATES[cacheKey] || 1.0;
+    this.cache.set(cacheKey, {
+      rate: hardcodedRate,
+      timestamp: now,
+      date: 'hardcoded',
+      source: 'hardcoded',
+    });
+    console.warn(`[CurrencyConverter] Using HARDCODED fallback: 1 ${fromCurrency} = ${hardcodedRate} ${toCurrency}`);
+    return hardcodedRate;
   }
 
-  /**
-   * Obtient le taux de change USD vers EUR avec cache (rétrocompatibilité)
-   */
+  /** Rétrocompatibilité */
   public async getUsdToEurRate(): Promise<number> {
     return this.getExchangeRate('USD', 'EUR');
   }
 
-  /**
-   * Convertit un montant en centimes d'une devise vers une autre
-   */
-  public async convertCents(fromCents: number, fromCurrency: SupportedCurrency, toCurrency: SupportedCurrency): Promise<number> {
+  /** Convertit un montant en centimes d'une devise vers une autre */
+  public async convertCents(
+    fromCents: number,
+    fromCurrency: SupportedCurrency,
+    toCurrency: SupportedCurrency
+  ): Promise<number> {
     if (fromCurrency === toCurrency) return fromCents;
-    
     const rate = await this.getExchangeRate(fromCurrency, toCurrency);
     return Math.round(fromCents * rate);
   }
 
-  /**
-   * Convertit un montant d'une devise vers une autre
-   */
-  public async convertAmount(amount: number, fromCurrency: SupportedCurrency, toCurrency: SupportedCurrency): Promise<number> {
+  /** Convertit un montant d'une devise vers une autre */
+  public async convertAmount(
+    amount: number,
+    fromCurrency: SupportedCurrency,
+    toCurrency: SupportedCurrency
+  ): Promise<number> {
     if (fromCurrency === toCurrency) return amount;
-    
     const rate = await this.getExchangeRate(fromCurrency, toCurrency);
     return amount * rate;
   }
 
-  /**
-   * Formate un prix en centimes avec le symbole de la devise
-   */
+  /** Formate un prix en centimes avec le symbole de la devise */
   public formatPrice(cents: number, currency: SupportedCurrency): string {
     const currencyInfo = SUPPORTED_CURRENCIES[currency];
     const amount = (cents / 100).toFixed(2);
-    
-    // Pour le yuan, le symbole va avant le montant
-    if (currency === 'CNY') {
+
+    if (currency === 'CNY' || currency === 'USD') {
       return `${currencyInfo.symbol}${amount}`;
     }
-    
-    // Pour USD, le symbole va avant
-    if (currency === 'USD') {
-      return `${currencyInfo.symbol}${amount}`;
-    }
-    
-    // Pour EUR, le symbole va après
     return `${amount}${currencyInfo.symbol}`;
   }
 
-  /**
-   * Convertit un montant en centimes USD vers centimes EUR (rétrocompatibilité)
-   */
+  /** Rétrocompatibilité */
   public async convertUsdCentsToEurCents(usdCents: number): Promise<number> {
     return this.convertCents(usdCents, 'USD', 'EUR');
   }
 
-  /**
-   * Convertit un montant en dollars USD vers euros EUR (rétrocompatibilité)
-   */
+  /** Rétrocompatibilité */
   public async convertUsdToEur(usdAmount: number): Promise<number> {
     return this.convertAmount(usdAmount, 'USD', 'EUR');
   }
 
-  /**
-   * Formate un prix en centimes EUR avec le symbole € (rétrocompatibilité)
-   */
   public formatEurPrice(eurCents: number): string {
     return this.formatPrice(eurCents, 'EUR');
   }
 
-  /**
-   * Formate un prix en centimes USD avec le symbole $ (rétrocompatibilité)
-   */
   public formatUsdPrice(usdCents: number): string {
     return this.formatPrice(usdCents, 'USD');
   }
 
-  /**
-   * Vide le cache (utile pour forcer une mise à jour)
-   */
   public clearCache(): void {
     this.cache.clear();
-    console.log('Cache des taux de change vidé');
+    console.log('[CurrencyConverter] Cache cleared');
   }
 
-  /**
-   * Obtient les informations du cache actuel
-   */
-  public getCacheInfo(): { hasCache: boolean; age?: number; rate?: number; date?: string } {
+  public getCacheInfo(): {
+    hasCache: boolean;
+    age?: number;
+    rate?: number;
+    date?: string;
+    source?: string;
+  } {
     const cached = this.cache.get('USD_EUR');
-    if (!cached) {
-      return { hasCache: false };
-    }
+    if (!cached) return { hasCache: false };
 
     return {
       hasCache: true,
       age: Date.now() - cached.timestamp,
       rate: cached.rate,
-      date: cached.date
+      date: cached.date,
+      source: cached.source,
     };
   }
 }
 
-// Export de l'instance singleton
 export const currencyConverter = CurrencyConverter.getInstance();
 
-// Export des types pour TypeScript
 export type { ExchangeRateResponse, CachedRate, CachedRates };
 
 // =============================================================================
-// HELPER FUNCTIONS (pour compatibilité avec les pages)
+// HELPER FUNCTIONS
 // =============================================================================
 
-/**
- * Convertit des centimes en montant formaté avec symbole de devise
- * @param cents - Montant en centimes
- * @param currency - Code devise (EUR, USD, CNY)
- * @returns Chaîne formatée (ex: "12.34€")
- */
 export function formatCentsToCurrency(cents: number, currency: SupportedCurrency | string = 'EUR'): string {
-  const validCurrency = (currency as SupportedCurrency) in SUPPORTED_CURRENCIES 
-    ? (currency as SupportedCurrency) 
+  const validCurrency = (currency as SupportedCurrency) in SUPPORTED_CURRENCIES
+    ? (currency as SupportedCurrency)
     : 'EUR';
   return currencyConverter.formatPrice(cents, validCurrency);
 }
 
-/**
- * Convertit un montant en euros vers des centimes
- * @param amount - Montant en euros (ou autre devise)
- * @returns Montant en centimes
- */
 export function toCents(amount: number): number {
   return Math.round(amount * 100);
 }
 
-/**
- * Convertit des centimes vers un montant décimal
- * @param cents - Montant en centimes
- * @returns Montant décimal
- */
 export function fromCents(cents: number): number {
   return cents / 100;
 }

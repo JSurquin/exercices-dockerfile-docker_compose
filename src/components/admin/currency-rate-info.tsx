@@ -106,6 +106,14 @@ export function CurrencyRateInfo() {
                     </span>
                   </div>
                 )}
+                {cacheInfo.hasCache && cacheInfo.source && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">{t?.cacheSource ?? 'Source:'}</span>
+                    <Badge variant={cacheInfo.source === 'api' ? 'default' : cacheInfo.source === 'db' ? 'secondary' : 'destructive'}>
+                      {cacheInfo.source === 'api' ? 'API Live' : cacheInfo.source === 'db' ? 'BDD (J-1)' : 'Hardcodé'}
+                    </Badge>
+                  </div>
+                )}
               </>
             )}
           </div>
