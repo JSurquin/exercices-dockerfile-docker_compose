@@ -40,6 +40,7 @@ export async function GET(
         accountFrozen: true,
         bonusRatePercent: true,
         userTag: true,
+        instantCreditEnabled: true,
         createdAt: true,
         role: true,
       },

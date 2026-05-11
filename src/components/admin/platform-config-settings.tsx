@@ -20,6 +20,7 @@ import {
   ArrowPathIcon,
   InformationCircleIcon,
   CodeBracketIcon,
+  ShieldExclamationIcon,
 } from '@heroicons/react/24/outline';
 import { queryKeys } from '@/lib/query-keys';
 import type { PlatformConfig } from '@/lib/platform-config-constants';
@@ -422,6 +423,68 @@ export function PlatformConfigSettings() {
             <Switch
               checked={config.apiDocsEnabled}
               onCheckedChange={(checked) => handleSave(PLATFORM_CONFIG_KEYS.API_DOCS_ENABLED, checked)}
+              disabled={mutation.isPending}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Global Controls */}
+      <Card className="bg-slate-800/50 border-red-500/30 border-2">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-white flex items-center gap-2 text-base">
+            <ShieldExclamationIcon className="w-5 h-5 text-red-400" />
+            {t.globalControlsTitle}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <NumberField
+            label={t.defaultWithdrawalLimitLabel}
+            description={t.defaultWithdrawalLimitDesc}
+            dbKey={PLATFORM_CONFIG_KEYS.DEFAULT_WITHDRAWAL_LIMIT}
+            value={config.defaultWithdrawalLimit}
+            defaultValue={defaults.defaultWithdrawalLimit}
+            source={s(PLATFORM_CONFIG_KEYS.DEFAULT_WITHDRAWAL_LIMIT)}
+            min={0}
+            step={10000}
+            unit={t.defaultWithdrawalLimitUnit}
+            onSave={handleSave}
+            onReset={handleReset}
+            isPending={mutation.isPending}
+            saveLabel={t.save}
+            resetTitle={t.resetTitle}
+          />
+          <Separator className="bg-slate-700" />
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <Label className="text-slate-200">{t.xpEnabledLabel}</Label>
+                <SourceBadge source={s(PLATFORM_CONFIG_KEYS.XP_ENABLED)} />
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {t.xpEnabledDesc}
+              </p>
+            </div>
+            <Switch
+              checked={config.xpEnabled}
+              onCheckedChange={(checked) => handleSave(PLATFORM_CONFIG_KEYS.XP_ENABLED, checked)}
+              disabled={mutation.isPending}
+            />
+          </div>
+          <Separator className="bg-slate-700" />
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <Label className="text-slate-200">{t.fragmentsEnabledLabel}</Label>
+                <SourceBadge source={s(PLATFORM_CONFIG_KEYS.FRAGMENTS_ENABLED)} />
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {t.fragmentsEnabledDesc}
+              </p>
+            </div>
+            <Switch
+              checked={config.fragmentsEnabled}
+              onCheckedChange={(checked) => handleSave(PLATFORM_CONFIG_KEYS.FRAGMENTS_ENABLED, checked)}
               disabled={mutation.isPending}
             />
           </div>

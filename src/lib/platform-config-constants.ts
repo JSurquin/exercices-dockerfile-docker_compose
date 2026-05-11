@@ -12,6 +12,9 @@ export const PLATFORM_CONFIG_KEYS = {
   SKINPLACE_DASHBOARD_URL:  'platform.skinplace_dashboard_url',
   STEAM_CDN_URL:            'platform.steam_cdn_url',
   API_DOCS_ENABLED:         'platform.api_docs_enabled',
+  DEFAULT_WITHDRAWAL_LIMIT: 'platform.default_withdrawal_limit',
+  XP_ENABLED:               'platform.xp_enabled',
+  FRAGMENTS_ENABLED:        'platform.fragments_enabled',
 } as const;
 
 export type PlatformConfigKey = typeof PLATFORM_CONFIG_KEYS[keyof typeof PLATFORM_CONFIG_KEYS];
@@ -25,4 +28,7 @@ export interface PlatformConfig {
   skinplaceDashboardUrl:  string;
   steamCdnUrl:            string;
   apiDocsEnabled:         boolean;
+  defaultWithdrawalLimit: number;
+  xpEnabled:              boolean;
+  fragmentsEnabled:       boolean;
 }

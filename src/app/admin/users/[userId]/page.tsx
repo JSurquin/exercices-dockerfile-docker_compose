@@ -10,7 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, User, Mail, Hash, RefreshCw, Crown, Save } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { ArrowLeft, User, Mail, Hash, RefreshCw, Crown, Save, Zap } from 'lucide-react';
 import { BalanceManagement } from '@/components/admin/balance-management';
 import { WithdrawalLimits } from '@/components/admin/withdrawal-limits';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -38,6 +39,7 @@ interface UserDetail {
   accountFrozen: boolean;
   bonusRatePercent: number;
   userTag: string | null;
+  instantCreditEnabled: boolean;
   createdAt: string;
   role: string;
 }
@@ -55,6 +57,7 @@ export default function AdminUserDetailPage() {
   const [userTag, setUserTag] = useState('');
   const [bonusSaving, setBonusSaving] = useState(false);
   const [bonusInitialized, setBonusInitialized] = useState(false);
+  const [instantCreditSaving, setInstantCreditSaving] = useState(false);
 
   const { data: user, isLoading: loading, error: queryError, refetch: refetchUser } = useQuery({
     queryKey: queryKeys.adminUser(userId ?? ''),
@@ -104,6 +107,35 @@ export default function AdminUserDetailPage() {
       });
     } finally {
       setBonusSaving(false);
+    }
+  };
+
+  const handleToggleInstantCredit = async (enabled: boolean) => {
+    if (!userId) return;
+    setInstantCreditSaving(true);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/instant-credit`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || t.errorTitle);
+      toast({
+        title: enabled ? t.instantCreditEnabledTitle : t.instantCreditDisabledTitle,
+        description: enabled ? t.instantCreditEnabledDesc : t.instantCreditDisabledDesc,
+        variant: enabled ? 'default' : 'destructive',
+      });
+      await refetchUser();
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+    } catch (e) {
+      toast({
+        title: t.errorTitle,
+        description: e instanceof Error ? e.message : t.errorSave,
+        variant: 'destructive',
+      });
+    } finally {
+      setInstantCreditSaving(false);
     }
   };
 
@@ -268,6 +300,35 @@ export default function AdminUserDetailPage() {
         <BalanceManagement userId={userId} onUpdate={() => {}} />
         <WithdrawalLimits userId={userId} onUpdate={() => {}} />
       </div>
+
+      <Card className={`bg-slate-800/30 border-slate-700 ${user.instantCreditEnabled ? 'border-amber-500/50 shadow-lg shadow-amber-500/10' : ''}`}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-white flex items-center gap-2">
+            <Zap className={`h-5 w-5 ${user.instantCreditEnabled ? 'text-amber-400' : 'text-slate-500'}`} />
+            {t.instantCreditTitle}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-red-500/5 border border-red-500/20">
+            <div className="space-y-1 flex-1">
+              <Label className="text-slate-200">{t.instantCreditLabel}</Label>
+              <p className="text-xs text-slate-400">
+                {t.instantCreditHelp}
+              </p>
+            </div>
+            <Switch
+              checked={user.instantCreditEnabled}
+              onCheckedChange={handleToggleInstantCredit}
+              disabled={instantCreditSaving}
+            />
+          </div>
+          {user.instantCreditEnabled && (
+            <p className="text-sm text-amber-300">
+              {t.instantCreditActiveWarning}
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="bg-slate-800/30 border-slate-700">
         <CardHeader className="pb-2">

@@ -64,26 +64,34 @@ export class TradeHooks {
 
   /**
    * Hook appelé lors de l'IPN #1 Skinplace : l'échange Steam est ACCEPTÉ.
-   * On crédite le solde EN ATTENTE (pendingBalanceCents) pour que l'utilisateur
-   * voie que des fonds arrivent, sans pouvoir les retirer.
-   * La libération vers le solde réel se fait à l'IPN #2 (protection_status=confirmed).
    *
-   * Idempotence : on utilise pendingCreditedAt comme verrou atomique.
-   * updateMany avec WHERE pendingCreditedAt IS NULL garantit qu'un seul appel réussit.
+   * Deux modes :
+   *   - Mode normal : crédite pendingBalanceCents (fonds bloqués 7j).
+   *   - Mode Instant Credit (admin) : crédite directement balanceCents + pose
+   *     instantCreditedAt pour que onTradeAvailable ne re-crédite pas.
+   *
+   * Idempotence : pendingCreditedAt sert de verrou atomique.
    */
   static async onTradeAccepted(userId: string, tradeId: string): Promise<void> {
     try {
       console.log(`[TradeHooks] IPN #1 — Trade ${tradeId} accepted, crediting pending balance`);
 
-      const trade = await prisma.trade.findUnique({ where: { id: tradeId } });
-      if (!trade) throw new Error(`Trade ${tradeId} not found`);
+      const { trade, locked } = await prisma.$transaction(async (tx) => {
+        const t = await tx.trade.findUnique({
+          where: { id: tradeId },
+          include: { user: { select: { instantCreditEnabled: true } } },
+        });
+        if (!t) throw new Error(`Trade ${tradeId} not found`);
 
-      const lockResult = await prisma.trade.updateMany({
-        where: { id: tradeId, pendingCreditedAt: null },
-        data: { pendingCreditedAt: new Date() },
+        const lockResult = await tx.trade.updateMany({
+          where: { id: tradeId, pendingCreditedAt: null },
+          data: { pendingCreditedAt: new Date() },
+        });
+
+        return { trade: t, locked: lockResult.count > 0 };
       });
 
-      if (lockResult.count === 0) {
+      if (!locked) {
         console.warn(`[TradeHooks] Pending balance already credited for trade ${tradeId}, skipping`);
         return;
       }
@@ -91,22 +99,41 @@ export class TradeHooks {
       const eurCents = await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
       const rate = await currencyConverter.getUsdToEurRate();
 
-      await creditPendingBalance(
-        userId,
-        eurCents,
-        `Trade ${tradeId} accepted — awaiting confirmation (~8d)`,
-        { tradeId }
-      );
-
-      await prisma.auditLog.create({
-        data: {
+      if (trade.user.instantCreditEnabled) {
+        await creditBalance(
           userId,
-          action: 'TRADE_PENDING_BALANCE_CREDITED',
-          details: { tradeId, netCentsUsd: trade.netCents, eurCents, usdToEurRate: rate, source: 'skinplace_ipn1' },
-        },
-      });
-
-      console.log(`[TradeHooks] Pending balance credited for trade ${tradeId}: ${trade.netCents} USD cents -> ${eurCents} EUR cents (rate=${rate})`);
+          eurCents,
+          `Trade ${tradeId} accepted — instant credit`,
+          { type: 'TRADE_CREDIT', tradeId }
+        );
+        await prisma.trade.update({
+          where: { id: tradeId },
+          data: { instantCreditedAt: new Date(), balanceCreditedAt: new Date() },
+        });
+        await prisma.auditLog.create({
+          data: {
+            userId,
+            action: 'TRADE_INSTANT_CREDIT',
+            details: { tradeId, netCentsUsd: trade.netCents, eurCents, usdToEurRate: rate, source: 'instant_credit_ipn1' },
+          },
+        });
+        console.log(`[TradeHooks] INSTANT CREDIT for trade ${tradeId}: ${trade.netCents} USD -> ${eurCents} EUR cents (rate=${rate})`);
+      } else {
+        await creditPendingBalance(
+          userId,
+          eurCents,
+          `Trade ${tradeId} accepted — awaiting confirmation (~8d)`,
+          { tradeId }
+        );
+        await prisma.auditLog.create({
+          data: {
+            userId,
+            action: 'TRADE_PENDING_BALANCE_CREDITED',
+            details: { tradeId, netCentsUsd: trade.netCents, eurCents, usdToEurRate: rate, source: 'skinplace_ipn1' },
+          },
+        });
+        console.log(`[TradeHooks] Pending balance credited for trade ${tradeId}: ${trade.netCents} USD cents -> ${eurCents} EUR cents (rate=${rate})`);
+      }
     } catch (error) {
       console.error(`[TradeHooks] Error in onTradeAccepted for trade ${tradeId}:`, error);
       throw error;
@@ -182,13 +209,16 @@ export class TradeHooks {
   /**
    * Hook appelé lors de l'IPN #2 avec protection_status=rollback.
    * Skinplace annule le trade (demande de remboursement Steam, fraude, etc.).
-   * On décrémente le pendingBalanceCents crédité à l'IPN #1 pour remettre le solde à zéro.
    *
-   * Idempotence : on utilise pendingRevertedAt comme verrou atomique.
+   * Deux chemins :
+   *   - Instant Credit : on force-debit balanceCents (le trade avait crédité directement)
+   *   - Normal : on décrémente pendingBalanceCents
+   *
+   * Idempotence : pendingRevertedAt sert de verrou atomique.
    */
   static async onTradeRolledBack(userId: string, tradeId: string): Promise<void> {
     try {
-      console.log(`[TradeHooks] Rollback trade ${tradeId} — reverting pending balance`);
+      console.log(`[TradeHooks] Rollback trade ${tradeId} — reverting balance`);
 
       const trade = await prisma.trade.findUnique({ where: { id: tradeId } });
       if (!trade) throw new Error(`Trade ${tradeId} not found`);
@@ -205,24 +235,54 @@ export class TradeHooks {
 
       const eurCents = await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
 
-      await debitPendingBalance(
-        userId,
-        eurCents,
-        `Trade ${tradeId} cancelled (Skinplace rollback) — pending balance reverted`,
-        { tradeId }
-      );
+      if (trade.instantCreditedAt) {
+        const { forceDebitBalance } = await import('@/lib/balance-service');
+        const { balanceAfterCents } = await forceDebitBalance(
+          userId,
+          eurCents,
+          `Trade ${tradeId} cancelled (Skinplace rollback) — instant credit reverted`,
+          { type: 'ADMIN_ADJUSTMENT', tradeId }
+        );
+        if (balanceAfterCents < 0) {
+          await prisma.user.update({
+            where: { id: userId },
+            data: { accountFrozen: true },
+          });
+          await prisma.auditLog.create({
+            data: {
+              userId,
+              action: 'ACCOUNT_AUTO_FROZEN_NEGATIVE_BALANCE',
+              details: { tradeId, balanceAfterCents, debitedCents: eurCents, source: 'instant_credit_rollback' },
+            },
+          });
+          console.error(`[TradeHooks] CRITICAL: User ${userId} balance went negative (${balanceAfterCents} cts) after rollback of instant-credited trade ${tradeId} — account FROZEN`);
+        }
+        console.log(`[TradeHooks] Instant credit reverted for trade ${tradeId}: -${eurCents} EUR cents (force debit, balance=${balanceAfterCents})`);
+      } else {
+        await debitPendingBalance(
+          userId,
+          eurCents,
+          `Trade ${tradeId} cancelled (Skinplace rollback) — pending balance reverted`,
+          { tradeId }
+        );
+        console.log(`[TradeHooks] Pending balance reverted for trade ${tradeId}: -${eurCents} EUR cents`);
+      }
 
       await prisma.auditLog.create({
         data: {
           userId,
           action: 'TRADE_PENDING_BALANCE_REVERTED',
-          details: { tradeId, netCentsUsd: trade.netCents, eurCents, source: 'skinplace_ipn2_rollback' },
+          details: {
+            tradeId,
+            netCentsUsd: trade.netCents,
+            eurCents,
+            wasInstantCredit: !!trade.instantCreditedAt,
+            source: 'skinplace_ipn2_rollback',
+          },
         },
       });
-
-      console.log(`[TradeHooks] Pending balance reverted for trade ${tradeId}: -${eurCents} EUR cents`);
     } catch (error) {
-      console.error(`[TradeHooks] Error reverting pending balance for trade ${tradeId}:`, error);
+      console.error(`[TradeHooks] Error reverting balance for trade ${tradeId}:`, error);
       throw error;
     }
   }
@@ -298,13 +358,28 @@ export class TradeHooks {
 
       if (!locked) {
         console.warn(`[TradeHooks] Balance already credited for trade ${tradeId}, skipping`);
+      } else if (trade.instantCreditedAt) {
+        // Instant Credit : la balance a déjà été créditée à l'IPN #1
+        // On doit seulement supprimer le pending (qui n'a pas été crédité en mode instant)
+        // Aucun crédit supplémentaire — le verrou balanceCreditedAt est déjà posé
+        console.log(`[TradeHooks] Trade ${tradeId} was instant-credited — skipping balance credit (already done at IPN #1)`);
+        await prisma.auditLog.create({
+          data: {
+            userId: trade.userId,
+            action: 'TRADE_BALANCE_CREDITED',
+            details: {
+              tradeId,
+              netCentsUsd: trade.netCents,
+              grossCents: trade.grossCents,
+              source: 'instant_credit_already_done',
+            },
+          },
+        });
       } else {
         const eurCents = await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
         const rate = await currencyConverter.getUsdToEurRate();
 
         if (trade.pendingCreditedAt) {
-          // Chemin A : pending avait été crédité à l'IPN #1 → on libère vers balance
-          // On utilise le même montant EUR qui avait été crédité en pending
           const pendingEurCents = await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
           await releasePendingToBalance(
             trade.userId,
@@ -314,7 +389,6 @@ export class TradeHooks {
           );
           console.log(`[TradeHooks] Balance released from pending for trade ${tradeId}: ${trade.netCents} USD -> ${pendingEurCents} EUR cents (rate=${rate})`);
         } else {
-          // Chemin B : IPN #1 raté, pas de pending → crédit direct sur balanceCents
           console.warn(`[TradeHooks] No pending credit found for trade ${tradeId} — direct credit to balance`);
           await creditBalance(
             trade.userId,

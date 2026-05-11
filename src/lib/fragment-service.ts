@@ -1,5 +1,6 @@
 import type { FragmentTransactionType, Prisma } from '@prisma/client';
 import { prisma } from '../../prisma/prisma';
+import { getPlatformConfig } from '@/lib/platform-config-service';
 
 export async function grantFragments(
   userId: string,
@@ -9,6 +10,13 @@ export async function grantFragments(
   metadata?: Prisma.InputJsonValue
 ): Promise<void> {
   if (amount <= 0) return;
+  if (type !== 'GENERATED_ADMIN') {
+    const config = await getPlatformConfig();
+    if (!config.fragmentsEnabled) {
+      console.warn(`[grantFragments] Fragments disabled globally, skipping grant of ${amount} for user ${userId}`);
+      return;
+    }
+  }
   await prisma.$transaction(async (tx) => {
     await tx.fragmentTransaction.create({
       data: {

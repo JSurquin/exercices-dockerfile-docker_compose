@@ -33,6 +33,9 @@ const DEFAULTS: PlatformConfig = {
   skinplaceDashboardUrl:  SKINPLACE_DASHBOARD_URL,
   steamCdnUrl:            STEAM_CDN_IMAGE_BASE,
   apiDocsEnabled:         false,
+  defaultWithdrawalLimit: 100_000,
+  xpEnabled:              true,
+  fragmentsEnabled:       true,
 };
 
 // ─── Cache mémoire ───────────────────────────────────────────────────────────
@@ -78,6 +81,9 @@ export async function getPlatformConfig(): Promise<PlatformConfig> {
     skinplaceDashboardUrl:  get(PLATFORM_CONFIG_KEYS.SKINPLACE_DASHBOARD_URL,  DEFAULTS.skinplaceDashboardUrl) as string,
     steamCdnUrl:            get(PLATFORM_CONFIG_KEYS.STEAM_CDN_URL,            DEFAULTS.steamCdnUrl) as string,
     apiDocsEnabled:         get(PLATFORM_CONFIG_KEYS.API_DOCS_ENABLED,         DEFAULTS.apiDocsEnabled) as boolean,
+    defaultWithdrawalLimit: get(PLATFORM_CONFIG_KEYS.DEFAULT_WITHDRAWAL_LIMIT, DEFAULTS.defaultWithdrawalLimit),
+    xpEnabled:              get(PLATFORM_CONFIG_KEYS.XP_ENABLED,               DEFAULTS.xpEnabled) as boolean,
+    fragmentsEnabled:       get(PLATFORM_CONFIG_KEYS.FRAGMENTS_ENABLED,        DEFAULTS.fragmentsEnabled) as boolean,
   };
 
   cache = { config, expiresAt: Date.now() + CACHE_TTL_MS };

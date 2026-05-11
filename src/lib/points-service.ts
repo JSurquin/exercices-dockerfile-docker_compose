@@ -6,6 +6,7 @@ import {
   DEFAULT_GIVEAWAY_COSTS,
   DEFAULT_POINTS_CONFIG,
 } from './points-config';
+import { getPlatformConfig } from '@/lib/platform-config-service';
 export type { FragmentDropTier, FragmentDropConfig, PointsConfig } from './points-config';
 
 const POINTS_CONFIG_KEY = 'points_config';
@@ -127,7 +128,13 @@ export async function awardTradePoints(
   tradeId: string,
   grossCents: number
 ): Promise<{ points: number; tickets: number; fragments: number; drop: number }> {
-  // Idempotence : ne pas attribuer deux fois pour le même trade
+  const platformConfig = await getPlatformConfig();
+
+  if (!platformConfig.xpEnabled && !platformConfig.fragmentsEnabled) {
+    console.warn(`[awardTradePoints] XP and fragments both disabled globally, skipping trade ${tradeId}`);
+    return { points: 0, tickets: 0, fragments: 0, drop: 0 };
+  }
+
   const alreadyAwarded = await prisma.pointTransaction.findFirst({
     where: { userId, type: 'TRADE_SALE', metadata: { path: ['tradeId'], equals: tradeId } },
   });
@@ -138,10 +145,10 @@ export async function awardTradePoints(
 
   const config = await getPointsConfig();
   const euros = grossCents / 100;
-  const points = Math.floor(euros * config.pointsPerEuro);
-  const tickets = Math.floor(euros * config.ticketsPerEuro);
-  const fragments = Math.floor(euros * config.fragmentsPerEuro);
-  const drop = rollFragmentDrop(config.fragmentDrop);
+  const points = platformConfig.xpEnabled ? Math.floor(euros * config.pointsPerEuro) : 0;
+  const tickets = platformConfig.xpEnabled ? Math.floor(euros * config.ticketsPerEuro) : 0;
+  const fragments = platformConfig.fragmentsEnabled ? Math.floor(euros * config.fragmentsPerEuro) : 0;
+  const drop = platformConfig.fragmentsEnabled ? rollFragmentDrop(config.fragmentDrop) : 0;
   const totalFragments = fragments + drop;
 
   await prisma.$transaction(async (tx) => {

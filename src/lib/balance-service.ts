@@ -1,5 +1,6 @@
 import { prisma } from '~/prisma/prisma';
 import type { BalanceTransactionType, Prisma } from '@prisma/client';
+import { getPlatformConfig } from '@/lib/platform-config-service';
 
 /**
  * Service de gestion du solde utilisateur.
@@ -295,11 +296,11 @@ export async function getMonthlyWithdrawalUsedCents(userId: string): Promise<num
   return result._sum.amountCents ?? 0;
 }
 
-export const DEFAULT_MONTHLY_WITHDRAWAL_LIMIT_CENTS = 500_000; // 5000€
+export const DEFAULT_MONTHLY_WITHDRAWAL_LIMIT_CENTS = 100_000; // 1000€ (legacy fallback)
 
 /**
- * Plafond mensuel en centimes.
- * - Pas d'enregistrement → DEFAULT (5000€)
+ * Plafond mensuel en centimes, lu depuis la config plateforme.
+ * - Pas d'enregistrement → config plateforme (défaut 1000€)
  * - monthlyLimitCents = 0 → pas de limite (illimité, débloqué par admin)
  * - monthlyLimitCents > 0 → limite personnalisée
  */
@@ -308,7 +309,10 @@ export async function getMonthlyWithdrawalLimitCents(userId: string): Promise<nu
     where: { userId },
     select: { monthlyLimitCents: true },
   });
-  if (!limit) return DEFAULT_MONTHLY_WITHDRAWAL_LIMIT_CENTS;
+  if (!limit) {
+    const config = await getPlatformConfig();
+    return config.defaultWithdrawalLimit;
+  }
   if (limit.monthlyLimitCents === 0) return null;
   return limit.monthlyLimitCents;
 }
