@@ -1433,6 +1433,14 @@ export interface Messages {
       noTagLabel: string;
       errorTitle: string;
       errorSave: string;
+      instantCreditTitle: string;
+      instantCreditLabel: string;
+      instantCreditHelp: string;
+      instantCreditActiveWarning: string;
+      instantCreditEnabledTitle: string;
+      instantCreditEnabledDesc: string;
+      instantCreditDisabledTitle: string;
+      instantCreditDisabledDesc: string;
     };
     platformConfig: {
       infoDb: string;
@@ -1465,6 +1473,14 @@ export interface Messages {
       save: string;
       resetTitle: string;
       configUpdated: string;
+      globalControlsTitle: string;
+      defaultWithdrawalLimitLabel: string;
+      defaultWithdrawalLimitDesc: string;
+      defaultWithdrawalLimitUnit: string;
+      xpEnabledLabel: string;
+      xpEnabledDesc: string;
+      fragmentsEnabledLabel: string;
+      fragmentsEnabledDesc: string;
     };
     trades: {
       title: string;
