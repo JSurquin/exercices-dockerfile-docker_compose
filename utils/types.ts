@@ -2672,6 +2672,7 @@ export interface Messages {
       cacheActive: string;
       cacheEmpty: string;
       cacheAge: string;
+      cacheSource: string;
       refresh: string;
       clearCache: string;
       conversionExample: string;
