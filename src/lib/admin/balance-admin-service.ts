@@ -129,8 +129,7 @@ export async function updateWithdrawalLimit(
 }
 
 /**
- * Annule un payout (statut -> CANCELLED). Ne rembourse pas le solde ici car le flux actuel
- * ne débite le solde qu'au moment du payout; si le payout n'est pas encore traité, pas de débit.
+ * Annule un payout (statut -> CANCELLED) et dégèle la balance si elle avait été gelée.
  */
 export async function cancelPayout(
   adminId: string,
@@ -140,7 +139,7 @@ export async function cancelPayout(
 ): Promise<void> {
   const payout = await prisma.payout.findUnique({
     where: { id: payoutId },
-    select: { id: true, userId: true, status: true, amountCents: true },
+    select: { id: true, userId: true, status: true, amountCents: true, balanceFrozenAt: true, balanceDebitedAt: true },
   });
   if (!payout) throw new Error('Payout not found');
   const cancellable = [
@@ -156,14 +155,23 @@ export async function cancelPayout(
   if (!cancellable.includes(payout.status)) {
     throw new Error(`Payout cannot be cancelled (status: ${payout.status})`);
   }
-  await prisma.payout.update({
-    where: { id: payoutId },
-    data: { status: 'CANCELLED', errorMessage: reason },
-  });
+
+  if (payout.balanceFrozenAt && !payout.balanceDebitedAt) {
+    const { PayoutLifecycle } = await import('@/lib/payout-lifecycle');
+    await PayoutLifecycle.onFailed(payout.userId, payout.id, payout.amountCents, {
+      finalStatus: 'CANCELLED',
+    });
+  } else {
+    await prisma.payout.update({
+      where: { id: payoutId },
+      data: { status: 'CANCELLED', errorMessage: reason },
+    });
+  }
+
   await auditLog(
     adminId,
     AUDIT_ACTIONS.ADMIN_PAYOUT_CANCELLED,
-    { payoutId, targetUserId: payout.userId, reason, amountCents: payout.amountCents },
+    { payoutId, targetUserId: payout.userId, reason, amountCents: payout.amountCents, balanceUnfrozen: !!payout.balanceFrozenAt },
     ipAddress
   );
 }

@@ -216,14 +216,7 @@ export default function KYCPage() {
 
   const submitKYC = async () => {
     try {
-      console.log('🚀 [KYC FRONTEND] Début de la soumission du dossier KYC');
-      console.log('📋 [KYC FRONTEND] Informations personnelles:', personalInfo);
-      console.log('📋 [KYC FRONTEND] Type de document:', documentType);
-      console.log('📋 [KYC FRONTEND] Fichiers uploadés:', Object.keys(uploadedFiles));
-      
-      // Validation finale
       if (!uploadedFiles.identity || !uploadedFiles.selfie) {
-        console.error('❌ [KYC FRONTEND] Documents manquants');
         toast.error(messages.kycPage.toasts.error);
         return;
       }
@@ -246,8 +239,6 @@ export default function KYCPage() {
         formData.append('addressFile', uploadedFiles.address);
       }
 
-      console.log('📤 [KYC FRONTEND] Envoi de la requête à /api/kyc/submit');
-
       // Envoyer à l'API
       const response = await fetch('/api/kyc/submit', {
         method: 'POST',
@@ -261,13 +252,8 @@ export default function KYCPage() {
         throw new Error(data.error || messages.kycPage.toasts.submissionError || messages.kycPage.toasts.error);
       }
 
-      console.log('✅ [KYC FRONTEND] Réponse de l\'API:', data);
-      console.log('🎉 [KYC FRONTEND] Dossier KYC soumis avec succès !');
-      
-      // Mettre à jour l'utilisateur
       if (user) {
         await updateUser({ kycStatus: 'IN_PROGRESS' });
-        console.log('✅ [KYC FRONTEND] Statut utilisateur mis à jour : IN_PROGRESS');
       }
       
       toast.success(messages.toast.kycSubmitted);

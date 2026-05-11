@@ -21,6 +21,7 @@ import { safeParseJson } from '@/lib/validation/helpers';
 import { whitepayPayoutRequestBodySchema } from '@/lib/validation/schemas/integrations';
 import { assertTradeOwnership } from '@/lib/trade-ownership';
 import { validateAmountCents } from '@/lib/amount-validation';
+import { checkWithdrawalLimit } from '@/lib/balance-service';
 
 const generateOrderId = () => `WP-${crypto.randomUUID()}`;
 
@@ -193,6 +194,14 @@ export async function POST(request: NextRequest) {
       LOG('✗ Solde insuffisant', { availableCents, amountCents });
       return NextResponse.json(
         { error: `Solde insuffisant (disponible : ${centsToEur(availableCents)}€)` },
+        { status: 400 }
+      );
+    }
+    const withdrawalCheck = await checkWithdrawalLimit(userId, amountCents);
+    if (!withdrawalCheck.allowed) {
+      LOG('✗ Limite retrait mensuelle dépassée', { usedCents: withdrawalCheck.usedCents, limitCents: withdrawalCheck.limitCents });
+      return NextResponse.json(
+        { error: `Limite de retrait mensuelle dépassée (utilisé : ${(withdrawalCheck.usedCents / 100).toFixed(2)}€, limite : ${(withdrawalCheck.limitCents! / 100).toFixed(2)}€)` },
         { status: 400 }
       );
     }

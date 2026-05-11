@@ -3,7 +3,7 @@ import { logger } from './logger';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { prisma } from '~/prisma/prisma';
 
-function escapeHtml(str: string): string {
+export function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')

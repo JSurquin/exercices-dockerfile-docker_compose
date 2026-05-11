@@ -238,7 +238,6 @@ export async function GET(request: NextRequest) {
       cookiesToForward = allCookies;
     }
 
-    console.log('[Steam] cookies transmis:', cookiesToForward.map(c => c.split(';')[0]));
     for (const cookie of cookiesToForward) {
       response.headers.append('set-cookie', cookie);
     }

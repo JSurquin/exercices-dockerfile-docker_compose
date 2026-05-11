@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { decrypt } from '@/lib/encryption';
-import { emailService } from '@/lib/email';
+import { emailService, escapeHtml } from '@/lib/email';
 import { formatCentsToCurrency } from '@/lib/currency-converter';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { adminSepaRequestBodySchema } from '@/lib/validation/schemas/admin-bodies';
@@ -206,13 +206,13 @@ function buildApprovalEmailHtml({
         <p style="margin:10px 0 0;color:rgba(255,255,255,0.9);font-size:16px;">Votre retrait SEPA France a été traité</p>
       </td></tr>
       <tr><td style="padding:40px;">
-        <p style="color:#475569;">Bonjour <strong>${userName}</strong>,</p>
-        <p style="color:#475569;">Nous avons bien effectué votre virement SEPA France. Les fonds devraient apparaître sur votre compte dans les <strong>1 à 3 jours ouvrés</strong>.</p>
+        <p style="color:#475569;">Bonjour <strong>${escapeHtml(userName)}</strong>,</p>
+        <p style="color:#475569;">Nous avons bien effectué votre virement SEPA France. Les fonds devraient apparaître sur votre compte <strong>instantanément</strong>.</p>
         <table style="background:#f8fafc;border-radius:8px;padding:20px;width:100%;border-collapse:collapse;margin:20px 0;">
-          <tr><td style="padding:8px 0;color:#64748b;font-size:14px;">Montant</td><td style="padding:8px 0;text-align:right;font-weight:bold;color:#1e293b;font-size:16px;">${amount}</td></tr>
-          <tr><td style="padding:8px 0;color:#64748b;font-size:14px;">IBAN destinataire</td><td style="padding:8px 0;text-align:right;font-family:monospace;color:#1e293b;">${iban}</td></tr>
-          ${bic ? `<tr><td style="padding:8px 0;color:#64748b;font-size:14px;">BIC</td><td style="padding:8px 0;text-align:right;font-family:monospace;color:#1e293b;">${bic}</td></tr>` : ''}
-          <tr><td style="padding:8px 0;color:#64748b;font-size:14px;">Référence</td><td style="padding:8px 0;text-align:right;font-family:monospace;font-size:12px;color:#475569;">${reference}</td></tr>
+          <tr><td style="padding:8px 0;color:#64748b;font-size:14px;">Montant</td><td style="padding:8px 0;text-align:right;font-weight:bold;color:#1e293b;font-size:16px;">${escapeHtml(amount)}</td></tr>
+          <tr><td style="padding:8px 0;color:#64748b;font-size:14px;">IBAN destinataire</td><td style="padding:8px 0;text-align:right;font-family:monospace;color:#1e293b;">${escapeHtml(iban)}</td></tr>
+          ${bic ? `<tr><td style="padding:8px 0;color:#64748b;font-size:14px;">BIC</td><td style="padding:8px 0;text-align:right;font-family:monospace;color:#1e293b;">${escapeHtml(bic)}</td></tr>` : ''}
+          <tr><td style="padding:8px 0;color:#64748b;font-size:14px;">Référence</td><td style="padding:8px 0;text-align:right;font-family:monospace;font-size:12px;color:#475569;">${escapeHtml(reference)}</td></tr>
         </table>
         <p style="color:#64748b;font-size:14px;">Si vous avez des questions, n'hésitez pas à contacter notre support.</p>
         <p style="color:#475569;">L'équipe <strong>MoonSkin</strong></p>
@@ -248,10 +248,10 @@ function buildRejectionEmailHtml({
         <p style="margin:10px 0 0;color:rgba(255,255,255,0.9);font-size:16px;">Votre demande de virement SEPA France</p>
       </td></tr>
       <tr><td style="padding:40px;">
-        <p style="color:#475569;">Bonjour <strong>${userName}</strong>,</p>
-        <p style="color:#475569;">Nous avons étudié votre demande de virement SEPA France de <strong>${amount}</strong>, mais nous ne sommes pas en mesure de la traiter.</p>
+        <p style="color:#475569;">Bonjour <strong>${escapeHtml(userName)}</strong>,</p>
+        <p style="color:#475569;">Nous avons étudié votre demande de virement SEPA France de <strong>${escapeHtml(amount)}</strong>, mais nous ne sommes pas en mesure de la traiter.</p>
         <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:4px;padding:16px;margin:20px 0;">
-          <p style="margin:0;color:#991b1b;font-size:14px;"><strong>Raison du refus :</strong><br>${reason}</p>
+          <p style="margin:0;color:#991b1b;font-size:14px;"><strong>Raison du refus :</strong><br>${escapeHtml(reason)}</p>
         </div>
         <p style="color:#475569;">Votre solde n'a pas été débité. Vous pouvez soumettre une nouvelle demande après avoir corrigé le problème.</p>
         <p style="color:#475569;">Pour toute question, contactez notre support.</p>

@@ -28,6 +28,7 @@ import {
 import { getPayoutAutoApproveSettings } from '@/lib/payout-settings';
 import { encrypt, decrypt } from '@/lib/encryption';
 import { assertTradeOwnership } from '@/lib/trade-ownership';
+import { checkWithdrawalLimit } from '@/lib/balance-service';
 import { validateAmountCents } from '@/lib/amount-validation';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { flexifyPayoutBodySchema } from '@/lib/validation/schemas/integrations';
@@ -197,6 +198,15 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    const withdrawalCheck = await checkWithdrawalLimit(userId, validatedAmount);
+    if (!withdrawalCheck.allowed) {
+      LOG('WITHDRAWAL_LIMIT_EXCEEDED', { usedCents: withdrawalCheck.usedCents, limitCents: withdrawalCheck.limitCents });
+      return NextResponse.json(
+        { error: `Limite de retrait mensuelle dépassée (utilisé : ${(withdrawalCheck.usedCents / 100).toFixed(2)}€, limite : ${(withdrawalCheck.limitCents! / 100).toFixed(2)}€)` },
+        { status: 400 }
+      );
+    }
+
     LOG('USER_OK', { email: user.email, availableBalance: availableCents });
 
     const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] ||
@@ -343,10 +353,11 @@ export async function POST(request: NextRequest) {
 
       if (!shouldAutoApprove) {
         // Au-dessus du seuil : créer le payout en PENDING_APPROVAL (exécution à l'approbation admin)
+        const netCentsCardPending = validatedAmount - fees.totalFeeCents;
         const cardPayload = {
           method: 'card' as const,
           reference,
-          amountCents: validatedAmount,
+          amountCents: netCentsCardPending,
           customer: {
             identifier: userId,
             email: user.email,
@@ -437,12 +448,13 @@ export async function POST(request: NextRequest) {
         throw freezeErr;
       }
 
-      LOG('CALL_CREATE_CARD_PAYOUT', { reference, amountCents: validatedAmount });
+      const netCentsCard = validatedAmount - fees.totalFeeCents;
+      LOG('CALL_CREATE_CARD_PAYOUT', { reference, grossCents: validatedAmount, netCents: netCentsCard });
       let flexifyResponse;
       try {
         flexifyResponse = await createCardPayout({
           reference,
-          amountCents: validatedAmount,
+          amountCents: netCentsCard,
           customer: {
             identifier: userId,
             email: user.email,
@@ -644,10 +656,11 @@ export async function POST(request: NextRequest) {
 
     if (!shouldAutoApproveSepa) {
       // Au-dessus du seuil : créer le payout en PENDING_APPROVAL
+      const netCentsSepaPending = validatedAmount - fees.totalFeeCents;
       const sepaPayload = {
         method: 'sepa' as const,
         reference,
-        amountCents: validatedAmount,
+        amountCents: netCentsSepaPending,
         description: typeof description === 'string' ? description : undefined,
         customer: {
           identifier: userId,
@@ -785,12 +798,13 @@ export async function POST(request: NextRequest) {
       throw freezeErr;
     }
 
-    LOG('CALL_CREATE_SEPA_PAYOUT', { reference, amountCents: validatedAmount });
+    const netCentsSepa = validatedAmount - fees.totalFeeCents;
+    LOG('CALL_CREATE_SEPA_PAYOUT', { reference, grossCents: validatedAmount, netCents: netCentsSepa });
     let flexifyResponse;
     try {
       flexifyResponse = await createSepaPayout({
         reference,
-        amountCents: validatedAmount,
+        amountCents: netCentsSepa,
         description: typeof description === 'string' ? description : undefined,
         customer: {
           identifier: userId,
@@ -881,7 +895,7 @@ export async function POST(request: NextRequest) {
         method: 'SEPA',
         flexifyTransactionId: flexifyResponse.transaction.id,
         flexifyStatus: flexifyResponse.transaction.status,
-        estimatedArrival: '1-2 jours ouvrés',
+        estimatedArrival: 'Instantané',
       },
     });
   } catch (error) {
