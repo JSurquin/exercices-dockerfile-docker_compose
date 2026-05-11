@@ -99,6 +99,11 @@ export class TradeHooks {
       const eurCents = await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
       const rate = await currencyConverter.getUsdToEurRate();
 
+      await prisma.trade.update({
+        where: { id: tradeId },
+        data: { eurCentsAtCredit: eurCents, usdToEurRate: rate },
+      });
+
       if (trade.user.instantCreditEnabled) {
         await creditBalance(
           userId,
@@ -233,7 +238,7 @@ export class TradeHooks {
         return;
       }
 
-      const eurCents = await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
+      const eurCents = trade.eurCentsAtCredit ?? await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
 
       if (trade.instantCreditedAt) {
         const { forceDebitBalance } = await import('@/lib/balance-service');
@@ -376,18 +381,18 @@ export class TradeHooks {
           },
         });
       } else {
-        const eurCents = await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
-        const rate = await currencyConverter.getUsdToEurRate();
+        const storedEurCents = trade.eurCentsAtCredit;
+        const eurCents = storedEurCents ?? await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
+        const rate = trade.usdToEurRate ?? await currencyConverter.getUsdToEurRate();
 
         if (trade.pendingCreditedAt) {
-          const pendingEurCents = await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
           await releasePendingToBalance(
             trade.userId,
-            pendingEurCents,
+            eurCents,
             `Trade ${tradeId} confirmed — funds released by Skinplace`,
             { tradeId }
           );
-          console.log(`[TradeHooks] Balance released from pending for trade ${tradeId}: ${trade.netCents} USD -> ${pendingEurCents} EUR cents (rate=${rate})`);
+          console.log(`[TradeHooks] Balance released from pending for trade ${tradeId}: ${trade.netCents} USD -> ${eurCents} EUR cents (rate=${rate}, stored=${!!storedEurCents})`);
         } else {
           console.warn(`[TradeHooks] No pending credit found for trade ${tradeId} — direct credit to balance`);
           await creditBalance(
@@ -396,7 +401,7 @@ export class TradeHooks {
             `Trade ${tradeId} confirmed — direct credit (polling catchup)`,
             { type: 'TRADE_CREDIT', tradeId }
           );
-          console.log(`[TradeHooks] Balance directly credited for trade ${tradeId}: ${trade.netCents} USD -> ${eurCents} EUR cents (rate=${rate})`);
+          console.log(`[TradeHooks] Balance directly credited for trade ${tradeId}: ${trade.netCents} USD -> ${eurCents} EUR cents (rate=${rate}, stored=${!!storedEurCents})`);
         }
 
         await prisma.auditLog.create({
@@ -408,6 +413,7 @@ export class TradeHooks {
               netCentsUsd: trade.netCents,
               eurCents,
               usdToEurRate: rate,
+              usedStoredRate: !!storedEurCents,
               grossCents: trade.grossCents,
               hadPendingCredit: !!trade.pendingCreditedAt,
               source: trade.pendingCreditedAt ? 'release_pending' : 'direct_credit_catchup',

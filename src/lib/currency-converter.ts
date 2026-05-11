@@ -73,27 +73,21 @@ class CurrencyConverter {
    * Côté serveur, appelle directement Prisma.
    */
   private persistRate(fromCurrency: string, toCurrency: string, rate: number, date: string): void {
+    if (typeof window !== 'undefined') return; // Never persist from client-side
+
     const key = `${fromCurrency}_${toCurrency}_${date}`;
     if (this.persistPromises.has(key)) return;
 
     const promise = (async () => {
       try {
-        if (typeof window !== 'undefined') {
-          await fetch('/api/exchange-rate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fromCurrency, toCurrency, rate, date }),
-          });
-        } else {
-          const { prisma } = await import('~/prisma/prisma');
-          await prisma.exchangeRate.upsert({
-            where: {
-              fromCurrency_toCurrency_date: { fromCurrency, toCurrency, date },
-            },
-            update: { rate, source: 'frankfurter', updatedAt: new Date() },
-            create: { fromCurrency, toCurrency, rate, date, source: 'frankfurter' },
-          });
-        }
+        const { prisma } = await import('~/prisma/prisma');
+        await prisma.exchangeRate.upsert({
+          where: {
+            fromCurrency_toCurrency_date: { fromCurrency, toCurrency, date },
+          },
+          update: { rate, source: 'frankfurter', updatedAt: new Date() },
+          create: { fromCurrency, toCurrency, rate, date, source: 'frankfurter' },
+        });
       } catch (err) {
         console.warn('Failed to persist exchange rate:', err);
       } finally {
@@ -139,19 +133,20 @@ class CurrencyConverter {
     try {
       const symbols = toCurrencies.filter(c => c !== fromCurrency).join(',');
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
+      const timeout = setTimeout(() => controller.abort(), 8000);
 
       const response = await fetch(
         `${this.API_BASE_URL}/latest?base=${fromCurrency}&symbols=${symbols}`,
         { signal: controller.signal }
       );
-      clearTimeout(timeout);
 
       if (!response.ok) {
+        clearTimeout(timeout);
         throw new Error(`Frankfurter API error: ${response.status}`);
       }
 
       const data: ExchangeRateResponse = await response.json();
+      clearTimeout(timeout);
       const rates = { ...data.rates };
       rates[fromCurrency] = 1.0;
 
@@ -224,7 +219,11 @@ class CurrencyConverter {
     }
 
     // 4) Last resort — hardcoded rates
-    const hardcodedRate = HARDCODED_FALLBACK_RATES[cacheKey] || 1.0;
+    const hardcodedRate = HARDCODED_FALLBACK_RATES[cacheKey];
+    if (!hardcodedRate) {
+      console.error(`[CurrencyConverter] CRITICAL: No fallback rate for ${cacheKey}. Refusing to use 1.0.`);
+      throw new Error(`No exchange rate available for ${fromCurrency}->${toCurrency}`);
+    }
     this.cache.set(cacheKey, {
       rate: hardcodedRate,
       timestamp: now,
@@ -332,7 +331,7 @@ export function formatCentsToCurrency(cents: number, currency: SupportedCurrency
 }
 
 export function toCents(amount: number): number {
-  return Math.round(amount * 100);
+  return Math.round(parseFloat((amount * 100).toPrecision(12)));
 }
 
 export function fromCents(cents: number): number {

@@ -144,6 +144,10 @@ model Trade {
   paidProcessedAt    DateTime?
   /// Horodatage du crédit instantané (verrou d'idempotence pour éviter le double-crédit avec onTradeAvailable)
   instantCreditedAt  DateTime?
+  /// Montant EUR crédité au moment du trade (verrouillé à IPN#1 pour cohérence release/rollback)
+  eurCentsAtCredit   Int?
+  /// Taux USD→EUR utilisé lors du crédit initial (pour audit et cohérence)
+  usdToEurRate       Float?
   ticketId           String              @unique
   tradeAcceptedAt    DateTime?
   availableAt        DateTime?

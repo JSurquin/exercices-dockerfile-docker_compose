@@ -1,5 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
+import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+
+const VALID_CURRENCIES = ['USD', 'EUR', 'CNY'] as const;
+type ValidCurrency = typeof VALID_CURRENCIES[number];
+
+const RATE_BOUNDS: Record<string, { min: number; max: number }> = {
+  'USD_EUR': { min: 0.50, max: 1.50 },
+  'USD_CNY': { min: 4.00, max: 12.00 },
+  'EUR_USD': { min: 0.70, max: 2.00 },
+  'EUR_CNY': { min: 5.00, max: 15.00 },
+  'CNY_USD': { min: 0.05, max: 0.30 },
+  'CNY_EUR': { min: 0.04, max: 0.25 },
+};
+
+const rateLimiter = new RateLimiter('EXCHANGE_RATE', RATE_LIMIT_CONFIGS.API_GENERAL);
+
+function isValidCurrency(val: unknown): val is ValidCurrency {
+  return typeof val === 'string' && VALID_CURRENCIES.includes(val as ValidCurrency);
+}
+
+function isValidDate(val: unknown): val is string {
+  return typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val);
+}
 
 /**
  * GET /api/exchange-rate?from=USD&to=EUR
@@ -10,8 +33,12 @@ export async function GET(request: NextRequest) {
   const fromCurrency = searchParams.get('from');
   const toCurrency = searchParams.get('to');
 
-  if (!fromCurrency || !toCurrency) {
-    return NextResponse.json({ error: 'Missing from/to params' }, { status: 400 });
+  if (!isValidCurrency(fromCurrency) || !isValidCurrency(toCurrency)) {
+    return NextResponse.json({ error: 'Invalid currency' }, { status: 400 });
+  }
+
+  if (fromCurrency === toCurrency) {
+    return NextResponse.json({ rate: 1.0, date: new Date().toISOString().split('T')[0], source: 'identity' });
   }
 
   try {
@@ -38,20 +65,46 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/exchange-rate
- * Persists an exchange rate (called by the client-side CurrencyConverter).
+ * Persists an exchange rate. Server-internal only — validated by shared secret.
+ * Client-side CurrencyConverter calls this; the secret is injected server-side
+ * via the Frankfurter fetch flow, not exposed to browsers.
  */
 export async function POST(request: NextRequest) {
   try {
+    const rateCheck = await rateLimiter.checkLimit(request);
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
+    }
+
+    const internalSecret = request.headers.get('x-internal-secret');
+    if (!internalSecret || internalSecret !== process.env.EXCHANGE_RATE_INTERNAL_SECRET) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { fromCurrency, toCurrency, rate, date } = body;
 
-    if (!fromCurrency || !toCurrency || typeof rate !== 'number' || !date) {
-      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+    if (!isValidCurrency(fromCurrency) || !isValidCurrency(toCurrency)) {
+      return NextResponse.json({ error: 'Invalid currency' }, { status: 400 });
     }
 
-    // Sanity check: rate should be within a reasonable range
-    if (rate <= 0 || rate > 1000) {
-      return NextResponse.json({ error: 'Rate out of range' }, { status: 400 });
+    if (fromCurrency === toCurrency) {
+      return NextResponse.json({ error: 'Same currency' }, { status: 400 });
+    }
+
+    if (typeof rate !== 'number' || !Number.isFinite(rate)) {
+      return NextResponse.json({ error: 'Invalid rate' }, { status: 400 });
+    }
+
+    if (!isValidDate(date)) {
+      return NextResponse.json({ error: 'Invalid date format (YYYY-MM-DD)' }, { status: 400 });
+    }
+
+    const pairKey = `${fromCurrency}_${toCurrency}`;
+    const bounds = RATE_BOUNDS[pairKey];
+    if (bounds && (rate < bounds.min || rate > bounds.max)) {
+      console.warn(`[exchange-rate] Rate ${rate} out of bounds for ${pairKey} (${bounds.min}-${bounds.max})`);
+      return NextResponse.json({ error: 'Rate out of acceptable range' }, { status: 400 });
     }
 
     await prisma.exchangeRate.upsert({
