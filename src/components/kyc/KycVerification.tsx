@@ -110,21 +110,17 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
     if (initiating) return;
 
     lastInitiateTimeRef.current = now;
-    console.log('[KYC] Initiating KYC process...');
     setInitiating(true);
     setError(null);
 
     try {
-      console.log('[KYC] Calling /api/kycaid/initiate...');
       const response = await fetch('/api/kycaid/initiate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       });
 
-      console.log('[KYC] Response status:', response.status);
       const data = await response.json();
-      console.log('[KYC] Response data:', data);
 
       if (!response.ok) {
         if (response.status === 429) {
@@ -136,19 +132,15 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
 
       if (data.verificationId) {
         setVerificationId(data.verificationId);
-        console.log('[KYC] ✅ Verification ID stored:', data.verificationId);
       }
 
       if (data.verificationUrl) {
-        console.log('[KYC] ✅ Opening verification URL:', data.verificationUrl);
         window.open(data.verificationUrl, '_blank');
         setTimeout(() => refetch(), 3000);
       } else {
-        console.warn('[KYC] ⚠️  No verification URL returned');
         setError(m.errors.noVerificationUrl);
       }
     } catch (err) {
-      console.error('[KYC] ❌ Error:', err);
       const errorMessage = err instanceof Error ? err.message : m.errors.unknown;
       setError(errorMessage);
       toast.error(errorMessage);

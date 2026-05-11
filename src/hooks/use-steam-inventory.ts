@@ -83,13 +83,10 @@ export function useSteamInventory(options: UseSteamInventoryOptions = {}) {
 
   // Récupérer l'inventaire Steam d'un utilisateur
   const getSteamInventory = useCallback(async (steamId64: string) => {
-    console.log('getSteamInventory');
-    console.log('steamId64', steamId64);
     return handleRequest<SteamInventoryResponse>(async () => {
       const response = await fetch(`/api/steam/inventory?steam_id=${steamId64}`, {
         credentials: 'include',
       });
-      console.log('response', response);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || t.fetchError);

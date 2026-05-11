@@ -5,6 +5,7 @@ import { initiateKyc, checkKycStatus } from '@/lib/kycaid';
 import { prisma } from '~/prisma/prisma';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { kycaidInitiateBodySchema } from '@/lib/validation/schemas/integrations';
+import { logger } from '@/lib/logger';
 
 // =============================================================================
 // POST - Initier le processus KYC
@@ -12,7 +13,7 @@ import { kycaidInitiateBodySchema } from '@/lib/validation/schemas/integrations'
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('[KYCAID Initiate] POST request received');
+    logger.info('[KYCAID Initiate] POST request received');
     
     // Vérifier l'authentification
     const session = await auth.api.getSession({
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!session?.user?.id) {
-      console.error('[KYCAID Initiate] No user session');
+      logger.info('[KYCAID Initiate] No user session');
       return NextResponse.json(
         { error: 'Non authentifié' },
         { status: 401 }
@@ -28,21 +29,20 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
-    console.log('[KYCAID Initiate] User ID:', userId);
 
     // Récupérer l'adresse du body (optionnel)
     const raw = await request.json().catch(() => ({}));
     const parsed = safeParseJson(raw, kycaidInitiateBodySchema);
     const body = parsed.ok ? parsed.data : {};
     const { address } = body;
-    console.log('[KYCAID Initiate] Address provided:', !!address);
+    logger.debug('[KYCAID Initiate] Address provided:', !!address);
 
     // Vérifier si l'utilisateur est déjà vérifié
     const currentStatus = await checkKycStatus(userId);
-    console.log('[KYCAID Initiate] Current status:', currentStatus.status);
+    logger.debug('[KYCAID Initiate] Current status:', currentStatus.status);
     
     if (currentStatus.status === 'VERIFIED') {
-      console.log('[KYCAID Initiate] User already verified, skipping');
+      logger.info('[KYCAID Initiate] User already verified, skipping');
       return NextResponse.json({
         success: true,
         status: 'VERIFIED',
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (recentPendingVerification) {
-      console.log('[KYCAID Initiate] Blocked: recent pending verification exists', recentPendingVerification.kycaidVerificationId);
+      logger.info('[KYCAID Initiate] Blocked: recent pending verification exists');
       return NextResponse.json({
         success: false,
         status: 'PENDING',
@@ -72,17 +72,13 @@ export async function POST(request: NextRequest) {
 
     // Si rejeté, on peut relancer le processus
     if (currentStatus.status === 'REJECTED') {
-      console.log('[KYCAID Initiate] ♻️  Re-initiating KYC for rejected user:', userId);
+      logger.info('[KYCAID Initiate] Re-initiating KYC for rejected user');
     }
 
     // Initier le KYC avec l'adresse si fournie
-    console.log('[KYCAID Initiate] Calling initiateKyc()...');
+    logger.debug('[KYCAID Initiate] Calling initiateKyc()...');
     const kycResult = await initiateKyc(userId, address);
-    console.log('[KYCAID Initiate] ✅ Success:', {
-      verificationId: kycResult.verificationId,
-      applicantId: kycResult.applicantId,
-      url: kycResult.verificationUrl,
-    });
+    logger.info('[KYCAID Initiate] KYC initiated successfully');
 
     // Logger l'événement
     await prisma.auditLog.create({
@@ -103,9 +99,8 @@ export async function POST(request: NextRequest) {
       applicantId: kycResult.applicantId,
     });
   } catch (error) {
-    console.error('[KYCAID Initiate] ❌ Error:', error);
+    logger.error('[KYCAID Initiate] Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-    console.error('[KYCAID Initiate] Error details:', errorMessage);
     
     return NextResponse.json(
       { 
@@ -142,7 +137,7 @@ export async function GET() {
       userId,
     });
   } catch (error) {
-    console.error('[KYCAID] Error checking status:', error);
+    logger.error('[KYCAID] Error checking status:', error);
     return NextResponse.json(
       { error: 'Erreur lors de la vérification du statut KYC' },
       { status: 500 }

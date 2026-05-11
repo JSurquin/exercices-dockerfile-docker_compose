@@ -7,6 +7,7 @@ import { awardTradePoints } from '@/lib/points-service';
 import { grantFragments } from '@/lib/fragment-service';
 import { currencyConverter } from '@/lib/currency-converter';
 import { prisma } from '../../prisma/prisma';
+import { logger } from '@/lib/logger';
 
 /**
  * Service pour gérer les hooks et événements liés aux trades.
@@ -26,23 +27,23 @@ export class TradeHooks {
         data: { paidProcessedAt: new Date() },
       });
       if (lock.count === 0) {
-        console.warn(`[TradeHooks] onTradePaid already processed for trade ${tradeId}, skipping`);
+        logger.warn(`[TradeHooks] onTradePaid already processed for trade ${tradeId}`);
         return;
       }
 
-      console.log(`[TradeHooks] Processing trade ${tradeId} for affiliate commissions + XP`);
+      logger.info(`[TradeHooks] Processing trade ${tradeId} for affiliate commissions + XP`);
       
       await AffiliateService.calculateCommissionForTrade(tradeId);
       await this.updateUserExperience(tradeId);
       
-      console.log(`[TradeHooks] Successfully processed trade ${tradeId}`);
+      logger.info(`[TradeHooks] Successfully processed trade ${tradeId}`);
     } catch (error) {
-      console.error(`[TradeHooks] Error processing trade ${tradeId}:`, error);
+      logger.error(`[TradeHooks] Error processing trade ${tradeId}`, error);
       // Rollback the lock so the trade can be reprocessed on next attempt
       try {
         await prisma.trade.update({ where: { id: tradeId }, data: { paidProcessedAt: null } });
       } catch (rollbackErr) {
-        console.error(`[TradeHooks] CRITICAL: Failed to rollback paidProcessedAt for trade ${tradeId}:`, rollbackErr);
+        logger.error(`[TradeHooks] CRITICAL: Failed to rollback paidProcessedAt for trade ${tradeId}`, rollbackErr);
       }
     }
   }
@@ -54,11 +55,11 @@ export class TradeHooks {
    */
   static async onTradeCreated(userId: string, tradeId: string): Promise<void> {
     try {
-      console.log(`[TradeHooks] Processing new trade ${tradeId} for user ${userId}`);
+      logger.info(`[TradeHooks] Processing new trade ${tradeId}`);
       await AffiliateService.associateUserToAffiliate(userId);
-      console.log(`[TradeHooks] Successfully processed new trade ${tradeId}`);
+      logger.info(`[TradeHooks] Successfully processed new trade ${tradeId}`);
     } catch (error) {
-      console.error(`[TradeHooks] Error processing new trade ${tradeId}:`, error);
+      logger.error(`[TradeHooks] Error processing new trade ${tradeId}`, error);
     }
   }
 
@@ -74,7 +75,7 @@ export class TradeHooks {
    */
   static async onTradeAccepted(userId: string, tradeId: string): Promise<void> {
     try {
-      console.log(`[TradeHooks] IPN #1 — Trade ${tradeId} accepted, crediting pending balance`);
+      logger.info(`[TradeHooks] IPN #1 — Trade ${tradeId} accepted`);
 
       const { trade, locked } = await prisma.$transaction(async (tx) => {
         const t = await tx.trade.findUnique({
@@ -92,7 +93,7 @@ export class TradeHooks {
       });
 
       if (!locked) {
-        console.warn(`[TradeHooks] Pending balance already credited for trade ${tradeId}, skipping`);
+        logger.warn(`[TradeHooks] Pending balance already credited for trade ${tradeId}`);
         return;
       }
 
@@ -122,7 +123,7 @@ export class TradeHooks {
             details: { tradeId, netCentsUsd: trade.netCents, eurCents, usdToEurRate: rate, source: 'instant_credit_ipn1' },
           },
         });
-        console.log(`[TradeHooks] INSTANT CREDIT for trade ${tradeId}: ${trade.netCents} USD -> ${eurCents} EUR cents (rate=${rate})`);
+        logger.info(`[TradeHooks] INSTANT CREDIT applied for trade ${tradeId}`);
       } else {
         await creditPendingBalance(
           userId,
@@ -137,10 +138,10 @@ export class TradeHooks {
             details: { tradeId, netCentsUsd: trade.netCents, eurCents, usdToEurRate: rate, source: 'skinplace_ipn1' },
           },
         });
-        console.log(`[TradeHooks] Pending balance credited for trade ${tradeId}: ${trade.netCents} USD cents -> ${eurCents} EUR cents (rate=${rate})`);
+        logger.info(`[TradeHooks] Pending balance credited for trade ${tradeId}`);
       }
     } catch (error) {
-      console.error(`[TradeHooks] Error in onTradeAccepted for trade ${tradeId}:`, error);
+      logger.error(`[TradeHooks] Error in onTradeAccepted for trade ${tradeId}`, error);
       throw error;
     }
   }
@@ -223,7 +224,7 @@ export class TradeHooks {
    */
   static async onTradeRolledBack(userId: string, tradeId: string): Promise<void> {
     try {
-      console.log(`[TradeHooks] Rollback trade ${tradeId} — reverting balance`);
+      logger.info(`[TradeHooks] Rollback trade ${tradeId}`);
 
       const trade = await prisma.trade.findUnique({ where: { id: tradeId } });
       if (!trade) throw new Error(`Trade ${tradeId} not found`);
@@ -234,7 +235,7 @@ export class TradeHooks {
       });
 
       if (lockResult.count === 0) {
-        console.warn(`[TradeHooks] Pending balance already reverted for trade ${tradeId}, skipping`);
+        logger.warn(`[TradeHooks] Pending balance already reverted for trade ${tradeId}`);
         return;
       }
 
@@ -260,9 +261,9 @@ export class TradeHooks {
               details: { tradeId, balanceAfterCents, debitedCents: eurCents, source: 'instant_credit_rollback' },
             },
           });
-          console.error(`[TradeHooks] CRITICAL: User ${userId} balance went negative (${balanceAfterCents} cts) after rollback of instant-credited trade ${tradeId} — account FROZEN`);
+          logger.error(`[TradeHooks] CRITICAL: User balance went negative after rollback of trade ${tradeId} — account FROZEN`);
         }
-        console.log(`[TradeHooks] Instant credit reverted for trade ${tradeId}: -${eurCents} EUR cents (force debit, balance=${balanceAfterCents})`);
+        logger.info(`[TradeHooks] Instant credit reverted for trade ${tradeId}`);
       } else {
         await debitPendingBalance(
           userId,
@@ -270,7 +271,7 @@ export class TradeHooks {
           `Trade ${tradeId} cancelled (Skinplace rollback) — pending balance reverted`,
           { tradeId }
         );
-        console.log(`[TradeHooks] Pending balance reverted for trade ${tradeId}: -${eurCents} EUR cents`);
+        logger.info(`[TradeHooks] Pending balance reverted for trade ${tradeId}`);
       }
 
       await prisma.auditLog.create({
@@ -287,7 +288,7 @@ export class TradeHooks {
         },
       });
     } catch (error) {
-      console.error(`[TradeHooks] Error reverting balance for trade ${tradeId}:`, error);
+      logger.error(`[TradeHooks] Error reverting balance for trade ${tradeId}`, error);
       throw error;
     }
   }
@@ -297,7 +298,7 @@ export class TradeHooks {
    */
   static async onTradeStatusChanged(tradeId: string, oldStatus: string, newStatus: string): Promise<void> {
     try {
-      console.log(`[TradeHooks] Trade ${tradeId} status changed from ${oldStatus} to ${newStatus}`);
+      logger.info(`[TradeHooks] Trade ${tradeId} status: ${oldStatus} -> ${newStatus}`);
       
       // Si le trade devient AVAILABLE après le hold, créer le payout
       if (newStatus === 'AVAILABLE' && oldStatus === 'IN_TRADE_HOLD') {
@@ -323,7 +324,7 @@ export class TradeHooks {
       });
       
     } catch (error) {
-      console.error(`[TradeHooks] Error processing status change for trade ${tradeId}:`, error);
+      logger.error(`[TradeHooks] Error processing status change for trade ${tradeId}`, error);
     }
   }
   
@@ -343,7 +344,7 @@ export class TradeHooks {
    */
   static async onTradeAvailable(tradeId: string): Promise<void> {
     try {
-      console.log(`[TradeHooks] Trade ${tradeId} is now AVAILABLE — crediting balance`);
+      logger.info(`[TradeHooks] Trade ${tradeId} is now AVAILABLE`);
 
       // Verrou atomique : read + lock dans une seule transaction pour éviter le double-crédit
       const { trade, locked } = await prisma.$transaction(async (tx) => {
@@ -362,12 +363,12 @@ export class TradeHooks {
       });
 
       if (!locked) {
-        console.warn(`[TradeHooks] Balance already credited for trade ${tradeId}, skipping`);
+        logger.warn(`[TradeHooks] Balance already credited for trade ${tradeId}`);
       } else if (trade.instantCreditedAt) {
         // Instant Credit : la balance a déjà été créditée à l'IPN #1
         // On doit seulement supprimer le pending (qui n'a pas été crédité en mode instant)
         // Aucun crédit supplémentaire — le verrou balanceCreditedAt est déjà posé
-        console.log(`[TradeHooks] Trade ${tradeId} was instant-credited — skipping balance credit (already done at IPN #1)`);
+        logger.info(`[TradeHooks] Trade ${tradeId} was instant-credited — skipping balance credit`);
         await prisma.auditLog.create({
           data: {
             userId: trade.userId,
@@ -392,16 +393,16 @@ export class TradeHooks {
             `Trade ${tradeId} confirmed — funds released by Skinplace`,
             { tradeId }
           );
-          console.log(`[TradeHooks] Balance released from pending for trade ${tradeId}: ${trade.netCents} USD -> ${eurCents} EUR cents (rate=${rate}, stored=${!!storedEurCents})`);
+          logger.info(`[TradeHooks] Balance released from pending for trade ${tradeId}`);
         } else {
-          console.warn(`[TradeHooks] No pending credit found for trade ${tradeId} — direct credit to balance`);
+          logger.warn(`[TradeHooks] No pending credit found for trade ${tradeId} — direct credit`);
           await creditBalance(
             trade.userId,
             eurCents,
             `Trade ${tradeId} confirmed — direct credit (polling catchup)`,
             { type: 'TRADE_CREDIT', tradeId }
           );
-          console.log(`[TradeHooks] Balance directly credited for trade ${tradeId}: ${trade.netCents} USD -> ${eurCents} EUR cents (rate=${rate}, stored=${!!storedEurCents})`);
+          logger.info(`[TradeHooks] Balance directly credited for trade ${tradeId}`);
         }
 
         await prisma.auditLog.create({
@@ -436,13 +437,13 @@ export class TradeHooks {
             data: { affiliatePromoFragmentsGrantedAt: new Date() },
           });
         } catch (fragErr) {
-          console.error(`[TradeHooks] Promo fragments for trade ${tradeId}:`, fragErr);
+          logger.error(`[TradeHooks] Promo fragments error for trade ${tradeId}`, fragErr);
         }
       }
 
-      console.log(`[TradeHooks] Trade ${tradeId} ready for payout`);
+      logger.info(`[TradeHooks] Trade ${tradeId} ready for payout`);
     } catch (error) {
-      console.error(`[TradeHooks] Error processing available trade ${tradeId}:`, error);
+      logger.error(`[TradeHooks] Error processing available trade ${tradeId}`, error);
       throw error;
     }
   }
@@ -453,7 +454,7 @@ export class TradeHooks {
    */
   static async recalculateAffiliateCommissions(affiliateId: string): Promise<void> {
     try {
-      console.log(`[TradeHooks] Recalculating commissions for affiliate ${affiliateId}`);
+      logger.info(`[TradeHooks] Recalculating commissions for affiliate ${affiliateId}`);
       
       const affiliate = await prisma.affiliateStats.findUnique({
         where: { id: affiliateId },
@@ -485,9 +486,9 @@ export class TradeHooks {
         }
       }
       
-      console.log(`[TradeHooks] Successfully recalculated commissions for affiliate ${affiliateId}`);
+      logger.info(`[TradeHooks] Successfully recalculated commissions for affiliate ${affiliateId}`);
     } catch (error) {
-      console.error(`[TradeHooks] Error recalculating commissions for affiliate ${affiliateId}:`, error);
+      logger.error(`[TradeHooks] Error recalculating commissions for affiliate ${affiliateId}`, error);
       throw error;
     }
   }

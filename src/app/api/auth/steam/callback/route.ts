@@ -71,7 +71,6 @@ export async function GET(request: NextRequest) {
     if (!user) {
       const userByEmail = await prisma.user.findFirst({ where: { email } });
       if (userByEmail) {
-        console.log(`[Steam] steamId mismatch corrigé pour ${userByEmail.name}: ${userByEmail.steamId} -> ${steamUser.steamid}`);
         user = await prisma.user.update({
           where: { id: userByEmail.id },
           data: { steamId: steamUser.steamid },
@@ -95,8 +94,6 @@ export async function GET(request: NextRequest) {
       );
 
       // Créer un nouvel utilisateur avec Better Auth
-      console.log('Création nouvel utilisateur Steam:', steamUser.personaname);
-      
       const signUpResult = await auth.api.signUpEmail({
         body: {
           email: email,
@@ -144,7 +141,6 @@ export async function GET(request: NextRequest) {
       );
 
       // Mettre à jour les informations Steam — ne jamais toucher email (clé d'auth interne)
-      console.log('Mise à jour utilisateur existant:', user.name);
       user = await prisma.user.update({
         where: { id: user.id },
         data: {
@@ -178,15 +174,9 @@ export async function GET(request: NextRequest) {
     // Utiliser le handler Better Auth directement
     const signInResponse = await auth.handler(signInRequest);
     
-    console.log('[Steam] signIn status:', signInResponse.status);
-
     if (!signInResponse.ok) {
-      const errorText = await signInResponse.text();
-      console.error('Sign in error:', errorText);
       throw new Error('Failed to sign in user via Better Auth');
     }
-
-    console.log('Connexion réussie, redirection vers dashboard');
     let requiresTwoFactor = false;
     try {
       const payload = await signInResponse.clone().json();

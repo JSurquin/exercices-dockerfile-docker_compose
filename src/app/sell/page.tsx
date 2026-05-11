@@ -24,6 +24,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 import { UserRoleBadge } from "@/components/ui/user-role-badge";
+import { LoginRequiredBlock } from '@/components/auth/require-auth';
 
 const getSteps = (messages: any) => [
   { id: "inventory", title: messages.sellPage.steps.inventory, icon: LinkIcon },
@@ -84,55 +85,35 @@ export default function SellPage() {
   const startPolling = useCallback((tradeId: string) => {
     stopPolling();
     pollAttemptsRef.current = 0;
-    console.log(`[POLL] 🚀 Démarrage polling pour tradeId="${tradeId}" — interval=${POLL_INTERVAL_MS}ms max=${POLL_MAX_ATTEMPTS} tentatives`);
-
     pollIntervalRef.current = setInterval(async () => {
       pollAttemptsRef.current += 1;
       const attempt = pollAttemptsRef.current;
 
       if (attempt > POLL_MAX_ATTEMPTS) {
-        console.warn(`[POLL] ⏹ Polling arrêté après ${POLL_MAX_ATTEMPTS} tentatives sans statut terminal`);
         stopPolling();
         return;
       }
 
-      console.log(`[POLL] 🔄 Tentative #${attempt}/${POLL_MAX_ATTEMPTS} — tradeId="${tradeId}"`);
-
       try {
         const url = `/api/skinplace/trade/status/${tradeId}`;
         const res = await fetch(url);
-        console.log(`[POLL] 📡 HTTP ${res.status} pour ${url}`);
 
-        if (!res.ok) {
-          console.warn(`[POLL] ⚠️  Réponse non-OK (${res.status}), skip tentative #${attempt}`);
-          return;
-        }
+        if (!res.ok) return;
 
         const data = await res.json();
-        console.log(`[POLL] 📦 Réponse JSON tentative #${attempt}:`, JSON.stringify(data, null, 2));
-
         const status: string = data?.trade?.status ?? "";
-        const skinplaceDebug = data?.trade?.skinplaceDebug ?? null;
-        const message = data?.trade?.message ?? "";
-
-        console.log(`[POLL] 🏷  status DB="${status}" | skinplaceDebug=${JSON.stringify(skinplaceDebug)} | message="${message}"`);
 
         if (status === "ACCEPTED_BY_BOT") {
-          console.log(`[POLL] ⏳ → modal PENDING (bot a envoyé l'offre, attente acceptation Steam)`);
           setModalStatus("pending");
         } else if (status === "IN_TRADE_HOLD" || status === "AVAILABLE") {
-          console.log(`[POLL] ✅ → modal ACCEPTED (trade accepté, hold démarre) — arrêt polling`);
           stopPolling();
           setModalStatus("accepted");
         } else if (status === "CANCELLED" || status === "FAILED") {
-          console.log(`[POLL] ❌ → modal CANCELLED (status=${status}) — arrêt polling`);
           stopPolling();
           setModalStatus("cancelled");
-        } else {
-          console.log(`[POLL] 🤷 Statut non reconnu ou inchangé ("${status}"), prochain tick dans ${POLL_INTERVAL_MS}ms`);
         }
-      } catch (err) {
-        console.error(`[POLL] 💥 Erreur tentative #${attempt}:`, err);
+      } catch {
+        // Silently retry on next tick
       }
     }, POLL_INTERVAL_MS);
   }, [stopPolling]);
@@ -152,15 +133,11 @@ export default function SellPage() {
   };
 
   const handleTradeCreated = (trade: TradeCreatedData) => {
-    console.log(`[POLL] 🆕 handleTradeCreated — trade_id="${trade.trade_id}" status="${(trade as any).status}"`);
-    console.log(`[POLL] 📋 TradeCreatedData complet:`, JSON.stringify(trade, null, 2));
     setTradeData(trade);
     setCurrentStep(2);
     toast.success(messages.sellPage.successMessages.tradeCreated);
     if (trade.trade_id) {
       startPolling(trade.trade_id);
-    } else {
-      console.error(`[POLL] ❌ trade_id manquant dans TradeCreatedData — polling non démarré !`);
     }
   };
 
@@ -177,22 +154,12 @@ export default function SellPage() {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        <Card className="max-w-md mx-auto text-center">
-          <CardContent className="p-6 sm:p-8">
-            <ShieldCheckIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">
-              {messages.dashboard.loginRequired}
-            </h2>
-            <p className="text-muted-foreground mb-6">
-              {messages.sellPage.loginDescription}
-            </p>
-            <Button onClick={() => (window.location.href = "/")}>
-              {messages.common.steamLogin}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <LoginRequiredBlock
+        icon={<ShieldCheckIcon className="w-16 h-16" />}
+        title={messages.dashboard.loginRequired}
+        description={messages.sellPage.loginDescription}
+        buttonLabel={messages.common.steamLogin}
+      />
     );
   }
 

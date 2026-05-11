@@ -48,10 +48,7 @@ export function SteamInventoryViewer({
   });
 
   const loadInventory = useCallback(async () => {
-    console.log('loadInventory');
-    console.log('steamId64', steamId64);
     const result = await getSteamInventory(steamId64);
-    console.log('result', result);
     if (result?.success && result.items) {
       const enrichedItems = enrichItems(result.items);
       setInventory(enrichedItems);

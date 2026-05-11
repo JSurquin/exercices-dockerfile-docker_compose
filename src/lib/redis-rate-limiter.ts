@@ -1,4 +1,5 @@
 import { Redis } from '@upstash/redis';
+import { logger } from '@/lib/logger';
 
 /**
  * Configuration Redis/Upstash pour le rate limiting distribué.
@@ -35,9 +36,7 @@ export function getRedisClient(): Redis | null {
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (!url || !token) {
-    console.warn(
-      '[Redis] Upstash credentials not configured. Rate limiting will use in-memory fallback (not distributed).'
-    );
+    logger.warn('[Redis] Upstash credentials not configured, using in-memory fallback');
     return null;
   }
 
@@ -46,10 +45,10 @@ export function getRedisClient(): Redis | null {
       url,
       token,
     });
-    console.log('[Redis] Connected to Upstash successfully');
+    logger.debug('[Redis] Connected to Upstash');
     return redisClient;
   } catch (error) {
-    console.error('[Redis] Failed to connect to Upstash:', error);
+    logger.error('[Redis] Failed to connect to Upstash', error);
     return null;
   }
 }
@@ -119,7 +118,7 @@ export async function checkRateLimit(
       resetAt,
     };
   } catch (error) {
-    console.error('[Redis] Rate limit check failed:', error);
+    logger.error('[Redis] Rate limit check failed', error);
     // En cas d'erreur Redis, autoriser par sécurité (éviter de bloquer l'app)
     return {
       allowed: true,
@@ -140,7 +139,7 @@ export async function clearRateLimit(key: string): Promise<void> {
   try {
     await redis.del(key);
   } catch (error) {
-    console.error('[Redis] Failed to clear rate limit:', error);
+    logger.error('[Redis] Failed to clear rate limit', error);
   }
 }
 
@@ -184,7 +183,7 @@ export async function getRateLimitStatus(
       resetAt,
     };
   } catch (error) {
-    console.error('[Redis] Failed to get rate limit status:', error);
+    logger.error('[Redis] Failed to get rate limit status', error);
     return {
       current: 0,
       remaining: limit,

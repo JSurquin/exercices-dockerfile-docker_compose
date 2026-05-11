@@ -172,11 +172,6 @@ export function SkinplaceTradeCreator({
   const handleCreateTrade = async () => {
     if (!isValidUrl || selectedItems.length === 0) return;
 
-    console.log('🎯 Création du trade avec', selectedItems.length, 'items sélectionnés:');
-    selectedItems.forEach((item, index) => {
-      console.log(`  ${index + 1}. ${item.name} (${item.assetid}) - ${(item.price_centimes / 100).toFixed(2)} USD`);
-    });
-
     setLoading(true);
     setError(null);
 

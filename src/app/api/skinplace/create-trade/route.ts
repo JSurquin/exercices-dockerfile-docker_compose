@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
+import { logger } from '@/lib/logger';
 import { TradeStatus } from '@prisma/client';
 import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
 import { TradeHooks } from '@/lib/trade-hooks';
@@ -253,8 +254,7 @@ export async function POST(request: NextRequest) {
       send_offer_sync: 1,
     };
 
-    console.log('[CREATE-TRADE] Creating Skinplace trade:', {
-      steamId: body.steam_id,
+    logger.info('[CREATE-TRADE] Creating Skinplace trade', {
       itemsCount: assetIds.length,
       grossCentimes: serverGrossCentimes,
     });

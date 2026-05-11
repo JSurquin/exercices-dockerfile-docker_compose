@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 /**
  * Service de conversion de devises utilisant l'API Frankfurter
  * avec fallback BDD (taux J-1) puis taux hardcodés en dernier recours.
@@ -89,7 +91,7 @@ class CurrencyConverter {
           create: { fromCurrency, toCurrency, rate, date, source: 'frankfurter' },
         });
       } catch (err) {
-        console.warn('Failed to persist exchange rate:', err);
+        logger.warn('Failed to persist exchange rate');
       } finally {
         this.persistPromises.delete(key);
       }
@@ -117,7 +119,7 @@ class CurrencyConverter {
         return record?.rate ?? null;
       }
     } catch (err) {
-      console.warn('Failed to fetch DB fallback rate:', err);
+      logger.warn('Failed to fetch DB fallback rate');
       return null;
     }
   }
@@ -160,7 +162,7 @@ class CurrencyConverter {
 
       return rates;
     } catch (error) {
-      console.error('Frankfurter API fetch failed:', error);
+      logger.error('Frankfurter API fetch failed', error);
       return null;
     }
   }
@@ -193,13 +195,13 @@ class CurrencyConverter {
         date: new Date().toISOString().split('T')[0],
         source: 'api',
       });
-      console.log(`[CurrencyConverter] API rate: 1 ${fromCurrency} = ${rate} ${toCurrency}`);
+      logger.debug(`[CurrencyConverter] API rate: 1 ${fromCurrency} = ${rate} ${toCurrency}`);
       return rate;
     }
 
     // 2) API failed — use expired cache if available (still better than fallback)
     if (cached) {
-      console.warn(`[CurrencyConverter] API down, using expired cache (${cached.source}): 1 ${fromCurrency} = ${cached.rate} ${toCurrency}`);
+      logger.warn(`[CurrencyConverter] API down, using expired cache (${cached.source})`);
       // Refresh cache timestamp to avoid hammering the API on every request
       this.cache.set(cacheKey, { ...cached, timestamp: now });
       return cached.rate;
@@ -214,14 +216,14 @@ class CurrencyConverter {
         date: 'db-fallback',
         source: 'db',
       });
-      console.warn(`[CurrencyConverter] Using DB fallback: 1 ${fromCurrency} = ${dbRate} ${toCurrency}`);
+      logger.warn(`[CurrencyConverter] Using DB fallback for ${fromCurrency}->${toCurrency}`);
       return dbRate;
     }
 
     // 4) Last resort — hardcoded rates
     const hardcodedRate = HARDCODED_FALLBACK_RATES[cacheKey];
     if (!hardcodedRate) {
-      console.error(`[CurrencyConverter] CRITICAL: No fallback rate for ${cacheKey}. Refusing to use 1.0.`);
+      logger.error(`[CurrencyConverter] CRITICAL: No fallback rate for ${cacheKey}`);
       throw new Error(`No exchange rate available for ${fromCurrency}->${toCurrency}`);
     }
     this.cache.set(cacheKey, {
@@ -230,7 +232,7 @@ class CurrencyConverter {
       date: 'hardcoded',
       source: 'hardcoded',
     });
-    console.warn(`[CurrencyConverter] Using HARDCODED fallback: 1 ${fromCurrency} = ${hardcodedRate} ${toCurrency}`);
+    logger.warn(`[CurrencyConverter] Using HARDCODED fallback for ${fromCurrency}->${toCurrency}`);
     return hardcodedRate;
   }
 
@@ -292,7 +294,7 @@ class CurrencyConverter {
 
   public clearCache(): void {
     this.cache.clear();
-    console.log('[CurrencyConverter] Cache cleared');
+    logger.debug('[CurrencyConverter] Cache cleared');
   }
 
   public getCacheInfo(): {

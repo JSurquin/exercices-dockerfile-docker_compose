@@ -202,10 +202,6 @@ export default function DashboardPage() {
 
   const { messages, locale: appLocale } = useLocale();
   
-  console.log("useSession data:", data);
-  console.log("useSession isPending:", isPending);
-  console.log("useSession error:", error);
-
   // Auto-claim DAILY_VISIT silencieusement à l'ouverture du dashboard
   useEffect(() => {
     if (!data?.user) return;

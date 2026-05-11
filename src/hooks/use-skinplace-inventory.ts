@@ -37,8 +37,6 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
 
   // Récupérer l'inventaire avec les prix depuis Skin.place
   const getSkinplaceInventory = useCallback(async (steamId64: string) => {
-    console.log('getSkinplaceInventory pour:', steamId64);
-    
     return handleRequest<NormalizedInventoryResponse>(async () => {
       const response = await fetch(`/api/skinplace/inventory-with-prices?steam_id=${steamId64}`);
       
@@ -47,9 +45,7 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
         throw new Error(errorData.error || t.fetchError);
       }
       
-      const data = await response.json();
-      console.log('Inventaire Skin.place récupéré:', data);
-      return data;
+      return response.json();
     });
   }, [handleRequest]);
 

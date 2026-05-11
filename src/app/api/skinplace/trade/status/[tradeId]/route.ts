@@ -5,6 +5,7 @@ import { TradeStatus } from '@prisma/client';
 import { skinplaceService } from '@/lib/skinplace';
 import { resolveMoonSkinTradeStatusFromSkinplaceApi } from '@/lib/skinplace-trade-status-resolve';
 import { TradeHooks } from '@/lib/trade-hooks';
+import { logger } from '@/lib/logger';
 
 /**
  * Endpoint pour récupérer et mettre à jour le statut d'un trade depuis Skinplace
@@ -34,7 +35,7 @@ export async function GET(
     }
 
     const { tradeId } = await params;
-    console.log(`[STATUS] --> GET /api/skinplace/trade/status/${tradeId} par user=${session.user.id}`);
+    logger.info(`[STATUS] GET trade status request for tradeId=${tradeId}`);
 
     const trade = await prisma.trade.findUnique({
       where: { id: tradeId },
@@ -42,7 +43,7 @@ export async function GET(
     });
 
     if (!trade) {
-      console.warn(`[STATUS] Trade introuvable en DB: tradeId="${tradeId}"`);
+      logger.warn(`[STATUS] Trade not found: tradeId=${tradeId}`);
       return NextResponse.json(
         { success: false, error: 'Trade non trouvé' },
         { status: 404 }
@@ -50,19 +51,19 @@ export async function GET(
     }
 
     if (trade.userId !== session.user.id && session.user.role !== 'ADMIN') {
-      console.warn(`[STATUS] Acces refuse: trade.userId="${trade.userId}" != session.user.id="${session.user.id}"`);
+      logger.warn(`[STATUS] Access denied for trade ${tradeId}`);
       return NextResponse.json(
         { success: false, error: 'Acces non autorisé' },
         { status: 403 }
       );
     }
 
-    console.log(`[STATUS] Trade trouvé: id="${trade.id}" status="${trade.status}" skinplaceToken="${trade.skinplaceToken ?? 'NULL'}" ticketId="${trade.ticketId ?? 'NULL'}"`);
+    logger.info(`[STATUS] Trade found: id=${trade.id} status=${trade.status}`);
 
     // Si le trade est AVAILABLE mais que le solde n'a jamais été crédité,
     // on rattrape le crédit sans re-appeler Skinplace.
     if (trade.status === 'AVAILABLE' && !trade.balanceCreditedAt) {
-      console.log(`[STATUS] Trade ${trade.id} déjà AVAILABLE mais balanceCreditedAt=null — rattrapage crédit`);
+      logger.info(`[STATUS] Trade ${trade.id} AVAILABLE but balanceCreditedAt=null — catching up credit`);
       let balanceCredited = false;
       try {
         await TradeHooks.onTradeAvailable(trade.id);
@@ -93,7 +94,7 @@ export async function GET(
       trade.status === 'FAILED' ||
       trade.status === 'AVAILABLE'
     ) {
-      console.log(`[STATUS] Statut terminal "${trade.status}" — pas d'appel Skinplace`);
+      logger.info(`[STATUS] Terminal status "${trade.status}" — skipping Skinplace call`);
       return NextResponse.json({
         success: true,
         trade: {
@@ -110,23 +111,22 @@ export async function GET(
 
     // Stratégie 1 : lookup direct par skinplaceToken via skinplaceService (Bearer auth)
     if (trade.skinplaceToken) {
-      console.log(`[STATUS] Stratégie 1 — GET /api/v3/instant/payment/trade/${trade.skinplaceToken}`);
+      logger.info(`[STATUS] Strategy 1 — fetching trade by token`);
       try {
         skinplacePayload = await skinplaceService.getTradeStatus(trade.skinplaceToken);
-        console.log(`[STATUS] [strategy=token] Payload reçu:`, JSON.stringify(skinplacePayload, null, 2));
+        logger.debug(`[STATUS] [strategy=token] Payload received`);
       } catch (e) {
-        console.warn(`[STATUS] [strategy=token] Exception:`, e);
+        logger.warn(`[STATUS] [strategy=token] Exception occurred`);
       }
     } else {
-      console.warn(`[STATUS] skinplaceToken NULL pour trade ${trade.id} — fallback sur ticketId/order_id="${trade.ticketId}"`);
+      logger.warn(`[STATUS] skinplaceToken NULL for trade ${trade.id} — falling back to history`);
     }
 
     // Stratégie 2 : fallback via /instant/history avec order_ids (notre ticketId = order_id envoyé à Skinplace)
     if (!skinplacePayload && trade.ticketId) {
-      console.log(`[STATUS] Stratégie 2 — POST /api/v3/instant/history avec order_ids=["${trade.ticketId}"]`);
+      logger.info(`[STATUS] Strategy 2 — fetching via instant history`);
       try {
         const historyData = await skinplaceService.getInstantHistoryByOrderIds([trade.ticketId]);
-        console.log(`[STATUS] [strategy=history] Réponse brute:`, JSON.stringify(historyData, null, 2));
         const entry = (historyData as { data?: unknown[] })?.data?.[0];
         if (entry) {
           skinplacePayload = entry;
@@ -136,19 +136,19 @@ export async function GET(
               where: { id: trade.id },
               data: { skinplaceToken: foundToken },
             });
-            console.log(`[STATUS] skinplaceToken "${foundToken}" récupéré via history et sauvegardé`);
+            logger.info(`[STATUS] skinplaceToken recovered via history and saved`);
           }
-          console.log(`[STATUS] [strategy=history] Entrée trouvée:`, JSON.stringify(entry, null, 2));
+          logger.debug(`[STATUS] [strategy=history] Entry found`);
         } else {
-          console.warn(`[STATUS] [strategy=history] Aucune entrée pour order_id="${trade.ticketId}" — data brut:`, (historyData as any)?.data);
+          logger.warn(`[STATUS] [strategy=history] No entry found for trade ${trade.id}`);
         }
       } catch (e) {
-        console.warn(`[STATUS] [strategy=history] Exception:`, e);
+        logger.warn(`[STATUS] [strategy=history] Exception occurred`);
       }
     }
 
     if (!skinplacePayload) {
-      console.error(`[STATUS] Les deux stratégies ont échoué pour trade ${trade.id} — aucune donnée Skinplace disponible`);
+      console.error(`[STATUS] Both strategies failed for trade ${trade.id} — no Skinplace data available`);
     }
 
     const resolved = skinplacePayload
@@ -157,7 +157,7 @@ export async function GET(
     const newStatus = resolved?.status ?? null;
     const skinplaceDebug = resolved?.debug ?? null;
 
-    console.log(`[STATUS] Resolution: skinplacePayload=${skinplacePayload ? 'OK' : 'NULL'} | newStatus="${newStatus ?? 'NULL'}" | debug=${JSON.stringify(skinplaceDebug)}`);
+    logger.info(`[STATUS] Resolution: payload=${skinplacePayload ? 'OK' : 'NULL'} newStatus=${newStatus ?? 'NULL'}`);
 
     if (newStatus && skinplaceDebug) {
       const oldStatus = trade.status;
@@ -174,7 +174,7 @@ export async function GET(
       const oldStatusIndex = statusOrder.indexOf(oldStatus);
       const newStatusIndex = statusOrder.indexOf(newStatus);
 
-      console.log(`[STATUS] Progression: "${oldStatus}"(idx=${oldStatusIndex}) -> "${newStatus}"(idx=${newStatusIndex}) | terminal=${newStatus === 'FAILED' || newStatus === 'CANCELLED'}`);
+      logger.info(`[STATUS] Progression: "${oldStatus}"(${oldStatusIndex}) -> "${newStatus}"(${newStatusIndex})`);
 
       if (newStatus === 'FAILED' || newStatus === 'CANCELLED' || newStatusIndex > oldStatusIndex) {
         let availableAt = trade.availableAt;
@@ -213,7 +213,7 @@ export async function GET(
           },
         });
 
-        console.log(`[STATUS] Trade ${trade.id} mis a jour: ${oldStatus} -> ${newStatus}`, skinplaceDebug);
+        logger.info(`[STATUS] Trade ${trade.id} updated: ${oldStatus} -> ${newStatus}`);
 
         // Déclencher les hooks de balance (même logique que le webhook IPN)
         let balanceCredited = false;
@@ -250,7 +250,7 @@ export async function GET(
       }
 
       // Résolu côté Skinplace mais pas d'évolution autorisée
-      console.log(`[STATUS] Pas de progression autorisée: local="${oldStatus}"(idx=${oldStatusIndex}) Skinplace->"${newStatus}"(idx=${newStatusIndex}) source="${skinplaceDebug.effectiveSource}"`);
+      logger.info(`[STATUS] No progression allowed: local="${oldStatus}" skinplace="${newStatus}"`);
       const noMoveMsg = `Statut inchangé — local: ${trade.status}, Skinplace->${newStatus} (${skinplaceDebug.effectiveSource})`;
       return NextResponse.json({
         success: true,
@@ -267,7 +267,7 @@ export async function GET(
     }
 
     // Pas de payload exploitable
-    console.error(`[STATUS] Retour statut local sans appel Skinplace pour trade ${trade.id} — vérifiez SKINPLACE_API_KEY, skinplaceToken et order_id`);
+    console.error(`[STATUS] Returning local status for trade ${trade.id} — check SKINPLACE_API_KEY config`);
     return NextResponse.json({
       success: true,
       trade: {

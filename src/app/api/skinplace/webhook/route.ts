@@ -6,6 +6,7 @@ import { TradeHooks } from '@/lib/trade-hooks';
 import { isProductionApp } from '@/lib/env-production';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { skinplaceWebhookPostBodySchema } from '@/lib/validation/schemas/integrations';
+import { logger } from '@/lib/logger';
 
 // =============================================================================
 // Skinplace IPN (webhook)
@@ -93,7 +94,7 @@ export async function GET(request: NextRequest) {
     const amount           = searchParams.get('amount') ?? '';
     const transactionId    = searchParams.get('transaction_id') ?? '';
 
-    console.log('[WEBHOOK] IPN received:', { type, status, orderId, protectionStatus });
+    logger.info(`[WEBHOOK] IPN received: type=${type}, status=${status}`);
 
     // SÉCURITÉ: Vérification de la signature IPN (auth serveur-à-serveur)
     // secret_key IPN = SKINPLACE_API_KEY_PRIVATE (confirmé dashboard skin.place)
@@ -103,31 +104,26 @@ export async function GET(request: NextRequest) {
     // En production : secret ET signature obligatoires
     if (inProd) {
       if (!secretKey) {
-        console.error('❌ IPN Skinplace: clé manquante en production');
+        logger.error('[WEBHOOK] Skinplace API key missing in production');
         return new Response('ipn not configured', { status: 503 });
       }
       if (!receivedSignature) {
         return new Response('missing signature', { status: 401 });
       }
       if (!verifySkinplaceSignature(token, receivedSignature, secretKey)) {
-        console.error('❌ IPN Skinplace: signature invalide');
+        logger.error('[WEBHOOK] Skinplace signature invalid');
         return new Response('wrong signature', { status: 401 });
       }
-    } 
-    // SÉCURITÉ: Hors production, BLOQUER si secret non configuré
-    // Ne JAMAIS accepter de webhooks non signés, même en dev
-    else {
+    } else {
       if (!secretKey) {
-        console.error('❌ IPN Skinplace: SKINPLACE_API_KEY_PRIVATE non configurée');
-        console.error('   Le webhook est BLOQUÉ même hors prod pour éviter les failles de sécurité');
-        console.error('   Configurez SKINPLACE_API_KEY_PRIVATE dans .env pour activer les webhooks');
+        logger.error('[WEBHOOK] SKINPLACE_API_KEY_PRIVATE not configured — webhook blocked');
         return new Response('webhook endpoint disabled (no secret key)', { status: 503 });
       }
       if (!receivedSignature) {
         return new Response('missing signature', { status: 401 });
       }
       if (!verifySkinplaceSignature(token, receivedSignature, secretKey)) {
-        console.error('❌ IPN Skinplace: signature invalide');
+        logger.error('[WEBHOOK] Skinplace signature invalid');
         return new Response('wrong signature', { status: 401 });
       }
     }
@@ -151,19 +147,18 @@ export async function GET(request: NextRequest) {
     }
 
     if (!trade) {
-      console.error('[WEBHOOK] Trade introuvable — order_id="' + orderId + '" token="' + token + '"');
-      console.error('[WEBHOOK] Cherché d\'abord avec ticketId=orderId, puis ticketId=token');
+      logger.error('[WEBHOOK] Trade not found for IPN');
       return new Response('ok', { status: 200 });
     }
 
-    console.log('[WEBHOOK] Trade trouvé: id="' + trade.id + '" status actuel="' + trade.status + '" ticketId="' + trade.ticketId + '"');
+    logger.info(`[WEBHOOK] Trade found: ${trade.id}, status=${trade.status}`);
 
     // Cross-validation: compare webhook amount with stored trade amount
     const webhookAmountCents = Math.round(parseFloat(amount) * 100);
     if (webhookAmountCents > 0 && trade.grossCents > 0) {
       const drift = Math.abs(webhookAmountCents - trade.grossCents) / trade.grossCents;
       if (drift > 0.1) {
-        console.warn('[WEBHOOK][SECURITY] Amount mismatch:', { tradeId: trade.id, expected: trade.grossCents, received: webhookAmountCents, drift: `${(drift * 100).toFixed(1)}%` });
+        logger.warn(`[WEBHOOK][SECURITY] Amount mismatch for trade ${trade.id}`);
       }
     }
 
@@ -180,7 +175,7 @@ export async function GET(request: NextRequest) {
     // On n'entre dans le bloc IPN #2 que si le statut n'est pas une annulation.
     // =========================================================================
     if (protectionStatus !== null && status !== 'cancelled') {
-      console.log(`🔒 IPN #2 protection_status pour trade ${trade.id}: ${protectionStatus}`);
+      logger.info(`[WEBHOOK] IPN #2 protection_status=${protectionStatus} for trade ${trade.id}`);
 
       await prisma.auditLog.create({
         data: {
@@ -199,7 +194,7 @@ export async function GET(request: NextRequest) {
       });
 
       if (protectionStatus === 'confirmed') {
-        console.log(`✅ Fonds Skinplace définitivement libérés pour trade ${trade.id} — crédit balance`);
+        logger.info(`[WEBHOOK] Funds released for trade ${trade.id}`);
         // On passe le trade en AVAILABLE et on crédite la balance.
         // onTradeAvailable gère l'idempotence : pas de double crédit si le webhook est rejoué.
         if (trade.status !== 'PAID' && trade.status !== 'FAILED') {
@@ -210,7 +205,7 @@ export async function GET(request: NextRequest) {
           await TradeHooks.onTradeAvailable(trade.id);
         }
       } else if (protectionStatus === 'rollback') {
-        console.error(`⚠️  Rollback Skinplace pour trade ${trade.id} — annulation du pending balance`);
+        logger.error(`[WEBHOOK] Rollback for trade ${trade.id}`);
         await prisma.trade.update({
           where: { id: trade.id },
           data: { status: 'FAILED' },
@@ -226,13 +221,12 @@ export async function GET(request: NextRequest) {
     // status : 'complete' | 'active' | 'cancelled'
     // =========================================================================
     if (!status) {
-      console.warn('IPN Skinplace sans champ status, ignoré');
+      logger.warn('[WEBHOOK] IPN without status field, ignored');
       return new Response('ok', { status: 200 });
     }
 
     const newStatus = mapSkinplaceStatusToTradeStatus(status);
-    console.log('[WEBHOOK] IPN #1 mappage: skinplace.status="' + status + '" -> TradeStatus="' + newStatus + '"');
-    console.log('[WEBHOOK] IPN #1 trade ' + trade.id + ': ' + oldStatus + ' -> ' + newStatus);
+    logger.info(`[WEBHOOK] IPN #1 trade ${trade.id}: ${oldStatus} -> ${newStatus}`);
 
     const statusOrder: TradeStatus[] = [
       'CREATED', 'ACCEPTED_BY_BOT', 'IN_TRADE_HOLD', 'AVAILABLE', 'PAYOUT_PENDING', 'PAID',
@@ -243,7 +237,7 @@ export async function GET(request: NextRequest) {
     const TERMINAL_STATUSES: TradeStatus[] = ['FAILED', 'CANCELLED', 'PAID'];
     // Ne pas réécrire un état terminal déjà atteint
     if (TERMINAL_STATUSES.includes(oldStatus)) {
-      console.log(`ℹ️  Trade ${trade.id} déjà en état terminal ${oldStatus}, IPN ignoré`);
+      logger.info(`[WEBHOOK] Trade ${trade.id} already terminal (${oldStatus}), IPN ignored`);
       return new Response('ok', { status: 200 });
     }
 
@@ -291,17 +285,17 @@ export async function GET(request: NextRequest) {
       } else if (newStatus === 'AVAILABLE') {
         await TradeHooks.onTradeAvailable(trade.id);
       } else if (newStatus === 'FAILED') {
-        console.error(`Trade ${trade.id} échoué pour user ${trade.userId}`);
+        logger.error(`[WEBHOOK] Trade ${trade.id} failed`);
       }
     } else {
-      console.log('[WEBHOOK] Statut ignoré (pas de progression): ' + oldStatus + ' -> ' + newStatus + ' (old idx=' + statusOrder.indexOf(oldStatus) + ' new idx=' + statusOrder.indexOf(newStatus) + ')');
+      logger.debug(`[WEBHOOK] Status not progressing: ${oldStatus} -> ${newStatus}, ignored`);
     }
 
     // Skinplace attend HTTP 200 avec body "ok"
     return new Response('ok', { status: 200 });
 
   } catch (error) {
-    console.error('❌ Erreur IPN Skinplace:', error);
+    logger.error('[WEBHOOK] Skinplace IPN error', error);
     return new Response('error', { status: 500 });
   }
 }

@@ -1,5 +1,6 @@
 import { prisma } from '~/prisma/prisma';
 import { encrypt } from '@/lib/encryption';
+import { logger } from '@/lib/logger';
 
 // =============================================================================
 // CONFIGURATION KYCAID
@@ -22,11 +23,10 @@ export const KYCAID_CONFIG = {
 };
 
 if (typeof window === 'undefined') {
-  console.log('[KYCAID] Config loaded:', {
-    baseUrl: KYCAID_CONFIG.baseUrl,
+  logger.debug('[KYCAID] Config loaded', {
     sandbox: KYCAID_CONFIG.sandboxMode,
-    apiTokenConfigured: !!KYCAID_CONFIG.apiToken,
-    formIdConfigured: !!KYCAID_CONFIG.formId,
+    hasToken: !!KYCAID_CONFIG.apiToken,
+    hasFormId: !!KYCAID_CONFIG.formId,
   });
 }
 
@@ -259,10 +259,7 @@ async function kycaidRequest<T>(
   const url = `${KYCAID_CONFIG.baseUrl}${path}`;
   const headers = prepareHeaders();
 
-  console.log(`📡 [KYCAID REQUEST] ${method} ${url}`);
-  if (body) {
-    console.log(`📦 [KYCAID REQUEST] Body:`, JSON.stringify(body, null, 2));
-  }
+  logger.debug(`[KYCAID] ${method} ${path}`);
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
@@ -275,7 +272,7 @@ async function kycaidRequest<T>(
       const data = await response.json();
 
       if (!response.ok) {
-        console.error(`❌ [KYCAID REQUEST] Error ${response.status}:`, data);
+        logger.error(`[KYCAID] API error ${response.status} on ${method} ${path}`);
         const err = new Error(
           `KYCAID API error: ${response.status} - ${JSON.stringify(data)}`
         ) as Error & { status?: number; data?: unknown };
@@ -284,16 +281,14 @@ async function kycaidRequest<T>(
         throw err;
       }
 
-      console.log(`✅ [KYCAID REQUEST] Success:`, data);
       return data as T;
     } catch (error) {
       const status = (error as { status?: number }).status;
       if (status === 422) {
-        // limit_exceeded / duplicate : retry ne sert à rien
         throw error;
       }
       if (attempt === retries) throw error;
-      console.warn(`⚠️  [KYCAID REQUEST] Attempt ${attempt} failed, retrying...`);
+      logger.warn(`[KYCAID] Attempt ${attempt} failed on ${method} ${path}, retrying...`);
       await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
     }
   }
@@ -437,24 +432,17 @@ export async function uploadFile(
 ): Promise<{ file_id: string }> {
   validateConfig();
   
-  console.log(`📤 [KYCAID] Upload du fichier ${fileName} (${mimeType})`);
-  
   const formData = new FormData();
   
   if (Buffer.isBuffer(file)) {
-    // Si Buffer, créer un Blob en convertissant correctement le buffer
     const uint8Array = new Uint8Array(file);
     const blob = new Blob([uint8Array], { type: mimeType });
     formData.append('file', blob, fileName);
-    console.log(`  → Conversion Buffer → Blob : ${uint8Array.length} bytes`);
   } else {
     formData.append('file', file, fileName);
-    console.log(`  → Fichier File direct : ${file.size} bytes`);
   }
   
   const url = `${KYCAID_CONFIG.baseUrl}/files`;
-  
-  console.log(`  → URL: ${url}`);
   
   const response = await fetch(url, {
     method: 'POST',
@@ -466,13 +454,11 @@ export async function uploadFile(
   
   if (!response.ok) {
     const error = await response.text();
-    console.error(`❌ [KYCAID] Erreur upload fichier : ${response.status}`);
-    console.error(`   Response: ${error}`);
+    logger.error(`[KYCAID] File upload failed: ${response.status}`);
     throw new Error(`File upload failed: ${response.status} - ${error}`);
   }
   
   const data = await response.json();
-  console.log(`✅ [KYCAID] Fichier uploadé avec succès : ${data.file_id}`);
   
   logKycTransaction('UPLOAD_FILE', '', { fileId: data.file_id, fileName });
   
@@ -484,7 +470,7 @@ export async function uploadFile(
  * Utiliser uploadFile() directement à la place
  */
 export async function createFile(): Promise<{ file_id: string }> {
-  console.warn('⚠️  [KYCAID] createFile() is deprecated, use uploadFile() directly');
+  logger.warn('[KYCAID] createFile() is deprecated, use uploadFile() directly');
   throw new Error('createFile() is deprecated - use uploadFile() directly with file content');
 }
 
@@ -559,13 +545,12 @@ export async function deleteExistingIdentityDocumentsInKycaid(
   try {
     rawList = await listApplicantDocuments(applicantId);
   } catch (e) {
-    console.warn('[KYCAID] listApplicantDocuments failed:', e);
+    logger.warn('[KYCAID] listApplicantDocuments failed');
     return { deleted: [], stillPresent: [] };
   }
   const allDocs = parseDocumentsList(rawList);
   const docId = (d: KycaidDocument & { documentId?: string }) => d.document_id || (d as { documentId?: string }).documentId || '';
   const identityDocs = allDocs.filter((d) => isIdentityDocumentType(String(d.type || '').toUpperCase()));
-  console.log(`[KYCAID] Applicant ${applicantId} — documents listés: ${allDocs.length}, identité: ${identityDocs.map((d) => docId(d)).join(', ') || 'aucun'}`);
 
   const deleted: string[] = [];
   for (const d of identityDocs) {
@@ -574,9 +559,8 @@ export async function deleteExistingIdentityDocumentsInKycaid(
     try {
       await deleteDocument(id);
       deleted.push(id);
-      console.log(`  ✓ [KYCAID] Document supprimé: ${id}`);
     } catch (err) {
-      console.warn(`  ⚠ [KYCAID] DELETE ${id} échoué (API peut ne pas supporter):`, err);
+      logger.warn(`[KYCAID] DELETE document ${id} failed`);
     }
   }
 
@@ -587,7 +571,7 @@ export async function deleteExistingIdentityDocumentsInKycaid(
     const stillIdentity = afterList.filter((d) => isIdentityDocumentType(String(d.type || '').toUpperCase()));
     stillPresent = stillIdentity.map((d) => docId(d)).filter(Boolean);
     if (stillPresent.length) {
-      console.warn(`[KYCAID] Après suppression, documents identité encore présents: ${stillPresent.join(', ')}`);
+      logger.warn(`[KYCAID] Identity documents still present after deletion: ${stillPresent.length}`);
     }
   } catch {
     // si la 2e liste échoue, on considère qu'il peut en rester
@@ -633,9 +617,6 @@ export async function createVerification(
   // En dev, on n'ajoute PAS de callback_url car localhost n'est pas accessible
   if (KYCAID_CONFIG.callbackUrl) {
     requestBody.callback_url = KYCAID_CONFIG.callbackUrl;
-    console.log(`📡 [KYCAID] Callback URL configurée: ${KYCAID_CONFIG.callbackUrl}`);
-  } else {
-    console.log(`⚠️  [KYCAID] Mode développement: Pas de callback URL (utiliser le polling)`);
   }
 
   logKycTransaction('CREATE_VERIFICATION', params.applicantId, {
@@ -913,11 +894,11 @@ export async function processWebhook(payload: KycaidWebhookPayload): Promise<voi
           where: { id: userByExtId.id },
           data: { kycaidApplicantId: applicant_id },
         });
-        console.log(`[KYCAID Webhook] Linked applicant ${applicant_id} to user ${userByExtId.id} via external_applicant_id`);
+        logger.info(`[KYCAID Webhook] Linked applicant to user via external_applicant_id`);
         return processWebhook({ ...payload });
       }
     }
-    console.warn('[KYCAID Webhook] No user found for applicant:', applicant_id);
+    logger.warn('[KYCAID Webhook] No user found for applicant');
     return;
   }
 
@@ -1032,7 +1013,7 @@ export async function processWebhook(payload: KycaidWebhookPayload): Promise<voi
       break;
 
     default:
-      console.log(`[KYCAID Webhook] Unhandled type: ${type}`);
+      logger.debug(`[KYCAID Webhook] Unhandled type: ${type}`);
   }
 }
 
@@ -1097,9 +1078,8 @@ export async function updateUserKycStatus(
     },
   });
 
-  console.log(`[KYCAID] User ${userId} KYC status updated to ${status}`);
+  logger.info(`[KYCAID] User KYC status updated to ${status}`);
 
-  // N'envoyer l'email que si le statut vient vraiment de changer (évite doublons / re-polling)
   const statusActuallyChanged =
     (status === 'VERIFIED' && previousStatus !== 'VERIFIED' && previousStatus !== 'KYCAID_VERIFIED') ||
     (status === 'REJECTED' && previousStatus !== 'REJECTED');
@@ -1114,23 +1094,19 @@ export async function updateUserKycStatus(
       const username = currentUser.steamUsername || 'Utilisateur';
 
       if (status === 'VERIFIED') {
-        console.log(`📧 [KYCAID] Envoi de l'email d'approbation KYC à ${currentUser.email}`);
         await emailService.sendKycApprovedEmail(currentUser.email, username);
-        console.log(`✅ [KYCAID] Email d'approbation KYC envoyé avec succès`);
       } else if (status === 'REJECTED') {
-        console.log(`📧 [KYCAID] Envoi de l'email de rejet KYC à ${currentUser.email}`);
         await emailService.sendKycRejectedEmail(
           currentUser.email,
           username,
           rejectionReason || 'Aucune raison spécifiée'
         );
-        console.log(`✅ [KYCAID] Email de rejet KYC envoyé avec succès`);
       }
     } else {
-      console.warn(`⚠️  [KYCAID] Impossible d'envoyer l'email : email utilisateur non trouvé pour userId ${userId}`);
+      logger.warn(`[KYCAID] Cannot send email: no email found for user`);
     }
   } catch (emailError: any) {
-    console.error(`⚠️  [KYCAID] Erreur lors de l'envoi de l'email de notification KYC (non bloquant) :`, emailError.message);
+    logger.error(`[KYCAID] Failed to send KYC notification email (non-blocking)`, emailError);
   }
 }
 
@@ -1219,12 +1195,6 @@ function logKycTransaction(
   userId: string,
   data: Record<string, unknown>
 ): void {
-  console.log('[KYCAID]', {
-    action,
-    userId,
-    timestamp: new Date().toISOString(),
-    sandboxMode: KYCAID_CONFIG.sandboxMode,
-    ...data,
-  });
+  logger.debug(`[KYCAID] ${action}`, { userId, ...data });
 }
 

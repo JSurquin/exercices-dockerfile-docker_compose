@@ -25,6 +25,7 @@ import {
 import { CurrencyDollarIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { formatCentsToCurrency, toCents } from '@/lib/currency-converter';
+import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import { FeePreview } from '@/components/payout/FeePreview';
 import {
   Select,
@@ -349,9 +350,6 @@ export default function PayoutPage() {
         payoutMethod === 'crypto'
           ? { amountCents, currency: 'EUR' }
           : { amountCents, currency: 'EUR', method: payoutMethod === 'card' ? 'CARD' : 'SEPA' };
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[PAYOUT] getQuote request', { url: quoteUrl, method: payoutMethod, body: requestBody });
-      }
       const response = await fetch(quoteUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -362,21 +360,14 @@ export default function PayoutPage() {
 
       if (!response.ok) {
         const errorMessage = typeof data?.error === 'string' ? data.error : data?.message ?? `HTTP ${response.status}`;
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[PAYOUT] getQuote failed', { status: response.status, statusText: response.statusText, body: data });
-        }
         throw new Error(errorMessage);
       }
 
       // L'API renvoie { quote, limits }; le front utilise la structure quote directement (avec quoteId si présent)
       const quotePayload = data.quote ? { ...data.quote, quoteId: data.quote.quoteId ?? `quote-${Date.now()}` } : data;
       setQuote(quotePayload);
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[PAYOUT] getQuote success', quotePayload);
-      }
     } catch (error) {
       const message = error instanceof Error ? error.message : text.toast.payoutError;
-      console.error('[PAYOUT] getQuote error', error);
       toast.error(message);
     } finally {
       setIsLoadingQuote(false);
@@ -501,9 +492,6 @@ export default function PayoutPage() {
             };
       }
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[PAYOUT] handleSubmit request', { url: apiUrl, payload });
-      }
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -514,14 +502,8 @@ export default function PayoutPage() {
 
       if (!response.ok) {
         let errorMessage = typeof data?.error === 'string' ? data.error : data?.message ?? `HTTP ${response.status}`;
-        if (data?.whitepayErrors) {
-          console.error('[PAYOUT] Whitepay validation errors', data.whitepayErrors);
-          if (process.env.NODE_ENV === 'development') {
-            errorMessage += ` — Details: ${JSON.stringify(data.whitepayErrors)}`;
-          }
-        }
-        if (process.env.NODE_ENV === 'development') {
-          console.error('[PAYOUT] handleSubmit failed', { status: response.status, statusText: response.statusText, body: data });
+        if (data?.whitepayErrors && process.env.NODE_ENV === 'development') {
+          errorMessage += ` — Details: ${JSON.stringify(data.whitepayErrors)}`;
         }
         // Carte obsolète supprimée côté serveur : on rafraîchit les méthodes et on bascule en saisie manuelle
         if (data?.code === 'CARD_STALE_DELETED') {
@@ -532,9 +514,6 @@ export default function PayoutPage() {
         throw new Error(errorMessage);
       }
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[PAYOUT] handleSubmit success', data);
-      }
       const successMessage = data?.pendingApproval && data?.message
         ? data.message
         : text.toast.payoutCreated;
@@ -580,18 +559,12 @@ export default function PayoutPage() {
   // Pas connecté
   if (!user) {
     return (
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        <Card className="max-w-md mx-auto text-center">
-          <CardContent className="p-6 sm:p-8">
-            <BanknotesIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">{text.loginRequired.title}</h2>
-            <p className="text-muted-foreground mb-6">{text.loginRequired.description}</p>
-            <Button onClick={() => window.location.href = '/'}>
-              {text.loginRequired.login}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <LoginRequiredBlock
+        icon={<BanknotesIcon className="w-16 h-16" />}
+        title={text.loginRequired.title}
+        description={text.loginRequired.description}
+        buttonLabel={text.loginRequired.login}
+      />
     );
   }
 

@@ -344,7 +344,6 @@ export default function KYCPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  console.log('[KYC] Forcing form display from IN_PROGRESS');
                   setForceShowForm(true);
                 }}
               >

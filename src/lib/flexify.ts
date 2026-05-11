@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { logger } from '@/lib/logger';
 
 // =============================================================================
 // CONFIGURATION FLEXIFY
@@ -365,12 +366,6 @@ async function flexifyRequest<T>(
     bodySanitized: body ? sanitizeForLog(body) : undefined,
   });
 
-  // Log du body exact envoyé à Flexify (dev + prod) — données sensibles masquées
-  if (body && path === '/v1/payout') {
-    const payloadLog = sanitizeForLog(body);
-    console.log('[FLEXIFY] PAYLOAD ENVOYÉ À FLEXIFY (v1/payout):', JSON.stringify(payloadLog, null, 2));
-  }
-
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       if (attempt > 1) {
@@ -460,10 +455,6 @@ async function flexifyRequest<T>(
           error_fields_detail: errorFields ? JSON.stringify(errorFields) : '',
           fullBody: data,
         }, 'error');
-        // En cas d'erreur (ex. general bank decline), log du payload envoyé (dev + prod)
-        if (path === '/v1/payout' && body) {
-          console.error('[FLEXIFY] ERREUR FLEXIFY — payload envoyé lors de l\'erreur:', JSON.stringify(sanitizeForLog(body), null, 2));
-        }
         if (response.status === 403) {
           await logOutboundIpForWhitelist();
         }
@@ -1222,11 +1213,11 @@ export function flexifyLog(
   };
   const msg = `${FLEXIFY_LOG_PREFIX} ${step}`;
   if (level === 'error') {
-    console.error(msg, payload);
+    logger.error(msg, payload);
   } else if (level === 'warn') {
-    console.warn(msg, payload);
+    logger.warn(msg, payload);
   } else {
-    console.log(msg, payload);
+    logger.debug(msg, payload);
   }
 }
 

@@ -4,6 +4,7 @@ import {
   type KycaidWebhookPayload,
 } from '@/lib/kycaid';
 import { prisma } from '~/prisma/prisma';
+import { logger } from '@/lib/logger';
 
 // =============================================================================
 // POST - Recevoir les webhooks KYCAID
@@ -23,13 +24,13 @@ export async function POST(request: NextRequest) {
     try {
       payload = JSON.parse(rawBody);
     } catch {
-      console.error('[KYCAID Webhook] Invalid JSON body');
+      logger.error('[KYCAID Webhook] Invalid JSON body');
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
 
     // Validation basique du payload
     if (!payload.type || !payload.applicant_id) {
-      console.error('[KYCAID Webhook] Missing required fields (type, applicant_id)');
+      logger.error('[KYCAID Webhook] Missing required fields (type, applicant_id)');
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -40,23 +41,17 @@ export async function POST(request: NextRequest) {
     });
 
     if (!knownUser && !payload.external_applicant_id) {
-      console.warn('[KYCAID Webhook] Unknown applicant_id:', payload.applicant_id);
+      logger.warn('[KYCAID Webhook] Unknown applicant_id');
       return NextResponse.json({ error: 'Unknown applicant' }, { status: 404 });
     }
 
-    console.log('[KYCAID Webhook] Received:', {
-      type: payload.type,
-      applicantId: payload.applicant_id,
-      verificationId: payload.verification_id,
-      status: payload.status,
-      verified: payload.verified,
-    });
+    logger.info(`[KYCAID Webhook] Received: type=${payload.type}, status=${payload.status}`);
 
     await processWebhook(payload);
 
     return NextResponse.json({ received: true, processed: true });
   } catch (error) {
-    console.error('[KYCAID Webhook] Error:', error);
+    logger.error('[KYCAID Webhook] Error', error);
     return NextResponse.json(
       { error: 'Webhook processing error' },
       { status: 500 }

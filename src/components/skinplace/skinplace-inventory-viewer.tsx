@@ -118,12 +118,10 @@ export function SkinplaceInventoryViewer({
 
   const loadInventory = async (steamIdToLoad?: string) => {
     const idToUse = steamIdToLoad || currentSteamId;
-    console.log('Chargement inventaire Skin.place pour:', idToUse);
     const result = await getSkinplaceInventory(idToUse);
     
     if (result?.success && result.items) {
       setInventory(result.items);
-      console.log(`Inventaire chargé: ${result.items.length} items, ${result.tradable_count} tradables`);
     }
   };
 
