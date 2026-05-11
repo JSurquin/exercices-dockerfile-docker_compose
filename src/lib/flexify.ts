@@ -521,7 +521,7 @@ export async function getPayoutQuote(
       network: fees.networkFeeCents / 100,
       total: fees.totalFeeCents / 100,
     },
-    estimatedDelivery: params.method === 'sepa' ? '1-2 business days' : 'Instant to 24h',
+    estimatedDelivery: params.method === 'sepa' ? 'Instant' : 'Instant to 24h',
     expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
     quoteId: `QUOTE-${Date.now()}`,
   };

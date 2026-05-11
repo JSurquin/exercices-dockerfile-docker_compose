@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     const fees = method === 'SEPA' ? calculateSepaFees(amount) : calculateCardFees(amount);
     const totalFeeCents = fees.totalFeeCents;
     const netCents = amount - totalFeeCents;
-    const estimatedDelivery = method === 'SEPA' ? '1-2 jours ouvrés' : 'Instantané à 24h';
+    const estimatedDelivery = method === 'SEPA' ? 'Instantané' : 'Instantané à 24h';
 
     const quote = {
       method,

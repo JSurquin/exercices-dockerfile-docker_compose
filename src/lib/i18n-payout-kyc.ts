@@ -19,7 +19,7 @@ export const payoutKycTranslations = {
         title: "Virement SEPA",
         iban: "IBAN",
         bic: "BIC/SWIFT (optionnel)",
-        info: "Les virements SEPA sont sécurisés et arrivent sous 1-2 jours ouvrés.",
+        info: "Les virements SEPA sont sécurisés et instantanés.",
       },
       
       card: {
@@ -39,7 +39,7 @@ export const payoutKycTranslations = {
       
       success: {
         title: "Paiement initié avec succès !",
-        sepa: "Votre virement sera traité dans 1-2 jours ouvrés.",
+        sepa: "Votre virement a été traité instantanément.",
         card: "Votre paiement sera traité dans les 24h.",
       },
       
@@ -124,7 +124,7 @@ export const payoutKycTranslations = {
         title: "SEPA Transfer",
         iban: "IBAN",
         bic: "BIC/SWIFT (optional)",
-        info: "SEPA transfers are secure and arrive within 1-2 business days.",
+        info: "SEPA transfers are secure and instant.",
       },
       
       card: {
@@ -144,7 +144,7 @@ export const payoutKycTranslations = {
       
       success: {
         title: "Payment initiated successfully!",
-        sepa: "Your transfer will be processed within 1-2 business days.",
+        sepa: "Your transfer has been processed instantly.",
         card: "Your payment will be processed within 24 hours.",
       },
       
@@ -229,7 +229,7 @@ export const payoutKycTranslations = {
         title: "SEPA转账",
         iban: "IBAN",
         bic: "BIC/SWIFT（可选）",
-        info: "SEPA转账安全可靠，1-2个工作日到账。",
+        info: "SEPA转账安全可靠，即时到账。",
       },
       
       card: {
@@ -249,7 +249,7 @@ export const payoutKycTranslations = {
       
       success: {
         title: "付款已成功发起！",
-        sepa: "您的转账将在1-2个工作日内处理。",
+        sepa: "您的转账已即时处理。",
         card: "您的付款将在24小时内处理。",
       },
       
