@@ -14,6 +14,7 @@ import { hashPassword } from 'better-auth/crypto';
 
 export async function GET(request: NextRequest) {
   const context = getRequestContext(request);
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
   
   try {
     // Vérifier la réponse OpenID de Steam
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
         'medium'
       );
 
-      const errorUrl = new URL('/', request.url);
+      const errorUrl = new URL('/', baseUrl);
       errorUrl.searchParams.set('error', 'steam_verification_failed');
       return NextResponse.redirect(errorUrl.toString());
     }
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
         'medium'
       );
 
-      const errorUrl = new URL('/', request.url);
+      const errorUrl = new URL('/', baseUrl);
       errorUrl.searchParams.set('error', 'steam_profile_fetch_failed');
       return NextResponse.redirect(errorUrl.toString());
     }
@@ -211,7 +212,7 @@ export async function GET(request: NextRequest) {
 
     // Créer la réponse avec redirection
     const redirectPath = requiresTwoFactor ? '/two-factor' : '/dashboard';
-    const redirectUrl = new URL(redirectPath, request.url);
+    const redirectUrl = new URL(redirectPath, baseUrl);
     if (!requiresTwoFactor) {
       redirectUrl.searchParams.set('steam_login', 'success');
     } else {
@@ -249,7 +250,8 @@ export async function GET(request: NextRequest) {
     // Log de l'erreur système
     await logSystemError(context, error, 'steam_callback');
     
-    const errorUrl = new URL('/', request.url);
+    const baseUrlFallback = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+    const errorUrl = new URL('/', baseUrlFallback);
     errorUrl.searchParams.set('error', 'steam_callback_error');
     return NextResponse.redirect(errorUrl.toString());
   }

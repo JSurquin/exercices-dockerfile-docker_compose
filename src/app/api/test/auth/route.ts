@@ -120,7 +120,8 @@ export async function GET(request: NextRequest) {
     console.log('✅ Connexion réussie, redirection vers dashboard');
 
     // Créer la réponse avec redirection
-    const redirectUrl = new URL('/dashboard', request.url);
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+    const redirectUrl = new URL('/dashboard', baseUrl);
     redirectUrl.searchParams.set('test_login', 'success');
     redirectUrl.searchParams.set('role', role);
     

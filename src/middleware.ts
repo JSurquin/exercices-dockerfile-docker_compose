@@ -21,11 +21,11 @@ export function middleware(request: NextRequest) {
     }
     
     // Rediriger sans les paramètres d'affiliation pour nettoyer l'URL
-    const cleanUrl = new URL(request.url);
+    const cleanUrl = request.nextUrl.clone();
     cleanUrl.searchParams.delete('ref');
     cleanUrl.searchParams.delete('affiliate');
     
-    if (cleanUrl.toString() !== request.url) {
+    if (cleanUrl.searchParams.toString() !== request.nextUrl.searchParams.toString()) {
       return NextResponse.redirect(cleanUrl);
     }
   }
