@@ -332,15 +332,28 @@ export function AdminKYCManagement() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
-                            if (confirm(t.forceVerifyConfirm.replace('{name}', displayName(u)))) {
-                              fetch(`/api/admin/kyc/force-verify/${u.userId}?force=true`, { method: 'POST' })
-                                .then((r) => r.json())
-                                .then((d) => {
-                                  toast({ title: t.kycForcedTitle, description: t.kycForcedDesc.replace('{status}', d.newStatus) });
-                                  queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-                                  queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
+                          onClick={async () => {
+                            if (!confirm(t.forceVerifyConfirm.replace('{name}', displayName(u)))) return;
+                            try {
+                              const r = await fetch(`/api/admin/kyc/force-verify/${u.userId}?force=true`, { method: 'POST' });
+                              const d = await r.json().catch(() => ({}));
+                              if (!r.ok || !d?.success || !d?.newStatus) {
+                                toast({
+                                  title: t.errorTitle,
+                                  description: d?.error || d?.message || t.kycSyncErrorDesc,
+                                  variant: 'destructive',
                                 });
+                                return;
+                              }
+                              toast({ title: t.kycForcedTitle, description: t.kycForcedDesc.replace('{status}', d.newStatus) });
+                              queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+                              queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
+                            } catch (err) {
+                              toast({
+                                title: t.errorTitle,
+                                description: err instanceof Error ? err.message : t.kycSyncErrorDesc,
+                                variant: 'destructive',
+                              });
                             }
                           }}
                           className="border-green-700 text-green-400 hover:bg-green-900/30"
@@ -354,15 +367,33 @@ export function AdminKYCManagement() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
-                            if (confirm(t.rejectConfirm.replace('{name}', displayName(u)))) {
-                              fetch(`/api/admin/kyc/force-verify/${u.userId}`, { method: 'POST' })
-                                .then((r) => r.json())
-                                .then((d) => {
-                                  toast({ title: t.rejectResultTitle, description: d.newStatus === 'VERIFIED' ? 'KYCAID dit VERIFIED — pas rejeté' : `Statut → ${d.newStatus ?? 'inchangé'}` });
-                                  queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-                                  queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
+                          onClick={async () => {
+                            if (!confirm(t.rejectConfirm.replace('{name}', displayName(u)))) return;
+                            try {
+                              const r = await fetch(`/api/admin/kyc/force-verify/${u.userId}`, { method: 'POST' });
+                              const d = await r.json().catch(() => ({}));
+                              if (!r.ok) {
+                                toast({
+                                  title: t.errorTitle,
+                                  description: d?.error || d?.message || t.kycSyncErrorDesc,
+                                  variant: 'destructive',
                                 });
+                                return;
+                              }
+                              toast({
+                                title: t.rejectResultTitle,
+                                description: d.newStatus === 'VERIFIED'
+                                  ? t.kycaidSaysVerified
+                                  : `Statut → ${d.newStatus ?? t.unchanged}`,
+                              });
+                              queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+                              queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
+                            } catch (err) {
+                              toast({
+                                title: t.errorTitle,
+                                description: err instanceof Error ? err.message : t.kycSyncErrorDesc,
+                                variant: 'destructive',
+                              });
                             }
                           }}
                           className="border-red-700 text-red-400 hover:bg-red-900/30"

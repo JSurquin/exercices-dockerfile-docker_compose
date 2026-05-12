@@ -3788,6 +3788,9 @@ export const messages: Record<Locale, Messages> = {
         tooltipSyncKycaid: "Interroger KYCAID et mettre à jour le statut",
         tooltipForceVerify: "Forcer VERIFIED manuellement (override admin)",
         tooltipForceReject: "Vérifier depuis KYCAID (peut rejeter si KYCAID l'a décliné)",
+        kycSyncErrorDesc: "Impossible de mettre à jour le statut KYC",
+        kycaidSaysVerified: "KYCAID dit VERIFIED — pas rejeté",
+        unchanged: "inchangé",
       },
       affiliatesManagement: {
         adminToolsTitle: "Outils d'Administration",
@@ -9504,6 +9507,9 @@ export const messages: Record<Locale, Messages> = {
         tooltipSyncKycaid: "Query KYCAID and update the status",
         tooltipForceVerify: "Force VERIFIED manually (admin override)",
         tooltipForceReject: "Check with KYCAID (may reject if KYCAID declined)",
+        kycSyncErrorDesc: "Could not update KYC status",
+        kycaidSaysVerified: "KYCAID says VERIFIED — not rejected",
+        unchanged: "unchanged",
       },
       affiliatesManagement: {
         adminToolsTitle: "Administration Tools",
@@ -16246,6 +16252,9 @@ export const messages: Record<Locale, Messages> = {
         tooltipSyncKycaid: "查询KYCAID并更新状态",
         tooltipForceVerify: "手动强制VERIFIED（管理员覆盖）",
         tooltipForceReject: "通过KYCAID检查（如KYCAID已拒绝则可能被拒绝）",
+        kycSyncErrorDesc: "无法更新KYC状态",
+        kycaidSaysVerified: "KYCAID判定为已验证 — 未拒绝",
+        unchanged: "未变更",
       },
       affiliatesManagement: {
         adminToolsTitle: "管理工具",

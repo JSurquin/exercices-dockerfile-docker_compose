@@ -22,19 +22,36 @@ interface ReconcileResult {
   provider: 'flexify' | 'whitepay';
 }
 
-const FLEXIFY_STATUSES = ['PROCESSING', 'PENDING'] as const;
+const FLEXIFY_STATUSES = [
+  'PROCESSING',
+  'PENDING',
+  'FLEXIFY_PENDING',
+  'FLEXIFY_PROCESSING',
+  // Payouts dont le webhook a marqué le statut final mais où le débit/dégel a échoué
+  'FLEXIFY_PAID',
+  'PAID',
+] as const;
 const WHITEPAY_STATUSES = [
   'WHITEPAY_PENDING_WITHDRAWAL',
   'WHITEPAY_PROCESSING_WITHDRAWAL',
   'WHITEPAY_WAITING_CONFIRMATION',
   'PROCESSING',
   'PENDING',
+  // Payouts dont le webhook a marqué COMPLETE mais où onCompleted a échoué silencieusement
+  'WHITEPAY_COMPLETE',
+  'PAID',
 ] as const;
 
 async function reconcileFlexifyPayout(
   userId: string,
-  payout: { id: string; flexifyPayoutId: string | null; amountCents: number; tradeId: string | null },
+  payout: { id: string; flexifyPayoutId: string | null; status: string; amountCents: number; tradeId: string | null },
 ): Promise<ReconcileResult> {
+  // Fast-path : statut interne déjà final → on ne réinterroge pas Flexify, on rejoue juste onCompleted
+  // (la balance n'a pas été débitée car balanceDebitedAt:null dans le filtre amont)
+  if (payout.status === 'FLEXIFY_PAID' || payout.status === 'PAID') {
+    return applyDebit(userId, payout, 'flexify', { preserveExistingStatus: true });
+  }
+
   const flexifyData = await getFlexifyTransactionStatus(payout.flexifyPayoutId!);
   const flexifyStatus = flexifyData.transaction?.status ?? flexifyData.status;
 
@@ -53,8 +70,14 @@ async function reconcileFlexifyPayout(
 
 async function reconcileWhitepayPayout(
   userId: string,
-  payout: { id: string; whitepayTransactionId: string | null; amountCents: number; tradeId: string | null },
+  payout: { id: string; whitepayTransactionId: string | null; status: string; amountCents: number; tradeId: string | null },
 ): Promise<ReconcileResult> {
+  // Fast-path : statut interne déjà final → on ne réinterroge pas Whitepay, on rejoue juste onCompleted
+  // (la balance n'a pas été débitée car balanceDebitedAt:null dans le filtre amont)
+  if (payout.status === 'WHITEPAY_COMPLETE' || payout.status === 'PAID') {
+    return applyDebit(userId, payout, 'whitepay', { preserveExistingStatus: true });
+  }
+
   const wpData = await getWhitepayTransactionStatus(payout.whitepayTransactionId!);
   const wpStatus = wpData.transaction?.status;
 
@@ -75,15 +98,15 @@ async function applyDebit(
   userId: string,
   payout: { id: string; amountCents: number; tradeId: string | null },
   provider: 'flexify' | 'whitepay',
+  options: { preserveExistingStatus?: boolean } = {},
 ): Promise<ReconcileResult> {
   const { debited } = await PayoutLifecycle.onCompleted(
     userId, payout.id, payout.amountCents,
     {
       tradeId: payout.tradeId,
-      
       reason: `Payout ${provider} ${payout.id} complété (rattrapage polling)`,
-      finalStatus: 'PAID',
-      paidAt: new Date(),
+      // Fast-path : on garde le statut et la date d'origine posés par le webhook provider
+      ...(options.preserveExistingStatus ? {} : { finalStatus: 'PAID', paidAt: new Date() }),
     },
   );
   if (!debited) {
@@ -124,7 +147,7 @@ export async function GET() {
         flexifyPayoutId: { not: null },
         balanceDebitedAt: null,
       },
-      select: { id: true, flexifyPayoutId: true, amountCents: true, tradeId: true },
+      select: { id: true, flexifyPayoutId: true, status: true, amountCents: true, tradeId: true },
     });
 
     // WhitePay payouts bloqués
@@ -135,7 +158,7 @@ export async function GET() {
         whitepayTransactionId: { not: null },
         balanceDebitedAt: null,
       },
-      select: { id: true, whitepayTransactionId: true, amountCents: true, tradeId: true },
+      select: { id: true, whitepayTransactionId: true, status: true, amountCents: true, tradeId: true },
     });
 
     if (flexifyPayouts.length === 0 && whitepayPayouts.length === 0) {

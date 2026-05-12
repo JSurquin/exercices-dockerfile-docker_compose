@@ -1650,6 +1650,9 @@ export interface Messages {
       tooltipSyncKycaid: string;
       tooltipForceVerify: string;
       tooltipForceReject: string;
+      kycSyncErrorDesc: string;
+      kycaidSaysVerified: string;
+      unchanged: string;
     };
     affiliatesManagement: {
       adminToolsTitle: string;

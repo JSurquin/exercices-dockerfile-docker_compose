@@ -231,14 +231,14 @@ export function AdminUsersTable() {
     setSyncingKycUserId(userId);
     try {
       const res = await fetch(`/api/admin/kyc/force-verify/${userId}`, { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur');
-      if (data.success) {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || 'Erreur');
+      if (data?.success && data?.newStatus) {
         toast({ title: t.kycUpdated, description: `Statut → ${data.newStatus}` });
       } else {
         toast({
           title: t.kycUpdateFailed,
-          description: data.message || `Status KYCAID : ${data.kycaidStatus ?? t.kycUnknown}`,
+          description: data?.message || `Status KYCAID : ${data?.kycaidStatus ?? t.kycUnknown}`,
           variant: 'destructive',
         });
       }
