@@ -112,9 +112,15 @@ export class TradeHooks {
           `Trade ${tradeId} accepted — instant credit`,
           { type: 'TRADE_CREDIT', tradeId }
         );
+        const now = new Date();
         await prisma.trade.update({
           where: { id: tradeId },
-          data: { instantCreditedAt: new Date(), balanceCreditedAt: new Date() },
+          data: {
+            instantCreditedAt: now,
+            balanceCreditedAt: now,
+            status: 'AVAILABLE',
+            availableAt: now,
+          },
         });
         await prisma.auditLog.create({
           data: {
@@ -123,7 +129,7 @@ export class TradeHooks {
             details: { tradeId, netCentsUsd: trade.netCents, eurCents, usdToEurRate: rate, source: 'instant_credit_ipn1' },
           },
         });
-        logger.info(`[TradeHooks] INSTANT CREDIT applied for trade ${tradeId}`);
+        logger.info(`[TradeHooks] INSTANT CREDIT applied for trade ${tradeId} — status forced to AVAILABLE`);
       } else {
         await creditPendingBalance(
           userId,
