@@ -372,8 +372,8 @@ export function SkinplaceInventoryViewer({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {Array.from({ length: 10 }).map((_, i) => (
               <Skeleton key={i} className="h-48 w-full" />
             ))}
           </div>
@@ -906,8 +906,8 @@ export function SkinplaceInventoryViewer({
             </div>
           ) : (
             <div className="relative">
-              <div className="max-h-[600px] overflow-y-auto pr-2 -mr-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
+              <div className="max-h-[600px] overflow-y-auto px-1 -mx-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 pb-4">
                 {filteredItems.map((item) => {
                   const isSelected = selectedItems.includes(item.id);
                   const isDisabled = !!item.skip_reason;
@@ -942,18 +942,18 @@ export function SkinplaceInventoryViewer({
                       }`}
                       onClick={() => handleItemClick(item)}
                     >
-                      <CardContent className="p-4">
-                        <div className="space-y-3">
+                      <CardContent className="p-3">
+                        <div className="space-y-2">
                           {/* Image et badges */}
                           <div className="relative">
                             <SafeImg
                               src={item.icon_url}
                               alt={item.name}
-                              className={`w-full h-24 object-contain mx-auto ${
+                              className={`w-full h-20 object-contain mx-auto ${
                                 isDisabled ? 'grayscale' : ''
                               }`}
-                              fallbackClassName={`w-full h-24 ${isDisabled ? 'grayscale' : ''}`}
-                              fallbackIcon={<Package className="w-12 h-12 text-muted-foreground" />}
+                              fallbackClassName={`w-full h-20 ${isDisabled ? 'grayscale' : ''}`}
+                              fallbackIcon={<Package className="w-10 h-10 text-muted-foreground" />}
                             />
                             {badgeCfg && (
                               <div className="absolute top-0 right-0">
