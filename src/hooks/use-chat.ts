@@ -1,9 +1,10 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { queryKeys } from '@/lib/query-keys';
 import { useLocale } from '@/components/providers/locale-provider';
+import { playNotificationSound } from '@/lib/play-notification-sound';
 
 interface ChatMessage {
   id: string;
@@ -92,6 +93,25 @@ export function useChat(isOpen = false) {
     refetchInterval: isOpen && conversationId ? 15_000 : false,
     refetchIntervalInBackground: false,
   });
+
+  // Track staff message count to play a sound when a new one arrives
+  const prevStaffMsgCountRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!currentConversation) return;
+    const staffMsgCount = currentConversation.messages.filter(
+      (m) => m.senderType === 'MODERATOR' || m.senderType === 'BOT' || m.senderType === 'SYSTEM',
+    ).length;
+
+    if (
+      prevStaffMsgCountRef.current !== null &&
+      staffMsgCount > prevStaffMsgCountRef.current
+    ) {
+      playNotificationSound(660, 400, 0.25);
+    }
+
+    prevStaffMsgCountRef.current = staffMsgCount;
+  }, [currentConversation]);
 
   const createConversationMutation = useMutation({
     mutationFn: async (initialMessage: string) => {

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useLocale } from '@/components/providers/locale-provider';
+import { playNotificationSound } from '@/lib/play-notification-sound';
 
 interface UpdateNotifierProps {
   checkInterval?: number;
@@ -102,28 +103,6 @@ export default function UpdateNotifier({
     }, 1000);
 
     playNotificationSound();
-  };
-
-  const playNotificationSound = () => {
-    try {
-      const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
-    } catch {
-      // Sound is not critical
-    }
   };
 
   return null;
