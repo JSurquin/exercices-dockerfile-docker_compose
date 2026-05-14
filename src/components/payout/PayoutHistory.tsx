@@ -68,6 +68,8 @@ export function PayoutHistory() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'PAID':
+      case 'FLEXIFY_PAID':
+      case 'WHITEPAY_COMPLETE':
         return (
           <Badge className="bg-green-500/20 text-green-500 border-green-500/50">
             <CheckCircle className="w-3 h-3 mr-1" />
@@ -75,6 +77,9 @@ export function PayoutHistory() {
           </Badge>
         );
       case 'FAILED':
+      case 'FLEXIFY_FAILED':
+      case 'WHITEPAY_DECLINED':
+      case 'CANCELLED':
         return (
           <Badge variant="destructive">
             <XCircle className="w-3 h-3 mr-1" />
@@ -83,6 +88,9 @@ export function PayoutHistory() {
         );
       case 'PROCESSING':
       case 'SCHEDULED':
+      case 'FLEXIFY_PROCESSING':
+      case 'WHITEPAY_PROCESSING_WITHDRAWAL':
+      case 'WHITEPAY_PENDING_WITHDRAWAL':
         return (
           <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/50">
             <Loader2 className="w-3 h-3 mr-1 animate-spin" />
@@ -90,8 +98,16 @@ export function PayoutHistory() {
           </Badge>
         );
       case 'VERIFICATION_REQUIRED':
+      case 'WHITEPAY_WAITING_CONFIRMATION':
         return (
           <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
+            <AlertCircle className="w-3 h-3 mr-1" />
+            {t.statusVerification}
+          </Badge>
+        );
+      case 'PENDING_APPROVAL':
+        return (
+          <Badge className="bg-orange-500/20 text-orange-500 border-orange-500/50">
             <AlertCircle className="w-3 h-3 mr-1" />
             {t.statusVerification}
           </Badge>
