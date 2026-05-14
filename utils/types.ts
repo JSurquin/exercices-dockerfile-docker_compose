@@ -1259,6 +1259,35 @@ export interface Messages {
       merchantDescription?: string;
       sectionInDevelopment?: string;
     };
+    vipMerchantManagement: {
+      toastErrorTitle: string;
+      bonusRangeError: string;
+      bonusUpdatedTitle: string;
+      bonusUpdatedDesc: string;
+      bonusUpdateError: string;
+      tagRemovedTitle: string;
+      tagRemovedDesc: string;
+      tagRemoveError: string;
+      totalWithTagLabel: string;
+      totalVolume: string;
+      averageBonus: string;
+      searchPlaceholder: string;
+      emptyStateLine: string;
+      colUser: string;
+      colBonus: string;
+      colVolume: string;
+      colActions: string;
+      dialogEditTitle: string;
+      dialogEditDesc: string;
+      bonusRateLabel: string;
+      cancel: string;
+      save: string;
+      dialogRemoveTitle: string;
+      dialogRemoveDesc: string;
+      dialogRemoveConfirm: string;
+      fetchUsersError: string;
+      fetchBonusError: string;
+    };
     userCreation: {
       title: string;
       description: string;
@@ -1408,6 +1437,7 @@ export interface Messages {
       filterMerchant: string;
       errorTitle: string;
       errorUnknown: string;
+      genericRequestError: string;
     };
     userDetail: {
       backToUsers: string;
@@ -1475,6 +1505,8 @@ export interface Messages {
       save: string;
       resetTitle: string;
       configUpdated: string;
+      loadError: string;
+      saveError: string;
       globalControlsTitle: string;
       defaultWithdrawalLimitLabel: string;
       defaultWithdrawalLimitDesc: string;
@@ -1655,6 +1687,11 @@ export interface Messages {
       kycSyncErrorDesc: string;
       kycaidSaysVerified: string;
       unchanged: string;
+      loadError: string;
+      singleUserSyncDesc: string;
+      kycaidStatusLine: string;
+      tooltipSyncAllPending: string;
+      kycUnknown: string;
     };
     affiliatesManagement: {
       adminToolsTitle: string;
@@ -2228,6 +2265,8 @@ export interface Messages {
         previous: string;
         next: string;
         page: string;
+        filterTypePlaceholder?: string;
+        filterPriorityPlaceholder?: string;
       };
       create: {
         title: string;
@@ -5029,6 +5068,13 @@ export interface Messages {
         colReference?: string;
         colCreatedAt?: string;
         colActions?: string;
+        toastErrorTitle?: string;
+        toastSaveFailed?: string;
+        toastApproveFailed?: string;
+        toastResyncFailed?: string;
+        toastCancelFailed?: string;
+        requestFailed?: string;
+        cancelReasonByAdmin?: string;
       };
     };
   };

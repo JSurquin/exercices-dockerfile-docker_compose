@@ -33,25 +33,6 @@ interface PlatformConfigResponse {
   sources: Record<string, 'db' | 'env'>;
 }
 
-async function fetchPlatformConfig(): Promise<PlatformConfigResponse> {
-  const res = await fetch('/api/admin/platform-config');
-  if (!res.ok) throw new Error('Erreur chargement config plateforme');
-  return res.json();
-}
-
-async function patchConfig(payload: { key: string; value: unknown } | { key: string; reset: true; value?: never }) {
-  const res = await fetch('/api/admin/platform-config', {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error ?? 'Erreur sauvegarde');
-  }
-  return res.json();
-}
-
 function SourceBadge({ source }: { source: 'db' | 'env' }) {
   return source === 'db' ? (
     <Badge variant="outline" className="bg-green-500/10 border-green-500/50 text-green-400 text-xs">
@@ -211,11 +192,28 @@ export function PlatformConfigSettings() {
 
   const { data, isLoading } = useQuery({
     queryKey: queryKeys.adminPlatformConfig,
-    queryFn: fetchPlatformConfig,
+    queryFn: async (): Promise<PlatformConfigResponse> => {
+      const res = await fetch('/api/admin/platform-config');
+      if (!res.ok) throw new Error(t.loadError);
+      return res.json();
+    },
   });
 
   const mutation = useMutation({
-    mutationFn: patchConfig,
+    mutationFn: async (
+      payload: { key: string; value: unknown } | { key: string; reset: true }
+    ) => {
+      const res = await fetch('/api/admin/platform-config', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? t.saveError);
+      }
+      return res.json();
+    },
     onSuccess: () => {
       toast.success(t.configUpdated);
       queryClient.invalidateQueries({ queryKey: queryKeys.adminPlatformConfig });

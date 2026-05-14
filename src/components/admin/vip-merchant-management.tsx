@@ -25,6 +25,7 @@ import {
 import { UserRoleBadge } from '@/components/ui/user-role-badge';
 import Link from 'next/link';
 import { queryKeys } from '@/lib/query-keys';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface VipMerchantUser {
   id: string;
@@ -42,6 +43,8 @@ interface VipMerchantProps {
 }
 
 export function VipMerchantManagement({ tag }: VipMerchantProps) {
+  const { messages } = useLocale();
+  const t = messages.admin.vipMerchantManagement;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchInput, setSearchInput] = useState('');
@@ -70,7 +73,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
       params.append('limit', '20');
 
       const response = await fetch(`/api/admin/users?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch users');
+      if (!response.ok) throw new Error(t.fetchUsersError);
       return response.json();
     },
     placeholderData: keepPreviousData,
@@ -85,7 +88,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
     if (!editDialog.user) return;
     const rate = parseFloat(newBonusRate);
     if (isNaN(rate) || rate < 0 || rate > 50) {
-      toast({ title: 'Erreur', description: 'Le bonus doit être entre 0 et 50%', variant: 'destructive' });
+      toast({ title: t.toastErrorTitle, description: t.bonusRangeError, variant: 'destructive' });
       return;
     }
 
@@ -96,13 +99,16 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bonusRatePercent: rate, userTag: tag }),
       });
-      if (!res.ok) throw new Error('Failed to update bonus');
+      if (!res.ok) throw new Error(t.fetchBonusError);
 
-      toast({ title: 'Bonus mis à jour', description: `${editDialog.user.username} → ${rate}%` });
+      toast({
+        title: t.bonusUpdatedTitle,
+        description: t.bonusUpdatedDesc.replace('{username}', editDialog.user.username).replace('{rate}', String(rate)),
+      });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       setEditDialog({ open: false, user: null });
     } catch {
-      toast({ title: 'Erreur', description: 'Impossible de mettre à jour le bonus', variant: 'destructive' });
+      toast({ title: t.toastErrorTitle, description: t.bonusUpdateError, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -117,13 +123,16 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bonusRatePercent: 0, userTag: null }),
       });
-      if (!res.ok) throw new Error('Failed to remove tag');
+      if (!res.ok) throw new Error(t.tagRemoveError);
 
-      toast({ title: 'Tag retiré', description: `${removeDialog.user.username} n'est plus ${tag}` });
+      toast({
+        title: t.tagRemovedTitle,
+        description: t.tagRemovedDesc.replace('{username}', removeDialog.user.username).replace('{tag}', tag),
+      });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       setRemoveDialog({ open: false, user: null });
     } catch {
-      toast({ title: 'Erreur', description: 'Impossible de retirer le tag', variant: 'destructive' });
+      toast({ title: t.toastErrorTitle, description: t.tagRemoveError, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -142,7 +151,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
           <CardContent className="p-4 flex items-center gap-3">
             <Users className="h-8 w-8 text-amber-400" />
             <div>
-              <p className="text-sm text-slate-400">Total {tag}s</p>
+              <p className="text-sm text-slate-400">{t.totalWithTagLabel.replace('{tag}', tag)}</p>
               <p className="text-2xl font-bold text-white">{totalUsers}</p>
             </div>
           </CardContent>
@@ -151,7 +160,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
           <CardContent className="p-4 flex items-center gap-3">
             <TrendingUp className="h-8 w-8 text-emerald-400" />
             <div>
-              <p className="text-sm text-slate-400">Volume total</p>
+              <p className="text-sm text-slate-400">{t.totalVolume}</p>
               <p className="text-2xl font-bold text-white">
                 {formatCurrency(users.reduce((sum, u) => sum + (u.totalVolume || 0), 0))}
               </p>
@@ -162,7 +171,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
           <CardContent className="p-4 flex items-center gap-3">
             <DollarSign className="h-8 w-8 text-blue-400" />
             <div>
-              <p className="text-sm text-slate-400">Bonus moyen</p>
+              <p className="text-sm text-slate-400">{t.averageBonus}</p>
               <p className="text-2xl font-bold text-white">
                 {totalUsers > 0
                   ? (users.reduce((sum, u) => sum + (u.bonusRatePercent || 0), 0) / totalUsers).toFixed(1)
@@ -179,7 +188,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              placeholder={`Rechercher un ${tag}...`}
+              placeholder={t.searchPlaceholder.replace('{tag}', tag)}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="pl-10 bg-slate-700 border-slate-600 text-white"
@@ -202,17 +211,17 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
         ) : users.length === 0 ? (
           <div className="text-center py-12 text-slate-400">
             <Icon className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p>Aucun utilisateur {tag} trouvé</p>
+            <p>{t.emptyStateLine.replace('{tag}', tag)}</p>
           </div>
         ) : (
           <div className="rounded-lg border border-slate-700 overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="border-slate-700 hover:bg-transparent">
-                  <TableHead className="text-slate-400">Utilisateur</TableHead>
-                  <TableHead className="text-slate-400">Bonus</TableHead>
-                  <TableHead className="text-slate-400">Volume</TableHead>
-                  <TableHead className="text-slate-400">Actions</TableHead>
+                  <TableHead className="text-slate-400">{t.colUser}</TableHead>
+                  <TableHead className="text-slate-400">{t.colBonus}</TableHead>
+                  <TableHead className="text-slate-400">{t.colVolume}</TableHead>
+                  <TableHead className="text-slate-400">{t.colActions}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -274,14 +283,16 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
       <Dialog open={editDialog.open} onOpenChange={(open) => !open && setEditDialog({ open: false, user: null })}>
         <DialogContent className="bg-slate-800 border-slate-700">
           <DialogHeader>
-            <DialogTitle className="text-white">Modifier le bonus</DialogTitle>
+            <DialogTitle className="text-white">{t.dialogEditTitle}</DialogTitle>
             <DialogDescription className="text-slate-400">
-              Modifier le taux de bonus pour {editDialog.user?.username}
+              {editDialog.user?.username
+                ? t.dialogEditDesc.replace('{username}', editDialog.user.username)
+                : ''}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label className="text-slate-300">Taux de bonus (%)</Label>
+              <Label className="text-slate-300">{t.bonusRateLabel}</Label>
               <Input
                 type="number"
                 step="0.1"
@@ -295,11 +306,11 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
           </div>
           <DialogFooter>
             <Button variant="outline" className="border-slate-600 text-white" onClick={() => setEditDialog({ open: false, user: null })}>
-              Annuler
+              {t.cancel}
             </Button>
             <Button onClick={handleEditBonus} disabled={saving} className="bg-amber-500 hover:bg-amber-600 text-black">
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Sauvegarder
+              {t.save}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -309,18 +320,22 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
       <Dialog open={removeDialog.open} onOpenChange={(open) => !open && setRemoveDialog({ open: false, user: null })}>
         <DialogContent className="bg-slate-800 border-slate-700">
           <DialogHeader>
-            <DialogTitle className="text-white">Retirer le statut {tag}</DialogTitle>
+            <DialogTitle className="text-white">{t.dialogRemoveTitle.replace('{tag}', tag)}</DialogTitle>
             <DialogDescription className="text-slate-400">
-              Êtes-vous sûr de vouloir retirer le statut {tag} de {removeDialog.user?.username} ? Son bonus sera remis à 0%.
+              {removeDialog.user?.username
+                ? t.dialogRemoveDesc
+                    .replace(/\{tag\}/g, tag)
+                    .replace('{username}', removeDialog.user.username)
+                : ''}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" className="border-slate-600 text-white" onClick={() => setRemoveDialog({ open: false, user: null })}>
-              Annuler
+              {t.cancel}
             </Button>
             <Button variant="destructive" onClick={handleRemoveTag} disabled={saving}>
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Retirer {tag}
+              {t.dialogRemoveConfirm.replace('{tag}', tag)}
             </Button>
           </DialogFooter>
         </DialogContent>

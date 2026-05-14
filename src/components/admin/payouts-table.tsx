@@ -64,7 +64,7 @@ export function AdminPayoutsTable() {
 
       const response = await fetch(`/api/admin/payouts?${params}`);
       const json = await response.json();
-      if (!response.ok) throw new Error(json.error || 'Erreur lors du chargement des paiements');
+      if (!response.ok) throw new Error((json.error as string | undefined) || tp.loadError || 'Error');
       return json;
     },
   });
@@ -102,11 +102,11 @@ export function AdminPayoutsTable() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled: autoApproveEnabled, thresholdCents }),
       });
-      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Erreur');
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || tp.requestFailed || 'Error');
       toast.success(tp.autoApproveSaved ?? 'Paramètres enregistrés');
     } catch (e) {
-      toast.error('Erreur', {
-        description: e instanceof Error ? e.message : 'Impossible d\'enregistrer',
+      toast.error(tp.toastErrorTitle ?? 'Error', {
+        description: e instanceof Error ? e.message : (tp.toastSaveFailed ?? ''),
       });
     } finally {
       setAutoApproveSaving(false);
@@ -118,12 +118,12 @@ export function AdminPayoutsTable() {
     try {
       const res = await fetch(`/api/admin/payouts/${payoutId}/approve`, { method: 'POST' });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Erreur');
+      if (!res.ok) throw new Error(data.error || tp.requestFailed || 'Error');
       toast.success(tp.approveSuccess ?? 'Payout approuvé');
       queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) });
     } catch (e) {
-      toast.error('Erreur', {
-        description: e instanceof Error ? e.message : 'Impossible d\'approuver',
+      toast.error(tp.toastErrorTitle ?? 'Error', {
+        description: e instanceof Error ? e.message : (tp.toastApproveFailed ?? ''),
       });
     } finally {
       setApprovingId(null);
@@ -200,15 +200,15 @@ export function AdminPayoutsTable() {
     try {
       const res = await fetch(`/api/admin/payouts/${payoutId}/resync-flexify`, { method: 'POST' });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Erreur');
+      if (!res.ok) throw new Error(data.error || tp.requestFailed || 'Error');
       toast.success(
         tp.resyncSuccess ?? 'Statut resynchronisé avec Flexify',
         { description: `${data.previousStatus} → ${data.newStatus}` }
       );
       queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) });
     } catch (e) {
-      toast.error('Erreur', {
-        description: e instanceof Error ? e.message : 'Impossible de resynchroniser le statut Flexify',
+      toast.error(tp.toastErrorTitle ?? 'Error', {
+        description: e instanceof Error ? e.message : (tp.toastResyncFailed ?? ''),
       });
     } finally {
       setResyncingId(null);
@@ -221,15 +221,15 @@ export function AdminPayoutsTable() {
       const res = await fetch(`/api/admin/payouts/${payoutId}/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: 'Annulé par l\'admin' }),
+        body: JSON.stringify({ reason: tp.cancelReasonByAdmin }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Erreur');
+      if (!res.ok) throw new Error(data.error || tp.requestFailed || 'Error');
       toast.success(tp.cancelSuccess ?? 'Payout annulé');
       queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) });
     } catch (e) {
-      toast.error('Erreur', {
-        description: e instanceof Error ? e.message : 'Impossible d\'annuler le payout',
+      toast.error(tp.toastErrorTitle ?? 'Error', {
+        description: e instanceof Error ? e.message : (tp.toastCancelFailed ?? ''),
       });
     } finally {
       setCancellingId(null);
