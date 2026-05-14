@@ -4589,6 +4589,8 @@ export const messages: Record<Locale, Messages> = {
         title: 'Historique des retraits',
         noPayout: 'Aucun retrait',
         noPayoutDesc: 'Aucun retrait effectué',
+        receivedNetHint: 'Montant viré',
+        balanceDebitedHint: 'Débit de votre solde',
         requestPayout: 'Demander un retrait',
         sepaPremiumLabel: 'SEPA Premium',
         columns: {
@@ -10309,6 +10311,8 @@ export const messages: Record<Locale, Messages> = {
         title: 'Withdrawal history',
         noPayout: 'No withdrawals',
         noPayoutDesc: 'No withdrawals made',
+        receivedNetHint: 'Amount sent',
+        balanceDebitedHint: 'Deducted from balance',
         requestPayout: 'Request withdrawal',
         sepaPremiumLabel: 'SEPA Premium',
         columns: {
@@ -16904,6 +16908,8 @@ export const messages: Record<Locale, Messages> = {
         title: '提取历史',
         noPayout: '暂无提取',
         noPayoutDesc: '暂无提取记录',
+        receivedNetHint: '到账金额',
+        balanceDebitedHint: '余额扣款',
         requestPayout: '申请提取',
         sepaPremiumLabel: 'SEPA Premium',
         columns: {

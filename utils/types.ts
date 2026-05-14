@@ -5899,6 +5899,8 @@ export interface Messages {
       title: string;
       noPayout: string;
       noPayoutDesc: string;
+      receivedNetHint: string;
+      balanceDebitedHint: string;
       requestPayout: string;
       sepaPremiumLabel: string;
       columns: {

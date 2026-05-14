@@ -65,6 +65,41 @@ function getAddressPlaceholder(network: string): string {
   }
 }
 
+/** Flexify envoie processingFeeCents / Whitepay processingCents — évite NaN dans le récap */
+function normalizeWithdrawalFeesCents(fees: unknown): { processingCents: number; networkCents: number } {
+  if (!fees || typeof fees !== 'object') return { processingCents: 0, networkCents: 0 };
+  const o = fees as Record<string, unknown>;
+  const processing =
+    typeof o.processingFeeCents === 'number'
+      ? o.processingFeeCents
+      : typeof o.processingCents === 'number'
+        ? o.processingCents
+        : 0;
+  const network =
+    typeof o.networkFeeCents === 'number'
+      ? o.networkFeeCents
+      : typeof o.networkCents === 'number'
+        ? o.networkCents
+        : 0;
+  return { processingCents: processing, networkCents: network };
+}
+
+/** amount API = brut déduit du solde ; netAmount = montant effectivement viré */
+function netReceivedFromHistoryRow(payout: {
+  amount: number;
+  fees?: number;
+  netAmount?: number;
+}): { grossCents: number; netCents: number } {
+  const grossCents = Number(payout.amount) || 0;
+  const feesTotal = typeof payout.fees === 'number' ? payout.fees : 0;
+  let netCents =
+    typeof payout.netAmount === 'number' && !Number.isNaN(payout.netAmount)
+      ? payout.netAmount
+      : grossCents - feesTotal;
+  if (netCents < 0) netCents = 0;
+  return { grossCents, netCents };
+}
+
 // Type for the quote response from our API
 interface QuoteData {
   method: string;
@@ -156,8 +191,8 @@ export default function PayoutPage() {
     reference: string;
     status: string;
     amountCents: number;
-    fees: { processingCents: number; networkCents: number; totalCents: number };
-    netCents: number;
+    fees?: unknown;
+    netCents?: number;
     method: string;
     pendingApproval?: boolean;
   } | null>(null);
@@ -193,6 +228,8 @@ export default function PayoutPage() {
       (historyData?.payouts ?? []) as Array<{
         id: string;
         amount: number;
+        fees?: number;
+        netAmount?: number;
         status: string;
         method: string;
         createdAt: string;
@@ -1521,7 +1558,16 @@ export default function PayoutPage() {
                 )}
 
                 {/* Récapitulatif frais réels après soumission */}
-                {payoutResult && (
+                {payoutResult && (() => {
+                  const resultFees = normalizeWithdrawalFeesCents(payoutResult.fees);
+                  const resultNet =
+                    typeof payoutResult.netCents === 'number' && !Number.isNaN(payoutResult.netCents)
+                      ? payoutResult.netCents
+                      : Math.max(
+                          0,
+                          payoutResult.amountCents - resultFees.processingCents - resultFees.networkCents,
+                        );
+                  return (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1542,16 +1588,16 @@ export default function PayoutPage() {
                       </div>
                       <div className="flex justify-between text-orange-500">
                         <span>{text.result.processingFee}</span>
-                        <span>-{formatCentsToCurrency(payoutResult.fees.processingCents, 'EUR')}</span>
+                        <span>-{formatCentsToCurrency(resultFees.processingCents, 'EUR')}</span>
                       </div>
                       <div className="flex justify-between text-orange-500">
                         <span>{text.result.networkFee}</span>
-                        <span>-{formatCentsToCurrency(payoutResult.fees.networkCents, 'EUR')}</span>
+                        <span>-{formatCentsToCurrency(resultFees.networkCents, 'EUR')}</span>
                       </div>
                       <Separator />
                       <div className="flex justify-between font-semibold text-lg">
                         <span>{text.request.youReceive}</span>
-                        <span className="text-green-500">{formatCentsToCurrency(payoutResult.netCents, 'EUR')}</span>
+                        <span className="text-green-500">{formatCentsToCurrency(resultNet, 'EUR')}</span>
                       </div>
                     </div>
                     <Button
@@ -1563,7 +1609,8 @@ export default function PayoutPage() {
                       {text.result.newWithdrawal}
                     </Button>
                   </motion.div>
-                )}
+                  );
+                })()}
               </CardContent>
             </Card>
           </motion.div>
@@ -1602,16 +1649,24 @@ export default function PayoutPage() {
                   </div>
                 ) : (
                   <div className="space-y-3 max-h-[480px] overflow-y-auto pr-2 -mr-2">
-                    {payoutHistory.map((payout) => (
+                    {payoutHistory.map((payout) => {
+                      const { grossCents, netCents } = netReceivedFromHistoryRow(payout);
+                      return (
                       <div 
                         key={payout.id} 
                         className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                       >
                         <div>
-                          <p className="font-medium">{formatCentsToCurrency(payout.amount, 'EUR')}</p>
+                          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{text.history.receivedNetHint}</p>
+                          <p className="font-medium">{formatCentsToCurrency(netCents, 'EUR')}</p>
                           <p className="text-xs text-muted-foreground">
                             {new Date(payout.createdAt).toLocaleDateString(locale)}
                           </p>
+                          {grossCents !== netCents && (
+                            <p className="text-[11px] text-muted-foreground mt-1">
+                              {text.history.balanceDebitedHint}: {formatCentsToCurrency(grossCents, 'EUR')}
+                            </p>
+                          )}
                         </div>
                         <div className="text-right">
                           {getStatusBadge(displayPayoutStatus(payout))}
@@ -1620,7 +1675,7 @@ export default function PayoutPage() {
                           </p>
                         </div>
                       </div>
-                    ))}
+                    ); })}
                   </div>
                 )}
               </CardContent>
