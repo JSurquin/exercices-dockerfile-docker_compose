@@ -71,6 +71,12 @@ export const RATE_LIMIT_CONFIGS = {
     windowMs: 60 * 60 * 1000, // 1 heure
     maxRequests: 5, // 5 demandes de paiement par heure
   },
+
+  // Polling réconciliation payouts (Flexify/Whitepay — coût API + anti-abus)
+  PAYOUT_RECONCILE: {
+    windowMs: 60 * 1000,
+    maxRequests: 30,
+  },
   
   // Upload de documents KYC
   KYC_UPLOAD: {
@@ -264,6 +270,7 @@ export const rateLimiters = {
   sensitiveActions: new RateLimiter('sensitive_actions', RATE_LIMIT_CONFIGS.SENSITIVE_ACTIONS),
   ibanChange: new RateLimiter('iban_change', RATE_LIMIT_CONFIGS.IBAN_CHANGE),
   payoutRequest: new RateLimiter('payout_request', RATE_LIMIT_CONFIGS.PAYOUT_REQUEST),
+  payoutReconcile: new RateLimiter('payout_reconcile', RATE_LIMIT_CONFIGS.PAYOUT_RECONCILE),
   kycUpload: new RateLimiter('kyc_upload', RATE_LIMIT_CONFIGS.KYC_UPLOAD),
   tradeCreation: new RateLimiter('trade_creation', RATE_LIMIT_CONFIGS.TRADE_CREATION),
   newsletterSubscribe: new RateLimiter('newsletter_subscribe', RATE_LIMIT_CONFIGS.NEWSLETTER_SUBSCRIBE),

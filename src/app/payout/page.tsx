@@ -188,7 +188,50 @@ export default function PayoutPage() {
     enabled: !!user,
     refetchOnWindowFocus: true,
   });
-  const payoutHistory = historyData?.payouts ?? [];
+  const payoutHistory = useMemo(
+    () => (historyData?.payouts ?? []) as Array<{ id: string; amount: number; status: string; method: string; createdAt: string }>,
+    [historyData],
+  );
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Polling actif : on déclenche la réconciliation côté serveur dès qu'on arrive
+  // sur la page, puis toutes les 15 secondes tant qu'il reste un payout non-final.
+  // Le serveur interroge directement Flexify/Whitepay (filet de sécurité si le
+  // webhook a été manqué).
+  // ───────────────────────────────────────────────────────────────────────────
+  const FINAL_STATUSES_UPPER = useMemo(
+    () => new Set([
+      'PAID', 'FLEXIFY_PAID', 'WHITEPAY_COMPLETE',
+      'FAILED', 'FLEXIFY_FAILED', 'WHITEPAY_DECLINED',
+      'CANCELLED',
+    ]),
+    [],
+  );
+  const hasNonFinalPayout = useMemo(
+    () => payoutHistory.some((p) => !FINAL_STATUSES_UPPER.has(p.status.toUpperCase())),
+    [payoutHistory, FINAL_STATUSES_UPPER],
+  );
+
+  const { isFetching: isReconciling, refetch: triggerReconcile } = useQuery({
+    queryKey: ['payout-reconcile-page'],
+    queryFn: async () => {
+      const r = await fetch('/api/user/payouts/reconcile');
+      if (!r.ok) return { results: [] };
+      const data = await r.json();
+      // Si quelque chose a bougé, on rafraîchit l'historique et la balance
+      if (Array.isArray(data?.results) && data.results.some((x: { action: string }) => x.action === 'debited' || x.action === 'failed')) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.payoutHistory });
+        queryClient.invalidateQueries({ queryKey: queryKeys.userBalance });
+      }
+      return data;
+    },
+    enabled: !!user,
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    refetchInterval: hasNonFinalPayout ? 15_000 : false,
+    staleTime: 0,
+    retry: false,
+  });
 
   const { data: paymentMethodsData } = useQuery({
     queryKey: queryKeys.paymentMethods,
@@ -608,9 +651,15 @@ export default function PayoutPage() {
       case 'whitepay_complete':
         return <Badge className="bg-green-500">{text.history.status.paid}</Badge>;
       case 'processing':
+      case 'scheduled':
       case 'flexify_processing':
+      case 'whitepay_pending_withdrawal':
       case 'whitepay_processing_withdrawal':
-        return <Badge className="bg-blue-500">{text.history.status.pending}</Badge>;
+        return <Badge className="bg-blue-500">{text.history.status.processing}</Badge>;
+      case 'whitepay_waiting_confirmation':
+      case 'verification_required':
+      case 'verified':
+        return <Badge className="bg-yellow-500">{text.history.status.verificationRequired}</Badge>;
       case 'failed':
       case 'flexify_failed':
       case 'whitepay_declined':
@@ -1511,14 +1560,16 @@ export default function PayoutPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => {
+                    onClick={async () => {
+                      await triggerReconcile();
                       queryClient.invalidateQueries({ queryKey: queryKeys.payoutHistory });
                       queryClient.invalidateQueries({ queryKey: queryKeys.userBalance });
                     }}
                     title={messages.ui?.refresh}
+                    disabled={isReconciling}
                     className="h-8 w-8"
                   >
-                    <ArrowPathIcon className="h-4 w-4" />
+                    <ArrowPathIcon className={`h-4 w-4 ${isReconciling ? 'animate-spin' : ''}`} />
                   </Button>
                 </div>
               </CardHeader>
@@ -1529,8 +1580,8 @@ export default function PayoutPage() {
                     <p className="text-sm text-muted-foreground">{text.history.noPayoutDesc}</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {payoutHistory.slice(0, 5).map((payout: { id: string; amount: number; status: string; method: string; createdAt: string }) => (
+                  <div className="space-y-3 max-h-[480px] overflow-y-auto pr-2 -mr-2">
+                    {payoutHistory.map((payout: { id: string; amount: number; status: string; method: string; createdAt: string }) => (
                       <div 
                         key={payout.id} 
                         className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
