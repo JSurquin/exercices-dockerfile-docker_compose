@@ -253,13 +253,21 @@ export default function PayoutPage() {
     ]),
     [],
   );
+  /** Échecs explicites — balanceDebitedAt peut être non-null (verrou onFailed), sans aucun paiement réussi */
+  const TERMINAL_FAILURE_UPPER = useMemo(
+    () => new Set(['FAILED', 'FLEXIFY_FAILED', 'WHITEPAY_DECLINED', 'CANCELLED']),
+    [],
+  );
   const hasNonFinalPayout = useMemo(
     () =>
       payoutHistory.some((p) => {
-        if (p.balanceDebitedAt || p.paidAt) return false;
-        return !FINAL_STATUSES_UPPER.has(p.status.toUpperCase());
+        const u = p.status.toUpperCase();
+        if (FINAL_STATUSES_UPPER.has(u)) return false;
+        // paidAt n’est posé qu’en succès ; ne pas couper le polling si statut = échec
+        if (p.paidAt && !TERMINAL_FAILURE_UPPER.has(u)) return false;
+        return true;
       }),
-    [payoutHistory, FINAL_STATUSES_UPPER],
+    [payoutHistory, FINAL_STATUSES_UPPER, TERMINAL_FAILURE_UPPER],
   );
 
   const { isFetching: isReconciling, refetch: triggerReconcile } = useQuery({
@@ -692,12 +700,15 @@ export default function PayoutPage() {
     );
   }
 
-  /** Statut BDD parfois en retard ; si balance déjà débitée ou paidAt → badge Payé */
-  const displayPayoutStatus = (row: {
-    status: string;
-    paidAt?: string | null;
-    balanceDebitedAt?: string | null;
-  }) => (row.balanceDebitedAt || row.paidAt ? 'PAID' : row.status);
+  /** Ne jamais déduire « Payé » de balanceDebitedAt : onFailed() le pose aussi (verrou sans débit utilisateur). */
+  const displayPayoutStatus = (row: { status: string; paidAt?: string | null }) => {
+    const u = row.status.toUpperCase();
+    if (TERMINAL_FAILURE_UPPER.has(u)) return row.status;
+    const successLike = new Set(['PAID', 'FLEXIFY_PAID', 'WHITEPAY_COMPLETE']);
+    if (successLike.has(u)) return row.status;
+    if (row.paidAt) return 'PAID';
+    return row.status;
+  };
 
   const getStatusBadge = (status: string) => {
     const s = status.toLowerCase();

@@ -146,7 +146,8 @@ export class PayoutLifecycle {
 
   /**
    * Dégèle le montant sans débiter (paiement échoué / rejeté).
-   * Idempotent : utilise balanceDebitedAt comme verrou atomique.
+   * Idempotent : utilise balanceDebitedAt comme verrou atomique (à ne pas confondre avec un succès :
+   * ce champ est aussi posé ici pour marquer le payout comme traité après échec).
    */
   static async onFailed(
     userId: string,

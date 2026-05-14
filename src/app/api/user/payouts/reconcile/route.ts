@@ -99,9 +99,18 @@ async function reconcileFlexifyPayout(
   userId: string,
   payout: { id: string; flexifyPayoutId: string | null; gateFiOrderId: string | null; status: string; amountCents: number; tradeId: string | null; paymentMethodType: string | null },
 ): Promise<ReconcileResult> {
-  // Fast-path : statut interne déjà final → on ne réinterroge pas Flexify, on rejoue juste onCompleted
-  // (la balance n'a pas été débitée car balanceDebitedAt:null dans le filtre amont)
+  // Statut interne déjà « payé » mais débit balance pas rejoué : on revérifie Flexify avant tout débit
   if (payout.status === 'FLEXIFY_PAID' || payout.status === 'PAID') {
+    const flexifyStatus = await fetchFlexifyStatus(payout);
+    if (!flexifyStatus) {
+      return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'flexify' };
+    }
+    if (isFlexifyFailed(flexifyStatus)) {
+      return applyFailed(userId, payout, 'flexify');
+    }
+    if (!isFlexifyCompleted(flexifyStatus)) {
+      return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'flexify' };
+    }
     return applyDebit(userId, payout, 'flexify', { preserveExistingStatus: true });
   }
 
@@ -124,9 +133,26 @@ async function reconcileWhitepayPayout(
   userId: string,
   payout: { id: string; whitepayTransactionId: string | null; status: string; amountCents: number; tradeId: string | null; createdAt: Date },
 ): Promise<ReconcileResult> {
-  // Fast-path : statut interne déjà final → on ne réinterroge pas Whitepay, on rejoue juste onCompleted
-  // (la balance n'a pas été débitée car balanceDebitedAt:null dans le filtre amont)
+  // Même logique : statut interne succès sans débit → confirmer chez Whitepay avant applyDebit
   if (payout.status === 'WHITEPAY_COMPLETE' || payout.status === 'PAID') {
+    let wpStatus: string | undefined;
+    try {
+      const wpData = await getWhitepayTransactionStatus(payout.whitepayTransactionId!);
+      wpStatus = wpData.transaction?.status;
+    } catch (err) {
+      const msg = (err as Error).message ?? '';
+      const ageMs = Date.now() - payout.createdAt.getTime();
+      if ((msg.includes('404') || msg.toLowerCase().includes('not found')) && ageMs > 24 * 60 * 60 * 1000) {
+        return applyFailed(userId, payout, 'whitepay');
+      }
+      return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'whitepay' };
+    }
+    if (wpStatus && isWhitepayFailed(wpStatus as never)) {
+      return applyFailed(userId, payout, 'whitepay');
+    }
+    if (!wpStatus || !isWhitepayComplete(wpStatus as never)) {
+      return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'whitepay' };
+    }
     return applyDebit(userId, payout, 'whitepay', { preserveExistingStatus: true });
   }
 
