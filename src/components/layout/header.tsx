@@ -111,7 +111,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex w-full justify-between h-16 items-center">
         {/* Logo */}
-        <Link href="/" className="flex items-center space-x-3 mr-8">
+        <Link href="/" className="flex items-center space-x-2 sm:space-x-3 shrink-0 min-w-0 mr-2 sm:mr-6 lg:mr-8">
           <div className="relative group">
             <div className="h-10 w-10 rounded-lg">
               <Image src="/images/logo.webp" alt="MoonSkin" width={40} height={40} />
@@ -151,7 +151,7 @@ export function Header() {
         </nav>
 
         {/* Actions Desktop */}
-        <div className="hidden md:flex items-center space-x-2">
+        <div className="hidden md:flex flex-wrap items-center justify-end gap-2">
           {/* Currency Selector */}
           <CurrencySelector variant="ghost" size="sm" showFlag={true} />
           

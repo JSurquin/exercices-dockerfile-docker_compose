@@ -449,7 +449,7 @@ export function ChatWidget() {
       </div>
 
       {/* ── Bouton flottant ── */}
-      <div className="fixed bottom-6 right-6 z-[99999] pointer-events-auto">
+      <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-[99999] sm:bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:right-[max(1.5rem,env(safe-area-inset-right,0px))] pointer-events-auto">
         <div className="relative">
           {unreadCount > 0 && !isOpen && (
             <Badge className="absolute -top-2 -left-2 h-6 w-6 rounded-full bg-red-500 hover:bg-red-500 text-white text-xs flex items-center justify-center animate-pulse z-10">

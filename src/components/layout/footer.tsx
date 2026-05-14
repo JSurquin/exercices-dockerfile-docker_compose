@@ -113,7 +113,7 @@ export function Footer() {
                 <div className="text-sm text-white/60">
                   <p className="font-medium text-white/80 mb-1">{messages.footer.securedBy}</p>
                   <TooltipProvider delayDuration={200}>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <span className="px-2 py-1 bg-green-500/20 border border-green-500/30 text-green-300 rounded text-xs backdrop-blur-sm cursor-help hover:bg-green-500/30 transition-colors">
@@ -261,7 +261,7 @@ export function Footer() {
             <div className="text-sm text-white/50">
               {messages.footer.copyright}
             </div>
-            <div className="flex space-x-6">
+            <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 max-w-full">
               {links.community.map((link) => (
                 <Link
                   key={link.name}

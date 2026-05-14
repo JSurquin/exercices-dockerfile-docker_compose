@@ -404,7 +404,7 @@ export function HeroSection() {
             className="relative"
           >
             {/* Main Card */}
-            <div className="relative bg-card rounded-2xl -mt-48 border p-4 sm:p-6 lg:p-8 shadow-2xl">
+            <div className="relative bg-card rounded-2xl mt-6 lg:-mt-48 border p-4 sm:p-6 lg:p-8 shadow-2xl">
               {/* Fake Trade Interface */}
               <div className="space-y-3 sm:space-y-4 lg:space-y-6">
                 <div className="flex items-center justify-between">
