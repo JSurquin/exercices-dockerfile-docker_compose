@@ -55,7 +55,9 @@ const WHITEPAY_STATUSES = [
 async function fetchFlexifyStatus(
   payout: { flexifyPayoutId: string | null; gateFiOrderId?: string | null; paymentMethodType?: string | null },
 ): Promise<FlexifyTransactionStatus | null> {
-  const credentialType: 'sepa' | 'card' = payout.paymentMethodType === 'SEPA' ? 'sepa' : 'card';
+  const pm = (payout.paymentMethodType ?? '').toUpperCase();
+  const credentialType: 'sepa' | 'card' =
+    pm === 'SEPA' || pm === 'FLEXIFY_SEPA' ? 'sepa' : 'card';
 
   // 1) Check officiel H2H par référence (le plus fiable, doc Flexify)
   if (payout.gateFiOrderId) {

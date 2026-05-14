@@ -49,8 +49,5 @@ yarn-error.log*
 next-env.d.ts
 
 certificates
-
-# Ops locale — ne pas versionner (credentials / IP whitelist prod)
-scripts/reconcile-all-payouts.ts
 # Sentry Config File
 .env.sentry-build-plugin

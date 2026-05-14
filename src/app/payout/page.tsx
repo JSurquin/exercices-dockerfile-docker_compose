@@ -189,7 +189,16 @@ export default function PayoutPage() {
     refetchOnWindowFocus: true,
   });
   const payoutHistory = useMemo(
-    () => (historyData?.payouts ?? []) as Array<{ id: string; amount: number; status: string; method: string; createdAt: string }>,
+    () =>
+      (historyData?.payouts ?? []) as Array<{
+        id: string;
+        amount: number;
+        status: string;
+        method: string;
+        createdAt: string;
+        paidAt?: string | null;
+        balanceDebitedAt?: string | null;
+      }>,
     [historyData],
   );
 
@@ -208,7 +217,11 @@ export default function PayoutPage() {
     [],
   );
   const hasNonFinalPayout = useMemo(
-    () => payoutHistory.some((p) => !FINAL_STATUSES_UPPER.has(p.status.toUpperCase())),
+    () =>
+      payoutHistory.some((p) => {
+        if (p.balanceDebitedAt || p.paidAt) return false;
+        return !FINAL_STATUSES_UPPER.has(p.status.toUpperCase());
+      }),
     [payoutHistory, FINAL_STATUSES_UPPER],
   );
 
@@ -642,6 +655,13 @@ export default function PayoutPage() {
     );
   }
 
+  /** Statut BDD parfois en retard ; si balance déjà débitée ou paidAt → badge Payé */
+  const displayPayoutStatus = (row: {
+    status: string;
+    paidAt?: string | null;
+    balanceDebitedAt?: string | null;
+  }) => (row.balanceDebitedAt || row.paidAt ? 'PAID' : row.status);
+
   const getStatusBadge = (status: string) => {
     const s = status.toLowerCase();
     switch (s) {
@@ -652,6 +672,7 @@ export default function PayoutPage() {
         return <Badge className="bg-green-500">{text.history.status.paid}</Badge>;
       case 'processing':
       case 'scheduled':
+      case 'flexify_pending':
       case 'flexify_processing':
       case 'whitepay_pending_withdrawal':
       case 'whitepay_processing_withdrawal':
@@ -1581,7 +1602,7 @@ export default function PayoutPage() {
                   </div>
                 ) : (
                   <div className="space-y-3 max-h-[480px] overflow-y-auto pr-2 -mr-2">
-                    {payoutHistory.map((payout: { id: string; amount: number; status: string; method: string; createdAt: string }) => (
+                    {payoutHistory.map((payout) => (
                       <div 
                         key={payout.id} 
                         className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
@@ -1593,7 +1614,7 @@ export default function PayoutPage() {
                           </p>
                         </div>
                         <div className="text-right">
-                          {getStatusBadge(payout.status)}
+                          {getStatusBadge(displayPayoutStatus(payout))}
                           <p className="text-xs text-muted-foreground mt-1">
                             {payout.method === 'FLEXIFY_SEPA' ? 'SEPA' : payout.method === 'WHITEPAY_CRYPTO' ? 'Crypto' : payout.method === 'SEPA_FR' ? text.history.sepaPremiumLabel : payout.method}
                           </p>
