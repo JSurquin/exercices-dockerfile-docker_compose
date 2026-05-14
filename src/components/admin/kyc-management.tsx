@@ -81,7 +81,7 @@ export function AdminKYCManagement() {
       params.append('limit', '20');
       const res = await fetch(`/api/admin/kyc?${params}`);
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Erreur chargement KYC');
+      if (!res.ok) throw new Error(json.error || t.loadError);
       return json;
     },
   });
@@ -121,9 +121,20 @@ export function AdminKYCManagement() {
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || t.syncErrorDesc);
       if (d.success) {
-        toast({ title: t.statusUpdatedTitle, description: `→ ${d.newStatus} (source : ${d.source})` });
+        toast({
+          title: t.statusUpdatedTitle,
+          description: t.singleUserSyncDesc
+            .replace('{status}', String(d.newStatus))
+            .replace('{source}', String(d.source ?? '')),
+        });
       } else {
-        toast({ title: t.kycaidUnresolvedTitle, description: d.message || `Status KYCAID : ${d.kycaidStatus}`, variant: 'destructive' });
+        toast({
+          title: t.kycaidUnresolvedTitle,
+          description:
+            d.message ||
+            t.kycaidStatusLine.replace('{status}', String(d.kycaidStatus ?? t.kycUnknown)),
+          variant: 'destructive',
+        });
       }
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
@@ -241,7 +252,7 @@ export function AdminKYCManagement() {
             disabled={syncing}
             size="sm"
             className="bg-amber-600 hover:bg-amber-700 text-white"
-            title="Interroge KYCAID pour tous les users en attente et met à jour la DB"
+            title={t.tooltipSyncAllPending}
           >
             {syncing ? <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" /> : <CloudDownload className="h-4 w-4 sm:mr-2" />}
             <span className="hidden sm:inline">{syncing ? t.syncing : t.syncAll}</span>
@@ -382,9 +393,13 @@ export function AdminKYCManagement() {
                               }
                               toast({
                                 title: t.rejectResultTitle,
-                                description: d.newStatus === 'VERIFIED'
-                                  ? t.kycaidSaysVerified
-                                  : `Statut → ${d.newStatus ?? t.unchanged}`,
+                                description:
+                                  d.newStatus === 'VERIFIED'
+                                    ? t.kycaidSaysVerified
+                                    : t.kycForcedDesc.replace(
+                                        '{status}',
+                                        String(d.newStatus ?? t.unchanged),
+                                      ),
                               });
                               queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
                               queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });

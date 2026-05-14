@@ -202,7 +202,11 @@ export function AdminUsersTable() {
       const data = await response.json();
       if (!response.ok) {
         let description = data.error || t.errorMessage;
-        if (data.error?.includes('déjà affilié') || data.error?.includes('already')) {
+        if (
+          data.error?.includes('déjà affilié') ||
+          data.error?.includes('already') ||
+          data.error?.toLowerCase()?.includes('affiliate')
+        ) {
           description = t.errorAlreadyAffiliate;
         } else if (data.error?.includes('code')) {
           description = t.errorCodeExists;
@@ -232,13 +236,21 @@ export function AdminUsersTable() {
     try {
       const res = await fetch(`/api/admin/kyc/force-verify/${userId}`, { method: 'POST' });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || 'Erreur');
+      if (!res.ok) throw new Error(data?.error || messages.admin.usersTable.genericRequestError);
       if (data?.success && data?.newStatus) {
-        toast({ title: t.kycUpdated, description: `Statut → ${data.newStatus}` });
+        toast({
+          title: t.kycUpdated,
+          description: messages.admin.kycManagement.kycForcedDesc.replace('{status}', String(data.newStatus)),
+        });
       } else {
         toast({
           title: t.kycUpdateFailed,
-          description: data?.message || `Status KYCAID : ${data?.kycaidStatus ?? t.kycUnknown}`,
+          description:
+            data?.message ||
+            messages.admin.kycManagement.kycaidStatusLine.replace(
+              '{status}',
+              String(data?.kycaidStatus ?? t.kycUnknown),
+            ),
           variant: 'destructive',
         });
       }
@@ -427,7 +439,7 @@ export function AdminUsersTable() {
                         disabled={syncingKycUserId === user.id}
                         onClick={() => handleSyncKyc(user.id)}
                         className="border-amber-600 text-amber-400 hover:bg-amber-900/30"
-                        title="Interroger KYCAID et mettre à jour le statut KYC"
+                        title={messages.admin.kycManagement.tooltipSyncKycaid}
                       >
                         {syncingKycUserId === user.id ? (
                           <RefreshCw className="h-4 w-4 animate-spin" />

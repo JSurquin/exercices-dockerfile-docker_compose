@@ -251,7 +251,7 @@ export default function AdminSepaRequestsPage() {
                           )}
                           <div>
                             <p className="text-white font-medium text-sm">
-                              {req.user?.name ?? req.user?.steamUsername ?? 'Utilisateur'}
+                              {req.user?.name ?? req.user?.steamUsername ?? t.columns.user}
                             </p>
                             <p className="text-slate-400 text-xs">{req.user?.email ?? '—'}</p>
                             {req.beneficiary?.firstName && (

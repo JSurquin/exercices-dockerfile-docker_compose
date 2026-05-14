@@ -317,7 +317,7 @@ export default function AdminNotificationsPage() {
                 <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                   <Select value={typeFilter} onValueChange={setTypeFilter}>
                     <SelectTrigger className="w-[160px] bg-slate-700 border-slate-600">
-                      <SelectValue placeholder="Type" />
+                      <SelectValue placeholder={t.list.filterTypePlaceholder} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">{t.list.allTypes}</SelectItem>
@@ -334,7 +334,7 @@ export default function AdminNotificationsPage() {
                     onValueChange={setPriorityFilter}
                   >
                     <SelectTrigger className="w-[160px] bg-slate-700 border-slate-600">
-                      <SelectValue placeholder="Priorité" />
+                      <SelectValue placeholder={t.list.filterPriorityPlaceholder} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">{t.list.allPriorities}</SelectItem>
