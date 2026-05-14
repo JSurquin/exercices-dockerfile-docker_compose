@@ -4605,6 +4605,7 @@ export const messages: Record<Locale, Messages> = {
           verified: 'Vérifié',
           scheduled: 'Planifié',
           executed: 'Exécuté',
+          processing: 'En cours',
           paid: 'Payé',
           failed: 'Échoué',
           cancelled: 'Refusé / Annulé'
@@ -10324,6 +10325,7 @@ export const messages: Record<Locale, Messages> = {
           verified: 'Verified',
           scheduled: 'Scheduled',
           executed: 'Executed',
+          processing: 'In progress',
           paid: 'Paid',
           failed: 'Failed',
           cancelled: 'Declined / Cancelled'
@@ -16918,6 +16920,7 @@ export const messages: Record<Locale, Messages> = {
           verified: '已验证',
           scheduled: '已计划',
           executed: '已执行',
+          processing: '处理中',
           paid: '已支付',
           failed: '失败',
           cancelled: '已拒绝/已取消'

@@ -5915,6 +5915,7 @@ export interface Messages {
         verified: string;
         scheduled: string;
         executed: string;
+        processing: string;
         paid: string;
         failed: string;
         cancelled: string;

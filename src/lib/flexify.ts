@@ -797,6 +797,32 @@ export async function getTransactionStatus(transactionId: string): Promise<Flexi
 }
 
 /**
+ * POST /v1/payout/check — Check Request officiel Flexify (H2H signed).
+ * Retourne le statut final d'un payout par référence. Plus fiable que le Reporting
+ * pour les payouts récents (Reporting peut être en retard de quelques minutes).
+ *
+ * Cf. doc Flexify : https://docs.flexify.finance/docs/payout/main_methods/check
+ *
+ * @param reference Notre référence interne (gateFiOrderId), ex: "MOON-XXX-YYY"
+ * @param credentialType Quelle paire de clés H2H utiliser (sepa pour SEPA, card pour Carte)
+ */
+export async function checkPayoutByReference(
+  reference: string,
+  credentialType: 'sepa' | 'card' = 'card',
+): Promise<FlexifyPayoutResponse> {
+  validateConfig();
+  flexifyLog('CHECK_PAYOUT_REQUEST_START', { reference, credentialType });
+  return flexifyRequest<FlexifyPayoutResponse>(
+    'POST',
+    '/v1/payout/check',
+    { reference },
+    3,
+    false,
+    credentialType,
+  );
+}
+
+/**
  * Récupère une transaction par référence
  */
 export async function getTransactionByReference(reference: string): Promise<FlexifyPayoutResponse> {
