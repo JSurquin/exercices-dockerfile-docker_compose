@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/providers/auth-provider';
+import { useLocale } from '@/components/providers/locale-provider';
 import { LockClosedIcon } from '@heroicons/react/24/outline';
 
 interface RequireAuthProps {
@@ -21,17 +22,21 @@ interface RequireAuthProps {
  */
 export function RequireAuth({
   children,
-  title = 'Connexion requise',
-  description = 'Vous devez être connecté pour accéder à cette page.',
-  buttonLabel = 'Se connecter avec Steam',
+  title,
+  description,
+  buttonLabel,
   icon,
 }: RequireAuthProps) {
   const { user, isLoading } = useAuth();
+  const { messages } = useLocale();
+  const resolvedTitle = title ?? messages.common.requireAuthTitle;
+  const resolvedDescription = description ?? messages.common.requireAuthDescription;
+  const resolvedButton = buttonLabel ?? messages.nav.login;
 
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-24 flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Chargement...</div>
+        <div className="animate-pulse text-muted-foreground">{messages.common.loading}</div>
       </div>
     );
   }
@@ -44,10 +49,10 @@ export function RequireAuth({
             <div className="w-16 h-16 mx-auto mb-4 text-muted-foreground">
               {icon ?? <LockClosedIcon className="w-16 h-16" />}
             </div>
-            <h2 className="text-xl font-semibold mb-2">{title}</h2>
-            <p className="text-muted-foreground mb-6">{description}</p>
+            <h2 className="text-xl font-semibold mb-2">{resolvedTitle}</h2>
+            <p className="text-muted-foreground mb-6">{resolvedDescription}</p>
             <Button onClick={() => (window.location.href = '/')}>
-              {buttonLabel}
+              {resolvedButton}
             </Button>
           </CardContent>
         </Card>
@@ -70,11 +75,16 @@ interface LoginRequiredBlockProps {
  * already have their own user check (e.g. when hooks depend on user).
  */
 export function LoginRequiredBlock({
-  title = 'Connexion requise',
-  description = 'Vous devez être connecté pour accéder à cette page.',
-  buttonLabel = 'Se connecter avec Steam',
+  title,
+  description,
+  buttonLabel,
   icon,
 }: LoginRequiredBlockProps) {
+  const { messages } = useLocale();
+  const resolvedTitle = title ?? messages.common.requireAuthTitle;
+  const resolvedDescription = description ?? messages.common.requireAuthDescription;
+  const resolvedButton = buttonLabel ?? messages.nav.login;
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
       <Card className="max-w-md mx-auto text-center">
@@ -82,10 +92,10 @@ export function LoginRequiredBlock({
           <div className="w-16 h-16 mx-auto mb-4 text-muted-foreground">
             {icon ?? <LockClosedIcon className="w-16 h-16" />}
           </div>
-          <h2 className="text-xl font-semibold mb-2">{title}</h2>
-          <p className="text-muted-foreground mb-6">{description}</p>
+          <h2 className="text-xl font-semibold mb-2">{resolvedTitle}</h2>
+          <p className="text-muted-foreground mb-6">{resolvedDescription}</p>
           <Button onClick={() => (window.location.href = '/')}>
-            {buttonLabel}
+            {resolvedButton}
           </Button>
         </CardContent>
       </Card>

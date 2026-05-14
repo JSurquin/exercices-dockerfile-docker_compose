@@ -15,6 +15,7 @@ import { Search, RefreshCw, DollarSign, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLocale } from '@/components/providers/locale-provider';
 import { getRarityHexColor } from '@/lib/cs2-constants';
+import { isInventoryPrivateError } from '@/lib/inventory-api-errors';
 
 interface SteamInventoryViewerProps {
   steamId64: string;
@@ -43,7 +44,11 @@ export function SteamInventoryViewer({
   } = useSteamInventory({
     onError: (err) => {
       console.error('Steam Inventory error:', err);
-      toast.error(`${messages.components.steam.errorPrefix}: ${err}`);
+      const st = messages.components.steam;
+      const msg = isInventoryPrivateError(err)
+        ? `${st.errorPrefix}: ${st.inventoryPrivate}`
+        : `${st.errorPrefix}: ${err}`;
+      toast.error(msg);
     },
   });
 
@@ -133,7 +138,7 @@ export function SteamInventoryViewer({
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          {error === 'Inventaire privé ou inaccessible' ? (
+          {isInventoryPrivateError(error) ? (
             <>
               {st.inventoryPrivate}
               <a 

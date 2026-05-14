@@ -34,6 +34,7 @@ import { currencyConverter } from '@/lib/currency-converter';
 import { isValidSteamId64, parseSteamId64FromUserInput } from '@/lib/steam-id';
 import { useAuth } from '@/components/providers/auth-provider';
 import Link from 'next/link';
+import { isInventoryPrivateError } from '@/lib/inventory-api-errors';
 
 function isPurchasable(item: NormalizedInventoryItem): boolean {
   return item.tradable && !item.skip_reason;
@@ -112,7 +113,11 @@ export function SkinplaceInventoryViewer({
   } = useSkinplaceInventory({
     onError: (err) => {
       console.error('Erreur Skinplace Inventory:', err);
-      toast.error(`${messages.components.skinplace.error} ${err}`);
+      const sp = messages.components.skinplace;
+      const msg = isInventoryPrivateError(err)
+        ? `${sp.error} ${sp.inventoryPrivateTitle}`
+        : `${sp.error} ${err}`;
+      toast.error(msg);
     },
   });
 
@@ -129,7 +134,7 @@ export function SkinplaceInventoryViewer({
   const handleSteamIdChange = () => {
     const resolved = parseSteamId64FromUserInput(customSteamId);
     if (!resolved || !isValidSteamId64(resolved)) {
-      toast.error(messages.settings?.steamId?.invalidFormat || 'Format Steam ID invalide');
+      toast.error(messages.settings.steamId.invalidFormat);
       return;
     }
     
@@ -155,10 +160,10 @@ export function SkinplaceInventoryViewer({
   };
 
   const handleIdentifierGateSubmit = () => {
-    const ig = messages.components?.skinplace?.identifierGate;
+    const ig = messages.components.skinplace.identifierGate;
     const resolved = parseSteamId64FromUserInput(customSteamId);
     if (!resolved || !isValidSteamId64(resolved)) {
-      toast.error(ig?.invalidPaste ?? messages.settings?.steamId?.invalidFormat ?? 'Invalid Steam identifier');
+      toast.error(ig.invalidPaste);
       return;
     }
     setCurrentSteamId(resolved);
@@ -300,8 +305,7 @@ export function SkinplaceInventoryViewer({
 
   const openSupportForItem = (item: NormalizedInventoryItem) => {
     const reason = translateSkipReason(item.skip_reason);
-    const template = messages.components?.skinplace?.blockedItemMessage
-      ?? "Mon skin {name} est bloqué ({reason}), pouvez-vous m'aider ?";
+    const template = messages.components.skinplace.blockedItemMessage;
     const prefillMessage = template
       .replace('{name}', item.name)
       .replace('{reason}', reason);
@@ -312,24 +316,24 @@ export function SkinplaceInventoryViewer({
   const customSteamInputLooksValid = Boolean(parseSteamId64FromUserInput(customSteamId));
 
   if (!hasValidSteamId && !loading) {
-    const ig = messages.components?.skinplace?.identifierGate;
+    const ig = messages.components.skinplace.identifierGate;
     return (
       <Card className="border-orange-500/30 bg-orange-500/5">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Link2 className="h-5 w-5 text-orange-500" />
-            {ig?.title ?? 'Steam account'}
+            {ig.title}
           </CardTitle>
           <CardDescription className="text-base text-muted-foreground">
-            {ig?.description ?? ''}
+            {ig.description}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="steam-identifier-gate">{ig?.label ?? 'Trade Link or SteamID64'}</Label>
+            <Label htmlFor="steam-identifier-gate">{ig.label}</Label>
             <Input
               id="steam-identifier-gate"
-              placeholder={ig?.placeholder}
+              placeholder={ig.placeholder}
               value={customSteamId}
               onChange={(e) => setCustomSteamId(e.target.value)}
               className={`font-mono text-sm ${
@@ -351,10 +355,10 @@ export function SkinplaceInventoryViewer({
               onClick={handleIdentifierGateSubmit}
               disabled={!customSteamInputLooksValid}
             >
-              {ig?.cta ?? 'Load inventory'}
+              {ig.cta}
             </Button>
             <Button type="button" variant="outline" asChild>
-              <Link href="/settings">{ig?.openSettings ?? 'Settings'}</Link>
+              <Link href="/settings">{ig.openSettings}</Link>
             </Button>
           </div>
         </CardContent>
@@ -383,7 +387,7 @@ export function SkinplaceInventoryViewer({
   }
 
   if (error) {
-    const isPrivateError = error === 'Inventaire privé ou inaccessible';
+    const isPrivateError = isInventoryPrivateError(error);
     const isNotFoundError = error.includes('introuvable') || error.includes('not found');
     
     const sp = messages.components.skinplace;
@@ -641,8 +645,7 @@ export function SkinplaceInventoryViewer({
             
             {showSteamIdInput && customSteamId && !customSteamInputLooksValid && (
               <p className="text-xs text-destructive mt-2">
-                {messages.components?.skinplace?.identifierGate?.invalidPaste ??
-                  'Collez votre Trade Link Steam ou un SteamID64 (7656119…).'}
+                {messages.components.skinplace.identifierGate.invalidPaste}
               </p>
             )}
           </CardContent>
@@ -1052,7 +1055,7 @@ export function SkinplaceInventoryViewer({
                                 openSupportForItem(item);
                               }}
                             >
-                              {messages.components?.skinplace?.askSupport ?? 'Ask support'}
+                              {messages.components.skinplace.askSupport}
                             </Button>
                           )}
                         </div>

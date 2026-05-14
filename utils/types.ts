@@ -510,6 +510,8 @@ export interface Messages {
     conversionError: string;
     personalData: string;
     selectPlaceholder: string;
+    requireAuthTitle: string;
+    requireAuthDescription: string;
   };
   currencies: {
     usd: string;
@@ -2815,9 +2817,9 @@ export interface Messages {
         license: string;
       };
       uploaded: string;
-      idCardBack?: string;
-      idCardBackDescription?: string;
-      frontSuffix?: string;
+      idCardBack: string;
+      idCardBackDescription: string;
+      frontSuffix: string;
     };
     selfie: {
       title: string;
@@ -2888,15 +2890,15 @@ export interface Messages {
       uploaded: string;
       submitted: string;
       error: string;
-      identityVerifiedSuccess?: string;
-      verificationRejected?: string;
-      fileTooLarge?: string;
-      compressing?: string;
-      compressed?: string;
+      identityVerifiedSuccess: string;
+      verificationRejected: string;
+      fileTooLarge: string;
+      compressing: string;
+      compressed: string;
       submissionError?: string;
     };
-    inProgressPolling?: string;
-    submitNewVerification?: string;
+    inProgressPolling: string;
+    submitNewVerification: string;
     privacy: {
       badge: string;
       title: string;
@@ -2969,7 +2971,7 @@ export interface Messages {
       tradeCreated: string;
       followInstructions: string;
     };
-    bonusBanner?: string;
+    bonusBanner: string;
   };
   giveawaysPage: {
     participationSuccess: string;
@@ -4306,7 +4308,7 @@ export interface Messages {
       quickHome: string;
       quickSell: string;
       quickGiveaways: string;
-      privateGiveawaysLabel?: string;
+      privateGiveawaysLabel: string;
       partnerBenefits: string;
       benefitCommission: string;
       benefitPayments: string;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { SteamInventoryItem, SteamInventoryResponse } from '@/hooks/use-steam-inventory';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { INVENTORY_ERROR_PRIVATE } from '@/lib/inventory-api-errors';
 
 const rateLimiter = new RateLimiter('INVENTORY_FETCH', RATE_LIMIT_CONFIGS.API_GENERAL);
 
@@ -117,7 +118,7 @@ export async function GET(request: NextRequest) {
     if (!response.ok) {
       if (response.status === 403) {
         return NextResponse.json(
-          { success: false, error: 'Inventaire privé ou inaccessible' },
+          { success: false, error: INVENTORY_ERROR_PRIVATE },
           { status: 403 }
         );
       }
