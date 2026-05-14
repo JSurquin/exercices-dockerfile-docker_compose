@@ -33,13 +33,14 @@ import {
   EyeSlashIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
+import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import TradeLinkConfig from "@/components/settings/trade-link-config";
 import SteamIdConfig from "@/components/settings/steam-id-config";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { locale, setLocale, messages } = useLocale();
   const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
@@ -103,6 +104,8 @@ export default function SettingsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? messages.common.error);
+      await refreshUser();
+      queryClient.invalidateQueries({ queryKey: queryKeys.userProfile });
       toast.success(messages.settings.profile.emailSuccess);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : messages.common.error);
@@ -153,20 +156,12 @@ export default function SettingsPage() {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        <Card className="max-w-md mx-auto text-center">
-          <CardContent className="p-6 sm:p-8">
-            <UserCircleIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">{messages.dashboard.loginRequired}</h2>
-            <p className="text-muted-foreground mb-6">
-              {messages.settings.loginDescription}
-            </p>
-            <Button onClick={() => (window.location.href = "/")}>
-              {messages.common.steamLogin}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <LoginRequiredBlock
+        icon={<UserCircleIcon className="w-16 h-16" />}
+        title={messages.dashboard.loginRequired}
+        description={messages.settings.loginDescription}
+        buttonLabel={messages.common.steamLogin}
+      />
     );
   }
 
