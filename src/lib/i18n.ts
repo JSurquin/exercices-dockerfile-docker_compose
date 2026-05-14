@@ -466,6 +466,8 @@ export const messages: Record<Locale, Messages> = {
       conversionError: "Erreur de conversion",
       personalData: "Données personnelles",
       selectPlaceholder: "Sélectionner",
+      requireAuthTitle: "Connexion requise",
+      requireAuthDescription: "Vous devez être connecté pour accéder à cette page.",
     },
     currencies: {
       usd: "Dollar américain",
@@ -7319,6 +7321,8 @@ export const messages: Record<Locale, Messages> = {
       conversionError: "Conversion error",
       personalData: "Personal data",
       selectPlaceholder: "Select",
+      requireAuthTitle: "Login required",
+      requireAuthDescription: "You must be logged in to access this page.",
     },
     currencies: {
       usd: "US Dollar",
@@ -14167,6 +14171,8 @@ export const messages: Record<Locale, Messages> = {
       conversionError: "转换错误",
       personalData: "个人数据",
       selectPlaceholder: "选择",
+      requireAuthTitle: "需要登录",
+      requireAuthDescription: "您必须登录后才能访问此页面。",
     },
     currencies: {
       usd: "美元",
@@ -16639,6 +16645,7 @@ export const messages: Record<Locale, Messages> = {
       title: "出售您的CS2皮肤",
       subtitle: "立即出售您的反恐精英2皮肤并快速收到您的资金",
       loginDescription: "请登录以出售皮肤。若使用 Discord，可在本页粘贴 Steam 交易链接以加载库存。",
+      bonusBanner: "每件物品额外 +{percent}% 奖励",
       noSteamLinkedBanner: {
         title: "个人资料未绑定 Steam 账户",
         description:
@@ -18012,7 +18019,8 @@ export const messages: Record<Locale, Messages> = {
         linkGenerator: "链接生成器", linkGeneratorDesc: "创建指向任何页面的联盟链接",
         targetPage: "目标页面", targetPageOptional: "（可选）", targetPageHint: "留空表示主页。以/开头表示特定页面。",
         generateAndCopy: "生成并复制", lastGenerated: "最后生成的链接",
-        quickLinks: "快速链接", quickHome: "主页", quickSell: "出售页面", quickGiveaways: "抽奖",
+        quickLinks: "快速链接", quickHome: "主页", quickSell: "出售页面",         quickGiveaways: "抽奖",
+        privateGiveawaysLabel: "🔒 私密抽奖",
         partnerBenefits: "您的合作伙伴优势",
         benefitCommission: "{rate}% 佣金", benefitPayments: "每月通过SEPA或加密货币付款",
         benefitAnalytics: "实时分析仪表板", benefitMarketing: "提供营销和创意工具", benefitSupport: "优先专属联盟支持",

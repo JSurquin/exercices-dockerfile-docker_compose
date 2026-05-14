@@ -195,8 +195,7 @@ export default function SellPage() {
             <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-2.5">
               <UserRoleBadge userTag={user.userTag} size="sm" />
               <span className="text-sm text-amber-600 dark:text-amber-400">
-                {messages.sellPage.bonusBanner?.replace('{percent}', String(user.bonusRatePercent)) 
-                  ?? `Bonus +${user.bonusRatePercent}% appliqué sur chaque item`}
+                {messages.sellPage.bonusBanner.replace('{percent}', String(user.bonusRatePercent))}
               </span>
             </div>
           </motion.div>

@@ -563,7 +563,7 @@ export default function AffiliatePage() {
                     {privateGiveaways.length > 0 && (
                       <>
                         <p className="text-xs text-purple-400 font-medium uppercase tracking-wide pt-2">
-                          {messages.affiliate.dashboard.privateGiveawaysLabel ?? '🔒 Giveaways privés'}
+                          {messages.affiliate.dashboard.privateGiveawaysLabel}
                         </p>
                         {privateGiveaways.map((g) => {
                           const key = `private-${g.id}`;

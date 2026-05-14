@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { INVENTORY_ERROR_PRIVATE } from '@/lib/inventory-api-errors';
 import { auth } from '~/lib/auth';
 import { generateSkinplaceSignature, validateSkinplaceParams } from '@/utils/skinplace-signature';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
@@ -245,7 +246,7 @@ export async function GET(request: NextRequest) {
       
       if (response.status === 403) {
         return NextResponse.json(
-          { success: false, error: 'Inventaire privé ou inaccessible' },
+          { success: false, error: INVENTORY_ERROR_PRIVATE },
           { status: 403 }
         );
       }
