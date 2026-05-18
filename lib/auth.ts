@@ -6,6 +6,11 @@ import { twoFactor, admin } from "better-auth/plugins";
 import { createAccessControl } from "better-auth/plugins/access";
 import { adminAc, defaultStatements } from "better-auth/plugins/admin/access";
 import { prisma } from "~/prisma/prisma";
+
+// Une seule instance ac partagée — requis pour la compatibilité de types entre roles
+const ac = createAccessControl(defaultStatements);
+const adminRole = ac.newRole({ ...adminAc.statements });
+const userRole = ac.newRole({});
 import { emailService } from "../src/lib/email";
 
 // Better Auth 1.2.12 a un bug de typage sur viewBackupCodes (GET avec body dans un GET endpoint).
@@ -149,12 +154,10 @@ export const auth = betterAuth({
       // Better Auth defaultRoles ne contient que "admin"/"user" en minuscule,
       // donc hasPermission(role="ADMIN") retournait undefined → FORBIDDEN.
       // On mappe explicitement "ADMIN" → permissions complètes admin.
-      ac: createAccessControl(defaultStatements),
+      ac,
       roles: {
-        ADMIN: createAccessControl(defaultStatements).newRole({
-          ...adminAc.statements,
-        }),
-        USER: createAccessControl(defaultStatements).newRole({}),
+        ADMIN: adminRole,
+        USER: userRole,
       },
     }),
   ],
