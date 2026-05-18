@@ -10,7 +10,6 @@ import { prisma } from "~/prisma/prisma";
 // Une seule instance ac partagée — requis pour la compatibilité de types entre roles
 const ac = createAccessControl(defaultStatements);
 const adminRole = ac.newRole({ ...adminAc.statements });
-const userRole = ac.newRole({});
 import { emailService } from "../src/lib/email";
 
 // Better Auth 1.2.12 a un bug de typage sur viewBackupCodes (GET avec body dans un GET endpoint).
@@ -157,7 +156,6 @@ export const auth = betterAuth({
       ac,
       roles: {
         ADMIN: adminRole,
-        USER: userRole,
       },
     }),
   ],
