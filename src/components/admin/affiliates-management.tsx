@@ -73,6 +73,7 @@ export default function AffiliatesManagement() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
   const [selectedAffiliate, setSelectedAffiliate] = useState<AffiliateData | null>(null);
   const [editingCommissionRate, setEditingCommissionRate] = useState(false);
   const [newCommissionRate, setNewCommissionRate] = useState(0);
@@ -92,6 +93,10 @@ export default function AffiliatesManagement() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [limit]);
+
   const defaultGlobalStats: GlobalStats = {
     totalAffiliates: 0,
     totalReferrals: 0,
@@ -100,11 +105,11 @@ export default function AffiliatesManagement() {
   };
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: queryKeys.adminAffiliates({ page, search: debouncedSearch, status: statusFilter }),
+    queryKey: queryKeys.adminAffiliates({ page, search: debouncedSearch, status: statusFilter, limit }),
     queryFn: async () => {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: '20',
+        limit: limit.toString(),
         search: debouncedSearch,
         status: statusFilter
       });
@@ -432,27 +437,43 @@ export default function AffiliatesManagement() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between mt-4">
-            <p className="text-sm text-muted-foreground">
-              {t.page.replace('{page}', String(page)).replace('{total}', String(totalPages))}
-            </p>
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page - 1)}
-                disabled={page <= 1}
-              >
-                {t.previous}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page + 1)}
-                disabled={page >= totalPages}
-              >
-                {t.next}
-              </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
+            <div className="flex items-center gap-2">
+              <Label className="text-slate-300 text-sm">{t.perPage || 'Par page'}:</Label>
+              <Select value={String(limit)} onValueChange={(v) => setLimit(Number(v))}>
+                <SelectTrigger className="w-24">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="30">30</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-4">
+              <p className="text-sm text-muted-foreground">
+                {t.page.replace('{page}', String(page)).replace('{total}', String(totalPages))}
+              </p>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page <= 1}
+                >
+                  {t.previous}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page + 1)}
+                  disabled={page >= totalPages}
+                >
+                  {t.next}
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>

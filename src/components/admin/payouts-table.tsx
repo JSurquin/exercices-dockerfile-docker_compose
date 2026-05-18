@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -44,6 +45,7 @@ export function AdminPayoutsTable() {
     limit: 20,
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [limit, setLimit] = useState(20);
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [resyncingId, setResyncingId] = useState<string | null>(null);
   const [autoApproveEnabled, setAutoApproveEnabled] = useState(false);
@@ -70,6 +72,10 @@ export function AdminPayoutsTable() {
   });
 
   const payouts: Payout[] = data?.payouts ?? [];
+
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, limit, page: 1 }));
+  }, [limit]);
 
   const { data: autoApproveData } = useQuery({
     queryKey: queryKeys.adminPayoutAutoApprove,
@@ -502,6 +508,51 @@ export function AdminPayoutsTable() {
             <p className="text-slate-300">{tp.noPayouts ?? 'Aucun paiement trouvé'}</p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Pagination */}
+      {data && data.pagination && data.pagination.total > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
+          <div className="flex items-center gap-2">
+            <Label className="text-slate-300 text-sm">{tp.perPage || 'Par page'}:</Label>
+            <Select value={String(limit)} onValueChange={(v) => setLimit(Number(v))}>
+              <SelectTrigger className="w-24 bg-slate-700 border-slate-600 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="30">30</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-slate-400">
+              {tp.page || 'Page'} {data.pagination.page} / {data.pagination.pages} ({data.pagination.total} {tp.total || 'total'})
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFilters(prev => ({ ...prev, page: Math.max(1, (prev.page || 1) - 1) }))}
+                disabled={!data.pagination.page || data.pagination.page <= 1}
+                className="border-slate-600 text-white hover:bg-slate-700"
+              >
+                {tp.previous || 'Précédent'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFilters(prev => ({ ...prev, page: (prev.page || 1) + 1 }))}
+                disabled={!data.pagination.pages || data.pagination.page >= data.pagination.pages}
+                className="border-slate-600 text-white hover:bg-slate-700"
+              >
+                {tp.next || 'Suivant'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

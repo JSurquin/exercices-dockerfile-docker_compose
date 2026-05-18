@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
@@ -46,6 +47,7 @@ export function AdminTradesTable() {
     limit: 20,
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [limit, setLimit] = useState(20);
   const [syncingTradeIds, setSyncingTradeIds] = useState<Set<string>>(new Set());
   const [detailTrade, setDetailTrade] = useState<Trade | null>(null);
 
@@ -71,6 +73,10 @@ export function AdminTradesTable() {
   });
 
   const trades: Trade[] = data?.trades ?? [];
+
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, limit, page: 1 }));
+  }, [limit]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -384,6 +390,51 @@ export function AdminTradesTable() {
             <p className="text-slate-300">{t.noTrades}</p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Pagination */}
+      {data && data.pagination && data.pagination.total > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
+          <div className="flex items-center gap-2">
+            <Label className="text-slate-300 text-sm">{t.perPage || 'Par page'}:</Label>
+            <Select value={String(limit)} onValueChange={(v) => setLimit(Number(v))}>
+              <SelectTrigger className="w-24 bg-slate-700 border-slate-600 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="30">30</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-slate-400">
+              {t.page || 'Page'} {data.pagination.page} / {data.pagination.pages} ({data.pagination.total} {t.total || 'total'})
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFilters(prev => ({ ...prev, page: Math.max(1, (prev.page || 1) - 1) }))}
+                disabled={!data.pagination.page || data.pagination.page <= 1}
+                className="border-slate-600 text-white hover:bg-slate-700"
+              >
+                {t.previous || 'Précédent'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFilters(prev => ({ ...prev, page: (prev.page || 1) + 1 }))}
+                disabled={!data.pagination.pages || data.pagination.page >= data.pagination.pages}
+                className="border-slate-600 text-white hover:bg-slate-700"
+              >
+                {t.next || 'Suivant'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
       <Dialog open={detailTrade !== null} onOpenChange={(open) => !open && setDetailTrade(null)}>

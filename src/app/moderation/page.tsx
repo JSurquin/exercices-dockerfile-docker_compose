@@ -62,7 +62,7 @@ export default function ModerationPage() {
         }
       });
       const response = await fetch(`/api/chat/conversations?${params}`);
-      if (!response.ok) throw new Error('Erreur lors du chargement');
+      if (!response.ok) throw new Error(messages.moderation.errors.loadError);
       return response.json();
     },
   });
@@ -73,7 +73,7 @@ export default function ModerationPage() {
     queryKey: queryKeys.adminChatStats,
     queryFn: async () => {
       const response = await fetch('/api/chat/stats');
-      if (!response.ok) throw new Error('Erreur lors du chargement des stats');
+      if (!response.ok) throw new Error(messages.moderation.errors.statsLoadError);
       return response.json();
     },
   });
@@ -86,12 +86,12 @@ export default function ModerationPage() {
         body: JSON.stringify({ moderatorId }),
       });
 
-      if (!response.ok) throw new Error('Erreur lors de l\'assignation');
+      if (!response.ok) throw new Error(messages.moderation.errors.assignError);
       
-      toast.success('Conversation assignée avec succès');
+      toast.success(messages.moderation.success.assigned);
       queryClient.invalidateQueries({ queryKey: ['admin', 'chat', 'conversations'] });
     } catch (error) {
-      toast.error('Erreur lors de l\'assignation');
+      toast.error(messages.moderation.errors.assignError);
       console.error(error);
     }
   };
@@ -104,12 +104,12 @@ export default function ModerationPage() {
         body: JSON.stringify({ status }),
       });
 
-      if (!response.ok) throw new Error('Erreur lors de la mise à jour');
+      if (!response.ok) throw new Error(messages.moderation.errors.updateError);
       
-      toast.success('Statut mis à jour avec succès');
+      toast.success(messages.moderation.success.statusUpdated);
       queryClient.invalidateQueries({ queryKey: ['admin', 'chat', 'conversations'] });
     } catch (error) {
-      toast.error('Erreur lors de la mise à jour');
+      toast.error(messages.moderation.errors.updateError);
       console.error(error);
     }
   };
@@ -327,7 +327,7 @@ export default function ModerationPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-2">
                           <h3 className="font-semibold truncate max-w-[200px] sm:max-w-xs">
-                            {conversation.subject || 'Sans sujet'}
+                            {conversation.subject || messages.moderation.noSubject}
                           </h3>
                           <Badge className={priorityColors[conversation.priority as keyof typeof priorityColors]}>
                             {conversation.priority}
@@ -342,7 +342,7 @@ export default function ModerationPage() {
 
                         <div className="text-sm text-muted-foreground mb-2 min-w-0">
                           <span className="font-medium break-all">
-                            {conversation.user?.name || conversation.user?.email || 'Utilisateur anonyme'}
+                            {conversation.user?.name || conversation.user?.email || messages.moderation.anonymousUser}
                           </span>
                           {conversation.user?.steamUsername && (
                             <span className="break-all"> • Steam: {conversation.user.steamUsername}</span>
@@ -356,12 +356,12 @@ export default function ModerationPage() {
                         )}
 
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
-                          <span className="whitespace-nowrap">Créée le {formatDate(conversation.createdAt)}</span>
-                          <span className="whitespace-nowrap">Mise à jour le {formatDate(conversation.updatedAt)}</span>
-                          <span className="whitespace-nowrap">{conversation._count?.messages || 0} messages</span>
+                          <span className="whitespace-nowrap">{messages.moderation.createdOn} {formatDate(conversation.createdAt)}</span>
+                          <span className="whitespace-nowrap">{messages.moderation.updatedOn} {formatDate(conversation.updatedAt)}</span>
+                          <span className="whitespace-nowrap">{conversation._count?.messages || 0} {messages.moderation.messages}</span>
                           {conversation.assignedModerator && (
                             <span className="break-all">
-                              Assignée à {conversation.assignedModerator.name || conversation.assignedModerator.email}
+                              {messages.moderation.assignedTo} {conversation.assignedModerator.name || conversation.assignedModerator.email}
                             </span>
                           )}
                         </div>
@@ -375,7 +375,7 @@ export default function ModerationPage() {
                             variant="outline"
                             onClick={() => assignConversation(conversation.id, session.user!.id)}
                           >
-                            S&apos;assigner
+                            {messages.moderation.actions.assignToMe}
                           </Button>
                         )}
 
@@ -385,7 +385,7 @@ export default function ModerationPage() {
                             variant="outline"
                             onClick={() => updateConversationStatus(conversation.id, 'CLOSED')}
                           >
-                            Fermer
+                            {messages.moderation.actions.close}
                           </Button>
                         )}
 
@@ -393,7 +393,7 @@ export default function ModerationPage() {
                           size="sm"
                           onClick={() => router.push(`/moderation/conversations/${conversation.id}`)}
                         >
-                          Ouvrir
+                          {messages.moderation.actions.open}
                         </Button>
                       </div>
                     </div>

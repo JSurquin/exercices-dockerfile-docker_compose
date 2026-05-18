@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -67,15 +68,20 @@ export default function AffiliateCommissions() {
 
   const [statusFilter, setStatusFilter] = useState('PENDING');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
   const [selectedCommissions, setSelectedCommissions] = useState<string[]>([]);
   const [processing, setProcessing] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  useEffect(() => {
+    setPage(1);
+  }, [limit]);
+
   const { data, isLoading: loading } = useQuery({
-    queryKey: ['admin', 'affiliate-commissions', { page, statusFilter }],
+    queryKey: ['admin', 'affiliate-commissions', { page, statusFilter, limit }],
     queryFn: async () => {
-      const params = new URLSearchParams({ page: page.toString(), limit: '20', status: statusFilter });
+      const params = new URLSearchParams({ page: page.toString(), limit: limit.toString(), status: statusFilter });
       const response = await fetch(`/api/admin/affiliates/commissions?${params}`);
       const json = await response.json();
       return json.success ? json.data : null;
@@ -403,27 +409,43 @@ export default function AffiliateCommissions() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between mt-4">
-            <p className="text-sm text-muted-foreground">
-              {t.page.replace('{page}', String(page)).replace('{total}', String(totalPages))}
-            </p>
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page - 1)}
-                disabled={page <= 1}
-              >
-                {t.previous}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page + 1)}
-                disabled={page >= totalPages}
-              >
-                {t.next}
-              </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
+            <div className="flex items-center gap-2">
+              <Label className="text-slate-300 text-sm">{t.perPage || 'Par page'}:</Label>
+              <Select value={String(limit)} onValueChange={(v) => setLimit(Number(v))}>
+                <SelectTrigger className="w-24">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="30">30</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-4">
+              <p className="text-sm text-muted-foreground">
+                {t.page.replace('{page}', String(page)).replace('{total}', String(totalPages))}
+              </p>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page <= 1}
+                >
+                  {t.previous}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page + 1)}
+                  disabled={page >= totalPages}
+                >
+                  {t.next}
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>

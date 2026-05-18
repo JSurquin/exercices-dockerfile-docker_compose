@@ -137,7 +137,7 @@ export default function Error({ error, reset }: ErrorProps) {
             className="mt-12"
           >
             <p className="text-sm text-muted-foreground">
-              Vérifiez le statut de nos services sur{" "}
+              {messages.error.checkStatus}{" "}
               <a
                 href={process.env.NEXT_PUBLIC_STATUS_URL ?? 'https://status.moonskin.gg'}
                 target="_blank"

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -65,11 +66,16 @@ export function AdminKYCManagement() {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
 
   const [syncing, setSyncing] = useState(false);
   const [syncingUserId, setSyncingUserId] = useState<string | null>(null);
 
-  const queryParams = { status: statusFilter, search: searchTerm, page };
+  useEffect(() => {
+    setPage(1);
+  }, [limit]);
+
+  const queryParams = { status: statusFilter, search: searchTerm, page, limit };
 
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.adminKyc(queryParams as any),
@@ -78,7 +84,7 @@ export function AdminKYCManagement() {
       if (statusFilter) params.append('status', statusFilter);
       if (searchTerm) params.append('search', searchTerm);
       params.append('page', String(page));
-      params.append('limit', '20');
+      params.append('limit', String(limit));
       const res = await fetch(`/api/admin/kyc?${params}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || t.loadError);
@@ -436,14 +442,32 @@ export function AdminKYCManagement() {
 
       {/* Pagination */}
       {data?.totalPages > 1 && (
-        <div className="flex justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}
-            className="border-slate-600 text-white">{t.previous}</Button>
-          <span className="text-slate-400 text-sm self-center">
-            {t.page.replace('{page}', String(page)).replace('{total}', String(data.totalPages))}
-          </span>
-          <Button variant="outline" size="sm" disabled={page >= data.totalPages} onClick={() => setPage(p => p + 1)}
-            className="border-slate-600 text-white">{t.next}</Button>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Label className="text-slate-300 text-sm">{t.perPage || 'Par page'}:</Label>
+            <Select value={String(limit)} onValueChange={(v) => setLimit(Number(v))}>
+              <SelectTrigger className="w-24 bg-slate-700 border-slate-600 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="30">30</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-slate-400 text-sm">
+              {t.page.replace('{page}', String(page)).replace('{total}', String(data.totalPages))}
+            </span>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}
+                className="border-slate-600 text-white">{t.previous}</Button>
+              <Button variant="outline" size="sm" disabled={page >= data.totalPages} onClick={() => setPage(p => p + 1)}
+                className="border-slate-600 text-white">{t.next}</Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

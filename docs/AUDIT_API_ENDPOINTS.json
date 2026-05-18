@@ -1,0 +1,117 @@
+{
+  "apiDocsEnabled": false,
+  "totalEndpoints": 178,
+  "tradeEndpoints": {
+    "skinplace": "/api/skinplace/create-trade",
+    "steam": "/api/steam/create-trade"
+  },
+  "stats": {
+    "totalUsers": 22,
+    "totalTrades": 80,
+    "tradesWithoutSkinplaceToken": 9,
+    "usersWithoutWebActivity": [
+      "cmmm6xqo1000bt2vj5smbx9zp",
+      "n165eEelGSvyLSjj0xGjFl0Avt4qXWMU",
+      "Fxtj9Sv9j7EdeeyTvIAHyYcgAGBTNIGu",
+      "M0zyLGx5JCGeecEmjbBsK4M2eiuMZ16c",
+      "RMuLf9jskY1Xwfy2kVtfvFSB5Joklxvr",
+      "7UKLXpUfxFjTMooz33YcVPB1e8skpg9I",
+      "NvuNJcYzX86W2eYpWOZ5j1gN6VwIqorB",
+      "zS1gHiV1pKKSl9J5ApQBB0ylIcHFncl0",
+      "MTpZqfcA5Q5GWyWW0pCcabKt8WmFjjSO"
+    ]
+  },
+  "suspiciousActivity": [
+    {
+      "userId": "cmmm6xqo1000bt2vj5smbx9zp",
+      "userName": "Nyouz I B/S Skins",
+      "steamId": "76561199040420116",
+      "tradesCount": 43,
+      "tradesWithoutToken": 1,
+      "auditLogsCount": 1,
+      "firstTrade": "2026-01-27T21:23:42.629Z",
+      "lastTrade": "2026-04-28T17:40:34.112Z"
+    },
+    {
+      "userId": "n165eEelGSvyLSjj0xGjFl0Avt4qXWMU",
+      "userName": "NyoubCS",
+      "steamId": "76561198982110174",
+      "tradesCount": 1,
+      "tradesWithoutToken": 1,
+      "auditLogsCount": 1,
+      "firstTrade": "2026-03-11T18:29:28.240Z",
+      "lastTrade": "2026-03-11T18:29:28.240Z"
+    },
+    {
+      "userId": "Fxtj9Sv9j7EdeeyTvIAHyYcgAGBTNIGu",
+      "userName": "ApachinoW`",
+      "steamId": "76561198058187019",
+      "tradesCount": 1,
+      "tradesWithoutToken": 1,
+      "auditLogsCount": 1,
+      "firstTrade": "2025-12-23T08:17:47.686Z",
+      "lastTrade": "2025-12-23T08:17:47.686Z"
+    },
+    {
+      "userId": "M0zyLGx5JCGeecEmjbBsK4M2eiuMZ16c",
+      "userName": "LeMousseu",
+      "steamId": "76561199705623372",
+      "tradesCount": 1,
+      "tradesWithoutToken": 1,
+      "auditLogsCount": 1,
+      "firstTrade": "2025-12-22T00:55:31.871Z",
+      "lastTrade": "2025-12-22T00:55:31.871Z"
+    },
+    {
+      "userId": "RMuLf9jskY1Xwfy2kVtfvFSB5Joklxvr",
+      "userName": "[4FUN] Zifluks",
+      "steamId": "76561199653923392",
+      "tradesCount": 1,
+      "tradesWithoutToken": 1,
+      "auditLogsCount": 1,
+      "firstTrade": "2025-12-15T02:45:05.531Z",
+      "lastTrade": "2025-12-15T02:45:05.531Z"
+    },
+    {
+      "userId": "7UKLXpUfxFjTMooz33YcVPB1e8skpg9I",
+      "userName": "tjackzone",
+      "steamId": "76561198346742655",
+      "tradesCount": 1,
+      "tradesWithoutToken": 1,
+      "auditLogsCount": 1,
+      "firstTrade": "2025-10-30T22:22:40.233Z",
+      "lastTrade": "2025-10-30T22:22:40.233Z"
+    },
+    {
+      "userId": "NvuNJcYzX86W2eYpWOZ5j1gN6VwIqorB",
+      "userName": "SkinMaster Elite",
+      "steamId": "76561198000000002",
+      "tradesCount": 1,
+      "tradesWithoutToken": 1,
+      "auditLogsCount": 0,
+      "firstTrade": "2025-10-16T14:00:05.697Z",
+      "lastTrade": "2025-10-16T14:00:05.697Z"
+    },
+    {
+      "userId": "zS1gHiV1pKKSl9J5ApQBB0ylIcHFncl0",
+      "userName": "ProTrader CS2",
+      "steamId": "76561198000000001",
+      "tradesCount": 1,
+      "tradesWithoutToken": 1,
+      "auditLogsCount": 0,
+      "firstTrade": "2025-10-16T14:00:05.697Z",
+      "lastTrade": "2025-10-16T14:00:05.697Z"
+    },
+    {
+      "userId": "MTpZqfcA5Q5GWyWW0pCcabKt8WmFjjSO",
+      "userName": "CS2 Collector Pro",
+      "steamId": "76561198000000003",
+      "tradesCount": 1,
+      "tradesWithoutToken": 1,
+      "auditLogsCount": 0,
+      "firstTrade": "2025-10-16T14:00:05.697Z",
+      "lastTrade": "2025-10-16T14:00:05.697Z"
+    }
+  ],
+  "recommendation": "Des utilisateurs ont créé des trades sans token Skinplace. Cela peut indiquer une utilisation de l'endpoint /api/steam/create-trade ou des trades créés avant l'intégration Skinplace complète."
+}

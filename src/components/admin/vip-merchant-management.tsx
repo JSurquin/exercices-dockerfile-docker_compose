@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -50,6 +51,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
   const [editDialog, setEditDialog] = useState<{ open: boolean; user: VipMerchantUser | null }>({ open: false, user: null });
   const [newBonusRate, setNewBonusRate] = useState('');
   const [removeDialog, setRemoveDialog] = useState<{ open: boolean; user: VipMerchantUser | null }>({ open: false, user: null });
@@ -63,14 +65,18 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [limit]);
+
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: queryKeys.adminUsers({ search: debouncedSearch, page, limit: 20, status: undefined }),
+    queryKey: queryKeys.adminUsers({ search: debouncedSearch, page, limit, status: undefined }),
     queryFn: async () => {
       const params = new URLSearchParams();
       params.append('tag', tag);
       if (debouncedSearch) params.append('search', debouncedSearch);
       params.append('page', page.toString());
-      params.append('limit', '20');
+      params.append('limit', limit.toString());
 
       const response = await fetch(`/api/admin/users?${params}`);
       if (!response.ok) throw new Error(t.fetchUsersError);
@@ -278,6 +284,51 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {data && data.pagination && data.pagination.total > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
+          <div className="flex items-center gap-2">
+            <Label className="text-slate-300 text-sm">{t.perPage || 'Par page'}:</Label>
+            <Select value={String(limit)} onValueChange={(v) => setLimit(Number(v))}>
+              <SelectTrigger className="w-24 bg-slate-700 border-slate-600 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="30">30</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-slate-400">
+              {t.page || 'Page'} {data.pagination.page} / {data.pagination.pages} ({data.pagination.total} {t.total || 'total'})
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(Math.max(1, page - 1))}
+                disabled={page <= 1}
+                className="border-slate-600 text-white hover:bg-slate-700"
+              >
+                {t.previous || 'Précédent'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page + 1)}
+                disabled={!data.pagination.pages || page >= data.pagination.pages}
+                className="border-slate-600 text-white hover:bg-slate-700"
+              >
+                {t.next || 'Suivant'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Dialog */}
       <Dialog open={editDialog.open} onOpenChange={(open) => !open && setEditDialog({ open: false, user: null })}>

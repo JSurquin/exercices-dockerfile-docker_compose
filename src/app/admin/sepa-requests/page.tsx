@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -70,19 +70,24 @@ export default function AdminSepaRequestsPage() {
 
   const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
   const [approveModal, setApproveModal] = useState<SepaFrRequest | null>(null);
   const [rejectModal, setRejectModal] = useState<SepaFrRequest | null>(null);
   const [approveReference, setApproveReference] = useState('');
   const [rejectReason, setRejectReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    setPage(1);
+  }, [limit]);
+
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['admin-sepa-requests', statusFilter, page],
+    queryKey: ['admin-sepa-requests', statusFilter, page, limit],
     queryFn: async () => {
       const params = new URLSearchParams({
         status: statusFilter,
         page: page.toString(),
-        limit: '20',
+        limit: limit.toString(),
       });
       const res = await fetch(`/api/admin/sepa-requests?${params}`);
       if (!res.ok) throw new Error('Erreur lors du chargement');
@@ -350,28 +355,46 @@ export default function AdminSepaRequestsPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-700">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="border-slate-600 text-slate-300"
-              >
-                {t.paginationPrev}
-              </Button>
-              <span className="text-slate-400 text-sm">
-                {t.paginationPage} {page} {t.paginationOf} {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="border-slate-600 text-slate-300"
-              >
-                {t.paginationNext}
-              </Button>
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-4 border-t border-slate-700 gap-4">
+              <div className="flex items-center gap-2">
+                <Label className="text-slate-300 text-sm">{t.perPage || 'Par page'}:</Label>
+                <Select value={String(limit)} onValueChange={(v) => setLimit(Number(v))}>
+                  <SelectTrigger className="w-24 bg-slate-900 border-slate-600 text-slate-200">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-700">
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="30">30</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-slate-400 text-sm">
+                  {t.paginationPage} {page} {t.paginationOf} {totalPages}
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="border-slate-600 text-slate-300"
+                  >
+                    {t.paginationPrev}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="border-slate-600 text-slate-300"
+                  >
+                    {t.paginationNext}
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>

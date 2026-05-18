@@ -56,6 +56,7 @@ export function AdminUsersTable() {
     page: 1,
     limit: 20,
   });
+  const [limit, setLimit] = useState(20);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -66,6 +67,10 @@ export function AdminUsersTable() {
     }, 400);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, limit, page: 1 }));
+  }, [limit]);
 
   const [promoteDialog, setPromoteDialog] = useState<PromoteDialogState>({
     open: false,
@@ -474,6 +479,51 @@ export function AdminUsersTable() {
             <p className="text-slate-300">{t.noUsers}</p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Pagination */}
+      {data && data.pagination && data.pagination.total > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
+          <div className="flex items-center gap-2">
+            <Label className="text-slate-300 text-sm">{t.perPage || 'Par page'}:</Label>
+            <Select value={String(limit)} onValueChange={(v) => setLimit(Number(v))}>
+              <SelectTrigger className="w-24 bg-slate-700 border-slate-600 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="30">30</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-slate-400">
+              {t.page || 'Page'} {data.pagination.page} / {data.pagination.pages} ({data.pagination.total} {t.total || 'total'})
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFilters(prev => ({ ...prev, page: Math.max(1, (prev.page || 1) - 1) }))}
+                disabled={!data.pagination.page || data.pagination.page <= 1}
+                className="border-slate-600 text-white hover:bg-slate-700"
+              >
+                {t.previous || 'Précédent'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFilters(prev => ({ ...prev, page: (prev.page || 1) + 1 }))}
+                disabled={!data.pagination.pages || data.pagination.page >= data.pagination.pages}
+                className="border-slate-600 text-white hover:bg-slate-700"
+              >
+                {t.next || 'Suivant'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
       <Dialog
