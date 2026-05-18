@@ -227,9 +227,18 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = session.user.id;
+    const isManual = request.nextUrl.searchParams.get('manual') === 'true';
+    const triggerSource = isManual ? 'MANUAL_USER_CLICK' : 'AUTO_POLL';
+
+    console.log(`[RECONCILE] Triggered by user ${userId} — source: ${triggerSource}`, {
+      userId,
+      triggerSource,
+      timestamp: new Date().toISOString(),
+    });
 
     const rateCheck = await reconcileRateLimiter.checkLimit(request, userId);
     if (!rateCheck.allowed) {
+      console.warn(`[RECONCILE] Rate limit hit for user ${userId} — source: ${triggerSource}`);
       return NextResponse.json(
         { error: 'Trop de requêtes. Réessayez plus tard.', resetTime: rateCheck.resetTime },
         { status: 429 },
@@ -291,6 +300,12 @@ export async function GET(request: NextRequest) {
       select: { id: true, status: true, amountCents: true, tradeId: true },
     });
 
+    console.log(`[RECONCILE] Found payouts to check for user ${userId}:`, {
+      flexify: flexifyPayouts.length,
+      whitepay: whitepayPayouts.length,
+      orphanWhitepay: orphanWhitepayPayouts.length,
+    });
+
     if (flexifyPayouts.length === 0 && whitepayPayouts.length === 0 && orphanWhitepayPayouts.length === 0) {
       return NextResponse.json({ results: [] });
     }
@@ -324,6 +339,18 @@ export async function GET(request: NextRequest) {
         console.error('[RECONCILE] Orphan Whitepay error:', p.id, err);
         results.push({ payoutId: p.id, action: 'error', amountCents: p.amountCents, provider: 'whitepay' });
       }
+    }
+
+    const acted = results.filter((r) => r.action === 'debited' || r.action === 'failed');
+    if (acted.length > 0) {
+      console.log(`[RECONCILE] State changes for user ${userId}:`, acted.map((r) => ({
+        payoutId: r.payoutId,
+        action: r.action,
+        provider: r.provider,
+        amountCents: r.amountCents,
+      })));
+    } else {
+      console.log(`[RECONCILE] No changes needed for user ${userId} — all payouts up to date`);
     }
 
     return NextResponse.json({ results });

@@ -26,9 +26,7 @@ import { checkWithdrawalLimit } from '@/lib/balance-service';
 const generateOrderId = () => `WP-${crypto.randomUUID()}`;
 
 const LOG = (msg: string, data?: object) => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[PAYOUT WHITEPAY CRYPTO] ${msg}`, data ?? '');
-  }
+  console.log(`[PAYOUT WHITEPAY CRYPTO] ${msg}`, data ?? '');
 };
 
 // =============================================================================

@@ -270,10 +270,16 @@ export default function PayoutPage() {
     [payoutHistory, FINAL_STATUSES_UPPER, TERMINAL_FAILURE_UPPER],
   );
 
+  const isManualReconcileRef = useRef(false);
+
   const { isFetching: isReconciling, refetch: triggerReconcile } = useQuery({
     queryKey: ['payout-reconcile-page'],
     queryFn: async () => {
-      const r = await fetch('/api/user/payouts/reconcile');
+      const url = isManualReconcileRef.current
+        ? '/api/user/payouts/reconcile?manual=true'
+        : '/api/user/payouts/reconcile';
+      isManualReconcileRef.current = false;
+      const r = await fetch(url);
       if (!r.ok) return { results: [] };
       const data = await r.json();
       // Si quelque chose a bougé, on rafraîchit l'historique et la balance
@@ -1640,6 +1646,7 @@ export default function PayoutPage() {
                     variant="ghost"
                     size="icon"
                     onClick={async () => {
+                      isManualReconcileRef.current = true;
                       await triggerReconcile();
                       queryClient.invalidateQueries({ queryKey: queryKeys.payoutHistory });
                       queryClient.invalidateQueries({ queryKey: queryKeys.userBalance });

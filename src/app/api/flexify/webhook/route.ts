@@ -189,27 +189,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ received: true, processed: true });
     }
 
-    if (isTransactionCompleted(payload.status)) {
-      const { debited } = await PayoutLifecycle.onCompleted(
-        payout.userId, payout.id, payout.amountCents,
-        {
-          tradeId: payout.tradeId,
-          
-          reason: `Payout Flexify ${payout.id} complété (webhook)`,
-          finalStatus: newStatus,
-          paidAt: new Date(),
-        },
-      );
-      if (!debited) {
-        flexifyLog('WEBHOOK_DEBIT_ALREADY_DONE', { payoutId: payout.id }, 'info');
+    try {
+      if (isTransactionCompleted(payload.status)) {
+        const { debited } = await PayoutLifecycle.onCompleted(
+          payout.userId, payout.id, payout.amountCents,
+          {
+            tradeId: payout.tradeId,
+            reason: `Payout Flexify ${payout.id} complété (webhook)`,
+            finalStatus: newStatus,
+            paidAt: new Date(),
+          },
+        );
+        if (!debited) {
+          flexifyLog('WEBHOOK_DEBIT_ALREADY_DONE', { payoutId: payout.id }, 'info');
+        }
       }
-    }
 
-    if (isTransactionFailed(payload.status)) {
-      await PayoutLifecycle.onFailed(payout.userId, payout.id, payout.amountCents, {
-        tradeId: payout.tradeId,
-        finalStatus: newStatus,
+      if (isTransactionFailed(payload.status)) {
+        await PayoutLifecycle.onFailed(payout.userId, payout.id, payout.amountCents, {
+          tradeId: payout.tradeId,
+          finalStatus: newStatus,
+        });
+      }
+    } catch (lifecycleErr) {
+      flexifyLog('WEBHOOK_LIFECYCLE_ERROR', {
+        payoutId: payout.id,
+        status: payload.status,
+        error: String(lifecycleErr),
+      }, 'error');
+      await markWebhookProcessed(webhookId, 'flexify_payout', {
+        success: false,
+        error: lifecycleErr instanceof Error ? lifecycleErr.message : String(lifecycleErr),
+        data: { payoutId: payout.id, flexifyStatus: payload.status },
       });
+      return NextResponse.json({ error: 'Lifecycle error' }, { status: 500 });
     }
 
     // Logger l'événement (non-critique : ne doit pas bloquer le webhook)
