@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,6 +16,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -31,6 +33,7 @@ import {
   User,
   Clock,
   UserCheck,
+  UserCog,
   Loader2,
   CloudDownload,
 } from 'lucide-react';
@@ -40,8 +43,15 @@ import { useLocale } from '@/components/providers/locale-provider';
 import { CreateUserDialog } from './create-user-dialog';
 import { queryKeys } from '@/lib/query-keys';
 import { UserRoleBadge } from '@/components/ui/user-role-badge';
+import { authClient } from '~/lib/auth-client';
 
 interface PromoteDialogState {
+  open: boolean;
+  userId: string;
+  username: string;
+}
+
+interface ImpersonateDialogState {
   open: boolean;
   userId: string;
   username: string;
@@ -52,6 +62,7 @@ export function AdminUsersTable() {
   const t = messages.admin.usersTable;
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const router = useRouter();
   const [filters, setFilters] = useState<AdminFilters>({
     page: 1,
     limit: 20,
@@ -81,6 +92,12 @@ export function AdminUsersTable() {
   const [promoteCommission, setPromoteCommission] = useState('2');
   const [promoting, setPromoting] = useState(false);
   const [syncingKycUserId, setSyncingKycUserId] = useState<string | null>(null);
+  const [impersonateDialog, setImpersonateDialog] = useState<ImpersonateDialogState>({
+    open: false,
+    userId: '',
+    username: '',
+  });
+  const [impersonating, setImpersonating] = useState(false);
 
   const { data, isLoading, isFetching, error } = useQuery({
     queryKey: queryKeys.adminUsers({ ...filters, search: debouncedSearch }),
@@ -268,6 +285,38 @@ export function AdminUsersTable() {
       });
     } finally {
       setSyncingKycUserId(null);
+    }
+  };
+
+  const openImpersonateDialog = (user: UserType) => {
+    setImpersonateDialog({ open: true, userId: user.id, username: user.username });
+  };
+
+  const handleImpersonate = async () => {
+    setImpersonating(true);
+    try {
+      const { error } = await authClient.admin.impersonateUser({ userId: impersonateDialog.userId });
+      if (error) {
+        toast({
+          title: t.impersonateError,
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+      toast({
+        title: t.impersonateSuccess.replace('{name}', impersonateDialog.username),
+      });
+      setImpersonateDialog({ open: false, userId: '', username: '' });
+      router.push('/');
+    } catch (err) {
+      toast({
+        title: t.impersonateError,
+        description: err instanceof Error ? err.message : t.errorUnknown,
+        variant: 'destructive',
+      });
+    } finally {
+      setImpersonating(false);
     }
   };
 
@@ -464,6 +513,17 @@ export function AdminUsersTable() {
                         <UserCheck className="h-4 w-4" />
                       </Button>
                     )}
+                    {user.role !== 'ADMIN' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-orange-600 text-orange-400 hover:bg-orange-900/30 hover:text-orange-300"
+                        onClick={() => openImpersonateDialog(user)}
+                        title={t.impersonateButton}
+                      >
+                        <UserCog className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -602,6 +662,53 @@ export function AdminUsersTable() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de confirmation d'impersonation */}
+      <Dialog
+        open={impersonateDialog.open}
+        onOpenChange={(open) => setImpersonateDialog((prev) => ({ ...prev, open }))}
+      >
+        <DialogContent className="sm:max-w-[420px] bg-slate-800 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <UserCog className="h-5 w-5 text-orange-400" />
+              {t.impersonateConfirmTitle}
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              {t.impersonateConfirmDesc.replace('{name}', impersonateDialog.username)}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setImpersonateDialog((prev) => ({ ...prev, open: false }))}
+              disabled={impersonating}
+              className="border-slate-600 text-white hover:bg-slate-700"
+            >
+              {t.impersonateCancel}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleImpersonate}
+              disabled={impersonating}
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
+            >
+              {impersonating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t.impersonateButton}…
+                </>
+              ) : (
+                <>
+                  <UserCog className="mr-2 h-4 w-4" />
+                  {t.impersonateConfirm}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

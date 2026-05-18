@@ -1287,6 +1287,11 @@ export interface Messages {
       dialogRemoveConfirm: string;
       fetchUsersError: string;
       fetchBonusError: string;
+      perPage: string;
+      page: string;
+      total: string;
+      previous: string;
+      next: string;
     };
     userCreation: {
       title: string;
@@ -1438,6 +1443,25 @@ export interface Messages {
       errorTitle: string;
       errorUnknown: string;
       genericRequestError: string;
+      perPage: string;
+      page: string;
+      total: string;
+      previous: string;
+      next: string;
+      impersonateButton: string;
+      impersonateConfirmTitle: string;
+      impersonateConfirmDesc: string;
+      impersonateConfirm: string;
+      impersonateCancel: string;
+      impersonateSuccess: string;
+      impersonateError: string;
+      impersonateAdminError: string;
+    };
+    impersonationBanner: {
+      message: string;
+      stop: string;
+      stopping: string;
+      stopError: string;
     };
     userDetail: {
       backToUsers: string;
@@ -2772,9 +2796,12 @@ export interface Messages {
         createTitle: string;
         editTitle: string;
         slugLabel: string;
+        slugPlaceholder: string;
         slugUrl: string;
         contactEmail: string;
+        contactEmailPlaceholder: string;
         contactPhone: string;
+        contactPhonePlaceholder: string;
         publishSwitch: string;
         changeReason: string;
         changeReasonPlaceholder: string;
@@ -2785,8 +2812,17 @@ export interface Messages {
         save: string;
         createBtn: string;
         titleLabel: string;
+        titlePlaceholderFr: string;
+        titlePlaceholderEn: string;
+        titlePlaceholderCn: string;
         subtitleLabel: string;
+        subtitlePlaceholderFr: string;
+        subtitlePlaceholderEn: string;
+        subtitlePlaceholderCn: string;
         contentLabel: string;
+        contentPlaceholderFr: string;
+        contentPlaceholderEn: string;
+        contentPlaceholderCn: string;
       };
       toasts: {
         missingFields: string;
@@ -5032,6 +5068,11 @@ export interface Messages {
         labelItemsCount: string;
         viewTradeAriaLabel: string;
         syncTooltip: string;
+        perPage: string;
+        page: string;
+        total: string;
+        previous: string;
+        next: string;
       };
       payouts: {
         searchPlaceholder: string;
@@ -6068,6 +6109,7 @@ export interface Messages {
     modalLabelBeneficiary: string;
     statusPaid: string;
     statusRejected: string;
+    perPage: string;
   };
   kycPolicy: {
     title: string;
