@@ -3869,6 +3869,8 @@ export const messages: Record<Locale, Messages> = {
         kycaidStatusLine: "Statut KYCAID : {status}",
         tooltipSyncAllPending: "Interroge KYCAID pour tous les utilisateurs en attente et met à jour la base",
         kycUnknown: "inconnu",
+        perPage: "Par page",
+        total: "sur",
       },
       affiliatesManagement: {
         adminToolsTitle: "Outils d'Administration",
@@ -3930,6 +3932,8 @@ export const messages: Record<Locale, Messages> = {
         errorConnection: "Erreur de connexion",
         tooltipViewDetails: "Voir les détails",
         tooltipRemoveAffiliate: "Retirer l'affiliation",
+        perPage: "Par page",
+        total: "sur",
       },
       affiliateCommissions: {
         statusPending: "En Attente",
@@ -3964,6 +3968,8 @@ export const messages: Record<Locale, Messages> = {
         errorConnection: "Erreur de connexion",
         infoPayoutTitle: "Info",
         infoPayoutDesc: "Création de payout - À implémenter",
+        perPage: "Par page",
+        total: "sur",
       },
       affiliateApplications: {
         title: "Demandes d'Affiliation",
@@ -4973,6 +4979,7 @@ export const messages: Record<Locale, Messages> = {
     moderation: {
       title: "Modération",
       subtitle: "Gérez les conversations et demandes d'assistance",
+      noSubject: "(Sans sujet)",
       accessDenied: {
         title: "Accès refusé",
         description: "Vous devez être modérateur ou administrateur pour accéder à cette page."
@@ -4987,7 +4994,6 @@ export const messages: Record<Locale, Messages> = {
       loading: "Chargement...",
       noConversations: "Aucune conversation trouvée",
       conversationsCount: "Conversations",
-      noSubject: "Sans sujet",
       anonymousUser: "Utilisateur anonyme",
       createdOn: "Créée le",
       updatedOn: "Mise à jour le",
@@ -9713,6 +9719,8 @@ export const messages: Record<Locale, Messages> = {
         kycaidStatusLine: "KYCAID status: {status}",
         tooltipSyncAllPending: "Query KYCAID for all pending users and update the database",
         kycUnknown: "unknown",
+        perPage: "Per page",
+        total: "of",
       },
       affiliatesManagement: {
         adminToolsTitle: "Administration Tools",
@@ -9774,6 +9782,8 @@ export const messages: Record<Locale, Messages> = {
         errorConnection: "Connection error",
         tooltipViewDetails: "View details",
         tooltipRemoveAffiliate: "Remove affiliation",
+        perPage: "Per page",
+        total: "of",
       },
       affiliateCommissions: {
         statusPending: "Pending",
@@ -9808,6 +9818,8 @@ export const messages: Record<Locale, Messages> = {
         errorConnection: "Connection error",
         infoPayoutTitle: "Info",
         infoPayoutDesc: "Payout creation - To be implemented",
+        perPage: "Per page",
+        total: "of",
       },
       affiliateApplications: {
         title: "Affiliate Applications",
@@ -11740,6 +11752,7 @@ export const messages: Record<Locale, Messages> = {
     moderation: {
       title: "Moderation",
       subtitle: "Manage conversations and support requests",
+      noSubject: "(No subject)",
       accessDenied: {
         title: "Access Denied",
         description: "You must be a moderator or administrator to access this page."
@@ -11754,7 +11767,6 @@ export const messages: Record<Locale, Messages> = {
       loading: "Loading...",
       noConversations: "No conversations found",
       conversationsCount: "Conversations",
-      noSubject: "No subject",
       anonymousUser: "Anonymous user",
       createdOn: "Created on",
       updatedOn: "Updated on",
@@ -16583,6 +16595,8 @@ export const messages: Record<Locale, Messages> = {
         kycaidStatusLine: "KYCAID 状态：{status}",
         tooltipSyncAllPending: "对所有待审核用户查询KYCAID并更新数据库",
         kycUnknown: "未知",
+        perPage: "每页",
+        total: "共",
       },
       affiliatesManagement: {
         adminToolsTitle: "管理工具",
@@ -16644,6 +16658,8 @@ export const messages: Record<Locale, Messages> = {
         errorConnection: "连接错误",
         tooltipViewDetails: "查看详情",
         tooltipRemoveAffiliate: "移除推广资格",
+        perPage: "每页",
+        total: "共",
       },
       affiliateCommissions: {
         statusPending: "待处理",
@@ -16678,6 +16694,8 @@ export const messages: Record<Locale, Messages> = {
         errorConnection: "连接错误",
         infoPayoutTitle: "提示",
         infoPayoutDesc: "创建提款 - 待实现",
+        perPage: "每页",
+        total: "共",
       },
       affiliateApplications: {
         title: "推广申请",
@@ -18414,6 +18432,7 @@ export const messages: Record<Locale, Messages> = {
     moderation: {
       title: "审核管理",
       subtitle: "管理对话和支持请求",
+      noSubject: "（无主题）",
       accessDenied: {
         title: "访问被拒绝",
         description: "您必须是版主或管理员才能访问此页面。"
@@ -18428,7 +18447,6 @@ export const messages: Record<Locale, Messages> = {
       loading: "加载中...",
       noConversations: "未找到对话",
       conversationsCount: "对话",
-      noSubject: "无主题",
       anonymousUser: "匿名用户",
       createdOn: "创建于",
       updatedOn: "更新于",

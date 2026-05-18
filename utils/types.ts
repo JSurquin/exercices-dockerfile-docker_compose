@@ -1716,6 +1716,8 @@ export interface Messages {
       kycaidStatusLine: string;
       tooltipSyncAllPending: string;
       kycUnknown: string;
+      perPage: string;
+      total: string;
     };
     affiliatesManagement: {
       adminToolsTitle: string;
@@ -1777,6 +1779,8 @@ export interface Messages {
       errorConnection: string;
       tooltipViewDetails: string;
       tooltipRemoveAffiliate: string;
+      perPage: string;
+      total: string;
     };
     affiliateCommissions: {
       statusPending: string;
@@ -1811,6 +1815,8 @@ export interface Messages {
       errorConnection: string;
       infoPayoutTitle: string;
       infoPayoutDesc: string;
+      perPage: string;
+      total: string;
     };
     affiliateApplications: {
       title: string;
@@ -4458,10 +4464,32 @@ export interface Messages {
     accessDenied: string;
     accessDeniedDesc: string;
     reservedInterface: string;
+    twoFactorNotAvailable: string;
   };
   moderation: {
     title: string;
     subtitle: string;
+    noSubject: string;
+    anonymousUser: string;
+    createdOn: string;
+    updatedOn: string;
+    messages: string;
+    assignedTo: string;
+    actions: {
+      assignToMe: string;
+      close: string;
+      open: string;
+    };
+    errors: {
+      loadError: string;
+      statsLoadError: string;
+      assignError: string;
+      updateError: string;
+    };
+    success: {
+      assigned: string;
+      statusUpdated: string;
+    };
     accessDenied: {
       title: string;
       description: string;
@@ -5116,6 +5144,11 @@ export interface Messages {
         toastCancelFailed?: string;
         requestFailed?: string;
         cancelReasonByAdmin?: string;
+        perPage?: string;
+        page?: string;
+        total?: string;
+        previous?: string;
+        next?: string;
       };
     };
   };
@@ -5699,6 +5732,7 @@ export interface Messages {
     tip2: string;
     tip3: string;
     tip4: string;
+    checkStatus: string;
   };
   globalError: {
     title: string;
@@ -5924,7 +5958,9 @@ export interface Messages {
         cityLabel?: string;
         cityPlaceholder?: string;
         countryLabel?: string;
+        countryPlaceholder?: string;
         beneficiaryEmailLabel?: string;
+        beneficiaryEmailPlaceholder?: string;
         // Crypto fields
         cryptoLabel: string;
         cryptoPlaceholder: string;
@@ -5941,10 +5977,15 @@ export interface Messages {
         cardExpiryRequired: string;
         cardCvvRequired: string;
         cardNumberLabel: string;
+        cardNumberPlaceholder: string;
         cardHolderLabel: string;
+        cardHolderPlaceholder: string;
         cardExpireMonthLabel: string;
+        cardExpireMonthPlaceholder: string;
         cardExpireYearLabel: string;
+        cardExpireYearPlaceholder: string;
         cardCvvLabel: string;
+        cardCvvPlaceholder: string;
         memoLabel: string;
         memoRequired: string;
         memoPlaceholder: string;
@@ -5975,6 +6016,7 @@ export interface Messages {
           cardInfo: string;
           ibanVerificationDesc: string;
         };
+        stablecoinBadge: string;
       };
     result: {
       requestRegistered: string;
