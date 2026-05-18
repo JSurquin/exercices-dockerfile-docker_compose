@@ -1,7 +1,7 @@
 "use client";
 
 import { createAuthClient } from "better-auth/react";
-import { inferAdditionalFields, twoFactorClient } from "better-auth/client/plugins";
+import { inferAdditionalFields, twoFactorClient, adminClient } from "better-auth/client/plugins";
 import type { BetterAuthClientPlugin } from "better-auth/client";
 import type { auth } from "./auth";
 
@@ -17,6 +17,7 @@ export const authClient = createAuthClient({
         window.location.href = `/two-factor?mode=verify&redirect=${encodeURIComponent(current)}`;
       },
     }) as unknown as BetterAuthClientPlugin,
+    adminClient(),
   ],
 });
 
