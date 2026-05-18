@@ -38,7 +38,7 @@ export default function ModeratorLoginPage() {
       }
 
       if ((data as Record<string, unknown>)?.twoFactorRedirect) {
-        toast.error("La 2FA n'est pas disponible pour les comptes moderateur.");
+        toast.error(t.twoFactorNotAvailable);
         await authClient.signOut();
         return;
       }

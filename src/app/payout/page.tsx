@@ -891,7 +891,7 @@ export default function PayoutPage() {
                           type="text"
                           inputMode="numeric"
                           autoComplete="cc-number"
-                          placeholder="1234 5678 9012 3456"
+                          placeholder={text.request.cardNumberPlaceholder}
                           value={formData.cardNumber}
                           onChange={(e) => {
                             const v = e.target.value.replace(/\D/g, '').slice(0, 19);
@@ -905,7 +905,7 @@ export default function PayoutPage() {
                         <Input
                           id="cardHolder"
                           autoComplete="cc-name"
-                          placeholder="Jean Dupont"
+                          placeholder={text.request.cardHolderPlaceholder}
                           value={formData.cardHolder}
                           onChange={(e) => {
                             setFormData(prev => ({ ...prev, cardHolder: e.target.value }));
@@ -924,7 +924,7 @@ export default function PayoutPage() {
                             }}
                           >
                             <SelectTrigger id="expireMonth">
-                              <SelectValue placeholder="MM" />
+                              <SelectValue placeholder={text.request.cardExpireMonthPlaceholder} />
                             </SelectTrigger>
                             <SelectContent>
                               {Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0')).map((m) => (
@@ -937,7 +937,7 @@ export default function PayoutPage() {
                           <Label htmlFor="expireYear">{text.request.cardExpireYearLabel}</Label>
                           <Input
                             id="expireYear"
-                            placeholder="AA"
+                            placeholder={text.request.cardExpireYearPlaceholder}
                             maxLength={4}
                             value={formData.expireYear}
                             onChange={(e) => {
@@ -954,7 +954,7 @@ export default function PayoutPage() {
                             type="password"
                             inputMode="numeric"
                             autoComplete="cc-csc"
-                            placeholder="•••"
+                            placeholder={text.request.cardCvvPlaceholder}
                             maxLength={4}
                             value={formData.cvv}
                             onChange={(e) => {
@@ -1114,7 +1114,7 @@ export default function PayoutPage() {
                           <Label htmlFor="sepaCountry">{text.request.countryLabel}</Label>
                           <Input
                             id="sepaCountry"
-                            placeholder="DE"
+                            placeholder={text.request.countryPlaceholder}
                             value={formData.beneficiaryCountry}
                             onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryCountry: e.target.value.toUpperCase().slice(0, 2) }))}
                             maxLength={2}
@@ -1126,7 +1126,7 @@ export default function PayoutPage() {
                         <Input
                           id="sepaEmail"
                           type="email"
-                          placeholder="jean.dupont@example.com"
+                          placeholder={text.request.beneficiaryEmailPlaceholder}
                           value={formData.beneficiaryEmail}
                           onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryEmail: e.target.value }))}
                         />
@@ -1410,7 +1410,7 @@ export default function PayoutPage() {
                                 <span className="flex items-center gap-2">
                                   {c.name}
                                   {c.is_stable && (
-                                    <span className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded">Stablecoin</span>
+                                    <span className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded">{text.request.stablecoinBadge}</span>
                                   )}
                                 </span>
                               </SelectItem>
