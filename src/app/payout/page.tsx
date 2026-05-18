@@ -752,7 +752,7 @@ export default function PayoutPage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-8"
         >
-          <h1 className="text-3xl lg:text-4xl font-bold mb-2">{text.title}</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">{text.title}</h1>
           <p className="text-muted-foreground">{text.subtitle}</p>
         </motion.div>
 
@@ -765,13 +765,13 @@ export default function PayoutPage() {
             className="lg:col-span-2"
           >
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
+              <CardHeader className="space-y-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <CardTitle>{text.title}</CardTitle>
                     <CardDescription>{text.subtitle}</CardDescription>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right w-full sm:w-auto shrink-0 border-t pt-4 sm:border-0 sm:pt-0">
                     <p className="text-sm text-muted-foreground">{text.request.availableBalance}</p>
                     <p className="text-2xl font-bold text-green-500">
                       {availableBalanceCents === null
@@ -817,20 +817,20 @@ export default function PayoutPage() {
                   setQuote(null);
                   setSepaFrResult(null);
                 }}>
-                  <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="card" className="flex items-center gap-1 text-xs sm:text-sm">
+                  <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-4 sm:gap-0">
+                    <TabsTrigger value="card" className="flex items-center justify-center gap-1 px-1.5 py-2 text-[11px] sm:px-3 sm:text-sm">
                       <CreditCardIcon className="w-4 h-4" />
                       <span className="hidden sm:inline">{text.request.cardLabel}</span>
                     </TabsTrigger>
-                    <TabsTrigger value="sepa" className="flex items-center gap-1 text-xs sm:text-sm">
+                    <TabsTrigger value="sepa" className="flex items-center justify-center gap-1 px-1.5 py-2 text-[11px] sm:px-3 sm:text-sm">
                       <BanknotesIcon className="w-4 h-4" />
                       <span className="hidden sm:inline">SEPA</span>
                     </TabsTrigger>
-                    <TabsTrigger value="sepa_fr" className="flex items-center gap-1 text-xs sm:text-sm">
+                    <TabsTrigger value="sepa_fr" className="flex items-center justify-center gap-1 px-1.5 py-2 text-[11px] sm:px-3 sm:text-sm">
                       <BanknotesIcon className="w-4 h-4" />
                       <span>{text.sepaFr?.tabLabel}</span>
                     </TabsTrigger>
-                    <TabsTrigger value="crypto" className="flex items-center gap-1 text-xs sm:text-sm">
+                    <TabsTrigger value="crypto" className="flex items-center justify-center gap-1 px-1.5 py-2 text-[11px] sm:px-3 sm:text-sm">
                       <CurrencyDollarIcon className="w-4 h-4" />
                       <span className="hidden sm:inline">Crypto</span>
                     </TabsTrigger>
@@ -913,7 +913,7 @@ export default function PayoutPage() {
                           }}
                         />
                       </div>
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="expireMonth">{text.request.cardExpireMonthLabel}</Label>
                           <Select

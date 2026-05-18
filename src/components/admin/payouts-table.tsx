@@ -117,8 +117,12 @@ export function AdminPayoutsTable() {
     setApprovingId(payoutId);
     try {
       const res = await fetch(`/api/admin/payouts/${payoutId}/approve`, { method: 'POST' });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || tp.requestFailed || 'Error');
+      const data = await res.json().catch(() => ({})) as { error?: string; details?: string };
+      if (!res.ok) {
+        const base = data.error || tp.requestFailed || 'Error';
+        const details = typeof data.details === 'string' && data.details.trim() ? data.details.trim() : '';
+        throw new Error(details ? `${base} — ${details}` : base);
+      }
       toast.success(tp.approveSuccess ?? 'Payout approuvé');
       queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) });
     } catch (e) {

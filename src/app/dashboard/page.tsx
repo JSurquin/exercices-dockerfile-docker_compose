@@ -745,11 +745,11 @@ export default function DashboardPage() {
           transition={{ duration: 0.6, delay: 0.3 }}
         >
           <Tabs defaultValue="trades" className="space-y-4 sm:space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="trades">{messages.dashboard.tabs.trades}</TabsTrigger>
-              <TabsTrigger value="analytics">{messages.dashboard.tabs.analytics}</TabsTrigger>
-              <TabsTrigger value="payments">{messages.dashboard.tabs.payments}</TabsTrigger>
-              <TabsTrigger value="settings">{messages.dashboard.tabs.settings}</TabsTrigger>
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-0">
+              <TabsTrigger value="trades" className="text-xs sm:text-sm px-2">{messages.dashboard.tabs.trades}</TabsTrigger>
+              <TabsTrigger value="analytics" className="text-xs sm:text-sm px-2">{messages.dashboard.tabs.analytics}</TabsTrigger>
+              <TabsTrigger value="payments" className="text-xs sm:text-sm px-2">{messages.dashboard.tabs.payments}</TabsTrigger>
+              <TabsTrigger value="settings" className="text-xs sm:text-sm px-2">{messages.dashboard.tabs.settings}</TabsTrigger>
             </TabsList>
 
             {/* Trades Tab */}

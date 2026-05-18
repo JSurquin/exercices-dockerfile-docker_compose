@@ -194,7 +194,8 @@ export async function POST(
       }
     }
 
-    if (pmType !== 'WHITEPAY_CRYPTO') {
+    // payout-request accepte WHITEPAY_CRYPTO et CRYPTO (legacy) — même flux Whitepay
+    if (pmType !== 'WHITEPAY_CRYPTO' && pmType !== 'CRYPTO') {
       return NextResponse.json(
         { error: 'Type de payout non géré pour approbation' },
         { status: 400 }

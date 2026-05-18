@@ -192,7 +192,7 @@ export default function SellPage() {
             transition={{ duration: 0.4 }}
             className="max-w-6xl mx-auto mb-4"
           >
-            <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-2.5">
+            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2.5 sm:px-4">
               <UserRoleBadge userTag={user.userTag} size="sm" />
               <span className="text-sm text-amber-600 dark:text-amber-400">
                 {messages.sellPage.bonusBanner.replace('{percent}', String(user.bonusRatePercent))}
@@ -217,27 +217,27 @@ export default function SellPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-6 sm:mb-8"
+          className="mb-6 sm:mb-8 overflow-x-auto -mx-1 px-1 scrollbar-thin"
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-center sm:justify-between gap-1 sm:gap-2 mb-4 min-w-max sm:min-w-0 w-full mx-auto">
             {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
+              <div key={step.id} className="flex items-center shrink-0">
                 <div
-                  className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
+                  className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${
                     index <= currentStep
                       ? "bg-orange-500 border-orange-500 text-white"
                       : "border-muted-foreground text-muted-foreground"
                   }`}
                 >
                   {index < currentStep ? (
-                    <CheckCircleIcon className="w-6 h-6" />
+                    <CheckCircleIcon className="w-4 h-4 sm:w-6 sm:h-6" />
                   ) : (
-                    <step.icon className="w-5 h-5" />
+                    <step.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
                 </div>
-                <div className="ml-3 hidden sm:block">
+                <div className="ml-2 sm:ml-3 hidden sm:block">
                   <p
-                    className={`text-sm font-medium ${
+                    className={`text-xs md:text-sm font-medium leading-snug md:leading-normal ${
                       index <= currentStep
                         ? "text-foreground"
                         : "text-muted-foreground"
@@ -248,7 +248,7 @@ export default function SellPage() {
                 </div>
                 {index < steps.length - 1 && (
                   <div
-                    className={`w-20 h-0.5 ml-6 ${
+                    className={`w-6 sm:w-10 md:w-14 lg:w-20 h-0.5 shrink-0 mx-2 sm:mx-3 md:mx-4 ${
                       index < currentStep ? "bg-orange-500" : "bg-muted"
                     }`}
                   />
@@ -295,7 +295,7 @@ export default function SellPage() {
           {currentStep === 2 && tradeData && (
             <div className="space-y-6">
               <Card>
-                <CardContent className="p-8 text-center">
+                <CardContent className="p-4 sm:p-8 text-center">
                   <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-green-500" />
                   <h2 className="text-2xl font-bold mb-2">
                     {messages.sellPage.confirmation.title}
