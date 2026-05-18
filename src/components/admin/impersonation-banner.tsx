@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { UserCog, X, Loader2 } from 'lucide-react';
 import { authClient } from '~/lib/auth-client';
@@ -11,7 +10,6 @@ export function ImpersonationBanner() {
   const { data: session } = authClient.useSession();
   const { messages } = useLocale();
   const t = messages.admin.impersonationBanner;
-  const router = useRouter();
   const [stopping, setStopping] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,8 +28,7 @@ export function ImpersonationBanner() {
         setError(t.stopError);
         return;
       }
-      router.push('/admin/dashboard?tab=users');
-      router.refresh();
+      window.location.href = '/admin/dashboard?tab=users';
     } catch {
       setError(t.stopError);
     } finally {

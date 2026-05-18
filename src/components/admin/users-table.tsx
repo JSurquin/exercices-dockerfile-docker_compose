@@ -304,11 +304,9 @@ export function AdminUsersTable() {
         });
         return;
       }
-      toast({
-        title: t.impersonateSuccess.replace('{name}', impersonateDialog.username),
-      });
       setImpersonateDialog({ open: false, userId: '', username: '' });
-      router.push('/');
+      // Rechargement complet pour forcer la session impersonée côté client
+      window.location.href = '/';
     } catch (err) {
       toast({
         title: t.impersonateError,
