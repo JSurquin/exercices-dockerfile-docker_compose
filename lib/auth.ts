@@ -3,6 +3,8 @@ import type { BetterAuthPlugin } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { twoFactor, admin } from "better-auth/plugins";
+import { createAccessControl } from "better-auth/plugins/access";
+import { adminAc, defaultStatements } from "better-auth/plugins/admin/access";
 import { prisma } from "~/prisma/prisma";
 import { emailService } from "../src/lib/email";
 
@@ -143,6 +145,17 @@ export const auth = betterAuth({
     admin({
       defaultRole: "USER",
       adminRoles: ["ADMIN"],
+      // Le projet stocke les rôles en MAJUSCULES (UserRole ENUM Postgres).
+      // Better Auth defaultRoles ne contient que "admin"/"user" en minuscule,
+      // donc hasPermission(role="ADMIN") retournait undefined → FORBIDDEN.
+      // On mappe explicitement "ADMIN" → permissions complètes admin.
+      ac: createAccessControl(defaultStatements),
+      roles: {
+        ADMIN: createAccessControl(defaultStatements).newRole({
+          ...adminAc.statements,
+        }),
+        USER: createAccessControl(defaultStatements).newRole({}),
+      },
     }),
   ],
 });
