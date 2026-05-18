@@ -15,6 +15,7 @@ import {
   getTransactionStatus as getWhitepayTransactionStatus,
   isTransactionComplete as isWhitepayComplete,
   isTransactionFailed as isWhitepayFailed,
+  WhitepayApiError,
 } from '@/lib/whitepay';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
@@ -232,11 +233,21 @@ async function correctFailedWhitepayToPaid(
   try {
     const wpData = await getWhitepayTransactionStatus(payout.whitepayTransactionId);
     wpStatus = wpData?.transaction?.status;
-  } catch {
+  } catch (err) {
+    // 404 = transaction inconnue de Whitepay (expirée, sandbox, ou jamais soumise)
+    // On efface le whitepayTransactionId pour stopper les appels API répétés sur ce payout.
+    if (err instanceof WhitepayApiError && err.statusCode === 404) {
+      console.warn(`[RECONCILE] Whitepay 404 for tx ${payout.whitepayTransactionId} on payout ${payout.id} — clearing transactionId to stop polling`);
+      await prisma.payout.updateMany({
+        where: { id: payout.id, status: 'FAILED' },
+        data: { whitepayTransactionId: null },
+      });
+    }
     return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'whitepay' };
   }
 
   if (!wpStatus || !isWhitepayComplete(wpStatus as never)) {
+    // Si Whitepay dit que le tx a échoué, pas de correction à faire
     return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'whitepay' };
   }
 
