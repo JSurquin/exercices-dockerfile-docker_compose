@@ -147,6 +147,8 @@ export const auth = betterAuth({
     admin({
       defaultRole: "USER",
       adminRoles: ["ADMIN"],
+      // Contourne le conflit ENUM UserRole vs String attendu par le plugin
+      adminUserIds: [process.env.ADMIN_USER_ID as string].filter(Boolean),
     }),
   ],
 });
