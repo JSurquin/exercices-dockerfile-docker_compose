@@ -136,12 +136,18 @@ export async function GET(request: NextRequest) {
       totalUsers: totalUsers,
     }).catch(() => {});
 
+    const pageSize = filters.limit || 20;
+    const currentPage = filters.page || 1;
+    const totalPages = Math.ceil(totalUsers / pageSize);
+
     return NextResponse.json({
       users: formattedUsers,
-      total: totalUsers,
-      page: filters.page || 1,
-      limit: filters.limit || 20,
-      totalPages: Math.ceil(totalUsers / (filters.limit || 20)),
+      pagination: {
+        total: totalUsers,
+        page: currentPage,
+        pages: totalPages,
+        limit: pageSize,
+      },
     });
   } catch (error) {
     console.error('Erreur lors de la récupération des utilisateurs:', error);

@@ -93,12 +93,17 @@ export async function GET(request: NextRequest) {
       })),
     }));
 
+    const pageSize = filters.limit || 20;
+    const currentPage = filters.page || 1;
+
     return NextResponse.json({
       trades,
-      total,
-      page: filters.page || 1,
-      limit: filters.limit || 20,
-      totalPages: Math.ceil(total / (filters.limit || 20)),
+      pagination: {
+        total,
+        page: currentPage,
+        pages: Math.ceil(total / pageSize),
+        limit: pageSize,
+      },
     });
   } catch (error) {
     console.error('Erreur lors de la récupération des trades:', error);
