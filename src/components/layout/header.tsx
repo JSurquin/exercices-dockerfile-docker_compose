@@ -151,7 +151,7 @@ export function Header() {
         </nav>
 
         {/* Actions Desktop */}
-        <div className="hidden md:flex flex-wrap items-center justify-end gap-2">
+        <div className="hidden md:flex items-center justify-end gap-2">
           {/* Currency Selector */}
           <CurrencySelector variant="ghost" size="sm" showFlag={true} />
           
