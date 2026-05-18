@@ -591,7 +591,7 @@ export default function AdminLegalPagesPage() {
                 <Input
                   value={form.slug}
                   onChange={(e) => setForm(prev => ({ ...prev, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') }))}
-                  placeholder="terms"
+                  placeholder={t.dialog.slugPlaceholder}
                   disabled={editMode === 'edit'}
                   className="bg-slate-800 border-slate-600 text-white"
                 />
@@ -604,7 +604,7 @@ export default function AdminLegalPagesPage() {
                   type="email"
                   value={form.contactEmail}
                   onChange={(e) => setForm(prev => ({ ...prev, contactEmail: e.target.value }))}
-                  placeholder="legal@moonskin.gg"
+                  placeholder={t.dialog.contactEmailPlaceholder}
                   className="bg-slate-800 border-slate-600 text-white"
                 />
               </div>
@@ -614,7 +614,7 @@ export default function AdminLegalPagesPage() {
                 <Input
                   value={form.contactPhone}
                   onChange={(e) => setForm(prev => ({ ...prev, contactPhone: e.target.value }))}
-                  placeholder="+33 1 23 45 67 89"
+                  placeholder={t.dialog.contactPhonePlaceholder}
                   className="bg-slate-800 border-slate-600 text-white"
                 />
               </div>
@@ -718,7 +718,7 @@ export default function AdminLegalPagesPage() {
                   <Input
                     value={form.titleFr}
                     onChange={(e) => setForm(prev => ({ ...prev, titleFr: e.target.value }))}
-                    placeholder="Conditions Générales d'Utilisation"
+                    placeholder={t.dialog.titlePlaceholderFr}
                     className="bg-slate-800 border-slate-600 text-white"
                   />
                 </div>
@@ -728,7 +728,7 @@ export default function AdminLegalPagesPage() {
                   <Input
                     value={form.subtitleFr}
                     onChange={(e) => setForm(prev => ({ ...prev, subtitleFr: e.target.value }))}
-                    placeholder="Veuillez lire attentivement ces conditions"
+                    placeholder={t.dialog.subtitlePlaceholderFr}
                     className="bg-slate-800 border-slate-600 text-white"
                   />
                 </div>
@@ -738,7 +738,7 @@ export default function AdminLegalPagesPage() {
                   <Textarea
                     value={form.contentFr}
                     onChange={(e) => setForm(prev => ({ ...prev, contentFr: e.target.value }))}
-                    placeholder="# Section 1&#10;&#10;Contenu de la section...&#10;&#10;## Sous-section&#10;&#10;- Point 1&#10;- Point 2"
+                    placeholder={t.dialog.contentPlaceholderFr}
                     rows={15}
                     className="bg-slate-800 border-slate-600 text-white font-mono text-sm"
                   />
@@ -751,7 +751,7 @@ export default function AdminLegalPagesPage() {
                   <Input
                     value={form.titleEn}
                     onChange={(e) => setForm(prev => ({ ...prev, titleEn: e.target.value }))}
-                    placeholder="Terms of Service"
+                    placeholder={t.dialog.titlePlaceholderEn}
                     className="bg-slate-800 border-slate-600 text-white"
                   />
                 </div>
@@ -761,7 +761,7 @@ export default function AdminLegalPagesPage() {
                   <Input
                     value={form.subtitleEn}
                     onChange={(e) => setForm(prev => ({ ...prev, subtitleEn: e.target.value }))}
-                    placeholder="Please read these terms carefully"
+                    placeholder={t.dialog.subtitlePlaceholderEn}
                     className="bg-slate-800 border-slate-600 text-white"
                   />
                 </div>
@@ -771,7 +771,7 @@ export default function AdminLegalPagesPage() {
                   <Textarea
                     value={form.contentEn}
                     onChange={(e) => setForm(prev => ({ ...prev, contentEn: e.target.value }))}
-                    placeholder="# Section 1&#10;&#10;Section content...&#10;&#10;## Subsection&#10;&#10;- Point 1&#10;- Point 2"
+                    placeholder={t.dialog.contentPlaceholderEn}
                     rows={15}
                     className="bg-slate-800 border-slate-600 text-white font-mono text-sm"
                   />
@@ -784,7 +784,7 @@ export default function AdminLegalPagesPage() {
                   <Input
                     value={form.titleCn}
                     onChange={(e) => setForm(prev => ({ ...prev, titleCn: e.target.value }))}
-                    placeholder="服务条款"
+                    placeholder={t.dialog.titlePlaceholderCn}
                     className="bg-slate-800 border-slate-600 text-white"
                   />
                 </div>
@@ -794,7 +794,7 @@ export default function AdminLegalPagesPage() {
                   <Input
                     value={form.subtitleCn}
                     onChange={(e) => setForm(prev => ({ ...prev, subtitleCn: e.target.value }))}
-                    placeholder="请仔细阅读这些条款"
+                    placeholder={t.dialog.subtitlePlaceholderCn}
                     className="bg-slate-800 border-slate-600 text-white"
                   />
                 </div>
@@ -804,7 +804,7 @@ export default function AdminLegalPagesPage() {
                   <Textarea
                     value={form.contentCn}
                     onChange={(e) => setForm(prev => ({ ...prev, contentCn: e.target.value }))}
-                    placeholder="# 第一部分&#10;&#10;内容...&#10;&#10;## 子部分&#10;&#10;- 要点 1&#10;- 要点 2"
+                    placeholder={t.dialog.contentPlaceholderCn}
                     rows={15}
                     className="bg-slate-800 border-slate-600 text-white font-mono text-sm"
                   />
