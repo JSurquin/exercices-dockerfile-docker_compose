@@ -55,15 +55,14 @@ export async function POST(request: NextRequest) {
     const skipVerify = process.env.FLEXIFY_WEBHOOK_SKIP_VERIFY === 'true' && !isDeployedEnv;
 
     if (isDeployedEnv && process.env.FLEXIFY_WEBHOOK_SKIP_VERIFY === 'true') {
+      // Ne jamais retourner 503 : ça bloquerait tous les webhooks si la var est accidentellement setée.
+      // On log l'avertissement et on force la vérification de signature au lieu de court-circuiter.
       flexifyLog(
-        'WEBHOOK_SKIP_VERIFY_BLOCKED',
-        { message: 'FLEXIFY_WEBHOOK_SKIP_VERIFY interdit sur les environnements déployés' },
+        'WEBHOOK_SKIP_VERIFY_IGNORED_ON_DEPLOYED',
+        { message: 'FLEXIFY_WEBHOOK_SKIP_VERIFY=true ignoré sur environnement déployé — vérification signature forcée. Supprimer cette variable d\'env sur le serveur.' },
         'error'
       );
-      return NextResponse.json(
-        { error: 'Webhook verification misconfigured' },
-        { status: 503 }
-      );
+      // skipVerify reste false, on proceed à la vérification normale ci-dessous
     }
 
     // Vérification de fraîcheur : rejeter les webhooks de plus de 5 minutes (anti-replay)

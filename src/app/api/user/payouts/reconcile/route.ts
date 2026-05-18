@@ -23,7 +23,7 @@ const reconcileRateLimiter = new RateLimiter('USER_PAYOUT_RECONCILE', RATE_LIMIT
 
 interface ReconcileResult {
   payoutId: string;
-  action: 'debited' | 'failed' | 'unchanged' | 'error';
+  action: 'debited' | 'failed' | 'unchanged' | 'error' | 'corrected';
   amountCents: number;
   provider: 'flexify' | 'whitepay';
 }
@@ -219,6 +219,59 @@ async function applyFailed(
   return { payoutId: payout.id, action: 'failed', amountCents: payout.amountCents, provider };
 }
 
+/**
+ * Correction : payout marqué FAILED dans notre système mais COMPLETE chez Whitepay.
+ * Cela arrive quand onFailed s'est déclenché (timeout > 24h) avant l'arrivée du webhook.
+ * Le solde a déjà été dégélé (unfreezeBalance) → on doit juste débiter et passer en PAID.
+ */
+async function correctFailedWhitepayToPaid(
+  userId: string,
+  payout: { id: string; whitepayTransactionId: string; amountCents: number; tradeId: string | null },
+): Promise<ReconcileResult> {
+  let wpStatus: string | undefined;
+  try {
+    const wpData = await getWhitepayTransactionStatus(payout.whitepayTransactionId);
+    wpStatus = wpData?.transaction?.status;
+  } catch {
+    return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'whitepay' };
+  }
+
+  if (!wpStatus || !isWhitepayComplete(wpStatus as never)) {
+    return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'whitepay' };
+  }
+
+  console.log(`[RECONCILE] Correction FAILED→PAID for payout ${payout.id} (Whitepay status=${wpStatus})`);
+
+  // Réinitialiser le verrou pour permettre à onCompleted de s'exécuter
+  const reset = await prisma.payout.updateMany({
+    where: { id: payout.id, status: 'FAILED' },
+    data: { balanceDebitedAt: null, status: 'WHITEPAY_COMPLETE' },
+  });
+
+  if (reset.count === 0) {
+    console.warn(`[RECONCILE] Correction skipped for ${payout.id} — already corrected or concurrent update`);
+    return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'whitepay' };
+  }
+
+  const { debited } = await PayoutLifecycle.onCompleted(
+    userId, payout.id, payout.amountCents,
+    {
+      tradeId: payout.tradeId,
+      reason: `Correction: Whitepay tx ${payout.whitepayTransactionId} = COMPLETE (payout était FAILED)`,
+      finalStatus: 'PAID',
+      paidAt: new Date(),
+    },
+  );
+
+  if (!debited) {
+    console.error(`[RECONCILE] Correction failed: onCompleted returned debited=false for ${payout.id}`);
+    return { payoutId: payout.id, action: 'error', amountCents: payout.amountCents, provider: 'whitepay' };
+  }
+
+  console.log(`[RECONCILE] Correction SUCCESS: payout ${payout.id} → PAID, balance débité de ${payout.amountCents} centimes`);
+  return { payoutId: payout.id, action: 'corrected', amountCents: payout.amountCents, provider: 'whitepay' };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -285,6 +338,20 @@ export async function GET(request: NextRequest) {
       select: { id: true, whitepayTransactionId: true, status: true, amountCents: true, tradeId: true, createdAt: true },
     });
 
+    // Payouts FAILED avec un whitepayTransactionId : vérifier que Whitepay ne les a pas marqués COMPLETE
+    // (cas : onFailed déclenché par timeout avant l'arrivée du webhook Whitepay)
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    const failedWhitepayToCheck = await prisma.payout.findMany({
+      where: {
+        userId,
+        status: 'FAILED',
+        whitepayTransactionId: { not: null },
+        paidAt: null,
+        createdAt: { lt: thirtyMinutesAgo },
+      },
+      select: { id: true, whitepayTransactionId: true, amountCents: true, tradeId: true },
+    });
+
     // Payouts WhitePay sans transactionId mais en PROCESSING depuis > 24h → marqués FAILED
     // (création API a échoué, donc plus jamais de webhook possible — il faut libérer la balance)
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -304,9 +371,10 @@ export async function GET(request: NextRequest) {
       flexify: flexifyPayouts.length,
       whitepay: whitepayPayouts.length,
       orphanWhitepay: orphanWhitepayPayouts.length,
+      failedWhitepayToCorrect: failedWhitepayToCheck.length,
     });
 
-    if (flexifyPayouts.length === 0 && whitepayPayouts.length === 0 && orphanWhitepayPayouts.length === 0) {
+    if (flexifyPayouts.length === 0 && whitepayPayouts.length === 0 && orphanWhitepayPayouts.length === 0 && failedWhitepayToCheck.length === 0) {
       return NextResponse.json({ results: [] });
     }
 
@@ -330,6 +398,17 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Correction FAILED → PAID : Whitepay a payé mais notre système a déclenché onFailed par timeout
+    for (const p of failedWhitepayToCheck) {
+      try {
+        const r = await correctFailedWhitepayToPaid(userId, p as { id: string; whitepayTransactionId: string; amountCents: number; tradeId: string | null });
+        if (r.action !== 'unchanged') results.push(r);
+      } catch (err) {
+        console.error('[RECONCILE] correctFailedWhitepayToPaid error:', p.id, err);
+        results.push({ payoutId: p.id, action: 'error', amountCents: p.amountCents, provider: 'whitepay' });
+      }
+    }
+
     // Orphelins Whitepay : pas d'ID provider, > 24h → on libère la balance (FAILED)
     for (const p of orphanWhitepayPayouts) {
       try {
@@ -341,7 +420,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const acted = results.filter((r) => r.action === 'debited' || r.action === 'failed');
+    const acted = results.filter((r) => r.action === 'debited' || r.action === 'failed' || r.action === 'corrected');
     if (acted.length > 0) {
       console.log(`[RECONCILE] State changes for user ${userId}:`, acted.map((r) => ({
         payoutId: r.payoutId,
