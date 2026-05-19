@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useLocale } from "@/components/providers/locale-provider";
 import { usePublicStats } from "@/hooks/use-public-stats";
 import { SiteTour } from "@/components/layout/site-tour";
+import { useTourMode } from "@/components/providers/tour-provider";
 import {
   MOONSKIN_DISCORD_URL,
   MOONSKIN_X_URL,
@@ -24,7 +24,7 @@ import {
 export function Footer() {
   const { messages } = useLocale();
   const { data: publicStats } = usePublicStats();
-  const [tourActive, setTourActive] = useState(false);
+  const { isTourMode: tourActive, startTour, endTour } = useTourMode();
 
   const links = {
     company: [
@@ -279,7 +279,7 @@ export function Footer() {
               ))}
               <button
                 data-tour="footer-guide"
-                onClick={() => setTourActive(true)}
+                onClick={() => startTour()}
                 className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-colors flex items-center gap-1"
               >
                 <span>🗺️</span>
@@ -298,7 +298,7 @@ export function Footer() {
         </div>
       </div>
     </footer>
-    {tourActive && <SiteTour onFinish={() => setTourActive(false)} />}
+    {tourActive && <SiteTour onFinish={() => endTour()} />}
     </>
   );
 }

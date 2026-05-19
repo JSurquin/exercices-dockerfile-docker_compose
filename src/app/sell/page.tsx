@@ -25,6 +25,8 @@ import {
 import { toast } from "sonner";
 import { UserRoleBadge } from "@/components/ui/user-role-badge";
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
+import { useTourMode } from '@/components/providers/tour-provider';
+import { SellTourDemo } from '@/components/tour-demos/sell-tour-demo';
 
 const getSteps = (messages: any) => [
   { id: "inventory", title: messages.sellPage.steps.inventory, icon: LinkIcon },
@@ -38,6 +40,7 @@ const POLL_MAX_ATTEMPTS = 45; // ~6 minutes de polling
 export default function SellPage() {
   const { user } = useAuth();
   const { messages } = useLocale();
+  const { isTourMode } = useTourMode();
   const [currentStep, setCurrentStep] = useState(0);
   const steps = getSteps(messages);
   const [selectedItems, setSelectedItems] = useState<NormalizedInventoryItem[]>([]);
@@ -153,6 +156,7 @@ export default function SellPage() {
   };
 
   if (!user) {
+    if (isTourMode) return <SellTourDemo />;
     return (
       <LoginRequiredBlock
         icon={<ShieldCheckIcon className="w-16 h-16" />}

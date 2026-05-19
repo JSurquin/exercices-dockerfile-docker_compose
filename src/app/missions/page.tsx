@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
+import { useTourMode } from '@/components/providers/tour-provider';
+import { MissionsTourDemo } from '@/components/tour-demos/missions-tour-demo';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -273,6 +275,7 @@ function MissionCard({
 export default function MissionsPage() {
   const { user, isLoading: authLoading, refreshUser } = useAuth();
   const { messages, locale } = useLocale();
+  const { isTourMode } = useTourMode();
   const t = messages.missions;
   const queryClient = useQueryClient();
   const [animatingFragments, setAnimatingFragments] = useState(false);
@@ -341,6 +344,7 @@ export default function MissionsPage() {
   }
 
   if (!user) {
+    if (isTourMode) return <MissionsTourDemo />;
     return (
       <div className="container max-w-lg mx-auto py-24 text-center space-y-4">
         <SparklesIcon className="w-16 h-16 mx-auto text-amber-500" />

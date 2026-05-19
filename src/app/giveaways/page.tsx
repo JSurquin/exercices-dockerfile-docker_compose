@@ -14,6 +14,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
+import { useTourMode } from '@/components/providers/tour-provider';
+import { GiveawaysTourDemo } from '@/components/tour-demos/giveaways-tour-demo';
 import { Messages } from '~/utils/types';
 import { useGiveaways, GiveawayWithEntries } from '@/hooks/use-giveaways';
 import { GiveawayNotifications } from '@/components/giveaway/giveaway-notifications';
@@ -279,6 +281,7 @@ const GiveawayCard = ({
 export default function GiveawaysPage() {
   const { user } = useAuth();
   const { messages, locale } = useLocale();
+  const { isTourMode } = useTourMode();
   const [selectedTab, setSelectedTab] = useState('active');
   const { giveaways, loading, participateInGiveaway, refetch } = useGiveaways();
   const [userFragments, setUserFragments] = useState(0);
@@ -378,6 +381,7 @@ export default function GiveawaysPage() {
   }
 
   if (!user) {
+    if (isTourMode) return <GiveawaysTourDemo />;
     return (
       <LoginRequiredBlock
         icon={<GiftIcon className="w-16 h-16" />}

@@ -7,6 +7,7 @@ import { LocaleProvider } from "@/components/providers/locale-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { CurrencyProvider } from "@/components/providers/currency-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { TourModeProvider } from "@/components/providers/tour-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ChatWidget } from "@/components/ui/chat-widget";
@@ -81,6 +82,7 @@ export default function RootLayout({
             <CurrencyProvider>
               <QueryProvider>
                 <AuthProvider>
+                  <TourModeProvider>
                   <ImpersonationBanner />
                   {/* Header, Footer et ChatWidget uniquement pour le site public */}
                   {!isAdminRoute && <Header />}
@@ -95,6 +97,7 @@ export default function RootLayout({
                   <PayoutReconciler />
                   <UpdateNotifier />
                   <Toaster />
+                  </TourModeProvider>
                 </AuthProvider>
               </QueryProvider>
             </CurrencyProvider>

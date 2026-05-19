@@ -16,6 +16,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "~/lib/auth-client";
 import { useLocale } from "@/components/providers/locale-provider";
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
+import { useTourMode } from '@/components/providers/tour-provider';
+import { DashboardTourDemo } from '@/components/tour-demos/dashboard-tour-demo';
 import OnboardingDialog from "@/components/onboarding/onboarding-dialog";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { Messages } from "~/utils/types";
@@ -163,6 +165,7 @@ const dateLocaleTag = (locale: string) =>
   locale === "en" ? "en-GB" : locale === "cn" ? "zh-CN" : "fr-FR";
 
 export default function DashboardPage() {
+  const { isTourMode } = useTourMode();
   const { data, isPending, error } = useSession();
   const searchParams = useSearchParams();
   const { isFirstLogin, completeOnboarding } = useOnboarding();
@@ -370,6 +373,7 @@ export default function DashboardPage() {
   const localeTag = dateLocaleTag(appLocale);
 
   if (!data || !user) {
+    if (isTourMode) return <DashboardTourDemo />;
     return (
       <LoginRequiredBlock
         icon={<ChartBarIcon className="w-16 h-16" />}
