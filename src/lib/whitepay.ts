@@ -749,44 +749,39 @@ function isRateExpiredError(error: WhitepayApiError): boolean {
 // =============================================================================
 
 /**
- * Frais fixes Whitepay basés sur les vraies valeurs retournées par l'API
- * processingCents: 22 (0,22€ fixe) — networkCents: 200 (2,00€ réseau blockchain)
+ * Taux de frais Whitepay : 1,1% du montant brut.
+ * Pas de frais fixe — uniquement un pourcentage proportionnel.
  */
-export const WHITEPAY_FEES = {
-  processingFeeCents: 22,
-  networkFeeCents: 200,
-  totalFeeCents: 222,
-} as const;
+export const WHITEPAY_FEE_RATE = 0.011; // 1,1%
 
 /**
- * Calcule les frais pour un retrait crypto Whitepay
- * Valeurs fixes réelles issues de l'API Whitepay (processingCents: 22, networkCents: 200)
+ * Calcule les frais estimés pour un retrait crypto Whitepay (1,1% du montant).
+ * Utiliser parseWhitepayFeesFromResponse() pour les frais réels issus de l'API.
  */
-export function calculateWhitepayFees(_amountCents: number): {
+export function calculateWhitepayFees(amountCents: number): {
   processingFeeCents: number;
   networkFeeCents: number;
   totalFeeCents: number;
 } {
-  return { ...WHITEPAY_FEES };
+  const totalFeeCents = Math.ceil(amountCents * WHITEPAY_FEE_RATE);
+  return { processingFeeCents: totalFeeCents, networkFeeCents: 0, totalFeeCents };
 }
 
 /**
- * Extrait les frais réels depuis la réponse Whitepay (tx.fee = total en EUR string)
- * et les décompose en processing + network
+ * Extrait les frais réels depuis la réponse Whitepay (tx.fee = total en EUR string).
+ * Si txFee est null (non fourni par l'API), on estime à partir du taux de 1,1%.
  */
-export function parseWhitepayFeesFromResponse(txFee: string | null): {
+export function parseWhitepayFeesFromResponse(txFee: string | null, amountCents?: number): {
   processingFeeCents: number;
   networkFeeCents: number;
   totalFeeCents: number;
 } {
-  if (!txFee) return { ...WHITEPAY_FEES };
-
+  if (!txFee) {
+    if (amountCents !== undefined) return calculateWhitepayFees(amountCents);
+    return { processingFeeCents: 0, networkFeeCents: 0, totalFeeCents: 0 };
+  }
   const totalFeeCents = Math.round(parseFloat(txFee) * 100);
-  // On conserve le réseau fixe à 200 centimes, le reste est le processing
-  const networkFeeCents = WHITEPAY_FEES.networkFeeCents;
-  const processingFeeCents = Math.max(0, totalFeeCents - networkFeeCents);
-
-  return { processingFeeCents, networkFeeCents, totalFeeCents };
+  return { processingFeeCents: totalFeeCents, networkFeeCents: 0, totalFeeCents };
 }
 
 /**

@@ -16,7 +16,7 @@ interface FeeNumericConfig {
 const FEE_CONFIG: Record<PayoutMethod, FeeNumericConfig> = {
   card:   { rate: 0.042, fixedCents: 50 },
   sepa:   { rate: 0.02,  fixedCents: 350 },
-  crypto: { rate: 0,     fixedCents: 222 },
+  crypto: { rate: 0.011, fixedCents: 0 },   // 1,1% Whitepay, pas de frais fixe
 };
 
 export function computeFees(method: PayoutMethod, amountCents: number) {

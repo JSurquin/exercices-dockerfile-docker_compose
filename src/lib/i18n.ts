@@ -6750,7 +6750,7 @@ export const messages: Record<Locale, Messages> = {
       fees: {
         cardLabel: 'Frais carte (4,2% + 0,50€)',
         sepaLabel: 'Frais SEPA (2% + 3,50€)',
-        cryptoLabel: 'Frais crypto (2,22€ fixe)',
+        cryptoLabel: 'Frais crypto (1,1%)',
         cardDelay: 'Crédité sous 24h',
         sepaDelay: 'Instantané',
       },
@@ -13731,7 +13731,7 @@ export const messages: Record<Locale, Messages> = {
       fees: {
         cardLabel: 'Card fees (4.2% + €0.50)',
         sepaLabel: 'SEPA fees (2% + €3.50)',
-        cryptoLabel: 'Crypto fees (€2.22 fixed)',
+        cryptoLabel: 'Crypto fees (1.1%)',
         cardDelay: 'Credited within 24h',
         sepaDelay: 'Instant',
       },
@@ -20408,7 +20408,7 @@ export const messages: Record<Locale, Messages> = {
       fees: {
         cardLabel: '卡费 (4.2% + €0.50)',
         sepaLabel: 'SEPA费 (2% + €3.50)',
-        cryptoLabel: '加密货币费 (€2.22)',
+        cryptoLabel: '加密货币费 (1.1%)',
         cardDelay: '24小时内到账',
         sepaDelay: '即时',
       },
