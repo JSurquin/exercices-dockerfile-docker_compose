@@ -27,6 +27,7 @@ import { UserRoleBadge } from "@/components/ui/user-role-badge";
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import { useTourMode } from '@/components/providers/tour-provider';
 import { SellTourDemo } from '@/components/tour-demos/sell-tour-demo';
+import { XPPreviewBar, estimateXPGain, xpForNextLevel, levelFromXP } from '@/components/sell/xp-preview-bar';
 
 const getSteps = (messages: any) => [
   { id: "inventory", title: messages.sellPage.steps.inventory, icon: LinkIcon },
@@ -155,6 +156,13 @@ export default function SellPage() {
     setCurrentStep(0);
   };
 
+  const pendingXPGain = estimateXPGain(
+    selectedItems.reduce((sum, item) => sum + item.price_centimes, 0)
+  );
+  const userLevel = user?.level ?? 1;
+  const userXP = user?.xp ?? 0;
+  const xpNext = xpForNextLevel(userLevel);
+
   if (!user) {
     if (isTourMode) return <SellTourDemo />;
     return (
@@ -277,6 +285,14 @@ export default function SellPage() {
         >
           {currentStep === 0 && (
             <div data-tour="sell-inventory">
+            <div className="max-w-6xl mx-auto mb-4">
+              <XPPreviewBar
+                currentXP={userXP}
+                currentLevel={userLevel}
+                xpForNextLevel={xpNext}
+                pendingXPGain={pendingXPGain}
+              />
+            </div>
             <SkinplaceInventoryViewer
               steamId64={activeSteamId}
               linkedSteamIdentity={
