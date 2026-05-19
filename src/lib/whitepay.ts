@@ -505,7 +505,9 @@ export async function createInstantWithdrawal(
 // =============================================================================
 
 /**
- * Récupère le statut actuel d'une transaction Whitepay
+ * Récupère le statut d'une transaction via l'endpoint convert-withdrawal.
+ * Fonctionne uniquement pour les transactions en cours (avant completion).
+ * Pour les transactions terminées, utiliser getTransactionByExternalId().
  */
 export async function getTransactionStatus(
   transactionId: string
@@ -516,6 +518,69 @@ export async function getTransactionStatus(
     'GET',
     `/private-api/convert-withdrawal/${transactionId}`
   );
+}
+
+/**
+ * Recherche une transaction Whitepay terminée par son external_id (notre orderId).
+ * C'est le seul moyen de retrouver une transaction COMPLETE car /convert-withdrawal/{id}
+ * renvoie 404 une fois la transaction complétée et archivée.
+ */
+export async function getTransactionByExternalId(
+  externalId: string
+): Promise<{ id: string; type: string; status: string; hash: string | null; completed_at: string | null; external_id: string } | null> {
+  validateConfig();
+
+  const qs = new URLSearchParams({ external_id: externalId, per_page: '10' });
+  const resp = await whitepayRequest<{
+    transactions: Array<{ id: string; type: string; status: string; hash: string | null; completed_at: string | null; external_id?: string | null }>;
+  }>('GET', `/private-api/transactions?${qs.toString()}`);
+
+  const found = resp.transactions.find((tx) => tx.external_id === externalId);
+  if (!found) return null;
+  return { ...found, external_id: found.external_id ?? externalId };
+}
+
+/**
+ * Tente de résoudre le statut d'une transaction Whitepay avec double fallback :
+ * 1. /convert-withdrawal/{id}     → fonctionne en cours de traitement
+ * 2. /transactions?external_id=X → fonctionne après completion (archived)
+ *
+ * Retourne null si la transaction est introuvable des deux côtés.
+ */
+export async function resolveWhitepayTransactionStatus(
+  transactionId: string | null,
+  externalId: string | null
+): Promise<{ status: string; source: 'convert_withdrawal' | 'transactions_list' } | null> {
+  validateConfig();
+
+  // Essai 1 : endpoint convert-withdrawal (in-flight)
+  if (transactionId) {
+    try {
+      const resp = await whitepayRequest<WhitepayStatusResponse>(
+        'GET',
+        `/private-api/convert-withdrawal/${transactionId}`
+      );
+      if (resp.transaction?.status) {
+        return { status: resp.transaction.status, source: 'convert_withdrawal' };
+      }
+    } catch {
+      // 404 attendu pour les tx complétées — on passe au fallback
+    }
+  }
+
+  // Essai 2 : transactions list par external_id (post-completion)
+  if (externalId) {
+    try {
+      const tx = await getTransactionByExternalId(externalId);
+      if (tx?.status) {
+        return { status: tx.status, source: 'transactions_list' };
+      }
+    } catch {
+      // Erreur réseau ou API — on renvoie null
+    }
+  }
+
+  return null;
 }
 
 // =============================================================================

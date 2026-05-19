@@ -12,7 +12,7 @@ import {
   type FlexifyTransactionStatus,
 } from '@/lib/flexify';
 import {
-  getTransactionStatus as getWhitepayTransactionStatus,
+  resolveWhitepayTransactionStatus,
   isTransactionComplete as isWhitepayComplete,
   isTransactionFailed as isWhitepayFailed,
 } from '@/lib/whitepay';
@@ -129,48 +129,57 @@ async function reconcileFlexifyPayout(
   return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'flexify' };
 }
 
+/**
+ * Retrouve l'orderId (external_id envoyé à Whitepay) depuis l'audit log.
+ * Nécessaire pour le fallback /transactions?external_id= quand /convert-withdrawal/{id} retourne 404.
+ */
+async function getWhitepayOrderIdFromAudit(userId: string, payoutId: string): Promise<string | null> {
+  const entry = await prisma.auditLog.findFirst({
+    where: {
+      userId,
+      action: { in: ['WHITEPAY_WITHDRAWAL_CREATED', 'WHITEPAY_INSTANT_WITHDRAWAL_CREATED'] },
+      details: { path: ['payoutId'], equals: payoutId },
+    },
+    select: { details: true },
+  });
+  if (!entry) return null;
+  const d = entry.details as Record<string, unknown>;
+  return typeof d.orderId === 'string' ? d.orderId : null;
+}
+
 async function reconcileWhitepayPayout(
   userId: string,
   payout: { id: string; whitepayTransactionId: string | null; status: string; amountCents: number; tradeId: string | null; createdAt: Date },
 ): Promise<ReconcileResult> {
-  // Même logique : statut interne succès sans débit → confirmer chez Whitepay avant applyDebit
+  // Résolution avec double fallback : /convert-withdrawal → /transactions?external_id
+  const externalId = await getWhitepayOrderIdFromAudit(userId, payout.id);
+  const resolved = await resolveWhitepayTransactionStatus(payout.whitepayTransactionId, externalId);
+
+  console.log(`[RECONCILE] Whitepay ${payout.id}: status=${resolved?.status ?? 'unknown'} source=${resolved?.source ?? 'none'} externalId=${externalId ?? 'none'}`);
+
+  const wpStatus = resolved?.status;
+
+  // Statut interne succès sans débit → confirmer chez Whitepay avant tout débit
   if (payout.status === 'WHITEPAY_COMPLETE' || payout.status === 'PAID') {
-    let wpStatus: string | undefined;
-    try {
-      const wpData = await getWhitepayTransactionStatus(payout.whitepayTransactionId!);
-      wpStatus = wpData.transaction?.status;
-    } catch (err) {
-      const msg = (err as Error).message ?? '';
-      const ageMs = Date.now() - payout.createdAt.getTime();
-      if ((msg.includes('404') || msg.toLowerCase().includes('not found')) && ageMs > 24 * 60 * 60 * 1000) {
-        return applyFailed(userId, payout, 'whitepay');
-      }
+    if (!wpStatus) {
       return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'whitepay' };
     }
-    if (wpStatus && isWhitepayFailed(wpStatus as never)) {
+    if (isWhitepayFailed(wpStatus as never)) {
       return applyFailed(userId, payout, 'whitepay');
     }
-    if (!wpStatus || !isWhitepayComplete(wpStatus as never)) {
+    if (!isWhitepayComplete(wpStatus as never)) {
       return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'whitepay' };
     }
     return applyDebit(userId, payout, 'whitepay', { preserveExistingStatus: true });
   }
 
-  let wpStatus: string | undefined;
-  try {
-    const wpData = await getWhitepayTransactionStatus(payout.whitepayTransactionId!);
-    wpStatus = wpData.transaction?.status;
-  } catch (err) {
-    const msg = (err as Error).message ?? '';
-    // Transaction inconnue chez Whitepay + > 24h → on libère la balance (FAILED)
+  if (!wpStatus) {
+    // Introuvable ni sur convert-withdrawal ni sur /transactions — si > 24h on abandonne
     const ageMs = Date.now() - payout.createdAt.getTime();
-    if ((msg.includes('404') || msg.toLowerCase().includes('not found')) && ageMs > 24 * 60 * 60 * 1000) {
+    if (ageMs > 24 * 60 * 60 * 1000) {
+      console.log(`[RECONCILE] Whitepay tx introuvable pour ${payout.id} (${Math.round(ageMs / 3600000)}h) → FAILED`);
       return applyFailed(userId, payout, 'whitepay');
     }
-    throw err;
-  }
-
-  if (!wpStatus) {
     return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'whitepay' };
   }
 
@@ -226,15 +235,15 @@ async function applyFailed(
  */
 async function correctFailedWhitepayToPaid(
   userId: string,
-  payout: { id: string; whitepayTransactionId: string; amountCents: number; tradeId: string | null },
+  payout: { id: string; whitepayTransactionId: string | null; amountCents: number; tradeId: string | null },
 ): Promise<ReconcileResult> {
-  let wpStatus: string | undefined;
-  try {
-    const wpData = await getWhitepayTransactionStatus(payout.whitepayTransactionId);
-    wpStatus = wpData?.transaction?.status;
-  } catch {
-    // 404 ou autre erreur : transaction inconnue ou temporairement indisponible
-    // On conserve le whitepayTransactionId pour pouvoir recheck plus tard
+  const externalId = await getWhitepayOrderIdFromAudit(userId, payout.id);
+  const resolved = await resolveWhitepayTransactionStatus(payout.whitepayTransactionId, externalId);
+  const wpStatus = resolved?.status;
+
+  console.log(`[RECONCILE] correctFailed ${payout.id}: status=${wpStatus ?? 'unknown'} source=${resolved?.source ?? 'none'} externalId=${externalId ?? 'none'}`);
+
+  if (!wpStatus) {
     return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'whitepay' };
   }
 
@@ -329,27 +338,27 @@ export async function GET(request: NextRequest) {
       paymentMethodType: p.paymentMethod?.type ?? null,
     }));
 
-    // WhitePay payouts bloqués (uniquement ceux avec transactionId — sinon rien à interroger)
+    // WhitePay payouts bloqués : avec ou sans transactionId (on a le fallback /transactions?external_id=)
     const whitepayPayouts = await prisma.payout.findMany({
       where: {
         userId,
         status: { in: [...WHITEPAY_STATUSES] },
-        whitepayTransactionId: { not: null },
         balanceDebitedAt: null,
+        paymentMethod: { type: 'WHITEPAY_CRYPTO' },
       },
       select: { id: true, whitepayTransactionId: true, status: true, amountCents: true, tradeId: true, createdAt: true },
     });
 
-    // Payouts FAILED avec un whitepayTransactionId : vérifier que Whitepay ne les a pas marqués COMPLETE
+    // Payouts FAILED Whitepay : vérifier que Whitepay ne les a pas marqués COMPLETE
     // (cas : onFailed déclenché par timeout avant l'arrivée du webhook Whitepay)
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
     const failedWhitepayToCheck = await prisma.payout.findMany({
       where: {
         userId,
         status: 'FAILED',
-        whitepayTransactionId: { not: null },
         paidAt: null,
         createdAt: { lt: thirtyMinutesAgo },
+        paymentMethod: { type: 'WHITEPAY_CRYPTO' },
       },
       select: { id: true, whitepayTransactionId: true, amountCents: true, tradeId: true },
     });
@@ -403,7 +412,7 @@ export async function GET(request: NextRequest) {
     // Correction FAILED → PAID : Whitepay a payé mais notre système a déclenché onFailed par timeout
     for (const p of failedWhitepayToCheck) {
       try {
-        const r = await correctFailedWhitepayToPaid(userId, p as { id: string; whitepayTransactionId: string; amountCents: number; tradeId: string | null });
+        const r = await correctFailedWhitepayToPaid(userId, p);
         if (r.action !== 'unchanged') results.push(r);
       } catch (err) {
         console.error('[RECONCILE] correctFailedWhitepayToPaid error:', p.id, err);
