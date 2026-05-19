@@ -916,6 +916,7 @@ export function SkinplaceInventoryViewer({
                   const isDisabled = !!item.skip_reason;
                   const skipCategory = getSkipReasonCategory(item.skip_reason);
                   const isOverstock = skipCategory === 'overstock';
+                  const isLowPrice = skipCategory === 'low_price';
                   const needsSupport = isDisabled && !isOverstock;
 
                   // Couleur et libellé du badge selon la catégorie
@@ -1044,15 +1045,21 @@ export function SkinplaceInventoryViewer({
                             )}
                           </div>
 
-                          {/* Bouton Ask Support pour low_price, high_price, unliquid */}
+                          {/* Bouton Ask Support : actif sauf pour prix trop bas */}
                           {needsSupport && (
                             <Button
                               size="sm"
                               variant="outline"
-                              className="w-full text-xs h-7 border-orange-300 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:hover:bg-orange-950"
+                              disabled={isLowPrice}
+                              title={isLowPrice ? messages.components.skinplace.askSupportDisabled : undefined}
+                              className={`w-full text-xs h-7 ${
+                                isLowPrice
+                                  ? 'opacity-50 cursor-not-allowed border-muted text-muted-foreground'
+                                  : 'border-orange-300 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:hover:bg-orange-950'
+                              }`}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                openSupportForItem(item);
+                                if (!isLowPrice) openSupportForItem(item);
                               }}
                             >
                               {messages.components.skinplace.askSupport}

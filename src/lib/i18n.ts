@@ -5363,6 +5363,7 @@ export const messages: Record<Locale, Messages> = {
           unknown: "Raison inconnue"
         },
         askSupport: "Contacter le support",
+        askSupportDisabled: "Prix trop bas pour être repris",
         blockedItemMessage: "Mon skin {name} est bloqué ({reason}), pouvez-vous m'aider ?",
         unavailable: "Non disponible",
         purchasableOnly: "Montrer uniquement les items achetables",
@@ -12345,6 +12346,7 @@ export const messages: Record<Locale, Messages> = {
           unknown: "Unknown reason"
         },
         askSupport: "Ask support",
+        askSupportDisabled: "Price too low to be repurchased",
         blockedItemMessage: "My skin {name} is blocked ({reason}), can you help me?",
         unavailable: "Unavailable",
         purchasableOnly: "Show only purchasable items",
@@ -19025,6 +19027,7 @@ export const messages: Record<Locale, Messages> = {
           unknown: "未知原因"
         },
         askSupport: "联系支持",
+        askSupportDisabled: "价格过低，无法回收",
         blockedItemMessage: "我的皮肤 {name} 被锁定（{reason}），您能帮我吗？",
         unavailable: "不可用",
         purchasableOnly: "仅显示可购买物品",

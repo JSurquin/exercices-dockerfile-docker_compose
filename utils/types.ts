@@ -4852,6 +4852,7 @@ export interface Messages {
         unknown: string;
       };
       askSupport: string;
+      askSupportDisabled: string;
       blockedItemMessage: string;
       unavailable: string;
       purchasableOnly: string;
