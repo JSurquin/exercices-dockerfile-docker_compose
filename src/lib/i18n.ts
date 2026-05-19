@@ -18784,7 +18784,7 @@ export const messages: Record<Locale, Messages> = {
       noPressReleasesBody: "新闻团队正在准备后续公告。如有媒体报道或采访需求，欢迎发邮件与我们联系。",
       aboutTitle: "关于 MoonSkin",
       aboutDescription1: "MoonSkin 是首个专注于安全 Counter-Strike 2 皮肤交易的法国平台。成立于 2024 年，该公司通过让玩家轻松变现虚拟库存来革命化游戏生态系统。",
-      aboutDescription2: "通过与 Skinplace 的估价战略合作伙伴关系和 Qonto 的 SEPA 支付，CashTrade 保证透明度、安全性和监管合规性。该平台严格遵守 KYC 和反洗钱义务。",
+      aboutDescription2: "通过与 Skinplace 的估价战略合作伙伴关系和 Qonto 的 SEPA 支付，MoonSkin 保证透明度、安全性和监管合规性。该平台严格遵守 KYC 和反洗钱义务。",
       sector: "行业",
       sectorValue: "游戏、金融科技、电竞",
       founded: "成立",
@@ -19548,7 +19548,7 @@ export const messages: Record<Locale, Messages> = {
             paymentIssue: "支付问题：怎么办？",
           },
           security: {
-            secureAccount: "保护我的CashTrade账户",
+            secureAccount: "保护我的MoonSkin账户",
             accountSuspended: "如果我的账户被暂停怎么办？",
             reportSuspicious: "报告可疑活动",
             accountRecovery: "丢失账户恢复",
