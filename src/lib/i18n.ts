@@ -502,6 +502,7 @@ export const messages: Record<Locale, Messages> = {
       saveError: "Erreur lors de la sauvegarde",
     },
     footer: {
+      tourButton: "Guide interactif",
       description: "La plateforme la plus rapide et sécurisée pour convertir vos skins CS2 en argent réel. Vendez vos skins en toute confiance avec notre système de paiement sécurisé.",
       securedBy: "Sécurisé par :",
       securityBadges: {
@@ -7483,6 +7484,7 @@ export const messages: Record<Locale, Messages> = {
       saveError: "Error saving settings",
     },
     footer: {
+      tourButton: "Interactive guide",
       description: "The fastest and most secure platform to convert your CS2 skins into real money. Sell your skins with confidence using our secure payment system.",
       securedBy: "Secured by:",
       securityBadges: {
@@ -14459,6 +14461,7 @@ export const messages: Record<Locale, Messages> = {
       saveError: "保存时出错",
     },
     footer: {
+      tourButton: "互动指南",
       description: "最快速、最安全的平台，将您的CS2皮肤转换为真钱。使用我们的安全支付系统放心出售您的皮肤。",
       securedBy: "安全保障：",
       securityBadges: {

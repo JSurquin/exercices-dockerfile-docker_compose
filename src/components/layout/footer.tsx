@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useLocale } from "@/components/providers/locale-provider";
 import { usePublicStats } from "@/hooks/use-public-stats";
+import { SiteTour } from "@/components/layout/site-tour";
 import {
   MOONSKIN_DISCORD_URL,
   MOONSKIN_X_URL,
@@ -22,6 +24,7 @@ import {
 export function Footer() {
   const { messages } = useLocale();
   const { data: publicStats } = usePublicStats();
+  const [tourActive, setTourActive] = useState(false);
 
   const links = {
     company: [
@@ -58,6 +61,7 @@ export function Footer() {
   };
 
   return (
+    <>
     <footer className="relative border-t overflow-hidden"
       style={{
         backgroundImage: "url('/images/cs2/footer/moonskin.webp')",
@@ -273,6 +277,14 @@ export function Footer() {
                   {link.name}
                 </Link>
               ))}
+              <button
+                data-tour="footer-guide"
+                onClick={() => setTourActive(true)}
+                className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-colors flex items-center gap-1"
+              >
+                <span>🗺️</span>
+                {messages.footer.tourButton}
+              </button>
             </div>
           </div>
 
@@ -286,5 +298,7 @@ export function Footer() {
         </div>
       </div>
     </footer>
+    {tourActive && <SiteTour onFinish={() => setTourActive(false)} />}
+    </>
   );
 }

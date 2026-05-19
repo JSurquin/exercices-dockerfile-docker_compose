@@ -77,17 +77,18 @@ export function Header() {
   const isModerator = effectiveRole === "MODERATOR";
 
   const navigation = [
-    { name: messages.nav.home, href: "/", icon: HomeIcon },
-    { name: messages.nav.sell, href: "/sell", icon: CurrencyDollarIcon },
-    { name: messages.nav.dashboard, href: "/dashboard", icon: ChartBarIcon },
-    { name: messages.nav.giveaways, href: "/giveaways", icon: GiftIcon },
-    { name: messages.nav.missions, href: "/missions", icon: SparklesIcon },
-    ...(showAffiliateNav ? [{ name: messages.nav.affiliation, href: "/affiliate", icon: UserCircleIcon }] : []),
-    ...(isModerator || isAdmin ? [{ name: messages.nav.moderation, href: "/moderation", icon: ChatBubbleLeftRightIcon }] : []),
+    { name: messages.nav.home, href: "/", icon: HomeIcon, tourId: "nav-home" },
+    { name: messages.nav.sell, href: "/sell", icon: CurrencyDollarIcon, tourId: "nav-sell" },
+    { name: messages.nav.dashboard, href: "/dashboard", icon: ChartBarIcon, tourId: "nav-dashboard" },
+    { name: messages.nav.giveaways, href: "/giveaways", icon: GiftIcon, tourId: "nav-giveaways" },
+    { name: messages.nav.missions, href: "/missions", icon: SparklesIcon, tourId: "nav-missions" },
+    ...(showAffiliateNav ? [{ name: messages.nav.affiliation, href: "/affiliate", icon: UserCircleIcon, tourId: "nav-affiliate" }] : []),
+    ...(isModerator || isAdmin ? [{ name: messages.nav.moderation, href: "/moderation", icon: ChatBubbleLeftRightIcon, tourId: "nav-moderation" }] : []),
     {
       name: messages.nav.support,
       href: "/help",
       icon: QuestionMarkCircleIcon,
+      tourId: "nav-support",
     },
   ];
 
@@ -133,6 +134,7 @@ export function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
+                  data-tour={item.tourId}
                   className={`group relative flex items-center space-x-2 text-xs font-medium transition-all duration-200 ${
                     isActive
                       ? "text-foreground"

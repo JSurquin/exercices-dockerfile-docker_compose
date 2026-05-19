@@ -87,6 +87,7 @@
     "d3": "^7.9.0",
     "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
+    "driver.js": "^1.4.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.16",
     "import-in-the-middle": "^3.0.0",

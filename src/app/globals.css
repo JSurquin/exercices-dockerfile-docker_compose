@@ -519,3 +519,61 @@ body.next-dev-overlay-present #sentry-feedback {
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
+
+/* MoonSkin tour (driver.js) */
+.moonskin-tour-popover {
+  background: rgba(15, 15, 20, 0.95) !important;
+  border: 1px solid rgba(249, 115, 22, 0.35) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(16px) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(249, 115, 22, 0.15) !important;
+  color: #f5f5f5 !important;
+  max-width: 360px !important;
+}
+
+.moonskin-tour-popover .driver-popover-title {
+  color: #fff !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+}
+
+.moonskin-tour-popover .driver-popover-description {
+  color: rgba(255, 255, 255, 0.75) !important;
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
+}
+
+.moonskin-tour-popover .driver-popover-progress-text {
+  color: rgba(249, 115, 22, 0.8) !important;
+  font-size: 0.75rem !important;
+}
+
+.moonskin-tour-popover .driver-popover-footer button {
+  background: linear-gradient(135deg, #f97316, #dc2626) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 6px 14px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: opacity 0.2s !important;
+}
+
+.moonskin-tour-popover .driver-popover-footer button:hover {
+  opacity: 0.85 !important;
+}
+
+.moonskin-tour-popover .driver-popover-footer .driver-popover-prev-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.moonskin-tour-popover .driver-popover-close-btn {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.moonskin-tour-popover .driver-popover-close-btn:hover {
+  color: #fff !important;
+}

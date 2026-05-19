@@ -546,6 +546,7 @@ export interface Messages {
     saveError: string;
   };
   footer: {
+    tourButton: string;
     description: string;
     securedBy: string;
     securityBadges: {
