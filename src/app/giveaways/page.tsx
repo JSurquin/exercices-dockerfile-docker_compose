@@ -498,6 +498,7 @@ export default function GiveawaysPage() {
 
         {user && (
           <motion.div
+            data-tour="giveaways-fragments"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
@@ -560,6 +561,7 @@ export default function GiveawaysPage() {
 
         {/* How Tickets Work */}
         <motion.div
+          data-tour="giveaways-how"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
@@ -612,7 +614,7 @@ export default function GiveawaysPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4 sm:space-y-6">
+          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4 sm:space-y-6" data-tour="giveaways-tabs">
             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 gap-2 h-auto">
               <TabsTrigger value="active">
                 {messages.giveaways.tabs.active} ({activeGiveaways.length})

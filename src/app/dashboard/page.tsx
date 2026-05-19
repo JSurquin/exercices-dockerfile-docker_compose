@@ -416,7 +416,7 @@ export default function DashboardPage() {
           </div>
 
           {/* XP Progress */}
-          <Card>
+          <Card data-tour="dashboard-xp">
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
@@ -445,6 +445,7 @@ export default function DashboardPage() {
 
         {/* Balance Card */}
         <motion.div
+          data-tour="dashboard-balance"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
@@ -650,6 +651,7 @@ export default function DashboardPage() {
 
         {/* Stats Cards */}
         <motion.div
+          data-tour="dashboard-stats"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
@@ -744,7 +746,7 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <Tabs defaultValue="trades" className="space-y-4 sm:space-y-6">
+          <Tabs defaultValue="trades" className="space-y-4 sm:space-y-6" data-tour="dashboard-trades">
             <TabsList className="grid h-auto w-full grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-0">
               <TabsTrigger value="trades" className="text-xs sm:text-sm px-2">{messages.dashboard.tabs.trades}</TabsTrigger>
               <TabsTrigger value="analytics" className="text-xs sm:text-sm px-2">{messages.dashboard.tabs.analytics}</TabsTrigger>

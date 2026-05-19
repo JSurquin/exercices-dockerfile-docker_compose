@@ -203,6 +203,7 @@ export default function SellPage() {
 
         {user && currentStep === 0 && (
           <motion.div
+            data-tour="sell-trade-link"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
@@ -214,6 +215,7 @@ export default function SellPage() {
 
         {/* Progress Stepper */}
         <motion.div
+          data-tour="sell-steps"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
@@ -270,6 +272,7 @@ export default function SellPage() {
           transition={{ duration: 0.4 }}
         >
           {currentStep === 0 && (
+            <div data-tour="sell-inventory">
             <SkinplaceInventoryViewer
               steamId64={activeSteamId}
               linkedSteamIdentity={
@@ -282,6 +285,7 @@ export default function SellPage() {
               allowSteamIdChange={true}
               onSteamIdChange={(newId) => setActiveSteamId(newId)}
             />
+            </div>
           )}
 
           {currentStep === 1 && (

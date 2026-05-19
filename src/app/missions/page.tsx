@@ -464,7 +464,7 @@ export default function MissionsPage() {
         </Link>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-3">
+      <div data-tour="missions-stats" className="grid md:grid-cols-3 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground mb-1">{t.statsFragments}</p>
@@ -512,7 +512,7 @@ export default function MissionsPage() {
           ))}
         </div>
       ) : (
-        <div className="space-y-8">
+        <div data-tour="missions-categories" className="space-y-8">
           {CATEGORY_ORDER.map((cat) => {
             const catMissions = byCat(cat);
             const catStyle = CATEGORY_STYLE[cat];
