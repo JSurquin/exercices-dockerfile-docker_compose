@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/components/providers/locale-provider';
 import { useAffiliateApplications } from '@/hooks/use-affiliate-applications';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import {
   LayoutDashboard,
   Users,
@@ -66,6 +68,17 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
   const { messages } = useLocale();
   const t = messages.adminNav;
 
+  const { data: pendingCounts } = useQuery<{ pendingPayouts: number; kycPending: number }>({
+    queryKey: queryKeys.adminPendingCounts,
+    queryFn: async () => {
+      const res = await fetch('/api/admin/pending-counts');
+      if (!res.ok) throw new Error('Failed to fetch pending counts');
+      return res.json();
+    },
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
+
   const navigationGroups: NavGroup[] = [
     {
       title: t.groups.overview,
@@ -79,9 +92,9 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
       items: [
         { title: t.items.users, href: '/admin/dashboard?tab=users', icon: Users },
         { title: t.items.trades, href: '/admin/dashboard?tab=trades', icon: ShoppingCart },
-        { title: t.items.payouts, href: '/admin/dashboard?tab=payouts', icon: CreditCard, badge: 5, badgeVariant: 'destructive' as const },
+        { title: t.items.payouts, href: '/admin/dashboard?tab=payouts', icon: CreditCard, badge: pendingCounts?.pendingPayouts, badgeVariant: 'destructive' as const },
         { title: t.items.sepaRequests, href: '/admin/sepa-requests', icon: Landmark, badgeVariant: 'destructive' as const },
-        { title: t.items.kyc, href: '/admin/dashboard?tab=kyc', icon: Shield, badge: 3, badgeVariant: 'destructive' as const },
+        { title: t.items.kyc, href: '/admin/dashboard?tab=kyc', icon: Shield, badge: pendingCounts?.kycPending, badgeVariant: 'destructive' as const },
       ],
     },
     {

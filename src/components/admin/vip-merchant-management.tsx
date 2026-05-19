@@ -70,7 +70,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
   }, [limit]);
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: queryKeys.adminUsers({ search: debouncedSearch, page, limit, status: undefined }),
+    queryKey: queryKeys.adminUsers({ tag, search: debouncedSearch, page, limit, status: undefined }),
     queryFn: async () => {
       const params = new URLSearchParams();
       params.append('tag', tag);

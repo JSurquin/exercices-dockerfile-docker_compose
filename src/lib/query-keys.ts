@@ -26,6 +26,7 @@ export const queryKeys = {
 
   // Admin - stats
   adminStats: ['admin', 'stats'] as const,
+  adminPendingCounts: ['admin', 'pending-counts'] as const,
   adminAnalytics: (period?: number) => ['admin', 'analytics', period ?? 30] as const,
   adminMetrics: ['admin', 'metrics'] as const,
 
