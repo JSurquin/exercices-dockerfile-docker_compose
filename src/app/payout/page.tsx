@@ -38,9 +38,15 @@ import {
 type PayoutMethod = 'card' | 'sepa' | 'crypto' | 'sepa_fr';
 
 // Cryptos supportées par Whitepay
+// USDC : réseaux officiels Whitepay triés du plus au moins utilisé
 const SUPPORTED_CRYPTOS = [
   { ticker: 'USDT', name: 'Tether (USDT)', networks: ['ERC20', 'TRC20', 'BEP20', 'TON', 'SOL'], is_stable: true },
-  { ticker: 'USDC', name: 'USD Coin (USDC)', networks: ['ERC20', 'TRC20', 'BEP20', 'SOL'], is_stable: true },
+  {
+    ticker: 'USDC',
+    name: 'USD Coin (USDC)',
+    networks: ['ERC20', 'SOL', 'POLYGON', 'ARBITRUM', 'BASE', 'OPTIMISM', 'NEAR', 'STELLAR', 'CCHAIN', 'WHITECHAIN', 'DOTASSETHUB'],
+    is_stable: true,
+  },
   { ticker: 'BTC', name: 'Bitcoin (BTC)', networks: ['BTC'], is_stable: false },
   { ticker: 'ETH', name: 'Ethereum (ETH)', networks: ['ERC20'], is_stable: false },
   { ticker: 'SOL', name: 'Solana (SOL)', networks: ['SOL'], is_stable: false },
@@ -48,20 +54,29 @@ const SUPPORTED_CRYPTOS = [
   { ticker: 'BNB', name: 'BNB (BNB)', networks: ['BEP20'], is_stable: false },
 ];
 
-const MEMO_REQUIRED_NETWORKS = ['TON', 'STELLAR', 'XLM', 'COSMOS', 'ATOM'];
+const MEMO_REQUIRED_NETWORKS = ['TON', 'STELLAR', 'XLM', 'COSMOS', 'ATOM', 'NEAR', 'DOTASSETHUB'];
 
 // Minimum retrait crypto (Whitepay) : 21,20 €
 const CRYPTO_MIN_CENTS = 2120;
 
 function getAddressPlaceholder(network: string): string {
   switch (network) {
-    case 'BTC': return 'bc1q...';
+    case 'BTC':        return 'bc1q...';
     case 'ERC20':
-    case 'BEP20': return '0x...';
-    case 'TRC20': return 'T...';
-    case 'SOL': return 'So1...';
-    case 'TON': return 'EQ...';
-    default: return '0x...';
+    case 'BEP20':
+    case 'POLYGON':
+    case 'ARBITRUM':
+    case 'BASE':
+    case 'OPTIMISM':
+    case 'CCHAIN':
+    case 'WHITECHAIN': return '0x...';
+    case 'TRC20':      return 'T...';
+    case 'SOL':        return 'So1...';
+    case 'TON':        return 'EQ...';
+    case 'STELLAR':    return 'G...';
+    case 'NEAR':       return 'user.near';
+    case 'DOTASSETHUB': return '1...';
+    default:           return '0x...';
   }
 }
 
