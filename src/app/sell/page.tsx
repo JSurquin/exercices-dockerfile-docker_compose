@@ -45,6 +45,8 @@ export default function SellPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const steps = getSteps(messages);
   const [selectedItems, setSelectedItems] = useState<NormalizedInventoryItem[]>([]);
+  // Preview temps réel pour la barre XP (avant confirmation)
+  const [previewItems, setPreviewItems] = useState<NormalizedInventoryItem[]>([]);
   const [tradeData, setTradeData] = useState<TradeCreatedData | null>(null);
   
   // Déterminer le Steam ID à utiliser pour l'inventaire
@@ -136,6 +138,10 @@ export default function SellPage() {
     setCurrentStep(1);
   };
 
+  const handleSelectionChange = (items: NormalizedInventoryItem[]) => {
+    setPreviewItems(items);
+  };
+
   const handleTradeCreated = (trade: TradeCreatedData) => {
     setTradeData(trade);
     setCurrentStep(2);
@@ -157,7 +163,7 @@ export default function SellPage() {
   };
 
   const pendingXPGain = estimateXPGain(
-    selectedItems.reduce((sum, item) => sum + item.price_centimes, 0)
+    previewItems.reduce((sum, item) => sum + item.price_centimes, 0)
   );
   const userLevel = user?.level ?? 1;
   const userXP = user?.xp ?? 0;
@@ -301,6 +307,7 @@ export default function SellPage() {
                   : undefined
               }
               onItemSelect={handleItemSelect}
+              onSelectionChange={handleSelectionChange}
               selectable={true}
               allowSteamIdChange={true}
               onSteamIdChange={(newId) => setActiveSteamId(newId)}

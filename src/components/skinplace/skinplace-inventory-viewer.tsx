@@ -55,6 +55,8 @@ interface SkinplaceInventoryViewerProps {
   /** Identité Steam du compte MoonSkin (affichée seulement si currentSteamId === SteamID du profil) */
   linkedSteamIdentity?: { name: string; avatarUrl: string };
   onItemSelect?: (items: NormalizedInventoryItem[]) => void;
+  /** Appelé en temps réel à chaque changement de sélection (pour la preview XP) */
+  onSelectionChange?: (items: NormalizedInventoryItem[]) => void;
   selectable?: boolean;
   allowSteamIdChange?: boolean;
   onSteamIdChange?: (newSteamId: string) => void;
@@ -63,7 +65,8 @@ interface SkinplaceInventoryViewerProps {
 export function SkinplaceInventoryViewer({ 
   steamId64: profileSteamId64Prop = '',
   linkedSteamIdentity,
-  onItemSelect, 
+  onItemSelect,
+  onSelectionChange,
   selectable = false,
   allowSteamIdChange = false,
   onSteamIdChange
@@ -281,11 +284,17 @@ export function SkinplaceInventoryViewer({
   const handleItemClick = (item: NormalizedInventoryItem) => {
     if (!selectable || !item.tradable || item.skip_reason) return;
 
-    if (selectedItems.includes(item.id)) {
-      setSelectedItems(prev => prev.filter(id => id !== item.id));
-    } else {
-      setSelectedItems(prev => [...prev, item.id]);
-    }
+    setSelectedItems(prev => {
+      const next = prev.includes(item.id)
+        ? prev.filter(id => id !== item.id)
+        : [...prev, item.id];
+      // Propager en temps réel pour la preview XP
+      if (onSelectionChange) {
+        const nextData = inventory.filter(i => next.includes(i.id));
+        onSelectionChange(nextData);
+      }
+      return next;
+    });
   };
 
   const clearFilters = () => {

@@ -58,6 +58,7 @@ import CountUp from "react-countup";
 import { formatCentsToCurrency } from "@/lib/currency-converter";
 import { ConvertedPrice } from "@/components/ui/converted-price";
 import { getLevelInfo, getLevelName, LEVELS } from "@/lib/level-system";
+import { LevelHelpPopover } from "@/components/ui/level-help-popover";
 
 const formatPrice = (centimes: number) => {
   return (centimes / 100).toFixed(2) + "€";
@@ -425,9 +426,12 @@ export default function DashboardPage() {
                 <div className="flex items-center space-x-3">
                   <TrophyIcon className="w-6 h-6 text-yellow-500" />
                   <div>
-                    <h3 className="font-semibold">
-                      {levelInfo.level.name} — Palier {levelInfo.tierIndex + 1}/5
-                    </h3>
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="font-semibold">
+                        {levelInfo.level.name} — Palier {levelInfo.tierIndex + 1}/5
+                      </h3>
+                      <LevelHelpPopover />
+                    </div>
                     <p className="text-sm text-muted-foreground">
                       {levelInfo.saleBonus > 0
                         ? `Bonus vendeur actif : ${levelInfo.saleBonusPct} sur tes ventes`

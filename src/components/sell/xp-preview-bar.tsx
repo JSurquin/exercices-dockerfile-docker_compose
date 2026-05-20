@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { useLocale } from "@/components/providers/locale-provider";
+import { LevelHelpPopover } from "@/components/ui/level-help-popover";
 import {
   getLevelInfo,
   xpFromCents,
@@ -96,6 +97,7 @@ export function XPPreviewBar({
           <span className="text-sm font-semibold text-foreground">
             {cosmicName}
           </span>
+          <LevelHelpPopover />
           <span className="text-xs text-muted-foreground">
             {t.tier(info.tierIndex + 1, TIERS_PER_LEVEL)}
           </span>
