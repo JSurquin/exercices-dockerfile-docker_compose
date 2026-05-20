@@ -3,104 +3,111 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { useLocale } from "@/components/providers/locale-provider";
+import {
+  getLevelInfo,
+  xpFromCents,
+  LEVELS,
+  TIERS_PER_LEVEL,
+  XP_CAP,
+} from "@/lib/level-system";
 
-/**
- * XP formula mirrors the server-side logic in trade-hooks.ts:
- *   level = floor(sqrt(xp / 100)) + 1
- * XP thresholds:
- *   level L starts at xp = 100 * (L-1)^2
- *   level L ends at  xp = 100 * L^2  (= start of L+1)
- */
-export function xpForLevel(level: number): number {
-  return 100 * Math.pow(level - 1, 2);
+// ─── Exported helpers (used by sell/page.tsx) ────────────────────────────────
+
+export function estimateXPGain(totalCentimes: number): number {
+  return xpFromCents(totalCentimes);
 }
 
 export function xpForNextLevel(level: number): number {
-  return 100 * Math.pow(level, 2);
+  const idx = Math.max(0, Math.min(level - 1, LEVELS.length - 1));
+  return LEVELS[idx]?.xpEnd ?? XP_CAP;
 }
 
 export function levelFromXP(xp: number): number {
-  return Math.floor(Math.sqrt(xp / 100)) + 1;
+  return getLevelInfo(xp).levelIndex + 1;
 }
 
-/**
- * Estimate XP gain from a list of skin values (in cents).
- * Server formula: points = floor((grossCents / 100) * pointsPerEuro)
- * Default pointsPerEuro = 100 → points = grossCents
- */
-export function estimateXPGain(totalCentimes: number): number {
-  return totalCentimes;
+export function xpForLevel(level: number): number {
+  const idx = Math.max(0, Math.min(level - 1, LEVELS.length - 1));
+  return LEVELS[idx]?.xpStart ?? 0;
 }
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 interface XPPreviewBarProps {
   currentXP: number;
-  currentLevel: number;
-  xpForNextLevel: number;
+  currentLevel: number;   // kept for API compat, recalculated internally
+  xpForNextLevel: number; // kept for API compat, recalculated internally
   pendingXPGain: number;
 }
 
 const LABELS = {
   fr: {
-    level: "Niveau",
-    xpLabel: "XP",
+    tier: (cur: number, total: number) => `Palier ${cur}/${total}`,
     gain: (n: number) => `+${n.toLocaleString("fr-FR")} XP`,
-    nextLevel: (n: number) => `Niveau ${n}`,
+    levelUp: (name: string) => `→ ${name}`,
     progress: (cur: number, max: number) =>
       `${cur.toLocaleString("fr-FR")} / ${max.toLocaleString("fr-FR")} XP`,
     pendingLabel: "XP gagné à la vente",
+    saleBonus: "Bonus vendeur",
   },
   en: {
-    level: "Level",
-    xpLabel: "XP",
+    tier: (cur: number, total: number) => `Tier ${cur}/${total}`,
     gain: (n: number) => `+${n.toLocaleString("en-US")} XP`,
-    nextLevel: (n: number) => `Level ${n}`,
+    levelUp: (name: string) => `→ ${name}`,
     progress: (cur: number, max: number) =>
       `${cur.toLocaleString("en-US")} / ${max.toLocaleString("en-US")} XP`,
     pendingLabel: "XP earned on sale",
+    saleBonus: "Seller bonus",
   },
 } as const;
 
 export function XPPreviewBar({
   currentXP,
-  currentLevel,
-  xpForNextLevel: xpNext,
   pendingXPGain,
 }: XPPreviewBarProps) {
   const { locale } = useLocale();
   const t = LABELS[locale as keyof typeof LABELS] ?? LABELS.en;
 
-  const xpStart = xpForLevel(currentLevel);
-  const xpRange = Math.max(xpNext - xpStart, 1);
+  const info = getLevelInfo(currentXP);
+  const projectedInfo = getLevelInfo(currentXP + pendingXPGain);
 
-  const currentProgress = Math.min(
-    ((currentXP - xpStart) / xpRange) * 100,
-    100
-  );
+  const cosmicName = locale === "en" ? info.level.nameEn : info.level.name;
+  const projectedCosmicName =
+    locale === "en" ? projectedInfo.level.nameEn : projectedInfo.level.name;
 
-  const projectedXP = currentXP + pendingXPGain;
-  const projectedLevel = levelFromXP(projectedXP);
+  const currentPct = info.tierProgress * 100;
+  const projectedPct = Math.min(projectedInfo.tierProgress * 100, 100);
+  const hasTierUp = projectedInfo.globalTierIndex > info.globalTierIndex;
+  const hasLevelUp = projectedInfo.levelIndex > info.levelIndex;
 
-  // Pending gain may push beyond current level — clamp to 100%
-  const projectedProgress = Math.min(
-    ((projectedXP - xpStart) / xpRange) * 100,
-    100
-  );
+  // When a tier/level boundary is crossed, animate the bar to 100% then restart
+  const pendingPct = hasTierUp
+    ? Math.max(100 - currentPct, 0)
+    : Math.max(projectedPct - currentPct, 0);
 
-  const pendingBarWidth = Math.max(projectedProgress - currentProgress, 0);
   const hasPending = pendingXPGain > 0;
-  const levelUp = projectedLevel > currentLevel;
 
   return (
     <div className="w-full rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
       {/* Header row */}
-      <div className="flex items-center justify-between mb-2 gap-2">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <SparklesIcon className="w-4 h-4 text-orange-500 shrink-0" />
           <span className="text-sm font-semibold text-foreground">
-            {t.level} {currentLevel}
+            {cosmicName}
           </span>
+          <span className="text-xs text-muted-foreground">
+            {t.tier(info.tierIndex + 1, TIERS_PER_LEVEL)}
+          </span>
+
+          {info.saleBonus > 0 && (
+            <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-amber-400/15 text-amber-600 dark:text-amber-400 border border-amber-400/30">
+              {info.saleBonusPct}
+            </span>
+          )}
+
           <AnimatePresence>
-            {levelUp && (
+            {hasLevelUp && (
               <motion.span
                 key="levelup"
                 initial={{ opacity: 0, scale: 0.7, x: -6 }}
@@ -109,7 +116,7 @@ export function XPPreviewBar({
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-500 border border-amber-400/40 ml-1"
               >
-                → {t.nextLevel(projectedLevel)}
+                {t.levelUp(projectedCosmicName)}
               </motion.span>
             )}
           </AnimatePresence>
@@ -117,7 +124,7 @@ export function XPPreviewBar({
 
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-xs text-muted-foreground">
-            {t.progress(currentXP, xpNext)}
+            {t.progress(info.cappedXP, info.tierXpEnd)}
           </span>
 
           <AnimatePresence>
@@ -140,27 +147,26 @@ export function XPPreviewBar({
 
       {/* Progress bar */}
       <div className="relative h-3 w-full rounded-full bg-muted overflow-hidden">
-        {/* Current XP fill */}
+        {/* Current XP fill within the tier */}
         <motion.div
           className="absolute left-0 top-0 h-full rounded-full bg-orange-500"
           initial={false}
-          animate={{ width: `${currentProgress}%` }}
+          animate={{ width: `${currentPct}%` }}
           transition={{ duration: 0.5, ease: "easeOut" }}
         />
 
         {/* Pending XP gain overlay */}
         <AnimatePresence>
-          {hasPending && pendingBarWidth > 0 && (
+          {hasPending && pendingPct > 0 && (
             <motion.div
               key="pending"
               className="absolute top-0 h-full rounded-r-full"
-              style={{ left: `${currentProgress}%` }}
+              style={{ left: `${currentPct}%` }}
               initial={{ width: 0, opacity: 0 }}
-              animate={{ width: `${pendingBarWidth}%`, opacity: 1 }}
+              animate={{ width: `${pendingPct}%`, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
             >
-              {/* Shimmer effect */}
               <div className="relative h-full w-full overflow-hidden rounded-r-full bg-emerald-500/70">
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
