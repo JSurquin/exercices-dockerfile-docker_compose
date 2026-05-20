@@ -23,6 +23,7 @@ import {
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import { CurrencyDollarIcon, CreditCardIcon } from '@heroicons/react/24/outline';
+import { Snowflake } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCentsToCurrency, toCents } from '@/lib/currency-converter';
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
@@ -221,12 +222,14 @@ export default function PayoutPage() {
     queryKey: queryKeys.userBalance,
     queryFn: async () => {
       const response = await fetch('/api/user/balance');
-      if (!response.ok) return { availableCents: 0 };
+      if (!response.ok) return { availableCents: 0, frozenBalanceCents: 0 };
       return response.json();
     },
     enabled: !!user,
+    refetchOnWindowFocus: true,
   });
   const availableBalanceCents = balanceData?.availableCents ?? null;
+  const frozenBalanceCents = balanceData?.frozenBalanceCents ?? null;
 
   const { data: historyData } = useQuery({
     queryKey: queryKeys.payoutHistory,
@@ -792,13 +795,26 @@ export default function PayoutPage() {
                     <CardTitle>{text.title}</CardTitle>
                     <CardDescription>{text.subtitle}</CardDescription>
                   </div>
-                  <div className="text-right w-full sm:w-auto shrink-0 border-t pt-4 sm:border-0 sm:pt-0">
-                    <p className="text-sm text-muted-foreground">{text.request.availableBalance}</p>
-                    <p className="text-2xl font-bold text-green-500">
-                      {availableBalanceCents === null
-                        ? '—'
-                        : formatCentsToCurrency(availableBalanceCents, 'EUR')}
-                    </p>
+                  <div className="flex flex-wrap gap-6 justify-end w-full sm:w-auto shrink-0 border-t pt-4 sm:border-0 sm:pt-0">
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">{text.request.availableBalance}</p>
+                      <p className="text-2xl font-bold text-green-500">
+                        {availableBalanceCents === null
+                          ? '—'
+                          : formatCentsToCurrency(availableBalanceCents, 'EUR')}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground flex items-center justify-end gap-1">
+                        <Snowflake className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                        {text.request.frozenBalance}
+                      </p>
+                      <p className="text-2xl font-bold text-amber-500">
+                        {frozenBalanceCents === null
+                          ? '—'
+                          : formatCentsToCurrency(frozenBalanceCents, 'EUR')}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </CardHeader>

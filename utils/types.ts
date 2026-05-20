@@ -5928,6 +5928,7 @@ export interface Messages {
       request: {
         title: string;
         availableBalance: string;
+        frozenBalance: string;
         selectMethod: string;
         amountLabel: string;
         amountPlaceholder: string;

@@ -4586,6 +4586,7 @@ export const messages: Record<Locale, Messages> = {
       request: {
         title: 'Demander un retrait',
         availableBalance: 'Solde disponible',
+        frozenBalance: 'Solde gelé (en attente)',
         selectMethod: 'Méthode de paiement',
         amountLabel: 'Montant à retirer',
         amountPlaceholder: 'Entrez le montant',
@@ -10438,6 +10439,7 @@ export const messages: Record<Locale, Messages> = {
       request: {
         title: 'Request withdrawal',
         availableBalance: 'Available balance',
+        frozenBalance: 'Frozen balance (pending)',
         selectMethod: 'Payment method',
         amountLabel: 'Amount to withdraw',
         amountPlaceholder: 'Enter amount',
@@ -17166,6 +17168,7 @@ export const messages: Record<Locale, Messages> = {
       request: {
         title: '申请提取',
         availableBalance: '可用余额',
+        frozenBalance: '冻结余额（待处理）',
         selectMethod: '支付方式',
         amountLabel: '提取金额',
         amountPlaceholder: '输入金额',
