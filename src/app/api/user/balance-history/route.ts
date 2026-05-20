@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
+import { currencyConverter } from '@/lib/currency-converter';
 
 /**
  * GET /api/user/balance-history
@@ -26,23 +27,36 @@ export async function GET(request: NextRequest) {
       select: { balanceCents: true, pendingBalanceCents: true, frozenBalanceCents: true },
     });
     const currentBalance = user?.balanceCents ?? 0;
-    const pendingBalance = user?.pendingBalanceCents ?? 0;
+    const userPendingBalance = user?.pendingBalanceCents ?? 0;
     const frozenBalance = user?.frozenBalanceCents ?? 0;
     const availableCents = Math.max(0, currentBalance - frozenBalance);
-    const projectedAvailableCents = availableCents + pendingBalance;
 
-    // Trades en trade hold : date de déblocage + compteur pour la projection UI
-    const pendingTrades = await prisma.trade.findMany({
+    // Trades en attente de fin de trade hold — source de vérité pour la projection UI.
+    // Ne pas exiger pendingCreditedAt : l'IPN #1 peut être manqué tout en étant IN_TRADE_HOLD.
+    const holdTrades = await prisma.trade.findMany({
       where: {
         userId,
-        pendingCreditedAt: { not: null },
         balanceCreditedAt: null,
+        instantCreditedAt: null,
         status: { in: ['IN_TRADE_HOLD', 'ACCEPTED_BY_BOT'] },
       },
-      select: { availableAt: true },
+      select: { availableAt: true, netCents: true, eurCentsAtCredit: true },
       orderBy: { availableAt: 'asc' },
     });
-    const nextReleaseAt = pendingTrades.find((t) => t.availableAt)?.availableAt?.toISOString() ?? null;
+
+    let pendingFromTradesCents = 0;
+    for (const trade of holdTrades) {
+      if (trade.eurCentsAtCredit != null) {
+        pendingFromTradesCents += trade.eurCentsAtCredit;
+      } else {
+        pendingFromTradesCents += await currencyConverter.convertUsdCentsToEurCents(trade.netCents);
+      }
+    }
+
+    // Prendre le max : couvre IPN #1 manqué (pendingBalance=0 mais trades en hold)
+    const pendingBalanceCents = Math.max(userPendingBalance, pendingFromTradesCents);
+    const projectedAvailableCents = availableCents + pendingBalanceCents;
+    const nextReleaseAt = holdTrades.find((t) => t.availableAt)?.availableAt?.toISOString() ?? null;
 
     // Toutes les transactions depuis le début de la fenêtre (uniquement les transactions
     // qui affectent balanceCents : TRADE_CREDIT et WITHDRAWAL)
@@ -102,9 +116,9 @@ export async function GET(request: NextRequest) {
       currentBalanceCents: currentBalance,
       availableCents,
       frozenBalanceCents: frozenBalance,
-      pendingBalanceCents: pendingBalance,
+      pendingBalanceCents,
       projectedAvailableCents,
-      pendingTradesCount: pendingTrades.length,
+      pendingTradesCount: holdTrades.length,
       nextReleaseAt,
     });
   } catch (error) {

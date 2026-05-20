@@ -847,7 +847,9 @@ export default function DashboardPage() {
                               <ConvertedPrice usdCents={trade.brutCentimes} fromCurrency="USD" />
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {messages.dashboard.tradeHistory.netCredit}{" "}
+                              {(trade.status === 'en_trade_hold' && !trade.balanceCreditedAt)
+                                ? messages.dashboard.tradeHistory.pendingCredit
+                                : messages.dashboard.tradeHistory.netCredit}{" "}
                               <ConvertedPrice usdCents={trade.netCentimes} fromCurrency="USD" className="text-green-600 font-medium" />
                             </p>
                             <p className="text-sm text-muted-foreground">

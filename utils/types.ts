@@ -380,6 +380,7 @@ export interface Messages {
         tradeHoldReminder: string;
         /** Montant net crédité sur le solde (après frais cashout) */
         netCredit: string;
+        pendingCredit: string;
         accepted: string;
         available: string;
         others: string;
