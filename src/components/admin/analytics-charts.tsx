@@ -175,7 +175,7 @@ function AreaChart({
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    const margin = { top: 20, right: 30, bottom: 40, left: 60 };
+    const margin = { top: 20, right: 30, bottom: 60, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
@@ -249,13 +249,22 @@ function AreaChart({
       .duration(800)
       .attr('r', 4);
 
-    // Axe X
-    g.append('g')
+    // Axe X — affiche 1 label sur N pour éviter le chevauchement
+    const tickStep = Math.ceil(data.length / 8);
+    const xAxis = g.append('g')
       .attr('transform', `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(xScale))
-      .selectAll('text')
+      .call(
+        d3.axisBottom(xScale)
+          .tickValues(data.filter((_, i) => i % tickStep === 0).map(d => d[dateKey]))
+      );
+
+    xAxis.selectAll('text')
       .style('fill', CHART_COLORS.slate300)
-      .style('font-size', '12px');
+      .style('font-size', '11px')
+      .attr('transform', 'rotate(-40)')
+      .attr('text-anchor', 'end')
+      .attr('dx', '-0.5em')
+      .attr('dy', '0.15em');
 
     // Axe Y
     g.append('g')
