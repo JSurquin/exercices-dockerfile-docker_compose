@@ -7,6 +7,7 @@ import {
   DEFAULT_POINTS_CONFIG,
 } from './points-config';
 import { getPlatformConfig } from '@/lib/platform-config-service';
+import { xpFromCents, getLevelInfo, globalTierFromXP } from '@/lib/level-system';
 export type { FragmentDropTier, FragmentDropConfig, PointsConfig } from './points-config';
 
 const POINTS_CONFIG_KEY = 'points_config';
@@ -143,9 +144,12 @@ export async function awardTradePoints(
     return { points: 0, tickets: 0, fragments: 0, drop: 0 };
   }
 
+  const userBefore = await prisma.user.findUnique({ where: { id: userId }, select: { xp: true, currentTier: true } });
+  const previousTier = userBefore?.currentTier ?? 0;
+
   const config = await getPointsConfig();
   const euros = grossCents / 100;
-  const points = platformConfig.xpEnabled ? Math.floor(euros * config.pointsPerEuro) : 0;
+  const points = platformConfig.xpEnabled ? xpFromCents(grossCents) : 0;
   const tickets = platformConfig.xpEnabled ? Math.floor(euros * config.ticketsPerEuro) : 0;
   const fragments = platformConfig.fragmentsEnabled ? Math.floor(euros * config.fragmentsPerEuro) : 0;
   const drop = platformConfig.fragmentsEnabled ? rollFragmentDrop(config.fragmentDrop) : 0;
@@ -192,7 +196,27 @@ export async function awardTradePoints(
         ...(totalFragments > 0 ? { fragments: { increment: totalFragments } } : {}),
       },
     });
+
+    const updatedUser = await tx.user.findUnique({ where: { id: userId }, select: { xp: true } });
+    const newXP = updatedUser?.xp ?? 0;
+    const info = getLevelInfo(newXP);
+
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        level: info.levelIndex + 1,
+        saleBonus: info.saleBonus,
+        currentTier: info.globalTierIndex,
+        totalVolumeCents: { increment: grossCents },
+      },
+    });
   });
+
+  const newXPAfter = (await prisma.user.findUnique({ where: { id: userId }, select: { xp: true } }))?.xp ?? 0;
+  const newTier = globalTierFromXP(newXPAfter);
+  if (newTier > previousTier) {
+    console.log(`[awardTradePoints] User ${userId} reached tier ${newTier} (was ${previousTier}) after trade ${tradeId}`);
+  }
 
   return { points, tickets, fragments, drop };
 }
