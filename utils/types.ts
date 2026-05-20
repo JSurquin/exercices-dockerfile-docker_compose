@@ -3013,6 +3013,7 @@ export interface Messages {
       trade: string;
       confirmation: string;
     };
+    stepGoBack: string;
     confirmation: {
       title: string;
       description: string;

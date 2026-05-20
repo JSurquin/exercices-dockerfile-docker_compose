@@ -159,7 +159,25 @@ export default function SellPage() {
     setModalStatus(null);
     setTradeData(null);
     setSelectedItems([]);
+    setPreviewItems([]);
     setCurrentStep(0);
+  };
+
+  const handleStepNavigation = (targetIndex: number) => {
+    if (targetIndex >= currentStep) return;
+
+    stopPolling();
+    setModalStatus(null);
+
+    if (targetIndex < 2) {
+      setTradeData(null);
+    }
+
+    if (targetIndex === 0) {
+      setPreviewItems(selectedItems);
+    }
+
+    setCurrentStep(targetIndex);
   };
 
   const pendingXPGain = estimateXPGain(
@@ -239,42 +257,79 @@ export default function SellPage() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="mb-6 sm:mb-8 overflow-x-auto -mx-1 px-1 scrollbar-thin"
         >
-          <div className="flex items-center justify-center sm:justify-between gap-1 sm:gap-2 mb-4 min-w-max sm:min-w-0 w-full mx-auto">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center shrink-0">
-                <div
-                  className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${
-                    index <= currentStep
-                      ? "bg-orange-500 border-orange-500 text-white"
-                      : "border-muted-foreground text-muted-foreground"
-                  }`}
-                >
-                  {index < currentStep ? (
-                    <CheckCircleIcon className="w-4 h-4 sm:w-6 sm:h-6" />
+          <div
+            className="flex items-center justify-center sm:justify-between gap-1 sm:gap-2 mb-4 min-w-max sm:min-w-0 w-full mx-auto"
+            role="list"
+            aria-label={messages.sellPage.title}
+          >
+            {steps.map((step, index) => {
+              const isCompleted = index < currentStep;
+              const isCurrent = index === currentStep;
+              const isClickable = isCompleted;
+              const stepLabel = messages.sellPage.stepGoBack.replace(
+                "{step}",
+                step.title
+              );
+
+              const stepContent = (
+                <>
+                  <div
+                    className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-colors ${
+                      isCurrent || isCompleted
+                        ? "bg-orange-500 border-orange-500 text-white"
+                        : "border-muted-foreground text-muted-foreground"
+                    } ${isClickable ? "group-hover:bg-orange-600 group-hover:border-orange-600" : ""}`}
+                  >
+                    {isCompleted ? (
+                      <CheckCircleIcon className="w-4 h-4 sm:w-6 sm:h-6" />
+                    ) : (
+                      <step.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    )}
+                  </div>
+                  <div className="ml-2 sm:ml-3 hidden sm:block text-left">
+                    <p
+                      className={`text-xs md:text-sm font-medium leading-snug md:leading-normal ${
+                        isCurrent || isCompleted
+                          ? "text-foreground"
+                          : "text-muted-foreground"
+                      } ${isClickable ? "group-hover:text-orange-600 dark:group-hover:text-orange-400" : ""}`}
+                    >
+                      {step.title}
+                    </p>
+                  </div>
+                </>
+              );
+
+              return (
+                <div key={step.id} className="flex items-center shrink-0" role="listitem">
+                  {isClickable ? (
+                    <button
+                      type="button"
+                      onClick={() => handleStepNavigation(index)}
+                      className="group flex items-center rounded-lg px-1 py-1 -mx-1 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 cursor-pointer"
+                      aria-label={stepLabel}
+                    >
+                      {stepContent}
+                    </button>
                   ) : (
-                    <step.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <div
+                      className="flex items-center px-1 py-1 -mx-1"
+                      aria-current={isCurrent ? "step" : undefined}
+                    >
+                      {stepContent}
+                    </div>
+                  )}
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`w-6 sm:w-10 md:w-14 lg:w-20 h-0.5 shrink-0 mx-2 sm:mx-3 md:mx-4 ${
+                        index < currentStep ? "bg-orange-500" : "bg-muted"
+                      }`}
+                      aria-hidden
+                    />
                   )}
                 </div>
-                <div className="ml-2 sm:ml-3 hidden sm:block">
-                  <p
-                    className={`text-xs md:text-sm font-medium leading-snug md:leading-normal ${
-                      index <= currentStep
-                        ? "text-foreground"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {step.title}
-                  </p>
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`w-6 sm:w-10 md:w-14 lg:w-20 h-0.5 shrink-0 mx-2 sm:mx-3 md:mx-4 ${
-                      index < currentStep ? "bg-orange-500" : "bg-muted"
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
           <Progress
             value={(currentStep / (steps.length - 1)) * 100}
@@ -306,6 +361,7 @@ export default function SellPage() {
                   ? { name: user.username, avatarUrl: user.avatar }
                   : undefined
               }
+              initialSelectedIds={selectedItems.map((item) => item.id)}
               onItemSelect={handleItemSelect}
               onSelectionChange={handleSelectionChange}
               selectable={true}

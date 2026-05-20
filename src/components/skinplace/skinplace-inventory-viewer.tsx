@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSkinplaceInventory, NormalizedInventoryItem } from '@/hooks/use-skinplace-inventory';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -57,6 +57,8 @@ interface SkinplaceInventoryViewerProps {
   onItemSelect?: (items: NormalizedInventoryItem[]) => void;
   /** Appelé en temps réel à chaque changement de sélection (pour la preview XP) */
   onSelectionChange?: (items: NormalizedInventoryItem[]) => void;
+  /** IDs présélectionnés (ex. retour arrière depuis /sell) */
+  initialSelectedIds?: string[];
   selectable?: boolean;
   allowSteamIdChange?: boolean;
   onSteamIdChange?: (newSteamId: string) => void;
@@ -67,6 +69,7 @@ export function SkinplaceInventoryViewer({
   linkedSteamIdentity,
   onItemSelect,
   onSelectionChange,
+  initialSelectedIds,
   selectable = false,
   allowSteamIdChange = false,
   onSteamIdChange
@@ -96,7 +99,8 @@ export function SkinplaceInventoryViewer({
   const [purchasableOnly, setPurchasableOnly] = useState(false);
   const [priceMinUsd, setPriceMinUsd] = useState('');
   const [priceMaxUsd, setPriceMaxUsd] = useState('');
-  
+  const hasRestoredInitialSelection = useRef(false);
+
   const { 
     loading, 
     error, 
@@ -250,6 +254,27 @@ export function SkinplaceInventoryViewer({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileSteamId64]);
+
+  // Restaurer la sélection après navigation arrière sur /sell
+  useEffect(() => {
+    if (
+      hasRestoredInitialSelection.current ||
+      !initialSelectedIds?.length ||
+      inventory.length === 0
+    ) {
+      return;
+    }
+    const validIds = initialSelectedIds.filter((id) =>
+      inventory.some((item) => item.id === id && item.tradable && !item.skip_reason)
+    );
+    if (validIds.length === 0) return;
+
+    hasRestoredInitialSelection.current = true;
+    setSelectedItems(validIds);
+    if (onSelectionChange) {
+      onSelectionChange(inventory.filter((item) => validIds.includes(item.id)));
+    }
+  }, [inventory, initialSelectedIds, onSelectionChange]);
 
   const stats = calculateInventoryStats(inventory);
   // Tous les items visibles (tradable Steam), incluant ceux bloqués par Skinplace

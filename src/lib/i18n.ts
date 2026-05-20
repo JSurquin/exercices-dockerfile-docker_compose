@@ -4417,6 +4417,7 @@ export const messages: Record<Locale, Messages> = {
         trade: "Création du trade",
         confirmation: "Confirmation"
       },
+      stepGoBack: "Revenir à l’étape : {step}",
       confirmation: {
         title: "🎉 Trade créé avec succès !",
         description: "Votre trade a été accepté par notre bot. Acceptez l'offre sur Steam pour continuer.",
@@ -10276,6 +10277,7 @@ export const messages: Record<Locale, Messages> = {
         trade: "Trade creation",
         confirmation: "Confirmation"
       },
+      stepGoBack: "Go back to step: {step}",
       confirmation: {
         title: "🎉 Trade created successfully!",
         description: "Your trade has been accepted by our bot. Accept the offer on Steam to continue.",
@@ -17016,6 +17018,7 @@ export const messages: Record<Locale, Messages> = {
         trade: "交易创建",
         confirmation: "确认"
       },
+      stepGoBack: "返回步骤：{step}",
       confirmation: {
         title: "🎉 交易创建成功！",
         description: "您的交易已被我们的机器人接受。在Steam上接受报价以继续。",
