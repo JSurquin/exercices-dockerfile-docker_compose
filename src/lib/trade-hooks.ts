@@ -31,10 +31,9 @@ export class TradeHooks {
         return;
       }
 
-      logger.info(`[TradeHooks] Processing trade ${tradeId} for affiliate commissions + XP`);
+      logger.info(`[TradeHooks] Processing trade ${tradeId} for affiliate commissions`);
       
       await AffiliateService.calculateCommissionForTrade(tradeId);
-      await this.updateUserExperience(tradeId);
       
       logger.info(`[TradeHooks] Successfully processed trade ${tradeId}`);
     } catch (error) {
@@ -427,6 +426,15 @@ export class TradeHooks {
             },
           },
         });
+      }
+
+      // XP + totalVolumeCents : déclenché à AVAILABLE (skin reçue, trade terminé côté user)
+      await this.updateUserExperience(tradeId);
+
+      // XP + totalVolumeCents : déclenché une seule fois quand le lock est acquis
+      // (skin confirmée reçue = trade terminé côté utilisateur)
+      if (locked) {
+        await this.updateUserExperience(tradeId);
       }
 
       if (trade.affiliatePromoCode && !trade.affiliatePromoFragmentsGrantedAt) {
