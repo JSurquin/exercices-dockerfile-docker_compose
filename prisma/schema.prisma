@@ -36,6 +36,10 @@ model User {
   adminMetadata            Json?
   pendingBalanceCents      Int                     @default(0)
   fragments                Int                     @default(0)
+  /// Bonus de vente débloqué par niveau cosmique (ex: 0.0075 = +0.75%)
+  saleBonus                Float                   @default(0.0)
+  /// Palier actuel 0-29 (6 niveaux × 5 paliers)
+  currentTier              Int                     @default(0)
   twoFactorEnabled         Boolean                 @default(false)
   banned                   Boolean                 @default(false)
   banReason                String?
