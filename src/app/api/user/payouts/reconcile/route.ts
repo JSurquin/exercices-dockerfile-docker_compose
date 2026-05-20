@@ -134,10 +134,17 @@ async function reconcileFlexifyPayout(
  * Nécessaire pour le fallback /transactions?external_id= quand /convert-withdrawal/{id} retourne 404.
  */
 async function getWhitepayOrderIdFromAudit(userId: string, payoutId: string): Promise<string | null> {
+  // Cherche dans toutes les actions qui contiennent un orderId Whitepay
   const entry = await prisma.auditLog.findFirst({
     where: {
       userId,
-      action: { in: ['WHITEPAY_WITHDRAWAL_CREATED', 'WHITEPAY_INSTANT_WITHDRAWAL_CREATED'] },
+      action: {
+        in: [
+          'WHITEPAY_WITHDRAWAL_CREATED',
+          'WHITEPAY_INSTANT_WITHDRAWAL_CREATED',
+          'ADMIN_PAYOUT_APPROVED',  // Payouts approuvés manuellement par un admin
+        ],
+      },
       details: { path: ['payoutId'], equals: payoutId },
     },
     select: { details: true },

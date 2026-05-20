@@ -93,14 +93,25 @@ async function fetchWpConvertWithdrawal(txId: string): Promise<{ status: string;
 async function applyCorrection(payoutId: string, userId: string, amountCents: number, wpTx: WpTx) {
   if (DRY_RUN) return;
 
-  // 1. Passer de FAILED → PAID directement avec les infos Whitepay
+  // 1. Passer vers PAID (peu importe le statut source)
   const reset = await prisma.payout.updateMany({
-    where: { id: payoutId, status: 'FAILED' },
+    where: {
+      id: payoutId,
+      status: {
+        in: [
+          'FAILED',
+          'WHITEPAY_PENDING_WITHDRAWAL',
+          'WHITEPAY_PROCESSING_WITHDRAWAL',
+          'WHITEPAY_WAITING_CONFIRMATION',
+          'WHITEPAY_COMPLETE',
+        ],
+      },
+    },
     data: {
       balanceDebitedAt: null,              // sera rempli en étape 3
       status: 'PAID',
       whitepayTxHash: wpTx.hash ?? undefined,
-      whitepayTransactionId: wpTx.id,      // restaurer l'ID Whitepay
+      whitepayTransactionId: wpTx.id,      // restaurer/confirmer l'ID Whitepay
       paidAt: wpTx.completed_at ? new Date(wpTx.completed_at + ' UTC') : new Date(),
     },
   });
@@ -109,7 +120,9 @@ async function applyCorrection(payoutId: string, userId: string, amountCents: nu
     return;
   }
 
-  // 2. Débiter la balance (le solde a déjà été dégélé par onFailed)
+  // 2. Débiter la balance et libérer le gel si encore actif
+  // Pour les payouts PENDING : frozenBalanceCents est encore actif → on doit le libérer
+  // Pour les payouts FAILED  : onFailed a déjà appelé unfreezeBalance → frozenBalanceCents déjà à 0
   await prisma.$transaction(async (tx) => {
     const result = await tx.user.updateMany({
       where: { id: userId, balanceCents: { gte: amountCents } },
@@ -118,6 +131,19 @@ async function applyCorrection(payoutId: string, userId: string, amountCents: nu
     if (result.count === 0) {
       throw new Error(`Solde insuffisant pour débiter ${amountCents} cents (user ${userId})`);
     }
+    // Dégel : clamp sur le frozen actuel pour éviter de descendre sous 0
+    const userForFreeze = await tx.user.findUnique({
+      where: { id: userId },
+      select: { frozenBalanceCents: true },
+    });
+    const currentFrozen = userForFreeze?.frozenBalanceCents ?? 0;
+    const decrementFrozenBy = Math.min(amountCents, currentFrozen);
+    if (decrementFrozenBy > 0) {
+      await tx.user.update({
+        where: { id: userId },
+        data: { frozenBalanceCents: { decrement: decrementFrozenBy } },
+      });
+    }
     const user = await tx.user.findUnique({ where: { id: userId }, select: { balanceCents: true } });
     await tx.balanceTransaction.create({
       data: {
@@ -125,7 +151,7 @@ async function applyCorrection(payoutId: string, userId: string, amountCents: nu
         type: 'WITHDRAWAL',
         amountCents: -amountCents,
         balanceAfterCents: user!.balanceCents,
-        reason: `Correction Whitepay — payout ${payoutId} était FAILED mais tx ${wpTx.id} = COMPLETE`,
+        reason: `Correction Whitepay — payout ${payoutId} tx ${wpTx.id} = COMPLETE`,
         metadata: { type: 'WITHDRAWAL', payoutId, whitepayTxId: wpTx.id, wpHash: wpTx.hash },
       },
     });
@@ -160,6 +186,7 @@ async function main() {
   const users = [
     { id: 'lS5O83zRrSluxdvF3oAJdd5slW0RXgik', name: 'FPM' },
     { id: 'cmmm6xqo1000bt2vj5smbx9zp',       name: 'Nyouz' },
+    { id: 'St8etc2E4yWUe6FiqmyzBMPsWxNYn9oC', name: 'Purple' },
   ];
 
   for (const user of users) {
@@ -167,11 +194,19 @@ async function main() {
     console.log(`  User: ${user.name} (${user.id})`);
     console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
 
-    // 1. Payouts FAILED (Whitepay) — avec ou sans transactionId stocké
+    // 1. Payouts Whitepay non résolus (FAILED ou bloqués en PENDING/PROCESSING)
     const failedPayouts = await prisma.payout.findMany({
       where: {
         userId: user.id,
-        status: 'FAILED',
+        status: {
+          in: [
+            'FAILED',
+            'WHITEPAY_PENDING_WITHDRAWAL',
+            'WHITEPAY_PROCESSING_WITHDRAWAL',
+            'WHITEPAY_WAITING_CONFIRMATION',
+            'WHITEPAY_COMPLETE',
+          ],
+        },
         paidAt: null,
         paymentMethod: { type: { in: ['WHITEPAY_CRYPTO', 'CRYPTO'] } },
       },
@@ -179,12 +214,13 @@ async function main() {
       orderBy: { createdAt: 'asc' },
     });
 
-    console.log(`  ${failedPayouts.length} payout(s) FAILED Whitepay\n`);
+    console.log(`  ${failedPayouts.length} payout(s) Whitepay non résolus\n`);
 
     // Txs déjà matchées pour cet user (évite double-attribution)
     const usedTxIds = new Set<string>();
 
     for (const payout of failedPayouts) {
+      try {
       // Format attendu par Whitepay : "Y-m-d" (ex: 2022-06-01)
       const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
       const dateFrom = fmtDate(new Date(payout.createdAt.getTime() - 24 * 60 * 60 * 1000));
@@ -227,11 +263,17 @@ async function main() {
         console.log(`    Candidat : id=${tx.id} | value=${tx.value} ${tx.currency} | completed=${tx.completed_at} | hash=${tx.hash?.slice(0, 20) ?? '-'}... | external_id=${tx.external_id ?? '-'}`);
       }
 
-      // Récupérer l'orderId depuis l'audit log (si disponible)
+      // Récupérer l'orderId depuis l'audit log (toutes les actions Whitepay + approbation admin)
       const auditEntry = await prisma.auditLog.findFirst({
         where: {
           userId: user.id,
-          action: { in: ['WHITEPAY_WITHDRAWAL_CREATED', 'WHITEPAY_INSTANT_WITHDRAWAL_CREATED'] },
+          action: {
+            in: [
+              'WHITEPAY_WITHDRAWAL_CREATED',
+              'WHITEPAY_INSTANT_WITHDRAWAL_CREATED',
+              'ADMIN_PAYOUT_APPROVED',
+            ],
+          },
           details: { path: ['payoutId'], equals: payout.id },
         },
         select: { details: true },
@@ -240,12 +282,23 @@ async function main() {
         ? (auditEntry.details as Record<string, string>)['orderId'] ?? null
         : null;
 
-      // Matching 1 : par external_id (orderId depuis audit log)
+      // Matching 0 : par whitepayTransactionId stocké en base (le plus fiable)
       let bestMatch: WpTx | null = null;
       let matchReason = '';
 
-      if (knownOrderId) {
-        const externalMatch = completedTxs.find((tx) => tx.external_id === knownOrderId);
+      if (payout.whitepayTransactionId) {
+        const directMatch = completedTxs.find((tx) => tx.id === payout.whitepayTransactionId);
+        if (directMatch && !usedTxIds.has(directMatch.id)) {
+          bestMatch = directMatch;
+          matchReason = `whitepayTransactionId direct = ${directMatch.id}`;
+        }
+      }
+
+      // Matching 1 : par external_id (orderId depuis audit log)
+      if (!bestMatch && knownOrderId) {
+        const externalMatch = completedTxs.find(
+          (tx) => tx.external_id === knownOrderId && !usedTxIds.has(tx.id)
+        );
         if (externalMatch) {
           bestMatch = externalMatch;
           matchReason = `external_id = ${knownOrderId}`;
@@ -253,9 +306,15 @@ async function main() {
       }
 
       // Matching 2 : proximité temporelle
-      // Règle : la tx doit être complétée APRÈS la création du payout (±5 min de tolérance)
-      // et ne pas déjà être attribuée à un autre payout.
-      if (!bestMatch) {
+      // Uniquement si le payout a au moins un indice qu'il a été soumis à Whitepay
+      // (whitepayTransactionId en DB OU orderId dans l'audit log OU whitepayStatus non null).
+      // Sinon le retrait n'a jamais été créé chez Whitepay → ne pas chercher.
+      const wasSubmittedToWhitepay =
+        payout.whitepayTransactionId !== null ||
+        knownOrderId !== null ||
+        payout.whitepayStatus !== null;
+
+      if (!bestMatch && wasSubmittedToWhitepay) {
         const WINDOW_AFTER_MS  = 60 * 60 * 1000;  // 60 min après création
         const TOLERANCE_BEFORE = 5  * 60 * 1000;  // 5 min avant (tolérance horloge)
         const payoutTime = payout.createdAt.getTime();
@@ -307,10 +366,18 @@ async function main() {
           console.log(`    ✅ Payout ${payout.id} → PAID, balance débitée de ${payout.amountCents} centimes`);
         }
       } else {
-        console.log(`\n    ✗  Aucun match (montant en €≠USDC, fenêtre 60 min, external_id inconnu) — vérification manuelle.`);
-        console.log(`       Candidats : ${completedTxs.map(t => `${t.value} ${t.currency} (${t.completed_at})`).join(', ')}`);
+        if (!wasSubmittedToWhitepay) {
+          console.log(`\n    ℹ️  Payout jamais soumis à Whitepay (pas de transactionId ni orderId) — FAILED légitime.`);
+        } else {
+          console.log(`\n    ✗  Aucun match (montant en €≠USDC, fenêtre 60 min, external_id inconnu) — vérification manuelle.`);
+          console.log(`       Candidats : ${completedTxs.map(t => `${t.value} ${t.currency} (${t.completed_at})`).join(', ')}`);
+        }
       }
       console.log('');
+      } catch (err) {
+        console.error(`\n    ❌ Erreur sur payout ${payout.id} :`, err instanceof Error ? err.message : err);
+        console.log('');
+      }
     }
 
     // Résumé balance actuelle
