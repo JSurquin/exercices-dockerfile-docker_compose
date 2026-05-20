@@ -162,14 +162,14 @@ export function XPPreviewBar({
           {hasPending && pendingPct > 0 && (
             <motion.div
               key="pending"
-              className="absolute top-0 h-full rounded-r-full"
+              className="absolute top-0 h-full rounded-full"
               style={{ left: `${currentPct}%` }}
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: `${pendingPct}%`, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
             >
-              <div className="relative h-full w-full overflow-hidden rounded-r-full bg-emerald-500/70">
+              <div className="relative h-full w-full overflow-hidden rounded-full bg-emerald-500/70">
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
                   animate={{ x: ["-100%", "200%"] }}

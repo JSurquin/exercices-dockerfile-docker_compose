@@ -309,7 +309,9 @@ export function SkinplaceInventoryViewer({
   };
 
   const handleSelectAllPurchasable = () => {
-    setSelectedItems(filteredItems.filter(isPurchasable).map((i) => i.id));
+    const purchasable = filteredItems.filter(isPurchasable);
+    setSelectedItems(purchasable.map((i) => i.id));
+    if (onSelectionChange) onSelectionChange(purchasable);
   };
 
   const openSupportForItem = (item: NormalizedInventoryItem) => {
@@ -1111,7 +1113,7 @@ export function SkinplaceInventoryViewer({
               <div className="flex gap-2 w-full sm:w-auto">
                 <Button
                   variant="outline"
-                  onClick={() => setSelectedItems([])}
+                  onClick={() => { setSelectedItems([]); if (onSelectionChange) onSelectionChange([]); }}
                   className="flex-1 sm:flex-none"
                 >
                   {messages.components.skinplace.deselectAll}
