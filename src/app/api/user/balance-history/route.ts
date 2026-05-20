@@ -23,10 +23,26 @@ export async function GET(request: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { balanceCents: true, pendingBalanceCents: true },
+      select: { balanceCents: true, pendingBalanceCents: true, frozenBalanceCents: true },
     });
     const currentBalance = user?.balanceCents ?? 0;
     const pendingBalance = user?.pendingBalanceCents ?? 0;
+    const frozenBalance = user?.frozenBalanceCents ?? 0;
+    const availableCents = Math.max(0, currentBalance - frozenBalance);
+    const projectedAvailableCents = availableCents + pendingBalance;
+
+    // Trades en trade hold : date de déblocage + compteur pour la projection UI
+    const pendingTrades = await prisma.trade.findMany({
+      where: {
+        userId,
+        pendingCreditedAt: { not: null },
+        balanceCreditedAt: null,
+        status: { in: ['IN_TRADE_HOLD', 'ACCEPTED_BY_BOT'] },
+      },
+      select: { availableAt: true },
+      orderBy: { availableAt: 'asc' },
+    });
+    const nextReleaseAt = pendingTrades.find((t) => t.availableAt)?.availableAt?.toISOString() ?? null;
 
     // Toutes les transactions depuis le début de la fenêtre (uniquement les transactions
     // qui affectent balanceCents : TRADE_CREDIT et WITHDRAWAL)
@@ -84,7 +100,12 @@ export async function GET(request: NextRequest) {
       variationCents,
       variationPct: Math.round(variationPct * 10) / 10,
       currentBalanceCents: currentBalance,
+      availableCents,
+      frozenBalanceCents: frozenBalance,
       pendingBalanceCents: pendingBalance,
+      projectedAvailableCents,
+      pendingTradesCount: pendingTrades.length,
+      nextReleaseAt,
     });
   } catch (error) {
     console.error('[api/user/balance-history]', error);

@@ -469,6 +469,12 @@ export interface Messages {
         pendingTitle: string;
         pendingTooltip: string;
         projected: string;
+        projectedTitle: string;
+        projectedHint: string;
+        projectedPending: string;
+        pendingTrades: string;
+        nextRelease: string;
+        frozenBalance: string;
         last7days: string;
         vsLastWeek: string;
         chart30days: string;
