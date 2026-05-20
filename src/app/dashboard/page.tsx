@@ -57,6 +57,7 @@ import {
 import CountUp from "react-countup";
 import { formatCentsToCurrency } from "@/lib/currency-converter";
 import { ConvertedPrice } from "@/components/ui/converted-price";
+import { getLevelInfo, getLevelName, LEVELS } from "@/lib/level-system";
 
 const formatPrice = (centimes: number) => {
   return (centimes / 100).toFixed(2) + "€";
@@ -384,13 +385,11 @@ export default function DashboardPage() {
     );
   }
 
-  const currentLevel = user?.level || 0;
-  const nextLevel = currentLevel + 1;
-  const xpForCurrentLevel = currentLevel * 1000;
-  const xpForNextLevel = nextLevel * 1000;
-  const xpProgress =
-    ((user?.xp || 0 - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel)) *
-    100;
+  const userXP = user?.xp ?? 0;
+  const levelInfo = getLevelInfo(userXP);
+  const nextLevelName = !levelInfo.isMaxLevel && levelInfo.levelIndex < LEVELS.length - 1
+    ? getLevelName(levelInfo.levelIndex + 1)
+    : null;
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -426,23 +425,31 @@ export default function DashboardPage() {
                 <div className="flex items-center space-x-3">
                   <TrophyIcon className="w-6 h-6 text-yellow-500" />
                   <div>
-                    <h3 className="font-semibold">{messages.dashboard.currentLevel} {currentLevel}</h3>
+                    <h3 className="font-semibold">
+                      {levelInfo.level.name} — Palier {levelInfo.tierIndex + 1}/5
+                    </h3>
                     <p className="text-sm text-muted-foreground">
-                      {user?.xp || 0 - xpForCurrentLevel} /{" "}
-                      {xpForNextLevel - xpForCurrentLevel} {messages.dashboard.xp}
+                      {levelInfo.saleBonus > 0
+                        ? `Bonus vendeur actif : ${levelInfo.saleBonusPct} sur tes ventes`
+                        : "Aucun bonus vendeur encore"}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold">
-                    {user?.xp?.toLocaleString()} {messages.dashboard.xp}
+                    {levelInfo.cappedXP.toLocaleString()} / {levelInfo.tierXpEnd.toLocaleString()} {messages.dashboard.xp}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {xpForNextLevel - (user?.xp || 0)} {messages.dashboard.xpForNext} {nextLevel}
+                    −{levelInfo.nextTierXP.toLocaleString()} XP prochain palier
                   </p>
+                  {!levelInfo.isMaxLevel && levelInfo.nextLevelXP != null && nextLevelName && (
+                    <p className="text-xs text-muted-foreground">
+                      −{levelInfo.nextLevelXP.toLocaleString()} XP pour {nextLevelName}
+                    </p>
+                  )}
                 </div>
               </div>
-              <Progress value={xpProgress} className="h-3" />
+              <Progress value={levelInfo.tierProgress * 100} className="h-3" />
             </CardContent>
           </Card>
         </motion.div>
@@ -699,7 +706,8 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{messages.dashboard.level}</p>
-                  <p className="text-2xl font-bold">{user?.level || 0}</p>
+                  <p className="text-2xl font-bold">{levelInfo.level.name}</p>
+                  <p className="text-xs text-muted-foreground">Palier {levelInfo.tierIndex + 1}/5</p>
                 </div>
                 <StarIcon className="w-8 h-8 text-yellow-500" />
               </div>
