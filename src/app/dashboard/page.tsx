@@ -43,13 +43,18 @@ import {
 } from "@heroicons/react/24/outline";
 import { Snowflake, TrendingUp } from "lucide-react";
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  AreaChart,
+  Area,
 } from "recharts";
 import CountUp from "react-countup";
 import { formatCentsToCurrency } from "@/lib/currency-converter";
@@ -172,6 +177,15 @@ export default function DashboardPage() {
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const { data: tradesData, loading: tradesLoading, error: tradesError, refetch: refetchTrades } = useUserTrades();
   const { data: platformStats, isLoading: platformStatsLoading } = usePublicStats({ marketing: false });
+  const { data: dashboardStats, isLoading: statsLoading } = useQuery({
+    queryKey: queryKeys.userDashboard,
+    queryFn: async () => {
+      const response = await fetch('/api/user/dashboard-stats');
+      if (!response.ok) throw new Error('Erreur statistiques');
+      return response.json();
+    },
+    enabled: !!data?.user,
+  });
   const [refreshingTradeId, setRefreshingTradeId] = useState<string | null>(null);
   const [refreshingKyc, setRefreshingKyc] = useState(false);
   const autoPollingDone = useRef(false);
@@ -987,6 +1001,82 @@ export default function DashboardPage() {
                       )}
                     </CardContent>
                   </Card>
+                </div>
+
+                <div className="space-y-4 pt-2">
+                  <div className="px-1">
+                    <h3 className="text-lg font-semibold">{messages.dashboard.analytics.personalTitle}</h3>
+                    <p className="text-sm text-muted-foreground">{messages.dashboard.analytics.personalSubtitle}</p>
+                  </div>
+                  <div className="grid lg:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>{messages.dashboard.analytics.tradingVolume}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {statsLoading ? (
+                          <div className="flex items-center justify-center h-[300px]">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
+                          </div>
+                        ) : (
+                          <ResponsiveContainer width="100%" height={300}>
+                            <LineChart data={dashboardStats?.volumeData || []}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="date" />
+                              <YAxis />
+                              <Tooltip
+                                formatter={(value) => [
+                                  formatPrice(value as number),
+                                  messages.dashboard.volume,
+                                ]}
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="volume"
+                                stroke="#f97316"
+                                strokeWidth={2}
+                                dot={{ fill: "#f97316" }}
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>{messages.dashboard.analytics.tradeStatus}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {statsLoading ? (
+                          <div className="flex items-center justify-center h-[300px]">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+                          </div>
+                        ) : (
+                          <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                              <Pie
+                                data={dashboardStats?.tradeStatusData || []}
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={80}
+                                fill="#8884d8"
+                                dataKey="count"
+                                label={({ name, percent }) =>
+                                  `${name} ${(percent * 100).toFixed(0)}%`
+                                }
+                              >
+                                {(dashboardStats?.tradeStatusData || []).map((entry: { name: string; count: number; color: string }, index: number) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                              <Tooltip />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
               </motion.div>
             </TabsContent>

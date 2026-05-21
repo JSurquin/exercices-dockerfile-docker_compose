@@ -400,6 +400,10 @@ export interface Messages {
         totalSalesVolumeDesc: string;
         totalSkinsSold: string;
         totalSkinsSoldDesc: string;
+        personalTitle: string;
+        personalSubtitle: string;
+        tradingVolume: string;
+        tradeStatus: string;
       };
       payments: {
         title: string;

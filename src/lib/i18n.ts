@@ -355,6 +355,10 @@ export const messages: Record<Locale, Messages> = {
         totalSalesVolumeDesc: "Montant brut cumulé de toutes les transactions",
         totalSkinsSold: "Skins vendus",
         totalSkinsSoldDesc: "Nombre total de skins échangés sur MoonSkin",
+        personalTitle: "Vos statistiques",
+        personalSubtitle: "Suivez votre activité personnelle sur les 7 derniers jours.",
+        tradingVolume: "Volume de trading",
+        tradeStatus: "Statut des trades",
       },
       payments: {
         title: "Retraits et virements",
@@ -7439,6 +7443,10 @@ export const messages: Record<Locale, Messages> = {
         totalSalesVolumeDesc: "Cumulative gross amount of all transactions",
         totalSkinsSold: "Skins sold",
         totalSkinsSoldDesc: "Total number of skins exchanged on MoonSkin",
+        personalTitle: "Your statistics",
+        personalSubtitle: "Track your personal activity over the last 7 days.",
+        tradingVolume: "Trading volume",
+        tradeStatus: "Trade status",
       },
       payments: {
         title: "Payouts & transfers",
@@ -14519,6 +14527,10 @@ export const messages: Record<Locale, Messages> = {
         totalSalesVolumeDesc: "所有交易的累计毛额",
         totalSkinsSold: "已售皮肤",
         totalSkinsSoldDesc: "MoonSkin上交换的皮肤总数",
+        personalTitle: "您的统计",
+        personalSubtitle: "跟踪您最近7天的个人活动。",
+        tradingVolume: "交易量",
+        tradeStatus: "交易状态",
       },
       payments: {
         title: "提现与转账",
