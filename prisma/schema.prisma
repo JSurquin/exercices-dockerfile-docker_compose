@@ -1072,6 +1072,40 @@ model ExchangeRate {
   @@map("exchange_rates")
 }
 
+/// Vidéos partenaires / créateurs affichées sur la page d'accueil
+model PartnerVideo {
+  id                String   @id @default(cuid())
+  youtubeVideoUrl   String
+  youtubeVideoId    String
+  creatorName       String
+  subscriberCount   String?
+  avatarUrl         String?
+  youtubeChannelUrl String?
+  twitterUrl        String?
+  sortOrder         Int      @default(0)
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+  @@map("partner_video")
+}
+
+/// Logos partenaires affichés sous les vidéos sur la page d'accueil
+model PartnerLogo {
+  id         String   @id @default(cuid())
+  name       String
+  logoUrl    String
+  profileUrl String?
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+  @@map("partner_logo")
+}
+
 /// Idempotence des webhooks (Flexify, Skinplace, etc.)
 model WebhookEvent {
   id           String    @id @default(cuid())

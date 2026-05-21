@@ -32,6 +32,7 @@ import {
   Landmark,
   Crown,
   Store,
+  Heart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -132,6 +133,7 @@ export function AdminMobileNav() {
     {
       title: t.groups.content,
       items: [
+        { title: t.items.partners, href: '/admin/partners', icon: Heart },
         { title: t.items.legalPages, href: '/admin/legal-pages', icon: FileText },
       ],
     },

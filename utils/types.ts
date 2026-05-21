@@ -344,6 +344,11 @@ export interface Messages {
       support: string;
     };
   };
+  partners: {
+    title: string;
+    contactPrefix: string;
+    contactEmail: string;
+  };
     dashboard: {
       title: string;
       subtitle: string;
@@ -2552,6 +2557,58 @@ export interface Messages {
         manualPoint1: string;
         manualPoint2: string;
         manualPoint3: string;
+      };
+    };
+    partners: {
+      title: string;
+      subtitle: string;
+      loading: string;
+      tabs: { videos: string; logos: string };
+      order: string;
+      active: string;
+      inactive: string;
+      save: string;
+      saving: string;
+      cancel: string;
+      errors: {
+        required: string;
+        save: string;
+        delete: string;
+      };
+      videos: {
+        title: string;
+        description: string;
+        add: string;
+        edit: string;
+        empty: string;
+        createSuccess: string;
+        updateSuccess: string;
+        deleteSuccess: string;
+        deleteConfirm: string;
+        fields: {
+          youtubeUrl: string;
+          creatorName: string;
+          subscriberCount: string;
+          avatarUrl: string;
+          youtubeChannelUrl: string;
+          twitterUrl: string;
+        };
+      };
+      logos: {
+        title: string;
+        description: string;
+        add: string;
+        edit: string;
+        empty: string;
+        createSuccess: string;
+        updateSuccess: string;
+        deleteSuccess: string;
+        deleteConfirm: string;
+        fields: {
+          name: string;
+          logoUrl: string;
+          profileUrl: string;
+        };
       };
     };
     newsletter: {
@@ -5579,6 +5636,7 @@ export interface Messages {
         newsletter: string;
         notifications: string;
         chatSupport: string;
+        partners: string;
         legalPages: string;
         audit: string;
         exports: string;

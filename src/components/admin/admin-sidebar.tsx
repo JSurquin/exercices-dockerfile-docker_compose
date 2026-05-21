@@ -35,6 +35,7 @@ import {
   Landmark,
   Crown,
   Store,
+  Heart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -137,6 +138,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
     {
       title: t.groups.content,
       items: [
+        { title: t.items.partners, href: '/admin/partners', icon: Heart },
         { title: t.items.legalPages, href: '/admin/legal-pages', icon: FileText },
       ],
     },

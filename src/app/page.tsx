@@ -2,7 +2,7 @@ import { HeroSection } from '@/components/home/hero-section';
 import { HowItWorks } from '@/components/home/how-it-works';
 import { FeaturesSection } from '@/components/home/features-section';
 import { TestimonialsSection } from '@/components/home/testimonials-section';
-import { NewsletterSection } from '@/components/home/newsletter-section';
+import { PartnersSection } from '@/components/home/partners-section';
 
 export default function Home() {
   return (
@@ -11,7 +11,7 @@ export default function Home() {
       <HowItWorks />
       <FeaturesSection />
       <TestimonialsSection />
-      <NewsletterSection />
+      <PartnersSection />
     </div>
   );
 }

@@ -74,6 +74,10 @@ export const queryKeys = {
   // Admin - legal pages
   adminLegalPages: ['admin', 'legal-pages'] as const,
 
+  // Admin - homepage partners
+  adminPartnerVideos: ['admin', 'partners', 'videos'] as const,
+  adminPartnerLogos: ['admin', 'partners', 'logos'] as const,
+
   // Admin - settings
   adminSettings: ['admin', 'settings'] as const,
   adminSmtpSettings: ['admin', 'smtp-settings'] as const,

@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://community.cloudflare.steamstatic.com",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://*.steamstatic.com https://*.akamaihd.net https://community.cloudflare.steamstatic.com https://steamcommunity-a.akamaihd.net https://avatars.steamstatic.com https://steamcdn-a.akamaihd.net",
+      "img-src 'self' data: blob: https://*.steamstatic.com https://*.akamaihd.net https://community.cloudflare.steamstatic.com https://steamcommunity-a.akamaihd.net https://avatars.steamstatic.com https://steamcdn-a.akamaihd.net https://img.youtube.com https://i.ytimg.com https://yt3.ggpht.com",
       "font-src 'self' data:",
       "connect-src 'self' https://*.ingest.sentry.io https://o*.ingest.sentry.io https://api.frankfurter.dev",
       "worker-src 'self' blob:",
@@ -76,6 +76,21 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '*.steamstatic.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+        pathname: '/vi/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'yt3.ggpht.com',
         pathname: '/**',
       },
     ],
