@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { prisma } from '../../prisma/prisma';
 import { AffiliateStats, AffiliateReferral, AffiliateCommission } from '@/lib/types';
 import { computeSellPromoBonusCents as computeSellPromoBonusCentsPure } from '@/lib/affiliate-sell-promo';
+import { getUserRewardFlags, isAffiliateRewardsBlocked } from '@/lib/user-rewards-guard';
 
 export {
   AFFILIATE_SELL_PROMO_FRAGMENTS,
@@ -239,6 +240,14 @@ export class AffiliateService {
     });
     
     if (!trade || !trade.user.referredByAffiliateId) return;
+
+    const rewardFlags = await getUserRewardFlags(trade.userId);
+    if (isAffiliateRewardsBlocked(rewardFlags)) {
+      console.warn(
+        `[AffiliateService] Skipping commission for trade ${tradeId} — affiliate rewards blocked for user ${trade.userId}`
+      );
+      return;
+    }
     
     const affiliate = await prisma.affiliateStats.findUnique({
       where: { id: trade.user.referredByAffiliateId, isActive: true }

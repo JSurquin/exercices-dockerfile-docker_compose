@@ -8,6 +8,7 @@ import { grantFragments } from '@/lib/fragment-service';
 import { currencyConverter } from '@/lib/currency-converter';
 import { prisma } from '../../prisma/prisma';
 import { logger } from '@/lib/logger';
+import { getUserRewardFlags, isAffiliateRewardsBlocked } from '@/lib/user-rewards-guard';
 
 /**
  * Service pour gérer les hooks et événements liés aux trades.
@@ -438,20 +439,27 @@ export class TradeHooks {
       }
 
       if (trade.affiliatePromoCode && !trade.affiliatePromoFragmentsGrantedAt) {
-        try {
-          await grantFragments(
-            trade.userId,
-            AFFILIATE_SELL_PROMO_FRAGMENTS,
-            'GENERATED_EVENT',
-            `Affiliate promo bonus — trade ${tradeId}`,
-            { tradeId, source: 'affiliate_sell_promo' }
+        const promoFlags = await getUserRewardFlags(trade.userId);
+        if (isAffiliateRewardsBlocked(promoFlags)) {
+          logger.warn(
+            `[TradeHooks] Skipping affiliate promo fragments for trade ${tradeId} — rewards blocked`
           );
-          await prisma.trade.update({
-            where: { id: tradeId },
-            data: { affiliatePromoFragmentsGrantedAt: new Date() },
-          });
-        } catch (fragErr) {
-          logger.error(`[TradeHooks] Promo fragments error for trade ${tradeId}`, fragErr);
+        } else {
+          try {
+            await grantFragments(
+              trade.userId,
+              AFFILIATE_SELL_PROMO_FRAGMENTS,
+              'GENERATED_EVENT',
+              `Affiliate promo bonus — trade ${tradeId}`,
+              { tradeId, source: 'affiliate_sell_promo' }
+            );
+            await prisma.trade.update({
+              where: { id: tradeId },
+              data: { affiliatePromoFragmentsGrantedAt: new Date() },
+            });
+          } catch (fragErr) {
+            logger.error(`[TradeHooks] Promo fragments error for trade ${tradeId}`, fragErr);
+          }
         }
       }
 

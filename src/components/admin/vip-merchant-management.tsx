@@ -24,6 +24,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { UserRoleBadge } from '@/components/ui/user-role-badge';
+import { UserRewardsBlockControls } from '@/components/admin/user-rewards-block-controls';
 import Link from 'next/link';
 import { queryKeys } from '@/lib/query-keys';
 import { useLocale } from '@/components/providers/locale-provider';
@@ -35,6 +36,8 @@ interface VipMerchantUser {
   steamId64: string;
   userTag: string;
   bonusRatePercent: number;
+  affiliateRewardsBlocked?: boolean;
+  xpRewardsBlocked?: boolean;
   totalVolume: number;
   joinedAt: string;
 }
@@ -227,6 +230,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
                   <TableHead className="text-slate-400">{t.colUser}</TableHead>
                   <TableHead className="text-slate-400">{t.colBonus}</TableHead>
                   <TableHead className="text-slate-400">{t.colVolume}</TableHead>
+                  <TableHead className="text-slate-400">{t.colRewardsBlock ?? 'Récompenses'}</TableHead>
                   <TableHead className="text-slate-400">{t.colActions}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -253,6 +257,14 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
                     </TableCell>
                     <TableCell className="text-white">
                       {formatCurrency(user.totalVolume || 0)}
+                    </TableCell>
+                    <TableCell className="min-w-[200px]">
+                      <UserRewardsBlockControls
+                        userId={user.id}
+                        affiliateRewardsBlocked={user.affiliateRewardsBlocked ?? false}
+                        xpRewardsBlocked={user.xpRewardsBlocked ?? false}
+                        compact
+                      />
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

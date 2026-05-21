@@ -51,6 +51,8 @@ export const queryKeys = {
   // Admin - affiliates
   adminAffiliates: (filters?: Record<string, unknown>) =>
     ['admin', 'affiliates', filters ?? {}] as const,
+  adminAffiliateReferrals: (affiliateId: string, filters?: Record<string, unknown>) =>
+    ['admin', 'affiliates', affiliateId, 'referrals', filters ?? {}] as const,
 
   // Admin - balance
   adminBalance: (userId: string) => ['admin', 'balance', userId] as const,

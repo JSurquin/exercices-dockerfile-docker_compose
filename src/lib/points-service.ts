@@ -8,6 +8,7 @@ import {
 } from './points-config';
 import { getPlatformConfig } from '@/lib/platform-config-service';
 import { xpFromCents, getLevelInfo, globalTierFromXP } from '@/lib/level-system';
+import { getUserRewardFlags, isXpRewardsBlocked } from '@/lib/user-rewards-guard';
 export type { FragmentDropTier, FragmentDropConfig, PointsConfig } from './points-config';
 
 const POINTS_CONFIG_KEY = 'points_config';
@@ -133,6 +134,12 @@ export async function awardTradePoints(
 
   if (!platformConfig.xpEnabled && !platformConfig.fragmentsEnabled) {
     console.warn(`[awardTradePoints] XP and fragments both disabled globally, skipping trade ${tradeId}`);
+    return { points: 0, tickets: 0, fragments: 0, drop: 0 };
+  }
+
+  const rewardFlags = await getUserRewardFlags(userId);
+  if (isXpRewardsBlocked(rewardFlags)) {
+    console.warn(`[awardTradePoints] XP/fragments blocked for user ${userId}, skipping trade ${tradeId}`);
     return { points: 0, tickets: 0, fragments: 0, drop: 0 };
   }
 

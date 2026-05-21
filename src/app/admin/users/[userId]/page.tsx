@@ -19,6 +19,7 @@ import { queryKeys } from '@/lib/query-keys';
 import { useToast } from '@/hooks/use-toast';
 import { UserRoleBadge } from '@/components/ui/user-role-badge';
 import { useLocale } from '@/components/providers/locale-provider';
+import { UserRewardsBlockControls } from '@/components/admin/user-rewards-block-controls';
 
 interface UserDetail {
   id: string;
@@ -40,6 +41,9 @@ interface UserDetail {
   bonusRatePercent: number;
   userTag: string | null;
   instantCreditEnabled: boolean;
+  affiliateRewardsBlocked: boolean;
+  xpRewardsBlocked: boolean;
+  referredBy: { affiliateId: string; code: string; steamUsername: string | null } | null;
   createdAt: string;
   role: string;
 }
@@ -387,6 +391,23 @@ export default function AdminUserDetailPage() {
               {t.bonusActive.replace('{rate}', String(user.bonusRatePercent))}
             </p>
           )}
+          {user.referredBy && (
+            <p className="text-sm text-slate-300 border-t border-slate-700 pt-3">
+              {t.referredByLabel}{' '}
+              <code className="text-amber-400">{user.referredBy.code}</code>
+              {user.referredBy.steamUsername ? ` (${user.referredBy.steamUsername})` : ''}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="bg-slate-800/30 border-slate-700">
+        <CardContent className="pt-6">
+          <UserRewardsBlockControls
+            userId={userId!}
+            affiliateRewardsBlocked={user.affiliateRewardsBlocked ?? false}
+            xpRewardsBlocked={user.xpRewardsBlocked ?? false}
+          />
         </CardContent>
       </Card>
     </div>
