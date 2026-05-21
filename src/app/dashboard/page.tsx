@@ -24,7 +24,7 @@ import { Messages } from "~/utils/types";
 import { User } from "~/utils/types";
 import { toast } from "sonner";
 import { useUserTrades } from "@/hooks/use-user-trades";
-import { usePublicStats } from "@/hooks/use-public-stats";
+import { usePublicStats, formatPlatformVolume } from "@/hooks/use-public-stats";
 import { TradeItemsGallery } from "@/components/trade/trade-items-gallery";
 import {
   CurrencyDollarIcon,
@@ -171,7 +171,7 @@ export default function DashboardPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const { data: tradesData, loading: tradesLoading, error: tradesError, refetch: refetchTrades } = useUserTrades();
-  const { data: platformStats, isLoading: platformStatsLoading } = usePublicStats();
+  const { data: platformStats, isLoading: platformStatsLoading } = usePublicStats({ marketing: false });
   const [refreshingTradeId, setRefreshingTradeId] = useState<string | null>(null);
   const [refreshingKyc, setRefreshingKyc] = useState(false);
   const autoPollingDone = useRef(false);
@@ -200,6 +200,7 @@ export default function DashboardPage() {
   });
 
   const { messages, locale: appLocale } = useLocale();
+  const platformVolumeDisplay = formatPlatformVolume(platformStats?.totalVolumeCents ?? 0);
   
   // Auto-claim DAILY_VISIT silencieusement à l'ouverture du dashboard
   useEffect(() => {
@@ -935,11 +936,12 @@ export default function DashboardPage() {
                             </p>
                             <p className="text-5xl sm:text-6xl lg:text-7xl font-bold tabular-nums tracking-tight">
                               <CountUp
-                                end={Math.max(platformStats?.volumeMillions ?? 0.6, 0.6)}
+                                end={platformVolumeDisplay.value}
                                 duration={2.5}
-                                decimals={1}
-                                prefix="€"
-                                suffix="M+"
+                                decimals={platformVolumeDisplay.decimals}
+                                prefix={platformVolumeDisplay.prefix}
+                                suffix={platformVolumeDisplay.suffix}
+                                separator=" "
                               />
                             </p>
                             <p className="text-sm sm:text-base text-muted-foreground max-w-xl">
@@ -969,10 +971,9 @@ export default function DashboardPage() {
                             </p>
                             <p className="text-3xl sm:text-4xl lg:text-5xl font-bold tabular-nums tracking-tight">
                               <CountUp
-                                end={Math.max(platformStats?.totalSkinsSold ?? 1200, 1200)}
+                                end={platformStats?.totalSkinsSold ?? 0}
                                 duration={2.5}
                                 separator=" "
-                                suffix="+"
                               />
                             </p>
                             <p className="text-sm text-muted-foreground max-w-sm">

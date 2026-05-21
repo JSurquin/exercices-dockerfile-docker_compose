@@ -26,12 +26,13 @@ export async function GET() {
     return NextResponse.json({
       totalUsers: obfuscatePublicCount(rawUsers),
       completedTrades: obfuscatePublicCount(completedTrades),
-      volumeMillions: Math.round((volumeCents / 100_000) * 10) / 10,
+      volumeMillions: Math.round((volumeCents / 100_000_000) * 10) / 10,
+      totalVolumeCents: obfuscatePublicCount(volumeCents),
       totalSkinsSold: obfuscatePublicCount(rawSkinsSold),
     });
   } catch {
     return NextResponse.json(
-      { totalUsers: 0, completedTrades: 0, volumeMillions: 0, totalSkinsSold: 0 },
+      { totalUsers: 0, completedTrades: 0, volumeMillions: 0, totalVolumeCents: 0, totalSkinsSold: 0 },
       { status: 500 }
     );
   }
