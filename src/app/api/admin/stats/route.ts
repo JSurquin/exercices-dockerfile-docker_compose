@@ -5,6 +5,10 @@ import { prisma } from '~/prisma/prisma';
 import { mapTradeStatusFromDb, mapPayoutStatusFromDb, mapPaymentMethodTypeFromDb } from '@/lib/status-mapper';
 import { getPublicSepaDetails } from '@/lib/payment-method-sepa';
 import type { SepaDetailsStored } from '@/lib/payment-method-sepa';
+import {
+  payoutProcessingWhere,
+  submittedKycPendingWhere,
+} from '@/lib/admin-pending-filters';
 
 export async function GET(request: NextRequest) {
   try {
@@ -39,28 +43,8 @@ export async function GET(request: NextRequest) {
         },
       }),
       prisma.trade.count({ where: { status: 'FAILED' } }),
-      // Payouts en attente : PENDING, PENDING_APPROVAL, et statuts Flexify/Whitepay en cours
-      prisma.payout.count({
-        where: {
-          status: {
-            in: [
-              'PENDING',
-              'PENDING_APPROVAL',
-              'FLEXIFY_PENDING',
-              'FLEXIFY_PROCESSING',
-              'WHITEPAY_WAITING_CONFIRMATION',
-              'WHITEPAY_PENDING_WITHDRAWAL',
-              'WHITEPAY_PROCESSING_WITHDRAWAL',
-            ],
-          },
-        },
-      }),
-      // KYC en attente : PENDING, KYCAID_PENDING, IN_PROGRESS
-      prisma.user.count({
-        where: {
-          kycStatus: { in: ['PENDING', 'KYCAID_PENDING', 'IN_PROGRESS'] },
-        },
-      }),
+      prisma.payout.count({ where: payoutProcessingWhere }),
+      prisma.user.count({ where: submittedKycPendingWhere }),
     ]);
 
     // Statistiques mensuelles (6 derniers mois)

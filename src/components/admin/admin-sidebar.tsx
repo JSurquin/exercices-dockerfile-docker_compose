@@ -68,7 +68,12 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
   const { messages } = useLocale();
   const t = messages.adminNav;
 
-  const { data: pendingCounts } = useQuery<{ pendingPayouts: number; kycPending: number }>({
+  const { data: pendingCounts } = useQuery<{
+    pendingPayouts: number;
+    pendingApprovals: number;
+    kycPending: number;
+    sepaPending: number;
+  }>({
     queryKey: queryKeys.adminPendingCounts,
     queryFn: async () => {
       const res = await fetch('/api/admin/pending-counts');
@@ -92,15 +97,15 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
       items: [
         { title: t.items.users, href: '/admin/dashboard?tab=users', icon: Users },
         { title: t.items.trades, href: '/admin/dashboard?tab=trades', icon: ShoppingCart },
-        { title: t.items.payouts, href: '/admin/dashboard?tab=payouts', icon: CreditCard, badge: pendingCounts?.pendingPayouts, badgeVariant: 'destructive' as const },
-        { title: t.items.sepaRequests, href: '/admin/sepa-requests', icon: Landmark, badgeVariant: 'destructive' as const },
+        { title: t.items.payouts, href: '/admin/dashboard?tab=payouts', icon: CreditCard, badge: pendingCounts?.pendingApprovals, badgeVariant: 'destructive' as const },
+        { title: t.items.sepaRequests, href: '/admin/sepa-requests', icon: Landmark, badge: pendingCounts?.sepaPending, badgeVariant: 'destructive' as const },
         { title: t.items.kyc, href: '/admin/dashboard?tab=kyc', icon: Shield, badge: pendingCounts?.kycPending, badgeVariant: 'destructive' as const },
       ],
     },
     {
       title: t.groups.affiliation,
       items: [
-        { title: t.items.applications, href: '/admin/affiliate-applications', icon: FileDown, badge: 0, badgeVariant: 'destructive' as const },
+        { title: t.items.applications, href: '/admin/affiliate-applications', icon: FileDown, badgeVariant: 'destructive' as const },
         { title: t.items.affiliates, href: '/admin/dashboard?tab=affiliates', icon: UserCheck },
         { title: t.items.commissions, href: '/admin/dashboard?tab=commissions', icon: Percent },
         { title: t.items.performance, href: '/admin/dashboard?tab=affiliate-performance', icon: TrendingUp },
@@ -308,10 +313,6 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
                   <div className="mr-1 h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
                   {t.footer.online}
                 </Badge>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">{t.footer.uptime}</span>
-                <span className="font-medium text-white">99.9%</span>
               </div>
             </div>
           </motion.div>

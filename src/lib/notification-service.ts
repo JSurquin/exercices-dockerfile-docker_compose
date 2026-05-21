@@ -131,25 +131,66 @@ export class NotificationService {
       messageEn: `${username} submitted a KYC verification (${kycType})`,
       messageCn: `${username} 提交了KYC验证 (${kycType})`,
       link: `/admin/dashboard?tab=kyc`,
-      metadata: { userId, kycType },
+      metadata: { userId, kycType, event: "submitted" },
     });
   }
 
-  /**
-   * Notifie les admins d'une nouvelle inscription
-   */
-  static async notifyNewUser(userId: string, username: string, email: string) {
+  static async notifyKycApproved(userId: string, username: string) {
     await this.notifyAdmins({
-      type: NotificationType.SYSTEM_ANNOUNCEMENT,
-      priority: NotificationPriority.LOW,
-      titleFr: "Nouvel utilisateur inscrit",
-      titleEn: "New user registered",
-      titleCn: "新用户注册",
-      messageFr: `${username} (${email}) vient de s'inscrire`,
-      messageEn: `${username} (${email}) just registered`,
-      messageCn: `${username} (${email}) 刚刚注册`,
+      type: NotificationType.KYC_UPDATE,
+      priority: NotificationPriority.NORMAL,
+      titleFr: "KYC approuvé",
+      titleEn: "KYC approved",
+      titleCn: "KYC已通过",
+      messageFr: `Le dossier KYC de ${username} a été approuvé`,
+      messageEn: `${username}'s KYC application was approved`,
+      messageCn: `${username} 的KYC申请已通过`,
       link: `/admin/users/${userId}`,
-      metadata: { userId, email },
+      metadata: { userId, event: "approved" },
+    });
+  }
+
+  static async notifyKycRejected(userId: string, username: string, reason?: string) {
+    await this.notifyAdmins({
+      type: NotificationType.KYC_UPDATE,
+      priority: NotificationPriority.HIGH,
+      titleFr: "KYC refusé",
+      titleEn: "KYC rejected",
+      titleCn: "KYC被拒绝",
+      messageFr: reason
+        ? `Le dossier KYC de ${username} a été refusé : ${reason}`
+        : `Le dossier KYC de ${username} a été refusé`,
+      messageEn: reason
+        ? `${username}'s KYC application was rejected: ${reason}`
+        : `${username}'s KYC application was rejected`,
+      messageCn: reason
+        ? `${username} 的KYC申请被拒绝：${reason}`
+        : `${username} 的KYC申请被拒绝`,
+      link: `/admin/dashboard?tab=kyc`,
+      metadata: { userId, event: "rejected", reason },
+    });
+  }
+
+  static async notifyPayoutPendingApproval(
+    payoutId: string,
+    userId: string,
+    username: string,
+    amount: number,
+    method: string,
+  ) {
+    const amountEur = (amount / 100).toFixed(2);
+
+    await this.notifyAdmins({
+      type: NotificationType.PAYOUT_UPDATE,
+      priority: NotificationPriority.HIGH,
+      titleFr: "Retrait en attente d'approbation",
+      titleEn: "Withdrawal pending approval",
+      titleCn: "提现待批准",
+      messageFr: `${username} demande un retrait de ${amountEur}€ via ${method} — approbation requise`,
+      messageEn: `${username} requests a withdrawal of €${amountEur} via ${method} — approval required`,
+      messageCn: `${username} 请求通过 ${method} 提取 ${amountEur}€ — 需要批准`,
+      link: method === 'SEPA FR' ? '/admin/sepa-requests' : '/admin/dashboard?tab=payouts',
+      metadata: { payoutId, userId, amount, method, event: "pending_approval" },
     });
   }
 

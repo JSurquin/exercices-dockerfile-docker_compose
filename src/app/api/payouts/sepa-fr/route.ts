@@ -8,6 +8,7 @@ import { encrypt } from '@/lib/encryption';
 import { validateIban } from '@/lib/flexify';
 import { getBalance } from '@/lib/balance-service';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
+import { notifyAdminsPayoutPendingApproval } from '@/lib/admin-notification-hooks';
 import crypto from 'crypto';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { payoutsSepaFrBodySchema } from '@/lib/validation/schemas/integrations';
@@ -174,6 +175,8 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    await notifyAdminsPayoutPendingApproval(payout.id, userId, amountCents, 'SEPA FR');
 
     return NextResponse.json({
       success: true,

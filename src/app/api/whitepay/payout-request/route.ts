@@ -3,6 +3,7 @@ import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '~/prisma/prisma';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
+import { notifyAdminsPayoutPendingApproval } from '@/lib/admin-notification-hooks';
 import {
   createInstantWithdrawal,
   calculateWhitepayFees,
@@ -486,6 +487,13 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    await notifyAdminsPayoutPendingApproval(
+      payout.id,
+      userId,
+      amountCents,
+      `${targetCurrency.toUpperCase()} (${network.toUpperCase()})`,
+    );
 
     return NextResponse.json({
       success: true,

@@ -33,6 +33,7 @@ import { validateAmountCents } from '@/lib/amount-validation';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { flexifyPayoutBodySchema } from '@/lib/validation/schemas/integrations';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
+import { notifyAdminsPayoutPendingApproval } from '@/lib/admin-notification-hooks';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
 
 const payoutRateLimiter = new RateLimiter('PAYOUT_FLEXIFY', RATE_LIMIT_CONFIGS.PAYOUT_REQUEST);
@@ -403,6 +404,7 @@ export async function POST(request: NextRequest) {
           },
         });
         LOG('DB_PAYOUT_CREATED_CARD_PENDING', { payoutId: payout.id });
+        await notifyAdminsPayoutPendingApproval(payout.id, userId, validatedAmount, 'CARD');
         return NextResponse.json({
           success: true,
           autoApproved: false,
@@ -730,6 +732,7 @@ export async function POST(request: NextRequest) {
           },
         });
       LOG('DB_PAYOUT_CREATED_SEPA_PENDING', { payoutId: payoutPending.id });
+      await notifyAdminsPayoutPendingApproval(payoutPending.id, userId, validatedAmount, 'SEPA');
       return NextResponse.json({
         success: true,
         autoApproved: false,

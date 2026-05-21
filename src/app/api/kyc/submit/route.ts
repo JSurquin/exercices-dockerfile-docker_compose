@@ -17,6 +17,7 @@ import { prisma } from '~/prisma/prisma';
 import { emailService } from '@/lib/email';
 import { encrypt } from '@/lib/encryption';
 import { logger } from '@/lib/logger';
+import { notifyAdminsKycSubmitted } from '@/lib/admin-notification-hooks';
 
 /**
  * Mapper les types de documents du frontend vers les types KYCAID
@@ -436,6 +437,8 @@ export async function POST(request: NextRequest) {
     } catch (emailError: any) {
       logger.warn('[KYC SUBMIT] Email sending failed (non-blocking)');
     }
+
+    await notifyAdminsKycSubmitted(userId, kycaidDocumentType);
 
     logger.success('[KYC SUBMIT] KYC submission completed');
 
