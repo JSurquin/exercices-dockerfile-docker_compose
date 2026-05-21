@@ -228,7 +228,7 @@ export const messages: Record<Locale, Messages> = {
     partners: {
       title: "Merci à tous nos partenaires talentueux",
       contactPrefix: "Contactez-nous pour les partenariats :",
-      contactEmail: "business@moonskin.com",
+      contactEmail: "contact@moonskin.fun",
     },
     trade: {
       title: "Vendre mes skins",
@@ -7309,7 +7309,7 @@ export const messages: Record<Locale, Messages> = {
     partners: {
       title: "Thank you to all our talented partners",
       contactPrefix: "Contact us for partnerships:",
-      contactEmail: "business@moonskin.com",
+      contactEmail: "contact@moonskin.fun",
     },
     trade: {
       title: "Sell my skins",
@@ -14389,7 +14389,7 @@ export const messages: Record<Locale, Messages> = {
     partners: {
       title: "感谢所有才华横溢的合作伙伴",
       contactPrefix: "商务合作请联系：",
-      contactEmail: "business@moonskin.com",
+      contactEmail: "contact@moonskin.fun",
     },
     trade: {
       title: "出售我的皮肤",
