@@ -44,12 +44,12 @@ function PartnerAvatar({ src, name }: { src: string | null; name: string }) {
       <img
         src={src}
         alt={name}
-        className="h-9 w-9 rounded-full object-cover ring-2 ring-white/10"
+        className="h-9 w-9 rounded-full object-cover ring-2 ring-border"
       />
     );
   }
   return (
-    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500/20 text-xs font-bold text-orange-400 ring-2 ring-white/10">
+    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500/15 text-xs font-bold text-orange-600 ring-2 ring-border dark:text-orange-400">
       {name.slice(0, 2).toUpperCase()}
     </div>
   );
@@ -60,12 +60,12 @@ function VideoCard({ video }: { video: PartnerVideo }) {
   const thumbUrl = getYoutubeThumbnailUrl(video.youtubeVideoId);
 
   return (
-    <article className="group flex w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/80 shadow-xl transition-all duration-300 hover:border-orange-500/40 hover:shadow-orange-500/10 sm:w-auto">
+    <article className="group flex w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-lg transition-all duration-300 hover:border-orange-500/40 hover:shadow-orange-500/10 sm:w-auto">
       <a
         href={watchUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="relative block aspect-video overflow-hidden"
+        className="relative block aspect-video overflow-hidden bg-muted"
         aria-label={`${video.creatorName} — YouTube`}
       >
         <img
@@ -87,7 +87,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
         </div>
       </a>
 
-      <div className="flex items-center gap-3 border-t border-white/5 bg-zinc-900/90 px-3 py-3">
+      <div className="flex items-center gap-3 border-t border-border bg-muted/40 px-3 py-3 dark:bg-muted/20">
         {video.youtubeChannelUrl ? (
           <a href={video.youtubeChannelUrl} target="_blank" rel="noopener noreferrer">
             <PartnerAvatar src={video.avatarUrl} name={video.creatorName} />
@@ -102,15 +102,15 @@ function VideoCard({ video }: { video: PartnerVideo }) {
               href={video.youtubeChannelUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block truncate text-sm font-semibold text-white hover:text-orange-400"
+              className="block truncate text-sm font-semibold text-foreground hover:text-orange-600 dark:hover:text-orange-400"
             >
               {video.creatorName}
             </a>
           ) : (
-            <p className="truncate text-sm font-semibold text-white">{video.creatorName}</p>
+            <p className="truncate text-sm font-semibold text-foreground">{video.creatorName}</p>
           )}
           {video.subscriberCount && (
-            <p className="text-xs text-zinc-400">{video.subscriberCount}</p>
+            <p className="text-xs text-muted-foreground">{video.subscriberCount}</p>
           )}
         </div>
 
@@ -119,7 +119,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
             href={watchUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-zinc-400 transition-colors hover:text-red-500"
+            className="text-muted-foreground transition-colors hover:text-red-600 dark:hover:text-red-500"
             aria-label="YouTube"
           >
             <Youtube className="h-4 w-4" />
@@ -129,7 +129,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
               href={video.twitterUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-zinc-400 transition-colors hover:text-white"
+              className="text-muted-foreground transition-colors hover:text-foreground"
               aria-label="X"
             >
               <XIcon className="h-3.5 w-3.5" />
@@ -144,10 +144,10 @@ function VideoCard({ video }: { video: PartnerVideo }) {
 function LogoItem({ logo }: { logo: PartnerLogo }) {
   const inner = (
     <>
-      <div className="relative h-14 w-14 overflow-hidden rounded-full border border-white/10 bg-zinc-900 transition-all duration-300 group-hover:border-orange-500/50 group-hover:ring-2 group-hover:ring-orange-500/20">
+      <div className="relative h-14 w-14 overflow-hidden rounded-full border border-border bg-card transition-all duration-300 group-hover:border-orange-500/50 group-hover:ring-2 group-hover:ring-orange-500/20">
         <img src={logo.logoUrl} alt={logo.name} className="h-full w-full object-cover" />
       </div>
-      <span className="max-w-[72px] truncate text-center text-[10px] text-zinc-400 transition-colors group-hover:text-white">
+      <span className="max-w-[72px] truncate text-center text-[10px] text-muted-foreground transition-colors group-hover:text-foreground">
         {logo.name}
       </span>
     </>
@@ -193,9 +193,9 @@ export function PartnersSection() {
   return (
     <section
       id="partners"
-      className="relative overflow-hidden bg-zinc-950 py-20 dark:bg-black"
+      className="relative overflow-hidden bg-muted/30 py-20"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-500/5 via-transparent to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-500/10 via-transparent to-transparent dark:from-orange-500/5" />
 
       <div className="container relative mx-auto px-4">
         <motion.div
@@ -208,14 +208,14 @@ export function PartnersSection() {
           <div className="mb-4 flex justify-center">
             <Heart className="h-8 w-8 text-orange-500" strokeWidth={1.5} />
           </div>
-          <h2 className="text-2xl font-bold uppercase tracking-wide text-white md:text-3xl">
+          <h2 className="text-2xl font-bold uppercase tracking-wide md:text-3xl">
             {t.title}
           </h2>
-          <p className="mt-4 text-sm text-zinc-400 md:text-base">
+          <p className="mt-4 text-sm text-muted-foreground md:text-base">
             {t.contactPrefix}{' '}
             <a
               href={`mailto:${t.contactEmail}`}
-              className="font-medium text-orange-400 hover:text-orange-300"
+              className="font-medium text-orange-600 hover:text-orange-500 dark:text-orange-400 dark:hover:text-orange-300"
             >
               {t.contactEmail}
             </a>
@@ -238,7 +238,7 @@ export function PartnersSection() {
               >
                 <div
                   className={cn(
-                    'flex gap-5 overflow-x-auto pb-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-700',
+                    'flex gap-5 overflow-x-auto pb-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border',
                     'md:grid md:overflow-visible md:pb-0',
                     videos.length >= 3
                       ? 'md:grid-cols-3'
