@@ -37,6 +37,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useSession } from '~/lib/auth-client';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
+import { useAffiliateApplications } from '@/hooks/use-affiliate-applications';
 
 interface NavItem {
   title: string;
@@ -60,6 +63,22 @@ export function AdminMobileNav() {
   const { data: session } = useSession();
   const { messages } = useLocale();
   const t = messages.adminNav;
+  const { pendingCount: affiliatePendingCount } = useAffiliateApplications();
+
+  const { data: pendingCounts } = useQuery<{
+    pendingApprovals: number;
+    kycPending: number;
+    sepaPending: number;
+  }>({
+    queryKey: queryKeys.adminPendingCounts,
+    queryFn: async () => {
+      const res = await fetch('/api/admin/pending-counts');
+      if (!res.ok) throw new Error('Failed to fetch pending counts');
+      return res.json();
+    },
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
 
   const navigationGroups: NavGroup[] = [
     {
@@ -74,14 +93,15 @@ export function AdminMobileNav() {
       items: [
         { title: t.items.users, href: '/admin/dashboard?tab=users', icon: Users },
         { title: t.items.trades, href: '/admin/dashboard?tab=trades', icon: ShoppingCart },
-        { title: t.items.payouts, href: '/admin/dashboard?tab=payouts', icon: CreditCard, badge: 5, badgeVariant: 'destructive' as const },
-        { title: t.items.sepaRequests ?? 'SEPA France', href: '/admin/sepa-requests', icon: Landmark, badgeVariant: 'destructive' as const },
-        { title: t.items.kyc, href: '/admin/dashboard?tab=kyc', icon: Shield, badge: 3, badgeVariant: 'destructive' as const },
+        { title: t.items.payouts, href: '/admin/dashboard?tab=payouts', icon: CreditCard, badge: pendingCounts?.pendingApprovals, badgeVariant: 'destructive' as const },
+        { title: t.items.sepaRequests ?? 'SEPA France', href: '/admin/sepa-requests', icon: Landmark, badge: pendingCounts?.sepaPending, badgeVariant: 'destructive' as const },
+        { title: t.items.kyc, href: '/admin/dashboard?tab=kyc', icon: Shield, badge: pendingCounts?.kycPending, badgeVariant: 'destructive' as const },
       ],
     },
     {
       title: t.groups.affiliation,
       items: [
+        { title: t.items.applications, href: '/admin/affiliate-applications', icon: FileDown, badge: affiliatePendingCount, badgeVariant: 'destructive' as const },
         { title: t.items.affiliates, href: '/admin/dashboard?tab=affiliates', icon: UserCheck },
         { title: t.items.commissions, href: '/admin/dashboard?tab=commissions', icon: Percent },
         { title: t.items.performance, href: '/admin/dashboard?tab=affiliate-performance', icon: TrendingUp },
@@ -229,6 +249,10 @@ export function AdminMobileNav() {
                     {group.items.map((item, itemIndex) => {
                       const Icon = item.icon;
                       const active = isActive(item.href);
+                      const itemBadge =
+                        item.href === '/admin/affiliate-applications' && affiliatePendingCount > 0
+                          ? affiliatePendingCount
+                          : item.badge;
                       
                       return (
                         <Link key={itemIndex} href={item.href} onClick={closeMenu}>
@@ -248,12 +272,12 @@ export function AdminMobileNav() {
                               )}
                             />
                             <span className="flex-1 text-sm font-medium">{item.title}</span>
-                            {item.badge && (
+                            {itemBadge && (typeof itemBadge === 'number' ? itemBadge > 0 : itemBadge) && (
                               <Badge
                                 variant={item.badgeVariant || 'default'}
                                 className="h-5 px-2 text-xs"
                               >
-                                {item.badge}
+                                {itemBadge}
                               </Badge>
                             )}
                             {active && (

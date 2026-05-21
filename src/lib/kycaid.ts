@@ -1108,6 +1108,17 @@ export async function updateUserKycStatus(
   } catch (emailError: any) {
     logger.error(`[KYCAID] Failed to send KYC notification email (non-blocking)`, emailError);
   }
+
+  try {
+    const { notifyAdminsKycResolved } = await import('@/lib/admin-notification-hooks');
+    if (status === 'VERIFIED') {
+      await notifyAdminsKycResolved(userId, 'VERIFIED');
+    } else if (status === 'REJECTED') {
+      await notifyAdminsKycResolved(userId, 'REJECTED', rejectionReason);
+    }
+  } catch (notifyError) {
+    logger.warn('[KYCAID] Admin KYC notification failed (non-blocking)', notifyError);
+  }
 }
 
 // =============================================================================

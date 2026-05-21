@@ -15,6 +15,7 @@ import { safeParseJson } from '@/lib/validation/helpers';
 import { skinplaceCreateTradeBodySchema } from '@/lib/validation/schemas/integrations';
 import { verifyAndPriceItems } from '@/lib/skinplace-price-verifier';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { notifyAdminsNewTrade } from '@/lib/admin-notification-hooks';
 
 interface CreateTradeBody {
   steam_id: string;
@@ -382,6 +383,8 @@ export async function POST(request: NextRequest) {
     });
 
     await TradeHooks.onTradeCreated(user.id, trade.id);
+
+    await notifyAdminsNewTrade(trade.id, user.id, serverGrossCentimes);
 
     const notificationEmail = (user as { contactEmail?: string | null }).contactEmail || user.email;
     if (notificationEmail) {
