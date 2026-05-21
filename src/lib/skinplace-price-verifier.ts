@@ -50,7 +50,7 @@ export async function verifyAndPriceItems(
   const publicKey = process.env.SKINPLACE_API_KEY_PUBLIC;
 
   if (!privateKey || !publicKey) {
-    return { ok: false, error: 'Configuration API Skinplace manquante', code: 'CONFIG_ERROR' };
+    return { ok: false, error: 'Configuration API manquante', code: 'CONFIG_ERROR' };
   }
 
   const signature = generateSkinplaceSignature(steamId, privateKey);
@@ -79,7 +79,7 @@ export async function verifyAndPriceItems(
       console.error(`[PRICE-VERIFIER] Skinplace API error: ${response.status}`);
       return {
         ok: false,
-        error: `Erreur Skinplace (${response.status}): impossible de vérifier les prix`,
+        error: `Erreur API (${response.status}): impossible de vérifier les prix`,
         code: 'API_ERROR',
       };
     }
@@ -89,7 +89,7 @@ export async function verifyAndPriceItems(
     console.error('[PRICE-VERIFIER] Fetch failed:', err);
     return {
       ok: false,
-      error: 'Impossible de contacter Skinplace pour vérifier les prix',
+      error: 'Impossible de contacter notre API pour vérifier les prix',
       code: 'API_ERROR',
     };
   }
@@ -97,7 +97,7 @@ export async function verifyAndPriceItems(
   if (!data.inventory || !Array.isArray(data.inventory)) {
     return {
       ok: false,
-      error: 'Inventaire Skinplace vide ou inaccessible',
+      error: 'Inventaire vide ou inaccessible',
       code: 'API_ERROR',
     };
   }

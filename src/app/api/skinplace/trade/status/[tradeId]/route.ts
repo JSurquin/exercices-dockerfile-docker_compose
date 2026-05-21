@@ -229,7 +229,7 @@ export async function GET(
           balanceCredited = false;
         }
 
-        const detailMsg = `Skinplace: ${skinplaceDebug.effectiveSource} (steamtrade=${skinplaceDebug.steamtradeStatus ?? '?'}, payment=${skinplaceDebug.paymentStatus ?? '?'})`;
+        const detailMsg = `Source: ${skinplaceDebug.effectiveSource} (steamtrade=${skinplaceDebug.steamtradeStatus ?? '?'}, payment=${skinplaceDebug.paymentStatus ?? '?'})`;
 
         return NextResponse.json({
           success: true,
@@ -244,14 +244,14 @@ export async function GET(
             balanceCredited,
             message: balanceCredited
               ? `Statut mis a jour — fonds libérés et solde crédité`
-              : `Statut mis a jour depuis Skinplace — ${detailMsg}`,
+              : `Statut mis a jour — ${detailMsg}`,
           },
         });
       }
 
-      // Résolu côté Skinplace mais pas d'évolution autorisée
+      // Résolu côté API externe mais pas d'évolution autorisée
       logger.info(`[STATUS] No progression allowed: local="${oldStatus}" skinplace="${newStatus}"`);
-      const noMoveMsg = `Statut inchangé — local: ${trade.status}, Skinplace->${newStatus} (${skinplaceDebug.effectiveSource})`;
+      const noMoveMsg = `Statut inchangé — local: ${trade.status}, distant: ${newStatus} (${skinplaceDebug.effectiveSource})`;
       return NextResponse.json({
         success: true,
         trade: {
@@ -278,7 +278,7 @@ export async function GET(
         skinplaceStatus: null,
         skinplaceDebug: null,
         message:
-          'Statut Skinplace non disponible (vérifiez SKINPLACE_API_KEY et skinplaceToken / order_id). Statut local conservé.',
+          'Statut externe non disponible. Statut local conservé.',
       },
     });
 

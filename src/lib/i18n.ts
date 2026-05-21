@@ -42,7 +42,7 @@ export const messages: Record<Locale, Messages> = {
       instant: "Estimation instantanée",
       secure: "Paiements sécurisés", 
       transparent: "Frais transparents",
-      instantDesc: "Prix en temps réel via notre API Skinplace intégrée",
+      instantDesc: "Prix en temps réel via notre API intégrée",
       secureDesc: "SEPA, crypto, et KYC obligatoire pour votre sécurité",
       transparentDesc: "Seulement {rate}% de frais de cashout, pas de frais cachés",
     },
@@ -97,8 +97,8 @@ export const messages: Record<Locale, Messages> = {
         estimation: {
           category: "Estimation",
           title: "Prix en temps réel",
-          description: "API Skinplace intégrée pour des estimations précises et mises à jour en continu.",
-          highlights: ["API Skinplace", "Temps réel", "Estimation précise"],
+          description: "Notre API intégrée pour des estimations précises et mises à jour en continu.",
+          highlights: ["Notre API", "Temps réel", "Estimation précise"],
           badge: "Nouveau"
         },
         support: {
@@ -158,7 +158,7 @@ export const messages: Record<Locale, Messages> = {
         estimation: {
           title: "Estimation instantanée",
           description: "Notre IA analyse vos skins et vous donne le prix en temps réel.",
-          details: ["Prix basés sur Skinplace API", "Mise à jour en temps réel", "Estimation précise"]
+          details: ["Prix basés sur notre API", "Mise à jour en temps réel", "Estimation précise"]
         },
         kyc: {
           title: "Vérification KYC",
@@ -593,13 +593,13 @@ export const messages: Record<Locale, Messages> = {
         },
         questions: {
           howItWorks: "Comment fonctionne MoonSkin ?",
-          howItWorksAnswer: "MoonSkin est une plateforme qui vous permet de vendre vos skins CS2 contre de l'argent réel. Vous connectez votre compte Steam, ajoutez votre Trade Link, nous estimons vos skins en temps réel via l'API Skinplace, puis nous créons un trade. Après le trade hold Steam de 7 jours, vous recevez automatiquement votre paiement.",
+          howItWorksAnswer: "MoonSkin est une plateforme qui vous permet de vendre vos skins CS2 contre de l'argent réel. Vous connectez votre compte Steam, ajoutez votre Trade Link, nous estimons vos skins en temps réel via notre API, puis nous créons un trade. Après le trade hold Steam de 7 jours, vous recevez automatiquement votre paiement.",
           fees: "Quels sont les frais ?",
           feesAnswer: "Nous appliquons seulement {rate}% de frais de cashout sur le montant brut de votre vente. Des frais de réseau peuvent s'appliquer selon votre méthode de paiement (environ 20€ pour SEPA, variable pour les cryptomonnaies). Aucun frais caché !",
           processTime: "Combien de temps prend le processus ?",
           processTimeAnswer: "Le processus complet prend environ 7-9 jours : estimation instantanée, création du trade (quelques minutes), trade hold Steam obligatoire (7 jours), puis paiement automatique (24-48h). Vous pouvez suivre l'état en temps réel sur votre dashboard.",
           priceCalculation: "Comment sont calculés les prix des skins ?",
-          priceCalculationAnswer: "Nos prix sont basés sur l'API Skinplace qui agrège les données de marché en temps réel. Les prix sont mis à jour toutes les 5 minutes pour refléter les fluctuations du marché. Nous utilisons la moyenne des prix de vente récents.",
+          priceCalculationAnswer: "Nos prix sont basés sur notre API qui agrège les données de marché en temps réel. Les prix sont mis à jour toutes les 5 minutes pour refléter les fluctuations du marché. Nous utilisons la moyenne des prix de vente récents.",
           whyKyc: "Pourquoi dois-je faire un KYC ?",
           whyKycAnswer: "Le KYC (Know Your Customer) est obligatoire selon la réglementation européenne pour lutter contre le blanchiment d'argent. Il nous permet de vérifier votre identité et de sécuriser tous les paiements. Le processus est simple et prend généralement 24-48h.",
           dataSecurity: "Mes données sont-elles sécurisées ?",
@@ -5164,7 +5164,7 @@ export const messages: Record<Locale, Messages> = {
         "Notre équipe presse prépare les prochaines annonces. En attendant, écrivez-nous pour toute demande média ou interview.",
       aboutTitle: "À propos de MoonSkin",
       aboutDescription1: "MoonSkin est la première plateforme française dédiée au trading sécurisé de skins Counter-Strike 2. Fondée en 2024, l'entreprise révolutionne l'écosystème du gaming en permettant aux joueurs de monétiser facilement leurs inventaires virtuels.",
-      aboutDescription2: "Grâce à des partenariats stratégiques avec Skinplace pour l'estimation et Qonto pour les paiements SEPA, MoonSkin garantit transparence, sécurité et conformité réglementaire. La plateforme respecte scrupuleusement les obligations KYC et anti-blanchiment.",
+      aboutDescription2: "Grâce à des partenariats stratégiques pour l'estimation et avec Qonto pour les paiements SEPA, MoonSkin garantit transparence, sécurité et conformité réglementaire. La plateforme respecte scrupuleusement les obligations KYC et anti-blanchiment.",
       sector: "Secteur d'activité",
       sectorValue: "Gaming, Fintech, Esport",
       founded: "Fondation",
@@ -5228,7 +5228,7 @@ export const messages: Record<Locale, Messages> = {
         authentication: "Authentification",
         user: "Utilisateur",
         trading: "Trading",
-        skinplace: "Skinplace"
+        skinplace: "Estimation & inventaire"
       },
       endpoints: {
         steamAuth: "Authentification via Steam OpenID",
@@ -5240,7 +5240,7 @@ export const messages: Record<Locale, Messages> = {
         createTrade: "Créer un trade de vente",
         getInventory: "Inventaire Steam utilisateur",
         getItems: "Liste des items disponibles",
-        getBalance: "Solde Skinplace",
+        getBalance: "Solde plateforme",
         purchaseItems: "Acheter des items"
       },
       statusCodesLabels: {
@@ -7065,7 +7065,7 @@ export const messages: Record<Locale, Messages> = {
         instant: "Instant estimation",
         secure: "Secure payments",
         transparent: "Transparent fees",
-        instantDesc: "Real-time pricing via our integrated Skinplace API",
+        instantDesc: "Real-time pricing via our integrated API",
         secureDesc: "SEPA, crypto, and mandatory KYC for your security",
         transparentDesc: "Only {rate}% cashout fees, no hidden costs",
       },
@@ -7120,8 +7120,8 @@ export const messages: Record<Locale, Messages> = {
         estimation: {
           category: "Estimation",
           title: "Real-time pricing",
-          description: "Integrated Skinplace API for accurate estimates and continuous updates.",
-          highlights: ["Skinplace API", "Real-time", "Accurate estimation"],
+          description: "Our integrated API for accurate estimates and continuous updates.",
+          highlights: ["Our API", "Real-time", "Accurate estimation"],
           badge: "New"
         },
         support: {
@@ -7181,7 +7181,7 @@ export const messages: Record<Locale, Messages> = {
         estimation: {
           title: "Instant estimation",
           description: "Our AI analyzes your skins and gives you the price in real time.",
-          details: ["Skinplace API-based prices", "Real-time updates", "Accurate estimation"]
+          details: ["Prices based on our API", "Real-time updates", "Accurate estimation"]
         },
         kyc: {
           title: "KYC verification",
@@ -7615,13 +7615,13 @@ export const messages: Record<Locale, Messages> = {
         },
         questions: {
           howItWorks: "How does MoonSkin work?",
-          howItWorksAnswer: "MoonSkin is a platform that allows you to sell your CS2 skins for real money. You connect your Steam account, add your Trade Link, we estimate your skins in real time via the Skinplace API, then we create a trade. After the 7-day Steam trade hold, you automatically receive your payment.",
+          howItWorksAnswer: "MoonSkin is a platform that allows you to sell your CS2 skins for real money. You connect your Steam account, add your Trade Link, we estimate your skins in real time via our API, then we create a trade. After the 7-day Steam trade hold, you automatically receive your payment.",
           fees: "What are the fees?",
           feesAnswer: "We only apply {rate}% cashout fees on the gross amount of your sale. Network fees may apply depending on your payment method (around €20 for SEPA, variable for cryptocurrencies). No hidden fees!",
           processTime: "How long does the process take?",
           processTimeAnswer: "The complete process takes about 7-9 days: instant estimation, trade creation (a few minutes), mandatory Steam trade hold (7 days), then automatic payment (24-48h). You can track the status in real time on your dashboard.",
           priceCalculation: "How are skin prices calculated?",
-          priceCalculationAnswer: "Our prices are based on the Skinplace API which aggregates real-time market data. Prices are updated every 5 minutes to reflect market fluctuations. We use the average of recent sale prices.",
+          priceCalculationAnswer: "Our prices are based on our API which aggregates real-time market data. Prices are updated every 5 minutes to reflect market fluctuations. We use the average of recent sale prices.",
           whyKyc: "Why do I need to do KYC?",
           whyKycAnswer: "KYC (Know Your Customer) is mandatory under European regulations to combat money laundering. It allows us to verify your identity and secure all payments. The process is simple and usually takes 24-48h.",
           dataSecurity: "Is my data secure?",
@@ -12186,7 +12186,7 @@ export const messages: Record<Locale, Messages> = {
         "Our press team is preparing upcoming announcements. In the meantime, email us for any media request or interview.",
       aboutTitle: "About MoonSkin",
       aboutDescription1: "MoonSkin is the first French platform dedicated to secure Counter-Strike 2 skin trading. Founded in 2024, the company revolutionizes the gaming ecosystem by allowing players to easily monetize their virtual inventories.",
-      aboutDescription2: "Through strategic partnerships with Skinplace for estimation and Qonto for SEPA payments, MoonSkin guarantees transparency, security and regulatory compliance. The platform strictly respects KYC and anti-money laundering obligations.",
+      aboutDescription2: "Through strategic partnerships for estimation and with Qonto for SEPA payments, MoonSkin guarantees transparency, security and regulatory compliance. The platform strictly respects KYC and anti-money laundering obligations.",
       sector: "Industry",
       sectorValue: "Gaming, Fintech, Esport",
       founded: "Founded",
@@ -12250,7 +12250,7 @@ export const messages: Record<Locale, Messages> = {
         authentication: "Authentication",
         user: "User",
         trading: "Trading",
-        skinplace: "Skinplace"
+        skinplace: "Estimation & inventory"
       },
       endpoints: {
         steamAuth: "Steam OpenID authentication",
@@ -12262,7 +12262,7 @@ export const messages: Record<Locale, Messages> = {
         createTrade: "Create sell trade",
         getInventory: "Steam user inventory",
         getItems: "List of available items",
-        getBalance: "Skinplace balance",
+        getBalance: "Platform balance",
         purchaseItems: "Purchase items"
       },
       statusCodesLabels: {
@@ -14087,7 +14087,7 @@ export const messages: Record<Locale, Messages> = {
         instant: "即时估价",
         secure: "安全支付",
         transparent: "透明费用",
-        instantDesc: "通过集成的Skinplace API实时定价",
+        instantDesc: "通过我们集成的 API 实时定价",
         secureDesc: "SEPA、加密货币和强制KYC保障您的安全",
         transparentDesc: "仅收取{rate}%提现费，无隐藏费用",
       },
@@ -14142,8 +14142,8 @@ export const messages: Record<Locale, Messages> = {
         estimation: {
           category: "估价",
           title: "实时定价",
-          description: "集成Skinplace API，提供准确估价和持续更新。",
-          highlights: ["Skinplace API", "实时", "准确估价"],
+          description: "我们集成的 API，提供准确估价和持续更新。",
+          highlights: ["我们的 API", "实时", "准确估价"],
           badge: "新功能"
         },
         support: {
@@ -14203,7 +14203,7 @@ export const messages: Record<Locale, Messages> = {
         estimation: {
           title: "即时估价",
           description: "我们的AI分析您的皮肤并实时给出价格。",
-          details: ["基于Skinplace API的价格", "实时更新", "准确估价"]
+          details: ["基于我们 API 的价格", "实时更新", "准确估价"]
         },
         kyc: {
           title: "KYC验证",
@@ -14632,13 +14632,13 @@ export const messages: Record<Locale, Messages> = {
         },
         questions: {
           howItWorks: "CashTrade如何工作？",
-          howItWorksAnswer: "CashTrade是一个允许您将CS2皮肤出售换取真钱的平台。您连接Steam账户，添加交易链接，我们通过Skinplace API实时估价您的皮肤，然后创建交易。在7天Steam交易锁定后，您会自动收到付款。",
+          howItWorksAnswer: "CashTrade是一个允许您将CS2皮肤出售换取真钱的平台。您连接Steam账户，添加交易链接，我们通过我们的 API 实时估价您的皮肤，然后创建交易。在7天Steam交易锁定后，您会自动收到付款。",
           fees: "费用是多少？",
           feesAnswer: "我们仅对您出售的总金额收取0.5%的提现费。根据您的支付方式可能会产生网络费（SEPA约20€，加密货币费用可变）。无隐藏费用！",
           processTime: "整个流程需要多长时间？",
           processTimeAnswer: "完整流程需要大约7-9天：即时估价，创建交易（几分钟），强制Steam交易锁定（7天），然后自动付款（24-48小时）。您可以在控制台实时跟踪状态。",
           priceCalculation: "皮肤价格如何计算？",
-          priceCalculationAnswer: "我们的价格基于Skinplace API，该API汇总实时市场数据。价格每5分钟更新一次以反映市场波动。我们使用最近销售价格的平均值。",
+          priceCalculationAnswer: "我们的价格基于我们的 API，该 API 汇总实时市场数据。价格每5分钟更新一次以反映市场波动。我们使用最近销售价格的平均值。",
           whyKyc: "为什么我需要进行KYC？",
           whyKycAnswer: "根据欧洲法规，KYC（了解您的客户）是打击洗钱的强制要求。它允许我们验证您的身份并确保所有付款的安全。流程简单，通常需要24-48小时。",
           dataSecurity: "我的数据安全吗？",
@@ -18905,7 +18905,7 @@ export const messages: Record<Locale, Messages> = {
       noPressReleasesBody: "新闻团队正在准备后续公告。如有媒体报道或采访需求，欢迎发邮件与我们联系。",
       aboutTitle: "关于 MoonSkin",
       aboutDescription1: "MoonSkin 是首个专注于安全 Counter-Strike 2 皮肤交易的法国平台。成立于 2024 年，该公司通过让玩家轻松变现虚拟库存来革命化游戏生态系统。",
-      aboutDescription2: "通过与 Skinplace 的估价战略合作伙伴关系和 Qonto 的 SEPA 支付，MoonSkin 保证透明度、安全性和监管合规性。该平台严格遵守 KYC 和反洗钱义务。",
+      aboutDescription2: "通过与估价战略合作伙伴关系和 Qonto 的 SEPA 支付，MoonSkin 保证透明度、安全性和监管合规性。该平台严格遵守 KYC 和反洗钱义务。",
       sector: "行业",
       sectorValue: "游戏、金融科技、电竞",
       founded: "成立",
@@ -18969,7 +18969,7 @@ export const messages: Record<Locale, Messages> = {
         authentication: "身份验证",
         user: "用户",
         trading: "交易",
-        skinplace: "Skinplace"
+        skinplace: "估价与库存"
       },
       endpoints: {
         steamAuth: "Steam OpenID 身份验证",
@@ -18981,7 +18981,7 @@ export const messages: Record<Locale, Messages> = {
         createTrade: "创建出售交易",
         getInventory: "Steam 用户库存",
         getItems: "可用物品列表",
-        getBalance: "Skinplace 余额",
+        getBalance: "平台余额",
         purchaseItems: "购买物品"
       },
       statusCodesLabels: {

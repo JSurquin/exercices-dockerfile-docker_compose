@@ -47,7 +47,7 @@ class SkinplaceService {
     useCache = false
   ): Promise<T> {
     if (!this.config.apiKey) {
-      throw new Error('SKINPLACE_API_KEY est requis pour utiliser l\'API Skinplace');
+      throw new Error('SKINPLACE_API_KEY est requis pour utiliser l\'API');
     }
     const cacheKey = `${endpoint}:${JSON.stringify(options.body || {})}`;
 
@@ -96,7 +96,7 @@ class SkinplaceService {
           const errorData = await response.json().catch(() => ({}));
           logger.error(`Skinplace API error (${response.status})`, errorData);
           throw new Error(
-            `Skinplace API Error: ${response.status} ${response.statusText} - ${errorData.message || 'Unknown error'}`
+            `Erreur API: ${response.status} ${response.statusText} - ${errorData.message || 'Unknown error'}`
           );
         }
 

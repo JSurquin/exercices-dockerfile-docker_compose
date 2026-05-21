@@ -285,7 +285,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           success: false, 
-          error: `Erreur Skinplace: ${(errorData as { message?: string }).message || 'Erreur lors de la création du trade'}` 
+          error: `Erreur: ${(errorData as { message?: string }).message || 'Erreur lors de la création du trade'}`
         },
         { status: skinplaceResponse.status }
       );

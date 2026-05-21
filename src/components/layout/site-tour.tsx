@@ -30,9 +30,9 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('👋 Bienvenue sur MoonSkin !', '👋 Welcome to MoonSkin!', '👋 欢迎来到 MoonSkin！'),
         description: t(
-          'MoonSkin est la plateforme la plus rapide pour <strong>vendre vos skins CS2 contre de l\'argent réel</strong>. Ce guide vous emmène page par page pour découvrir chaque fonctionnalité — utilisez <strong>Précédent / Suivant</strong> pour naviguer.',
-          'MoonSkin is the fastest platform to <strong>sell your CS2 skins for real money</strong>. This guide takes you page by page through every feature — use <strong>Back / Next</strong> to navigate.',
-          'MoonSkin 是最快速出售 CS2 皮肤换取真实货币的平台。本指南将带您逐页了解每项功能——使用<strong>上一步/下一步</strong>导航。'
+          'MoonSkin est la plateforme la plus rapide pour <strong>vendre vos skins CS2 contre de l\'argent réel</strong>. Ce guide vous emmène page par page pour découvrir chaque fonctionnalité. Utilisez <strong>Précédent / Suivant</strong> pour naviguer.',
+          'MoonSkin is the fastest platform to <strong>sell your CS2 skins for real money</strong>. This guide takes you page by page through every feature. Use <strong>Back / Next</strong> to navigate.',
+          'MoonSkin 是最快速出售 CS2 皮肤换取真实货币的平台。本指南将带您逐页了解每项功能。使用<strong>上一步/下一步</strong>导航。'
         ),
         align: 'center',
       },
@@ -42,9 +42,9 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('💰 Vendre vos skins', '💰 Sell your skins', '💰 出售皮肤'),
         description: t(
-          'Point d\'entrée principal : obtenez une <strong>estimation instantanée</strong> de vos skins via Skinplace, sélectionnez les items à vendre et confirmez. Le paiement arrive sous <strong>7 jours</strong> après le trade hold Steam.',
-          'Main entry point: get an <strong>instant estimate</strong> of your skins via Skinplace, select items to sell and confirm. Payment arrives within <strong>7 days</strong> after the Steam trade hold.',
-          '主要入口：通过 Skinplace 即时估算皮肤价值，选择要出售的物品并确认。Steam 交易保留期后 <strong>7 天内</strong>付款。'
+          'Point d\'entrée principal : obtenez une <strong>estimation instantanée</strong> de vos skins via notre API, sélectionnez les items à vendre et confirmez. Le paiement arrive sous <strong>7 jours</strong> après le trade hold Steam.',
+          'Main entry point: get an <strong>instant estimate</strong> of your skins via our API, select items to sell and confirm. Payment arrives within <strong>7 days</strong> after the Steam trade hold.',
+          '主要入口：通过我们的 API 即时估算皮肤价值，选择要出售的物品并确认。Steam 交易保留期后 <strong>7 天内</strong>付款。'
         ),
         side: 'bottom',
       },
@@ -104,9 +104,9 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('📋 Étapes du processus', '📋 Process steps', '📋 流程步骤'),
         description: t(
-          'La barre de progression indique où vous en êtes : <strong>Inventaire</strong> → <strong>Trade</strong> → <strong>Confirmation</strong>. Chaque étape validée reste cochée ; vous pouvez voir votre avancement d\'un seul coup d\'œil.',
-          'The progress bar shows where you are: <strong>Inventory</strong> → <strong>Trade</strong> → <strong>Confirmation</strong>. Each completed step stays checked; you can see your progress at a glance.',
-          '进度条显示您的位置：<strong>库存</strong>→<strong>交易</strong>→<strong>确认</strong>。每个完成的步骤保持勾选；一眼即可看到您的进度。'
+          'La barre de progression indique où vous en êtes : <strong>Inventaire</strong>, puis <strong>Trade</strong>, puis <strong>Confirmation</strong>. Chaque étape validée reste cochée pour voir votre avancement d\'un seul coup d\'œil.',
+          'The progress bar shows where you are: <strong>Inventory</strong>, then <strong>Trade</strong>, then <strong>Confirmation</strong>. Each completed step stays checked so you can see your progress at a glance.',
+          '进度条显示您的位置：<strong>库存</strong>，然后<strong>交易</strong>，最后<strong>确认</strong>。每个完成的步骤保持勾选，一眼即可看到您的进度。'
         ),
         side: 'bottom',
       },
@@ -116,9 +116,9 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('🔗 Lien de trade Steam', '🔗 Steam Trade Link', '🔗 Steam 交易链接'),
         description: t(
-          'Avant de sélectionner des skins, renseignez votre <strong>lien de trade Steam</strong>. Il est nécessaire pour que notre bot puisse recevoir vos items. Vous le trouvez dans vos paramètres Steam → Inventaire → Liens de trade.',
-          'Before selecting skins, enter your <strong>Steam trade link</strong>. It is required so our bot can receive your items. Find it in Steam settings → Inventory → Trade links.',
-          '选择皮肤前，请输入您的<strong>Steam 交易链接</strong>。这是我们的机器人接收您物品所必需的。在 Steam 设置 → 库存 → 交易链接中找到它。'
+          'Avant de sélectionner des skins, renseignez votre <strong>lien de trade Steam</strong>. Il est nécessaire pour que notre bot puisse recevoir vos items. Vous le trouvez dans vos paramètres Steam, section Inventaire, Liens de trade.',
+          'Before selecting skins, enter your <strong>Steam trade link</strong>. It is required so our bot can receive your items. Find it in Steam settings, under Inventory, Trade links.',
+          '选择皮肤前，请输入您的<strong>Steam 交易链接</strong>。这是我们的机器人接收您物品所必需的。在 Steam 设置的库存部分，交易链接中找到它。'
         ),
         side: 'bottom',
       },
@@ -128,9 +128,9 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('🎒 Votre inventaire CS2', '🎒 Your CS2 Inventory', '🎒 您的 CS2 库存'),
         description: t(
-          'Votre inventaire Steam se charge ici. Cochez les skins que vous souhaitez vendre — le <strong>prix estimé</strong> s\'affiche pour chaque item via l\'API Skinplace. Une fois votre sélection faite, cliquez sur <em>Continuer</em>.',
-          'Your Steam inventory loads here. Check the skins you want to sell — the <strong>estimated price</strong> appears for each item via the Skinplace API. Once selected, click <em>Continue</em>.',
-          '您的 Steam 库存在此加载。勾选要出售的皮肤——每件物品通过 Skinplace API 显示<strong>估计价格</strong>。选好后点击<em>继续</em>。'
+          'Votre inventaire Steam se charge ici. Cochez les skins que vous souhaitez vendre : le <strong>prix estimé</strong> s\'affiche pour chaque item via notre API. Une fois votre sélection faite, cliquez sur <em>Continuer</em>.',
+          'Your Steam inventory loads here. Check the skins you want to sell: the <strong>estimated price</strong> appears for each item via our API. Once selected, click <em>Continue</em>.',
+          '您的 Steam 库存在此加载。勾选要出售的皮肤：每件物品通过我们的 API 显示<strong>估计价格</strong>。选好后点击<em>继续</em>。'
         ),
         side: 'top',
       },
@@ -216,9 +216,9 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('💠 Votre solde de fragments', '💠 Your Fragment Balance', '💠 您的碎片余额'),
         description: t(
-          'Cette carte affiche votre <strong>solde de fragments</strong> et votre progression vers le prochain concours accessible. Les fragments ne sont <strong>pas transférables</strong> — ils ne servent qu\'ici.',
-          'This card displays your <strong>fragment balance</strong> and your progress toward the next accessible giveaway. Fragments are <strong>not transferable</strong> — they are only used here.',
-          '此卡片显示您的<strong>碎片余额</strong>以及您向下一个可参与抽奖的进度。碎片<strong>不可转让</strong>——仅在此处使用。'
+          'Cette carte affiche votre <strong>solde de fragments</strong> et votre progression vers le prochain concours accessible. Les fragments ne sont <strong>pas transférables</strong> et ne servent qu\'ici.',
+          'This card displays your <strong>fragment balance</strong> and your progress toward the next accessible giveaway. Fragments are <strong>not transferable</strong> and are only used here.',
+          '此卡片显示您的<strong>碎片余额</strong>以及您向下一个可参与抽奖的进度。碎片<strong>不可转让</strong>，仅在此处使用。'
         ),
         side: 'bottom',
       },
@@ -228,9 +228,9 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('📖 Comment ça marche ?', '📖 How does it work?', '📖 如何运作？'),
         description: t(
-          '<strong>3 règles simples :</strong> 1) Vendez des skins → gagnez des fragments. 2) Dépensez des fragments → obtenez des entrées dans un concours. 3) Le tirage est <strong>aléatoire déterministe</strong> (seed loggué) — les résultats sont publics et vérifiables.',
-          '<strong>3 simple rules:</strong> 1) Sell skins → earn fragments. 2) Spend fragments → get entries in a giveaway. 3) The draw is <strong>deterministic random</strong> (logged seed) — results are public and verifiable.',
-          '<strong>3条简单规则：</strong>1) 出售皮肤→赚取碎片。2) 花费碎片→获得抽奖入场资格。3) 抽奖为<strong>确定性随机</strong>（记录种子）——结果公开可验证。'
+          'Vendez des skins pour gagner des fragments, puis dépensez vos fragments pour obtenir des entrées dans un concours. Le tirage est <strong>aléatoire déterministe</strong> (seed loggué) et les résultats sont publics et vérifiables.',
+          'Sell skins to earn fragments, then spend your fragments to get entries in a giveaway. The draw is <strong>deterministic random</strong> (logged seed) and results are public and verifiable.',
+          '出售皮肤赚取碎片，然后花费碎片获得抽奖入场资格。抽奖为<strong>确定性随机</strong>（记录种子），结果公开可验证。'
         ),
         side: 'bottom',
       },
@@ -240,9 +240,9 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('🗂️ Concours actifs / terminés', '🗂️ Active / ended giveaways', '🗂️ 进行中/已结束的抽奖'),
         description: t(
-          'L\'onglet <strong>Actifs</strong> liste les concours en cours — cliquez sur une carte pour voir le détail, le nombre de participants et entrer vos fragments. L\'onglet <strong>Terminés</strong> affiche les anciens résultats, l\'onglet <strong>Mes participations</strong> résume vos entrées passées.',
-          'The <strong>Active</strong> tab lists ongoing giveaways — click a card for details, participant count and to enter your fragments. The <strong>Ended</strong> tab shows past results, the <strong>My Entries</strong> tab summarizes your past participations.',
-          '<strong>进行中</strong>标签列出当前抽奖——点击卡片查看详情、参与人数并输入您的碎片。<strong>已结束</strong>标签显示过去的结果，<strong>我的参与</strong>标签汇总您的历史参与。'
+          'L\'onglet <strong>Actifs</strong> liste les concours en cours. Cliquez sur une carte pour voir le détail, le nombre de participants et entrer vos fragments. L\'onglet <strong>Terminés</strong> affiche les anciens résultats et l\'onglet <strong>Mes participations</strong> résume vos entrées passées.',
+          'The <strong>Active</strong> tab lists ongoing giveaways. Click a card for details, participant count and to enter your fragments. The <strong>Ended</strong> tab shows past results and the <strong>My Entries</strong> tab summarizes your past participations.',
+          '<strong>进行中</strong>标签列出当前抽奖。点击卡片查看详情、参与人数并输入您的碎片。<strong>已结束</strong>标签显示过去的结果，<strong>我的参与</strong>标签汇总您的历史参与。'
         ),
         side: 'top',
       },
@@ -292,9 +292,9 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('🔐 KYC & méthode de paiement', '🔐 KYC & Payment Method', '🔐 KYC 与支付方式'),
         description: t(
-          'Avant de retirer vos gains, vous devez valider votre identité (<strong>KYC</strong>) via la page dédiée. Deux options de retrait : <strong>SEPA</strong> (virement bancaire, 1–3 jours ouvrés) ou <strong>crypto</strong> (rapide, via Binance). Configurez votre méthode dans l\'onglet <em>Paramètres</em> du dashboard.',
-          'Before withdrawing your earnings, you must verify your identity (<strong>KYC</strong>) on the dedicated page. Two withdrawal options: <strong>SEPA</strong> (bank transfer, 1–3 business days) or <strong>crypto</strong> (fast, via Binance). Set up your method in the <em>Settings</em> tab of the dashboard.',
-          '提现前，您需要在专用页面完成身份验证（<strong>KYC</strong>）。两种提现选项：<strong>SEPA</strong>（银行转账，1-3个工作日）或<strong>加密货币</strong>（快速，通过Binance）。在仪表盘的<em>设置</em>标签中配置您的方式。'
+          'Avant de retirer vos gains, vous devez valider votre identité (<strong>KYC</strong>) via la page dédiée. Deux options de retrait : <strong>SEPA</strong> (virement bancaire, 1 à 3 jours ouvrés) ou <strong>crypto</strong> (rapide, via Binance). Configurez votre méthode dans l\'onglet <em>Paramètres</em> du dashboard.',
+          'Before withdrawing your earnings, you must verify your identity (<strong>KYC</strong>) on the dedicated page. Two withdrawal options: <strong>SEPA</strong> (bank transfer, 1 to 3 business days) or <strong>crypto</strong> (fast, via Binance). Set up your method in the <em>Settings</em> tab of the dashboard.',
+          '提现前，您需要在专用页面完成身份验证（<strong>KYC</strong>）。两种提现选项：<strong>SEPA</strong>（银行转账，1至3个工作日）或<strong>加密货币</strong>（快速，通过Binance）。在仪表盘的<em>设置</em>标签中配置您的方式。'
         ),
         align: 'center',
       },
@@ -303,9 +303,9 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('🚀 Vous êtes prêt !', '🚀 You are ready!', '🚀 您准备好了！'),
         description: t(
-          '<strong>Récap du parcours :</strong> vendez vos skins → suivez l\'état sur le dashboard → accumulez des fragments → participez aux concours → complétez des missions pour plus de fragments. Relancez ce guide à tout moment depuis le <strong>footer du site</strong>. Bonne vente ! 🎮',
-          '<strong>Tour recap:</strong> sell your skins → track status on the dashboard → accumulate fragments → enter giveaways → complete missions for more fragments. Relaunch this guide anytime from the <strong>site footer</strong>. Happy selling! 🎮',
-          '<strong>旅程回顾：</strong>出售皮肤→在仪表盘跟踪状态→积累碎片→参与抽奖→完成任务获取更多碎片。随时从<strong>网站页脚</strong>重新启动本指南。祝销售顺利！🎮'
+          '<strong>Récap du parcours :</strong> vendez vos skins, suivez l\'état sur le dashboard, accumulez des fragments, participez aux concours et complétez des missions pour en gagner davantage. Relancez ce guide à tout moment depuis le <strong>footer du site</strong>. Bonne vente ! 🎮',
+          '<strong>Tour recap:</strong> sell your skins, track status on the dashboard, accumulate fragments, enter giveaways and complete missions for more fragments. Relaunch this guide anytime from the <strong>site footer</strong>. Happy selling! 🎮',
+          '<strong>旅程回顾：</strong>出售皮肤，在仪表盘跟踪状态，积累碎片，参与抽奖并完成任务获取更多碎片。随时从<strong>网站页脚</strong>重新启动本指南。祝销售顺利！🎮'
         ),
         align: 'center',
       },

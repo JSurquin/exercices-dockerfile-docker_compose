@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     const skinplaceApiKey = process.env.SKINPLACE_API_KEY;
     if (!skinplaceApiKey) {
       return NextResponse.json(
-        { success: false, error: 'Configuration API Skinplace manquante' },
+        { success: false, error: 'Configuration API manquante' },
         { status: 500 }
       );
     }

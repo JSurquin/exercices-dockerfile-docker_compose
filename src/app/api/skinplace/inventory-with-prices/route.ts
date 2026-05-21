@@ -239,7 +239,7 @@ export async function GET(request: NextRequest) {
       
       if (response.status === 401) {
         return NextResponse.json(
-          { success: false, error: 'Authentification Skin.place échouée' },
+          { success: false, error: 'Erreur d\'authentification du service' },
           { status: 401 }
         );
       }
