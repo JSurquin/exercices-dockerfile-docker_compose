@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import AffiliateTools from './affiliate-tools';
 import { CreateAffiliateDialog } from './create-affiliate-dialog';
+import { AffiliateReferralsList } from './affiliate-referrals-list';
 import { queryKeys } from '@/lib/query-keys';
 import { useLocale } from '@/components/providers/locale-provider';
 
@@ -481,7 +482,7 @@ export default function AffiliatesManagement() {
 
       {/* Affiliate details dialog */}
       <Dialog open={!!selectedAffiliate} onOpenChange={(open) => { if (!open) setSelectedAffiliate(null); }}>
-        <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
           <DialogHeader>
             <DialogTitle className="text-white">{t.detailsTitle}</DialogTitle>
             <DialogDescription className="text-slate-400">
@@ -582,6 +583,8 @@ export default function AffiliatesManagement() {
                   </p>
                 )}
               </div>
+
+              <AffiliateReferralsList affiliateId={selectedAffiliate.id} />
 
               <div className="grid grid-cols-3 gap-4 pt-4 border-t">
                 <div className="text-center">

@@ -41,6 +41,9 @@ export async function GET(
         bonusRatePercent: true,
         userTag: true,
         instantCreditEnabled: true,
+        affiliateRewardsBlocked: true,
+        xpRewardsBlocked: true,
+        referredByAffiliateId: true,
         createdAt: true,
         role: true,
       },
@@ -48,7 +51,32 @@ export async function GET(
     if (!user) {
       return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
     }
-    return NextResponse.json(user);
+
+    let referredBy: {
+      affiliateId: string;
+      code: string;
+      steamUsername: string | null;
+    } | null = null;
+    if (user.referredByAffiliateId) {
+      const affiliate = await prisma.affiliateStats.findUnique({
+        where: { id: user.referredByAffiliateId },
+        select: {
+          id: true,
+          code: true,
+          user: { select: { steamUsername: true } },
+        },
+      });
+      if (affiliate) {
+        referredBy = {
+          affiliateId: affiliate.id,
+          code: affiliate.code,
+          steamUsername: affiliate.user.steamUsername,
+        };
+      }
+    }
+
+    const { referredByAffiliateId: _refId, ...userPayload } = user;
+    return NextResponse.json({ ...userPayload, referredBy });
   } catch (err) {
     console.error('[admin/users/[userId]]', err);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });

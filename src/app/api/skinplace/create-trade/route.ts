@@ -11,6 +11,7 @@ import {
   getCashoutFeeRate,
 } from '@/lib/trade-platform-fees';
 import { AffiliateService } from '@/lib/affiliate-service';
+import { isAffiliateRewardsBlocked } from '@/lib/user-rewards-guard';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { skinplaceCreateTradeBodySchema } from '@/lib/validation/schemas/integrations';
 import { verifyAndPriceItems } from '@/lib/skinplace-price-verifier';
@@ -188,9 +189,16 @@ export async function POST(request: NextRequest) {
       }
       await AffiliateService.bindUserToAffiliateForSellPromo(user.id, promo.affiliateId);
       affiliatePromoCode = promo.code;
-      affiliatePromoBonusCents = AffiliateService.computeSellPromoBonusCents(
-        serverGrossCentimes
-      );
+      if (
+        !isAffiliateRewardsBlocked({
+          affiliateRewardsBlocked: user.affiliateRewardsBlocked ?? false,
+          xpRewardsBlocked: user.xpRewardsBlocked ?? false,
+        })
+      ) {
+        affiliatePromoBonusCents = AffiliateService.computeSellPromoBonusCents(
+          serverGrossCentimes
+        );
+      }
     }
 
     const vipBonusCents = Math.round(serverGrossCentimes * (user.bonusRatePercent ?? 0) / 100);

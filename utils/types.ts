@@ -1284,6 +1284,7 @@ export interface Messages {
       colUser: string;
       colBonus: string;
       colVolume: string;
+      colRewardsBlock: string;
       colActions: string;
       dialogEditTitle: string;
       dialogEditDesc: string;
@@ -1300,6 +1301,18 @@ export interface Messages {
       total: string;
       previous: string;
       next: string;
+    };
+    userRewardsBlock: {
+      sectionTitle: string;
+      affiliateBlockLabel: string;
+      affiliateBlockHelp: string;
+      xpBlockLabel: string;
+      xpBlockHelp: string;
+      updatedTitle: string;
+      enabledDesc: string;
+      disabledDesc: string;
+      errorTitle: string;
+      errorSave: string;
     };
     userCreation: {
       title: string;
@@ -1505,6 +1518,7 @@ export interface Messages {
       instantCreditEnabledDesc: string;
       instantCreditDisabledTitle: string;
       instantCreditDisabledDesc: string;
+      referredByLabel: string;
     };
     platformConfig: {
       infoDb: string;
@@ -1789,6 +1803,21 @@ export interface Messages {
       tooltipRemoveAffiliate: string;
       perPage: string;
       total: string;
+      referrals: {
+        title: string;
+        totalCount: string;
+        searchPlaceholder: string;
+        empty: string;
+        loadError: string;
+        colUser: string;
+        colJoined: string;
+        colVolume: string;
+        colCommission: string;
+        rewardsBlockedBadge: string;
+        page: string;
+        previous: string;
+        next: string;
+      };
     };
     affiliateCommissions: {
       statusPending: string;
