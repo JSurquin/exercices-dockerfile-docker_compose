@@ -349,8 +349,12 @@ export const messages: Record<Locale, Messages> = {
         loadingError: "Erreur lors du chargement des trades:",
       },
       analytics: {
-        tradingVolume: "Volume de trading",
-        tradeStatus: "Statut des trades",
+        title: "Activité de la plateforme",
+        subtitle: "Des milliers de joueurs nous font confiance pour vendre leurs skins CS2.",
+        totalSalesVolume: "Volume total de ventes",
+        totalSalesVolumeDesc: "Montant brut cumulé de toutes les transactions",
+        totalSkinsSold: "Skins vendus",
+        totalSkinsSoldDesc: "Nombre total de skins échangés sur MoonSkin",
       },
       payments: {
         title: "Retraits et virements",
@@ -7429,8 +7433,12 @@ export const messages: Record<Locale, Messages> = {
         loadingError: "Error loading trades:",
       },
       analytics: {
-        tradingVolume: "Trading Volume",
-        tradeStatus: "Trade Status",
+        title: "Platform activity",
+        subtitle: "Thousands of players trust us to sell their CS2 skins.",
+        totalSalesVolume: "Total sales volume",
+        totalSalesVolumeDesc: "Cumulative gross amount of all transactions",
+        totalSkinsSold: "Skins sold",
+        totalSkinsSoldDesc: "Total number of skins exchanged on MoonSkin",
       },
       payments: {
         title: "Payouts & transfers",
@@ -14505,8 +14513,12 @@ export const messages: Record<Locale, Messages> = {
         loadingError: "加载交易时出错：",
       },
       analytics: {
-        tradingVolume: "交易量",
-        tradeStatus: "交易状态",
+        title: "平台活动",
+        subtitle: "数千名玩家信赖我们出售CS2皮肤。",
+        totalSalesVolume: "总销售额",
+        totalSalesVolumeDesc: "所有交易的累计毛额",
+        totalSkinsSold: "已售皮肤",
+        totalSkinsSoldDesc: "MoonSkin上交换的皮肤总数",
       },
       payments: {
         title: "提现与转账",

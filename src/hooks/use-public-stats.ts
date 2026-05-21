@@ -4,12 +4,14 @@ export interface PublicStats {
   totalUsers: number;
   completedTrades: number;
   volumeMillions: number;
+  totalSkinsSold: number;
 }
 
 const FALLBACK: PublicStats = {
   totalUsers: 144,
   completedTrades: 5,
   volumeMillions: 0.6,
+  totalSkinsSold: 1200,
 };
 
 async function fetchPublicStats(): Promise<PublicStats> {

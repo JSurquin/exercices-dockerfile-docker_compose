@@ -394,8 +394,12 @@ export interface Messages {
         noTradesDescription: string;
       };
       analytics: {
-        tradingVolume: string;
-        tradeStatus: string;
+        title: string;
+        subtitle: string;
+        totalSalesVolume: string;
+        totalSalesVolumeDesc: string;
+        totalSkinsSold: string;
+        totalSkinsSoldDesc: string;
       };
       payments: {
         title: string;

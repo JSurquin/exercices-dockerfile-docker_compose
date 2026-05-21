@@ -24,6 +24,7 @@ import { Messages } from "~/utils/types";
 import { User } from "~/utils/types";
 import { toast } from "sonner";
 import { useUserTrades } from "@/hooks/use-user-trades";
+import { usePublicStats } from "@/hooks/use-public-stats";
 import { TradeItemsGallery } from "@/components/trade/trade-items-gallery";
 import {
   CurrencyDollarIcon,
@@ -42,18 +43,13 @@ import {
 } from "@heroicons/react/24/outline";
 import { Snowflake, TrendingUp } from "lucide-react";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area,
 } from "recharts";
 import CountUp from "react-countup";
 import { formatCentsToCurrency } from "@/lib/currency-converter";
@@ -175,19 +171,11 @@ export default function DashboardPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const { data: tradesData, loading: tradesLoading, error: tradesError, refetch: refetchTrades } = useUserTrades();
+  const { data: platformStats, isLoading: platformStatsLoading } = usePublicStats();
   const [refreshingTradeId, setRefreshingTradeId] = useState<string | null>(null);
   const [refreshingKyc, setRefreshingKyc] = useState(false);
   const autoPollingDone = useRef(false);
   const queryClient = useQueryClient();
-  const { data: dashboardStats, isLoading: statsLoading } = useQuery({
-    queryKey: queryKeys.userDashboard,
-    queryFn: async () => {
-      const response = await fetch('/api/user/dashboard-stats');
-      if (!response.ok) throw new Error('Erreur statistiques');
-      return response.json();
-    },
-    enabled: !!data?.user,
-  });
 
   const { data: balanceHistoryData, isLoading: balanceHistoryLoading } = useQuery({
     queryKey: queryKeys.userBalanceHistory,
@@ -916,75 +904,90 @@ export default function DashboardPage() {
 
             {/* Analytics Tab */}
             <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
-              <div className="grid lg:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{messages.dashboard.analytics.tradingVolume}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {statsLoading ? (
-                      <div className="flex items-center justify-center h-[300px]">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-                      </div>
-                    ) : (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={dashboardStats?.volumeData || []}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="date" />
-                          <YAxis />
-                          <Tooltip
-                            formatter={(value) => [
-                              formatPrice(value as number),
-                              messages.dashboard.volume,
-                            ]}
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="volume"
-                            stroke="#f97316"
-                            strokeWidth={2}
-                            dot={{ fill: "#f97316" }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    )}
-                  </CardContent>
-                </Card>
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-6"
+              >
+                <div className="text-center space-y-2 px-2">
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+                    {messages.dashboard.analytics.title}
+                  </h2>
+                  <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+                    {messages.dashboard.analytics.subtitle}
+                  </p>
+                </div>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{messages.dashboard.analytics.tradeStatus}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {statsLoading ? (
-                      <div className="flex items-center justify-center h-[300px]">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-                      </div>
-                    ) : (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                          <Pie
-                            data={dashboardStats?.tradeStatusData || []}
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="count"
-                            label={({ name, percent }) =>
-                              `${name} ${(percent * 100).toFixed(0)}%`
-                            }
-                          >
-                            {(dashboardStats?.tradeStatusData || []).map((entry: { name: string; value: number; color: string }, index: number) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+                <div className="grid gap-4 sm:gap-6">
+                  <Card className="relative overflow-hidden border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-transparent">
+                    <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-orange-500/10 blur-2xl" />
+                    <CardContent className="relative p-6 sm:p-10">
+                      {platformStatsLoading ? (
+                        <div className="flex items-center justify-center h-40">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
+                        </div>
+                      ) : (
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                          <div className="space-y-3">
+                            <p className="text-sm font-medium text-orange-600 dark:text-orange-400 uppercase tracking-wide">
+                              {messages.dashboard.analytics.totalSalesVolume}
+                            </p>
+                            <p className="text-5xl sm:text-6xl lg:text-7xl font-bold tabular-nums tracking-tight">
+                              <CountUp
+                                end={Math.max(platformStats?.volumeMillions ?? 0.6, 0.6)}
+                                duration={2.5}
+                                decimals={1}
+                                prefix="€"
+                                suffix="M+"
+                              />
+                            </p>
+                            <p className="text-sm sm:text-base text-muted-foreground max-w-xl">
+                              {messages.dashboard.analytics.totalSalesVolumeDesc}
+                            </p>
+                          </div>
+                          <div className="flex h-20 w-20 sm:h-24 sm:w-24 shrink-0 items-center justify-center rounded-2xl bg-orange-500/15 ring-1 ring-orange-500/20">
+                            <CurrencyDollarIcon className="h-10 w-10 sm:h-12 sm:w-12 text-orange-500" />
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="relative overflow-hidden border-purple-500/30 bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent md:max-w-2xl">
+                    <div className="absolute -right-8 -bottom-8 h-32 w-32 rounded-full bg-purple-500/10 blur-2xl" />
+                    <CardContent className="relative p-6 sm:p-8">
+                      {platformStatsLoading ? (
+                        <div className="flex items-center justify-center h-40">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+                        </div>
+                      ) : (
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium text-purple-600 dark:text-purple-400 uppercase tracking-wide">
+                              {messages.dashboard.analytics.totalSkinsSold}
+                            </p>
+                            <p className="text-3xl sm:text-4xl lg:text-5xl font-bold tabular-nums tracking-tight">
+                              <CountUp
+                                end={Math.max(platformStats?.totalSkinsSold ?? 1200, 1200)}
+                                duration={2.5}
+                                separator=" "
+                                suffix="+"
+                              />
+                            </p>
+                            <p className="text-sm text-muted-foreground max-w-sm">
+                              {messages.dashboard.analytics.totalSkinsSoldDesc}
+                            </p>
+                          </div>
+                          <div className="flex h-16 w-16 sm:h-20 sm:w-20 shrink-0 items-center justify-center rounded-2xl bg-purple-500/15 ring-1 ring-purple-500/20">
+                            <SparklesIcon className="h-8 w-8 sm:h-10 sm:w-10 text-purple-500" />
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </motion.div>
             </TabsContent>
 
             {/* Payments Tab */}
