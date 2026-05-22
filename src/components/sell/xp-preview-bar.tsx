@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { useLocale } from "@/components/providers/locale-provider";
 import { LevelHelpPopover } from "@/components/ui/level-help-popover";
+import { LevelBadge } from "@/components/ui/level-badge";
+import { LevelProgressBar } from "@/components/ui/level-progress-bar";
 import {
   getLevelInfo,
   xpFromCents,
@@ -36,8 +38,8 @@ export function xpForLevel(level: number): number {
 
 interface XPPreviewBarProps {
   currentXP: number;
-  currentLevel: number;   // kept for API compat, recalculated internally
-  xpForNextLevel: number; // kept for API compat, recalculated internally
+  currentLevel: number;
+  xpForNextLevel: number;
   pendingXPGain: number;
 }
 
@@ -76,117 +78,75 @@ export function XPPreviewBar({
   const projectedCosmicName =
     locale === "en" ? projectedInfo.level.nameEn : projectedInfo.level.name;
 
-  const currentPct = info.tierProgress * 100;
-  const projectedPct = Math.min(projectedInfo.tierProgress * 100, 100);
-  const hasTierUp = projectedInfo.globalTierIndex > info.globalTierIndex;
   const hasLevelUp = projectedInfo.levelIndex > info.levelIndex;
-
-  // When a tier/level boundary is crossed, animate the bar to 100% then restart
-  const pendingPct = hasTierUp
-    ? Math.max(100 - currentPct, 0)
-    : Math.max(projectedPct - currentPct, 0);
-
   const hasPending = pendingXPGain > 0;
 
   return (
     <div className="w-full rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
-      {/* Header row */}
-      <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <SparklesIcon className="w-4 h-4 text-orange-500 shrink-0" />
-          <span className="text-sm font-semibold text-foreground">
-            {cosmicName}
-          </span>
-          <LevelHelpPopover />
-          <span className="text-xs text-muted-foreground">
-            {t.tier(info.tierIndex + 1, TIERS_PER_LEVEL)}
-          </span>
+      <div className="flex items-start gap-3 mb-3">
+        <LevelBadge tierIndex={info.tierIndex} size="sm" className="shrink-0 mt-0.5" />
 
-          {info.saleBonus > 0 && (
-            <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-amber-400/15 text-amber-600 dark:text-amber-400 border border-amber-400/30">
-              {info.saleBonusPct}
-            </span>
-          )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <SparklesIcon className="w-4 h-4 text-orange-500 shrink-0" />
+              <span className="text-sm font-semibold text-foreground">
+                {cosmicName}
+              </span>
+              <LevelHelpPopover />
+              <span className="text-xs text-muted-foreground">
+                {t.tier(info.tierIndex + 1, TIERS_PER_LEVEL)}
+              </span>
 
-          <AnimatePresence>
-            {hasLevelUp && (
-              <motion.span
-                key="levelup"
-                initial={{ opacity: 0, scale: 0.7, x: -6 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0.7, x: -6 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-500 border border-amber-400/40 ml-1"
-              >
-                {t.levelUp(projectedCosmicName)}
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </div>
+              {info.saleBonus > 0 && (
+                <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-amber-400/15 text-amber-600 dark:text-amber-400 border border-amber-400/30">
+                  {info.saleBonusPct}
+                </span>
+              )}
 
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xs text-muted-foreground">
-            {t.progress(info.cappedXP, info.tierXpEnd)}
-          </span>
+              <AnimatePresence>
+                {hasLevelUp && (
+                  <motion.span
+                    key="levelup"
+                    initial={{ opacity: 0, scale: 0.7, x: -6 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.7, x: -6 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-500 border border-amber-400/40 ml-1"
+                  >
+                    {t.levelUp(projectedCosmicName)}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </div>
 
-          <AnimatePresence>
-            {hasPending && (
-              <motion.span
-                key="gain"
-                initial={{ opacity: 0, y: -6, scale: 0.85 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -6, scale: 0.85 }}
-                transition={{ type: "spring", stiffness: 250, damping: 18 }}
-                className="inline-flex items-center gap-1 text-xs font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-2 py-0.5"
-              >
-                <SparklesIcon className="w-3 h-3" />
-                {t.gain(pendingXPGain)}
-              </motion.span>
-            )}
-          </AnimatePresence>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-xs text-muted-foreground">
+                {t.progress(info.cappedXP, info.level.xpEnd)}
+              </span>
+
+              <AnimatePresence>
+                {hasPending && (
+                  <motion.span
+                    key="gain"
+                    initial={{ opacity: 0, y: -6, scale: 0.85 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.85 }}
+                    transition={{ type: "spring", stiffness: 250, damping: 18 }}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-2 py-0.5"
+                  >
+                    <SparklesIcon className="w-3 h-3" />
+                    {t.gain(pendingXPGain)}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          <LevelProgressBar xp={currentXP} pendingXP={pendingXPGain} />
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div className="relative h-3 w-full rounded-full bg-muted overflow-hidden">
-        {/* Current XP fill within the tier */}
-        <motion.div
-          className="absolute left-0 top-0 h-full rounded-full bg-orange-500"
-          initial={false}
-          animate={{ width: `${currentPct}%` }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-        />
-
-        {/* Pending XP gain overlay */}
-        <AnimatePresence>
-          {hasPending && pendingPct > 0 && (
-            <motion.div
-              key="pending"
-              className="absolute top-0 h-full rounded-full"
-              style={{ left: `${currentPct}%` }}
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: `${pendingPct}%`, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            >
-              <div className="relative h-full w-full overflow-hidden rounded-full bg-emerald-500/70">
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                  animate={{ x: ["-100%", "200%"] }}
-                  transition={{
-                    duration: 1.6,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    repeatDelay: 0.4,
-                  }}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Pending label */}
       <AnimatePresence>
         {hasPending && (
           <motion.p
@@ -195,7 +155,7 @@ export function XPPreviewBar({
             animate={{ opacity: 1, height: "auto", marginTop: 6 }}
             exit={{ opacity: 0, height: 0, marginTop: 0 }}
             transition={{ duration: 0.3 }}
-            className="text-xs text-emerald-500 font-medium overflow-hidden"
+            className="text-xs text-emerald-500 font-medium overflow-hidden pl-11"
           >
             {t.pendingLabel}
           </motion.p>

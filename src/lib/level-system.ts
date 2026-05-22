@@ -36,6 +36,24 @@ export const LEVELS: LevelDef[] = [
 
 export const TOTAL_TIERS = LEVELS.length * TIERS_PER_LEVEL; // 30
 
+// ─── Assets visuels (public/levels/) ────────────────────────────────────────
+
+export const LEVEL_ASSETS = {
+  fragment: "/levels/FRAGMENTMS.png",
+  tiers: [
+    "/levels/lvl1.png",
+    "/levels/lvl2.png",
+    "/levels/lvl3.png",
+    "/levels/lvl4.png",
+  ] as const,
+} as const;
+
+/** Badge de palier (1–5) — paliers 4 et 5 partagent le visuel max (lvl4). */
+export function getTierBadgeSrc(tierIndex: number): string {
+  const idx = Math.min(Math.max(tierIndex, 0), LEVEL_ASSETS.tiers.length - 1);
+  return LEVEL_ASSETS.tiers[idx];
+}
+
 // ─── Paliers ──────────────────────────────────────────────────────────────────
 
 /**

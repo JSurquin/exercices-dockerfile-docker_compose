@@ -61,6 +61,8 @@ import { formatCentsToCurrency } from "@/lib/currency-converter";
 import { ConvertedPrice } from "@/components/ui/converted-price";
 import { getLevelInfo, getLevelName, LEVELS } from "@/lib/level-system";
 import { LevelHelpPopover } from "@/components/ui/level-help-popover";
+import { LevelBadge } from "@/components/ui/level-badge";
+import { LevelProgressBar } from "@/components/ui/level-progress-bar";
 
 const formatPrice = (centimes: number) => {
   return (centimes / 100).toFixed(2) + "€";
@@ -431,38 +433,46 @@ export default function DashboardPage() {
           {/* XP Progress */}
           <Card data-tour="dashboard-xp">
             <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <TrophyIcon className="w-6 h-6 text-yellow-500" />
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="font-semibold">
-                        {levelInfo.level.name} — Palier {levelInfo.tierIndex + 1}/5
-                      </h3>
-                      <LevelHelpPopover />
+              <div className="flex items-start gap-4 mb-4">
+                <LevelBadge tierIndex={levelInfo.tierIndex} size="md" className="shrink-0" />
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <div className="flex items-center space-x-3">
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <h3 className="font-semibold">
+                            {levelInfo.level.name} — Palier {levelInfo.tierIndex + 1}/5
+                          </h3>
+                          <LevelHelpPopover />
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {levelInfo.saleBonus > 0
+                            ? `Bonus vendeur actif : ${levelInfo.saleBonusPct} sur tes ventes`
+                            : "Aucun bonus vendeur encore"}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {levelInfo.saleBonus > 0
-                        ? `Bonus vendeur actif : ${levelInfo.saleBonusPct} sur tes ventes`
-                        : "Aucun bonus vendeur encore"}
-                    </p>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold">
+                        {levelInfo.cappedXP.toLocaleString()} / {levelInfo.level.xpEnd.toLocaleString()} {messages.dashboard.xp}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        −{levelInfo.nextTierXP.toLocaleString()} XP prochain palier
+                      </p>
+                      {!levelInfo.isMaxLevel && levelInfo.nextLevelXP != null && nextLevelName && (
+                        <p className="text-xs text-muted-foreground">
+                          −{levelInfo.nextLevelXP.toLocaleString()} XP pour {nextLevelName}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <LevelProgressBar xp={userXP} />
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold">
-                    {levelInfo.cappedXP.toLocaleString()} / {levelInfo.tierXpEnd.toLocaleString()} {messages.dashboard.xp}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    −{levelInfo.nextTierXP.toLocaleString()} XP prochain palier
-                  </p>
-                  {!levelInfo.isMaxLevel && levelInfo.nextLevelXP != null && nextLevelName && (
-                    <p className="text-xs text-muted-foreground">
-                      −{levelInfo.nextLevelXP.toLocaleString()} XP pour {nextLevelName}
-                    </p>
-                  )}
-                </div>
               </div>
-              <Progress value={levelInfo.tierProgress * 100} className="h-3" />
             </CardContent>
           </Card>
         </motion.div>
