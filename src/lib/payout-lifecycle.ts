@@ -123,7 +123,7 @@ export class PayoutLifecycle {
           where: { id: options.tradeId },
           data: { status: 'PAID' },
         });
-        // XP, volume, commissions affilié — centralisé dans TradeHooks
+        // Marque le trade comme traité post-PAID (commissions déjà attribuées à AVAILABLE)
         await TradeHooks.onTradePaid(options.tradeId);
       } catch (err) {
         console.error(`[PayoutLifecycle] trade.update PAID / onTradePaid failed for ${payoutId}:`, err);

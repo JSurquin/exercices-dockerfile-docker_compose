@@ -223,6 +223,8 @@ export async function GET(
           } else if (newStatus === 'AVAILABLE') {
             await TradeHooks.onTradeAvailable(trade.id);
             balanceCredited = true;
+          } else if (newStatus === 'FAILED' || newStatus === 'CANCELLED') {
+            await TradeHooks.onTradeStatusChanged(trade.id, oldStatus, newStatus);
           }
         } catch (hookError) {
           console.error(`[STATUS] TradeHooks error for trade ${trade.id}:`, hookError);

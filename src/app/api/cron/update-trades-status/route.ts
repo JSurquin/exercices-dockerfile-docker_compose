@@ -3,6 +3,7 @@ import { prisma } from '~/prisma/prisma';
 import { TradeStatus } from '@prisma/client';
 import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
 import { requireCronSecret } from '@/lib/cron-auth';
+import { TradeHooks } from '@/lib/trade-hooks';
 
 /**
  * Cron job pour mettre à jour les statuts des trades en attente
@@ -167,6 +168,18 @@ async function updateTradeStatus(trade: {
     });
 
     console.log(`✅ Trade ${trade.id} mis à jour: ${oldStatus} -> ${newStatus} (Skinplace: ${skinplaceStatus})`);
+
+    try {
+      if (newStatus === 'ACCEPTED_BY_BOT') {
+        await TradeHooks.onTradeAccepted(trade.userId, trade.id);
+      } else if (newStatus === 'AVAILABLE') {
+        await TradeHooks.onTradeAvailable(trade.id);
+      } else if (newStatus === 'FAILED' || newStatus === 'CANCELLED') {
+        await TradeHooks.onTradeStatusChanged(trade.id, oldStatus, newStatus);
+      }
+    } catch (hookError) {
+      console.error(`[Cron] TradeHooks error for trade ${trade.id}:`, hookError);
+    }
 
     return { 
       updated: true, 
