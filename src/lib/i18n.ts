@@ -4560,6 +4560,18 @@ export const messages: Record<Locale, Messages> = {
           "C’est normal si vous vous connectez avec Discord. Pour afficher vos skins, utilisez l’encadré ci-dessous : collez votre Trade Link Steam (recommandé) ou votre SteamID64. Pensez aussi à enregistrer votre Trade Link dans les paramètres pour recevoir les offres d’échange.",
         settings: "Ouvrir les paramètres",
       },
+      steamAccount: {
+        label: "Compte Steam",
+        hint: "Ce compte est lié à votre connexion MoonSkin et ne peut pas être modifié ici.",
+        noSteamId: "Aucun Steam ID lié — connectez-vous via Steam ou configurez votre Trade Link ci-dessous.",
+      },
+      tradeLinkSection: {
+        description: "Seule information modifiable — détermine quel inventaire est chargé et où vous recevez les offres d’échange.",
+        inventoryFromTradeLink: "Inventaire chargé depuis :",
+      },
+      selectionPanel: {
+        selectedTotal: "Total sélectionné",
+      },
       steps: {
         inventory: "Sélection des items",
         trade: "Création du trade",
@@ -10568,6 +10580,18 @@ export const messages: Record<Locale, Messages> = {
         description:
           "That is expected when you sign in with Discord. To show your skins, use the box below: paste your Steam Trade Link (recommended) or your SteamID64. Save your Trade Link in settings so you can receive trade offers.",
         settings: "Open settings",
+      },
+      steamAccount: {
+        label: "Steam account",
+        hint: "This account is tied to your MoonSkin login and cannot be changed here.",
+        noSteamId: "No Steam ID linked — sign in with Steam or configure your Trade Link below.",
+      },
+      tradeLinkSection: {
+        description: "The only editable field — determines which inventory is loaded and where you receive trade offers.",
+        inventoryFromTradeLink: "Inventory loaded from:",
+      },
+      selectionPanel: {
+        selectedTotal: "Selected total",
       },
       steps: {
         inventory: "Item selection",
@@ -17457,6 +17481,18 @@ export const messages: Record<Locale, Messages> = {
         description:
           "使用 Discord 登录时这是正常的。要显示皮肤，请在下方粘贴 Steam 交易链接（推荐）或 SteamID64，并在设置中保存交易链接以便接收报价。",
         settings: "打开设置",
+      },
+      steamAccount: {
+        label: "Steam 账户",
+        hint: "此账户与您的 MoonSkin 登录绑定，无法在此处修改。",
+        noSteamId: "未绑定 Steam ID — 请通过 Steam 登录或在下方配置交易链接。",
+      },
+      tradeLinkSection: {
+        description: "唯一可修改的信息 — 决定加载哪个库存以及接收交易报价的位置。",
+        inventoryFromTradeLink: "库存来源：",
+      },
+      selectionPanel: {
+        selectedTotal: "已选总额",
       },
       steps: {
         inventory: "物品选择",

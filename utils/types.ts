@@ -3155,6 +3155,18 @@ export interface Messages {
       description: string;
       settings: string;
     };
+    steamAccount: {
+      label: string;
+      hint: string;
+      noSteamId: string;
+    };
+    tradeLinkSection: {
+      description: string;
+      inventoryFromTradeLink: string;
+    };
+    selectionPanel: {
+      selectedTotal: string;
+    };
     steps: {
       inventory: string;
       trade: string;

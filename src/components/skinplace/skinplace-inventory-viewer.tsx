@@ -62,6 +62,12 @@ interface SkinplaceInventoryViewerProps {
   selectable?: boolean;
   allowSteamIdChange?: boolean;
   onSteamIdChange?: (newSteamId: string) => void;
+  /** Layout compact type Skinplace pour la page Vendre */
+  layout?: 'default' | 'sell';
+  /** Masque la barre de sélection sticky (utilisée avec sidebar Vendre) */
+  hideSelectionBar?: boolean;
+  /** Incrémenter pour vider la sélection depuis le parent */
+  selectionResetToken?: number;
 }
 
 export function SkinplaceInventoryViewer({ 
@@ -72,8 +78,12 @@ export function SkinplaceInventoryViewer({
   initialSelectedIds,
   selectable = false,
   allowSteamIdChange = false,
-  onSteamIdChange
+  onSteamIdChange,
+  layout = 'default',
+  hideSelectionBar = false,
+  selectionResetToken = 0,
 }: SkinplaceInventoryViewerProps) {
+  const isSellLayout = layout === 'sell';
   const profileSteamId64 = (profileSteamId64Prop ?? '').trim();
   const { messages } = useLocale();
   const { selectedCurrency } = useCurrency();
@@ -275,6 +285,12 @@ export function SkinplaceInventoryViewer({
       onSelectionChange(inventory.filter((item) => validIds.includes(item.id)));
     }
   }, [inventory, initialSelectedIds, onSelectionChange]);
+
+  useEffect(() => {
+    if (!selectionResetToken) return;
+    setSelectedItems([]);
+    onSelectionChange?.([]);
+  }, [selectionResetToken, onSelectionChange]);
 
   const stats = calculateInventoryStats(inventory);
   // Tous les items visibles (tradable Steam), incluant ceux bloqués par Skinplace
@@ -586,7 +602,7 @@ export function SkinplaceInventoryViewer({
   }
 
   return (
-    <div className="space-y-6 pb-24">
+    <div className={isSellLayout ? 'min-w-0 w-full' : 'space-y-6 pb-24'}>
 
       {/* Header avec option de changer le Steam ID */}
       {allowSteamIdChange && (
@@ -689,6 +705,7 @@ export function SkinplaceInventoryViewer({
       )}
 
       {/* Statistiques de l'inventaire */}
+      {!isSellLayout && (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
@@ -744,16 +761,31 @@ export function SkinplaceInventoryViewer({
           </CardContent>
         </Card>
       </div>
+      )}
 
       {/* Contrôles et filtres */}
-      <Card>
-        <CardHeader>
-          <div className="md:flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              {messages.components.skinplace.yourInventory}
-              <Badge variant="secondary">{filteredItems.length} {messages.components.skinplace.items}</Badge>
-            </CardTitle>
+      <Card className={isSellLayout ? 'rounded-b-none shadow-sm' : undefined}>
+        <CardHeader className={isSellLayout ? 'pb-3' : undefined}>
+          <div className="md:flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <CardTitle className={`flex items-center gap-2 ${isSellLayout ? 'text-lg' : ''}`}>
+                <Package className="h-5 w-5" />
+                {messages.components.skinplace.yourInventory}
+                {!isSellLayout && (
+                  <Badge variant="secondary">{filteredItems.length} {messages.components.skinplace.items}</Badge>
+                )}
+              </CardTitle>
+              {isSellLayout && (
+                <p className="text-sm text-muted-foreground mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                  <span>{stats.tradableItems} {messages.components.skinplace.items}</span>
+                  <span aria-hidden>·</span>
+                  <ConvertedPrice
+                    usdCents={stats.totalValueCentimes}
+                    className="font-semibold text-green-600 dark:text-green-400"
+                  />
+                </p>
+              )}
+            </div>
             <div className="flex flex-wrap items-center gap-2 justify-end">
               {selectable && filteredItems.some(isPurchasable) && (
                 <Button
@@ -785,11 +817,11 @@ export function SkinplaceInventoryViewer({
           </div>
         </CardHeader>
         
-        <CardContent className="space-y-4">
+        <CardContent className={`space-y-4 ${isSellLayout ? 'pt-0' : ''}`}>
           {/* Barre de recherche */}
-          <div className="md:flex grid items-center gap-4">
+          <div className={`${isSellLayout ? 'flex flex-col sm:flex-row' : 'md:flex grid'} items-center gap-3`}>
             <div className="flex-1">
-              <Label htmlFor="search">{messages.components.skinplace.search}</Label>
+              {!isSellLayout && <Label htmlFor="search">{messages.components.skinplace.search}</Label>}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -802,8 +834,8 @@ export function SkinplaceInventoryViewer({
               </div>
             </div>
             
-            <div className="w-full sm:w-48">
-              <Label>{messages.components.skinplace.sortBy}</Label>
+            <div className={`w-full ${isSellLayout ? 'sm:w-44' : 'sm:w-48'}`}>
+              {!isSellLayout && <Label>{messages.components.skinplace.sortBy}</Label>}
               <Select value={sortBy} onValueChange={(value: 'value_desc' | 'value_asc' | 'rarity' | 'name') => setSortBy(value)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -819,6 +851,7 @@ export function SkinplaceInventoryViewer({
           </div>
 
           {/* Filtres avancés - Prix et options */}
+          {!isSellLayout && (
           <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Checkbox Purchasable Only */}
@@ -871,6 +904,7 @@ export function SkinplaceInventoryViewer({
               </div>
             </div>
           </div>
+          )}
 
           {/* Filtres avancés */}
           {showFilters && (
@@ -935,8 +969,8 @@ export function SkinplaceInventoryViewer({
       </Card>
 
       {/* Grille des items avec scroll */}
-      <Card>
-        <CardContent className="p-6">
+      <Card className={isSellLayout ? 'rounded-t-none border-t-0 -mt-px shadow-sm' : undefined}>
+        <CardContent className={isSellLayout ? 'p-4 pt-2' : 'p-6'}>
           {filteredItems.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               {searchTerm || selectedRarity || selectedExterior || statTrakOnly || purchasableOnly || priceMinUsd.trim() || priceMaxUsd.trim()
@@ -945,8 +979,12 @@ export function SkinplaceInventoryViewer({
             </div>
           ) : (
             <div className="relative">
-              <div className="max-h-[600px] overflow-y-auto px-1 -mx-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 pb-4">
+              <div className={`${isSellLayout ? 'max-h-[min(720px,calc(100vh-16rem))] min-h-[360px]' : 'max-h-[600px]'} overflow-y-auto px-1 -mx-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent`}>
+                <div className={`grid pb-4 ${
+                  isSellLayout
+                    ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5'
+                    : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3'
+                }`}>
                 {filteredItems.map((item) => {
                   const isSelected = selectedItems.includes(item.id);
                   const isDisabled = !!item.skip_reason;
@@ -986,6 +1024,13 @@ export function SkinplaceInventoryViewer({
                         <div className="space-y-2">
                           {/* Image et badges */}
                           <div className="relative">
+                            {selectable && isSelected && (
+                              <div className="absolute top-1 left-1 z-10">
+                                <span className="inline-flex max-w-[calc(100%-0.5rem)] items-center rounded bg-orange-500 px-1.5 py-0.5 text-[10px] font-medium leading-tight text-white truncate">
+                                  {messages.components.skinplace.selected}
+                                </span>
+                              </div>
+                            )}
                             <SafeImg
                               src={item.icon_url}
                               alt={item.name}
@@ -1044,8 +1089,8 @@ export function SkinplaceInventoryViewer({
                           </div>
                           
                           {/* Prix + actions */}
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex flex-col">
+                          <div className="flex items-center justify-between gap-1.5 min-w-0">
+                            <div className="flex min-w-0 flex-col">
                               {bonusRatePercent > 0 && !isDisabled ? (
                                 <>
                                   <ConvertedPrice
@@ -1062,18 +1107,13 @@ export function SkinplaceInventoryViewer({
                               ) : (
                                 <ConvertedPrice
                                   usdCents={item.price_centimes}
-                                  className={`text-lg font-bold ${
+                                  className={`text-base font-bold truncate ${
                                     isDisabled ? 'text-muted-foreground' : 'text-green-600'
                                   }`}
                                   showOriginal={false}
                                 />
                               )}
                             </div>
-                            {selectable && isSelected && (
-                              <Badge className="bg-orange-500 text-white">
-                                {messages.components.skinplace.selected}
-                              </Badge>
-                            )}
                             {isOverstock && (
                               <Badge variant="secondary" className="text-xs">
                                 {messages.components.skinplace.unavailable}
@@ -1123,7 +1163,7 @@ export function SkinplaceInventoryViewer({
       </Card>
 
       {/* Résumé de sélection - Fixe en bas */}
-      {selectable && selectedItems.length > 0 && (
+      {selectable && selectedItems.length > 0 && !hideSelectionBar && (
         <Card className="bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800 sticky bottom-4 z-10 shadow-lg">
           <CardContent className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

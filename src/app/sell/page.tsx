@@ -14,7 +14,7 @@ import { ConvertedPrice } from "@/components/ui/converted-price";
 import { NormalizedInventoryItem } from "@/hooks/use-skinplace-inventory";
 import { TradeStatusModal, TradeModalStatus } from "@/components/sell/trade-status-modal";
 import { parseSteamId64FromUserInput } from "@/lib/steam-id";
-import InlineTradeLinkEditor from "@/components/sell/inline-trade-link-editor";
+import { SellAccountSidebar } from "@/components/sell/sell-account-sidebar";
 import {
   LinkIcon,
   CurrencyDollarIcon,
@@ -27,7 +27,7 @@ import { UserRoleBadge } from "@/components/ui/user-role-badge";
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import { useTourMode } from '@/components/providers/tour-provider';
 import { SellTourDemo } from '@/components/tour-demos/sell-tour-demo';
-import { XPPreviewBar, estimateXPGain, xpForNextLevel, levelFromXP } from '@/components/sell/xp-preview-bar';
+import { estimateXPGain, xpForNextLevel, levelFromXP } from '@/components/sell/xp-preview-bar';
 
 const getSteps = (messages: any) => [
   { id: "inventory", title: messages.sellPage.steps.inventory, icon: LinkIcon },
@@ -61,6 +61,7 @@ export default function SellPage() {
   };
   
   const [activeSteamId, setActiveSteamId] = useState(getInventorySteamId());
+  const [selectionResetToken, setSelectionResetToken] = useState(0);
   const [modalStatus, setModalStatus] = useState<TradeModalStatus>(null);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollAttemptsRef = useRef(0);
@@ -200,7 +201,7 @@ export default function SellPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
       <TradeStatusModal
         status={modalStatus}
         onClose={handleModalClose}
@@ -208,19 +209,6 @@ export default function SellPage() {
         bot={tradeData?.bot}
       />
       <div>
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-6 sm:mb-8"
-        >
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
-            {messages.sellPage.title}
-          </h1>
-          <p className="text-muted-foreground">{messages.sellPage.subtitle}</p>
-        </motion.div>
-
         {user && (user.bonusRatePercent ?? 0) > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -237,28 +225,19 @@ export default function SellPage() {
           </motion.div>
         )}
 
-        {user && currentStep === 0 && (
-          <motion.div
-            data-tour="sell-trade-link"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="max-w-6xl mx-auto"
-          >
-            <InlineTradeLinkEditor onSuccess={handleTradeLinkUpdate} />
-          </motion.div>
-        )}
-
-        {/* Progress Stepper */}
         <motion.div
           data-tour="sell-steps"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-6 sm:mb-8 overflow-x-auto -mx-1 px-1 scrollbar-thin"
+          className={`max-w-[1600px] mx-auto overflow-x-auto -mx-1 px-1 scrollbar-thin ${
+            currentStep === 0 ? "mb-3" : "mb-6 sm:mb-8"
+          }`}
         >
           <div
-            className="flex items-center justify-center sm:justify-between gap-1 sm:gap-2 mb-4 min-w-max sm:min-w-0 w-full mx-auto"
+            className={`flex items-center justify-center sm:justify-between gap-1 sm:gap-2 min-w-max sm:min-w-0 w-full mx-auto ${
+              currentStep === 0 ? "mb-2" : "mb-4"
+            }`}
             role="list"
             aria-label={messages.sellPage.title}
           >
@@ -333,7 +312,7 @@ export default function SellPage() {
           </div>
           <Progress
             value={(currentStep / (steps.length - 1)) * 100}
-            className="h-2"
+            className={currentStep === 0 ? "h-1" : "h-2"}
           />
         </motion.div>
 
@@ -345,30 +324,42 @@ export default function SellPage() {
           transition={{ duration: 0.4 }}
         >
           {currentStep === 0 && (
-            <div data-tour="sell-inventory">
-            <div className="max-w-6xl mx-auto mb-4">
-              <XPPreviewBar
-                currentXP={userXP}
-                currentLevel={userLevel}
-                xpForNextLevel={xpNext}
-                pendingXPGain={pendingXPGain}
-              />
-            </div>
-            <SkinplaceInventoryViewer
-              steamId64={activeSteamId}
-              linkedSteamIdentity={
-                user.steamId64 && activeSteamId === user.steamId64
-                  ? { name: user.username, avatarUrl: user.avatar }
-                  : undefined
-              }
-              initialSelectedIds={selectedItems.map((item) => item.id)}
-              onItemSelect={handleItemSelect}
-              onSelectionChange={handleSelectionChange}
-              selectable={true}
-              allowSteamIdChange={true}
-              onSteamIdChange={(newId) => setActiveSteamId(newId)}
-            />
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_288px] gap-4 lg:gap-5 items-start"
+            >
+              <div className="min-w-0 w-full order-2 lg:order-none" data-tour="sell-inventory">
+                <SkinplaceInventoryViewer
+                  steamId64={activeSteamId}
+                  initialSelectedIds={selectedItems.map((item) => item.id)}
+                  onItemSelect={handleItemSelect}
+                  onSelectionChange={handleSelectionChange}
+                  selectable={true}
+                  layout="sell"
+                  hideSelectionBar
+                  selectionResetToken={selectionResetToken}
+                />
+              </div>
+              <div className="w-full min-w-0 order-1 lg:order-none">
+                <SellAccountSidebar
+                  onTradeLinkUpdate={handleTradeLinkUpdate}
+                  currentXP={userXP}
+                  currentLevel={userLevel}
+                  xpForNextLevel={xpNext}
+                  pendingXPGain={pendingXPGain}
+                  previewItems={previewItems}
+                  onContinue={() => {
+                    if (previewItems.length > 0) handleItemSelect(previewItems);
+                  }}
+                  onDeselect={() => {
+                    setSelectionResetToken((t) => t + 1);
+                    setPreviewItems([]);
+                  }}
+                />
+              </div>
+            </motion.div>
           )}
 
           {currentStep === 1 && (

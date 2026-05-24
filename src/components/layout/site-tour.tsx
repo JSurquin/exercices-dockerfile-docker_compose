@@ -100,13 +100,13 @@ function buildTourSteps(locale: string): TourStep[] {
       },
     },
     {
-      element: '[data-tour="sell-steps"]',
+      element: '[data-tour="sell-steam-account"]',
       popover: {
-        title: t('📋 Étapes du processus', '📋 Process steps', '📋 流程步骤'),
+        title: t('👤 Compte Steam connecté', '👤 Connected Steam account', '👤 已连接的 Steam 账户'),
         description: t(
-          'La barre de progression indique où vous en êtes : <strong>Inventaire</strong>, puis <strong>Trade</strong>, puis <strong>Confirmation</strong>. Chaque étape validée reste cochée pour voir votre avancement d\'un seul coup d\'œil.',
-          'The progress bar shows where you are: <strong>Inventory</strong>, then <strong>Trade</strong>, then <strong>Confirmation</strong>. Each completed step stays checked so you can see your progress at a glance.',
-          '进度条显示您的位置：<strong>库存</strong>，然后<strong>交易</strong>，最后<strong>确认</strong>。每个完成的步骤保持勾选，一眼即可看到您的进度。'
+          'Votre <strong>compte Steam de connexion</strong> est affiché ici à titre informatif. Il est lié à MoonSkin et <strong>ne peut pas être modifié</strong> sur cette page.',
+          'Your <strong>login Steam account</strong> is shown here for information. It is linked to MoonSkin and <strong>cannot be changed</strong> on this page.',
+          '您的<strong>登录 Steam 账户</strong>在此显示仅供参考。它与 MoonSkin 绑定，<strong>无法</strong>在此页面修改。'
         ),
         side: 'bottom',
       },
@@ -114,11 +114,23 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="sell-trade-link"]',
       popover: {
-        title: t('🔗 Lien de trade Steam', '🔗 Steam Trade Link', '🔗 Steam 交易链接'),
+        title: t('🔗 Trade Link Steam — modifiable', '🔗 Steam Trade Link — editable', '🔗 Steam 交易链接 — 可修改'),
         description: t(
-          'Avant de sélectionner des skins, renseignez votre <strong>lien de trade Steam</strong>. Il est nécessaire pour que notre bot puisse recevoir vos items. Vous le trouvez dans vos paramètres Steam, section Inventaire, Liens de trade.',
-          'Before selecting skins, enter your <strong>Steam trade link</strong>. It is required so our bot can receive your items. Find it in Steam settings, under Inventory, Trade links.',
-          '选择皮肤前，请输入您的<strong>Steam 交易链接</strong>。这是我们的机器人接收您物品所必需的。在 Steam 设置的库存部分，交易链接中找到它。'
+          'C\'est la <strong>seule information modifiable</strong> : elle détermine quel inventaire est chargé et où vous recevez les offres d\'échange. Cliquez sur <em>Modifier</em> pour la mettre à jour.',
+          'This is the <strong>only editable field</strong>: it determines which inventory is loaded and where you receive trade offers. Click <em>Edit</em> to update it.',
+          '这是<strong>唯一可修改的信息</strong>：它决定加载哪个库存以及接收交易报价的位置。点击<em>修改</em>进行更新。'
+        ),
+        side: 'bottom',
+      },
+    },
+    {
+      element: '[data-tour="sell-steps"]',
+      popover: {
+        title: t('📋 Étapes du processus', '📋 Process steps', '📋 流程步骤'),
+        description: t(
+          'La barre de progression indique où vous en êtes : <strong>Inventaire</strong>, puis <strong>Trade</strong>, puis <strong>Confirmation</strong>. Chaque étape validée reste cochée pour voir votre avancement d\'un seul coup d\'œil.',
+          'The progress bar shows where you are: <strong>Inventory</strong>, then <strong>Trade</strong>, then <strong>Confirmation</strong>. Each completed step stays checked so you can see your progress at a glance.',
+          '进度条显示您的位置：<strong>库存</strong>，然后<strong>交易</strong>，最后<strong>确认</strong>。每个完成的步骤保持勾选，一眼即可看到您的进度。'
         ),
         side: 'bottom',
       },
