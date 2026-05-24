@@ -3,6 +3,7 @@ import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { executeGiveawayDraw } from '@/lib/execute-giveaway-draw';
 import { prisma } from '~/prisma/prisma';
 import { emailService } from '@/lib/email';
+import { scheduleNextSpawnAfterDraw } from '@/lib/giveaway-recurrence';
 import { requireCronSecret } from '@/lib/cron-auth';
 
 export async function POST(
@@ -67,6 +68,10 @@ export async function POST(
       }
     } catch (emailErr) {
       console.error('[draw] Erreur envoi email gagnant:', emailErr);
+    }
+
+    if (result.giveaway.seriesId) {
+      await scheduleNextSpawnAfterDraw(result.giveaway.seriesId, new Date());
     }
 
     return NextResponse.json({

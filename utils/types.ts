@@ -2474,6 +2474,7 @@ export interface Messages {
       tabs: {
         list: string;
         create: string;
+        recurring: string;
         manage: string;
       };
       page: {
@@ -2554,6 +2555,56 @@ export interface Messages {
       chooseSkin: string;
       browseSkinplace: string;
       };
+      recurring: {
+        title: string;
+        subtitle: string;
+        createSeries: string;
+        cancelCreate: string;
+        createTitle: string;
+        loading: string;
+        refresh: string;
+        empty: string;
+        loadError: string;
+        createError: string;
+        createSuccess: string;
+        actionError: string;
+        actionSuccess: string;
+        requiredFields: string;
+        creating: string;
+        submitCreate: string;
+        formTitle: string;
+        formPrize: string;
+        formFrequency: string;
+        formDuration: string;
+        formStartDate: string;
+        formEndDate: string;
+        formEndDateHint: string;
+        formEntryPrice: string;
+        formWinnerCount: string;
+        formDescription: string;
+        formPrivate: string;
+        formAffiliateCode: string;
+        instances: string;
+        duration: string;
+        nextSpawn: string;
+        currentInstance: string;
+        noActiveInstance: string;
+        pause: string;
+        resume: string;
+        disable: string;
+        restart: string;
+        frequency: {
+          daily: string;
+          weekly: string;
+          monthly: string;
+          yearly: string;
+        };
+        status: {
+          active: string;
+          paused: string;
+          disabled: string;
+        };
+      };
       info: {
         title: string;
         autoTitle: string;
@@ -2561,6 +2612,7 @@ export interface Messages {
         autoPoint2: string;
         autoPoint3: string;
         autoPoint4: string;
+        autoPoint5: string;
         manualTitle: string;
         manualPoint1: string;
         manualPoint2: string;

@@ -125,7 +125,7 @@ export interface Giveaway {
   maxTickets: number;
   soldTickets: number;
   endDate: Date | string;
-  status: 'ACTIVE' | 'ENDED' | 'CANCELLED';
+  status: 'ACTIVE' | 'PAUSED' | 'ENDED' | 'CANCELLED' | 'DISABLED';
   winnerId?: string;
   randomSeed?: string;
   rewardValueCents?: number;
@@ -134,6 +134,8 @@ export interface Giveaway {
   maxEntriesPerUser?: number | null;
   isPrivate?: boolean;
   requiredAffiliateCode?: string | null;
+  seriesId?: string | null;
+  startDate?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   /** Agrégats API */

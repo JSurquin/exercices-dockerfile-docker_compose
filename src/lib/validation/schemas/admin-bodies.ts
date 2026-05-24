@@ -195,3 +195,51 @@ export const adminAffiliateCommissionsListQuerySchema = z
     affiliateId: z.string().max(128).optional(),
   })
   .strip();
+
+const recurringFrequencySchema = z.enum(['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']);
+
+export const giveawaySeriesCreateBodySchema = z
+  .object({
+    title: z.string().min(1),
+    description: z.string().min(1),
+    prize: z.string().min(1),
+    prizeImageUrl: z.string().nullable().optional(),
+    steamMarketHashName: z.string().nullable().optional(),
+    ticketPrice: z.coerce.number().int().positive(),
+    maxTickets: z.coerce.number().int().positive(),
+    durationMinutes: z.coerce.number().int().positive(),
+    frequency: recurringFrequencySchema,
+    winnerCount: z.coerce.number().int().positive().optional(),
+    maxEntriesPerUser: z.union([z.coerce.number().int().positive(), z.null()]).optional(),
+    rewardValueCents: z.coerce.number().int().min(0).optional(),
+    isPrivate: z.boolean().optional(),
+    requiredAffiliateCode: z.string().nullable().optional(),
+    startDate: z.union([z.string(), z.number()]).optional(),
+    endDate: z.union([z.string(), z.number(), z.null()]).optional(),
+    enabled: z.boolean().optional(),
+  })
+  .strip();
+
+export const giveawaySeriesPatchBodySchema = z
+  .object({
+    action: z.enum(['pause', 'resume', 'disable', 'restart', 'spawn']).optional(),
+    title: z.string().min(1).optional(),
+    description: z.string().min(1).optional(),
+    prize: z.string().min(1).optional(),
+    prizeImageUrl: z.string().nullable().optional(),
+    steamMarketHashName: z.string().nullable().optional(),
+    ticketPrice: z.coerce.number().int().positive().optional(),
+    maxTickets: z.coerce.number().int().positive().optional(),
+    durationMinutes: z.coerce.number().int().positive().optional(),
+    frequency: recurringFrequencySchema.optional(),
+    winnerCount: z.coerce.number().int().positive().optional(),
+    maxEntriesPerUser: z.union([z.coerce.number().int().positive(), z.null()]).optional(),
+    rewardValueCents: z.coerce.number().int().min(0).optional(),
+    isPrivate: z.boolean().optional(),
+    requiredAffiliateCode: z.string().nullable().optional(),
+    startDate: z.union([z.string(), z.number()]).optional(),
+    endDate: z.union([z.string(), z.number(), z.null()]).optional(),
+    status: z.enum(['ACTIVE', 'PAUSED', 'DISABLED']).optional(),
+    syncActiveInstance: z.boolean().optional(),
+  })
+  .strip();

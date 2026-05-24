@@ -45,7 +45,10 @@ export async function POST(
       return NextResponse.json({ error: 'Giveaway introuvable' }, { status: 404 });
     }
     if (giveaway.status !== 'ACTIVE') {
-      return NextResponse.json({ error: "Ce giveaway n'est plus actif" }, { status: 400 });
+      return NextResponse.json(
+        { error: giveaway.status === 'PAUSED' ? 'Ce giveaway est en pause' : "Ce giveaway n'est plus actif" },
+        { status: 400 }
+      );
     }
     if (new Date() > giveaway.endDate) {
       return NextResponse.json({ error: 'Ce giveaway est terminé' }, { status: 400 });

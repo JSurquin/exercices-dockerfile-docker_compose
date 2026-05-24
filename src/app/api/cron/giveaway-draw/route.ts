@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCronSecret } from '@/lib/cron-auth';
+import { processDueRecurringGiveaways } from '@/lib/giveaway-recurrence';
 
 /**
  * CRON Job pour effectuer automatiquement le tirage des giveaways expirés
@@ -50,10 +51,14 @@ export async function GET(request: NextRequest) {
     console.log(`[CRON] Tirage terminé: ${result.processedCount} giveaways traités`);
     console.log(`[CRON] Résultats:`, JSON.stringify(result.results, null, 2));
 
+    const recurrence = await processDueRecurringGiveaways();
+    console.log(`[CRON] Giveaways récurrents: ${recurrence.processedCount} série(s) traitée(s)`);
+
     return NextResponse.json({
       success: true,
       message: 'Tirage automatique effectué',
-      ...result
+      ...result,
+      recurrence,
     });
 
   } catch (error) {
