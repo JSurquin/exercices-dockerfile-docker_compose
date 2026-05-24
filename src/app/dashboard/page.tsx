@@ -178,7 +178,7 @@ export default function DashboardPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const { data: tradesData, loading: tradesLoading, error: tradesError, refetch: refetchTrades } = useUserTrades();
-  const { data: platformStats, isLoading: platformStatsLoading } = usePublicStats({ marketing: false });
+  const { data: platformStats, isLoading: platformStatsLoading } = usePublicStats();
   const { data: dashboardStats, isLoading: statsLoading } = useQuery({
     queryKey: queryKeys.userDashboard,
     queryFn: async () => {

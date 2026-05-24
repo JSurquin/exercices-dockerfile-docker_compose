@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useLocale } from "@/components/providers/locale-provider";
-import { usePublicStats } from "@/hooks/use-public-stats";
+import { usePublicStats, formatPlatformVolume, formatCompactCount } from "@/hooks/use-public-stats";
 import { SiteTour } from "@/components/layout/site-tour";
 import { useTourMode } from "@/components/providers/tour-provider";
 import {
@@ -24,6 +24,10 @@ import {
 export function Footer() {
   const { messages } = useLocale();
   const { data: publicStats } = usePublicStats();
+  const volumeDisplay = formatPlatformVolume(publicStats?.totalVolumeCents ?? 0);
+  const tradesDisplay = formatCompactCount(publicStats?.completedTrades ?? 0);
+  const skinsDisplay = formatCompactCount(publicStats?.totalSkinsSold ?? 0);
+  const usersDisplay = formatCompactCount(publicStats?.totalUsers ?? 0);
   const { isTourMode: tourActive, startTour, endTour } = useTourMode();
 
   const links = {
@@ -237,25 +241,47 @@ export function Footer() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold text-orange-400 drop-shadow-lg">
-                  {(publicStats?.totalUsers ?? 0).toLocaleString()}+
+                  {usersDisplay.prefix}
+                  {usersDisplay.value.toLocaleString(undefined, {
+                    minimumFractionDigits: usersDisplay.decimals,
+                    maximumFractionDigits: usersDisplay.decimals,
+                  })}
+                  {usersDisplay.suffix}
                 </div>
                 <div className="text-sm text-white/60">{messages.footer.stats.activeUsers}</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-orange-400 drop-shadow-lg">
-                  €{publicStats?.volumeMillions ?? 0}M+
+                  {volumeDisplay.prefix}
+                  {volumeDisplay.value.toLocaleString(undefined, {
+                    minimumFractionDigits: volumeDisplay.decimals,
+                    maximumFractionDigits: volumeDisplay.decimals,
+                  })}
+                  {volumeDisplay.suffix}
                 </div>
                 <div className="text-sm text-white/60">{messages.footer.stats.volumeProcessed}</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-orange-400 drop-shadow-lg">
-                  {(publicStats?.completedTrades ?? 0).toLocaleString()}+
+                  {tradesDisplay.prefix}
+                  {tradesDisplay.value.toLocaleString(undefined, {
+                    minimumFractionDigits: tradesDisplay.decimals,
+                    maximumFractionDigits: tradesDisplay.decimals,
+                  })}
+                  {tradesDisplay.suffix}
                 </div>
                 <div className="text-sm text-white/60">{messages.footer.stats.tradesCompleted}</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-orange-400 drop-shadow-lg">99.8%</div>
-                <div className="text-sm text-white/60">{messages.footer.stats.satisfactionRate}</div>
+                <div className="text-2xl font-bold text-orange-400 drop-shadow-lg">
+                  {skinsDisplay.prefix}
+                  {skinsDisplay.value.toLocaleString(undefined, {
+                    minimumFractionDigits: skinsDisplay.decimals,
+                    maximumFractionDigits: skinsDisplay.decimals,
+                  })}
+                  {skinsDisplay.suffix}
+                </div>
+                <div className="text-sm text-white/60">{messages.footer.stats.skinsSold}</div>
               </div>
             </div>
           </div>

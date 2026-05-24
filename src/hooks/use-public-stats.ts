@@ -8,12 +8,11 @@ export interface PublicStats {
   totalSkinsSold: number;
 }
 
-const MARKETING_FALLBACK: PublicStats = {
-  totalUsers: 144,
-  completedTrades: 5,
-  volumeMillions: 0.6,
-  totalVolumeCents: 60_000_000,
-  totalSkinsSold: 1200,
+export type CompactNumberDisplay = {
+  value: number;
+  prefix: string;
+  suffix: string;
+  decimals: number;
 };
 
 const EMPTY_STATS: PublicStats = {
@@ -24,20 +23,38 @@ const EMPTY_STATS: PublicStats = {
   totalSkinsSold: 0,
 };
 
-async function fetchPublicStats(marketing: boolean): Promise<PublicStats> {
-  const res = await fetch('/api/stats');
-  if (!res.ok) return marketing ? MARKETING_FALLBACK : EMPTY_STATS;
-  return res.json();
+function roundCompact(value: number, decimals: number): number {
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
 }
 
-export function formatPlatformVolume(cents: number) {
+/** Formate un montant en centimes (€) : k / M / Md selon l'ampleur. */
+export function formatPlatformVolume(cents: number): CompactNumberDisplay {
   const euros = cents / 100;
+
+  if (euros >= 1_000_000_000) {
+    return {
+      value: roundCompact(euros / 1_000_000_000, 1),
+      prefix: '€',
+      suffix: ' Md',
+      decimals: 1,
+    };
+  }
   if (euros >= 1_000_000) {
     return {
-      value: Math.round((euros / 1_000_000) * 10) / 10,
+      value: roundCompact(euros / 1_000_000, 1),
       prefix: '€',
-      suffix: 'M',
+      suffix: ' M',
       decimals: 1,
+    };
+  }
+  if (euros >= 10_000) {
+    const decimals = euros >= 100_000 ? 0 : 1;
+    return {
+      value: roundCompact(euros / 1_000, decimals),
+      prefix: '€',
+      suffix: ' k',
+      decimals,
     };
   }
   if (euros >= 1_000) {
@@ -46,18 +63,51 @@ export function formatPlatformVolume(cents: number) {
   return { value: euros, prefix: '€', suffix: '', decimals: 2 };
 }
 
-type UsePublicStatsOptions = {
-  /** Affiche des valeurs marketing par défaut (homepage, footer). Désactivé sur le dashboard. */
-  marketing?: boolean;
-};
+/** Formate un grand entier (trades, skins, utilisateurs) : k / M / Md. */
+export function formatCompactCount(count: number): CompactNumberDisplay {
+  if (count >= 1_000_000_000) {
+    return {
+      value: roundCompact(count / 1_000_000_000, 1),
+      prefix: '',
+      suffix: ' Md+',
+      decimals: 1,
+    };
+  }
+  if (count >= 1_000_000) {
+    return {
+      value: roundCompact(count / 1_000_000, 1),
+      prefix: '',
+      suffix: ' M+',
+      decimals: 1,
+    };
+  }
+  if (count >= 10_000) {
+    const decimals = count >= 100_000 ? 0 : 1;
+    return {
+      value: roundCompact(count / 1_000, decimals),
+      prefix: '',
+      suffix: ' k+',
+      decimals,
+    };
+  }
+  return {
+    value: count,
+    prefix: '',
+    suffix: count > 0 ? '+' : '',
+    decimals: 0,
+  };
+}
 
-export function usePublicStats(options?: UsePublicStatsOptions) {
-  const marketing = options?.marketing ?? true;
+async function fetchPublicStats(): Promise<PublicStats> {
+  const res = await fetch('/api/stats');
+  if (!res.ok) return EMPTY_STATS;
+  return res.json();
+}
 
+export function usePublicStats() {
   return useQuery<PublicStats>({
-    queryKey: ['public-stats', marketing ? 'marketing' : 'real'],
-    queryFn: () => fetchPublicStats(marketing),
+    queryKey: ['public-stats'],
+    queryFn: fetchPublicStats,
     staleTime: 5 * 60 * 1000,
-    placeholderData: marketing ? MARKETING_FALLBACK : undefined,
   });
 }

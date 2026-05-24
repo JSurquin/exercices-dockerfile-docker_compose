@@ -7,7 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useAuth } from "@/components/providers/auth-provider";
-import { usePublicStats } from "@/hooks/use-public-stats";
+import {
+  usePublicStats,
+  formatPlatformVolume,
+  formatCompactCount,
+} from "@/hooks/use-public-stats";
 import { usePlatformSettings } from "@/hooks/use-platform-settings";
 import { motion } from "framer-motion";
 import CountUp from "react-countup";
@@ -145,10 +149,22 @@ export function HeroSection() {
   }, []);
 
   const stats = [
-    { value: Math.max(publicStats?.totalUsers ?? 144, 144), label: messages.hero.stats.users, prefix: "", suffix: "+" },
-    { value: Math.max(publicStats?.volumeMillions ?? 0.6, 0.6), label: messages.hero.stats.volume, prefix: "€", suffix: "M+" },
-    { value: Math.max(publicStats?.completedTrades ?? 5, 5), label: messages.hero.stats.trades, prefix: "", suffix: "+" },
-    { value: 99.8, label: messages.hero.stats.satisfaction, prefix: "", suffix: "%" },
+    {
+      ...formatCompactCount(publicStats?.totalUsers ?? 0),
+      label: messages.hero.stats.users,
+    },
+    {
+      ...formatPlatformVolume(publicStats?.totalVolumeCents ?? 0),
+      label: messages.hero.stats.volume,
+    },
+    {
+      ...formatCompactCount(publicStats?.completedTrades ?? 0),
+      label: messages.hero.stats.trades,
+    },
+    {
+      ...formatCompactCount(publicStats?.totalSkinsSold ?? 0),
+      label: messages.hero.stats.skinsSold,
+    },
   ];
 
   const features = [
@@ -384,7 +400,7 @@ export function HeroSection() {
                       end={stat.value}
                       duration={2}
                       delay={0.5}
-                      decimals={stat.value % 1 !== 0 ? 1 : 0}
+                      decimals={stat.decimals}
                     />
                     {stat.suffix}
                   </div>

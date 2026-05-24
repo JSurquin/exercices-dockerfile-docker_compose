@@ -108,7 +108,7 @@ export interface Messages {
       users: string;
       volume: string;
       trades: string;
-      satisfaction: string;
+      skinsSold: string;
     };
     tradeInterface: {
       estimation: string;
@@ -338,7 +338,7 @@ export interface Messages {
       date: string[];
     };
     trustStats: {
-      satisfaction: string;
+      skinsSold: string;
       users: string;
       volume: string;
       support: string;
@@ -601,7 +601,7 @@ export interface Messages {
       activeUsers: string;
       volumeProcessed: string;
       tradesCompleted: string;
-      satisfactionRate: string;
+      skinsSold: string;
     };
     disclaimer: string;
     copyright: string;

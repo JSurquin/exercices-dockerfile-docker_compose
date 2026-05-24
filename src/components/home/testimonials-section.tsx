@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 import { useLocale } from '@/components/providers/locale-provider';
-import { usePublicStats } from '@/hooks/use-public-stats';
+import { usePublicStats, formatPlatformVolume, formatCompactCount } from '@/hooks/use-public-stats';
 
 const RatingStars = ({ rating }: { rating: number }) => {
   return (
@@ -25,6 +25,9 @@ const RatingStars = ({ rating }: { rating: number }) => {
 export function TestimonialsSection() {
   const { messages } = useLocale();
   const { data: publicStats } = usePublicStats();
+  const volumeDisplay = formatPlatformVolume(publicStats?.totalVolumeCents ?? 0);
+  const skinsDisplay = formatCompactCount(publicStats?.totalSkinsSold ?? 0);
+  const usersDisplay = formatCompactCount(publicStats?.totalUsers ?? 0);
   
   const avatars = [
     'https://avatars.steamstatic.com/8707319fd87ef78f9c3166d44d5a928d72230415_full.jpg',
@@ -185,15 +188,36 @@ export function TestimonialsSection() {
           className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
         >
           <div>
-            <div className="text-3xl font-bold text-orange-600 mb-2">99.8%</div>
-            <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.satisfaction}</div>
+            <div className="text-3xl font-bold text-orange-600 mb-2">
+              {skinsDisplay.prefix}
+              {skinsDisplay.value.toLocaleString(undefined, {
+                minimumFractionDigits: skinsDisplay.decimals,
+                maximumFractionDigits: skinsDisplay.decimals,
+              })}
+              {skinsDisplay.suffix}
+            </div>
+            <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.skinsSold}</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-orange-600 mb-2">{(publicStats?.totalUsers ?? 0).toLocaleString()}+</div>
+            <div className="text-3xl font-bold text-orange-600 mb-2">
+              {usersDisplay.prefix}
+              {usersDisplay.value.toLocaleString(undefined, {
+                minimumFractionDigits: usersDisplay.decimals,
+                maximumFractionDigits: usersDisplay.decimals,
+              })}
+              {usersDisplay.suffix}
+            </div>
             <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.users}</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-orange-600 mb-2">€{publicStats?.volumeMillions ?? 0}M+</div>
+            <div className="text-3xl font-bold text-orange-600 mb-2">
+              {volumeDisplay.prefix}
+              {volumeDisplay.value.toLocaleString(undefined, {
+                minimumFractionDigits: volumeDisplay.decimals,
+                maximumFractionDigits: volumeDisplay.decimals,
+              })}
+              {volumeDisplay.suffix}
+            </div>
             <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.volume}</div>
           </div>
           <div>
