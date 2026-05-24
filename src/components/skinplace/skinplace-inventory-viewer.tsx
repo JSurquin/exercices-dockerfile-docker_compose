@@ -349,10 +349,19 @@ export function SkinplaceInventoryViewer({
     setPriceMaxUsd('');
   };
 
-  const handleSelectAllPurchasable = () => {
-    const purchasable = filteredItems.filter(isPurchasable);
-    setSelectedItems(purchasable.map((i) => i.id));
-    if (onSelectionChange) onSelectionChange(purchasable);
+  const purchasableFiltered = filteredItems.filter(isPurchasable);
+  const allPurchasableSelected =
+    purchasableFiltered.length > 0 &&
+    purchasableFiltered.every((item) => selectedItems.includes(item.id));
+
+  const handleToggleSelectAllPurchasable = () => {
+    if (allPurchasableSelected) {
+      setSelectedItems([]);
+      if (onSelectionChange) onSelectionChange([]);
+      return;
+    }
+    setSelectedItems(purchasableFiltered.map((i) => i.id));
+    if (onSelectionChange) onSelectionChange(purchasableFiltered);
   };
 
   const openSupportForItem = (item: NormalizedInventoryItem) => {
@@ -787,14 +796,16 @@ export function SkinplaceInventoryViewer({
               )}
             </div>
             <div className="flex flex-wrap items-center gap-2 justify-end">
-              {selectable && filteredItems.some(isPurchasable) && (
+              {selectable && purchasableFiltered.length > 0 && (
                 <Button
                   type="button"
-                  variant="secondary"
+                  variant={allPurchasableSelected ? 'outline' : 'secondary'}
                   size="sm"
-                  onClick={handleSelectAllPurchasable}
+                  onClick={handleToggleSelectAllPurchasable}
                 >
-                  {messages.components.skinplace.selectAll}
+                  {allPurchasableSelected
+                    ? messages.components.skinplace.deselectAll
+                    : messages.components.skinplace.selectAll}
                 </Button>
               )}
               <Button
