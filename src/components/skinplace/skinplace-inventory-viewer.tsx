@@ -1035,13 +1035,6 @@ export function SkinplaceInventoryViewer({
                         <div className="space-y-2">
                           {/* Image et badges */}
                           <div className="relative">
-                            {selectable && isSelected && (
-                              <div className="absolute top-1 left-1 z-10">
-                                <span className="inline-flex max-w-[calc(100%-0.5rem)] items-center rounded bg-orange-500 px-1.5 py-0.5 text-[10px] font-medium leading-tight text-white truncate">
-                                  {messages.components.skinplace.selected}
-                                </span>
-                              </div>
-                            )}
                             <SafeImg
                               src={item.icon_url}
                               alt={item.name}
@@ -1099,36 +1092,43 @@ export function SkinplaceInventoryViewer({
                             )}
                           </div>
                           
-                          {/* Prix + actions */}
-                          <div className="flex items-center justify-between gap-1.5 min-w-0">
-                            <div className="flex min-w-0 flex-col">
-                              {bonusRatePercent > 0 && !isDisabled ? (
-                                <>
-                                  <ConvertedPrice
-                                    usdCents={item.price_centimes + Math.round(item.price_centimes * bonusRatePercent / 100)}
-                                    className="text-lg font-bold text-amber-500"
-                                    showOriginal={false}
-                                  />
+                          {/* Prix + sélection */}
+                          <div className="space-y-1 min-w-0">
+                            <div className="flex items-start justify-between gap-1.5 min-w-0">
+                              <div className="flex min-w-0 flex-col flex-1">
+                                {bonusRatePercent > 0 && !isDisabled ? (
+                                  <>
+                                    <ConvertedPrice
+                                      usdCents={item.price_centimes + Math.round(item.price_centimes * bonusRatePercent / 100)}
+                                      className="text-lg font-bold text-amber-500 truncate"
+                                      showOriginal={false}
+                                    />
+                                    <ConvertedPrice
+                                      usdCents={item.price_centimes}
+                                      className="text-xs text-muted-foreground line-through truncate"
+                                      showOriginal={false}
+                                    />
+                                  </>
+                                ) : (
                                   <ConvertedPrice
                                     usdCents={item.price_centimes}
-                                    className="text-xs text-muted-foreground line-through"
+                                    className={`text-base font-bold truncate ${
+                                      isDisabled ? 'text-muted-foreground' : 'text-green-600'
+                                    }`}
                                     showOriginal={false}
                                   />
-                                </>
-                              ) : (
-                                <ConvertedPrice
-                                  usdCents={item.price_centimes}
-                                  className={`text-base font-bold truncate ${
-                                    isDisabled ? 'text-muted-foreground' : 'text-green-600'
-                                  }`}
-                                  showOriginal={false}
-                                />
+                                )}
+                              </div>
+                              {isOverstock && (
+                                <Badge variant="secondary" className="text-xs shrink-0">
+                                  {messages.components.skinplace.unavailable}
+                                </Badge>
                               )}
                             </div>
-                            {isOverstock && (
-                              <Badge variant="secondary" className="text-xs">
-                                {messages.components.skinplace.unavailable}
-                              </Badge>
+                            {selectable && isSelected && (
+                              <span className="block w-full rounded bg-orange-500 px-1.5 py-0.5 text-center text-[10px] font-medium leading-tight text-white">
+                                {messages.components.skinplace.selected}
+                              </span>
                             )}
                           </div>
 
