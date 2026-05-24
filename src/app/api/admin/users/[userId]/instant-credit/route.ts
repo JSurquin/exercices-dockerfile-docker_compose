@@ -3,6 +3,7 @@ import { prisma } from '~/prisma/prisma';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { releasePendingToBalance, creditBalance } from '@/lib/balance-service';
 import { currencyConverter } from '@/lib/currency-converter';
+import { TradeHooks } from '@/lib/trade-hooks';
 import { logger } from '@/lib/logger';
 
 export async function PATCH(
@@ -121,6 +122,12 @@ export async function PATCH(
           releasedTrades += 1;
           releasedAmountCents += eurCents;
           logger.info(`[InstantCredit] Retroactive instant credit applied to trade ${trade.id} (user ${userId})`);
+
+          try {
+            await TradeHooks.onTradeAvailable(trade.id);
+          } catch (hookErr) {
+            logger.error(`[InstantCredit] TradeHooks.onTradeAvailable failed for trade ${trade.id}`, hookErr);
+          }
         } catch (tradeErr) {
           logger.error(`[InstantCredit] Failed to apply retro instant credit on trade ${trade.id}`, tradeErr);
         }

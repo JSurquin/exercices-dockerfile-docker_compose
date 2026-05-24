@@ -5,6 +5,7 @@ import { computeSellPromoBonusCents as computeSellPromoBonusCentsPure } from '@/
 import { getUserRewardFlags, isAffiliateRewardsBlocked } from '@/lib/user-rewards-guard';
 import {
   computeAffiliateCommissionCents,
+  isAffiliateCommissionHoldComplete,
   isTradeEligibleForAffiliateCommission,
   normalizeAffiliateCode,
 } from '@/lib/affiliate-commission-logic';
@@ -233,7 +234,10 @@ export class AffiliateService {
    * Calcule et enregistre les commissions pour un trade validé (statut AVAILABLE+).
    * Appelé après la période de trade hold (~7 jours), pas au retrait utilisateur.
    */
-  static async calculateCommissionForTrade(tradeId: string): Promise<void> {
+  static async calculateCommissionForTrade(
+    tradeId: string,
+    options?: { skipHoldCheck?: boolean }
+  ): Promise<void> {
     const trade = await prisma.trade.findUnique({
       where: { id: tradeId },
       include: {
@@ -249,6 +253,13 @@ export class AffiliateService {
     if (!trade) return;
 
     if (!isTradeEligibleForAffiliateCommission(trade.status)) {
+      return;
+    }
+
+    if (
+      !options?.skipHoldCheck &&
+      !isAffiliateCommissionHoldComplete(trade)
+    ) {
       return;
     }
 

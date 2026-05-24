@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { TradeHooks } from '@/lib/trade-hooks';
-import { AffiliateService } from '@/lib/affiliate-service';
 import { prisma } from '../../../../../../prisma/prisma';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { adminAffiliateRecalculateSchema } from '@/lib/validation/schemas/admin-bodies';
@@ -58,7 +57,7 @@ export async function POST(request: NextRequest) {
           where: { id: tradeId },
           data: { affiliateCommissionProcessedAt: null },
         });
-        await AffiliateService.calculateCommissionForTrade(tradeId);
+        await TradeHooks.processAffiliateCommission(tradeId, { skipHoldCheck: true });
         
         await prisma.auditLog.create({
           data: {

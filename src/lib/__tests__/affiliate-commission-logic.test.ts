@@ -1,6 +1,8 @@
 import {
   AFFILIATE_COMMISSION_ELIGIBLE_STATUSES,
+  AFFILIATE_HOLD_DAYS_AFTER_INSTANT_CREDIT,
   computeAffiliateCommissionCents,
+  isAffiliateCommissionHoldComplete,
   isTradeEligibleForAffiliateCommission,
   normalizeAffiliateCode,
 } from '@/lib/affiliate-commission-logic';
@@ -30,5 +32,35 @@ describe('affiliate-commission-logic', () => {
       'PAYOUT_PENDING',
       'PAID',
     ]);
+  });
+
+  it('requires hold period to complete before commission', () => {
+    const future = new Date(Date.now() + 86_400_000);
+    expect(
+      isAffiliateCommissionHoldComplete({ instantCreditedAt: null, availableAt: future })
+    ).toBe(false);
+    expect(
+      isAffiliateCommissionHoldComplete({ instantCreditedAt: null, availableAt: new Date(0) })
+    ).toBe(true);
+  });
+
+  it('waits full hold after instant credit before commission', () => {
+    const recentInstant = new Date();
+    recentInstant.setDate(recentInstant.getDate() - 1);
+    expect(
+      isAffiliateCommissionHoldComplete({
+        instantCreditedAt: recentInstant,
+        availableAt: new Date(0),
+      })
+    ).toBe(false);
+
+    const oldInstant = new Date();
+    oldInstant.setDate(oldInstant.getDate() - AFFILIATE_HOLD_DAYS_AFTER_INSTANT_CREDIT);
+    expect(
+      isAffiliateCommissionHoldComplete({
+        instantCreditedAt: oldInstant,
+        availableAt: new Date(),
+      })
+    ).toBe(true);
   });
 });

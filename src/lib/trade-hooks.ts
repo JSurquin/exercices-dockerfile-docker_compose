@@ -314,6 +314,10 @@ export class TradeHooks {
       if (newStatus === 'FAILED' && oldStatus !== 'FAILED') {
         await AffiliateService.cancelCommissionsForTrade(tradeId);
       }
+
+      if (newStatus === 'CANCELLED' && oldStatus !== 'CANCELLED') {
+        await AffiliateService.cancelCommissionsForTrade(tradeId);
+      }
       
       // Log de l'audit
       await prisma.auditLog.create({
@@ -428,11 +432,7 @@ export class TradeHooks {
         });
       }
 
-      // XP + totalVolumeCents : déclenché à AVAILABLE (skin reçue, trade terminé côté user)
-      await this.updateUserExperience(tradeId);
-
-      // XP + totalVolumeCents : déclenché une seule fois quand le lock est acquis
-      // (skin confirmée reçue = trade terminé côté utilisateur)
+      // XP + totalVolumeCents : une seule fois quand le lock balance est acquis
       if (locked) {
         await this.updateUserExperience(tradeId);
       }
@@ -462,15 +462,7 @@ export class TradeHooks {
         }
       }
 
-      try {
-        await AffiliateService.calculateCommissionForTrade(tradeId);
-      } catch (commissionErr) {
-        logger.error(`[TradeHooks] Affiliate commission error for trade ${tradeId}`, commissionErr);
-        await prisma.trade.update({
-          where: { id: tradeId },
-          data: { affiliateCommissionProcessedAt: null },
-        }).catch(() => undefined);
-      }
+      await this.processAffiliateCommission(tradeId);
 
       logger.info(`[TradeHooks] Trade ${tradeId} ready for payout`);
     } catch (error) {
@@ -479,6 +471,24 @@ export class TradeHooks {
     }
   }
   
+  /**
+   * Attribution commission affilié — toujours passer par ce hook (pas d'appel direct Prisma ailleurs).
+   */
+  static async processAffiliateCommission(
+    tradeId: string,
+    options?: { skipHoldCheck?: boolean }
+  ): Promise<void> {
+    try {
+      await AffiliateService.calculateCommissionForTrade(tradeId, options);
+    } catch (commissionErr) {
+      logger.error(`[TradeHooks] Affiliate commission error for trade ${tradeId}`, commissionErr);
+      await prisma.trade.update({
+        where: { id: tradeId },
+        data: { affiliateCommissionProcessedAt: null },
+      }).catch(() => undefined);
+    }
+  }
+
   /**
    * Recalcule les commissions pour tous les trades d'un affilié
    * Utile pour les ajustements de taux de commission
@@ -547,7 +557,7 @@ export class TradeHooks {
           where: { id },
           data: { affiliateCommissionProcessedAt: null },
         });
-        await AffiliateService.calculateCommissionForTrade(id);
+        await this.processAffiliateCommission(id, { skipHoldCheck: true });
       }
       
       logger.info(`[TradeHooks] Successfully recalculated commissions for affiliate ${affiliateId}`);

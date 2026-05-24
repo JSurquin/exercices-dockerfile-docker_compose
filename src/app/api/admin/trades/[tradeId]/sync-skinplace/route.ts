@@ -194,6 +194,8 @@ export async function POST(
       await TradeHooks.onTradeAccepted(trade.userId, tradeId);
     } else if (newStatus === 'AVAILABLE') {
       await TradeHooks.onTradeAvailable(tradeId);
+    } else if (newStatus === 'FAILED' || newStatus === 'CANCELLED') {
+      await TradeHooks.onTradeStatusChanged(tradeId, oldStatus, newStatus);
     }
 
     return NextResponse.json({
