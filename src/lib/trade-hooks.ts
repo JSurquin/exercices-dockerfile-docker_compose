@@ -17,12 +17,11 @@ import { getUserRewardFlags, isAffiliateRewardsBlocked } from '@/lib/user-reward
  */
 export class TradeHooks {
   /**
-   * Hook appelé après qu'un trade soit marqué comme "PAID"
-   * Calcule et enregistre les commissions d'affiliation
+   * Hook legacy post-PAID (retrait utilisateur).
+   * Les commissions affilié sont désormais attribuées dans onTradeAvailable (après validation ~7j).
    */
   static async onTradePaid(tradeId: string): Promise<void> {
     try {
-      // Idempotence: skip if already processed
       const lock = await prisma.trade.updateMany({
         where: { id: tradeId, paidProcessedAt: null },
         data: { paidProcessedAt: new Date() },
@@ -31,15 +30,9 @@ export class TradeHooks {
         logger.warn(`[TradeHooks] onTradePaid already processed for trade ${tradeId}`);
         return;
       }
-
-      logger.info(`[TradeHooks] Processing trade ${tradeId} for affiliate commissions`);
-      
-      await AffiliateService.calculateCommissionForTrade(tradeId);
-      
-      logger.info(`[TradeHooks] Successfully processed trade ${tradeId}`);
+      logger.info(`[TradeHooks] Trade ${tradeId} marked PAID (affiliate commission handled at AVAILABLE)`);
     } catch (error) {
       logger.error(`[TradeHooks] Error processing trade ${tradeId}`, error);
-      // Rollback the lock so the trade can be reprocessed on next attempt
       try {
         await prisma.trade.update({ where: { id: tradeId }, data: { paidProcessedAt: null } });
       } catch (rollbackErr) {
@@ -293,6 +286,8 @@ export class TradeHooks {
           },
         },
       });
+
+      await AffiliateService.cancelCommissionsForTrade(tradeId);
     } catch (error) {
       logger.error(`[TradeHooks] Error reverting balance for trade ${tradeId}`, error);
       throw error;
@@ -311,9 +306,13 @@ export class TradeHooks {
         await this.onTradeAvailable(tradeId);
       }
       
-      // Si le trade passe à "PAID", calculer les commissions
+      // Si le trade passe à "PAID", journaliser (commissions déjà traitées à AVAILABLE)
       if (newStatus === 'PAID' && oldStatus !== 'PAID') {
         await this.onTradePaid(tradeId);
+      }
+
+      if (newStatus === 'FAILED' && oldStatus !== 'FAILED') {
+        await AffiliateService.cancelCommissionsForTrade(tradeId);
       }
       
       // Log de l'audit
@@ -463,6 +462,16 @@ export class TradeHooks {
         }
       }
 
+      try {
+        await AffiliateService.calculateCommissionForTrade(tradeId);
+      } catch (commissionErr) {
+        logger.error(`[TradeHooks] Affiliate commission error for trade ${tradeId}`, commissionErr);
+        await prisma.trade.update({
+          where: { id: tradeId },
+          data: { affiliateCommissionProcessedAt: null },
+        }).catch(() => undefined);
+      }
+
       logger.info(`[TradeHooks] Trade ${tradeId} ready for payout`);
     } catch (error) {
       logger.error(`[TradeHooks] Error processing available trade ${tradeId}`, error);
@@ -493,19 +502,52 @@ export class TradeHooks {
         throw new Error('Affiliate not found');
       }
       
-      // Supprimer les anciennes commissions non payées
-      await prisma.affiliateCommission.deleteMany({
-        where: {
-          affiliateId,
-          status: 'PENDING'
+      // Supprimer les commissions en attente et annuler leurs effets sur les stats
+      const pendingToRemove = await prisma.affiliateCommission.findMany({
+        where: { affiliateId, status: 'PENDING' },
+        include: { trade: { select: { grossCents: true } } },
+      });
+
+      for (const commission of pendingToRemove) {
+        if (commission.tradeId && commission.trade) {
+          if (commission.referralId) {
+            await prisma.affiliateReferral.update({
+              where: { id: commission.referralId },
+              data: {
+                volumeCents: { decrement: commission.trade.grossCents },
+                commissionCents: { decrement: commission.amountCents },
+              },
+            });
+          }
+          await prisma.affiliateStats.update({
+            where: { id: affiliateId },
+            data: {
+              totalVolumeCents: { decrement: commission.trade.grossCents },
+              totalCommissionCents: { decrement: commission.amountCents },
+            },
+          });
         }
+      }
+
+      await prisma.affiliateCommission.deleteMany({
+        where: { affiliateId, status: 'PENDING' },
       });
       
-      // Recalculer pour chaque trade payé
-      for (const referral of affiliate.referrals) {
-        if (referral.trade && referral.trade.status === 'PAID') {
-          await AffiliateService.calculateCommissionForTrade(referral.trade.id);
-        }
+      const referredUserIds = affiliate.referrals.map((r) => r.referredUserId);
+      const eligibleTrades = await prisma.trade.findMany({
+        where: {
+          userId: { in: referredUserIds },
+          status: { in: ['AVAILABLE', 'PAYOUT_PENDING', 'PAID'] },
+        },
+        select: { id: true },
+      });
+
+      for (const { id } of eligibleTrades) {
+        await prisma.trade.update({
+          where: { id },
+          data: { affiliateCommissionProcessedAt: null },
+        });
+        await AffiliateService.calculateCommissionForTrade(id);
       }
       
       logger.info(`[TradeHooks] Successfully recalculated commissions for affiliate ${affiliateId}`);

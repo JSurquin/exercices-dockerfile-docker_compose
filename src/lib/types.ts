@@ -195,13 +195,17 @@ export interface AffiliateCommission {
   id: string;
   affiliateId: string;
   referralId?: string;
+  tradeId?: string;
+  affiliateCode?: string;
+  commissionRate?: number;
   amountCents: number;
-  status: 'PENDING' | 'APPROVED' | 'PAID' | 'CANCELLED';
+  status: 'PENDING' | 'PAYOUT_REQUESTED' | 'APPROVED' | 'PAID' | 'CANCELLED';
   payoutId?: string;
   createdAt: Date;
   paidAt?: Date;
   referral?: AffiliateReferral;
   payout?: Payout;
+  trade?: Trade;
 }
 
 // Types Stripe
