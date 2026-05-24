@@ -3,6 +3,12 @@ import { prisma } from '../../prisma/prisma';
 import { AffiliateStats, AffiliateReferral, AffiliateCommission } from '@/lib/types';
 import { computeSellPromoBonusCents as computeSellPromoBonusCentsPure } from '@/lib/affiliate-sell-promo';
 import { getUserRewardFlags, isAffiliateRewardsBlocked } from '@/lib/user-rewards-guard';
+import {
+  computeAffiliateCommissionCents,
+  isAffiliateCommissionHoldComplete,
+  isTradeEligibleForAffiliateCommission,
+  normalizeAffiliateCode,
+} from '@/lib/affiliate-commission-logic';
 
 export {
   AFFILIATE_SELL_PROMO_FRAGMENTS,
@@ -225,76 +231,209 @@ export class AffiliateService {
   }
   
   /**
-   * Calcule et enregistre les commissions pour un trade
+   * Calcule et enregistre les commissions pour un trade validé (statut AVAILABLE+).
+   * Appelé après la période de trade hold (~7 jours), pas au retrait utilisateur.
    */
-  static async calculateCommissionForTrade(tradeId: string): Promise<void> {
+  static async calculateCommissionForTrade(
+    tradeId: string,
+    options?: { skipHoldCheck?: boolean }
+  ): Promise<void> {
     const trade = await prisma.trade.findUnique({
       where: { id: tradeId },
       include: {
         user: {
-          include: {
-            affiliateStats: true
-          }
-        }
-      }
+          select: {
+            id: true,
+            referredByAffiliateId: true,
+          },
+        },
+      },
     });
-    
-    if (!trade || !trade.user.referredByAffiliateId) return;
+
+    if (!trade) return;
+
+    if (!isTradeEligibleForAffiliateCommission(trade.status)) {
+      return;
+    }
+
+    if (
+      !options?.skipHoldCheck &&
+      !isAffiliateCommissionHoldComplete(trade)
+    ) {
+      return;
+    }
+
+    if (trade.affiliateCommissionProcessedAt) {
+      return;
+    }
+
+    const existingCommission = await prisma.affiliateCommission.findUnique({
+      where: { tradeId: trade.id },
+    });
+    if (existingCommission) {
+      await prisma.trade.update({
+        where: { id: tradeId },
+        data: { affiliateCommissionProcessedAt: new Date() },
+      });
+      return;
+    }
+
+    const affiliate = await this.resolveAffiliateForTrade(
+      trade.affiliatePromoCode,
+      trade.user.referredByAffiliateId,
+      trade.user.id
+    );
+    if (!affiliate) return;
 
     const rewardFlags = await getUserRewardFlags(trade.userId);
     if (isAffiliateRewardsBlocked(rewardFlags)) {
       console.warn(
         `[AffiliateService] Skipping commission for trade ${tradeId} — affiliate rewards blocked for user ${trade.userId}`
       );
+      await prisma.trade.update({
+        where: { id: tradeId },
+        data: { affiliateCommissionProcessedAt: new Date() },
+      });
       return;
     }
-    
-    const affiliate = await prisma.affiliateStats.findUnique({
-      where: { id: trade.user.referredByAffiliateId, isActive: true }
+
+    const commissionCents = computeAffiliateCommissionCents(
+      trade.grossCents,
+      affiliate.commissionRate
+    );
+    if (commissionCents <= 0) {
+      await prisma.trade.update({
+        where: { id: tradeId },
+        data: { affiliateCommissionProcessedAt: new Date() },
+      });
+      return;
+    }
+
+    const lock = await prisma.trade.updateMany({
+      where: { id: tradeId, affiliateCommissionProcessedAt: null },
+      data: { affiliateCommissionProcessedAt: new Date() },
     });
-    
-    if (!affiliate) return;
-    
-    // Calculer la commission (sur le volume brut)
-    const commissionCents = Math.floor(trade.grossCents * affiliate.commissionRate);
-    
-    // Mettre à jour la référence avec le volume et la commission
-    const referral = await prisma.affiliateReferral.findFirst({
+    if (lock.count === 0) return;
+
+    let referral = await prisma.affiliateReferral.findFirst({
       where: {
         affiliateId: affiliate.id,
-        referredUserId: trade.userId
-      }
+        referredUserId: trade.userId,
+      },
     });
-    
-    if (referral) {
-      await prisma.affiliateReferral.update({
-        where: { id: referral.id },
-        data: {
-          tradeId: trade.id,
-          volumeCents: { increment: trade.grossCents },
-          commissionCents: { increment: commissionCents }
-        }
-      });
-      
-      // Créer une commission
-      await prisma.affiliateCommission.create({
+
+    if (!referral) {
+      referral = await prisma.affiliateReferral.create({
         data: {
           affiliateId: affiliate.id,
-          referralId: referral.id,
-          amountCents: commissionCents,
-          status: 'PENDING'
-        }
+          referredUserId: trade.userId,
+          volumeCents: 0,
+          commissionCents: 0,
+        },
       });
-      
-      // Mettre à jour les statistiques de l'affilié
       await prisma.affiliateStats.update({
         where: { id: affiliate.id },
-        data: {
-          totalVolumeCents: { increment: trade.grossCents },
-          totalCommissionCents: { increment: commissionCents }
-        }
+        data: { totalReferrals: { increment: 1 } },
       });
     }
+
+    await prisma.affiliateReferral.update({
+      where: { id: referral.id },
+      data: {
+        tradeId: trade.id,
+        volumeCents: { increment: trade.grossCents },
+        commissionCents: { increment: commissionCents },
+      },
+    });
+
+    await prisma.affiliateCommission.create({
+      data: {
+        affiliateId: affiliate.id,
+        referralId: referral.id,
+        tradeId: trade.id,
+        affiliateCode: affiliate.code,
+        commissionRate: affiliate.commissionRate,
+        amountCents: commissionCents,
+        status: 'PENDING',
+      },
+    });
+
+    await prisma.affiliateStats.update({
+      where: { id: affiliate.id },
+      data: {
+        totalVolumeCents: { increment: trade.grossCents },
+        totalCommissionCents: { increment: commissionCents },
+      },
+    });
+  }
+
+  /**
+   * Annule les commissions en attente liées à un trade annulé / rollback.
+   */
+  static async cancelCommissionsForTrade(tradeId: string): Promise<void> {
+    const trade = await prisma.trade.findUnique({ where: { id: tradeId } });
+    if (!trade) return;
+
+    const pendingCommissions = await prisma.affiliateCommission.findMany({
+      where: {
+        tradeId,
+        status: { in: ['PENDING', 'PAYOUT_REQUESTED', 'APPROVED'] },
+      },
+    });
+
+    if (pendingCommissions.length === 0) return;
+
+    for (const commission of pendingCommissions) {
+      await prisma.affiliateCommission.update({
+        where: { id: commission.id },
+        data: { status: 'CANCELLED' },
+      });
+
+      if (commission.referralId) {
+        await prisma.affiliateReferral.update({
+          where: { id: commission.referralId },
+          data: {
+            volumeCents: { decrement: trade.grossCents },
+            commissionCents: { decrement: commission.amountCents },
+          },
+        });
+      }
+
+      await prisma.affiliateStats.update({
+        where: { id: commission.affiliateId },
+        data: {
+          totalVolumeCents: { decrement: trade.grossCents },
+          totalCommissionCents: { decrement: commission.amountCents },
+        },
+      });
+    }
+  }
+
+  private static async resolveAffiliateForTrade(
+    affiliatePromoCode: string | null,
+    referredByAffiliateId: string | null,
+    sellerUserId: string
+  ) {
+    if (affiliatePromoCode) {
+      const code = normalizeAffiliateCode(affiliatePromoCode);
+      const fromPromo = await prisma.affiliateStats.findFirst({
+        where: { code, isActive: true },
+      });
+      if (fromPromo && fromPromo.userId !== sellerUserId) {
+        return fromPromo;
+      }
+    }
+
+    if (referredByAffiliateId) {
+      const fromReferral = await prisma.affiliateStats.findUnique({
+        where: { id: referredByAffiliateId, isActive: true },
+      });
+      if (fromReferral && fromReferral.userId !== sellerUserId) {
+        return fromReferral;
+      }
+    }
+
+    return null;
   }
   
   /**

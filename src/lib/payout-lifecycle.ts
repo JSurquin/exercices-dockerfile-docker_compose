@@ -1,6 +1,7 @@
 import { prisma } from '~/prisma/prisma';
 import { debitBalance, unfreezeBalance } from '@/lib/balance-service';
 import { TradeHooks } from '@/lib/trade-hooks';
+import { AffiliateService } from '@/lib/affiliate-service';
 
 /**
  * Service centralisé pour le cycle de vie des payouts.
@@ -122,7 +123,7 @@ export class PayoutLifecycle {
           where: { id: options.tradeId },
           data: { status: 'PAID' },
         });
-        // XP, volume, commissions affilié — centralisé dans TradeHooks
+        // Marque le trade comme traité post-PAID (commissions déjà attribuées à AVAILABLE)
         await TradeHooks.onTradePaid(options.tradeId);
       } catch (err) {
         console.error(`[PayoutLifecycle] trade.update PAID / onTradePaid failed for ${payoutId}:`, err);
@@ -180,10 +181,23 @@ export class PayoutLifecycle {
 
     if (options.tradeId) {
       try {
+        const tradeBefore = await prisma.trade.findUnique({
+          where: { id: options.tradeId },
+          select: { status: true },
+        });
         await prisma.trade.update({
           where: { id: options.tradeId },
           data: { status: 'FAILED' },
         });
+        if (tradeBefore) {
+          await TradeHooks.onTradeStatusChanged(
+            options.tradeId,
+            tradeBefore.status,
+            'FAILED'
+          );
+        } else {
+          await AffiliateService.cancelCommissionsForTrade(options.tradeId);
+        }
       } catch (err) {
         console.error(`[PayoutLifecycle] trade.update FAILED failed for ${payoutId}:`, err);
       }

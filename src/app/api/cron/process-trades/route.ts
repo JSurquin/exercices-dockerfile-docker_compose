@@ -119,7 +119,38 @@ export async function POST(request: NextRequest) {
 
     console.log('[Cron] Trade processing completed:', response);
 
-    return NextResponse.json(response);
+    // Rattrapage : XP + commissions affilié via onTradeAvailable (même chemin que le webhook / cron principal)
+    const tradesMissingCommission = await prisma.trade.findMany({
+      where: {
+        status: { in: ['AVAILABLE', 'PAYOUT_PENDING', 'PAID'] },
+        affiliateCommissionProcessedAt: null,
+        balanceCreditedAt: { not: null },
+        OR: [
+          { affiliatePromoCode: { not: null } },
+          { user: { referredByAffiliateId: { not: null } } },
+        ],
+      },
+      select: { id: true },
+      take: 50,
+    });
+
+    let commissionsProcessed = 0;
+    for (const { id } of tradesMissingCommission) {
+      try {
+        await TradeHooks.onTradeAvailable(id);
+        commissionsProcessed++;
+      } catch (err) {
+        console.error(`[Cron] Affiliate commission catchup failed for trade ${id}:`, err);
+      }
+    }
+
+    return NextResponse.json({
+      ...response,
+      stats: {
+        ...response.stats,
+        affiliateCommissionsCatchup: commissionsProcessed,
+      },
+    });
   } catch (error) {
     console.error('[Cron] Fatal error in trade processing:', error);
     return NextResponse.json(

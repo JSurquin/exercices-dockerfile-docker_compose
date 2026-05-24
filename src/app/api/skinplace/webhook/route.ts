@@ -284,8 +284,9 @@ export async function GET(request: NextRequest) {
         await TradeHooks.onTradeAccepted(trade.userId, trade.id);
       } else if (newStatus === 'AVAILABLE') {
         await TradeHooks.onTradeAvailable(trade.id);
-      } else if (newStatus === 'FAILED') {
-        logger.error(`[WEBHOOK] Trade ${trade.id} failed`);
+      } else if (newStatus === 'FAILED' || newStatus === 'CANCELLED') {
+        logger.error(`[WEBHOOK] Trade ${trade.id} ${newStatus.toLowerCase()}`);
+        await TradeHooks.onTradeStatusChanged(trade.id, oldStatus, newStatus);
       }
     } else {
       logger.debug(`[WEBHOOK] Status not progressing: ${oldStatus} -> ${newStatus}, ignored`);

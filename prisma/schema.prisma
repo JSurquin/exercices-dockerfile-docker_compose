@@ -148,8 +148,10 @@ model Trade {
   balanceCreditedAt  DateTime?
   /// Horodatage du revert pending balance (IPN #2 rollback) — sert de verrou d'idempotence
   pendingRevertedAt  DateTime?
-  /// Horodatage du traitement post-PAID (XP, volume, commissions) — verrou d'idempotence
+  /// Horodatage du traitement post-PAID — verrou d'idempotence (legacy)
   paidProcessedAt    DateTime?
+  /// Horodatage attribution commission affilié (après validation 7j / statut AVAILABLE)
+  affiliateCommissionProcessedAt DateTime?
   /// Horodatage du crédit instantané (verrou d'idempotence pour éviter le double-crédit avec onTradeAvailable)
   instantCreditedAt  DateTime?
   /// Montant EUR crédité au moment du trade (verrouillé à IPN#1 pour cohérence release/rollback)
@@ -166,6 +168,7 @@ model Trade {
   expiresAt          DateTime?
   skinplaceToken     String?
   affiliateReferrals AffiliateReferral[]
+  affiliateCommissions AffiliateCommission[]
   payouts            Payout[]
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   items              TradeItem[]
@@ -413,18 +416,25 @@ model AffiliateReferral {
 }
 
 model AffiliateCommission {
-  id          String                    @id @default(cuid())
-  affiliateId String
-  referralId  String?
-  amountCents Int
-  status      AffiliateCommissionStatus @default(PENDING)
-  payoutId    String?
-  createdAt   DateTime                  @default(now())
-  paidAt      DateTime?
-  affiliate   AffiliateStats            @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  payout      Payout?                   @relation(fields: [payoutId], references: [id])
-  referral    AffiliateReferral?        @relation(fields: [referralId], references: [id])
+  id              String                    @id @default(cuid())
+  affiliateId     String
+  referralId      String?
+  tradeId         String?
+  /// Code affilié utilisé pour cette vente (snapshot)
+  affiliateCode   String?
+  /// Taux appliqué au moment de l'attribution (snapshot)
+  commissionRate  Float?
+  amountCents     Int
+  status          AffiliateCommissionStatus @default(PENDING)
+  payoutId        String?
+  createdAt       DateTime                  @default(now())
+  paidAt          DateTime?
+  affiliate       AffiliateStats            @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  payout          Payout?                   @relation(fields: [payoutId], references: [id])
+  referral        AffiliateReferral?        @relation(fields: [referralId], references: [id])
+  trade           Trade?                    @relation(fields: [tradeId], references: [id])
 
+  @@unique([tradeId])
   @@index([affiliateId])
   @@index([status])
   @@index([createdAt])

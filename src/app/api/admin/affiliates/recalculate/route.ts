@@ -53,7 +53,11 @@ export async function POST(request: NextRequest) {
           );
         }
         
-        await TradeHooks.onTradePaid(tradeId);
+        await prisma.trade.update({
+          where: { id: tradeId },
+          data: { affiliateCommissionProcessedAt: null },
+        });
+        await TradeHooks.processAffiliateCommission(tradeId, { skipHoldCheck: true });
         
         await prisma.auditLog.create({
           data: {
