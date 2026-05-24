@@ -32,6 +32,7 @@ import { toast } from 'sonner';
 import { useLocale } from '@/components/providers/locale-provider';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
+import { chatPriorityBadgeClass, chatStatusBadgeClass } from '@/lib/chat-badges';
 
 interface Moderator {
   id: string;
@@ -246,19 +247,6 @@ export default function AdminChatPage() {
   const formatDate = (date: Date) =>
     new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-  const statusBadgeClass = (status: string) => {
-    if (status === 'ACTIVE') return 'bg-green-500/20 text-green-400 border-green-500/30';
-    if (status === 'CLOSED') return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
-    return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-  };
-
-  const priorityBadgeClass = (priority: string) => {
-    if (priority === 'URGENT') return 'bg-red-500/20 text-red-400 border-red-500/30';
-    if (priority === 'HIGH') return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-    if (priority === 'NORMAL') return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-    return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
-  };
-
   if (!user || (user as any).role !== 'ADMIN') {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -398,10 +386,10 @@ export default function AdminChatPage() {
                           <h3 className="font-medium text-white truncate">
                             {conv.subject || messages.admin.chat.conversations.noSubject}
                           </h3>
-                          <Badge variant="outline" className={`text-xs ${statusBadgeClass(conv.status)}`}>
+                          <Badge variant="outline" className={`text-xs ${chatStatusBadgeClass(conv.status)}`}>
                             {conv.status}
                           </Badge>
-                          <Badge variant="outline" className={`text-xs ${priorityBadgeClass(conv.priority)}`}>
+                          <Badge variant="outline" className={`text-xs ${chatPriorityBadgeClass(conv.priority)}`}>
                             {conv.priority}
                           </Badge>
                         </div>
@@ -477,16 +465,16 @@ export default function AdminChatPage() {
           <div className="space-y-6">
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="flex items-center justify-between text-white">
+                <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-white">
                   <span>{t.title}</span>
                   <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
                     <DialogTrigger asChild>
-                      <Button className="bg-orange-500 hover:bg-orange-600 text-white">
+                      <Button className="bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto">
                         <PlusIcon className="w-4 h-4 mr-2" />
                         {t.addModerator}
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
+                    <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg w-[calc(100vw-2rem)] sm:w-full max-h-[90dvh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle className="text-white">{t.addModerator}</DialogTitle>
                       </DialogHeader>
@@ -613,16 +601,16 @@ export default function AdminChatPage() {
                     {moderators.map((moderator: Moderator) => (
                       <div
                         key={moderator.id}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-slate-900/40 border border-slate-700"
+                        className="flex flex-col gap-3 p-4 rounded-lg bg-slate-900/40 border border-slate-700"
                       >
-                        <div className="flex items-center gap-4 min-w-0">
+                        <div className="flex items-center gap-3 min-w-0">
                           <Avatar className="h-10 w-10 shrink-0">
                             <AvatarImage src={moderator.steamAvatar || undefined} />
                             <AvatarFallback className="bg-slate-700 text-white">
                               {moderator.name?.[0] || moderator.email[0]}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1">
                             <h3 className="font-semibold text-white truncate">{moderator.name || t.noName}</h3>
                             <p className="text-sm text-slate-400 truncate">{moderator.email}</p>
                             {moderator.steamUsername && (
@@ -641,8 +629,8 @@ export default function AdminChatPage() {
                           </Badge>
                         </div>
 
-                        <div className="flex items-center gap-4 shrink-0">
-                          <div className="text-right text-sm">
+                        <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-700/50">
+                          <div className="text-sm">
                             <p className="font-medium text-white">{moderator._count.assignedConversations} {t.conversations}</p>
                             <p className="text-slate-400">{moderator._count.chatMessages} messages</p>
                           </div>
@@ -650,7 +638,7 @@ export default function AdminChatPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                              className="border-red-500/50 text-red-400 hover:bg-red-500/10 shrink-0"
                               onClick={() => demoteModerator(moderator.id)}
                             >
                               <TrashIcon className="w-4 h-4" />
@@ -684,13 +672,13 @@ export default function AdminChatPage() {
                     {moderatorStats.map((stat: ModeratorStats) => (
                       <div
                         key={stat.id}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-slate-900/40 border border-slate-700"
+                        className="flex flex-col gap-4 p-4 rounded-lg bg-slate-900/40 border border-slate-700"
                       >
                         <div>
                           <h3 className="font-semibold text-white">{stat.name || t.noName}</h3>
-                          <p className="text-sm text-slate-400">{stat.email}</p>
+                          <p className="text-sm text-slate-400 truncate">{stat.email}</p>
                         </div>
-                        <div className="grid grid-cols-4 gap-6 text-center">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 text-center">
                           <div>
                             <p className="text-2xl font-bold text-white">{stat.assignedConversations}</p>
                             <p className="text-xs text-slate-400">{messages.admin.chat.performance.assigned}</p>
@@ -725,7 +713,7 @@ export default function AdminChatPage() {
                     <div className="space-y-3">
                       {Object.entries(chatStats.conversationsByPriority).map(([priority, count]) => (
                         <div key={priority} className="flex items-center justify-between">
-                          <Badge variant="outline" className={`text-xs ${priorityBadgeClass(priority)}`}>
+                          <Badge variant="outline" className={`text-xs ${chatPriorityBadgeClass(priority)}`}>
                             {priority}
                           </Badge>
                           <span className="font-semibold text-white">{count as string}</span>
