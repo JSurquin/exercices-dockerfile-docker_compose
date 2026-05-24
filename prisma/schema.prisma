@@ -459,6 +459,38 @@ model AffiliateApplication {
   @@index([createdAt])
 }
 
+model GiveawaySeries {
+  id                    String               @id @default(cuid())
+  title                 String
+  description           String
+  prize                 String
+  prizeImageUrl         String?
+  steamMarketHashName   String?
+  ticketPrice           Int
+  maxTickets            Int
+  /// Durée de chaque instance en minutes
+  durationMinutes       Int
+  frequency             GiveawayDurationType
+  winnerCount           Int                  @default(1)
+  maxEntriesPerUser     Int?
+  rewardValueCents      Int                  @default(0)
+  isPrivate             Boolean              @default(false)
+  requiredAffiliateCode String?
+  status                GiveawaySeriesStatus @default(ACTIVE)
+  startDate             DateTime
+  endDate               DateTime?
+  lastSpawnAt           DateTime?
+  nextSpawnAt           DateTime?
+  spawnCount            Int                  @default(0)
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  instances             Giveaway[]
+
+  @@index([status])
+  @@index([nextSpawnAt])
+  @@map("giveaway_series")
+}
+
 model Giveaway {
   id                    String               @id @default(cuid())
   title                 String
@@ -468,6 +500,7 @@ model Giveaway {
   ticketPrice           Int
   maxTickets            Int
   soldTickets           Int                  @default(0)
+  startDate             DateTime?
   endDate               DateTime
   status                GiveawayStatus       @default(ACTIVE)
   winnerId              String?
@@ -485,6 +518,8 @@ model Giveaway {
   steamMarketHashName   String?
   isPrivate             Boolean              @default(false)
   requiredAffiliateCode String?
+  seriesId              String?
+  series                GiveawaySeries?      @relation(fields: [seriesId], references: [id], onDelete: SetNull)
   entries               GiveawayEntry[]
   winners               GiveawayWinner[]
 
@@ -492,6 +527,7 @@ model Giveaway {
   @@index([endDate])
   @@index([durationType])
   @@index([isPrivate])
+  @@index([seriesId])
 }
 
 model GiveawayEntry {
@@ -907,8 +943,16 @@ enum AffiliatedRole {
 
 enum GiveawayStatus {
   ACTIVE
+  PAUSED
   ENDED
   CANCELLED
+  DISABLED
+}
+
+enum GiveawaySeriesStatus {
+  ACTIVE
+  PAUSED
+  DISABLED
 }
 
 enum GiveawayDurationType {

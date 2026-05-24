@@ -3,6 +3,7 @@ import { prisma } from '~/prisma/prisma';
 import { executeGiveawayDraw } from '@/lib/execute-giveaway-draw';
 import { emailService } from '@/lib/email';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
+import { scheduleNextSpawnAfterDraw } from '@/lib/giveaway-recurrence';
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,6 +40,9 @@ export async function POST(request: NextRequest) {
             where: { id: giveaway.id },
             data: { status: 'CANCELLED' },
           });
+          if (giveaway.seriesId) {
+            await scheduleNextSpawnAfterDraw(giveaway.seriesId, now);
+          }
           results.push({
             giveawayId: giveaway.id,
             status: 'cancelled',
@@ -86,6 +90,10 @@ export async function POST(request: NextRequest) {
           }
         } catch (emailErr) {
           console.error(`[auto-draw] Erreur email gagnant giveaway ${giveaway.id}:`, emailErr);
+        }
+
+        if (giveaway.seriesId) {
+          await scheduleNextSpawnAfterDraw(giveaway.seriesId, now);
         }
 
         results.push({

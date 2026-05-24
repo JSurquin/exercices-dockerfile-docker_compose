@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GiveawayAdmin } from '@/components/admin/giveaway-admin';
+import { GiveawayRecurringAdmin } from '@/components/admin/giveaway-recurring-admin';
 import { useGiveaways } from '@/hooks/use-giveaways';
 import { useLocale } from '@/components/providers/locale-provider';
 import { SafeImage } from '@/components/ui/safe-image';
@@ -327,7 +328,7 @@ export default function AdminGiveawaysPage() {
 
         {/* Main Content */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border-slate-700 h-auto">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-slate-800/50 border-slate-700 h-auto">
             <TabsTrigger value="list" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               <TrophyIcon className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline truncate">{messages.admin.giveaways.tabs.list}</span>
@@ -337,6 +338,11 @@ export default function AdminGiveawaysPage() {
               <PlusIcon className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline truncate">{messages.admin.giveaways.tabs.create}</span>
               <span className="sm:hidden text-[10px] leading-tight text-center">{messages.admin.giveaways.tabs.create}</span>
+            </TabsTrigger>
+            <TabsTrigger value="recurring" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+              <GiftIcon className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline truncate">{messages.admin.giveaways.tabs.recurring}</span>
+              <span className="sm:hidden text-[10px] leading-tight text-center">{messages.admin.giveaways.tabs.recurring}</span>
             </TabsTrigger>
             <TabsTrigger value="manage" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               <UserGroupIcon className="w-4 h-4 shrink-0" />
@@ -697,6 +703,11 @@ export default function AdminGiveawaysPage() {
             </Card>
           </TabsContent>
 
+          {/* Giveaways récurrents */}
+          <TabsContent value="recurring">
+            <GiveawayRecurringAdmin />
+          </TabsContent>
+
           {/* Gestion Automatique */}
           <TabsContent value="manage">
             <div className="space-y-6">
@@ -715,6 +726,7 @@ export default function AdminGiveawaysPage() {
                         <li>• {messages.admin.giveaways.info.autoPoint2}</li>
                         <li>• {messages.admin.giveaways.info.autoPoint3}</li>
                         <li>• {messages.admin.giveaways.info.autoPoint4}</li>
+                        <li>• {messages.admin.giveaways.info.autoPoint5}</li>
                       </ul>
                     </div>
                     
