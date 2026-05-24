@@ -46,5 +46,5 @@ export function isAffiliateCommissionHoldComplete(trade: {
     return trade.availableAt.getTime() <= now;
   }
 
-  return true;
+  return false;
 }

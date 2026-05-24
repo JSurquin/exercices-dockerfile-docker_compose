@@ -157,6 +157,15 @@ export class TradeHooks {
     
     if (!trade) return;
 
+    const alreadyAwarded = await prisma.pointTransaction.findFirst({
+      where: {
+        userId: trade.userId,
+        type: 'TRADE_SALE',
+        metadata: { path: ['tradeId'], equals: tradeId },
+      },
+    });
+    if (alreadyAwarded) return;
+
     // Attribution des points via le service configurable
     const { points: xpGained } = await awardTradePoints(
       trade.userId,
@@ -432,8 +441,8 @@ export class TradeHooks {
         });
       }
 
-      // XP + totalVolumeCents : une seule fois quand le lock balance est acquis
-      if (locked) {
+      // XP + totalVolumeCents : lock balance (flux normal) ou crédit instantané (balance déjà créditée à l'IPN #1)
+      if (locked || trade.instantCreditedAt) {
         await this.updateUserExperience(tradeId);
       }
 

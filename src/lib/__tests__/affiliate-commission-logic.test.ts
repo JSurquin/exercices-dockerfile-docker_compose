@@ -44,6 +44,12 @@ describe('affiliate-commission-logic', () => {
     ).toBe(true);
   });
 
+  it('blocks commission when hold dates are missing', () => {
+    expect(
+      isAffiliateCommissionHoldComplete({ instantCreditedAt: null, availableAt: null })
+    ).toBe(false);
+  });
+
   it('waits full hold after instant credit before commission', () => {
     const recentInstant = new Date();
     recentInstant.setDate(recentInstant.getDate() - 1);

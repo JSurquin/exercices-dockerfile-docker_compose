@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
 
     console.log('[Cron] Trade processing completed:', response);
 
-    // Rattrapage : commissions affilié via TradeHooks (même chemin que le webhook / cron principal)
+    // Rattrapage : XP + commissions affilié via onTradeAvailable (même chemin que le webhook / cron principal)
     const tradesMissingCommission = await prisma.trade.findMany({
       where: {
         status: { in: ['AVAILABLE', 'PAYOUT_PENDING', 'PAID'] },
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
     let commissionsProcessed = 0;
     for (const { id } of tradesMissingCommission) {
       try {
-        await TradeHooks.processAffiliateCommission(id);
+        await TradeHooks.onTradeAvailable(id);
         commissionsProcessed++;
       } catch (err) {
         console.error(`[Cron] Affiliate commission catchup failed for trade ${id}:`, err);
