@@ -460,10 +460,10 @@ export function AdminUsersTable() {
                   </div>
                 </TableCell>
                 <TableCell className="text-white">
-                  {formatCurrency(user.totalVolume)}
+                  {user.totalVolume > 0 ? formatCurrency(user.totalVolume) : '—'}
                 </TableCell>
                 <TableCell className="text-blue-400">
-                  {user.pendingVolume ? formatCurrency(user.pendingVolume) : '—'}
+                  {(user.pendingVolume ?? 0) > 0 ? formatCurrency(user.pendingVolume ?? 0) : '—'}
                 </TableCell>
                 <TableCell className="text-slate-300">
                   {user.tickets}

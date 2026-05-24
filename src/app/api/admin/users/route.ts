@@ -99,16 +99,32 @@ export async function GET(request: NextRequest) {
       prisma.user.count({ where: whereConditions }),
     ]);
 
-    // Calculer le volume en attente par utilisateur (trades actifs non payés/échoués)
     const userIds = users.map(u => u.id);
-    const pendingVolumeRows = await prisma.trade.groupBy({
-      by: ['userId'],
-      where: {
-        userId: { in: userIds },
-        status: { in: ['CREATED', 'ACCEPTED_BY_BOT', 'IN_TRADE_HOLD', 'AVAILABLE', 'PAYOUT_PENDING'] },
-      },
-      _sum: { grossCents: true },
-    });
+
+    // Volume total : tous les trades hors échec/annulation (aligné sur /api/user/trades)
+    const [totalVolumeRows, pendingVolumeRows] = await Promise.all([
+      prisma.trade.groupBy({
+        by: ['userId'],
+        where: {
+          userId: { in: userIds },
+          status: { notIn: ['FAILED', 'CANCELLED'] },
+        },
+        _sum: { grossCents: true },
+      }),
+      // Volume en attente : uniquement les trades encore en cours (hold Steam)
+      prisma.trade.groupBy({
+        by: ['userId'],
+        where: {
+          userId: { in: userIds },
+          status: { in: ['CREATED', 'ACCEPTED_BY_BOT', 'IN_TRADE_HOLD'] },
+        },
+        _sum: { grossCents: true },
+      }),
+    ]);
+
+    const totalVolumeMap = new Map(
+      totalVolumeRows.map(r => [r.userId, r._sum.grossCents ?? 0])
+    );
     const pendingVolumeMap = new Map(
       pendingVolumeRows.map(r => [r.userId, r._sum.grossCents ?? 0])
     );
@@ -122,7 +138,7 @@ export async function GET(request: NextRequest) {
       acceptedTermsAt: user.acceptedTermsAt || undefined,
       kycStatus: user.kycStatus as 'PENDING' | 'IN_PROGRESS' | 'VERIFIED' | 'REJECTED' | 'KYCAID_PENDING' | 'KYCAID_VERIFIED' | 'KYCAID_REJECTED',
       role: user.role,
-      totalVolume: user.totalVolumeCents,
+      totalVolume: Math.max(user.totalVolumeCents, totalVolumeMap.get(user.id) ?? 0),
       pendingVolume: pendingVolumeMap.get(user.id) ?? 0,
       pendingBalanceCents: user.pendingBalanceCents,
       bonusRatePercent: user.bonusRatePercent,
