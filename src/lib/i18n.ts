@@ -48,9 +48,9 @@ export const messages: Record<Locale, Messages> = {
     },
       stats: {
         users: "Utilisateurs actifs",
-        volume: "Millions d'€ traités",
+        volume: "Volume traité",
         trades: "Trades réalisés",
-        satisfaction: "Taux de satisfaction",
+        skinsSold: "Skins échangés",
       },
       tradeInterface: {
         estimation: "Estimation instantanée",
@@ -219,7 +219,7 @@ export const messages: Record<Locale, Messages> = {
         date: ["10 Nov 2025", "3 Mar 2026", "12 Avr 2025", "15 Nov 2025", "11 Jan 2024", "13 Avr 2026"]
       },
       trustStats: {
-        satisfaction: "Taux de satisfaction",
+        skinsSold: "Skins échangés",
         users: "Utilisateurs actifs", 
         volume: "Volume traité",
         support: "Support disponible"
@@ -571,7 +571,7 @@ export const messages: Record<Locale, Messages> = {
         activeUsers: "Utilisateurs actifs",
         volumeProcessed: "Volume traité",
         tradesCompleted: "Trades réalisés",
-        satisfactionRate: "Taux de satisfaction",
+        skinsSold: "Skins échangés",
       },
       disclaimer: "Avertissement : MoonSkin n'est pas affilié à Valve Corporation ou Steam. Counter-Strike et Steam sont des marques déposées de Valve Corporation. Le trading de skins comporte des risques et les prix peuvent fluctuer. Veuillez trader de manière responsable et ne jamais investir plus que ce que vous pouvez vous permettre de perdre.",
       copyright: "© 2026 MoonSkin. Tous droits réservés. | Licence EU: CT-2024-001",
@@ -7137,9 +7137,9 @@ export const messages: Record<Locale, Messages> = {
       },
       stats: {
         users: "Active users",
-        volume: "Million € traded",
+        volume: "Volume processed",
         trades: "Trades completed",
-        satisfaction: "Satisfaction rate",
+        skinsSold: "Skins exchanged",
       },
       tradeInterface: {
         estimation: "Instant estimation",
@@ -7308,7 +7308,7 @@ export const messages: Record<Locale, Messages> = {
         date: ["Nov 10, 2025", "Mar 3, 2026", "Apr 12, 2025", "Nov 15, 2025", "Jan 11, 2024", "Apr 13, 2026"]
       },
       trustStats: {
-        satisfaction: "Satisfaction rate",
+        skinsSold: "Skins exchanged",
         users: "Active users",
         volume: "Volume processed",
         support: "Support available"
@@ -7659,7 +7659,7 @@ export const messages: Record<Locale, Messages> = {
         activeUsers: "Active users",
         volumeProcessed: "Volume processed",
         tradesCompleted: "Trades completed",
-        satisfactionRate: "Satisfaction rate",
+        skinsSold: "Skins exchanged",
       },
       disclaimer: "Disclaimer: MoonSkin is not affiliated with Valve Corporation or Steam. Counter-Strike and Steam are registered trademarks of Valve Corporation. Skin trading involves risks and prices may fluctuate. Please trade responsibly and never invest more than you can afford to lose.",
       copyright: "© 2026 MoonSkin. All rights reserved. | EU License: CT-2024-001",
@@ -14225,9 +14225,9 @@ export const messages: Record<Locale, Messages> = {
       },
       stats: {
         users: "活跃用户",
-        volume: "百万欧元交易量",
+        volume: "交易量",
         trades: "完成交易",
-        satisfaction: "满意度",
+        skinsSold: "已交换皮肤",
       },
       tradeInterface: {
         estimation: "即时估价",
@@ -14396,7 +14396,7 @@ export const messages: Record<Locale, Messages> = {
         date: ["2025年11月10日", "2026年3月3日", "2025年4月12日", "2025年11月15日", "2024年1月11日", "2026年4月13日"]
       },
       trustStats: {
-        satisfaction: "满意度",
+        skinsSold: "已交换皮肤",
         users: "活跃用户",
         volume: "处理量",
         support: "客服可用"
@@ -14742,7 +14742,7 @@ export const messages: Record<Locale, Messages> = {
         activeUsers: "活跃用户",
         volumeProcessed: "处理量",
         tradesCompleted: "完成交易",
-        satisfactionRate: "满意度",
+        skinsSold: "已交换皮肤",
       },
       disclaimer: "免责声明：CashTrade与Valve Corporation或Steam无关。反恐精英和Steam是Valve Corporation的注册商标。皮肤交易存在风险，价格可能波动。请负责任地交易，永远不要投资超过您承受损失能力的资金。",
       copyright: "© 2026 MoonSkin. 保留所有权利。| 欧盟许可证：CT-2024-001",
