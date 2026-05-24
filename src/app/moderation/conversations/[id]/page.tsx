@@ -26,20 +26,14 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
+import { chatPriorityBadgeClass, chatSenderBadgeClass, chatStatusBadgeClass } from '@/lib/chat-badges';
 import { resolveI18nContent } from '@/lib/resolve-i18n-content';
 
-const senderTypeLabels = {
+const senderTypeLabels: Record<string, string> = {
   USER: 'Utilisateur',
   BOT: 'Bot',
   MODERATOR: 'Modérateur',
   SYSTEM: 'Système',
-};
-
-const senderTypeColors = {
-  USER: 'bg-blue-100 text-blue-800',
-  BOT: 'bg-green-100 text-green-800',
-  MODERATOR: 'bg-orange-100 text-orange-800',
-  SYSTEM: 'bg-gray-100 text-gray-800',
 };
 
 export default function ConversationPage() {
@@ -264,20 +258,10 @@ export default function ConversationPage() {
           </div>
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
-          <Badge
-            className={`text-xs px-1.5 py-0.5 ${conversation.status === 'ACTIVE' ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}
-          >
+          <Badge variant="outline" className={`text-xs px-1.5 py-0.5 ${chatStatusBadgeClass(conversation.status)}`}>
             {conversation.status}
           </Badge>
-          <Badge
-            className={`text-xs px-1.5 py-0.5 hidden sm:inline-flex ${
-              conversation.priority === 'URGENT'
-                ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'
-                : conversation.priority === 'HIGH'
-                ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300'
-                : 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
-            }`}
-          >
+          <Badge variant="outline" className={`text-xs px-1.5 py-0.5 hidden sm:inline-flex ${chatPriorityBadgeClass(conversation.priority)}`}>
             {conversation.priority}
           </Badge>
         </div>
@@ -292,13 +276,13 @@ export default function ConversationPage() {
           {/* Version mobile : accordéon */}
           <Collapsible className="lg:hidden">
             <CollapsibleTrigger asChild>
-              <button className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border bg-card text-sm font-medium hover:bg-muted/50 transition-colors">
+              <button className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-700 bg-slate-800/50 text-sm font-medium text-white hover:bg-slate-800 transition-colors">
                 <span>{messages.moderation.conversation.info.title}</span>
                 <ChevronDownIcon className="w-4 h-4 text-muted-foreground transition-transform duration-200 [[data-state=open]_&]:rotate-180" />
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="mt-2 rounded-lg border bg-card px-4 py-3 space-y-3">
+              <div className="mt-2 rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 space-y-3">
                 <SidebarContent
                   conversation={conversation}
                   messages={messages}
@@ -311,8 +295,8 @@ export default function ConversationPage() {
           </Collapsible>
 
           {/* Version desktop : toujours visible */}
-          <div className="hidden lg:block rounded-lg border bg-card p-4 space-y-4">
-            <p className="font-semibold text-sm">{messages.moderation.conversation.info.title}</p>
+          <div className="hidden lg:block rounded-lg border border-slate-700 bg-slate-800/50 p-4 space-y-4">
+            <p className="font-semibold text-sm text-white">{messages.moderation.conversation.info.title}</p>
             <SidebarContent
               conversation={conversation}
               messages={messages}
@@ -326,12 +310,12 @@ export default function ConversationPage() {
         {/* ── Zone chat ── */}
         <div className="lg:col-span-3">
           <Card
-            className="flex flex-col overflow-hidden"
-            style={{ height: 'clamp(520px, 72dvh, 860px)' }}
+            className="flex flex-col overflow-hidden bg-slate-800/50 border-slate-700"
+            style={{ height: 'clamp(480px, calc(100dvh - 180px), 860px)' }}
           >
             {/* En-tête chat */}
-            <CardHeader className="flex-shrink-0 py-3 px-4 border-b">
-              <CardTitle className="text-sm sm:text-base">
+            <CardHeader className="flex-shrink-0 py-3 px-4 border-b border-slate-700">
+              <CardTitle className="text-sm sm:text-base text-white">
                 {messages.moderation.conversation.messages.title}{' '}
                 <span className="text-muted-foreground font-normal">
                   ({conversation.messages.length})
@@ -360,10 +344,10 @@ export default function ConversationPage() {
                     <div className="max-w-[85%] sm:max-w-[72%] min-w-0">
                       <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                         <Badge
-                          className={`text-[10px] px-1.5 py-0 ${senderTypeColors[msg.senderType as keyof typeof senderTypeColors]}`}
-                          variant="secondary"
+                          variant="outline"
+                          className={`text-[10px] px-1.5 py-0 ${chatSenderBadgeClass(msg.senderType)}`}
                         >
-                          {senderTypeLabels[msg.senderType as keyof typeof senderTypeLabels]}
+                          {senderTypeLabels[msg.senderType] ?? msg.senderType}
                         </Badge>
                         <span className="text-[10px] text-muted-foreground">
                           {formatTime(msg.createdAt)}
@@ -394,7 +378,7 @@ export default function ConversationPage() {
             </div>
 
             {/* Zone saisie — ancrée en bas, jamais couverte */}
-            <div className="flex-shrink-0 border-t bg-card px-3 sm:px-4 py-2.5 sm:py-3">
+            <div className="flex-shrink-0 border-t border-slate-700 bg-slate-900/60 px-3 sm:px-4 py-2.5 sm:py-3">
               <div className="flex gap-2 items-end">
                 <Textarea
                   placeholder={messages.moderation.conversation.typeYourReply}
@@ -406,14 +390,14 @@ export default function ConversationPage() {
                       sendMessage();
                     }
                   }}
-                  className="flex-1 min-h-[60px] sm:min-h-[72px] max-h-[120px] resize-none text-sm"
+                  className="flex-1 min-h-[52px] sm:min-h-[60px] max-h-[120px] resize-none text-sm bg-slate-900 border-slate-600 text-white"
                   disabled={sending}
                 />
                 <Button
                   onClick={sendMessage}
                   disabled={!message.trim() || sending}
                   size="icon"
-                  className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 self-end"
+                  className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 self-end bg-orange-500 hover:bg-orange-600"
                 >
                   {sending ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
