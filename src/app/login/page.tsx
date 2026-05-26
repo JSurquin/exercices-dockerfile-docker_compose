@@ -155,7 +155,7 @@ export default function LoginPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder={messages.admin.login.emailPlaceholder}
+                    placeholder={messages.loginPage.emailPlaceholder}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required

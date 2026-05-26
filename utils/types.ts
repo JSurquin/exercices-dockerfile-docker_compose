@@ -6661,6 +6661,7 @@ export interface Messages {
     continueWithSteam: string;
     orContinueWithEmail: string;
     emailLabel: string;
+    emailPlaceholder: string;
     passwordLabel: string;
     forgotPassword: string;
     loggingIn: string;
