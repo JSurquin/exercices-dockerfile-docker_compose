@@ -488,6 +488,7 @@ export const messages: Record<Locale, Messages> = {
       selectPlaceholder: "Sélectionner",
       requireAuthTitle: "Connexion requise",
       requireAuthDescription: "Vous devez être connecté pour accéder à cette page.",
+      scrollToTop: "Remonter en haut de la page",
     },
     currencies: {
       usd: "Dollar américain",
@@ -7640,6 +7641,7 @@ export const messages: Record<Locale, Messages> = {
       selectPlaceholder: "Select",
       requireAuthTitle: "Login required",
       requireAuthDescription: "You must be logged in to access this page.",
+      scrollToTop: "Back to top",
     },
     currencies: {
       usd: "US Dollar",
@@ -14787,6 +14789,7 @@ export const messages: Record<Locale, Messages> = {
       selectPlaceholder: "选择",
       requireAuthTitle: "需要登录",
       requireAuthDescription: "您必须登录后才能访问此页面。",
+      scrollToTop: "回到页面顶部",
     },
     currencies: {
       usd: "美元",

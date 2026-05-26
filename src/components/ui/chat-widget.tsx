@@ -160,6 +160,12 @@ export function ChatWidget() {
     return () => window.removeEventListener("open-support-chat", handleOpenSupport);
   }, []);
 
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("chat-widget-open-change", { detail: { open: isOpen } })
+    );
+  }, [isOpen]);
+
   const handleCategorySelect = (category: Category) => {
     setSelectedCategory(category);
     setChatStep("subcategories");
