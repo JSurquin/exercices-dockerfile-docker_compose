@@ -12,6 +12,7 @@ const OFFSET_ABOVE_CHAT = "4.25rem";
 
 export function ScrollToTopButton() {
   const [visible, setVisible] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const { messages } = useLocale();
 
   useEffect(() => {
@@ -23,6 +24,15 @@ export function ScrollToTopButton() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    const onChatOpenChange = (e: Event) => {
+      setChatOpen((e as CustomEvent<{ open: boolean }>).detail.open);
+    };
+    window.addEventListener("chat-widget-open-change", onChatOpenChange);
+    return () =>
+      window.removeEventListener("chat-widget-open-change", onChatOpenChange);
+  }, []);
+
   const scrollToTop = useCallback(() => {
     window.scrollTo({
       top: 0,
@@ -32,6 +42,8 @@ export function ScrollToTopButton() {
     });
   }, []);
 
+  const showButton = visible && !chatOpen;
+
   return (
     <div
       className={cn(
@@ -39,7 +51,7 @@ export function ScrollToTopButton() {
         "bottom-[calc(max(1rem,env(safe-area-inset-bottom,0px))+var(--scroll-top-offset))]",
         "sm:bottom-[calc(max(1.5rem,env(safe-area-inset-bottom,0px))+var(--scroll-top-offset))]",
         "transition-all duration-200",
-        visible
+        showButton
           ? "opacity-100 translate-y-0 pointer-events-auto"
           : "opacity-0 translate-y-2 pointer-events-none"
       )}
@@ -53,7 +65,7 @@ export function ScrollToTopButton() {
         type="button"
         onClick={scrollToTop}
         aria-label={messages.common.scrollToTop}
-        tabIndex={visible ? 0 : -1}
+        tabIndex={showButton ? 0 : -1}
         className={cn(
           "h-11 w-11 rounded-full",
           "bg-background/90 backdrop-blur-md border border-orange-500/30",
