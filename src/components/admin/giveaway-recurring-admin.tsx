@@ -15,8 +15,12 @@ import {
   PlayIcon,
   PowerIcon,
   PlusIcon,
+  CubeIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useLocale } from '@/components/providers/locale-provider';
+import { SafeImage } from '@/components/ui/safe-image';
+import { SkinPickerModal } from '@/components/admin/skin-picker-modal';
 import {
   GIVEAWAY_DEFAULT_MAX_TICKETS,
   GIVEAWAY_DEFAULT_TICKET_PRICE,
@@ -26,11 +30,23 @@ import {
 type SeriesStatus = 'ACTIVE' | 'PAUSED' | 'DISABLED';
 type RecurringFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
+interface SkinItem {
+  steam_market_hash_name: string;
+  icon_url: string | null;
+  price: number | null;
+  rarity: string | null;
+  rarity_color: string | null;
+  exterior: string | null;
+  item_type: string | null;
+  phase: string | null;
+}
+
 interface GiveawaySeriesRow {
   id: string;
   title: string;
   description: string;
   prize: string;
+  prizeImageUrl?: string | null;
   frequency: RecurringFrequency;
   durationMinutes: number;
   status: SeriesStatus;
@@ -51,6 +67,8 @@ interface SeriesForm {
   title: string;
   description: string;
   prize: string;
+  prizeImageUrl: string;
+  steamMarketHashName: string;
   ticketPrice: number;
   maxTickets: number;
   durationMinutes: number;
@@ -68,6 +86,8 @@ const defaultForm = (): SeriesForm => ({
   title: '',
   description: '',
   prize: '',
+  prizeImageUrl: '',
+  steamMarketHashName: '',
   ticketPrice: GIVEAWAY_DEFAULT_TICKET_PRICE,
   maxTickets: GIVEAWAY_DEFAULT_MAX_TICKETS,
   durationMinutes: 24 * 60,
@@ -84,12 +104,31 @@ const defaultForm = (): SeriesForm => ({
 export function GiveawayRecurringAdmin() {
   const { messages } = useLocale();
   const t = messages.admin.giveaways.recurring;
+  const formT = messages.admin.giveaways.form;
   const [series, setSeries] = useState<GiveawaySeriesRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<SeriesForm>(defaultForm);
+  const [selectedSkin, setSelectedSkin] = useState<SkinItem | null>(null);
+  const [skinPickerOpen, setSkinPickerOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const handleSelectSkin = (skin: SkinItem) => {
+    setSelectedSkin(skin);
+    setForm((prev) => ({
+      ...prev,
+      prize: skin.steam_market_hash_name,
+      prizeImageUrl: skin.icon_url ?? '',
+      steamMarketHashName: skin.steam_market_hash_name,
+      rewardValueCents: skin.price != null ? Math.round(skin.price * 100) : prev.rewardValueCents,
+    }));
+  };
+
+  const handleClearSkin = () => {
+    setSelectedSkin(null);
+    setForm((prev) => ({ ...prev, prize: '', prizeImageUrl: '', steamMarketHashName: '' }));
+  };
 
   const loadSeries = useCallback(async () => {
     setLoading(true);
@@ -132,7 +171,8 @@ export function GiveawayRecurringAdmin() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title || !form.description || !form.prize) {
+    const prizeValue = selectedSkin?.steam_market_hash_name || form.prize;
+    if (!form.title || !form.description || !prizeValue) {
       toast.error(t.requiredFields);
       return;
     }
@@ -144,6 +184,9 @@ export function GiveawayRecurringAdmin() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          prize: prizeValue,
+          prizeImageUrl: form.prizeImageUrl || null,
+          steamMarketHashName: form.steamMarketHashName || null,
           maxEntriesPerUser: form.maxEntriesPerUser.trim()
             ? parseInt(form.maxEntriesPerUser, 10)
             : null,
@@ -161,6 +204,7 @@ export function GiveawayRecurringAdmin() {
       }
       toast.success(t.createSuccess);
       setForm(defaultForm());
+      setSelectedSkin(null);
       setShowForm(false);
       await loadSeries();
     } catch (err) {
@@ -217,13 +261,59 @@ export function GiveawayRecurringAdmin() {
                     required
                   />
                 </div>
-                <div>
-                  <Label>{t.formPrize}</Label>
-                  <Input
-                    value={form.prize}
-                    onChange={(e) => setForm((p) => ({ ...p, prize: e.target.value }))}
-                    required
-                  />
+                <div className="md:col-span-2">
+                  <Label>{formT.prizeLabel}</Label>
+                  {selectedSkin ? (
+                    <div className="flex items-center gap-3 mt-1 p-3 rounded-xl border border-orange-500/60 bg-slate-700/50">
+                      <SafeImage
+                        src={selectedSkin.icon_url}
+                        alt={selectedSkin.steam_market_hash_name}
+                        width={64}
+                        height={48}
+                        className="object-contain rounded shrink-0 drop-shadow-lg"
+                        fallbackIcon={<CubeIcon className="w-8 h-8" />}
+                        unoptimized
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white truncate">{selectedSkin.steam_market_hash_name}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {selectedSkin.price != null ? `~${selectedSkin.price.toFixed(2)} $` : formT.priceUnknown}
+                          {selectedSkin.exterior ? ` · ${selectedSkin.exterior}` : ''}
+                          {selectedSkin.rarity ? ` · ${selectedSkin.rarity}` : ''}
+                        </p>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setSkinPickerOpen(true)}
+                          className="text-xs text-orange-400 hover:text-orange-300 transition-colors px-2 py-1 rounded border border-orange-500/40 hover:border-orange-400"
+                        >
+                          {formT.changeSkin}
+                        </button>
+                        <button type="button" onClick={handleClearSkin} className="text-slate-400 hover:text-red-400 transition-colors">
+                          <XMarkIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setSkinPickerOpen(true)}
+                      className="mt-1 w-full flex items-center gap-3 rounded-xl border-2 border-dashed border-slate-600 hover:border-orange-500/60 bg-slate-800/40 hover:bg-slate-700/40 px-4 py-4 transition-all group"
+                    >
+                      <div className="p-2 rounded-lg bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
+                        <CubeIcon className="w-6 h-6 text-orange-400" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
+                          {formT.chooseSkin}
+                        </p>
+                        <p className="text-xs text-slate-500 group-hover:text-slate-400 transition-colors">
+                          {formT.browseSkinplace}
+                        </p>
+                      </div>
+                    </button>
+                  )}
                 </div>
                 <div>
                   <Label>{t.formFrequency}</Label>
@@ -276,6 +366,17 @@ export function GiveawayRecurringAdmin() {
                     value={form.ticketPrice}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, ticketPrice: parseInt(e.target.value, 10) || 1 }))
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>{formT.rewardValueLabel}</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={form.rewardValueCents}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, rewardValueCents: parseInt(e.target.value, 10) || 0 }))
                     }
                   />
                 </div>
@@ -345,6 +446,15 @@ export function GiveawayRecurringAdmin() {
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <SafeImage
+                          src={row.prizeImageUrl}
+                          alt={row.prize}
+                          width={52}
+                          height={38}
+                          className="object-contain rounded shrink-0"
+                          fallbackIcon={<CubeIcon className="w-8 h-8 text-orange-600" />}
+                          unoptimized
+                        />
                         <h3 className="text-lg font-semibold text-white">{row.title}</h3>
                         {statusBadge(row.status)}
                         <Badge variant="outline">{t.frequency[row.frequency.toLowerCase() as keyof typeof t.frequency] ?? row.frequency}</Badge>
@@ -422,6 +532,13 @@ export function GiveawayRecurringAdmin() {
           })}
         </div>
       )}
+
+      <SkinPickerModal
+        open={skinPickerOpen}
+        onOpenChange={setSkinPickerOpen}
+        onSelect={handleSelectSkin}
+        selected={selectedSkin}
+      />
     </div>
   );
 }
