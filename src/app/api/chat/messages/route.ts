@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 import { resolveChatIdentity } from '@/lib/require-admin';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { createChatMessageSchema } from '@/lib/validation/schemas/chat-api';
+import { maybeGenerateAiReply } from '@/lib/chat-ai-service';
 
 // POST /api/chat/messages - Créer un nouveau message
 export async function POST(request: NextRequest) {
@@ -136,6 +137,12 @@ export async function POST(request: NextRequest) {
         senderType,
         contentLength: body.content.length,
       });
+    }
+
+    // Réponse IA (Ollama) en arrière-plan — sans bloquer la requête.
+    // Désactivée si modérateur assigné ou déjà intervenu.
+    if (senderType === 'USER') {
+      void maybeGenerateAiReply(body.conversationId);
     }
 
     return NextResponse.json(message, { status: 201 });
