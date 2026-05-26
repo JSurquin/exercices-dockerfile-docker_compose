@@ -522,13 +522,13 @@ body.next-dev-overlay-present #sentry-feedback {
 
 /* MoonSkin tour (driver.js) */
 .moonskin-tour-popover {
-  background: rgba(15, 15, 20, 0.95) !important;
+  background: #0f0f14 !important;
   border: 1px solid rgba(249, 115, 22, 0.35) !important;
   border-radius: 14px !important;
-  backdrop-filter: blur(16px) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(249, 115, 22, 0.15) !important;
   color: #f5f5f5 !important;
   max-width: 360px !important;
+  overflow: visible !important;
 }
 
 .moonskin-tour-popover .driver-popover-title {
@@ -549,16 +549,34 @@ body.next-dev-overlay-present #sentry-feedback {
   font-size: 0.75rem !important;
 }
 
+.moonskin-tour-popover .driver-popover-footer {
+  overflow: visible !important;
+  gap: 8px !important;
+}
+
+.moonskin-tour-popover .driver-popover-navigation-btns {
+  overflow: visible !important;
+  gap: 8px !important;
+}
+
 .moonskin-tour-popover .driver-popover-footer button {
+  all: unset;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   background: linear-gradient(135deg, #f97316, #dc2626) !important;
   color: #fff !important;
   border: none !important;
   border-radius: 8px !important;
-  padding: 6px 14px !important;
+  padding: 8px 14px !important;
   font-size: 0.8rem !important;
   font-weight: 600 !important;
+  line-height: 1.2 !important;
+  text-shadow: none !important;
   cursor: pointer !important;
   transition: opacity 0.2s !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
 .moonskin-tour-popover .driver-popover-footer button:hover {
@@ -566,8 +584,9 @@ body.next-dev-overlay-present #sentry-feedback {
 }
 
 .moonskin-tour-popover .driver-popover-footer .driver-popover-prev-btn {
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: rgba(255, 255, 255, 0.7) !important;
+  background: #2a2a32 !important;
+  color: #e5e5e5 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
 .moonskin-tour-popover .driver-popover-close-btn {
