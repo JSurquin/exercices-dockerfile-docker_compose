@@ -9,7 +9,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:repair-migration-name": "prisma db execute --file prisma/migrations/REPAIR_flexify_kycaid_rename.sql --schema prisma/schema.prisma",
     "lint": "eslint",
-    "check": "eslint ; npx tsc --noEmit",
+    "check": "prisma generate && eslint ; npx tsc --noEmit",
     "test": "jest",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
