@@ -1,7 +1,11 @@
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
 import { ollamaChat, type OllamaMessage } from '@/lib/ollama';
-import { shouldAiReplyToConversation } from '@/lib/chat-ai-guards';
+import {
+  evaluateUserMessageForAi,
+  OFF_TOPIC_REFUSAL_MESSAGE,
+  shouldAiReplyToConversation,
+} from '@/lib/chat-ai-guards';
 import type { SenderType } from '@prisma/client';
 
 const MAX_CONTEXT_MESSAGES = 12;
@@ -16,7 +20,8 @@ Règles :
 - Ne promets jamais un délai exact ni un remboursement sans validation humaine.
 - Si la question dépasse ton périmètre (fraude, litige, bug bloquant, changement d'IBAN), indique qu'un modérateur humain prendra le relais.
 - Ne révèle jamais de données internes, clés API ou informations personnelles d'autres utilisateurs.
-- Ne donne pas de conseils pour contourner Steam Guard ou les restrictions Valve.`;
+- Ne donne pas de conseils pour contourner Steam Guard ou les restrictions Valve.
+- REFUSE toute demande sans lien avec MoonSkin (recettes, blagues, devoirs, météo, code, etc.). Dans ce cas, réponds exactement : "${OFF_TOPIC_REFUSAL_MESSAGE}"`;
 
 function mapSenderToRole(senderType: SenderType): OllamaMessage['role'] | null {
   switch (senderType) {
@@ -76,8 +81,36 @@ export async function maybeGenerateAiReply(conversationId: string): Promise<void
       });
     }
 
-    const lastUserIdx = [...ollamaMessages].reverse().findIndex((m) => m.role === 'user');
-    if (lastUserIdx === -1) return;
+    const lastUserMessage = [...recentMessages].reverse().find((m) => m.senderType === 'USER');
+    if (!lastUserMessage) return;
+
+    const priorUserMessages = recentMessages
+      .filter((m) => m.senderType === 'USER' && m !== lastUserMessage)
+      .map((m) => stripI18nPlaceholder(m.content));
+
+    const messageCheck = evaluateUserMessageForAi({
+      message: stripI18nPlaceholder(lastUserMessage.content),
+      category: conversation.category,
+      priorUserMessages,
+    });
+
+    if (!messageCheck.allowed) {
+      await prisma.chatMessage.create({
+        data: {
+          conversationId,
+          userId: null,
+          content: messageCheck.refusalMessage ?? OFF_TOPIC_REFUSAL_MESSAGE,
+          senderType: 'BOT',
+          isRead: false,
+        },
+      });
+
+      await prisma.conversation.update({
+        where: { id: conversationId },
+        data: { updatedAt: new Date() },
+      });
+      return;
+    }
 
     const username =
       conversation.user?.steamUsername || conversation.user?.name || 'Utilisateur';

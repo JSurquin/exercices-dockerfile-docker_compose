@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "docker:rag:up": "docker compose -f docker-compose.rag.yml up -d",
+    "docker:rag:down": "docker compose -f docker-compose.rag.yml down",
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
