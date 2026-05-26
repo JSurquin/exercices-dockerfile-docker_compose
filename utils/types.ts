@@ -532,6 +532,7 @@ export interface Messages {
     selectPlaceholder: string;
     requireAuthTitle: string;
     requireAuthDescription: string;
+    scrollToTop: string;
   };
   currencies: {
     usd: string;

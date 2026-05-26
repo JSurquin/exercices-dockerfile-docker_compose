@@ -11,6 +11,7 @@ import { TourModeProvider } from "@/components/providers/tour-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ChatWidget } from "@/components/ui/chat-widget";
+import { ScrollToTopButton } from "@/components/ui/scroll-to-top-button";
 import { Toaster } from "@/components/ui/sonner";
 import { PayoutReconciler } from "@/components/payout-reconciler";
 import UpdateNotifier from "@/components/update-notifier";
@@ -92,6 +93,7 @@ export default function RootLayout({
                   </main>
                   
                   {!isAdminRoute && <Footer />}
+                  {!isAdminRoute && <ScrollToTopButton />}
                   {!isAdminRoute && <ChatWidget />}
                   
                   <PayoutReconciler />
