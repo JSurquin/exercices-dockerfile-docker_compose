@@ -349,8 +349,8 @@ export function Header() {
                 <Bars3Icon className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px] overflow-y-auto">
-              <div className="flex flex-col space-y-3 sm:space-y-4 pb-8">
+            <SheetContent side="right" className="w-[280px] sm:w-[320px] overflow-y-auto">
+              <div className="flex flex-col space-y-3 sm:space-y-4 px-4 pt-12 pb-8">
                 {/* User Section */}
                 {user ? (
                   <div className="flex items-center space-x-3 p-4 border rounded-lg">
