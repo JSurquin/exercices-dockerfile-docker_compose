@@ -3,6 +3,8 @@ import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { mapTradeStatusFromDb } from '@/lib/status-mapper';
 
+const COMPLETED_TRADE_STATUSES = ['PAID', 'PAYOUT_PENDING', 'AVAILABLE'] as const;
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
@@ -14,6 +16,27 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = session.user.id;
+
+    const [collectedResult, skinsSoldCount] = await Promise.all([
+      prisma.trade.aggregate({
+        where: {
+          userId,
+          status: { in: [...COMPLETED_TRADE_STATUSES] },
+        },
+        _sum: { netCents: true },
+      }),
+      prisma.tradeItem.count({
+        where: {
+          trade: {
+            userId,
+            status: { in: [...COMPLETED_TRADE_STATUSES] },
+          },
+        },
+      }),
+    ]);
+
+    const totalCollectedCents = collectedResult._sum.netCents ?? 0;
+    const totalSkinsSold = skinsSoldCount;
 
     // Statistiques de volume par jour (7 derniers jours)
     const sevenDaysAgo = new Date();
@@ -135,6 +158,8 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json({
+      totalCollectedCents,
+      totalSkinsSold,
       volumeData,
       tradeStatusData,
     });

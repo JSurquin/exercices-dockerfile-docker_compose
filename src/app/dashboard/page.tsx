@@ -24,7 +24,7 @@ import { Messages } from "~/utils/types";
 import { User } from "~/utils/types";
 import { toast } from "sonner";
 import { useUserTrades } from "@/hooks/use-user-trades";
-import { usePublicStats, formatPlatformVolume } from "@/hooks/use-public-stats";
+import { formatPlatformVolume } from "@/hooks/use-public-stats";
 import { TradeItemsGallery } from "@/components/trade/trade-items-gallery";
 import {
   CurrencyDollarIcon,
@@ -178,7 +178,6 @@ export default function DashboardPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const { data: tradesData, loading: tradesLoading, error: tradesError, refetch: refetchTrades } = useUserTrades();
-  const { data: platformStats, isLoading: platformStatsLoading } = usePublicStats();
   const { data: dashboardStats, isLoading: statsLoading } = useQuery({
     queryKey: queryKeys.userDashboard,
     queryFn: async () => {
@@ -216,7 +215,7 @@ export default function DashboardPage() {
   });
 
   const { messages, locale: appLocale } = useLocale();
-  const platformVolumeDisplay = formatPlatformVolume(platformStats?.totalVolumeCents ?? 0);
+  const collectedVolumeDisplay = formatPlatformVolume(dashboardStats?.totalCollectedCents ?? 0);
   
   // Auto-claim DAILY_VISIT silencieusement à l'ouverture du dashboard
   useEffect(() => {
@@ -948,7 +947,7 @@ export default function DashboardPage() {
                   <Card className="relative overflow-hidden border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-transparent">
                     <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-orange-500/10 blur-2xl" />
                     <CardContent className="relative p-6 sm:p-10">
-                      {platformStatsLoading ? (
+                      {statsLoading ? (
                         <div className="flex items-center justify-center h-40">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
                         </div>
@@ -960,11 +959,11 @@ export default function DashboardPage() {
                             </p>
                             <p className="text-5xl sm:text-6xl lg:text-7xl font-bold tabular-nums tracking-tight">
                               <CountUp
-                                end={platformVolumeDisplay.value}
+                                end={collectedVolumeDisplay.value}
                                 duration={2.5}
-                                decimals={platformVolumeDisplay.decimals}
-                                prefix={platformVolumeDisplay.prefix}
-                                suffix={platformVolumeDisplay.suffix}
+                                decimals={collectedVolumeDisplay.decimals}
+                                prefix={collectedVolumeDisplay.prefix}
+                                suffix={collectedVolumeDisplay.suffix}
                                 separator=" "
                               />
                             </p>
@@ -983,7 +982,7 @@ export default function DashboardPage() {
                   <Card className="relative overflow-hidden border-purple-500/30 bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent md:max-w-2xl">
                     <div className="absolute -right-8 -bottom-8 h-32 w-32 rounded-full bg-purple-500/10 blur-2xl" />
                     <CardContent className="relative p-6 sm:p-8">
-                      {platformStatsLoading ? (
+                      {statsLoading ? (
                         <div className="flex items-center justify-center h-40">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
                         </div>
@@ -995,7 +994,7 @@ export default function DashboardPage() {
                             </p>
                             <p className="text-3xl sm:text-4xl lg:text-5xl font-bold tabular-nums tracking-tight">
                               <CountUp
-                                end={platformStats?.totalSkinsSold ?? 0}
+                                end={dashboardStats?.totalSkinsSold ?? 0}
                                 duration={2.5}
                                 separator=" "
                               />
