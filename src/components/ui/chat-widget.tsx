@@ -116,6 +116,8 @@ export function ChatWidget() {
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const wasOpenBeforeMobileMenuRef = useRef(false);
+  const [isHiddenByMobileMenu, setIsHiddenByMobileMenu] = useState(false);
 
   // Si une conversation existe déjà, aller directement au chat
   useEffect(() => {
@@ -165,6 +167,28 @@ export function ChatWidget() {
       new CustomEvent("chat-widget-open-change", { detail: { open: isOpen } })
     );
   }, [isOpen]);
+
+  useEffect(() => {
+    const handleMobileMenuChange = (e: Event) => {
+      const { open } = (e as CustomEvent<{ open: boolean }>).detail;
+      if (open) {
+        setIsOpen((current) => {
+          wasOpenBeforeMobileMenuRef.current = current;
+          return false;
+        });
+        setIsHiddenByMobileMenu(true);
+      } else {
+        setIsHiddenByMobileMenu(false);
+        if (wasOpenBeforeMobileMenuRef.current) {
+          wasOpenBeforeMobileMenuRef.current = false;
+          setIsOpen(true);
+        }
+      }
+    };
+    window.addEventListener("mobile-menu-open-change", handleMobileMenuChange);
+    return () =>
+      window.removeEventListener("mobile-menu-open-change", handleMobileMenuChange);
+  }, []);
 
   const handleCategorySelect = (category: Category) => {
     setSelectedCategory(category);
@@ -227,6 +251,10 @@ export function ChatWidget() {
     resolveI18nContent(content, messages);
 
   const unreadCount = getUnreadCount();
+
+  if (isHiddenByMobileMenu) {
+    return null;
+  }
 
   return (
     <>
