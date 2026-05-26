@@ -134,31 +134,44 @@ export async function GET(request: NextRequest) {
 
     const monthlyStats = Array.from(monthlyStatsMap.values());
 
-    // Top users (volume total réel en BDD)
-    const topUsersData = await prisma.user.findMany({
-      orderBy: { totalVolumeCents: 'desc' },
+    // Top users par volume réel (somme grossCents des trades, hors échec/annulation)
+    const topVolumeRows = await prisma.trade.groupBy({
+      by: ['userId'],
+      where: { status: { notIn: ['CANCELLED', 'FAILED'] } },
+      _sum: { grossCents: true },
+      orderBy: { _sum: { grossCents: 'desc' } },
       take: 3,
-      select: {
-        id: true,
-        name: true,
-        steamUsername: true,
-        steamId: true,
-        totalVolumeCents: true,
-        level: true,
-        xp: true,
-        _count: { select: { trades: true } },
-      },
     });
 
-    const topUsers = topUsersData.map(user => ({
-      id: user.id,
-      username: (user.steamUsername || user.name || 'Inconnu').trim() || 'Inconnu',
-      steamId64: user.steamId || '',
-      totalVolumeCentimes: user.totalVolumeCents,
-      totalTrades: user._count?.trades ?? 0,
-      level: user.level,
-      xp: user.xp,
-    }));
+    const topUserIds = topVolumeRows.map((row) => row.userId);
+    const topUsersData =
+      topUserIds.length > 0
+        ? await prisma.user.findMany({
+            where: { id: { in: topUserIds } },
+            select: {
+              id: true,
+              name: true,
+              steamUsername: true,
+              steamId: true,
+              level: true,
+              xp: true,
+              _count: { select: { trades: true } },
+            },
+          })
+        : [];
+
+    const topUsers = topVolumeRows.map((row) => {
+      const user = topUsersData.find((u) => u.id === row.userId);
+      return {
+        id: row.userId,
+        username: (user?.steamUsername || user?.name || 'Inconnu').trim() || 'Inconnu',
+        steamId64: user?.steamId || '',
+        totalVolumeCentimes: row._sum.grossCents ?? 0,
+        totalTrades: user?._count?.trades ?? 0,
+        level: user?.level ?? 0,
+        xp: user?.xp ?? 0,
+      };
+    });
 
     // Recent trades
     const recentTradesData = await prisma.trade.findMany({

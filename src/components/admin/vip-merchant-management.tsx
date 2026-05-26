@@ -28,6 +28,7 @@ import { UserRewardsBlockControls } from '@/components/admin/user-rewards-block-
 import Link from 'next/link';
 import { queryKeys } from '@/lib/query-keys';
 import { useLocale } from '@/components/providers/locale-provider';
+import { ConvertedPrice } from '@/components/ui/converted-price';
 
 interface VipMerchantUser {
   id: string;
@@ -147,8 +148,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
     }
   };
 
-  const formatCurrency = (centimes: number) =>
-    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'USD' }).format(centimes / 100);
+  const totalVolumeCents = users.reduce((sum, u) => sum + (u.totalVolume || 0), 0);
 
   const Icon = tag === 'VIP' ? Crown : Store;
 
@@ -171,7 +171,11 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
             <div>
               <p className="text-sm text-slate-400">{t.totalVolume}</p>
               <p className="text-2xl font-bold text-white">
-                {formatCurrency(users.reduce((sum, u) => sum + (u.totalVolume || 0), 0))}
+                <ConvertedPrice
+                  usdCents={totalVolumeCents}
+                  fromCurrency="USD"
+                  className="text-2xl font-bold text-white"
+                />
               </p>
             </div>
           </CardContent>
@@ -256,7 +260,11 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
                       <span className="text-amber-400 font-semibold">+{user.bonusRatePercent}%</span>
                     </TableCell>
                     <TableCell className="text-white">
-                      {formatCurrency(user.totalVolume || 0)}
+                      <ConvertedPrice
+                        usdCents={user.totalVolume || 0}
+                        fromCurrency="USD"
+                        className="text-white"
+                      />
                     </TableCell>
                     <TableCell className="min-w-[200px]">
                       <UserRewardsBlockControls

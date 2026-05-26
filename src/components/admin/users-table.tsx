@@ -44,6 +44,7 @@ import { CreateUserDialog } from './create-user-dialog';
 import { queryKeys } from '@/lib/query-keys';
 import { UserRoleBadge } from '@/components/ui/user-role-badge';
 import { authClient } from '~/lib/auth-client';
+import { ConvertedPrice } from '@/components/ui/converted-price';
 
 interface PromoteDialogState {
   open: boolean;
@@ -158,13 +159,6 @@ export function AdminUsersTable() {
         {config.text}
       </Badge>
     );
-  };
-
-  const formatCurrency = (centimes: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(centimes / 100);
   };
 
   const formatDate = (date: Date | string) => {
@@ -460,10 +454,22 @@ export function AdminUsersTable() {
                   </div>
                 </TableCell>
                 <TableCell className="text-white">
-                  {user.totalVolume > 0 ? formatCurrency(user.totalVolume) : '—'}
+                  {user.totalVolume > 0 ? (
+                    <ConvertedPrice usdCents={user.totalVolume} fromCurrency="USD" className="text-white" />
+                  ) : (
+                    '—'
+                  )}
                 </TableCell>
                 <TableCell className="text-blue-400">
-                  {(user.pendingVolume ?? 0) > 0 ? formatCurrency(user.pendingVolume ?? 0) : '—'}
+                  {(user.pendingVolume ?? 0) > 0 ? (
+                    <ConvertedPrice
+                      usdCents={user.pendingVolume ?? 0}
+                      fromCurrency="USD"
+                      className="text-blue-400"
+                    />
+                  ) : (
+                    '—'
+                  )}
                 </TableCell>
                 <TableCell className="text-slate-300">
                   {user.tickets}

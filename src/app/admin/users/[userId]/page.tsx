@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { UserRoleBadge } from '@/components/ui/user-role-badge';
 import { useLocale } from '@/components/providers/locale-provider';
 import { UserRewardsBlockControls } from '@/components/admin/user-rewards-block-controls';
+import { ConvertedPrice } from '@/components/ui/converted-price';
 
 interface UserDetail {
   id: string;
@@ -272,7 +273,11 @@ export default function AdminUserDetailPage() {
           <div>
             <p className="text-slate-400">{t.totalVolume}</p>
             <p className="text-white">
-              {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(user.totalVolumeCents / 100)}
+              <ConvertedPrice
+                usdCents={user.totalVolumeCents}
+                fromCurrency="USD"
+                className="text-white"
+              />
             </p>
           </div>
           </div>

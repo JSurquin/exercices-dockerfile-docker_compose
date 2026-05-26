@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { AdminStats } from '@/lib/types';
 import { queryKeys } from '@/lib/query-keys';
+import { ConvertedPrice } from '@/components/ui/converted-price';
+import { formatCentsToCurrency } from '@/lib/currency-converter';
 
 export function AdminStatsOverview() {
   const { messages } = useLocale();
@@ -33,12 +35,7 @@ export function AdminStatsOverview() {
     },
   });
 
-  const formatCurrency = (centimes: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(centimes / 100);
-  };
+  const formatEurAmount = (centimes: number) => formatCentsToCurrency(centimes, 'EUR');
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('fr-FR').format(num);
@@ -64,6 +61,10 @@ export function AdminStatsOverview() {
   if (!stats) {
     return null;
   }
+
+  const monthlyVolumeCents =
+    stats.monthlyStats[stats.monthlyStats.length - 1]?.volumeCentimes || 0;
+  const volumeMonthParts = t.totalVolumeMonth.split('{amount}');
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -115,10 +116,20 @@ export function AdminStatsOverview() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-white">
-            {formatCurrency(stats.totalVolumeCentimes)}
+            <ConvertedPrice
+              usdCents={stats.totalVolumeCentimes}
+              fromCurrency="USD"
+              className="text-2xl font-bold text-white"
+            />
           </div>
-          <p className="text-xs text-slate-400">
-            {t.totalVolumeMonth.replace('{amount}', formatCurrency(stats.monthlyStats[stats.monthlyStats.length - 1]?.volumeCentimes || 0))}
+          <p className="text-xs text-slate-400 inline-flex items-center gap-0.5 flex-wrap">
+            {volumeMonthParts[0]}
+            <ConvertedPrice
+              usdCents={monthlyVolumeCents}
+              fromCurrency="USD"
+              className="text-xs text-slate-400"
+            />
+            {volumeMonthParts[1]}
           </p>
         </CardContent>
       </Card>
@@ -133,7 +144,7 @@ export function AdminStatsOverview() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-white">
-            {formatCurrency(stats.totalPayoutsCentimes)}
+            {formatEurAmount(stats.totalPayoutsCentimes)}
           </div>
           <div className="flex items-center gap-2 mt-1">
             <Badge 
@@ -207,7 +218,11 @@ export function AdminStatsOverview() {
             {stats.topUsers[0]?.username || 'N/A'}
           </div>
           <p className="text-xs text-slate-400">
-            {formatCurrency(stats.topUsers[0]?.totalVolumeCentimes || 0)}
+            <ConvertedPrice
+              usdCents={stats.topUsers[0]?.totalVolumeCentimes || 0}
+              fromCurrency="USD"
+              className="text-xs text-slate-400"
+            />
           </p>
         </CardContent>
       </Card>

@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useLocale } from '@/components/providers/locale-provider';
 import { ADMIN_ANALYTICS_REFETCH_INTERVAL_MS } from '@/lib/admin-constants';
 import { CHART_COLORS, CHART_PALETTE } from '@/lib/chart-colors';
+import { ConvertedPrice } from '@/components/ui/converted-price';
 
 interface AnalyticsData {
   overview: {
@@ -467,13 +468,6 @@ export function AdminAnalyticsCharts() {
     );
   }
 
-  const formatCurrency = (cents: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(cents / 100);
-  };
-
   const getGrowthIcon = (growth: number) => {
     if (growth > 0) return <TrendingUp className="h-4 w-4 text-green-500" />;
     if (growth < 0) return <TrendingDown className="h-4 w-4 text-red-500" />;
@@ -515,7 +509,11 @@ export function AdminAnalyticsCharts() {
               <div>
                 <p className="text-sm font-medium text-slate-400">{messages.adminDashboard.analytics.totalVolume}</p>
                 <p className="text-2xl font-bold text-slate-100">
-                  {formatCurrency(analyticsData.overview.totalVolumeCents)}
+                  <ConvertedPrice
+                    usdCents={analyticsData.overview.totalVolumeCents}
+                    fromCurrency="USD"
+                    className="text-2xl font-bold text-slate-100"
+                  />
                 </p>
                 <div className="flex items-center mt-1">
                   {getGrowthIcon(analyticsData.overview.volumeGrowth)}

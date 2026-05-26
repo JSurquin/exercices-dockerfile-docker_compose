@@ -52,6 +52,27 @@ export async function GET(
       return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
     }
 
+    const [totalVolumeAgg, pendingVolumeAgg] = await Promise.all([
+      prisma.trade.aggregate({
+        where: {
+          userId,
+          status: { notIn: ['FAILED', 'CANCELLED'] },
+        },
+        _sum: { grossCents: true },
+      }),
+      prisma.trade.aggregate({
+        where: {
+          userId,
+          status: { in: ['CREATED', 'ACCEPTED_BY_BOT', 'IN_TRADE_HOLD'] },
+        },
+        _sum: { grossCents: true },
+      }),
+    ]);
+
+    const tradeTotalVolumeCents = totalVolumeAgg._sum.grossCents ?? 0;
+    const totalVolumeCents = Math.max(user.totalVolumeCents, tradeTotalVolumeCents);
+    const pendingVolumeCents = pendingVolumeAgg._sum.grossCents ?? 0;
+
     let referredBy: {
       affiliateId: string;
       code: string;
@@ -75,8 +96,13 @@ export async function GET(
       }
     }
 
-    const { referredByAffiliateId: _refId, ...userPayload } = user;
-    return NextResponse.json({ ...userPayload, referredBy });
+    const { referredByAffiliateId: _refId, totalVolumeCents: _storedVolume, ...userPayload } = user;
+    return NextResponse.json({
+      ...userPayload,
+      totalVolumeCents,
+      pendingVolumeCents,
+      referredBy,
+    });
   } catch (err) {
     console.error('[admin/users/[userId]]', err);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
