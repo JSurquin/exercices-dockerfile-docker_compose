@@ -1,6 +1,6 @@
 'use client';
 
-import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Inter, Poppins, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { SpaceBackground } from "@/components/ui/space-background";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -23,6 +23,13 @@ import { usePathname } from "next/navigation";
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
   display: "swap",
 });
 
@@ -76,7 +83,7 @@ export default function RootLayout({
         <meta name="description" content="The fastest and most secure platform to convert your Counter-Strike 2 skins into real money. SEPA and crypto payments available." />
       </head>
       <body
-        className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen flex flex-col overflow-x-hidden${
+        className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen flex flex-col overflow-x-hidden${
           process.env.NODE_ENV === "development" ? " next-dev-overlay-present" : ""
         }`}
       >
