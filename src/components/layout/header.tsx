@@ -18,8 +18,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
 import { ThemeSelector } from "@/components/ui/theme-selector";
-import { useTheme } from "next-themes";
-import { APP_THEMES, normalizeStoredTheme, type AppTheme } from "@/lib/themes";
 import { CurrencySelector } from "@/components/ui/currency-selector";
 import {
   HomeIcon,
@@ -49,13 +47,6 @@ export function Header() {
   const { locale, setLocale, messages } = useLocale();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const currentTheme = normalizeStoredTheme(resolvedTheme ?? theme);
-  const themeLabels: Record<AppTheme, "themeMoonskin" | "themeLight" | "themeCs2"> = {
-    moonskin: "themeMoonskin",
-    light: "themeLight",
-    cs2: "themeCs2",
-  };
 
   useEffect(() => {
     window.dispatchEvent(
@@ -475,19 +466,12 @@ export function Header() {
 
                 {/* Settings */}
                 <div className="border-t pt-4 space-y-2">
-                  <p className="px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {messages.nav.themeLabel}
-                  </p>
-                  {APP_THEMES.map((t) => (
-                    <Button
-                      key={t}
-                      variant="ghost"
-                      className={`w-full justify-start ${currentTheme === t ? "bg-theme-accent/10 text-theme-accent" : ""}`}
-                      onClick={() => setTheme(t)}
-                    >
-                      {messages.nav[themeLabels[t]]}
-                    </Button>
-                  ))}
+                  <div className="flex items-center justify-between px-3">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {messages.nav.themeLabel}
+                    </p>
+                    <ThemeSelector />
+                  </div>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
