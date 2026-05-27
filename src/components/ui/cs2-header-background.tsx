@@ -171,7 +171,7 @@ export const CS2HeroBackground: React.FC<{
       variant={currentBackground}
       className={cn("min-h-screen", className)}
       overlay={true}
-      overlayOpacity={0.6}
+      overlayOpacity={0.75}
       animated={true}
     >
       {/* Subtle noise texture overlay */}
