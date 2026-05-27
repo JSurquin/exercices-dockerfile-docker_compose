@@ -20,15 +20,15 @@ import {
 } from '@heroicons/react/24/outline';
 
 const badgeVariantMap: Record<string, string> = {
-  'certified': 'bg-theme-accent/10 text-theme-accent border-theme-accent/20',
-  'popular': 'bg-theme-accent/10 text-theme-accent border-theme-accent/15',
-  'new': 'bg-theme-accent/10 text-theme-accent border-theme-accent/20',
-  'premium': 'bg-theme-accent/15 text-theme-accent border-theme-accent/25',
-  'efficient': 'bg-theme-accent/10 text-theme-accent border-theme-accent/20',
-  'global': 'bg-muted text-muted-foreground border-border',
-  'fun': 'bg-muted text-muted-foreground border-border',
-  'profitable': 'bg-theme-accent/10 text-theme-accent border-theme-accent/20',
-  'pro': 'bg-theme-accent/15 text-theme-accent border-theme-accent/25',
+  'certified': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  'popular': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  'new': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  'premium': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+  'efficient': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+  'global': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200',
+  'fun': 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
+  'profitable': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200',
+  'pro': 'bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-200',
 };
 
 const getBadgeStyle = (badge: string) => {

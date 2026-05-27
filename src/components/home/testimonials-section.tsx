@@ -122,7 +122,7 @@ export function TestimonialsSection() {
                             <h4 className="font-semibold text-sm">{testimonial.name}</h4>
                           </a>
                           {testimonial.verified && (
-                            <div className="w-4 h-4 bg-theme-accent rounded-full flex items-center justify-center" title="CSGO-Rep verified">
+                            <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center" title="CSGO-Rep verified">
                               <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
@@ -133,7 +133,7 @@ export function TestimonialsSection() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold text-theme-accent">{testimonial.amount}</div>
+                      <div className="text-lg font-bold text-green-600">{testimonial.amount}</div>
                     </div>
                   </div>
 
@@ -170,7 +170,7 @@ export function TestimonialsSection() {
             href="https://csgo-rep.com/profile/76561199040420116"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 text-sm text-chrome-gradient hover:text-foreground transition-colors font-medium"
+            className="inline-flex items-center space-x-2 text-sm text-orange-600 hover:text-orange-500 transition-colors font-medium"
           >
             <span>{messages.testimonials.basedOn} 806+ {messages.testimonials.reviews} CSGO-Rep</span>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -188,7 +188,7 @@ export function TestimonialsSection() {
           className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
         >
           <div>
-            <div className="text-3xl font-bold text-chrome-gradient mb-2">
+            <div className="text-3xl font-bold text-orange-600 mb-2">
               {skinsDisplay.prefix}
               {skinsDisplay.value.toLocaleString(undefined, {
                 minimumFractionDigits: skinsDisplay.decimals,
@@ -199,7 +199,7 @@ export function TestimonialsSection() {
             <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.skinsSold}</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-chrome-gradient mb-2">
+            <div className="text-3xl font-bold text-orange-600 mb-2">
               {usersDisplay.prefix}
               {usersDisplay.value.toLocaleString(undefined, {
                 minimumFractionDigits: usersDisplay.decimals,
@@ -210,7 +210,7 @@ export function TestimonialsSection() {
             <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.users}</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-chrome-gradient mb-2">
+            <div className="text-3xl font-bold text-orange-600 mb-2">
               {volumeDisplay.prefix}
               {volumeDisplay.value.toLocaleString(undefined, {
                 minimumFractionDigits: volumeDisplay.decimals,
@@ -221,7 +221,7 @@ export function TestimonialsSection() {
             <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.volume}</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-chrome-gradient mb-2">24/7</div>
+            <div className="text-3xl font-bold text-orange-600 mb-2">24/7</div>
             <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.support}</div>
           </div>
         </motion.div>

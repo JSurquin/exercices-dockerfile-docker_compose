@@ -158,6 +158,9 @@ body.next-dev-overlay-present #sentry-feedback {
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
+  --color-theme-accent: var(--theme-accent);
+  --color-theme-highlight: var(--theme-highlight);
+  --color-theme-success: var(--theme-success);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);

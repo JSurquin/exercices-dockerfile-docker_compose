@@ -140,7 +140,7 @@ export function HowItWorks() {
                   <ul className="text-xs text-muted-foreground space-y-1">
                     {step.details.map((detail, i) => (
                       <li key={i} className="flex items-center justify-center">
-                        <CheckCircleIcon className="w-3 h-3 mr-1 text-theme-accent flex-shrink-0" />
+                        <CheckCircleIcon className="w-3 h-3 mr-1 text-green-500 flex-shrink-0" />
                         {detail}
                       </li>
                     ))}
@@ -152,8 +152,8 @@ export function HowItWorks() {
               {index < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2">
                   <div className="w-8 h-8 flex items-center justify-center">
-                    <div className="w-6 h-0.5 bg-border relative">
-                      <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-muted-foreground border-t-2 border-b-2 border-t-transparent border-b-transparent" />
+                    <div className="w-6 h-0.5 bg-gradient-to-r from-orange-500 to-red-600 relative">
+                      <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-orange-600 border-t-2 border-b-2 border-t-transparent border-b-transparent" />
                     </div>
                   </div>
                 </div>
@@ -171,9 +171,9 @@ export function HowItWorks() {
           className="grid md:grid-cols-3 gap-8 mb-12"
         >
           {benefits.map((benefit, index) => (
-            <div key={index} className="text-center lunar-card p-6">
+            <div key={index} className="text-center backdrop-blur-md bg-background/60 border border-white/10 dark:border-white/10 rounded-2xl p-6 hover:bg-background/70 transition-all">
               <div className="mb-4">
-                <benefit.icon className="w-12 h-12 mx-auto text-theme-accent" />
+                <benefit.icon className="w-12 h-12 mx-auto text-orange-600" />
               </div>
               <h3 className="font-semibold mb-2">{benefit.title}</h3>
               <p className="text-muted-foreground">{benefit.description}</p>
@@ -189,8 +189,8 @@ export function HowItWorks() {
           viewport={{ once: true }}
           className="text-center"
         >
-          <div className="lunar-card chrome-shimmer p-8">
-            <h3 className="text-2xl font-bold mb-4 text-chrome-gradient">{messages.howItWorks.cta.title}</h3>
+          <div className="backdrop-blur-md bg-background/60 rounded-2xl p-8 border border-white/10 dark:border-white/10">
+            <h3 className="text-2xl font-bold mb-4">{messages.howItWorks.cta.title}</h3>
             <p className="text-muted-foreground mb-6">
               {messages.howItWorks.cta.description}
             </p>
