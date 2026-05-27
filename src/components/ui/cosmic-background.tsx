@@ -145,7 +145,7 @@ const css = `
   background-image:
     radial-gradient(ellipse at 20% 50%, rgba(140,150,170,0.05) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 20%, rgba(160,160,180,0.04) 0%, transparent 50%);
-  z-index: 0;
+  z-index: -10;
 }
 .cb-fixed { position: fixed; }
 
