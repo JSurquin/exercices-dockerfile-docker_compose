@@ -13,7 +13,8 @@ export function SpaceBackground() {
   useEffect(() => setMounted(true), []);
 
   if (!mounted) return null;
-  if (normalizeStoredTheme(resolvedTheme ?? theme) !== "moonskin") return null;
+  const current = normalizeStoredTheme(resolvedTheme ?? theme);
+  if (current !== "moonskin") return null;
 
   return (
     <div

@@ -83,7 +83,7 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="moonskin"
-          themes={["moonskin", "colorful", "tertiary"]}
+          themes={["moonskin", "light", "cs2"]}
           enableSystem={false}
           disableTransitionOnChange
           storageKey="moonskin-theme"

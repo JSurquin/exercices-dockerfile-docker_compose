@@ -80,8 +80,8 @@ export interface Messages {
     darkMode: string;
     themeLabel: string;
     themeMoonskin: string;
-    themeColorful: string;
-    themeTertiary: string;
+    themeLight: string;
+    themeCs2: string;
     affiliation: string;
     moderation: string;
     withdrawFunds: string;

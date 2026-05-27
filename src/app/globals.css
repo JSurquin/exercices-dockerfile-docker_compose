@@ -128,7 +128,7 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 }
 
-@custom-variant dark (&:is(.moonskin *, .colorful *, .tertiary *, .dark *));
+@custom-variant dark (&:is(.moonskin *, .cs2 *, .dark *));
 
 @theme inline {
   --color-background: var(--background);
@@ -253,63 +253,16 @@ body.next-dev-overlay-present #sentry-feedback {
   color-scheme: dark;
 }
 
-/* ─── Colorful : vibrant gaming ─── */
-.colorful {
-  --background: #08080e;
-  --foreground: #f0f0f5;
-  --card: #12121c;
-  --card-foreground: #f0f0f5;
-  --popover: #12121c;
-  --popover-foreground: #f0f0f5;
-  --primary: #f97316;
-  --primary-foreground: #ffffff;
-  --secondary: #1a1a28;
-  --secondary-foreground: #f0f0f5;
-  --muted: #1a1a28;
-  --muted-foreground: #9898b0;
-  --accent: #252538;
-  --accent-foreground: #f0f0f5;
-  --destructive: #ef4444;
-  --border: rgba(249, 115, 22, 0.15);
-  --input: rgba(255, 255, 255, 0.08);
-  --ring: rgba(249, 115, 22, 0.5);
-  --chart-1: #f97316;
-  --chart-2: #a855f7;
-  --chart-3: #22d3ee;
-  --chart-4: #eab308;
-  --chart-5: #22c55e;
-  --sidebar: #12121c;
-  --sidebar-foreground: #f0f0f5;
-  --sidebar-primary: #f97316;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #252538;
-  --sidebar-accent-foreground: #f0f0f5;
-  --sidebar-border: rgba(249, 115, 22, 0.15);
-  --sidebar-ring: rgba(249, 115, 22, 0.4);
-  --cta-from: #f97316;
-  --cta-to: #dc2626;
-  --cta-shadow: rgba(249, 115, 22, 0.4);
-  --theme-accent: #f97316;
-  --theme-highlight: #fb923c;
-  --theme-stat: #fb923c;
-  --theme-success: #22c55e;
-  --lunar-bg: #08080e;
-  --lunar-bg-secondary: #12121c;
-  --lunar-border: rgba(249, 115, 22, 0.12);
-  --lunar-body: #a0a0b8;
-  color-scheme: dark;
-}
-
-/* ─── Tertiary : classique CS2 orange (original) ─── */
-.tertiary {
+/* ─── CS2 : thème dark original — orange/rouge, identique avant refonte ─── */
+.cs2 {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: #f97316;
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -319,23 +272,23 @@ body.next-dev-overlay-present #sentry-feedback {
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --ring: rgba(249, 115, 22, 0.5);
+  --chart-1: #f97316;
+  --chart-2: #dc2626;
+  --chart-3: #eab308;
+  --chart-4: #22c55e;
+  --chart-5: #3b82f6;
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary: #f97316;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: rgba(249, 115, 22, 0.4);
   --cta-from: #f97316;
   --cta-to: #dc2626;
-  --cta-shadow: rgba(249, 115, 22, 0.35);
+  --cta-shadow: rgba(249, 115, 22, 0.45);
   --theme-accent: #f97316;
   --theme-highlight: #fb923c;
   --theme-stat: #fb923c;
@@ -345,6 +298,53 @@ body.next-dev-overlay-present #sentry-feedback {
   --lunar-border: oklch(1 0 0 / 10%);
   --lunar-body: oklch(0.708 0 0);
   color-scheme: dark;
+}
+
+/* ─── Light : mode clair avec accents CS2 orange ─── */
+.light {
+  --background: #ffffff;
+  --foreground: #0a0a0f;
+  --card: #f8f8fc;
+  --card-foreground: #0a0a0f;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0f;
+  --primary: #f97316;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f1f5;
+  --secondary-foreground: #1a1a2e;
+  --muted: #f1f1f5;
+  --muted-foreground: #6b6b80;
+  --accent: #f1f1f5;
+  --accent-foreground: #1a1a2e;
+  --destructive: #dc2626;
+  --border: rgba(0, 0, 0, 0.08);
+  --input: rgba(0, 0, 0, 0.06);
+  --ring: rgba(249, 115, 22, 0.4);
+  --chart-1: #f97316;
+  --chart-2: #dc2626;
+  --chart-3: #eab308;
+  --chart-4: #22c55e;
+  --chart-5: #3b82f6;
+  --sidebar: #f8f8fc;
+  --sidebar-foreground: #0a0a0f;
+  --sidebar-primary: #f97316;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f1f5;
+  --sidebar-accent-foreground: #1a1a2e;
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+  --sidebar-ring: rgba(249, 115, 22, 0.3);
+  --cta-from: #f97316;
+  --cta-to: #dc2626;
+  --cta-shadow: rgba(249, 115, 22, 0.35);
+  --theme-accent: #f97316;
+  --theme-highlight: #fb923c;
+  --theme-stat: #ea6910;
+  --theme-success: #16a34a;
+  --lunar-bg: #ffffff;
+  --lunar-bg-secondary: #f8f8fc;
+  --lunar-border: rgba(0, 0, 0, 0.08);
+  --lunar-body: #4b4b60;
+  color-scheme: light;
 }
 
 /* Rétrocompat next-themes "dark" */
@@ -376,16 +376,16 @@ body.next-dev-overlay-present #sentry-feedback {
     color: var(--lunar-body, #9a9aaa);
   }
 
-  .colorful body {
-    background: #08080e;
+  .cs2 body {
+    background: oklch(0.145 0 0);
     background-image:
-      radial-gradient(ellipse at 15% 40%, rgba(249, 115, 22, 0.06) 0%, transparent 55%),
-      radial-gradient(ellipse at 85% 25%, rgba(168, 85, 247, 0.05) 0%, transparent 50%);
+      radial-gradient(ellipse at 10% 30%, rgba(249, 115, 22, 0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 70%, rgba(220, 38, 38, 0.05) 0%, transparent 50%);
     color: var(--lunar-body);
   }
 
-  .tertiary body {
-    background: oklch(0.145 0 0);
+  .light body {
+    background: #ffffff;
     color: var(--lunar-body);
   }
 
@@ -614,21 +614,16 @@ body.next-dev-overlay-present #sentry-feedback {
     filter: brightness(1.12);
     box-shadow:
       0 8px 32px var(--cta-shadow),
-      0 0 40px color-mix(in srgb, var(--cta-from) 25%, transparent);
+      0 0 40px var(--cta-shadow);
   }
 
-  .colorful .btn-cta {
-    animation: colorful-cta-pulse 3s ease-in-out infinite;
+  /* CS2 theme : glow orange sur CTA */
+  .cs2 .btn-cta {
+    box-shadow: 0 4px 20px rgba(249, 115, 22, 0.4), 0 0 0 1px rgba(249, 115, 22, 0.15) inset;
   }
 
-  @keyframes colorful-cta-pulse {
-    0%,
-    100% {
-      box-shadow: 0 4px 20px var(--cta-shadow);
-    }
-    50% {
-      box-shadow: 0 4px 28px rgba(168, 85, 247, 0.35), 0 0 24px var(--cta-shadow);
-    }
+  .cs2 .btn-cta:hover {
+    box-shadow: 0 8px 32px rgba(249, 115, 22, 0.55), 0 0 40px rgba(249, 115, 22, 0.2);
   }
 
   /* Hero title gradient chrome */
@@ -659,8 +654,21 @@ body.next-dev-overlay-present #sentry-feedback {
   /* Sticky nav — adaptatif */
   .lunar-nav {
     backdrop-filter: blur(20px);
-    background: color-mix(in srgb, var(--lunar-bg) 88%, transparent);
-    border-bottom: 1px solid var(--lunar-border);
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .moonskin .lunar-nav {
+    background: rgba(6, 6, 8, 0.88);
+    border-bottom-color: rgba(200, 200, 220, 0.08);
+  }
+
+  .cs2 .lunar-nav {
+    background: rgba(18, 18, 18, 0.92);
+  }
+
+  .light .lunar-nav {
+    background: rgba(255, 255, 255, 0.92);
   }
 
   /* Footer harmonisé */
@@ -668,7 +676,7 @@ body.next-dev-overlay-present #sentry-feedback {
     border-color: var(--lunar-border);
     background: var(--lunar-bg-secondary);
     background-image:
-      radial-gradient(ellipse at 30% 0%, color-mix(in srgb, var(--theme-accent) 8%, transparent) 0%, transparent 55%),
+      radial-gradient(ellipse at 30% 0%, rgba(126, 179, 232, 0.06) 0%, transparent 55%),
       radial-gradient(ellipse at 70% 100%, rgba(140, 150, 170, 0.04) 0%, transparent 50%);
   }
 
@@ -679,12 +687,14 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .lunar-footer__overlay {
-    background: color-mix(in srgb, var(--lunar-bg) 82%, transparent);
+    background: var(--background);
+    opacity: 0.85;
   }
 
   .lunar-footer__card {
     backdrop-filter: blur(12px);
-    background: color-mix(in srgb, var(--card) 60%, transparent);
+    background: var(--card);
+    opacity: 0.7;
     border: 1px solid var(--lunar-border);
     border-radius: 16px;
   }
@@ -695,7 +705,7 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .lunar-footer__link {
-    color: color-mix(in srgb, var(--foreground) 55%, transparent);
+    color: var(--muted-foreground);
     transition: color 0.2s ease;
   }
 
@@ -847,7 +857,7 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   /* Thème Colorful — cards RGB shimmer */
-  .colorful .lunar-card {
+  .cs2 .lunar-card {
     border-color: rgba(249, 115, 22, 0.15);
     background: linear-gradient(
       135deg,
@@ -856,7 +866,7 @@ body.next-dev-overlay-present #sentry-feedback {
     );
   }
 
-  .colorful .chrome-shimmer {
+  .cs2 .chrome-shimmer {
     animation: colorful-border-shimmer 5s ease-in-out infinite;
   }
 
@@ -876,52 +886,47 @@ body.next-dev-overlay-present #sentry-feedback {
     }
   }
 
-  .colorful .hero-title {
+  .cs2 .hero-title {
     background: linear-gradient(135deg, #fff 0%, #fb923c 30%, #a855f7 60%, #22d3ee 100%);
     -webkit-background-clip: text;
     background-clip: text;
   }
 
-  .colorful .text-chrome-gradient {
+  .cs2 .text-chrome-gradient {
     background: linear-gradient(135deg, #fb923c, #f97316, #a855f7);
     -webkit-background-clip: text;
     background-clip: text;
   }
 
   /* Thème Tertiary — style CS2 original */
-  .tertiary .lunar-card {
+  .cs2 .lunar-card {
     background: oklch(0.205 0 0 / 80%);
     border-color: oklch(1 0 0 / 12%);
     backdrop-filter: blur(8px);
   }
 
-  .tertiary .hero-title {
+  .cs2 .hero-title {
     background: linear-gradient(135deg, #ffffff 0%, #fb923c 50%, #f97316 100%);
     -webkit-background-clip: text;
     background-clip: text;
   }
 
-  .tertiary .text-chrome-gradient {
+  .cs2 .text-chrome-gradient {
     background: linear-gradient(135deg, #fbbf24, #f97316, #dc2626);
     -webkit-background-clip: text;
     background-clip: text;
   }
 
-  .tertiary .weapon-card-hover:hover {
+  .cs2 .weapon-card-hover:hover {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 30px rgba(245, 101, 35, 0.2);
   }
 
-  .moonskin .scrollbar-thin,
-  .colorful .scrollbar-thin,
-  .tertiary .scrollbar-thin {
-    scrollbar-color: color-mix(in srgb, var(--theme-accent) 35%, transparent) transparent;
-  }
-
-  .moonskin .scrollbar-thin::-webkit-scrollbar-thumb,
-  .colorful .scrollbar-thin::-webkit-scrollbar-thumb,
-  .tertiary .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--theme-accent) 35%, transparent);
-  }
+  .moonskin .scrollbar-thin { scrollbar-color: rgba(126, 179, 232, 0.3) transparent; }
+  .moonskin .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(126, 179, 232, 0.3); }
+  .cs2 .scrollbar-thin { scrollbar-color: rgba(249, 115, 22, 0.3) transparent; }
+  .cs2 .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(249, 115, 22, 0.3); }
+  .light .scrollbar-thin { scrollbar-color: rgba(249, 115, 22, 0.25) transparent; }
+  .light .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(249, 115, 22, 0.25); }
 }
 
 @layer utilities {
@@ -951,33 +956,24 @@ body.next-dev-overlay-present #sentry-feedback {
     color: var(--theme-success);
   }
 
-  .bg-theme-accent\/10 {
-    background-color: color-mix(in srgb, var(--theme-accent) 10%, transparent);
-  }
+  /* Moonskin accent */
+  .moonskin .bg-theme-accent\/10 { background-color: rgba(126, 179, 232, 0.1); }
+  .moonskin .hover\:bg-theme-accent\/10:hover { background-color: rgba(126, 179, 232, 0.1); }
+  .moonskin .hover\:text-theme-accent:hover { color: #7eb3e8; }
+  .moonskin .bg-theme-accent { background-color: #7eb3e8; }
+  .moonskin .border-theme-accent { border-color: #7eb3e8; }
 
-  .bg-theme-accent\/20 {
-    background-color: color-mix(in srgb, var(--theme-accent) 20%, transparent);
-  }
-
-  .border-theme-accent\/20 {
-    border-color: color-mix(in srgb, var(--theme-accent) 20%, transparent);
-  }
-
-  .border-theme-accent\/30 {
-    border-color: color-mix(in srgb, var(--theme-accent) 30%, transparent);
-  }
-
-  .hover\:bg-theme-accent\/10:hover {
-    background-color: color-mix(in srgb, var(--theme-accent) 10%, transparent);
-  }
-
-  .hover\:text-theme-accent:hover {
-    color: var(--theme-accent);
-  }
-
-  .hover\:border-theme-accent\/30:hover {
-    border-color: color-mix(in srgb, var(--theme-accent) 30%, transparent);
-  }
+  /* CS2 + Light accent */
+  .cs2 .bg-theme-accent\/10,
+  .light .bg-theme-accent\/10 { background-color: rgba(249, 115, 22, 0.1); }
+  .cs2 .hover\:bg-theme-accent\/10:hover,
+  .light .hover\:bg-theme-accent\/10:hover { background-color: rgba(249, 115, 22, 0.12); }
+  .cs2 .hover\:text-theme-accent:hover,
+  .light .hover\:text-theme-accent:hover { color: #f97316; }
+  .cs2 .bg-theme-accent,
+  .light .bg-theme-accent { background-color: #f97316; }
+  .cs2 .border-theme-accent,
+  .light .border-theme-accent { border-color: #f97316; }
 
   .text-chrome-accent {
     color: var(--theme-accent);
@@ -1111,8 +1107,8 @@ body.next-dev-overlay-present #sentry-feedback {
   }
   
   .moonskin .chat-glass,
-  .colorful .chat-glass,
-  .tertiary .chat-glass {
+  .cs2 .chat-glass,
+  .cs2 .chat-glass {
     background: rgba(0, 0, 0, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }

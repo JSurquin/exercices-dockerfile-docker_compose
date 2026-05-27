@@ -14,10 +14,16 @@ import { useLocale } from "@/components/providers/locale-provider";
 import { SwatchIcon } from "@heroicons/react/24/outline";
 import { APP_THEMES, type AppTheme, normalizeStoredTheme } from "@/lib/themes";
 
-const THEME_LABEL: Record<AppTheme, "themeMoonskin" | "themeColorful" | "themeTertiary"> = {
+const THEME_ICON: Record<AppTheme, string> = {
+  moonskin: "🌙",
+  light: "☀️",
+  cs2: "🔥",
+};
+
+const THEME_LABEL_KEY: Record<AppTheme, "themeMoonskin" | "themeLight" | "themeCs2"> = {
   moonskin: "themeMoonskin",
-  colorful: "themeColorful",
-  tertiary: "themeTertiary",
+  light: "themeLight",
+  cs2: "themeCs2",
 };
 
 export function ThemeSelector() {
@@ -43,7 +49,7 @@ export function ThemeSelector() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 hover:bg-theme-accent/10 hover:text-theme-accent"
+          className="h-9 w-9"
           data-tour="theme-selector"
         >
           <SwatchIcon className="h-4 w-4" />
@@ -58,10 +64,10 @@ export function ThemeSelector() {
           <DropdownMenuItem
             key={t}
             onClick={() => setTheme(t)}
-            className={current === t ? "bg-theme-accent/10 text-theme-accent" : ""}
+            className={current === t ? "bg-accent font-medium" : ""}
           >
-            <span className="mr-2">{t === "moonskin" ? "🌙" : t === "colorful" ? "✨" : "🔥"}</span>
-            {messages.nav[THEME_LABEL[t]]}
+            <span className="mr-2">{THEME_ICON[t]}</span>
+            {messages.nav[THEME_LABEL_KEY[t]]}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

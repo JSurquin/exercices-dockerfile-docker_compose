@@ -39,7 +39,7 @@ export function Footer() {
   useEffect(() => setMounted(true), []);
 
   const currentTheme = mounted ? normalizeStoredTheme(resolvedTheme ?? theme) : "moonskin";
-  const showFooterImage = currentTheme === "tertiary";
+  const showFooterImage = currentTheme === "cs2";
 
   const links = {
     company: [

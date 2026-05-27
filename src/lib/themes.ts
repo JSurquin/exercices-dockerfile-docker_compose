@@ -1,19 +1,14 @@
-export const APP_THEMES = ["moonskin", "colorful", "tertiary"] as const;
+export const APP_THEMES = ["moonskin", "light", "cs2"] as const;
 export type AppTheme = (typeof APP_THEMES)[number];
 
 export const DEFAULT_THEME: AppTheme = "moonskin";
 
-/** Anciennes valeurs next-themes → nouveau schéma */
 export function normalizeStoredTheme(value: string | undefined): AppTheme {
-  if (value === "colorful" || value === "tertiary" || value === "moonskin") {
-    return value;
-  }
-  if (value === "dark") return "tertiary";
-  if (value === "light") return "moonskin";
+  if (value === "moonskin" || value === "light" || value === "cs2") return value;
+  if (value === "dark" || value === "tertiary" || value === "colorful") return "cs2";
   return DEFAULT_THEME;
 }
 
 export function isDarkAppTheme(theme: string | undefined): boolean {
-  const t = normalizeStoredTheme(theme);
-  return t === "moonskin" || t === "colorful" || t === "tertiary";
+  return normalizeStoredTheme(theme) !== "light";
 }

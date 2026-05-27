@@ -51,10 +51,10 @@ export function Header() {
   const pathname = usePathname();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const currentTheme = normalizeStoredTheme(resolvedTheme ?? theme);
-  const themeLabels: Record<AppTheme, keyof typeof messages.nav> = {
+  const themeLabels: Record<AppTheme, "themeMoonskin" | "themeLight" | "themeCs2"> = {
     moonskin: "themeMoonskin",
-    colorful: "themeColorful",
-    tertiary: "themeTertiary",
+    light: "themeLight",
+    cs2: "themeCs2",
   };
 
   useEffect(() => {
