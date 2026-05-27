@@ -13,6 +13,7 @@ export const queryKeys = {
 
   // Giveaways
   giveaways: (status?: string) => ['giveaways', status ?? 'all'] as const,
+  adminGiveaways: ['admin', 'giveaways'] as const,
 
   // Affiliate
   affiliateStats: ['affiliate', 'stats'] as const,

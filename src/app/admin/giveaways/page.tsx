@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GiveawayAdmin } from '@/components/admin/giveaway-admin';
 import { GiveawayRecurringAdmin } from '@/components/admin/giveaway-recurring-admin';
 import { useGiveaways } from '@/hooks/use-giveaways';
+import { useAdminGiveaways } from '@/hooks/use-admin-giveaways';
 import { useLocale } from '@/components/providers/locale-provider';
 import { SafeImage } from '@/components/ui/safe-image';
 import Image from 'next/image';
@@ -26,6 +27,8 @@ import {
   PowerIcon,
   XMarkIcon,
   CubeIcon,
+  LinkIcon,
+  ClipboardDocumentIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { SkinPickerModal } from '@/components/admin/skin-picker-modal';
@@ -66,7 +69,8 @@ interface CreateGiveawayForm {
 }
 
 export default function AdminGiveawaysPage() {
-  const { giveaways, loading, createGiveaway, drawGiveaway, refetch } = useGiveaways();
+  const { giveaways: publicGiveaways, createGiveaway, refetch: refetchPublic } = useGiveaways();
+  const { giveaways, loading, refetch, drawGiveaway: drawAdminGiveaway } = useAdminGiveaways();
   const { messages } = useLocale();
   const [isCreating, setIsCreating] = useState(false);
   const [selectedTab, setSelectedTab] = useState('list');
@@ -198,15 +202,18 @@ export default function AdminGiveawaysPage() {
 
   const handleManualDraw = async (giveawayId: string) => {
     try {
-      const result = await drawGiveaway(giveawayId);
+      const result = await drawAdminGiveaway(giveawayId);
       const names =
         result.winners
-          ?.map((w) => w.user?.steamUsername || w.userId.slice(-8))
+          ?.map((w: { user?: { steamUsername?: string | null }; userId: string }) =>
+            w.user?.steamUsername || w.userId.slice(-8)
+          )
           .join(', ') ||
         result.winner?.steamUsername ||
         result.winner?.id ||
         '?';
       toast.success(`${messages.admin.giveaways.toasts.drawSuccess} ${names}`);
+      refetch();
     } catch (error) {
       console.error('Erreur lors du tirage:', error);
     }
@@ -228,14 +235,15 @@ export default function AdminGiveawaysPage() {
 
       toast.success(messages.admin.giveaways.toasts.deleteSuccess);
       refetch();
+      refetchPublic();
     } catch (error) {
       console.error('Delete error:', error);
       toast.error(messages.admin.giveaways.toasts.deleteError);
     }
   };
 
-  const activeGiveaways = giveaways.filter(g => g.status === 'ACTIVE');
-  const endedGiveaways = giveaways.filter(g => g.status === 'ENDED');
+  const activeGiveaways = giveaways.filter((g) => g.status === 'ACTIVE');
+  const endedGiveaways = giveaways.filter((g) => g.status === 'ENDED');
 
   return (
     <div>
@@ -418,12 +426,40 @@ export default function AdminGiveawaysPage() {
                               </div>
                             </div>
 
-                            {giveaway.status === 'ENDED' && giveaway.winnerId && (
-                              <div className="mt-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
-                                <p className="text-sm text-green-800 dark:text-green-200">
-                                  <TrophyIcon className="w-4 h-4 inline mr-1" />
-                                  {messages.admin.giveaways.list.winner} {giveaway.winnerId.slice(-6)}
-                                </p>
+                            {giveaway.status === 'ENDED' && giveaway.winners && giveaway.winners.length > 0 && (
+                              <div className="mt-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800 space-y-2">
+                                {giveaway.winners.map((w) => (
+                                  <div key={w.rank} className="flex flex-col gap-1">
+                                    <p className="text-sm text-green-800 dark:text-green-200 flex items-center gap-1">
+                                      <TrophyIcon className="w-4 h-4 inline shrink-0" />
+                                      <span className="font-semibold">#{w.rank}</span>
+                                      <span>{w.user?.steamUsername ?? w.userId?.slice(-6) ?? '?'}</span>
+                                    </p>
+                                    {w.user?.tradeLink ? (
+                                      <div className="flex items-center gap-2 bg-green-100/50 dark:bg-green-900/20 rounded px-2 py-1">
+                                        <LinkIcon className="w-3 h-3 text-green-600 dark:text-green-400 shrink-0" />
+                                        <span className="text-xs font-mono text-green-700 dark:text-green-300 truncate flex-1" title={w.user.tradeLink}>
+                                          {w.user.tradeLink}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            navigator.clipboard.writeText(w.user!.tradeLink!);
+                                            toast.success('Trade link copié !');
+                                          }}
+                                          className="shrink-0 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 transition-colors"
+                                          title="Copier le trade link"
+                                        >
+                                          <ClipboardDocumentIcon className="w-4 h-4" />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <p className="text-xs text-amber-600 dark:text-amber-400 px-2">
+                                        ⚠️ Aucun trade link configuré
+                                      </p>
+                                    )}
+                                  </div>
+                                ))}
                               </div>
                             )}
                           </div>
