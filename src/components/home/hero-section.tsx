@@ -18,9 +18,6 @@ import { motion } from "framer-motion";
 import CountUp from "react-countup";
 import {
   CS2Background,
-  AK47Icon,
-  AWPIcon,
-  SecurityShieldIcon,
   WeaponGradeIndicator,
 } from "@/components/ui/cs2-icons";
 import {
@@ -219,56 +216,6 @@ export function HeroSection() {
       {/* CS2 Background Pattern Overlay pour plus de texture */}
       <CS2Background className="opacity-20" />
 
-      {/* Animated CS2 Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{
-            x: [0, 100, 0],
-            y: [0, -50, 0],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute top-20 left-10 text-foreground/10"
-        >
-          <AK47Icon className="h-12 w-12" />
-        </motion.div>
-
-        <motion.div
-          animate={{
-            x: [0, -80, 0],
-            y: [0, 100, 0],
-            rotate: [0, -180, -360],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "linear",
-            delay: 5,
-          }}
-          className="absolute top-40 right-20 text-foreground/10"
-        >
-          <AWPIcon className="h-8 w-8" />
-        </motion.div>
-
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.1, 0.3, 0.1],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="absolute bottom-20 left-1/4 text-foreground/20"
-        >
-          <SecurityShieldIcon className="h-16 w-16" />
-        </motion.div>
-      </div>
 
       <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-18">
         <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
