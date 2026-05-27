@@ -78,19 +78,52 @@ export function TestimonialsSection() {
           </p>
           
           {/* Rating Summary */}
-          <div className="flex items-center justify-center space-x-3 sm:space-x-4 mt-8">
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
             <div className="flex items-center space-x-2">
               <RatingStars rating={5} />
               <span className="text-2xl font-bold">{messages.testimonials.rating}</span>
               <span className="text-muted-foreground">/5</span>
             </div>
-            <div className="h-6 w-px bg-border" />
-            <div className="text-muted-foreground">
-              <a href="https://csgo-rep.com/profile/76561199040420116" target="_blank" rel="noopener noreferrer"             className="hover:text-foreground transition-colors">
-                {messages.testimonials.basedOn} <strong>806+</strong> {messages.testimonials.reviews} CSGO-Rep
-              </a>
-            </div>
+            <div className="h-6 w-px bg-border hidden sm:block" />
+            <motion.a
+              href="https://csgo-rep.com/profile/76561199040420116"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.06, y: -3 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="inline-flex relative group"
+            >
+              <span
+                className="absolute -inset-[2px] rounded-full opacity-80 blur-[2px] group-hover:opacity-100 group-hover:blur-[3px] transition-all duration-300"
+                style={{
+                  background: "linear-gradient(var(--csgo-neon-angle, 0deg), #ff0080, #ff8c00, #ffe000, #00ff88, #00cfff, #a855f7, #ff0080)",
+                  animation: "csgo-neon-rotate 3s linear infinite",
+                }}
+              />
+              <span className="relative inline-flex items-center space-x-2 lunar-card px-5 py-2.5 rounded-full bg-background/90 text-sm font-semibold">
+                <svg className="w-4 h-4 text-orange-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                </svg>
+                <span>
+                  {messages.testimonials.basedOn} <strong className="text-orange-500">806+</strong> {messages.testimonials.reviews} CSGO-Rep
+                </span>
+                <svg className="w-3.5 h-3.5 opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </span>
+            </motion.a>
           </div>
+
+          <style>{`
+            @property --csgo-neon-angle {
+              syntax: "<angle>";
+              initial-value: 0deg;
+              inherits: false;
+            }
+            @keyframes csgo-neon-rotate {
+              to { --csgo-neon-angle: 360deg; }
+            }
+          `}</style>
         </motion.div>
 
         {/* Testimonials Grid */}
@@ -166,17 +199,33 @@ export function TestimonialsSection() {
           viewport={{ once: true }}
           className="text-center mt-10"
         >
-          <a
+          <motion.a
             href="https://csgo-rep.com/profile/76561199040420116"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 text-sm text-orange-600 hover:text-orange-500 transition-colors font-medium"
+            whileHover={{ scale: 1.06, y: -3 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="inline-flex relative group"
           >
-            <span>{messages.testimonials.basedOn} 806+ {messages.testimonials.reviews} CSGO-Rep</span>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-          </a>
+            <span
+              className="absolute -inset-[2px] rounded-full opacity-80 blur-[2px] group-hover:opacity-100 group-hover:blur-[3px] transition-all duration-300"
+              style={{
+                background: "linear-gradient(var(--csgo-neon-angle, 0deg), #ff0080, #ff8c00, #ffe000, #00ff88, #00cfff, #a855f7, #ff0080)",
+                animation: "csgo-neon-rotate 3s linear infinite",
+              }}
+            />
+            <span className="relative inline-flex items-center space-x-2 lunar-card px-6 py-3 rounded-full bg-background/90 text-sm font-semibold">
+              <svg className="w-4 h-4 text-orange-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+              </svg>
+              <span>
+                {messages.testimonials.basedOn} <strong className="text-orange-500">806+</strong> {messages.testimonials.reviews} CSGO-Rep
+              </span>
+              <svg className="w-3.5 h-3.5 opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </span>
+          </motion.a>
         </motion.div>
 
         {/* Trust Indicators */}
