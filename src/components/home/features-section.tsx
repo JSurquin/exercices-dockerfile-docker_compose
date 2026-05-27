@@ -257,13 +257,39 @@ export function FeaturesSection() {
           viewport={{ once: true }}
           className="text-center mt-16"
         >
-          <div className="inline-flex items-center space-x-2 lunar-card px-6 py-3 rounded-full">
-            <ShieldCheckIcon className="w-5 h-5 text-theme-accent" />
-            <span className="text-sm font-medium">
-              {messages.features.trustIndicators}
-            </span>
-          </div>
+          <motion.div
+            whileHover={{ scale: 1.06, y: -3 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="inline-flex relative group cursor-default"
+          >
+            {/* Neon RGB animated border */}
+            <span
+              className="absolute -inset-[2px] rounded-full opacity-80 blur-[2px] group-hover:opacity-100 group-hover:blur-[3px] transition-all duration-300"
+              style={{
+                background:
+                  "linear-gradient(var(--neon-angle, 0deg), #ff0080, #ff8c00, #ffe000, #00ff88, #00cfff, #a855f7, #ff0080)",
+                animation: "neon-rotate 3s linear infinite",
+              }}
+            />
+            <div className="relative inline-flex items-center space-x-2 lunar-card px-6 py-3 rounded-full bg-background/90">
+              <ShieldCheckIcon className="w-5 h-5 text-theme-accent" />
+              <span className="text-sm font-medium">
+                {messages.features.trustIndicators}
+              </span>
+            </div>
+          </motion.div>
         </motion.div>
+
+        <style>{`
+          @property --neon-angle {
+            syntax: "<angle>";
+            initial-value: 0deg;
+            inherits: false;
+          }
+          @keyframes neon-rotate {
+            to { --neon-angle: 360deg; }
+          }
+        `}</style>
       </div>
     </section>
   );
