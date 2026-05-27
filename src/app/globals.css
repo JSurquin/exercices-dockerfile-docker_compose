@@ -574,9 +574,20 @@ body.next-dev-overlay-present #sentry-feedback {
   .btn-chrome {
     background: linear-gradient(135deg, rgba(180, 185, 200, 0.15), rgba(120, 125, 140, 0.1));
     border: 1px solid rgba(200, 205, 220, 0.3);
-    color: #e8e8f0;
+    color: var(--foreground);
     position: relative;
     overflow: hidden;
+  }
+
+  .light .btn-chrome {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.02));
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    color: var(--foreground);
+  }
+
+  .light .btn-chrome:hover {
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.15);
+    border-color: rgba(249, 115, 22, 0.3);
   }
 
   .btn-chrome::before {
@@ -930,6 +941,39 @@ body.next-dev-overlay-present #sentry-feedback {
   .cs2 .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(249, 115, 22, 0.3); }
   .light .scrollbar-thin { scrollbar-color: rgba(249, 115, 22, 0.25) transparent; }
   .light .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(249, 115, 22, 0.25); }
+
+  /* ─── Light theme : rendre les dégradés texte visibles sur fond blanc ─── */
+  .light .hero-title {
+    background: none;
+    -webkit-text-fill-color: var(--foreground);
+    color: var(--foreground);
+  }
+
+  .light .text-chrome-gradient {
+    background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .light .text-brand-gradient {
+    background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Light — lunar-card : fond blanc léger avec bordure */
+  .light .lunar-card {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Light — chrome-shimmer : bordure subtile orange */
+  .light .chrome-shimmer {
+    border-color: rgba(249, 115, 22, 0.2);
+  }
 }
 
 @layer utilities {

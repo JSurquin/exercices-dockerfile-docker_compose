@@ -49,7 +49,7 @@ function PartnerAvatar({ src, name }: { src: string | null; name: string }) {
     );
   }
   return (
-    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-[#a8b8cc] ring-2 ring-[rgba(200,205,220,0.15)]">
+    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-xs font-bold text-theme-accent ring-2 ring-border">
       {name.slice(0, 2).toUpperCase()}
     </div>
   );
@@ -60,7 +60,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
   const thumbUrl = getYoutubeThumbnailUrl(video.youtubeVideoId);
 
   return (
-    <article className="group flex w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-lg transition-all duration-300 hover:border-[rgba(200,205,220,0.3)] hover:shadow-[rgba(192,192,210,0.1)] sm:w-auto">
+    <article className="group flex w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-lg transition-all duration-300 hover:border-theme-accent/30 hover:shadow-md sm:w-auto">
       <a
         href={watchUrl}
         target="_blank"
@@ -102,7 +102,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
               href={video.youtubeChannelUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block truncate text-sm font-semibold text-foreground hover:text-[#e8e8f0]"
+              className="block truncate text-sm font-semibold text-foreground hover:text-foreground/80"
             >
               {video.creatorName}
             </a>
@@ -119,7 +119,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
             href={watchUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-muted-foreground transition-colors hover:text-[#c0c0d0]"
+            className="text-muted-foreground transition-colors hover:text-foreground"
             aria-label="YouTube"
           >
             <Youtube className="h-4 w-4" />
@@ -144,7 +144,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
 function LogoItem({ logo }: { logo: PartnerLogo }) {
   const inner = (
     <>
-      <div className="relative h-14 w-14 overflow-hidden rounded-full border border-border bg-card transition-all duration-300 group-hover:border-[rgba(200,205,220,0.3)] group-hover:ring-2 group-hover:ring-[rgba(192,192,210,0.15)]">
+      <div className="relative h-14 w-14 overflow-hidden rounded-full border border-border bg-card transition-all duration-300 group-hover:border-theme-accent/30 group-hover:ring-2 group-hover:ring-theme-accent/15">
         <img src={logo.logoUrl} alt={logo.name} className="h-full w-full object-cover" />
       </div>
       <span className="max-w-[72px] truncate text-center text-[10px] text-muted-foreground transition-colors group-hover:text-foreground">
@@ -195,7 +195,7 @@ export function PartnersSection() {
       id="partners"
       className="relative overflow-hidden bg-muted/30 py-20"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[rgba(140,150,170,0.06)] via-transparent to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-theme-accent/5 via-transparent to-transparent" />
 
       <div className="container relative mx-auto px-4">
         <motion.div
@@ -215,7 +215,7 @@ export function PartnersSection() {
             {t.contactPrefix}{' '}
             <a
               href={`mailto:${t.contactEmail}`}
-              className="font-medium text-[#c0c0d0] hover:text-[#e8e8f0]"
+              className="font-medium text-theme-accent hover:text-theme-accent/80"
             >
               {t.contactEmail}
             </a>
@@ -224,7 +224,7 @@ export function PartnersSection() {
 
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#a8b8cc] border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-theme-accent border-t-transparent" />
           </div>
         ) : (
           <>

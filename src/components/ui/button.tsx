@@ -20,7 +20,7 @@ const buttonVariants = cva(
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
         chrome:
-          "btn-chrome rounded-[10px] px-7 py-3 text-[#e8e8f0] hover:text-white",
+          "btn-chrome rounded-[10px] px-7 py-3 hover:brightness-110",
         cta:
           "btn-cta cs2-button-shine rounded-[10px] font-semibold text-white shadow-lg hover:brightness-110",
       },

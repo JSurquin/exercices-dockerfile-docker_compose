@@ -86,7 +86,7 @@ export function TestimonialsSection() {
             </div>
             <div className="h-6 w-px bg-border" />
             <div className="text-muted-foreground">
-              <a href="https://csgo-rep.com/profile/76561199040420116" target="_blank" rel="noopener noreferrer" className="hover:text-[#e8e8f0] transition-colors">
+              <a href="https://csgo-rep.com/profile/76561199040420116" target="_blank" rel="noopener noreferrer"             className="hover:text-foreground transition-colors">
                 {messages.testimonials.basedOn} <strong>806+</strong> {messages.testimonials.reviews} CSGO-Rep
               </a>
             </div>
@@ -109,7 +109,7 @@ export function TestimonialsSection() {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
                       <a href={`https://csgo-rep.com/profile/${testimonial.steamId}`} target="_blank" rel="noopener noreferrer">
-                        <Avatar className="w-10 h-10 ring-2 ring-transparent hover:ring-[#a8b8cc] transition-all">
+                        <Avatar className="w-10 h-10 ring-2 ring-transparent hover:ring-theme-accent transition-all">
                           <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
                           <AvatarFallback>
                             {testimonial.name.slice(0, 2).toUpperCase()}
@@ -118,11 +118,11 @@ export function TestimonialsSection() {
                       </a>
                       <div>
                         <div className="flex items-center space-x-2">
-                          <a href={`https://csgo-rep.com/profile/${testimonial.steamId}`} target="_blank" rel="noopener noreferrer" className="hover:text-[#e8e8f0] transition-colors">
+                          <a href={`https://csgo-rep.com/profile/${testimonial.steamId}`} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
                             <h4 className="font-semibold text-sm">{testimonial.name}</h4>
                           </a>
                           {testimonial.verified && (
-                            <div className="w-4 h-4 bg-[#a8b8cc] rounded-full flex items-center justify-center" title="CSGO-Rep verified">
+                            <div className="w-4 h-4 bg-theme-accent rounded-full flex items-center justify-center" title="CSGO-Rep verified">
                               <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
@@ -133,7 +133,7 @@ export function TestimonialsSection() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold text-[#e0e0e8]">{testimonial.amount}</div>
+                      <div className="text-lg font-bold text-theme-accent">{testimonial.amount}</div>
                     </div>
                   </div>
 
@@ -170,7 +170,7 @@ export function TestimonialsSection() {
             href="https://csgo-rep.com/profile/76561199040420116"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 text-sm text-chrome-gradient hover:text-[#e8e8f0] transition-colors font-medium"
+            className="inline-flex items-center space-x-2 text-sm text-chrome-gradient hover:text-foreground transition-colors font-medium"
           >
             <span>{messages.testimonials.basedOn} 806+ {messages.testimonials.reviews} CSGO-Rep</span>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -20,15 +20,15 @@ import {
 } from '@heroicons/react/24/outline';
 
 const badgeVariantMap: Record<string, string> = {
-  'certified': 'bg-white/10 text-[#e0e0e8] border-[rgba(200,205,220,0.2)]',
-  'popular': 'bg-white/8 text-[#c8c8d8] border-[rgba(200,205,220,0.15)]',
-  'new': 'bg-white/10 text-[#e8e8f0] border-[rgba(200,205,220,0.2)]',
-  'premium': 'bg-white/12 text-[#ffffff] border-[rgba(220,220,240,0.25)]',
-  'efficient': 'bg-white/8 text-theme-accent border-[rgba(168,184,204,0.2)]',
-  'global': 'bg-white/8 text-[#b0b8c8] border-[rgba(200,205,220,0.15)]',
-  'fun': 'bg-white/8 text-[#c0c0d0] border-[rgba(200,205,220,0.15)]',
-  'profitable': 'bg-white/10 text-[#e0e0e8] border-[rgba(200,205,220,0.2)]',
-  'pro': 'bg-white/12 text-[#e8e8f0] border-[rgba(200,205,220,0.25)]',
+  'certified': 'bg-theme-accent/10 text-theme-accent border-theme-accent/20',
+  'popular': 'bg-theme-accent/10 text-theme-accent border-theme-accent/15',
+  'new': 'bg-theme-accent/10 text-theme-accent border-theme-accent/20',
+  'premium': 'bg-theme-accent/15 text-theme-accent border-theme-accent/25',
+  'efficient': 'bg-theme-accent/10 text-theme-accent border-theme-accent/20',
+  'global': 'bg-muted text-muted-foreground border-border',
+  'fun': 'bg-muted text-muted-foreground border-border',
+  'profitable': 'bg-theme-accent/10 text-theme-accent border-theme-accent/20',
+  'pro': 'bg-theme-accent/15 text-theme-accent border-theme-accent/25',
 };
 
 const getBadgeStyle = (badge: string) => {
@@ -139,7 +139,7 @@ export function FeaturesSection() {
         <CardContent className="p-4 sm:p-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-br from-white/10 to-[#a8b8cc]/10 rounded-lg border border-[rgba(200,205,220,0.1)]">
+              <div className="p-2 bg-gradient-to-br from-white/10 to-theme-accent/10 rounded-lg border border-border/50">
                 <feature.icon className="w-6 h-6 text-theme-accent" />
               </div>
               <div>
@@ -164,7 +164,7 @@ export function FeaturesSection() {
           <div className="space-y-2">
             {feature.highlights.map((highlight, i) => (
               <div key={i} className="flex items-center text-xs">
-                <div className="w-1.5 h-1.5 bg-[#c0c0d0] rounded-full mr-2 flex-shrink-0" />
+                <div className="w-1.5 h-1.5 bg-theme-accent/70 rounded-full mr-2 flex-shrink-0" />
                 <span className="text-muted-foreground">{highlight}</span>
               </div>
             ))}

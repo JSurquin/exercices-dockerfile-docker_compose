@@ -152,8 +152,8 @@ export function HowItWorks() {
               {index < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2">
                   <div className="w-8 h-8 flex items-center justify-center">
-                    <div className="w-6 h-0.5 bg-gradient-to-r from-[#c0c0c0] to-[#e8e8e8] relative">
-                      <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-[#c0c0d0] border-t-2 border-b-2 border-t-transparent border-b-transparent" />
+                    <div className="w-6 h-0.5 bg-border relative">
+                      <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-muted-foreground border-t-2 border-b-2 border-t-transparent border-b-transparent" />
                     </div>
                   </div>
                 </div>
