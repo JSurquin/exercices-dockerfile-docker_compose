@@ -127,7 +127,7 @@ export function HowItWorks() {
 
                   {/* Icon */}
                   <div className="mb-4">
-                    <step.icon className="w-8 h-8 mx-auto text-[#a8b8cc]" />
+                    <step.icon className="w-8 h-8 mx-auto text-theme-accent" />
                   </div>
 
                   {/* Content */}
@@ -140,7 +140,7 @@ export function HowItWorks() {
                   <ul className="text-xs text-muted-foreground space-y-1">
                     {step.details.map((detail, i) => (
                       <li key={i} className="flex items-center justify-center">
-                        <CheckCircleIcon className="w-3 h-3 mr-1 text-[#a8b8cc] flex-shrink-0" />
+                        <CheckCircleIcon className="w-3 h-3 mr-1 text-theme-accent flex-shrink-0" />
                         {detail}
                       </li>
                     ))}
@@ -173,7 +173,7 @@ export function HowItWorks() {
           {benefits.map((benefit, index) => (
             <div key={index} className="text-center lunar-card p-6">
               <div className="mb-4">
-                <benefit.icon className="w-12 h-12 mx-auto text-[#a8b8cc]" />
+                <benefit.icon className="w-12 h-12 mx-auto text-theme-accent" />
               </div>
               <h3 className="font-semibold mb-2">{benefit.title}</h3>
               <p className="text-muted-foreground">{benefit.description}</p>
@@ -197,7 +197,7 @@ export function HowItWorks() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                variant="chrome"
+                variant="cta"
                 onClick={handlePrimaryCta}
               >
                 {messages.howItWorks.cta.primary}

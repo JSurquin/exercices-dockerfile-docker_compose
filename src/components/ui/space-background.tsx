@@ -1,9 +1,20 @@
 "use client";
 
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { normalizeStoredTheme } from "@/lib/themes";
+
 /**
  * Fond spatial chrome/lunaire — étoiles, comètes argentées, nébuleuse diffuse.
  */
 export function SpaceBackground() {
+  const { resolvedTheme, theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+  if (normalizeStoredTheme(resolvedTheme ?? theme) !== "moonskin") return null;
+
   return (
     <div
       className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"

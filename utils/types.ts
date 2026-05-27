@@ -78,6 +78,10 @@ export interface Messages {
     language: string;
     lightMode: string;
     darkMode: string;
+    themeLabel: string;
+    themeMoonskin: string;
+    themeColorful: string;
+    themeTertiary: string;
     affiliation: string;
     moderation: string;
     withdrawFunds: string;

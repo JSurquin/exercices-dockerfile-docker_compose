@@ -82,9 +82,11 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem
+          defaultTheme="moonskin"
+          themes={["moonskin", "colorful", "tertiary"]}
+          enableSystem={false}
           disableTransitionOnChange
+          storageKey="moonskin-theme"
         >
           <LocaleProvider>
             <CurrencyProvider>

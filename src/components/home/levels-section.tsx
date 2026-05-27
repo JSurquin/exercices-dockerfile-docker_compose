@@ -76,7 +76,7 @@ export function LevelsSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <Badge variant="secondary" className="mb-4 bg-white/10 text-[#a8b8cc] border-[rgba(200,205,220,0.2)]">
+          <Badge variant="secondary" className="mb-4 bg-white/10 text-theme-accent border-[rgba(200,205,220,0.2)]">
             <SparklesIcon className="w-3.5 h-3.5 mr-1" />
             {t.badge}
           </Badge>
@@ -139,7 +139,7 @@ export function LevelsSection() {
             viewport={{ once: true }}
           >
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <ArrowTrendingUpIcon className="w-5 h-5 text-[#a8b8cc]" />
+              <ArrowTrendingUpIcon className="w-5 h-5 text-theme-accent" />
               {t.levelsTitle}
             </h3>
             <div className="space-y-2">
@@ -169,7 +169,7 @@ export function LevelsSection() {
                         {(level.xpStart / 1000).toFixed(level.xpStart >= 1000 ? 0 : 1)}k – {(level.xpEnd / 1000).toFixed(0)}k XP
                       </p>
                     </div>
-                    <Badge variant="outline" className="shrink-0 text-[#a8b8cc] border-[rgba(200,205,220,0.2)]">
+                    <Badge variant="outline" className="shrink-0 text-theme-accent border-[rgba(200,205,220,0.2)]">
                       {bonusStr}
                     </Badge>
                   </div>
@@ -188,7 +188,7 @@ export function LevelsSection() {
             <Card className="lunar-card h-full">
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                  <GiftIcon className="w-5 h-5 text-[#a8b8cc]" />
+                  <GiftIcon className="w-5 h-5 text-theme-accent" />
                   {t.tierRewards}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">{t.fragmentsDesc}</p>
@@ -213,7 +213,7 @@ export function LevelsSection() {
           viewport={{ once: true }}
           className="text-center"
         >
-          <Button asChild size="lg" variant="chrome">
+          <Button asChild size="lg" variant="cta">
             <Link href="/sell">{t.cta}</Link>
           </Button>
         </motion.div>

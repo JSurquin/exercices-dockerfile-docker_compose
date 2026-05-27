@@ -17,7 +17,9 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
+import { ThemeSelector } from "@/components/ui/theme-selector";
 import { useTheme } from "next-themes";
+import { APP_THEMES, normalizeStoredTheme, type AppTheme } from "@/lib/themes";
 import { CurrencySelector } from "@/components/ui/currency-selector";
 import {
   HomeIcon,
@@ -26,8 +28,6 @@ import {
   GiftIcon,
   QuestionMarkCircleIcon,
   Bars3Icon,
-  MoonIcon,
-  SunIcon,
   LanguageIcon,
   UserCircleIcon,
   ChatBubbleLeftRightIcon,
@@ -47,9 +47,15 @@ import { UserRoleBadge } from "@/components/ui/user-role-badge";
 export function Header() {
   const { user, loginWithSteam, loginWithDiscord, logout, isLoading } = useAuth();
   const { locale, setLocale, messages } = useLocale();
-  const { theme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const currentTheme = normalizeStoredTheme(resolvedTheme ?? theme);
+  const themeLabels: Record<AppTheme, keyof typeof messages.nav> = {
+    moonskin: "themeMoonskin",
+    colorful: "themeColorful",
+    tertiary: "themeTertiary",
+  };
 
   useEffect(() => {
     window.dispatchEvent(
@@ -125,7 +131,7 @@ export function Header() {
             </div>
           </div>
           <div className="flex flex-col">
-            <span className="text-gaming-title text-xl bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+            <span className="text-gaming-title text-xl text-chrome-gradient">
               MoonSkin
             </span>
           </div>
@@ -147,9 +153,9 @@ export function Header() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <item.icon className={`h-4 w-4 transition-colors ${isActive ? "text-orange-500" : "group-hover:text-orange-500"}`} />
+                  <item.icon className={`h-4 w-4 transition-colors ${isActive ? "text-theme-accent" : "group-hover:text-theme-accent"}`} />
                   <span>{item.name}</span>
-                  <div className={`absolute -bottom-[21px] left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-red-600 transition-transform duration-200 ${
+                  <div className={`absolute -bottom-[21px] left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--cta-from)] to-[var(--cta-to)] transition-transform duration-200 ${
                     isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
                   }`}></div>
                 </Link>
@@ -172,17 +178,7 @@ export function Header() {
             <div className="text-xs text-muted-foreground">€2.4M traded</div>
           </div> */}
 
-          {/* Theme Toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 hover:bg-orange-500/10 hover:text-orange-500"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          >
-            <SunIcon className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <MoonIcon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
+          <ThemeSelector />
 
           {/* Language Toggle */}
           <DropdownMenu>
@@ -190,7 +186,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 hover:bg-orange-500/10 hover:text-orange-500"
+                className="h-9 w-9 hover:bg-theme-accent/10 hover:text-theme-accent"
               >
                 <LanguageIcon className="h-4 w-4" />
               </Button>
@@ -201,7 +197,7 @@ export function Header() {
                   key={loc}
                   onClick={() => setLocale(loc as Locale)}
                   className={
-                    locale === loc ? "bg-orange-500/10 text-orange-600" : ""
+                    locale === loc ? "bg-theme-accent/10 text-theme-accent" : ""
                   }
                 >
                   <span className="mr-2">
@@ -230,12 +226,12 @@ export function Header() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 hover:bg-orange-500/10 hover:text-orange-500 relative"
+                  className="h-9 w-9 hover:bg-theme-accent/10 hover:text-theme-accent relative"
                 >
                   <BellIcon className="h-4 w-4" />
                   {unreadCount > 0 && (
                     <Badge
-                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-orange-500 text-white text-[10px] border-2 border-background"
+                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-theme-accent text-white text-[10px] border-2 border-background"
                     >
                       {unreadCount > 9 ? "9+" : unreadCount}
                     </Badge>
@@ -312,7 +308,8 @@ export function Header() {
               <Button
                 onClick={handleSteamLogin}
                 disabled={isLoading}
-                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                variant="cta"
+                className="border-0 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
                 {isLoading ? (
                   <div className="flex items-center space-x-2">
@@ -378,7 +375,8 @@ export function Header() {
                     <Button
                       onClick={handleSteamLogin}
                       disabled={isLoading}
-                      className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                      variant="cta"
+                      className="w-full"
                     >
                       <UserCircleIcon className="mr-2 h-4 w-4" />
                       {isLoading ? messages.common.loading : messages.common.steamLogin}
@@ -408,11 +406,11 @@ export function Header() {
                         onClick={() => setIsMenuOpen(false)}
                         className={`flex items-center space-x-3 p-3 text-sm font-medium rounded-md transition-colors ${
                           isActive
-                            ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-l-2 border-orange-500"
+                            ? "bg-theme-accent/10 text-theme-accent border-l-2 border-theme-accent"
                             : "hover:bg-accent"
                         }`}
                       >
-                        <item.icon className={`h-5 w-5 ${isActive ? "text-orange-500" : ""}`} />
+                        <item.icon className={`h-5 w-5 ${isActive ? "text-theme-accent" : ""}`} />
                         <span>{item.name}</span>
                       </Link>
                     );
@@ -443,7 +441,7 @@ export function Header() {
                         <span>{messages.ui.notifications}</span>
                       </div>
                       {unreadCount > 0 && (
-                        <Badge className="bg-orange-500 text-white">
+                        <Badge className="bg-theme-accent text-white">
                           {unreadCount > 9 ? "9+" : unreadCount}
                         </Badge>
                       )}
@@ -477,20 +475,19 @@ export function Header() {
 
                 {/* Settings */}
                 <div className="border-t pt-4 space-y-2">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() =>
-                      setTheme(theme === "dark" ? "light" : "dark")
-                    }
-                  >
-                    {theme === "dark" ? (
-                      <SunIcon className="mr-3 h-5 w-5" />
-                    ) : (
-                      <MoonIcon className="mr-3 h-5 w-5" />
-                    )}
-                    {theme === "dark" ? messages.nav.lightMode : messages.nav.darkMode}
-                  </Button>
+                  <p className="px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    {messages.nav.themeLabel}
+                  </p>
+                  {APP_THEMES.map((t) => (
+                    <Button
+                      key={t}
+                      variant="ghost"
+                      className={`w-full justify-start ${currentTheme === t ? "bg-theme-accent/10 text-theme-accent" : ""}`}
+                      onClick={() => setTheme(t)}
+                    >
+                      {messages.nav[themeLabels[t]]}
+                    </Button>
+                  ))}
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

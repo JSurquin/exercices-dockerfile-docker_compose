@@ -282,7 +282,7 @@ export function HeroSection() {
                 variant="secondary"
                 className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm"
               >
-                <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-[#a8b8cc]" />
+                <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-theme-accent" />
                 {messages.hero.badge}
               </Badge>
             </motion.div>
@@ -328,7 +328,7 @@ export function HeroSection() {
                   key={index}
                   className="flex items-center space-x-1.5 sm:space-x-2"
                 >
-                  <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#a8b8cc] flex-shrink-0" />
+                  <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-theme-accent flex-shrink-0" />
                   <span className="text-xs sm:text-sm lunar-label text-[#9a9aaa]">
                     {feature.title}
                   </span>
@@ -345,7 +345,7 @@ export function HeroSection() {
             >
               <Button
                 asChild
-                variant="chrome"
+                variant="cta"
                 className="w-full sm:w-auto h-12 sm:h-11 px-6 sm:px-8 text-sm sm:text-base"
               >
                 <Link href={user ? "/sell" : "/login"}>
@@ -519,7 +519,7 @@ export function HeroSection() {
                   </div>
                 </div>
 
-                <Button variant="chrome" className="w-full">
+                <Button variant="cta" className="w-full">
                   {messages.trade.confirm}
                 </Button>
               </div>

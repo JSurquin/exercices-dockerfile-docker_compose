@@ -22,7 +22,7 @@ const badgeVariantMap: Record<string, string> = {
   'popular': 'bg-white/8 text-[#c8c8d8] border-[rgba(200,205,220,0.15)]',
   'new': 'bg-white/10 text-[#e8e8f0] border-[rgba(200,205,220,0.2)]',
   'premium': 'bg-white/12 text-[#ffffff] border-[rgba(220,220,240,0.25)]',
-  'efficient': 'bg-white/8 text-[#a8b8cc] border-[rgba(168,184,204,0.2)]',
+  'efficient': 'bg-white/8 text-theme-accent border-[rgba(168,184,204,0.2)]',
   'global': 'bg-white/8 text-[#b0b8c8] border-[rgba(200,205,220,0.15)]',
   'fun': 'bg-white/8 text-[#c0c0d0] border-[rgba(200,205,220,0.15)]',
   'profitable': 'bg-white/10 text-[#e0e0e8] border-[rgba(200,205,220,0.2)]',
@@ -152,7 +152,7 @@ export function FeaturesSection() {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
                       <div className="p-2 bg-gradient-to-br from-white/10 to-[#a8b8cc]/10 rounded-lg border border-[rgba(200,205,220,0.1)]">
-                        <feature.icon className="w-6 h-6 text-[#a8b8cc]" />
+                        <feature.icon className="w-6 h-6 text-theme-accent" />
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wider">
@@ -198,7 +198,7 @@ export function FeaturesSection() {
           className="text-center mt-16"
         >
           <div className="inline-flex items-center space-x-2 lunar-card px-6 py-3 rounded-full">
-            <ShieldCheckIcon className="w-5 h-5 text-[#a8b8cc]" />
+            <ShieldCheckIcon className="w-5 h-5 text-theme-accent" />
             <span className="text-sm font-medium">
               {messages.features.trustIndicators}
             </span>
