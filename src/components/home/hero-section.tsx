@@ -3,6 +3,7 @@
 import type { ComponentType } from "react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLocale } from "@/components/providers/locale-provider";
@@ -100,6 +101,12 @@ const UsdIcon = () => (
     <path d="M16.5 8v1.2c1.9.3 3.5 1.4 3.5 3.2 0 1.7-1.2 2.6-3 3.1l-.5.1v3.8c1.1-.2 1.9-.8 2.1-1.7h2c-.3 2-1.8 3.1-4.1 3.4V22h-1.5v-1.1c-2.1-.3-3.7-1.5-3.7-3.4h2c.2 1 .9 1.7 1.7 1.9v-3.9l-.6-.1c-1.7-.4-3.1-1.4-3.1-3.2 0-1.8 1.5-2.9 3.7-3.1V8h1.5zm-1.5 2.3c-1.1.2-1.8.7-1.8 1.6 0 .9.7 1.4 1.8 1.7v-3.3zm1.5 5.4v3.5c1.2-.2 1.9-.8 1.9-1.8 0-.9-.7-1.4-1.9-1.7z" fill="white"/>
   </svg>
 );
+
+/** Vignettes Steam (512×512) servies depuis public/images/hero-demo-skins */
+const HERO_DEMO_SKIN_IMAGES = {
+  ak47RedlineFt: "/images/hero-demo-skins/ak47-redline-field-tested.png",
+  awpDragonLoreFn: "/images/hero-demo-skins/awp-dragon-lore-factory-new.png",
+} as const;
 
 const HERO_PAYMENT_METHOD_ORDER = [
   "usdt",
@@ -443,11 +450,18 @@ export function HeroSection() {
                     className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white/5 rounded-lg border border-border/50 hover:border-border transition-all duration-300"
                     whileHover={{ scale: 1.02 }}
                   >
-                    <div className="relative w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#9090a0] to-[#606070] rounded-lg flex items-center justify-center shadow-lg">
-                      <AK47Icon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#14141a] shadow-lg ring-1 ring-white/10 sm:h-12 sm:w-12">
+                      <Image
+                        src={HERO_DEMO_SKIN_IMAGES.ak47RedlineFt}
+                        alt="AK-47 | Redline (Field-Tested)"
+                        width={512}
+                        height={512}
+                        className="h-full w-full object-cover"
+                        sizes="(min-width: 640px) 48px, 40px"
+                      />
                       <WeaponGradeIndicator
                         grade="Classified"
-                        className="absolute -top-1 -right-1 h-2 w-2 sm:h-3 sm:w-3"
+                        className="absolute -right-1 -top-1 z-10 h-2 w-2 sm:h-3 sm:w-3"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -476,11 +490,18 @@ export function HeroSection() {
                     className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white/5 rounded-lg border border-border/50 hover:border-border transition-all duration-300"
                     whileHover={{ scale: 1.02 }}
                   >
-                    <div className="relative w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#c0c0d0] to-[#808090] rounded-lg flex items-center justify-center shadow-lg">
-                      <AWPIcon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#14141a] shadow-lg ring-1 ring-white/10 sm:h-12 sm:w-12">
+                      <Image
+                        src={HERO_DEMO_SKIN_IMAGES.awpDragonLoreFn}
+                        alt="AWP | Dragon Lore (Factory New)"
+                        width={512}
+                        height={512}
+                        className="h-full w-full object-cover"
+                        sizes="(min-width: 640px) 48px, 40px"
+                      />
                       <WeaponGradeIndicator
                         grade="Covert"
-                        className="absolute -top-1 -right-1 h-2 w-2 sm:h-3 sm:w-3"
+                        className="absolute -right-1 -top-1 z-10 h-2 w-2 sm:h-3 sm:w-3"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
