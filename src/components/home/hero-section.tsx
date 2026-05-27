@@ -447,7 +447,7 @@ export function HeroSection() {
                 {/* Skin Items */}
                 <div className="space-y-2 sm:space-y-3">
                   <motion.div
-                    className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white/5 rounded-lg border border-border/50 hover:border-border transition-all duration-300"
+                    className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gradient-to-r from-red-500/10 to-orange-500/10 rounded-lg border border-red-500/20 hover:border-red-500/40 transition-all duration-300"
                     whileHover={{ scale: 1.02 }}
                   >
                     <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#14141a] shadow-lg ring-1 ring-white/10 sm:h-12 sm:w-12">
@@ -469,7 +469,7 @@ export function HeroSection() {
                         <p className="font-medium text-sm sm:text-base truncate">
                           AK-47 | Redline
                         </p>
-                        <div className="px-1.5 sm:px-2 py-0.5 bg-white/10 text-muted-foreground text-xs rounded font-mono flex-shrink-0">
+                        <div className="px-1.5 sm:px-2 py-0.5 bg-orange-500/20 text-orange-600 text-xs rounded font-mono flex-shrink-0">
                           StatTrak™
                         </div>
                       </div>
@@ -479,7 +479,7 @@ export function HeroSection() {
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="font-bold text-sm sm:text-lg text-foreground">
+                      <p className="font-bold text-sm sm:text-lg text-green-600">
                         {fmt(demoAk47Cents)}
                       </p>
                       <p className="text-xs text-theme-accent">+15% ↗</p>
@@ -487,7 +487,7 @@ export function HeroSection() {
                   </motion.div>
 
                   <motion.div
-                    className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white/5 rounded-lg border border-border/50 hover:border-border transition-all duration-300"
+                    className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-lg border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300"
                     whileHover={{ scale: 1.02 }}
                   >
                     <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#14141a] shadow-lg ring-1 ring-white/10 sm:h-12 sm:w-12">
@@ -509,17 +509,17 @@ export function HeroSection() {
                         <p className="font-medium text-sm sm:text-base truncate">
                           AWP | Dragon Lore
                         </p>
-                        <div className="px-1.5 py-0.5 bg-white/10 text-foreground text-xs rounded flex-shrink-0">
+                        <div className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-600 text-xs rounded flex-shrink-0">
                           ★
                         </div>
                       </div>
                       <p className="text-xs sm:text-sm text-muted-foreground flex items-center space-x-1">
                         <span>Factory New</span>
-                        <span className="text-theme-accent">★★★★★</span>
+                        <span className="text-yellow-500">★★★★★</span>
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="font-bold text-sm sm:text-lg text-foreground">
+                      <p className="font-bold text-sm sm:text-lg text-green-600">
                         {fmt(demoAwpCents)}
                       </p>
                       <p className="text-xs text-theme-accent">+8% ↗</p>
@@ -529,9 +529,9 @@ export function HeroSection() {
 
                 {/* Summary */}
                 <div className="border-t pt-4 space-y-2 bg-muted/30 rounded-lg p-3">
-                  <div className="flex justify-between font-bold text-lg pt-2 text-foreground">
+                  <div className="flex justify-between font-bold text-lg pt-2 text-green-600">
                     <span>{messages.hero.tradeInterface.totalNet}</span>
-                    <span className="bg-white/10 px-2 py-1 rounded border border-border/30">
+                    <span className="bg-green-500/10 px-2 py-1 rounded">
                       {fmt(demoNetCents)}
                     </span>
                   </div>

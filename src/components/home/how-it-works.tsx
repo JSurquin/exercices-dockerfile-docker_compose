@@ -85,7 +85,7 @@ export function HowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" className="py-16 sm:py-20 lg:py-24 lunar-section-divider bg-[#0d0d12]/50">
+    <section id="how-it-works" className="py-16 sm:py-20 lg:py-24 bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header - Glass Effect */}
         <motion.div
@@ -96,7 +96,7 @@ export function HowItWorks() {
           className="text-center mb-16"
         >
           <div className="lunar-card p-6 sm:p-8 inline-block">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 hero-title">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
               {messages.howItWorks.title}
             </h2>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -120,7 +120,7 @@ export function HowItWorks() {
                 <CardContent className="p-6 text-center">
                   {/* Step Number */}
                   <div className="mb-4">
-                    <div className="w-12 h-12 mx-auto bg-gradient-to-br from-[#c0c0c0]/30 to-[#808090]/20 rounded-full flex items-center justify-center shadow-lg shadow-[rgba(192,192,210,0.2)] border border-[rgba(200,205,220,0.2)]">
+                    <div className="w-12 h-12 mx-auto bg-gradient-to-br from-[var(--cta-from)] to-[var(--cta-to)] rounded-full flex items-center justify-center shadow-lg shadow-[var(--cta-shadow)]">
                       <span className="text-white font-bold">{step.step}</span>
                     </div>
                   </div>
