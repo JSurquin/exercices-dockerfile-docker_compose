@@ -274,6 +274,8 @@ export interface Messages {
         badge: string;
       };
     };
+    showMore: string;
+    showLess: string;
     trustIndicators: string;
   };
   howItWorks: {

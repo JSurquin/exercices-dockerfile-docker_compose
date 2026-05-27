@@ -101,8 +101,8 @@ export const messages: Record<Locale, Messages> = {
         estimation: {
           category: "Estimation",
           title: "Prix en temps réel",
-          description: "Notre API intégrée pour des estimations précises et mises à jour en continu.",
-          highlights: ["Notre API", "Temps réel", "Estimation précise"],
+          description: "Notre API en temps réel pour des estimations précises et mises à jour en continu.",
+          highlights: ["Notre API", "En temps réel", "Estimation précise"],
           badge: "Nouveau"
         },
         support: {
@@ -148,6 +148,8 @@ export const messages: Record<Locale, Messages> = {
           badge: "Pro"
         }
       },
+      showMore: "En savoir plus",
+      showLess: "Réduire",
       trustIndicators: "Plus de 15,000 utilisateurs nous font confiance"
     },
     howItWorks: {
@@ -7260,8 +7262,8 @@ export const messages: Record<Locale, Messages> = {
         estimation: {
           category: "Estimation",
           title: "Real-time pricing",
-          description: "Our integrated API for accurate estimates and continuous updates.",
-          highlights: ["Our API", "Real-time", "Accurate estimation"],
+          description: "Our real-time API for accurate estimates and continuous updates.",
+          highlights: ["Our API", "Real time", "Accurate estimation"],
           badge: "New"
         },
         support: {
@@ -7307,6 +7309,8 @@ export const messages: Record<Locale, Messages> = {
           badge: "Pro"
         }
       },
+      showMore: "Learn more",
+      showLess: "Show less",
       trustIndicators: "Over 15,000 users trust us"
     },
     howItWorks: {
@@ -14418,8 +14422,8 @@ export const messages: Record<Locale, Messages> = {
         estimation: {
           category: "估价",
           title: "实时定价",
-          description: "我们集成的 API，提供准确估价和持续更新。",
-          highlights: ["我们的 API", "实时", "准确估价"],
+          description: "我们的实时 API，提供准确估价和持续更新。",
+          highlights: ["我们的 API", "实时更新", "准确估价"],
           badge: "新功能"
         },
         support: {
@@ -14465,6 +14469,8 @@ export const messages: Record<Locale, Messages> = {
           badge: "专业"
         }
       },
+      showMore: "了解更多",
+      showLess: "收起",
       trustIndicators: "超过15,000名用户信任我们"
     },
     howItWorks: {
