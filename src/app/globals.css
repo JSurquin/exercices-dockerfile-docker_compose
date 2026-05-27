@@ -562,17 +562,19 @@ body.next-dev-overlay-present #sentry-feedback {
     border-radius: 16px;
     backdrop-filter: blur(12px);
     box-shadow:
-      0 4px 24px rgba(0, 0, 0, 0.6),
-      0 1px 0 rgba(255, 255, 255, 0.06) inset,
-      0 0 0 1px rgba(180, 180, 200, 0.05) inset;
+      0 10px 48px rgba(0, 0, 0, 0.72),
+      0 3px 10px rgba(0, 0, 0, 0.55),
+      0 1px 0 rgba(255, 255, 255, 0.08) inset,
+      0 0 0 1px rgba(180, 180, 200, 0.07) inset;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
   .lunar-card:hover {
     box-shadow:
-      0 20px 60px rgba(0, 0, 0, 0.8),
-      0 0 30px rgba(190, 195, 215, 0.12),
-      0 1px 0 rgba(255, 255, 255, 0.1) inset;
+      0 28px 80px rgba(0, 0, 0, 0.88),
+      0 8px 24px rgba(0, 0, 0, 0.65),
+      0 0 40px rgba(190, 195, 215, 0.15),
+      0 1px 0 rgba(255, 255, 255, 0.12) inset;
   }
 
   /* Chrome shimmer border */
@@ -688,7 +690,10 @@ body.next-dev-overlay-present #sentry-feedback {
   /* Hero product float */
   .hero-product {
     animation: lunar-float 4s ease-in-out infinite;
-    filter: drop-shadow(0 20px 40px rgba(150, 160, 180, 0.3));
+    filter:
+      drop-shadow(0 32px 64px rgba(0, 0, 0, 0.85))
+      drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6))
+      drop-shadow(0 0 1px rgba(210, 215, 235, 0.18));
   }
 
   @keyframes lunar-float {
@@ -948,11 +953,32 @@ body.next-dev-overlay-present #sentry-feedback {
     background-clip: text;
   }
 
-  /* CS2 — lunar-card : style sombre original */
+  /* CS2 — lunar-card : style sombre original + relief orange */
   .cs2 .lunar-card {
     background: rgba(0, 0, 0, 0.25);
     border-color: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(8px);
+    box-shadow:
+      0 10px 48px rgba(0, 0, 0, 0.75),
+      0 3px 10px rgba(0, 0, 0, 0.55),
+      0 0 60px rgba(245, 101, 35, 0.07),
+      0 1px 0 rgba(255, 255, 255, 0.08) inset,
+      0 0 0 1px rgba(245, 101, 35, 0.06) inset;
+  }
+
+  .cs2 .lunar-card:hover {
+    box-shadow:
+      0 28px 80px rgba(0, 0, 0, 0.9),
+      0 8px 24px rgba(0, 0, 0, 0.65),
+      0 0 60px rgba(245, 101, 35, 0.12),
+      0 1px 0 rgba(255, 255, 255, 0.12) inset;
+  }
+
+  .cs2 .hero-product {
+    filter:
+      drop-shadow(0 36px 70px rgba(0, 0, 0, 0.88))
+      drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6))
+      drop-shadow(0 0 40px rgba(245, 101, 35, 0.12));
   }
 
   .cs2 .weapon-card-hover:hover {
@@ -996,11 +1022,29 @@ body.next-dev-overlay-present #sentry-feedback {
     background-clip: text;
   }
 
-  /* Light — lunar-card : fond blanc léger avec bordure */
+  /* Light — lunar-card : fond blanc léger avec bordure + relief */
   .light .lunar-card {
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.85);
     border-color: rgba(0, 0, 0, 0.08);
     backdrop-filter: blur(8px);
+    box-shadow:
+      0 10px 48px rgba(0, 0, 0, 0.22),
+      0 3px 10px rgba(0, 0, 0, 0.14),
+      0 1px 0 rgba(255, 255, 255, 0.95) inset;
+  }
+
+  .light .lunar-card:hover {
+    box-shadow:
+      0 28px 80px rgba(0, 0, 0, 0.28),
+      0 8px 24px rgba(0, 0, 0, 0.16),
+      0 1px 0 rgba(255, 255, 255, 0.95) inset;
+  }
+
+  .light .hero-product {
+    filter:
+      drop-shadow(0 32px 64px rgba(0, 0, 0, 0.28))
+      drop-shadow(0 4px 12px rgba(0, 0, 0, 0.16))
+      drop-shadow(0 0 1px rgba(0, 0, 0, 0.08));
   }
 
   /* Light — chrome-shimmer : bordure subtile orange */
