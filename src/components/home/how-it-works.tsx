@@ -85,7 +85,7 @@ export function HowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" className="py-16 sm:py-20 lg:py-24 bg-muted/30">
+    <section id="how-it-works" className="py-16 sm:py-20 lg:py-24 lunar-section-divider bg-[#0d0d12]/50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header - Glass Effect */}
         <motion.div
@@ -95,8 +95,8 @@ export function HowItWorks() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <div className="backdrop-blur-md bg-background/50 border border-white/10 dark:border-white/10 rounded-2xl p-6 sm:p-8 inline-block">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
+          <div className="lunar-card p-6 sm:p-8 inline-block">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 hero-title">
               {messages.howItWorks.title}
             </h2>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -116,18 +116,18 @@ export function HowItWorks() {
               viewport={{ once: true }}
               className="relative"
             >
-              <Card className="h-full hover:shadow-lg transition-all backdrop-blur-md bg-background/60 border-white/10 dark:border-white/10">
+              <Card className="lunar-card h-full weapon-card-hover">
                 <CardContent className="p-6 text-center">
                   {/* Step Number */}
                   <div className="mb-4">
-                    <div className="w-12 h-12 mx-auto bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center shadow-lg shadow-orange-500/30">
+                    <div className="w-12 h-12 mx-auto bg-gradient-to-br from-[#c0c0c0]/30 to-[#808090]/20 rounded-full flex items-center justify-center shadow-lg shadow-[rgba(192,192,210,0.2)] border border-[rgba(200,205,220,0.2)]">
                       <span className="text-white font-bold">{step.step}</span>
                     </div>
                   </div>
 
                   {/* Icon */}
                   <div className="mb-4">
-                    <step.icon className="w-8 h-8 mx-auto text-orange-600" />
+                    <step.icon className="w-8 h-8 mx-auto text-[#a8b8cc]" />
                   </div>
 
                   {/* Content */}
@@ -140,7 +140,7 @@ export function HowItWorks() {
                   <ul className="text-xs text-muted-foreground space-y-1">
                     {step.details.map((detail, i) => (
                       <li key={i} className="flex items-center justify-center">
-                        <CheckCircleIcon className="w-3 h-3 mr-1 text-green-500 flex-shrink-0" />
+                        <CheckCircleIcon className="w-3 h-3 mr-1 text-[#a8b8cc] flex-shrink-0" />
                         {detail}
                       </li>
                     ))}
@@ -152,8 +152,8 @@ export function HowItWorks() {
               {index < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2">
                   <div className="w-8 h-8 flex items-center justify-center">
-                    <div className="w-6 h-0.5 bg-gradient-to-r from-orange-500 to-red-600 relative">
-                      <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-orange-600 border-t-2 border-b-2 border-t-transparent border-b-transparent" />
+                    <div className="w-6 h-0.5 bg-gradient-to-r from-[#c0c0c0] to-[#e8e8e8] relative">
+                      <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-[#c0c0d0] border-t-2 border-b-2 border-t-transparent border-b-transparent" />
                     </div>
                   </div>
                 </div>
@@ -171,9 +171,9 @@ export function HowItWorks() {
           className="grid md:grid-cols-3 gap-8 mb-12"
         >
           {benefits.map((benefit, index) => (
-            <div key={index} className="text-center backdrop-blur-md bg-background/60 border border-white/10 dark:border-white/10 rounded-2xl p-6 hover:bg-background/70 transition-all">
+            <div key={index} className="text-center lunar-card p-6">
               <div className="mb-4">
-                <benefit.icon className="w-12 h-12 mx-auto text-orange-600" />
+                <benefit.icon className="w-12 h-12 mx-auto text-[#a8b8cc]" />
               </div>
               <h3 className="font-semibold mb-2">{benefit.title}</h3>
               <p className="text-muted-foreground">{benefit.description}</p>
@@ -189,15 +189,15 @@ export function HowItWorks() {
           viewport={{ once: true }}
           className="text-center"
         >
-          <div className="backdrop-blur-md bg-background/60 rounded-2xl p-8 border border-white/10 dark:border-white/10">
-            <h3 className="text-2xl font-bold mb-4">{messages.howItWorks.cta.title}</h3>
+          <div className="lunar-card chrome-shimmer p-8">
+            <h3 className="text-2xl font-bold mb-4 text-chrome-gradient">{messages.howItWorks.cta.title}</h3>
             <p className="text-muted-foreground mb-6">
               {messages.howItWorks.cta.description}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-lg shadow-orange-500/30"
+                variant="chrome"
                 onClick={handlePrimaryCta}
               >
                 {messages.howItWorks.cta.primary}

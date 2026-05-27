@@ -26,6 +26,7 @@ import {
   CS2HeroBackground,
   usePreloadCS2Backgrounds,
 } from "@/components/ui/cs2-header-background";
+import { CardTilt } from "@/components/ui/card-tilt";
 import {
   ShieldCheckIcon,
   ClockIcon,
@@ -224,7 +225,7 @@ export function HeroSection() {
             repeat: Infinity,
             ease: "linear",
           }}
-          className="absolute top-20 left-10 text-orange-500/10"
+          className="absolute top-20 left-10 text-[#a8b8cc]/10"
         >
           <AK47Icon className="h-12 w-12" />
         </motion.div>
@@ -241,7 +242,7 @@ export function HeroSection() {
             ease: "linear",
             delay: 5,
           }}
-          className="absolute top-40 right-20 text-orange-500/10"
+          className="absolute top-40 right-20 text-[#a8b8cc]/10"
         >
           <AWPIcon className="h-8 w-8" />
         </motion.div>
@@ -256,7 +257,7 @@ export function HeroSection() {
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="absolute bottom-20 left-1/4 text-orange-500"
+          className="absolute bottom-20 left-1/4 text-[#a8b8cc]/30"
         >
           <SecurityShieldIcon className="h-16 w-16" />
         </motion.div>
@@ -281,7 +282,7 @@ export function HeroSection() {
                 variant="secondary"
                 className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm"
               >
-                <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-green-500" />
+                <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-[#a8b8cc]" />
                 {messages.hero.badge}
               </Badge>
             </motion.div>
@@ -291,18 +292,18 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="space-y-3 sm:space-y-4 backdrop-blur-sm bg-black/20 border border-white/10 rounded-2xl px-5 py-4"
+              className="space-y-3 sm:space-y-4 lunar-card px-5 py-4"
             >
-              <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white text-gaming-title leading-tight">
+              <h1 className="hero-title text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-[clamp(3rem,5vw,5rem)] font-display font-bold leading-tight">
                 {messages.hero.title
                   .split(/(CS2|MOONSKIN)/)
                   .map((part, i) =>
                     part === "CS2" ? (
-                      <span key={i} className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+                      <span key={i} className="text-chrome-gradient">
                         CS2
                       </span>
                     ) : part === "MOONSKIN" ? (
-                      <span key={i} className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
+                      <span key={i} className="text-chrome-gradient">
                         MOONSKIN
                       </span>
                     ) : (
@@ -310,7 +311,7 @@ export function HeroSection() {
                     )
                   )}
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-gaming-body text-white/80 max-w-lg">
+              <p className="text-base sm:text-lg md:text-xl text-gaming-body text-[#c8c8d8] max-w-lg">
                 {messages.hero.subtitle}
               </p>
             </motion.div>
@@ -320,15 +321,15 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4 backdrop-blur-sm bg-black/10 border border-white/5 rounded-xl px-4 py-3"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4 lunar-card px-4 py-3"
             >
               {features.map((feature, index) => (
                 <div
                   key={index}
                   className="flex items-center space-x-1.5 sm:space-x-2"
                 >
-                  <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm text-gaming-caption text-white dark:text-gray-300">
+                  <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#a8b8cc] flex-shrink-0" />
+                  <span className="text-xs sm:text-sm lunar-label text-[#9a9aaa]">
                     {feature.title}
                   </span>
                 </div>
@@ -344,7 +345,8 @@ export function HeroSection() {
             >
               <Button
                 asChild
-                className="w-full sm:w-auto h-12 sm:h-11 px-6 sm:px-8 text-sm sm:text-base bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                variant="chrome"
+                className="w-full sm:w-auto h-12 sm:h-11 px-6 sm:px-8 text-sm sm:text-base"
               >
                 <Link href={user ? "/sell" : "/login"}>
                   {user ? messages.hero.cta : messages.hero.cta}
@@ -364,9 +366,9 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
               transition={{ duration: 0.6, delay: 0.65 }}
-              className="backdrop-blur-sm bg-black/20 border border-white/10 rounded-xl px-4 py-3"
+              className="lunar-card px-4 py-3"
             >
-              <p className="text-xs text-white/50 mb-2 uppercase tracking-wider">
+              <p className="lunar-label mb-2">
                 {messages.hero.paymentMethods.title}
               </p>
               <div className="flex flex-wrap items-center gap-3">
@@ -394,7 +396,7 @@ export function HeroSection() {
             >
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
-                  <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-orange-600">
+                  <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-chrome-gradient font-display">
                     {stat.prefix}
                     <CountUp
                       end={stat.value}
@@ -419,8 +421,8 @@ export function HeroSection() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="relative"
           >
-            {/* Main Card */}
-            <div className="relative bg-card rounded-2xl mt-6 lg:-mt-48 border p-4 sm:p-6 lg:p-8 shadow-2xl">
+            {/* Main Card — 3D glass chrome */}
+            <CardTilt shimmer className="relative mt-6 lg:-mt-48 p-4 sm:p-6 lg:p-8 hero-product">
               {/* Fake Trade Interface */}
               <div className="space-y-3 sm:space-y-4 lg:space-y-6">
                 <div className="flex items-center justify-between">
@@ -429,7 +431,7 @@ export function HeroSection() {
                   </h3>
                   <Badge
                     variant="secondary"
-                    className="text-green-600 text-xs sm:text-sm"
+                    className="text-[#a8b8cc] text-xs sm:text-sm border-[#a8b8cc]/30"
                   >
                     {messages.common.online}
                   </Badge>
@@ -438,10 +440,10 @@ export function HeroSection() {
                 {/* Skin Items */}
                 <div className="space-y-2 sm:space-y-3">
                   <motion.div
-                    className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gradient-to-r from-red-500/10 to-orange-500/10 rounded-lg border border-red-500/20 hover:border-red-500/40 transition-all duration-300"
+                    className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gradient-to-r from-white/5 to-[#a8b8cc]/5 rounded-lg border border-[rgba(200,205,220,0.12)] hover:border-[rgba(200,205,220,0.25)] transition-all duration-300"
                     whileHover={{ scale: 1.02 }}
                   >
-                    <div className="relative w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg">
+                    <div className="relative w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#9090a0] to-[#606070] rounded-lg flex items-center justify-center shadow-lg">
                       <AK47Icon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                       <WeaponGradeIndicator
                         grade="Classified"
@@ -453,7 +455,7 @@ export function HeroSection() {
                         <p className="font-medium text-sm sm:text-base truncate">
                           AK-47 | Redline
                         </p>
-                        <div className="px-1.5 sm:px-2 py-0.5 bg-orange-500/20 text-orange-600 text-xs rounded font-mono flex-shrink-0">
+                        <div className="px-1.5 sm:px-2 py-0.5 bg-white/10 text-[#c0c0d0] text-xs rounded font-mono flex-shrink-0">
                           StatTrak™
                         </div>
                       </div>
@@ -463,18 +465,18 @@ export function HeroSection() {
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="font-bold text-sm sm:text-lg text-green-600">
+                      <p className="font-bold text-sm sm:text-lg text-[#e0e0e8]">
                         {fmt(demoAk47Cents)}
                       </p>
-                      <p className="text-xs text-muted-foreground">+15% ↗</p>
+                      <p className="text-xs text-[#a8b8cc]">+15% ↗</p>
                     </div>
                   </motion.div>
 
                   <motion.div
-                    className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-lg border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300"
+                    className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gradient-to-r from-white/5 to-[#c0c0d0]/5 rounded-lg border border-[rgba(200,205,220,0.12)] hover:border-[rgba(200,205,220,0.25)] transition-all duration-300"
                     whileHover={{ scale: 1.02 }}
                   >
-                    <div className="relative w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg">
+                    <div className="relative w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#c0c0d0] to-[#808090] rounded-lg flex items-center justify-center shadow-lg">
                       <AWPIcon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                       <WeaponGradeIndicator
                         grade="Covert"
@@ -486,29 +488,29 @@ export function HeroSection() {
                         <p className="font-medium text-sm sm:text-base truncate">
                           AWP | Dragon Lore
                         </p>
-                        <div className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-600 text-xs rounded flex-shrink-0">
+                        <div className="px-1.5 py-0.5 bg-white/10 text-[#e8e8f0] text-xs rounded flex-shrink-0">
                           ★
                         </div>
                       </div>
                       <p className="text-xs sm:text-sm text-muted-foreground flex items-center space-x-1">
                         <span>Factory New</span>
-                        <span className="text-green-500">★★★★★</span>
+                        <span className="text-[#a8b8cc]">★★★★★</span>
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="font-bold text-sm sm:text-lg text-green-600">
+                      <p className="font-bold text-sm sm:text-lg text-[#e0e0e8]">
                         {fmt(demoAwpCents)}
                       </p>
-                      <p className="text-xs text-green-500">+8% ↗</p>
+                      <p className="text-xs text-[#a8b8cc]">+8% ↗</p>
                     </div>
                   </motion.div>
                 </div>
 
                 {/* Summary */}
                 <div className="border-t pt-4 space-y-2 bg-muted/30 rounded-lg p-3">
-                  <div className="flex justify-between font-bold text-lg pt-2 text-green-600">
+                  <div className="flex justify-between font-bold text-lg pt-2 text-[#e8e8f0]">
                     <span>{messages.hero.tradeInterface.totalNet}</span>
-                    <span className="bg-green-500/10 px-2 py-1 rounded">
+                    <span className="bg-white/10 px-2 py-1 rounded border border-[rgba(200,205,220,0.15)]">
                       {fmt(demoNetCents)}
                     </span>
                   </div>
@@ -517,16 +519,16 @@ export function HeroSection() {
                   </div>
                 </div>
 
-                <Button className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700">
+                <Button variant="chrome" className="w-full">
                   {messages.trade.confirm}
                 </Button>
               </div>
 
               {/* Floating elements */}
-              <div className="absolute -top-4 -right-4 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <CheckCircleIcon className="w-5 h-5 text-white" />
+              <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#a8b8cc] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(168,184,204,0.4)]">
+                <CheckCircleIcon className="w-5 h-5 text-[#060608]" />
               </div>
-            </div>
+            </CardTilt>
           </motion.div>
         </div>
       </div>

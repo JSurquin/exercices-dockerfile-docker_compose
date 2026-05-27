@@ -1,6 +1,7 @@
 'use client';
 
-import { Poppins, JetBrains_Mono } from "next/font/google";
+import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { SpaceBackground } from "@/components/ui/space-background";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LocaleProvider } from "@/components/providers/locale-provider";
@@ -19,10 +20,16 @@ import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 import type { Metadata } from "next";
 import { usePathname } from "next/navigation";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
+const inter = Inter({
+  variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -69,7 +76,7 @@ export default function RootLayout({
         <meta name="description" content="The fastest and most secure platform to convert your Counter-Strike 2 skins into real money. SEPA and crypto payments available." />
       </head>
       <body
-        className={`${poppins.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen flex flex-col overflow-x-hidden${
+        className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen flex flex-col overflow-x-hidden${
           process.env.NODE_ENV === "development" ? " next-dev-overlay-present" : ""
         }`}
       >
@@ -85,6 +92,7 @@ export default function RootLayout({
                 <AuthProvider>
                   <TourModeProvider>
                   <ImpersonationBanner />
+                  {!isAdminRoute && <SpaceBackground />}
                   {/* Header, Footer et ChatWidget uniquement pour le site public */}
                   {!isAdminRoute && <Header />}
                   

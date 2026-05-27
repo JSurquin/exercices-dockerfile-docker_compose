@@ -133,7 +133,8 @@ body.next-dev-overlay-present #sentry-feedback {
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-poppins);
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -206,37 +207,51 @@ body.next-dev-overlay-present #sentry-feedback {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Lunar chrome identity */
+  --background: #060608;
+  --foreground: #e0e0e0;
+  --card: #0d0d12;
+  --card-foreground: #e0e0e0;
+  --popover: #0d0d12;
+  --popover-foreground: #e0e0e0;
+  --primary: #c8c8d0;
+  --primary-foreground: #060608;
+  --secondary: #12121a;
+  --secondary-foreground: #e0e0e0;
+  --muted: #12121a;
+  --muted-foreground: #7a7a8c;
+  --accent: #1a1a24;
+  --accent-foreground: #e8e8f0;
+  --destructive: #8a7a7a;
+  --border: rgba(200, 200, 220, 0.12);
+  --input: rgba(200, 200, 220, 0.08);
+  --ring: rgba(168, 184, 204, 0.4);
+  --chart-1: #a8b8cc;
+  --chart-2: #c0c0c0;
+  --chart-3: #9090a0;
+  --chart-4: #d0d0e0;
+  --chart-5: #787888;
+  --sidebar: #0d0d12;
+  --sidebar-foreground: #e0e0e0;
+  --sidebar-primary: #c0c0c0;
+  --sidebar-primary-foreground: #060608;
+  --sidebar-accent: #1a1a24;
+  --sidebar-accent-foreground: #e0e0e0;
+  --sidebar-border: rgba(200, 200, 220, 0.12);
+  --sidebar-ring: rgba(168, 184, 204, 0.4);
+
+  /* Chrome palette tokens */
+  --lunar-bg: #060608;
+  --lunar-bg-secondary: #0d0d12;
+  --lunar-chrome-from: #c0c0c0;
+  --lunar-chrome-to: #e8e8e8;
+  --lunar-chrome-bright: #ffffff;
+  --lunar-accent-glow: rgba(192, 192, 192, 0.4);
+  --lunar-accent-cold: #a8b8cc;
+  --lunar-text: #e0e0e0;
+  --lunar-text-muted: #7a7a8c;
+  --lunar-body: #9a9aaa;
+  --lunar-border: rgba(200, 200, 220, 0.12);
 }
 
 @layer base {
@@ -247,27 +262,36 @@ body.next-dev-overlay-present #sentry-feedback {
     @apply bg-background text-foreground;
   }
 
-  /* CS2 Gaming Theme Variables */
+  .dark body {
+    background: #060608;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(140, 150, 170, 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(160, 160, 180, 0.03) 0%, transparent 50%);
+    color: var(--lunar-body, #9a9aaa);
+  }
+
+  /* Lunar chrome theme variables */
   :root {
-    --cs2-orange: 245 101 35;
-    --cs2-red: 231 75 75;
-    --cs2-gold: 255 215 0;
+    --lunar-chrome-from: 192 192 192;
+    --lunar-chrome-to: 232 232 232;
+    --lunar-accent-cold: 168 184 204;
     --glow-size: 20px;
   }
 }
 
 @layer components {
-  /* CS2 Glow Effects */
-  .cs2-glow-orange {
-    box-shadow: 0 0 var(--glow-size) rgba(245, 101, 35, 0.3);
+  /* Lunar chrome glow */
+  .cs2-glow-orange,
+  .lunar-glow {
+    box-shadow: 0 0 var(--glow-size) rgba(192, 192, 192, 0.25);
   }
 
   .cs2-glow-red {
-    box-shadow: 0 0 var(--glow-size) rgba(231, 75, 75, 0.3);
+    box-shadow: 0 0 var(--glow-size) rgba(168, 184, 204, 0.2);
   }
 
   .cs2-glow-gold {
-    box-shadow: 0 0 var(--glow-size) rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 var(--glow-size) rgba(232, 232, 240, 0.3);
   }
 
   /* Gaming Animations */
@@ -293,8 +317,11 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .weapon-card-hover:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 30px rgba(245, 101, 35, 0.2);
+    transform: translateY(-6px) rotateX(2deg) rotateY(-2deg);
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.8),
+      0 0 30px rgba(190, 195, 215, 0.12),
+      0 1px 0 rgba(255, 255, 255, 0.1) inset;
   }
 
   /* StatTrak Animation */
@@ -304,11 +331,11 @@ body.next-dev-overlay-present #sentry-feedback {
 
   @keyframes stattrak-glow {
     from {
-      text-shadow: 0 0 5px rgba(245, 101, 35, 0.5);
+      text-shadow: 0 0 5px rgba(192, 192, 210, 0.4);
     }
     to {
-      text-shadow: 0 0 10px rgba(245, 101, 35, 0.8),
-        0 0 15px rgba(245, 101, 35, 0.6);
+      text-shadow: 0 0 10px rgba(220, 220, 240, 0.6),
+        0 0 15px rgba(168, 184, 204, 0.4);
     }
   }
 
@@ -361,63 +388,328 @@ body.next-dev-overlay-present #sentry-feedback {
     border-color: rgb(255, 215, 0);
   }
 
-  /* Gaming Grid Pattern */
+  /* Lunar grid pattern */
   .cs2-grid-bg {
     background-image: linear-gradient(
-        rgba(245, 101, 35, 0.1) 1px,
+        rgba(200, 205, 220, 0.06) 1px,
         transparent 1px
       ),
-      linear-gradient(90deg, rgba(245, 101, 35, 0.1) 1px, transparent 1px);
+      linear-gradient(90deg, rgba(200, 205, 220, 0.06) 1px, transparent 1px);
     background-size: 20px 20px;
   }
 
-  /* Enhanced Scrollbar Styling */
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: rgb(245 101 35 / 0.3) transparent;
+  /* Lunar glass card */
+  .lunar-card {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(150, 155, 170, 0.03) 100%
+    );
+    border: 1px solid rgba(200, 205, 220, 0.12);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.6),
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 0 0 1px rgba(180, 180, 200, 0.05) inset;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 8px;
+  .lunar-card:hover {
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.8),
+      0 0 30px rgba(190, 195, 215, 0.12),
+      0 1px 0 rgba(255, 255, 255, 0.1) inset;
   }
 
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
+  /* Chrome shimmer border */
+  .chrome-shimmer {
+    animation: chrome-shimmer 4s ease-in-out infinite;
   }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgb(245 101 35 / 0.3);
-    border-radius: 4px;
+  @keyframes chrome-shimmer {
+    0% {
+      border-color: rgba(180, 180, 200, 0.3);
+      box-shadow: 0 0 15px rgba(180, 180, 200, 0.1);
+    }
+    25% {
+      border-color: rgba(220, 220, 240, 0.6);
+      box-shadow: 0 0 30px rgba(210, 210, 230, 0.25);
+    }
+    50% {
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+    }
+    75% {
+      border-color: rgba(180, 190, 210, 0.4);
+      box-shadow: 0 0 20px rgba(170, 180, 200, 0.15);
+    }
+    100% {
+      border-color: rgba(180, 180, 200, 0.3);
+      box-shadow: 0 0 15px rgba(180, 180, 200, 0.1);
+    }
   }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: rgb(245 101 35 / 0.5);
+  /* Chrome primary button */
+  .btn-chrome {
+    background: linear-gradient(135deg, rgba(180, 185, 200, 0.15), rgba(120, 125, 140, 0.1));
+    border: 1px solid rgba(200, 205, 220, 0.3);
+    color: #e8e8f0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-chrome::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-chrome:hover::before {
+    left: 100%;
+  }
+
+  .btn-chrome:hover {
+    box-shadow: 0 0 30px rgba(192, 192, 192, 0.2);
+    border-color: rgba(220, 220, 240, 0.5);
+  }
+
+  /* Hero title gradient chrome */
+  .hero-title {
+    background: linear-gradient(135deg, #ffffff 0%, #a8b0c0 50%, #e0e0e8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+  }
+
+  /* Hero product float */
+  .hero-product {
+    animation: lunar-float 4s ease-in-out infinite;
+    filter: drop-shadow(0 20px 40px rgba(150, 160, 180, 0.3));
+  }
+
+  @keyframes lunar-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+
+  /* Sticky chrome nav */
+  .lunar-nav {
+    backdrop-filter: blur(20px);
+    background: rgba(6, 6, 8, 0.8);
+    border-bottom: 1px solid rgba(200, 200, 220, 0.08);
+  }
+
+  .lunar-nav-link {
+    color: #7a7a8c;
+    transition: color 0.2s ease;
+  }
+
+  .lunar-nav-link:hover,
+  .lunar-nav-link[data-active="true"] {
+    color: #ffffff;
+  }
+
+  /* Section separator */
+  .lunar-section-divider {
+    border-top: 1px solid rgba(200, 200, 220, 0.08);
+  }
+
+  /* Space background layers */
+  .lunar-nebula {
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(140, 150, 170, 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(160, 160, 180, 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, rgba(140, 140, 160, 0.04) 0%, transparent 55%);
+  }
+
+  .lunar-stars {
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255, 255, 255, 0.6), transparent),
+      radial-gradient(1px 1px at 30% 65%, rgba(255, 255, 255, 0.4), transparent),
+      radial-gradient(1px 1px at 50% 10%, rgba(255, 255, 255, 0.5), transparent),
+      radial-gradient(1px 1px at 70% 40%, rgba(255, 255, 255, 0.3), transparent),
+      radial-gradient(1px 1px at 90% 75%, rgba(255, 255, 255, 0.5), transparent),
+      radial-gradient(1px 1px at 15% 85%, rgba(255, 255, 255, 0.35), transparent),
+      radial-gradient(1px 1px at 45% 45%, rgba(255, 255, 255, 0.45), transparent),
+      radial-gradient(1px 1px at 65% 90%, rgba(255, 255, 255, 0.4), transparent),
+      radial-gradient(1px 1px at 85% 15%, rgba(255, 255, 255, 0.55), transparent),
+      radial-gradient(1px 1px at 25% 35%, rgba(255, 255, 255, 0.3), transparent),
+      radial-gradient(1.5px 1.5px at 55% 70%, rgba(255, 255, 255, 0.7), transparent),
+      radial-gradient(1px 1px at 75% 55%, rgba(255, 255, 255, 0.4), transparent);
+    background-size: 100% 100%;
+    opacity: 0.7;
+  }
+
+  .lunar-comet {
+    position: absolute;
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(220, 225, 240, 0.8), transparent);
+    filter: blur(1px);
+    opacity: 0;
+    border-radius: 50%;
+  }
+
+  .lunar-comet::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -1px;
+    width: 40px;
+    height: 4px;
+    background: radial-gradient(ellipse, rgba(255, 255, 255, 0.9), transparent);
+    filter: blur(3px);
+  }
+
+  .lunar-comet-1 {
+    top: 15%;
+    left: -120px;
+    transform: rotate(-35deg);
+    animation: lunar-comet-fly 12s linear infinite;
+    animation-delay: 0s;
+  }
+
+  .lunar-comet-2 {
+    top: 55%;
+    left: -120px;
+    transform: rotate(-25deg);
+    animation: lunar-comet-fly 18s linear infinite;
+    animation-delay: 6s;
+  }
+
+  .lunar-comet-3 {
+    top: 35%;
+    left: -120px;
+    transform: rotate(-40deg);
+    animation: lunar-comet-fly 15s linear infinite;
+    animation-delay: 10s;
+  }
+
+  @keyframes lunar-comet-fly {
+    0% {
+      opacity: 0;
+      transform: translateX(0) rotate(-35deg);
+    }
+    5% {
+      opacity: 0.8;
+    }
+    25% {
+      opacity: 0.6;
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(calc(100vw + 240px)) rotate(-35deg);
+    }
+  }
+
+  .lunar-asteroid {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 30% 70% 60% 40%;
+    background: linear-gradient(135deg, rgba(150, 155, 170, 0.06), rgba(80, 85, 100, 0.04));
+    border: 1px solid rgba(200, 205, 220, 0.06);
+    opacity: 0.15;
+    animation: lunar-asteroid-spin 40s linear infinite;
+  }
+
+  .lunar-asteroid-tl {
+    top: 8%;
+    left: 3%;
+    width: 60px;
+    height: 60px;
+  }
+
+  .lunar-asteroid-br {
+    bottom: 12%;
+    right: 4%;
+    width: 100px;
+    height: 90px;
+    animation-direction: reverse;
+    animation-duration: 55s;
+  }
+
+  @keyframes lunar-asteroid-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Enhanced Scrollbar — chrome */
+  .dark .scrollbar-thin {
+    scrollbar-color: rgba(192, 192, 210, 0.3) transparent;
+  }
+
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(192, 192, 210, 0.3);
+  }
+
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(220, 220, 240, 0.5);
   }
 }
 
 @layer utilities {
-  /* Gaming Text Effects */
-  .text-glow-orange {
-    text-shadow: 0 0 10px rgba(245, 101, 35, 0.5);
+  /* Lunar text effects */
+  .text-glow-orange,
+  .text-glow-chrome {
+    text-shadow: 0 0 10px rgba(192, 192, 210, 0.5);
   }
 
   .text-glow-gold {
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    text-shadow: 0 0 10px rgba(232, 232, 240, 0.5);
   }
 
-  /* Gaming Backgrounds */
-  .bg-gaming-dark {
+  .text-chrome-accent {
+    color: #a8b8cc;
+  }
+
+  .text-lunar-muted {
+    color: #7a7a8c;
+  }
+
+  /* Lunar backgrounds */
+  .bg-gaming-dark,
+  .bg-lunar-dark {
     background: linear-gradient(
       135deg,
-      rgba(0, 0, 0, 0.9) 0%,
-      rgba(245, 101, 35, 0.1) 50%,
-      rgba(0, 0, 0, 0.9) 100%
+      rgba(6, 6, 8, 0.95) 0%,
+      rgba(140, 150, 170, 0.04) 50%,
+      rgba(6, 6, 8, 0.95) 100%
     );
   }
 
-  /* Poppins Font Utilities */
-  .font-poppins {
-    font-family: var(--font-poppins), sans-serif;
+  .text-chrome-gradient {
+    background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 50%, #ffffff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .lunar-label {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.75rem;
+    color: #7a7a8c;
+  }
+
+  .font-display {
+    font-family: var(--font-display), sans-serif;
   }
   
   .font-mono-jetbrains {
@@ -426,27 +718,27 @@ body.next-dev-overlay-present #sentry-feedback {
 
   /* Gaming Typography */
   .text-gaming-title {
-    font-family: var(--font-poppins), sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.025em;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
   
   .text-gaming-subtitle {
-    font-family: var(--font-poppins), sans-serif;
+    font-family: var(--font-display), sans-serif;
     font-weight: 600;
     letter-spacing: -0.01em;
   }
   
   .text-gaming-body {
-    font-family: var(--font-poppins), sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-weight: 400;
     line-height: 1.6;
   }
   
   .text-gaming-caption {
-    font-family: var(--font-poppins), sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-weight: 500;
-    letter-spacing: 0.025em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
   }
 
@@ -520,12 +812,12 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 }
 
-/* MoonSkin tour (driver.js) */
+/* MoonSkin tour (driver.js) — chrome */
 .moonskin-tour-popover {
-  background: #0f0f14 !important;
-  border: 1px solid rgba(249, 115, 22, 0.35) !important;
+  background: #0d0d12 !important;
+  border: 1px solid rgba(200, 205, 220, 0.25) !important;
   border-radius: 14px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(249, 115, 22, 0.15) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(192, 192, 210, 0.1) !important;
   color: #f5f5f5 !important;
   max-width: 360px !important;
   overflow: visible !important;
@@ -545,7 +837,7 @@ body.next-dev-overlay-present #sentry-feedback {
 }
 
 .moonskin-tour-popover .driver-popover-progress-text {
-  color: rgba(249, 115, 22, 0.8) !important;
+  color: rgba(168, 184, 204, 0.8) !important;
   font-size: 0.75rem !important;
 }
 
@@ -565,7 +857,8 @@ body.next-dev-overlay-present #sentry-feedback {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background: linear-gradient(135deg, #f97316, #dc2626) !important;
+  background: linear-gradient(135deg, rgba(200, 205, 220, 0.25), rgba(140, 150, 170, 0.15)) !important;
+  border: 1px solid rgba(200, 205, 220, 0.3) !important;
   color: #fff !important;
   border: none !important;
   border-radius: 8px !important;

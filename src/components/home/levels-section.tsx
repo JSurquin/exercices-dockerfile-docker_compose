@@ -66,7 +66,7 @@ export function LevelsSection() {
 
   return (
     <section className="py-24 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-orange-500/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[rgba(140,150,170,0.04)] via-transparent to-[rgba(160,160,180,0.03)] pointer-events-none" />
 
       <div className="container mx-auto px-4 relative">
         <motion.div
@@ -76,13 +76,13 @@ export function LevelsSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <Badge variant="secondary" className="mb-4 bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20">
+          <Badge variant="secondary" className="mb-4 bg-white/10 text-[#a8b8cc] border-[rgba(200,205,220,0.2)]">
             <SparklesIcon className="w-3.5 h-3.5 mr-1" />
             {t.badge}
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             {t.title}
-            <span className="bg-gradient-to-r from-purple-500 to-orange-500 bg-clip-text text-transparent">
+            <span className="text-chrome-gradient">
               {t.titleHighlight}
             </span>
           </h2>
@@ -139,7 +139,7 @@ export function LevelsSection() {
             viewport={{ once: true }}
           >
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <ArrowTrendingUpIcon className="w-5 h-5 text-orange-500" />
+              <ArrowTrendingUpIcon className="w-5 h-5 text-[#a8b8cc]" />
               {t.levelsTitle}
             </h3>
             <div className="space-y-2">
@@ -154,7 +154,7 @@ export function LevelsSection() {
                 return (
                   <div
                     key={level.index}
-                    className="flex items-center gap-3 rounded-lg border border-border bg-card/50 px-3 py-2.5 hover:border-orange-500/30 transition-colors"
+                    className="flex items-center gap-3 rounded-lg border border-[rgba(200,205,220,0.12)] bg-card/50 px-3 py-2.5 hover:border-[rgba(200,205,220,0.25)] transition-colors"
                   >
                     {level.index > 0 ? (
                       <LevelBadge tierIndex={badgeTier} size="sm" />
@@ -169,7 +169,7 @@ export function LevelsSection() {
                         {(level.xpStart / 1000).toFixed(level.xpStart >= 1000 ? 0 : 1)}k – {(level.xpEnd / 1000).toFixed(0)}k XP
                       </p>
                     </div>
-                    <Badge variant="outline" className="shrink-0 text-orange-600 dark:text-orange-400 border-orange-500/30">
+                    <Badge variant="outline" className="shrink-0 text-[#a8b8cc] border-[rgba(200,205,220,0.2)]">
                       {bonusStr}
                     </Badge>
                   </div>
@@ -185,10 +185,10 @@ export function LevelsSection() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <Card className="h-full border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-orange-500/5">
+            <Card className="lunar-card h-full">
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                  <GiftIcon className="w-5 h-5 text-purple-500" />
+                  <GiftIcon className="w-5 h-5 text-[#a8b8cc]" />
                   {t.tierRewards}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">{t.fragmentsDesc}</p>
@@ -213,7 +213,7 @@ export function LevelsSection() {
           viewport={{ once: true }}
           className="text-center"
         >
-          <Button asChild size="lg" className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
+          <Button asChild size="lg" variant="chrome">
             <Link href="/sell">{t.cta}</Link>
           </Button>
         </motion.div>

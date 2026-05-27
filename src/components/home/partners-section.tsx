@@ -49,7 +49,7 @@ function PartnerAvatar({ src, name }: { src: string | null; name: string }) {
     );
   }
   return (
-    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500/15 text-xs font-bold text-orange-600 ring-2 ring-border dark:text-orange-400">
+    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-[#a8b8cc] ring-2 ring-[rgba(200,205,220,0.15)]">
       {name.slice(0, 2).toUpperCase()}
     </div>
   );
@@ -60,7 +60,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
   const thumbUrl = getYoutubeThumbnailUrl(video.youtubeVideoId);
 
   return (
-    <article className="group flex w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-lg transition-all duration-300 hover:border-orange-500/40 hover:shadow-orange-500/10 sm:w-auto">
+    <article className="group flex w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-lg transition-all duration-300 hover:border-[rgba(200,205,220,0.3)] hover:shadow-[rgba(192,192,210,0.1)] sm:w-auto">
       <a
         href={watchUrl}
         target="_blank"
@@ -81,7 +81,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
         />
         <div className="absolute inset-0 bg-black/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-red-600/90 shadow-lg">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#606070]/90 shadow-lg">
             <Play className="ml-1 h-7 w-7 fill-white text-white" />
           </span>
         </div>
@@ -102,7 +102,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
               href={video.youtubeChannelUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block truncate text-sm font-semibold text-foreground hover:text-orange-600 dark:hover:text-orange-400"
+              className="block truncate text-sm font-semibold text-foreground hover:text-[#e8e8f0]"
             >
               {video.creatorName}
             </a>
@@ -119,7 +119,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
             href={watchUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-muted-foreground transition-colors hover:text-red-600 dark:hover:text-red-500"
+            className="text-muted-foreground transition-colors hover:text-[#c0c0d0]"
             aria-label="YouTube"
           >
             <Youtube className="h-4 w-4" />
@@ -144,7 +144,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
 function LogoItem({ logo }: { logo: PartnerLogo }) {
   const inner = (
     <>
-      <div className="relative h-14 w-14 overflow-hidden rounded-full border border-border bg-card transition-all duration-300 group-hover:border-orange-500/50 group-hover:ring-2 group-hover:ring-orange-500/20">
+      <div className="relative h-14 w-14 overflow-hidden rounded-full border border-border bg-card transition-all duration-300 group-hover:border-[rgba(200,205,220,0.3)] group-hover:ring-2 group-hover:ring-[rgba(192,192,210,0.15)]">
         <img src={logo.logoUrl} alt={logo.name} className="h-full w-full object-cover" />
       </div>
       <span className="max-w-[72px] truncate text-center text-[10px] text-muted-foreground transition-colors group-hover:text-foreground">
@@ -195,7 +195,7 @@ export function PartnersSection() {
       id="partners"
       className="relative overflow-hidden bg-muted/30 py-20"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-500/10 via-transparent to-transparent dark:from-orange-500/5" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[rgba(140,150,170,0.06)] via-transparent to-transparent" />
 
       <div className="container relative mx-auto px-4">
         <motion.div
@@ -215,7 +215,7 @@ export function PartnersSection() {
             {t.contactPrefix}{' '}
             <a
               href={`mailto:${t.contactEmail}`}
-              className="font-medium text-orange-600 hover:text-orange-500 dark:text-orange-400 dark:hover:text-orange-300"
+              className="font-medium text-[#c0c0d0] hover:text-[#e8e8f0]"
             >
               {t.contactEmail}
             </a>
@@ -224,7 +224,7 @@ export function PartnersSection() {
 
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-orange-500 border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#a8b8cc] border-t-transparent" />
           </div>
         ) : (
           <>
