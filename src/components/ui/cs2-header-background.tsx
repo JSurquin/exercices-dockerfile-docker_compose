@@ -1,6 +1,10 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { getHeaderBackgrounds, generateCS2Fallback, useThemeAwareImages } from "@/lib/cs2-images";
+import { normalizeStoredTheme } from "@/lib/themes";
 
 interface CS2HeaderBackgroundProps {
   variant?: 'dust2' | 'mirage' | 'inferno' | 'community' | 'cs2_main';
@@ -21,6 +25,9 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const currentTheme = normalizeStoredTheme(resolvedTheme);
+  const showOrange = currentTheme === "cs2" || currentTheme === "light";
   
   // Image fixe pour tous les thèmes
   const fixedBackgroundUrl = "/images/cs2/backgrounds/artworksite.webp";
@@ -93,13 +100,18 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
       {/* Overlay avec gradient */}
       {overlay && (
         <div
-          className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/50 to-orange-900/40"
+          className={cn(
+            "absolute inset-0",
+            showOrange
+              ? "bg-gradient-to-br from-black/60 via-black/50 to-orange-900/40"
+              : "bg-gradient-to-br from-black/60 via-black/50 to-black/40"
+          )}
           style={{ opacity: overlayOpacity }}
         />
       )}
 
       {/* Effet de particules CS2 */}
-      {animated && (
+      {animated && showOrange && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="cs2-particles">
             {Array.from({ length: 20 }, (_, i) => (
@@ -119,7 +131,9 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
       )}
 
       {/* Bordure inférieure avec effet CS2 */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-60" />
+      {showOrange && (
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-60" />
+      )}
 
       {/* Contenu */}
       {children && <div className="relative z-10 h-full">{children}</div>}
@@ -134,6 +148,9 @@ export const CS2HeroBackground: React.FC<{
 }> = ({ className = "", children }) => {
   const [currentBackground, setCurrentBackground] =
     useState<'dust2' | 'mirage' | 'inferno' | 'community' | 'cs2_main'>("cs2_main");
+  const { resolvedTheme } = useTheme();
+  const currentTheme = normalizeStoredTheme(resolvedTheme);
+  const showOrange = currentTheme === "cs2" || currentTheme === "light";
 
   // Utiliser le hook pour obtenir les images selon le thème
   // const { currentTheme } = useThemeAwareImages();
@@ -175,7 +192,9 @@ export const CS2HeroBackground: React.FC<{
       animated={true}
     >
       {/* Subtle noise texture overlay */}
-      <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-orange-500 via-transparent to-red-900" />
+      {showOrange && (
+        <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-orange-500 via-transparent to-red-900" />
+      )}
 
       {/* Indicateur de fond actuel */}
       <div className="absolute top-4 right-4 z-20">
