@@ -12,6 +12,7 @@ import { useLocale } from '@/components/providers/locale-provider';
 import { useTourMode } from '@/components/providers/tour-provider';
 import { MissionsTourDemo } from '@/components/tour-demos/missions-tour-demo';
 import Link from 'next/link';
+import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -345,16 +346,7 @@ export default function MissionsPage() {
 
   if (!user) {
     if (isTourMode) return <MissionsTourDemo />;
-    return (
-      <div className="container max-w-lg mx-auto py-24 text-center space-y-4">
-        <SparklesIcon className="w-16 h-16 mx-auto text-amber-500" />
-        <p className="font-semibold text-lg">{t.loginTitle}</p>
-        <p className="text-muted-foreground">{t.loginSubtitle}</p>
-        <Link href="/giveaways">
-          <Button variant="outline">{t.backToGiveaways}</Button>
-        </Link>
-      </div>
-    );
+    return <LoginRequiredBlock />;
   }
 
   const missions = data?.missions ?? [];
