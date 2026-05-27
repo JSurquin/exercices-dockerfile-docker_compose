@@ -298,6 +298,7 @@ body.next-dev-overlay-present #sentry-feedback {
   --lunar-bg-secondary: oklch(0.205 0 0);
   --lunar-border: oklch(1 0 0 / 10%);
   --lunar-body: oklch(0.708 0 0);
+  --font-sans: var(--font-poppins), sans-serif;
   color-scheme: dark;
 }
 
@@ -345,6 +346,7 @@ body.next-dev-overlay-present #sentry-feedback {
   --lunar-bg-secondary: #f8f8fc;
   --lunar-border: rgba(0, 0, 0, 0.08);
   --lunar-body: #4b4b60;
+  --font-sans: var(--font-poppins), sans-serif;
   color-scheme: light;
 }
 
@@ -400,9 +402,18 @@ body.next-dev-overlay-present #sentry-feedback {
 }
 
 @layer components {
-  /* Lunar chrome glow */
-  .cs2-glow-orange,
+  /* Moonskin : chrome glow */
   .lunar-glow {
+    box-shadow: 0 0 var(--glow-size) rgba(192, 192, 192, 0.25);
+  }
+
+  /* CS2 + Light : glow original orange/rouge */
+  .cs2 .cs2-glow-orange,
+  .light .cs2-glow-orange {
+    box-shadow: 0 0 var(--glow-size) rgba(245, 101, 35, 0.3);
+  }
+
+  .moonskin .cs2-glow-orange {
     box-shadow: 0 0 var(--glow-size) rgba(192, 192, 192, 0.25);
   }
 
@@ -410,8 +421,16 @@ body.next-dev-overlay-present #sentry-feedback {
     box-shadow: 0 0 var(--glow-size) rgba(168, 184, 204, 0.2);
   }
 
+  .cs2 .cs2-glow-red {
+    box-shadow: 0 0 var(--glow-size) rgba(231, 75, 75, 0.3);
+  }
+
   .cs2-glow-gold {
     box-shadow: 0 0 var(--glow-size) rgba(232, 232, 240, 0.3);
+  }
+
+  .cs2 .cs2-glow-gold {
+    box-shadow: 0 0 var(--glow-size) rgba(255, 215, 0, 0.3);
   }
 
   /* Gaming Animations */
@@ -457,6 +476,17 @@ body.next-dev-overlay-present #sentry-feedback {
       text-shadow: 0 0 10px rgba(220, 220, 240, 0.6),
         0 0 15px rgba(168, 184, 204, 0.4);
     }
+  }
+
+  /* CS2 + Light : stattrak orange */
+  .cs2 .stattrak-glow,
+  .light .stattrak-glow {
+    animation: stattrak-glow-orange 1.5s ease-in-out infinite alternate;
+  }
+
+  @keyframes stattrak-glow-orange {
+    from { text-shadow: 0 0 5px rgba(245, 101, 35, 0.5); }
+    to   { text-shadow: 0 0 10px rgba(245, 101, 35, 0.8), 0 0 15px rgba(245, 101, 35, 0.6); }
   }
 
   /* CS2 Button Shine Effect */
@@ -730,13 +760,13 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .lunar-nav-link {
-    color: #7a7a8c;
+    color: var(--muted-foreground);
     transition: color 0.2s ease;
   }
 
   .lunar-nav-link:hover,
   .lunar-nav-link[data-active="true"] {
-    color: #ffffff;
+    color: var(--foreground);
   }
 
   /* Section separator */
@@ -868,33 +898,19 @@ body.next-dev-overlay-present #sentry-feedback {
     }
   }
 
-  /* Thème Colorful — cards RGB shimmer */
-  .cs2 .lunar-card {
-    border-color: rgba(249, 115, 22, 0.15);
-    background: linear-gradient(
-      135deg,
-      rgba(249, 115, 22, 0.06) 0%,
-      rgba(168, 85, 247, 0.04) 100%
-    );
-  }
-
+  /* CS2 — chrome-shimmer : bordure orange subtile */
   .cs2 .chrome-shimmer {
-    animation: colorful-border-shimmer 5s ease-in-out infinite;
+    animation: cs2-shimmer 4s ease-in-out infinite;
   }
 
-  @keyframes colorful-border-shimmer {
-    0%,
-    100% {
-      border-color: rgba(249, 115, 22, 0.35);
-      box-shadow: 0 0 20px rgba(249, 115, 22, 0.15);
+  @keyframes cs2-shimmer {
+    0%, 100% {
+      border-color: rgba(249, 115, 22, 0.3);
+      box-shadow: 0 0 15px rgba(249, 115, 22, 0.1);
     }
-    33% {
-      border-color: rgba(168, 85, 247, 0.4);
-      box-shadow: 0 0 24px rgba(168, 85, 247, 0.2);
-    }
-    66% {
-      border-color: rgba(34, 211, 238, 0.35);
-      box-shadow: 0 0 20px rgba(34, 211, 238, 0.15);
+    50% {
+      border-color: rgba(249, 115, 22, 0.55);
+      box-shadow: 0 0 28px rgba(249, 115, 22, 0.2);
     }
   }
 
@@ -978,9 +994,17 @@ body.next-dev-overlay-present #sentry-feedback {
 
 @layer utilities {
   /* Lunar text effects */
-  .text-glow-orange,
   .text-glow-chrome {
     text-shadow: 0 0 10px rgba(192, 192, 210, 0.5);
+  }
+
+  .text-glow-orange {
+    text-shadow: 0 0 10px rgba(192, 192, 210, 0.5);
+  }
+
+  .cs2 .text-glow-orange,
+  .light .text-glow-orange {
+    text-shadow: 0 0 10px rgba(245, 101, 35, 0.5);
   }
 
   .text-glow-gold {
@@ -1030,14 +1054,23 @@ body.next-dev-overlay-present #sentry-feedback {
     color: var(--muted-foreground);
   }
 
-  /* Lunar backgrounds */
-  .bg-gaming-dark,
+  /* Dark backgrounds */
   .bg-lunar-dark {
     background: linear-gradient(
       135deg,
       rgba(6, 6, 8, 0.95) 0%,
       rgba(140, 150, 170, 0.04) 50%,
       rgba(6, 6, 8, 0.95) 100%
+    );
+  }
+
+  /* CS2 + Light : bg-gaming-dark conserve l'orange d'origine */
+  .bg-gaming-dark {
+    background: linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.9) 0%,
+      rgba(245, 101, 35, 0.1) 50%,
+      rgba(0, 0, 0, 0.9) 100%
     );
   }
 
@@ -1093,7 +1126,7 @@ body.next-dev-overlay-present #sentry-feedback {
   .text-gaming-caption {
     font-family: var(--font-sans), sans-serif;
     font-weight: 500;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.025em;
     text-transform: uppercase;
   }
 
