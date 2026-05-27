@@ -676,12 +676,13 @@ body.next-dev-overlay-present #sentry-feedback {
     letter-spacing: -0.02em;
   }
 
-  /* Moonskin ONLY : dégradé chrome bleu */
+  /* Moonskin ONLY : dégradé chrome blanc→bleu */
   .moonskin .hero-title {
     background: linear-gradient(135deg, #ffffff 0%, #8eb4d4 35%, #c8d4e8 65%, #e8ecf4 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    letter-spacing: -0.02em;
   }
 
   /* Hero product float */
@@ -1090,28 +1091,20 @@ body.next-dev-overlay-present #sentry-feedback {
     );
   }
 
-  /* text-chrome-gradient — base neutre (chaque thème injecte sa couleur) */
-  .text-chrome-gradient {
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  /* Moonskin ONLY : chrome argenté-bleu */
+  /* text-chrome-gradient — Moonskin ONLY : chrome argenté-bleu */
   .moonskin .text-chrome-gradient {
     background: linear-gradient(135deg, #c0c0c0 0%, #8eb4d4 40%, #e8e8f0 100%);
-  }
-
-  /* text-brand-gradient — base neutre */
-  .text-brand-gradient {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Moonskin ONLY : chrome doux bleu */
+  /* text-brand-gradient — Moonskin ONLY : chrome doux bleu */
   .moonskin .text-brand-gradient {
     background: linear-gradient(135deg, #8eb4d4 0%, #c0c0c0 50%, #e8e8f0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .lunar-label {
