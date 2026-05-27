@@ -173,13 +173,15 @@ export function DashboardOverview() {
               >
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                    <AvatarImage src="" />
+                    <AvatarImage src={trade.userAvatar || ''} />
                     <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-xs font-bold text-white">
-                      U
+                      {trade.userName ? trade.userName.slice(0, 2).toUpperCase() : 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium text-white sm:text-base">User #{trade.userId.slice(0, 8)}</p>
+                    <p className="text-sm font-medium text-white sm:text-base">
+                      {trade.userName || `User #${trade.userId.slice(0, 8)}`}
+                    </p>
                     <p className="text-xs text-slate-400 sm:text-sm">{trade.ticketId}</p>
                   </div>
                 </div>

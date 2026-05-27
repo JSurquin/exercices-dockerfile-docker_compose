@@ -174,17 +174,26 @@ export async function GET(request: NextRequest) {
     });
 
     // Recent trades
-    const recentTradesData = await prisma.trade.findMany({
+    const recentTradesRaw = await prisma.trade.findMany({
       orderBy: { createdAt: 'desc' },
       take: 5,
       include: {
         items: true,
+        user: {
+          select: {
+            steamUsername: true,
+            name: true,
+            steamAvatar: true,
+          },
+        },
       },
     });
 
-    const recentTrades = recentTradesData.map(trade => ({
+    const recentTrades = recentTradesRaw.map(trade => ({
       id: trade.id,
       userId: trade.userId,
+      userName: ((trade.user?.steamUsername || trade.user?.name || '').trim()) || null,
+      userAvatar: trade.user?.steamAvatar || null,
       status: mapTradeStatusFromDb(trade.status),
       brutCentimes: trade.grossCents,
       frais: { 

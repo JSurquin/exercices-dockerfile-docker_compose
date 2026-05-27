@@ -26,7 +26,8 @@ export interface User {
 export interface Trade {
   id: string;
   userId: string;
-  userName?: string;
+  userName?: string | null;
+  userAvatar?: string | null;
   userEmail?: string;
   status: 'créé' | 'accepté_par_bot' | 'en_trade_hold' | 'disponible' | 'paiement_en_cours' | 'payé' | 'échoué' | 'annulé';
   brutCentimes: number;
