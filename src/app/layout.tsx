@@ -1,7 +1,7 @@
 'use client';
 
 import { Inter, Poppins, Space_Grotesk, JetBrains_Mono } from "next/font/google";
-import { SpaceBackground } from "@/components/ui/space-background";
+import { CosmicBackground } from "@/components/ui/cosmic-background";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LocaleProvider } from "@/components/providers/locale-provider";
@@ -101,7 +101,7 @@ export default function RootLayout({
                 <AuthProvider>
                   <TourModeProvider>
                   <ImpersonationBanner />
-                  {!isAdminRoute && <SpaceBackground />}
+                  {!isAdminRoute && <CosmicBackground />}
                   {/* Header, Footer et ChatWidget uniquement pour le site public */}
                   {!isAdminRoute && <Header />}
                   
