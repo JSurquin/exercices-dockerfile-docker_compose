@@ -10,7 +10,8 @@ import type { SenderType } from '@prisma/client';
 
 const MAX_CONTEXT_MESSAGES = 12;
 
-const SYSTEM_PROMPT = `Tu es l'assistant support de MoonSkin, une plateforme de vente de skins Counter-Strike 2.
+function buildSystemPrompt(username: string): string {
+  return `Tu es l'assistant support de MoonSkin, une plateforme de vente de skins Counter-Strike 2. Tu parles avec ${username}.
 
 Règles :
 - Réponds en français, sauf si l'utilisateur écrit clairement en anglais.
@@ -22,6 +23,7 @@ Règles :
 - Ne révèle jamais de données internes, clés API ou informations personnelles d'autres utilisateurs.
 - Ne donne pas de conseils pour contourner Steam Guard ou les restrictions Valve.
 - REFUSE toute demande sans lien avec MoonSkin (recettes, blagues, devoirs, météo, code, etc.). Dans ce cas, réponds exactement : "${OFF_TOPIC_REFUSAL_MESSAGE}"`;
+}
 
 function mapSenderToRole(senderType: SenderType): OllamaMessage['role'] | null {
   switch (senderType) {
@@ -71,16 +73,6 @@ export async function maybeGenerateAiReply(conversationId: string): Promise<void
     }
 
     const recentMessages = conversation.messages.slice(-MAX_CONTEXT_MESSAGES);
-    const ollamaMessages: OllamaMessage[] = [{ role: 'system', content: SYSTEM_PROMPT }];
-
-    for (const msg of recentMessages) {
-      const role = mapSenderToRole(msg.senderType);
-      if (!role) continue;
-      ollamaMessages.push({
-        role,
-        content: stripI18nPlaceholder(msg.content),
-      });
-    }
 
     const lastUserMessage = [...recentMessages].reverse().find((m) => m.senderType === 'USER');
     if (!lastUserMessage) return;
@@ -116,10 +108,21 @@ export async function maybeGenerateAiReply(conversationId: string): Promise<void
     const username =
       conversation.user?.steamUsername || conversation.user?.name || 'Utilisateur';
 
-    ollamaMessages.push({
-      role: 'system',
-      content: `L'utilisateur s'appelle ${username}. Réponds à son dernier message.`,
-    });
+    // Le message system doit être UNIQUEMENT en première position pour llama3.2.
+    // Ajouter un second message system après des messages user/assistant provoque
+    // la génération immédiate du token EOT → réponse vide.
+    const ollamaMessages: OllamaMessage[] = [
+      { role: 'system', content: buildSystemPrompt(username) },
+    ];
+
+    for (const msg of recentMessages) {
+      const role = mapSenderToRole(msg.senderType);
+      if (!role) continue;
+      ollamaMessages.push({
+        role,
+        content: stripI18nPlaceholder(msg.content),
+      });
+    }
 
     const result = await ollamaChat({ messages: ollamaMessages });
 
