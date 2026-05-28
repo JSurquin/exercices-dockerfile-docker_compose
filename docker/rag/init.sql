@@ -13,6 +13,6 @@ CREATE TABLE IF NOT EXISTS rag_documents (
 );
 
 CREATE INDEX IF NOT EXISTS rag_documents_source_idx ON rag_documents (source);
+-- HNSW works well for small-to-medium datasets (IVFFlat needs >> lists rows to be effective)
 CREATE INDEX IF NOT EXISTS rag_documents_embedding_idx
-  ON rag_documents USING ivfflat (embedding vector_cosine_ops)
-  WITH (lists = 100);
+  ON rag_documents USING hnsw (embedding vector_cosine_ops);

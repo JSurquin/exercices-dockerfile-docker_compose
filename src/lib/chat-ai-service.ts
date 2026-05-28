@@ -32,7 +32,10 @@ Règles :
   return `${base}
 
 ---
-Extraits de la base de connaissances MoonSkin (utilise ces informations en priorité pour répondre) :
+⚠️ INFORMATIONS OFFICIELLES MOONSKIN — SOURCE DE VÉRITÉ ⚠️
+Tu dois UNIQUEMENT utiliser les informations ci-dessous pour répondre.
+Ne jamais inventer de boutons, d'étapes, de fonctionnalités ou de services qui ne figurent pas dans ces extraits.
+Si la réponse n'est pas dans ces extraits, dis-le clairement sans improviser.
 
 ${ragContext}
 ---`;
@@ -127,7 +130,7 @@ export async function maybeGenerateAiReply(conversationId: string): Promise<void
       try {
         const queryText = stripI18nPlaceholder(lastUserMessage.content);
         const embedding = await generateEmbedding(queryText);
-        const chunks = await searchSimilarChunks(embedding, 4, 0.45);
+        const chunks = await searchSimilarChunks(embedding, 6, 0.45);
         if (chunks.length > 0) {
           ragContext = chunks
             .map((c, i) => `[${i + 1}] ${c.content.trim()}`)

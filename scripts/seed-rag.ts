@@ -12,15 +12,19 @@ const DOCUMENTS: { source: string; content: string; metadata?: Record<string, un
   // ── PROCESSUS DE VENTE ─────────────────────────────────────────────────────
   {
     source: 'faq/processus-vente',
-    content: `Comment vendre mes skins CS2 sur MoonSkin ?
+    content: `Comment vendre mes skins CS2 sur MoonSkin ? Processus de vente, étapes, procédure.
 
-1. Connecte-toi avec Steam OpenID.
-2. Entre ton Trade Link Steam (Paramètres Steam → Confidentialité → Trade Offers).
-3. Sélectionne les skins que tu veux vendre dans ton inventaire.
-4. MoonSkin estime leur valeur via l'API Skinplace en temps réel.
-5. Confirme la vente — un ticket est créé avec un ID unique.
-6. Notre bot Steam accepte le trade dans les 15 minutes.
-7. Après le trade hold Steam de 7 jours, le paiement est déclenché automatiquement.`,
+Il n'y a PAS de bouton "Ajouter un skin", PAS de création de compte manuelle, PAS de fixation de prix — tout est automatique.
+
+Processus de vente étape par étape :
+1. Connecte-toi avec Steam OpenID (pas de création de compte séparée).
+2. Entre ton Trade Link Steam (Paramètres Steam → Confidentialité → Offres d'échange).
+3. Ton inventaire CS2 s'affiche automatiquement — sélectionne les skins à vendre.
+4. MoonSkin estime leur valeur en temps réel via l'API Skinplace (prix fixé automatiquement, non négociable).
+5. Confirme la vente — un ticket de suivi est créé avec un ID unique.
+6. Notre bot Steam envoie une offre d'échange — accepte-la dans les 15 minutes.
+7. Le trade hold Steam de 7 jours commence (imposé par Valve, non contournable).
+8. Le paiement est déclenché automatiquement le 8ème jour.`,
     metadata: { category: 'vente', tags: ['trade', 'processus', 'steam'] },
   },
   {
@@ -283,7 +287,14 @@ async function main() {
 
   // Vider les données existantes
   await pool.query('DELETE FROM rag_documents');
-  console.log('🗑️  Table rag_documents vidée\n');
+  console.log('🗑️  Table rag_documents vidée');
+
+  // S'assurer que l'index est HNSW (IVFFlat ne fonctionne pas avec peu de données)
+  await pool.query('DROP INDEX IF EXISTS rag_documents_embedding_idx');
+  await pool.query(
+    'CREATE INDEX rag_documents_embedding_idx ON rag_documents USING hnsw (embedding vector_cosine_ops)',
+  );
+  console.log('🔍 Index HNSW recréé\n');
 
   let ok = 0;
   let fail = 0;
