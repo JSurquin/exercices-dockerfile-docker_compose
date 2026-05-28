@@ -7198,7 +7198,7 @@ export const messages: Record<Locale, Messages> = {
       xp: "XP",
     },
     hero: {
-      title: "Sell your CS2 skins easily with MOONSKIN — zero fees",
+      title: "Sell your CS2 skins easily with MOONSKIN with zero fees",
       subtitle:
         "The only regulated cashtrade platform in Europe, the fastest and most secure to convert your Counter-Strike 2 skins into real money with 0% selling fees",
       cta: "Sell now",
