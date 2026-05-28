@@ -307,7 +307,7 @@ export function HeroSection() {
                 </Link>
               </Button>
               <Button
-                variant="outline"
+                variant="chrome"
                 asChild
                 className="w-full sm:w-auto h-12 sm:h-11 px-6 sm:px-8 text-sm sm:text-base"
               >
