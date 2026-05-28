@@ -122,6 +122,7 @@ export function ChatWidget() {
   const wasOpenBeforeMobileMenuRef = useRef(false);
   const [isHiddenByMobileMenu, setIsHiddenByMobileMenu] = useState(false);
   const aiTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const aiTypingBaseMsgCountRef = useRef<number>(0);
 
   // Si une conversation existe déjà, aller directement au chat
   useEffect(() => {
@@ -143,12 +144,18 @@ export function ChatWidget() {
     }
   }, [currentConversation?.messages, chatStep, scrollToBottom]);
 
-  // Désactiver l'indicateur "IA tape..." dès qu'une réponse non-user arrive
+  // Désactiver l'indicateur "IA tape..." quand un NOUVEAU message non-user arrive
+  // (on compare avec le count baseline enregistré au moment de l'envoi)
   useEffect(() => {
     if (!isAiTyping || !currentConversation?.messages) return;
     const msgs = currentConversation.messages;
-    const lastMsg = msgs[msgs.length - 1];
-    if (lastMsg && lastMsg.senderType !== "USER") {
+    const currentCount = msgs.length;
+    const lastMsg = msgs[currentCount - 1];
+    if (
+      currentCount > aiTypingBaseMsgCountRef.current &&
+      lastMsg &&
+      lastMsg.senderType !== "USER"
+    ) {
       setIsAiTyping(false);
       if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
     }
@@ -246,7 +253,8 @@ export function ChatWidget() {
     const content = message;
     setMessage("");
     await sendMessage(content);
-    // Activer l'indicateur "IA tape..." avec timeout de sécurité à 90s
+    // Mémoriser le nombre de messages AVANT la réponse IA, puis activer l'indicateur
+    aiTypingBaseMsgCountRef.current = currentConversation?.messages.length ?? 0;
     setIsAiTyping(true);
     if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
     aiTypingTimeoutRef.current = setTimeout(() => setIsAiTyping(false), 90_000);
