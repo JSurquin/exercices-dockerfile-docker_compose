@@ -50,6 +50,8 @@ export async function ollamaChat(options: OllamaChatOptions): Promise<OllamaChat
         options: {
           temperature: options.temperature ?? 0.4,
           num_predict: options.maxTokens ?? 512,
+          // Extend context window: default is 2048 which is too small when RAG chunks are injected
+          num_ctx: 4096,
         },
       }),
       signal: controller.signal,

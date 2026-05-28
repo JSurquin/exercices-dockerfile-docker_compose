@@ -133,7 +133,7 @@ export async function maybeGenerateAiReply(conversationId: string): Promise<void
         const chunks = await searchSimilarChunks(embedding, 6, 0.45);
         if (chunks.length > 0) {
           ragContext = chunks
-            .map((c, i) => `[${i + 1}] ${c.content.trim()}`)
+            .map((c, i) => `[${i + 1}] ${c.content.trim().slice(0, 600)}`)
             .join('\n\n');
           logger.info('[chat-ai] RAG: ' + chunks.length + ' chunks trouvés pour "' + queryText.slice(0, 60) + '"');
         }
