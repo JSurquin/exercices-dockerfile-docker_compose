@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -420,9 +422,32 @@ export function ChatWidget() {
                             <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">✨ {messages.chatWidget.aiLabel}</span>
                           </div>
                         )}
-                        <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                          {resolveContent(msg.content)}
-                        </p>
+                        {isUser ? (
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                            {resolveContent(msg.content)}
+                          </p>
+                        ) : (
+                          <div className="text-sm leading-relaxed">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
+                              ul: ({ children }) => <ul className="list-disc pl-4 mb-1 space-y-0.5">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal pl-4 mb-1 space-y-0.5">{children}</ol>,
+                              li: ({ children }) => <li className="text-sm">{children}</li>,
+                              strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                              em: ({ children }) => <em className="italic">{children}</em>,
+                              code: ({ children }) => <code className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5 text-xs font-mono">{children}</code>,
+                              h1: ({ children }) => <p className="font-semibold text-sm mb-1">{children}</p>,
+                              h2: ({ children }) => <p className="font-semibold text-sm mb-1">{children}</p>,
+                              h3: ({ children }) => <p className="font-medium text-sm mb-0.5">{children}</p>,
+                              a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-80">{children}</a>,
+                            }}
+                          >
+                            {resolveContent(msg.content)}
+                          </ReactMarkdown>
+                          </div>
+                        )}
                         <div
                           className={`flex items-center justify-between mt-1 gap-2 ${
                             isUser ? "text-white/70" : isSystem ? "text-emerald-600" : isAi ? "text-violet-500 dark:text-violet-400" : "text-muted-foreground"
