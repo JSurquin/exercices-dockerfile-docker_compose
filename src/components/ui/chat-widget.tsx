@@ -116,6 +116,7 @@ export function ChatWidget() {
   const [message, setMessage] = useState("");
   const [isSendingBotMsg, setIsSendingBotMsg] = useState(false);
   const [isAiTyping, setIsAiTyping] = useState(false);
+  const [aiTypingBaseCount, setAiTypingBaseCount] = useState(0);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -144,22 +145,22 @@ export function ChatWidget() {
     }
   }, [currentConversation?.messages, chatStep, scrollToBottom]);
 
-  // Désactiver l'indicateur "IA tape..." quand un NOUVEAU message non-user arrive
-  // (on compare avec le count baseline enregistré au moment de l'envoi)
+  // Désactiver l'indicateur quand un NOUVEAU message non-user arrive
   useEffect(() => {
     if (!isAiTyping || !currentConversation?.messages) return;
     const msgs = currentConversation.messages;
     const currentCount = msgs.length;
     const lastMsg = msgs[currentCount - 1];
+    // +2 car on attend : le message user + la réponse IA
     if (
-      currentCount > aiTypingBaseMsgCountRef.current &&
+      currentCount > aiTypingBaseCount + 1 &&
       lastMsg &&
       lastMsg.senderType !== "USER"
     ) {
       setIsAiTyping(false);
       if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
     }
-  }, [currentConversation?.messages, isAiTyping]);
+  }, [currentConversation?.messages, isAiTyping, aiTypingBaseCount]);
 
   const handleToggleChat = () => {
     if (isOpen) {
@@ -254,7 +255,9 @@ export function ChatWidget() {
     setMessage("");
     await sendMessage(content);
     // Mémoriser le nombre de messages AVANT la réponse IA, puis activer l'indicateur
-    aiTypingBaseMsgCountRef.current = currentConversation?.messages.length ?? 0;
+    const baseCount = currentConversation?.messages.length ?? 0;
+    aiTypingBaseMsgCountRef.current = baseCount;
+    setAiTypingBaseCount(baseCount);
     setIsAiTyping(true);
     if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
     aiTypingTimeoutRef.current = setTimeout(() => setIsAiTyping(false), 90_000);
@@ -417,7 +420,7 @@ export function ChatWidget() {
                   return (
                     <div
                       key={msg.id}
-                      className={`flex ${isUser ? "justify-end" : "justify-start"} animate-in fade-in-0 slide-in-from-bottom-1 duration-200`}
+                      className={`flex ${isUser ? "justify-end" : "justify-start"} message-slide-in`}
                     >
                       <div
                         className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
@@ -503,15 +506,16 @@ export function ChatWidget() {
                   </div>
                 )}
 
-                {isAiTyping && !isLoading && (
-                  <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-1 duration-200">
+                {isAiTyping && !isLoading &&
+                  (currentConversation?.messages.length ?? 0) > aiTypingBaseCount && (
+                  <div className="flex justify-start ai-typing-bubble">
                     <div className="bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 rounded-2xl rounded-tl-sm px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">✨ {messages.chatWidget.aiLabel}</span>
-                        <div className="flex space-x-1">
-                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                        <div className="flex gap-1">
+                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
+                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
+                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
                         </div>
                       </div>
                     </div>
