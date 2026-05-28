@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
 import { resolveChatIdentity } from '@/lib/require-admin';
@@ -139,10 +140,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Réponse IA (Ollama) en arrière-plan — sans bloquer la requête.
-    // Désactivée si modérateur assigné ou déjà intervenu.
+    // Réponse IA (Ollama) schedulée après envoi de la réponse HTTP.
+    // after() garantit l'exécution complète même en environnement serverless.
     if (senderType === 'USER') {
-      void maybeGenerateAiReply(body.conversationId);
+      after(() => maybeGenerateAiReply(body.conversationId));
     }
 
     return NextResponse.json(message, { status: 201 });
