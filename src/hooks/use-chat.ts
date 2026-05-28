@@ -9,7 +9,7 @@ import { playNotificationSound } from '@/lib/play-notification-sound';
 interface ChatMessage {
   id: string;
   content: string;
-  senderType: 'USER' | 'BOT' | 'MODERATOR' | 'SYSTEM';
+  senderType: 'USER' | 'BOT' | 'AI' | 'MODERATOR' | 'SYSTEM';
   createdAt: string;
   userId?: string;
   isRead: boolean;

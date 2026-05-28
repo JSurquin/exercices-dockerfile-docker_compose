@@ -16,6 +16,7 @@ export function chatPriorityBadgeClass(priority: string): string {
 export function chatSenderBadgeClass(senderType: string): string {
   if (senderType === 'USER') return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
   if (senderType === 'BOT') return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+  if (senderType === 'AI') return 'bg-violet-500/20 text-violet-400 border-violet-500/30';
   if (senderType === 'MODERATOR') return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
   return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
 }

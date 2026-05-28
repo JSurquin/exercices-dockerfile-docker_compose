@@ -28,6 +28,7 @@ function mapSenderToRole(senderType: SenderType): OllamaMessage['role'] | null {
     case 'USER':
       return 'user';
     case 'BOT':
+    case 'AI':
     case 'MODERATOR':
       return 'assistant';
     case 'SYSTEM':
@@ -100,7 +101,7 @@ export async function maybeGenerateAiReply(conversationId: string): Promise<void
           conversationId,
           userId: null,
           content: messageCheck.refusalMessage ?? OFF_TOPIC_REFUSAL_MESSAGE,
-          senderType: 'BOT',
+          senderType: 'AI',
           isRead: false,
         },
       });
@@ -127,7 +128,7 @@ export async function maybeGenerateAiReply(conversationId: string): Promise<void
         conversationId,
         userId: null,
         content: result.content,
-        senderType: 'BOT',
+        senderType: 'AI',
         isRead: false,
       },
     });

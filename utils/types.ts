@@ -3580,6 +3580,7 @@ export interface Messages {
     problemQuestion: string;
     moderatorLabel: string;
     botLabel: string;
+    aiLabel: string;
     sendHint: string;
     quickActions: string;
     tradeProblem: string;

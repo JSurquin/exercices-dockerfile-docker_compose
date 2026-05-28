@@ -383,6 +383,7 @@ export function ChatWidget() {
                   const isUser =
                     msg.senderType === "USER" && msg.userId === user?.id;
                   const isBot = msg.senderType === "BOT";
+                  const isAi = msg.senderType === "AI";
                   const isModerator = msg.senderType === "MODERATOR";
                   const isSystem = msg.senderType === "SYSTEM";
 
@@ -397,6 +398,8 @@ export function ChatWidget() {
                             ? "bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-tr-sm"
                             : isModerator
                             ? "bg-blue-500 text-white rounded-tl-sm"
+                            : isAi
+                            ? "bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 rounded-tl-sm"
                             : isSystem
                             ? "bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 rounded-tl-sm text-xs"
                             : "bg-muted border rounded-tl-sm"
@@ -412,12 +415,17 @@ export function ChatWidget() {
                             <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/60 rounded-full px-2 py-0.5">🤖 {messages.chatWidget.botLabel}</span>
                           </div>
                         )}
+                        {isAi && (
+                          <div className="flex items-center gap-1 mb-1">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">✨ {messages.chatWidget.aiLabel}</span>
+                          </div>
+                        )}
                         <p className="text-sm whitespace-pre-wrap leading-relaxed">
                           {resolveContent(msg.content)}
                         </p>
                         <div
                           className={`flex items-center justify-between mt-1 gap-2 ${
-                            isUser ? "text-white/70" : isSystem ? "text-emerald-600" : "text-muted-foreground"
+                            isUser ? "text-white/70" : isSystem ? "text-emerald-600" : isAi ? "text-violet-500 dark:text-violet-400" : "text-muted-foreground"
                           }`}
                         >
                           <span className="text-[10px]">{formatTime(msg.createdAt)}</span>

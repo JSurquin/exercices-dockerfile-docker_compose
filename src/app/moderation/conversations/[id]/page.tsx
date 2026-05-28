@@ -32,6 +32,7 @@ import { resolveI18nContent } from '@/lib/resolve-i18n-content';
 const senderTypeLabels: Record<string, string> = {
   USER: 'Utilisateur',
   BOT: 'Bot',
+  AI: '✨ IA',
   MODERATOR: 'Modérateur',
   SYSTEM: 'Système',
 };
@@ -361,6 +362,8 @@ export default function ConversationPage() {
                             ? 'bg-orange-500 text-white rounded-tr-sm'
                             : msg.senderType === 'BOT'
                             ? 'bg-green-600 text-white rounded-tr-sm'
+                            : msg.senderType === 'AI'
+                            ? 'bg-violet-100 dark:bg-violet-950/40 border border-violet-300 dark:border-violet-700 text-violet-900 dark:text-violet-100 rounded-tr-sm'
                             : msg.senderType === 'SYSTEM'
                             ? 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 text-emerald-800 dark:text-emerald-200 rounded-tr-sm'
                             : 'bg-muted-foreground/20 rounded-tr-sm'
