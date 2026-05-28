@@ -22,6 +22,8 @@ export default function UpdateNotifier({
   const { messages } = useLocale();
 
   useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') return;
+
     const fetchInitialBuildId = async () => {
       try {
         const response = await fetch('/api/build-id', {
