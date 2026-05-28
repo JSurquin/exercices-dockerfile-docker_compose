@@ -403,10 +403,14 @@ export function ChatWidget() {
                         }`}
                       >
                         {isModerator && (
-                          <p className="text-[10px] text-white/80 font-medium mb-0.5">👨‍💼 {messages.chatWidget.moderatorLabel}</p>
+                          <div className="flex items-center gap-1 mb-1">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-white/20 rounded-full px-2 py-0.5">👨‍💼 {messages.chatWidget.moderatorLabel}</span>
+                          </div>
                         )}
                         {isBot && (
-                          <p className="text-[10px] text-muted-foreground font-medium mb-0.5">🤖 {messages.chatWidget.botLabel}</p>
+                          <div className="flex items-center gap-1 mb-1">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/60 rounded-full px-2 py-0.5">🤖 {messages.chatWidget.botLabel}</span>
+                          </div>
                         )}
                         <p className="text-sm whitespace-pre-wrap leading-relaxed">
                           {resolveContent(msg.content)}

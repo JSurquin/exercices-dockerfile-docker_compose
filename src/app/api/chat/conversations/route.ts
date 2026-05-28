@@ -220,25 +220,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Réponse automatique du bot — on stocke une clé i18n pour que
-    // le client puisse la résoudre dans la langue courante de l'UI.
-    // Format : __i18n:<dotted.key>__
-    setTimeout(async () => {
-      try {
-        await prisma.chatMessage.create({
-          data: {
-            conversationId: conversation.id,
-            userId: null,
-            content: '__i18n:chatWidget.responses.thankYouMessage__',
-            senderType: 'BOT',
-            isRead: false,
-          },
-        });
-      } catch (error) {
-        logger.error('Erreur lors de l\'envoi de la réponse automatique:', error);
-      }
-    }, 1000);
-
     return NextResponse.json(conversation, { status: 201 });
   } catch (error) {
     logger.error('Erreur lors de la création de la conversation:', error);
