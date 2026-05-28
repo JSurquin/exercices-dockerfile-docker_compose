@@ -115,11 +115,13 @@ export function ChatWidget() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [message, setMessage] = useState("");
   const [isSendingBotMsg, setIsSendingBotMsg] = useState(false);
+  const [isAiTyping, setIsAiTyping] = useState(false);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const wasOpenBeforeMobileMenuRef = useRef(false);
   const [isHiddenByMobileMenu, setIsHiddenByMobileMenu] = useState(false);
+  const aiTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Si une conversation existe déjà, aller directement au chat
   useEffect(() => {
@@ -140,6 +142,17 @@ export function ChatWidget() {
       setTimeout(scrollToBottom, 50);
     }
   }, [currentConversation?.messages, chatStep, scrollToBottom]);
+
+  // Désactiver l'indicateur "IA tape..." dès qu'une réponse non-user arrive
+  useEffect(() => {
+    if (!isAiTyping || !currentConversation?.messages) return;
+    const msgs = currentConversation.messages;
+    const lastMsg = msgs[msgs.length - 1];
+    if (lastMsg && lastMsg.senderType !== "USER") {
+      setIsAiTyping(false);
+      if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
+    }
+  }, [currentConversation?.messages, isAiTyping]);
 
   const handleToggleChat = () => {
     if (isOpen) {
@@ -233,6 +246,10 @@ export function ChatWidget() {
     const content = message;
     setMessage("");
     await sendMessage(content);
+    // Activer l'indicateur "IA tape..." avec timeout de sécurité à 90s
+    setIsAiTyping(true);
+    if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
+    aiTypingTimeoutRef.current = setTimeout(() => setIsAiTyping(false), 90_000);
     setTimeout(scrollToBottom, 100);
   };
 
@@ -473,6 +490,21 @@ export function ChatWidget() {
                         <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                         <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
                         <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {isAiTyping && !isLoading && (
+                  <div className="flex justify-start animate-in fade-in-0 slide-in-from-bottom-1 duration-200">
+                    <div className="bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 rounded-2xl rounded-tl-sm px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">✨ {messages.chatWidget.aiLabel}</span>
+                        <div className="flex space-x-1">
+                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                        </div>
                       </div>
                     </div>
                   </div>
