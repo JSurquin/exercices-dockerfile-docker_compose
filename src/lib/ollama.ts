@@ -60,14 +60,22 @@ export async function ollamaChat(options: OllamaChatOptions): Promise<OllamaChat
       throw new Error(`Ollama HTTP ${res.status}: ${body.slice(0, 200)}`);
     }
 
-    const data = (await res.json()) as {
-      message?: { content?: string };
-      model?: string;
-      done?: boolean;
-    };
+    const rawText = await res.text();
+
+    let data: { message?: { content?: string }; model?: string; done?: boolean };
+    try {
+      // Ollama peut renvoyer du NDJSON en mode stream: false sur certaines versions
+      // On prend la dernière ligne non-vide qui contient done: true
+      const lines = rawText.split('\n').filter((l) => l.trim());
+      const lastLine = lines[lines.length - 1] ?? '{}';
+      data = JSON.parse(lastLine);
+    } catch {
+      throw new Error(`Réponse Ollama non-JSON: ${rawText.slice(0, 200)}`);
+    }
 
     const content = data.message?.content?.trim();
     if (!content) {
+      logger.error('[ollama] Réponse vide — payload brut:', rawText.slice(0, 500));
       throw new Error('Réponse Ollama vide');
     }
 
