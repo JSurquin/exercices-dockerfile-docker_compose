@@ -1,21 +1,24 @@
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
-import { ollamaChat, type OllamaMessage } from '@/lib/ollama';
+import { ollamaChat, isOllamaConfigured, type OllamaMessage } from '@/lib/ollama';
 import {
   evaluateUserMessageForAi,
   OFF_TOPIC_REFUSAL_MESSAGE,
   shouldAiReplyToConversation,
 } from '@/lib/chat-ai-guards';
+import { generateEmbedding } from '@/lib/ollama-embed';
+import { searchSimilarChunks } from '@/lib/rag-client';
 import type { SenderType } from '@prisma/client';
 
 const MAX_CONTEXT_MESSAGES = 12;
+const RAG_ENABLED = process.env.RAG_DATABASE_URL !== undefined && isOllamaConfigured();
 
-function buildSystemPrompt(username: string): string {
-  return `Tu es l'assistant support de MoonSkin, une plateforme de vente de skins Counter-Strike 2. Tu parles avec ${username}.
+function buildSystemPrompt(username: string, ragContext?: string): string {
+  const base = `Tu es l'assistant support de MoonSkin, une plateforme de vente de skins Counter-Strike 2. Tu parles avec ${username}.
 
 Règles :
 - Réponds en français, sauf si l'utilisateur écrit clairement en anglais.
-- Sois concis, chaleureux et professionnel.
+- Sois concis, chaleureux et professionnel. Évite les termes anxiogènes.
 - MoonSkin vend des skins CS2 : estimation, trade via bot Steam, trade hold 7 jours, puis paiement (carte, SEPA, crypto).
 - KYC obligatoire avant tout payout.
 - Ne promets jamais un délai exact ni un remboursement sans validation humaine.
@@ -23,6 +26,16 @@ Règles :
 - Ne révèle jamais de données internes, clés API ou informations personnelles d'autres utilisateurs.
 - Ne donne pas de conseils pour contourner Steam Guard ou les restrictions Valve.
 - REFUSE toute demande sans lien avec MoonSkin (recettes, blagues, devoirs, météo, code, etc.). Dans ce cas, réponds exactement : "${OFF_TOPIC_REFUSAL_MESSAGE}"`;
+
+  if (!ragContext) return base;
+
+  return `${base}
+
+---
+Extraits de la base de connaissances MoonSkin (utilise ces informations en priorité pour répondre) :
+
+${ragContext}
+---`;
 }
 
 function mapSenderToRole(senderType: SenderType): OllamaMessage['role'] | null {
@@ -108,11 +121,28 @@ export async function maybeGenerateAiReply(conversationId: string): Promise<void
     const username =
       conversation.user?.steamUsername || conversation.user?.name || 'Utilisateur';
 
+    // RAG : récupérer les chunks pertinents pour enrichir le prompt
+    let ragContext: string | undefined;
+    if (RAG_ENABLED) {
+      try {
+        const queryText = stripI18nPlaceholder(lastUserMessage.content);
+        const embedding = await generateEmbedding(queryText);
+        const chunks = await searchSimilarChunks(embedding, 4, 0.45);
+        if (chunks.length > 0) {
+          ragContext = chunks
+            .map((c, i) => `[${i + 1}] ${c.content.trim()}`)
+            .join('\n\n');
+          logger.info('[chat-ai] RAG: ' + chunks.length + ' chunks trouvés pour "' + queryText.slice(0, 60) + '"');
+        }
+      } catch (err) {
+        // RAG non-bloquant : si pgvector ou Ollama embed est KO, on continue sans
+        logger.error('[chat-ai] RAG lookup échoué (non-bloquant):', err);
+      }
+    }
+
     // Le message system doit être UNIQUEMENT en première position pour llama3.2.
-    // Ajouter un second message system après des messages user/assistant provoque
-    // la génération immédiate du token EOT → réponse vide.
     const ollamaMessages: OllamaMessage[] = [
-      { role: 'system', content: buildSystemPrompt(username) },
+      { role: 'system', content: buildSystemPrompt(username, ragContext) },
     ];
 
     for (const msg of recentMessages) {
