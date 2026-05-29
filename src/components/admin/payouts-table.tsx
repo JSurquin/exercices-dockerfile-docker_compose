@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,7 +26,8 @@ import {
   CreditCard,
   Ban,
   Check,
-  Settings2
+  Settings2,
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Payout, AdminFilters } from '@/lib/types';
@@ -45,6 +46,7 @@ export function AdminPayoutsTable() {
     limit: 20,
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [limit, setLimit] = useState(20);
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [resyncingId, setResyncingId] = useState<string | null>(null);
@@ -52,8 +54,16 @@ export function AdminPayoutsTable() {
   const [autoApproveThresholdEur, setAutoApproveThresholdEur] = useState('20');
   const [autoApproveSaving, setAutoApproveSaving] = useState(false);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }),
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setFilters(prev => ({ ...prev, page: 1 }));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const { data, isLoading, isFetching, error } = useQuery({
+    queryKey: queryKeys.adminPayouts({ ...filters, search: debouncedSearch }),
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filters.status) params.append('status', filters.status);
@@ -62,13 +72,14 @@ export function AdminPayoutsTable() {
       if (filters.dateTo) params.append('dateTo', filters.dateTo.toISOString());
       if (filters.page) params.append('page', filters.page.toString());
       if (filters.limit) params.append('limit', filters.limit.toString());
-      if (searchTerm) params.append('search', searchTerm);
+      if (debouncedSearch) params.append('search', debouncedSearch);
 
       const response = await fetch(`/api/admin/payouts?${params}`);
       const json = await response.json();
       if (!response.ok) throw new Error((json.error as string | undefined) || tp.loadError || 'Error');
       return json;
     },
+    placeholderData: keepPreviousData,
   });
 
   const payouts: Payout[] = data?.payouts ?? [];
@@ -130,7 +141,7 @@ export function AdminPayoutsTable() {
         throw new Error(details ? `${base} — ${details}` : base);
       }
       toast.success(tp.approveSuccess ?? 'Payout approuvé');
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: debouncedSearch }) });
     } catch (e) {
       toast.error(tp.toastErrorTitle ?? 'Error', {
         description: e instanceof Error ? e.message : (tp.toastApproveFailed ?? ''),
@@ -138,11 +149,6 @@ export function AdminPayoutsTable() {
     } finally {
       setApprovingId(null);
     }
-  };
-
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setFilters(prev => ({ ...prev, page: 1 }));
   };
 
   const handleStatusFilter = (status: string) => {
@@ -215,7 +221,7 @@ export function AdminPayoutsTable() {
         tp.resyncSuccess ?? 'Statut resynchronisé avec Flexify',
         { description: `${data.previousStatus} → ${data.newStatus}` }
       );
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: debouncedSearch }) });
     } catch (e) {
       toast.error(tp.toastErrorTitle ?? 'Error', {
         description: e instanceof Error ? e.message : (tp.toastResyncFailed ?? ''),
@@ -236,7 +242,7 @@ export function AdminPayoutsTable() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || tp.requestFailed || 'Error');
       toast.success(tp.cancelSuccess ?? 'Payout annulé');
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: debouncedSearch }) });
     } catch (e) {
       toast.error(tp.toastErrorTitle ?? 'Error', {
         description: e instanceof Error ? e.message : (tp.toastCancelFailed ?? ''),
@@ -271,7 +277,7 @@ export function AdminPayoutsTable() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return <TableSkeleton />;
   }
 
@@ -341,9 +347,12 @@ export function AdminPayoutsTable() {
             <Input
               placeholder={tp.searchPlaceholder}
               value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10 bg-slate-700 border-slate-600 text-white"
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-10 bg-slate-700 border-slate-600 text-white"
             />
+            {isFetching && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 animate-spin" />
+            )}
           </div>
           
           <Select onValueChange={handleStatusFilter}>
@@ -366,7 +375,7 @@ export function AdminPayoutsTable() {
 
         <div className="flex flex-wrap gap-2">
           <Button 
-            onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: searchTerm }) })}
+            onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: debouncedSearch }) })}
             variant="outline"
             size="sm"
             className="border-slate-600 text-white hover:bg-slate-700"
