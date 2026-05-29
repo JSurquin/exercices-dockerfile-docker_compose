@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,7 @@ import {
   XCircle,
   RefreshCw,
   RotateCcw,
+  Loader2,
 } from 'lucide-react';
 import { Trade, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
@@ -47,12 +48,21 @@ export function AdminTradesTable() {
     limit: 20,
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [limit, setLimit] = useState(20);
   const [syncingTradeIds, setSyncingTradeIds] = useState<Set<string>>(new Set());
   const [detailTrade, setDetailTrade] = useState<Trade | null>(null);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.adminTrades({ ...filters, search: searchTerm }),
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setFilters(prev => ({ ...prev, page: 1 }));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const { data, isLoading, isFetching, error } = useQuery({
+    queryKey: queryKeys.adminTrades({ ...filters, search: debouncedSearch }),
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filters.status) params.append('status', filters.status);
@@ -61,7 +71,7 @@ export function AdminTradesTable() {
       if (filters.dateTo) params.append('dateTo', filters.dateTo.toISOString());
       if (filters.page) params.append('page', filters.page.toString());
       if (filters.limit) params.append('limit', filters.limit.toString());
-      if (searchTerm) params.append('search', searchTerm);
+      if (debouncedSearch) params.append('search', debouncedSearch);
 
       const response = await fetch(`/api/admin/trades?${params}`);
       const json = await response.json();
@@ -70,6 +80,7 @@ export function AdminTradesTable() {
       }
       return json;
     },
+    placeholderData: keepPreviousData,
   });
 
   const trades: Trade[] = data?.trades ?? [];
@@ -77,11 +88,6 @@ export function AdminTradesTable() {
   useEffect(() => {
     setFilters(prev => ({ ...prev, limit, page: 1 }));
   }, [limit]);
-
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setFilters(prev => ({ ...prev, page: 1 }));
-  };
 
   const handleStatusFilter = (status: string) => {
     setFilters(prev => ({ 
@@ -218,7 +224,7 @@ export function AdminTradesTable() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return <TableSkeleton />;
   }
 
@@ -245,9 +251,12 @@ export function AdminTradesTable() {
             <Input
               placeholder={t.searchPlaceholder}
               value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10 bg-slate-700 border-slate-600 text-white"
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-10 bg-slate-700 border-slate-600 text-white"
             />
+            {isFetching && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 animate-spin" />
+            )}
           </div>
           
           <Select onValueChange={handleStatusFilter}>
