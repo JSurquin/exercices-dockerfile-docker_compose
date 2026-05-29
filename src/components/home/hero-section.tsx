@@ -138,8 +138,8 @@ export function HeroSection() {
   const [isVisible, setIsVisible] = useState(false);
 
   // Calculs de la carte démo basés sur les vrais taux
-  const demoAk47Cents = 12750;
-  const demoAwpCents = 284700;
+  const demoAk47Cents = 22403;
+  const demoAwpCents = 886858;
   const demoGrossCents = demoAk47Cents + demoAwpCents;
   const demoCashoutFeeCents = Math.round(demoGrossCents * (platformSettings?.cashoutFeeRate ?? 0.005));
   const demoNetworkFeeCents = platformSettings?.networkFeeCentimes ?? 200;
@@ -394,13 +394,13 @@ export function HeroSection() {
                 {/* Skin Items */}
                 <div className="space-y-2 sm:space-y-3">
                   <motion.div
-                    className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gradient-to-r from-red-500/10 to-orange-500/10 rounded-lg border border-red-500/20 hover:border-red-500/40 transition-all duration-300"
+                    className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10 hover:border-theme-accent/30 hover:bg-white/[0.07] transition-all duration-300"
                     whileHover={{ scale: 1.02 }}
                   >
                     <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#14141a] shadow-lg ring-1 ring-white/10 sm:h-12 sm:w-12">
                       <Image
                         src={HERO_DEMO_SKIN_IMAGES.ak47RedlineFt}
-                        alt="AK-47 | Redline (Field-Tested)"
+                        alt="AK-47 | Redline (Minimal Wear)"
                         width={512}
                         height={512}
                         className="h-full w-full object-cover"
@@ -416,13 +416,13 @@ export function HeroSection() {
                         <p className="font-medium text-sm sm:text-base truncate">
                           AK-47 | Redline
                         </p>
-                        <div className="px-1.5 sm:px-2 py-0.5 bg-orange-500/20 text-orange-600 text-xs rounded font-mono flex-shrink-0">
+                        <div className="px-1.5 sm:px-2 py-0.5 bg-theme-accent/15 text-theme-accent text-xs rounded font-mono flex-shrink-0">
                           StatTrak™
                         </div>
                       </div>
                       <p className="text-xs sm:text-sm text-muted-foreground flex items-center space-x-1">
-                        <span>Field-Tested</span>
-                        <span className="text-yellow-500">★★★</span>
+                        <span>Minimal Wear</span>
+                        <span className="text-yellow-500">★★★★</span>
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
@@ -434,7 +434,7 @@ export function HeroSection() {
                   </motion.div>
 
                   <motion.div
-                    className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-lg border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300"
+                    className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10 hover:border-theme-accent/30 hover:bg-white/[0.07] transition-all duration-300"
                     whileHover={{ scale: 1.02 }}
                   >
                     <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#14141a] shadow-lg ring-1 ring-white/10 sm:h-12 sm:w-12">
@@ -456,7 +456,7 @@ export function HeroSection() {
                         <p className="font-medium text-sm sm:text-base truncate">
                           AWP | Dragon Lore
                         </p>
-                        <div className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-600 text-xs rounded flex-shrink-0">
+                        <div className="px-1.5 py-0.5 bg-theme-accent/15 text-theme-accent text-xs rounded flex-shrink-0">
                           ★
                         </div>
                       </div>
