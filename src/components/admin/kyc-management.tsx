@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,6 +65,7 @@ export function AdminKYCManagement() {
 
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
 
@@ -75,14 +76,22 @@ export function AdminKYCManagement() {
     setPage(1);
   }, [limit]);
 
-  const queryParams = { status: statusFilter, search: searchTerm, page, limit };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
-  const { data, isLoading, error } = useQuery({
+  const queryParams = { status: statusFilter, search: debouncedSearch, page, limit };
+
+  const { data, isLoading, isFetching, error } = useQuery({
     queryKey: queryKeys.adminKyc(queryParams as any),
     queryFn: async () => {
       const params = new URLSearchParams();
       if (statusFilter) params.append('status', statusFilter);
-      if (searchTerm) params.append('search', searchTerm);
+      if (debouncedSearch) params.append('search', debouncedSearch);
       params.append('page', String(page));
       params.append('limit', String(limit));
       const res = await fetch(`/api/admin/kyc?${params}`);
@@ -90,6 +99,7 @@ export function AdminKYCManagement() {
       if (!res.ok) throw new Error(json.error || t.loadError);
       return json;
     },
+    placeholderData: keepPreviousData,
   });
 
   const users: KycUser[] = data?.users ?? [];
@@ -201,7 +211,7 @@ export function AdminKYCManagement() {
     } catch { /* silent */ }
   };
 
-  if (isLoading) return <TableSkeleton />;
+  if (isLoading && !data) return <TableSkeleton />;
 
   if (error) {
     return (
@@ -226,9 +236,12 @@ export function AdminKYCManagement() {
             <Input
               placeholder={t.searchPlaceholder}
               value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-              className="pl-10 bg-slate-700 border-slate-600 text-white"
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-10 bg-slate-700 border-slate-600 text-white"
             />
+            {isFetching && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 animate-spin" />
+            )}
           </div>
           <Select value={statusFilter || 'all'} onValueChange={(v) => { setStatusFilter(v === 'all' ? '' : v); setPage(1); }}>
             <SelectTrigger className="w-full sm:w-48 bg-slate-700 border-slate-600 text-white">
