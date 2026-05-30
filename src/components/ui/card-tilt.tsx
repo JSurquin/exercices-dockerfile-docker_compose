@@ -1,6 +1,4 @@
-"use client";
-
-import { useRef, useCallback, type ReactNode, type MouseEvent } from "react";
+import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface CardTiltProps {
@@ -10,33 +8,11 @@ interface CardTiltProps {
 }
 
 /**
- * Card glassmorphism 3D avec tilt souris (style b9bou, teinte chrome).
+ * Card glassmorphism 3D — tilt au hover en CSS pur (plus fluide que le tracking souris JS).
  */
 export function CardTilt({ children, className, shimmer = false }: CardTiltProps) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  const handleMove = useCallback((e: MouseEvent<HTMLDivElement>) => {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    el.style.transform = `perspective(600px) rotateY(${x * 12}deg) rotateX(${-y * 12}deg) translateY(-4px)`;
-  }, []);
-
-  const handleLeave = useCallback(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.transform = "perspective(600px) rotateY(0) rotateX(0) translateY(0)";
-  }, []);
-
   return (
-    <div
-      ref={ref}
-      onMouseMove={handleMove}
-      onMouseLeave={handleLeave}
-      className={cn("lunar-card", shimmer && "chrome-shimmer", className)}
-    >
+    <div className={cn("lunar-card card-tilt", shimmer && "chrome-shimmer", className)}>
       {children}
     </div>
   );

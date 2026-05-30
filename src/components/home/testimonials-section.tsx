@@ -1,12 +1,16 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 import { useLocale } from '@/components/providers/locale-provider';
 import { usePublicStats, formatPlatformVolume, formatCompactCount } from '@/hooks/use-public-stats';
+import {
+  homeHover,
+  homeReveal,
+  homeStagger,
+} from '@/lib/home-animation-classes';
 
 const RatingStars = ({ rating }: { rating: number }) => {
   return (
@@ -21,6 +25,32 @@ const RatingStars = ({ rating }: { rating: number }) => {
     </div>
   );
 };
+
+function CsgoRepLink({ className }: { className?: string }) {
+  const { messages } = useLocale();
+
+  return (
+    <a
+      href="https://csgo-rep.com/profile/76561199040420116"
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`inline-flex relative group ${homeHover.lift} ${className ?? ''}`}
+    >
+      <span className="absolute -inset-[2px] rounded-full opacity-80 blur-[2px] group-hover:opacity-100 group-hover:blur-[3px] transition-all duration-300 home-neon-border" />
+      <span className="relative inline-flex items-center space-x-2 lunar-card px-5 py-2.5 rounded-full bg-background/90 text-sm font-semibold">
+        <svg className="w-4 h-4 text-orange-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+        </svg>
+        <span>
+          {messages.testimonials.basedOn} <strong className="text-orange-500">806+</strong> {messages.testimonials.reviews} CSGO-Rep
+        </span>
+        <svg className="w-3.5 h-3.5 opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        </svg>
+      </span>
+    </a>
+  );
+}
 
 export function TestimonialsSection() {
   const { messages } = useLocale();
@@ -63,13 +93,7 @@ export function TestimonialsSection() {
     <section className="py-24 bg-muted/30">
       <div className="container mx-auto px-4">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
+        <div className={`text-center mb-16 ${homeReveal.upSm}`}>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             {messages.testimonials.title}
           </h2>
@@ -85,56 +109,16 @@ export function TestimonialsSection() {
               <span className="text-muted-foreground">/5</span>
             </div>
             <div className="h-6 w-px bg-border hidden sm:block" />
-            <motion.a
-              href="https://csgo-rep.com/profile/76561199040420116"
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.06, y: -3 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="inline-flex relative group"
-            >
-              <span
-                className="absolute -inset-[2px] rounded-full opacity-80 blur-[2px] group-hover:opacity-100 group-hover:blur-[3px] transition-all duration-300"
-                style={{
-                  background: "linear-gradient(var(--csgo-neon-angle, 0deg), #ff0080, #ff8c00, #ffe000, #00ff88, #00cfff, #a855f7, #ff0080)",
-                  animation: "csgo-neon-rotate 3s linear infinite",
-                }}
-              />
-              <span className="relative inline-flex items-center space-x-2 lunar-card px-5 py-2.5 rounded-full bg-background/90 text-sm font-semibold">
-                <svg className="w-4 h-4 text-orange-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                </svg>
-                <span>
-                  {messages.testimonials.basedOn} <strong className="text-orange-500">806+</strong> {messages.testimonials.reviews} CSGO-Rep
-                </span>
-                <svg className="w-3.5 h-3.5 opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-              </span>
-            </motion.a>
+            <CsgoRepLink />
           </div>
-
-          <style>{`
-            @property --csgo-neon-angle {
-              syntax: "<angle>";
-              initial-value: 0deg;
-              inherits: false;
-            }
-            @keyframes csgo-neon-rotate {
-              to { --csgo-neon-angle: 360deg; }
-            }
-          `}</style>
-        </motion.div>
+        </div>
 
         {/* Testimonials Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((testimonial, index) => (
-            <motion.div
+            <div
               key={testimonial.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
+              className={`${homeReveal.up} ${homeStagger(index)}`}
             >
               <Card className="h-full hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-4 sm:p-6">
@@ -187,55 +171,17 @@ export function TestimonialsSection() {
                   )}
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* CSGO-Rep Link */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mt-10"
-        >
-          <motion.a
-            href="https://csgo-rep.com/profile/76561199040420116"
-            target="_blank"
-            rel="noopener noreferrer"
-            whileHover={{ scale: 1.06, y: -3 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className="inline-flex relative group"
-          >
-            <span
-              className="absolute -inset-[2px] rounded-full opacity-80 blur-[2px] group-hover:opacity-100 group-hover:blur-[3px] transition-all duration-300"
-              style={{
-                background: "linear-gradient(var(--csgo-neon-angle, 0deg), #ff0080, #ff8c00, #ffe000, #00ff88, #00cfff, #a855f7, #ff0080)",
-                animation: "csgo-neon-rotate 3s linear infinite",
-              }}
-            />
-            <span className="relative inline-flex items-center space-x-2 lunar-card px-6 py-3 rounded-full bg-background/90 text-sm font-semibold">
-              <svg className="w-4 h-4 text-orange-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-              </svg>
-              <span>
-                {messages.testimonials.basedOn} <strong className="text-orange-500">806+</strong> {messages.testimonials.reviews} CSGO-Rep
-              </span>
-              <svg className="w-3.5 h-3.5 opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </span>
-          </motion.a>
-        </motion.div>
+        <div className={`text-center mt-10 ${homeReveal.upSm}`}>
+          <CsgoRepLink className="px-6 py-3" />
+        </div>
 
         {/* Trust Indicators */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
-        >
+        <div className={`mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center ${homeReveal.upSm}`}>
           <div>
             <div className="text-3xl font-bold text-orange-600 mb-2">
               {skinsDisplay.prefix}
@@ -273,7 +219,7 @@ export function TestimonialsSection() {
             <div className="text-3xl font-bold text-orange-600 mb-2">24/7</div>
             <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.support}</div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

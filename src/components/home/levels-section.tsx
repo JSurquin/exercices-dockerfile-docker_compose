@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +12,10 @@ import {
   getTierReward,
   TIERS_PER_LEVEL,
 } from "@/lib/level-system";
+import {
+  homeReveal,
+  homeStagger,
+} from "@/lib/home-animation-classes";
 import {
   SparklesIcon,
   ArrowTrendingUpIcon,
@@ -69,13 +72,7 @@ export function LevelsSection() {
       <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-orange-500/5 pointer-events-none" />
 
       <div className="container mx-auto px-4 relative">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
+        <div className={`text-center mb-16 ${homeReveal.upSm}`}>
           <Badge variant="secondary" className="mb-4 bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20">
             <SparklesIcon className="w-3.5 h-3.5 mr-1" />
             {t.badge}
@@ -90,54 +87,33 @@ export function LevelsSection() {
             {t.subtitle}
           </p>
           <p className="text-sm text-muted-foreground mt-2">{t.xpRate(xpPerEuro)}</p>
-        </motion.div>
+        </div>
 
         {/* Badge evolution row */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          viewport={{ once: true }}
-          className="mb-16"
-        >
+        <div className={`mb-16 ${homeReveal.up} ${homeStagger(1)}`}>
           <h3 className="text-center text-sm font-medium text-muted-foreground uppercase tracking-wider mb-8">
             {t.tierEvolution}
           </h3>
           <div className="flex flex-wrap items-end justify-center gap-6 sm:gap-10">
             {[0, 1, 2, 3].map((tierIdx, i) => (
-              <motion.div
+              <div
                 key={tierIdx}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: 0.15 + i * 0.1 }}
-                viewport={{ once: true }}
-                className="flex flex-col items-center gap-2"
+                className={`flex flex-col items-center gap-2 ${homeReveal.scale} ${homeStagger(i + 2)}`}
               >
                 <LevelBadge tierIndex={tierIdx} size="lg" />
                 <span className="text-xs text-muted-foreground">{t.tierLabels[i]}</span>
-              </motion.div>
+              </div>
             ))}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.55 }}
-              viewport={{ once: true }}
-              className="flex flex-col items-center gap-2"
-            >
+            <div className={`flex flex-col items-center gap-2 ${homeReveal.scale} ${homeStagger(6)}`}>
               <FragmentBadge size="lg" />
               <span className="text-xs text-muted-foreground">{t.fragmentsTitle}</span>
-            </motion.div>
+            </div>
           </div>
-        </motion.div>
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-8 mb-12">
           {/* Cosmic levels grid */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
+          <div className={homeReveal.left}>
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <ArrowTrendingUpIcon className="w-5 h-5 text-theme-accent" />
               {t.levelsTitle}
@@ -176,15 +152,10 @@ export function LevelsSection() {
                 );
               })}
             </div>
-          </motion.div>
+          </div>
 
           {/* Tier rewards example */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
+          <div className={homeReveal.right}>
             <Card className="h-full border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-orange-500/5">
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
@@ -203,20 +174,14 @@ export function LevelsSection() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center"
-        >
+        <div className={`text-center ${homeReveal.upSm}`}>
           <Button asChild size="lg" variant="cta">
             <Link href="/sell">{t.cta}</Link>
           </Button>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

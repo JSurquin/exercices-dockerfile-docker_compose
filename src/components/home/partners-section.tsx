@@ -1,11 +1,14 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
 import { Heart, Play, Youtube } from 'lucide-react';
 import { useLocale } from '@/components/providers/locale-provider';
 import { getYoutubeThumbnailUrl, getYoutubeWatchUrl } from '@/lib/youtube';
 import { cn } from '@/lib/utils';
+import {
+  homeReveal,
+  homeStagger,
+} from '@/lib/home-animation-classes';
 
 interface PartnerVideo {
   id: string;
@@ -198,13 +201,7 @@ export function PartnersSection() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-theme-accent/5 via-transparent to-transparent" />
 
       <div className="container relative mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="mb-12 text-center"
-        >
+        <div className={`mb-12 text-center ${homeReveal.upSm}`}>
           <div className="mb-4 flex justify-center">
             <Heart className="h-8 w-8 text-orange-500" strokeWidth={1.5} />
           </div>
@@ -220,7 +217,7 @@ export function PartnersSection() {
               {t.contactEmail}
             </a>
           </p>
-        </motion.div>
+        </div>
 
         {isLoading ? (
           <div className="flex justify-center py-12">
@@ -229,13 +226,7 @@ export function PartnersSection() {
         ) : (
           <>
             {videos.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-                className="mb-14"
-              >
+              <div className={`mb-14 ${homeReveal.fade}`}>
                 <div
                   className={cn(
                     'flex gap-5 overflow-x-auto pb-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border',
@@ -248,33 +239,23 @@ export function PartnersSection() {
                   )}
                 >
                   {videos.map((video, index) => (
-                    <motion.div
+                    <div
                       key={video.id}
-                      initial={{ opacity: 0, y: 24 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.08 }}
-                      viewport={{ once: true }}
-                      className="md:w-auto"
+                      className={`md:w-auto ${homeReveal.upMd} ${homeStagger(index)}`}
                     >
                       <VideoCard video={video} />
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             )}
 
             {logos.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-                className="flex flex-wrap items-start justify-center gap-6 md:gap-8"
-              >
+              <div className={`flex flex-wrap items-start justify-center gap-6 md:gap-8 ${homeReveal.upSm}`}>
                 {logos.map((logo) => (
                   <LogoItem key={logo.id} logo={logo} />
                 ))}
-              </motion.div>
+              </div>
             )}
           </>
         )}

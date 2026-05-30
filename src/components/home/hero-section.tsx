@@ -1,7 +1,6 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -14,8 +13,12 @@ import {
   formatCompactCount,
 } from "@/hooks/use-public-stats";
 import { usePlatformSettings } from "@/hooks/use-platform-settings";
-import { motion } from "framer-motion";
-import CountUp from "react-countup";
+import { CssCountUp } from "@/components/ui/css-count-up";
+import {
+  homeDelay,
+  homeEnter,
+  homeHover,
+} from "@/lib/home-animation-classes";
 import {
   CS2Background,
   WeaponGradeIndicator,
@@ -135,7 +138,6 @@ export function HeroSection() {
   const { user } = useAuth();
   const { data: publicStats } = usePublicStats();
   const { data: platformSettings } = usePlatformSettings();
-  const [isVisible, setIsVisible] = useState(false);
 
   // Calculs de la carte démo basés sur les vrais taux
   const demoAk47Cents = 22403;
@@ -148,10 +150,6 @@ export function HeroSection() {
 
   // Précharger les vraies images CS2
   usePreloadCS2Backgrounds();
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
 
   const stats = [
     {
@@ -220,18 +218,9 @@ export function HeroSection() {
       <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-18">
         <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
           {/* Left Column - Hero Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: isVisible ? 1 : 0, x: isVisible ? 0 : -50 }}
-            transition={{ duration: 0.8 }}
-            className="space-y-6 sm:space-y-8"
-          >
+          <div className={`space-y-6 sm:space-y-8 ${homeEnter.left}`}>
             {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
+            <div className={`${homeEnter.up} ${homeDelay[200]}`}>
               <Badge
                 variant="secondary"
                 className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm"
@@ -239,15 +228,10 @@ export function HeroSection() {
                 <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-theme-accent" />
                 {messages.hero.badge}
               </Badge>
-            </motion.div>
+            </div>
 
             {/* Main Title */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="space-y-3 sm:space-y-4 lunar-card px-5 py-4"
-            >
+            <div className={`space-y-3 sm:space-y-4 lunar-card px-5 py-4 ${homeEnter.upLg} ${homeDelay[300]}`}>
               <h1 className="hero-title text-gaming-title text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
                 {messages.hero.title
                   .split(/(CS2|MOONSKIN)/)
@@ -268,15 +252,10 @@ export function HeroSection() {
               <p className="text-base sm:text-lg md:text-xl text-gaming-body text-foreground/70 max-w-lg">
                 {messages.hero.subtitle}
               </p>
-            </motion.div>
+            </div>
 
             {/* Features */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4 lunar-card px-4 py-3"
-            >
+            <div className={`grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4 lunar-card px-4 py-3 ${homeEnter.up} ${homeDelay[500]}`}>
               {features.map((feature, index) => (
                 <div
                   key={index}
@@ -288,15 +267,10 @@ export function HeroSection() {
                   </span>
                 </div>
               ))}
-            </motion.div>
+            </div>
 
             {/* CTA Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full"
-            >
+            <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 w-full ${homeEnter.up} ${homeDelay[600]}`}>
               <Button
                 asChild
                 variant="cta"
@@ -313,15 +287,10 @@ export function HeroSection() {
               >
                 <Link href="#how-it-works">{messages.hero.secondaryCta}</Link>
               </Button>
-            </motion.div>
+            </div>
 
             {/* Payment Methods */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
-              transition={{ duration: 0.6, delay: 0.65 }}
-              className="lunar-card px-4 py-3"
-            >
+            <div className={`lunar-card px-4 py-3 ${homeEnter.up} ${homeDelay[650]}`}>
               <p className="lunar-label mb-2">
                 {messages.hero.paymentMethods.title}
               </p>
@@ -339,21 +308,16 @@ export function HeroSection() {
                   );
                 })}
               </div>
-            </motion.div>
+            </div>
 
             {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
-              className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 pt-6 sm:pt-8 border-t"
-            >
+            <div className={`grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 pt-6 sm:pt-8 border-t ${homeEnter.up} ${homeDelay[700]}`}>
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
                   <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-brand-gradient font-display">
                     {stat.prefix}
-                    <CountUp
-                      end={stat.value}
+                    <CssCountUp
+                      value={stat.value}
                       duration={2}
                       delay={0.5}
                       decimals={stat.decimals}
@@ -365,18 +329,14 @@ export function HeroSection() {
                   </div>
                 </div>
               ))}
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
           {/* Right Column - Visual */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: isVisible ? 1 : 0, x: isVisible ? 0 : 50 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="relative"
-          >
+          <div className={`relative ${homeEnter.right}`}>
             {/* Main Card — 3D glass chrome */}
-            <CardTilt shimmer className="relative mt-6 lg:-mt-48 p-4 sm:p-6 lg:p-8 hero-product">
+            <div className="hero-product relative mt-6 lg:-mt-48">
+            <CardTilt shimmer className="p-4 sm:p-6 lg:p-8">
               {/* Fake Trade Interface */}
               <div className="space-y-3 sm:space-y-4 lg:space-y-6">
                 <div className="flex items-center justify-between">
@@ -393,10 +353,7 @@ export function HeroSection() {
 
                 {/* Skin Items */}
                 <div className="space-y-2 sm:space-y-3">
-                  <motion.div
-                    className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10 hover:border-theme-accent/30 hover:bg-white/[0.07] transition-all duration-300"
-                    whileHover={{ scale: 1.02 }}
-                  >
+                  <div className={`flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10 hover:border-theme-accent/30 hover:bg-white/[0.07] transition-all duration-300 ${homeHover.scale}`}>
                     <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#14141a] shadow-lg ring-1 ring-white/10 sm:h-12 sm:w-12">
                       <Image
                         src={HERO_DEMO_SKIN_IMAGES.ak47RedlineFt}
@@ -431,12 +388,9 @@ export function HeroSection() {
                       </p>
                       <p className="text-xs text-theme-accent">+15% ↗</p>
                     </div>
-                  </motion.div>
+                  </div>
 
-                  <motion.div
-                    className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10 hover:border-theme-accent/30 hover:bg-white/[0.07] transition-all duration-300"
-                    whileHover={{ scale: 1.02 }}
-                  >
+                  <div className={`flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10 hover:border-theme-accent/30 hover:bg-white/[0.07] transition-all duration-300 ${homeHover.scale}`}>
                     <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#14141a] shadow-lg ring-1 ring-white/10 sm:h-12 sm:w-12">
                       <Image
                         src={HERO_DEMO_SKIN_IMAGES.awpDragonLoreFn}
@@ -471,7 +425,7 @@ export function HeroSection() {
                       </p>
                       <p className="text-xs text-theme-accent">+8% ↗</p>
                     </div>
-                  </motion.div>
+                  </div>
                 </div>
 
                 {/* Summary */}
@@ -497,7 +451,8 @@ export function HeroSection() {
                 <CheckCircleIcon className="w-5 h-5 text-white" />
               </div>
             </CardTilt>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </div>
     </CS2HeroBackground>

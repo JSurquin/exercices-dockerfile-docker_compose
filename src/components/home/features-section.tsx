@@ -1,10 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLocale } from '@/components/providers/locale-provider';
+import {
+  homeExpand,
+  homeHover,
+  homeReveal,
+  homeStagger,
+} from '@/lib/home-animation-classes';
 import {
   ShieldCheckIcon,
   CurrencyDollarIcon,
@@ -128,13 +133,7 @@ export function FeaturesSection() {
   const hiddenFeatures = allFeatures.slice(3);
 
   const FeatureCard = ({ feature, index }: { feature: (typeof allFeatures)[0]; index: number }) => (
-    <motion.div
-      key={feature.key}
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      viewport={{ once: true }}
-    >
+    <div className={`${homeReveal.up} ${homeStagger(index)}`}>
       <Card className="lunar-card h-full weapon-card-hover">
         <CardContent className="p-4 sm:p-6">
           <div className="flex items-start justify-between mb-4">
@@ -171,19 +170,13 @@ export function FeaturesSection() {
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 
   return (
     <section className="py-24">
       <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
+        <div className={`text-center mb-16 ${homeReveal.upSm}`}>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             {messages.features.title.split('MoonSkin')[0]}
             <span className="text-chrome-gradient">
@@ -194,7 +187,7 @@ export function FeaturesSection() {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             {messages.features.subtitle}
           </p>
-        </motion.div>
+        </div>
 
         {/* Always-visible 3 features */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -204,13 +197,7 @@ export function FeaturesSection() {
         </div>
 
         {/* Toggle button */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          viewport={{ once: true }}
-          className="flex justify-center mt-10"
-        >
+        <div className={`flex justify-center mt-10 ${homeReveal.upSm}`}>
           <button
             onClick={() => setExpanded(!expanded)}
             className="inline-flex items-center gap-2 lunar-card px-6 py-3 rounded-full text-sm font-medium transition-all hover:scale-105 active:scale-95"
@@ -227,69 +214,35 @@ export function FeaturesSection() {
               </>
             )}
           </button>
-        </motion.div>
+        </div>
 
         {/* Expandable 6 features */}
-        <AnimatePresence>
-          {expanded && (
-            <motion.div
-              key="hidden-features"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.5, ease: 'easeInOut' }}
-              className="overflow-hidden"
-            >
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
-                {hiddenFeatures.map((feature, index) => (
-                  <FeatureCard key={feature.key} feature={feature} index={index} />
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div
+          className={homeExpand.grid}
+          data-open={expanded ? 'true' : 'false'}
+          aria-hidden={!expanded}
+        >
+          <div className="home-expand-grid-inner">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
+              {hiddenFeatures.map((feature, index) => (
+                <FeatureCard key={feature.key} feature={feature} index={index} />
+              ))}
+            </div>
+          </div>
+        </div>
 
         {/* Bottom CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mt-16"
-        >
-          <motion.div
-            whileHover={{ scale: 1.06, y: -3 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className="inline-flex relative group cursor-default"
-          >
-            {/* Neon RGB animated border */}
-            <span
-              className="absolute -inset-[2px] rounded-full opacity-80 blur-[2px] group-hover:opacity-100 group-hover:blur-[3px] transition-all duration-300"
-              style={{
-                background:
-                  "linear-gradient(var(--neon-angle, 0deg), #ff0080, #ff8c00, #ffe000, #00ff88, #00cfff, #a855f7, #ff0080)",
-                animation: "neon-rotate 3s linear infinite",
-              }}
-            />
+        <div className={`text-center mt-16 ${homeReveal.upSm}`}>
+          <div className={`inline-flex relative group cursor-default ${homeHover.lift}`}>
+            <span className="absolute -inset-[2px] rounded-full opacity-80 blur-[2px] group-hover:opacity-100 group-hover:blur-[3px] transition-all duration-300 home-neon-border" />
             <div className="relative inline-flex items-center space-x-2 lunar-card px-6 py-3 rounded-full bg-background/90">
               <ShieldCheckIcon className="w-5 h-5 text-theme-accent" />
               <span className="text-sm font-medium">
                 {messages.features.trustIndicators}
               </span>
             </div>
-          </motion.div>
-        </motion.div>
-
-        <style>{`
-          @property --neon-angle {
-            syntax: "<angle>";
-            initial-value: 0deg;
-            inherits: false;
-          }
-          @keyframes neon-rotate {
-            to { --neon-angle: 360deg; }
-          }
-        `}</style>
+          </div>
+        </div>
       </div>
     </section>
   );

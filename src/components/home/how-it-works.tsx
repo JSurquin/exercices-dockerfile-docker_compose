@@ -1,11 +1,14 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useRouter } from "next/navigation";
+import {
+  homeReveal,
+  homeStagger,
+} from "@/lib/home-animation-classes";
 import {
   LinkIcon,
   CurrencyDollarIcon,
@@ -88,13 +91,7 @@ export function HowItWorks() {
     <section id="how-it-works" className="py-16 sm:py-20 lg:py-24 bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header - Glass Effect */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
+        <div className={`text-center mb-16 ${homeReveal.upSm}`}>
           <div className="lunar-card p-6 sm:p-8 inline-block">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
               {messages.howItWorks.title}
@@ -103,18 +100,14 @@ export function HowItWorks() {
               {messages.howItWorks.subtitle}
             </p>
           </div>
-        </motion.div>
+        </div>
 
         {/* Steps */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-8 mb-12 lg:mb-16">
           {steps.map((step, index) => (
-            <motion.div
+            <div
               key={step.step}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              className="relative"
+              className={`relative ${homeReveal.up} ${homeStagger(index)}`}
             >
               <Card className="lunar-card h-full weapon-card-hover">
                 <CardContent className="p-6 text-center">
@@ -158,18 +151,12 @@ export function HowItWorks() {
                   </div>
                 </div>
               )}
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Benefits */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="grid md:grid-cols-3 gap-8 mb-12"
-        >
+        <div className={`grid md:grid-cols-3 gap-8 mb-12 ${homeReveal.upSm}`}>
           {benefits.map((benefit, index) => (
             <div key={index} className="text-center backdrop-blur-md bg-background/60 border border-white/10 dark:border-white/10 rounded-2xl p-6 hover:bg-background/70 transition-all">
               <div className="mb-4">
@@ -179,16 +166,10 @@ export function HowItWorks() {
               <p className="text-muted-foreground">{benefit.description}</p>
             </div>
           ))}
-        </motion.div>
+        </div>
 
         {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center"
-        >
+        <div className={`text-center ${homeReveal.upSm}`}>
           <div className="backdrop-blur-md bg-background/60 rounded-2xl p-8 border border-white/10 dark:border-white/10">
             <h3 className="text-2xl font-bold mb-4">{messages.howItWorks.cta.title}</h3>
             <p className="text-muted-foreground mb-6">
@@ -204,7 +185,7 @@ export function HowItWorks() {
               </Button>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
