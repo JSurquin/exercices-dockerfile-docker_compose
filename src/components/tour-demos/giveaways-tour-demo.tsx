@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocale } from '@/components/providers/locale-provider';
 import {
   GiftIcon,
-  SparklesIcon,
   ClockIcon,
   UserGroupIcon,
   TrophyIcon,
@@ -80,9 +79,8 @@ export function GiveawaysTourDemo() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="flex items-center justify-end space-x-2 mb-1">
-                    <SparklesIcon className="w-5 h-5 text-amber-500" />
-                    <span className="text-2xl font-bold">340</span>
+                  <div className="flex items-center justify-end gap-2 mb-1">
+                    <FragmentAmount amount={340} size="sm" className="text-2xl font-bold" />
                     <span className="text-muted-foreground">{messages.giveaways.card.fragmentsLabel}</span>
                   </div>
                   <div className="mt-2 space-y-1 text-xs text-left min-w-[180px]">

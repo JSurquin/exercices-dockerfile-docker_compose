@@ -115,7 +115,12 @@ export function MissionsTourDemo() {
             <p className="text-xs text-muted-foreground mb-1">
               {messages.missions?.statsToClaim ?? 'À réclamer'}
             </p>
-            <p className="text-2xl font-bold text-orange-500">+{totalClaimable}</p>
+            <FragmentAmount
+              amount={totalClaimable}
+              prefix="+"
+              size="sm"
+              className="text-2xl font-bold text-orange-500 justify-center"
+            />
           </CardContent>
         </Card>
         <Card>

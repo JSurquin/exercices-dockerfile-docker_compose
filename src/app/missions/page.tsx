@@ -485,7 +485,12 @@ export default function MissionsPage() {
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground mb-1">{t.statsToClaim}</p>
-            <p className="text-2xl font-bold text-orange-500">+{totalClaimable}</p>
+            <FragmentAmount
+              amount={totalClaimable}
+              prefix="+"
+              size="sm"
+              className="text-2xl font-bold text-orange-500 justify-center"
+            />
           </CardContent>
         </Card>
         <Card>
