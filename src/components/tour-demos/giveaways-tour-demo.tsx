@@ -14,6 +14,7 @@ import {
   TrophyIcon,
 } from '@heroicons/react/24/outline';
 import { TourDemoBanner } from './tour-demo-banner';
+import { FragmentAmount, FragmentBadge } from '@/components/ui/level-badge';
 
 const DEMO_GIVEAWAYS = [
   {
@@ -111,7 +112,10 @@ export function GiveawaysTourDemo() {
               <div className="grid sm:grid-cols-3 gap-3 text-sm">
                 <div className="flex items-start gap-2">
                   <span className="text-orange-500 font-bold">1.</span>
-                  <span className="text-muted-foreground">Vendez des skins → gagnez des fragments 💠</span>
+                  <span className="text-muted-foreground inline-flex items-center gap-1 flex-wrap">
+                    Vendez des skins → gagnez des fragments
+                    <FragmentBadge size="xs" />
+                  </span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-orange-500 font-bold">2.</span>
@@ -152,7 +156,10 @@ export function GiveawaysTourDemo() {
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <UserGroupIcon className="w-3 h-3" />{g.participants} participants
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">{g.ticketPrice} 💠 / entrée</p>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                        <FragmentAmount amount={g.ticketPrice} size="xs" className="text-xs" />
+                        <span>/ entrée</span>
+                      </div>
                     </div>
                   </div>
                   <Button size="sm" className="mt-3 w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white" disabled>

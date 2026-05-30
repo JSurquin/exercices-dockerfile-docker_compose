@@ -30,6 +30,7 @@ import {
 import { queryKeys } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
 import { SOCIAL_MISSION_URLS } from '@/lib/moonskin-social';
+import { FragmentAmount, FragmentBadge } from '@/components/ui/level-badge';
 import type { Messages } from '~/utils/types';
 
 const SOCIAL_VISIT_DELAY_MS = 10_000;
@@ -238,8 +239,7 @@ function MissionCard({
 
       <div className="flex items-center gap-3 shrink-0">
         <div className="flex items-center gap-1 text-sm font-bold text-amber-600">
-          <SparklesIcon className="w-4 h-4" />
-          +{mission.rewardFragments}
+          <FragmentAmount amount={mission.rewardFragments} prefix="+" size="xs" />
         </div>
         {mission.completed ? (
           <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800">
@@ -383,20 +383,20 @@ export default function MissionsPage() {
                 duration: 1.5,
                 ease: [0.34, 1.56, 0.64, 1],
               }}
-              className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white rounded-3xl shadow-2xl p-8 backdrop-blur-xl border-4 border-amber-300"
+              className="bg-gradient-to-br from-purple-600/95 via-fuchsia-600/95 to-pink-600/95 text-white rounded-3xl shadow-2xl p-8 backdrop-blur-xl border-4 border-pink-300/60"
             >
               <div className="flex flex-col items-center gap-4">
                 <motion.div
                   animate={{
-                    rotate: [0, 360],
-                    scale: [1, 1.1, 1],
+                    rotate: [0, -8, 8, -8, 0],
+                    scale: [1, 1.15, 1],
                   }}
                   transition={{
-                    rotate: { duration: 2, repeat: Infinity, ease: 'linear' },
-                    scale: { duration: 0.5, repeat: Infinity, repeatType: 'reverse' },
+                    rotate: { duration: 1.2, ease: 'easeInOut' },
+                    scale: { duration: 0.6, repeat: Infinity, repeatType: 'reverse' },
                   }}
                 >
-                  <SparklesIcon className="w-20 h-20" />
+                  <FragmentBadge size="xl" className="drop-shadow-[0_0_24px_rgba(236,72,153,0.6)]" />
                 </motion.div>
                 <div className="text-center">
                   <motion.p
@@ -405,13 +405,16 @@ export default function MissionsPage() {
                   >
                     +{displayFragments}
                   </motion.p>
-                  <p className="text-2xl font-semibold mt-2">{t.celebrationFragments}</p>
+                  <p className="text-2xl font-semibold mt-2 flex items-center justify-center gap-2">
+                    {t.celebrationFragments}
+                    <FragmentBadge size="sm" />
+                  </p>
                   <p className="text-sm opacity-90 mt-1">{t.celebrationComplete}</p>
                 </div>
               </div>
             </motion.div>
 
-            {[...Array(20)].map((_, i) => (
+            {[...Array(16)].map((_, i) => (
               <motion.div
                 key={i}
                 initial={{
@@ -424,7 +427,7 @@ export default function MissionsPage() {
                   opacity: [1, 0],
                   x: Math.random() * 400 - 200,
                   y: Math.random() * 400 - 200,
-                  scale: [1, 0],
+                  scale: [1, 0.3],
                   rotate: Math.random() * 360,
                 }}
                 transition={{
@@ -432,14 +435,14 @@ export default function MissionsPage() {
                   delay: Math.random() * 0.3,
                   ease: 'easeOut',
                 }}
-                className={`absolute w-3 h-3 rounded-full ${
-                  i % 3 === 0 ? 'bg-amber-400' : i % 3 === 1 ? 'bg-orange-400' : 'bg-yellow-300'
-                }`}
+                className="absolute"
                 style={{
                   left: '50%',
                   top: '50%',
                 }}
-              />
+              >
+                <FragmentBadge size="xs" className="opacity-90" />
+              </motion.div>
             ))}
           </motion.div>
         )}
@@ -464,15 +467,19 @@ export default function MissionsPage() {
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground mb-1">{t.statsFragments}</p>
-            <motion.p
+            <motion.div
               key={user.fragments ?? 0}
               initial={{ scale: 1 }}
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 0.3 }}
-              className="text-2xl font-bold text-amber-600"
+              className="flex items-center justify-center"
             >
-              {user.fragments ?? 0} 💠
-            </motion.p>
+              <FragmentAmount
+                amount={user.fragments ?? 0}
+                size="sm"
+                className="text-2xl font-bold text-amber-600"
+              />
+            </motion.div>
           </CardContent>
         </Card>
         <Card>
@@ -529,7 +536,13 @@ export default function MissionsPage() {
                     <div className="flex items-center gap-2">
                       {catClaimable > 0 && (
                         <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 text-xs">
-                          {t.categoryAvailableBadge.replace('{amount}', String(catClaimable))}
+                          <FragmentAmount
+                            amount={catClaimable}
+                            prefix="+"
+                            size="xs"
+                            className="text-xs font-medium"
+                          />
+                          <span className="ml-1">{t.categoryAvailableSuffix}</span>
                         </Badge>
                       )}
                       <span className="text-xs text-muted-foreground font-normal">

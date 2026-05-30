@@ -17,6 +17,7 @@ import {
   LockClosedIcon,
 } from '@heroicons/react/24/outline';
 import { TourDemoBanner } from './tour-demo-banner';
+import { FragmentAmount, FragmentBadge } from '@/components/ui/level-badge';
 import Link from 'next/link';
 
 const DEMO_CATEGORIES = [
@@ -106,7 +107,7 @@ export function MissionsTourDemo() {
             <p className="text-xs text-muted-foreground mb-1">
               {messages.missions?.statsFragments ?? 'Fragments accumulés'}
             </p>
-            <p className="text-2xl font-bold text-amber-600">340 💠</p>
+            <FragmentAmount amount={340} size="sm" className="text-2xl font-bold text-amber-600 justify-center" />
           </CardContent>
         </Card>
         <Card>
@@ -187,7 +188,7 @@ export function MissionsTourDemo() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <Badge variant="outline" className="text-amber-600 border-amber-500/30 text-xs">
-                        +{m.reward} 💠
+                        <FragmentAmount amount={m.reward} prefix="+" size="xs" className="text-xs" />
                       </Badge>
                       {m.eligible && !m.completed && (
                         <Button size="sm" className="h-7 text-xs bg-orange-500 hover:bg-orange-600" disabled>

@@ -56,3 +56,27 @@ export function FragmentBadge({
     />
   );
 }
+
+interface FragmentAmountProps {
+  amount: number | string;
+  size?: keyof typeof SIZE_CLASSES;
+  className?: string;
+  prefix?: string;
+  showBadge?: boolean;
+}
+
+export function FragmentAmount({
+  amount,
+  size = "xs",
+  className,
+  prefix = "",
+  showBadge = true,
+}: FragmentAmountProps) {
+  return (
+    <span className={cn("inline-flex items-center gap-1", className)}>
+      {prefix}
+      <span>{amount}</span>
+      {showBadge && <FragmentBadge size={size} className="shrink-0" />}
+    </span>
+  );
+}

@@ -41,6 +41,7 @@ import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { UserRoleBadge } from "@/components/ui/user-role-badge";
+import { FragmentAmount } from "@/components/ui/level-badge";
 
 export function Header() {
   const { user, loginWithSteam, loginWithDiscord, logout, isLoading } = useAuth();
@@ -208,8 +209,11 @@ export function Header() {
                 href="/missions"
                 className="hidden sm:flex items-center gap-1 rounded-full border border-amber-300/60 dark:border-amber-700/60 bg-amber-50/80 dark:bg-amber-950/40 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors"
               >
-                <SparklesIcon className="w-3.5 h-3.5" />
-                {(user as unknown as { fragments?: number })?.fragments ?? 0} 💠
+                <FragmentAmount
+                  amount={(user as unknown as { fragments?: number })?.fragments ?? 0}
+                  size="xs"
+                  className="text-xs font-semibold"
+                />
               </Link>
 
               {/* Notifications */}

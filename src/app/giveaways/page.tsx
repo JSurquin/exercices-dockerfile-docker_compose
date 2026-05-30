@@ -20,6 +20,7 @@ import { Messages } from '~/utils/types';
 import { useGiveaways, GiveawayWithEntries } from '@/hooks/use-giveaways';
 import { GiveawayNotifications } from '@/components/giveaway/giveaway-notifications';
 import { SafeImage } from '@/components/ui/safe-image';
+import { FragmentAmount, FragmentBadge } from '@/components/ui/level-badge';
 import {
   GiftIcon,
   TicketIcon,
@@ -31,7 +32,6 @@ import {
   CurrencyDollarIcon,
   LockClosedIcon,
   BellAlertIcon,
-  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -154,10 +154,8 @@ const GiveawayCard = ({
 
         <div className="rounded-lg border bg-muted/30 p-3 text-sm space-y-1.5">
           <div className="flex items-center gap-2">
-            <SparklesIcon className="w-4 h-4 text-amber-500 shrink-0" />
-            <span>
-              {giveaway.ticketPrice} {fg.costPerEntry}
-            </span>
+            <FragmentAmount amount={giveaway.ticketPrice} size="xs" />
+            <span>{fg.costPerEntry}</span>
           </div>
           <div className="flex items-center gap-2">
             <UserGroupIcon className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -226,8 +224,10 @@ const GiveawayCard = ({
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <SparklesIcon className="w-3.5 h-3.5 text-amber-500" />
-                    {userFragments} / {giveaway.ticketPrice} {messages.giveaways.card.fragmentsLabel}
+                    <FragmentAmount amount={userFragments} size="xs" />
+                    <span>/</span>
+                    <FragmentAmount amount={giveaway.ticketPrice} size="xs" />
+                    <span>{messages.giveaways.card.fragmentsLabel}</span>
                   </span>
                   <span className="text-amber-500 font-medium">
                     {messages.giveaways.card.fragmentsRemaining.replace('{count}', String(giveaway.ticketPrice - userFragments))}
@@ -439,10 +439,14 @@ export default function GiveawaysPage() {
                       {messages.giveawaysPage.keepAccumulatingDescription}
                     </p>
                     {user && (
-                      <div className="mt-3 flex items-center space-x-2">
-                        <SparklesIcon className="w-4 h-4 text-amber-500" />
-                        <span className="font-bold text-amber-700 dark:text-amber-300">
-                          {user.fragments ?? 0} {messages.giveaways.card.fragmentsLabel}
+                      <div className="mt-3">
+                        <FragmentAmount
+                          amount={user.fragments ?? 0}
+                          size="xs"
+                          className="font-bold text-amber-700 dark:text-amber-300"
+                        />
+                        <span className="ml-1 text-sm text-amber-700 dark:text-amber-300">
+                          {messages.giveaways.card.fragmentsLabel}
                         </span>
                       </div>
                     )}
@@ -524,9 +528,8 @@ export default function GiveawaysPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="flex items-center justify-end space-x-2 mb-1">
-                      <SparklesIcon className="w-5 h-5 text-amber-500" />
-                      <span className="text-2xl font-bold">{userFragments}</span>
+                    <div className="flex items-center justify-end gap-2 mb-1">
+                      <FragmentAmount amount={userFragments} size="sm" className="text-2xl font-bold" />
                       <span className="text-muted-foreground">{messages.giveaways.card.fragmentsLabel}</span>
                     </div>
                     {/* Progression vers le prochain giveaway actif le moins cher */}

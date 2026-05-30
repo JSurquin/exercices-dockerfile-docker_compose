@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLocale } from '@/components/providers/locale-provider';
 import { useAuth } from '@/components/providers/auth-provider';
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
+import { FragmentAmount, FragmentBadge } from '@/components/ui/level-badge';
 import { toast } from 'sonner';
 import {
   GiftIcon,
@@ -25,7 +26,6 @@ import {
   CalendarIcon,
   ArrowLeftIcon,
   CheckCircleIcon,
-  SparklesIcon,
   ChartBarIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
@@ -248,9 +248,9 @@ export default function GiveawayDetailsPage() {
                 {/* Stats rapides */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
                   <div className="text-center p-3 bg-muted rounded-lg">
-                    <SparklesIcon className="w-5 h-5 mx-auto mb-1 text-amber-500" />
+                    <FragmentBadge size="sm" className="mx-auto mb-1" />
                     <p className="text-xs text-muted-foreground">{messages.giveawaysPage.detail.ticketPrice}</p>
-                    <p className="font-bold">{giveaway.ticketPrice} 💠</p>
+                    <FragmentAmount amount={giveaway.ticketPrice} size="xs" className="font-bold justify-center" />
                   </div>
                   <div className="text-center p-3 bg-muted rounded-lg">
                     <UserGroupIcon className="w-5 h-5 mx-auto mb-1 text-blue-500" />
@@ -315,7 +315,7 @@ export default function GiveawayDetailsPage() {
                     </div>
                     <div className="text-center p-3 bg-muted rounded-lg">
                       <p className="text-xs text-muted-foreground mb-1">{messages.giveawaysPage.detail.myFragments}</p>
-                      <p className="text-xl font-bold">{fragments} 💠</p>
+                      <FragmentAmount amount={fragments} size="sm" className="text-xl font-bold justify-center" />
                     </div>
                   </div>
 
@@ -337,8 +337,8 @@ export default function GiveawayDetailsPage() {
                             {messages.giveawaysPage.detail.sellSkinsHint}
                           </p>
                           <Link href="/missions">
-                            <Button variant="outline" size="sm" className="w-full text-xs">
-                              <SparklesIcon className="w-3.5 h-3.5 mr-1.5" />
+                            <Button variant="outline" size="sm" className="w-full text-xs gap-1.5">
+                              <FragmentBadge size="xs" />
                               {messages.giveawaysPage.detail.viewMissions}
                             </Button>
                           </Link>
@@ -375,9 +375,16 @@ export default function GiveawayDetailsPage() {
                                 entriesToBuy > poolLeft ||
                                 entriesToBuy > maxPerUser
                               }
-                              className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shrink-0"
+                              className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shrink-0 gap-2"
                             >
-                              {participateMutation.isPending ? messages.giveawaysPage.detail.participating : messages.giveawaysPage.detail.participateWithCost.replace('{cost}', String(totalCost))}
+                              {participateMutation.isPending ? (
+                                messages.giveawaysPage.detail.participating
+                              ) : (
+                                <>
+                                  {messages.giveawaysPage.detail.participateWithCost}
+                                  <FragmentAmount amount={totalCost} size="xs" className="text-white" />
+                                </>
+                              )}
                             </Button>
                           </div>
 
@@ -420,8 +427,9 @@ export default function GiveawayDetailsPage() {
                 <CardContent className="p-6 text-center">
                   <GiftIcon className="w-12 h-12 mx-auto mb-3 text-orange-500" />
                   <p className="font-medium mb-1">{messages.giveawaysPage.detail.loginToParticipate}</p>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {messages.giveawaysPage.detail.costPerEntry.replace('{price}', String(giveaway.ticketPrice))}
+                  <p className="text-sm text-muted-foreground mb-4 flex items-center justify-center gap-2">
+                    <FragmentAmount amount={giveaway.ticketPrice} size="xs" />
+                    <span>{messages.giveawaysPage.detail.costPerEntry}</span>
                   </p>
                   <Link href="/">
                     <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">

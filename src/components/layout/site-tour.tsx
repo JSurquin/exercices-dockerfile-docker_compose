@@ -66,9 +66,9 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('🎁 Concours', '🎁 Giveaways', '🎁 抽奖活动'),
         description: t(
-          'Participez aux concours avec vos <strong>fragments</strong> (💠) gagnés lors de vos ventes. Plus vous vendez, plus vous accumulez de fragments pour tenter de gagner des skins, du cash ou des items exclusifs.',
-          'Enter giveaways with your <strong>fragments</strong> (💠) earned from your sales. The more you sell, the more fragments you collect to win skins, cash or exclusive items.',
-          '使用出售赚取的<strong>碎片</strong>（💠）参与抽奖。销售越多，积累的碎片越多，赢取皮肤、现金或专属物品的机会越大。'
+          'Participez aux concours avec vos <strong>fragments</strong> gagnés lors de vos ventes. Plus vous vendez, plus vous accumulez de fragments pour tenter de gagner des skins, du cash ou des items exclusifs.',
+          'Enter giveaways with your <strong>fragments</strong> earned from your sales. The more you sell, the more fragments you collect to win skins, cash or exclusive items.',
+          '使用出售赚取的<strong>碎片</strong>参与抽奖。销售越多，积累的碎片越多，赢取皮肤、现金或专属物品的机会越大。'
         ),
         side: 'bottom',
       },
@@ -216,9 +216,9 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('🎁 Page des concours', '🎁 Giveaways Page', '🎁 抽奖页面'),
         description: t(
-          'Bienvenue dans la section concours. Les <strong>fragments</strong> (💠) que vous avez accumulés en vendant servent de monnaie pour participer. Plus vous en misez, plus vos chances de gagner augmentent.',
-          'Welcome to the giveaways section. The <strong>fragments</strong> (💠) you accumulated by selling serve as currency to participate. The more you stake, the higher your chances of winning.',
-          '欢迎来到抽奖区。您通过出售积累的<strong>碎片</strong>（💠）作为参与货币。押注越多，赢的机会越大。'
+          'Bienvenue dans la section concours. Les <strong>fragments</strong> que vous avez accumulés en vendant servent de monnaie pour participer. Plus vous en misez, plus vos chances de gagner augmentent.',
+          'Welcome to the giveaways section. The <strong>fragments</strong> you accumulated by selling serve as currency to participate. The more you stake, the higher your chances of winning.',
+          '欢迎来到抽奖区。您通过出售积累的<strong>碎片</strong>作为参与货币。押注越多，赢的机会越大。'
         ),
         align: 'center',
       },
@@ -226,7 +226,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="giveaways-fragments"]',
       popover: {
-        title: t('💠 Votre solde de fragments', '💠 Your Fragment Balance', '💠 您的碎片余额'),
+        title: t('Votre solde de fragments', 'Your Fragment Balance', '您的碎片余额'),
         description: t(
           'Cette carte affiche votre <strong>solde de fragments</strong> et votre progression vers le prochain concours accessible. Les fragments ne sont <strong>pas transférables</strong> et ne servent qu\'ici.',
           'This card displays your <strong>fragment balance</strong> and your progress toward the next accessible giveaway. Fragments are <strong>not transferable</strong> and are only used here.',
@@ -278,9 +278,9 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('📊 Vos compteurs', '📊 Your counters', '📊 您的计数器'),
         description: t(
-          'Trois chiffres essentiels : <strong>fragments accumulés</strong> (💠), <strong>fragments à réclamer</strong> (missions complétées en attente de validation) et <strong>missions terminées</strong>. Cliquez sur "Réclamer" pour encaisser chaque récompense.',
-          'Three key numbers: <strong>accumulated fragments</strong> (💠), <strong>fragments to claim</strong> (completed missions pending validation) and <strong>completed missions</strong>. Click "Claim" to collect each reward.',
-          '三个关键数字：<strong>累积碎片</strong>（💠）、<strong>待领取碎片</strong>（已完成但待验证的任务）和<strong>已完成任务</strong>。点击"领取"收集每个奖励。'
+          'Trois chiffres essentiels : <strong>fragments accumulés</strong>, <strong>fragments à réclamer</strong> (missions complétées en attente de validation) et <strong>missions terminées</strong>. Cliquez sur "Réclamer" pour encaisser chaque récompense.',
+          'Three key numbers: <strong>accumulated fragments</strong>, <strong>fragments to claim</strong> (completed missions pending validation) and <strong>completed missions</strong>. Click "Claim" to collect each reward.',
+          '三个关键数字：<strong>累积碎片</strong>、<strong>待领取碎片</strong>（已完成但待验证的任务）和<strong>已完成任务</strong>。点击"领取"收集每个奖励。'
         ),
         side: 'bottom',
       },

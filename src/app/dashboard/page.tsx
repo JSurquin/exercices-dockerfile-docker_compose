@@ -61,7 +61,7 @@ import { formatCentsToCurrency } from "@/lib/currency-converter";
 import { ConvertedPrice } from "@/components/ui/converted-price";
 import { getLevelInfo, getLevelName, LEVELS } from "@/lib/level-system";
 import { LevelHelpPopover } from "@/components/ui/level-help-popover";
-import { LevelBadge } from "@/components/ui/level-badge";
+import { LevelBadge, FragmentBadge } from "@/components/ui/level-badge";
 import { LevelProgressBar } from "@/components/ui/level-progress-bar";
 
 const formatPrice = (centimes: number) => {
@@ -759,15 +759,16 @@ export default function DashboardPage() {
                     initial={{ scale: 1 }}
                     animate={{ scale: [1, 1.15, 1] }}
                     transition={{ duration: 0.4 }}
-                    className="text-2xl font-bold text-amber-600"
+                    className="text-2xl font-bold text-amber-600 flex items-center gap-2"
                   >
                     {(user as unknown as { fragments?: number })?.fragments ?? 0}
+                    <FragmentBadge size="sm" />
                   </motion.p>
                   <Link href="/missions" className="text-xs text-orange-500 hover:underline">
                     {messages.dashboard.viewMissions}
                   </Link>
                 </div>
-                <SparklesIcon className="w-8 h-8 text-amber-500" />
+                <FragmentBadge size="md" />
               </div>
             </CardContent>
           </Card>

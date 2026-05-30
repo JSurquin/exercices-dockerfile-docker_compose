@@ -11,7 +11,6 @@ import {
   TrophyIcon,
   StarIcon,
   BanknotesIcon,
-  SparklesIcon,
   GiftIcon,
   ArrowTrendingUpIcon,
 } from '@heroicons/react/24/outline';
@@ -24,6 +23,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { TourDemoBanner } from './tour-demo-banner';
+import { FragmentAmount, FragmentBadge } from '@/components/ui/level-badge';
 
 const BALANCE_HISTORY = [
   { date: '20/04', solde: 42 },
@@ -179,9 +179,9 @@ export function DashboardTourDemo() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{messages.dashboard.fragmentsLabel}</p>
-                  <p className="text-2xl font-bold text-amber-600">340 💠</p>
+                  <FragmentAmount amount={340} size="sm" className="text-2xl font-bold text-amber-600" />
                 </div>
-                <SparklesIcon className="w-8 h-8 text-amber-500" />
+                <FragmentBadge size="md" />
               </div>
             </CardContent>
           </Card>

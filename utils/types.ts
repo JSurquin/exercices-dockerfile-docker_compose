@@ -3539,7 +3539,7 @@ export interface Messages {
     socialConfirm: string;
     socialWaiting: string;
     notAvailable: string;
-    categoryAvailableBadge: string;
+    categoryAvailableSuffix: string;
     celebrationFragments: string;
     celebrationComplete: string;
     toastEarnedTitle: string;
