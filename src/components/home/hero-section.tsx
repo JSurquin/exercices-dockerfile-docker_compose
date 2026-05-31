@@ -439,8 +439,10 @@ export function HeroSection() {
                   </div>
                 </div>
 
-                <Button variant="cta" className="w-full">
-                  {messages.trade.confirm}
+                <Button variant="cta" className="w-full" asChild>
+                  <Link href={user ? "/sell" : "/login"}>
+                    {messages.trade.confirm}
+                  </Link>
                 </Button>
               </div>
 
