@@ -27,18 +27,19 @@ const RatingStars = ({ rating }: { rating: number }) => {
   );
 };
 
-function CsgoRepLink({ className }: { className?: string }) {
+function CsgoRepLink({ size = 'default' }: { size?: 'default' | 'large' }) {
   const { messages } = useLocale();
+  const innerPadding = size === 'large' ? 'px-6 py-3' : 'px-5 py-2.5';
 
   return (
     <a
       href="https://csgo-rep.com/profile/76561199040420116"
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex relative group ${homeHover.lift} ${className ?? ''}`}
+      className={`inline-flex relative group ${homeHover.lift}`}
     >
       <span className="absolute -inset-[2px] rounded-full opacity-80 blur-[2px] group-hover:opacity-100 group-hover:blur-[3px] transition-all duration-300 home-neon-border" />
-      <span className="relative inline-flex items-center space-x-2 lunar-card px-5 py-2.5 rounded-full bg-background/90 text-sm font-semibold">
+      <span className={`relative inline-flex items-center space-x-2 lunar-card ${innerPadding} rounded-full bg-background/90 text-sm font-semibold`}>
         <svg className="w-4 h-4 text-orange-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
         </svg>
@@ -179,7 +180,7 @@ export function TestimonialsSection() {
 
         {/* CSGO-Rep Link */}
         <div className={`text-center mt-10 ${homeReveal.upSm}`}>
-          <CsgoRepLink className="px-6 py-3" />
+          <CsgoRepLink size="large" />
         </div>
 
         {/* Trust Indicators */}
