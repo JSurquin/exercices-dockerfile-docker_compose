@@ -13,7 +13,6 @@ import {
   formatCompactCount,
 } from "@/hooks/use-public-stats";
 import { usePlatformSettings } from "@/hooks/use-platform-settings";
-import { CssCountUp } from "@/components/ui/css-count-up";
 import {
   homeDelay,
   homeEnter,
@@ -315,14 +314,12 @@ export function HeroSection() {
             <div className={`grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 pt-6 sm:pt-8 border-t ${homeEnter.up} ${homeDelay[700]}`}>
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
-                  <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-brand-gradient font-display">
+                  <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-brand-gradient font-display tabular-nums">
                     {stat.prefix}
-                    <CssCountUp
-                      value={stat.value}
-                      duration={2}
-                      delay={0.5}
-                      decimals={stat.decimals}
-                    />
+                    {stat.value.toLocaleString(undefined, {
+                      minimumFractionDigits: stat.decimals,
+                      maximumFractionDigits: stat.decimals,
+                    })}
                     {stat.suffix}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground">
