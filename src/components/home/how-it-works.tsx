@@ -147,8 +147,8 @@ export function HowItWorks() {
               {index < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2">
                   <div className="w-8 h-8 flex items-center justify-center">
-                    <div className="w-6 h-0.5 bg-gradient-to-r from-orange-500 to-red-600 relative">
-                      <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-orange-600 border-t-2 border-b-2 border-t-transparent border-b-transparent" />
+                    <div className="w-6 h-0.5 bg-gradient-to-r from-theme-accent/80 to-theme-accent relative">
+                      <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-theme-accent border-t-2 border-b-2 border-t-transparent border-b-transparent" />
                     </div>
                   </div>
                 </div>
@@ -158,15 +158,22 @@ export function HowItWorks() {
         </div>
 
         {/* Benefits */}
-        <div className={`grid md:grid-cols-3 gap-8 mb-12 ${homeReveal.upSm}`}>
+        <div className={`grid md:grid-cols-3 gap-6 lg:gap-8 mb-12 ${homeReveal.upSm}`}>
           {benefits.map((benefit, index) => (
-            <div key={index} className="text-center backdrop-blur-md bg-background/60 border border-white/10 dark:border-white/10 rounded-2xl p-6 hover:bg-background/70 transition-all">
-              <div className="mb-4">
-                <benefit.icon className="w-12 h-12 mx-auto text-orange-600" />
-              </div>
-              <h3 className="font-semibold mb-2">{benefit.title}</h3>
-              <p className="text-muted-foreground">{benefit.description}</p>
-            </div>
+            <Card
+              key={index}
+              className={`lunar-card h-full weapon-card-hover ${homeReveal.up} ${homeStagger(index)}`}
+            >
+              <CardContent className="p-6 text-center">
+                <div className="mb-4 flex justify-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-theme-accent/30 bg-gradient-to-br from-white/10 to-theme-accent/10 ring-2 ring-theme-accent/15">
+                    <benefit.icon className="w-8 h-8 text-theme-accent" />
+                  </div>
+                </div>
+                <h3 className="font-semibold mb-2">{benefit.title}</h3>
+                <p className="text-muted-foreground text-sm">{benefit.description}</p>
+              </CardContent>
+            </Card>
           ))}
         </div>
 

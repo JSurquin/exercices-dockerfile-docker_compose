@@ -193,7 +193,8 @@ export const messages: Record<Locale, Messages> = {
         },
         transparent: {
           title: "Frais transparents",
-          description: "Seulement {rate}% de frais de cashout, pas de frais cachés."
+          description:
+            "Aucun frais sur la vente de vos skins. Les frais de cashout varient selon le moyen de paiement choisi — une estimation est disponible directement sur le site avant confirmation."
         }
       },
       cta: {
@@ -7355,7 +7356,8 @@ export const messages: Record<Locale, Messages> = {
         },
         transparent: {
           title: "Transparent fees",
-          description: "Only {rate}% cashout fees, no hidden costs."
+          description:
+            "No fees on selling your skins. Cashout fees vary by payment method — an estimate is shown on the site before you confirm."
         }
       },
       cta: {
@@ -14516,7 +14518,8 @@ export const messages: Record<Locale, Messages> = {
         },
         transparent: {
           title: "透明费用",
-          description: "仅收取{rate}%提现费，无隐藏费用。"
+          description:
+            "出售皮肤无手续费。提现费用因支付方式而异——确认前可在网站上查看预估费用。"
         }
       },
       cta: {
