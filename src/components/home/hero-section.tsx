@@ -28,6 +28,7 @@ import {
   usePreloadCS2Backgrounds,
 } from "@/components/ui/cs2-header-background";
 import { CardTilt } from "@/components/ui/card-tilt";
+import { SectionBottomFade } from "@/components/home/section-bottom-fade";
 import {
   ShieldCheckIcon,
   ClockIcon,
@@ -213,9 +214,9 @@ export function HeroSection() {
     <CS2HeroBackground className="relative overflow-hidden">
       {/* CS2 Background Pattern Overlay pour plus de texture */}
       <CS2Background className="opacity-20" />
+      <SectionBottomFade to="muted" />
 
-
-      <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-18">
+      <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-18">
         <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
           {/* Left Column - Hero Content */}
           <div className={`space-y-6 sm:space-y-8 ${homeEnter.left}`}>

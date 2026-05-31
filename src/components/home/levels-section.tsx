@@ -21,6 +21,7 @@ import {
   ArrowTrendingUpIcon,
   GiftIcon,
 } from "@heroicons/react/24/outline";
+import { SectionBottomFade } from "@/components/home/section-bottom-fade";
 
 const COPY = {
   fr: {
@@ -70,8 +71,9 @@ export function LevelsSection() {
   return (
     <section className="py-24 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-orange-500/5 pointer-events-none" />
+      <SectionBottomFade to="background" />
 
-      <div className="container mx-auto px-4 relative">
+      <div className="container mx-auto px-4 relative z-10">
         <div className={`text-center mb-16 ${homeReveal.upSm}`}>
           <Badge variant="secondary" className="mb-4 bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20">
             <SparklesIcon className="w-3.5 h-3.5 mr-1" />

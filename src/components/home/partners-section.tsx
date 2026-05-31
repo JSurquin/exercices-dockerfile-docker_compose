@@ -9,6 +9,7 @@ import {
   homeReveal,
   homeStagger,
 } from '@/lib/home-animation-classes';
+import { SectionBottomFade } from '@/components/home/section-bottom-fade';
 
 interface PartnerVideo {
   id: string;
@@ -199,8 +200,9 @@ export function PartnersSection() {
       className="relative overflow-hidden bg-muted/30 py-20"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-theme-accent/5 via-transparent to-transparent" />
+      <SectionBottomFade to="background" />
 
-      <div className="container relative mx-auto px-4">
+      <div className="container relative z-10 mx-auto px-4">
         <div className={`mb-12 text-center ${homeReveal.upSm}`}>
           <div className="mb-4 flex justify-center">
             <Heart className="h-8 w-8 text-orange-500" strokeWidth={1.5} />

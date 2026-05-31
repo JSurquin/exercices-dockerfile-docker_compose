@@ -11,6 +11,7 @@ import {
   homeReveal,
   homeStagger,
 } from '@/lib/home-animation-classes';
+import { SectionBottomFade } from '@/components/home/section-bottom-fade';
 
 const RatingStars = ({ rating }: { rating: number }) => {
   return (
@@ -90,8 +91,9 @@ export function TestimonialsSection() {
   }));
 
   return (
-    <section className="py-24 bg-muted/30">
-      <div className="container mx-auto px-4">
+    <section className="relative py-24 bg-muted/30">
+      <SectionBottomFade to="muted" />
+      <div className="relative z-10 container mx-auto px-4">
         {/* Section Header */}
         <div className={`text-center mb-16 ${homeReveal.upSm}`}>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">

@@ -23,6 +23,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from '@heroicons/react/24/outline';
+import { SectionBottomFade } from '@/components/home/section-bottom-fade';
 
 const badgeVariantMap: Record<string, string> = {
   'certified': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
@@ -174,8 +175,9 @@ export function FeaturesSection() {
   );
 
   return (
-    <section className="py-24">
-      <div className="container mx-auto px-4">
+    <section className="relative py-24">
+      <SectionBottomFade to="muted" />
+      <div className="relative z-10 container mx-auto px-4">
         <div className={`text-center mb-16 ${homeReveal.upSm}`}>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             {messages.features.title.split('MoonSkin')[0]}

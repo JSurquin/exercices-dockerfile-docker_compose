@@ -366,6 +366,15 @@ body.next-dev-overlay-present #sentry-feedback {
   color-scheme: dark;
 }
 
+/* Home: effective bg of Tailwind `bg-muted/30` for section transitions */
+:root,
+.moonskin,
+.cs2,
+.light,
+.dark {
+  --home-section-muted: color-mix(in srgb, var(--muted) 30%, var(--background) 70%);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

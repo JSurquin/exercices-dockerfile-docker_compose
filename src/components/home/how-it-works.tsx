@@ -17,6 +17,7 @@ import {
   ShieldCheckIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
+import { SectionBottomFade } from "@/components/home/section-bottom-fade";
 
 export function HowItWorks() {
   const { messages } = useLocale();
@@ -88,8 +89,9 @@ export function HowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" className="py-16 sm:py-20 lg:py-24 bg-muted/30">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="how-it-works" className="relative py-16 sm:py-20 lg:py-24 bg-muted/30">
+      <SectionBottomFade to="background" />
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header - Glass Effect */}
         <div className={`text-center mb-16 ${homeReveal.upSm}`}>
           <div className="lunar-card p-6 sm:p-8 inline-block">
