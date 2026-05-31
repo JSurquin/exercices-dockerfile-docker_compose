@@ -14,15 +14,19 @@ const SIZE_CLASSES = {
 interface LevelBadgeProps {
   tierIndex: number;
   size?: keyof typeof SIZE_CLASSES;
+  pixelSize?: number;
   className?: string;
   alt?: string;
+  style?: React.CSSProperties;
 }
 
 export function LevelBadge({
   tierIndex,
   size = "md",
+  pixelSize,
   className,
   alt,
+  style,
 }: LevelBadgeProps) {
   const src = getTierBadgeSrc(tierIndex);
 
@@ -30,7 +34,16 @@ export function LevelBadge({
     <img
       src={src}
       alt={alt ?? `Tier ${tierIndex + 1}`}
-      className={cn("object-contain drop-shadow-[0_0_12px_rgba(168,85,247,0.35)]", SIZE_CLASSES[size], className)}
+      className={cn(
+        "object-contain drop-shadow-[0_0_12px_rgba(168,85,247,0.35)]",
+        pixelSize == null && SIZE_CLASSES[size],
+        className
+      )}
+      style={
+        pixelSize != null
+          ? { width: pixelSize, height: pixelSize, ...style }
+          : style
+      }
       draggable={false}
     />
   );
