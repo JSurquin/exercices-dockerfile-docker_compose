@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { CardTilt } from "@/components/ui/card-tilt";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useRouter } from "next/navigation";
@@ -160,20 +161,21 @@ export function HowItWorks() {
         {/* Benefits */}
         <div className={`grid md:grid-cols-3 gap-6 lg:gap-8 mb-12 ${homeReveal.upSm}`}>
           {benefits.map((benefit, index) => (
-            <Card
+            <CardTilt
               key={index}
-              className={`lunar-card h-full weapon-card-hover ${homeReveal.up} ${homeStagger(index)}`}
+              shimmer
+              className={`h-full weapon-card-hover ${homeReveal.up} ${homeStagger(index)}`}
             >
-              <CardContent className="p-6 text-center">
+              <div className="p-6 text-center">
                 <div className="mb-4 flex justify-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-theme-accent/30 bg-gradient-to-br from-white/10 to-theme-accent/10 ring-2 ring-theme-accent/15">
+                  <div className="how-it-works-benefit-icon flex h-14 w-14 items-center justify-center rounded-full border border-theme-accent/30 bg-gradient-to-br from-white/10 to-theme-accent/10 ring-2 ring-theme-accent/15">
                     <benefit.icon className="w-8 h-8 text-theme-accent" />
                   </div>
                 </div>
                 <h3 className="font-semibold mb-2">{benefit.title}</h3>
                 <p className="text-muted-foreground text-sm">{benefit.description}</p>
-              </CardContent>
-            </Card>
+              </div>
+            </CardTilt>
           ))}
         </div>
 

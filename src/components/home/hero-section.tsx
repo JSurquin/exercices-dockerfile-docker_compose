@@ -184,7 +184,7 @@ export function HeroSection() {
     {
       icon: CurrencyDollarIcon,
       title: messages.hero.features.transparent,
-      description: messages.hero.features.transparentDesc.replace('{rate}', ((platformSettings?.cashoutFeeRate ?? 0.005) * 100).toFixed(1)),
+      description: messages.hero.features.transparentDesc,
     },
   ];
 

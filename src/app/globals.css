@@ -1104,6 +1104,22 @@ body.next-dev-overlay-present #sentry-feedback {
   .moonskin .bg-theme-accent { background-color: #7eb3e8; }
   .moonskin .border-theme-accent { border-color: #7eb3e8; }
 
+  /* How it works — benefit icons (moonskin chrome blue) */
+  .moonskin .how-it-works-benefit-icon {
+    border-color: rgba(126, 179, 232, 0.35);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(126, 179, 232, 0.12) 100%
+    );
+    --tw-ring-color: rgba(126, 179, 232, 0.2);
+    box-shadow: 0 0 0 2px rgba(126, 179, 232, 0.15);
+  }
+
+  .moonskin .how-it-works-benefit-icon svg {
+    color: #7eb3e8;
+  }
+
   /* CS2 + Light accent */
   .cs2 .bg-theme-accent\/10,
   .light .bg-theme-accent\/10 { background-color: rgba(249, 115, 22, 0.1); }

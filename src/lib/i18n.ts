@@ -48,7 +48,8 @@ export const messages: Record<Locale, Messages> = {
       transparent: "Frais transparents",
       instantDesc: "Prix en temps réel via notre API intégrée",
       secureDesc: "SEPA, crypto, et KYC obligatoire pour votre sécurité",
-      transparentDesc: "Seulement {rate}% de frais de cashout, pas de frais cachés",
+      transparentDesc:
+        "Aucun frais sur la vente de vos skins. Les frais de cashout varient selon le moyen de paiement choisi — une estimation est disponible directement sur le site avant confirmation.",
     },
       stats: {
         users: "Utilisateurs actifs",
@@ -7211,7 +7212,8 @@ export const messages: Record<Locale, Messages> = {
         transparent: "Transparent fees",
         instantDesc: "Real-time pricing via our integrated API",
         secureDesc: "SEPA, crypto, and mandatory KYC for your security",
-        transparentDesc: "Only {rate}% cashout fees, no hidden costs",
+        transparentDesc:
+          "No fees on selling your skins. Cashout fees vary by payment method — an estimate is shown on the site before you confirm.",
       },
       stats: {
         users: "Active users",
@@ -14373,7 +14375,8 @@ export const messages: Record<Locale, Messages> = {
         transparent: "透明费用",
         instantDesc: "通过我们集成的 API 实时定价",
         secureDesc: "SEPA、加密货币和强制KYC保障您的安全",
-        transparentDesc: "仅收取{rate}%提现费，无隐藏费用",
+        transparentDesc:
+          "出售皮肤无手续费。提现费用因支付方式而异——确认前可在网站上查看预估费用。",
       },
       stats: {
         users: "活跃用户",
