@@ -1,11 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CardTilt } from "@/components/ui/card-tilt";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 import {
   homeReveal,
   homeStagger,
@@ -20,10 +21,71 @@ import {
 } from "@heroicons/react/24/outline";
 import { SectionBottomFade } from "@/components/home/section-bottom-fade";
 
+function getGlowLevel(hovered: number | null, index: number): number {
+  if (hovered === null) return 0;
+  const dist = Math.abs(index - hovered);
+  if (dist === 0) return 3;
+  if (dist === 1) return 2;
+  if (dist <= 3) return 1;
+  if (hovered <= 4 && index >= 5) return 1;
+  if (hovered >= 5 && index <= 4) return 1;
+  return 0;
+}
+
+function getConnectorGlow(hovered: number | null, connectorIndex: number): number {
+  if (hovered === null) return 0;
+  if (hovered >= 5) return 1;
+  const distToLeft = Math.abs(connectorIndex - hovered);
+  const distToRight = Math.abs(connectorIndex + 1 - hovered);
+  const dist = Math.min(distToLeft, distToRight);
+  if (dist === 0) return 3;
+  if (dist === 1) return 2;
+  if (dist <= 2) return 1;
+  return 0;
+}
+
+function glowClass(level: number): string {
+  if (level >= 3) return "how-it-works-glow-active";
+  if (level >= 2) return "how-it-works-glow-near";
+  if (level >= 1) return "how-it-works-glow-far";
+  return "";
+}
+
+function connectorGlowClass(level: number): string {
+  if (level >= 3) return "how-it-works-connector-glow-active";
+  if (level >= 2) return "how-it-works-connector-glow-near";
+  if (level >= 1) return "how-it-works-connector-glow-far";
+  return "";
+}
+
+function ProcessConnector({
+  orientation,
+  glowLevel,
+}: {
+  orientation: "horizontal" | "vertical";
+  glowLevel: number;
+}) {
+  return (
+    <div
+      className={cn(
+        "how-it-works-connector flex-shrink-0",
+        orientation === "horizontal"
+          ? "how-it-works-connector-h hidden lg:flex"
+          : "how-it-works-connector-v flex lg:hidden",
+        connectorGlowClass(glowLevel)
+      )}
+      aria-hidden
+    >
+      <div className="how-it-works-connector-line" />
+    </div>
+  );
+}
+
 export function HowItWorks() {
   const { messages } = useLocale();
   const { user, loginWithSteam } = useAuth();
   const router = useRouter();
+  const [hoveredZone, setHoveredZone] = useState<number | null>(null);
 
   const handlePrimaryCta = () => {
     if (user) {
@@ -92,7 +154,10 @@ export function HowItWorks() {
   return (
     <section id="how-it-works" className="relative py-16 sm:py-20 lg:py-24 bg-muted/30">
       <SectionBottomFade to="background" />
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+      <div
+        className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8"
+        onMouseLeave={() => setHoveredZone(null)}
+      >
         {/* Section Header - Glass Effect */}
         <div className={`text-center mb-16 ${homeReveal.upSm}`}>
           <div className="lunar-card p-6 sm:p-8 inline-block">
@@ -105,83 +170,102 @@ export function HowItWorks() {
           </div>
         </div>
 
-        {/* Steps */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-8 mb-12 lg:mb-16">
+        {/* Steps with connecting lines */}
+        <div className="how-it-works-steps mb-12 lg:mb-16 flex flex-col lg:flex-row lg:flex-nowrap lg:items-stretch">
           {steps.map((step, index) => (
-            <div
-              key={step.step}
-              className={`relative ${homeReveal.up} ${homeStagger(index)}`}
-            >
-              <Card className="lunar-card h-full weapon-card-hover">
-                <CardContent className="p-6 text-center">
-                  {/* Step Number */}
-                  <div className="mb-4">
-                    <div className="w-12 h-12 mx-auto bg-gradient-to-br from-[var(--cta-from)] to-[var(--cta-to)] rounded-full flex items-center justify-center shadow-lg shadow-[var(--cta-shadow)]">
-                      <span className="text-white font-bold">{step.step}</span>
+            <div key={step.step} className="contents">
+              <div
+                className={cn(
+                  "flex-1 min-w-0",
+                  homeReveal.up,
+                  homeStagger(index)
+                )}
+                onMouseEnter={() => setHoveredZone(index)}
+              >
+                <Card
+                  className={cn(
+                    "lunar-card h-full weapon-card-hover how-it-works-step-card",
+                    glowClass(getGlowLevel(hoveredZone, index))
+                  )}
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="mb-4">
+                      <div className="w-12 h-12 mx-auto bg-gradient-to-br from-[var(--cta-from)] to-[var(--cta-to)] rounded-full flex items-center justify-center shadow-lg shadow-[var(--cta-shadow)]">
+                        <span className="text-white font-bold">{step.step}</span>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Icon */}
-                  <div className="mb-4">
-                    <step.icon className="w-8 h-8 mx-auto text-theme-accent" />
-                  </div>
+                    <div className="mb-4">
+                      <step.icon className="w-8 h-8 mx-auto text-theme-accent" />
+                    </div>
 
-                  {/* Content */}
-                  <h3 className="font-semibold mb-2">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {step.description}
-                  </p>
+                    <h3 className="font-semibold mb-2">{step.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {step.description}
+                    </p>
 
-                  {/* Details */}
-                  <ul className="text-xs text-muted-foreground space-y-1">
-                    {step.details.map((detail, i) => (
-                      <li key={i} className="flex items-center justify-center">
-                        <CheckCircleIcon className="w-3 h-3 mr-1 text-green-500 flex-shrink-0" />
-                        {detail}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      {step.details.map((detail, i) => (
+                        <li key={i} className="flex items-center justify-center">
+                          <CheckCircleIcon className="w-3 h-3 mr-1 text-green-500 flex-shrink-0" />
+                          {detail}
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              </div>
 
-              {/* Arrow */}
               {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2">
-                  <div className="w-8 h-8 flex items-center justify-center">
-                    <div className="w-6 h-0.5 bg-gradient-to-r from-theme-accent/80 to-theme-accent relative">
-                      <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-theme-accent border-t-2 border-b-2 border-t-transparent border-b-transparent" />
-                    </div>
-                  </div>
-                </div>
+                <>
+                  <ProcessConnector
+                    orientation="vertical"
+                    glowLevel={getConnectorGlow(hoveredZone, index)}
+                  />
+                  <ProcessConnector
+                    orientation="horizontal"
+                    glowLevel={getConnectorGlow(hoveredZone, index)}
+                  />
+                </>
               )}
             </div>
           ))}
         </div>
 
-        {/* Benefits */}
+        {/* Benefits — glass cards with propagated hover */}
         <div className={`grid md:grid-cols-3 gap-6 lg:gap-8 mb-12 ${homeReveal.upSm}`}>
-          {benefits.map((benefit, index) => (
-            <CardTilt
-              key={index}
-              shimmer
-              className={`h-full weapon-card-hover ${homeReveal.up} ${homeStagger(index)}`}
-            >
-              <div className="p-6 text-center">
-                <div className="mb-4 flex justify-center">
-                  <div className="how-it-works-benefit-icon flex h-14 w-14 items-center justify-center rounded-full border border-theme-accent/30 bg-gradient-to-br from-white/10 to-theme-accent/10 ring-2 ring-theme-accent/15">
-                    <benefit.icon className="w-8 h-8 text-theme-accent" />
-                  </div>
-                </div>
-                <h3 className="font-semibold mb-2">{benefit.title}</h3>
-                <p className="text-muted-foreground text-sm">{benefit.description}</p>
+          {benefits.map((benefit, index) => {
+            const zoneIndex = steps.length + index;
+            return (
+              <div
+                key={index}
+                className={cn(homeReveal.up, homeStagger(index))}
+                onMouseEnter={() => setHoveredZone(zoneIndex)}
+              >
+                <Card
+                  className={cn(
+                    "lunar-card h-full weapon-card-hover how-it-works-benefit-card chrome-shimmer",
+                    glowClass(getGlowLevel(hoveredZone, zoneIndex))
+                  )}
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="mb-4 flex justify-center">
+                      <div className="how-it-works-benefit-icon flex h-14 w-14 items-center justify-center rounded-full border border-theme-accent/30 bg-gradient-to-br from-white/10 to-theme-accent/10 ring-2 ring-theme-accent/15">
+                        <benefit.icon className="w-8 h-8 text-theme-accent" />
+                      </div>
+                    </div>
+                    <h3 className="font-semibold mb-2">{benefit.title}</h3>
+                    <p className="text-muted-foreground text-sm">{benefit.description}</p>
+                  </CardContent>
+                </Card>
               </div>
-            </CardTilt>
-          ))}
+            );
+          })}
         </div>
 
         {/* CTA */}
         <div className={`text-center ${homeReveal.upSm}`}>
-          <div className="backdrop-blur-md bg-background/60 rounded-2xl p-8 border border-white/10 dark:border-white/10">
+          <div className="lunar-card p-8">
             <h3 className="text-2xl font-bold mb-4">{messages.howItWorks.cta.title}</h3>
             <p className="text-muted-foreground mb-6">
               {messages.howItWorks.cta.description}

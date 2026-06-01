@@ -1120,6 +1120,157 @@ body.next-dev-overlay-present #sentry-feedback {
     color: #7eb3e8;
   }
 
+  /* How it works — connectors & hover propagation */
+  .how-it-works-connector-h {
+    width: 1.25rem;
+    align-self: center;
+    position: relative;
+    z-index: 2;
+    padding: 0 0.125rem;
+  }
+
+  @media (min-width: 1280px) {
+    .how-it-works-connector-h {
+      width: 2rem;
+    }
+  }
+
+  .how-it-works-connector-v {
+    height: 1.25rem;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .how-it-works-connector-line {
+    position: relative;
+    border-radius: 9999px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--theme-accent) 12%, transparent),
+      color-mix(in srgb, var(--theme-accent) 28%, transparent),
+      color-mix(in srgb, var(--theme-accent) 12%, transparent)
+    );
+    transition:
+      box-shadow 0.4s ease,
+      background 0.4s ease;
+  }
+
+  .how-it-works-connector-h .how-it-works-connector-line {
+    width: 100%;
+    height: 2px;
+  }
+
+  .how-it-works-connector-v .how-it-works-connector-line {
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--theme-accent) 12%, transparent),
+      color-mix(in srgb, var(--theme-accent) 28%, transparent),
+      color-mix(in srgb, var(--theme-accent) 12%, transparent)
+    );
+  }
+
+  .how-it-works-connector-line::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: var(--theme-accent);
+    opacity: 0;
+    transform: scale(0.15);
+    transition:
+      opacity 0.45s ease,
+      transform 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.45s ease;
+  }
+
+  .how-it-works-connector-h .how-it-works-connector-line::after {
+    transform: scaleX(0.15);
+    transform-origin: center;
+  }
+
+  .how-it-works-connector-v .how-it-works-connector-line::after {
+    transform: scaleY(0.15);
+    transform-origin: center;
+  }
+
+  .how-it-works-connector-glow-far .how-it-works-connector-line::after {
+    opacity: 0.35;
+    transform: scale(0.65);
+    box-shadow: 0 0 6px color-mix(in srgb, var(--theme-accent) 40%, transparent);
+  }
+
+  .how-it-works-connector-glow-far.how-it-works-connector-h .how-it-works-connector-line::after {
+    transform: scaleX(0.65);
+  }
+
+  .how-it-works-connector-glow-far.how-it-works-connector-v .how-it-works-connector-line::after {
+    transform: scaleY(0.65);
+  }
+
+  .how-it-works-connector-glow-near .how-it-works-connector-line::after {
+    opacity: 0.65;
+    transform: scale(0.85);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--theme-accent) 55%, transparent);
+  }
+
+  .how-it-works-connector-glow-near.how-it-works-connector-h .how-it-works-connector-line::after {
+    transform: scaleX(0.85);
+  }
+
+  .how-it-works-connector-glow-near.how-it-works-connector-v .how-it-works-connector-line::after {
+    transform: scaleY(0.85);
+  }
+
+  .how-it-works-connector-glow-active .how-it-works-connector-line::after {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--theme-accent) 70%, transparent);
+  }
+
+  .how-it-works-connector-glow-active.how-it-works-connector-h .how-it-works-connector-line::after {
+    transform: scaleX(1);
+  }
+
+  .how-it-works-connector-glow-active.how-it-works-connector-v .how-it-works-connector-line::after {
+    transform: scaleY(1);
+  }
+
+  .how-it-works-step-card,
+  .how-it-works-benefit-card {
+    transition:
+      transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.35s ease,
+      border-color 0.35s ease;
+  }
+
+  .how-it-works-glow-far.lunar-card {
+    border-color: color-mix(in srgb, var(--theme-accent) 18%, transparent);
+    box-shadow:
+      0 24px 70px rgba(0, 0, 0, 0.88),
+      0 0 18px color-mix(in srgb, var(--theme-accent) 8%, transparent),
+      0 1px 0 rgba(255, 255, 255, 0.1) inset;
+  }
+
+  .how-it-works-glow-near.lunar-card {
+    border-color: color-mix(in srgb, var(--theme-accent) 32%, transparent);
+    box-shadow:
+      0 28px 80px rgba(0, 0, 0, 0.9),
+      0 0 28px color-mix(in srgb, var(--theme-accent) 18%, transparent),
+      0 1px 0 rgba(255, 255, 255, 0.12) inset;
+  }
+
+  .how-it-works-glow-active.lunar-card {
+    border-color: color-mix(in srgb, var(--theme-accent) 50%, transparent);
+    box-shadow:
+      0 32px 90px rgba(0, 0, 0, 0.92),
+      0 0 42px color-mix(in srgb, var(--theme-accent) 30%, transparent),
+      0 1px 0 rgba(255, 255, 255, 0.14) inset;
+  }
+
   /* CS2 + Light accent */
   .cs2 .bg-theme-accent\/10,
   .light .bg-theme-accent\/10 { background-color: rgba(249, 115, 22, 0.1); }
