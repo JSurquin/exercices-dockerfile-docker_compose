@@ -1,3 +1,10 @@
+# Dokploy / Nixpacks — MoonSkin production image
+# Healthchecks: voir docs/deployment-dokploy.md (Swarm Settings, pas ici)
+
+[phases.setup]
+# curl requis pour le healthcheck Docker Swarm (CMD curl -f http://localhost:3000/health)
+aptPkgs = ["...", "curl"]
+
 [phases.install]
 cmds = [
   "pnpm install --no-frozen-lockfile --prefer-offline=false"
@@ -9,10 +16,12 @@ cmds = [
   "pnpm run build"
 ]
 
-# Migrations Prisma au DÉMARRAGE du conteneur (pas au build) : le builder
-# Docker n'a pas accès au réseau Docker de la DB, donc `prisma migrate
-# deploy` plante en build avec P1001. Au runtime en revanche le container
-# voit bien Postgres et applique les migrations en attente avant de
-# lancer Next.js.
+[variables]
+NODE_ENV = "production"
+PORT = "3000"
+HOSTNAME = "0.0.0.0"
+
+# Migrations au DÉMARRAGE (pas au build) : le builder Docker n'a pas le réseau DB.
+# Le tunnel ne doit router le trafic qu'après healthcheck OK — configurer Dokploy.
 [start]
-cmd = "npx prisma migrate deploy && pnpm run start"
+cmd = "sh scripts/docker-start.sh"
