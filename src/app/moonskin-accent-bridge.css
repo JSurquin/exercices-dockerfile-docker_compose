@@ -1,0 +1,319 @@
+/**
+ * Moonskin — remap des utilitaires Tailwind orange/amber (héritage thème CS2)
+ * vers la palette bleue spatiale. .cs2 et .light conservent l’orange d’origine.
+ */
+@layer utilities {
+  .moonskin {
+    --ms-accent: #7eb3e8;
+    --ms-accent-hover: #6ba3d8;
+    --ms-accent-deep: #5c93c8;
+    --ms-accent-darker: #3d6a9e;
+    --ms-accent-light: #8eb8e0;
+    --ms-accent-soft: #a8c8e8;
+    --ms-accent-pale: #b8d8f8;
+    --ms-accent-surface: rgba(126, 179, 232, 0.08);
+    --ms-accent-surface-2: rgba(126, 179, 232, 0.12);
+    --ms-accent-border: rgba(126, 179, 232, 0.25);
+    --ms-accent-glow: rgba(62, 120, 180, 0.45);
+    --ms-cta-from: #3d6a9e;
+    --ms-cta-to: #7eb3e8;
+    --ms-gold: #c8d4e8;
+    --ms-gold-muted: #a8b8cc;
+  }
+
+  /* ─── Texte orange ─── */
+  .moonskin .text-orange-300,
+  .moonskin .text-orange-400 {
+    color: var(--ms-accent-light);
+  }
+  .moonskin .text-orange-500,
+  .moonskin .text-orange-600 {
+    color: var(--ms-accent);
+  }
+  .moonskin .text-orange-700,
+  .moonskin .text-orange-800 {
+    color: var(--ms-accent-deep);
+  }
+  .moonskin .dark\:text-orange-300 {
+    color: var(--ms-accent-soft);
+  }
+  .moonskin .dark\:text-orange-400 {
+    color: var(--ms-accent-light);
+  }
+  .moonskin .dark\:text-orange-300\/80 {
+    color: color-mix(in srgb, var(--ms-accent-soft) 80%, transparent);
+  }
+
+  /* ─── Texte amber ─── */
+  .moonskin .text-amber-200 {
+    color: var(--ms-accent-pale);
+  }
+  .moonskin .text-amber-300,
+  .moonskin .text-amber-400 {
+    color: var(--ms-accent-soft);
+  }
+  .moonskin .text-amber-500,
+  .moonskin .text-amber-600,
+  .moonskin .text-amber-700 {
+    color: var(--ms-accent);
+  }
+  .moonskin .dark\:text-amber-300 {
+    color: var(--ms-accent-soft);
+  }
+  .moonskin .dark\:text-amber-400 {
+    color: var(--ms-accent-light);
+  }
+
+  /* ─── Fond orange ─── */
+  .moonskin .bg-orange-50,
+  .moonskin .bg-orange-100 {
+    background-color: var(--ms-accent-surface);
+  }
+  .moonskin .bg-orange-500,
+  .moonskin .bg-orange-600 {
+    background-color: var(--ms-accent);
+  }
+  .moonskin .bg-orange-900 {
+    background-color: #121a28;
+  }
+  .moonskin .bg-orange-500\/5 {
+    background-color: rgba(126, 179, 232, 0.05);
+  }
+  .moonskin .bg-orange-500\/10 {
+    background-color: rgba(126, 179, 232, 0.1);
+  }
+  .moonskin .bg-orange-500\/15 {
+    background-color: rgba(126, 179, 232, 0.15);
+  }
+  .moonskin .bg-orange-500\/20 {
+    background-color: rgba(126, 179, 232, 0.2);
+  }
+  .moonskin .bg-orange-50\/30 {
+    background-color: rgba(126, 179, 232, 0.06);
+  }
+  .moonskin .bg-orange-950\/20,
+  .moonskin .dark\:bg-orange-950\/20 {
+    background-color: rgba(13, 21, 32, 0.35);
+  }
+  .moonskin .dark\:bg-orange-900 {
+    background-color: #121a28;
+  }
+
+  /* ─── Fond amber ─── */
+  .moonskin .bg-amber-50\/80 {
+    background-color: rgba(126, 179, 232, 0.1);
+  }
+  .moonskin .bg-amber-100 {
+    background-color: var(--ms-accent-surface-2);
+  }
+  .moonskin .bg-amber-400,
+  .moonskin .bg-amber-500 {
+    background-color: var(--ms-accent);
+  }
+  .moonskin .bg-amber-500\/10 {
+    background-color: rgba(126, 179, 232, 0.1);
+  }
+  .moonskin .bg-amber-500\/20 {
+    background-color: rgba(126, 179, 232, 0.2);
+  }
+  .moonskin .bg-amber-50\/30 {
+    background-color: rgba(126, 179, 232, 0.06);
+  }
+  .moonskin .bg-amber-950\/20,
+  .moonskin .dark\:bg-amber-950\/20,
+  .moonskin .dark\:bg-amber-950\/40 {
+    background-color: rgba(13, 21, 32, 0.35);
+  }
+  .moonskin .dark\:bg-amber-900\/30,
+  .moonskin .dark\:bg-amber-900\/50 {
+    background-color: rgba(18, 26, 40, 0.5);
+  }
+  .moonskin .dark\:bg-amber-900 {
+    background-color: #121a28;
+  }
+  .moonskin .hover\:bg-amber-100:hover {
+    background-color: rgba(126, 179, 232, 0.14);
+  }
+  .moonskin .hover\:bg-amber-900\/50:hover {
+    background-color: rgba(18, 26, 40, 0.55);
+  }
+
+  /* ─── Bordures ─── */
+  .moonskin .border-orange-200,
+  .moonskin .dark\:border-orange-800 {
+    border-color: var(--ms-accent-border);
+  }
+  .moonskin .border-orange-500\/20,
+  .moonskin .border-orange-500\/30,
+  .moonskin .border-orange-500\/40 {
+    border-color: rgba(126, 179, 232, 0.3);
+  }
+  .moonskin .border-orange-500 {
+    border-color: var(--ms-accent);
+  }
+  .moonskin .border-amber-200,
+  .moonskin .dark\:border-amber-800 {
+    border-color: var(--ms-accent-border);
+  }
+  .moonskin .border-amber-300\/60,
+  .moonskin .dark\:border-amber-700\/60 {
+    border-color: rgba(126, 179, 232, 0.35);
+  }
+  .moonskin .border-amber-400\/30,
+  .moonskin .border-amber-400\/40,
+  .moonskin .border-amber-500\/30,
+  .moonskin .border-amber-500\/40 {
+    border-color: rgba(126, 179, 232, 0.35);
+  }
+  .moonskin .border-amber-300 {
+    border-color: rgba(168, 184, 204, 0.5);
+  }
+  .moonskin .border-amber-600 {
+    border-color: var(--ms-accent-deep);
+  }
+
+  /* ─── Hover ─── */
+  .moonskin .hover\:bg-orange-500:hover,
+  .moonskin .hover\:bg-orange-600:hover {
+    background-color: var(--ms-accent-hover);
+  }
+  .moonskin .hover\:bg-orange-900\/30:hover {
+    background-color: rgba(18, 26, 40, 0.45);
+  }
+  .moonskin .hover\:text-orange-500:hover,
+  .moonskin .hover\:text-orange-600:hover {
+    color: var(--ms-accent-hover);
+  }
+  .moonskin .group-hover\:text-orange-400:is(:where(.group):hover *) {
+    color: var(--ms-accent-light);
+  }
+  .moonskin .group-hover\:text-orange-600:is(:where(.group):hover *) {
+    color: var(--ms-accent-hover);
+  }
+  .moonskin .dark\:group-hover\:text-orange-400:is(:where(.group):hover *) {
+    color: var(--ms-accent-light);
+  }
+  .moonskin .group-hover\:bg-orange-600:is(:where(.group):hover *) {
+    background-color: var(--ms-accent-hover);
+  }
+  .moonskin .group-hover\:border-orange-600:is(:where(.group):hover *) {
+    border-color: var(--ms-accent-hover);
+  }
+  .moonskin .hover\:bg-amber-500:hover,
+  .moonskin .hover\:bg-amber-600:hover,
+  .moonskin .hover\:bg-amber-700:hover {
+    background-color: var(--ms-accent-hover);
+  }
+  .moonskin .hover\:bg-orange-600:hover,
+  .moonskin .hover\:bg-orange-700:hover {
+    background-color: var(--ms-accent-deep);
+  }
+
+  /* ─── Anneaux / focus ─── */
+  .moonskin .ring-orange-500\/30 {
+    --tw-ring-color: rgba(126, 179, 232, 0.3);
+  }
+  .moonskin .focus-visible\:ring-orange-500:focus-visible {
+    --tw-ring-color: var(--ms-accent);
+  }
+  .moonskin .border-b-2.border-orange-600 {
+    border-bottom-color: var(--ms-accent);
+  }
+
+  /* ─── Dégradés (stops Tailwind) ─── */
+  .moonskin .from-orange-50\/60 {
+    --tw-gradient-from: rgba(126, 179, 232, 0.08);
+  }
+  .moonskin .from-orange-500\/5 {
+    --tw-gradient-from: rgba(126, 179, 232, 0.05);
+  }
+  .moonskin .from-orange-500\/10 {
+    --tw-gradient-from: rgba(126, 179, 232, 0.1);
+  }
+  .moonskin .from-orange-500\/20 {
+    --tw-gradient-from: rgba(126, 179, 232, 0.2);
+  }
+  .moonskin .from-orange-400 {
+    --tw-gradient-from: var(--ms-accent-light);
+  }
+  .moonskin .from-orange-500 {
+    --tw-gradient-from: var(--ms-cta-from);
+  }
+  .moonskin .from-orange-600 {
+    --tw-gradient-from: var(--ms-accent-deep);
+  }
+  .moonskin .via-orange-500 {
+    --tw-gradient-via: var(--ms-accent);
+  }
+  .moonskin .to-orange-500,
+  .moonskin .to-orange-600 {
+    --tw-gradient-to: var(--ms-cta-to);
+  }
+  .moonskin .to-amber-50\/60 {
+    --tw-gradient-to: rgba(126, 179, 232, 0.08);
+  }
+  .moonskin .to-amber-500,
+  .moonskin .to-amber-600 {
+    --tw-gradient-to: var(--ms-accent);
+  }
+  .moonskin .to-red-500\/5,
+  .moonskin .to-red-500\/10,
+  .moonskin .to-red-500\/20 {
+    --tw-gradient-to: rgba(90, 143, 201, 0.12);
+  }
+  .moonskin .to-red-500,
+  .moonskin .to-red-600,
+  .moonskin .to-red-700,
+  .moonskin .to-red-900 {
+    --tw-gradient-to: var(--ms-cta-to);
+  }
+  .moonskin .hover\:from-orange-600:hover {
+    --tw-gradient-from: var(--ms-accent-deep);
+  }
+  .moonskin .hover\:to-orange-600:hover,
+  .moonskin .hover\:to-amber-600:hover {
+    --tw-gradient-to: var(--ms-accent-hover);
+  }
+  .moonskin .hover\:to-red-600:hover,
+  .moonskin .hover\:to-red-700:hover {
+    --tw-gradient-to: var(--ms-accent);
+  }
+  .moonskin .hover\:from-orange-500\/20:hover {
+    --tw-gradient-from: rgba(126, 179, 232, 0.2);
+  }
+  .moonskin .hover\:to-red-500\/20:hover {
+    --tw-gradient-to: rgba(90, 143, 201, 0.2);
+  }
+
+  /* ─── Ombres ─── */
+  .moonskin .shadow-orange-500\/30,
+  .moonskin .shadow-orange-500\/50 {
+    --tw-shadow-color: var(--ms-accent-glow);
+  }
+
+  /* ─── Jaune (missions) → tons lunaires ─── */
+  .moonskin .text-yellow-300 {
+    color: var(--ms-gold);
+  }
+  .moonskin .from-yellow-50\/60 {
+    --tw-gradient-from: rgba(200, 212, 232, 0.08);
+  }
+  .moonskin .to-yellow-50\/60 {
+    --tw-gradient-to: rgba(200, 212, 232, 0.08);
+  }
+  .moonskin .border-yellow-300,
+  .moonskin .dark\:border-yellow-700 {
+    border-color: rgba(168, 184, 204, 0.35);
+  }
+  .moonskin .dark\:from-yellow-950\/20 {
+    --tw-gradient-from: rgba(20, 24, 36, 0.35);
+  }
+  .moonskin .bg-yellow-300 {
+    background-color: var(--ms-gold-muted);
+  }
+
+  /* Progress [&>div]:bg-amber-500 */
+  .moonskin .\[&\>div\]\:bg-amber-500 > div {
+    background-color: var(--ms-accent) !important;
+  }
+}

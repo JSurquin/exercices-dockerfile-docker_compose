@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./moonskin-accent-bridge.css";
 
 /* Custom scrollbar styles */
 .scrollbar-thin {
@@ -1308,6 +1309,15 @@ body.next-dev-overlay-present #sentry-feedback {
       rgba(0, 0, 0, 0.9) 0%,
       rgba(245, 101, 35, 0.1) 50%,
       rgba(0, 0, 0, 0.9) 100%
+    );
+  }
+
+  .moonskin .bg-gaming-dark {
+    background: linear-gradient(
+      135deg,
+      rgba(6, 6, 8, 0.95) 0%,
+      rgba(126, 179, 232, 0.06) 50%,
+      rgba(6, 6, 8, 0.95) 100%
     );
   }
 

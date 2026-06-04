@@ -25,7 +25,7 @@ export const CS2Button: React.FC<CS2ButtonProps> = ({
   const getVariantClasses = (variant: string) => {
     const variants = {
       primary:
-        "bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white border-0 shadow-lg hover:shadow-xl",
+        "btn-cta text-white border-0 shadow-lg hover:shadow-xl",
       secondary:
         "bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white border border-gray-500/30",
       danger:
