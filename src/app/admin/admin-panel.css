@@ -216,3 +216,23 @@
 .admin-shell .btn-cta:hover {
   filter: brightness(1.1);
 }
+
+/* Curseur pointer sur tous les contrôles cliquables (Tailwind v4 + overrides admin) */
+.admin-shell button:not(:disabled),
+.admin-shell [data-slot='button']:not(:disabled),
+.admin-shell [role='button']:not(:disabled),
+.admin-shell [type='button']:not(:disabled),
+.admin-shell [type='submit']:not(:disabled),
+.admin-shell [data-slot='tabs-trigger']:not(:disabled),
+.admin-shell [data-slot='dropdown-menu-item']:not([data-disabled]),
+.admin-shell [data-slot='select-trigger']:not(:disabled),
+.admin-shell summary,
+.admin-shell label:has(> button),
+.admin-shell a[href]:not([aria-disabled='true']) {
+  cursor: pointer;
+}
+
+.admin-shell button:disabled,
+.admin-shell [aria-disabled='true'] {
+  cursor: not-allowed;
+}
