@@ -27,6 +27,7 @@ import {
   panelListRow,
 } from '@/lib/admin-ui';
 import { cn } from '@/lib/utils';
+import { PageLoading } from '@/components/ui/page-loading';
 import {
   ChatBubbleLeftRightIcon,
   MagnifyingGlassIcon,
@@ -127,9 +128,11 @@ export default function ModerationPage() {
   // Attendre le chargement de la session
   if (isPending) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
-      </div>
+      <PageLoading
+        variant="compact"
+        message={messages.moderation.loading}
+        className="min-h-[60vh]"
+      />
     );
   }
 
@@ -236,10 +239,7 @@ export default function ModerationPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
-              <p className="mt-2 text-muted-foreground">{messages.moderation.loading}</p>
-            </div>
+            <PageLoading variant="compact" message={messages.moderation.loading} />
           ) : conversations.length === 0 ? (
             <div className="text-center py-8">
               <ChatBubbleLeftRightIcon className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-muted-foreground/40" />

@@ -34,6 +34,7 @@ import {
   panelGlassField,
 } from '@/lib/admin-ui';
 import { cn } from '@/lib/utils';
+import { PageLoading } from '@/components/ui/page-loading';
 import { resolveI18nContent } from '@/lib/resolve-i18n-content';
 
 const senderTypeLabels: Record<string, string> = {
@@ -180,9 +181,11 @@ export default function ConversationPage() {
   // Attendre le chargement de la session
   if (isPending) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
-      </div>
+      <PageLoading
+        variant="compact"
+        message={messages.moderation.loading}
+        className="min-h-[60vh]"
+      />
     );
   }
 
@@ -205,12 +208,11 @@ export default function ConversationPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Chargement...</p>
-        </div>
-      </div>
+      <PageLoading
+        variant="compact"
+        message={messages.moderation.loading}
+        className="min-h-[60vh]"
+      />
     );
   }
 
