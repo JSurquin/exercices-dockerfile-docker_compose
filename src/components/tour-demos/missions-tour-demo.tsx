@@ -10,7 +10,6 @@ import {
   ClockIcon,
   ChartBarIcon,
   GiftIcon,
-  GlobeAltIcon,
   StarIcon,
   CalendarDaysIcon,
   CheckCircleIcon,
@@ -25,7 +24,6 @@ const DEMO_CATEGORIES = [
     id: 'BONUS',
     label: 'Bonus',
     icon: StarIcon,
-    color: 'text-yellow-400',
     missions: [
       { label: '🎁 Surprise du jour', reward: 5, completed: true, eligible: false },
     ],
@@ -34,7 +32,6 @@ const DEMO_CATEGORIES = [
     id: 'DAILY',
     label: 'Quotidien',
     icon: ClockIcon,
-    color: 'text-theme-stat',
     missions: [
       { label: '👋 Visite quotidienne', reward: 2, completed: true, eligible: false },
       { label: '💰 Vendre un skin aujourd\'hui', reward: 10, completed: false, eligible: true },
@@ -44,7 +41,6 @@ const DEMO_CATEGORIES = [
     id: 'WEEKLY',
     label: 'Hebdomadaire',
     icon: CalendarDaysIcon,
-    color: 'text-emerald-500',
     missions: [
       { label: '📈 Volume 500 € sur 7 jours', reward: 30, completed: false, eligible: false, progress: 68 },
       { label: '📊 Volume 1 000 € sur 7 jours', reward: 60, completed: false, eligible: false, progress: 34 },
@@ -54,7 +50,6 @@ const DEMO_CATEGORIES = [
     id: 'MONTHLY',
     label: 'Mensuel',
     icon: ChartBarIcon,
-    color: 'text-theme-accent',
     missions: [
       { label: '🏆 Volume 5 000 € ce mois', reward: 150, completed: false, eligible: false, progress: 24 },
     ],
@@ -62,8 +57,7 @@ const DEMO_CATEGORIES = [
   {
     id: 'SOCIAL',
     label: 'Social',
-    icon: GlobeAltIcon,
-    color: 'text-purple-500',
+    icon: SparklesIcon,
     missions: [
       { label: '💬 Rejoindre le Discord', reward: 20, completed: true, eligible: false },
       { label: '📱 Suivre sur Instagram', reward: 15, completed: false, eligible: true },
@@ -88,7 +82,7 @@ export function MissionsTourDemo() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <SparklesIcon className="w-8 h-8 text-theme-stat" />
+            <SparklesIcon className="w-8 h-8 text-theme-accent" />
             {messages.nav.missions}
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -102,15 +96,15 @@ export function MissionsTourDemo() {
 
       {/* Stats counters */}
       <div data-tour="missions-stats" className="grid md:grid-cols-3 gap-3">
-        <Card>
+        <Card className="lunar-card border-border/60 bg-card/40">
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground mb-1">
               {messages.missions?.statsFragments ?? 'Fragments accumulés'}
             </p>
-            <FragmentAmount amount={340} size="sm" className="text-2xl font-bold text-theme-stat justify-center" />
+            <FragmentAmount amount={340} size="sm" className="text-2xl font-bold text-theme-accent justify-center" />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="lunar-card border-border/60 bg-card/40">
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground mb-1">
               {messages.missions?.statsToClaim ?? 'À réclamer'}
@@ -123,12 +117,12 @@ export function MissionsTourDemo() {
             />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="lunar-card border-border/60 bg-card/40">
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground mb-1">
               {messages.missions?.statsCompleted ?? 'Complétées'}
             </p>
-            <p className="text-2xl font-bold text-green-500">
+            <p className="text-2xl font-bold text-theme-accent tabular-nums">
               {totalCompleted}/{totalMissions}
             </p>
           </CardContent>
@@ -141,7 +135,7 @@ export function MissionsTourDemo() {
           <span className="text-muted-foreground">Progression globale</span>
           <span className="font-medium">{Math.round((totalCompleted / totalMissions) * 100)}%</span>
         </div>
-        <Progress value={(totalCompleted / totalMissions) * 100} className="h-2" />
+        <Progress value={(totalCompleted / totalMissions) * 100} className="mission-progress h-2" />
       </div>
 
       {/* Mission categories */}
@@ -151,11 +145,11 @@ export function MissionsTourDemo() {
           const catCompleted = cat.missions.filter((m) => m.completed).length;
 
           return (
-            <Card key={cat.id}>
+            <Card key={cat.id} className="lunar-card border-border/60 bg-card/30">
               <CardHeader className="pb-3">
-                <CardTitle className={`flex items-center justify-between text-base ${cat.color}`}>
+                <CardTitle className="flex items-center justify-between text-base text-foreground">
                   <div className="flex items-center gap-2">
-                    <CatIcon className="w-5 h-5" />
+                    <CatIcon className="w-5 h-5 text-theme-accent" />
                     {cat.label}
                   </div>
                   <span className="text-sm text-muted-foreground font-normal">
@@ -167,17 +161,17 @@ export function MissionsTourDemo() {
                 {cat.missions.map((m, i) => (
                   <div
                     key={i}
-                    className={`flex items-center justify-between gap-3 rounded-lg border p-3 ${
+                    className={`flex items-center justify-between gap-3 rounded-xl p-3 ${
                       m.completed
-                        ? 'border-green-500/20 bg-green-500/5'
+                        ? 'border border-border/50 bg-muted/25 opacity-75'
                         : m.eligible
-                        ? 'border-theme-accent/20 bg-primary/5'
-                        : 'border-border bg-muted/20'
+                          ? 'lunar-card !rounded-xl'
+                          : 'border border-border/40 bg-card/30'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       {m.completed ? (
-                        <CheckCircleIcon className="w-5 h-5 text-green-500 shrink-0" />
+                        <CheckCircleIcon className="w-5 h-5 text-theme-success shrink-0" />
                       ) : (
                         <LockClosedIcon className="w-5 h-5 text-muted-foreground shrink-0" />
                       )}
@@ -185,18 +179,18 @@ export function MissionsTourDemo() {
                         <p className="text-sm font-medium truncate">{m.label}</p>
                         {'progress' in m && m.progress !== undefined && (
                           <div className="mt-1 space-y-0.5">
-                            <Progress value={m.progress} className="h-1" />
+                            <Progress value={m.progress} className="mission-progress h-1.5" />
                             <p className="text-[10px] text-muted-foreground">{m.progress}%</p>
                           </div>
                         )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <Badge variant="outline" className="text-theme-stat border-theme-highlight/30 text-xs">
+                      <Badge variant="outline" className="mission-glass-badge text-xs">
                         <FragmentAmount amount={m.reward} prefix="+" size="xs" className="text-xs" />
                       </Badge>
                       {m.eligible && !m.completed && (
-                        <Button size="sm" className="h-7 text-xs bg-primary hover:bg-primary/90" disabled>
+                        <Button size="sm" variant="cta" className="h-7 text-xs" disabled>
                           Réclamer
                         </Button>
                       )}
