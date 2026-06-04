@@ -2,8 +2,8 @@
 # Healthchecks: voir docs/deployment-dokploy.md (Swarm Settings, pas ici)
 
 [phases.setup]
-# curl requis pour le healthcheck Docker Swarm (CMD curl -f http://localhost:3000/health)
-aptPkgs = ["...", "curl"]
+# curl = healthcheck Swarm ; chromium = exports PDF admin (Puppeteer)
+aptPkgs = ["...", "curl", "chromium", "fonts-liberation", "fontconfig", "ca-certificates"]
 
 [phases.install]
 cmds = [
@@ -20,6 +20,8 @@ cmds = [
 NODE_ENV = "production"
 PORT = "3000"
 HOSTNAME = "0.0.0.0"
+PUPPETEER_EXECUTABLE_PATH = "/usr/bin/chromium"
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
 
 # Migrations au DÉMARRAGE (pas au build) : le builder Docker n'a pas le réseau DB.
 # Le tunnel ne doit router le trafic qu'après healthcheck OK — configurer Dokploy.
