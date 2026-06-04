@@ -671,6 +671,23 @@ body.next-dev-overlay-present #sentry-feedback {
     background-image: linear-gradient(to bottom right, var(--cta-from), var(--cta-to));
   }
 
+  /* Missions — barres de progression chrome */
+  .mission-progress {
+    background-color: color-mix(in srgb, var(--muted) 55%, transparent);
+  }
+
+  .mission-progress [data-slot="progress-indicator"] {
+    background: linear-gradient(90deg, var(--cta-from), var(--cta-to));
+  }
+
+  /* Badge glass discret (fragments disponibles, etc.) */
+  .mission-glass-badge {
+    background: color-mix(in srgb, var(--theme-accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--theme-accent) 22%, transparent);
+    color: var(--theme-highlight);
+    backdrop-filter: blur(8px);
+  }
+
   /* CTA principal — contraste fort, variable par thème */
   .btn-cta {
     background: linear-gradient(135deg, var(--cta-from), var(--cta-to));

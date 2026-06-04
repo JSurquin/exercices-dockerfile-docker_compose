@@ -22,7 +22,6 @@ import {
   ClockIcon,
   GiftIcon,
   ChartBarIcon,
-  GlobeAltIcon,
   CalendarDaysIcon,
   StarIcon,
   ArrowTopRightOnSquareIcon,
@@ -30,6 +29,7 @@ import {
 import { queryKeys } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
 import { SOCIAL_MISSION_URLS } from '@/lib/moonskin-social';
+import { getSocialMissionIcon } from '@/components/ui/social-brand-icons';
 import { FragmentAmount, FragmentBadge } from '@/components/ui/level-badge';
 import type { Messages } from '~/utils/types';
 
@@ -47,36 +47,33 @@ type MissionRow = {
   thresholdCents?: number;
 };
 
-const MISSION_ROW_STYLE: Record<string, { icon: ComponentType<{ className?: string }>; iconClass: string }> = {
-  DAILY_CLAIM: { icon: SparklesIcon, iconClass: 'text-theme-stat' },
-  DAILY_SELL_SKIN: { icon: ChartBarIcon, iconClass: 'text-green-500' },
-  DAILY_VISIT: { icon: ClockIcon, iconClass: 'text-blue-500' },
-  WEEKLY_SELL_500: { icon: ChartBarIcon, iconClass: 'text-emerald-500' },
-  WEEKLY_SELL_1000: { icon: ChartBarIcon, iconClass: 'text-emerald-600' },
-  WEEKLY_GIVEAWAY_3: { icon: GiftIcon, iconClass: 'text-purple-500' },
-  MONTHLY_SELL_5000: { icon: ChartBarIcon, iconClass: 'text-theme-accent' },
-  MONTHLY_SELL_10000: { icon: ChartBarIcon, iconClass: 'text-red-500' },
-  SOCIAL_NEWSLETTER: { icon: GlobeAltIcon, iconClass: 'text-sky-500' },
-  SOCIAL_TWITTER: { icon: GlobeAltIcon, iconClass: 'text-sky-400' },
-  SOCIAL_INSTAGRAM: { icon: GlobeAltIcon, iconClass: 'text-pink-500' },
-  SOCIAL_DISCORD: { icon: GlobeAltIcon, iconClass: 'text-indigo-500' },
-  SOCIAL_TIKTOK: { icon: GlobeAltIcon, iconClass: 'text-gray-800 dark:text-gray-200' },
-  SOCIAL_YOUTUBE: { icon: GlobeAltIcon, iconClass: 'text-red-500' },
-  SOCIAL_TELEGRAM: { icon: GlobeAltIcon, iconClass: 'text-blue-400' },
-  SOCIAL_STEAM_GROUP: { icon: GlobeAltIcon, iconClass: 'text-gray-500' },
-  BONUS_DAILY_SURPRISE: { icon: StarIcon, iconClass: 'text-yellow-400' },
+const MISSION_ICON_ACCENT = 'text-theme-accent';
+
+const MISSION_ROW_STYLE: Record<string, { icon: ComponentType<{ className?: string }> }> = {
+  DAILY_CLAIM: { icon: SparklesIcon },
+  DAILY_SELL_SKIN: { icon: ChartBarIcon },
+  DAILY_VISIT: { icon: ClockIcon },
+  WEEKLY_SELL_500: { icon: ChartBarIcon },
+  WEEKLY_SELL_1000: { icon: ChartBarIcon },
+  WEEKLY_GIVEAWAY_3: { icon: GiftIcon },
+  MONTHLY_SELL_5000: { icon: ChartBarIcon },
+  MONTHLY_SELL_10000: { icon: ChartBarIcon },
+  BONUS_DAILY_SURPRISE: { icon: StarIcon },
 };
 
 const CATEGORY_STYLE: Record<
   'DAILY' | 'WEEKLY' | 'MONTHLY' | 'SOCIAL' | 'BONUS',
-  { icon: ComponentType<{ className?: string }>; color: string }
+  { icon: ComponentType<{ className?: string }> }
 > = {
-  DAILY: { icon: ClockIcon, color: 'text-theme-stat' },
-  WEEKLY: { icon: CalendarDaysIcon, color: 'text-emerald-500' },
-  MONTHLY: { icon: ChartBarIcon, color: 'text-theme-accent' },
-  SOCIAL: { icon: GlobeAltIcon, color: 'text-purple-500' },
-  BONUS: { icon: StarIcon, color: 'text-yellow-400' },
+  DAILY: { icon: ClockIcon },
+  WEEKLY: { icon: CalendarDaysIcon },
+  MONTHLY: { icon: ChartBarIcon },
+  SOCIAL: { icon: SparklesIcon },
+  BONUS: { icon: StarIcon },
 };
+
+const MISSION_VISIT_BTN =
+  'gap-1.5 border-theme-accent/30 bg-background/40 text-theme-accent hover:bg-theme-accent/10 hover:text-theme-accent hover:border-theme-accent/40';
 
 const CATEGORY_ORDER = ['BONUS', 'DAILY', 'WEEKLY', 'MONTHLY', 'SOCIAL'] as const;
 
@@ -119,12 +116,7 @@ function SocialMissionActions({
 
   if (!socialUrl) {
     return (
-      <Button
-        size="sm"
-        disabled={isPending}
-        onClick={() => onClaim(mission.key)}
-        className="bg-cta-gradient hover:brightness-110"
-      >
+      <Button size="sm" variant="cta" disabled={isPending} onClick={() => onClaim(mission.key)}>
         {t.claim}
       </Button>
     );
@@ -132,11 +124,7 @@ function SocialMissionActions({
 
   if (!visited) {
     return (
-      <Button
-        size="sm"
-        onClick={handleVisit}
-        className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 gap-1.5"
-      >
+      <Button size="sm" variant="outline" onClick={handleVisit} className={MISSION_VISIT_BTN}>
         <ArrowTopRightOnSquareIcon className="w-4 h-4" />
         {t.socialVisit}
       </Button>
@@ -153,12 +141,7 @@ function SocialMissionActions({
   }
 
   return (
-    <Button
-      size="sm"
-      disabled={isPending}
-      onClick={() => onClaim(mission.key)}
-      className="bg-cta-gradient hover:brightness-110"
-    >
+    <Button size="sm" variant="cta" disabled={isPending} onClick={() => onClaim(mission.key)}>
       {t.socialConfirm}
     </Button>
   );
@@ -176,42 +159,40 @@ function MissionCard({
   t: Messages['missions'];
 }) {
   const rowStyle = MISSION_ROW_STYLE[mission.key];
-  const IconComp = rowStyle?.icon ?? SparklesIcon;
-  const iconClass = rowStyle?.iconClass ?? 'text-theme-stat';
+  const SocialIcon = getSocialMissionIcon(mission.key);
+  const IconComp = SocialIcon ?? rowStyle?.icon ?? SparklesIcon;
   const itemMeta = t.items[mission.key as keyof typeof t.items];
 
   const isSocial = mission.category === 'SOCIAL' && mission.key !== 'SOCIAL_NEWSLETTER';
 
   return (
     <div
-      className={`md:flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 rounded-xl border p-4 transition-all ${
+      className={cn(
+        'md:flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 rounded-xl p-4 transition-all',
         mission.completed
-          ? 'bg-muted/40 opacity-70'
-          : mission.category === 'BONUS'
-            ? 'bg-gradient-to-r from-theme-highlight/5 to-theme-highlight/10 dark:from-theme-highlight/10 dark:to-theme-highlight/15 border-theme-highlight/30 dark:border-theme-highlight/40 shadow-sm'
-            : mission.eligible
-              ? 'bg-gradient-to-r from-theme-accent/5 to-theme-highlight/5 dark:from-theme-accent/10 dark:to-theme-highlight/10 border-theme-accent/20 dark:border-theme-accent/30 shadow-sm'
-              : 'hover:bg-muted/30'
-      }`}
+          ? 'border border-border/50 bg-muted/25 opacity-75 backdrop-blur-sm'
+          : mission.eligible
+            ? 'lunar-card !rounded-xl'
+            : 'border border-border/40 bg-card/30 hover:bg-muted/20 backdrop-blur-sm'
+      )}
     >
       <div className="flex items-start gap-3 flex-1 min-w-0">
         <div
-          className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+          className={cn(
+            'w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border border-border/40 backdrop-blur-sm',
             mission.completed
-              ? 'bg-green-100 dark:bg-green-900/30'
-              : mission.category === 'BONUS'
-                ? 'bg-yellow-100 dark:bg-yellow-900/30'
-                : mission.eligible
-                  ? 'bg-theme-accent/15 dark:bg-theme-accent/25/30'
-                  : 'bg-muted'
-          }`}
+              ? 'bg-muted/50'
+              : mission.eligible
+                ? 'bg-theme-accent/10'
+                : 'bg-muted/40'
+          )}
         >
           {mission.completed ? (
-            <CheckCircleIcon className="w-5 h-5 text-green-500" />
+            <CheckCircleIcon className="w-5 h-5 text-theme-success" />
           ) : !mission.eligible ? (
             <LockClosedIcon className="w-5 h-5 text-muted-foreground" />
           ) : (
-            <IconComp className={cn('w-5 h-5', iconClass)} />
+            <IconComp className={cn('w-5 h-5', MISSION_ICON_ACCENT)} />
           )}
         </div>
         <div className="min-w-0 flex-1">
@@ -225,7 +206,7 @@ function MissionCard({
             <div className="mt-2 space-y-1">
               <Progress
                 value={Math.min(100, (mission.progressCurrent / mission.progressTarget) * 100)}
-                className="h-1.5"
+                className="mission-progress h-1.5"
               />
               <p className="text-xs text-muted-foreground">
                 {mission.thresholdCents != null
@@ -238,12 +219,15 @@ function MissionCard({
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
-        <div className="flex items-center gap-1 text-sm font-bold text-theme-stat">
+        <div className="flex items-center gap-1 text-sm font-bold text-theme-accent">
           <FragmentAmount amount={mission.rewardFragments} prefix="+" size="xs" />
         </div>
         {mission.completed ? (
-          <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800">
-            <CheckCircleIcon className="w-3.5 h-3.5 mr-1" />
+          <Badge
+            variant="outline"
+            className="bg-muted/30 text-muted-foreground border-border/60 backdrop-blur-sm"
+          >
+            <CheckCircleIcon className="w-3.5 h-3.5 mr-1 text-theme-success" />
             {t.claimed}
           </Badge>
         ) : mission.eligible && isSocial ? (
@@ -254,16 +238,11 @@ function MissionCard({
             t={t}
           />
         ) : mission.eligible ? (
-          <Button
-            size="sm"
-            disabled={isPending}
-            onClick={() => onClaim(mission.key)}
-            className="bg-cta-gradient hover:brightness-110"
-          >
+          <Button size="sm" variant="cta" disabled={isPending} onClick={() => onClaim(mission.key)}>
             {t.claim}
           </Button>
         ) : (
-          <Badge variant="outline" className="text-muted-foreground">
+          <Badge variant="outline" className="text-muted-foreground border-border/50 bg-muted/20">
             <LockClosedIcon className="w-3.5 h-3.5 mr-1" />
             {t.notAvailable}
           </Badge>
@@ -383,7 +362,7 @@ export default function MissionsPage() {
                 duration: 1.5,
                 ease: [0.34, 1.56, 0.64, 1],
               }}
-              className="bg-gradient-to-br from-purple-600/95 via-fuchsia-600/95 to-pink-600/95 text-white rounded-3xl shadow-2xl p-8 backdrop-blur-xl border-4 border-pink-300/60"
+              className="lunar-card bg-cta-gradient-br text-white rounded-3xl shadow-2xl p-8 border border-theme-accent/30"
             >
               <div className="flex flex-col items-center gap-4">
                 <motion.div
@@ -396,7 +375,7 @@ export default function MissionsPage() {
                     scale: { duration: 0.6, repeat: Infinity, repeatType: 'reverse' },
                   }}
                 >
-                  <FragmentBadge size="xl" className="drop-shadow-[0_0_24px_rgba(236,72,153,0.6)]" />
+                  <FragmentBadge size="xl" className="drop-shadow-[0_0_24px_var(--cta-shadow)]" />
                 </motion.div>
                 <div className="text-center">
                   <motion.p
@@ -451,7 +430,7 @@ export default function MissionsPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <SparklesIcon className="w-8 h-8 text-theme-stat" />
+            <SparklesIcon className="w-8 h-8 text-theme-accent" />
             {messages.nav.missions}
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -464,7 +443,7 @@ export default function MissionsPage() {
       </div>
 
       <div data-tour="missions-stats" className="grid md:grid-cols-3 gap-3">
-        <Card>
+        <Card className="lunar-card border-border/60 bg-card/40">
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground mb-1">{t.statsFragments}</p>
             <motion.div
@@ -477,12 +456,12 @@ export default function MissionsPage() {
               <FragmentAmount
                 amount={user.fragments ?? 0}
                 size="sm"
-                className="text-2xl font-bold text-theme-stat"
+                className="text-2xl font-bold text-theme-accent"
               />
             </motion.div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="lunar-card border-border/60 bg-card/40">
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground mb-1">{t.statsToClaim}</p>
             <FragmentAmount
@@ -493,10 +472,10 @@ export default function MissionsPage() {
             />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="lunar-card border-border/60 bg-card/40">
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground mb-1">{t.statsCompleted}</p>
-            <p className="text-2xl font-bold text-green-500">
+            <p className="text-2xl font-bold text-theme-accent tabular-nums">
               {totalCompleted}/{totalMissions}
             </p>
           </CardContent>
@@ -509,7 +488,10 @@ export default function MissionsPage() {
             <span className="text-muted-foreground">{t.globalProgress}</span>
             <span className="font-medium">{Math.round((totalCompleted / totalMissions) * 100)}%</span>
           </div>
-          <Progress value={(totalCompleted / totalMissions) * 100} className="h-2" />
+          <Progress
+            value={(totalCompleted / totalMissions) * 100}
+            className="mission-progress h-2"
+          />
         </div>
       )}
 
@@ -531,16 +513,16 @@ export default function MissionsPage() {
               .reduce((s, m) => s + m.rewardFragments, 0);
 
             return (
-              <Card key={cat}>
+              <Card key={cat} className="lunar-card border-border/60 bg-card/30">
                 <CardHeader className="pb-3">
-                  <CardTitle className={`flex items-center justify-between text-base ${catStyle.color}`}>
+                  <CardTitle className="flex items-center justify-between text-base text-foreground">
                     <div className="flex items-center gap-2">
-                      <CatIcon className="w-5 h-5" />
+                      <CatIcon className={cn('w-5 h-5', MISSION_ICON_ACCENT)} />
                       {catCopy.label}
                     </div>
                     <div className="flex items-center gap-2">
                       {catClaimable > 0 && (
-                        <Badge className="bg-theme-stat/20 text-theme-highlight border-theme-highlight/30 text-xs">
+                        <Badge className="mission-glass-badge text-xs">
                           <FragmentAmount
                             amount={catClaimable}
                             prefix="+"
@@ -559,7 +541,7 @@ export default function MissionsPage() {
                   {catMissions.length > 0 && (
                     <Progress
                       value={(catCompleted / catMissions.length) * 100}
-                      className="h-1 mt-2"
+                      className="mission-progress h-1.5 mt-2"
                     />
                   )}
                 </CardHeader>
