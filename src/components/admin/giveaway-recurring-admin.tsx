@@ -19,6 +19,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useLocale } from '@/components/providers/locale-provider';
+import { PageLoading } from '@/components/ui/page-loading';
 import { SafeImage } from '@/components/ui/safe-image';
 import { SkinPickerModal } from '@/components/admin/skin-picker-modal';
 import {
@@ -427,9 +428,7 @@ export function GiveawayRecurringAdmin() {
       )}
 
       {loading ? (
-        <Card className="bg-slate-800/50 border-slate-700">
-          <CardContent className="p-8 text-center text-slate-300">{t.loading}</CardContent>
-        </Card>
+        <PageLoading variant="compact" message={t.loading} />
       ) : series.length === 0 ? (
         <Card className="bg-slate-800/50 border-slate-700">
           <CardContent className="p-8 text-center">

@@ -34,13 +34,14 @@ import {
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
+import { PageLoading } from '@/components/ui/page-loading';
 import TradeLinkConfig from "@/components/settings/trade-link-config";
 import SteamIdConfig from "@/components/settings/steam-id-config";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 
 export default function SettingsPage() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, isLoading: authLoading } = useAuth();
   const { locale, setLocale, messages } = useLocale();
   const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
@@ -153,6 +154,12 @@ export default function SettingsPage() {
       setIsSavingNotifications(false);
     }
   };
+
+  if (authLoading) {
+    return (
+      <PageLoading variant="compact" message={messages.common.loading} className="min-h-[50vh]" />
+    );
+  }
 
   if (!user) {
     return (

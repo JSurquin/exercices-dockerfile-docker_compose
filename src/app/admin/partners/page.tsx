@@ -21,6 +21,7 @@ import { useLocale } from '@/components/providers/locale-provider';
 import { queryKeys } from '@/lib/query-keys';
 import { getYoutubeThumbnailUrl } from '@/lib/youtube';
 import { toast } from 'sonner';
+import { PageLoading } from '@/components/ui/page-loading';
 import {
   Heart,
   Plus,
@@ -268,7 +269,7 @@ export default function AdminPartnersPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {videosLoading ? (
-                  <p className="text-slate-400">{t.loading}</p>
+                  <PageLoading variant="compact" message={t.loading} className="py-8" />
                 ) : videos.length === 0 ? (
                   <p className="text-slate-400">{t.videos.empty}</p>
                 ) : (
@@ -341,7 +342,7 @@ export default function AdminPartnersPage() {
               </CardHeader>
               <CardContent>
                 {logosLoading ? (
-                  <p className="text-slate-400">{t.loading}</p>
+                  <PageLoading variant="compact" message={t.loading} className="py-8" />
                 ) : logos.length === 0 ? (
                   <p className="text-slate-400">{t.logos.empty}</p>
                 ) : (

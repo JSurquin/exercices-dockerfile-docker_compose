@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { useLocale } from '@/components/providers/locale-provider';
+import { PageLoading } from '@/components/ui/page-loading';
 import { useSession } from '~/lib/auth-client';
 import { queryKeys } from '@/lib/query-keys';
 import { AffiliateCommission } from '@/lib/types';
@@ -190,9 +191,7 @@ export default function AffiliatePage() {
 
   if (isLoading || !session) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-purple-500" />
-      </div>
+      <PageLoading variant="compact" message={messages.common.loading} className="min-h-[50vh]" />
     );
   }
 

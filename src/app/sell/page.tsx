@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 import { UserRoleBadge } from "@/components/ui/user-role-badge";
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
+import { PageLoading } from '@/components/ui/page-loading';
 import { useTourMode } from '@/components/providers/tour-provider';
 import { SellTourDemo } from '@/components/tour-demos/sell-tour-demo';
 import { estimateXPGain, xpForNextLevel, levelFromXP } from '@/components/sell/xp-preview-bar';
@@ -39,7 +40,7 @@ const POLL_INTERVAL_MS = 8000;
 const POLL_MAX_ATTEMPTS = 45; // ~6 minutes de polling
 
 export default function SellPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { messages } = useLocale();
   const { isTourMode } = useTourMode();
   const [currentStep, setCurrentStep] = useState(0);
@@ -187,6 +188,12 @@ export default function SellPage() {
   const userLevel = user?.level ?? 1;
   const userXP = user?.xp ?? 0;
   const xpNext = xpForNextLevel(userLevel);
+
+  if (authLoading) {
+    return (
+      <PageLoading variant="compact" message={messages.common.loading} className="min-h-[50vh]" />
+    );
+  }
 
   if (!user) {
     if (isTourMode) return <SellTourDemo />;

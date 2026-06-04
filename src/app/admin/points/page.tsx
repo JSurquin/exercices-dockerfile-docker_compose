@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { PageLoading } from '@/components/ui/page-loading';
 import {
   StarIcon,
   TicketIcon,
@@ -242,11 +243,7 @@ export default function AdminPointsPage() {
           {/* Metrics tab */}
           <TabsContent value="metrics" className="space-y-6">
             {loadingMetrics ? (
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardContent className="p-8 text-center">
-                  <p className="text-slate-400">{t.loadingMetrics}</p>
-                </CardContent>
-              </Card>
+              <PageLoading variant="compact" message={t.loadingMetrics} />
             ) : metrics ? (
               <>
                 <div className="grid md:grid-cols-2 gap-6">
@@ -439,7 +436,7 @@ export default function AdminPointsPage() {
               </CardHeader>
               <CardContent>
                 {loadingMetrics ? (
-                  <p className="text-slate-400 text-center py-8">{t.loadingLeaderboard}</p>
+                  <PageLoading variant="compact" message={t.loadingLeaderboard} />
                 ) : (
                   <div className="space-y-3">
                     {metrics?.topUsers.map((user, index) => (

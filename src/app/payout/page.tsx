@@ -27,6 +27,7 @@ import { Snowflake } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCentsToCurrency, toCents } from '@/lib/currency-converter';
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
+import { PageLoading } from '@/components/ui/page-loading';
 import { FeePreview } from '@/components/payout/FeePreview';
 import {
   Select,
@@ -157,7 +158,7 @@ interface PayoutFormData {
 }
 
 export default function PayoutPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { messages, locale } = useLocale();
   const [payoutMethod, setPayoutMethod] = useState<PayoutMethod>('card');
   const [amount, setAmount] = useState<string>('');
@@ -680,6 +681,12 @@ export default function PayoutPage() {
       setIsLoading(false);
     }
   };
+
+  if (authLoading) {
+    return (
+      <PageLoading variant="compact" message={messages.common.loading} className="min-h-[50vh]" />
+    );
+  }
 
   // Pas connecté
   if (!user) {

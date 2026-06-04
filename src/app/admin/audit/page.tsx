@@ -14,6 +14,7 @@ import { fr, enUS, zhCN } from 'date-fns/locale';
 import { useLocale } from '@/components/providers/locale-provider';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
+import { PageLoading } from '@/components/ui/page-loading';
 
 interface AuditLog {
   id: string;
@@ -142,12 +143,7 @@ export default function AuditPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex items-center space-x-2">
-          <RefreshCw className="h-4 w-4 animate-spin" />
-          <span>{auditMessages.loading}</span>
-        </div>
-      </div>
+      <PageLoading variant="compact" message={auditMessages.loading} className="min-h-[50vh]" />
     );
   }
 

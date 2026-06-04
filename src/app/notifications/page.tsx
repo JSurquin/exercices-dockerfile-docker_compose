@@ -29,6 +29,7 @@ import { fr, enUS } from "date-fns/locale";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import Link from "next/link";
+import { PageLoading } from "@/components/ui/page-loading";
 
 interface Notification {
   id: string;
@@ -66,7 +67,7 @@ const priorityColors: Record<string, string> = {
 };
 
 export default function NotificationsPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { locale, messages } = useLocale();
   const t = messages.notificationsPage;
   const queryClient = useQueryClient();
@@ -151,6 +152,12 @@ export default function NotificationsPage() {
 
   const Icon = (type: string) => notificationIcons[type] ?? BellIcon;
 
+  if (authLoading) {
+    return (
+      <PageLoading variant="compact" message={messages.common.loading} className="min-h-[50vh] py-20" />
+    );
+  }
+
   if (!user) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
@@ -172,14 +179,7 @@ export default function NotificationsPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="text-muted-foreground">{t.loading}</p>
-          </div>
-        </div>
-      </div>
+      <PageLoading variant="compact" message={t.loading} className="min-h-[50vh] py-20" />
     );
   }
 

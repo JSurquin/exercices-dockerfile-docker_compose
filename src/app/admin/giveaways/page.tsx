@@ -15,6 +15,7 @@ import { GiveawayRecurringAdmin } from '@/components/admin/giveaway-recurring-ad
 import { useGiveaways } from '@/hooks/use-giveaways';
 import { useAdminGiveaways } from '@/hooks/use-admin-giveaways';
 import { useLocale } from '@/components/providers/locale-provider';
+import { PageLoading } from '@/components/ui/page-loading';
 import { SafeImage } from '@/components/ui/safe-image';
 import Image from 'next/image';
 import {
@@ -370,11 +371,7 @@ export default function AdminGiveawaysPage() {
               </div>
 
               {loading ? (
-                <Card className="bg-slate-800/50 border-slate-700">
-                  <CardContent className="p-8 text-center">
-                    <p className="text-slate-300">{messages.admin.giveaways.list.loading}</p>
-                  </CardContent>
-                </Card>
+                <PageLoading variant="compact" message={messages.admin.giveaways.list.loading} />
               ) : (
                 <div className="space-y-4">
                   {giveaways.map((giveaway) => (

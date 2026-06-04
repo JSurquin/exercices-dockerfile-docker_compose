@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
+import { PageLoading } from '@/components/ui/page-loading';
 import { useTourMode } from '@/components/providers/tour-provider';
 import { GiveawaysTourDemo } from '@/components/tour-demos/giveaways-tour-demo';
 import { Messages } from '~/utils/types';
@@ -279,7 +280,7 @@ const GiveawayCard = ({
 };
 
 export default function GiveawaysPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { messages, locale } = useLocale();
   const { isTourMode } = useTourMode();
   const [selectedTab, setSelectedTab] = useState('active');
@@ -374,9 +375,21 @@ export default function GiveawaysPage() {
   // Chargement de l'état
   if (giveawaysEnabled === null) {
     return (
-      <div className="container mx-auto px-4 py-24 flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">{messages.giveawaysPage.loading}</div>
-      </div>
+      <PageLoading
+        variant="compact"
+        message={messages.giveawaysPage.loading}
+        className="min-h-[50vh]"
+      />
+    );
+  }
+
+  if (authLoading) {
+    return (
+      <PageLoading
+        variant="compact"
+        message={messages.common.loading}
+        className="min-h-[50vh]"
+      />
     );
   }
 
@@ -637,9 +650,7 @@ export default function GiveawaysPage() {
             {/* Active Giveaways */}
             <TabsContent value="active">
               {loading ? (
-                <div className="text-center py-8">
-                  <p>{messages.giveawaysPage.loadingGiveaways}</p>
-                </div>
+                <PageLoading variant="compact" message={messages.giveawaysPage.loadingGiveaways} />
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {activeGiveaways.map((giveaway, index) => (
@@ -670,9 +681,7 @@ export default function GiveawaysPage() {
             {/* Ended Giveaways */}
             <TabsContent value="ended">
               {loading ? (
-                <div className="text-center py-8">
-                  <p>{messages.giveawaysPage.loadingEndedGiveaways}</p>
-                </div>
+                <PageLoading variant="compact" message={messages.giveawaysPage.loadingEndedGiveaways} />
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {endedGiveaways.map((giveaway, index) => (
@@ -698,9 +707,7 @@ export default function GiveawaysPage() {
                   </CardHeader>
                   <CardContent>
                     {loadingEntries ? (
-                      <div className="text-center py-8">
-                        <p>{messages.giveawaysPage.loadingParticipations}</p>
-                      </div>
+                      <PageLoading variant="compact" message={messages.giveawaysPage.loadingParticipations} />
                     ) : myEntries.length > 0 ? (
                       <div className="space-y-3 sm:space-y-4">
                         {myEntries.map((entry: { id: string; ticketsUsed: number; enteredAt: string; participationStatus: string; giveaway: { id: string; title: string; status: string; endDate: string } }) => (

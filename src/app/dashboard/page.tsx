@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "~/lib/auth-client";
 import { useLocale } from "@/components/providers/locale-provider";
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
+import { PageLoading } from '@/components/ui/page-loading';
 import { useTourMode } from '@/components/providers/tour-provider';
 import { DashboardTourDemo } from '@/components/tour-demos/dashboard-tour-demo';
 import OnboardingDialog from "@/components/onboarding/onboarding-dialog";
@@ -383,6 +384,12 @@ export default function DashboardPage() {
   const payoutsInProgress = payoutList.filter((p) => isPayoutInProgress(p.status));
   const payoutsCompleted = payoutList.filter((p) => !isPayoutInProgress(p.status));
   const localeTag = dateLocaleTag(appLocale);
+
+  if (isPending) {
+    return (
+      <PageLoading variant="compact" message={messages.common.loading} className="min-h-[50vh]" />
+    );
+  }
 
   if (!data || !user) {
     if (isTourMode) return <DashboardTourDemo />;
@@ -1246,7 +1253,7 @@ export default function DashboardPage() {
                   )}
 
                   {payoutsLoading && !payoutList.length ? (
-                    <p className="text-sm text-muted-foreground">{messages.common.loading}</p>
+                    <PageLoading variant="compact" message={messages.common.loading} className="py-6" />
                   ) : null}
 
                   {!payoutsLoading && !payoutList.length && !payoutsQueryError ? (

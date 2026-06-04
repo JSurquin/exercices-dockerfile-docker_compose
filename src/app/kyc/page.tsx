@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
+import { PageLoading } from '@/components/ui/page-loading';
 
 const KYCAID_SUPPORTED_COUNTRIES = [
   'AF','AX','AL','DZ','AS','AD','AO','AI','AQ','AG','AR','AM','AW','AU','AT',
@@ -87,7 +88,7 @@ interface PersonalInfo {
 }
 
 export default function KYCPage() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, isLoading: authLoading } = useAuth();
   const { messages, locale } = useLocale();
   const countryOptions = getCountryOptions(locale);
   const queryClient = useQueryClient();
@@ -283,6 +284,12 @@ export default function KYCPage() {
         return true;
     }
   };
+
+  if (authLoading) {
+    return (
+      <PageLoading variant="compact" message={messages.common.loading} className="min-h-[50vh]" />
+    );
+  }
 
   if (!user) {
     return (

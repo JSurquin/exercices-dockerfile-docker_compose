@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useLocale } from '@/components/providers/locale-provider';
 import { Snowflake, Sun, Plus, Minus, RefreshCw, Wallet } from 'lucide-react';
+import { PageLoading } from '@/components/ui/page-loading';
 
 const formatCents = (cents: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100);
@@ -176,8 +177,8 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
   if (loading && !context) {
     return (
       <Card className="bg-slate-800/30 border-slate-700">
-        <CardContent className="p-6">
-          <p className="text-slate-400">{t.loading}</p>
+        <CardContent className="p-0">
+          <PageLoading variant="compact" message={t.loading} className="py-8" />
         </CardContent>
       </Card>
     );

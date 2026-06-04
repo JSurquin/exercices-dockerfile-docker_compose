@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { LockClosedIcon } from '@heroicons/react/24/outline';
+import { PageLoading } from '@/components/ui/page-loading';
 
 interface RequireAuthProps {
   children: ReactNode;
@@ -35,9 +36,11 @@ export function RequireAuth({
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-24 flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">{messages.common.loading}</div>
-      </div>
+      <PageLoading
+        variant="compact"
+        message={messages.common.loading}
+        className="min-h-[50vh]"
+      />
     );
   }
 
