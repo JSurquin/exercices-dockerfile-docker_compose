@@ -3421,6 +3421,8 @@ export const messages: Record<Locale, Messages> = {
         success: "Export réussi",
         successDesc: "Les données ont été exportées avec succès.",
         errorDesc: "Impossible d'exporter les données.",
+        exporting: "Export en cours...",
+        generatingReport: "Génération du rapport...",
         reportGenerated: "Rapport généré",
         reportGeneratedDesc: "Le rapport complet a été généré avec succès.",
         reportError: "Impossible de générer le rapport."
@@ -9491,6 +9493,8 @@ export const messages: Record<Locale, Messages> = {
         success: "Export successful",
         successDesc: "Data has been successfully exported.",
         errorDesc: "Unable to export data.",
+        exporting: "Exporting...",
+        generatingReport: "Generating report...",
         reportGenerated: "Report generated",
         reportGeneratedDesc: "The complete report has been successfully generated.",
         reportError: "Unable to generate report."
@@ -16549,6 +16553,8 @@ export const messages: Record<Locale, Messages> = {
         success: "导出成功",
         successDesc: "数据已成功导出。",
         errorDesc: "无法导出数据。",
+        exporting: "导出中...",
+        generatingReport: "正在生成报告...",
         reportGenerated: "报告已生成",
         reportGeneratedDesc: "完整报告已成功生成。",
         reportError: "无法生成报告。"

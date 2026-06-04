@@ -1,6 +1,7 @@
 'use client';
 
-import { Suspense, useMemo, useCallback } from 'react';
+import { Suspense, useMemo, useCallback, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,10 +36,13 @@ function DashboardContent() {
   const { toast } = useToast();
   const { messages } = useLocale();
   const tab = searchParams.get('tab') || 'overview';
+  const [isExportingData, setIsExportingData] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   // Quick actions handlers
   const handleExportData = useCallback(async () => {
     try {
+      setIsExportingData(true);
       const response = await fetch('/api/admin/export-data');
       if (!response.ok) throw new Error(messages.admin.exportMessages.error);
       
@@ -62,11 +66,14 @@ function DashboardContent() {
         description: messages.admin.exportMessages.errorDesc,
         variant: 'destructive',
       });
+    } finally {
+      setIsExportingData(false);
     }
   }, [toast, messages]);
 
   const handleGenerateReport = useCallback(async () => {
     try {
+      setIsGeneratingReport(true);
       const response = await fetch('/api/admin/full-report');
       if (!response.ok) throw new Error(messages.admin.exportMessages.reportError);
       
@@ -90,8 +97,12 @@ function DashboardContent() {
         description: messages.admin.exportMessages.reportError,
         variant: 'destructive',
       });
+    } finally {
+      setIsGeneratingReport(false);
     }
   }, [toast, messages]);
+
+  const exportMsg = messages.admin.exportMessages;
 
   // Quick Actions pour le header
   const quickActions = useMemo(() => (
@@ -101,20 +112,41 @@ function DashboardContent() {
         size="sm"
         className={cn('hidden md:flex', adminBtnOutline)}
         onClick={handleExportData}
+        disabled={isExportingData || isGeneratingReport}
       >
-        <DocumentArrowDownIcon className="h-4 w-4 md:mr-2" />
-        <span className="hidden md:inline">{messages.admin.dashboard.exportData}</span>
+        {isExportingData ? (
+          <Loader2 className="h-4 w-4 animate-spin md:mr-2" />
+        ) : (
+          <DocumentArrowDownIcon className="h-4 w-4 md:mr-2" />
+        )}
+        <span className="hidden md:inline">
+          {isExportingData ? exportMsg.exporting : messages.admin.dashboard.exportData}
+        </span>
       </Button>
       <Button
         size="sm"
         className={cn('hidden md:flex', adminBtnPrimary)}
         onClick={handleGenerateReport}
+        disabled={isExportingData || isGeneratingReport}
       >
-        <ChartBarIcon className="h-4 w-4 md:mr-2" />
-        <span className="hidden md:inline">{messages.admin.dashboard.fullReport}</span>
+        {isGeneratingReport ? (
+          <Loader2 className="h-4 w-4 animate-spin md:mr-2" />
+        ) : (
+          <ChartBarIcon className="h-4 w-4 md:mr-2" />
+        )}
+        <span className="hidden md:inline">
+          {isGeneratingReport ? exportMsg.generatingReport : messages.admin.dashboard.fullReport}
+        </span>
       </Button>
     </div>
-  ), [handleExportData, handleGenerateReport, messages]);
+  ), [
+    handleExportData,
+    handleGenerateReport,
+    messages.admin.dashboard,
+    exportMsg,
+    isExportingData,
+    isGeneratingReport,
+  ]);
 
   // Rendu du contenu selon le tab actif
   const renderContent = () => {

@@ -2803,6 +2803,8 @@ export interface Messages {
       success: string;
       successDesc: string;
       errorDesc: string;
+      exporting: string;
+      generatingReport: string;
       reportGenerated: string;
       reportGeneratedDesc: string;
       reportError: string;
