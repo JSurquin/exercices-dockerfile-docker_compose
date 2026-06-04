@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import '../admin/admin-panel.css';
 import { ModerationHeader } from '@/components/moderation/moderation-header';
 
 export const metadata: Metadata = {
@@ -12,7 +13,7 @@ export default function ModerationLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="dark min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
+    <div className="admin-shell dark min-h-screen bg-gradient-to-br from-[#060608] via-[#0d0d12] to-[#060608] text-foreground">
       <ModerationHeader />
       <main>{children}</main>
     </div>

@@ -1,22 +1,57 @@
 /** Classes Tailwind partagées pour les badges chat (admin + modération). */
 
+const badgeBase = 'text-[10px] sm:text-xs font-medium backdrop-blur-sm';
+
 export function chatStatusBadgeClass(status: string): string {
-  if (status === 'ACTIVE') return 'bg-green-500/20 text-green-400 border-green-500/30';
-  if (status === 'CLOSED') return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
-  return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+  if (status === 'ACTIVE') {
+    return `${badgeBase} admin-badge-status admin-badge-status--success`;
+  }
+  if (status === 'CLOSED') {
+    return `${badgeBase} admin-badge-status`;
+  }
+  return `${badgeBase} admin-badge-status admin-badge-status--pending`;
 }
 
 export function chatPriorityBadgeClass(priority: string): string {
-  if (priority === 'URGENT') return 'bg-red-500/20 text-red-400 border-red-500/30';
-  if (priority === 'HIGH') return 'bg-theme-accent/20 text-theme-highlight border-theme-accent/30';
-  if (priority === 'NORMAL') return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-  return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+  if (priority === 'URGENT') {
+    return `${badgeBase} admin-badge-status admin-badge-status--danger`;
+  }
+  if (priority === 'HIGH') {
+    return `${badgeBase} admin-badge-status admin-badge-status--pending`;
+  }
+  if (priority === 'NORMAL') {
+    return `${badgeBase} admin-badge-status`;
+  }
+  return `${badgeBase} admin-badge-status`;
 }
 
 export function chatSenderBadgeClass(senderType: string): string {
-  if (senderType === 'USER') return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-  if (senderType === 'BOT') return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-  if (senderType === 'AI') return 'bg-violet-500/20 text-violet-400 border-violet-500/30';
-  if (senderType === 'MODERATOR') return 'bg-theme-accent/20 text-theme-highlight border-theme-accent/30';
-  return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+  if (senderType === 'USER') {
+    return `${badgeBase} admin-badge-status`;
+  }
+  if (senderType === 'MODERATOR') {
+    return `${badgeBase} admin-badge-status admin-badge-status--pending`;
+  }
+  if (senderType === 'BOT' || senderType === 'AI' || senderType === 'SYSTEM') {
+    return `${badgeBase} admin-badge-status`;
+  }
+  return `${badgeBase} admin-badge-status`;
+}
+
+/** Bulles de message — modération / admin chat */
+export function chatMessageBubbleClass(senderType: string): string {
+  const base = 'rounded-xl px-3 py-2 break-words overflow-hidden';
+  if (senderType === 'USER') {
+    return `${base} bg-muted/80 border border-border/50 text-foreground rounded-tl-sm`;
+  }
+  if (senderType === 'MODERATOR') {
+    return `${base} bg-primary text-primary-foreground rounded-tr-sm`;
+  }
+  if (senderType === 'BOT' || senderType === 'SYSTEM') {
+    return `${base} bg-theme-accent/12 border border-theme-accent/20 text-foreground rounded-tr-sm`;
+  }
+  if (senderType === 'AI') {
+    return `${base} bg-theme-highlight/10 border border-theme-highlight/25 text-foreground rounded-tr-sm`;
+  }
+  return `${base} bg-muted/50 text-muted-foreground rounded-tr-sm`;
 }

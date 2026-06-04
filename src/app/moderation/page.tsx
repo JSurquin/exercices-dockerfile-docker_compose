@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ComponentType } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -16,6 +16,17 @@ import { ConversationWithMessages, ConversationFilters } from '@/lib/types/chat'
 import { ConversationStatus, ConversationPriority } from '@prisma/client';
 import { useSession } from '~/lib/auth-client';
 import { chatPriorityBadgeClass, chatStatusBadgeClass } from '@/lib/chat-badges';
+import {
+  adminBadgeStatus,
+  adminBtnOutline,
+  adminBtnPrimary,
+  adminGlassCard,
+  adminIconAccent,
+  adminStatCard,
+  panelGlassField,
+  panelListRow,
+} from '@/lib/admin-ui';
+import { cn } from '@/lib/utils';
 import {
   ChatBubbleLeftRightIcon,
   MagnifyingGlassIcon,
@@ -126,11 +137,11 @@ export default function ModerationPage() {
   if (!session?.user || (session.user.role !== 'MODERATOR' && session.user.role !== 'ADMIN')) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className={adminGlassCard}>
           <CardContent className="p-8 text-center">
             <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-theme-accent" />
-            <h2 className="text-2xl font-bold mb-2 text-white">{messages.moderation.accessDenied.title}</h2>
-            <p className="text-slate-400">
+            <h2 className="text-2xl font-bold mb-2 text-foreground">{messages.moderation.accessDenied.title}</h2>
+            <p className="text-muted-foreground">
               {messages.moderation.accessDenied.description}
             </p>
           </CardContent>
@@ -147,11 +158,11 @@ export default function ModerationPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-6 sm:mb-8"
       >
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 flex items-center gap-2 text-white">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 flex items-center gap-2 text-foreground">
           <ChatBubbleLeftRightIcon className="w-6 h-6 sm:w-7 sm:h-7 text-theme-accent shrink-0" />
           {messages.moderation.title}
         </h1>
-        <p className="text-slate-400 text-sm sm:text-base">
+        <p className="text-muted-foreground text-sm sm:text-base">
           {messages.moderation.subtitle}
         </p>
       </motion.div>
@@ -164,66 +175,39 @@ export default function ModerationPage() {
           transition={{ delay: 0.1 }}
           className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6"
         >
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm text-slate-400 truncate">{messages.moderation.stats.activeConversations}</p>
-                  <p className="text-xl sm:text-2xl font-bold text-white">{stats.activeConversations}</p>
-                </div>
-                <ChatBubbleLeftRightIcon className="w-6 h-6 sm:w-8 sm:h-8 text-green-400 shrink-0" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm text-slate-400 truncate">{messages.moderation.stats.unassigned}</p>
-                  <p className="text-xl sm:text-2xl font-bold text-white">{stats.unassignedConversations}</p>
-                </div>
-                <UserIcon className="w-6 h-6 sm:w-8 sm:h-8 text-theme-highlight shrink-0" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm text-slate-400 truncate">{messages.moderation.stats.responseTime}</p>
-                  <p className="text-xl sm:text-2xl font-bold text-white">{stats.averageResponseTime}min</p>
-                </div>
-                <ClockIcon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400 shrink-0" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm text-slate-400 truncate">{messages.moderation.stats.closed}</p>
-                  <p className="text-xl sm:text-2xl font-bold text-white">{stats.closedConversations}</p>
-                </div>
-                <CheckCircleIcon className="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 shrink-0" />
-              </div>
-            </CardContent>
-          </Card>
+          <ModStatCard
+            label={messages.moderation.stats.activeConversations}
+            value={stats.activeConversations}
+            icon={ChatBubbleLeftRightIcon}
+          />
+          <ModStatCard
+            label={messages.moderation.stats.unassigned}
+            value={stats.unassignedConversations}
+            icon={UserIcon}
+          />
+          <ModStatCard
+            label={messages.moderation.stats.responseTime}
+            value={`${stats.averageResponseTime}min`}
+            icon={ClockIcon}
+          />
+          <ModStatCard
+            label={messages.moderation.stats.closed}
+            value={stats.closedConversations}
+            icon={CheckCircleIcon}
+          />
         </motion.div>
       )}
 
       {/* Filtres — collapsible sur mobile */}
-      <Card className="mb-4 sm:mb-6 bg-slate-800/50 border-slate-700">
+      <Card className={cn(adminGlassCard, 'mb-4 sm:mb-6')}>
         <Collapsible defaultOpen={false} className="sm:hidden">
           <CollapsibleTrigger asChild>
-            <button className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-white">
+            <button className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground">
               <span className="flex items-center gap-2">
                 <FunnelIcon className="w-4 h-4 text-theme-accent" />
                 {messages.moderation.filtersTitle}
               </span>
-              <ChevronDownIcon className="w-4 h-4 text-slate-400 transition-transform duration-200 [[data-state=open]_&]:rotate-180" />
+              <ChevronDownIcon className="w-4 h-4 text-muted-foreground transition-transform duration-200 [[data-state=open]_&]:rotate-180" />
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent>
@@ -235,7 +219,7 @@ export default function ModerationPage() {
 
         <div className="hidden sm:block">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base text-white">{messages.moderation.filtersTitle}</CardTitle>
+            <CardTitle className="text-base text-foreground">{messages.moderation.filtersTitle}</CardTitle>
           </CardHeader>
           <CardContent>
             <FiltersGrid filters={filters} setFilters={setFilters} messages={messages} />
@@ -244,9 +228,9 @@ export default function ModerationPage() {
       </Card>
 
       {/* Liste des conversations */}
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className={adminGlassCard}>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base sm:text-lg text-white">
+          <CardTitle className="text-base sm:text-lg text-foreground">
             {messages.moderation.conversationsCount} ({conversations.length})
           </CardTitle>
         </CardHeader>
@@ -254,12 +238,12 @@ export default function ModerationPage() {
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
-              <p className="mt-2 text-slate-400">{messages.moderation.loading}</p>
+              <p className="mt-2 text-muted-foreground">{messages.moderation.loading}</p>
             </div>
           ) : conversations.length === 0 ? (
             <div className="text-center py-8">
-              <ChatBubbleLeftRightIcon className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-slate-600" />
-              <p className="text-slate-400">{messages.moderation.noConversations}</p>
+              <ChatBubbleLeftRightIcon className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-muted-foreground/40" />
+              <p className="text-muted-foreground">{messages.moderation.noConversations}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -268,12 +252,12 @@ export default function ModerationPage() {
                   key={conversation.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-lg border border-slate-700 bg-slate-900/40 p-3 sm:p-4 hover:border-slate-600 transition-colors"
+                  className={panelListRow}
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
-                        <h3 className="font-semibold text-white truncate max-w-full sm:max-w-xs">
+                        <h3 className="font-semibold text-foreground truncate max-w-full sm:max-w-xs">
                           {conversation.subject || messages.moderation.noSubject}
                         </h3>
                         <Badge variant="outline" className={`text-[10px] sm:text-xs ${chatPriorityBadgeClass(conversation.priority)}`}>
@@ -283,14 +267,14 @@ export default function ModerationPage() {
                           {conversation.status}
                         </Badge>
                         {conversation.category && (
-                          <Badge variant="outline" className="text-[10px] sm:text-xs border-slate-600 text-slate-300">
+                          <Badge variant="outline" className={cn('text-[10px] sm:text-xs', adminBadgeStatus)}>
                             {conversation.category}
                           </Badge>
                         )}
                       </div>
 
-                      <div className="text-sm text-slate-400 mb-2 min-w-0">
-                        <span className="font-medium text-slate-300 break-all">
+                      <div className="text-sm text-muted-foreground mb-2 min-w-0">
+                        <span className="font-medium text-foreground/80 break-all">
                           {conversation.user?.name || conversation.user?.email || messages.moderation.anonymousUser}
                         </span>
                         {conversation.user?.steamUsername && (
@@ -299,16 +283,16 @@ export default function ModerationPage() {
                       </div>
 
                       {conversation.messages.length > 0 && (
-                        <p className="text-sm text-slate-500 line-clamp-2 break-words">
+                        <p className="text-sm text-muted-foreground/80 line-clamp-2 break-words">
                           {conversation.messages[0].content}
                         </p>
                       )}
 
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-slate-500">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-muted-foreground">
                         <span className="whitespace-nowrap">{messages.moderation.createdOn} {formatDate(conversation.createdAt)}</span>
                         <span className="whitespace-nowrap">{conversation._count?.messages || 0} {messages.moderation.messages}</span>
                         {conversation.assignedModerator && (
-                          <span className="break-all text-slate-400">
+                          <span className="break-all">
                             {messages.moderation.assignedTo} {conversation.assignedModerator.name || conversation.assignedModerator.email}
                           </span>
                         )}
@@ -320,7 +304,7 @@ export default function ModerationPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 sm:flex-none border-slate-600 text-slate-300 hover:text-white text-xs h-8"
+                          className={cn('flex-1 sm:flex-none text-xs h-8', adminBtnOutline)}
                           onClick={() => assignConversation(conversation.id, session.user!.id)}
                         >
                           {messages.moderation.actions.assignToMe}
@@ -331,7 +315,7 @@ export default function ModerationPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 sm:flex-none border-slate-600 text-slate-300 hover:text-white text-xs h-8"
+                          className={cn('flex-1 sm:flex-none text-xs h-8', adminBtnOutline)}
                           onClick={() => updateConversationStatus(conversation.id, 'CLOSED')}
                         >
                           {messages.moderation.actions.close}
@@ -340,7 +324,8 @@ export default function ModerationPage() {
 
                       <Button
                         size="sm"
-                        className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-8"
+                        variant="cta"
+                        className={cn('flex-1 sm:flex-none text-xs h-8', adminBtnPrimary)}
                         onClick={() => router.push(`/moderation/conversations/${conversation.id}`)}
                       >
                         {messages.moderation.actions.open}
@@ -354,6 +339,30 @@ export default function ModerationPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function ModStatCard({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string;
+  value: string | number;
+  icon: ComponentType<{ className?: string }>;
+}) {
+  return (
+    <Card className={adminStatCard}>
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">{label}</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{value}</p>
+          </div>
+          <Icon className={cn(adminIconAccent, 'w-6 h-6 sm:w-8 sm:h-8')} />
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -372,10 +381,10 @@ function FiltersGrid({
         value={filters.status || 'ALL'}
         onValueChange={(value) => setFilters(prev => ({ ...prev, status: value === 'ALL' ? undefined : value as ConversationStatus }))}
       >
-        <SelectTrigger className="bg-slate-900 border-slate-600 text-white h-9">
+        <SelectTrigger className={cn(panelGlassField, 'h-9')}>
           <SelectValue placeholder={messages.moderation.filters.statusPlaceholder} />
         </SelectTrigger>
-        <SelectContent className="bg-slate-900 border-slate-700">
+        <SelectContent className={cn(adminGlassCard, 'border')}>
           <SelectItem value="ALL">{messages.moderation.filters.allStatuses}</SelectItem>
           <SelectItem value="ACTIVE">{messages.moderation.filters.active}</SelectItem>
           <SelectItem value="CLOSED">{messages.moderation.filters.closed}</SelectItem>
@@ -387,10 +396,10 @@ function FiltersGrid({
         value={filters.priority || 'ALL'}
         onValueChange={(value) => setFilters(prev => ({ ...prev, priority: value === 'ALL' ? undefined : value as ConversationPriority }))}
       >
-        <SelectTrigger className="bg-slate-900 border-slate-600 text-white h-9">
+        <SelectTrigger className={cn(panelGlassField, 'h-9')}>
           <SelectValue placeholder={messages.moderation.filters.priorityPlaceholder} />
         </SelectTrigger>
-        <SelectContent className="bg-slate-900 border-slate-700">
+        <SelectContent className={cn(adminGlassCard, 'border')}>
           <SelectItem value="ALL">{messages.moderation.filters.allPriorities}</SelectItem>
           <SelectItem value="LOW">{messages.moderation.filters.low}</SelectItem>
           <SelectItem value="NORMAL">{messages.moderation.filters.normal}</SelectItem>
@@ -403,10 +412,10 @@ function FiltersGrid({
         value={filters.assignedTo || 'ALL'}
         onValueChange={(value) => setFilters(prev => ({ ...prev, assignedTo: value === 'ALL' ? undefined : value }))}
       >
-        <SelectTrigger className="bg-slate-900 border-slate-600 text-white h-9">
+        <SelectTrigger className={cn(panelGlassField, 'h-9')}>
           <SelectValue placeholder={messages.moderation.filters.assignmentPlaceholder} />
         </SelectTrigger>
-        <SelectContent className="bg-slate-900 border-slate-700">
+        <SelectContent className={cn(adminGlassCard, 'border')}>
           <SelectItem value="ALL">{messages.moderation.filters.all}</SelectItem>
           <SelectItem value="me">{messages.moderation.filters.myConversations}</SelectItem>
           <SelectItem value="unassigned">{messages.moderation.filters.unassigned}</SelectItem>
@@ -414,10 +423,10 @@ function FiltersGrid({
       </Select>
 
       <div className="relative">
-        <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder={messages.moderation.filters.searchPlaceholder}
-          className="pl-9 bg-slate-900 border-slate-600 text-white h-9"
+          className={cn('pl-9 h-9', panelGlassField)}
           value={filters.search || ''}
           onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
         />

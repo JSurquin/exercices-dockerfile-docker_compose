@@ -1,5 +1,5 @@
 /**
- * Admin panel — glass chrome, scoped via .admin-shell on layout root
+ * Admin & moderation panels — glass chrome, scoped via layout root class
  */
 .admin-shell {
   --admin-glass-bg: linear-gradient(

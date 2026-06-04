@@ -41,3 +41,11 @@ export const adminBtnPrimary = 'btn-cta rounded-md font-medium text-white shadow
 /** Secondary / visit-style */
 export const adminBtnOutline =
   'border-theme-accent/30 bg-background/30 text-theme-accent hover:bg-theme-accent/10 hover:text-theme-accent hover:border-theme-accent/40';
+
+/** Inputs / selects in dark panels */
+export const panelGlassField =
+  'bg-background/30 border-border/50 text-foreground backdrop-blur-sm focus-visible:border-theme-accent/40 focus-visible:ring-theme-accent/20';
+
+/** Conversation list row */
+export const panelListRow =
+  'rounded-lg border border-border/40 bg-background/20 p-3 sm:p-4 hover:border-theme-accent/25 hover:bg-theme-accent/5 transition-colors backdrop-blur-sm';

@@ -21,6 +21,8 @@ import {
   HomeIcon,
   ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
+import { adminBtnOutline, adminGlassCard } from '@/lib/admin-ui';
+import { cn } from '@/lib/utils';
 
 export function ModerationHeader() {
   const pathname = usePathname();
@@ -31,12 +33,12 @@ export function ModerationHeader() {
   const isConversationPage = pathname.startsWith('/moderation/conversations/');
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/90 backdrop-blur-md">
+    <header className="admin-glass-header sticky top-0 z-40 border-b">
       <div className="container mx-auto flex h-14 items-center justify-between gap-3 px-3 sm:px-4 md:px-6">
         <div className="flex items-center gap-2 min-w-0">
           <Link
             href="/moderation"
-            className="flex items-center gap-2 min-w-0 text-white hover:text-theme-highlight transition-colors"
+            className="flex items-center gap-2 min-w-0 text-foreground hover:text-theme-highlight transition-colors"
           >
             <ChatBubbleLeftRightIcon className="h-5 w-5 shrink-0 text-theme-accent" />
             <span className="font-semibold text-sm sm:text-base truncate">
@@ -46,7 +48,7 @@ export function ModerationHeader() {
           {isConversationPage && (
             <Link
               href="/moderation"
-              className="hidden sm:inline-flex text-xs text-slate-400 hover:text-white transition-colors ml-1"
+              className="hidden sm:inline-flex text-xs text-muted-foreground hover:text-foreground transition-colors ml-1"
             >
               ← {messages.moderation.conversation.notFound.backButton}
             </Link>
@@ -59,7 +61,7 @@ export function ModerationHeader() {
               asChild
               variant="outline"
               size="sm"
-              className="hidden sm:inline-flex border-slate-700 text-slate-300 hover:text-white h-8 text-xs"
+              className={cn('hidden sm:inline-flex h-8 text-xs', adminBtnOutline)}
             >
               <Link href="/admin/chat">
                 <ShieldCheckIcon className="h-3.5 w-3.5 mr-1.5" />
@@ -73,30 +75,30 @@ export function ModerationHeader() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 px-2 hover:bg-slate-800 text-slate-300"
+                className="h-9 px-2 hover:bg-theme-accent/10 text-muted-foreground"
               >
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={(user as { image?: string })?.image} />
-                  <AvatarFallback className="bg-slate-700 text-white text-xs">
+                  <AvatarFallback className="bg-muted text-foreground text-xs">
                     {user?.name?.[0] || user?.email?.[0] || '?'}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52 bg-slate-900 border-slate-700">
-              <DropdownMenuLabel className="text-slate-300">
+            <DropdownMenuContent align="end" className={cn('w-52', adminGlassCard, 'border p-1')}>
+              <DropdownMenuLabel className="text-foreground">
                 <p className="font-medium truncate">{user?.name || user?.email}</p>
-                <p className="text-xs text-slate-500 font-normal truncate">{user?.email}</p>
+                <p className="text-xs text-muted-foreground font-normal truncate">{user?.email}</p>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-slate-700" />
-              <DropdownMenuItem asChild className="text-slate-300 focus:bg-slate-800 focus:text-white">
+              <DropdownMenuSeparator className="bg-border/60" />
+              <DropdownMenuItem asChild className="text-foreground focus:bg-theme-accent/10 focus:text-theme-highlight">
                 <Link href="/">
                   <HomeIcon className="h-4 w-4 mr-2" />
                   Accueil
                 </Link>
               </DropdownMenuItem>
               {user?.role === 'ADMIN' && (
-                <DropdownMenuItem asChild className="text-slate-300 focus:bg-slate-800 focus:text-white sm:hidden">
+                <DropdownMenuItem asChild className="text-foreground focus:bg-theme-accent/10 focus:text-theme-highlight sm:hidden">
                   <Link href="/admin/chat">
                     <ShieldCheckIcon className="h-4 w-4 mr-2" />
                     Admin
@@ -105,7 +107,7 @@ export function ModerationHeader() {
               )}
               <DropdownMenuItem
                 onClick={() => logout()}
-                className="text-red-400 focus:bg-red-500/10 focus:text-red-400"
+                className="text-destructive focus:bg-destructive/10 focus:text-destructive"
               >
                 <ArrowLeftOnRectangleIcon className="h-4 w-4 mr-2" />
                 Déconnexion

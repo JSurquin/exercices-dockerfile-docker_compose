@@ -26,7 +26,14 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
-import { chatPriorityBadgeClass, chatSenderBadgeClass, chatStatusBadgeClass } from '@/lib/chat-badges';
+import { chatMessageBubbleClass, chatPriorityBadgeClass, chatSenderBadgeClass, chatStatusBadgeClass } from '@/lib/chat-badges';
+import {
+  adminBtnOutline,
+  adminBtnPrimary,
+  adminGlassCard,
+  panelGlassField,
+} from '@/lib/admin-ui';
+import { cn } from '@/lib/utils';
 import { resolveI18nContent } from '@/lib/resolve-i18n-content';
 
 const senderTypeLabels: Record<string, string> = {
@@ -183,7 +190,7 @@ export default function ConversationPage() {
   if (!session?.user || (session.user.role !== 'MODERATOR' && session.user.role !== 'ADMIN')) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Card>
+        <Card className={adminGlassCard}>
           <CardContent className="p-8 text-center">
             <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-theme-accent" />
             <h2 className="text-2xl font-bold mb-2">Accès refusé</h2>
@@ -210,11 +217,11 @@ export default function ConversationPage() {
   if (!conversation) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Card>
+        <Card className={adminGlassCard}>
           <CardContent className="p-8 text-center">
             <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-theme-accent" />
             <h2 className="text-2xl font-bold mb-2">{messages.moderation.conversation.notFound.title}</h2>
-            <Button onClick={() => router.push('/moderation')}>
+            <Button variant="cta" className={adminBtnPrimary} onClick={() => router.push('/moderation')}>
               {messages.moderation.conversation.notFound.backButton}
             </Button>
           </CardContent>
@@ -243,7 +250,7 @@ export default function ConversationPage() {
           <Button
             variant="outline"
             size="icon"
-            className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
+            className={cn('flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9', adminBtnOutline)}
             onClick={() => router.push('/moderation')}
           >
             <ArrowLeftIcon className="w-4 h-4" />
@@ -277,13 +284,13 @@ export default function ConversationPage() {
           {/* Version mobile : accordéon */}
           <Collapsible className="lg:hidden">
             <CollapsibleTrigger asChild>
-              <button className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-700 bg-slate-800/50 text-sm font-medium text-white hover:bg-slate-800 transition-colors">
+              <button className={cn('w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium text-foreground hover:bg-theme-accent/8 transition-colors', adminGlassCard)}>
                 <span>{messages.moderation.conversation.info.title}</span>
                 <ChevronDownIcon className="w-4 h-4 text-muted-foreground transition-transform duration-200 [[data-state=open]_&]:rotate-180" />
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="mt-2 rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 space-y-3">
+              <div className={cn('mt-2 px-4 py-3 space-y-3', adminGlassCard)}>
                 <SidebarContent
                   conversation={conversation}
                   messages={messages}
@@ -296,8 +303,8 @@ export default function ConversationPage() {
           </Collapsible>
 
           {/* Version desktop : toujours visible */}
-          <div className="hidden lg:block rounded-lg border border-slate-700 bg-slate-800/50 p-4 space-y-4">
-            <p className="font-semibold text-sm text-white">{messages.moderation.conversation.info.title}</p>
+          <div className={cn('hidden lg:block p-4 space-y-4', adminGlassCard)}>
+            <p className="font-semibold text-sm text-foreground">{messages.moderation.conversation.info.title}</p>
             <SidebarContent
               conversation={conversation}
               messages={messages}
@@ -311,12 +318,12 @@ export default function ConversationPage() {
         {/* ── Zone chat ── */}
         <div className="lg:col-span-3">
           <Card
-            className="flex flex-col overflow-hidden bg-slate-800/50 border-slate-700"
+            className={cn('flex flex-col overflow-hidden', adminGlassCard)}
             style={{ height: 'clamp(480px, calc(100dvh - 180px), 860px)' }}
           >
             {/* En-tête chat */}
-            <CardHeader className="flex-shrink-0 py-3 px-4 border-b border-slate-700">
-              <CardTitle className="text-sm sm:text-base text-white">
+            <CardHeader className="flex-shrink-0 py-3 px-4 border-b border-border/50">
+              <CardTitle className="text-sm sm:text-base text-foreground">
                 {messages.moderation.conversation.messages.title}{' '}
                 <span className="text-muted-foreground font-normal">
                   ({conversation.messages.length})
@@ -354,21 +361,7 @@ export default function ConversationPage() {
                           {formatTime(msg.createdAt)}
                         </span>
                       </div>
-                      <div
-                        className={`rounded-xl px-3 py-2 break-words overflow-hidden ${
-                          msg.senderType === 'USER'
-                            ? 'bg-muted border rounded-tl-sm'
-                            : msg.senderType === 'MODERATOR'
-                            ? 'bg-primary text-primary-foreground rounded-tr-sm'
-                            : msg.senderType === 'BOT'
-                            ? 'bg-green-600 text-white rounded-tr-sm'
-                            : msg.senderType === 'AI'
-                            ? 'bg-violet-100 dark:bg-violet-950/40 border border-violet-300 dark:border-violet-700 text-violet-900 dark:text-violet-100 rounded-tr-sm'
-                            : msg.senderType === 'SYSTEM'
-                            ? 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 text-emerald-800 dark:text-emerald-200 rounded-tr-sm'
-                            : 'bg-muted-foreground/20 rounded-tr-sm'
-                        }`}
-                      >
+                      <div className={chatMessageBubbleClass(msg.senderType)}>
                         <p className="text-sm whitespace-pre-wrap leading-relaxed">
                           {resolveI18nContent(msg.content, messages)}
                         </p>
@@ -381,7 +374,7 @@ export default function ConversationPage() {
             </div>
 
             {/* Zone saisie — ancrée en bas, jamais couverte */}
-            <div className="flex-shrink-0 border-t border-slate-700 bg-slate-900/60 px-3 sm:px-4 py-2.5 sm:py-3">
+            <div className="flex-shrink-0 border-t border-border/50 bg-background/30 backdrop-blur-sm px-3 sm:px-4 py-2.5 sm:py-3">
               <div className="flex gap-2 items-end">
                 <Textarea
                   placeholder={messages.moderation.conversation.typeYourReply}
@@ -393,14 +386,15 @@ export default function ConversationPage() {
                       sendMessage();
                     }
                   }}
-                  className="flex-1 min-h-[52px] sm:min-h-[60px] max-h-[120px] resize-none text-sm bg-slate-900 border-slate-600 text-white"
+                  className={cn('flex-1 min-h-[52px] sm:min-h-[60px] max-h-[120px] resize-none text-sm', panelGlassField)}
                   disabled={sending}
                 />
                 <Button
                   onClick={sendMessage}
                   disabled={!message.trim() || sending}
                   size="icon"
-                  className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 self-end bg-primary hover:bg-primary/90"
+                  variant="cta"
+                  className={cn('flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 self-end', adminBtnPrimary)}
                 >
                   {sending ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
@@ -477,7 +471,7 @@ function SidebarContent({
         ) : (
           <div className="space-y-1.5">
             <p className="text-xs text-muted-foreground">{messages.moderation.conversation.info.unassigned}</p>
-            <Button size="sm" onClick={assignToMe} className="w-full h-8 text-xs">
+            <Button size="sm" variant="cta" onClick={assignToMe} className={cn('w-full h-8 text-xs', adminBtnPrimary)}>
               {messages.moderation.conversation.info.assignToMe}
             </Button>
           </div>
@@ -513,11 +507,11 @@ function SidebarContent({
           {messages.moderation.conversation.info.actionsTitle}
         </p>
         {(conversation as any).status === 'ACTIVE' ? (
-          <Button size="sm" variant="outline" className="w-full h-8 text-xs" onClick={() => updateStatus('CLOSED')}>
+          <Button size="sm" variant="outline" className={cn('w-full h-8 text-xs', adminBtnOutline)} onClick={() => updateStatus('CLOSED')}>
             {messages.moderation.conversation.info.closeConversation}
           </Button>
         ) : (
-          <Button size="sm" variant="outline" className="w-full h-8 text-xs" onClick={() => updateStatus('ACTIVE')}>
+          <Button size="sm" variant="outline" className={cn('w-full h-8 text-xs', adminBtnOutline)} onClick={() => updateStatus('ACTIVE')}>
             {messages.moderation.conversation.info.reopenConversation}
           </Button>
         )}
