@@ -153,7 +153,7 @@ export default function TradeLinkConfig() {
                     <li key={index}>{instruction}</li>
                   ))}
                 </ol>
-                <div className="flex items-center space-x-2">
+                <div className="md:flex grid gap-y-4 md:gap-y-0 items-center space-x-2">
                   <Button
                     variant="outline"
                     size="sm"
