@@ -44,7 +44,12 @@ function DashboardContent() {
     try {
       setIsExportingData(true);
       const response = await fetch('/api/admin/export-data');
-      if (!response.ok) throw new Error(messages.admin.exportMessages.error);
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(
+          typeof body?.error === 'string' ? body.error : messages.admin.exportMessages.error
+        );
+      }
       
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -63,7 +68,8 @@ function DashboardContent() {
     } catch (error) {
       toast({
         title: messages.common.error || 'Error',
-        description: messages.admin.exportMessages.errorDesc,
+        description:
+          error instanceof Error ? error.message : messages.admin.exportMessages.errorDesc,
         variant: 'destructive',
       });
     } finally {
@@ -75,7 +81,12 @@ function DashboardContent() {
     try {
       setIsGeneratingReport(true);
       const response = await fetch('/api/admin/full-report');
-      if (!response.ok) throw new Error(messages.admin.exportMessages.reportError);
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(
+          typeof body?.error === 'string' ? body.error : messages.admin.exportMessages.reportError
+        );
+      }
       
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -94,7 +105,8 @@ function DashboardContent() {
     } catch (error) {
       toast({
         title: messages.common.error || 'Error',
-        description: messages.admin.exportMessages.reportError,
+        description:
+          error instanceof Error ? error.message : messages.admin.exportMessages.reportError,
         variant: 'destructive',
       });
     } finally {

@@ -28,9 +28,12 @@ export async function GET(request: NextRequest) {
         select: {
           id: true,
           email: true,
+          name: true,
+          steamUsername: true,
           role: true,
           kycStatus: true,
           createdAt: true,
+          updatedAt: true,
           xp: true,
           tickets: true,
           _count: {
@@ -49,6 +52,7 @@ export async function GET(request: NextRequest) {
           user: {
             select: {
               steamUsername: true,
+              name: true,
               email: true
             }
           },
@@ -63,9 +67,13 @@ export async function GET(request: NextRequest) {
           user: {
             select: {
               steamUsername: true,
+              name: true,
               email: true
             }
-          }
+          },
+          paymentMethod: {
+            select: { type: true },
+          },
         },
         orderBy: { createdAt: 'desc' }
       }),
@@ -199,7 +207,7 @@ export async function GET(request: NextRequest) {
       trades: trades.map((trade: any) => ({
         id: trade.id,
         userId: trade.userId,
-        username: trade.user.steamUsername,
+        username: trade.user.steamUsername || trade.user.name || trade.user.email || '—',
         status: trade.status,
         grossCents: trade.grossCents || 0,
         netCents: trade.netCents || 0,
@@ -208,7 +216,7 @@ export async function GET(request: NextRequest) {
       })),
       users: users.map((user: any) => ({
         id: user.id,
-        username: user.steamUsername,
+        username: user.steamUsername || user.name || user.email || '—',
         email: user.email,
         role: user.role,
         kycStatus: user.kycStatus,
@@ -218,8 +226,8 @@ export async function GET(request: NextRequest) {
       payouts: payouts.map((payout: any) => ({
         id: payout.id,
         userId: payout.userId,
-        username: payout.user.steamUsername,
-        method: payout.paymentMethod?.type,
+        username: payout.user.steamUsername || payout.user.name || '—',
+        method: payout.paymentMethod?.type ?? '—',
         amountCents: payout.amountCents,
         status: payout.status,
         createdAt: payout.createdAt.toISOString(),
@@ -227,7 +235,7 @@ export async function GET(request: NextRequest) {
       })),
       affiliates: affiliates.map((affiliate: any) => ({
         id: affiliate.id,
-        username: affiliate.user.steamUsername,
+        username: affiliate.user.steamUsername || affiliate.user.name || '—',
         code: affiliate.code,
         totalReferrals: affiliate._count.referrals,
         totalCommissionCents: affiliate.totalCommissionCents,
@@ -236,10 +244,10 @@ export async function GET(request: NextRequest) {
       })),
       commissions: commissions.map((commission: any) => ({
         id: commission.id,
-        affiliateUsername: commission.affiliate.user.steamUsername,
+        affiliateUsername: commission.affiliate.user.steamUsername || '—',
         amountCents: commission.amountCents,
         status: commission.status,
-        referralId: commission.referralId,
+        referralId: commission.referralId ?? null,
         createdAt: commission.createdAt.toISOString()
       })),
       kyc: kycDocuments.map((kyc: any) => ({

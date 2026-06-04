@@ -26,9 +26,12 @@ export async function GET(request: NextRequest) {
         select: {
           id: true,
           email: true,
+          name: true,
+          steamUsername: true,
           role: true,
           kycStatus: true,
           createdAt: true,
+          updatedAt: true,
         },
         orderBy: { createdAt: 'desc' }
       }),
@@ -51,9 +54,13 @@ export async function GET(request: NextRequest) {
         include: {
           user: {
             select: {
-              steamUsername: true
+              steamUsername: true,
+              name: true,
             }
-          }
+          },
+          paymentMethod: {
+            select: { type: true },
+          },
         },
         orderBy: { createdAt: 'desc' },
         take: 100
@@ -139,7 +146,7 @@ export async function GET(request: NextRequest) {
       })),
       users: users.map((user: any) => ({
         id: user.id,
-        username: user.steamUsername,
+        username: user.steamUsername || user.name || user.email || '—',
         email: user.email,
         role: user.role,
         kycStatus: user.kycStatus,
@@ -149,8 +156,8 @@ export async function GET(request: NextRequest) {
       payouts: payouts.map((payout: any) => ({
         id: payout.id,
         userId: payout.userId,
-        username: payout.user.steamUsername,
-        method: payout.paymentMethod?.type,
+        username: payout.user.steamUsername || payout.user.name || '—',
+        method: payout.paymentMethod?.type ?? '—',
         amountCents: payout.amountCents,
         status: payout.status,
         createdAt: payout.createdAt.toISOString(),
@@ -170,7 +177,7 @@ export async function GET(request: NextRequest) {
         affiliateUsername: commission.affiliate.user.steamUsername,
         amountCents: commission.amountCents,
         status: commission.status,
-        referralId: commission.referralId,
+        referralId: commission.referralId ?? null,
         createdAt: commission.createdAt.toISOString()
       })),
       kyc: kycDocuments.map((kyc: any) => ({
@@ -222,7 +229,7 @@ async function getVolumeByDay() {
         gte: thirtyDaysAgo
       },
       status: {
-        in: ['PAID', 'AVAILABLE', 'PAYOUT_PENDING']
+        notIn: ['CANCELLED', 'FAILED']
       }
     },
     select: {
