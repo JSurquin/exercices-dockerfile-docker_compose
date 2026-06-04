@@ -30,9 +30,15 @@ export type ChartColor = keyof typeof CHART_COLORS;
 
 /** Couleur brand des graphiques selon le thème sur <html> */
 export function resolveChartBrandColor(): string {
-  if (typeof document === 'undefined') return CHART_COLORS.orange;
-  if (document.documentElement.classList.contains('moonskin')) {
+  if (typeof document === 'undefined') return CHART_COLORS.moonskin;
+  if (
+    document.documentElement.classList.contains('moonskin') ||
+    document.querySelector('.admin-shell')
+  ) {
     return CHART_COLORS.moonskin;
+  }
+  if (document.documentElement.classList.contains('cs2')) {
+    return CHART_COLORS.orange;
   }
   return CHART_COLORS.orange;
 }

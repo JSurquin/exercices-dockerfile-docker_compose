@@ -38,6 +38,10 @@ export const adminIconAccentLg = 'h-5 w-5 text-theme-accent shrink-0';
 /** Primary action button */
 export const adminBtnPrimary = 'btn-cta rounded-md font-medium text-white shadow-md hover:brightness-110';
 
+/** Tabs / triggers actifs */
+export const adminTabActive =
+  'data-[state=active]:bg-cta-gradient data-[state=active]:text-white data-[state=active]:shadow-md';
+
 /** Secondary / visit-style */
 export const adminBtnOutline =
   'border-theme-accent/30 bg-background/30 text-theme-accent hover:bg-theme-accent/10 hover:text-theme-accent hover:border-theme-accent/40';

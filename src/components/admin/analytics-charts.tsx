@@ -11,7 +11,7 @@ import { RefreshCw, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLocale } from '@/components/providers/locale-provider';
 import { ADMIN_ANALYTICS_REFETCH_INTERVAL_MS } from '@/lib/admin-constants';
-import { CHART_COLORS, CHART_PALETTE } from '@/lib/chart-colors';
+import { CHART_COLORS, CHART_PALETTE, resolveChartBrandColor } from '@/lib/chart-colors';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 
 interface AnalyticsData {
@@ -110,7 +110,7 @@ function HorizontalBarChart({
       .attr('y', d => yScale(d.label) || 0)
       .attr('width', 0)
       .attr('height', yScale.bandwidth())
-      .attr('fill', d => d.color || CHART_COLORS.orange)
+      .attr('fill', d => d.color || resolveChartBrandColor())
       .attr('rx', 4)
       .transition()
       .duration(800)
@@ -173,6 +173,7 @@ function AreaChart({
   useEffect(() => {
     if (!svgRef.current || !data.length) return;
 
+    const brandColor = resolveChartBrandColor();
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -202,12 +203,12 @@ function AreaChart({
 
     gradient.append('stop')
       .attr('offset', '0%')
-      .attr('stop-color', CHART_COLORS.orange)
+      .attr('stop-color', brandColor)
       .attr('stop-opacity', 0.1);
 
     gradient.append('stop')
       .attr('offset', '100%')
-      .attr('stop-color', CHART_COLORS.orange)
+      .attr('stop-color', brandColor)
       .attr('stop-opacity', 0.8);
 
     // Ligne
@@ -233,7 +234,7 @@ function AreaChart({
     g.append('path')
       .datum(data)
       .attr('fill', 'none')
-      .attr('stroke', CHART_COLORS.orange)
+      .attr('stroke', brandColor)
       .attr('stroke-width', 2)
       .attr('d', line);
 
@@ -245,7 +246,7 @@ function AreaChart({
       .attr('cx', d => (xScale(d[dateKey]) || 0) + xScale.bandwidth() / 2)
       .attr('cy', d => yScale(d[valueKey]))
       .attr('r', 0)
-      .attr('fill', CHART_COLORS.orange)
+      .attr('fill', brandColor)
       .transition()
       .duration(800)
       .attr('r', 4);
@@ -627,7 +628,7 @@ export function AdminAnalyticsCharts() {
                   data={analyticsData.topUsers.slice(0, 5).map(user => ({
                     label: user.name,
                     value: user.volume,
-                    color: CHART_COLORS.orange
+                    color: resolveChartBrandColor()
                   }))}
                   title=""
                   width={500}

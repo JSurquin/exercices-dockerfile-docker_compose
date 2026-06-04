@@ -14,6 +14,8 @@ import { queryKeys } from '@/lib/query-keys';
 import { CHART_COLORS, RECHARTS_TOOLTIP_STYLE, resolveChartBrandColor } from '@/lib/chart-colors';
 import { useLocale } from '@/components/providers/locale-provider';
 import { ConvertedPrice } from '@/components/ui/converted-price';
+import { adminGlassCard, adminIconAccent, panelListRow } from '@/lib/admin-ui';
+import { cn } from '@/lib/utils';
 
 interface AdminStats {
   recentTrades: any[];
@@ -26,7 +28,7 @@ const getStatusColor = (status: string) => {
     'accepté_par_bot': 'bg-indigo-500',
     'en_trade_hold': 'bg-yellow-500',
     'disponible': 'bg-green-500',
-    'paiement_en_cours': 'bg-primary',
+    'paiement_en_cours': 'bg-theme-accent/80',
     'payé': 'bg-emerald-500',
     'échoué': 'bg-red-500',
   };
@@ -50,7 +52,7 @@ export function DashboardOverview() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-2 border-theme-accent border-t-transparent" />
       </div>
     );
   }
@@ -80,10 +82,10 @@ export function DashboardOverview() {
       {/* Graphiques */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Graphique des volumes */}
-        <Card className="bg-slate-800/50 border-slate-700 shadow-lg hover:shadow-cyan-500/10 transition-all duration-300">
+        <Card className={cn(adminGlassCard, 'transition-all duration-300')}>
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2 text-base md:text-lg">
-              <ChartBarIcon className="h-5 w-5 text-cyan-400" />
+            <CardTitle className="text-foreground flex items-center gap-2 text-base md:text-lg">
+              <ChartBarIcon className={cn('h-5 w-5', adminIconAccent)} />
               {messages.adminDashboard.overview.volumeChart}
             </CardTitle>
           </CardHeader>
@@ -120,10 +122,10 @@ export function DashboardOverview() {
         </Card>
 
         {/* Répartition des statuts */}
-        <Card className="bg-slate-800/50 border-slate-700 shadow-lg hover:shadow-purple-500/10 transition-all duration-300">
+        <Card className={cn(adminGlassCard, 'transition-all duration-300')}>
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2 text-base md:text-lg">
-              <UsersIcon className="h-5 w-5 text-purple-400" />
+            <CardTitle className="text-foreground flex items-center gap-2 text-base md:text-lg">
+              <UsersIcon className={cn('h-5 w-5', adminIconAccent)} />
               {messages.adminDashboard.overview.tradeDistribution}
             </CardTitle>
           </CardHeader>
@@ -158,10 +160,10 @@ export function DashboardOverview() {
       </div>
 
       {/* Activité récente */}
-      <Card className="bg-slate-800/50 border-slate-700 shadow-lg hover:shadow-emerald-500/10 transition-all duration-300">
+      <Card className={cn(adminGlassCard, 'transition-all duration-300')}>
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2 text-base md:text-lg">
-            <ClockIcon className="h-5 w-5 text-emerald-400" />
+          <CardTitle className="text-foreground flex items-center gap-2 text-base md:text-lg">
+            <ClockIcon className={cn('h-5 w-5', adminIconAccent)} />
             {messages.adminDashboard.overview.recentActivity}
           </CardTitle>
         </CardHeader>
@@ -170,7 +172,7 @@ export function DashboardOverview() {
             {stats.recentTrades.slice(0, 5).map((trade) => (
               <div 
                 key={trade.id} 
-                className="flex flex-col gap-2 rounded-lg border border-slate-700 bg-slate-900/50 p-3 transition-all duration-300 hover:border-emerald-400/50 hover:shadow-lg hover:shadow-emerald-500/10 sm:flex-row sm:items-center sm:justify-between sm:p-4"
+                className={cn(panelListRow, 'sm:flex-row sm:items-center sm:justify-between')}
               >
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
@@ -180,19 +182,19 @@ export function DashboardOverview() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium text-white sm:text-base">
+                    <p className="text-sm font-medium text-foreground sm:text-base">
                       {trade.userName || `User #${trade.userId.slice(0, 8)}`}
                     </p>
-                    <p className="text-xs text-slate-400 sm:text-sm">{trade.ticketId}</p>
+                    <p className="text-xs text-muted-foreground sm:text-sm">{trade.ticketId}</p>
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end">
-                  <p className="text-sm font-bold text-white sm:text-base">
+                  <p className="text-sm font-bold text-foreground sm:text-base">
                     <ConvertedPrice
                       usdCents={trade.netCentimes}
                       fromCurrency="USD"
                       showOriginal
-                      className="text-white"
+                      className="text-foreground"
                     />
                   </p>
                   <Badge className={`${getStatusColor(trade.status)} text-white text-xs`}>

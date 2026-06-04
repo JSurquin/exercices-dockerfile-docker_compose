@@ -79,7 +79,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   // Affichage normal pour les admins avec nouveau layout
   return (
-    <div className="admin-shell dark min-h-screen bg-gradient-to-br from-[#060608] via-[#0d0d12] to-[#060608]">
+    <div className="admin-shell moonskin min-h-screen bg-gradient-to-br from-[#060608] via-[#0d0d12] to-[#060608]">
       {/* Mobile Navigation */}
       <Suspense fallback={null}>
         <AdminMobileNav />

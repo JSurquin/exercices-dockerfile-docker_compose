@@ -11,8 +11,6 @@ import {
   Settings,
   User,
   LogOut,
-  Moon,
-  Sun,
   Shield,
   ChevronRight,
   Download,
@@ -31,7 +29,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '~/lib/auth-client';
-import { useTheme } from 'next-themes';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { useQuery } from '@tanstack/react-query';
@@ -64,7 +61,6 @@ interface Notification {
 
 export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
   const { data: session } = useSession();
-  const { theme, setTheme } = useTheme();
   const { logout } = useAuth();
   const pathname = usePathname();
   const { messages } = useLocale();
@@ -173,17 +169,6 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-
-          {/* Theme Toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="hidden text-slate-400 hover:text-white md:inline-flex"
-          >
-            <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          </Button>
 
           {/* Notifications */}
           <DropdownMenu>

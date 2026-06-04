@@ -13,7 +13,7 @@ export default function ModerationLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="admin-shell dark min-h-screen bg-gradient-to-br from-[#060608] via-[#0d0d12] to-[#060608] text-foreground">
+    <div className="admin-shell moonskin min-h-screen bg-gradient-to-br from-[#060608] via-[#0d0d12] to-[#060608] text-foreground">
       <ModerationHeader />
       <main>{children}</main>
     </div>
