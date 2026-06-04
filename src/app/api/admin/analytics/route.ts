@@ -170,7 +170,14 @@ export async function GET(request: NextRequest) {
     const previousPeriodStart = startOfDay(subDays(startDate, periodDays));
     const previousPeriodEnd = endOfDay(subDays(endDate, periodDays));
 
-    const [previousUsers, previousTrades, previousVolume] = await Promise.all([
+    const [currentVolume, previousUsers, previousTrades, previousVolume] = await Promise.all([
+      prisma.trade.aggregate({
+        _sum: { grossCents: true },
+        where: {
+          createdAt: { gte: startDate, lte: endDate },
+          status: { notIn: ['CANCELLED', 'FAILED'] },
+        },
+      }),
       prisma.user.count({
         where: {
           createdAt: {
@@ -199,12 +206,17 @@ export async function GET(request: NextRequest) {
       })
     ]);
 
-    // Calcul des pourcentages de croissance
-    const userGrowth = previousUsers > 0 ? ((recentUsers - previousUsers) / previousUsers) * 100 : 0;
-    const tradeGrowth = previousTrades > 0 ? ((recentTrades - previousTrades) / previousTrades) * 100 : 0;
-    const volumeGrowth = previousVolume._sum?.grossCents && totalVolumeCents._sum?.grossCents 
-      ? ((Number(totalVolumeCents._sum.grossCents) - Number(previousVolume._sum.grossCents)) / Number(previousVolume._sum.grossCents)) * 100 
-      : 0;
+    const periodVolumeCents = Number(currentVolume._sum?.grossCents || 0);
+    const previousVolumeCents = Number(previousVolume._sum?.grossCents || 0);
+
+    const growthPct = (current: number, previous: number) => {
+      if (previous > 0) return ((current - previous) / previous) * 100;
+      return current > 0 ? 100 : 0;
+    };
+
+    const userGrowth = growthPct(recentUsers, previousUsers);
+    const tradeGrowth = growthPct(recentTrades, previousTrades);
+    const volumeGrowth = growthPct(periodVolumeCents, previousVolumeCents);
 
     const analytics = {
       overview: {
@@ -214,8 +226,9 @@ export async function GET(request: NextRequest) {
         totalPayouts,
         pendingKyc,
         activeGiveaways,
-        recentUsers,
-        recentTrades,
+        periodUsers: recentUsers,
+        periodTrades: recentTrades,
+        periodVolumeCents,
         userGrowth: Math.round(userGrowth * 100) / 100,
         tradeGrowth: Math.round(tradeGrowth * 100) / 100,
         volumeGrowth: Math.round(volumeGrowth * 100) / 100

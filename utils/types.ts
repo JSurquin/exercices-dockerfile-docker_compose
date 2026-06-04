@@ -6447,6 +6447,13 @@ export interface Messages {
       totalUsers: string;
       totalVolume: string;
       totalTrades: string;
+      newUsersInPeriod: string;
+      volumeInPeriod: string;
+      tradesInPeriod: string;
+      growthVsPrevious: string;
+      platformTotalUsers: string;
+      platformTotalTrades: string;
+      platformTotalVolume: string;
       activeSessions: string;
       realtime: string;
       tabVolume: string;

@@ -25,8 +25,9 @@ interface AnalyticsData {
     totalPayouts: number;
     pendingKyc: number;
     activeGiveaways: number;
-    recentUsers: number;
-    recentTrades: number;
+    periodUsers: number;
+    periodTrades: number;
+    periodVolumeCents: number;
     userGrowth: number;
     tradeGrowth: number;
     volumeGrowth: number;
@@ -484,6 +485,21 @@ export function AdminAnalyticsCharts() {
     return 'text-slate-400';
   };
 
+  const a = messages.adminDashboard.analytics;
+  const growthLabel = a.growthVsPrevious.replace('{period}', String(period));
+
+  const GrowthBadge = ({ growth }: { growth: number }) => (
+    <div className="flex flex-col gap-0.5 mt-1">
+      <div className="flex items-center">
+        {getGrowthIcon(growth)}
+        <span className={`text-sm ml-1 ${getGrowthColor(growth)}`}>
+          {growth > 0 ? '+' : ''}{growth.toFixed(1)}%
+        </span>
+      </div>
+      <span className="text-xs text-slate-500">{growthLabel}</span>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       {/* KPIs principaux */}
@@ -492,16 +508,19 @@ export function AdminAnalyticsCharts() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-400">{messages.adminDashboard.analytics.totalUsers}</p>
-                <p className="text-2xl font-bold text-slate-100">
-                  {analyticsData.overview.totalUsers.toLocaleString()}
+                <p className="text-sm font-medium text-slate-400">
+                  {a.newUsersInPeriod.replace('{period}', String(period))}
                 </p>
-                <div className="flex items-center mt-1">
-                  {getGrowthIcon(analyticsData.overview.userGrowth)}
-                  <span className={`text-sm ml-1 ${getGrowthColor(analyticsData.overview.userGrowth)}`}>
-                    {analyticsData.overview.userGrowth > 0 ? '+' : ''}{analyticsData.overview.userGrowth.toFixed(1)}%
-                  </span>
-                </div>
+                <p className="text-2xl font-bold text-slate-100">
+                  {analyticsData.overview.periodUsers.toLocaleString()}
+                </p>
+                <GrowthBadge growth={analyticsData.overview.userGrowth} />
+                <p className="text-xs text-slate-500 mt-2">
+                  {a.platformTotalUsers.replace(
+                    '{count}',
+                    analyticsData.overview.totalUsers.toLocaleString()
+                  )}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -511,20 +530,25 @@ export function AdminAnalyticsCharts() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-400">{messages.adminDashboard.analytics.totalVolume}</p>
+                <p className="text-sm font-medium text-slate-400">
+                  {a.volumeInPeriod.replace('{period}', String(period))}
+                </p>
                 <p className="text-2xl font-bold text-slate-100">
                   <ConvertedPrice
-                    usdCents={analyticsData.overview.totalVolumeCents}
+                    usdCents={analyticsData.overview.periodVolumeCents}
                     fromCurrency="USD"
                     className="text-2xl font-bold text-slate-100"
                   />
                 </p>
-                <div className="flex items-center mt-1">
-                  {getGrowthIcon(analyticsData.overview.volumeGrowth)}
-                  <span className={`text-sm ml-1 ${getGrowthColor(analyticsData.overview.volumeGrowth)}`}>
-                    {analyticsData.overview.volumeGrowth > 0 ? '+' : ''}{analyticsData.overview.volumeGrowth.toFixed(1)}%
-                  </span>
-                </div>
+                <GrowthBadge growth={analyticsData.overview.volumeGrowth} />
+                <p className="text-xs text-slate-500 mt-2 flex flex-wrap items-baseline gap-1">
+                  <span>{a.platformTotalVolume}</span>
+                  <ConvertedPrice
+                    usdCents={analyticsData.overview.totalVolumeCents}
+                    fromCurrency="USD"
+                    className="text-xs text-slate-500"
+                  />
+                </p>
               </div>
             </div>
           </CardContent>
@@ -534,16 +558,19 @@ export function AdminAnalyticsCharts() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-400">{messages.adminDashboard.analytics.totalTrades}</p>
-                <p className="text-2xl font-bold text-slate-100">
-                  {analyticsData.overview.totalTrades.toLocaleString()}
+                <p className="text-sm font-medium text-slate-400">
+                  {a.tradesInPeriod.replace('{period}', String(period))}
                 </p>
-                <div className="flex items-center mt-1">
-                  {getGrowthIcon(analyticsData.overview.tradeGrowth)}
-                  <span className={`text-sm ml-1 ${getGrowthColor(analyticsData.overview.tradeGrowth)}`}>
-                    {analyticsData.overview.tradeGrowth > 0 ? '+' : ''}{analyticsData.overview.tradeGrowth.toFixed(1)}%
-                  </span>
-                </div>
+                <p className="text-2xl font-bold text-slate-100">
+                  {analyticsData.overview.periodTrades.toLocaleString()}
+                </p>
+                <GrowthBadge growth={analyticsData.overview.tradeGrowth} />
+                <p className="text-xs text-slate-500 mt-2">
+                  {a.platformTotalTrades.replace(
+                    '{count}',
+                    analyticsData.overview.totalTrades.toLocaleString()
+                  )}
+                </p>
               </div>
             </div>
           </CardContent>
