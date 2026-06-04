@@ -176,6 +176,15 @@ body.next-dev-overlay-present #sentry-feedback {
 }
 
 :root {
+  /* Fallbacks Moonskin — visibles avant hydration thème (loaders, etc.) */
+  --theme-accent: #7eb3e8;
+  --theme-highlight: #a8c8e8;
+  --theme-stat: #b8d8f8;
+  --theme-success: #6eb8a8;
+  --cta-from: #3d6a9e;
+  --cta-to: #7eb3e8;
+  --cta-shadow: rgba(62, 120, 180, 0.45);
+
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -714,6 +723,162 @@ body.next-dev-overlay-present #sentry-feedback {
 
   .cs2 .btn-cta:hover {
     box-shadow: 0 8px 32px rgba(249, 115, 22, 0.55), 0 0 40px rgba(249, 115, 22, 0.2);
+  }
+
+  /* Page loader — CSS pur (toujours visible, pas de framer-motion / tokens manquants) */
+  .page-loader-crosshair {
+    --loader-accent: #7eb3e8;
+    --loader-highlight: #a8c8e8;
+    position: relative;
+    width: 5rem;
+    height: 5rem;
+    margin-inline: auto;
+    flex-shrink: 0;
+  }
+
+  .page-loader-crosshair--sm {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .page-loader-crosshair__ring {
+    position: absolute;
+    inset: 0;
+    border: 2px solid color-mix(in srgb, var(--loader-accent) 35%, transparent);
+    border-radius: 50%;
+    animation: page-loader-pulse 2s ease-in-out infinite;
+  }
+
+  .page-loader-crosshair__spin {
+    position: absolute;
+    inset: 0;
+    animation: page-loader-spin 2.8s linear infinite;
+  }
+
+  .page-loader-crosshair__arm-h,
+  .page-loader-crosshair__arm-v {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    background: var(--loader-accent);
+    border-radius: 9999px;
+    transform: translate(-50%, -50%);
+  }
+
+  .page-loader-crosshair__arm-h {
+    width: 2rem;
+    height: 2px;
+  }
+
+  .page-loader-crosshair--sm .page-loader-crosshair__arm-h {
+    width: 1.25rem;
+  }
+
+  .page-loader-crosshair__arm-v {
+    width: 2px;
+    height: 2rem;
+  }
+
+  .page-loader-crosshair--sm .page-loader-crosshair__arm-v {
+    height: 1.25rem;
+  }
+
+  .page-loader-crosshair__dot {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--loader-highlight);
+    border-radius: 50%;
+  }
+
+  .page-loader-crosshair__dot--t { top: 18%; left: 50%; transform: translateX(-50%); }
+  .page-loader-crosshair__dot--b { bottom: 18%; left: 50%; transform: translateX(-50%); }
+  .page-loader-crosshair__dot--l { left: 18%; top: 50%; transform: translateY(-50%); }
+  .page-loader-crosshair__dot--r { right: 18%; top: 50%; transform: translateY(-50%); }
+  .page-loader-crosshair__dot--c {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .page-loader-bar {
+    width: min(100%, 16rem);
+    height: 0.5rem;
+    margin-inline: auto;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--muted) 80%, transparent);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .page-loader-bar--sm {
+    max-width: 12rem;
+  }
+
+  .page-loader-bar__fill {
+    display: block;
+    height: 100%;
+    width: 45%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #3d6a9e, #7eb3e8);
+    animation: page-loader-progress 2.2s ease-in-out infinite;
+  }
+
+  .page-loader-logo {
+    background: linear-gradient(to bottom right, #3d6a9e, #7eb3e8);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page-loader-logo__shine {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.22),
+      transparent
+    );
+    animation: page-loader-shine 2.5s ease-in-out infinite;
+  }
+
+  .page-loader-text {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--foreground);
+    animation: page-loader-text-pulse 2s ease-in-out infinite;
+  }
+
+  .page-loader-subtext {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+
+  @keyframes page-loader-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes page-loader-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.35; }
+    50% { transform: scale(1.12); opacity: 0.85; }
+  }
+
+  @keyframes page-loader-progress {
+    0% { transform: translateX(-120%); }
+    100% { transform: translateX(280%); }
+  }
+
+  @keyframes page-loader-shine {
+    0% { transform: translateX(-120%); }
+    100% { transform: translateX(220%); }
+  }
+
+  @keyframes page-loader-text-pulse {
+    0%, 100% { opacity: 0.65; }
+    50% { opacity: 1; }
   }
 
   /* Hero title — base : layout seulement, sans couleur (chaque thème gère la sienne) */

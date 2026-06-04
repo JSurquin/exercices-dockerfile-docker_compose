@@ -23,7 +23,7 @@ function detectBrowserLocale(): Locale {
   }
 
   const browserLang = navigator.language.toLowerCase();
-  
+
   if (browserLang.startsWith('fr')) return 'fr';
   if (browserLang.startsWith('en')) return 'en';
   if (browserLang.startsWith('zh') || browserLang.startsWith('cn')) return 'cn';
@@ -37,14 +37,13 @@ function detectBrowserLocale(): Locale {
 }
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(defaultLocale);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [locale, setLocaleState] = useState<Locale>(() =>
+    typeof window !== 'undefined' ? detectBrowserLocale() : defaultLocale
+  );
   const messages = getMessages(locale);
 
   useEffect(() => {
-    const detectedLocale = detectBrowserLocale();
-    setLocaleState(detectedLocale);
-    setIsInitialized(true);
+    setLocaleState(detectBrowserLocale());
   }, []);
 
   const setLocale = (newLocale: Locale) => {
@@ -53,10 +52,6 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
     }
   };
-
-  if (!isInitialized) {
-    return null;
-  }
 
   return (
     <LocaleContext.Provider value={{ locale, setLocale, messages }}>

@@ -33,6 +33,7 @@ import { useLocale } from '@/components/providers/locale-provider';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { chatPriorityBadgeClass, chatStatusBadgeClass } from '@/lib/chat-badges';
+import { PageLoading } from '@/components/ui/page-loading';
 
 interface Moderator {
   id: string;
@@ -365,10 +366,10 @@ export default function AdminChatPage() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
-                  <p className="mt-2 text-slate-400">{messages.admin.chat.conversations.loading}</p>
-                </div>
+                <PageLoading
+                  variant="compact"
+                  message={messages.admin.chat.conversations.loading}
+                />
               ) : conversations.length === 0 ? (
                 <div className="text-center py-8">
                   <ChatBubbleLeftRightIcon className="w-16 h-16 mx-auto mb-4 text-slate-600" />

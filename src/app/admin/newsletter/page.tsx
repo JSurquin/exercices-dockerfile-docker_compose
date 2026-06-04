@@ -27,6 +27,7 @@ import { fr } from 'date-fns/locale';
 import { NewsletterCampaignCreator } from '@/components/admin/newsletter-campaign-creator';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
+import { PageLoading } from '@/components/ui/page-loading';
 
 interface Subscriber {
   id: string;
@@ -127,12 +128,11 @@ export default function NewsletterAdminPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-slate-300">{messages.admin.newsletter.loading}</p>
-        </div>
-      </div>
+      <PageLoading
+        variant="compact"
+        message={messages.admin.newsletter.loading}
+        className="py-20"
+      />
     );
   }
 

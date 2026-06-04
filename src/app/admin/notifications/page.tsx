@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocale } from "@/components/providers/locale-provider";
+import { PageLoading } from "@/components/ui/page-loading";
 import {
   Bell,
   Send,
@@ -236,14 +237,7 @@ export default function AdminNotificationsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-slate-300">{t.loading}</p>
-        </div>
-      </div>
-    );
+    return <PageLoading variant="compact" message={t.loading} className="py-20" />;
   }
 
   return (

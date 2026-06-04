@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { AdminSidebar } from '@/components/admin/admin-sidebar';
 import { AdminMobileNav } from '@/components/admin/admin-mobile-nav';
 import { AdminHeader } from '@/components/admin/admin-header';
+import { PageLoading } from '@/components/ui/page-loading';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -41,11 +42,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // Affichage du loading pendant la vérification
   if (isPending) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-slate-300">Vérification des permissions...</p>
-        </div>
+      <div className="admin-shell moonskin min-h-screen">
+        <PageLoading variant="compact" message="Vérification des permissions..." className="min-h-screen" />
       </div>
     );
   }

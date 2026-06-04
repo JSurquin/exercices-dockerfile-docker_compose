@@ -13,6 +13,7 @@ import { useTourMode } from '@/components/providers/tour-provider';
 import { MissionsTourDemo } from '@/components/tour-demos/missions-tour-demo';
 import Link from 'next/link';
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
+import { PageLoading } from '@/components/ui/page-loading';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -319,7 +320,7 @@ export default function MissionsPage() {
 
   if (authLoading) {
     return (
-      <div className="container py-24 text-center text-muted-foreground">{t.loading}</div>
+      <PageLoading variant="compact" message={t.loading} className="min-h-[50vh]" />
     );
   }
 
