@@ -35,14 +35,6 @@ export const metadata: Metadata = {
     'The fastest and most secure platform to convert your Counter-Strike 2 skins into real money. SEPA and crypto payments available.',
   keywords: ['CS2', 'Counter-Strike', 'skins', 'trading', 'cashout', 'SEPA', 'crypto'],
   authors: [{ name: 'MoonSkin Team' }],
-  icons: {
-    icon: [
-      { url: '/icon.png?v=2', type: 'image/png', sizes: '32x32' },
-      { url: '/favicon.ico?v=2', sizes: 'any' },
-    ],
-    apple: [{ url: '/apple-icon.png?v=2', sizes: '180x180', type: 'image/png' }],
-    shortcut: '/favicon.ico?v=2',
-  },
   openGraph: {
     title: 'MoonSkin - Sell your CS2 skins easily',
     description:
