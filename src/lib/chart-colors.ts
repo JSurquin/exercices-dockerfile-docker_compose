@@ -28,13 +28,49 @@ export const CHART_COLORS = {
 
 export type ChartColor = keyof typeof CHART_COLORS;
 
-/** Couleur brand des graphiques selon le thème sur <html> */
+/** Palette multi-séries MoonSkin / admin (chrome bleu) */
+export const MOONSKIN_CHART_PALETTE: string[] = [
+  CHART_COLORS.moonskin,
+  CHART_COLORS.cyan,
+  '#5b9bd5',
+  CHART_COLORS.purple,
+  CHART_COLORS.green,
+  CHART_COLORS.amber,
+  CHART_COLORS.red,
+];
+
+/** Palette multi-séries CS2 / light (orange brand) */
+export const CS2_CHART_PALETTE: string[] = [
+  CHART_COLORS.orange,
+  CHART_COLORS.cyan,
+  CHART_COLORS.purple,
+  CHART_COLORS.green,
+  CHART_COLORS.amber,
+  CHART_COLORS.red,
+];
+
+/** @deprecated Préférer resolveChartPalette() ou MOONSKIN_CHART_PALETTE / CS2_CHART_PALETTE */
+export const CHART_PALETTE = CS2_CHART_PALETTE;
+
+function isMoonskinChartContext(): boolean {
+  if (typeof document === 'undefined') return true;
+  const adminShell = document.querySelector('.admin-shell');
+  if (adminShell) return true;
+  return document.documentElement.classList.contains('moonskin');
+}
+
+/** Couleur brand des graphiques selon le thème actif (admin-shell ou <html>) */
 export function resolveChartBrandColor(): string {
   if (typeof document === 'undefined') return CHART_COLORS.moonskin;
-  if (
-    document.documentElement.classList.contains('moonskin') ||
-    document.querySelector('.admin-shell')
-  ) {
+
+  const adminShell = document.querySelector('.admin-shell');
+  if (adminShell) {
+    const accent = getComputedStyle(adminShell).getPropertyValue('--theme-accent').trim();
+    if (accent) return accent;
+    return CHART_COLORS.moonskin;
+  }
+
+  if (document.documentElement.classList.contains('moonskin')) {
     return CHART_COLORS.moonskin;
   }
   if (document.documentElement.classList.contains('cs2')) {
@@ -43,15 +79,10 @@ export function resolveChartBrandColor(): string {
   return CHART_COLORS.orange;
 }
 
-/** Palette ordonnée pour les graphiques multi-séries */
-export const CHART_PALETTE: string[] = [
-  CHART_COLORS.orange,
-  CHART_COLORS.cyan,
-  CHART_COLORS.purple,
-  CHART_COLORS.green,
-  CHART_COLORS.amber,
-  CHART_COLORS.red,
-];
+/** Palette ordonnée pour donut / barres groupées */
+export function resolveChartPalette(): string[] {
+  return isMoonskinChartContext() ? MOONSKIN_CHART_PALETTE : CS2_CHART_PALETTE;
+}
 
 /** Style commun pour les tooltips Recharts */
 export const RECHARTS_TOOLTIP_STYLE = {

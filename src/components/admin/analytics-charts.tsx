@@ -11,7 +11,10 @@ import { RefreshCw, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLocale } from '@/components/providers/locale-provider';
 import { ADMIN_ANALYTICS_REFETCH_INTERVAL_MS } from '@/lib/admin-constants';
-import { CHART_COLORS, CHART_PALETTE, resolveChartBrandColor } from '@/lib/chart-colors';
+import { CHART_COLORS, MOONSKIN_CHART_PALETTE } from '@/lib/chart-colors';
+
+/** Admin : thème MoonSkin verrouillé (pas de dépendance au thème <html>) */
+const ADMIN_CHART_BRAND = CHART_COLORS.moonskin;
 import { ConvertedPrice } from '@/components/ui/converted-price';
 
 interface AnalyticsData {
@@ -110,7 +113,7 @@ function HorizontalBarChart({
       .attr('y', d => yScale(d.label) || 0)
       .attr('width', 0)
       .attr('height', yScale.bandwidth())
-      .attr('fill', d => d.color || resolveChartBrandColor())
+      .attr('fill', d => d.color || ADMIN_CHART_BRAND)
       .attr('rx', 4)
       .transition()
       .duration(800)
@@ -173,7 +176,7 @@ function AreaChart({
   useEffect(() => {
     if (!svgRef.current || !data.length) return;
 
-    const brandColor = resolveChartBrandColor();
+    const brandColor = ADMIN_CHART_BRAND;
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -317,7 +320,7 @@ function DonutChart({
 
     const color = d3.scaleOrdinal()
       .domain(data.map(d => d.label))
-      .range(CHART_PALETTE);
+      .range(MOONSKIN_CHART_PALETTE);
 
     const pie = d3.pie<any>()
       .value(d => d.value)
@@ -628,7 +631,7 @@ export function AdminAnalyticsCharts() {
                   data={analyticsData.topUsers.slice(0, 5).map(user => ({
                     label: user.name,
                     value: user.volume,
-                    color: resolveChartBrandColor()
+                    color: ADMIN_CHART_BRAND
                   }))}
                   title=""
                   width={500}

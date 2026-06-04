@@ -11,7 +11,9 @@ import {
 } from '@heroicons/react/24/outline';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { queryKeys } from '@/lib/query-keys';
-import { CHART_COLORS, RECHARTS_TOOLTIP_STYLE, resolveChartBrandColor } from '@/lib/chart-colors';
+import { CHART_COLORS, RECHARTS_TOOLTIP_STYLE } from '@/lib/chart-colors';
+
+const ADMIN_CHART_BRAND = CHART_COLORS.moonskin;
 import { useLocale } from '@/components/providers/locale-provider';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 import { adminGlassCard, adminIconAccent, panelListRow } from '@/lib/admin-ui';
@@ -38,7 +40,7 @@ const getStatusColor = (status: string) => {
 export function DashboardOverview() {
   const { messages } = useLocale();
   const t = messages.adminNav.dashboardOverview;
-  const brandChartColor = resolveChartBrandColor();
+  const brandChartColor = ADMIN_CHART_BRAND;
 
   const { data: stats, isLoading } = useQuery<AdminStats>({
     queryKey: queryKeys.adminStats,
