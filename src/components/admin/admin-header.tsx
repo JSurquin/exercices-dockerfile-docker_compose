@@ -38,6 +38,7 @@ import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { adminBtnOutline } from '@/lib/admin-ui';
 
 interface Breadcrumb {
   label: string;
@@ -90,7 +91,7 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
   const displayBreadcrumbs = breadcrumbs || defaultBreadcrumbs;
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-700 bg-slate-900/95 backdrop-blur-sm supports-[backdrop-filter]:bg-slate-900/75">
+    <header className="admin-glass-header sticky top-0 z-30 border-b supports-[backdrop-filter]:bg-background/75">
       <div className="flex h-14 items-center gap-4 px-4 md:px-6">
         {/* Spacer for mobile burger button */}
         <div className="w-10 shrink-0 lg:hidden" />

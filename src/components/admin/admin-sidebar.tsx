@@ -41,6 +41,13 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import {
+  adminBadgeCount,
+  adminNavIcon,
+  adminNavIconActive,
+  adminNavItem,
+  adminNavItemActive,
+} from '@/lib/admin-ui';
 
 interface NavItem {
   title: string;
@@ -171,13 +178,10 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
       initial={false}
       animate={{ width: collapsed ? 80 : 280 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className={cn(
-        'relative h-full border-r border-slate-700 bg-slate-900/50 backdrop-blur-sm',
-        className
-      )}
+      className={cn('admin-glass-sidebar relative h-full border-r', className)}
     >
       {/* Header avec logo et toggle */}
-      <div className="flex h-16 items-center justify-between border-b border-slate-700 px-4">
+      <div className="flex h-16 items-center justify-between border-b border-border/40 px-4">
         <AnimatePresence mode="wait">
           {!collapsed && (
             <motion.div
@@ -187,12 +191,12 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
               transition={{ duration: 0.2 }}
               className="flex items-center gap-3"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cta-gradient-br">
-                <Shield className="h-5 w-5 text-white" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cta-gradient-br shadow-[0_0_16px_var(--cta-shadow)]">
+                <Shield className="h-5 w-5 text-primary-foreground" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-white">MoonSkin</h2>
-                <p className="text-xs text-slate-400">{t.header.adminPanel}</p>
+                <h2 className="text-sm font-bold text-foreground">MoonSkin</h2>
+                <p className="text-xs text-muted-foreground">{t.header.adminPanel}</p>
               </div>
             </motion.div>
           )}
@@ -201,7 +205,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
           variant="ghost"
           size="icon"
           onClick={() => setCollapsed(!collapsed)}
-          className="text-slate-400 hover:bg-slate-800 hover:text-white"
+          className="text-muted-foreground hover:bg-theme-accent/10 hover:text-foreground"
         >
           {collapsed ? (
             <ChevronRight className="h-4 w-4" />
@@ -223,7 +227,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-slate-400"
+                    className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                   >
                     {group.title}
                   </motion.h3>
@@ -244,19 +248,12 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
                       <motion.div
                         whileHover={{ x: collapsed ? 0 : 4 }}
                         className={cn(
-                          'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200',
-                          active
-                            ? 'bg-gradient-to-r from-theme-accent/20 to-theme-accent/30 text-theme-highlight shadow-lg shadow-[var(--cta-shadow)]'
-                            : 'text-slate-300 hover:bg-slate-800/50 hover:text-white',
+                          adminNavItem,
+                          active && adminNavItemActive,
                           collapsed && 'justify-center'
                         )}
                       >
-                        <Icon
-                          className={cn(
-                            'h-5 w-5 flex-shrink-0',
-                            active ? 'text-theme-highlight' : 'text-slate-400 group-hover:text-white'
-                          )}
-                        />
+                        <Icon className={cn(active ? adminNavIconActive : adminNavIcon)} />
                         <AnimatePresence mode="wait">
                           {!collapsed && (
                             <motion.div
@@ -268,10 +265,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
                             >
                               <span className="text-sm font-medium">{item.title}</span>
                               {itemBadge && (typeof itemBadge === 'number' ? itemBadge > 0 : itemBadge) && (
-                                <Badge
-                                  variant={item.badgeVariant || 'default'}
-                                  className="ml-auto h-5 px-1.5 text-xs"
-                                >
+                                <Badge variant="outline" className={adminBadgeCount}>
                                   {itemBadge}
                                 </Badge>
                               )}
@@ -292,7 +286,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
                 })}
               </div>
               {groupIndex < navigationGroups.length - 1 && (
-                <Separator className="my-4 bg-slate-700" />
+                <Separator className="my-4 bg-border/40" />
               )}
             </div>
           ))}
@@ -306,13 +300,13 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-0 left-0 right-0 border-t border-slate-700 bg-slate-900/80 p-4 backdrop-blur-sm"
+            className="absolute bottom-0 left-0 right-0 border-t border-border/40 bg-background/40 p-4 backdrop-blur-md"
           >
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">{t.footer.systemStatus}</span>
-                <Badge variant="secondary" className="h-5 text-xs">
-                  <div className="mr-1 h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
+                <span className="text-muted-foreground">{t.footer.systemStatus}</span>
+                <Badge variant="outline" className="admin-badge-status admin-badge-status--success h-5 text-xs">
+                  <div className="mr-1 h-1.5 w-1.5 animate-pulse rounded-full bg-theme-success" />
                   {t.footer.online}
                 </Badge>
               </div>

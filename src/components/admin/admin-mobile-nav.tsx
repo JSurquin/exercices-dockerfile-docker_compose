@@ -41,6 +41,13 @@ import { useSession } from '~/lib/auth-client';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { useAffiliateApplications } from '@/hooks/use-affiliate-applications';
+import {
+  adminBadgeCount,
+  adminNavIcon,
+  adminNavIconActive,
+  adminNavItem,
+  adminNavItemActive,
+} from '@/lib/admin-ui';
 
 interface NavItem {
   title: string;
@@ -198,7 +205,7 @@ export function AdminMobileNav() {
             animate={{ x: 0 }}
             exit={{ x: -320 }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed top-0 left-0 z-50 h-full w-80 overflow-y-auto border-r border-slate-700 bg-slate-900 lg:hidden"
+            className="admin-glass-sidebar fixed top-0 left-0 z-50 h-full w-80 overflow-y-auto border-r lg:hidden"
           >
             {/* Header */}
             <div className="flex h-20 items-center justify-between border-b border-slate-700 px-6">
@@ -260,25 +267,12 @@ export function AdminMobileNav() {
                         <Link key={itemIndex} href={item.href} onClick={closeMenu}>
                           <motion.div
                             whileTap={{ scale: 0.98 }}
-                            className={cn(
-                              'group relative flex items-center gap-3 rounded-lg px-3 py-3 transition-all duration-200',
-                              active
-                                ? 'bg-gradient-to-r from-theme-accent/20 to-theme-accent/30 text-theme-highlight shadow-lg shadow-[var(--cta-shadow)]'
-                                : 'text-slate-300 hover:bg-slate-800/50 hover:text-white active:bg-slate-800'
-                            )}
+                            className={cn(adminNavItem, 'py-3', active && adminNavItemActive)}
                           >
-                            <Icon
-                              className={cn(
-                                'h-5 w-5 flex-shrink-0',
-                                active ? 'text-theme-highlight' : 'text-slate-400 group-hover:text-white'
-                              )}
-                            />
+                            <Icon className={cn(active ? adminNavIconActive : adminNavIcon)} />
                             <span className="flex-1 text-sm font-medium">{item.title}</span>
                             {itemBadge && (typeof itemBadge === 'number' ? itemBadge > 0 : itemBadge) && (
-                              <Badge
-                                variant={item.badgeVariant || 'default'}
-                                className="h-5 px-2 text-xs"
-                              >
+                              <Badge variant="outline" className={adminBadgeCount}>
                                 {itemBadge}
                               </Badge>
                             )}

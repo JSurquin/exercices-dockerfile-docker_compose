@@ -1,5 +1,7 @@
 'use client';
 
+import './admin-panel.css';
+
 import { Suspense } from 'react';
 import { useSession } from '~/lib/auth-client';
 import { usePathname, useRouter } from 'next/navigation';
@@ -77,7 +79,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   // Affichage normal pour les admins avec nouveau layout
   return (
-    <div className="dark min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="admin-shell dark min-h-screen bg-gradient-to-br from-[#060608] via-[#0d0d12] to-[#060608]">
       {/* Mobile Navigation */}
       <Suspense fallback={null}>
         <AdminMobileNav />

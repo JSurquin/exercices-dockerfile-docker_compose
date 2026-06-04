@@ -27,6 +27,8 @@ import AffiliateCommissions from '@/components/admin/affiliate-commissions';
 import { VipMerchantManagement } from '@/components/admin/vip-merchant-management';
 import { GiveawayAdmin } from '@/components/admin/giveaway-admin';
 import { DashboardOverview } from '@/components/admin/dashboard-overview';
+import { adminBtnOutline, adminBtnPrimary } from '@/lib/admin-ui';
+import { cn } from '@/lib/utils';
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -94,18 +96,18 @@ function DashboardContent() {
   // Quick Actions pour le header
   const quickActions = useMemo(() => (
     <div className="flex items-center gap-2">
-      <Button 
-        variant="outline" 
+      <Button
+        variant="outline"
         size="sm"
-        className="hidden text-white border-slate-600 hover:bg-slate-800 md:flex"
+        className={cn('hidden md:flex', adminBtnOutline)}
         onClick={handleExportData}
       >
         <DocumentArrowDownIcon className="h-4 w-4 md:mr-2" />
         <span className="hidden md:inline">{messages.admin.dashboard.exportData}</span>
       </Button>
-      <Button 
+      <Button
         size="sm"
-        className="hidden bg-cta-gradient hover:brightness-110 md:flex"
+        className={cn('hidden md:flex', adminBtnPrimary)}
         onClick={handleGenerateReport}
       >
         <ChartBarIcon className="h-4 w-4 md:mr-2" />

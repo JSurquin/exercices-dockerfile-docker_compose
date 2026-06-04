@@ -1,0 +1,175 @@
+/**
+ * Admin panel — glass chrome, scoped via .admin-shell on layout root
+ */
+.admin-shell {
+  --admin-glass-bg: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(126, 179, 232, 0.03) 50%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  --admin-glass-border: rgba(200, 205, 220, 0.12);
+  --admin-sidebar-bg: rgba(13, 13, 18, 0.72);
+}
+
+/* ─── Glass cards ─── */
+.admin-shell .admin-glass-card {
+  background: var(--admin-glass-bg);
+  border-color: var(--admin-glass-border);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+
+.admin-shell .admin-glass-sidebar {
+  background: var(--admin-sidebar-bg);
+  border-color: var(--admin-glass-border);
+  backdrop-filter: blur(16px);
+}
+
+.admin-shell .admin-glass-header {
+  background: rgba(13, 13, 18, 0.85);
+  border-color: var(--admin-glass-border);
+  backdrop-filter: blur(12px);
+}
+
+/* ─── Badges ─── */
+.admin-shell .admin-badge-count {
+  background: color-mix(in srgb, var(--theme-accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-accent) 28%, transparent);
+  color: var(--theme-highlight);
+  backdrop-filter: blur(6px);
+}
+
+.admin-shell .admin-badge-status {
+  background: color-mix(in srgb, var(--muted) 35%, transparent);
+  border-color: color-mix(in srgb, var(--border) 80%, transparent);
+  color: var(--muted-foreground);
+  backdrop-filter: blur(4px);
+}
+
+.admin-shell .admin-badge-status--pending {
+  background: color-mix(in srgb, var(--theme-accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--theme-accent) 25%, transparent);
+  color: var(--theme-highlight);
+}
+
+.admin-shell .admin-badge-status--success {
+  background: color-mix(in srgb, var(--theme-success) 12%, transparent);
+  border-color: color-mix(in srgb, var(--theme-success) 28%, transparent);
+  color: var(--theme-success);
+}
+
+.admin-shell .admin-badge-status--danger {
+  background: color-mix(in srgb, var(--destructive) 12%, transparent);
+  border-color: color-mix(in srgb, var(--destructive) 30%, transparent);
+  color: var(--destructive);
+}
+
+/* ─── Tables ─── */
+.admin-shell .admin-table-head {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: color-mix(in srgb, var(--muted) 25%, transparent);
+  border-color: var(--admin-glass-border);
+}
+
+.admin-shell .admin-table-row {
+  border-color: color-mix(in srgb, var(--border) 50%, transparent);
+  transition: background-color 0.15s ease;
+}
+
+.admin-shell .admin-table-row:hover {
+  background: color-mix(in srgb, var(--theme-accent) 6%, transparent);
+}
+
+.admin-shell .admin-table-body .admin-table-row:nth-child(even) {
+  background: color-mix(in srgb, var(--muted) 12%, transparent);
+}
+
+.admin-shell .admin-table-cell {
+  color: var(--foreground);
+}
+
+/* Legacy slate cards → glass (tables & panels not yet migrated) */
+.admin-shell [data-slot='card'].bg-slate-800\/50,
+.admin-shell [data-slot='card'].bg-slate-800\/30,
+.admin-shell .bg-slate-800\/50.border-slate-700,
+.admin-shell .bg-slate-800\/30.border-slate-700 {
+  background: var(--admin-glass-bg) !important;
+  border-color: var(--admin-glass-border) !important;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.admin-shell [data-slot='table-header'] [data-slot='table-row'] {
+  background: color-mix(in srgb, var(--muted) 25%, transparent);
+}
+
+.admin-shell [data-slot='table-body'] [data-slot='table-row']:nth-child(even) {
+  background: color-mix(in srgb, var(--muted) 10%, transparent);
+}
+
+.admin-shell [data-slot='table-head'].text-slate-300,
+.admin-shell [data-slot='table-head'].text-slate-400 {
+  color: var(--muted-foreground);
+}
+
+.admin-shell [data-slot='table-row'].border-slate-700 {
+  border-color: color-mix(in srgb, var(--border) 45%, transparent);
+}
+
+.admin-shell [data-slot='table-row'].hover\:bg-slate-800\/50:hover {
+  background: color-mix(in srgb, var(--theme-accent) 6%, transparent);
+}
+
+/* Neutralize rainbow stat borders when old classes remain */
+.admin-shell [data-slot='card'].border-blue-500\/50,
+.admin-shell [data-slot='card'].border-emerald-500\/50,
+.admin-shell [data-slot='card'].border-yellow-500\/50,
+.admin-shell [data-slot='card'].border-purple-500\/50,
+.admin-shell [data-slot='card'].border-red-500\/50,
+.admin-shell [data-slot='card'].border-green-500\/50,
+.admin-shell [data-slot='card'].border-cyan-500\/50,
+.admin-shell [data-slot='card'].border-2 {
+  border-width: 1px !important;
+  border-color: var(--admin-glass-border) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+.admin-shell .text-blue-400,
+.admin-shell .text-emerald-400,
+.admin-shell .text-yellow-400,
+.admin-shell .text-purple-400,
+.admin-shell .text-red-400,
+.admin-shell .text-green-400,
+.admin-shell .text-cyan-400 {
+  color: var(--theme-accent);
+}
+
+/* Primary actions — chrome CTA (legacy class strings) */
+.admin-shell .bg-cta-gradient,
+.admin-shell .bg-cta-gradient.hover\:brightness-110:hover {
+  background: linear-gradient(135deg, var(--cta-from), var(--cta-to)) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.admin-shell .bg-cta-gradient.hover\:brightness-110:hover {
+  filter: brightness(1.1);
+}
+
+.admin-shell button.bg-primary.hover\:bg-primary\/90,
+.admin-shell .bg-primary.hover\:bg-primary\/90 {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+.admin-shell button.bg-primary.hover\:bg-primary\/90:hover,
+.admin-shell .bg-primary.hover\:bg-primary\/90:hover {
+  background: color-mix(in srgb, var(--primary) 90%, transparent) !important;
+}
