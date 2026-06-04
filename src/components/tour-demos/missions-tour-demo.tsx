@@ -34,7 +34,7 @@ const DEMO_CATEGORIES = [
     id: 'DAILY',
     label: 'Quotidien',
     icon: ClockIcon,
-    color: 'text-amber-500',
+    color: 'text-theme-stat',
     missions: [
       { label: '👋 Visite quotidienne', reward: 2, completed: true, eligible: false },
       { label: '💰 Vendre un skin aujourd\'hui', reward: 10, completed: false, eligible: true },
@@ -54,7 +54,7 @@ const DEMO_CATEGORIES = [
     id: 'MONTHLY',
     label: 'Mensuel',
     icon: ChartBarIcon,
-    color: 'text-orange-500',
+    color: 'text-theme-accent',
     missions: [
       { label: '🏆 Volume 5 000 € ce mois', reward: 150, completed: false, eligible: false, progress: 24 },
     ],
@@ -88,7 +88,7 @@ export function MissionsTourDemo() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <SparklesIcon className="w-8 h-8 text-amber-500" />
+            <SparklesIcon className="w-8 h-8 text-theme-stat" />
             {messages.nav.missions}
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -107,7 +107,7 @@ export function MissionsTourDemo() {
             <p className="text-xs text-muted-foreground mb-1">
               {messages.missions?.statsFragments ?? 'Fragments accumulés'}
             </p>
-            <FragmentAmount amount={340} size="sm" className="text-2xl font-bold text-amber-600 justify-center" />
+            <FragmentAmount amount={340} size="sm" className="text-2xl font-bold text-theme-stat justify-center" />
           </CardContent>
         </Card>
         <Card>
@@ -119,7 +119,7 @@ export function MissionsTourDemo() {
               amount={totalClaimable}
               prefix="+"
               size="sm"
-              className="text-2xl font-bold text-orange-500 justify-center"
+              className="text-2xl font-bold text-theme-accent justify-center"
             />
           </CardContent>
         </Card>
@@ -171,7 +171,7 @@ export function MissionsTourDemo() {
                       m.completed
                         ? 'border-green-500/20 bg-green-500/5'
                         : m.eligible
-                        ? 'border-orange-500/20 bg-orange-500/5'
+                        ? 'border-theme-accent/20 bg-primary/5'
                         : 'border-border bg-muted/20'
                     }`}
                   >
@@ -192,11 +192,11 @@ export function MissionsTourDemo() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <Badge variant="outline" className="text-amber-600 border-amber-500/30 text-xs">
+                      <Badge variant="outline" className="text-theme-stat border-theme-highlight/30 text-xs">
                         <FragmentAmount amount={m.reward} prefix="+" size="xs" className="text-xs" />
                       </Badge>
                       {m.eligible && !m.completed && (
-                        <Button size="sm" className="h-7 text-xs bg-orange-500 hover:bg-orange-600" disabled>
+                        <Button size="sm" className="h-7 text-xs bg-primary hover:bg-primary/90" disabled>
                           Réclamer
                         </Button>
                       )}

@@ -1,10 +1,11 @@
 /**
  * Palette centralisée pour les graphiques D3 et Recharts.
- * Ces valeurs hex correspondent aux tokens Tailwind du design system.
+ * Préférer resolveChartBrandColor() pour la série principale (suit le thème actif).
  */
 export const CHART_COLORS = {
-  // Couleur principale de la marque
-  orange: '#f97316',   // orange-500
+  // Couleur principale CS2 / light (fallback SSR)
+  orange: '#f97316',
+  moonskin: '#7eb3e8',
 
   // Palette multi-séries (donut, barres groupées, etc.)
   cyan: '#06b6d4',     // cyan-500
@@ -26,6 +27,15 @@ export const CHART_COLORS = {
 } as const;
 
 export type ChartColor = keyof typeof CHART_COLORS;
+
+/** Couleur brand des graphiques selon le thème sur <html> */
+export function resolveChartBrandColor(): string {
+  if (typeof document === 'undefined') return CHART_COLORS.orange;
+  if (document.documentElement.classList.contains('moonskin')) {
+    return CHART_COLORS.moonskin;
+  }
+  return CHART_COLORS.orange;
+}
 
 /** Palette ordonnée pour les graphiques multi-séries */
 export const CHART_PALETTE: string[] = [

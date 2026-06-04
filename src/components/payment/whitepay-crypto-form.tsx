@@ -458,7 +458,7 @@ export function WhitepayCryptoForm({
 
           {/* Timer */}
           <div className={`flex items-center justify-center gap-2 p-3 rounded-lg text-center ${
-            isExpired ? 'bg-destructive/10 text-destructive' : timeLeft <= 10 ? 'bg-orange-500/10 text-orange-500' : 'bg-primary/10 text-primary'
+            isExpired ? 'bg-destructive/10 text-destructive' : timeLeft <= 10 ? 'bg-theme-accent/10 text-theme-accent' : 'bg-primary/10 text-primary'
           }`}>
             <Clock className="w-5 h-5" />
             <span className="text-lg font-bold font-mono">

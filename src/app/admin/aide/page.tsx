@@ -188,11 +188,11 @@ export default function AdminAidePage() {
         className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
       >
         <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/30">
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-cta-gradient-br shadow-lg shadow-[var(--cta-shadow)]">
             <HelpCircle className="h-7 w-7 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent md:text-4xl">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-theme-accent to-primary bg-clip-text text-transparent md:text-4xl">
               {aide.title}
             </h1>
             <p className="mt-1 text-slate-400">
@@ -206,7 +206,7 @@ export default function AdminAidePage() {
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-orange-400" />
+              <BookOpen className="h-5 w-5 text-theme-highlight" />
               {aide.howToUseTitle}
             </CardTitle>
             <CardDescription className="text-slate-400">
@@ -227,7 +227,7 @@ export default function AdminAidePage() {
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800 border border-slate-700">
-                  <Icon className="h-5 w-5 text-orange-400" />
+                  <Icon className="h-5 w-5 text-theme-highlight" />
                 </div>
                 <h2 className="text-xl font-semibold text-white">{section.title}</h2>
               </div>
@@ -243,14 +243,14 @@ export default function AdminAidePage() {
                           <div className="flex items-center gap-2 flex-wrap">
                             <Link
                               href={item.href}
-                              className="font-medium text-orange-400 hover:text-orange-300 hover:underline"
+                              className="font-medium text-theme-highlight hover:text-theme-highlight hover:underline"
                             >
                               {item.title}
                             </Link>
                           </div>
                           <p className="mt-1 text-sm text-slate-400">{item.desc}</p>
                         </div>
-                        <Button variant="ghost" size="sm" asChild className="shrink-0 text-slate-400 hover:text-orange-400">
+                        <Button variant="ghost" size="sm" asChild className="shrink-0 text-slate-400 hover:text-theme-highlight">
                           <Link href={item.href} className="flex items-center gap-1">
                             <span className="hidden sm:inline">{aide.openButton}</span>
                             <ChevronRight className="h-4 w-4" />

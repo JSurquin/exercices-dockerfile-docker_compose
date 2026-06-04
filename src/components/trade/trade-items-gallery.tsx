@@ -43,7 +43,7 @@ function ItemTile({
   return (
     <button
       onClick={onClick}
-      className={`relative group ${dim} rounded-lg border-2 ${rarityBorder(item.rarity)} bg-slate-900/60 overflow-hidden hover:scale-105 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500`}
+      className={`relative group ${dim} rounded-lg border-2 ${rarityBorder(item.rarity)} bg-slate-900/60 overflow-hidden hover:scale-105 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
     >
       <SafeImage
         src={item.iconUrl}
@@ -194,7 +194,7 @@ export function TradeItemsGallery({ items }: TradeItemsGalleryProps) {
                     {zoomedItem.rarity}
                   </Badge>
                 </div>
-                <p className="text-orange-400 font-bold text-base">
+                <p className="text-theme-highlight font-bold text-base">
                   <ConvertedPrice
                     usdCents={zoomedItem.prixCentimes}
                     fromCurrency="USD"

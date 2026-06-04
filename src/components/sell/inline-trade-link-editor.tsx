@@ -100,13 +100,13 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
   const sellTradeLink = messages.sellPage.tradeLinkSection;
 
   return (
-    <Card className="border-orange-500/40 bg-orange-500/5 shadow-sm">
+    <Card className="border-theme-accent/40 bg-theme-accent/5 shadow-sm">
       <CardContent className={compact ? "p-3" : "p-4 sm:p-5"}>
         {/* Header - Always visible */}
         <div className={`flex ${compact ? "flex-col" : "flex-col sm:flex-row sm:items-start"} justify-between gap-2 mb-2`}>
           <div className="flex items-start gap-2 min-w-0">
-            <div className={`${compact ? "p-1.5" : "p-2"} rounded-lg bg-orange-500/15 shrink-0`}>
-              <Link className={`${compact ? "w-4 h-4" : "w-5 h-5"} text-orange-500`} />
+            <div className={`${compact ? "p-1.5" : "p-2"} rounded-lg bg-theme-accent/15 shrink-0`}>
+              <Link className={`${compact ? "w-4 h-4" : "w-5 h-5"} text-theme-accent`} />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -130,7 +130,7 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
             onClick={() => setIsExpanded(!isExpanded)}
             className={`shrink-0 flex items-center gap-1 w-full ${compact ? "" : "sm:w-auto"} ${
               user?.tradeLink && !isExpanded
-                ? "bg-orange-500 hover:bg-orange-600 text-white"
+                ? "bg-primary hover:bg-primary/90 text-primary-foreground"
                 : ""
             }`}
           >
@@ -149,7 +149,7 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
 
         {/* Current Trade Link Summary - When collapsed */}
         {!isExpanded && user?.tradeLink && (
-          <div className="mt-3 rounded-md border border-orange-500/20 bg-background/60 px-3 py-2 space-y-1">
+          <div className="mt-3 rounded-md border border-theme-accent/20 bg-background/60 px-3 py-2 space-y-1">
             <p className="text-xs font-medium text-muted-foreground">
               {messages.settings.tradeLink.currentTradeLink}
             </p>

@@ -8,7 +8,7 @@ type UserRoleBadgeProps = {
 
 const TAG_CONFIG: Record<string, { className: string; icon: typeof Crown }> = {
   VIP: {
-    className: 'bg-amber-500/20 border border-amber-500/40 text-amber-400',
+    className: 'bg-theme-stat/20 border border-theme-highlight/40 text-theme-highlight',
     icon: Crown,
   },
   MERCHANT: {

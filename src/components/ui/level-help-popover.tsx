@@ -75,7 +75,7 @@ export function LevelHelpPopover() {
                       </div>
                     </td>
                     <td className="px-2 py-1.5 text-right text-muted-foreground">{xpStr}</td>
-                    <td className="px-2 py-1.5 text-right font-medium text-orange-500">{bonusStr}</td>
+                    <td className="px-2 py-1.5 text-right font-medium text-theme-accent">{bonusStr}</td>
                   </tr>
                 );
               })}

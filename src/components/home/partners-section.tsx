@@ -205,7 +205,7 @@ export function PartnersSection() {
       <div className="container relative z-10 mx-auto px-4">
         <div className={`mb-12 text-center ${homeReveal.upSm}`}>
           <div className="mb-4 flex justify-center">
-            <Heart className="h-8 w-8 text-orange-500" strokeWidth={1.5} />
+            <Heart className="h-8 w-8 text-theme-accent" strokeWidth={1.5} />
           </div>
           <h2 className="text-2xl font-bold uppercase tracking-wide md:text-3xl">
             {t.title}

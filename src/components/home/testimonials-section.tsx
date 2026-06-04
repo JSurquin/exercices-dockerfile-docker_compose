@@ -40,11 +40,11 @@ function CsgoRepLink({ size = 'default' }: { size?: 'default' | 'large' }) {
     >
       <span className="absolute -inset-[2px] rounded-full opacity-80 blur-[2px] group-hover:opacity-100 group-hover:blur-[3px] transition-all duration-300 home-neon-border" />
       <span className={`relative inline-flex items-center space-x-2 lunar-card ${innerPadding} rounded-full bg-background/90 text-sm font-semibold`}>
-        <svg className="w-4 h-4 text-orange-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="w-4 h-4 text-theme-accent flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
         </svg>
         <span>
-          {messages.testimonials.basedOn} <strong className="text-orange-500">806+</strong> {messages.testimonials.reviews} CSGO-Rep
+          {messages.testimonials.basedOn} <strong className="text-theme-accent">806+</strong> {messages.testimonials.reviews} CSGO-Rep
         </span>
         <svg className="w-3.5 h-3.5 opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -186,7 +186,7 @@ export function TestimonialsSection() {
         {/* Trust Indicators */}
         <div className={`mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center ${homeReveal.upSm}`}>
           <div>
-            <div className="text-3xl font-bold text-orange-600 mb-2">
+            <div className="text-3xl font-bold text-theme-accent mb-2">
               {skinsDisplay.prefix}
               {skinsDisplay.value.toLocaleString(undefined, {
                 minimumFractionDigits: skinsDisplay.decimals,
@@ -197,7 +197,7 @@ export function TestimonialsSection() {
             <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.skinsSold}</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-orange-600 mb-2">
+            <div className="text-3xl font-bold text-theme-accent mb-2">
               {usersDisplay.prefix}
               {usersDisplay.value.toLocaleString(undefined, {
                 minimumFractionDigits: usersDisplay.decimals,
@@ -208,7 +208,7 @@ export function TestimonialsSection() {
             <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.users}</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-orange-600 mb-2">
+            <div className="text-3xl font-bold text-theme-accent mb-2">
               {volumeDisplay.prefix}
               {volumeDisplay.value.toLocaleString(undefined, {
                 minimumFractionDigits: volumeDisplay.decimals,
@@ -219,7 +219,7 @@ export function TestimonialsSection() {
             <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.volume}</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-orange-600 mb-2">24/7</div>
+            <div className="text-3xl font-bold text-theme-accent mb-2">24/7</div>
             <div className="text-sm text-muted-foreground">{messages.testimonials.trustStats.support}</div>
           </div>
         </div>

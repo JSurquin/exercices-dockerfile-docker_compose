@@ -107,7 +107,7 @@ export function PayoutHistory() {
         );
       case 'PENDING_APPROVAL':
         return (
-          <Badge className="bg-orange-500/20 text-orange-500 border-orange-500/50">
+          <Badge className="bg-theme-accent/20 text-theme-accent border-theme-accent/50">
             <AlertCircle className="w-3 h-3 mr-1" />
             {t.statusVerification}
           </Badge>

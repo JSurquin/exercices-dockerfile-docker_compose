@@ -135,7 +135,7 @@ export default function AffiliateTools() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg border border-yellow-200 dark:border-yellow-800">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg border border-theme-highlight/25 dark:border-theme-highlight/35">
               <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
                 <AlertTriangle className="h-4 w-4" />
                 <span className="text-sm font-medium">{t.warningTitle}</span>

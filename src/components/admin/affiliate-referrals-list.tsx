@@ -143,7 +143,7 @@ export function AffiliateReferralsList({ affiliateId }: Props) {
                           </span>
                           <UserRoleBadge userTag={ref.user.userTag} />
                           {(ref.user.affiliateRewardsBlocked || ref.user.xpRewardsBlocked) && (
-                            <Badge variant="outline" className="text-amber-500 border-amber-600/50 text-[10px]">
+                            <Badge variant="outline" className="text-theme-stat border-theme-highlight/50 text-[10px]">
                               {t.rewardsBlockedBadge}
                             </Badge>
                           )}

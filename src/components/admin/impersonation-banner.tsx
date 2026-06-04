@@ -41,12 +41,12 @@ export function ImpersonationBanner() {
       {/* Espaceur dans le flux normal — pousse le header sticky vers le bas */}
       <div className="h-10 w-full shrink-0" aria-hidden />
       {/* Bandeau fixe au-dessus de tout (z > header z-50) */}
-      <div className="fixed top-0 left-0 right-0 z-[100] flex h-10 items-center justify-between gap-3 bg-orange-500 px-4 text-white shadow-lg">
+      <div className="fixed top-0 left-0 right-0 z-[100] flex h-10 items-center justify-between gap-3 bg-primary px-4 text-white shadow-lg">
         <div className="flex items-center gap-2 text-sm font-medium">
           <UserCog className="h-4 w-4 shrink-0" />
           <span>{t.message.replace('{name}', username)}</span>
           {error && (
-            <span className="ml-2 rounded bg-orange-700/60 px-2 py-0.5 text-xs">
+            <span className="ml-2 rounded bg-primary/60 px-2 py-0.5 text-xs">
               {error}
             </span>
           )}
@@ -56,7 +56,7 @@ export function ImpersonationBanner() {
           variant="outline"
           onClick={handleStop}
           disabled={stopping}
-          className="shrink-0 border-white/40 bg-transparent text-white hover:bg-orange-600 hover:text-white"
+          className="shrink-0 border-white/40 bg-transparent text-white hover:bg-primary/90 hover:text-white"
         >
           {stopping ? (
             <>

@@ -65,8 +65,8 @@ export function LevelProgressBar({
                   <button
                     type="button"
                     className={cn(
-                      "absolute top-0 -translate-x-1/2 rounded-full p-0.5 transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 pointer-events-auto",
-                      isCurrent && "scale-110 ring-2 ring-orange-500/60",
+                      "absolute top-0 -translate-x-1/2 rounded-full p-0.5 transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary pointer-events-auto",
+                      isCurrent && "scale-110 ring-2 ring-primary/60",
                       isReached && !isCurrent && "opacity-90"
                     )}
                     style={{ left: `${position}%` }}
@@ -96,7 +96,7 @@ export function LevelProgressBar({
         )}
       >
         <motion.div
-          className="absolute left-0 top-0 h-full rounded-full bg-orange-500"
+          className="absolute left-0 top-0 h-full rounded-full bg-primary"
           initial={false}
           animate={{ width: `${currentPct}%` }}
           transition={{ duration: 0.5, ease: "easeOut" }}

@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "./moonskin-accent-bridge.css";
 
 /* Custom scrollbar styles */
 .scrollbar-thin {
@@ -653,6 +652,23 @@ body.next-dev-overlay-present #sentry-feedback {
   .btn-chrome:hover {
     box-shadow: 0 0 30px rgba(192, 192, 192, 0.2);
     border-color: rgba(220, 220, 240, 0.5);
+  }
+
+  /* Surfaces & dégradés brand — tokens CSS, tous thèmes */
+  .brand-panel {
+    @apply border border-theme-accent/30 bg-theme-accent/5;
+  }
+
+  .brand-panel-dashed {
+    @apply border border-dashed border-theme-accent/40 bg-theme-accent/5;
+  }
+
+  .bg-cta-gradient {
+    background-image: linear-gradient(to right, var(--cta-from), var(--cta-to));
+  }
+
+  .bg-cta-gradient-br {
+    background-image: linear-gradient(to bottom right, var(--cta-from), var(--cta-to));
   }
 
   /* CTA principal — contraste fort, variable par thème */

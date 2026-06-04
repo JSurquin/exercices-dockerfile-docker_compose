@@ -133,7 +133,7 @@ const GiveawayCard = ({
       </CardHeader>
 
       <CardContent className="space-y-3 sm:space-y-4">
-        <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 rounded-lg p-4 border">
+        <div className="bg-gradient-to-r from-theme-accent/5 to-theme-accent/10 dark:from-theme-accent/10 dark:to-theme-accent/15 rounded-lg p-4 border">
           <div className="flex items-center space-x-3">
             <SafeImage
               src={giveaway.prizeImageUrl}
@@ -142,12 +142,12 @@ const GiveawayCard = ({
               height={52}
               className="object-contain rounded shrink-0 drop-shadow"
               fallbackClassName="w-[72px] h-[52px] rounded shrink-0"
-              fallbackIcon={<TrophyIcon className="w-8 h-8 text-orange-600" />}
+              fallbackIcon={<TrophyIcon className="w-8 h-8 text-theme-accent" />}
               unoptimized
             />
             <div>
-              <h4 className="font-semibold text-orange-800 dark:text-orange-200">{messages.giveaways.card.prize}</h4>
-              <p className="text-orange-700 dark:text-orange-300">{giveaway.prize}</p>
+              <h4 className="font-semibold text-theme-accent dark:text-theme-highlight">{messages.giveaways.card.prize}</h4>
+              <p className="text-theme-accent">{giveaway.prize}</p>
             </div>
           </div>
         </div>
@@ -229,13 +229,13 @@ const GiveawayCard = ({
                     <FragmentAmount amount={giveaway.ticketPrice} size="xs" />
                     <span>{messages.giveaways.card.fragmentsLabel}</span>
                   </span>
-                  <span className="text-amber-500 font-medium">
+                  <span className="text-theme-stat font-medium">
                     {messages.giveaways.card.fragmentsRemaining.replace('{count}', String(giveaway.ticketPrice - userFragments))}
                   </span>
                 </div>
                 <Progress
                   value={Math.min(100, (userFragments / giveaway.ticketPrice) * 100)}
-                  className="h-1.5 bg-muted [&>div]:bg-amber-500"
+                  className="h-1.5 bg-muted [&>div]:bg-theme-stat"
                 />
               </div>
             )}
@@ -263,7 +263,7 @@ const GiveawayCard = ({
                   entriesToBuy > poolLeft ||
                   entriesToBuy > maxPerUser
                 }
-                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                className="bg-cta-gradient hover:brightness-110"
               >
                 {messages.giveaways.card.participate}
               </Button>
@@ -405,8 +405,8 @@ export default function GiveawaysPage() {
           >
             {/* Icône animée */}
             <div className="relative mb-8 inline-block">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-500/20 to-red-600/20 border border-orange-500/30 flex items-center justify-center mx-auto">
-                <LockClosedIcon className="w-16 h-16 text-orange-500" />
+              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-theme-accent/20 to-theme-accent/30 border border-theme-accent/30 flex items-center justify-center mx-auto">
+                <LockClosedIcon className="w-16 h-16 text-theme-accent" />
               </div>
               <div className="absolute -top-1 -right-1 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-xs font-bold">!</span>
@@ -414,7 +414,7 @@ export default function GiveawaysPage() {
             </div>
 
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+              <span className="bg-cta-gradient bg-clip-text text-transparent">
                 Giveaways
               </span>{' '}
               {messages.giveawaysPage.comingSoon}
@@ -427,15 +427,15 @@ export default function GiveawaysPage() {
             </p>
 
             {/* Infos sur les tickets */}
-            <Card className="mb-8 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-orange-200 dark:border-orange-800">
+            <Card className="mb-8 bg-gradient-to-br from-theme-accent/5 to-theme-accent/10 dark:from-theme-accent/10 dark:to-theme-accent/15 border-theme-accent/20 dark:border-theme-accent/30">
               <CardContent className="p-6">
                 <div className="flex items-start space-x-4">
-                  <BellAlertIcon className="w-6 h-6 text-orange-600 flex-shrink-0 mt-0.5" />
+                  <BellAlertIcon className="w-6 h-6 text-theme-accent flex-shrink-0 mt-0.5" />
                   <div className="text-left">
-                    <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-1">
+                    <h3 className="font-semibold text-theme-accent dark:text-theme-highlight mb-1">
                       {messages.giveawaysPage.keepAccumulating}
                     </h3>
-                    <p className="text-sm text-orange-700 dark:text-orange-300">
+                    <p className="text-sm text-theme-accent">
                       {messages.giveawaysPage.keepAccumulatingDescription}
                     </p>
                     {user && (
@@ -443,9 +443,9 @@ export default function GiveawaysPage() {
                         <FragmentAmount
                           amount={user.fragments ?? 0}
                           size="xs"
-                          className="font-bold text-amber-700 dark:text-amber-300"
+                          className="font-bold text-theme-highlight"
                         />
-                        <span className="ml-1 text-sm text-amber-700 dark:text-amber-300">
+                        <span className="ml-1 text-sm text-theme-highlight">
                           {messages.giveaways.card.fragmentsLabel}
                         </span>
                       </div>
@@ -457,7 +457,7 @@ export default function GiveawaysPage() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/dashboard">
-                <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white">
+                <Button variant="cta">
                   <TrophyIcon className="w-4 h-4 mr-2" />
                   {messages.giveawaysPage.viewDashboard}
                 </Button>
@@ -488,7 +488,7 @@ export default function GiveawaysPage() {
           className="text-center mb-6 sm:mb-8"
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-            <GiftIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
+            <GiftIcon className="w-8 h-8 inline-block mr-2 text-theme-accent" />
             {messages.giveaways.title}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-4">
@@ -545,17 +545,17 @@ export default function GiveawaysPage() {
                         <div className="mt-2 space-y-1 text-xs text-left min-w-[180px]">
                           <div className="flex justify-between text-muted-foreground">
                             <span>{messages.giveaways.card.nextGiveaway}</span>
-                            <span className="text-amber-500 font-medium">
+                            <span className="text-theme-stat font-medium">
                               {messages.giveaways.card.moreNeeded.replace('{count}', String(cheapest.ticketPrice - userFragments))}
                             </span>
                           </div>
-                          <Progress value={pct} className="h-1.5 bg-muted [&>div]:bg-amber-500" />
+                          <Progress value={pct} className="h-1.5 bg-muted [&>div]:bg-theme-stat" />
                         </div>
                       );
                     })()}
                     <div className="flex flex-wrap justify-end gap-2 text-sm text-muted-foreground mt-1">
                       <span>{messages.giveaways.userTickets.tickets}: {user.tickets ?? 0}</span>
-                      <Link href="/missions" className="text-orange-600 hover:underline">
+                      <Link href="/missions" className="text-theme-accent hover:underline">
                         {messages.giveaways.card.missionsLink}
                       </Link>
                     </div>
@@ -584,8 +584,8 @@ export default function GiveawaysPage() {
             <CardContent>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <CurrencyDollarIcon className="w-6 h-6 text-orange-600" />
+                  <div className="w-12 h-12 bg-theme-accent/15 dark:bg-theme-accent/25 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <CurrencyDollarIcon className="w-6 h-6 text-theme-accent" />
                   </div>
                   <h4 className="font-semibold mb-2">{messages.giveaways.howTicketsWork.earn.title}</h4>
                   <p className="text-sm text-muted-foreground">
@@ -708,7 +708,7 @@ export default function GiveawaysPage() {
                             <div className="flex items-center justify-between">
                               <div className="flex-1">
                                 <Link href={`/giveaways/${entry.giveaway.id}`}>
-                                  <h4 className="font-semibold hover:text-orange-600 transition-colors cursor-pointer">
+                                  <h4 className="font-semibold hover:text-theme-accent transition-colors cursor-pointer">
                                     {entry.giveaway.title}
                                   </h4>
                                 </Link>

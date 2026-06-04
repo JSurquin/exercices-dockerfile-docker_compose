@@ -72,7 +72,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             <div className="space-y-3">
               <Button
                 onClick={reset}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
+                className="w-full bg-cta-gradient hover:brightness-110 text-white"
               >
                 {messages.reload}
               </Button>
@@ -91,7 +91,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 {messages.supportDesc}{" "}
                 <a
                   href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@moonskin.gg"}`}
-                  className="text-orange-600 hover:underline"
+                  className="text-theme-accent hover:underline"
                 >
                   {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@moonskin.gg"}
                 </a>

@@ -203,7 +203,7 @@ export function AdminMobileNav() {
             {/* Header */}
             <div className="flex h-20 items-center justify-between border-b border-slate-700 px-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/50">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cta-gradient-br shadow-lg shadow-[var(--cta-shadow)]">
                   <Shield className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -263,14 +263,14 @@ export function AdminMobileNav() {
                             className={cn(
                               'group relative flex items-center gap-3 rounded-lg px-3 py-3 transition-all duration-200',
                               active
-                                ? 'bg-gradient-to-r from-orange-500/20 to-orange-600/20 text-orange-300 shadow-lg shadow-orange-500/10'
+                                ? 'bg-gradient-to-r from-theme-accent/20 to-theme-accent/30 text-theme-highlight shadow-lg shadow-[var(--cta-shadow)]'
                                 : 'text-slate-300 hover:bg-slate-800/50 hover:text-white active:bg-slate-800'
                             )}
                           >
                             <Icon
                               className={cn(
                                 'h-5 w-5 flex-shrink-0',
-                                active ? 'text-orange-400' : 'text-slate-400 group-hover:text-white'
+                                active ? 'text-theme-highlight' : 'text-slate-400 group-hover:text-white'
                               )}
                             />
                             <span className="flex-1 text-sm font-medium">{item.title}</span>
@@ -285,7 +285,7 @@ export function AdminMobileNav() {
                             {active && (
                               <motion.div
                                 layoutId="activeMobileIndicator"
-                                className="absolute left-0 h-full w-1 rounded-r-full bg-gradient-to-b from-orange-400 to-orange-600"
+                                className="absolute left-0 h-full w-1 rounded-r-full bg-gradient-to-b from-theme-accent to-primary"
                                 transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                               />
                             )}

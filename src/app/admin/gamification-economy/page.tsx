@@ -91,14 +91,14 @@ function RatioGauge({ ratio, label, t }: { ratio: number; label: string; t: Reco
   const pct = Math.min(100, ratio * 100);
   const color =
     ratio > 0.15 ? 'bg-red-500' :
-    ratio > 0.12 ? 'bg-orange-500' :
+    ratio > 0.12 ? 'bg-primary' :
     ratio > 0.08 ? 'bg-yellow-500' :
     ratio > 0.03 ? 'bg-green-500' :
     'bg-blue-500';
 
   const status =
     ratio > 0.15 ? { label: t.statusDangerous, color: 'text-red-400' } :
-    ratio > 0.12 ? { label: t.statusExpensive, color: 'text-orange-400' } :
+    ratio > 0.12 ? { label: t.statusExpensive, color: 'text-theme-highlight' } :
     ratio > 0.08 ? { label: t.statusWatch, color: 'text-yellow-400' } :
     ratio > 0.03 ? { label: t.statusIdeal, color: 'text-green-400' } :
     { label: t.statusTooHard, color: 'text-blue-400' };
@@ -169,8 +169,8 @@ function Recommendation({
 
   if (ratio30 > 0.12) {
     return (
-      <div className="rounded-lg border border-orange-700/50 bg-orange-950/30 p-4 space-y-1">
-        <p className="text-orange-400 font-semibold text-sm flex items-center gap-2">
+      <div className="rounded-lg border border-theme-accent/30 bg-theme-accent/10 p-4 space-y-1">
+        <p className="text-theme-highlight font-semibold text-sm flex items-center gap-2">
           <ArrowTrendingUpIcon className="w-4 h-4" />
           {t.increasePrices}
         </p>
@@ -249,7 +249,7 @@ export default function AdminGamificationEconomyPage() {
     { range: ge.decisionGrid.range1, label: ge.decisionGrid.label1, desc: ge.decisionGrid.desc1, color: 'border-blue-700 bg-blue-950/30 text-blue-300' },
     { range: ge.decisionGrid.range2, label: ge.decisionGrid.label2, desc: ge.decisionGrid.desc2, color: 'border-green-700 bg-green-950/30 text-green-300' },
     { range: ge.decisionGrid.range3, label: ge.decisionGrid.label3, desc: ge.decisionGrid.desc3, color: 'border-yellow-700 bg-yellow-950/30 text-yellow-300' },
-    { range: ge.decisionGrid.range4, label: ge.decisionGrid.label4, desc: ge.decisionGrid.desc4, color: 'border-orange-700 bg-orange-950/30 text-orange-300' },
+    { range: ge.decisionGrid.range4, label: ge.decisionGrid.label4, desc: ge.decisionGrid.desc4, color: 'border-theme-accent/30 bg-theme-accent/10 text-theme-highlight' },
     { range: ge.decisionGrid.range5, label: ge.decisionGrid.label5, desc: ge.decisionGrid.desc5, color: 'border-red-700 bg-red-950/30 text-red-300' },
   ];
 
@@ -258,7 +258,7 @@ export default function AdminGamificationEconomyPage() {
       {/* Titre */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 flex items-center gap-2">
-          <ChartBarIcon className="w-7 h-7 text-orange-500" />
+          <ChartBarIcon className="w-7 h-7 text-theme-accent" />
           {ge.title}
         </h1>
         <p className="text-slate-400 text-sm">
@@ -272,10 +272,10 @@ export default function AdminGamificationEconomyPage() {
           {data.alerts.map((a, i) => (
             <div
               key={i}
-              className="flex items-start gap-3 rounded-lg border border-amber-700/50 bg-amber-950/30 p-4"
+              className="flex items-start gap-3 rounded-lg border border-theme-highlight/30 bg-theme-highlight/10 p-4"
             >
-              <ExclamationTriangleIcon className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-              <p className="text-amber-300 text-sm">{a}</p>
+              <ExclamationTriangleIcon className="w-5 h-5 text-theme-highlight shrink-0 mt-0.5" />
+              <p className="text-theme-highlight text-sm">{a}</p>
             </div>
           ))}
         </div>
@@ -287,7 +287,7 @@ export default function AdminGamificationEconomyPage() {
       {/* Bloc 1 — Finance */}
       <div>
         <h2 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
-          <ChartBarIcon className="w-4 h-4 text-orange-500" />
+          <ChartBarIcon className="w-4 h-4 text-theme-accent" />
           {ge.finance.title}
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -317,13 +317,13 @@ export default function AdminGamificationEconomyPage() {
             label={ge.finance.giveawayCost7d}
             value={fmtEur(data.finance.giveawayCostEur7d)}
             icon={<GiftIcon className="w-4 h-4" />}
-            color="text-orange-400"
+            color="text-theme-highlight"
           />
           <KpiCard
             label={ge.finance.giveawayCost30d}
             value={fmtEur(data.finance.giveawayCostEur30d)}
             icon={<GiftIcon className="w-4 h-4" />}
-            color="text-orange-400"
+            color="text-theme-highlight"
           />
           <KpiCard
             label={ge.finance.ratio7d}
@@ -354,7 +354,7 @@ export default function AdminGamificationEconomyPage() {
       <Card className="bg-slate-900/80 border-slate-700">
         <CardHeader>
           <CardTitle className="text-white text-base flex items-center gap-2">
-            <ChartBarIcon className="w-4 h-4 text-orange-500" />
+            <ChartBarIcon className="w-4 h-4 text-theme-accent" />
             {ge.kpi.title}
           </CardTitle>
         </CardHeader>
@@ -373,7 +373,7 @@ export default function AdminGamificationEconomyPage() {
       {/* Bloc 2 — Fragments */}
       <div>
         <h2 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
-          <SparklesIcon className="w-4 h-4 text-amber-500" />
+          <SparklesIcon className="w-4 h-4 text-theme-stat" />
           {ge.fragments.title}
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -381,13 +381,13 @@ export default function AdminGamificationEconomyPage() {
             label={ge.fragments.generatedTotal}
             value={fmtNum(data.fragments.generatedTotal)}
             icon={<SparklesIcon className="w-4 h-4" />}
-            color="text-amber-400"
+            color="text-theme-highlight"
           />
           <KpiCard
             label={ge.fragments.spentTotal}
             value={fmtNum(data.fragments.spentTotalGiveaways)}
             icon={<SparklesIcon className="w-4 h-4" />}
-            color="text-orange-400"
+            color="text-theme-highlight"
           />
           <KpiCard
             label={ge.fragments.circulation}
@@ -462,7 +462,7 @@ export default function AdminGamificationEconomyPage() {
             label={ge.giveaways.costEnded}
             value={fmtEur(data.giveaways.totalEndedRewardCostCents / 100)}
             icon={<GiftIcon className="w-4 h-4" />}
-            color="text-orange-400"
+            color="text-theme-highlight"
           />
           <KpiCard
             label={ge.giveaways.cost7d}
@@ -492,7 +492,7 @@ export default function AdminGamificationEconomyPage() {
                         {ge.giveaways.giveawayCount.replace('{count}', String(row._count))}
                       </p>
                     </div>
-                    <p className="text-orange-400 font-bold">{fmtEur((row._sum.rewardValueCents ?? 0) / 100)}</p>
+                    <p className="text-theme-highlight font-bold">{fmtEur((row._sum.rewardValueCents ?? 0) / 100)}</p>
                   </div>
                 ))}
               </div>
@@ -505,7 +505,7 @@ export default function AdminGamificationEconomyPage() {
       <Card className="bg-slate-900/80 border-slate-700">
         <CardHeader>
           <CardTitle className="text-white text-sm flex items-center gap-2">
-            <ExclamationTriangleIcon className="w-4 h-4 text-amber-500" />
+            <ExclamationTriangleIcon className="w-4 h-4 text-theme-stat" />
             {ge.decisionGrid.title}
           </CardTitle>
         </CardHeader>

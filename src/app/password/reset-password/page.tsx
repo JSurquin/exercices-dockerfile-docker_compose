@@ -91,7 +91,7 @@ export default function ResetPasswordPage() {
             <p className="text-slate-300 text-sm">
               {messages.resetPassword.resetSuccessRedirect}
             </p>
-            <Button asChild className="w-full bg-orange-600 hover:bg-orange-700 text-white">
+            <Button asChild variant="cta" className="w-full">
               <Link href="/admin/login" className="flex items-center justify-center gap-2">
                 <Shield className="w-4 h-4" />
                 {messages.resetPassword.loginNow}
@@ -108,8 +108,8 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500/10 rounded-full mb-4">
-            <Shield className="w-8 h-8 text-orange-500" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-theme-accent/10 rounded-full mb-4">
+            <Shield className="w-8 h-8 text-theme-accent" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
             {messages.resetPassword.resetPasswordTitle}
@@ -119,7 +119,7 @@ export default function ResetPasswordPage() {
           </p>
           {userEmail && (
             <p className="text-sm text-slate-500 mt-2">
-              {text.accountLabel} : <span className="text-orange-400">{userEmail}</span>
+              {text.accountLabel} : <span className="text-theme-highlight">{userEmail}</span>
             </p>
           )}
         </div>
@@ -240,7 +240,7 @@ export default function ResetPasswordPage() {
                 <Button
                   type="submit"
                   disabled={loading || password !== confirmPassword || password.length < 8}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50"
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50"
                 >
                   {loading ? (
                     <>

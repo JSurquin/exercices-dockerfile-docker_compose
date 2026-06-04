@@ -283,7 +283,7 @@ export function SteamTradeCreator({
               </div>
 
               {vipBonusPreview > 0 && (
-                <div className="flex items-center justify-between text-sm text-amber-600 dark:text-amber-400">
+                <div className="flex items-center justify-between text-sm text-theme-highlight">
                   <span className="flex items-center gap-1">
                     + {tc.vipBonus
                         .replace('{tag}', user?.userTag || 'VIP')

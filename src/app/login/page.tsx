@@ -87,7 +87,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
           <Link href="/" className="inline-flex items-center space-x-2 mb-2">
-            <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-lg bg-cta-gradient-br flex items-center justify-center">
               <span className="text-white font-bold text-xl">CS</span>
             </div>
             <span className="font-bold text-3xl text-white">MoonSkin</span>
@@ -171,7 +171,7 @@ export default function LoginPage() {
                   </Label>
                   <Link
                     href="/password/forgot"
-                    className="text-xs text-orange-400 hover:text-orange-300 transition-colors"
+                    className="text-xs text-theme-highlight hover:text-theme-highlight transition-colors"
                   >
                     {messages.loginPage.forgotPassword}
                   </Link>
@@ -192,7 +192,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
+                className="w-full bg-cta-gradient hover:brightness-110 text-white"
                 disabled={loading}
               >
                 {loading ? (
@@ -208,7 +208,7 @@ export default function LoginPage() {
 
             <div className="text-center text-sm text-slate-400">
               {messages.loginPage.noAccountYet}{' '}
-              <Link href="/" className="text-orange-400 hover:text-orange-300 transition-colors">
+              <Link href="/" className="text-theme-highlight hover:text-theme-highlight transition-colors">
                 {messages.loginPage.loginWithSteam}
               </Link>
             </div>
@@ -218,11 +218,11 @@ export default function LoginPage() {
         <div className="text-center text-xs text-slate-500">
           <p>
             {messages.loginPage.legalNotice}{' '}
-            <Link href="/terms" className="text-orange-400 hover:text-orange-300">
+            <Link href="/terms" className="text-theme-highlight hover:text-theme-highlight">
               {messages.loginPage.termsOfService}
             </Link>
             {' '}{messages.loginPage.and}{' '}
-            <Link href="/privacy" className="text-orange-400 hover:text-orange-300">
+            <Link href="/privacy" className="text-theme-highlight hover:text-theme-highlight">
               {messages.loginPage.privacyPolicy}
             </Link>
           </p>

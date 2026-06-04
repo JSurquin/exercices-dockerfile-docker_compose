@@ -56,7 +56,7 @@ const getStatusIcon = (status: ServiceStatus) => {
     case "degraded":
       return <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500" />;
     case "partial_outage":
-      return <ExclamationTriangleIcon className="w-5 h-5 text-orange-500" />;
+      return <ExclamationTriangleIcon className="w-5 h-5 text-theme-accent" />;
     case "major_outage":
       return <XCircleIcon className="w-5 h-5 text-red-500" />;
     case "maintenance":
@@ -90,7 +90,7 @@ const getStatusColor = (status: ServiceStatus) => {
     case "degraded":
       return "bg-yellow-100 text-yellow-800";
     case "partial_outage":
-      return "bg-orange-100 text-orange-800";
+      return "bg-theme-accent/10 text-theme-accent";
     case "major_outage":
       return "bg-red-100 text-red-800";
     case "maintenance":
@@ -280,7 +280,7 @@ export default function StatusPage() {
           </Card>
           <Card>
             <CardContent className="p-6 text-center">
-              <p className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold text-orange-600">
+              <p className="text-2xl sm:text-3xl lg:text-2xl sm:text-3xl lg:text-4xl font-bold text-theme-accent">
                 {incidents.filter((i) => i.status !== "resolved").length}
               </p>
               <p className="text-sm text-muted-foreground">{messages.status.stats.incidents}</p>
@@ -378,7 +378,7 @@ export default function StatusPage() {
                               incident.impact === "low"
                                 ? "border-yellow-500 text-yellow-700"
                                 : incident.impact === "medium"
-                                ? "border-orange-500 text-orange-700"
+                                ? "border-theme-accent text-theme-accent"
                                 : "border-red-500 text-red-700"
                             }
                           >

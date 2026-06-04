@@ -216,9 +216,9 @@ export default function SellPage() {
             transition={{ duration: 0.4 }}
             className="max-w-6xl mx-auto mb-4"
           >
-            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2.5 sm:px-4">
+            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-theme-highlight/30 bg-theme-highlight/5 px-3 py-2.5 sm:px-4">
               <UserRoleBadge userTag={user.userTag} size="sm" />
-              <span className="text-sm text-amber-600 dark:text-amber-400">
+              <span className="text-sm text-theme-highlight">
                 {messages.sellPage.bonusBanner.replace('{percent}', String(user.bonusRatePercent))}
               </span>
             </div>
@@ -255,9 +255,9 @@ export default function SellPage() {
                   <div
                     className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-colors ${
                       isCurrent || isCompleted
-                        ? "bg-orange-500 border-orange-500 text-white"
+                        ? "bg-primary border-primary text-primary-foreground"
                         : "border-muted-foreground text-muted-foreground"
-                    } ${isClickable ? "group-hover:bg-orange-600 group-hover:border-orange-600" : ""}`}
+                    } ${isClickable ? "group-hover:bg-primary/90 group-hover:border-primary/90" : ""}`}
                   >
                     {isCompleted ? (
                       <CheckCircleIcon className="w-4 h-4 sm:w-6 sm:h-6" />
@@ -271,7 +271,7 @@ export default function SellPage() {
                         isCurrent || isCompleted
                           ? "text-foreground"
                           : "text-muted-foreground"
-                      } ${isClickable ? "group-hover:text-orange-600 dark:group-hover:text-orange-400" : ""}`}
+                      } ${isClickable ? "group-hover:text-theme-accent" : ""}`}
                     >
                       {step.title}
                     </p>
@@ -285,7 +285,7 @@ export default function SellPage() {
                     <button
                       type="button"
                       onClick={() => handleStepNavigation(index)}
-                      className="group flex items-center rounded-lg px-1 py-1 -mx-1 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 cursor-pointer"
+                      className="group flex items-center rounded-lg px-1 py-1 -mx-1 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 cursor-pointer"
                       aria-label={stepLabel}
                     >
                       {stepContent}
@@ -301,7 +301,7 @@ export default function SellPage() {
                   {index < steps.length - 1 && (
                     <div
                       className={`w-6 sm:w-10 md:w-14 lg:w-20 h-0.5 shrink-0 mx-2 sm:mx-3 md:mx-4 ${
-                        index < currentStep ? "bg-orange-500" : "bg-muted"
+                        index < currentStep ? "bg-primary" : "bg-muted"
                       }`}
                       aria-hidden
                     />
@@ -417,7 +417,7 @@ export default function SellPage() {
                           <ConvertedPrice usdCents={tradeData.net_value} />
                         </span>
                       </div>
-                      <div className="flex flex-wrap items-start justify-between gap-2 border border-dashed border-amber-400/40 bg-amber-50/30 dark:bg-amber-950/20 rounded-md p-2 text-xs text-muted-foreground">
+                      <div className="flex flex-wrap items-start justify-between gap-2 border border-dashed brand-panel-dashed rounded-md p-2 text-xs text-muted-foreground">
                         <span className="flex-1">{messages.sellPage.confirmation.payoutFeesReminder}</span>
                       </div>
                     </div>
@@ -427,7 +427,7 @@ export default function SellPage() {
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button asChild className="bg-orange-500 hover:bg-orange-600">
+                    <Button asChild variant="cta">
                       <a
                         href="https://steamcommunity.com/my/tradeoffers/"
                         target="_blank"
@@ -446,9 +446,9 @@ export default function SellPage() {
 
               {/* MoonSkin trade bot (profil technique fourni par l’API partenaire) */}
               {tradeData.bot && (
-                <Card className="border-orange-500/30 bg-orange-500/5">
+                <Card className="brand-panel">
                   <CardContent className="p-6">
-                    <h3 className="text-base font-semibold mb-4 flex items-center gap-2 text-orange-500">
+                    <h3 className="text-base font-semibold mb-4 flex items-center gap-2 text-theme-accent">
                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2z"/>
                         <path d="M2 20c0-4 4-7 10-7s10 3 10 7"/>
@@ -461,15 +461,15 @@ export default function SellPage() {
                       <SafeImg
                         src={tradeData.bot.avatar}
                         alt={tradeData.bot.name}
-                        className="w-14 h-14 rounded-full border-2 border-orange-500/40 object-cover"
-                        fallbackClassName="w-14 h-14 rounded-full border-2 border-orange-500/40"
+                        className="w-14 h-14 rounded-full border-2 border-theme-accent/40 object-cover"
+                        fallbackClassName="w-14 h-14 rounded-full border-2 border-theme-accent/40"
                         fallbackIcon={<UserIcon className="w-7 h-7 text-muted-foreground" />}
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-semibold text-base truncate">{tradeData.bot.name}</p>
                           {tradeData.bot.level && (
-                            <span className="text-xs bg-orange-500/20 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full font-medium">
+                            <span className="text-xs bg-theme-accent/20 text-theme-highlight px-2 py-0.5 rounded-full font-medium">
                               {messages.sellPage.confirmation.botLevelShort} {tradeData.bot.level}
                             </span>
                           )}
@@ -488,7 +488,7 @@ export default function SellPage() {
                           href={tradeData.bot.profile_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="shrink-0 text-xs underline text-orange-500 hover:text-orange-600"
+                          className="shrink-0 text-xs underline text-theme-accent hover:text-theme-accent"
                         >
                           {messages.sellPage.confirmation.viewProfile}
                         </a>
@@ -507,7 +507,7 @@ export default function SellPage() {
                   
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center text-orange-600 font-bold text-sm">
+                      <div className="w-8 h-8 bg-theme-accent/15 dark:bg-theme-accent/25 rounded-full flex items-center justify-center text-theme-accent font-bold text-sm">
                         1
                       </div>
                       <div>

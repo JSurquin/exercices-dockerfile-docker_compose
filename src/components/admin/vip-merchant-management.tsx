@@ -158,7 +158,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-slate-800/50 border-slate-700">
           <CardContent className="p-4 flex items-center gap-3">
-            <Users className="h-8 w-8 text-amber-400" />
+            <Users className="h-8 w-8 text-theme-highlight" />
             <div>
               <p className="text-sm text-slate-400">{t.totalWithTagLabel.replace('{tag}', tag)}</p>
               <p className="text-2xl font-bold text-white">{totalUsers}</p>
@@ -257,7 +257,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
                       </Link>
                     </TableCell>
                     <TableCell>
-                      <span className="text-amber-400 font-semibold">+{user.bonusRatePercent}%</span>
+                      <span className="text-theme-highlight font-semibold">+{user.bonusRatePercent}%</span>
                     </TableCell>
                     <TableCell className="text-white">
                       <ConvertedPrice
@@ -379,7 +379,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
             <Button variant="outline" className="border-slate-600 text-white" onClick={() => setEditDialog({ open: false, user: null })}>
               {t.cancel}
             </Button>
-            <Button onClick={handleEditBonus} disabled={saving} className="bg-amber-500 hover:bg-amber-600 text-black">
+            <Button onClick={handleEditBonus} disabled={saving} className="bg-theme-stat hover:bg-theme-highlight/90 text-black">
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {t.save}
             </Button>

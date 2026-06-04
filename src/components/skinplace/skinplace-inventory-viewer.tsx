@@ -379,10 +379,10 @@ export function SkinplaceInventoryViewer({
   if (!hasValidSteamId && !loading) {
     const ig = messages.components.skinplace.identifierGate;
     return (
-      <Card className="border-orange-500/30 bg-orange-500/5">
+      <Card className="brand-panel">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Link2 className="h-5 w-5 text-orange-500" />
+            <Link2 className="h-5 w-5 text-theme-accent" />
             {ig.title}
           </CardTitle>
           <CardDescription className="text-base text-muted-foreground">
@@ -412,7 +412,7 @@ export function SkinplaceInventoryViewer({
           <div className="flex flex-col sm:flex-row gap-2">
             <Button
               type="button"
-              className="bg-orange-500 hover:bg-orange-600"
+              className="bg-primary hover:bg-primary/90"
               onClick={handleIdentifierGateSubmit}
               disabled={!customSteamInputLooksValid}
             >
@@ -746,7 +746,7 @@ export function SkinplaceInventoryViewer({
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-orange-500" />
+              <TrendingUp className="h-5 w-5 text-theme-accent" />
               <div>
                 <p className="text-sm text-muted-foreground">{messages.components.skinplace.averageValue}</p>
                 <ConvertedPrice 
@@ -1007,7 +1007,7 @@ export function SkinplaceInventoryViewer({
                   // Couleur et libellé du badge selon la catégorie
                   const skipBadgeConfig: Record<string, { label: string; className: string }> = {
                     overstock:      { label: translateSkipReason(item.skip_reason), className: 'bg-gray-500 text-white' },
-                    low_price:      { label: translateSkipReason(item.skip_reason), className: 'bg-orange-500 text-white' },
+                    low_price:      { label: translateSkipReason(item.skip_reason), className: 'bg-primary text-primary-foreground' },
                     high_volatility:{ label: translateSkipReason(item.skip_reason), className: 'bg-red-500 text-white' },
                     unliquid:       { label: translateSkipReason(item.skip_reason), className: 'bg-yellow-500 text-white' },
                     trade_lock:     { label: translateSkipReason(item.skip_reason), className: 'bg-blue-500 text-white' },
@@ -1024,7 +1024,7 @@ export function SkinplaceInventoryViewer({
                         selectable && !isDisabled ? 'cursor-pointer' : isDisabled ? 'cursor-not-allowed' : ''
                       } ${
                         selectable && isSelected
-                          ? 'ring-2 ring-orange-500 bg-orange-50 dark:bg-orange-950'
+                          ? 'ring-2 ring-primary bg-theme-accent/5 dark:bg-theme-accent/10'
                           : ''
                       } ${
                         isDisabled ? 'opacity-60 bg-muted/50' : ''
@@ -1100,7 +1100,7 @@ export function SkinplaceInventoryViewer({
                                   <>
                                     <ConvertedPrice
                                       usdCents={item.price_centimes + Math.round(item.price_centimes * bonusRatePercent / 100)}
-                                      className="text-lg font-bold text-amber-500 truncate"
+                                      className="text-lg font-bold text-theme-stat truncate"
                                       showOriginal={false}
                                     />
                                     <ConvertedPrice
@@ -1126,7 +1126,7 @@ export function SkinplaceInventoryViewer({
                               )}
                             </div>
                             {selectable && isSelected && (
-                              <span className="block w-full rounded bg-orange-500 px-1.5 py-0.5 text-center text-[10px] font-medium leading-tight text-white">
+                              <span className="block w-full rounded bg-primary px-1.5 py-0.5 text-center text-[10px] font-medium leading-tight text-white">
                                 {messages.components.skinplace.selected}
                               </span>
                             )}
@@ -1142,7 +1142,7 @@ export function SkinplaceInventoryViewer({
                               className={`w-full text-xs h-7 ${
                                 isLowPrice
                                   ? 'opacity-50 cursor-not-allowed border-muted text-muted-foreground'
-                                  : 'border-orange-300 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:hover:bg-orange-950'
+                                  : 'border-theme-accent/30 text-theme-accent hover:bg-theme-accent/5 dark:border-theme-accent/40 dark:text-theme-highlight dark:hover:bg-theme-accent/10'
                               }`}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -1175,7 +1175,7 @@ export function SkinplaceInventoryViewer({
 
       {/* Résumé de sélection - Fixe en bas */}
       {selectable && selectedItems.length > 0 && !hideSelectionBar && (
-        <Card className="bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800 sticky bottom-4 z-10 shadow-lg">
+        <Card className="bg-theme-accent/5 dark:bg-theme-accent/10 border-theme-accent/20 dark:border-theme-accent/30 sticky bottom-4 z-10 shadow-lg">
           <CardContent className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex-1">
@@ -1201,7 +1201,7 @@ export function SkinplaceInventoryViewer({
                     }
                   }}
                   disabled={selectedItems.length === 0}
-                  className="bg-orange-500 hover:bg-orange-600 flex-1 sm:flex-none"
+                  className="bg-primary hover:bg-primary/90 flex-1 sm:flex-none"
                 >
                   {messages.components.skinplace.continueWithSelection}
                 </Button>

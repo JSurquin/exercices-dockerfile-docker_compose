@@ -252,7 +252,7 @@ export default function AdminChatPage() {
       <div className="container mx-auto px-4 py-8">
         <Card className="bg-slate-800/50 border-slate-700">
           <CardContent className="p-8 text-center">
-            <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-orange-500" />
+            <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-theme-accent" />
             <h2 className="text-2xl font-bold mb-2 text-white">{messages.admin.chat.accessDenied}</h2>
             <p className="text-slate-400">{messages.admin.chat.accessDeniedDesc}</p>
           </CardContent>
@@ -266,7 +266,7 @@ export default function AdminChatPage() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl sm:text-3xl font-bold mb-1 flex items-center gap-2 text-white">
-          <ChatBubbleLeftRightIcon className="w-7 h-7 sm:w-8 sm:h-8 text-orange-500 shrink-0" />
+          <ChatBubbleLeftRightIcon className="w-7 h-7 sm:w-8 sm:h-8 text-theme-accent shrink-0" />
           {messages.admin.chat.title}
         </h1>
         <p className="text-slate-400">{messages.admin.chat.subtitle}</p>
@@ -309,7 +309,7 @@ export default function AdminChatPage() {
                   <p className="text-sm text-slate-400">{messages.admin.chat.stats.unassigned}</p>
                   <p className="text-2xl font-bold text-white">{chatStats.unassignedConversations}</p>
                 </div>
-                <ExclamationTriangleIcon className="w-8 h-8 text-orange-400" />
+                <ExclamationTriangleIcon className="w-8 h-8 text-theme-highlight" />
               </div>
             </CardContent>
           </Card>
@@ -331,7 +331,7 @@ export default function AdminChatPage() {
         <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border border-slate-700 h-auto">
           <TabsTrigger
             value="conversations"
-            className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+            className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white"
           >
             <ChatBubbleLeftRightIcon className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">{messages.admin.chat.tabs.conversations}</span>
@@ -339,7 +339,7 @@ export default function AdminChatPage() {
           </TabsTrigger>
           <TabsTrigger
             value="moderators"
-            className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+            className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white"
           >
             <UserGroupIcon className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">{messages.admin.chat.tabs.moderators}</span>
@@ -347,7 +347,7 @@ export default function AdminChatPage() {
           </TabsTrigger>
           <TabsTrigger
             value="stats"
-            className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+            className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white"
           >
             <ChartBarIcon className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">{messages.admin.chat.tabs.stats}</span>
@@ -366,7 +366,7 @@ export default function AdminChatPage() {
             <CardContent>
               {loading ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto" />
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
                   <p className="mt-2 text-slate-400">{messages.admin.chat.conversations.loading}</p>
                 </div>
               ) : conversations.length === 0 ? (
@@ -469,7 +469,7 @@ export default function AdminChatPage() {
                   <span>{t.title}</span>
                   <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
                     <DialogTrigger asChild>
-                      <Button className="bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto">
+                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto">
                         <PlusIcon className="w-4 h-4 mr-2" />
                         {t.addModerator}
                       </Button>
@@ -483,14 +483,14 @@ export default function AdminChatPage() {
                         <TabsList className="grid grid-cols-2 bg-slate-800 border border-slate-700">
                           <TabsTrigger
                             value="invite"
-                            className="data-[state=active]:bg-orange-500 data-[state=active]:text-white text-slate-300 flex items-center gap-2"
+                            className="data-[state=active]:bg-primary data-[state=active]:text-white text-slate-300 flex items-center gap-2"
                           >
                             <EnvelopeIcon className="w-4 h-4" />
                             {t.inviteTab}
                           </TabsTrigger>
                           <TabsTrigger
                             value="promote"
-                            className="data-[state=active]:bg-orange-500 data-[state=active]:text-white text-slate-300 flex items-center gap-2"
+                            className="data-[state=active]:bg-primary data-[state=active]:text-white text-slate-300 flex items-center gap-2"
                           >
                             <UserIcon className="w-4 h-4" />
                             {t.promoteTab}
@@ -528,7 +528,7 @@ export default function AdminChatPage() {
                           <Button
                             onClick={inviteModerator}
                             disabled={inviting || !inviteEmail}
-                            className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                           >
                             <EnvelopeIcon className="w-4 h-4 mr-2" />
                             {inviting ? t.inviting : t.inviteSubmit}
@@ -546,7 +546,7 @@ export default function AdminChatPage() {
                               className="bg-slate-800 border-slate-600 text-white pl-9 pr-9"
                             />
                             {searchLoading && (
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-theme-accent border-t-transparent rounded-full animate-spin" />
                             )}
                           </div>
 
@@ -576,7 +576,7 @@ export default function AdminChatPage() {
                                     size="sm"
                                     onClick={() => promoteToModerator(u.id)}
                                     disabled={promotingUser}
-                                    className="bg-orange-500 hover:bg-orange-600 text-white shrink-0 ml-2"
+                                    className="bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 ml-2"
                                   >
                                     {promotingUser ? t.promoting : t.promote}
                                   </Button>

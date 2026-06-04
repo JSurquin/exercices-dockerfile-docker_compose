@@ -174,7 +174,7 @@ export default function ConversationPage() {
   if (isPending) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
       </div>
     );
   }
@@ -185,7 +185,7 @@ export default function ConversationPage() {
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardContent className="p-8 text-center">
-            <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-orange-500" />
+            <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-theme-accent" />
             <h2 className="text-2xl font-bold mb-2">Accès refusé</h2>
             <p className="text-muted-foreground">
               Vous devez être modérateur ou administrateur pour accéder à cette page.
@@ -200,7 +200,7 @@ export default function ConversationPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           <p className="mt-2 text-muted-foreground">Chargement...</p>
         </div>
       </div>
@@ -212,7 +212,7 @@ export default function ConversationPage() {
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardContent className="p-8 text-center">
-            <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-orange-500" />
+            <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-theme-accent" />
             <h2 className="text-2xl font-bold mb-2">{messages.moderation.conversation.notFound.title}</h2>
             <Button onClick={() => router.push('/moderation')}>
               {messages.moderation.conversation.notFound.backButton}
@@ -359,7 +359,7 @@ export default function ConversationPage() {
                           msg.senderType === 'USER'
                             ? 'bg-muted border rounded-tl-sm'
                             : msg.senderType === 'MODERATOR'
-                            ? 'bg-orange-500 text-white rounded-tr-sm'
+                            ? 'bg-primary text-primary-foreground rounded-tr-sm'
                             : msg.senderType === 'BOT'
                             ? 'bg-green-600 text-white rounded-tr-sm'
                             : msg.senderType === 'AI'
@@ -400,7 +400,7 @@ export default function ConversationPage() {
                   onClick={sendMessage}
                   disabled={!message.trim() || sending}
                   size="icon"
-                  className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 self-end bg-orange-500 hover:bg-orange-600"
+                  className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 self-end bg-primary hover:bg-primary/90"
                 >
                   {sending ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />

@@ -270,7 +270,7 @@ export function AdminKYCManagement() {
             onClick={handleSyncAllPending}
             disabled={syncing}
             size="sm"
-            className="bg-amber-600 hover:bg-amber-700 text-white"
+            className="bg-theme-stat hover:bg-theme-stat/90 text-white"
             title={t.tooltipSyncAllPending}
           >
             {syncing ? <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" /> : <CloudDownload className="h-4 w-4 sm:mr-2" />}
@@ -350,7 +350,7 @@ export function AdminKYCManagement() {
                         variant="outline"
                         disabled={syncingUserId === u.userId}
                         onClick={() => handleSyncUser(u.userId)}
-                        className="border-amber-600 text-amber-400 hover:bg-amber-900/30"
+                        className="border-theme-highlight text-theme-highlight hover:bg-theme-highlight/15"
                         title={t.tooltipSyncKycaid}
                       >
                         {syncingUserId === u.userId

@@ -254,12 +254,12 @@ export default function AdminSettingsPage() {
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-theme-accent to-primary bg-clip-text text-transparent">
               {messages.admin.settings.title}
             </h1>
             <p className="text-slate-300">{messages.admin.settings.subtitle}</p>
           </div>
-          <Badge variant="outline" className="bg-orange-500/10 border-orange-500/50 text-orange-400 shrink-0">
+          <Badge variant="outline" className="bg-theme-accent/10 border-theme-accent/50 text-theme-highlight shrink-0">
             <ShieldCheckIcon className="w-4 h-4 mr-1" />
             {messages.admin.settings.badge}
           </Badge>
@@ -268,12 +268,12 @@ export default function AdminSettingsPage() {
 
       {/* Profile Overview */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
-        <Card className="bg-slate-800/50 border-2 border-orange-500/50 backdrop-blur-sm shadow-lg shadow-orange-500/20">
+        <Card className="bg-slate-800/50 border-2 border-theme-accent/50 backdrop-blur-sm shadow-lg shadow-[var(--cta-shadow)]">
           <CardContent className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-              <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-2 border-orange-500/50 shrink-0">
+              <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-2 border-theme-accent/50 shrink-0">
                 <AvatarImage src={settings.personalInfo.avatar} />
-                <AvatarFallback className="bg-orange-500/20 text-orange-400 text-xl">
+                <AvatarFallback className="bg-theme-accent/20 text-theme-highlight text-xl">
                   {settings.personalInfo.name?.charAt(0) || 'A'}
                 </AvatarFallback>
               </Avatar>
@@ -312,7 +312,7 @@ export default function AdminSettingsPage() {
               <TabsTrigger
                 key={value}
                 value={value}
-                className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-1 text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
+                className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-1 text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-[var(--cta-from)] data-[state=active]:to-[var(--cta-to)] data-[state=active]:text-white"
               >
                 <Icon className="w-4 h-4 shrink-0" />
                 <span className="hidden md:inline truncate">{label}</span>
@@ -326,7 +326,7 @@ export default function AdminSettingsPage() {
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <UserIcon className="w-5 h-5 text-orange-400" />
+                  <UserIcon className="w-5 h-5 text-theme-highlight" />
                   {messages.admin.settings.personal.title}
                 </CardTitle>
               </CardHeader>
@@ -375,7 +375,7 @@ export default function AdminSettingsPage() {
                   <Button
                     onClick={() => profileMutation.mutate({ name: settings.personalInfo.name, email: settings.personalInfo.email })}
                     disabled={profileMutation.isPending}
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+                    className="bg-cta-gradient hover:brightness-110"
                   >
                     {profileMutation.isPending ? messages.admin.settings.personal.saving : messages.admin.settings.personal.save}
                   </Button>
@@ -656,7 +656,7 @@ export default function AdminSettingsPage() {
                     </div>
 
                     {/* BCC admin toggle */}
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-orange-500/5 border border-orange-500/20">
+                    <div className="flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-theme-accent/20">
                       <div className="space-y-1">
                         <Label className="text-slate-200">{messages.admin.settings.smtpSettings.bccAdmin}</Label>
                         <p className="text-sm text-slate-400">{messages.admin.settings.smtpSettings.bccAdminDesc}</p>
@@ -721,7 +721,7 @@ export default function AdminSettingsPage() {
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <AdjustmentsHorizontalIcon className="w-5 h-5 text-orange-400" />
+                  <AdjustmentsHorizontalIcon className="w-5 h-5 text-theme-highlight" />
                   {messages.admin.settings.platformConfig?.title}
                 </CardTitle>
                 <p className="text-sm text-slate-400 mt-1">

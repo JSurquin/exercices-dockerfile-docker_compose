@@ -285,7 +285,7 @@ export default function AdminUserDetailPage() {
             <Button
               variant="outline"
               size="sm"
-              className="border-amber-600/50 text-amber-400 hover:bg-amber-500/10"
+              className="border-theme-highlight/50 text-theme-highlight hover:bg-theme-stat/10"
               onClick={handleResetKycApplicant}
               disabled={resetKycLoading}
             >
@@ -310,10 +310,10 @@ export default function AdminUserDetailPage() {
         <WithdrawalLimits userId={userId} onUpdate={() => {}} />
       </div>
 
-      <Card className={`bg-slate-800/30 border-slate-700 ${user.instantCreditEnabled ? 'border-amber-500/50 shadow-lg shadow-amber-500/10' : ''}`}>
+      <Card className={`bg-slate-800/30 border-slate-700 ${user.instantCreditEnabled ? 'border-theme-highlight/40 shadow-lg shadow-[var(--cta-shadow)]' : ''}`}>
         <CardHeader className="pb-2">
           <CardTitle className="text-white flex items-center gap-2">
-            <Zap className={`h-5 w-5 ${user.instantCreditEnabled ? 'text-amber-400' : 'text-slate-500'}`} />
+            <Zap className={`h-5 w-5 ${user.instantCreditEnabled ? 'text-theme-highlight' : 'text-slate-500'}`} />
             {t.instantCreditTitle}
           </CardTitle>
         </CardHeader>
@@ -332,7 +332,7 @@ export default function AdminUserDetailPage() {
             />
           </div>
           {user.instantCreditEnabled && (
-            <p className="text-sm text-amber-300">
+            <p className="text-sm text-theme-highlight">
               {t.instantCreditActiveWarning}
             </p>
           )}
@@ -342,7 +342,7 @@ export default function AdminUserDetailPage() {
       <Card className="bg-slate-800/30 border-slate-700">
         <CardHeader className="pb-2">
           <CardTitle className="text-white flex items-center gap-2">
-            <Crown className="h-5 w-5 text-amber-400" />
+            <Crown className="h-5 w-5 text-theme-highlight" />
             {t.bonusSectionTitle}
           </CardTitle>
         </CardHeader>
@@ -384,7 +384,7 @@ export default function AdminUserDetailPage() {
               <Button
                 onClick={handleSaveBonus}
                 disabled={bonusSaving}
-                className="bg-amber-600 hover:bg-amber-700"
+                className="bg-theme-stat hover:bg-theme-stat/90"
               >
                 <Save className="h-4 w-4 mr-2" />
                 {bonusSaving ? t.saving : t.save}
@@ -392,14 +392,14 @@ export default function AdminUserDetailPage() {
             </div>
           </div>
           {user.bonusRatePercent > 0 && (
-            <p className="text-sm text-amber-300">
+            <p className="text-sm text-theme-highlight">
               {t.bonusActive.replace('{rate}', String(user.bonusRatePercent))}
             </p>
           )}
           {user.referredBy && (
             <p className="text-sm text-slate-300 border-t border-slate-700 pt-3">
               {t.referredByLabel}{' '}
-              <code className="text-amber-400">{user.referredBy.code}</code>
+              <code className="text-theme-highlight">{user.referredBy.code}</code>
               {user.referredBy.steamUsername ? ` (${user.referredBy.steamUsername})` : ''}
             </p>
           )}

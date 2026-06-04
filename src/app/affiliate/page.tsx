@@ -298,7 +298,7 @@ export default function AffiliatePage() {
             color="purple"
           />
           <StatCard
-            icon={<Clock className="h-5 w-5 text-orange-400" />}
+            icon={<Clock className="h-5 w-5 text-theme-highlight" />}
             label={messages.affiliate.dashboard.kpi.pending}
             value={fmt(pendingTotal)}
             sub={`${commissions.length} commission(s)`}
@@ -425,11 +425,11 @@ export default function AffiliatePage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-orange-400" />
+                    <Clock className="h-4 w-4 text-theme-highlight" />
                     {messages.affiliate.dashboard.pendingCommissionsTitle}
                   </CardTitle>
                   <CardDescription>
-                    {messages.affiliate.dashboard.pendingTotal} : <span className="font-semibold text-orange-300">{fmt(pendingTotal)}</span>
+                    {messages.affiliate.dashboard.pendingTotal} : <span className="font-semibold text-theme-highlight">{fmt(pendingTotal)}</span>
                   </CardDescription>
                 </div>
                 {commissions.length > 0 && (
@@ -437,7 +437,7 @@ export default function AffiliatePage() {
                     size="sm"
                     onClick={() => payoutMutation.mutate(commissions.map((c: AffiliateCommission) => c.id))}
                     disabled={payoutMutation.isPending}
-                    className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white"
+                    className="bg-cta-gradient hover:brightness-110 text-white"
                   >
                     {payoutMutation.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -616,7 +616,7 @@ export default function AffiliatePage() {
                       label: messages.affiliate.dashboard.benefitAnalytics,
                     },
                     {
-                      icon: <Share2 className="h-4 w-4 text-orange-400" />,
+                      icon: <Share2 className="h-4 w-4 text-theme-highlight" />,
                       label: messages.affiliate.dashboard.benefitMarketing,
                     },
                     {
@@ -665,7 +665,7 @@ function StatCard({
     blue: 'bg-blue-500/10 border-blue-500/20',
     emerald: 'bg-emerald-500/10 border-emerald-500/20',
     purple: 'bg-purple-500/10 border-purple-500/20',
-    orange: 'bg-orange-500/10 border-orange-500/20',
+    orange: 'bg-theme-accent/10 border-theme-accent/20',
   }[color];
 
   return (
@@ -713,7 +713,7 @@ function CommissionList({
             className={
               paid
                 ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                : 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+                : 'bg-theme-accent/20 text-theme-highlight border-theme-accent/30'
             }
           >
             {paid ? paidLabel : pendingLabel}

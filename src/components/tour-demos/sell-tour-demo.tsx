@@ -40,7 +40,7 @@ export function SellTourDemo() {
               <div
                 className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
                   index === 0
-                    ? 'bg-orange-500 border-orange-500 text-white'
+                    ? 'bg-primary border-primary text-primary-foreground'
                     : 'border-muted-foreground text-muted-foreground'
                 }`}
               >
@@ -76,7 +76,7 @@ export function SellTourDemo() {
                     key={i}
                     className="rounded-lg border bg-muted/30 p-2 flex flex-col items-center gap-1 select-none opacity-80"
                   >
-                    <div className="w-full aspect-square rounded bg-gradient-to-br from-orange-500/10 to-blue-500/10 flex items-center justify-center mb-1">
+                    <div className="w-full aspect-square rounded bg-gradient-to-br from-theme-accent/10 to-primary/10 flex items-center justify-center mb-1">
                       <span className="text-2xl">🔫</span>
                     </div>
                     <p className="text-[10px] text-center font-medium line-clamp-2 leading-tight">
@@ -107,10 +107,10 @@ export function SellTourDemo() {
           </div>
 
           <div data-tour="sell-trade-link">
-            <Card className="border-orange-500/40 bg-orange-500/5">
+            <Card className="border-theme-accent/40 bg-theme-accent/5">
               <CardContent className="p-3 space-y-2">
                 <div className="flex items-center gap-2">
-                  <LinkIcon className="w-4 h-4 text-orange-500 shrink-0" />
+                  <LinkIcon className="w-4 h-4 text-theme-accent shrink-0" />
                   <p className="text-sm font-semibold">Steam Trade Link</p>
                 </div>
                 <p className="text-[11px] font-mono text-muted-foreground truncate">
@@ -123,7 +123,7 @@ export function SellTourDemo() {
             </Card>
           </div>
 
-          <Card className="border-orange-500/30 bg-orange-500/5">
+          <Card className="brand-panel">
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground">{messages.sellPage.selectionPanel.selectedTotal}</p>
               <p className="text-2xl font-bold text-green-600">0,00 €</p>

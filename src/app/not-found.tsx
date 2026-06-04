@@ -27,7 +27,7 @@ export default function NotFound() {
         >
           {/* Error Code */}
           <div className="mb-8">
-            <div className="text-8xl md:text-9xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+            <div className="text-8xl md:text-9xl font-bold bg-cta-gradient bg-clip-text text-transparent">
               404
             </div>
             <div className="text-2xl md:text-3xl font-semibold text-muted-foreground mt-2">
@@ -43,7 +43,7 @@ export default function NotFound() {
             className="mb-8"
           >
             <div className="w-24 h-24 mx-auto bg-muted/50 rounded-full flex items-center justify-center">
-              <ExclamationTriangleIcon className="w-12 h-12 text-orange-500" />
+              <ExclamationTriangleIcon className="w-12 h-12 text-theme-accent" />
             </div>
           </motion.div>
 
@@ -72,7 +72,7 @@ export default function NotFound() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 asChild
-                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                className="bg-cta-gradient hover:brightness-110"
               >
                 <Link href="/">
                   <HomeIcon className="w-4 h-4 mr-2" />

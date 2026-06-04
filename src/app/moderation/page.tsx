@@ -117,7 +117,7 @@ export default function ModerationPage() {
   if (isPending) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
       </div>
     );
   }
@@ -128,7 +128,7 @@ export default function ModerationPage() {
       <div className="container mx-auto px-4 py-8">
         <Card className="bg-slate-800/50 border-slate-700">
           <CardContent className="p-8 text-center">
-            <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-orange-500" />
+            <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-theme-accent" />
             <h2 className="text-2xl font-bold mb-2 text-white">{messages.moderation.accessDenied.title}</h2>
             <p className="text-slate-400">
               {messages.moderation.accessDenied.description}
@@ -148,7 +148,7 @@ export default function ModerationPage() {
         className="mb-6 sm:mb-8"
       >
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 flex items-center gap-2 text-white">
-          <ChatBubbleLeftRightIcon className="w-6 h-6 sm:w-7 sm:h-7 text-orange-500 shrink-0" />
+          <ChatBubbleLeftRightIcon className="w-6 h-6 sm:w-7 sm:h-7 text-theme-accent shrink-0" />
           {messages.moderation.title}
         </h1>
         <p className="text-slate-400 text-sm sm:text-base">
@@ -183,7 +183,7 @@ export default function ModerationPage() {
                   <p className="text-xs sm:text-sm text-slate-400 truncate">{messages.moderation.stats.unassigned}</p>
                   <p className="text-xl sm:text-2xl font-bold text-white">{stats.unassignedConversations}</p>
                 </div>
-                <UserIcon className="w-6 h-6 sm:w-8 sm:h-8 text-orange-400 shrink-0" />
+                <UserIcon className="w-6 h-6 sm:w-8 sm:h-8 text-theme-highlight shrink-0" />
               </div>
             </CardContent>
           </Card>
@@ -220,7 +220,7 @@ export default function ModerationPage() {
           <CollapsibleTrigger asChild>
             <button className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-white">
               <span className="flex items-center gap-2">
-                <FunnelIcon className="w-4 h-4 text-orange-500" />
+                <FunnelIcon className="w-4 h-4 text-theme-accent" />
                 {messages.moderation.filtersTitle}
               </span>
               <ChevronDownIcon className="w-4 h-4 text-slate-400 transition-transform duration-200 [[data-state=open]_&]:rotate-180" />
@@ -253,7 +253,7 @@ export default function ModerationPage() {
         <CardContent>
           {loading ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
               <p className="mt-2 text-slate-400">{messages.moderation.loading}</p>
             </div>
           ) : conversations.length === 0 ? (
@@ -340,7 +340,7 @@ export default function ModerationPage() {
 
                       <Button
                         size="sm"
-                        className="flex-1 sm:flex-none bg-orange-500 hover:bg-orange-600 text-white text-xs h-8"
+                        className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-8"
                         onClick={() => router.push(`/moderation/conversations/${conversation.id}`)}
                       >
                         {messages.moderation.actions.open}

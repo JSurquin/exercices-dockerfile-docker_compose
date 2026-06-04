@@ -97,7 +97,7 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
 
         {/* Breadcrumbs - Hidden on mobile */}
         <div className="hidden flex-1 items-center gap-2 lg:flex">
-          <Shield className="h-5 w-5 text-orange-500" />
+          <Shield className="h-5 w-5 text-theme-accent" />
           <nav className="flex items-center gap-1 text-sm">
             {displayBreadcrumbs.map((crumb, index) => (
               <div key={index} className="flex items-center gap-1">
@@ -136,7 +136,7 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
             <Input
               type="search"
               placeholder={t.searchPlaceholder}
-              className="h-9 w-full border-slate-700 bg-slate-800/50 pl-9 text-sm text-white placeholder:text-slate-400 focus-visible:ring-orange-500"
+              className="h-9 w-full border-slate-700 bg-slate-800/50 pl-9 text-sm text-white placeholder:text-slate-400 focus-visible:ring-primary"
             />
           </div>
         </div>
@@ -252,7 +252,7 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
                 )}
               </div>
               <DropdownMenuSeparator className="bg-slate-700" />
-              <DropdownMenuItem asChild className="justify-center text-orange-400 focus:bg-slate-800 focus:text-orange-300 cursor-pointer">
+              <DropdownMenuItem asChild className="justify-center text-theme-highlight focus:bg-slate-800 focus:text-theme-highlight cursor-pointer">
                 <Link href="/notifications">
                   {t.viewAllNotifications}
                 </Link>
@@ -264,7 +264,7 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2 px-2 text-slate-400 hover:text-white">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-orange-600 text-sm font-bold text-white">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cta-gradient-br text-sm font-bold text-white">
                   {session?.user?.name?.charAt(0).toUpperCase() || 'A'}
                 </div>
                 <span className="hidden text-sm font-medium text-white md:inline-block">

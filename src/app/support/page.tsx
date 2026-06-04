@@ -177,7 +177,7 @@ export default function SupportPage() {
           className="text-center mb-8 sm:mb-12"
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-            <QuestionMarkCircleIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
+            <QuestionMarkCircleIcon className="w-8 h-8 inline-block mr-2 text-theme-accent" />
             {messages.support.title}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -195,7 +195,7 @@ export default function SupportPage() {
           {supportStats.map((stat, index) => (
             <Card key={index}>
               <CardContent className="p-4 text-center">
-                <stat.icon className="w-6 h-6 mx-auto mb-2 text-orange-600" />
+                <stat.icon className="w-6 h-6 mx-auto mb-2 text-theme-accent" />
                 <p className="text-2xl font-bold">{stat.value}</p>
                 <p className="text-sm text-muted-foreground">{stat.label}</p>
               </CardContent>
@@ -366,7 +366,7 @@ export default function SupportPage() {
                           </SelectItem>
                           <SelectItem value="high">
                             <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-orange-500 rounded-full" />
+                              <div className="w-2 h-2 bg-primary rounded-full" />
                               <span>{messages.support.contactForm.priorities.high}</span>
                             </div>
                           </SelectItem>

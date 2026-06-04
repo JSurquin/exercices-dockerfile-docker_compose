@@ -101,13 +101,13 @@ export function EmailTemplateSelector({ selectedTemplate, onTemplateSelect }: Em
           <Card 
             key={template.id}
             className={`border-slate-700 bg-slate-800/50 cursor-pointer transition-all hover:bg-slate-700/50 ${
-              selectedTemplate?.id === template.id ? 'ring-2 ring-orange-500' : ''
+              selectedTemplate?.id === template.id ? 'ring-2 ring-primary' : ''
             }`}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="text-orange-500">
+                  <div className="text-theme-accent">
                     {template.icon}
                   </div>
                   <CardTitle className="text-sm text-white">
@@ -131,7 +131,7 @@ export function EmailTemplateSelector({ selectedTemplate, onTemplateSelect }: Em
                   variant="outline"
                   onClick={() => onTemplateSelect(template)}
                   className={`flex-1 border-slate-600 text-slate-300 hover:bg-slate-700 ${
-                    selectedTemplate?.id === template.id ? 'bg-orange-500 text-white border-orange-500' : ''
+                    selectedTemplate?.id === template.id ? 'bg-primary text-primary-foreground border-theme-accent' : ''
                   }`}
                 >
                   {selectedTemplate?.id === template.id ? (
@@ -216,7 +216,7 @@ export function EmailTemplateSelector({ selectedTemplate, onTemplateSelect }: Em
       {selectedTemplate && (
         <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
           <div className="flex items-center gap-3 mb-2">
-            <div className="text-orange-500">
+            <div className="text-theme-accent">
               {selectedTemplate.icon}
             </div>
             <h4 className="text-white font-medium">{t.selectedTemplate.replace('{name}', selectedTemplate.name)}</h4>

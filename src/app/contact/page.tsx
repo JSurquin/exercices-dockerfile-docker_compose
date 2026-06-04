@@ -69,7 +69,7 @@ export default function ContactPage() {
       icon: PhoneIcon,
       availability: t.methods.phone.availability,
       responseTime: t.methods.phone.responseTime,
-      color: "bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400",
+      color: "bg-theme-accent/10 text-theme-accent dark:bg-theme-accent/20 dark:text-theme-highlight",
       action: process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? "",
     },
   ];
@@ -134,7 +134,7 @@ export default function ContactPage() {
           className="text-center mb-8 sm:mb-12"
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-            <EnvelopeIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
+            <EnvelopeIcon className="w-8 h-8 inline-block mr-2 text-theme-accent" />
             {messages.contact.title}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
@@ -245,7 +245,7 @@ export default function ContactPage() {
                       <input type="checkbox" id="privacy" className="mt-1" required />
                       <Label htmlFor="privacy" className="text-sm text-muted-foreground">
                         {t.privacyConsent}{" "}
-                        <a href="/privacy" className="text-orange-600 hover:underline">
+                        <a href="/privacy" className="text-theme-accent hover:underline">
                           {t.privacyPolicy}
                         </a>
                       </Label>
@@ -319,7 +319,7 @@ export default function ContactPage() {
                   {getDepartments().map((dept, index) => (
                     <div key={index} className="space-y-2">
                       <div className="flex items-start space-x-3">
-                        <dept.icon className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                        <dept.icon className="w-5 h-5 text-theme-accent flex-shrink-0 mt-0.5" />
                         <div>
                           <h4 className="font-medium text-sm">{dept.name}</h4>
                           <p className="text-xs text-muted-foreground mb-1">{dept.description}</p>

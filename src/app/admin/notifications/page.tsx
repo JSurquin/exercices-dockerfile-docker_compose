@@ -87,7 +87,7 @@ export default function AdminNotificationsPage() {
   const notificationPriorities = [
     { value: "LOW", label: t.priorities.LOW, color: "text-slate-400" },
     { value: "NORMAL", label: t.priorities.NORMAL, color: "text-blue-400" },
-    { value: "HIGH", label: t.priorities.HIGH, color: "text-orange-400" },
+    { value: "HIGH", label: t.priorities.HIGH, color: "text-theme-highlight" },
     { value: "URGENT", label: t.priorities.URGENT, color: "text-red-400" },
   ];
 
@@ -239,7 +239,7 @@ export default function AdminNotificationsPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="text-slate-300">{t.loading}</p>
         </div>
       </div>
@@ -251,7 +251,7 @@ export default function AdminNotificationsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-            <Bell className="h-7 w-7 text-orange-500 shrink-0" />
+            <Bell className="h-7 w-7 text-theme-accent shrink-0" />
             {t.title}
           </h1>
           <p className="text-slate-400 mt-1">{t.subtitle}</p>
@@ -278,10 +278,10 @@ export default function AdminNotificationsPage() {
                 {notificationTypes.find((tp) => tp.value === stat.type)?.label ??
                   stat.type}
               </CardTitle>
-              <BarChart3 className="h-4 w-4 text-orange-400" />
+              <BarChart3 className="h-4 w-4 text-theme-highlight" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-400">
+              <div className="text-2xl font-bold text-theme-highlight">
                 {stat._count.id}
               </div>
             </CardContent>
@@ -293,14 +293,14 @@ export default function AdminNotificationsPage() {
         <TabsList className="grid w-full grid-cols-2 bg-slate-800 border-slate-700 h-auto">
           <TabsTrigger
             value="list"
-            className="flex items-center gap-2 py-2 text-xs sm:text-sm data-[state=active]:bg-orange-500"
+            className="flex items-center gap-2 py-2 text-xs sm:text-sm data-[state=active]:bg-primary"
           >
             <Bell className="h-4 w-4 shrink-0" />
             <span>{t.tabs.list}</span>
           </TabsTrigger>
           <TabsTrigger
             value="create"
-            className="flex items-center gap-2 py-2 text-xs sm:text-sm data-[state=active]:bg-orange-500"
+            className="flex items-center gap-2 py-2 text-xs sm:text-sm data-[state=active]:bg-primary"
           >
             <Plus className="h-4 w-4 shrink-0" />
             <span>{t.tabs.create}</span>
@@ -721,7 +721,7 @@ export default function AdminNotificationsPage() {
                 <Button
                   onClick={handleCreateNotification}
                   disabled={isSending}
-                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   {isSending ? (
                     <>

@@ -67,7 +67,7 @@ export function UserRewardsBlockControls({
   return (
     <div className={compact ? 'space-y-3' : 'space-y-4 rounded-lg border border-slate-700 p-4'}>
       {!compact && (
-        <div className="flex items-center gap-2 text-amber-400">
+        <div className="flex items-center gap-2 text-theme-highlight">
           <ShieldAlert className="h-5 w-5" />
           <span className="font-medium text-white">{t.sectionTitle}</span>
         </div>

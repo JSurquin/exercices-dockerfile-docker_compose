@@ -67,7 +67,7 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
           className={cn(
             "absolute inset-0",
             showOrange
-              ? "bg-gradient-to-br from-black/60 via-black/50 to-orange-900/40"
+              ? "bg-gradient-to-br from-black/60 via-black/50 to-background/40"
               : "bg-gradient-to-br from-black/60 via-black/50 to-black/40"
           )}
           style={{ opacity: overlayOpacity }}
@@ -76,7 +76,7 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
 
       {/* Bordure inférieure */}
       {showOrange && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-60" />
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-theme-accent/20 to-transparent opacity-60" />
       )}
 
       {/* Contenu */}
@@ -100,7 +100,7 @@ export const CS2HeroBackground: React.FC<{
       overlayOpacity={0.75}
     >
       {showOrange && (
-        <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-orange-500 via-transparent to-red-900" />
+        <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-theme-accent/15 via-transparent to-background" />
       )}
       {children}
     </CS2HeaderBackground>

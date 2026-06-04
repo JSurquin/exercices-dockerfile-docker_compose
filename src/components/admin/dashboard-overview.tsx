@@ -11,7 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { queryKeys } from '@/lib/query-keys';
-import { CHART_COLORS, RECHARTS_TOOLTIP_STYLE } from '@/lib/chart-colors';
+import { CHART_COLORS, RECHARTS_TOOLTIP_STYLE, resolveChartBrandColor } from '@/lib/chart-colors';
 import { useLocale } from '@/components/providers/locale-provider';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 
@@ -26,7 +26,7 @@ const getStatusColor = (status: string) => {
     'accepté_par_bot': 'bg-indigo-500',
     'en_trade_hold': 'bg-yellow-500',
     'disponible': 'bg-green-500',
-    'paiement_en_cours': 'bg-orange-500',
+    'paiement_en_cours': 'bg-primary',
     'payé': 'bg-emerald-500',
     'échoué': 'bg-red-500',
   };
@@ -36,6 +36,7 @@ const getStatusColor = (status: string) => {
 export function DashboardOverview() {
   const { messages } = useLocale();
   const t = messages.adminNav.dashboardOverview;
+  const brandChartColor = resolveChartBrandColor();
 
   const { data: stats, isLoading } = useQuery<AdminStats>({
     queryKey: queryKeys.adminStats,
@@ -107,9 +108,9 @@ export function DashboardOverview() {
                   <Line 
                     type="monotone" 
                     dataKey="volume" 
-                    stroke={CHART_COLORS.orange} 
+                    stroke={brandChartColor} 
                     strokeWidth={2}
-                    dot={{ fill: CHART_COLORS.orange, strokeWidth: 2, r: 4 }}
+                    dot={{ fill: brandChartColor, strokeWidth: 2, r: 4 }}
                     activeDot={{ r: 6 }}
                   />
                 </LineChart>
@@ -146,7 +147,7 @@ export function DashboardOverview() {
                   />
                   <Bar 
                     dataKey="count" 
-                    fill={CHART_COLORS.orange} 
+                    fill={brandChartColor} 
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
@@ -174,7 +175,7 @@ export function DashboardOverview() {
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
                     <AvatarImage src={trade.userAvatar || ''} />
-                    <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-xs font-bold text-white">
+                    <AvatarFallback className="bg-cta-gradient-br text-xs font-bold text-white">
                       {trade.userName ? trade.userName.slice(0, 2).toUpperCase() : 'U'}
                     </AvatarFallback>
                   </Avatar>

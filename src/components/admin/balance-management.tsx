@@ -212,7 +212,7 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
             </div>
             <div>
               <p className="text-xs text-slate-400">{t.frozenBalance}</p>
-              <p className="text-lg font-semibold text-amber-400">{formatCents(context.frozenBalanceCents)}</p>
+              <p className="text-lg font-semibold text-theme-highlight">{formatCents(context.frozenBalanceCents)}</p>
             </div>
             <div>
               <p className="text-xs text-slate-400">{t.available}</p>

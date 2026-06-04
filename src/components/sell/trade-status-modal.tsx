@@ -119,11 +119,11 @@ export function TradeStatusModal({
               >
                 <div className="relative">
                   <motion.div
-                    className="absolute inset-0 rounded-full bg-orange-500/20"
+                    className="absolute inset-0 rounded-full bg-theme-accent/20"
                     animate={{ scale: [1, 1.5, 1], opacity: [0.6, 0, 0.6] }}
                     transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
                   />
-                  <ClockIcon className="w-20 h-20 text-orange-500 relative z-10" />
+                  <ClockIcon className="w-20 h-20 text-theme-accent relative z-10" />
                 </div>
                 <DialogTitle className="text-2xl font-bold text-center">
                   {t.pendingTitle}
@@ -162,7 +162,7 @@ export function TradeStatusModal({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 text-sm text-orange-700 dark:text-orange-300 leading-relaxed"
+              className="bg-theme-accent/10 border border-theme-accent/30 rounded-lg p-3 text-sm text-theme-accent leading-relaxed"
             >
               {t.holdReminder}
             </motion.div>
@@ -196,9 +196,9 @@ export function TradeStatusModal({
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="border border-orange-500/30 bg-orange-500/5 rounded-lg p-4 text-left"
+                    className="border brand-panel rounded-lg p-4 text-left"
                   >
-                    <p className="text-xs font-semibold text-orange-500 mb-3 flex items-center gap-1.5">
+                    <p className="text-xs font-semibold text-theme-accent mb-3 flex items-center gap-1.5">
                       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2z"/>
                         <path d="M2 20c0-4 4-7 10-7s10 3 10 7"/>
@@ -211,15 +211,15 @@ export function TradeStatusModal({
                       <SafeImg
                         src={bot.avatar}
                         alt={bot.name}
-                        className="w-11 h-11 rounded-full border-2 border-orange-500/40 object-cover"
-                        fallbackClassName="w-11 h-11 rounded-full border-2 border-orange-500/40"
+                        className="w-11 h-11 rounded-full border-2 border-theme-accent/40 object-cover"
+                        fallbackClassName="w-11 h-11 rounded-full border-2 border-theme-accent/40"
                         fallbackIcon={<UserIcon className="w-6 h-6 text-muted-foreground" />}
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-semibold text-sm truncate">{bot.name}</p>
                           {bot.level && (
-                            <span className="text-xs bg-orange-500/20 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full font-medium">
+                            <span className="text-xs bg-theme-accent/20 text-theme-highlight px-2 py-0.5 rounded-full font-medium">
                               {messages.sellPage.confirmation.botLevelShort} {bot.level}
                             </span>
                           )}
@@ -238,7 +238,7 @@ export function TradeStatusModal({
                           href={bot.profile_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="shrink-0 text-xs underline text-orange-500 hover:text-orange-600"
+                          className="shrink-0 text-xs underline text-theme-accent hover:text-theme-accent"
                         >
                           {messages.sellPage.confirmation.viewProfile}
                         </a>
@@ -246,7 +246,7 @@ export function TradeStatusModal({
                     </div>
                   </motion.div>
                 )}
-                <Button asChild className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+                <Button asChild variant="cta" className="w-full">
                   <a
                     href="https://steamcommunity.com/my/tradeoffers/"
                     target="_blank"
@@ -260,7 +260,8 @@ export function TradeStatusModal({
             ) : (
               <>
                 <Button
-                  className="w-full bg-orange-500 hover:bg-orange-600"
+                  variant="cta"
+                  className="w-full"
                   onClick={onSellAgain}
                 >
                   <ArrowPathIcon className="w-4 h-4 mr-2" />

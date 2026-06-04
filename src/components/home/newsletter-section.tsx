@@ -64,7 +64,7 @@ export function NewsletterSection() {
 
   if (isSubscribed) {
     return (
-      <section className="py-16 px-4 bg-gradient-to-br from-orange-500/10 via-orange-600/5 to-red-500/10">
+      <section className="py-16 px-4 bg-gradient-to-br from-theme-accent/10 via-theme-accent/5 to-theme-accent/10">
         <div className="max-w-4xl mx-auto text-center">
           <Card className="border-green-500/20 bg-green-500/5">
             <CardContent className="p-8">
@@ -93,8 +93,8 @@ export function NewsletterSection() {
       <div className="max-w-4xl mx-auto text-center">
         <div className="mb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="p-3 rounded-full bg-orange-500/20">
-              <Mail className="h-8 w-8 text-orange-400" />
+            <div className="p-3 rounded-full bg-theme-accent/20">
+              <Mail className="h-8 w-8 text-theme-highlight" />
             </div>
           </div>
           <h2 className="text-3xl font-bold dark:text-white text-black mb-4">
@@ -114,14 +114,14 @@ export function NewsletterSection() {
                   placeholder={messages.components.newsletter.emailPlaceholder}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-orange-500"
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-theme-accent"
                   disabled={isLoading}
                 />
               </div>
               
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold"
+                className="w-full bg-cta-gradient hover:brightness-110 text-white font-semibold"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -147,15 +147,15 @@ export function NewsletterSection() {
 
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
           <div className="flex items-center justify-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-orange-500 rounded-full "></div>
+            <div className="w-2 h-2 bg-primary rounded-full "></div>
             <span className="text-sm text-black dark:text-gray-300">{messages.components.newsletter.feature1}</span>
           </div>
           <div className="flex items-center justify-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-orange-500 rounded-full "></div>
+            <div className="w-2 h-2 bg-primary rounded-full "></div>
             <span className="text-sm text-black dark:text-gray-300">{messages.components.newsletter.feature2}</span>
           </div>
           <div className="flex items-center justify-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-orange-500 rounded-full "></div>
+            <div className="w-2 h-2 bg-primary rounded-full "></div>
             <span className="text-sm text-black dark:text-gray-300">{messages.components.newsletter.feature3}</span>
           </div>
         </div>

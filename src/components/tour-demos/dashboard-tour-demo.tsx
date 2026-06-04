@@ -51,7 +51,7 @@ export function DashboardTourDemo() {
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center space-x-3 sm:space-x-4 mb-6">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white text-2xl font-bold">
+            <div className="w-16 h-16 rounded-full bg-cta-gradient-br flex items-center justify-center text-white text-2xl font-bold">
               🎮
             </div>
             <div>
@@ -174,25 +174,25 @@ export function DashboardTourDemo() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-amber-200 dark:border-amber-800">
+          <Card className="border-theme-highlight/25 dark:border-theme-highlight/35">
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{messages.dashboard.fragmentsLabel}</p>
-                  <FragmentAmount amount={340} size="sm" className="text-2xl font-bold text-amber-600" />
+                  <FragmentAmount amount={340} size="sm" className="text-2xl font-bold text-theme-stat" />
                 </div>
                 <FragmentBadge size="md" />
               </div>
             </CardContent>
           </Card>
-          <Card className="border-orange-200 dark:border-orange-800">
+          <Card className="border-theme-accent/20 dark:border-theme-accent/30">
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{messages.dashboard.giveawaysLabel}</p>
-                  <p className="text-sm font-medium text-orange-500">{messages.dashboard.participateGiveaway}</p>
+                  <p className="text-sm font-medium text-theme-accent">{messages.dashboard.participateGiveaway}</p>
                 </div>
-                <GiftIcon className="w-8 h-8 text-orange-500" />
+                <GiftIcon className="w-8 h-8 text-theme-accent" />
               </div>
             </CardContent>
           </Card>

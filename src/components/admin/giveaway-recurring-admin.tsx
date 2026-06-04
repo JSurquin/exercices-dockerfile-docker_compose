@@ -217,7 +217,7 @@ export function GiveawayRecurringAdmin() {
   const statusBadge = (status: SeriesStatus) => {
     const colors: Record<SeriesStatus, string> = {
       ACTIVE: 'bg-green-500',
-      PAUSED: 'bg-amber-500',
+      PAUSED: 'bg-theme-stat',
       DISABLED: 'bg-slate-500',
     };
     return (
@@ -238,7 +238,7 @@ export function GiveawayRecurringAdmin() {
           <Button variant="outline" onClick={loadSeries} disabled={loading}>
             {loading ? t.loading : t.refresh}
           </Button>
-          <Button onClick={() => setShowForm((v) => !v)} className="bg-orange-500 hover:bg-orange-600">
+          <Button onClick={() => setShowForm((v) => !v)} className="bg-primary hover:bg-primary/90">
             <PlusIcon className="w-4 h-4 mr-2" />
             {showForm ? t.cancelCreate : t.createSeries}
           </Button>
@@ -264,7 +264,7 @@ export function GiveawayRecurringAdmin() {
                 <div className="md:col-span-2">
                   <Label>{formT.prizeLabel}</Label>
                   {selectedSkin ? (
-                    <div className="flex items-center gap-3 mt-1 p-3 rounded-xl border border-orange-500/60 bg-slate-700/50">
+                    <div className="flex items-center gap-3 mt-1 p-3 rounded-xl border border-theme-accent/40 bg-slate-700/50">
                       <SafeImage
                         src={selectedSkin.icon_url}
                         alt={selectedSkin.steam_market_hash_name}
@@ -286,7 +286,7 @@ export function GiveawayRecurringAdmin() {
                         <button
                           type="button"
                           onClick={() => setSkinPickerOpen(true)}
-                          className="text-xs text-orange-400 hover:text-orange-300 transition-colors px-2 py-1 rounded border border-orange-500/40 hover:border-orange-400"
+                          className="text-xs text-theme-highlight hover:text-theme-highlight transition-colors px-2 py-1 rounded border border-theme-accent/40 hover:border-theme-highlight"
                         >
                           {formT.changeSkin}
                         </button>
@@ -299,10 +299,10 @@ export function GiveawayRecurringAdmin() {
                     <button
                       type="button"
                       onClick={() => setSkinPickerOpen(true)}
-                      className="mt-1 w-full flex items-center gap-3 rounded-xl border-2 border-dashed border-slate-600 hover:border-orange-500/60 bg-slate-800/40 hover:bg-slate-700/40 px-4 py-4 transition-all group"
+                      className="mt-1 w-full flex items-center gap-3 rounded-xl border-2 border-dashed border-slate-600 hover:border-theme-accent/40 bg-slate-800/40 hover:bg-slate-700/40 px-4 py-4 transition-all group"
                     >
-                      <div className="p-2 rounded-lg bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
-                        <CubeIcon className="w-6 h-6 text-orange-400" />
+                      <div className="p-2 rounded-lg bg-theme-accent/10 group-hover:bg-theme-accent/20 transition-colors">
+                        <CubeIcon className="w-6 h-6 text-theme-highlight" />
                       </div>
                       <div className="text-left">
                         <p className="text-sm font-medium text-slate-300 group-hover:text-white transition-colors">
@@ -418,7 +418,7 @@ export function GiveawayRecurringAdmin() {
                   />
                 )}
               </div>
-              <Button type="submit" disabled={creating} className="bg-orange-500 hover:bg-orange-600">
+              <Button type="submit" disabled={creating} className="bg-primary hover:bg-primary/90">
                 {creating ? t.creating : t.submitCreate}
               </Button>
             </form>
@@ -452,7 +452,7 @@ export function GiveawayRecurringAdmin() {
                           width={52}
                           height={38}
                           className="object-contain rounded shrink-0"
-                          fallbackIcon={<CubeIcon className="w-8 h-8 text-orange-600" />}
+                          fallbackIcon={<CubeIcon className="w-8 h-8 text-theme-accent" />}
                           unoptimized
                         />
                         <h3 className="text-lg font-semibold text-white">{row.title}</h3>

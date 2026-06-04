@@ -91,7 +91,7 @@ export function XPPreviewBar({
         <div className="flex-1 min-w-0">
           <div className={`flex ${compact ? "flex-col items-start gap-1" : "items-center justify-between mb-2 gap-2 flex-wrap"}`}>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <SparklesIcon className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+              <SparklesIcon className="w-3.5 h-3.5 text-theme-accent shrink-0" />
               <span className={`${compact ? "text-xs" : "text-sm"} font-semibold text-foreground`}>
                 {cosmicName}
               </span>
@@ -101,7 +101,7 @@ export function XPPreviewBar({
               </span>
 
               {info.saleBonus > 0 && (
-                <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-amber-400/15 text-amber-600 dark:text-amber-400 border border-amber-400/30">
+                <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-theme-highlight/15 text-theme-highlight border border-theme-highlight/30">
                   {info.saleBonusPct}
                 </span>
               )}
@@ -114,7 +114,7 @@ export function XPPreviewBar({
                     animate={{ opacity: 1, scale: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.7, x: -6 }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-500 border border-amber-400/40 ml-1"
+                    className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-theme-highlight/20 text-theme-stat border border-theme-highlight/40 ml-1"
                   >
                     {t.levelUp(projectedCosmicName)}
                   </motion.span>

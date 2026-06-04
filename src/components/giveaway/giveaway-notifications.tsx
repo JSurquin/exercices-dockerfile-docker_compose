@@ -98,7 +98,7 @@ export function GiveawayNotifications() {
             exit={{ opacity: 0, x: 300, scale: 0.8 }}
             transition={{ duration: 0.4, type: 'spring' }}
           >
-            <Card className="w-80 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border-yellow-200 dark:border-yellow-800 shadow-lg">
+            <Card className="w-80 bg-gradient-to-r from-theme-highlight/5 to-theme-accent/5 dark:from-theme-highlight/10 dark:to-theme-accent/10 border-theme-highlight/25 dark:border-theme-highlight/35 shadow-lg">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">

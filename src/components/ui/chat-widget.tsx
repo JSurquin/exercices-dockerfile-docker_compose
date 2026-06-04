@@ -305,7 +305,7 @@ export function ChatWidget() {
         style={{ height: isOpen ? "clamp(480px, 75dvh, 640px)" : 0 }}
       >
         {/* ── Header ── */}
-        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-500 to-red-600 text-white flex-shrink-0">
+        <div className="flex items-center justify-between p-4 bg-cta-gradient text-white flex-shrink-0">
           <div className="flex items-center space-x-3">
             {(chatStep === "subcategories" || (chatStep === "conversation" && !currentConversation?.messages?.length)) && (
               <button
@@ -353,7 +353,7 @@ export function ChatWidget() {
                 <button
                   key={cat.key}
                   onClick={() => handleCategorySelect(cat)}
-                  className="w-full flex items-center justify-between p-3.5 rounded-xl border bg-card hover:bg-orange-50 dark:hover:bg-orange-950/30 hover:border-orange-300 transition-all duration-150 group text-left"
+                  className="w-full flex items-center justify-between p-3.5 rounded-xl border bg-card hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 hover:border-theme-accent/30 transition-all duration-150 group text-left"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{cat.emoji}</span>
@@ -362,7 +362,7 @@ export function ChatWidget() {
                       <p className="text-xs text-muted-foreground">{cat.description}</p>
                     </div>
                   </div>
-                  <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-orange-500 transition-colors flex-shrink-0" />
+                  <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-theme-accent transition-colors flex-shrink-0" />
                 </button>
               ))}
             </div>
@@ -379,13 +379,13 @@ export function ChatWidget() {
                   key={sub.key}
                   onClick={() => handleSubcategorySelect(sub)}
                   disabled={isSendingBotMsg}
-                  className="w-full flex items-center justify-between p-3 rounded-xl border bg-card hover:bg-orange-50 dark:hover:bg-orange-950/30 hover:border-orange-300 transition-all duration-150 group text-left disabled:opacity-60"
+                  className="w-full flex items-center justify-between p-3 rounded-xl border bg-card hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 hover:border-theme-accent/30 transition-all duration-150 group text-left disabled:opacity-60"
                 >
                   <span className="text-sm font-medium">{sub.label}</span>
                   {isSendingBotMsg ? (
-                    <div className="h-4 w-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="h-4 w-4 border-2 border-theme-accent border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-orange-500 transition-colors" />
+                    <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-theme-accent transition-colors" />
                   )}
                 </button>
               ))}
@@ -425,7 +425,7 @@ export function ChatWidget() {
                       <div
                         className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
                           isUser
-                            ? "bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-tr-sm"
+                            ? "bg-cta-gradient text-white rounded-tr-sm"
                             : isModerator
                             ? "bg-blue-500 text-white rounded-tl-sm"
                             : isAi
@@ -538,12 +538,12 @@ export function ChatWidget() {
                     placeholder={messages.chatWidget.placeholder}
                     disabled={isLoading}
                     rows={1}
-                    className="flex-1 resize-none rounded-xl border bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:opacity-50 transition-all min-h-[38px] max-h-[100px] leading-relaxed"
+                    className="flex-1 resize-none rounded-xl border bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 transition-all min-h-[38px] max-h-[100px] leading-relaxed"
                     style={{ height: "38px" }}
                   />
                   <Button
                     size="icon"
-                    className="h-[38px] w-[38px] flex-shrink-0 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 rounded-xl"
+                    className="h-[38px] w-[38px] flex-shrink-0 bg-cta-gradient hover:brightness-110 rounded-xl"
                     onClick={handleSendMessage}
                     disabled={!message.trim() || isLoading}
                   >
@@ -574,7 +574,7 @@ export function ChatWidget() {
 
           <button
             onClick={handleToggleChat}
-            className="h-14 w-14 rounded-full bg-gradient-to-r from-orange-500 to-red-600 shadow-lg shadow-orange-500/30 border-0 flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95"
+            className="h-14 w-14 rounded-full bg-cta-gradient shadow-lg shadow-[var(--cta-shadow)] border-0 flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95"
           >
             <div
               className={`transition-all duration-200 ${isOpen ? "rotate-0" : "rotate-0"}`}
@@ -589,8 +589,8 @@ export function ChatWidget() {
 
           {!isOpen && (
             <>
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-500 to-red-600 chat-pulse-ring opacity-20 pointer-events-none" />
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-500 to-red-600 animate-pulse opacity-10 pointer-events-none" />
+              <div className="absolute inset-0 rounded-full bg-cta-gradient chat-pulse-ring opacity-20 pointer-events-none" />
+              <div className="absolute inset-0 rounded-full bg-cta-gradient animate-pulse opacity-10 pointer-events-none" />
             </>
           )}
         </div>

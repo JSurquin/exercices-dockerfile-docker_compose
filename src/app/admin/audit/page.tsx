@@ -56,7 +56,7 @@ interface DashboardResponse {
 const severityColors = {
   low: 'bg-green-500/20 text-green-400 border-green-500/50',
   medium: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50',
-  high: 'bg-orange-500/20 text-orange-400 border-orange-500/50',
+  high: 'bg-theme-accent/20 text-theme-highlight border-theme-accent/50',
   critical: 'bg-red-500/20 text-red-400 border-red-500/50',
 };
 
@@ -203,10 +203,10 @@ export default function AuditPage() {
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-300">{auditMessages.metrics.suspiciousActivities}</CardTitle>
-            <Shield className="h-4 w-4 text-orange-400" />
+            <Shield className="h-4 w-4 text-theme-highlight" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-400">{metrics?.suspiciousActivities || 0}</div>
+            <div className="text-2xl font-bold text-theme-highlight">{metrics?.suspiciousActivities || 0}</div>
             <p className="text-xs text-slate-400">
               {auditMessages.metrics.detectedAutomatically}
             </p>
@@ -229,17 +229,17 @@ export default function AuditPage() {
 
       <Tabs defaultValue="logs" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border-slate-700 h-auto">
-          <TabsTrigger value="logs" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+          <TabsTrigger value="logs" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white">
             <Activity className="h-4 w-4 shrink-0" />
             <span className="hidden sm:inline">{auditMessages.tabs.logs}</span>
             <span className="sm:hidden text-[10px]">Logs</span>
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+          <TabsTrigger value="analytics" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white">
             <Shield className="h-4 w-4 shrink-0" />
             <span className="hidden sm:inline">{auditMessages.tabs.analytics}</span>
             <span className="sm:hidden text-[10px]">Analyses</span>
           </TabsTrigger>
-          <TabsTrigger value="alerts" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+          <TabsTrigger value="alerts" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             <span className="hidden sm:inline">{auditMessages.tabs.alerts}</span>
             <span className="sm:hidden text-[10px]">Alertes</span>
@@ -462,13 +462,13 @@ export default function AuditPage() {
                     <Card className="md:col-span-2 xl:col-span-3 bg-slate-900/50 border-slate-700">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-base flex items-center text-white">
-                          <AlertTriangle className="h-4 w-4 text-orange-400 mr-2" />
+                          <AlertTriangle className="h-4 w-4 text-theme-highlight mr-2" />
                           {auditMessages.analytics.activitySpike}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="p-4 bg-orange-500/20 border border-orange-500/50 rounded-lg">
-                          <p className="text-sm text-orange-300">
+                        <div className="p-4 bg-theme-accent/20 border border-theme-accent/50 rounded-lg">
+                          <p className="text-sm text-theme-highlight">
                             <strong>{auditMessages.analytics.currentActivity}:</strong> {metrics.activitySpikes.currentActivity} 
                             <span className="ml-2 text-slate-400">
                               ({auditMessages.analytics.threshold}: {metrics.activitySpikes.threshold})

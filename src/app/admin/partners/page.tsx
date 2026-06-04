@@ -233,8 +233,8 @@ export default function AdminPartnersPage() {
     <div className="min-h-screen bg-slate-950 p-6">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <div className="mb-8 flex items-start gap-4">
-          <div className="rounded-xl bg-orange-500/20 p-3">
-            <Heart className="h-8 w-8 text-orange-400" />
+          <div className="rounded-xl bg-theme-accent/20 p-3">
+            <Heart className="h-8 w-8 text-theme-highlight" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white">{t.title}</h1>
@@ -261,7 +261,7 @@ export default function AdminPartnersPage() {
                   <CardTitle className="text-white">{t.videos.title}</CardTitle>
                   <CardDescription className="text-slate-400">{t.videos.description}</CardDescription>
                 </div>
-                <Button onClick={openCreateVideo} className="bg-orange-600 hover:bg-orange-700">
+                <Button onClick={openCreateVideo} className="bg-primary hover:bg-primary/90">
                   <Plus className="mr-2 h-4 w-4" />
                   {t.videos.add}
                 </Button>
@@ -334,7 +334,7 @@ export default function AdminPartnersPage() {
                   <CardTitle className="text-white">{t.logos.title}</CardTitle>
                   <CardDescription className="text-slate-400">{t.logos.description}</CardDescription>
                 </div>
-                <Button onClick={openCreateLogo} className="bg-orange-600 hover:bg-orange-700">
+                <Button onClick={openCreateLogo} className="bg-primary hover:bg-primary/90">
                   <Plus className="mr-2 h-4 w-4" />
                   {t.logos.add}
                 </Button>
@@ -482,7 +482,7 @@ export default function AdminPartnersPage() {
             <Button variant="outline" onClick={() => setVideoDialogOpen(false)} className="border-slate-600">
               {t.cancel}
             </Button>
-            <Button onClick={saveVideo} disabled={saving} className="bg-orange-600 hover:bg-orange-700">
+            <Button onClick={saveVideo} disabled={saving} className="bg-primary hover:bg-primary/90">
               {saving ? t.saving : t.save}
             </Button>
           </DialogFooter>
@@ -549,7 +549,7 @@ export default function AdminPartnersPage() {
             <Button variant="outline" onClick={() => setLogoDialogOpen(false)} className="border-slate-600">
               {t.cancel}
             </Button>
-            <Button onClick={saveLogo} disabled={saving} className="bg-orange-600 hover:bg-orange-700">
+            <Button onClick={saveLogo} disabled={saving} className="bg-primary hover:bg-primary/90">
               {saving ? t.saving : t.save}
             </Button>
           </DialogFooter>

@@ -225,7 +225,7 @@ export default function AffiliateApplications() {
               </CardDescription>
             </div>
             {pendingCount > 0 && (
-              <Badge className="bg-orange-500 text-white">
+              <Badge className="bg-primary text-primary-foreground">
                 <Clock className="h-4 w-4 mr-1" />
                 {pendingCount} {t.pendingBadge}
               </Badge>

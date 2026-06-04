@@ -206,12 +206,12 @@ export function AdminStatsOverview() {
       </Card>
 
       {/* Top Utilisateur */}
-      <Card className="bg-slate-800/50 border-2 border-orange-500/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40">
+      <Card className="bg-slate-800/50 border-2 border-theme-accent/50 hover:bg-slate-800/70 transition-all duration-300 shadow-lg shadow-[var(--cta-shadow)] hover:shadow-[var(--cta-shadow)]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-300">
             {t.topUser}
           </CardTitle>
-          <Users className="h-4 w-4 text-orange-400" />
+          <Users className="h-4 w-4 text-theme-highlight" />
         </CardHeader>
         <CardContent>
           <div className="text-lg font-bold text-white truncate">

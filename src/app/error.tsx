@@ -96,7 +96,7 @@ export default function Error({ error, reset }: ErrorProps) {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 onClick={reset}
-                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                className="bg-cta-gradient hover:brightness-110"
               >
                 <ArrowPathIcon className="w-4 h-4 mr-2" />
                 {messages.error.retry}
@@ -142,7 +142,7 @@ export default function Error({ error, reset }: ErrorProps) {
                 href={process.env.NEXT_PUBLIC_STATUS_URL ?? 'https://status.moonskin.gg'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-orange-600 hover:underline"
+                className="text-theme-accent hover:underline"
               >
                 {(process.env.NEXT_PUBLIC_STATUS_URL ?? 'https://status.moonskin.gg').replace('https://', '')}
               </a>

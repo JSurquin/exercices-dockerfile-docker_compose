@@ -69,7 +69,7 @@ export function FeePreview({ method, amountCents, labels }: FeePreviewProps) {
         <span className="text-muted-foreground">{labels.grossAmount}</span>
         <span>{formatCentsToCurrency(amountCents, 'EUR')}</span>
       </div>
-      <div className="flex justify-between text-orange-500">
+      <div className="flex justify-between text-theme-accent">
         <span>{label}</span>
         <span>-{formatCentsToCurrency(totalCents, 'EUR')}</span>
       </div>

@@ -65,8 +65,8 @@ function VerifyLoginView({ redirectTo }: { redirectTo: string }) {
       <Card className="border-border bg-card">
         <CardHeader>
           <div className="mb-2 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500/10">
-              <KeyRound className="h-5 w-5 text-orange-500" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-theme-accent/10">
+              <KeyRound className="h-5 w-5 text-theme-accent" />
             </div>
             <div>
               <CardTitle>{t.verifyTitle}</CardTitle>
@@ -109,7 +109,7 @@ function VerifyLoginView({ redirectTo }: { redirectTo: string }) {
           <Button
             onClick={handleVerify}
             disabled={loading || otpCode.length !== 6}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {t.validateAndContinue}
@@ -228,8 +228,8 @@ function ManageView() {
       <Card className="border-border bg-card">
         <CardHeader>
           <div className="mb-2 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500/10">
-              <Settings className="h-5 w-5 text-orange-500" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-theme-accent/10">
+              <Settings className="h-5 w-5 text-theme-accent" />
             </div>
             <div>
               <CardTitle>{t.manageTitle}</CardTitle>
@@ -277,7 +277,7 @@ function ManageView() {
                   <Button
                     onClick={handleEnable}
                     disabled={loading}
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     {loading ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -357,18 +357,18 @@ function ManageView() {
               ) : null}
 
               {backupCodes.length > 0 ? (
-                <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
-                  <p className="mb-1 font-semibold text-sm text-amber-400">
+                <div className="rounded-lg border border-theme-highlight/30 bg-theme-stat/10 p-4">
+                  <p className="mb-1 font-semibold text-sm text-theme-highlight">
                     {t.step2Title}
                   </p>
-                  <p className="mb-3 text-xs text-amber-300/80">
+                  <p className="mb-3 text-xs text-theme-highlight/80">
                     {t.step2Warning}
                   </p>
                   <div className="grid grid-cols-2 gap-1.5">
                     {backupCodes.map((code) => (
                       <code
                         key={code}
-                        className="rounded bg-black/20 px-2 py-1.5 text-center text-xs font-mono tracking-widest text-amber-200"
+                        className="rounded bg-black/20 px-2 py-1.5 text-center text-xs font-mono tracking-widest text-theme-highlight"
                       >
                         {code}
                       </code>

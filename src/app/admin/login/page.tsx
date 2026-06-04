@@ -105,8 +105,8 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-orange-500/10 rounded-full flex items-center justify-center mb-4">
-            <Shield className="w-8 h-8 text-orange-500" />
+          <div className="mx-auto w-16 h-16 bg-theme-accent/10 rounded-full flex items-center justify-center mb-4">
+            <Shield className="w-8 h-8 text-theme-accent" />
           </div>
           <h1 className="text-3xl font-bold text-slate-100 mb-2">
             {messages.admin.login.title}
@@ -182,7 +182,7 @@ export default function AdminLoginPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 {loading ? (
                   <>
@@ -244,7 +244,7 @@ export default function AdminLoginPage() {
             {messages.admin.login.loginProblem}{' '}
             <Link 
               href="/help" 
-              className="text-orange-400 hover:text-orange-300 underline"
+              className="text-theme-highlight hover:text-theme-highlight underline"
             >
               {messages.admin.login.contactSupport}
             </Link>
@@ -262,7 +262,7 @@ export default function AdminLoginPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Mail className="h-5 w-5 text-orange-500" />
+                  <Mail className="h-5 w-5 text-theme-accent" />
                   <CardTitle className="text-white">{messages.admin.login.forgotPasswordTitle}</CardTitle>
                 </div>
                 <Button
@@ -308,7 +308,7 @@ export default function AdminLoginPage() {
                   <Button
                     type="submit"
                     disabled={forgotPasswordLoading}
-                    className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
+                    className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     {forgotPasswordLoading ? (
                       <>

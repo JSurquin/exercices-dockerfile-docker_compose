@@ -101,8 +101,8 @@ export const CS2IconButton: React.FC<{
       disabled={disabled}
       className={cn(
         "relative flex items-center justify-center rounded-lg transition-all duration-200",
-        "bg-gradient-to-br from-orange-500/10 to-red-500/10 hover:from-orange-500/20 hover:to-red-500/20",
-        "border border-orange-500/20 hover:border-orange-500/40",
+        "bg-gradient-to-br from-theme-accent/10 to-theme-accent/15 hover:from-theme-accent/20 hover:to-theme-accent/25",
+        "border border-theme-accent/20 hover:border-theme-accent/40",
         "backdrop-blur-sm shadow-lg hover:shadow-xl",
         size === "sm" && "h-8 w-8",
         size === "md" && "h-10 w-10",
@@ -111,7 +111,7 @@ export const CS2IconButton: React.FC<{
         className
       )}
     >
-      <div className="text-orange-500 group-hover:text-orange-400 transition-colors">
+      <div className="text-theme-accent group-hover:text-theme-highlight transition-colors">
         {icon}
       </div>
       {label && (

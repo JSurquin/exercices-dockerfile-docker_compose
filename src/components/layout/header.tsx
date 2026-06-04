@@ -207,7 +207,7 @@ export function Header() {
               {/* Compteur de fragments */}
               <Link
                 href="/missions"
-                className="hidden sm:flex items-center gap-1 rounded-full border border-amber-300/60 dark:border-amber-700/60 bg-amber-50/80 dark:bg-amber-950/40 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors"
+                className="hidden sm:flex items-center gap-1 rounded-full border border-theme-highlight/30 bg-theme-highlight/10 dark:bg-theme-highlight/15 px-2.5 py-1 text-xs font-semibold text-theme-highlight hover:bg-theme-highlight/15 dark:hover:bg-theme-highlight/20 transition-colors"
               >
                 <FragmentAmount
                   amount={(user as unknown as { fragments?: number })?.fragments ?? 0}
@@ -262,7 +262,7 @@ export function Header() {
                       )}
                       <UserRoleBadge userTag={user.userTag} />
                       {isAdmin && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/20 border border-orange-500/40 px-1.5 py-0.5 text-[10px] font-semibold text-orange-400 leading-none">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-theme-accent/20 border border-theme-accent/40 px-1.5 py-0.5 text-[10px] font-semibold text-theme-highlight leading-none">
                           Admin
                         </span>
                       )}

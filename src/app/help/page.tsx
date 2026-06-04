@@ -78,7 +78,7 @@ export default function HelpPage() {
       {
         title: messages.help.categories.trading,
         icon: CurrencyEuroIcon,
-        color: "text-orange-600",
+        color: "text-theme-accent",
         articles: [
           {
             id: "tr-howToSell",
@@ -257,7 +257,7 @@ export default function HelpPage() {
       availability: t.supportOptions.phone.availability,
       responseTime: t.supportOptions.phone.responseTime,
       icon: ClockIcon,
-      color: "bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400",
+      color: "bg-theme-accent/10 text-theme-accent dark:bg-theme-accent/20 dark:text-theme-highlight",
     },
   ];
 
@@ -271,7 +271,7 @@ export default function HelpPage() {
           className="text-center mb-8 sm:mb-12"
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-            <QuestionMarkCircleIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
+            <QuestionMarkCircleIcon className="w-8 h-8 inline-block mr-2 text-theme-accent" />
             {messages.help.title}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
@@ -322,7 +322,7 @@ export default function HelpPage() {
                   </div>
                   <Accordion type="single" collapsible className="w-full px-6 pb-4">
                     <AccordionItem value={item.id} className="border-0">
-                      <AccordionTrigger className="py-2 text-orange-600 hover:text-orange-700 hover:no-underline text-sm font-medium">
+                      <AccordionTrigger className="py-2 text-theme-accent hover:text-theme-accent hover:no-underline text-sm font-medium">
                         {item.title}
                       </AccordionTrigger>
                       <AccordionContent>

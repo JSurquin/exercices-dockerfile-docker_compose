@@ -59,7 +59,7 @@ export function AdminExports() {
       name: t.kycExport,
       description: t.kycDescription,
       icon: <Shield className="h-5 w-5" />,
-      color: 'bg-orange-500',
+      color: 'bg-primary',
     },
     {
       id: 'affiliates',

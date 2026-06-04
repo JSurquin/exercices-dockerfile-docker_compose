@@ -96,7 +96,7 @@ export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: Skin
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <Input
               autoFocus
-              className="pl-9 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus-visible:ring-orange-500"
+              className="pl-9 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus-visible:ring-primary"
               placeholder={t?.searchPlaceholder ?? 'Rechercher un skin (ex: AK-47, AWP, Karambit...)'}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -139,7 +139,7 @@ export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: Skin
                     className={`
                       relative flex flex-col items-center gap-2 rounded-xl border p-3 text-left transition-all duration-150 cursor-pointer group
                       ${isSelected
-                        ? 'border-orange-500 bg-orange-500/10 ring-1 ring-orange-500/50'
+                        ? 'border-theme-accent bg-theme-accent/10 ring-1 ring-primary/50'
                         : isHovered
                           ? 'border-slate-500 bg-slate-700/60'
                           : 'border-slate-700 bg-slate-800/50 hover:border-slate-500 hover:bg-slate-700/60'
@@ -147,7 +147,7 @@ export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: Skin
                     `}
                   >
                     {isSelected && (
-                      <span className="absolute top-2 right-2 bg-orange-500 rounded-full p-0.5">
+                      <span className="absolute top-2 right-2 bg-primary rounded-full p-0.5">
                         <CheckIcon className="w-3 h-3 text-white" />
                       </span>
                     )}

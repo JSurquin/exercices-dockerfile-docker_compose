@@ -60,7 +60,7 @@ const EVENT_TYPE_COLORS: Record<string, string> = {
   DAILY_LOGIN: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   LEVEL_UP: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
   ADMIN_ADJUSTMENT: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  GIVEAWAY_ENTRY: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  GIVEAWAY_ENTRY: 'bg-theme-accent/20 text-theme-highlight border-theme-accent/30',
   REFERRAL_BONUS: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
 };
 
@@ -207,8 +207,8 @@ export default function AdminPointsPage() {
             <Card className="bg-slate-800/50 border-slate-700">
               <CardContent className="p-5">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-orange-500/20 rounded-lg">
-                    <FireIcon className="w-5 h-5 text-orange-400" />
+                  <div className="p-2 bg-theme-accent/20 rounded-lg">
+                    <FireIcon className="w-5 h-5 text-theme-highlight" />
                   </div>
                   <div>
                     <p className="text-xs text-slate-400">{t.streakMax}</p>
@@ -225,15 +225,15 @@ export default function AdminPointsPage() {
 
         <Tabs defaultValue="metrics" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border-slate-700">
-            <TabsTrigger value="metrics" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <TabsTrigger value="metrics" className="data-[state=active]:bg-primary data-[state=active]:text-white">
               <ChartBarIcon className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">{t.tabMetrics}</span>
             </TabsTrigger>
-            <TabsTrigger value="leaderboard" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <TabsTrigger value="leaderboard" className="data-[state=active]:bg-primary data-[state=active]:text-white">
               <TrophyIcon className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">{t.tabLeaderboard}</span>
             </TabsTrigger>
-            <TabsTrigger value="config" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <TabsTrigger value="config" className="data-[state=active]:bg-primary data-[state=active]:text-white">
               <Cog6ToothIcon className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">{t.tabConfig}</span>
             </TabsTrigger>
@@ -314,7 +314,7 @@ export default function AdminPointsPage() {
                             <p className="text-xs text-slate-400 mt-1">{t.pointsDistributed}</p>
                           </div>
                           <div className="bg-slate-700/50 rounded-lg p-4 text-center">
-                            <p className="text-2xl font-bold text-orange-400">
+                            <p className="text-2xl font-bold text-theme-highlight">
                               {metrics.streakStats.maxStreak}
                             </p>
                             <p className="text-xs text-slate-400 mt-1">{t.streakRecord}</p>
@@ -334,7 +334,7 @@ export default function AdminPointsPage() {
                 <Card className="bg-slate-800/50 border-slate-700">
                   <CardHeader>
                     <CardTitle className="text-white text-base flex items-center">
-                      <FireIcon className="w-5 h-5 mr-2 text-amber-400" />
+                      <FireIcon className="w-5 h-5 mr-2 text-theme-highlight" />
                       {t.randomDropsTitle}
                     </CardTitle>
                   </CardHeader>
@@ -348,20 +348,20 @@ export default function AdminPointsPage() {
                       const dropRate = saleCount > 0 ? ((dropCount / saleCount) * 100).toFixed(1) : '0';
                       return (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
-                            <p className="text-2xl font-bold text-amber-400">{dropCount.toLocaleString('fr-FR')}</p>
+                          <div className="bg-theme-stat/10 border border-theme-highlight/20 rounded-lg p-4 text-center">
+                            <p className="text-2xl font-bold text-theme-highlight">{dropCount.toLocaleString('fr-FR')}</p>
                             <p className="text-xs text-slate-400 mt-1">{t.dropsTriggered}</p>
                           </div>
-                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
-                            <p className="text-2xl font-bold text-amber-400">{dropTotal.toLocaleString('fr-FR')}</p>
+                          <div className="bg-theme-stat/10 border border-theme-highlight/20 rounded-lg p-4 text-center">
+                            <p className="text-2xl font-bold text-theme-highlight">{dropTotal.toLocaleString('fr-FR')}</p>
                             <p className="text-xs text-slate-400 mt-1">{t.fragmentsDistributed}</p>
                           </div>
-                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
-                            <p className="text-2xl font-bold text-amber-400">{dropRate}%</p>
+                          <div className="bg-theme-stat/10 border border-theme-highlight/20 rounded-lg p-4 text-center">
+                            <p className="text-2xl font-bold text-theme-highlight">{dropRate}%</p>
                             <p className="text-xs text-slate-400 mt-1">{t.realDropRate}</p>
                           </div>
-                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
-                            <p className="text-2xl font-bold text-amber-400">
+                          <div className="bg-theme-stat/10 border border-theme-highlight/20 rounded-lg p-4 text-center">
+                            <p className="text-2xl font-bold text-theme-highlight">
                               {dropCount > 0 ? Math.round(dropTotal / dropCount) : 0}
                             </p>
                             <p className="text-xs text-slate-400 mt-1">{t.avgFragmentsPerDrop}</p>
@@ -375,7 +375,7 @@ export default function AdminPointsPage() {
                 <Card className="bg-slate-800/50 border-slate-700">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center">
-                      <ArrowTrendingUpIcon className="w-5 h-5 mr-2 text-orange-400" />
+                      <ArrowTrendingUpIcon className="w-5 h-5 mr-2 text-theme-highlight" />
                       {t.recentTransactionsTitle}
                     </CardTitle>
                   </CardHeader>
@@ -451,7 +451,7 @@ export default function AdminPointsPage() {
                             : index === 1
                             ? 'bg-slate-300/5 border-slate-400/30'
                             : index === 2
-                            ? 'bg-orange-500/10 border-orange-500/20'
+                            ? 'bg-theme-accent/10 border-theme-accent/20'
                             : 'bg-slate-700/30 border-slate-700/50'
                         }`}
                       >
@@ -459,7 +459,7 @@ export default function AdminPointsPage() {
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
                             index === 0 ? 'bg-yellow-500 text-black' :
                             index === 1 ? 'bg-slate-400 text-black' :
-                            index === 2 ? 'bg-orange-600 text-white' :
+                            index === 2 ? 'bg-primary text-primary-foreground' :
                             'bg-slate-700 text-slate-300'
                           }`}>
                             {index + 1}
@@ -667,7 +667,7 @@ export default function AdminPointsPage() {
                 <Card className="bg-slate-800/50 border-slate-700">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center">
-                      <FireIcon className="w-5 h-5 mr-2 text-amber-400" />
+                      <FireIcon className="w-5 h-5 mr-2 text-theme-highlight" />
                       {t.configFragmentsTitle}
                     </CardTitle>
                   </CardHeader>
@@ -846,7 +846,7 @@ export default function AdminPointsPage() {
                   <Button
                     onClick={handleSaveConfig}
                     disabled={savingConfig}
-                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     {savingConfig ? t.saving : t.saveButton}
                   </Button>

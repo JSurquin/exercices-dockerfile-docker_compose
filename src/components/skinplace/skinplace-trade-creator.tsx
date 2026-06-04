@@ -384,9 +384,9 @@ export function SkinplaceTradeCreator({
             )}
           </div>
 
-          <div className="rounded-lg border border-orange-500/25 bg-orange-500/[0.06] dark:bg-orange-950/20 p-4 space-y-3">
+          <div className="rounded-lg border border-theme-accent/25 bg-theme-accent/5 dark:bg-theme-accent/10 p-4 space-y-3">
             <div className="flex items-start gap-2">
-              <Gift className="h-5 w-5 text-orange-500 shrink-0 mt-0.5" />
+              <Gift className="h-5 w-5 text-theme-accent shrink-0 mt-0.5" />
               <div className="space-y-1 min-w-0">
                 <p className="text-sm font-medium">{messages.tradeCreator.promoSectionTitle}</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -447,7 +447,7 @@ export function SkinplaceTradeCreator({
                 promoBlocksSubmit ||
                 grossValueCentimes < 100
               }
-              className="flex-1 bg-orange-500 hover:bg-orange-600"
+              className="flex-1 bg-primary hover:bg-primary/90"
             >
               {loading ? messages.tradeCreator.creatingButton : messages.tradeCreator.createSaleButton}
             </Button>
@@ -540,7 +540,7 @@ export function SkinplaceTradeCreator({
               )}
 
               {vipBonusPreview > 0 && (
-                <div className="flex items-center justify-between text-sm text-amber-600 dark:text-amber-400">
+                <div className="flex items-center justify-between text-sm text-theme-highlight">
                   <span className="flex items-center gap-1">
                     <Plus className="h-3 w-3" />
                     {messages.tradeCreator.vipBonus
@@ -563,9 +563,9 @@ export function SkinplaceTradeCreator({
                 />
               </div>
 
-              <div className="flex items-start justify-between gap-2 text-xs text-muted-foreground border border-dashed border-amber-400/40 bg-amber-50/30 dark:bg-amber-950/20 rounded-md p-2 mt-1">
+              <div className="flex items-start justify-between gap-2 text-xs text-muted-foreground border border-dashed brand-panel-dashed rounded-md p-2 mt-1">
                 <span className="text-left">{messages.tradeCreator.payoutFeesIndicativeLine}</span>
-                <span className="shrink-0 font-medium text-amber-700 dark:text-amber-400 tabular-nums">
+                <span className="shrink-0 font-medium text-theme-highlight dark:text-theme-highlight tabular-nums">
                   ~<ConvertedPrice usdCents={fees.indicative_payout_fees_centimes} />
                 </span>
               </div>

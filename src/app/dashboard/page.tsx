@@ -76,7 +76,7 @@ const getStatusColor = (status: string) => {
     ACCEPTED_BY_BOT: "bg-indigo-500",
     IN_TRADE_HOLD: "bg-yellow-500",
     AVAILABLE: "bg-green-500",
-    PAYOUT_PENDING: "bg-orange-500",
+    PAYOUT_PENDING: "bg-primary",
     PAID: "bg-emerald-500",
     FAILED: "bg-red-500",
     CANCELLED: "bg-red-400",
@@ -85,7 +85,7 @@ const getStatusColor = (status: string) => {
     accepté_par_bot: "bg-indigo-500",
     en_trade_hold: "bg-yellow-500",
     disponible: "bg-green-500",
-    paiement_en_cours: "bg-orange-500",
+    paiement_en_cours: "bg-primary",
     payé: "bg-emerald-500",
     échoué: "bg-red-500",
   };
@@ -159,7 +159,7 @@ const payoutStatusBadgeClass = (status: string) => {
   if (["FAILED", "FLEXIFY_FAILED", "WHITEPAY_DECLINED", "CANCELLED"].includes(status)) {
     return "bg-red-500/15 text-red-800 dark:text-red-300 border-red-500/30";
   }
-  return "bg-amber-500/15 text-amber-900 dark:text-amber-200 border-amber-500/30";
+  return "bg-theme-stat/15 text-theme-highlight border-theme-highlight/30";
 };
 
 const payoutStatusLabel = (
@@ -550,7 +550,7 @@ export default function DashboardPage() {
                         <Snowflake className="h-3.5 w-3.5 shrink-0" aria-hidden />
                         {messages.dashboard.balance.frozenBalance}
                       </p>
-                      <p className="text-lg font-bold text-amber-500 tabular-nums">
+                      <p className="text-lg font-bold text-theme-stat tabular-nums">
                         {formatCentsToCurrency(balanceHistoryData!.frozenBalanceCents, "EUR")}
                       </p>
                     </div>
@@ -560,21 +560,21 @@ export default function DashboardPage() {
 
               {/* Projection trade hold — entre solde et graphique */}
               {!balanceHistoryLoading && (balanceHistoryData?.pendingBalanceCents ?? 0) > 0 && (
-                <div className="border-y border-amber-500/25 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-emerald-500/10 px-5 sm:px-6 py-4">
+                <div className="border-y border-theme-highlight/25 bg-gradient-to-r from-theme-highlight/10 via-theme-highlight/5 to-emerald-500/10 px-5 sm:px-6 py-4">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex items-start gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-full bg-amber-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                        <TrendingUp className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                      <div className="w-9 h-9 rounded-full bg-theme-stat/15 flex items-center justify-center shrink-0 mt-0.5">
+                        <TrendingUp className="w-5 h-5 text-theme-highlight" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                        <p className="text-sm font-medium text-theme-highlight">
                           {messages.dashboard.balance.projectedTitle}
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           {messages.dashboard.balance.projectedHint}
                         </p>
                         {(balanceHistoryData?.pendingTradesCount ?? 0) > 0 && (
-                          <p className="text-xs text-amber-700/80 dark:text-amber-300/80 mt-1 flex items-center gap-1">
+                          <p className="text-xs text-theme-highlight/80 dark:text-theme-highlight/80 mt-1 flex items-center gap-1">
                             <ClockIcon className="w-3.5 h-3.5 shrink-0" />
                             {messages.dashboard.balance.pendingTrades.replace(
                               '{count}',
@@ -594,7 +594,7 @@ export default function DashboardPage() {
                           separator=" "
                         />
                       </p>
-                      <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mt-0.5">
+                      <p className="text-xs font-medium text-theme-highlight mt-0.5">
                         {messages.dashboard.balance.projectedPending.replace(
                           '{amount}',
                           formatCentsToCurrency(balanceHistoryData!.pendingBalanceCents, 'EUR'),
@@ -749,7 +749,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-amber-200 dark:border-amber-800">
+          <Card className="border-theme-highlight/25 dark:border-theme-highlight/35">
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -759,12 +759,12 @@ export default function DashboardPage() {
                     initial={{ scale: 1 }}
                     animate={{ scale: [1, 1.15, 1] }}
                     transition={{ duration: 0.4 }}
-                    className="text-2xl font-bold text-amber-600 flex items-center gap-2"
+                    className="text-2xl font-bold text-theme-stat flex items-center gap-2"
                   >
                     {(user as unknown as { fragments?: number })?.fragments ?? 0}
                     <FragmentBadge size="sm" />
                   </motion.p>
-                  <Link href="/missions" className="text-xs text-orange-500 hover:underline">
+                  <Link href="/missions" className="text-xs text-theme-accent hover:underline">
                     {messages.dashboard.viewMissions}
                   </Link>
                 </div>
@@ -773,16 +773,16 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-orange-200 dark:border-orange-800">
+          <Card className="border-theme-accent/20 dark:border-theme-accent/30">
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{messages.dashboard.giveawaysLabel}</p>
-                  <Link href="/giveaways" className="text-orange-500 hover:underline text-sm font-medium">
+                  <Link href="/giveaways" className="text-theme-accent hover:underline text-sm font-medium">
                     {messages.dashboard.participateGiveaway}
                   </Link>
                 </div>
-                <GiftIcon className="w-8 h-8 text-orange-500" />
+                <GiftIcon className="w-8 h-8 text-theme-accent" />
               </div>
             </CardContent>
           </Card>
@@ -811,7 +811,7 @@ export default function DashboardPage() {
                 <CardContent>
                   {tradesLoading ? (
                     <div className="flex items-center justify-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
                   ) : tradesError ? (
                     <div className="text-center py-8 text-red-500">
@@ -889,9 +889,9 @@ export default function DashboardPage() {
                             </div>
                             <div>
                               {trade.status === 'en_trade_hold' && trade.disponibleLe && (
-                                <div className="flex items-center gap-1.5 mt-1 px-2 py-1.5 rounded-md bg-amber-500/10 border border-amber-500/20">
-                                  <ClockIcon className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                                  <p className="text-xs text-amber-700 dark:text-amber-300">
+                                <div className="flex items-center gap-1.5 mt-1 px-2 py-1.5 rounded-md bg-theme-stat/10 border border-theme-highlight/20">
+                                  <ClockIcon className="w-3.5 h-3.5 text-theme-stat shrink-0" />
+                                  <p className="text-xs text-theme-highlight">
                                     {messages.dashboard.tradeHistory.tradeHoldReminder}{" "}
                                     <span className="font-semibold">
                                       {new Date(trade.disponibleLe).toLocaleDateString()}
@@ -945,17 +945,17 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="grid gap-4 sm:gap-6">
-                  <Card className="relative overflow-hidden border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-transparent">
-                    <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-orange-500/10 blur-2xl" />
+                  <Card className="relative overflow-hidden border-theme-accent/30 bg-gradient-to-br from-theme-accent/10 via-theme-accent/5 to-transparent">
+                    <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-theme-accent/10 blur-2xl" />
                     <CardContent className="relative p-6 sm:p-10">
                       {statsLoading ? (
                         <div className="flex items-center justify-center h-40">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                         </div>
                       ) : (
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                           <div className="space-y-3">
-                            <p className="text-sm font-medium text-orange-600 dark:text-orange-400 uppercase tracking-wide">
+                            <p className="text-sm font-medium text-theme-highlight uppercase tracking-wide">
                               {messages.dashboard.analytics.totalSalesVolume}
                             </p>
                             <p className="text-5xl sm:text-6xl lg:text-7xl font-bold tabular-nums tracking-tight">
@@ -972,8 +972,8 @@ export default function DashboardPage() {
                               {messages.dashboard.analytics.totalSalesVolumeDesc}
                             </p>
                           </div>
-                          <div className="flex h-20 w-20 sm:h-24 sm:w-24 shrink-0 items-center justify-center rounded-2xl bg-orange-500/15 ring-1 ring-orange-500/20">
-                            <CurrencyDollarIcon className="h-10 w-10 sm:h-12 sm:w-12 text-orange-500" />
+                          <div className="flex h-20 w-20 sm:h-24 sm:w-24 shrink-0 items-center justify-center rounded-2xl bg-theme-accent/15 ring-1 ring-primary/20">
+                            <CurrencyDollarIcon className="h-10 w-10 sm:h-12 sm:w-12 text-theme-accent" />
                           </div>
                         </div>
                       )}
@@ -1026,7 +1026,7 @@ export default function DashboardPage() {
                       <CardContent>
                         {statsLoading ? (
                           <div className="flex items-center justify-center h-[300px]">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                           </div>
                         ) : (
                           <ResponsiveContainer width="100%" height={300}>
@@ -1101,7 +1101,7 @@ export default function DashboardPage() {
                     ? 'border-green-500/50 bg-green-500/5'
                     : data?.user?.kycStatus === 'IN_PROGRESS'
                     ? 'border-yellow-500/50 bg-yellow-500/5'
-                    : 'border-orange-500/50 bg-orange-500/5'
+                    : 'border-theme-accent/50 bg-primary/5'
                 }`}>
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
@@ -1111,12 +1111,12 @@ export default function DashboardPage() {
                             ? 'bg-green-500/20'
                             : data?.user?.kycStatus === 'IN_PROGRESS'
                             ? 'bg-yellow-500/20'
-                            : 'bg-orange-500/20'
+                            : 'bg-theme-accent/20'
                         }`}>
                           {data?.user?.kycStatus === 'VERIFIED' || data?.user?.kycStatus === 'KYCAID_VERIFIED' ? (
                             <CheckIcon className="w-6 h-6 text-green-500" />
                           ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-orange-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-theme-accent">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
                             </svg>
                           )}
@@ -1134,7 +1134,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex flex-col gap-2">
                         {(data?.user?.kycStatus !== 'VERIFIED' && data?.user?.kycStatus !== 'KYCAID_VERIFIED') && (
-                          <Button asChild className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
+                          <Button asChild variant="cta">
                             <Link href="/kyc">{messages.payments.verify}</Link>
                           </Button>
                         )}

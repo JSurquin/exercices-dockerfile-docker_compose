@@ -104,7 +104,7 @@ export default function AdminSepaRequestsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'PENDING_APPROVAL':
-        return <Badge className="bg-amber-500 text-white">{t.status.pending}</Badge>;
+        return <Badge className="bg-theme-stat text-white">{t.status.pending}</Badge>;
       case 'PAID':
         return <Badge className="bg-green-500 text-white">{t.status.approved}</Badge>;
       case 'CANCELLED':
@@ -172,10 +172,10 @@ export default function AdminSepaRequestsPage() {
       >
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <BanknotesIcon className="w-7 h-7 text-orange-400" />
+            <BanknotesIcon className="w-7 h-7 text-theme-highlight" />
             {t.title}
             {pendingCount > 0 && (
-              <Badge className="bg-amber-500 text-white ml-2">{pendingCount} {t.badge}</Badge>
+              <Badge className="bg-theme-stat text-white ml-2">{pendingCount} {t.badge}</Badge>
             )}
           </h1>
           <p className="text-slate-400 mt-1">{t.subtitle}</p>
@@ -221,7 +221,7 @@ export default function AdminSepaRequestsPage() {
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <ArrowPathIcon className="w-8 h-8 text-orange-400 animate-spin" />
+              <ArrowPathIcon className="w-8 h-8 text-theme-highlight animate-spin" />
             </div>
           ) : requests.length === 0 ? (
             <div className="text-center py-12">
@@ -416,10 +416,10 @@ export default function AdminSepaRequestsPage() {
           {approveModal && (
             <div className="space-y-4 py-2">
               {/* IBAN complet bien visible pour copier-coller */}
-              <div className="bg-slate-800 border border-orange-500/40 rounded-lg p-4 space-y-3">
+              <div className="bg-slate-800 border border-theme-accent/40 rounded-lg p-4 space-y-3">
                 <div className="space-y-1">
                   <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">{t.modalLabelIban}</p>
-                  <p className="font-mono text-orange-300 text-base font-bold tracking-widest select-all">
+                  <p className="font-mono text-theme-highlight text-base font-bold tracking-widest select-all">
                     {approveModal.beneficiary?.fullIban
                       ? approveModal.beneficiary.fullIban.replace(/(.{4})/g, '$1 ').trim()
                       : '—'}

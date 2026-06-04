@@ -48,13 +48,13 @@ type MissionRow = {
 };
 
 const MISSION_ROW_STYLE: Record<string, { icon: ComponentType<{ className?: string }>; iconClass: string }> = {
-  DAILY_CLAIM: { icon: SparklesIcon, iconClass: 'text-amber-500' },
+  DAILY_CLAIM: { icon: SparklesIcon, iconClass: 'text-theme-stat' },
   DAILY_SELL_SKIN: { icon: ChartBarIcon, iconClass: 'text-green-500' },
   DAILY_VISIT: { icon: ClockIcon, iconClass: 'text-blue-500' },
   WEEKLY_SELL_500: { icon: ChartBarIcon, iconClass: 'text-emerald-500' },
   WEEKLY_SELL_1000: { icon: ChartBarIcon, iconClass: 'text-emerald-600' },
   WEEKLY_GIVEAWAY_3: { icon: GiftIcon, iconClass: 'text-purple-500' },
-  MONTHLY_SELL_5000: { icon: ChartBarIcon, iconClass: 'text-orange-500' },
+  MONTHLY_SELL_5000: { icon: ChartBarIcon, iconClass: 'text-theme-accent' },
   MONTHLY_SELL_10000: { icon: ChartBarIcon, iconClass: 'text-red-500' },
   SOCIAL_NEWSLETTER: { icon: GlobeAltIcon, iconClass: 'text-sky-500' },
   SOCIAL_TWITTER: { icon: GlobeAltIcon, iconClass: 'text-sky-400' },
@@ -71,9 +71,9 @@ const CATEGORY_STYLE: Record<
   'DAILY' | 'WEEKLY' | 'MONTHLY' | 'SOCIAL' | 'BONUS',
   { icon: ComponentType<{ className?: string }>; color: string }
 > = {
-  DAILY: { icon: ClockIcon, color: 'text-amber-500' },
+  DAILY: { icon: ClockIcon, color: 'text-theme-stat' },
   WEEKLY: { icon: CalendarDaysIcon, color: 'text-emerald-500' },
-  MONTHLY: { icon: ChartBarIcon, color: 'text-orange-500' },
+  MONTHLY: { icon: ChartBarIcon, color: 'text-theme-accent' },
   SOCIAL: { icon: GlobeAltIcon, color: 'text-purple-500' },
   BONUS: { icon: StarIcon, color: 'text-yellow-400' },
 };
@@ -123,7 +123,7 @@ function SocialMissionActions({
         size="sm"
         disabled={isPending}
         onClick={() => onClaim(mission.key)}
-        className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+        className="bg-cta-gradient hover:brightness-110"
       >
         {t.claim}
       </Button>
@@ -157,7 +157,7 @@ function SocialMissionActions({
       size="sm"
       disabled={isPending}
       onClick={() => onClaim(mission.key)}
-      className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+      className="bg-cta-gradient hover:brightness-110"
     >
       {t.socialConfirm}
     </Button>
@@ -177,7 +177,7 @@ function MissionCard({
 }) {
   const rowStyle = MISSION_ROW_STYLE[mission.key];
   const IconComp = rowStyle?.icon ?? SparklesIcon;
-  const iconClass = rowStyle?.iconClass ?? 'text-amber-500';
+  const iconClass = rowStyle?.iconClass ?? 'text-theme-stat';
   const itemMeta = t.items[mission.key as keyof typeof t.items];
 
   const isSocial = mission.category === 'SOCIAL' && mission.key !== 'SOCIAL_NEWSLETTER';
@@ -188,9 +188,9 @@ function MissionCard({
         mission.completed
           ? 'bg-muted/40 opacity-70'
           : mission.category === 'BONUS'
-            ? 'bg-gradient-to-r from-yellow-50/60 to-amber-50/60 dark:from-yellow-950/20 dark:to-amber-950/20 border-yellow-300 dark:border-yellow-700 shadow-sm'
+            ? 'bg-gradient-to-r from-theme-highlight/5 to-theme-highlight/10 dark:from-theme-highlight/10 dark:to-theme-highlight/15 border-theme-highlight/30 dark:border-theme-highlight/40 shadow-sm'
             : mission.eligible
-              ? 'bg-gradient-to-r from-orange-50/60 to-amber-50/60 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200 dark:border-orange-800 shadow-sm'
+              ? 'bg-gradient-to-r from-theme-accent/5 to-theme-highlight/5 dark:from-theme-accent/10 dark:to-theme-highlight/10 border-theme-accent/20 dark:border-theme-accent/30 shadow-sm'
               : 'hover:bg-muted/30'
       }`}
     >
@@ -202,7 +202,7 @@ function MissionCard({
               : mission.category === 'BONUS'
                 ? 'bg-yellow-100 dark:bg-yellow-900/30'
                 : mission.eligible
-                  ? 'bg-orange-100 dark:bg-orange-900/30'
+                  ? 'bg-theme-accent/15 dark:bg-theme-accent/25/30'
                   : 'bg-muted'
           }`}
         >
@@ -238,7 +238,7 @@ function MissionCard({
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
-        <div className="flex items-center gap-1 text-sm font-bold text-amber-600">
+        <div className="flex items-center gap-1 text-sm font-bold text-theme-stat">
           <FragmentAmount amount={mission.rewardFragments} prefix="+" size="xs" />
         </div>
         {mission.completed ? (
@@ -258,7 +258,7 @@ function MissionCard({
             size="sm"
             disabled={isPending}
             onClick={() => onClaim(mission.key)}
-            className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+            className="bg-cta-gradient hover:brightness-110"
           >
             {t.claim}
           </Button>
@@ -451,7 +451,7 @@ export default function MissionsPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <SparklesIcon className="w-8 h-8 text-amber-500" />
+            <SparklesIcon className="w-8 h-8 text-theme-stat" />
             {messages.nav.missions}
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -477,7 +477,7 @@ export default function MissionsPage() {
               <FragmentAmount
                 amount={user.fragments ?? 0}
                 size="sm"
-                className="text-2xl font-bold text-amber-600"
+                className="text-2xl font-bold text-theme-stat"
               />
             </motion.div>
           </CardContent>
@@ -489,7 +489,7 @@ export default function MissionsPage() {
               amount={totalClaimable}
               prefix="+"
               size="sm"
-              className="text-2xl font-bold text-orange-500 justify-center"
+              className="text-2xl font-bold text-theme-accent justify-center"
             />
           </CardContent>
         </Card>
@@ -540,7 +540,7 @@ export default function MissionsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       {catClaimable > 0 && (
-                        <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 text-xs">
+                        <Badge className="bg-theme-stat/20 text-theme-highlight border-theme-highlight/30 text-xs">
                           <FragmentAmount
                             amount={catClaimable}
                             prefix="+"

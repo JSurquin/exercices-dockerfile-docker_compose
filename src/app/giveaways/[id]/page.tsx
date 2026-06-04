@@ -224,7 +224,7 @@ export default function GiveawayDetailsPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card>
               <CardContent className="p-6">
-                <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 rounded-lg p-6 border">
+                <div className="bg-gradient-to-r from-theme-accent/5 to-theme-accent/10 dark:from-theme-accent/10 dark:to-theme-accent/15 rounded-lg p-6 border">
                   <div className="flex items-center gap-4">
                     <SafeImage
                       src={giveaway.prizeImageUrl}
@@ -233,14 +233,14 @@ export default function GiveawayDetailsPage() {
                       height={100}
                       className="object-contain rounded drop-shadow-lg shrink-0"
                       fallbackClassName="w-[140px] h-[100px] rounded shrink-0"
-                      fallbackIcon={<TrophyIcon className="w-16 h-16 text-orange-600" />}
+                      fallbackIcon={<TrophyIcon className="w-16 h-16 text-theme-accent" />}
                       unoptimized
                     />
                     <div>
-                      <p className="text-sm font-medium text-orange-600 dark:text-orange-400 uppercase tracking-wider mb-1">
+                      <p className="text-sm font-medium text-theme-highlight uppercase tracking-wider mb-1">
                         {messages.giveawaysPage.detail.prizeTitle}
                       </p>
-                      <h2 className="text-2xl font-bold text-orange-800 dark:text-orange-200">{giveaway.prize}</h2>
+                      <h2 className="text-2xl font-bold text-theme-accent dark:text-theme-highlight">{giveaway.prize}</h2>
                     </div>
                   </div>
                 </div>
@@ -296,22 +296,22 @@ export default function GiveawayDetailsPage() {
           {/* Mes stats + Participer */}
           {user && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <Card className={isActive ? 'border-orange-500/30' : ''}>
+              <Card className={isActive ? 'border-theme-accent/30' : ''}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <ChartBarIcon className="w-5 h-5 text-orange-500" />
+                    <ChartBarIcon className="w-5 h-5 text-theme-accent" />
                     {messages.giveawaysPage.detail.yourParticipation}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="text-center p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <div className="text-center p-3 bg-theme-highlight/5 dark:bg-theme-highlight/10 rounded-lg border border-theme-highlight/25 dark:border-theme-highlight/35">
                       <p className="text-xs text-muted-foreground mb-1">{messages.giveawaysPage.detail.myEntries}</p>
-                      <p className="text-xl font-bold text-amber-600">{myEntries}</p>
+                      <p className="text-xl font-bold text-theme-stat">{myEntries}</p>
                     </div>
-                    <div className="text-center p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                    <div className="text-center p-3 bg-theme-accent/5 dark:bg-theme-accent/10/20 rounded-lg border border-theme-accent/20 dark:border-theme-accent/30">
                       <p className="text-xs text-muted-foreground mb-1">{messages.giveawaysPage.detail.myChance}</p>
-                      <p className="text-xl font-bold text-orange-600">{myChance.toFixed(2)}%</p>
+                      <p className="text-xl font-bold text-theme-accent">{myChance.toFixed(2)}%</p>
                     </div>
                     <div className="text-center p-3 bg-muted rounded-lg">
                       <p className="text-xs text-muted-foreground mb-1">{messages.giveawaysPage.detail.myFragments}</p>
@@ -325,13 +325,13 @@ export default function GiveawayDetailsPage() {
                         <div className="space-y-1.5">
                           <div className="flex justify-between text-xs text-muted-foreground">
                             <span>{messages.giveawaysPage.detail.fragmentsAvailable}</span>
-                            <span className="text-amber-500 font-medium">
+                            <span className="text-theme-stat font-medium">
                               {messages.giveawaysPage.detail.fragmentsMissing.replace('{count}', String(giveaway.ticketPrice - fragments))}
                             </span>
                           </div>
                           <Progress
                             value={Math.min(100, (fragments / giveaway.ticketPrice) * 100)}
-                            className="h-1.5 bg-muted [&>div]:bg-amber-500"
+                            className="h-1.5 bg-muted [&>div]:bg-theme-stat"
                           />
                           <p className="text-xs text-muted-foreground text-center">
                             {messages.giveawaysPage.detail.sellSkinsHint}
@@ -375,7 +375,7 @@ export default function GiveawayDetailsPage() {
                                 entriesToBuy > poolLeft ||
                                 entriesToBuy > maxPerUser
                               }
-                              className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shrink-0 gap-2"
+                              className="bg-cta-gradient hover:brightness-110 shrink-0 gap-2"
                             >
                               {participateMutation.isPending ? (
                                 messages.giveawaysPage.detail.participating
@@ -423,16 +423,16 @@ export default function GiveawayDetailsPage() {
 
           {!user && isActive && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <Card className="border-orange-500/30">
+              <Card className="border-theme-accent/30">
                 <CardContent className="p-6 text-center">
-                  <GiftIcon className="w-12 h-12 mx-auto mb-3 text-orange-500" />
+                  <GiftIcon className="w-12 h-12 mx-auto mb-3 text-theme-accent" />
                   <p className="font-medium mb-1">{messages.giveawaysPage.detail.loginToParticipate}</p>
                   <p className="text-sm text-muted-foreground mb-4 flex items-center justify-center gap-2">
                     <FragmentAmount amount={giveaway.ticketPrice} size="xs" />
                     <span>{messages.giveawaysPage.detail.costPerEntry}</span>
                   </p>
                   <Link href="/">
-                    <Button className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
+                    <Button variant="cta">
                       {messages.giveawaysPage.detail.loginViaSteam}
                     </Button>
                   </Link>
@@ -457,7 +457,7 @@ export default function GiveawayDetailsPage() {
                     return (
                       <div
                         key={`w-${w.rank}`}
-                        className="flex items-center gap-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 rounded-lg border border-yellow-200 dark:border-yellow-800"
+                        className="flex items-center gap-4 p-4 bg-gradient-to-r from-theme-highlight/5 to-theme-accent/5 dark:from-theme-highlight/10 dark:to-theme-accent/10 rounded-lg border border-theme-highlight/25 dark:border-theme-highlight/35"
                       >
                         <div className="flex items-center justify-center w-8 h-8 bg-yellow-500 rounded-full text-white text-sm font-bold shrink-0">
                           #{w.rank}
@@ -547,7 +547,7 @@ export default function GiveawayDetailsPage() {
                     <div
                       className={`flex items-center gap-2 p-2 rounded-lg ${
                         giveaway.winners?.some((w) => w.user?.steamUsername === user.username)
-                          ? 'bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800'
+                          ? 'bg-yellow-50 dark:bg-yellow-950/20 border border-theme-highlight/25 dark:border-theme-highlight/35'
                           : 'hover:bg-muted/50'
                       }`}
                     >

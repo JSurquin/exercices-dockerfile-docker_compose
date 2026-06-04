@@ -102,7 +102,7 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button 
-          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+          className="bg-cta-gradient hover:brightness-110"
         >
           <UserPlus className="h-4 w-4 mr-2" />
           {t.title}
@@ -195,7 +195,7 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
             <Button
               type="submit"
               disabled={loading}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+              className="bg-cta-gradient hover:brightness-110"
             >
               {loading ? (
                 <>

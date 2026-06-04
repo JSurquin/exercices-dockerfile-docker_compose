@@ -714,7 +714,7 @@ export default function PayoutPage() {
             )}
             <Button 
               onClick={() => window.location.href = '/kyc'}
-              className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+              className="bg-cta-gradient hover:brightness-110"
             >
               {text.kyc.startKyc}
             </Button>
@@ -760,7 +760,7 @@ export default function PayoutPage() {
       case 'cancelled':
         return <Badge className="bg-slate-500">{text.history.status.cancelled}</Badge>;
       case 'pending_approval':
-        return <Badge className="bg-amber-500">{text.history.status.pendingApproval}</Badge>;
+        return <Badge className="bg-theme-stat">{text.history.status.pendingApproval}</Badge>;
       default:
         return <Badge className="bg-yellow-500">{text.history.status.pending}</Badge>;
     }
@@ -809,7 +809,7 @@ export default function PayoutPage() {
                         <Snowflake className="h-3.5 w-3.5 shrink-0" aria-hidden />
                         {text.request.frozenBalance}
                       </p>
-                      <p className="text-2xl font-bold text-amber-500">
+                      <p className="text-2xl font-bold text-theme-stat">
                         {frozenBalanceCents === null
                           ? '—'
                           : formatCentsToCurrency(frozenBalanceCents, 'EUR')}
@@ -1009,10 +1009,10 @@ export default function PayoutPage() {
                   </TabsContent>
 
                   <TabsContent value="sepa" className="space-y-4 mt-4">
-                    <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                    <div className="bg-theme-highlight/5 dark:bg-theme-highlight/10 border border-theme-highlight/25 dark:border-theme-highlight/35 rounded-lg p-4">
                       <div className="flex items-start space-x-3">
-                        <ExclamationTriangleIcon className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-amber-700 dark:text-amber-300">
+                        <ExclamationTriangleIcon className="w-5 h-5 text-theme-stat flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-theme-highlight">
                           {text.request.security.sepaFrIbanWarning}
                         </p>
                       </div>
@@ -1196,15 +1196,15 @@ export default function PayoutPage() {
                       const fee = Math.ceil(gross * 0.017);
                       const net = gross - fee;
                       return (
-                        <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 space-y-2 text-sm">
-                          <p className="text-xs font-medium text-orange-600 dark:text-orange-400 uppercase tracking-wide">
+                        <div className="bg-theme-accent/5 dark:bg-theme-accent/10 border border-theme-accent/20 dark:border-theme-accent/30 rounded-lg p-4 space-y-2 text-sm">
+                          <p className="text-xs font-medium text-theme-highlight uppercase tracking-wide">
                             {text.request.feesPreview}
                           </p>
                           <div className="flex justify-between text-muted-foreground">
                             <span>{text.request.grossAmount}</span>
                             <span>{formatCentsToCurrency(gross, 'EUR')}</span>
                           </div>
-                          <div className="flex justify-between text-orange-500">
+                          <div className="flex justify-between text-theme-accent">
                             <span>{text.request.sepaFrFeeLabel}</span>
                             <span>-{formatCentsToCurrency(fee, 'EUR')}</span>
                           </div>
@@ -1358,7 +1358,7 @@ export default function PayoutPage() {
                             }
                           }}
                           disabled={sepaFrLoading || !amount || availableBalanceCents === null}
-                          className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                          className="w-full bg-cta-gradient hover:brightness-110"
                         >
                           {sepaFrLoading ? (
                             <>
@@ -1504,7 +1504,7 @@ export default function PayoutPage() {
                             onChange={(e) => setFormData(prev => ({ ...prev, memo: e.target.value }))}
                             placeholder={text.request.memoPlaceholder}
                           />
-                          <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                          <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-theme-highlight/25 dark:border-theme-highlight/35 rounded-lg p-3">
                             <p className="text-xs text-yellow-700 dark:text-yellow-300">{text.request.memoWarning}</p>
                           </div>
                         </div>
@@ -1564,11 +1564,11 @@ export default function PayoutPage() {
                         <span className="text-muted-foreground">{text.request.grossAmount}</span>
                         <span>{formatCentsToCurrency(quote.amountCents, 'EUR')}</span>
                       </div>
-                      <div className="flex justify-between text-orange-500">
+                      <div className="flex justify-between text-theme-accent">
                         <span>{text.request.processingFee}</span>
                         <span>-{formatCentsToCurrency(quote.fees.processingCents, 'EUR')}</span>
                       </div>
-                      <div className="flex justify-between text-orange-500">
+                      <div className="flex justify-between text-theme-accent">
                         <span>{text.request.networkFee}</span>
                         <span>-{formatCentsToCurrency(quote.fees.networkCents, 'EUR')}</span>
                       </div>
@@ -1589,7 +1589,7 @@ export default function PayoutPage() {
                     <Button
                       onClick={handleSubmit}
                       disabled={isLoading}
-                      className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                      className="w-full bg-cta-gradient hover:brightness-110"
                     >
                       {isLoading ? (
                         <>
@@ -1634,11 +1634,11 @@ export default function PayoutPage() {
                         <span className="text-muted-foreground">{text.request.grossAmount}</span>
                         <span>{formatCentsToCurrency(payoutResult.amountCents, 'EUR')}</span>
                       </div>
-                      <div className="flex justify-between text-orange-500">
+                      <div className="flex justify-between text-theme-accent">
                         <span>{text.result.processingFee}</span>
                         <span>-{formatCentsToCurrency(resultFees.processingCents, 'EUR')}</span>
                       </div>
-                      <div className="flex justify-between text-orange-500">
+                      <div className="flex justify-between text-theme-accent">
                         <span>{text.result.networkFee}</span>
                         <span>-{formatCentsToCurrency(resultFees.networkCents, 'EUR')}</span>
                       </div>

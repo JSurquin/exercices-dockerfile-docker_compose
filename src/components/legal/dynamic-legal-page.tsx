@@ -91,7 +91,7 @@ export function DynamicLegalPage({
               className="text-center mb-8 sm:mb-12"
             >
               <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-                <Icon className="w-8 h-8 inline-block mr-2 text-orange-600" />
+                <Icon className="w-8 h-8 inline-block mr-2 text-theme-accent" />
                 {fallbackContent.title}
               </h1>
               {fallbackContent.subtitle && (
@@ -141,7 +141,7 @@ export function DynamicLegalPage({
           className="text-center mb-8 sm:mb-12"
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-            <Icon className="w-8 h-8 inline-block mr-2 text-orange-600" />
+            <Icon className="w-8 h-8 inline-block mr-2 text-theme-accent" />
             {page.title}
           </h1>
           {page.subtitle && (
@@ -170,15 +170,15 @@ export function DynamicLegalPage({
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mb-6 sm:mb-8"
           >
-            <Card className="border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/20">
+            <Card className="border-theme-accent/20 dark:border-theme-accent/30 bg-theme-accent/5 dark:bg-theme-accent/10/20">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-start space-x-3">
-                  <ExclamationTriangleIcon className="w-6 h-6 text-orange-600 flex-shrink-0 mt-1" />
+                  <ExclamationTriangleIcon className="w-6 h-6 text-theme-accent flex-shrink-0 mt-1" />
                   <div>
-                    <h3 className="font-semibold text-orange-900 dark:text-orange-100 mb-2">
+                    <h3 className="font-semibold text-foreground mb-2">
                       {messages.legalPage.importantNotice}
                     </h3>
-                    <p className="text-orange-800 dark:text-orange-200 text-sm leading-relaxed">
+                    <p className="text-theme-accent dark:text-theme-highlight text-sm leading-relaxed">
                       {warningText}
                     </p>
                   </div>
@@ -209,12 +209,12 @@ export function DynamicLegalPage({
                     li: ({children}) => <li className="leading-relaxed">{children}</li>,
                     strong: ({children}) => <strong className="font-semibold">{children}</strong>,
                     a: ({children, href}) => (
-                      <a href={href} className="text-orange-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                      <a href={href} className="text-theme-accent hover:underline" target="_blank" rel="noopener noreferrer">
                         {children}
                       </a>
                     ),
                     blockquote: ({children}) => (
-                      <blockquote className="border-l-4 border-orange-500 pl-4 my-4 italic text-muted-foreground">
+                      <blockquote className="border-l-4 border-theme-accent pl-4 my-4 italic text-muted-foreground">
                         {children}
                       </blockquote>
                     ),

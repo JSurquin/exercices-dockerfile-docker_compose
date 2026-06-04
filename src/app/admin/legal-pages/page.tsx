@@ -320,7 +320,7 @@ export default function AdminLegalPagesPage() {
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-theme-accent to-primary bg-clip-text text-transparent">
               {t.title}
             </h1>
             <p className="text-slate-300 text-sm sm:text-base">
@@ -341,7 +341,7 @@ export default function AdminLegalPagesPage() {
             <Button
               size="sm"
               onClick={() => openEditDialog()}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+              className="bg-cta-gradient hover:brightness-110"
             >
               <PlusIcon className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">{t.newPage}</span>
@@ -431,7 +431,7 @@ export default function AdminLegalPagesPage() {
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <DocumentTextIcon className="w-5 h-5 text-orange-400" />
+              <DocumentTextIcon className="w-5 h-5 text-theme-highlight" />
               {t.list.title}
             </CardTitle>
             <CardDescription className="text-slate-400">
@@ -441,7 +441,7 @@ export default function AdminLegalPagesPage() {
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <ArrowPathIcon className="w-8 h-8 text-orange-400 animate-spin" />
+                <ArrowPathIcon className="w-8 h-8 text-theme-highlight animate-spin" />
               </div>
             ) : pages.length === 0 ? (
               <div className="text-center py-12">
@@ -460,7 +460,7 @@ export default function AdminLegalPagesPage() {
                 {pages.map((page: LegalPage) => (
                   <div
                     key={page.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700 hover:border-orange-500/50 transition-colors"
+                    className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700 hover:border-theme-accent/50 transition-colors"
                   >
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-1">
@@ -514,7 +514,7 @@ export default function AdminLegalPagesPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => openEditDialog(page)}
-                        className="text-slate-400 hover:text-orange-400"
+                        className="text-slate-400 hover:text-theme-highlight"
                       >
                         <PencilIcon className="w-4 h-4" />
                       </Button>
@@ -563,7 +563,7 @@ export default function AdminLegalPagesPage() {
                       setEditMode('create');
                       setDialogOpen(true);
                     }}
-                    className="border-slate-600 hover:border-orange-500/50"
+                    className="border-slate-600 hover:border-theme-accent/50"
                   >
                     <PlusIcon className="w-3 h-3 mr-1" />
                     {dp.labelFr}
@@ -637,13 +637,13 @@ export default function AdminLegalPagesPage() {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <TabsList className="bg-slate-800">
-                  <TabsTrigger value="fr" className="data-[state=active]:bg-orange-500">
+                  <TabsTrigger value="fr" className="data-[state=active]:bg-primary">
                     🇫🇷 Français
                   </TabsTrigger>
-                  <TabsTrigger value="en" className="data-[state=active]:bg-orange-500">
+                  <TabsTrigger value="en" className="data-[state=active]:bg-primary">
                     🇬🇧 English
                   </TabsTrigger>
-                  <TabsTrigger value="cn" className="data-[state=active]:bg-orange-500">
+                  <TabsTrigger value="cn" className="data-[state=active]:bg-primary">
                     🇨🇳 中文
                   </TabsTrigger>
                 </TabsList>
@@ -844,7 +844,7 @@ export default function AdminLegalPagesPage() {
               <Button
                 onClick={handleSave}
                 disabled={saving}
-                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+                className="bg-cta-gradient hover:brightness-110"
               >
                 {saving ? (
                   <>

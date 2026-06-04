@@ -187,7 +187,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
               transition={{ duration: 0.2 }}
               className="flex items-center gap-3"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-orange-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cta-gradient-br">
                 <Shield className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -246,7 +246,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
                         className={cn(
                           'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200',
                           active
-                            ? 'bg-gradient-to-r from-orange-500/20 to-orange-600/20 text-orange-300 shadow-lg shadow-orange-500/10'
+                            ? 'bg-gradient-to-r from-theme-accent/20 to-theme-accent/30 text-theme-highlight shadow-lg shadow-[var(--cta-shadow)]'
                             : 'text-slate-300 hover:bg-slate-800/50 hover:text-white',
                           collapsed && 'justify-center'
                         )}
@@ -254,7 +254,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
                         <Icon
                           className={cn(
                             'h-5 w-5 flex-shrink-0',
-                            active ? 'text-orange-400' : 'text-slate-400 group-hover:text-white'
+                            active ? 'text-theme-highlight' : 'text-slate-400 group-hover:text-white'
                           )}
                         />
                         <AnimatePresence mode="wait">
@@ -282,7 +282,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
                         {active && (
                           <motion.div
                             layoutId="activeIndicator"
-                            className="absolute left-0 h-full w-1 rounded-r-full bg-gradient-to-b from-orange-400 to-orange-600"
+                            className="absolute left-0 h-full w-1 rounded-r-full bg-gradient-to-b from-theme-accent to-primary"
                             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                           />
                         )}

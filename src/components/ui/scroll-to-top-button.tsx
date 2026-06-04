@@ -68,15 +68,15 @@ export function ScrollToTopButton() {
         tabIndex={showButton ? 0 : -1}
         className={cn(
           "h-11 w-11 rounded-full",
-          "bg-background/90 backdrop-blur-md border border-orange-500/30",
+          "bg-background/90 backdrop-blur-md border border-theme-accent/30",
           "shadow-lg shadow-black/10 dark:shadow-black/40",
           "flex items-center justify-center cursor-pointer",
           "transition-transform duration-200 hover:scale-110 active:scale-95",
-          "hover:border-orange-500/60 hover:bg-orange-500/10",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          "hover:border-theme-accent/40 hover:bg-theme-accent/10",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         )}
       >
-        <ChevronUpIcon className="h-5 w-5 text-orange-500" aria-hidden />
+        <ChevronUpIcon className="h-5 w-5 text-theme-accent" aria-hidden />
       </button>
     </div>
   );

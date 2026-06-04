@@ -127,7 +127,7 @@ export function LevelsSection() {
 
   return (
     <section className="py-24 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-orange-500/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-theme-accent/5 pointer-events-none" />
       <SectionBottomFade to="background" />
 
       <div className="container mx-auto px-4 relative z-10">
@@ -138,7 +138,7 @@ export function LevelsSection() {
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             {t.title}
-            <span className="bg-gradient-to-r from-purple-500 to-orange-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-purple-500 to-theme-accent bg-clip-text text-transparent">
               {t.titleHighlight}
             </span>
           </h2>
@@ -183,7 +183,7 @@ export function LevelsSection() {
                     <p className="text-xs text-muted-foreground mb-2">
                       {t.xpRequired}: {formatXp(level.xpStart)} – {formatXp(level.xpEnd)} XP
                     </p>
-                    <p className="text-xs font-medium text-orange-500 dark:text-orange-400 mb-2">
+                    <p className="text-xs font-medium text-theme-accent dark:text-theme-highlight mb-2">
                       {t.bonusLabel}: {formatBonus(level)}
                     </p>
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">
@@ -213,7 +213,7 @@ export function LevelsSection() {
             <span aria-hidden>🔮</span>
             <Badge
               variant="outline"
-              className="text-[10px] px-1.5 py-0 h-4 border-orange-500/40 bg-orange-500/10 text-orange-500 dark:text-orange-400 font-semibold uppercase tracking-wide"
+              className="text-[10px] px-1.5 py-0 h-4 border-theme-accent/40 bg-theme-accent/10 text-theme-accent dark:text-theme-highlight font-semibold uppercase tracking-wide"
             >
               {t.soonBadge}
             </Badge>
@@ -239,7 +239,7 @@ export function LevelsSection() {
                 return (
                   <div
                     key={level.index}
-                    className="flex items-center gap-3 rounded-lg border border-border bg-card/50 px-3 py-2.5 hover:border-orange-500/30 transition-colors"
+                    className="flex items-center gap-3 rounded-lg border border-border bg-card/50 px-3 py-2.5 hover:border-theme-accent/30 transition-colors"
                   >
                     {level.index > 0 ? (
                       <LevelBadge tierIndex={badgeTier} size="sm" />
@@ -254,7 +254,7 @@ export function LevelsSection() {
                         {formatXp(level.xpStart)} – {formatXp(level.xpEnd)} XP
                       </p>
                     </div>
-                    <Badge variant="outline" className="shrink-0 text-orange-600 dark:text-orange-400 border-orange-500/30">
+                    <Badge variant="outline" className="shrink-0 text-theme-highlight border-theme-accent/30">
                       {bonusStr}
                     </Badge>
                   </div>
@@ -265,7 +265,7 @@ export function LevelsSection() {
 
           {/* Tier rewards example */}
           <div className={homeReveal.right}>
-            <Card className="h-full border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-orange-500/5">
+            <Card className="h-full border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-theme-accent/5">
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <GiftIcon className="w-5 h-5 text-purple-500" />

@@ -306,7 +306,7 @@ export function AdminPayoutsTable() {
                 id="auto-approve-enabled"
                 checked={autoApproveEnabled}
                 onChange={(e) => setAutoApproveEnabled(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-600 bg-slate-700 text-orange-500"
+                className="h-4 w-4 rounded border-slate-600 bg-slate-700 text-theme-accent"
               />
               <label htmlFor="auto-approve-enabled" className="text-sm text-slate-300">
                 {tp.autoApproveLabel ?? 'Activer le paiement automatique pour les montants sous le seuil'}
@@ -331,7 +331,7 @@ export function AdminPayoutsTable() {
               size="sm"
               onClick={saveAutoApproveSettings}
               disabled={autoApproveSaving}
-              className="bg-orange-600 hover:bg-orange-700"
+              className="bg-primary hover:bg-primary/90"
             >
               {autoApproveSaving ? '...' : (tp.save ?? 'Enregistrer')}
             </Button>
@@ -484,7 +484,7 @@ export function AdminPayoutsTable() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-amber-600 text-amber-400 hover:bg-amber-900/30"
+                        className="border-theme-highlight text-theme-highlight hover:bg-theme-highlight/15"
                         onClick={() => handleResyncFlexify(payout.id)}
                         disabled={resyncingId === payout.id}
                         title={tp.resyncFlexify ?? 'Resync statut Flexify'}

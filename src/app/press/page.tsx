@@ -87,7 +87,7 @@ export default function PressPage() {
           className="text-center mb-8 sm:mb-12"
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-            <NewspaperIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
+            <NewspaperIcon className="w-8 h-8 inline-block mr-2 text-theme-accent" />
             {messages.press.title}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
@@ -112,8 +112,8 @@ export default function PressPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {stats.map((stat, index) => (
                   <div key={index} className="text-center">
-                    <stat.icon className="w-8 h-8 mx-auto mb-2 text-orange-600" />
-                    <div className="text-2xl font-bold text-orange-600">{stat.value}</div>
+                    <stat.icon className="w-8 h-8 mx-auto mb-2 text-theme-accent" />
+                    <div className="text-2xl font-bold text-theme-accent">{stat.value}</div>
                     <div className="text-sm text-muted-foreground">{stat.label}</div>
                   </div>
                 ))}
@@ -142,7 +142,7 @@ export default function PressPage() {
                       <p className="text-sm font-medium text-foreground">{messages.press.pressContact}</p>
                       <a
                         href={`mailto:${PRESS_EMAIL}`}
-                        className="text-orange-600 hover:underline font-medium break-all"
+                        className="text-theme-accent hover:underline font-medium break-all"
                       >
                         {PRESS_EMAIL}
                       </a>
@@ -206,7 +206,7 @@ export default function PressPage() {
                 <CardContent className="space-y-4">
                   {mediaKit.map((item, index) => (
                     <div key={index} className="flex items-start space-x-3">
-                      <item.icon className="w-5 h-5 text-orange-600 flex-shrink-0 mt-1" />
+                      <item.icon className="w-5 h-5 text-theme-accent flex-shrink-0 mt-1" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm">{item.title}</h4>
                         <p className="text-xs text-muted-foreground mb-2">{item.description}</p>
@@ -240,7 +240,7 @@ export default function PressPage() {
                     <div key={index} className="space-y-2">
                       <div>
                         <h4 className="font-medium">{member.name}</h4>
-                        <p className="text-sm text-orange-600">{member.role}</p>
+                        <p className="text-sm text-theme-accent">{member.role}</p>
                       </div>
                       <p className="text-xs text-muted-foreground">{member.bio}</p>
                       {index < arr.length - 1 && <hr className="my-3" />}
@@ -265,7 +265,7 @@ export default function PressPage() {
                       📧
                     </span>
                     <div>
-                      <a href={`mailto:${PRESS_EMAIL}`} className="text-orange-600 hover:underline font-medium break-all">
+                      <a href={`mailto:${PRESS_EMAIL}`} className="text-theme-accent hover:underline font-medium break-all">
                         {PRESS_EMAIL}
                       </a>
                     </div>

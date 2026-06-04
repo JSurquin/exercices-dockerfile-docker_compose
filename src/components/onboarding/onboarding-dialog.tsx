@@ -56,7 +56,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
   const allSteps = [
     {
       title: messages.components.onboarding.welcome.title,
-      icon: <Gamepad2 className="w-12 h-12 text-orange-500" />,
+      icon: <Gamepad2 className="w-12 h-12 text-theme-accent" />,
       content: (
         <div className="space-y-4">
           <p className="text-muted-foreground text-sm sm:text-base">
@@ -113,7 +113,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
                 <span className="text-xs sm:text-sm">{messages.components.onboarding.email.benefits.kyc}</span>
               </div>
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-orange-500 shrink-0" />
+                <ShieldCheck className="w-4 h-4 text-theme-accent shrink-0" />
                 <span className="text-xs sm:text-sm">{messages.components.onboarding.email.benefits.security}</span>
               </div>
             </div>
@@ -160,7 +160,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
     // Étape Steam ID (conditionnelle - seulement si l'utilisateur n'a pas de Steam ID)
     ...(!hasSteamId ? [{
       title: messages.components.onboarding.steamId.title,
-      icon: <Gamepad2 className="w-12 h-12 text-orange-500" />,
+      icon: <Gamepad2 className="w-12 h-12 text-theme-accent" />,
       isSteamIdStep: true,
       content: (
         <div className="space-y-3 sm:space-y-4">
@@ -185,7 +185,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
             href="https://store.steampowered.com/account/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full rounded-md border border-orange-500 bg-orange-500/10 px-4 py-2.5 text-sm font-medium text-orange-600 dark:text-orange-400 hover:bg-orange-500/20 transition-colors"
+            className="flex items-center justify-center gap-2 w-full rounded-md border border-theme-accent bg-theme-accent/10 px-4 py-2.5 text-sm font-medium text-theme-highlight hover:bg-theme-accent/20 transition-colors"
           >
             <ExternalLink className="w-4 h-4 shrink-0" />
             {messages.components.onboarding.steamId.openProfile}
@@ -216,8 +216,8 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               </Alert>
             )}
           </div>
-          <div className="bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-lg p-2.5 sm:p-3">
-            <p className="text-orange-700 dark:text-orange-300 text-xs sm:text-sm leading-relaxed">
+          <div className="bg-theme-accent/5 dark:bg-theme-accent/10 border border-theme-accent/20 dark:border-theme-accent/30 rounded-lg p-2.5 sm:p-3">
+            <p className="text-theme-accent text-xs sm:text-sm leading-relaxed">
               {messages.components.onboarding.steamId.reconnectInfo}
             </p>
           </div>
@@ -250,7 +250,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
             <ExternalLink className="w-4 h-4 shrink-0" />
             {messages.components.onboarding.tradeLink.openSteamTradeLinkPage}
           </a>
-          <Badge variant="outline" className="text-orange-500 border-orange-500 text-xs sm:text-sm inline-block w-full sm:w-auto">
+          <Badge variant="outline" className="text-theme-accent border-theme-accent text-xs sm:text-sm inline-block w-full sm:w-auto">
             <span className="wrap-break-word">{messages.components.onboarding.tradeLink.warning}</span>
           </Badge>
         </div>
@@ -334,7 +334,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
               </div>
             </div>
             <div className="flex items-start space-x-2 sm:space-x-3">
-              <div className="w-6 h-6 sm:w-7 sm:h-7 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shrink-0">2</div>
+              <div className="w-6 h-6 sm:w-7 sm:h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shrink-0">2</div>
               <div className="flex-1 min-w-0">
                 <h4 className="font-semibold text-sm sm:text-base wrap-break-word">{messages.components.onboarding.sellProcess.steps.accept.title}</h4>
                 <p className="text-xs sm:text-sm text-muted-foreground wrap-break-word">{messages.components.onboarding.sellProcess.steps.accept.description}</p>
@@ -372,9 +372,9 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
                 {messages.components.onboarding.security.payments.description}
               </p>
             </div>
-            <div className="bg-orange-50 dark:bg-orange-950 p-3 rounded-lg">
-              <h4 className="font-semibold text-sm sm:text-base text-orange-700 dark:text-orange-300 wrap-break-word">{messages.components.onboarding.security.tradeHold.title}</h4>
-              <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 wrap-break-word">
+            <div className="bg-theme-accent/5 dark:bg-theme-accent/10 p-3 rounded-lg">
+              <h4 className="font-semibold text-sm sm:text-base text-theme-accent wrap-break-word">{messages.components.onboarding.security.tradeHold.title}</h4>
+              <p className="text-xs sm:text-sm text-theme-highlight wrap-break-word">
                 {messages.components.onboarding.security.tradeHold.description}
               </p>
             </div>

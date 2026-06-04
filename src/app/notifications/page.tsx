@@ -61,7 +61,7 @@ const notificationIcons: Record<string, typeof BellIcon> = {
 const priorityColors: Record<string, string> = {
   LOW: "text-slate-400",
   NORMAL: "text-blue-400",
-  HIGH: "text-orange-400",
+  HIGH: "text-theme-highlight",
   URGENT: "text-red-400",
 };
 
@@ -175,7 +175,7 @@ export default function NotificationsPage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center justify-center py-20">
           <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
             <p className="text-muted-foreground">{t.loading}</p>
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function NotificationsPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 flex items-center gap-3">
-                <BellIcon className="w-8 h-8 text-orange-500" />
+                <BellIcon className="w-8 h-8 text-theme-accent" />
                 {t.title}
               </h1>
               <p className="text-muted-foreground">
@@ -258,7 +258,7 @@ export default function NotificationsPage() {
                         <Card
                           className={`${
                             !notification.read
-                              ? "border-orange-500/50 bg-orange-500/5"
+                              ? "border-theme-accent/50 bg-primary/5"
                               : "border-slate-700"
                           } hover:shadow-lg transition-all duration-200`}
                         >
@@ -267,7 +267,7 @@ export default function NotificationsPage() {
                               <div
                                 className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
                                   !notification.read
-                                    ? "bg-orange-500/20"
+                                    ? "bg-theme-accent/20"
                                     : "bg-slate-700"
                                 }`}
                               >
@@ -287,7 +287,7 @@ export default function NotificationsPage() {
                                   {!notification.read && (
                                     <Badge
                                       variant="secondary"
-                                      className="bg-orange-500/20 text-orange-500 border-orange-500/40 shrink-0"
+                                      className="bg-theme-accent/20 text-theme-accent border-theme-accent/40 shrink-0"
                                     >
                                       {t.badgeNew}
                                     </Badge>
@@ -311,7 +311,7 @@ export default function NotificationsPage() {
                                   {notification.link && (
                                     <Link
                                       href={notification.link}
-                                      className="text-orange-500 hover:text-orange-400 font-medium"
+                                      className="text-theme-accent hover:text-theme-highlight font-medium"
                                     >
                                       {t.viewDetails}
                                     </Link>

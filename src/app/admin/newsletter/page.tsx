@@ -129,7 +129,7 @@ export default function NewsletterAdminPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="text-slate-300">{messages.admin.newsletter.loading}</p>
         </div>
       </div>
@@ -142,7 +142,7 @@ export default function NewsletterAdminPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-              <Mail className="h-7 w-7 text-orange-500 shrink-0" />
+              <Mail className="h-7 w-7 text-theme-accent shrink-0" />
               {messages.admin.newsletter.title}
             </h1>
             <p className="text-slate-400 mt-1">
@@ -193,11 +193,11 @@ export default function NewsletterAdminPage() {
         {/* Main Content */}
         <Tabs defaultValue="subscribers" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 bg-slate-800 border-slate-700 h-auto">
-            <TabsTrigger value="subscribers" className="flex items-center gap-2 py-2 text-xs sm:text-sm data-[state=active]:bg-orange-500">
+            <TabsTrigger value="subscribers" className="flex items-center gap-2 py-2 text-xs sm:text-sm data-[state=active]:bg-primary">
               <Users className="h-4 w-4 shrink-0" />
               <span>{messages.admin.newsletter.tabs.subscribers}</span>
             </TabsTrigger>
-            <TabsTrigger value="campaigns" className="flex items-center gap-2 py-2 text-xs sm:text-sm data-[state=active]:bg-orange-500">
+            <TabsTrigger value="campaigns" className="flex items-center gap-2 py-2 text-xs sm:text-sm data-[state=active]:bg-primary">
               <Send className="h-4 w-4 shrink-0" />
               <span>{messages.admin.newsletter.tabs.campaigns}</span>
             </TabsTrigger>

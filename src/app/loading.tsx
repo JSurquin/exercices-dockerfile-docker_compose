@@ -18,7 +18,7 @@ export default function Loading() {
         >
           <div className="relative">
             {/* Logo MoonSkin */}
-            <div className="relative bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl p-6 shadow-2xl">
+            <div className="relative bg-cta-gradient-br rounded-2xl p-6 shadow-2xl">
               <div className="text-white font-bold text-3xl tracking-wider">
                 Moon<span className="text-yellow-300">Skin</span>
               </div>
@@ -40,7 +40,7 @@ export default function Loading() {
             {[...Array(6)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute w-2 h-2 bg-orange-400 rounded-full"
+                className="absolute w-2 h-2 bg-theme-highlight rounded-full"
                 style={{
                   left: `${20 + i * 15}%`,
                   top: `${10 + (i % 2) * 80}%`,
@@ -79,19 +79,19 @@ export default function Loading() {
               }}
             >
               {/* Lignes du crosshair */}
-              <div className="absolute w-8 h-0.5 bg-orange-500 rounded-full" />
-              <div className="absolute w-0.5 h-8 bg-orange-500 rounded-full" />
+              <div className="absolute w-8 h-0.5 bg-primary rounded-full" />
+              <div className="absolute w-0.5 h-8 bg-primary rounded-full" />
               
               {/* Points aux extrémités */}
-              <div className="absolute w-1 h-1 bg-orange-500 rounded-full" style={{ top: '20%', left: '50%', transform: 'translateX(-50%)' }} />
-              <div className="absolute w-1 h-1 bg-orange-500 rounded-full" style={{ bottom: '20%', left: '50%', transform: 'translateX(-50%)' }} />
-              <div className="absolute w-1 h-1 bg-orange-500 rounded-full" style={{ left: '20%', top: '50%', transform: 'translateY(-50%)' }} />
-              <div className="absolute w-1 h-1 bg-orange-500 rounded-full" style={{ right: '20%', top: '50%', transform: 'translateY(-50%)' }} />
+              <div className="absolute w-1 h-1 bg-primary rounded-full" style={{ top: '20%', left: '50%', transform: 'translateX(-50%)' }} />
+              <div className="absolute w-1 h-1 bg-primary rounded-full" style={{ bottom: '20%', left: '50%', transform: 'translateX(-50%)' }} />
+              <div className="absolute w-1 h-1 bg-primary rounded-full" style={{ left: '20%', top: '50%', transform: 'translateY(-50%)' }} />
+              <div className="absolute w-1 h-1 bg-primary rounded-full" style={{ right: '20%', top: '50%', transform: 'translateY(-50%)' }} />
             </motion.div>
 
             {/* Cercle extérieur */}
             <motion.div
-              className="absolute inset-0 border-2 border-orange-500/30 rounded-full"
+              className="absolute inset-0 border-2 border-theme-accent/30 rounded-full"
               animate={{ 
                 scale: [1, 1.2, 1],
                 opacity: [0.3, 0.8, 0.3]
@@ -103,7 +103,7 @@ export default function Loading() {
             />
 
             {/* Point central */}
-            <div className="absolute top-1/2 left-1/2 w-1 h-1 bg-orange-500 rounded-full transform -translate-x-1/2 -translate-y-1/2" />
+            <div className="absolute top-1/2 left-1/2 w-1 h-1 bg-primary rounded-full transform -translate-x-1/2 -translate-y-1/2" />
           </div>
         </motion.div>
 
@@ -135,7 +135,7 @@ export default function Loading() {
         >
           <div className="h-2 bg-muted rounded-full overflow-hidden relative">
             <motion.div
-              className="h-full bg-gradient-to-r from-orange-500 to-red-600 rounded-full relative"
+              className="h-full bg-cta-gradient rounded-full relative"
               animate={{ 
                 width: ["0%", "100%", "0%"]
               }}
@@ -192,7 +192,7 @@ export default function Loading() {
           {[...Array(3)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute w-32 h-32 border border-orange-500/10 rounded-full"
+              className="absolute w-32 h-32 border border-theme-accent/10 rounded-full"
               style={{
                 left: `${20 + i * 30}%`,
                 top: `${30 + i * 20}%`,

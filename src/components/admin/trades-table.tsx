@@ -378,7 +378,7 @@ export function AdminTradesTable() {
                         variant="outline"
                         disabled={syncingTradeIds.has(trade.id)}
                         onClick={() => syncTrade(trade.id)}
-                        className="border-orange-600 text-orange-400 hover:bg-orange-900/30"
+                        className="border-primary text-theme-highlight hover:bg-theme-accent/15"
                         title={t.syncTooltip}
                       >
                         <RotateCcw className={`h-4 w-4 ${syncingTradeIds.has(trade.id) ? 'animate-spin' : ''}`} />

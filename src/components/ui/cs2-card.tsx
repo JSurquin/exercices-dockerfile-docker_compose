@@ -23,9 +23,9 @@ export const CS2Card: React.FC<CS2CardProps> = ({
     const variants = {
       default: "bg-card border-border",
       gaming:
-        "bg-gradient-to-br from-orange-500/5 via-card to-red-500/5 border-orange-500/20",
+        "bg-gradient-to-br from-theme-accent/5 via-card to-theme-accent/10 border-theme-accent/20",
       weapon:
-        "bg-gradient-to-br from-yellow-500/10 via-card to-orange-500/10 border-yellow-500/30",
+        "bg-gradient-to-br from-theme-highlight/10 via-card to-theme-accent/10 border-theme-highlight/30",
       trading:
         "bg-gradient-to-br from-green-500/10 via-card to-blue-500/10 border-green-500/30",
     };
@@ -41,13 +41,13 @@ export const CS2Card: React.FC<CS2CardProps> = ({
         className={cn(
           "relative overflow-hidden transition-all duration-300",
           "hover:shadow-xl",
-          glow && "shadow-2xl shadow-orange-500/20",
+          glow && "shadow-2xl shadow-[var(--cta-shadow)]",
           getVariantClasses(variant),
           className
         )}
       >
         {glow && (
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 via-transparent to-red-500/20 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-theme-accent/20 via-transparent to-theme-accent/10 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
         )}
         {children}
       </Card>
@@ -144,7 +144,7 @@ export const CS2WeaponCard: React.FC<CS2WeaponCardProps> = ({
                 {weapon.name} | {weapon.skin}
               </h3>
               {weapon.statTrak && (
-                <div className="px-2 py-0.5 bg-orange-500/20 text-orange-600 text-xs rounded font-mono">
+                <div className="px-2 py-0.5 bg-theme-accent/20 text-theme-accent text-xs rounded font-mono">
                   StatTrak™
                 </div>
               )}

@@ -114,10 +114,10 @@ export default function AboutPage() {
               <button
                 type="button"
                 onClick={handleSteamCta}
-                className="w-full max-w-full text-center bg-transparent border-0 p-0 font-bold text-inherit cursor-pointer hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 rounded-sm"
+                className="w-full max-w-full text-center bg-transparent border-0 p-0 font-bold text-inherit cursor-pointer hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm"
               >
                 {messages.about.title}{" "}
-                <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+                <span className="bg-cta-gradient bg-clip-text text-transparent">
                   MoonSkin
                 </span>
               </button>
@@ -138,7 +138,7 @@ export default function AboutPage() {
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   className="text-center"
                 >
-                  <stat.icon className="w-8 h-8 mx-auto mb-2 text-orange-600" />
+                  <stat.icon className="w-8 h-8 mx-auto mb-2 text-theme-accent" />
                   <p className="text-2xl font-bold">{stat.value}</p>
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
                 </motion.div>
@@ -217,7 +217,7 @@ export default function AboutPage() {
               >
                 <Card className="h-full text-center hover:shadow-lg transition-shadow">
                   <CardContent className="p-4 sm:p-6">
-                    <value.icon className="w-12 h-12 mx-auto mb-4 text-orange-600" />
+                    <value.icon className="w-12 h-12 mx-auto mb-4 text-theme-accent" />
                     <h3 className="font-semibold mb-3">{value.title}</h3>
                     <p className="text-sm text-muted-foreground">{value.description}</p>
                   </CardContent>
@@ -262,7 +262,7 @@ export default function AboutPage() {
                       </AvatarFallback>
                     </Avatar>
                     <h3 className="font-semibold mb-1">{member.name}</h3>
-                    <p className="text-sm text-orange-600 mb-3">{member.role}</p>
+                    <p className="text-sm text-theme-accent mb-3">{member.role}</p>
                     <p className="text-sm text-muted-foreground mb-4 flex-1">{member.bio}</p>
                     {"linkUrl" in member && member.linkUrl ? (
                       <p className="text-xs mb-3">
@@ -270,7 +270,7 @@ export default function AboutPage() {
                           href={member.linkUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-orange-600 hover:underline"
+                          className="text-theme-accent hover:underline"
                         >
                           {member.linkLabel ?? member.linkUrl}
                         </a>
@@ -302,17 +302,17 @@ export default function AboutPage() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <Card className="border-orange-500/30 bg-gradient-to-br from-orange-500/5 to-red-600/5 overflow-hidden">
+            <Card className="border-theme-accent/30 bg-gradient-to-br from-theme-accent/5 to-theme-accent/10 overflow-hidden">
               <CardContent className="p-6 sm:p-10">
                 <div className="flex flex-col sm:flex-row sm:items-start gap-6">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-500/15 to-red-600/15 mx-auto sm:mx-0">
-                    <BuildingOffice2Icon className="h-8 w-8 text-orange-600" aria-hidden />
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-theme-accent/20 bg-gradient-to-br from-theme-accent/15 to-theme-accent/20 mx-auto sm:mx-0">
+                    <BuildingOffice2Icon className="h-8 w-8 text-theme-accent" aria-hidden />
                   </div>
                   <div className="flex-1 text-center sm:text-left space-y-3">
                     <h2 className="text-2xl sm:text-3xl font-bold">
                       {messages.about.technicalPartner.title}
                     </h2>
-                    <p className="text-sm font-medium text-orange-600">
+                    <p className="text-sm font-medium text-theme-accent">
                       {messages.about.technicalPartner.role}
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
@@ -333,7 +333,7 @@ export default function AboutPage() {
                         href={messages.about.technicalPartner.websiteUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-medium text-orange-600 hover:underline"
+                        className="font-medium text-theme-accent hover:underline"
                       >
                         {messages.about.technicalPartner.websiteLabel}
                       </a>
@@ -395,7 +395,7 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="max-w-3xl mx-auto mt-12"
           >
-            <Card className="border-orange-500/30 bg-orange-500/5">
+            <Card className="brand-panel">
               <CardContent className="p-6 sm:p-8">
                 <h3 className="text-xl font-bold mb-3">{messages.about.roadmap.visionTitle}</h3>
                 <p className="text-muted-foreground mb-4">{messages.about.roadmap.visionLead}</p>
@@ -419,13 +419,13 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="text-center"
           >
-            <div className="bg-gradient-to-r from-orange-500/10 to-red-600/10 rounded-2xl p-12 border">
+            <div className="bg-gradient-to-r from-theme-accent/10 to-theme-accent/15 rounded-2xl p-12 border">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">{messages.about.cta.title}</h2>
               <p className="text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto">
                 {messages.about.cta.description}
               </p>
               <div className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center">
-                <Button asChild className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700">
+                <Button asChild variant="cta">
                   <Link href="/sell">{messages.about.cta.start}</Link>
                 </Button>
                 <Button variant="outline" asChild>

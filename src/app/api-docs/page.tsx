@@ -69,7 +69,7 @@ const getEndpoints = (messages: any) => [
   },
   {
     category: messages.apiDocs.categories.trading,
-    color: "text-orange-600",
+    color: "text-theme-accent",
     endpoints: [
       {
         method: "POST",
@@ -255,13 +255,13 @@ function ApiDocsComingSoon({ messages }: { messages: any }) {
           className="text-center py-20"
         >
           <div className="relative mx-auto w-24 h-24 mb-8">
-            <div className="absolute inset-0 bg-orange-500/20 rounded-full animate-ping" />
-            <div className="relative flex items-center justify-center w-24 h-24 bg-gradient-to-br from-orange-500/30 to-orange-600/10 rounded-full border border-orange-500/30">
-              <RocketLaunchIcon className="w-12 h-12 text-orange-500" />
+            <div className="absolute inset-0 bg-theme-accent/20 rounded-full animate-ping" />
+            <div className="relative flex items-center justify-center w-24 h-24 bg-gradient-to-br from-theme-accent/30 to-theme-accent/10 rounded-full border border-theme-accent/30">
+              <RocketLaunchIcon className="w-12 h-12 text-theme-accent" />
             </div>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-theme-accent to-primary bg-clip-text text-transparent">
             {messages.apiDocs.comingSoon.title}
           </h1>
 
@@ -270,7 +270,7 @@ function ApiDocsComingSoon({ messages }: { messages: any }) {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 px-4 py-1.5 text-sm">
+            <Badge variant="secondary" className="bg-theme-accent/10 text-theme-accent dark:bg-theme-accent/20 dark:text-theme-highlight px-4 py-1.5 text-sm">
               {messages.apiDocs.comingSoon.badge}
             </Badge>
             <Badge variant="outline" className="px-4 py-1.5 text-sm">
@@ -300,7 +300,7 @@ function ApiDocsComingSoon({ messages }: { messages: any }) {
                 transition={{ duration: 0.5, delay: 0.3 + i * 0.15 }}
                 className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border/50 bg-muted/30"
               >
-                <Icon className="w-6 h-6 text-orange-500" />
+                <Icon className="w-6 h-6 text-theme-accent" />
                 <span className="text-sm font-medium text-muted-foreground">{label}</span>
               </motion.div>
             ))}
@@ -328,7 +328,7 @@ export default function ApiDocsPage() {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="max-w-6xl mx-auto flex items-center justify-center min-h-[50vh]">
-          <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-theme-accent border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -349,7 +349,7 @@ export default function ApiDocsPage() {
           className="text-center mb-8 sm:mb-12"
         >
           <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-            <CodeBracketIcon className="w-8 h-8 inline-block mr-2 text-orange-600" />
+            <CodeBracketIcon className="w-8 h-8 inline-block mr-2 text-theme-accent" />
             {messages.apiDocs.title}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
@@ -389,8 +389,8 @@ export default function ApiDocsPage() {
                   <p className="text-sm text-muted-foreground">{messages.apiDocs.getApiKeyDesc}</p>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <CodeBracketIcon className="w-6 h-6 text-orange-600" />
+                  <div className="w-12 h-12 bg-theme-accent/15 dark:bg-theme-accent/25 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <CodeBracketIcon className="w-6 h-6 text-theme-accent" />
                   </div>
                   <h3 className="font-semibold mb-2">{messages.apiDocs.makeCall}</h3>
                   <p className="text-sm text-muted-foreground">{messages.apiDocs.makeCallDesc}</p>
@@ -433,7 +433,7 @@ export default function ApiDocsPage() {
                       Authorization: Bearer YOUR_API_TOKEN
                     </code>
                   </div>
-                  <div className="flex items-start space-x-2 p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                  <div className="flex items-start space-x-2 p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-theme-highlight/25 dark:border-theme-highlight/35">
                     <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                     <div className="text-sm">
                       <p className="font-medium text-yellow-800 dark:text-yellow-200">{messages.apiDocs.important}</p>
@@ -469,7 +469,7 @@ export default function ApiDocsPage() {
                                 variant={endpoint.method === 'GET' ? 'secondary' : 'default'}
                                 className={`${endpoint.method === 'GET' ? 'bg-green-100 text-green-800' : 
                                           endpoint.method === 'POST' ? 'bg-blue-100 text-blue-800' : 
-                                          'bg-orange-100 text-orange-800'} font-mono text-xs`}
+                                          'bg-theme-accent/10 text-theme-accent'} font-mono text-xs`}
                               >
                                 {endpoint.method}
                               </Badge>
@@ -648,7 +648,7 @@ export default function ApiDocsPage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span>429</span>
-                      <span className="text-orange-600">{messages.apiDocs.statusCodesLabels.tooManyRequests}</span>
+                      <span className="text-theme-accent">{messages.apiDocs.statusCodesLabels.tooManyRequests}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>500</span>

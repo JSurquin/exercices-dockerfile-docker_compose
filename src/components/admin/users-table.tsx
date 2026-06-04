@@ -496,7 +496,7 @@ export function AdminUsersTable() {
                         variant="outline"
                         disabled={syncingKycUserId === user.id}
                         onClick={() => handleSyncKyc(user.id)}
-                        className="border-amber-600 text-amber-400 hover:bg-amber-900/30"
+                        className="border-theme-highlight text-theme-highlight hover:bg-theme-highlight/15"
                         title={messages.admin.kycManagement.tooltipSyncKycaid}
                       >
                         {syncingKycUserId === user.id ? (
@@ -521,7 +521,7 @@ export function AdminUsersTable() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-orange-600 text-orange-400 hover:bg-orange-900/30 hover:text-orange-300"
+                        className="border-primary text-theme-highlight hover:bg-theme-accent/15 hover:text-theme-highlight"
                         onClick={() => openImpersonateDialog(user)}
                         title={t.impersonateButton}
                       >
@@ -677,7 +677,7 @@ export function AdminUsersTable() {
         <DialogContent className="sm:max-w-[420px] bg-slate-800 border-slate-700">
           <DialogHeader>
             <DialogTitle className="text-white flex items-center gap-2">
-              <UserCog className="h-5 w-5 text-orange-400" />
+              <UserCog className="h-5 w-5 text-theme-highlight" />
               {t.impersonateConfirmTitle}
             </DialogTitle>
             <DialogDescription className="text-slate-400">
@@ -698,7 +698,7 @@ export function AdminUsersTable() {
               type="button"
               onClick={handleImpersonate}
               disabled={impersonating}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
+              className="bg-cta-gradient hover:brightness-110 text-white"
             >
               {impersonating ? (
                 <>

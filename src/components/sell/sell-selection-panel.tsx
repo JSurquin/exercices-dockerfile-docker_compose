@@ -43,7 +43,7 @@ export function SellSelectionPanel({ items, onContinue, onDeselect }: SellSelect
   }, [totalCentimes, selectedCurrency]);
 
   return (
-    <Card className="border-orange-500/30 bg-orange-500/5">
+    <Card className="brand-panel">
       <CardContent className="p-4 space-y-3">
         <div>
           <p className="text-xs text-muted-foreground mb-1">{t.selectedTotal}</p>
@@ -58,7 +58,7 @@ export function SellSelectionPanel({ items, onContinue, onDeselect }: SellSelect
         <div className="flex flex-col gap-2">
           <Button
             type="button"
-            className="w-full bg-orange-500 hover:bg-orange-600"
+            className="w-full bg-primary hover:bg-primary/90"
             disabled={items.length === 0}
             onClick={onContinue}
           >

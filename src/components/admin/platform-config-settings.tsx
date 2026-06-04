@@ -101,7 +101,7 @@ function NumberField({
           size="sm"
           disabled={!isDirty || isPending || isNaN(parseFloat(draft))}
           onClick={() => onSave(dbKey, parseFloat(draft))}
-          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shrink-0"
+          className="bg-cta-gradient hover:brightness-110 shrink-0"
         >
           {saveLabel}
         </Button>
@@ -164,7 +164,7 @@ function UrlField({
           size="sm"
           disabled={!isDirty || isPending || !draft}
           onClick={() => onSave(dbKey, draft)}
-          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shrink-0"
+          className="bg-cta-gradient hover:brightness-110 shrink-0"
         >
           {saveLabel}
         </Button>
@@ -364,7 +364,7 @@ export function PlatformConfigSettings() {
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader className="pb-3">
           <CardTitle className="text-white flex items-center gap-2 text-base">
-            <LinkIcon className="w-5 h-5 text-orange-400" />
+            <LinkIcon className="w-5 h-5 text-theme-highlight" />
             {t.externalUrlsTitle}
           </CardTitle>
         </CardHeader>

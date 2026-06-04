@@ -36,9 +36,9 @@ export function ModerationHeader() {
         <div className="flex items-center gap-2 min-w-0">
           <Link
             href="/moderation"
-            className="flex items-center gap-2 min-w-0 text-white hover:text-orange-400 transition-colors"
+            className="flex items-center gap-2 min-w-0 text-white hover:text-theme-highlight transition-colors"
           >
-            <ChatBubbleLeftRightIcon className="h-5 w-5 shrink-0 text-orange-500" />
+            <ChatBubbleLeftRightIcon className="h-5 w-5 shrink-0 text-theme-accent" />
             <span className="font-semibold text-sm sm:text-base truncate">
               {messages.moderation.title}
             </span>

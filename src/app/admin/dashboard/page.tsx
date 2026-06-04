@@ -105,7 +105,7 @@ function DashboardContent() {
       </Button>
       <Button 
         size="sm"
-        className="hidden bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 md:flex"
+        className="hidden bg-cta-gradient hover:brightness-110 md:flex"
         onClick={handleGenerateReport}
       >
         <ChartBarIcon className="h-4 w-4 md:mr-2" />
@@ -358,7 +358,7 @@ function DashboardContent() {
         className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
       >
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent sm:text-3xl md:text-4xl">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-theme-accent to-primary bg-clip-text text-transparent sm:text-3xl md:text-4xl">
               {messages.admin.dashboard.title}
             </h1>
           </div>

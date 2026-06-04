@@ -245,7 +245,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
     <Card className="border-slate-700 bg-slate-800/50">
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
-          <Mail className="h-5 w-5 text-orange-400" />
+          <Mail className="h-5 w-5 text-theme-highlight" />
           {messages.admin.newsletter.campaignCreator.title}
         </CardTitle>
         <CardDescription>
@@ -289,15 +289,15 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
           
           <Tabs value={contentMode} onValueChange={(value) => setContentMode(value as 'template' | 'wysiwyg' | 'text')}>
             <TabsList className="bg-slate-800 border-slate-700">
-              <TabsTrigger value="template" className="data-[state=active]:bg-orange-500">
+              <TabsTrigger value="template" className="data-[state=active]:bg-primary">
                 <Palette className="h-4 w-4 mr-2" />
                 {messages.admin.newsletter.campaignCreator.tabTemplates}
               </TabsTrigger>
-              <TabsTrigger value="wysiwyg" className="data-[state=active]:bg-orange-500">
+              <TabsTrigger value="wysiwyg" className="data-[state=active]:bg-primary">
                 <FileText className="h-4 w-4 mr-2" />
                 {messages.admin.newsletter.campaignCreator.tabVisual}
               </TabsTrigger>
-              <TabsTrigger value="text" className="data-[state=active]:bg-orange-500">
+              <TabsTrigger value="text" className="data-[state=active]:bg-primary">
                 <Code className="h-4 w-4 mr-2" />
                 {messages.admin.newsletter.campaignCreator.tabText}
               </TabsTrigger>
@@ -416,7 +416,7 @@ export function NewsletterCampaignCreator({ onCampaignCreated }: NewsletterCampa
           <Button
             onClick={handleSendNow}
             disabled={isSending || !title || !subject || !getContentForSave()}
-            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 flex-1"
+            className="bg-cta-gradient hover:brightness-110 flex-1"
           >
             {isSending ? (
               <div className="flex items-center">

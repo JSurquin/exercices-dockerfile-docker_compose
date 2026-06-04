@@ -484,7 +484,7 @@ export default function KYCPage() {
                 <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
                   <div className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 transition-colors ${
                     index <= getStepIndex()
-                      ? 'bg-orange-500 border-orange-500 text-white'
+                      ? 'bg-primary border-primary text-primary-foreground'
                       : 'border-muted-foreground/40 text-muted-foreground'
                   }`}>
                     {index < getStepIndex() ? (
@@ -503,7 +503,7 @@ export default function KYCPage() {
                 {/* Connecteur — prend tout l'espace restant jusqu'au prochain step */}
                 {index < steps.length - 1 && (
                   <div className={`flex-1 h-0.5 mx-1.5 sm:mx-2 transition-colors ${
-                    index < getStepIndex() ? 'bg-orange-500' : 'bg-muted'
+                    index < getStepIndex() ? 'bg-primary' : 'bg-muted'
                   }`} />
                 )}
               </div>
@@ -710,7 +710,7 @@ export default function KYCPage() {
                     </div>
                   )}
 
-                  <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                  <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-theme-highlight/25 dark:border-theme-highlight/35 rounded-lg p-4">
                     <div className="flex items-start space-x-3">
                       <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
                       <div className="text-sm">
@@ -886,7 +886,7 @@ export default function KYCPage() {
                     </div>
                   </div>
 
-                  <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                  <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-theme-highlight/25 dark:border-theme-highlight/35 rounded-lg p-4">
                     <div className="flex items-start space-x-3">
                       <ClockIcon className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
                       <div className="text-sm">
@@ -915,7 +915,7 @@ export default function KYCPage() {
                 <Button
                   onClick={handleNextStep}
                   disabled={!isStepValid() || isLoading}
-                  className="flex-1 sm:flex-none sm:min-w-[160px] bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                  className="flex-1 sm:flex-none sm:min-w-[160px] bg-cta-gradient hover:brightness-110"
                 >
                   {isLoading
                     ? messages.kycPage.navigation.loading
