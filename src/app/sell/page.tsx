@@ -130,11 +130,6 @@ export default function SellPage() {
     return () => stopPolling();
   }, [stopPolling]);
 
-  const confirmationCashoutPercent =
-    tradeData && tradeData.total_value > 0
-      ? ((tradeData.fees.cashout_fee / tradeData.total_value) * 100).toFixed(2)
-      : "0.50";
-
   const handleItemSelect = (items: NormalizedInventoryItem[]) => {
     setSelectedItems(items);
     setCurrentStep(1);
@@ -405,17 +400,6 @@ export default function SellPage() {
                           <ConvertedPrice usdCents={tradeData.total_value} />
                         </span>
                       </div>
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-red-500">
-                        <span>
-                          {messages.sellPage.confirmation.cashoutFeesLine.replace(
-                            "{percent}",
-                            confirmationCashoutPercent
-                          )}
-                        </span>
-                        <span className="font-medium">
-                          -<ConvertedPrice usdCents={tradeData.fees.cashout_fee} />
-                        </span>
-                      </div>
                       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
                         <span className="font-medium">
                           {messages.sellPage.confirmation.youWillReceive}
@@ -424,13 +408,10 @@ export default function SellPage() {
                           <ConvertedPrice usdCents={tradeData.net_value} />
                         </span>
                       </div>
-                      <div className="flex flex-wrap items-start justify-between gap-2 border border-dashed brand-panel-dashed rounded-md p-2 text-xs text-muted-foreground">
-                        <span className="flex-1">{messages.sellPage.confirmation.payoutFeesReminder}</span>
+                      <div className="rounded-lg border border-dashed brand-panel-dashed p-3 text-xs text-muted-foreground leading-relaxed">
+                        {messages.sellPage.confirmation.payoutFeesReminder}
                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
-                      {messages.sellPage.confirmation.feesExplanation}
-                    </p>
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">

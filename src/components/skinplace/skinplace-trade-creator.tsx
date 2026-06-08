@@ -18,7 +18,6 @@ import {
   DollarSign,
   Handshake,
   Calculator,
-  Minus,
   AlertTriangle,
   Gift,
   Loader2,
@@ -156,16 +155,14 @@ export function SkinplaceTradeCreator({
     }
   };
 
-  /** Frais déduits du trade : cashout uniquement. Les frais prestataire sont au retrait (/payout). */
+  /** Aucun frais à la vente — les frais s'appliquent uniquement au retrait (/payout). */
   const calculateFees = (grossValueCentimes: number) => {
-    const cashoutRate = platformSettings?.cashoutFeeRate ?? 0.005;
     const indicativePayoutFeesCentimes = platformSettings?.networkFeeCentimes ?? 200;
-    const cashoutFee = Math.round(grossValueCentimes * cashoutRate);
 
     return {
-      cashout_fee: cashoutFee,
+      cashout_fee: 0,
       indicative_payout_fees_centimes: indicativePayoutFeesCentimes,
-      net_credited_centimes: grossValueCentimes - cashoutFee,
+      net_credited_centimes: grossValueCentimes,
     };
   };
 
@@ -276,7 +273,6 @@ export function SkinplaceTradeCreator({
     : 0;
   const vipBonusPreview = Math.round(grossValueCentimes * (user?.bonusRatePercent ?? 0) / 100);
   const netValueCentimes = fees.net_credited_centimes + promoBonusPreview + vipBonusPreview;
-  const cashoutPercentDisplay = ((platformSettings?.cashoutFeeRate ?? 0.005) * 100).toFixed(2);
   const promoPercentLabel = (AFFILIATE_SELL_PROMO_GROSS_RATE * 100).toFixed(1);
   const trimmedPromoInput = promoInput.trim();
   const promoBlocksSubmit =
@@ -517,16 +513,6 @@ export function SkinplaceTradeCreator({
                 <ConvertedPrice usdCents={grossValueCentimes} className="font-medium" />
               </div>
               
-              <div className="flex items-center justify-between text-sm text-red-500">
-                <span className="flex items-center gap-1">
-                  <Minus className="h-3 w-3" />
-                  {messages.tradeCreator.cashoutFeesLabel.replace("{percent}", cashoutPercentDisplay)}
-                </span>
-                <span className="flex items-center gap-1">
-                  -<ConvertedPrice usdCents={fees.cashout_fee} />
-                </span>
-              </div>
-
               {promoBonusPreview > 0 && (
                 <div className="flex items-center justify-between text-sm text-emerald-600 dark:text-emerald-400">
                   <span className="flex items-center gap-1">
@@ -563,11 +549,16 @@ export function SkinplaceTradeCreator({
                 />
               </div>
 
-              <div className="flex items-start justify-between gap-2 text-xs text-muted-foreground border border-dashed brand-panel-dashed rounded-md p-2 mt-1">
-                <span className="text-left">{messages.tradeCreator.payoutFeesIndicativeLine}</span>
-                <span className="shrink-0 font-medium text-theme-highlight dark:text-theme-highlight tabular-nums">
-                  ~<ConvertedPrice usdCents={fees.indicative_payout_fees_centimes} />
-                </span>
+              <div className="rounded-lg border border-dashed brand-panel-dashed p-3 space-y-2 mt-1">
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {messages.tradeCreator.tradeFeesFootnote}
+                </p>
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <span className="text-muted-foreground">{messages.tradeCreator.payoutFeesIndicativeLine}</span>
+                  <span className="shrink-0 font-medium text-theme-highlight tabular-nums">
+                    ~<ConvertedPrice usdCents={fees.indicative_payout_fees_centimes} />
+                  </span>
+                </div>
               </div>
 
               {netValueCentimes <= 0 && (
@@ -580,11 +571,16 @@ export function SkinplaceTradeCreator({
               )}
             </div>
 
-            <p className="text-xs text-muted-foreground px-1">{messages.tradeCreator.tradeFeesFootnote}</p>
-
-            <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
-              <p className="mb-1">ℹ️ <strong>{messages.tradeCreator.paymentDelayTitle} :</strong> {messages.tradeCreator.paymentDelayInfo}</p>
-              <p>{messages.tradeCreator.paymentDelayDetail}</p>
+            <div className="flex items-start gap-3 rounded-lg border brand-panel p-3.5">
+              <Clock className="h-5 w-5 shrink-0 text-theme-accent mt-0.5" />
+              <div className="space-y-0.5 min-w-0">
+                <p className="text-sm font-medium text-foreground">
+                  {messages.tradeCreator.paymentDelayTitle}
+                </p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {messages.tradeCreator.paymentDelayDetail}
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>

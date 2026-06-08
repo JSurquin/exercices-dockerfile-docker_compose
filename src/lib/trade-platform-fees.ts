@@ -3,9 +3,8 @@ import { prisma } from "~/prisma/prisma";
 const DEFAULT_CASHOUT_RATE = 0.005;
 
 /**
- * Taux de frais plateforme (cashout) sur la valeur brute du trade.
- * Les frais type « réseau » / prestataire ne sont pas déduits du trade :
- * ils sont facturés au moment du retrait (Flexify / Whitepay).
+ * Taux de frais plateforme historique (conservé pour compatibilité settings).
+ * Les frais ne sont plus déduits à la vente : ils s'appliquent au retrait (/payout).
  */
 export async function getCashoutFeeRate(): Promise<number> {
   try {
@@ -24,9 +23,7 @@ export async function getCashoutFeeRate(): Promise<number> {
 
 export function computeTradeLedgerFromGross(
   grossCents: number,
-  cashoutFeeRate: number
+  _cashoutFeeRate?: number
 ): { cashoutFees: number; networkFees: number; netCents: number } {
-  const cashoutFees = Math.round(grossCents * cashoutFeeRate);
-  const netCents = grossCents - cashoutFees;
-  return { cashoutFees, networkFees: 0, netCents };
+  return { cashoutFees: 0, networkFees: 0, netCents: grossCents };
 }

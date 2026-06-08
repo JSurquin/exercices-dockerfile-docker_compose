@@ -19,7 +19,6 @@ import {
   DollarSign,
   Handshake,
   Calculator,
-  Minus,
   AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -69,14 +68,12 @@ export function SteamTradeCreator({
   };
 
   const calculateFees = (grossValue: number) => {
-    const cashoutRate = platformSettings?.cashoutFeeRate ?? 0.005;
     const indicativePayoutFeesCentimes = platformSettings?.networkFeeCentimes ?? 200;
-    const cashoutFee = Math.round(grossValue * cashoutRate);
 
     return {
-      cashout_fee: cashoutFee,
+      cashout_fee: 0,
       indicative_payout_fees_centimes: indicativePayoutFeesCentimes,
-      net_credited_centimes: grossValue - cashoutFee,
+      net_credited_centimes: grossValue,
     };
   };
 
@@ -163,7 +160,6 @@ export function SteamTradeCreator({
   const fees = calculateFees(grossValue);
   const vipBonusPreview = Math.round(grossValue * (user?.bonusRatePercent ?? 0) / 100);
   const netValue = fees.net_credited_centimes + vipBonusPreview;
-  const cashoutPercentDisplay = ((platformSettings?.cashoutFeeRate ?? 0.005) * 100).toFixed(2);
 
   const tc = messages.tradeCreator;
 
@@ -274,14 +270,6 @@ export function SteamTradeCreator({
                 <span className="font-medium">{formatPrice(grossValue)}</span>
               </div>
               
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Minus className="h-3 w-3" />
-                  {messages.tradeCreator.cashoutFeesLabel.replace("{percent}", cashoutPercentDisplay)}
-                </span>
-                <span>-{formatPrice(fees.cashout_fee)}</span>
-              </div>
-
               {vipBonusPreview > 0 && (
                 <div className="flex items-center justify-between text-sm text-theme-highlight">
                   <span className="flex items-center gap-1">
@@ -293,11 +281,16 @@ export function SteamTradeCreator({
                 </div>
               )}
 
-              <div className="flex items-start justify-between gap-2 text-xs text-muted-foreground border border-dashed border-muted-foreground/25 rounded-md p-2">
-                <span className="text-left">{messages.tradeCreator.payoutFeesIndicativeLine}</span>
-                <span className="shrink-0 font-medium text-foreground/80 tabular-nums">
-                  ~{formatPrice(fees.indicative_payout_fees_centimes)}
-                </span>
+              <div className="rounded-lg border border-dashed border-muted-foreground/25 p-3 space-y-2">
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {messages.tradeCreator.tradeFeesFootnote}
+                </p>
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <span className="text-muted-foreground">{messages.tradeCreator.payoutFeesIndicativeLine}</span>
+                  <span className="shrink-0 font-medium text-foreground/80 tabular-nums">
+                    ~{formatPrice(fees.indicative_payout_fees_centimes)}
+                  </span>
+                </div>
               </div>
 
               <Separator />
@@ -319,11 +312,12 @@ export function SteamTradeCreator({
               )}
             </div>
 
-            <p className="text-xs text-muted-foreground px-1">{messages.tradeCreator.tradeFeesFootnote}</p>
-
-            <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
-              <p className="mb-1">ℹ️ <strong>{tc.paymentDelayTitle} :</strong> {tc.paymentDelayInfo}</p>
-              <p>{tc.paymentDelayDetail}</p>
+            <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/20 p-3.5">
+              <Clock className="h-5 w-5 shrink-0 text-theme-accent mt-0.5" />
+              <div className="space-y-0.5 min-w-0">
+                <p className="text-sm font-medium text-foreground">{tc.paymentDelayTitle}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{tc.paymentDelayDetail}</p>
+              </div>
             </div>
           </div>
         </CardContent>
