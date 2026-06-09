@@ -18,12 +18,50 @@ import {
   MOONSKIN_STEAM_GROUP_URL,
 } from "@/lib/moonskin-social";
 import {
+  DiscordBrandIcon,
+  InstagramBrandIcon,
+  SteamBrandIcon,
+  TelegramBrandIcon,
+  TikTokBrandIcon,
+  XBrandIcon,
+  YouTubeBrandIcon,
+} from "@/components/ui/social-brand-icons";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+
+const FOOTER_SOCIAL_LINKS = [
+  { key: "discord", href: MOONSKIN_DISCORD_URL, Icon: DiscordBrandIcon },
+  { key: "x", href: MOONSKIN_X_URL, Icon: XBrandIcon },
+  { key: "instagram", href: MOONSKIN_INSTAGRAM_URL, Icon: InstagramBrandIcon },
+  { key: "tiktok", href: MOONSKIN_TIKTOK_URL, Icon: TikTokBrandIcon },
+  { key: "youtube", href: MOONSKIN_YOUTUBE_URL, Icon: YouTubeBrandIcon },
+  { key: "telegram", href: MOONSKIN_TELEGRAM_URL, Icon: TelegramBrandIcon },
+  { key: "steamGroup", href: MOONSKIN_STEAM_GROUP_URL, Icon: SteamBrandIcon },
+] as const;
+
+function FooterSocialIcons({ labels }: { labels: Record<(typeof FOOTER_SOCIAL_LINKS)[number]["key"], string> }) {
+  return (
+    <div className="flex flex-wrap items-center gap-4">
+      {FOOTER_SOCIAL_LINKS.map(({ key, href, Icon }) => (
+        <a
+          key={key}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={labels[key]}
+          className="lunar-footer__social-icon inline-flex"
+        >
+          <Icon className="h-5 w-5" />
+        </a>
+      ))}
+    </div>
+  );
+}
 
 export function Footer() {
   const { messages } = useLocale();
@@ -62,16 +100,9 @@ export function Footer() {
       { name: messages.footer.links.mentionsLegales, href: "/mentions-legales" },
       { name: messages.footer.links.skinSaleTerms, href: "/skin-sale-terms" },
     ],
-    community: [
-      { name: messages.footer.socialLinks.discord, href: MOONSKIN_DISCORD_URL },
-      { name: messages.footer.socialLinks.x, href: MOONSKIN_X_URL },
-      { name: messages.footer.socialLinks.instagram, href: MOONSKIN_INSTAGRAM_URL },
-      { name: messages.footer.socialLinks.tiktok, href: MOONSKIN_TIKTOK_URL },
-      { name: messages.footer.socialLinks.youtube, href: MOONSKIN_YOUTUBE_URL },
-      { name: messages.footer.socialLinks.telegram, href: MOONSKIN_TELEGRAM_URL },
-      { name: messages.footer.socialLinks.steamGroup, href: MOONSKIN_STEAM_GROUP_URL },
-    ],
   };
+
+  const socialLabels = messages.footer.socialLinks;
 
   return (
     <>
@@ -104,30 +135,8 @@ export function Footer() {
                   <p className="text-muted-foreground mb-4 max-w-md text-sm leading-relaxed">
                     {messages.footer.description}
                   </p>
-                  <div className="flex flex-wrap gap-3 mb-4">
-                    {[
-                      { label: messages.footer.socialLinks.discord, href: MOONSKIN_DISCORD_URL },
-                      { label: messages.footer.socialLinks.x, href: MOONSKIN_X_URL },
-                      { label: messages.footer.socialLinks.instagram, href: MOONSKIN_INSTAGRAM_URL },
-                      { label: messages.footer.socialLinks.tiktok, href: MOONSKIN_TIKTOK_URL },
-                      { label: messages.footer.socialLinks.youtube, href: MOONSKIN_YOUTUBE_URL },
-                      { label: messages.footer.socialLinks.telegram, href: MOONSKIN_TELEGRAM_URL },
-                      { label: messages.footer.socialLinks.steamGroup, href: MOONSKIN_STEAM_GROUP_URL },
-                    ].map((social, i, arr) => (
-                      <span key={social.label} className="flex items-center gap-3">
-                        <a
-                          href={social.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm font-medium lunar-footer__link"
-                        >
-                          {social.label}
-                        </a>
-                        {i < arr.length - 1 && (
-                          <span className="text-muted-foreground/40">·</span>
-                        )}
-                      </span>
-                    ))}
+                  <div className="mb-4">
+                    <FooterSocialIcons labels={socialLabels} />
                   </div>
                   <div className="text-sm text-muted-foreground">
                     <p className="font-medium text-foreground/80 mb-1">{messages.footer.securedBy}</p>
@@ -220,17 +229,7 @@ export function Footer() {
             <div className="lunar-footer__card px-6 py-4 mb-4 flex flex-col md:flex-row justify-between items-center gap-3">
               <div className="text-sm text-muted-foreground">{messages.footer.copyright}</div>
               <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 max-w-full">
-                {links.community.map((link) => (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    className="lunar-footer__link text-sm"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {link.name}
-                  </Link>
-                ))}
+                <FooterSocialIcons labels={socialLabels} />
                 <button
                   data-tour="footer-guide"
                   onClick={() => startTour()}

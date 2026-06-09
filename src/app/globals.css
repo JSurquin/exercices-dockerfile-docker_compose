@@ -971,7 +971,7 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .lunar-footer--image {
-    background-size: 100% auto;
+    background-size: contain;
     background-position: center bottom;
     background-repeat: no-repeat;
   }
@@ -982,11 +982,33 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .lunar-footer__card {
-    backdrop-filter: blur(12px);
-    background: var(--card);
-    opacity: 0.7;
-    border: 1px solid var(--lunar-border);
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.4),
+      0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  }
+
+  .lunar-footer__social-icon {
+    color: rgba(255, 255, 255, 0.65);
+    opacity: 0.65;
+    transition: opacity 0.25s ease, color 0.25s ease;
+  }
+
+  .lunar-footer__social-icon:hover {
+    color: rgba(255, 255, 255, 0.95);
+    opacity: 1;
+  }
+
+  .light .lunar-footer__social-icon {
+    color: rgba(0, 0, 0, 0.55);
+  }
+
+  .light .lunar-footer__social-icon:hover {
+    color: rgba(0, 0, 0, 0.85);
   }
 
   .lunar-footer__logo {
