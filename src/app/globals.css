@@ -927,6 +927,11 @@ body.next-dev-overlay-present #sentry-feedback {
     letter-spacing: -0.02em;
   }
 
+  /* Hero background artwork — pleine largeur, sans crop */
+  .cs2-hero-background__artwork {
+    background-size: 100% auto;
+  }
+
   /* Hero product float */
   .hero-product {
     animation: lunar-float 4s ease-in-out infinite;

@@ -48,16 +48,14 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
     <div className={cn("relative overflow-hidden grid", className)}>
       {/* Fond + overlay : même cellule grille que le contenu pour couvrir toute la section */}
       <div className="col-start-1 row-start-1 relative min-h-full w-full" aria-hidden>
-        <img
-          src={backgroundUrl}
-          alt="CS2 Artwork Background"
+        <div
+          role="img"
+          aria-label="CS2 Artwork Background"
           className={cn(
-            "absolute inset-0 h-full w-full object-cover transition-opacity duration-700",
+            "cs2-hero-background__artwork absolute inset-0 w-full bg-no-repeat transition-opacity duration-700",
             imageLoaded && !imageError ? "opacity-100" : "opacity-0"
           )}
-          loading="eager"
-          onLoad={() => setImageLoaded(true)}
-          onError={() => setImageError(true)}
+          style={{ backgroundImage: `url("${backgroundUrl}")` }}
         />
 
         {overlay && (
