@@ -107,7 +107,7 @@ export function Footer() {
   return (
     <>
       <footer
-        className={`relative border-t lunar-footer${showFooterImage ? " lunar-footer--banner" : ""}`}
+        className={`relative border-t pt-16 sm:pt-20 lunar-footer${showFooterImage ? " lunar-footer--banner" : ""}`}
       >
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 lunar-footer__overlay" />
