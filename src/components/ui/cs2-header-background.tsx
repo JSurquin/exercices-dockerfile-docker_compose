@@ -45,42 +45,39 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
   }, [backgroundUrl]);
 
   return (
-    <div className={cn("relative overflow-hidden", className)}>
-      {/* Image de fond */}
-      <div className="absolute inset-0">
+    <div className={cn("relative overflow-hidden grid", className)}>
+      {/* Fond + overlay : même cellule grille que le contenu pour couvrir toute la section */}
+      <div className="col-start-1 row-start-1 relative min-h-full w-full" aria-hidden>
         <img
           src={backgroundUrl}
           alt="CS2 Artwork Background"
           className={cn(
-            "w-full h-full object-cover transition-opacity duration-700",
+            "absolute inset-0 h-full w-full object-cover transition-opacity duration-700",
             imageLoaded && !imageError ? "opacity-100" : "opacity-0"
           )}
           loading="eager"
           onLoad={() => setImageLoaded(true)}
           onError={() => setImageError(true)}
         />
+
+        {overlay && (
+          <div
+            className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/70"
+            style={{ opacity: overlayOpacity }}
+          />
+        )}
+
+        {showOrange && (
+          <>
+            <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-theme-accent/15 via-transparent to-background" />
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-theme-accent/20 to-transparent opacity-60" />
+          </>
+        )}
       </div>
 
-      {/* Overlay avec gradient */}
-      {overlay && (
-        <div
-          className={cn(
-            "absolute inset-0",
-            showOrange
-              ? "bg-gradient-to-br from-black/60 via-black/50 to-background/40"
-              : "bg-gradient-to-br from-black/60 via-black/50 to-black/40"
-          )}
-          style={{ opacity: overlayOpacity }}
-        />
+      {children && (
+        <div className="col-start-1 row-start-1 relative z-10">{children}</div>
       )}
-
-      {/* Bordure inférieure */}
-      {showOrange && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-theme-accent/20 to-transparent opacity-60" />
-      )}
-
-      {/* Contenu */}
-      {children && <div className="relative z-10 h-full">{children}</div>}
     </div>
   );
 };
@@ -89,19 +86,12 @@ export const CS2HeroBackground: React.FC<{
   className?: string;
   children?: React.ReactNode;
 }> = ({ className = "", children }) => {
-  const { resolvedTheme } = useTheme();
-  const currentTheme = normalizeStoredTheme(resolvedTheme);
-  const showOrange = currentTheme === "cs2" || currentTheme === "light";
-
   return (
     <CS2HeaderBackground
       className={cn("min-h-screen", className)}
       overlay={true}
       overlayOpacity={0.75}
     >
-      {showOrange && (
-        <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-theme-accent/15 via-transparent to-background" />
-      )}
       {children}
     </CS2HeaderBackground>
   );
