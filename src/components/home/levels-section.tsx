@@ -18,7 +18,6 @@ import {
   homeStagger,
 } from "@/lib/home-animation-classes";
 import {
-  SparklesIcon,
   ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 import { SectionBottomFade } from "@/components/home/section-bottom-fade";
@@ -73,9 +72,7 @@ const COPY = {
     badge: "Programme fidélité",
     title: "Montez en niveau,",
     titleHighlight: " gagnez plus",
-    subtitle:
-      "Chaque vente vous fait progresser dans 6 niveaux cosmiques. Débloquez des bonus permanents, des fragments et des skins à chaque palier.",
-    levelsTitle: "Les 6 niveaux cosmiques",
+    tagline: "Vendez → gagnez de l'XP → débloquez des récompenses.",
     xpRate: (rate: string) => `1 XP = ${rate} € vendus`,
     fragmentsTitle: "Fragments — comment ça marche ?",
     fragmentsIntro:
@@ -96,9 +93,7 @@ const COPY = {
     badge: "Loyalty program",
     title: "Level up,",
     titleHighlight: " earn more",
-    subtitle:
-      "Every sale progresses you through 6 cosmic levels. Unlock permanent bonuses, fragments and skins at each tier.",
-    levelsTitle: "The 6 cosmic levels",
+    tagline: "Sell → earn XP → unlock rewards.",
     xpRate: (rate: string) => `1 XP = ${rate} € sold`,
     fragmentsTitle: "Fragments — how does it work?",
     fragmentsIntro:
@@ -134,7 +129,9 @@ export function LevelsSection() {
       <div className="container mx-auto px-4 relative z-10">
         <div className={`text-center mb-16 ${homeReveal.upSm}`}>
           <Badge variant="secondary" className="mb-4 bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20">
-            <SparklesIcon className="w-3.5 h-3.5 mr-1" />
+            <span className="mr-1" aria-hidden>
+              ✦
+            </span>
             {t.badge}
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -143,18 +140,13 @@ export function LevelsSection() {
               {t.titleHighlight}
             </span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            {t.subtitle}
-          </p>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">{t.tagline}</p>
           <p className="text-sm text-muted-foreground mt-2">{t.xpRate(xpPerEuro)}</p>
         </div>
 
         {/* Cosmic levels pyramid */}
         <div className={`mb-10 ${homeReveal.up} ${homeStagger(1)}`}>
-          <h3 className="text-center text-sm font-medium text-muted-foreground uppercase tracking-wider mb-8">
-            {t.levelsTitle}
-          </h3>
-          <div className="flex flex-wrap items-end justify-center gap-3 sm:gap-5 md:gap-6 px-2">
+          <div className="flex flex-wrap items-end justify-center md:justify-between gap-4 sm:gap-6 md:gap-7 lg:gap-8 w-full max-w-6xl mx-auto px-0">
             {LEVELS.map((level, i) => {
               const name = lang === "en" ? level.nameEn : level.name;
               const shortSummary = getShortRewardSummary(level.index, lang);
@@ -205,16 +197,19 @@ export function LevelsSection() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-12 items-stretch">
-          {/* Fragment hero — left half, full height */}
-          <div
-            className={`${homeReveal.upSm} flex items-center justify-center w-full min-h-[280px] sm:min-h-[340px] lg:min-h-[420px] h-full`}
-          >
-            <img
-              src="/levels/FRAGMENTMS.png"
-              alt={locale === "fr" ? "Fragments" : "Fragments"}
-              className="fragment-hero w-full h-full object-contain"
-              draggable={false}
-            />
+          {/* Fragment hero — left half, CTA aligned with right column footer */}
+          <div className={`${homeReveal.upSm} flex flex-col h-full`}>
+            <div className="flex flex-1 items-center justify-center w-full min-h-[280px] sm:min-h-[340px] lg:min-h-[420px]">
+              <img
+                src="/levels/FRAGMENTMS.png"
+                alt={locale === "fr" ? "Fragments" : "Fragments"}
+                className="fragment-hero w-full h-full object-contain"
+                draggable={false}
+              />
+            </div>
+            <Button asChild size="lg" variant="cta" className="mt-6 w-full shrink-0">
+              <Link href="/sell">{t.cta}</Link>
+            </Button>
           </div>
 
           {/* Fragments explanation — right half */}
@@ -255,12 +250,6 @@ export function LevelsSection() {
               </CardContent>
             </Card>
           </div>
-        </div>
-
-        <div className={`text-center ${homeReveal.upSm}`}>
-          <Button asChild size="lg" variant="cta">
-            <Link href="/sell">{t.cta}</Link>
-          </Button>
         </div>
       </div>
     </section>
