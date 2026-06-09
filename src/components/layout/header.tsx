@@ -145,9 +145,9 @@ export function Header() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <item.icon className={`h-4 w-4 transition-colors ${isActive ? "text-theme-accent" : "group-hover:text-theme-accent"}`} />
+                  <item.icon className={`h-4 w-4 transition-colors ${isActive ? "lunar-nav-link-active" : "group-hover:text-foreground/80"}`} />
                   <span>{item.name}</span>
-                  <div className={`absolute -bottom-[21px] left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--cta-from)] to-[var(--cta-to)] transition-transform duration-200 ${
+                  <div className={`absolute -bottom-[21px] left-0 right-0 h-0.5 lunar-nav-active-indicator transition-transform duration-200 ${
                     isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
                   }`}></div>
                 </Link>
@@ -159,7 +159,7 @@ export function Header() {
         {/* Actions Desktop */}
         <div className="hidden md:flex items-center justify-end gap-2">
           {/* Currency Selector */}
-          <CurrencySelector variant="ghost" size="sm" showFlag={true} />
+          <CurrencySelector variant="chrome" size="sm" showFlag={true} />
           
           {/* Stats Badge */}
           {/* <div className="hidden lg:flex items-center space-x-4 mr-4 px-3 py-1.5 bg-muted/50 rounded-lg border">
@@ -207,12 +207,12 @@ export function Header() {
               {/* Compteur de fragments */}
               <Link
                 href="/missions"
-                className="hidden sm:flex items-center gap-1 rounded-full border border-theme-highlight/30 bg-theme-highlight/10 dark:bg-theme-highlight/15 px-2.5 py-1 text-xs font-semibold text-theme-highlight hover:bg-theme-highlight/15 dark:hover:bg-theme-highlight/20 transition-colors"
+                className="hidden sm:flex items-center gap-1.5 overflow-visible rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-[#ffffff] hover:bg-white/[0.06] transition-colors"
               >
                 <FragmentAmount
                   amount={(user as unknown as { fragments?: number })?.fragments ?? 0}
-                  size="xs"
-                  className="text-xs font-semibold"
+                  size="sm"
+                  className="text-xs font-semibold text-[#ffffff]"
                 />
               </Link>
 
@@ -401,11 +401,11 @@ export function Header() {
                         onClick={() => setIsMenuOpen(false)}
                         className={`flex items-center space-x-3 p-3 text-sm font-medium rounded-md transition-colors ${
                           isActive
-                            ? "bg-theme-accent/10 text-theme-accent border-l-2 border-theme-accent"
+                            ? "bg-white/[0.06] text-[#e8e8f0] border-l-2 border-[#c0c0c0]"
                             : "hover:bg-accent"
                         }`}
                       >
-                        <item.icon className={`h-5 w-5 ${isActive ? "text-theme-accent" : ""}`} />
+                        <item.icon className={`h-5 w-5 ${isActive ? "text-[#c0c0c0]" : ""}`} />
                         <span>{item.name}</span>
                       </Link>
                     );

@@ -14,7 +14,7 @@ import { useLocale } from '@/components/providers/locale-provider';
 import { SupportedCurrency } from '@/lib/currency-converter';
 
 interface CurrencySelectorProps {
-  variant?: 'default' | 'outline' | 'ghost';
+  variant?: 'default' | 'outline' | 'ghost' | 'chrome';
   size?: 'default' | 'sm' | 'lg';
   showFlag?: boolean;
   showName?: boolean;
