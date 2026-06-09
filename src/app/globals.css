@@ -971,9 +971,10 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .lunar-footer--image {
-    background-size: contain;
-    background-position: center bottom;
+    background-image: url("/images/cs2/footer/moonskinbanniere2.png");
+    background-size: 100% auto;
     background-repeat: no-repeat;
+    background-position: center center;
   }
 
   .lunar-footer__overlay {
