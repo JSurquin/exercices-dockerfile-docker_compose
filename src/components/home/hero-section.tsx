@@ -3,7 +3,8 @@
 import type { ComponentType } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -221,13 +222,15 @@ export function HeroSection() {
           <div className={`space-y-6 sm:space-y-8 ${homeEnter.left}`}>
             {/* Badge */}
             <div className={`${homeEnter.up} ${homeDelay[200]}`}>
-              <Badge
-                variant="secondary"
-                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm"
+              <span
+                className={cn(
+                  buttonVariants({ variant: "chrome" }),
+                  "h-auto w-fit cursor-default px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm hover:brightness-100"
+                )}
               >
-                <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-theme-accent" />
+                <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-theme-accent" />
                 {messages.hero.badge}
-              </Badge>
+              </span>
             </div>
 
             {/* Main Title */}
