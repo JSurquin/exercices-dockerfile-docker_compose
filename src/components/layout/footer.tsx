@@ -39,7 +39,7 @@ export function Footer() {
   useEffect(() => setMounted(true), []);
 
   const currentTheme = mounted ? normalizeStoredTheme(resolvedTheme ?? theme) : "moonskin";
-  const showFooterImage = currentTheme === "cs2";
+  const showFooterImage = currentTheme !== "light";
 
   const links = {
     company: [
@@ -83,7 +83,8 @@ export function Footer() {
         style={
           showFooterImage
             ? {
-                backgroundImage: "url('/images/cs2/footer/moonskin.webp')",
+                backgroundImage: "url('/images/cs2/footer/space-background.jpg')",
+                backgroundPosition: "center center",
               }
             : undefined
         }
