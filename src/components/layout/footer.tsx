@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -32,7 +33,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 
 const FOOTER_SOCIAL_LINKS = [
   { key: "discord", href: MOONSKIN_DISCORD_URL, Icon: DiscordBrandIcon },
@@ -106,15 +106,11 @@ export function Footer() {
 
   return (
     <>
-      <footer
-        className={cn(
-          "relative border-t overflow-hidden lunar-footer",
-          showFooterImage && "lunar-footer--image"
-        )}
-      >
-        <div className="absolute inset-0 lunar-footer__overlay" />
+      <footer className="relative border-t lunar-footer">
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 lunar-footer__overlay" />
 
-        <div className="relative z-10">
+          <div className="relative z-10">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7">
             <div className="lunar-footer__card p-6 sm:p-8 mb-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 lg:gap-8">
@@ -241,6 +237,19 @@ export function Footer() {
             </div>
           </div>
         </div>
+        </div>
+
+        {showFooterImage && (
+          <Image
+            src="/images/cs2/footer/space-background.jpg"
+            alt=""
+            width={1280}
+            height={427}
+            className="block w-full h-auto"
+            aria-hidden
+            priority={false}
+          />
+        )}
       </footer>
       {tourActive && <SiteTour onFinish={() => endTour()} />}
     </>

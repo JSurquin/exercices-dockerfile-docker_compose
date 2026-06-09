@@ -986,13 +986,6 @@ body.next-dev-overlay-present #sentry-feedback {
       radial-gradient(ellipse at 70% 100%, rgba(140, 150, 170, 0.04) 0%, transparent 50%);
   }
 
-  .lunar-footer--image {
-    background-image: url("/images/cs2/footer/moonskinbanniere2.png");
-    background-size: 100% auto;
-    background-repeat: no-repeat;
-    background-position: center center;
-  }
-
   .lunar-footer__overlay {
     background: var(--background);
     opacity: 0.85;
