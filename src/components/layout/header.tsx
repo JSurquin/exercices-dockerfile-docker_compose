@@ -240,11 +240,12 @@ export function Header() {
               {/* Compteur de fragments */}
               <Link
                 href="/missions"
-                className="hidden sm:flex items-center gap-2 overflow-visible rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-sm font-semibold text-[#ffffff] hover:bg-white/[0.06] transition-colors"
+                className="hidden sm:flex h-9 items-center gap-1.5 overflow-visible rounded-full border border-white/10 bg-white/[0.04] px-2.5 text-sm font-semibold text-[#ffffff] hover:bg-white/[0.06] transition-colors"
               >
                 <FragmentAmount
                   amount={(user as unknown as { fragments?: number })?.fragments ?? 0}
                   size="sm"
+                  badgeContainerClassName="fragment-btn shrink-0"
                   className="text-sm font-semibold text-[#ffffff] overflow-visible"
                 />
               </Link>

@@ -705,6 +705,22 @@ body.next-dev-overlay-present #sentry-feedback {
       drop-shadow(0 20px 60px rgba(0, 0, 0, 0.8));
   }
 
+  .fragment-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+  }
+
+  .fragment-btn img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+
   /* Badge glass discret (fragments disponibles, etc.) */
   .mission-glass-badge {
     background: color-mix(in srgb, var(--theme-accent) 12%, transparent);

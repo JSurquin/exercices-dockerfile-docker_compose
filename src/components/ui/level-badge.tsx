@@ -62,25 +62,33 @@ interface FragmentBadgeProps {
   size?: keyof typeof FRAGMENT_SIZE_CLASSES;
   className?: string;
   alt?: string;
+  containerClassName?: string;
 }
 
 export function FragmentBadge({
   size = "md",
   className,
   alt = "Fragments",
+  containerClassName,
 }: FragmentBadgeProps) {
-  return (
+  const img = (
     <img
       src="/levels/FRAGMENTMS.png"
       alt={alt}
       className={cn(
         "block shrink-0 overflow-visible object-contain drop-shadow-[0_0_12px_rgba(236,72,153,0.35)]",
-        FRAGMENT_SIZE_CLASSES[size],
+        containerClassName == null && FRAGMENT_SIZE_CLASSES[size],
         className
       )}
       draggable={false}
     />
   );
+
+  if (containerClassName) {
+    return <span className={containerClassName}>{img}</span>;
+  }
+
+  return img;
 }
 
 interface FragmentAmountProps {
@@ -89,6 +97,7 @@ interface FragmentAmountProps {
   className?: string;
   prefix?: string;
   showBadge?: boolean;
+  badgeContainerClassName?: string;
 }
 
 export function FragmentAmount({
@@ -97,12 +106,15 @@ export function FragmentAmount({
   className,
   prefix = "",
   showBadge = true,
+  badgeContainerClassName,
 }: FragmentAmountProps) {
   return (
     <span className={cn("inline-flex items-center gap-1 overflow-visible", className)}>
       {prefix}
       <span>{amount}</span>
-      {showBadge && <FragmentBadge size={size} />}
+      {showBadge && (
+        <FragmentBadge size={size} containerClassName={badgeContainerClassName} />
+      )}
     </span>
   );
 }
