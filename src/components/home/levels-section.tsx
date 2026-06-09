@@ -204,20 +204,22 @@ export function LevelsSection() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-8 mb-12">
-          {/* Floating fragment hero — centered above the explanation card */}
-          <div className={`${homeReveal.upSm} flex items-center justify-center px-4 py-2`}>
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-12 items-stretch">
+          {/* Fragment hero — left half, full height */}
+          <div
+            className={`${homeReveal.upSm} flex items-center justify-center w-full min-h-[280px] sm:min-h-[340px] lg:min-h-[420px] h-full`}
+          >
             <img
               src="/levels/FRAGMENTMS.png"
               alt={locale === "fr" ? "Fragments" : "Fragments"}
-              className="fragment-hero w-[min(100%,320px)] sm:w-[min(100%,380px)] lg:w-[min(100%,420px)] h-auto object-contain"
+              className="fragment-hero w-full h-full object-contain"
               draggable={false}
             />
           </div>
 
-          {/* Fragments explanation */}
-          <div className={homeReveal.up}>
-            <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-theme-accent/5">
+          {/* Fragments explanation — right half */}
+          <div className={`${homeReveal.up} flex`}>
+            <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-theme-accent/5 flex-1">
               <CardContent className="p-6 flex flex-col h-full">
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                   <span aria-hidden>🔮</span>
