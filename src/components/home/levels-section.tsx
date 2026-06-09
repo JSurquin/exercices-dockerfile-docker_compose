@@ -74,14 +74,14 @@ const COPY = {
     titleHighlight: " gagnez plus",
     tagline: "Vendez → gagnez de l'XP → débloquez des récompenses.",
     xpRate: (rate: string) => `1 XP = ${rate} € vendus`,
-    fragmentsTitle: "Fragments — comment ça marche ?",
+    fragmentsTitle: "Fragments, comment ça marche ?",
     fragmentsIntro:
       "Les fragments sont la monnaie de récompense de MoonSkin. Tu en gagnes automatiquement à chaque vente, selon ton niveau de fidélité.",
     fragmentsBullet1: "Utilise tes fragments pour entrer dans les giveaways",
     fragmentsBullet2: "Plus tu as de fragments, plus tu as de chances de gagner",
     fragmentsBullet3: "Chaque palier débloque un bonus de fragments sur tes ventes",
     fragmentsFooter:
-      "Les fragments ne se dépensent pas — ils s'accumulent et te donnent des tickets d'entrée aux giveaways exclusifs MoonSkin.",
+      "Les fragments ne se dépensent pas, ils s'accumulent et te donnent des tickets d'entrée aux giveaways exclusifs MoonSkin.",
     fragmentsCta: "Voir les giveaways actifs",
     fragmentsBalance: "Ton solde de fragments",
     cta: "Commencer à vendre",
@@ -95,14 +95,14 @@ const COPY = {
     titleHighlight: " earn more",
     tagline: "Sell → earn XP → unlock rewards.",
     xpRate: (rate: string) => `1 XP = ${rate} € sold`,
-    fragmentsTitle: "Fragments — how does it work?",
+    fragmentsTitle: "Fragments, how does it work?",
     fragmentsIntro:
       "Fragments are MoonSkin's reward currency. You earn them automatically with every sale, based on your loyalty level.",
     fragmentsBullet1: "Use your fragments to enter giveaways",
     fragmentsBullet2: "The more fragments you have, the better your chances of winning",
     fragmentsBullet3: "Each tier unlocks a fragment bonus on your sales",
     fragmentsFooter:
-      "Fragments are not spent — they accumulate and earn you entry tickets to exclusive MoonSkin giveaways.",
+      "Fragments are not spent, they accumulate and earn you entry tickets to exclusive MoonSkin giveaways.",
     fragmentsCta: "View active giveaways",
     fragmentsBalance: "Your fragment balance",
     cta: "Start selling",
