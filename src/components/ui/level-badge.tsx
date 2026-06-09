@@ -11,10 +11,10 @@ const SIZE_CLASSES = {
   xl: "h-24 w-24",
 } as const;
 
-/** Fragment icon is wide (16:9) — height only, no square crop */
+/** Fragment icon — height drives visible logo size (PNG trimmed to content) */
 const FRAGMENT_SIZE_CLASSES = {
-  xs: "h-6 w-auto max-w-none",
-  sm: "h-9 w-auto max-w-none",
+  xs: "h-7 w-auto max-w-none",
+  sm: "h-8 w-auto max-w-none",
   md: "h-12 w-auto max-w-none",
   lg: "h-16 w-auto max-w-none",
   xl: "h-24 w-auto max-w-none",

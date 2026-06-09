@@ -204,22 +204,20 @@ export function LevelsSection() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 mb-12">
-          {/* Floating fragment hero */}
-          <div
-            className={`${homeReveal.left} flex items-center justify-center min-h-[280px] lg:min-h-[420px] px-4`}
-          >
+        <div className="flex flex-col gap-8 mb-12">
+          {/* Floating fragment hero — centered above the explanation card */}
+          <div className={`${homeReveal.upSm} flex items-center justify-center px-4 py-2`}>
             <img
               src="/levels/FRAGMENTMS.png"
               alt={locale === "fr" ? "Fragments" : "Fragments"}
-              className="fragment-hero w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[380px] h-auto object-contain"
+              className="fragment-hero w-[min(100%,320px)] sm:w-[min(100%,380px)] lg:w-[min(100%,420px)] h-auto object-contain"
               draggable={false}
             />
           </div>
 
           {/* Fragments explanation */}
-          <div className={homeReveal.right}>
-            <Card className="h-full border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-theme-accent/5">
+          <div className={homeReveal.up}>
+            <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-theme-accent/5">
               <CardContent className="p-6 flex flex-col h-full">
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                   <span aria-hidden>🔮</span>
