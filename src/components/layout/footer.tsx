@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -106,7 +105,9 @@ export function Footer() {
 
   return (
     <>
-      <footer className="relative border-t lunar-footer">
+      <footer
+        className={`relative border-t lunar-footer${showFooterImage ? " lunar-footer--banner" : ""}`}
+      >
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 lunar-footer__overlay" />
 
@@ -238,18 +239,6 @@ export function Footer() {
           </div>
         </div>
         </div>
-
-        {showFooterImage && (
-          <Image
-            src="/images/cs2/footer/space-background.jpg"
-            alt=""
-            width={1280}
-            height={427}
-            className="block w-full h-auto"
-            aria-hidden
-            priority={false}
-          />
-        )}
       </footer>
       {tourActive && <SiteTour onFinish={() => endTour()} />}
     </>
