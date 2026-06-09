@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -42,17 +42,45 @@ import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { UserRoleBadge } from "@/components/ui/user-role-badge";
 import { FragmentAmount } from "@/components/ui/level-badge";
+import { cn } from "@/lib/utils";
 
 export function Header() {
   const { user, loginWithSteam, loginWithDiscord, logout, isLoading } = useAuth();
   const { locale, setLocale, messages } = useLocale();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [navVisible, setNavVisible] = useState(true);
+  const lastScrollY = useRef(0);
   const pathname = usePathname();
 
   useEffect(() => {
     window.dispatchEvent(
       new CustomEvent("mobile-menu-open-change", { detail: { open: isMenuOpen } })
     );
+  }, [isMenuOpen]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (isMenuOpen) {
+        setNavVisible(true);
+        return;
+      }
+
+      const currentY = window.scrollY;
+      const delta = currentY - lastScrollY.current;
+
+      if (currentY <= 16) {
+        setNavVisible(true);
+      } else if (delta > 8) {
+        setNavVisible(false);
+      } else if (delta < -8) {
+        setNavVisible(true);
+      }
+
+      lastScrollY.current = currentY;
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, [isMenuOpen]);
   const { data: session } = useSession();
 
@@ -113,7 +141,12 @@ export function Header() {
   };
 
   return (
-    <header className="lunar-nav sticky top-0 z-50 w-full">
+    <header
+      className={cn(
+        "lunar-nav sticky top-0 z-50 w-full transition-transform duration-300 ease-in-out will-change-transform",
+        navVisible ? "translate-y-0" : "-translate-y-full"
+      )}
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex w-full justify-between h-16 items-center">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2 sm:space-x-3 shrink-0 min-w-0 mr-2 sm:mr-6 lg:mr-8">
@@ -212,7 +245,7 @@ export function Header() {
                 <FragmentAmount
                   amount={(user as unknown as { fragments?: number })?.fragments ?? 0}
                   size="sm"
-                  className="text-xs font-semibold text-[#ffffff]"
+                  className="text-xs font-semibold text-[#ffffff] overflow-visible"
                 />
               </Link>
 

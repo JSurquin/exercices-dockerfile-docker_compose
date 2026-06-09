@@ -11,6 +11,15 @@ const SIZE_CLASSES = {
   xl: "h-24 w-24",
 } as const;
 
+/** Fragment icon is wide (16:9) — height only, no square crop */
+const FRAGMENT_SIZE_CLASSES = {
+  xs: "h-4 w-auto max-w-none",
+  sm: "h-5 w-auto max-w-none",
+  md: "h-8 w-auto max-w-none",
+  lg: "h-12 w-auto max-w-none",
+  xl: "h-16 w-auto max-w-none",
+} as const;
+
 interface LevelBadgeProps {
   tierIndex: number;
   size?: keyof typeof SIZE_CLASSES;
@@ -50,7 +59,7 @@ export function LevelBadge({
 }
 
 interface FragmentBadgeProps {
-  size?: keyof typeof SIZE_CLASSES;
+  size?: keyof typeof FRAGMENT_SIZE_CLASSES;
   className?: string;
   alt?: string;
 }
@@ -64,7 +73,11 @@ export function FragmentBadge({
     <img
       src="/levels/FRAGMENTMS.png"
       alt={alt}
-      className={cn("object-contain drop-shadow-[0_0_12px_rgba(236,72,153,0.35)]", SIZE_CLASSES[size], className)}
+      className={cn(
+        "block shrink-0 overflow-visible object-contain drop-shadow-[0_0_12px_rgba(236,72,153,0.35)]",
+        FRAGMENT_SIZE_CLASSES[size],
+        className
+      )}
       draggable={false}
     />
   );
@@ -72,7 +85,7 @@ export function FragmentBadge({
 
 interface FragmentAmountProps {
   amount: number | string;
-  size?: keyof typeof SIZE_CLASSES;
+  size?: keyof typeof FRAGMENT_SIZE_CLASSES;
   className?: string;
   prefix?: string;
   showBadge?: boolean;
@@ -86,10 +99,10 @@ export function FragmentAmount({
   showBadge = true,
 }: FragmentAmountProps) {
   return (
-    <span className={cn("inline-flex items-center gap-1", className)}>
+    <span className={cn("inline-flex items-center gap-1 overflow-visible", className)}>
       {prefix}
       <span>{amount}</span>
-      {showBadge && <FragmentBadge size={size} className="shrink-0" />}
+      {showBadge && <FragmentBadge size={size} />}
     </span>
   );
 }
