@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
@@ -113,14 +114,14 @@ export function Footer() {
 
           <div className="relative z-10">
           <div
-            className={`container mx-auto px-4 sm:px-6 lg:px-8${showFooterImage ? " py-10 sm:py-14 lg:py-16" : " py-5 sm:py-7"}`}
+            className={`container mx-auto px-4 sm:px-6 lg:px-8${showFooterImage ? " pb-10 sm:pb-14 lg:pb-16" : " py-5 sm:py-7"}`}
           >
             <div className="lunar-footer__card p-6 sm:p-8 mb-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 lg:gap-8">
                 <div className="lg:col-span-2">
                   <Link href="/" className="flex items-center space-x-2 mb-4">
-                    <div className="h-8 w-8 rounded lunar-footer__logo flex items-center justify-center">
-                      <span className="text-white font-bold text-sm">CS</span>
+                    <div className="h-8 w-8 rounded-lg overflow-hidden shrink-0">
+                      <Image src="/images/logo.webp" alt="MoonSkin" width={32} height={32} />
                     </div>
                     <span className="font-bold text-xl text-foreground">MoonSkin</span>
                   </Link>
