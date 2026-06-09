@@ -25,7 +25,7 @@ import { SectionBottomFade } from "@/components/home/section-bottom-fade";
 import { useAuth } from "@/components/providers/auth-provider";
 import { FragmentAmount } from "@/components/ui/level-badge";
 
-const LEVEL_BADGE_SIZES = [32, 42, 54, 68, 84, 104] as const;
+const LEVEL_BADGE_SIZES = [44, 58, 74, 92, 112, 136] as const;
 
 function getLevelOpacity(levelIndex: number): number {
   return 0.5 + (levelIndex / 5) * 0.5;
@@ -164,7 +164,7 @@ export function LevelsSection() {
               return (
                 <div
                   key={level.index}
-                  className={`level-card group relative flex flex-col items-center gap-1.5 transition-transform duration-200 ease-out hover:scale-[1.12] hover:z-10 cursor-default ${homeReveal.scale} ${homeStagger(i + 2)}`}
+                  className={`level-card group relative flex flex-col items-center gap-2 transition-transform duration-200 ease-out hover:scale-[1.12] hover:z-10 cursor-default ${homeReveal.scale} ${homeStagger(i + 2)}`}
                 >
                   <LevelBadge
                     tierIndex={badgeTier}
@@ -172,10 +172,10 @@ export function LevelsSection() {
                     alt={name}
                     style={{ opacity: getLevelOpacity(level.index) }}
                   />
-                  <span className="text-[10px] sm:text-xs text-muted-foreground text-center leading-tight max-w-[80px]">
+                  <span className="text-xs sm:text-sm font-medium text-muted-foreground text-center leading-tight max-w-[100px]">
                     {name}
                   </span>
-                  <span className="text-[9px] sm:text-[10px] text-muted-foreground/80 text-center leading-tight max-w-[88px]">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground/80 text-center leading-tight max-w-[112px]">
                     {shortSummary}
                   </span>
 
