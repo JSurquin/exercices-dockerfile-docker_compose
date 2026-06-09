@@ -13,11 +13,11 @@ const SIZE_CLASSES = {
 
 /** Fragment icon is wide (16:9) — height only, no square crop */
 const FRAGMENT_SIZE_CLASSES = {
-  xs: "h-4 w-auto max-w-none",
-  sm: "h-5 w-auto max-w-none",
-  md: "h-8 w-auto max-w-none",
-  lg: "h-12 w-auto max-w-none",
-  xl: "h-16 w-auto max-w-none",
+  xs: "h-6 w-auto max-w-none",
+  sm: "h-9 w-auto max-w-none",
+  md: "h-12 w-auto max-w-none",
+  lg: "h-16 w-auto max-w-none",
+  xl: "h-24 w-auto max-w-none",
 } as const;
 
 interface LevelBadgeProps {

@@ -689,6 +689,22 @@ body.next-dev-overlay-present #sentry-feedback {
     background: linear-gradient(90deg, var(--cta-from), var(--cta-to));
   }
 
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-16px);
+    }
+  }
+
+  .fragment-hero {
+    animation: float 4s ease-in-out infinite;
+    filter: drop-shadow(0 0 40px rgba(180, 140, 220, 0.4))
+      drop-shadow(0 20px 60px rgba(0, 0, 0, 0.8));
+  }
+
   /* Badge glass discret (fragments disponibles, etc.) */
   .mission-glass-badge {
     background: color-mix(in srgb, var(--theme-accent) 12%, transparent);

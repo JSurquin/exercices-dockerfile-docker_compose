@@ -19,7 +19,6 @@ import {
 } from "@/lib/home-animation-classes";
 import {
   SparklesIcon,
-  ArrowTrendingUpIcon,
   ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 import { SectionBottomFade } from "@/components/home/section-bottom-fade";
@@ -206,43 +205,16 @@ export function LevelsSection() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 mb-12">
-          {/* Cosmic levels list */}
-          <div className={homeReveal.left}>
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <ArrowTrendingUpIcon className="w-5 h-5 text-theme-accent" />
-              {t.levelsTitle}
-            </h3>
-            <div className="space-y-2">
-              {LEVELS.map((level) => {
-                const name = lang === "en" ? level.nameEn : level.name;
-                const bonusStr = formatBonus(level);
-                const badgeTier = Math.min(level.index, 3);
-
-                return (
-                  <div
-                    key={level.index}
-                    className="flex items-center gap-3 rounded-lg border border-border bg-card/50 px-3 py-2.5 hover:border-theme-accent/30 transition-colors"
-                  >
-                    {level.index > 0 ? (
-                      <LevelBadge tierIndex={badgeTier} size="sm" />
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground">
-                        0
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">{name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatXp(level.xpStart)} – {formatXp(level.xpEnd)} XP
-                      </p>
-                    </div>
-                    <Badge variant="outline" className="shrink-0 text-theme-highlight border-theme-accent/30">
-                      {bonusStr}
-                    </Badge>
-                  </div>
-                );
-              })}
-            </div>
+          {/* Floating fragment hero */}
+          <div
+            className={`${homeReveal.left} flex items-center justify-center min-h-[280px] lg:min-h-[420px] px-4`}
+          >
+            <img
+              src="/levels/FRAGMENTMS.png"
+              alt={locale === "fr" ? "Fragments" : "Fragments"}
+              className="fragment-hero w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[380px] h-auto object-contain"
+              draggable={false}
+            />
           </div>
 
           {/* Fragments explanation */}
@@ -271,7 +243,7 @@ export function LevelsSection() {
                     <p className="text-xs text-muted-foreground mb-1">{t.fragmentsBalance}</p>
                     <FragmentAmount
                       amount={user.fragments ?? 0}
-                      size="sm"
+                      size="md"
                       className="text-lg font-semibold text-theme-accent dark:text-theme-highlight"
                     />
                   </div>
