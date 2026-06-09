@@ -84,7 +84,6 @@ export function Footer() {
           showFooterImage
             ? {
                 backgroundImage: "url('/images/cs2/footer/space-background.jpg')",
-                backgroundPosition: "center center",
               }
             : undefined
         }

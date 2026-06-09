@@ -944,8 +944,8 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .lunar-footer--image {
-    background-size: cover;
-    background-position: 100% 50%;
+    background-size: 100% auto;
+    background-position: center bottom;
     background-repeat: no-repeat;
   }
 
