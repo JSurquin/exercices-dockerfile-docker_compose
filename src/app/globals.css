@@ -994,6 +994,10 @@ body.next-dev-overlay-present #sentry-feedback {
     background-repeat: no-repeat;
     background-position: center bottom;
     position: relative;
+    /* FOOTER.png = 6000×2000 (ratio 3:1) — hauteur min pour afficher l'image entière */
+    min-height: 33.333vw;
+    padding-top: 2.5rem;
+    padding-bottom: 3rem;
   }
 
   .lunar-footer--banner .lunar-footer__overlay {

@@ -88,6 +88,8 @@ export function Footer() {
       { name: messages.footer.links.contact, href: "/contact" },
       { name: messages.footer.links.status, href: "/status" },
       { name: messages.footer.links.api, href: "/api-docs" },
+      { name: messages.footer.links.skinSaleTerms, href: "/skin-sale-terms" },
+      { name: messages.footer.links.paymentCashout, href: "/payment-cashout" },
     ],
     account: [{ name: messages.footer.links.login, href: "/login" }],
     legal: [
@@ -95,9 +97,7 @@ export function Footer() {
       { name: messages.footer.links.privacy, href: "/privacy" },
       { name: messages.footer.links.kycPolicy, href: "/kyc-policy" },
       { name: messages.footer.links.amlPolicy, href: "/aml-policy" },
-      { name: messages.footer.links.paymentCashout, href: "/payment-cashout" },
       { name: messages.footer.links.mentionsLegales, href: "/mentions-legales" },
-      { name: messages.footer.links.skinSaleTerms, href: "/skin-sale-terms" },
     ],
   };
 
@@ -112,7 +112,9 @@ export function Footer() {
           <div className="absolute inset-0 lunar-footer__overlay" />
 
           <div className="relative z-10">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7">
+          <div
+            className={`container mx-auto px-4 sm:px-6 lg:px-8${showFooterImage ? " py-10 sm:py-14 lg:py-16" : " py-5 sm:py-7"}`}
+          >
             <div className="lunar-footer__card p-6 sm:p-8 mb-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 lg:gap-8">
                 <div className="lg:col-span-2">
