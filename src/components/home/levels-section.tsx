@@ -20,9 +20,11 @@ import {
 import {
   SparklesIcon,
   ArrowTrendingUpIcon,
-  GiftIcon,
+  ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 import { SectionBottomFade } from "@/components/home/section-bottom-fade";
+import { useAuth } from "@/components/providers/auth-provider";
+import { FragmentAmount } from "@/components/ui/level-badge";
 
 const LEVEL_BADGE_SIZES = [32, 42, 54, 68, 84, 104] as const;
 
@@ -76,19 +78,20 @@ const COPY = {
       "Chaque vente vous fait progresser dans 6 niveaux cosmiques. Débloquez des bonus permanents, des fragments et des skins à chaque palier.",
     levelsTitle: "Les 6 niveaux cosmiques",
     xpRate: (rate: string) => `1 XP = ${rate} € vendus`,
-    fragmentsDesc: "Collectez des fragments à chaque palier pour participer aux giveaways.",
-    tierRewards: "Récompenses par palier",
+    fragmentsTitle: "Fragments — comment ça marche ?",
+    fragmentsIntro:
+      "Les fragments sont la monnaie de récompense de MoonSkin. Tu en gagnes automatiquement à chaque vente, selon ton niveau de fidélité.",
+    fragmentsBullet1: "Utilise tes fragments pour entrer dans les giveaways",
+    fragmentsBullet2: "Plus tu as de fragments, plus tu as de chances de gagner",
+    fragmentsBullet3: "Chaque palier débloque un bonus de fragments sur tes ventes",
+    fragmentsFooter:
+      "Les fragments ne se dépensent pas — ils s'accumulent et te donnent des tickets d'entrée aux giveaways exclusifs MoonSkin.",
+    fragmentsCta: "Voir les giveaways actifs",
+    fragmentsBalance: "Ton solde de fragments",
     cta: "Commencer à vendre",
     bonusLabel: "Bonus vente",
     xpRequired: "XP requis",
     fullRewards: "Récompenses complètes",
-    whyLine1: "Plus vous vendez, plus vous gagnez.",
-    whyLine2:
-      "Chaque niveau débloque des avantages permanents : bonus sur chaque vente, fragments pour les giveaways, et skins exclusifs.",
-    comingSoon: "À venir",
-    comingSoonDetail:
-      "pour les membres fidèles — crédit instantané, bonus majorés, giveaways exclusifs réservés aux hauts rangs.",
-    soonBadge: "SOON",
   },
   en: {
     badge: "Loyalty program",
@@ -98,32 +101,31 @@ const COPY = {
       "Every sale progresses you through 6 cosmic levels. Unlock permanent bonuses, fragments and skins at each tier.",
     levelsTitle: "The 6 cosmic levels",
     xpRate: (rate: string) => `1 XP = ${rate} € sold`,
-    fragmentsDesc: "Collect fragments at each tier to enter giveaways.",
-    tierRewards: "Tier rewards",
+    fragmentsTitle: "Fragments — how does it work?",
+    fragmentsIntro:
+      "Fragments are MoonSkin's reward currency. You earn them automatically with every sale, based on your loyalty level.",
+    fragmentsBullet1: "Use your fragments to enter giveaways",
+    fragmentsBullet2: "The more fragments you have, the better your chances of winning",
+    fragmentsBullet3: "Each tier unlocks a fragment bonus on your sales",
+    fragmentsFooter:
+      "Fragments are not spent — they accumulate and earn you entry tickets to exclusive MoonSkin giveaways.",
+    fragmentsCta: "View active giveaways",
+    fragmentsBalance: "Your fragment balance",
     cta: "Start selling",
     bonusLabel: "Sale bonus",
     xpRequired: "XP required",
     fullRewards: "Full rewards",
-    whyLine1: "The more you sell, the more you earn.",
-    whyLine2:
-      "Each level unlocks permanent perks: sale bonuses, giveaway fragments, and exclusive skins.",
-    comingSoon: "Coming soon",
-    comingSoonDetail:
-      "for loyal members — instant credit, boosted bonuses, exclusive high-rank giveaways.",
-    soonBadge: "SOON",
   },
 } as const;
 
+const FRAGMENT_BULLETS = ["fragmentsBullet1", "fragmentsBullet2", "fragmentsBullet3"] as const;
+
 export function LevelsSection() {
   const { locale } = useLocale();
+  const { user } = useAuth();
   const t = COPY[locale as keyof typeof COPY] ?? COPY.en;
   const lang = (locale === "fr" ? "fr" : "en") as "fr" | "en";
   const xpPerEuro = (1 / XP_RATE).toFixed(2);
-
-  const exampleRewards = Array.from({ length: TIERS_PER_LEVEL }, (_, i) => {
-    const reward = getTierReward(TIERS_PER_LEVEL + i);
-    return lang === "en" ? reward.descriptionEn : reward.description;
-  });
 
   return (
     <section className="py-24 relative overflow-hidden">
@@ -203,26 +205,6 @@ export function LevelsSection() {
           </div>
         </div>
 
-        {/* Why progress block */}
-        <div
-          className={`mb-16 max-w-2xl mx-auto rounded-xl border border-border/50 bg-[rgba(255,255,255,0.04)] px-5 py-4 text-center ${homeReveal.upSm}`}
-        >
-          <p className="text-sm text-muted-foreground mb-2">{t.whyLine1}</p>
-          <p className="text-sm text-muted-foreground mb-3">{t.whyLine2}</p>
-          <p className="text-xs text-muted-foreground/90 flex flex-wrap items-center justify-center gap-1.5">
-            <span aria-hidden>🔮</span>
-            <Badge
-              variant="outline"
-              className="text-[10px] px-1.5 py-0 h-4 border-theme-accent/40 bg-theme-accent/10 text-theme-accent dark:text-theme-highlight font-semibold uppercase tracking-wide"
-            >
-              {t.soonBadge}
-            </Badge>
-            <span className="italic text-purple-500 dark:text-purple-400">{t.comingSoon}</span>
-            <span>{t.comingSoonDetail}</span>
-            <span aria-hidden>😚</span>
-          </p>
-        </div>
-
         <div className="grid lg:grid-cols-2 gap-8 mb-12">
           {/* Cosmic levels list */}
           <div className={homeReveal.left}>
@@ -263,24 +245,41 @@ export function LevelsSection() {
             </div>
           </div>
 
-          {/* Tier rewards example */}
+          {/* Fragments explanation */}
           <div className={homeReveal.right}>
             <Card className="h-full border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-theme-accent/5">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                  <GiftIcon className="w-5 h-5 text-purple-500" />
-                  {t.tierRewards}
+              <CardContent className="p-6 flex flex-col h-full">
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <span aria-hidden>🔮</span>
+                  {t.fragmentsTitle}
                 </h3>
-                <p className="text-sm text-muted-foreground mb-4">{t.fragmentsDesc}</p>
+                <p className="text-sm text-muted-foreground mb-4">{t.fragmentsIntro}</p>
 
-                <div className="space-y-3">
-                  {exampleRewards.map((label, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <LevelBadge tierIndex={i} size="sm" />
-                      <span className="text-sm text-muted-foreground">{label}</span>
-                    </div>
+                <ul className="space-y-2.5 mb-4">
+                  {FRAGMENT_BULLETS.map((key) => (
+                    <li key={key} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <ArrowRightIcon className="w-4 h-4 shrink-0 mt-0.5 text-theme-accent" />
+                      <span>{t[key]}</span>
+                    </li>
                   ))}
-                </div>
+                </ul>
+
+                <p className="text-sm text-muted-foreground/90 mb-5">{t.fragmentsFooter}</p>
+
+                {user && (
+                  <div className="mb-5 rounded-lg border border-theme-accent/20 bg-theme-accent/5 px-4 py-3">
+                    <p className="text-xs text-muted-foreground mb-1">{t.fragmentsBalance}</p>
+                    <FragmentAmount
+                      amount={user.fragments ?? 0}
+                      size="sm"
+                      className="text-lg font-semibold text-theme-accent dark:text-theme-highlight"
+                    />
+                  </div>
+                )}
+
+                <Button asChild variant="outline" className="mt-auto border-purple-500/30 hover:border-purple-500/50">
+                  <Link href="/giveaways">{t.fragmentsCta}</Link>
+                </Button>
               </CardContent>
             </Card>
           </div>
