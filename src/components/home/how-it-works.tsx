@@ -265,7 +265,7 @@ export function HowItWorks() {
 
         {/* CTA */}
         <div className={`text-center ${homeReveal.upSm}`}>
-          <div className="lunar-card p-8">
+          <div className="lunar-card how-it-works-cta-card p-8">
             <h3 className="text-2xl font-bold mb-4">{messages.howItWorks.cta.title}</h3>
             <p className="text-muted-foreground mb-6">
               {messages.howItWorks.cta.description}

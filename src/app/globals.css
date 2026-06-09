@@ -1466,11 +1466,26 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .how-it-works-step-card,
-  .how-it-works-benefit-card {
+  .how-it-works-benefit-card,
+  .how-it-works-cta-card {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
     transition:
       transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
       box-shadow 0.35s ease,
       border-color 0.35s ease;
+  }
+
+  .cs2 .how-it-works-step-card,
+  .cs2 .how-it-works-benefit-card,
+  .cs2 .how-it-works-cta-card,
+  .light .how-it-works-step-card,
+  .light .how-it-works-benefit-card,
+  .light .how-it-works-cta-card {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
   }
 
   .how-it-works-glow-far.lunar-card {
