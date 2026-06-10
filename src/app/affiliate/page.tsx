@@ -12,10 +12,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { useLocale } from '@/components/providers/locale-provider';
+import { useCurrency } from '@/components/providers/currency-provider';
 import { PageLoading } from '@/components/ui/page-loading';
 import { useSession } from '~/lib/auth-client';
 import { queryKeys } from '@/lib/query-keys';
 import { AffiliateCommission } from '@/lib/types';
+import { currencyConverter, formatCentsToCurrency } from '@/lib/currency-converter';
 import { toast } from 'sonner';
 import {
   Copy,
@@ -39,13 +41,19 @@ import {
   Check,
 } from 'lucide-react';
 
+const CHROME_ICON = 'text-muted-foreground';
+
 export default function AffiliatePage() {
   const { messages } = useLocale();
+  const { selectedCurrency } = useCurrency();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const [customPath, setCustomPath] = useState('');
   const [generatedLink, setGeneratedLink] = useState('');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [fmt, setFmt] = useState<(cents: number) => string>(
+    (cents) => formatCentsToCurrency(cents, 'EUR')
+  );
 
   const userId = session?.user?.id;
 
@@ -107,6 +115,31 @@ export default function AffiliatePage() {
 
   const commissions = pendingCommissionsData ?? [];
   const paidCommissions = paidCommissionsData ?? [];
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      if (selectedCurrency === 'EUR') {
+        if (!cancelled) {
+          setFmt(() => (cents: number) => formatCentsToCurrency(cents, 'EUR'));
+        }
+        return;
+      }
+
+      const rate = await currencyConverter.getExchangeRate('EUR', selectedCurrency);
+      if (!cancelled) {
+        setFmt(
+          () => (cents: number) =>
+            formatCentsToCurrency(Math.round(cents * rate), selectedCurrency)
+        );
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCurrency]);
 
   // Détecter si l'utilisateur a visité sa propre page avec son propre lien affilié
   useEffect(() => {
@@ -183,9 +216,6 @@ export default function AffiliatePage() {
     }
   };
 
-  const fmt = (cents: number) =>
-    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100);
-
   const fmtDate = (d: string | Date) =>
     new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(d));
 
@@ -222,29 +252,29 @@ export default function AffiliatePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-slate-950/50">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden border-b border-purple-500/20 bg-gradient-to-r from-purple-950/40 via-slate-900 to-indigo-950/40">
+      <div className="relative overflow-hidden border-b border-white/[0.07] bg-[rgba(255,255,255,0.04)] backdrop-blur-[20px]">
         <div className="absolute inset-0 bg-[url('/images/cs2-pattern.svg')] opacity-5" />
         <div className="container mx-auto px-4 py-10 relative">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
-                  <UserCheck className="h-8 w-8 text-white" />
+                <div className="h-16 w-16 rounded-2xl border border-[rgba(200,205,220,0.2)] bg-[rgba(255,255,255,0.06)] backdrop-blur-sm flex items-center justify-center">
+                  <UserCheck className={`h-8 w-8 ${CHROME_ICON}`} />
                 </div>
-                {affiliateData.isActive && (
-                  <div className="absolute -top-1 -right-1 h-4 w-4 bg-green-400 rounded-full border-2 border-background animate-pulse" />
-                )}
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <h1 className="text-2xl font-bold text-white">{messages.affiliate.dashboard.title}</h1>
-                  <Badge className="bg-purple-500/20 border-purple-500/40 text-purple-300 text-xs">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs border border-[rgba(200,205,220,0.15)] bg-[rgba(255,255,255,0.04)] backdrop-blur-sm text-foreground/80">
+                    {affiliateData.isActive && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-400/80 shrink-0" />
+                    )}
                     {affiliateData.isActive ? messages.affiliate.dashboard.active : messages.affiliate.dashboard.inactive}
-                  </Badge>
+                  </span>
                 </div>
                 <p className="text-slate-400 text-sm">
                   {messages.affiliate.dashboard.codeLabel} :{' '}
-                  <span className="font-mono font-semibold text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded">
+                  <span className="font-mono font-semibold text-foreground/90 bg-[rgba(255,255,255,0.06)] border border-[rgba(200,205,220,0.12)] px-2 py-0.5 rounded">
                     {affiliateData.code}
                   </span>
                   {' · '}
@@ -258,11 +288,11 @@ export default function AffiliatePage() {
 
             {/* Quick copy */}
             <Button
+              variant="chrome"
               onClick={() => generateAffiliateLink('', 'hero')}
-              className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-lg shadow-purple-500/20"
             >
               {copiedKey === 'hero' ? (
-                <Check className="h-4 w-4 mr-2 text-green-300" />
+                <Check className={`h-4 w-4 mr-2 ${CHROME_ICON}`} />
               ) : (
                 <Copy className="h-4 w-4 mr-2" />
               )}
@@ -276,32 +306,28 @@ export default function AffiliatePage() {
         {/* KPI Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            icon={<Users className="h-5 w-5 text-blue-400" />}
+            icon={<Users className={`h-5 w-5 ${CHROME_ICON}`} />}
             label={messages.affiliate.dashboard.kpi.referrals}
             value={affiliateData.totalReferrals.toString()}
             sub={messages.affiliate.dashboard.kpi.referralsSub}
-            color="blue"
           />
           <StatCard
-            icon={<TrendingUp className="h-5 w-5 text-emerald-400" />}
+            icon={<TrendingUp className={`h-5 w-5 ${CHROME_ICON}`} />}
             label={messages.affiliate.dashboard.kpi.totalVolume}
             value={fmt(affiliateData.totalVolumeCents)}
             sub={messages.affiliate.dashboard.kpi.totalVolumeSub}
-            color="emerald"
           />
           <StatCard
-            icon={<DollarSign className="h-5 w-5 text-purple-400" />}
+            icon={<DollarSign className={`h-5 w-5 ${CHROME_ICON}`} />}
             label={messages.affiliate.dashboard.kpi.totalCommissions}
             value={fmt(affiliateData.totalCommissionCents)}
             sub={`${fmt(paidTotal)} ${messages.affiliate.dashboard.commissionPaid.toLowerCase()}`}
-            color="purple"
           />
           <StatCard
-            icon={<Clock className="h-5 w-5 text-theme-highlight" />}
+            icon={<Clock className={`h-5 w-5 ${CHROME_ICON}`} />}
             label={messages.affiliate.dashboard.kpi.pending}
             value={fmt(pendingTotal)}
             sub={`${commissions.length} commission(s)`}
-            color="orange"
           />
         </div>
 
@@ -319,7 +345,7 @@ export default function AffiliatePage() {
                 <span className="text-xs text-slate-400">{messages.affiliate.dashboard.conversionRate}</span>
                 <span className="text-sm font-bold text-white">{conversionPct}%</span>
               </div>
-              <Progress value={parseFloat(conversionPct)} className="h-2 bg-slate-700" />
+              <Progress value={parseFloat(conversionPct)} className="mission-progress h-2" />
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -333,19 +359,19 @@ export default function AffiliatePage() {
                   ((affiliateData.metrics?.averageOrderValue || 0) / 10000) * 100,
                   100
                 )}
-                className="h-2 bg-slate-700"
+                className="mission-progress h-2"
               />
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-slate-400">{messages.affiliate.dashboard.commissionRate}</span>
-                <span className="text-sm font-bold text-purple-300">
+                <span className="text-sm font-bold text-white">
                   {(affiliateData.commissionRate * 100).toFixed(1)}%
                 </span>
               </div>
               <Progress
                 value={affiliateData.commissionRate * 100}
-                className="h-2 bg-slate-700"
+                className="mission-progress h-2"
               />
             </div>
           </CardContent>
@@ -353,16 +379,16 @@ export default function AffiliatePage() {
 
         {/* Tabs */}
         <Tabs defaultValue="referrals" className="space-y-6">
-          <TabsList className="bg-slate-800 border border-slate-700">
-            <TabsTrigger value="referrals" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+          <TabsList className="bg-slate-800/60 border border-[rgba(200,205,220,0.12)] backdrop-blur-sm">
+            <TabsTrigger value="referrals" className="data-[state=active]:bg-[rgba(255,255,255,0.08)] data-[state=active]:text-foreground data-[state=active]:border-[rgba(200,205,220,0.2)]">
               <Users className="h-4 w-4 mr-2" />
               {messages.affiliate.dashboard.tabs.referrals}
             </TabsTrigger>
-            <TabsTrigger value="commissions" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+            <TabsTrigger value="commissions" className="data-[state=active]:bg-[rgba(255,255,255,0.08)] data-[state=active]:text-foreground data-[state=active]:border-[rgba(200,205,220,0.2)]">
               <DollarSign className="h-4 w-4 mr-2" />
               {messages.affiliate.dashboard.tabs.commissions}
             </TabsTrigger>
-            <TabsTrigger value="tools" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+            <TabsTrigger value="tools" className="data-[state=active]:bg-[rgba(255,255,255,0.08)] data-[state=active]:text-foreground data-[state=active]:border-[rgba(200,205,220,0.2)]">
               <Zap className="h-4 w-4 mr-2" />
               {messages.affiliate.dashboard.tabs.tools}
             </TabsTrigger>
@@ -401,14 +427,14 @@ export default function AffiliatePage() {
                         </div>
                         <div className="text-right">
                           <p className="font-semibold text-white text-sm">{fmt(ref.volumeCents)}</p>
-                          <p className="text-xs text-purple-400">+{fmt(ref.commissionCents)}</p>
+                          <p className="text-xs text-muted-foreground">+{fmt(ref.commissionCents)}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <EmptyState
-                    icon={<Users className="h-8 w-8 text-slate-500" />}
+                    icon={<Users className={`h-6 w-6 ${CHROME_ICON}`} />}
                     label={messages.affiliate.dashboard.noReferrals}
                     sub={messages.affiliate.dashboard.noReferralsSub}
                   />
@@ -424,11 +450,11 @@ export default function AffiliatePage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-theme-highlight" />
+                    <Clock className={`h-4 w-4 ${CHROME_ICON}`} />
                     {messages.affiliate.dashboard.pendingCommissionsTitle}
                   </CardTitle>
                   <CardDescription>
-                    {messages.affiliate.dashboard.pendingTotal} : <span className="font-semibold text-theme-highlight">{fmt(pendingTotal)}</span>
+                    {messages.affiliate.dashboard.pendingTotal} : <span className="font-semibold text-white">{fmt(pendingTotal)}</span>
                   </CardDescription>
                 </div>
                 {commissions.length > 0 && (
@@ -454,7 +480,7 @@ export default function AffiliatePage() {
                   <CommissionList commissions={commissions} fmt={fmt} fmtDate={fmtDate} paidLabel={messages.affiliate.dashboard.commissionPaid} pendingLabel={messages.affiliate.dashboard.commissionPending} />
                 ) : (
                   <EmptyState
-                    icon={<CheckCircle2 className="h-8 w-8 text-emerald-500/50" />}
+                    icon={<CheckCircle2 className={`h-6 w-6 ${CHROME_ICON} opacity-50`} />}
                     label={messages.affiliate.dashboard.noPending}
                     sub={messages.affiliate.dashboard.noPendingSub}
                   />
@@ -466,11 +492,11 @@ export default function AffiliatePage() {
             <Card className="border-slate-700 bg-slate-900/50">
               <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  <CheckCircle2 className={`h-4 w-4 ${CHROME_ICON}`} />
                   {messages.affiliate.dashboard.paidCommissionsTitle}
                 </CardTitle>
                 <CardDescription>
-                  {messages.affiliate.dashboard.totalReceived} : <span className="font-semibold text-emerald-300">{fmt(paidTotal)}</span>
+                  {messages.affiliate.dashboard.totalReceived} : <span className="font-semibold text-white">{fmt(paidTotal)}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -478,7 +504,7 @@ export default function AffiliatePage() {
                   <CommissionList commissions={paidCommissions} fmt={fmt} fmtDate={fmtDate} paid paidLabel={messages.affiliate.dashboard.commissionPaid} pendingLabel={messages.affiliate.dashboard.commissionPending} />
                 ) : (
                   <EmptyState
-                    icon={<XCircle className="h-8 w-8 text-slate-500" />}
+                    icon={<XCircle className={`h-6 w-6 ${CHROME_ICON} opacity-50`} />}
                     label={messages.affiliate.dashboard.noPaid}
                     sub={messages.affiliate.dashboard.noPaidSub}
                   />
@@ -494,7 +520,7 @@ export default function AffiliatePage() {
               <Card className="border-slate-700 bg-slate-900/50">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <LinkIcon className="h-5 w-5 text-purple-400" />
+                    <LinkIcon className={`h-5 w-5 ${CHROME_ICON}`} />
                     {messages.affiliate.dashboard.linkGenerator}
                   </CardTitle>
                   <CardDescription>
@@ -520,11 +546,12 @@ export default function AffiliatePage() {
                     </p>
                   </div>
                   <Button
-                    className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
+                    variant="chrome"
+                    className="w-full"
                     onClick={() => generateAffiliateLink(customPath, 'custom')}
                   >
                     {copiedKey === 'custom' ? (
-                      <><Check className="h-4 w-4 mr-2 text-green-300" /> {messages.affiliate.dashboard.copied}</>
+                      <><Check className={`h-4 w-4 mr-2 ${CHROME_ICON}`} /> {messages.affiliate.dashboard.copied}</>
                     ) : (
                       <><Copy className="h-4 w-4 mr-2" /> {messages.affiliate.dashboard.generateAndCopy}</>
                     )}
@@ -532,8 +559,8 @@ export default function AffiliatePage() {
 
                   {/* Aperçu du lien généré */}
                   {generatedLink && (
-                    <div className="rounded-lg border border-purple-500/30 bg-purple-950/20 p-3">
-                      <p className="text-xs text-purple-400 font-medium mb-1">{messages.affiliate.dashboard.lastGenerated} :</p>
+                    <div className="rounded-lg border border-[rgba(200,205,220,0.12)] bg-[rgba(255,255,255,0.04)] p-3">
+                      <p className="text-xs text-muted-foreground font-medium mb-1">{messages.affiliate.dashboard.lastGenerated} :</p>
                       <p className="text-xs text-slate-300 break-all font-mono">{generatedLink}</p>
                     </div>
                   )}
@@ -553,7 +580,7 @@ export default function AffiliatePage() {
                       >
                         <span>{label}</span>
                         {copiedKey === key ? (
-                          <Check className="h-3.5 w-3.5 text-green-400" />
+                          <Check className={`h-3.5 w-3.5 ${CHROME_ICON}`} />
                         ) : (
                           <Copy className="h-3.5 w-3.5 text-slate-500 group-hover:text-slate-300 transition-colors" />
                         )}
@@ -561,7 +588,7 @@ export default function AffiliatePage() {
                     ))}
                     {privateGiveaways.length > 0 && (
                       <>
-                        <p className="text-xs text-purple-400 font-medium uppercase tracking-wide pt-2">
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide pt-2">
                           {messages.affiliate.dashboard.privateGiveawaysLabel}
                         </p>
                         {privateGiveaways.map((g) => {
@@ -570,17 +597,17 @@ export default function AffiliatePage() {
                             <button
                               key={key}
                               onClick={() => generateAffiliateLink(`/giveaways/${g.id}`, key)}
-                              className="w-full flex items-center justify-between p-3 rounded-lg border border-purple-500/30 bg-purple-950/20 hover:bg-purple-950/40 transition-colors text-sm text-purple-300 hover:text-purple-100 group"
+                              className="w-full flex items-center justify-between p-3 rounded-lg border border-[rgba(200,205,220,0.08)] bg-slate-800/50 hover:bg-slate-700/60 transition-colors text-sm text-slate-300 hover:text-white group"
                             >
                               <span className="truncate">{g.title}</span>
                               <div className="flex items-center gap-1.5 shrink-0 ml-2">
                                 {g.status === 'ACTIVE' && (
-                                  <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+                                  <span className="h-1.5 w-1.5 rounded-full bg-green-400/80" />
                                 )}
                                 {copiedKey === key ? (
-                                  <Check className="h-3.5 w-3.5 text-green-400" />
+                                  <Check className={`h-3.5 w-3.5 ${CHROME_ICON}`} />
                                 ) : (
-                                  <Copy className="h-3.5 w-3.5 text-purple-500 group-hover:text-purple-300 transition-colors" />
+                                  <Copy className="h-3.5 w-3.5 text-slate-500 group-hover:text-slate-300 transition-colors" />
                                 )}
                               </div>
                             </button>
@@ -596,34 +623,34 @@ export default function AffiliatePage() {
               <Card className="border-slate-700 bg-slate-900/50">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Star className="h-5 w-5 text-yellow-400" />
+                    <Star className={`h-5 w-5 ${CHROME_ICON}`} />
                     {messages.affiliate.dashboard.partnerBenefits}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {[
                     {
-                      icon: <DollarSign className="h-4 w-4 text-emerald-400" />,
+                      icon: <DollarSign className={`h-4 w-4 ${CHROME_ICON}`} />,
                       label: messages.affiliate.dashboard.benefitCommission.replace('{rate}', (affiliateData.commissionRate * 100).toFixed(1)),
                     },
                     {
-                      icon: <Gift className="h-4 w-4 text-purple-400" />,
+                      icon: <Gift className={`h-4 w-4 ${CHROME_ICON}`} />,
                       label: messages.affiliate.dashboard.benefitPayments,
                     },
                     {
-                      icon: <BarChart3 className="h-4 w-4 text-blue-400" />,
+                      icon: <BarChart3 className={`h-4 w-4 ${CHROME_ICON}`} />,
                       label: messages.affiliate.dashboard.benefitAnalytics,
                     },
                     {
-                      icon: <Share2 className="h-4 w-4 text-theme-highlight" />,
+                      icon: <Share2 className={`h-4 w-4 ${CHROME_ICON}`} />,
                       label: messages.affiliate.dashboard.benefitMarketing,
                     },
                     {
-                      icon: <Shield className="h-4 w-4 text-indigo-400" />,
+                      icon: <Shield className={`h-4 w-4 ${CHROME_ICON}`} />,
                       label: messages.affiliate.dashboard.benefitSupport,
                     },
                   ].map(({ icon, label }, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700">
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 border border-[rgba(200,205,220,0.08)]">
                       <div className="flex-shrink-0">{icon}</div>
                       <p className="text-sm text-slate-300">{label}</p>
                     </div>
@@ -652,30 +679,21 @@ function StatCard({
   label,
   value,
   sub,
-  color,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   sub: string;
-  color: 'blue' | 'emerald' | 'purple' | 'orange';
 }) {
-  const bg = {
-    blue: 'bg-blue-500/10 border-blue-500/20',
-    emerald: 'bg-emerald-500/10 border-emerald-500/20',
-    purple: 'bg-purple-500/10 border-purple-500/20',
-    orange: 'bg-theme-accent/10 border-theme-accent/20',
-  }[color];
-
   return (
-    <Card className={`border ${bg} bg-slate-900/50`}>
-      <CardContent className="p-5">
-        <div className="flex items-center justify-between mb-3">
+    <Card className="border border-[rgba(200,205,220,0.12)] bg-slate-900/50">
+      <CardContent className="p-3.5">
+        <div className="flex items-center justify-between mb-2">
           <span className="text-xs text-slate-400 font-medium">{label}</span>
           {icon}
         </div>
-        <p className="text-2xl font-bold text-white truncate">{value}</p>
-        <p className="text-xs text-slate-500 mt-1 truncate">{sub}</p>
+        <p className="text-xl font-bold text-white truncate">{value}</p>
+        <p className="text-xs text-slate-500 mt-0.5 truncate">{sub}</p>
       </CardContent>
     </Card>
   );
@@ -733,9 +751,9 @@ function EmptyState({
   sub: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
-      <div className="mb-2">{icon}</div>
-      <p className="text-slate-300 font-medium">{label}</p>
+    <div className="flex flex-col items-center justify-center py-4 text-center gap-1">
+      {icon}
+      <p className="text-sm text-slate-300 font-medium">{label}</p>
       <p className="text-xs text-slate-500">{sub}</p>
     </div>
   );
