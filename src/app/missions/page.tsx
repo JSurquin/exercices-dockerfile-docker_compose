@@ -260,7 +260,7 @@ export default function MissionsPage() {
   const t = messages.missions;
   const queryClient = useQueryClient();
   const [animatingFragments, setAnimatingFragments] = useState(false);
-  const [displayFragments, setDisplayFragments] = useState(0);
+  const [claimedFragments, setClaimedFragments] = useState(0);
 
   const { data, isLoading } = useQuery({
     queryKey: ['missions', locale],
@@ -286,23 +286,9 @@ export default function MissionsPage() {
     },
     onSuccess: async (j: { fragments?: number }) => {
       const earned = j.fragments ?? 0;
+      setClaimedFragments(earned);
       setAnimatingFragments(true);
-
-      const duration = 1500;
-      const steps = 30;
-      const increment = earned / steps;
-      let current = 0;
-
-      const interval = setInterval(() => {
-        current += increment;
-        if (current >= earned) {
-          setDisplayFragments(earned);
-          clearInterval(interval);
-          setTimeout(() => setAnimatingFragments(false), 1000);
-        } else {
-          setDisplayFragments(Math.floor(current));
-        }
-      }, duration / steps);
+      setTimeout(() => setAnimatingFragments(false), 1600);
 
       queryClient.invalidateQueries({ queryKey: ['missions'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.userDashboard });
@@ -341,90 +327,37 @@ export default function MissionsPage() {
     <div className="container max-w-3xl mx-auto px-4 py-10 space-y-8">
       <AnimatePresence>
         {animatingFragments && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
-          >
+          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
             <motion.div
-              initial={{ scale: 0.5, opacity: 0, y: 100 }}
-              animate={{
-                scale: [0.5, 1.2, 1],
-                opacity: [0, 1, 1],
-                y: [100, -20, 0],
-              }}
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
               exit={{
-                scale: 0.5,
                 opacity: 0,
-                y: -100,
+                scale: 0.95,
+                transition: { duration: 0.2, ease: 'easeOut' },
               }}
-              transition={{
-                duration: 1.5,
-                ease: [0.34, 1.56, 0.64, 1],
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="flex flex-col items-center gap-3 px-8 py-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+              style={{
+                background: 'rgba(13, 13, 18, 0.95)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(200, 205, 220, 0.12)',
+                borderRadius: '16px',
               }}
-              className="lunar-card bg-cta-gradient-br text-white rounded-3xl shadow-2xl p-8 border border-theme-accent/30"
             >
-              <div className="flex flex-col items-center gap-4">
-                <motion.div
-                  animate={{
-                    rotate: [0, -8, 8, -8, 0],
-                    scale: [1, 1.15, 1],
-                  }}
-                  transition={{
-                    rotate: { duration: 1.2, ease: 'easeInOut' },
-                    scale: { duration: 0.6, repeat: Infinity, repeatType: 'reverse' },
-                  }}
-                >
-                  <FragmentBadge size="xl" className="drop-shadow-[0_0_24px_var(--cta-shadow)]" />
-                </motion.div>
-                <div className="text-center">
-                  <motion.p
-                    className="text-6xl font-black tabular-nums"
-                    key={displayFragments}
-                  >
-                    +{displayFragments}
-                  </motion.p>
-                  <p className="text-2xl font-semibold mt-2 flex items-center justify-center gap-2">
-                    {t.celebrationFragments}
-                    <FragmentBadge size="sm" />
-                  </p>
-                  <p className="text-sm opacity-90 mt-1">{t.celebrationComplete}</p>
-                </div>
-              </div>
+              <FragmentBadge
+                size="md"
+                className="drop-shadow-[0_0_16px_rgba(200,205,220,0.15)]"
+              />
+              <p className="text-2xl font-bold tabular-nums bg-gradient-to-br from-white via-[#e8e8f0] to-[#c0c0c0] bg-clip-text text-transparent">
+                +{claimedFragments} {t.celebrationFragments}
+              </p>
+              <p className="text-[11px] font-medium uppercase tracking-wider text-[#7a7a8c]">
+                {t.celebrationComplete}
+              </p>
             </motion.div>
-
-            {[...Array(16)].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{
-                  opacity: 1,
-                  x: 0,
-                  y: 0,
-                  scale: 1,
-                }}
-                animate={{
-                  opacity: [1, 0],
-                  x: Math.random() * 400 - 200,
-                  y: Math.random() * 400 - 200,
-                  scale: [1, 0.3],
-                  rotate: Math.random() * 360,
-                }}
-                transition={{
-                  duration: 1.5,
-                  delay: Math.random() * 0.3,
-                  ease: 'easeOut',
-                }}
-                className="absolute"
-                style={{
-                  left: '50%',
-                  top: '50%',
-                }}
-              >
-                <FragmentBadge size="xs" className="opacity-90" />
-              </motion.div>
-            ))}
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
