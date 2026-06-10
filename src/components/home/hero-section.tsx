@@ -252,7 +252,7 @@ export function HeroSection() {
             </div>
 
             {/* Main Title */}
-            <div className={`space-y-3 sm:space-y-4 lunar-card px-5 py-4 ${homeEnter.upLg} ${homeDelay[300]}`}>
+            <div className={`hero-box space-y-3 sm:space-y-4 lunar-card px-5 py-4 ${homeEnter.upLg} ${homeDelay[300]}`}>
               <h1 className="hero-title text-gaming-title text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight uppercase">
                 {messages.hero.title
                   .split(/(CS2|MOONSKIN)/i)
@@ -316,7 +316,7 @@ export function HeroSection() {
             </div>
 
             {/* Payment Methods */}
-            <div className={`lunar-card hero-payment-methods-card px-4 py-3 ${homeEnter.up} ${homeDelay[650]}`}>
+            <div className={`payment-box lunar-card hero-payment-methods-card px-4 py-3 ${homeEnter.up} ${homeDelay[650]}`}>
               <p className="hero-payment-title mb-2">
                 {messages.hero.paymentMethods.title}
               </p>
