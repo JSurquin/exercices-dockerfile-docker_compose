@@ -1732,6 +1732,17 @@ body.next-dev-overlay-present #sentry-feedback {
     color: rgba(255, 255, 255, 0.9);
   }
 
+  .hero-stat-value {
+    color: var(--theme-stat);
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+  }
+
+  .hero-stat-label {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: rgba(255, 255, 255, 0.88);
+  }
+
   .light .hero-payment-methods-card.lunar-card:hover {
     box-shadow:
       0 24px 70px rgba(0, 0, 0, 0.3),
@@ -1752,6 +1763,14 @@ body.next-dev-overlay-present #sentry-feedback {
 
   .light .hero-payment-label {
     color: rgba(0, 0, 0, 0.82);
+  }
+
+  .light .hero-stat-value {
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+  }
+
+  .light .hero-stat-label {
+    color: rgba(0, 0, 0, 0.78);
   }
 
   .font-display {

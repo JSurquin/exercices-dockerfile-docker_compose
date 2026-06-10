@@ -337,10 +337,10 @@ export function HeroSection() {
             </div>
 
             {/* Stats */}
-            <div className={`grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 pt-6 sm:pt-8 border-t ${homeEnter.up} ${homeDelay[700]}`}>
+            <div className={`grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 pt-6 sm:pt-8 border-t border-white/15 ${homeEnter.up} ${homeDelay[700]}`}>
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
-                  <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-brand-gradient font-display tabular-nums">
+                  <div className="hero-stat-value text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold font-display tabular-nums">
                     {stat.prefix}
                     {stat.value.toLocaleString(undefined, {
                       minimumFractionDigits: stat.decimals,
@@ -348,7 +348,7 @@ export function HeroSection() {
                     })}
                     {stat.suffix}
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">
+                  <div className="hero-stat-label text-xs sm:text-sm">
                     {stat.label}
                   </div>
                 </div>
