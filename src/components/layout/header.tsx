@@ -70,9 +70,9 @@ export function Header() {
 
       if (currentY <= 16) {
         setNavVisible(true);
-      } else if (delta > 8) {
+      } else if (delta > 2) {
         setNavVisible(false);
-      } else if (delta < -8) {
+      } else if (delta < -4) {
         setNavVisible(true);
       }
 
@@ -143,7 +143,7 @@ export function Header() {
   return (
     <header
       className={cn(
-        "lunar-nav sticky top-0 z-[100] w-full transition-transform duration-300 ease-in-out will-change-transform",
+        "lunar-nav sticky top-0 z-[100] w-full transition-transform duration-200 ease-in-out will-change-transform",
         navVisible ? "translate-y-0 shadow-sm" : "-translate-y-full pointer-events-none"
       )}
     >
