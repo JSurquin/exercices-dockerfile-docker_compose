@@ -991,7 +991,7 @@ export function SkinplaceInventoryViewer({
             </div>
           ) : (
             <div className="relative">
-              <div className={`${isSellLayout ? 'max-h-[min(720px,calc(100vh-14rem))] min-h-[360px]' : 'max-h-[600px]'} overflow-y-auto px-1 -mx-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent`}>
+              <div className={`${isSellLayout ? 'h-[calc(100vh-34rem)] min-h-[360px]' : 'max-h-[600px]'} overflow-y-auto px-1 -mx-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent`}>
                 <div className={`grid pb-4 ${isSellLayout ? 'mt-2' : 'mt-6'} ${
                   isSellLayout
                     ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5'
