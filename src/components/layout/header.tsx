@@ -143,8 +143,8 @@ export function Header() {
   return (
     <header
       className={cn(
-        "lunar-nav sticky top-0 z-50 w-full transition-transform duration-300 ease-in-out will-change-transform",
-        navVisible ? "translate-y-0" : "-translate-y-full"
+        "lunar-nav sticky top-0 z-[100] w-full transition-transform duration-300 ease-in-out will-change-transform",
+        navVisible ? "translate-y-0 shadow-sm" : "-translate-y-full pointer-events-none"
       )}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex w-full justify-between h-16 items-center">

@@ -88,14 +88,14 @@ export function DashboardTourDemo() {
           data-tour="dashboard-balance"
           className="mb-6 sm:mb-8"
         >
-          <Card className="overflow-hidden border-green-500/20 bg-gradient-to-br from-green-500/5 via-background to-emerald-500/5">
+          <Card className="overflow-hidden border-theme-highlight/20 bg-gradient-to-br from-theme-highlight/5 via-background to-theme-accent/5 py-0 gap-0">
             <CardContent className="p-0">
               <div className="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border/50">
-                <div className="p-5 sm:p-6 flex flex-col justify-between gap-4">
+                <div className="p-4 sm:p-5 flex flex-col justify-between gap-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-9 h-9 rounded-full bg-green-500/15 flex items-center justify-center">
-                        <BanknotesIcon className="w-5 h-5 text-green-500" />
+                      <div className="w-8 h-8 rounded-full bg-theme-accent/10 flex items-center justify-center">
+                        <BanknotesIcon className="w-4 h-4 text-theme-accent" />
                       </div>
                       <span className="text-sm font-medium text-muted-foreground">
                         {messages.dashboard.balance.title}
@@ -107,12 +107,12 @@ export function DashboardTourDemo() {
                       <span className="text-muted-foreground font-normal ml-0.5">7d</span>
                     </div>
                   </div>
-                  <p className="text-4xl sm:text-5xl font-bold tracking-tight text-green-500">
+                  <p className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
                     210.00 €
                   </p>
-                  <p className="text-sm text-green-600 dark:text-green-400">+35.00 € vs last week</p>
+                  <p className="text-sm text-theme-stat">+35.00 € vs last week</p>
                 </div>
-                <div className="p-5 sm:p-6 flex flex-col gap-2">
+                <div className="p-4 sm:p-5 flex flex-col gap-2">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {messages.dashboard.balance.chart30days}
                   </p>
@@ -120,14 +120,14 @@ export function DashboardTourDemo() {
                     <AreaChart data={BALANCE_HISTORY} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
                       <defs>
                         <linearGradient id="demoGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#22c55e" stopOpacity={0.25} />
-                          <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                          <stop offset="5%" stopColor="var(--theme-accent)" stopOpacity={0.25} />
+                          <stop offset="95%" stopColor="var(--theme-accent)" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'currentColor' }} tickLine={false} axisLine={false} />
                       <YAxis hide />
                       <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} formatter={(v: number) => [`${v.toFixed(2)} €`, 'Solde']} />
-                      <Area type="monotone" dataKey="solde" stroke="#22c55e" strokeWidth={2} fill="url(#demoGradient)" dot={false} activeDot={{ r: 4, fill: '#22c55e' }} />
+                      <Area type="monotone" dataKey="solde" stroke="var(--theme-accent)" strokeWidth={2} fill="url(#demoGradient)" dot={false} activeDot={{ r: 4, fill: 'var(--theme-accent)' }} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -139,60 +139,60 @@ export function DashboardTourDemo() {
         {/* Stats Cards */}
         <div
           data-tour="dashboard-stats"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 sm:mb-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-5"
         >
-          <Card>
-            <CardContent className="p-4 sm:p-6">
+          <Card className="py-0 gap-0">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{messages.dashboard.volume}</p>
-                  <p className="text-2xl font-bold">1 240.00 €</p>
+                  <p className="text-xs text-muted-foreground">{messages.dashboard.volume}</p>
+                  <p className="text-xl font-bold">1 240.00 €</p>
                 </div>
-                <CurrencyDollarIcon className="w-8 h-8 text-green-500" />
+                <CurrencyDollarIcon className="w-6 h-6 text-theme-accent/70" />
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4 sm:p-6">
+          <Card className="py-0 gap-0">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{messages.dashboard.trades}</p>
-                  <p className="text-2xl font-bold">18</p>
+                  <p className="text-xs text-muted-foreground">{messages.dashboard.trades}</p>
+                  <p className="text-xl font-bold">18</p>
                 </div>
-                <ChartBarIcon className="w-8 h-8 text-blue-500" />
+                <ChartBarIcon className="w-6 h-6 text-theme-accent/70" />
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4 sm:p-6">
+          <Card className="py-0 gap-0">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{messages.dashboard.level}</p>
-                  <p className="text-2xl font-bold">5</p>
+                  <p className="text-xs text-muted-foreground">{messages.dashboard.level}</p>
+                  <p className="text-xl font-bold">5</p>
                 </div>
-                <StarIcon className="w-8 h-8 text-yellow-500" />
+                <StarIcon className="w-6 h-6 text-theme-accent/70" />
               </div>
             </CardContent>
           </Card>
-          <Card className="border-theme-highlight/25 dark:border-theme-highlight/35">
-            <CardContent className="p-4 sm:p-6">
+          <Card className="py-0 gap-0 border-theme-highlight/25 dark:border-theme-highlight/35">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{messages.dashboard.fragmentsLabel}</p>
-                  <FragmentAmount amount={340} size="sm" className="text-2xl font-bold text-theme-stat" />
+                  <p className="text-xs text-muted-foreground">{messages.dashboard.fragmentsLabel}</p>
+                  <FragmentAmount amount={340} size="sm" className="text-xl font-bold text-theme-stat" />
                 </div>
                 <FragmentBadge size="md" />
               </div>
             </CardContent>
           </Card>
-          <Card className="border-theme-accent/20 dark:border-theme-accent/30">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
+          <Card className="col-span-full py-0 gap-0 border-theme-accent/20 dark:border-theme-accent/30">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-3">
+                <GiftIcon className="w-6 h-6 text-theme-accent/70 shrink-0" />
                 <div>
-                  <p className="text-sm text-muted-foreground">{messages.dashboard.giveawaysLabel}</p>
+                  <p className="text-xs text-muted-foreground">{messages.dashboard.giveawaysLabel}</p>
                   <p className="text-sm font-medium text-theme-accent">{messages.dashboard.participateGiveaway}</p>
                 </div>
-                <GiftIcon className="w-8 h-8 text-theme-accent" />
               </div>
             </CardContent>
           </Card>

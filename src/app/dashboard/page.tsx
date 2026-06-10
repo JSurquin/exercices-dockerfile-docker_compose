@@ -410,24 +410,24 @@ export default function DashboardPage() {
     : null;
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-6 sm:mb-8"
+          className="mb-4 sm:mb-5"
         >
-          <div className="flex items-center space-x-3 sm:space-x-4 mb-6">
-            <Avatar className="w-16 h-16">
+          <div className="flex items-center space-x-3 mb-4">
+            <Avatar className="w-12 h-12">
               <AvatarImage src={user?.image} alt={user?.name} />
               <AvatarFallback>
                 {user?.name?.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">
                 {messages.dashboard.welcome}, {user?.name}
               </h1>
               <p className="text-muted-foreground">
@@ -437,9 +437,9 @@ export default function DashboardPage() {
           </div>
 
           {/* XP Progress */}
-          <Card data-tour="dashboard-xp">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-start gap-4 mb-4">
+          <Card data-tour="dashboard-xp" className="py-0 gap-0">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-start gap-3 mb-3">
                 <LevelBadge tierIndex={levelInfo.tierIndex} size="md" className="shrink-0" />
 
                 <div className="flex-1 min-w-0">
@@ -460,7 +460,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold">
+                      <p className="text-xl font-bold">
                         {levelInfo.cappedXP.toLocaleString()} / {levelInfo.level.xpEnd.toLocaleString()} {messages.dashboard.xp}
                       </p>
                       <p className="text-sm text-muted-foreground">
@@ -489,16 +489,16 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-6 sm:mb-8"
+          className="mb-4 sm:mb-5"
         >
-          <Card className="overflow-hidden border-green-500/20 bg-gradient-to-br from-green-500/5 via-background to-emerald-500/5">
+          <Card className="overflow-hidden border-theme-highlight/20 bg-gradient-to-br from-theme-highlight/5 via-background to-theme-accent/5 py-0 gap-0">
             <CardContent className="p-0">
               {/* Solde disponible */}
-              <div className="p-5 sm:p-6">
-                <div className="flex items-center justify-between gap-4">
+              <div className="p-4 sm:p-5">
+                <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-full bg-green-500/15 flex items-center justify-center">
-                      <BanknotesIcon className="w-5 h-5 text-green-500" />
+                    <div className="w-8 h-8 rounded-full bg-theme-accent/10 flex items-center justify-center">
+                      <BanknotesIcon className="w-4 h-4 text-theme-accent" />
                     </div>
                     <span className="text-sm font-medium text-muted-foreground">
                       {messages.dashboard.balance.title}
@@ -523,12 +523,12 @@ export default function DashboardPage() {
                   )}
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-end gap-x-8 gap-y-3">
+                <div className="mt-3 flex flex-wrap items-end gap-x-6 gap-y-2">
                   <div>
                     {balanceHistoryLoading ? (
-                      <div className="h-12 w-40 animate-pulse bg-muted rounded-lg" />
+                      <div className="h-10 w-36 animate-pulse bg-muted rounded-lg" />
                     ) : (
-                      <p className="text-4xl sm:text-5xl font-bold tracking-tight text-green-500">
+                      <p className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
                         <CountUp
                           end={(balanceHistoryData?.availableCents ?? balanceHistoryData?.currentBalanceCents ?? 0) / 100}
                           duration={1.5}
@@ -557,7 +557,7 @@ export default function DashboardPage() {
                         <Snowflake className="h-3.5 w-3.5 shrink-0" aria-hidden />
                         {messages.dashboard.balance.frozenBalance}
                       </p>
-                      <p className="text-lg font-bold text-theme-stat tabular-nums">
+                      <p className="text-base font-bold text-theme-stat tabular-nums">
                         {formatCentsToCurrency(balanceHistoryData!.frozenBalanceCents, "EUR")}
                       </p>
                     </div>
@@ -567,11 +567,11 @@ export default function DashboardPage() {
 
               {/* Projection trade hold — entre solde et graphique */}
               {!balanceHistoryLoading && (balanceHistoryData?.pendingBalanceCents ?? 0) > 0 && (
-                <div className="border-y border-theme-highlight/25 bg-gradient-to-r from-theme-highlight/10 via-theme-highlight/5 to-emerald-500/10 px-5 sm:px-6 py-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex items-start gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-full bg-theme-stat/15 flex items-center justify-center shrink-0 mt-0.5">
-                        <TrendingUp className="w-5 h-5 text-theme-highlight" />
+                <div className="border-y border-theme-highlight/25 bg-gradient-to-r from-theme-highlight/10 via-theme-highlight/5 to-theme-accent/5 px-4 sm:px-5 py-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex items-start gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-theme-stat/15 flex items-center justify-center shrink-0 mt-0.5">
+                        <TrendingUp className="w-4 h-4 text-theme-highlight" />
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-theme-highlight">
@@ -592,7 +592,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <div className="sm:text-right shrink-0 pl-12 sm:pl-0">
-                      <p className="text-2xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                      <p className="text-xl sm:text-2xl font-bold text-theme-stat tabular-nums">
                         <CountUp
                           end={(balanceHistoryData?.projectedAvailableCents ?? 0) / 100}
                           duration={1.5}
@@ -622,11 +622,12 @@ export default function DashboardPage() {
               )}
 
               <div className="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border/50">
-                <div className="p-5 sm:p-6 flex flex-col justify-center">
+                <div className="p-4 sm:p-5 flex flex-col justify-center">
                   <Link href="/payout">
                     <Button
+                      variant="chrome"
                       size="sm"
-                      className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
+                      className="w-full sm:w-auto"
                     >
                       <BanknotesIcon className="w-4 h-4 mr-2" />
                       {messages.payments.withdraw}
@@ -635,7 +636,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Graphique de variation */}
-                <div className="p-5 sm:p-6 flex flex-col gap-2">
+                <div className="p-4 sm:p-5 flex flex-col gap-2">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {messages.dashboard.balance.chart30days}
                   </p>
@@ -659,8 +660,8 @@ export default function DashboardPage() {
                       >
                         <defs>
                           <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#22c55e" stopOpacity={0.25} />
-                            <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                            <stop offset="5%" stopColor="var(--theme-accent)" stopOpacity={0.25} />
+                            <stop offset="95%" stopColor="var(--theme-accent)" stopOpacity={0} />
                           </linearGradient>
                         </defs>
                         <XAxis
@@ -687,11 +688,11 @@ export default function DashboardPage() {
                         <Area
                           type="monotone"
                           dataKey="solde"
-                          stroke="#22c55e"
+                          stroke="var(--theme-accent)"
                           strokeWidth={2}
                           fill="url(#balanceGradient)"
                           dot={false}
-                          activeDot={{ r: 4, fill: "#22c55e" }}
+                          activeDot={{ r: 4, fill: "var(--theme-accent)" }}
                         />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -708,14 +709,14 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 sm:mb-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-5"
         >
-          <Card>
-            <CardContent className="p-4 sm:p-6">
+          <Card className="py-0 gap-0">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{messages.dashboard.volume}</p>
-                  <p className="text-2xl font-bold">
+                  <p className="text-xs text-muted-foreground">{messages.dashboard.volume}</p>
+                  <p className="text-xl font-bold">
                     <CountUp
                       end={(tradesData?.totalVolume || 0) / 100}
                       duration={2}
@@ -724,49 +725,49 @@ export default function DashboardPage() {
                     />
                   </p>
                 </div>
-                <CurrencyDollarIcon className="w-8 h-8 text-green-500" />
+                <CurrencyDollarIcon className="w-6 h-6 text-theme-accent/70" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4 sm:p-6">
+          <Card className="py-0 gap-0">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{messages.dashboard.trades}</p>
-                  <p className="text-2xl font-bold">
+                  <p className="text-xs text-muted-foreground">{messages.dashboard.trades}</p>
+                  <p className="text-xl font-bold">
                     <CountUp end={tradesData?.totalTrades || 0} duration={2} />
                   </p>
                 </div>
-                <ChartBarIcon className="w-8 h-8 text-blue-500" />
+                <ChartBarIcon className="w-6 h-6 text-theme-accent/70" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4 sm:p-6">
+          <Card className="py-0 gap-0">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{messages.dashboard.level}</p>
-                  <p className="text-2xl font-bold">{levelInfo.level.name}</p>
+                  <p className="text-xs text-muted-foreground">{messages.dashboard.level}</p>
+                  <p className="text-xl font-bold">{levelInfo.level.name}</p>
                   <p className="text-xs text-muted-foreground">Palier {levelInfo.tierIndex + 1}/5</p>
                 </div>
-                <StarIcon className="w-8 h-8 text-yellow-500" />
+                <StarIcon className="w-6 h-6 text-theme-accent/70" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-theme-highlight/25 dark:border-theme-highlight/35">
-            <CardContent className="p-4 sm:p-6">
+          <Card className="py-0 gap-0 border-theme-highlight/25 dark:border-theme-highlight/35">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{messages.dashboard.fragmentsLabel}</p>
+                  <p className="text-xs text-muted-foreground">{messages.dashboard.fragmentsLabel}</p>
                   <motion.p 
                     key={(user as unknown as { fragments?: number })?.fragments ?? 0}
                     initial={{ scale: 1 }}
                     animate={{ scale: [1, 1.15, 1] }}
                     transition={{ duration: 0.4 }}
-                    className="text-2xl font-bold text-theme-stat flex items-center gap-2"
+                    className="text-xl font-bold text-theme-stat flex items-center gap-2"
                   >
                     {(user as unknown as { fragments?: number })?.fragments ?? 0}
                     <FragmentBadge size="sm" />
@@ -780,16 +781,18 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-theme-accent/20 dark:border-theme-accent/30">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{messages.dashboard.giveawaysLabel}</p>
-                  <Link href="/giveaways" className="text-theme-accent hover:underline text-sm font-medium">
-                    {messages.dashboard.participateGiveaway}
-                  </Link>
+          <Card className="col-span-full py-0 gap-0 border-theme-accent/20 dark:border-theme-accent/30">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <GiftIcon className="w-6 h-6 text-theme-accent/70 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">{messages.dashboard.giveawaysLabel}</p>
+                    <Link href="/giveaways" className="text-theme-accent hover:underline text-sm font-medium">
+                      {messages.dashboard.participateGiveaway}
+                    </Link>
+                  </div>
                 </div>
-                <GiftIcon className="w-8 h-8 text-theme-accent" />
               </div>
             </CardContent>
           </Card>
@@ -1201,12 +1204,12 @@ export default function DashboardPage() {
                 </Card>
 
                 {/* Payout Card */}
-                <Card className="border-2 border-green-500/50 bg-green-500/5">
-                  <CardContent className="pt-6">
+                <Card className="py-0 gap-0 border-theme-highlight/25">
+                  <CardContent className="pt-4 pb-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                          <BanknotesIcon className="w-6 h-6 text-green-500" />
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-full bg-theme-accent/10 flex items-center justify-center">
+                          <BanknotesIcon className="w-5 h-5 text-theme-accent" />
                         </div>
                         <div>
                           <h3 className="font-semibold">{messages.dashboard.withdrawFunds}</h3>
@@ -1215,7 +1218,7 @@ export default function DashboardPage() {
                           </p>
                         </div>
                       </div>
-                      <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700">
+                      <Button asChild variant="chrome" size="sm">
                         <Link href="/payout">{messages.payments.withdraw}</Link>
                       </Button>
                     </div>

@@ -39,7 +39,7 @@ export function RootLayoutShell({ children }: { children: React.ReactNode }) {
                 {!isAdminRoute && <CosmicBackground />}
                 {!isAdminRoute && <Header />}
 
-                <main className={isAdminRoute ? '' : 'flex-1'}>{children}</main>
+                <main className={isAdminRoute ? '' : 'relative z-0 flex-1'}>{children}</main>
 
                 {!isAdminRoute && <Footer />}
                 {!isAdminRoute && <ScrollToTopButton />}
