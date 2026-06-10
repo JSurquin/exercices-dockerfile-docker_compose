@@ -1969,12 +1969,6 @@ body.next-dev-overlay-present #sentry-feedback {
   inherits: false;
 }
 
-@property --neon-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
 @keyframes home-enter-from-left {
   from {
     opacity: 0;
@@ -2103,9 +2097,9 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 }
 
-@keyframes neon-rotate {
+@keyframes neon-spin {
   to {
-    --neon-angle: 360deg;
+    transform: rotate(360deg);
   }
 }
 
@@ -2296,8 +2290,16 @@ body.next-dev-overlay-present #sentry-feedback {
 }
 
 .home-neon-border {
-  background: linear-gradient(
-    var(--neon-angle, 0deg),
+  overflow: hidden;
+  background: transparent;
+}
+
+.home-neon-border::before {
+  content: "";
+  position: absolute;
+  inset: -100%;
+  background: conic-gradient(
+    from 0deg,
     #ff0080,
     #ff8c00,
     #ffe000,
@@ -2306,7 +2308,8 @@ body.next-dev-overlay-present #sentry-feedback {
     #a855f7,
     #ff0080
   );
-  animation: neon-rotate 3s linear infinite;
+  animation: neon-spin 6s linear infinite;
+  will-change: transform;
 }
 
 .card-tilt {

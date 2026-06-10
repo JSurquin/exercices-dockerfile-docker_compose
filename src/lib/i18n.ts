@@ -151,7 +151,6 @@ export const messages: Record<Locale, Messages> = {
       },
       showMore: "En savoir plus",
       showLess: "Réduire",
-      trustIndicators: "Plus de 15,000 utilisateurs nous font confiance"
     },
     howItWorks: {
       title: "COMMENT ÇA MARCHE ?",
@@ -7324,7 +7323,6 @@ export const messages: Record<Locale, Messages> = {
       },
       showMore: "Learn more",
       showLess: "Show less",
-      trustIndicators: "Over 15,000 users trust us"
     },
     howItWorks: {
       title: "HOW DOES IT WORK?",
@@ -14496,7 +14494,6 @@ export const messages: Record<Locale, Messages> = {
       },
       showMore: "了解更多",
       showLess: "收起",
-      trustIndicators: "超过15,000名用户信任我们"
     },
     howItWorks: {
       title: "如何使用？",

@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { useLocale } from '@/components/providers/locale-provider';
 import {
   homeExpand,
-  homeHover,
   homeReveal,
   homeStagger,
 } from '@/lib/home-animation-classes';
@@ -179,7 +178,7 @@ export function FeaturesSection() {
       <SectionBottomFade to="muted" />
       <div className="relative z-10 container mx-auto px-4">
         <div className={`text-center mb-16 ${homeReveal.upSm}`}>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 uppercase tracking-wide">
             {messages.features.title.split('MoonSkin')[0]}
             <span className="text-chrome-gradient">
               MoonSkin
@@ -229,19 +228,6 @@ export function FeaturesSection() {
               {hiddenFeatures.map((feature, index) => (
                 <FeatureCard key={feature.key} feature={feature} index={index} />
               ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom CTA */}
-        <div className={`text-center mt-16 ${homeReveal.upSm}`}>
-          <div className={`inline-flex relative group cursor-default ${homeHover.lift}`}>
-            <span className="absolute -inset-[2px] rounded-full opacity-80 blur-[2px] group-hover:opacity-100 group-hover:blur-[3px] transition-all duration-300 home-neon-border" />
-            <div className="relative inline-flex items-center space-x-2 lunar-card px-6 py-3 rounded-full bg-background/90">
-              <ShieldCheckIcon className="w-5 h-5 text-theme-accent" />
-              <span className="text-sm font-medium">
-                {messages.features.trustIndicators}
-              </span>
             </div>
           </div>
         </div>

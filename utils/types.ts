@@ -276,7 +276,6 @@ export interface Messages {
     };
     showMore: string;
     showLess: string;
-    trustIndicators: string;
   };
   howItWorks: {
     title: string;

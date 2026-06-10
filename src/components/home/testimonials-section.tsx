@@ -38,7 +38,7 @@ function CsgoRepLink({ size = 'default' }: { size?: 'default' | 'large' }) {
       rel="noopener noreferrer"
       className={`inline-flex relative group ${homeHover.lift}`}
     >
-      <span className="absolute -inset-[2px] rounded-full opacity-80 blur-[2px] group-hover:opacity-100 group-hover:blur-[3px] transition-all duration-300 home-neon-border" />
+      <span className="absolute -inset-[2px] rounded-full opacity-80 blur-[2px] group-hover:opacity-100 group-hover:blur-[3px] transition-[opacity,filter] duration-300 home-neon-border" />
       <span className={`relative inline-flex items-center space-x-2 lunar-card ${innerPadding} rounded-full bg-background/90 text-sm font-semibold`}>
         <svg className="w-4 h-4 text-theme-accent flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
