@@ -213,17 +213,16 @@ export const messages: Record<Locale, Messages> = {
       items: {
         name: ["deft", "mETR1CKZ", "々", "-GoV-Yurchik*", "Slaeman", "ukozor"],
         comment: [
-          "Gift for him, fast and smooth trade",
-          "Tu peux lui faire confiance à 100%. Je trade avec lui depuis des années sans jamais de problème. Il propose toujours les meilleurs prix possibles.",
-          "Ty again for this trade, perfect inventory",
-          "+rep, have supplied his customers with 100k+ rmb, I went first, got money at the end of the day.",
-          "Bought 8k eur worth of buff ball and 2k usdt from him, I can only recommend him for not taking advantage of my trust!",
-          "I sold him $1,100 worth of skins, and he bought $5,500 worth of skins from me on Youpin. It was really fast! Skins were in my account that same day!"
+          "Cadeau pour lui, échange rapide et fluide",
+          "Tu peux lui faire confiance à 100 %. Je trade avec lui depuis des années sans jamais de problème. Il propose toujours les meilleurs prix possibles.",
+          "Merci encore pour cet échange, inventaire parfait",
+          "+rep, a fourni plus de 100k RMB à ses clients, je suis passé en premier, j'ai reçu l'argent en fin de journée.",
+          "J'ai acheté pour 8k EUR de buff ball et 2k USDT chez lui, je ne peux que le recommander pour ne pas avoir abusé de ma confiance !",
+          "Je lui ai vendu pour 1 100 $ de skins, et il m'a acheté pour 5 500 $ de skins sur Youpin. C'était vraiment rapide ! Les skins étaient sur mon compte le jour même !"
         ],
         amount: ["$98,744", "$30,000", "$18,000", "$13,000", "$10,000", "$6,600"],
         items: ["Skin CS2", "Skin CS2", "Skin CS2", "RMB", "Balance USDT", "Skin CS2"],
-        transaction: ["Achat skin CS2 par virement", "Achat skin CS2 par USDT", "Achat skin CS2 par virement", "Vente RMB par virement", "Achat balance par USDT", "Achat skin CS2 par crypto"],
-        date: ["10 Nov 2025", "3 Mar 2026", "12 Avr 2025", "15 Nov 2025", "11 Jan 2024", "13 Avr 2026"]
+        transaction: ["Achat skin CS2 par virement", "Achat skin CS2 par USDT", "Achat skin CS2 par virement", "Vente RMB par virement", "Achat balance par USDT", "Achat skin CS2 par crypto"]
       },
       trustStats: {
         skinsSold: "Skins échangés",
@@ -7387,15 +7386,14 @@ export const messages: Record<Locale, Messages> = {
         comment: [
           "Gift for him, fast and smooth trade",
           "You can trust him 100%. I have been trading with him for several years and have never had any problems. He always offers the best possible prices.",
-          "Ty again for this trade, perfect inventory",
-          "+rep, have supplied his customers with 100k+ rmb, I went first, got money at the end of the day.",
-          "Bought 8k eur worth of buff ball and 2k usdt from him, I can only recommend him for not taking advantage of my trust!",
+          "Thanks again for this trade, perfect inventory",
+          "+rep, have supplied his customers with 100k+ RMB, I went first, got money at the end of the day.",
+          "Bought 8k EUR worth of buff ball and 2k USDT from him, I can only recommend him for not taking advantage of my trust!",
           "I sold him $1,100 worth of skins, and he bought $5,500 worth of skins from me on Youpin. It was really fast! Skins were in my account that same day!"
         ],
         amount: ["$98,744", "$30,000", "$18,000", "$13,000", "$10,000", "$6,600"],
         items: ["CS2 Skin", "CS2 Skin", "CS2 Skin", "RMB", "USDT Balance", "CS2 Skin"],
-        transaction: ["Bought CS2 skin by bank wire", "Bought CS2 skin by USDT", "Bought CS2 skin by bank wire", "Sold RMB by bank wire", "Bought balance by USDT", "Bought CS2 skin by crypto"],
-        date: ["Nov 10, 2025", "Mar 3, 2026", "Apr 12, 2025", "Nov 15, 2025", "Jan 11, 2024", "Apr 13, 2026"]
+        transaction: ["Bought CS2 skin by bank wire", "Bought CS2 skin by USDT", "Bought CS2 skin by bank wire", "Sold RMB by bank wire", "Bought balance by USDT", "Bought CS2 skin by crypto"]
       },
       trustStats: {
         skinsSold: "Skins exchanged",
@@ -14556,17 +14554,16 @@ export const messages: Record<Locale, Messages> = {
       items: {
         name: ["deft", "mETR1CKZ", "々", "-GoV-Yurchik*", "Slaeman", "ukozor"],
         comment: [
-          "Gift for him, fast and smooth trade",
+          "给他的礼物，交易快速顺畅",
           "100%值得信赖。我和他交易了好几年，从来没有出过任何问题。他总是提供最优惠的价格。",
-          "Ty again for this trade, perfect inventory",
-          "+rep, have supplied his customers with 100k+ rmb, I went first, got money at the end of the day.",
-          "Bought 8k eur worth of buff ball and 2k usdt from him, I can only recommend him for not taking advantage of my trust!",
-          "I sold him $1,100 worth of skins, and he bought $5,500 worth of skins from me on Youpin. It was really fast! Skins were in my account that same day!"
+          "再次感谢这次交易，库存完美",
+          "+rep，为他的客户提供了10万多人民币，我先发货，当天结束时收到了钱。",
+          "从他那里购买了价值8k欧元的buff ball和2k USDT，我只能推荐他，因为他没有利用我的信任！",
+          "我卖给他价值1,100美元的皮肤，他在悠悠有品上从我这里购买了价值5,500美元的皮肤。真的很快！皮肤当天就在我的账户里了！"
         ],
         amount: ["$98,744", "$30,000", "$18,000", "$13,000", "$10,000", "$6,600"],
         items: ["CS2皮肤", "CS2皮肤", "CS2皮肤", "人民币", "USDT余额", "CS2皮肤"],
-        transaction: ["通过银行转账购买CS2皮肤", "通过USDT购买CS2皮肤", "通过银行转账购买CS2皮肤", "通过银行转账出售人民币", "通过USDT购买余额", "通过加密货币购买CS2皮肤"],
-        date: ["2025年11月10日", "2026年3月3日", "2025年4月12日", "2025年11月15日", "2024年1月11日", "2026年4月13日"]
+        transaction: ["通过银行转账购买CS2皮肤", "通过USDT购买CS2皮肤", "通过银行转账购买CS2皮肤", "通过银行转账出售人民币", "通过USDT购买余额", "通过加密货币购买CS2皮肤"]
       },
       trustStats: {
         skinsSold: "已交换皮肤",

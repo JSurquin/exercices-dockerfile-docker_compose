@@ -5,6 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 import { useLocale } from '@/components/providers/locale-provider';
+import {
+  CSGO_REP_TESTIMONIAL_SOURCE,
+  formatTestimonialDate,
+} from '@/lib/csgo-rep-testimonials';
 import { usePublicStats, formatPlatformVolume, formatCompactCount } from '@/hooks/use-public-stats';
 import {
   homeHover,
@@ -55,39 +59,21 @@ function CsgoRepLink({ size = 'default' }: { size?: 'default' | 'large' }) {
 }
 
 export function TestimonialsSection() {
-  const { messages } = useLocale();
+  const { locale, messages } = useLocale();
   const { data: publicStats } = usePublicStats();
   const volumeDisplay = formatPlatformVolume(publicStats?.totalVolumeCents ?? 0);
   const skinsDisplay = formatCompactCount(publicStats?.totalSkinsSold ?? 0);
   const usersDisplay = formatCompactCount(publicStats?.totalUsers ?? 0);
-  
-  const avatars = [
-    'https://avatars.steamstatic.com/8707319fd87ef78f9c3166d44d5a928d72230415_full.jpg',
-    'https://avatars.steamstatic.com/ddce018ed952993af326e8724b47384fcae6a10f_full.jpg',
-    'https://avatars.steamstatic.com/19e7c4f5d57f662bc37925422efa31aeaebbd9e2_full.jpg',
-    'https://avatars.steamstatic.com/cefaaaad35c70dd51850d509c6916b42743e8d98_full.jpg',
-    'https://avatars.steamstatic.com/d13c71aa50fa3bc9a4ef543138e362fffbdebf93_full.jpg',
-    'https://avatars.steamstatic.com/f77faaef3023f24ec09a5398c650f552bd4a7b6a_full.jpg',
-  ];
 
-  const steamIds = [
-    '76561198354097387',
-    '76561198980987936',
-    '76561199496067896',
-    '76561198061376237',
-    '76561198067621699',
-    '76561198001122376',
-  ];
-
-  const testimonials = Array.from({ length: 6 }, (_, i) => ({
+  const testimonials = CSGO_REP_TESTIMONIAL_SOURCE.map((source, i) => ({
     id: i + 1,
     name: messages.testimonials.items.name[i],
-    steamId: steamIds[i],
-    avatar: avatars[i],
+    steamId: source.steamId,
+    avatar: source.avatar,
     rating: 5,
     comment: messages.testimonials.items.comment[i],
     amount: messages.testimonials.items.amount[i],
-    date: messages.testimonials.items.date?.[i] ?? '',
+    date: formatTestimonialDate(source.dateIso, locale),
     verified: true,
   }));
 

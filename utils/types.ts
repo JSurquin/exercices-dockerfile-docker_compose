@@ -340,7 +340,6 @@ export interface Messages {
       amount: string[];
       items: string[];
       transaction: string[];
-      date: string[];
     };
     trustStats: {
       skinsSold: string;
