@@ -93,7 +93,7 @@ export function XPPreviewBar({
     <div
       className={cn(
         "w-full rounded-xl border border-border bg-card shadow-sm",
-        compact ? "px-3 py-2 h-[64px] overflow-hidden" : "px-4 py-3",
+        compact ? "px-3 py-2.5 h-[84px] overflow-hidden" : "px-4 py-3",
       )}
     >
       <div className="flex items-start gap-2 h-full">
