@@ -1523,7 +1523,7 @@ body.next-dev-overlay-present #sentry-feedback {
     border-radius: 9999px;
     background: var(--theme-accent);
     opacity: 0;
-    transform: scale(0.15);
+    transform: scale(0);
     transition:
       opacity 0.45s ease,
       transform 0.55s cubic-bezier(0.4, 0, 0.2, 1),
@@ -1531,13 +1531,13 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .how-it-works-connector-h .how-it-works-connector-line::after {
-    transform: scaleX(0.15);
-    transform-origin: center;
+    transform: scaleX(0);
+    transform-origin: left center;
   }
 
   .how-it-works-connector-v .how-it-works-connector-line::after {
-    transform: scaleY(0.15);
-    transform-origin: center;
+    transform: scaleY(0);
+    transform-origin: top center;
   }
 
   .how-it-works-connector-glow-far .how-it-works-connector-line::after {

@@ -40,7 +40,7 @@ export const messages: Record<Locale, Messages> = {
       subtitle:
         "La seule plateforme de cashtrade régulée en Europe, la plus rapide et sécurisée pour convertir vos skins Counter-Strike 2 en argent réel avec 0 % de frais de vente",
       cta: "Vendre maintenant",
-      secondaryCta: "Comment ça marche",
+      secondaryCta: "COMMENT ÇA MARCHE",
       badge: "Première plateforme régulée en Europe",
     features: {
       instant: "Estimation instantanée",
@@ -154,7 +154,7 @@ export const messages: Record<Locale, Messages> = {
       trustIndicators: "Plus de 15,000 utilisateurs nous font confiance"
     },
     howItWorks: {
-      title: "Comment ça marche ?",
+      title: "COMMENT ÇA MARCHE ?",
       subtitle: "Un processus simple et sécurisé pour vendre vos skins CS2 en quelques étapes",
       steps: {
         addTradeLink: {
@@ -7213,7 +7213,7 @@ export const messages: Record<Locale, Messages> = {
       subtitle:
         "The only regulated cashtrade platform in Europe, the fastest and most secure to convert your Counter-Strike 2 skins into real money with 0% selling fees",
       cta: "Sell now",
-      secondaryCta: "How it works",
+      secondaryCta: "HOW IT WORKS",
       badge: "Certified and secure platform",
       features: {
         instant: "Instant estimation",
@@ -7327,7 +7327,7 @@ export const messages: Record<Locale, Messages> = {
       trustIndicators: "Over 15,000 users trust us"
     },
     howItWorks: {
-      title: "How does it work?",
+      title: "HOW DOES IT WORK?",
       subtitle: "A simple and secure process to sell your CS2 skins in a few steps",
       steps: {
         addTradeLink: {
