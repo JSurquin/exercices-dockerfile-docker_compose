@@ -105,28 +105,28 @@ export function WhitepayCryptoForm({
   const { messages } = useLocale();
   const t = messages.paymentComponents.whitepayForm;
 
-  // State — Sélection
+  // State, Sélection
   const [selectedCrypto, setSelectedCrypto] = useState('USDT');
   const [selectedNetwork, setSelectedNetwork] = useState('ERC20');
   const [walletAddress, setWalletAddress] = useState('');
   const [memo, setMemo] = useState('');
 
-  // State — Flow
+  // State, Flow
   const [flowType, setFlowType] = useState<'standard' | 'instant'>('standard');
   const [step, setStep] = useState<'form' | 'confirm' | 'processing' | 'success' | 'error'>('form');
 
-  // State — Loading
+  // State, Loading
   const [isCreating, setIsCreating] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // State — Quote & données
+  // State, Quote & données
   const [payoutId, setPayoutId] = useState<string | null>(null);
   const [quote, setQuote] = useState<WhitepayQuote | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successData, setSuccessData] = useState<WhitepaySuccessData | null>(null);
 
-  // State — Timer 30s
+  // State, Timer 30s
   const [timeLeft, setTimeLeft] = useState(30);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -177,7 +177,7 @@ export function WhitepayCryptoForm({
   };
 
   // =============================================================================
-  // STANDARD FLOW — Étape 1: Créer le retrait (obtenir le taux)
+  // STANDARD FLOW, Étape 1: Créer le retrait (obtenir le taux)
   // =============================================================================
 
   const handleCreateWithdrawal = useCallback(async () => {
@@ -231,7 +231,7 @@ export function WhitepayCryptoForm({
   }, [amountCents, tradeId, selectedCrypto, selectedNetwork, walletAddress, memo, needsMemo, t, onError]);
 
   // =============================================================================
-  // STANDARD FLOW — Étape 2: Confirmer (dans les 30 secondes)
+  // STANDARD FLOW, Étape 2: Confirmer (dans les 30 secondes)
   // =============================================================================
 
   const handleConfirmWithdrawal = useCallback(async () => {
@@ -276,7 +276,7 @@ export function WhitepayCryptoForm({
   }, [payoutId, quote, t, onSuccess, onError]);
 
   // =============================================================================
-  // REFRESH — Rafraîchir le taux si expiré
+  // REFRESH, Rafraîchir le taux si expiré
   // =============================================================================
 
   const handleRefreshRate = useCallback(async () => {
@@ -335,7 +335,7 @@ export function WhitepayCryptoForm({
   }, [payoutId, quote, t]);
 
   // =============================================================================
-  // INSTANT FLOW — Tout en un seul appel
+  // INSTANT FLOW, Tout en un seul appel
   // =============================================================================
 
   const handleInstantWithdrawal = useCallback(async () => {
@@ -388,7 +388,7 @@ export function WhitepayCryptoForm({
   }, [amountCents, tradeId, selectedCrypto, selectedNetwork, walletAddress, memo, needsMemo, t, onSuccess, onError]);
 
   // =============================================================================
-  // RENDER — Écran de succès
+  // RENDER, Écran de succès
   // =============================================================================
 
   if (step === 'success' && successData) {
@@ -433,7 +433,7 @@ export function WhitepayCryptoForm({
   }
 
   // =============================================================================
-  // RENDER — Écran de confirmation (Standard Flow, 30 secondes)
+  // RENDER, Écran de confirmation (Standard Flow, 30 secondes)
   // =============================================================================
 
   if (step === 'confirm' && quote) {
@@ -553,7 +553,7 @@ export function WhitepayCryptoForm({
   }
 
   // =============================================================================
-  // RENDER — Formulaire principal
+  // RENDER, Formulaire principal
   // =============================================================================
 
   return (

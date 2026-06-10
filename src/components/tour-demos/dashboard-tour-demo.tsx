@@ -231,13 +231,13 @@ export function DashboardTourDemo() {
             </Card>
           </TabsContent>
           <TabsContent value="analytics">
-            <Card><CardContent className="p-8 text-center text-muted-foreground">Analytics — demo</CardContent></Card>
+            <Card><CardContent className="p-8 text-center text-muted-foreground">Analytics, demo</CardContent></Card>
           </TabsContent>
           <TabsContent value="payments">
-            <Card><CardContent className="p-8 text-center text-muted-foreground">Paiements — demo</CardContent></Card>
+            <Card><CardContent className="p-8 text-center text-muted-foreground">Paiements, demo</CardContent></Card>
           </TabsContent>
           <TabsContent value="settings">
-            <Card><CardContent className="p-8 text-center text-muted-foreground">Paramètres — demo</CardContent></Card>
+            <Card><CardContent className="p-8 text-center text-muted-foreground">Paramètres, demo</CardContent></Card>
           </TabsContent>
         </Tabs>
       </div>

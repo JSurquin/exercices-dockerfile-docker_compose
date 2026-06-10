@@ -70,7 +70,7 @@ export function LevelProgressBar({
                       isReached && !isCurrent && "opacity-90"
                     )}
                     style={{ left: `${position}%` }}
-                    aria-label={`${tierLabel(i + 1)} — ${rewardText}`}
+                    aria-label={`${tierLabel(i + 1)}, ${rewardText}`}
                   >
                     <LevelBadge
                       tierIndex={i}

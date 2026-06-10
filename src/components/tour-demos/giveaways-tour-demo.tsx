@@ -121,7 +121,7 @@ export function GiveawaysTourDemo() {
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-theme-accent font-bold">3.</span>
-                  <span className="text-muted-foreground">Tirage aléatoire déterministe — résultats publics</span>
+                  <span className="text-muted-foreground">Tirage aléatoire déterministe, résultats publics</span>
                 </div>
               </div>
             </CardContent>
@@ -168,10 +168,10 @@ export function GiveawaysTourDemo() {
             ))}
           </TabsContent>
           <TabsContent value="ended">
-            <Card><CardContent className="p-8 text-center text-muted-foreground">Concours terminés — demo</CardContent></Card>
+            <Card><CardContent className="p-8 text-center text-muted-foreground">Concours terminés, demo</CardContent></Card>
           </TabsContent>
           <TabsContent value="mine">
-            <Card><CardContent className="p-8 text-center text-muted-foreground">Mes participations — demo</CardContent></Card>
+            <Card><CardContent className="p-8 text-center text-muted-foreground">Mes participations, demo</CardContent></Card>
           </TabsContent>
         </Tabs>
       </div>

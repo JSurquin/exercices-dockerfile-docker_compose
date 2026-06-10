@@ -74,7 +74,7 @@ interface LoginRequiredBlockProps {
 }
 
 /**
- * Standalone "login required" UI block — use inline in pages that
+ * Standalone "login required" UI block, use inline in pages that
  * already have their own user check (e.g. when hooks depend on user).
  */
 export function LoginRequiredBlock({

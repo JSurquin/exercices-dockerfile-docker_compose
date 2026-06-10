@@ -65,14 +65,14 @@ export default function AdminChatPage() {
   const t = messages.admin.chat.moderators;
   const queryClient = useQueryClient();
 
-  // State — promotion utilisateur existant
+  // State, promotion utilisateur existant
   const [users, setUsers] = useState<User[]>([]);
   const [searchUser, setSearchUser] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
   const [promotingUser, setPromotingUser] = useState(false);
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // State — invitation par email
+  // State, invitation par email
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteName, setInviteName] = useState('');
   const [inviting, setInviting] = useState(false);

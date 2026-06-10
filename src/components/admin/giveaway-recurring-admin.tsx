@@ -471,7 +471,7 @@ export function GiveawayRecurringAdmin() {
                         <div>
                           <span className="text-slate-500">{t.nextSpawn}</span>
                           <p className="text-white">
-                            {row.nextSpawnAt ? new Date(row.nextSpawnAt).toLocaleString() : '—'}
+                            {row.nextSpawnAt ? new Date(row.nextSpawnAt).toLocaleString() : '-'}
                           </p>
                         </div>
                         <div>

@@ -481,7 +481,7 @@ const OnboardingDialog = ({ open, onComplete }: OnboardingDialogProps) => {
       setLoading(false);
     }
 
-    // Étape saisie du trade link — détectée via le contenu de l'étape courante
+    // Étape saisie du trade link, détectée via le contenu de l'étape courante
     const isEnterTradeLinkStep = currentStepData.title === messages.components.onboarding.enterTradeLink.title;
     if (isEnterTradeLinkStep) {
       if (!isValidUrl || !tradeUrl) {

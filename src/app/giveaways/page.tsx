@@ -282,7 +282,7 @@ const GiveawayCard = ({
               </Button>
             </div>
               <p className="text-xs text-muted-foreground">
-                {messages.giveaways.youHave} {userFragments} {fg.entriesAvailable} — {messages.giveaways.card.costLabel.replace('{cost}', String(totalCost))}
+                {messages.giveaways.youHave} {userFragments} {fg.entriesAvailable}, {messages.giveaways.card.costLabel.replace('{cost}', String(totalCost))}
             </p>
           </div>
         )}

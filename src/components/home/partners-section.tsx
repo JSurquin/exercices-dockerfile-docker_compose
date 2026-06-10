@@ -70,7 +70,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
         target="_blank"
         rel="noopener noreferrer"
         className="relative block aspect-video overflow-hidden bg-muted"
-        aria-label={`${video.creatorName} — YouTube`}
+        aria-label={`${video.creatorName}, YouTube`}
       >
         <img
           src={thumbUrl}

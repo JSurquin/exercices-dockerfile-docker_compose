@@ -19,8 +19,8 @@ export function LevelHelpPopover() {
   const colXP = "XP";
   const colBonus = isFr ? "Bonus vente" : "Sale bonus";
   const tierInfo = isFr
-    ? "Chaque niveau contient 5 paliers — débloquez des récompenses (fragments, skins) à chaque palier."
-    : "Each level has 5 tiers — unlock rewards (fragments, skins) at each tier.";
+    ? "Chaque niveau contient 5 paliers, débloquez des récompenses (fragments, skins) à chaque palier."
+    : "Each level has 5 tiers, unlock rewards (fragments, skins) at each tier.";
   const capInfo = isFr ? "Cap maximum : 100 000 XP (~64 000 € vendus)" : "Max cap: 100,000 XP (~€64,000 sold)";
 
   return (
@@ -59,7 +59,7 @@ export function LevelHelpPopover() {
             <tbody>
               {LEVELS.map((l) => {
                 const name = locale === "en" ? l.nameEn : l.name;
-                const bonusStr = l.saleBonus === 0 ? "—" : `+${(l.saleBonus * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
+                const bonusStr = l.saleBonus === 0 ? "-" : `+${(l.saleBonus * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
                 const xpStr = `${(l.xpStart / 1000).toFixed(0)}k–${(l.xpEnd / 1000).toFixed(0)}k`;
                 const badgeTier = Math.min(l.index, 3);
                 return (

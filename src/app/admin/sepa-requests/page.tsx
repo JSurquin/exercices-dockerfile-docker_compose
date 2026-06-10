@@ -258,7 +258,7 @@ export default function AdminSepaRequestsPage() {
                             <p className="text-white font-medium text-sm">
                               {req.user?.name ?? req.user?.steamUsername ?? t.columns.user}
                             </p>
-                            <p className="text-slate-400 text-xs">{req.user?.email ?? '—'}</p>
+                            <p className="text-slate-400 text-xs">{req.user?.email ?? '-'}</p>
                             {req.beneficiary?.firstName && (
                               <p className="text-slate-300 text-xs">
                                 {req.beneficiary.firstName} {req.beneficiary.lastName}
@@ -277,7 +277,7 @@ export default function AdminSepaRequestsPage() {
                           <span className="font-mono text-white text-xs font-semibold tracking-wide">
                             {req.beneficiary?.fullIban
                               ? req.beneficiary.fullIban.replace(/(.{4})/g, '$1 ').trim()
-                              : '—'}
+                              : '-'}
                           </span>
                           {req.beneficiary?.firstName && (
                             <p className="text-slate-400 text-xs mt-0.5">
@@ -288,7 +288,7 @@ export default function AdminSepaRequestsPage() {
                       </td>
                       <td className="py-4 pr-4">
                         <span className="font-mono text-slate-300 text-xs">
-                          {req.beneficiary?.bic || '—'}
+                          {req.beneficiary?.bic || '-'}
                         </span>
                       </td>
                       <td className="py-4 pr-4">
@@ -422,7 +422,7 @@ export default function AdminSepaRequestsPage() {
                   <p className="font-mono text-theme-highlight text-base font-bold tracking-widest select-all">
                     {approveModal.beneficiary?.fullIban
                       ? approveModal.beneficiary.fullIban.replace(/(.{4})/g, '$1 ').trim()
-                      : '—'}
+                      : '-'}
                   </p>
                 </div>
                 {approveModal.beneficiary?.bic && (
@@ -443,7 +443,7 @@ export default function AdminSepaRequestsPage() {
                 <div className="flex justify-between">
                   <span className="text-slate-400">{t.modalLabelUser}</span>
                   <span className="text-white font-medium">
-                    {approveModal.user?.name ?? approveModal.user?.steamUsername ?? '—'}
+                    {approveModal.user?.name ?? approveModal.user?.steamUsername ?? '-'}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -510,7 +510,7 @@ export default function AdminSepaRequestsPage() {
                 <div className="flex justify-between">
                   <span className="text-slate-400">{t.modalLabelUser}</span>
                   <span className="text-white font-medium">
-                    {rejectModal.user?.name ?? rejectModal.user?.steamUsername ?? '—'}
+                    {rejectModal.user?.name ?? rejectModal.user?.steamUsername ?? '-'}
                   </span>
                 </div>
                 <div className="flex justify-between">

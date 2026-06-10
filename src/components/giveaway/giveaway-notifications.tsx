@@ -132,7 +132,7 @@ export function GiveawayNotifications() {
                       </p>
                       {i === 0 && (
                         <p className="text-xs text-yellow-700 dark:text-yellow-300 truncate">
-                          {notification.prize} — {notification.giveawayTitle}
+                          {notification.prize}, {notification.giveawayTitle}
                         </p>
                       )}
                     </div>

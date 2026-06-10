@@ -264,7 +264,7 @@ export default function AdminUserDetailPage() {
           </div>
           <div>
             <p className="text-slate-400">{t.levelXp}</p>
-            <p className="text-white">{user.level} — {user.xp} XP</p>
+            <p className="text-white">{user.level}, {user.xp} XP</p>
           </div>
           <div>
             <p className="text-slate-400">{t.fragments}</p>

@@ -483,7 +483,7 @@ export default function KYCPage() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mb-6 sm:mb-8"
         >
-          {/* Stepper — icônes + connecteurs fluides */}
+          {/* Stepper, icônes + connecteurs fluides */}
           <div className="flex items-center mb-4">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center flex-1 last:flex-none">
@@ -500,14 +500,14 @@ export default function KYCPage() {
                       <step.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                     )}
                   </div>
-                  {/* Label sous l'icône — toujours visible, xs sur mobile */}
+                  {/* Label sous l'icône, toujours visible, xs sur mobile */}
                   <p className={`text-[10px] sm:text-xs font-medium text-center w-[56px] sm:w-[72px] leading-tight ${
                     index <= getStepIndex() ? 'text-foreground' : 'text-muted-foreground'
                   }`}>
                     {step.title}
                   </p>
                 </div>
-                {/* Connecteur — prend tout l'espace restant jusqu'au prochain step */}
+                {/* Connecteur, prend tout l'espace restant jusqu'au prochain step */}
                 {index < steps.length - 1 && (
                   <div className={`flex-1 h-0.5 mx-1.5 sm:mx-2 transition-colors ${
                     index < getStepIndex() ? 'bg-primary' : 'bg-muted'

@@ -457,7 +457,7 @@ export function AdminUsersTable() {
                   {user.totalVolume > 0 ? (
                     <ConvertedPrice usdCents={user.totalVolume} fromCurrency="USD" className="text-white" />
                   ) : (
-                    '—'
+                    '-'
                   )}
                 </TableCell>
                 <TableCell className="text-blue-400">
@@ -468,7 +468,7 @@ export function AdminUsersTable() {
                       className="text-blue-400"
                     />
                   ) : (
-                    '—'
+                    '-'
                   )}
                 </TableCell>
                 <TableCell className="text-slate-300">
@@ -602,7 +602,7 @@ export function AdminUsersTable() {
             </DialogTitle>
             <DialogDescription className="text-slate-400">
               <span className="font-semibold text-purple-300">{promoteDialog.username}</span>
-              {' — '}
+              {', '}
               {messages.admin.promoteAffiliate.dialogDescription}
             </DialogDescription>
           </DialogHeader>

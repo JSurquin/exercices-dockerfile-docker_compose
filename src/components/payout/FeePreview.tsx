@@ -77,7 +77,7 @@ export function FeePreview({ method, amountCents, labels }: FeePreviewProps) {
       <div className="flex justify-between font-semibold">
         <span>{labels.youReceive}</span>
         <span className={netCents > 0 ? 'text-green-500' : 'text-destructive'}>
-          {netCents > 0 ? formatCentsToCurrency(netCents, 'EUR') : '—'}
+          {netCents > 0 ? formatCentsToCurrency(netCents, 'EUR') : '-'}
         </span>
       </div>
       {delay && (

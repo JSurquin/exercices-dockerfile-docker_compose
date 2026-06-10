@@ -8,7 +8,7 @@ interface CardTiltProps {
 }
 
 /**
- * Card glassmorphism 3D — tilt au hover en CSS pur (plus fluide que le tracking souris JS).
+ * Card glassmorphism 3D, tilt au hover en CSS pur (plus fluide que le tracking souris JS).
  */
 export function CardTilt({ children, className, shimmer = false }: CardTiltProps) {
   return (

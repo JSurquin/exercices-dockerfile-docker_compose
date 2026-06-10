@@ -114,7 +114,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="sell-trade-link"]',
       popover: {
-        title: t('🔗 Trade Link Steam — modifiable', '🔗 Steam Trade Link — editable', '🔗 Steam 交易链接 — 可修改'),
+        title: t('🔗 Trade Link Steam, modifiable', '🔗 Steam Trade Link, editable', '🔗 Steam 交易链接, 可修改'),
         description: t(
           'C\'est la <strong>seule information modifiable</strong> : elle détermine quel inventaire est chargé et où vous recevez les offres d\'échange. Cliquez sur <em>Modifier</em> pour la mettre à jour.',
           'This is the <strong>only editable field</strong>: it determines which inventory is loaded and where you receive trade offers. Click <em>Edit</em> to update it.',

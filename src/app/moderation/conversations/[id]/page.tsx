@@ -234,7 +234,7 @@ export default function ConversationPage() {
 
   return (
     /*
-     * Sur mobile/tablette : layout vertical — sidebar collapsible en haut,
+     * Sur mobile/tablette : layout vertical, sidebar collapsible en haut,
      *   chat en dessous avec hauteur contrainte par dvh.
      * Sur desktop (lg+) : grid 4 colonnes côte à côte, sidebar sticky.
      * Le wrapper principal n'a pas de overflow caché pour laisser la page
@@ -280,7 +280,7 @@ export default function ConversationPage() {
       {/* ── Layout principal ── */}
       <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 lg:gap-6 lg:items-start">
 
-        {/* ── Sidebar infos — collapsible sur mobile, toujours visible sur lg ── */}
+        {/* ── Sidebar infos, collapsible sur mobile, toujours visible sur lg ── */}
         <div className="lg:col-span-1 lg:sticky lg:top-4">
 
           {/* Version mobile : accordéon */}
@@ -333,7 +333,7 @@ export default function ConversationPage() {
               </CardTitle>
             </CardHeader>
 
-            {/* Messages — zone scrollable, ordre chronologique (le plus récent en bas) */}
+            {/* Messages, zone scrollable, ordre chronologique (le plus récent en bas) */}
             <div
               ref={messagesContainerRef}
               className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-4 py-3 space-y-3"
@@ -375,7 +375,7 @@ export default function ConversationPage() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Zone saisie — ancrée en bas, jamais couverte */}
+            {/* Zone saisie, ancrée en bas, jamais couverte */}
             <div className="flex-shrink-0 border-t border-border/50 bg-background/30 backdrop-blur-sm px-3 sm:px-4 py-2.5 sm:py-3">
               <div className="flex gap-2 items-end">
                 <Textarea
@@ -417,7 +417,7 @@ export default function ConversationPage() {
 }
 
 /* ─────────────────────────────────────────────
- * Contenu de la sidebar — partagé entre mobile
+ * Contenu de la sidebar, partagé entre mobile
  * (Collapsible) et desktop (div fixe).
  * ───────────────────────────────────────────── */
 function SidebarContent({

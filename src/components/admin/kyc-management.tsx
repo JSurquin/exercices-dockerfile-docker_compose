@@ -187,11 +187,11 @@ export function AdminKYCManagement() {
       SELFIE: t.docSelfie,
       PROOF_OF_ADDRESS: t.docProofOfAddress,
     };
-    return map[type?.toUpperCase()] ?? type ?? '—';
+    return map[type?.toUpperCase()] ?? type ?? '-';
   };
 
   const fmt = (d: string | null | undefined) =>
-    d ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(d)) : '—';
+    d ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(d)) : '-';
 
   const displayName = (u: KycUser) =>
     u.steamUsername || u.name || u.email || u.userId;
@@ -328,11 +328,11 @@ export function AdminKYCManagement() {
                   <TableCell>{getKYCBadge(u.kycStatus)}</TableCell>
 
                   <TableCell className="text-slate-300 text-sm">
-                    {u.latestDocument ? getDocumentTypeLabel(u.latestDocument.type) : '—'}
+                    {u.latestDocument ? getDocumentTypeLabel(u.latestDocument.type) : '-'}
                   </TableCell>
 
                   <TableCell className="text-slate-300 text-sm whitespace-nowrap">
-                    {u.latestDocument ? fmt(u.latestDocument.uploadedAt) : (u.latestVerification ? fmt(u.latestVerification.createdAt) : '—')}
+                    {u.latestDocument ? fmt(u.latestDocument.uploadedAt) : (u.latestVerification ? fmt(u.latestVerification.createdAt) : '-')}
                   </TableCell>
 
                   <TableCell className="text-slate-300 text-sm whitespace-nowrap">
@@ -340,7 +340,7 @@ export function AdminKYCManagement() {
                       ? fmt(u.latestVerification.completedAt)
                       : u.latestDocument?.reviewedAt
                       ? fmt(u.latestDocument.reviewedAt)
-                      : '—'}
+                      : '-'}
                   </TableCell>
 
                   <TableCell>

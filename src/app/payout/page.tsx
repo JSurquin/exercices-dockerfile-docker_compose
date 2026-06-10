@@ -82,7 +82,7 @@ function getAddressPlaceholder(network: string): string {
   }
 }
 
-/** Flexify envoie processingFeeCents / Whitepay processingCents — évite NaN dans le récap */
+/** Flexify envoie processingFeeCents / Whitepay processingCents, évite NaN dans le récap */
 function normalizeWithdrawalFeesCents(fees: unknown): { processingCents: number; networkCents: number } {
   if (!fees || typeof fees !== 'object') return { processingCents: 0, networkCents: 0 };
   const o = fees as Record<string, unknown>;
@@ -140,7 +140,7 @@ interface PayoutFormData {
   expireMonth: string;
   expireYear: string;
   cvv: string;
-  // SEPA — prénom / nom séparés (requis Flexify)
+  // SEPA, prénom / nom séparés (requis Flexify)
   iban: string;
   bic: string;
   firstName: string;
@@ -272,7 +272,7 @@ export default function PayoutPage() {
     ]),
     [],
   );
-  /** Échecs explicites — balanceDebitedAt peut être non-null (verrou onFailed), sans aucun paiement réussi */
+  /** Échecs explicites, balanceDebitedAt peut être non-null (verrou onFailed), sans aucun paiement réussi */
   const TERMINAL_FAILURE_UPPER = useMemo(
     () => new Set(['FAILED', 'FLEXIFY_FAILED', 'WHITEPAY_DECLINED', 'CANCELLED']),
     [],
@@ -455,7 +455,7 @@ export default function PayoutPage() {
       }
     }
 
-    // Validation crypto (wallet, memo) — wallet chargé côté serveur si moyen enregistré
+    // Validation crypto (wallet, memo), wallet chargé côté serveur si moyen enregistré
     if (payoutMethod === 'crypto') {
       const useRegisteredWallet = useSavedWallet && selectedCryptoMethodId;
       if (!useRegisteredWallet && !formData.walletAddress) {
@@ -629,7 +629,7 @@ export default function PayoutPage() {
       if (!response.ok) {
         let errorMessage = typeof data?.error === 'string' ? data.error : data?.message ?? `HTTP ${response.status}`;
         if (data?.whitepayErrors && process.env.NODE_ENV === 'development') {
-          errorMessage += ` — Details: ${JSON.stringify(data.whitepayErrors)}`;
+          errorMessage += `, Details: ${JSON.stringify(data.whitepayErrors)}`;
         }
         // Carte obsolète supprimée côté serveur : on rafraîchit les méthodes et on bascule en saisie manuelle
         if (data?.code === 'CARD_STALE_DELETED') {
@@ -807,7 +807,7 @@ export default function PayoutPage() {
                       <p className="text-sm text-muted-foreground">{text.request.availableBalance}</p>
                       <p className="text-2xl font-bold text-green-500">
                         {availableBalanceCents === null
-                          ? '—'
+                          ? '-'
                           : formatCentsToCurrency(availableBalanceCents, 'EUR')}
                       </p>
                     </div>
@@ -818,7 +818,7 @@ export default function PayoutPage() {
                       </p>
                       <p className="text-2xl font-bold text-theme-stat">
                         {frozenBalanceCents === null
-                          ? '—'
+                          ? '-'
                           : formatCentsToCurrency(frozenBalanceCents, 'EUR')}
                       </p>
                     </div>
@@ -905,7 +905,7 @@ export default function PayoutPage() {
                               />
                               <span className="text-sm">
                                 {text.request.useSavedCard}: **** {pm.last4 ?? '••••'}
-                                {pm.holderName ? ` — ${pm.holderName}` : ''}
+                                {pm.holderName ? `, ${pm.holderName}` : ''}
                               </span>
                             </label>
                           ))}
@@ -1070,7 +1070,7 @@ export default function PayoutPage() {
                               />
                               <span className="text-sm">
                                 {text.request.useSavedIban}: <strong>{String(pm.maskedIban ?? '••••••••••••').slice(-4).padStart(12, '•')}</strong>
-                                {pm.holderName ? ` — ${pm.holderName}` : ''}
+                                {pm.holderName ? `, ${pm.holderName}` : ''}
                               </span>
                             </label>
                           ))}
@@ -1406,7 +1406,7 @@ export default function PayoutPage() {
                               />
                               <span className="text-sm">
                                 {text.request.useSavedWallet}: <strong>{pm.maskedAddress ?? '••••'}</strong>
-                                {pm.network ? ` (${pm.network})` : ''} {pm.targetCurrency ? ` — ${pm.targetCurrency}` : ''}
+                                {pm.network ? ` (${pm.network})` : ''} {pm.targetCurrency ? `, ${pm.targetCurrency}` : ''}
                               </span>
                             </label>
                           ))}
@@ -1523,7 +1523,7 @@ export default function PayoutPage() {
                   </TabsContent>
                 </Tabs>
 
-                {/* Aperçu des frais inline — affiché dès qu'un montant est saisi */}
+                {/* Aperçu des frais inline, affiché dès qu'un montant est saisi */}
                 {!payoutResult && payoutMethod !== 'sepa_fr' && amount && parseFloat(amount) > 0 && (
                   <FeePreview
                     method={payoutMethod as 'card' | 'sepa' | 'crypto'}
@@ -1536,7 +1536,7 @@ export default function PayoutPage() {
                   />
                 )}
 
-                {/* Bouton de confirmation — fetch le quote en background puis affiche le récap */}
+                {/* Bouton de confirmation, fetch le quote en background puis affiche le récap */}
                 {!quote && !payoutResult && payoutMethod !== 'sepa_fr' && (
                   <Button
                     onClick={getQuote}

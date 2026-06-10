@@ -216,7 +216,7 @@ function ManageView() {
       setBackupCodes([]);
       setPassword("");
       setMessage(t.disabledSuccess);
-      // Better Auth crée une nouvelle session — rechargement pour mettre à jour les cookies
+      // Better Auth crée une nouvelle session, rechargement pour mettre à jour les cookies
       setTimeout(() => window.location.reload(), 800);
     } finally {
       setLoading(false);

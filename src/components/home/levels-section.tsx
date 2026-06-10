@@ -36,7 +36,7 @@ function formatXp(xp: number): string {
 }
 
 function formatBonus(level: LevelDef): string {
-  if (level.saleBonus === 0) return "—";
+  if (level.saleBonus === 0) return "-";
   return `+${(level.saleBonus * 100).toFixed(2).replace(/\.?0+$/, "")}%`;
 }
 
@@ -197,7 +197,7 @@ export function LevelsSection() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-12 items-stretch">
-          {/* Fragment hero — left half, CTA aligned with right column footer */}
+          {/* Fragment hero, left half, CTA aligned with right column footer */}
           <div className={`${homeReveal.upSm} flex flex-col h-full`}>
             <div className="flex flex-1 items-center justify-center w-full min-h-[280px] sm:min-h-[340px] lg:min-h-[420px]">
               <img
@@ -212,7 +212,7 @@ export function LevelsSection() {
             </Button>
           </div>
 
-          {/* Fragments explanation — right half */}
+          {/* Fragments explanation, right half */}
           <div className={`${homeReveal.up} flex`}>
             <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-theme-accent/5 flex-1">
               <CardContent className="p-6 flex flex-col h-full">

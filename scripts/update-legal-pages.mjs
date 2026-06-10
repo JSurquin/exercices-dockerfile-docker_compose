@@ -70,9 +70,9 @@ Les traitements reposent sur :
 
 Les données peuvent être partagées avec des prestataires de confiance, uniquement lorsque cela est nécessaire au fonctionnement du service :
 
-- KYCAID — vérification d'identité (KYC)
-- Flexify — traitement des paiements
-- Whitepay — solutions de paiement
+- KYCAID, vérification d'identité (KYC)
+- Flexify, traitement des paiements
+- Whitepay, solutions de paiement
 
 Ainsi que :
 

@@ -49,7 +49,7 @@ export const messages: Record<Locale, Messages> = {
       instantDesc: "Prix en temps réel via notre API intégrée",
       secureDesc: "SEPA, crypto, et KYC obligatoire pour votre sécurité",
       transparentDesc:
-        "Aucun frais sur la vente de vos skins. Les frais de cashout varient selon le moyen de paiement choisi — une estimation est disponible directement sur le site avant confirmation.",
+        "Aucun frais sur la vente de vos skins. Les frais de cashout varient selon le moyen de paiement choisi, une estimation est disponible directement sur le site avant confirmation.",
     },
       stats: {
         users: "Utilisateurs actifs",
@@ -195,7 +195,7 @@ export const messages: Record<Locale, Messages> = {
         transparent: {
           title: "Frais transparents",
           description:
-            "Aucun frais sur la vente de vos skins. Les frais de cashout varient selon le moyen de paiement choisi — une estimation est disponible directement sur le site avant confirmation."
+            "Aucun frais sur la vente de vos skins. Les frais de cashout varient selon le moyen de paiement choisi, une estimation est disponible directement sur le site avant confirmation."
         }
       },
       cta: {
@@ -393,16 +393,16 @@ export const messages: Record<Locale, Messages> = {
           PROCESSING: "Traitement",
           PAID: "Payé",
           FAILED: "Échoué",
-          FLEXIFY_PENDING: "Flexify — en attente",
-          FLEXIFY_PROCESSING: "Flexify — traitement",
-          FLEXIFY_PAID: "Flexify — payé",
-          FLEXIFY_FAILED: "Flexify — échoué",
-          WHITEPAY_WAITING_CONFIRMATION: "Whitepay — confirmation",
-          WHITEPAY_PENDING_WITHDRAWAL: "Whitepay — retrait en attente",
+          FLEXIFY_PENDING: "Flexify, en attente",
+          FLEXIFY_PROCESSING: "Flexify, traitement",
+          FLEXIFY_PAID: "Flexify, payé",
+          FLEXIFY_FAILED: "Flexify, échoué",
+          WHITEPAY_WAITING_CONFIRMATION: "Whitepay, confirmation",
+          WHITEPAY_PENDING_WITHDRAWAL: "Whitepay, retrait en attente",
           CANCELLED: "Annulé",
-          WHITEPAY_PROCESSING_WITHDRAWAL: "Whitepay — retrait en cours",
-          WHITEPAY_COMPLETE: "Whitepay — terminé",
-          WHITEPAY_DECLINED: "Whitepay — refusé",
+          WHITEPAY_PROCESSING_WITHDRAWAL: "Whitepay, retrait en cours",
+          WHITEPAY_COMPLETE: "Whitepay, terminé",
+          WHITEPAY_DECLINED: "Whitepay, refusé",
         },
         kycRefreshStatus: "Rafraîchir le statut",
         kycRefreshing: "Vérification…",
@@ -706,7 +706,7 @@ export const messages: Record<Locale, Messages> = {
     },
     giveaways: {
       title: "Giveaways",
-      subtitle: "Utilisez vos fragments pour participer aux tirages — plus d’entrées, plus de chances de gagner.",
+      subtitle: "Utilisez vos fragments pour participer aux tirages, plus d’entrées, plus de chances de gagner.",
       userTickets: {
         level: "Niveau",
         tickets: "fragments",
@@ -760,7 +760,7 @@ export const messages: Record<Locale, Messages> = {
       notifications: {
         newWinner: "Nouveau gagnant !",
         newWinners: "Nouveaux gagnants !",
-        winnerToast: "🎉 Tirage terminé : {title} — Gagnant : {name}",
+        winnerToast: "🎉 Tirage terminé : {title}, Gagnant : {name}",
         winnerFallback: "Joueur",
         anonymousPlayer: "Joueur anonyme",
       },
@@ -804,7 +804,7 @@ export const messages: Record<Locale, Messages> = {
       loginTitle: "Connecte-toi pour voir les missions",
       loginSubtitle: "Gagne des fragments en accomplissant des missions quotidiennes.",
       backToGiveaways: "Retour aux giveaways",
-      pageSubtitle: "Source secondaire de fragments — les ventes restent la priorité.",
+      pageSubtitle: "Source secondaire de fragments, les ventes restent la priorité.",
       statsFragments: "Fragments disponibles",
       statsToClaim: "À réclamer",
       statsCompleted: "Complétées",
@@ -888,7 +888,7 @@ export const messages: Record<Locale, Messages> = {
         },
         BONUS_DAILY_SURPRISE: {
           label: "Mission du jour",
-          description: "Récompense surprise du jour — montant aléatoire entre 20 et 50 fragments.",
+          description: "Récompense surprise du jour, montant aléatoire entre 20 et 50 fragments.",
         },
       },
       categories: {
@@ -1926,7 +1926,7 @@ export const messages: Record<Locale, Messages> = {
           contractor: {
             name: "Partenaire technique",
             role: "Développement web (prestataire)",
-            bio: "Conception et développement de la plateforme Moonskin — merci pour la confiance.",
+            bio: "Conception et développement de la plateforme Moonskin, merci pour la confiance.",
             skills: ["Produit", "Ingénierie", "Qualité"]
           }
         }
@@ -1950,7 +1950,7 @@ export const messages: Record<Locale, Messages> = {
         title: "Roadmap",
         phases: [
           {
-            title: "Phase 1 — Lancement & fondations",
+            title: "Phase 1, Lancement & fondations",
             items: [
               "Mise en place des bases de Moonskin et déploiement de la plateforme.",
               "Développement initial de Moonskin",
@@ -1961,7 +1961,7 @@ export const messages: Record<Locale, Messages> = {
             ]
           },
           {
-            title: "Phase 2 — Acquisition & croissance",
+            title: "Phase 2, Acquisition & croissance",
             items: [
               "Développement de la visibilité et montée en puissance de la plateforme.",
               "Lancement de la première campagne marketing",
@@ -1972,7 +1972,7 @@ export const messages: Record<Locale, Messages> = {
             ]
           },
           {
-            title: "Phase 3 — Expansion de l'offre",
+            title: "Phase 3, Expansion de l'offre",
             items: [
               "Enrichissement des fonctionnalités et des sources de liquidité.",
               "Intégration de la supply issue des marketplaces chinoises",
@@ -1982,7 +1982,7 @@ export const messages: Record<Locale, Messages> = {
             ]
           },
           {
-            title: "Phase 4 — Écosystème Moonskin",
+            title: "Phase 4, Écosystème Moonskin",
             items: [
               "Construction d'une plateforme complète et autonome.",
               "Ajout d'un système de vente peer-to-peer",
@@ -2212,7 +2212,7 @@ export const messages: Record<Locale, Messages> = {
         },
         sharingSection: {
           title: "6. Partage des données",
-          content: "Les données peuvent être partagées avec des prestataires de confiance, uniquement lorsque cela est nécessaire au fonctionnement du service :\n\n• KYCAID — vérification d'identité (KYC)\n• Flexify — traitement des paiements\n• Whitepay — solutions de paiement\n\nAinsi que :\n\n• Fournisseurs techniques (hébergement, infrastructure)\n• Autorités légales si requis\n\nMoonskin ne vend ni ne loue les données personnelles."
+          content: "Les données peuvent être partagées avec des prestataires de confiance, uniquement lorsque cela est nécessaire au fonctionnement du service :\n\n• KYCAID, vérification d'identité (KYC)\n• Flexify, traitement des paiements\n• Whitepay, solutions de paiement\n\nAinsi que :\n\n• Fournisseurs techniques (hébergement, infrastructure)\n• Autorités légales si requis\n\nMoonskin ne vend ni ne loue les données personnelles."
         },
         retention: {
           title: "7. Conservation des données",
@@ -2240,10 +2240,10 @@ export const messages: Record<Locale, Messages> = {
         }
       },
       contact: {
-        title: "Contact — protection des données",
+        title: "Contact, protection des données",
         description: "Pour exercer vos droits ou pour toute question relative à cette politique :",
         email: "contact@moonskin.fun",
-        address: "COUNTER TRADE FRANCE — 53 T rue Auguste Blanqui, 78800 Houilles, France",
+        address: "COUNTER TRADE FRANCE, 53 T rue Auguste Blanqui, 78800 Houilles, France",
         cnil: "Vous avez également le droit de déposer une plainte auprès de la CNIL en cas de manquement."
       }
     },
@@ -2739,7 +2739,7 @@ export const messages: Record<Locale, Messages> = {
         },
         platformConfig: {
           title: "Configuration plateforme",
-          description: "Paramètres opérationnels — écrasent les variables d'environnement sans redéploiement.",
+          description: "Paramètres opérationnels, écrasent les variables d'environnement sans redéploiement.",
         },
         personal: {
           title: "Informations Personnelles",
@@ -3188,7 +3188,7 @@ export const messages: Record<Locale, Messages> = {
         },
         form: {
           titleLabel: "Titre *",
-          prizeLabel: "Prix à gagner — skin Skinplace *",
+          prizeLabel: "Prix à gagner, skin Skinplace *",
           prizeSearchPlaceholder: "Rechercher un skin CS2 (ex: AK-47 Redline)...",
           prizeManualHint: "Ou saisis manuellement ci-dessous si le skin n'est pas trouvé.",
           prizeManualPlaceholder: "Nom manuel du prix (fallback)",
@@ -3301,7 +3301,7 @@ export const messages: Record<Locale, Messages> = {
         },
         videos: {
           title: "Vidéos recommandées",
-          description: "Ajoutez des URLs YouTube — la miniature est récupérée automatiquement.",
+          description: "Ajoutez des URLs YouTube, la miniature est récupérée automatiquement.",
           add: "Ajouter une vidéo",
           edit: "Modifier la vidéo",
           empty: "Aucune vidéo configurée.",
@@ -3744,12 +3744,12 @@ export const messages: Record<Locale, Messages> = {
         impersonateConfirmDesc: "Vous allez prendre le contrôle du compte de {name}. Une bannière sera affichée pour vous rappeler que vous êtes en mode impersonation.",
         impersonateConfirm: "Confirmer",
         impersonateCancel: "Annuler",
-        impersonateSuccess: "Impersonation démarrée — vous êtes maintenant connecté en tant que {name}",
+        impersonateSuccess: "Impersonation démarrée, vous êtes maintenant connecté en tant que {name}",
         impersonateError: "Impossible de démarrer l'impersonation",
         impersonateAdminError: "Vous ne pouvez pas impersonnifier un administrateur",
       },
       impersonationBanner: {
-        message: "Vous impersonnifiez {name} — toutes vos actions sont effectuées en son nom",
+        message: "Vous impersonnifiez {name}, toutes vos actions sont effectuées en son nom",
         stop: "Quitter l'impersonation",
         stopping: "Arrêt...",
         stopError: "Erreur lors de l'arrêt de l'impersonation",
@@ -3782,8 +3782,8 @@ export const messages: Record<Locale, Messages> = {
         errorSave: "Impossible de sauvegarder",
         instantCreditTitle: "Crédit Instantané",
         instantCreditLabel: "Activer le crédit instantané",
-        instantCreditHelp: "Crédite la balance immédiatement lors de l'acceptation du trade, sans attendre les 7 jours de trade hold. Option critique — réservée aux merchants de confiance.",
-        instantCreditActiveWarning: "Crédit instantané ACTIF — Les fonds sont crédités immédiatement à chaque trade accepté.",
+        instantCreditHelp: "Crédite la balance immédiatement lors de l'acceptation du trade, sans attendre les 7 jours de trade hold. Option critique, réservée aux merchants de confiance.",
+        instantCreditActiveWarning: "Crédit instantané ACTIF, Les fonds sont crédités immédiatement à chaque trade accepté.",
         instantCreditEnabledTitle: "Crédit instantané activé",
         instantCreditEnabledDesc: "L'utilisateur recevra ses fonds immédiatement.",
         instantCreditDisabledTitle: "Crédit instantané désactivé",
@@ -4014,7 +4014,7 @@ export const messages: Record<Locale, Messages> = {
         tooltipForceVerify: "Forcer VERIFIED manuellement (override admin)",
         tooltipForceReject: "Vérifier depuis KYCAID (peut rejeter si KYCAID l'a décliné)",
         kycSyncErrorDesc: "Impossible de mettre à jour le statut KYC",
-        kycaidSaysVerified: "KYCAID dit VERIFIED — pas rejeté",
+        kycaidSaysVerified: "KYCAID dit VERIFIED, pas rejeté",
         unchanged: "inchangé",
         loadError: "Erreur chargement liste KYC",
         singleUserSyncDesc: "{status} (source : {source})",
@@ -4291,18 +4291,18 @@ export const messages: Record<Locale, Messages> = {
         recentTransactionsTitle: "Transactions récentes",
         anonymousPlayer: "Joueur anonyme",
         noTransactionsYet: "Aucune transaction pour le moment",
-        leaderboardTitle: "Top 10 Joueurs — XP & Fragments",
+        leaderboardTitle: "Top 10 Joueurs, XP & Fragments",
         loadingLeaderboard: "Chargement...",
         level: "Niveau",
         noPlayersYet: "Aucun joueur avec des points pour le moment",
-        configSalesTitle: "Règles — Ventes de skins",
+        configSalesTitle: "Règles, Ventes de skins",
         pointsPerEuroLabel: "Points par euro vendu",
         pointsPerEuroHelp: "Ex: 100 = 100 pts par euro. Vente de 50€ → 5 000 pts",
         fragmentsPerEuroSaleLabel: "Fragments par euro vendu",
         fragmentsPerEuroSaleHelp: "Ex: 0.1 = 1 fragment par 10€. Vente de 50€ → 5 fragments",
         simulationTitle: "Simulation",
         simulationText: "Pour une vente de 100€ :",
-        configDailyTitle: "Règles — Connexion quotidienne",
+        configDailyTitle: "Règles, Connexion quotidienne",
         pointsPerLoginLabel: "Points par connexion",
         pointsPerLoginHelp: "Points de base (avant multiplicateur streak)",
         fragmentsPerLoginLabel: "Fragments par connexion",
@@ -4313,13 +4313,13 @@ export const messages: Record<Locale, Messages> = {
         streakMaxDaysHelp: "Le multiplicateur est plafonné à ce nombre de jours",
         streakSimulationTitle: "Simulation du streak",
         day: "Jour",
-        configLevelTitle: "Règles — Progression de niveau",
+        configLevelTitle: "Règles, Progression de niveau",
         levelUpBonusLabel: "Bonus points passage de niveau",
         levelUpBonusHelp: "Points bonus accordés automatiquement à chaque passage de niveau",
         levelFormulaTitle: "Formule de niveau",
         levelFormula: "niveau = √(XP / 100) + 1",
         levelFormulaDesc: "Niveau 2 = 100 XP · Niveau 5 = 1 600 XP · Niveau 10 = 8 100 XP",
-        configFragmentsTitle: "Fragments — Génération & Drops aléatoires",
+        configFragmentsTitle: "Fragments, Génération & Drops aléatoires",
         fragmentsPerEuroLabel: "Fragments par euro vendu",
         fragmentsPerEuroHelp: "Formule : fragments = floor(euros × taux). Ex: 0.2 → 100€ = 20 fragments",
         randomDropsConfigTitle: "Drops aléatoires à chaque vente",
@@ -4329,7 +4329,7 @@ export const messages: Record<Locale, Messages> = {
         tierProbabilityLabel: "Probabilité tranche",
         tierMinLabel: "Min fragments",
         tierMaxLabel: "Max fragments",
-        configGiveawayTitle: "Coûts d'entrée — Giveaways par type",
+        configGiveawayTitle: "Coûts d'entrée, Giveaways par type",
         giveawayNote: "Ces valeurs sont utilisées par défaut lors de la création d'un giveaway selon son type. L'admin peut toujours surcharger manuellement.",
         cancelButton: "Annuler les modifications",
         saveButton: "Sauvegarder la configuration",
@@ -4351,7 +4351,7 @@ export const messages: Record<Locale, Messages> = {
         limit: "Plafond",
         unlimited: "Illimité (débloqué)",
         progress: "Progression",
-        newLimitLabel: "Nouveau plafond (€) — vide = illimité (débloquer)",
+        newLimitLabel: "Nouveau plafond (€), vide = illimité (débloquer)",
         placeholder: "Ex: 5000",
         save: "Enregistrer",
         invalidAmount: "Montant invalide",
@@ -4510,7 +4510,7 @@ export const messages: Record<Locale, Messages> = {
             COMPULSION: "La capture du document semble avoir été forcée.",
             DIFFERENT_FACES: "Le visage sur le document ne correspond pas au selfie.",
             DOCUMENT_DAMAGED: "Le document est physiquement endommagé.",
-            DOCUMENT_INCOMPLETE: "Le document est incomplet — il manque des pages ou sections.",
+            DOCUMENT_INCOMPLETE: "Le document est incomplet, il manque des pages ou sections.",
             DUPLICATE: "Un compte avec ce document existe déjà.",
             EDITED_DOCUMENT: "Le document semble avoir été modifié ou retouché.",
             EXPIRED_DOCUMENT: "Le document est expiré.",
@@ -4575,10 +4575,10 @@ export const messages: Record<Locale, Messages> = {
       steamAccount: {
         label: "Compte Steam",
         hint: "Ce compte est lié à votre connexion MoonSkin et ne peut pas être modifié ici.",
-        noSteamId: "Aucun Steam ID lié — connectez-vous via Steam ou configurez votre Trade Link ci-dessous.",
+        noSteamId: "Aucun Steam ID lié, connectez-vous via Steam ou configurez votre Trade Link ci-dessous.",
       },
       tradeLinkSection: {
-        description: "Seule information modifiable — détermine quel inventaire est chargé et où vous recevez les offres d’échange.",
+        description: "Seule information modifiable, détermine quel inventaire est chargé et où vous recevez les offres d’échange.",
         inventoryFromTradeLink: "Inventaire chargé depuis :",
       },
       selectionPanel: {
@@ -4733,7 +4733,7 @@ export const messages: Record<Locale, Messages> = {
         afterPurchase: "Après achat :",
         entriesCount: "{count} entrées",
         chancePercent: "{percent}% de chances",
-        userEntryLimit: "Limite : {max} entrées max — il vous reste {remaining}",
+        userEntryLimit: "Limite : {max} entrées max, il vous reste {remaining}",
         giveawayEnded: "Ce giveaway est terminé.",
         loginToParticipate: "Connectez-vous pour participer",
         costPerEntry: "par entrée",
@@ -5415,7 +5415,7 @@ export const messages: Record<Locale, Messages> = {
         title: "API bientôt disponible",
         description: "Notre API publique est en cours de finalisation. Revenez bientôt pour accéder à la documentation complète.",
         badge: "En développement",
-        version: "Version 1.0 — Prochainement",
+        version: "Version 1.0, Prochainement",
         feature1: "REST & SDK",
         feature2: "Authentification sécurisée",
         feature3: "Webhooks & Events"
@@ -5555,7 +5555,7 @@ export const messages: Record<Locale, Messages> = {
         identifierGate: {
           title: "Quel compte Steam contient vos skins ?",
           description:
-            "La vente se fait sur Steam : nous devons charger l’inventaire du bon compte. Si vous vous êtes connecté avec Discord (sans Steam lié), collez votre Trade Link ou votre SteamID64 — les deux fonctionnent.",
+            "La vente se fait sur Steam : nous devons charger l’inventaire du bon compte. Si vous vous êtes connecté avec Discord (sans Steam lié), collez votre Trade Link ou votre SteamID64, les deux fonctionnent.",
           label: "Trade Link Steam ou SteamID64",
           placeholder:
             "https://steamcommunity.com/tradeoffer/new/?partner=…&token=… ou 7656119…",
@@ -5954,7 +5954,7 @@ export const messages: Record<Locale, Messages> = {
           unknownError: "Erreur inconnue",
         },
         whitepayForm: {
-          title: "Retrait Crypto — Whitepay",
+          title: "Retrait Crypto, Whitepay",
           description: "Recevez votre paiement en crypto-monnaie avec un taux garanti pendant 30 secondes",
           flowStandard: {
             title: "Standard",
@@ -6356,7 +6356,7 @@ export const messages: Record<Locale, Messages> = {
           balancedDesc: "Ratio {ratio}% dans la zone cible (3–8%). Aucun ajustement urgent.",
         },
         decisionGrid: {
-          title: "Grille de décision — ratio giveaways / marge brute",
+          title: "Grille de décision, ratio giveaways / marge brute",
           range1: "< 3%",
           label1: "Trop dur",
           desc1: "→ baisser prix entrées ou augmenter nb gagnants",
@@ -6583,7 +6583,7 @@ export const messages: Record<Locale, Messages> = {
         "Entre ton code partenaire, soutiens ton créateur et récolte tes fragments et un bonus de prix",
       promoInputLabel: "Code de promotion",
       promoPlaceholder: "ex. streamerpro",
-      promoAccepted: "Code accepté — le bonus est inclus dans l’estimation ci-dessous.",
+      promoAccepted: "Code accepté, le bonus est inclus dans l’estimation ci-dessous.",
       promoErrorInvalid: "Code inconnu ou affilié inactif.",
       promoErrorSelf: "Vous ne pouvez pas utiliser votre propre code.",
       promoErrorOtherAffiliate: "Un autre affilié est déjà associé à votre compte.",
@@ -6604,7 +6604,7 @@ export const messages: Record<Locale, Messages> = {
         createSaleButton: "Créer la vente",
         creatingButton: "Création en cours...",
         paymentCalcTitle: "Calcul de votre paiement",
-        paymentDelayTitle: "Délai Steam — 7 jours",
+        paymentDelayTitle: "Délai Steam, 7 jours",
         paymentDelayInfo: "7 jours (Trade Hold Steam)",
         paymentDelayDetail: "Votre solde est crédité automatiquement une fois le trade validé par Steam.",
         errorPrefix: "Erreur",
@@ -6660,7 +6660,7 @@ export const messages: Record<Locale, Messages> = {
       title: "Politique KYC (Know Your Customer)",
       subtitle: "Vérification d'identité, sécurité des transactions et conformité LCB-FT",
       content: "Moonskin met en place des procédures KYC via KYCAID pour sécuriser la plateforme et respecter la réglementation.",
-      comingSoon: "Contenu de secours — la version publiée peut provenir de l'administration des pages légales.",
+      comingSoon: "Contenu de secours, la version publiée peut provenir de l'administration des pages légales.",
       warning: "Le KYC peut être exigé à tout moment, notamment pour les retraits.",
       warningText: "Une vérification d'identité peut être requise via notre prestataire KYCAID. Lorsque le KYC est obligatoire, aucun retrait ne pourra être effectué sans validation préalable.",
       sections: {
@@ -6710,7 +6710,7 @@ export const messages: Record<Locale, Messages> = {
       title: "Politique Anti-Blanchiment (AML)",
       subtitle: "Lutte contre le blanchiment de capitaux et le financement du terrorisme",
       content: "Moonskin applique une politique AML pour prévenir l'usage illicite de la plateforme.",
-      comingSoon: "Contenu de secours — la version publiée peut provenir de l'administration des pages légales.",
+      comingSoon: "Contenu de secours, la version publiée peut provenir de l'administration des pages légales.",
       warning: "Blanchiment, financement du terrorisme et fraude : tolérance zéro.",
       warningText: "Toute activité suspecte peut entraîner la suspension du compte, le blocage des transactions ou le gel des fonds, et le cas échéant un signalement aux autorités conformément à la loi.",
       sections: {
@@ -6760,7 +6760,7 @@ export const messages: Record<Locale, Messages> = {
       title: "Conditions de paiement & de cashout",
       subtitle: "Vente de skins, transactions et règlements sur Moonskin",
       content: "Modalités de vente, de validation et de paiement. Les paiements transitent par des prestataires tiers (Flexify, Whitepay).",
-      comingSoon: "Contenu de secours — la version publiée peut provenir de l'administration des pages légales.",
+      comingSoon: "Contenu de secours, la version publiée peut provenir de l'administration des pages légales.",
       warning: "Délais et montants",
       warningText: "Les délais de paiement dépendent des prestataires tiers, du mode de paiement et des contrôles KYC. Moonskin ne garantit pas un délai ou un prix exact avant validation définitive du payout.",
       sections: {
@@ -6830,7 +6830,7 @@ export const messages: Record<Locale, Messages> = {
       title: "Mentions légales",
       subtitle: "Informations sur l'éditeur, l'hébergement et le cadre juridique du site Moonskin",
       content: "Identification de l'éditeur, hébergement, propriété intellectuelle et responsabilité.",
-      comingSoon: "Contenu de secours — la version publiée peut provenir de l'administration des pages légales.",
+      comingSoon: "Contenu de secours, la version publiée peut provenir de l'administration des pages légales.",
       warning: "Informations légales",
       warningText: "Les coordonnées d'hébergement peuvent être complétées dans l'admin des pages légales lorsque elles sont définitives.",
       sections: {
@@ -6844,7 +6844,7 @@ export const messages: Record<Locale, Messages> = {
         },
         hosting: {
           title: "3. Hébergement",
-          content: "Le site Moonskin est hébergé par :\n\n[À compléter — préciser l'hébergeur et l'adresse, par ex. Vercel Inc., AWS, OVHcloud, etc.]"
+          content: "Le site Moonskin est hébergé par :\n\n[À compléter, préciser l'hébergeur et l'adresse, par ex. Vercel Inc., AWS, OVHcloud, etc.]"
         },
         intellectualProperty: {
           title: "4. Propriété intellectuelle",
@@ -6870,9 +6870,9 @@ export const messages: Record<Locale, Messages> = {
     },
     skinSaleTerms: {
       title: "Conditions spécifiques de vente de skins",
-      subtitle: "Complément aux CGU — vente de skins CS2 sur Moonskin",
+      subtitle: "Complément aux CGU, vente de skins CS2 sur Moonskin",
       content: "Règles propres au processus de vente, au trade lock Steam et aux risques de marché.",
-      comingSoon: "Contenu de secours — la version publiée peut provenir de l'administration des pages légales.",
+      comingSoon: "Contenu de secours, la version publiée peut provenir de l'administration des pages légales.",
       warning: "Vente de biens numériques",
       warningText: "Les skins CS2 ne sont pas des instruments financiers ; les délais Steam (trade lock) et les plateformes tierces peuvent affecter la transaction et le paiement.",
       sections: {
@@ -7222,7 +7222,7 @@ export const messages: Record<Locale, Messages> = {
         instantDesc: "Real-time pricing via our integrated API",
         secureDesc: "SEPA, crypto, and mandatory KYC for your security",
         transparentDesc:
-          "No fees on selling your skins. Cashout fees vary by payment method — an estimate is shown on the site before you confirm.",
+          "No fees on selling your skins. Cashout fees vary by payment method, an estimate is shown on the site before you confirm.",
       },
       stats: {
         users: "Active users",
@@ -7368,7 +7368,7 @@ export const messages: Record<Locale, Messages> = {
         transparent: {
           title: "Transparent fees",
           description:
-            "No fees on selling your skins. Cashout fees vary by payment method — an estimate is shown on the site before you confirm."
+            "No fees on selling your skins. Cashout fees vary by payment method, an estimate is shown on the site before you confirm."
         }
       },
       cta: {
@@ -7565,16 +7565,16 @@ export const messages: Record<Locale, Messages> = {
           PROCESSING: "Processing",
           PAID: "Paid",
           FAILED: "Failed",
-          FLEXIFY_PENDING: "Flexify — pending",
-          FLEXIFY_PROCESSING: "Flexify — processing",
-          FLEXIFY_PAID: "Flexify — paid",
-          FLEXIFY_FAILED: "Flexify — failed",
-          WHITEPAY_WAITING_CONFIRMATION: "Whitepay — awaiting confirmation",
-          WHITEPAY_PENDING_WITHDRAWAL: "Whitepay — withdrawal pending",
+          FLEXIFY_PENDING: "Flexify, pending",
+          FLEXIFY_PROCESSING: "Flexify, processing",
+          FLEXIFY_PAID: "Flexify, paid",
+          FLEXIFY_FAILED: "Flexify, failed",
+          WHITEPAY_WAITING_CONFIRMATION: "Whitepay, awaiting confirmation",
+          WHITEPAY_PENDING_WITHDRAWAL: "Whitepay, withdrawal pending",
           CANCELLED: "Cancelled",
-          WHITEPAY_PROCESSING_WITHDRAWAL: "Whitepay — withdrawal processing",
-          WHITEPAY_COMPLETE: "Whitepay — complete",
-          WHITEPAY_DECLINED: "Whitepay — declined",
+          WHITEPAY_PROCESSING_WITHDRAWAL: "Whitepay, withdrawal processing",
+          WHITEPAY_COMPLETE: "Whitepay, complete",
+          WHITEPAY_DECLINED: "Whitepay, declined",
         },
         kycRefreshStatus: "Refresh status",
         kycRefreshing: "Checking…",
@@ -7878,7 +7878,7 @@ export const messages: Record<Locale, Messages> = {
     },
     giveaways: {
       title: "Giveaways",
-      subtitle: "Use your fragments to enter giveaways — more entries, better chances to win.",
+      subtitle: "Use your fragments to enter giveaways, more entries, better chances to win.",
       userTickets: {
         level: "Level",
         tickets: "fragments",
@@ -7932,7 +7932,7 @@ export const messages: Record<Locale, Messages> = {
       notifications: {
         newWinner: "New winner!",
         newWinners: "New winners!",
-        winnerToast: "🎉 Draw complete: {title} — Winner: {name}",
+        winnerToast: "🎉 Draw complete: {title}, Winner: {name}",
         winnerFallback: "Player",
         anonymousPlayer: "Anonymous player",
       },
@@ -7976,7 +7976,7 @@ export const messages: Record<Locale, Messages> = {
       loginTitle: "Sign in to view missions",
       loginSubtitle: "Earn fragments by completing daily and weekly missions.",
       backToGiveaways: "Back to giveaways",
-      pageSubtitle: "A secondary way to earn fragments — selling skins remains the main path.",
+      pageSubtitle: "A secondary way to earn fragments, selling skins remains the main path.",
       statsFragments: "Fragments available",
       statsToClaim: "Ready to claim",
       statsCompleted: "Completed",
@@ -8060,7 +8060,7 @@ export const messages: Record<Locale, Messages> = {
         },
         BONUS_DAILY_SURPRISE: {
           label: "Mission of the day",
-          description: "Surprise reward — random amount between 20 and 50 fragments.",
+          description: "Surprise reward, random amount between 20 and 50 fragments.",
         },
       },
       categories: {
@@ -8082,7 +8082,7 @@ export const messages: Record<Locale, Messages> = {
         },
         BONUS: {
           label: "Surprise mission",
-          description: "Random daily reward — come back each day for a new surprise!",
+          description: "Random daily reward, come back each day for a new surprise!",
         },
       },
     },
@@ -8096,7 +8096,7 @@ export const messages: Record<Locale, Messages> = {
       },
       mission: {
         title: "Our mission",
-        p1: "To build the French reference for skin trading—with a standard of trust, transparency and simplicity we care about every day.",
+        p1: "To build the French reference for skin trading, with a standard of trust, transparency and simplicity we care about every day.",
         frictionTitle: "We want to remove friction:",
         frictionItems: [
           "No endless listings",
@@ -8111,8 +8111,8 @@ export const messages: Record<Locale, Messages> = {
           "In 2023, after losing over €1,000 to a scam, Lucas Pallanca (Nyouz) saw how immature the market still was.",
           "With his partner NPTZ, he launched a first Discord-based system to help French users access Asian marketplaces safely.",
           "Demand exploded almost immediately.",
-          "In 2025 the activity became official with Counter-Trade France, founded by Nyouz—focused on intermediation and skin trading.",
-          "Driven by community growth and trust, a new project launched at the end of 2025: Moonskin—a platform designed from day one to industrialise and secure buying and selling.",
+          "In 2025 the activity became official with Counter-Trade France, founded by Nyouz, focused on intermediation and skin trading.",
+          "Driven by community growth and trust, a new project launched at the end of 2025: Moonskin, a platform designed from day one to industrialise and secure buying and selling.",
           "In early 2026 Moonskin goes live with a clear goal: build a lasting standard in a market that still has room to mature."
         ]
       },
@@ -8174,7 +8174,7 @@ export const messages: Record<Locale, Messages> = {
           contractor: {
             name: "Technical partner",
             role: "Web development (contractor)",
-            bio: "Design and engineering of the Moonskin platform—thank you for your trust.",
+            bio: "Design and engineering of the Moonskin platform, thank you for your trust.",
             skills: ["Product", "Engineering", "Quality"]
           }
         }
@@ -8198,7 +8198,7 @@ export const messages: Record<Locale, Messages> = {
         title: "Roadmap",
         phases: [
           {
-            title: "Phase 1 — Launch & foundations",
+            title: "Phase 1, Launch & foundations",
             items: [
               "Lay Moonskin’s foundations and ship the platform.",
               "Initial Moonskin development",
@@ -8209,7 +8209,7 @@ export const messages: Record<Locale, Messages> = {
             ]
           },
           {
-            title: "Phase 2 — Acquisition & growth",
+            title: "Phase 2, Acquisition & growth",
             items: [
               "Grow visibility and scale the platform.",
               "First marketing campaign",
@@ -8220,7 +8220,7 @@ export const messages: Record<Locale, Messages> = {
             ]
           },
           {
-            title: "Phase 3 — Expanding the offer",
+            title: "Phase 3, Expanding the offer",
             items: [
               "More features and liquidity sources.",
               "Supply integration from Chinese marketplaces",
@@ -8230,7 +8230,7 @@ export const messages: Record<Locale, Messages> = {
             ]
           },
           {
-            title: "Phase 4 — Moonskin ecosystem",
+            title: "Phase 4, Moonskin ecosystem",
             items: [
               "A full, autonomous platform.",
               "Peer-to-peer selling",
@@ -8460,7 +8460,7 @@ export const messages: Record<Locale, Messages> = {
         },
         sharingSection: {
           title: "6. Sharing of data",
-          content: "Data may be shared with trusted processors only where necessary to operate the service:\n\n• KYCAID — identity verification (KYC)\n• Flexify — payment processing\n• Whitepay — payment solutions\n\nAs well as:\n\n• Technical providers (hosting, infrastructure)\n• Law enforcement or authorities where required by law\n\nMoonskin does not sell or rent personal data."
+          content: "Data may be shared with trusted processors only where necessary to operate the service:\n\n• KYCAID, identity verification (KYC)\n• Flexify, payment processing\n• Whitepay, payment solutions\n\nAs well as:\n\n• Technical providers (hosting, infrastructure)\n• Law enforcement or authorities where required by law\n\nMoonskin does not sell or rent personal data."
         },
         retention: {
           title: "7. Retention",
@@ -8488,10 +8488,10 @@ export const messages: Record<Locale, Messages> = {
         }
       },
       contact: {
-        title: "Contact — data protection",
+        title: "Contact, data protection",
         description: "To exercise your rights or for questions about this policy:",
         email: "contact@moonskin.fun",
-        address: "COUNTER TRADE FRANCE — 53 T rue Auguste Blanqui, 78800 Houilles, France",
+        address: "COUNTER TRADE FRANCE, 53 T rue Auguste Blanqui, 78800 Houilles, France",
         cnil: "You may also lodge a complaint with the CNIL (France)."
       }
     },
@@ -8779,7 +8779,7 @@ export const messages: Record<Locale, Messages> = {
         },
         platformConfig: {
           title: "Platform configuration",
-          description: "Operational settings — override environment variables without redeployment.",
+          description: "Operational settings, override environment variables without redeployment.",
         },
         personal: {
           title: "Personal Information",
@@ -9228,7 +9228,7 @@ export const messages: Record<Locale, Messages> = {
         },
         form: {
           titleLabel: "Title *",
-          prizeLabel: "Prize — Skinplace skin *",
+          prizeLabel: "Prize, Skinplace skin *",
           prizeSearchPlaceholder: "Search a CS2 skin (e.g. AK-47 Redline)...",
           prizeManualHint: "Or enter manually below if the skin is not found.",
           prizeManualPlaceholder: "Manual prize name (fallback)",
@@ -9341,7 +9341,7 @@ export const messages: Record<Locale, Messages> = {
         },
         videos: {
           title: "Recommended videos",
-          description: "Add YouTube URLs — thumbnails are fetched automatically.",
+          description: "Add YouTube URLs, thumbnails are fetched automatically.",
           add: "Add video",
           edit: "Edit video",
           empty: "No videos configured.",
@@ -9784,12 +9784,12 @@ export const messages: Record<Locale, Messages> = {
         impersonateConfirmDesc: "You will take control of {name}'s account. A banner will remind you that you are in impersonation mode.",
         impersonateConfirm: "Confirm",
         impersonateCancel: "Cancel",
-        impersonateSuccess: "Impersonation started — you are now logged in as {name}",
+        impersonateSuccess: "Impersonation started, you are now logged in as {name}",
         impersonateError: "Failed to start impersonation",
         impersonateAdminError: "You cannot impersonate an administrator",
       },
       impersonationBanner: {
-        message: "You are impersonating {name} — all your actions are performed on their behalf",
+        message: "You are impersonating {name}, all your actions are performed on their behalf",
         stop: "Stop impersonating",
         stopping: "Stopping...",
         stopError: "Error while stopping impersonation",
@@ -9822,8 +9822,8 @@ export const messages: Record<Locale, Messages> = {
         errorSave: "Unable to save",
         instantCreditTitle: "Instant Credit",
         instantCreditLabel: "Enable instant credit",
-        instantCreditHelp: "Credits the balance immediately when a trade is accepted, without waiting the 7-day trade hold. Critical option — reserved for trusted merchants.",
-        instantCreditActiveWarning: "Instant credit ACTIVE — Funds are credited immediately on each accepted trade.",
+        instantCreditHelp: "Credits the balance immediately when a trade is accepted, without waiting the 7-day trade hold. Critical option, reserved for trusted merchants.",
+        instantCreditActiveWarning: "Instant credit ACTIVE, Funds are credited immediately on each accepted trade.",
         instantCreditEnabledTitle: "Instant credit enabled",
         instantCreditEnabledDesc: "The user will receive funds immediately.",
         instantCreditDisabledTitle: "Instant credit disabled",
@@ -10054,7 +10054,7 @@ export const messages: Record<Locale, Messages> = {
         tooltipForceVerify: "Force VERIFIED manually (admin override)",
         tooltipForceReject: "Check with KYCAID (may reject if KYCAID declined)",
         kycSyncErrorDesc: "Could not update KYC status",
-        kycaidSaysVerified: "KYCAID says VERIFIED — not rejected",
+        kycaidSaysVerified: "KYCAID says VERIFIED, not rejected",
         unchanged: "unchanged",
         loadError: "Error loading KYC list",
         singleUserSyncDesc: "{status} (source: {source})",
@@ -10331,18 +10331,18 @@ export const messages: Record<Locale, Messages> = {
         recentTransactionsTitle: "Recent transactions",
         anonymousPlayer: "Anonymous player",
         noTransactionsYet: "No transactions yet",
-        leaderboardTitle: "Top 10 Players — XP & Fragments",
+        leaderboardTitle: "Top 10 Players, XP & Fragments",
         loadingLeaderboard: "Loading...",
         level: "Level",
         noPlayersYet: "No players with points yet",
-        configSalesTitle: "Rules — Skin sales",
+        configSalesTitle: "Rules, Skin sales",
         pointsPerEuroLabel: "Points per euro sold",
         pointsPerEuroHelp: "e.g. 100 = 100 pts per euro. €50 sale → 5,000 pts",
         fragmentsPerEuroSaleLabel: "Fragments per euro sold",
         fragmentsPerEuroSaleHelp: "e.g. 0.1 = 1 fragment per €10. €50 sale → 5 fragments",
         simulationTitle: "Simulation",
         simulationText: "For a €100 sale:",
-        configDailyTitle: "Rules — Daily login",
+        configDailyTitle: "Rules, Daily login",
         pointsPerLoginLabel: "Points per login",
         pointsPerLoginHelp: "Base points (before streak multiplier)",
         fragmentsPerLoginLabel: "Fragments per login",
@@ -10353,13 +10353,13 @@ export const messages: Record<Locale, Messages> = {
         streakMaxDaysHelp: "The multiplier is capped at this number of days",
         streakSimulationTitle: "Streak simulation",
         day: "Day",
-        configLevelTitle: "Rules — Level progression",
+        configLevelTitle: "Rules, Level progression",
         levelUpBonusLabel: "Level-up bonus points",
         levelUpBonusHelp: "Bonus points automatically awarded at each level-up",
         levelFormulaTitle: "Level formula",
         levelFormula: "level = √(XP / 100) + 1",
         levelFormulaDesc: "Level 2 = 100 XP · Level 5 = 1,600 XP · Level 10 = 8,100 XP",
-        configFragmentsTitle: "Fragments — Generation & Random drops",
+        configFragmentsTitle: "Fragments, Generation & Random drops",
         fragmentsPerEuroLabel: "Fragments per euro sold",
         fragmentsPerEuroHelp: "Formula: fragments = floor(euros × rate). e.g. 0.2 → €100 = 20 fragments",
         randomDropsConfigTitle: "Random drops on each sale",
@@ -10369,7 +10369,7 @@ export const messages: Record<Locale, Messages> = {
         tierProbabilityLabel: "Tier probability",
         tierMinLabel: "Min fragments",
         tierMaxLabel: "Max fragments",
-        configGiveawayTitle: "Entry costs — Giveaways by type",
+        configGiveawayTitle: "Entry costs, Giveaways by type",
         giveawayNote: "These values are used by default when creating a giveaway by type. Admin can always override manually.",
         cancelButton: "Cancel changes",
         saveButton: "Save configuration",
@@ -10391,7 +10391,7 @@ export const messages: Record<Locale, Messages> = {
         limit: "Limit",
         unlimited: "Unlimited (unlocked)",
         progress: "Progress",
-        newLimitLabel: "New limit (€) — empty = unlimited (unlock)",
+        newLimitLabel: "New limit (€), empty = unlimited (unlock)",
         placeholder: "e.g. 5000",
         save: "Save",
         invalidAmount: "Invalid amount",
@@ -10550,7 +10550,7 @@ export const messages: Record<Locale, Messages> = {
             COMPULSION: "The document capture may have been forced.",
             DIFFERENT_FACES: "The face in the document does not match the selfie.",
             DOCUMENT_DAMAGED: "The document is physically damaged.",
-            DOCUMENT_INCOMPLETE: "The document is incomplete — missing pages or sections.",
+            DOCUMENT_INCOMPLETE: "The document is incomplete, missing pages or sections.",
             DUPLICATE: "An account with this document already exists.",
             EDITED_DOCUMENT: "The document appears to have been modified or edited.",
             EXPIRED_DOCUMENT: "The document has expired.",
@@ -10615,10 +10615,10 @@ export const messages: Record<Locale, Messages> = {
       steamAccount: {
         label: "Steam account",
         hint: "This account is tied to your MoonSkin login and cannot be changed here.",
-        noSteamId: "No Steam ID linked — sign in with Steam or configure your Trade Link below.",
+        noSteamId: "No Steam ID linked, sign in with Steam or configure your Trade Link below.",
       },
       tradeLinkSection: {
-        description: "The only editable field — determines which inventory is loaded and where you receive trade offers.",
+        description: "The only editable field, determines which inventory is loaded and where you receive trade offers.",
         inventoryFromTradeLink: "Inventory loaded from:",
       },
       selectionPanel: {
@@ -10773,7 +10773,7 @@ export const messages: Record<Locale, Messages> = {
         afterPurchase: "After purchase:",
         entriesCount: "{count} entries",
         chancePercent: "{percent}% chance",
-        userEntryLimit: "Limit: {max} max entries — {remaining} remaining",
+        userEntryLimit: "Limit: {max} max entries, {remaining} remaining",
         giveawayEnded: "This giveaway has ended.",
         loginToParticipate: "Log in to participate",
         costPerEntry: "per entry",
@@ -12587,7 +12587,7 @@ export const messages: Record<Locale, Messages> = {
         title: "API Coming Soon",
         description: "Our public API is being finalized. Check back soon for full documentation.",
         badge: "In Development",
-        version: "Version 1.0 — Coming Soon",
+        version: "Version 1.0, Coming Soon",
         feature1: "REST & SDK",
         feature2: "Secure Authentication",
         feature3: "Webhooks & Events"
@@ -12727,7 +12727,7 @@ export const messages: Record<Locale, Messages> = {
         identifierGate: {
           title: "Which Steam account holds your skins?",
           description:
-            "Selling happens on Steam — we need to load the correct inventory. If you signed in with Discord (no linked Steam), paste your Steam Trade Link or your SteamID64 — both work.",
+            "Selling happens on Steam, we need to load the correct inventory. If you signed in with Discord (no linked Steam), paste your Steam Trade Link or your SteamID64, both work.",
           label: "Steam Trade Link or SteamID64",
           placeholder:
             "https://steamcommunity.com/tradeoffer/new/?partner=…&token=… or 7656119…",
@@ -13126,7 +13126,7 @@ export const messages: Record<Locale, Messages> = {
           unknownError: "Unknown error",
         },
         whitepayForm: {
-          title: "Crypto Withdrawal — Whitepay",
+          title: "Crypto Withdrawal, Whitepay",
           description: "Receive your payment in cryptocurrency with a guaranteed rate for 30 seconds",
           flowStandard: {
             title: "Standard",
@@ -13291,7 +13291,7 @@ export const messages: Record<Locale, Messages> = {
             secureAccount:
               "Enable Steam Guard and watch for Steam emails. Never share your Steam credentials. MoonSkin will never ask for your Steam password in chat or email.",
             accountSuspended:
-              "Contact support with your SteamID. Suspensions may follow a compliance review—provide the requested information to speed things up.",
+              "Contact support with your SteamID. Suspensions may follow a compliance review, provide the requested information to speed things up.",
             reportSuspicious:
               "Report fake sites or out-of-band payment requests through support. Screenshots and timestamps help us investigate.",
             accountRecovery:
@@ -13528,7 +13528,7 @@ export const messages: Record<Locale, Messages> = {
           balancedDesc: "Ratio {ratio}% within target range (3–8%). No urgent adjustment needed.",
         },
         decisionGrid: {
-          title: "Decision grid — giveaway cost / gross margin ratio",
+          title: "Decision grid, giveaway cost / gross margin ratio",
           range1: "< 3%",
           label1: "Too hard",
           desc1: "→ lower entry prices or increase number of winners",
@@ -13755,7 +13755,7 @@ export const messages: Record<Locale, Messages> = {
         "Enter your partner code, support your creator and earn your fragments and a price bonus",
       promoInputLabel: "Promotion code",
       promoPlaceholder: "e.g. streamerpro",
-      promoAccepted: "Code accepted — the bonus is included in the estimate below.",
+      promoAccepted: "Code accepted, the bonus is included in the estimate below.",
       promoErrorInvalid: "Unknown code or inactive affiliate.",
       promoErrorSelf: "You cannot use your own code.",
       promoErrorOtherAffiliate: "Another affiliate is already linked to your account.",
@@ -13776,7 +13776,7 @@ export const messages: Record<Locale, Messages> = {
         createSaleButton: "Create sale",
         creatingButton: "Creating...",
         paymentCalcTitle: "Payment calculation",
-        paymentDelayTitle: "Steam hold — 7 days",
+        paymentDelayTitle: "Steam hold, 7 days",
         paymentDelayInfo: "7 days (Steam Trade Hold)",
         paymentDelayDetail: "Your balance is credited automatically once Steam validates the trade.",
         errorPrefix: "Error",
@@ -13832,7 +13832,7 @@ export const messages: Record<Locale, Messages> = {
       title: "KYC Policy (Know Your Customer)",
       subtitle: "Identity verification, transaction security and AML/CFT compliance",
       content: "Moonskin implements KYC procedures through KYCAID to protect the platform and meet regulatory requirements.",
-      comingSoon: "Fallback content — the published version may come from the legal pages admin.",
+      comingSoon: "Fallback content, the published version may come from the legal pages admin.",
       warning: "KYC may be required at any time, in particular for withdrawals.",
       warningText: "Identity verification may be required through our provider KYCAID. When KYC is mandatory, no withdrawal can be processed without prior approval.",
       sections: {
@@ -13882,7 +13882,7 @@ export const messages: Record<Locale, Messages> = {
       title: "Anti-Money Laundering (AML) Policy",
       subtitle: "Combating money laundering and terrorist financing",
       content: "Moonskin maintains an AML programme to prevent illicit use of the platform.",
-      comingSoon: "Fallback content — the published version may come from the legal pages admin.",
+      comingSoon: "Fallback content, the published version may come from the legal pages admin.",
       warning: "Zero tolerance for money laundering, terrorist financing and fraud.",
       warningText: "Suspicious activity may result in account suspension, blocked transactions or frozen funds, and where required, reporting to authorities under applicable law.",
       sections: {
@@ -13932,7 +13932,7 @@ export const messages: Record<Locale, Messages> = {
       title: "Payment & cashout terms",
       subtitle: "Skin sales, transactions and payouts on Moonskin",
       content: "Rules for selling, validation and payment. Payouts are processed through third-party providers (Flexify, Whitepay).",
-      comingSoon: "Fallback content — the published version may come from the legal pages admin.",
+      comingSoon: "Fallback content, the published version may come from the legal pages admin.",
       warning: "Timing and amounts",
       warningText: "Payout timing depends on third-party providers, payment method and KYC checks. Moonskin does not guarantee an exact timeline or amount until payout is finally confirmed.",
       sections: {
@@ -14002,7 +14002,7 @@ export const messages: Record<Locale, Messages> = {
       title: "Legal notice",
       subtitle: "Publisher, hosting and legal framework for the Moonskin website",
       content: "Publisher identification, hosting, intellectual property and liability.",
-      comingSoon: "Fallback content — the published version may come from the legal pages admin.",
+      comingSoon: "Fallback content, the published version may come from the legal pages admin.",
       warning: "Legal information",
       warningText: "Hosting details can be completed in the legal pages admin when final.",
       sections: {
@@ -14016,7 +14016,7 @@ export const messages: Record<Locale, Messages> = {
         },
         hosting: {
           title: "3. Hosting",
-          content: "The Moonskin website is hosted by:\n\n[To be completed — e.g. Vercel, AWS, OVHcloud, with legal address as required]"
+          content: "The Moonskin website is hosted by:\n\n[To be completed, e.g. Vercel, AWS, OVHcloud, with legal address as required]"
         },
         intellectualProperty: {
           title: "4. Intellectual property",
@@ -14042,9 +14042,9 @@ export const messages: Record<Locale, Messages> = {
     },
     skinSaleTerms: {
       title: "Specific terms for skin sales",
-      subtitle: "Supplement to the Terms — selling CS2 skins on Moonskin",
+      subtitle: "Supplement to the Terms, selling CS2 skins on Moonskin",
       content: "Rules specific to the sale process, Steam trade lock and market risk.",
-      comingSoon: "Fallback content — the published version may come from the legal pages admin.",
+      comingSoon: "Fallback content, the published version may come from the legal pages admin.",
       warning: "Digital goods",
       warningText: "CS2 skins are not financial instruments. Steam trade locks and third-party platforms may affect the transaction and payout.",
       sections: {
@@ -14381,9 +14381,9 @@ export const messages: Record<Locale, Messages> = {
       xp: "经验",
     },
     hero: {
-      title: "使用 MOONSKIN 轻松出售你的CS2皮肤 — 零手续费",
+      title: "使用 MOONSKIN 轻松出售你的CS2皮肤, 零手续费",
       subtitle:
-        "欧洲唯一受监管的皮肤变现平台 — 将您的反恐精英2皮肤转换为真钱，速度最快、最安全，0%销售手续费",
+        "欧洲唯一受监管的皮肤变现平台, 将您的反恐精英2皮肤转换为真钱，速度最快、最安全，0%销售手续费",
       cta: "立即出售",
       secondaryCta: "了解详情",
       badge: "认证安全平台",
@@ -14394,7 +14394,7 @@ export const messages: Record<Locale, Messages> = {
         instantDesc: "通过我们集成的 API 实时定价",
         secureDesc: "SEPA、加密货币和强制KYC保障您的安全",
         transparentDesc:
-          "出售皮肤无手续费。提现费用因支付方式而异——确认前可在网站上查看预估费用。",
+          "出售皮肤无手续费。提现费用因支付方式而异, 确认前可在网站上查看预估费用。",
       },
       stats: {
         users: "活跃用户",
@@ -14540,7 +14540,7 @@ export const messages: Record<Locale, Messages> = {
         transparent: {
           title: "透明费用",
           description:
-            "出售皮肤无手续费。提现费用因支付方式而异——确认前可在网站上查看预估费用。"
+            "出售皮肤无手续费。提现费用因支付方式而异, 确认前可在网站上查看预估费用。"
         }
       },
       cta: {
@@ -14732,16 +14732,16 @@ export const messages: Record<Locale, Messages> = {
           PROCESSING: "处理中",
           PAID: "已支付",
           FAILED: "失败",
-          FLEXIFY_PENDING: "Flexify — 待处理",
-          FLEXIFY_PROCESSING: "Flexify — 处理中",
-          FLEXIFY_PAID: "Flexify — 已支付",
-          FLEXIFY_FAILED: "Flexify — 失败",
-          WHITEPAY_WAITING_CONFIRMATION: "Whitepay — 待确认",
-          WHITEPAY_PENDING_WITHDRAWAL: "Whitepay — 提现在队列",
+          FLEXIFY_PENDING: "Flexify, 待处理",
+          FLEXIFY_PROCESSING: "Flexify, 处理中",
+          FLEXIFY_PAID: "Flexify, 已支付",
+          FLEXIFY_FAILED: "Flexify, 失败",
+          WHITEPAY_WAITING_CONFIRMATION: "Whitepay, 待确认",
+          WHITEPAY_PENDING_WITHDRAWAL: "Whitepay, 提现在队列",
           CANCELLED: "已取消",
-          WHITEPAY_PROCESSING_WITHDRAWAL: "Whitepay — 提现处理中",
-          WHITEPAY_COMPLETE: "Whitepay — 已完成",
-          WHITEPAY_DECLINED: "Whitepay — 已拒绝",
+          WHITEPAY_PROCESSING_WITHDRAWAL: "Whitepay, 提现处理中",
+          WHITEPAY_COMPLETE: "Whitepay, 已完成",
+          WHITEPAY_DECLINED: "Whitepay, 已拒绝",
         },
         kycRefreshStatus: "刷新状态",
         kycRefreshing: "验证中…",
@@ -15099,7 +15099,7 @@ export const messages: Record<Locale, Messages> = {
       notifications: {
         newWinner: "新获胜者！",
         newWinners: "新获胜者！",
-        winnerToast: "🎉 抽奖结束：{title} — 获胜者：{name}",
+        winnerToast: "🎉 抽奖结束：{title}, 获胜者：{name}",
         winnerFallback: "玩家",
         anonymousPlayer: "匿名玩家",
       },
@@ -15143,7 +15143,7 @@ export const messages: Record<Locale, Messages> = {
       loginTitle: "登录后查看任务",
       loginSubtitle: "完成每日与每周任务，赚取碎片。",
       backToGiveaways: "返回抽奖",
-      pageSubtitle: "碎片的额外来源——出售饰品仍是主要途径。",
+      pageSubtitle: "碎片的额外来源, 出售饰品仍是主要途径。",
       statsFragments: "可用碎片",
       statsToClaim: "待领取",
       statsCompleted: "已完成",
@@ -15227,7 +15227,7 @@ export const messages: Record<Locale, Messages> = {
         },
         BONUS_DAILY_SURPRISE: {
           label: "每日惊喜任务",
-          description: "当日随机奖励——20 至 50 碎片之间。",
+          description: "当日随机奖励, 20 至 50 碎片之间。",
         },
       },
       categories: {
@@ -15249,7 +15249,7 @@ export const messages: Record<Locale, Messages> = {
         },
         BONUS: {
           label: "惊喜任务",
-          description: "每日随机奖励——每天回来都有新惊喜！",
+          description: "每日随机奖励, 每天回来都有新惊喜！",
         },
       },
     },
@@ -15322,7 +15322,7 @@ export const messages: Record<Locale, Messages> = {
           contractor: {
             name: "技术合作方",
             role: "网站开发（外包）",
-            bio: "Moonskin 平台的设计与工程实现——感谢您的信任。",
+            bio: "Moonskin 平台的设计与工程实现, 感谢您的信任。",
             skills: ["产品", "工程", "品质"]
           }
         }
@@ -15346,7 +15346,7 @@ export const messages: Record<Locale, Messages> = {
         title: "路线图",
         phases: [
           {
-            title: "第一阶段 — 启动与基础",
+            title: "第一阶段, 启动与基础",
             items: [
               "搭建 Moonskin 基础并上线平台。",
               "Moonskin 初期开发",
@@ -15357,7 +15357,7 @@ export const messages: Record<Locale, Messages> = {
             ]
           },
           {
-            title: "第二阶段 — 获客与增长",
+            title: "第二阶段, 获客与增长",
             items: [
               "提升曝光与平台体量。",
               "首轮营销活动",
@@ -15368,7 +15368,7 @@ export const messages: Record<Locale, Messages> = {
             ]
           },
           {
-            title: "第三阶段 — 扩展供给",
+            title: "第三阶段, 扩展供给",
             items: [
               "丰富功能与流动性来源。",
               "对接中国交易平台供货",
@@ -15378,7 +15378,7 @@ export const messages: Record<Locale, Messages> = {
             ]
           },
           {
-            title: "第四阶段 — Moonskin 生态",
+            title: "第四阶段, Moonskin 生态",
             items: [
               "打造完整自治平台。",
               "点对点出售能力",
@@ -15527,7 +15527,7 @@ export const messages: Record<Locale, Messages> = {
         },
         sharingSection: {
           title: "6. 数据共享",
-          content: "仅在运营服务所必要时，我们可能向可信的处理者共享数据：\n\n• KYCAID — 身份验证（KYC）\n• Flexify — 支付处理\n• Whitepay — 支付方案\n\n以及：\n\n• 技术供应商（托管、基础设施）\n• 依法有权的机关\n\nMoonskin 不出售或出租个人数据。"
+          content: "仅在运营服务所必要时，我们可能向可信的处理者共享数据：\n\n• KYCAID, 身份验证（KYC）\n• Flexify, 支付处理\n• Whitepay, 支付方案\n\n以及：\n\n• 技术供应商（托管、基础设施）\n• 依法有权的机关\n\nMoonskin 不出售或出租个人数据。"
         },
         retention: {
           title: "7. 保存期限",
@@ -15555,10 +15555,10 @@ export const messages: Record<Locale, Messages> = {
         }
       },
       contact: {
-        title: "联系 — 数据保护",
+        title: "联系, 数据保护",
         description: "行使权利或咨询本政策：",
         email: "contact@moonskin.fun",
-        address: "COUNTER TRADE FRANCE — 53 T rue Auguste Blanqui, 78800 Houilles, France",
+        address: "COUNTER TRADE FRANCE, 53 T rue Auguste Blanqui, 78800 Houilles, France",
         cnil: "您亦有权向法国 CNIL 投诉。"
       }
     },
@@ -15846,7 +15846,7 @@ export const messages: Record<Locale, Messages> = {
         },
         platformConfig: {
           title: "平台配置",
-          description: "操作设置 — 无需重新部署即可覆盖环境变量。",
+          description: "操作设置, 无需重新部署即可覆盖环境变量。",
         },
         personal: {
           title: "个人信息",
@@ -16295,7 +16295,7 @@ export const messages: Record<Locale, Messages> = {
         },
         form: {
           titleLabel: "标题 *",
-          prizeLabel: "奖品 — Skinplace 皮肤 *",
+          prizeLabel: "奖品, Skinplace 皮肤 *",
           prizeSearchPlaceholder: "搜索 CS2 皮肤（例如：AK-47 Redline）...",
           prizeManualHint: "或者如果找不到皮肤，请在下方手动输入。",
           prizeManualPlaceholder: "手动输入奖品名称（备用）",
@@ -16408,7 +16408,7 @@ export const messages: Record<Locale, Messages> = {
         },
         videos: {
           title: "推荐视频",
-          description: "添加YouTube链接 — 缩略图将自动获取。",
+          description: "添加YouTube链接, 缩略图将自动获取。",
           add: "添加视频",
           edit: "编辑视频",
           empty: "尚未配置视频。",
@@ -16890,12 +16890,12 @@ export const messages: Record<Locale, Messages> = {
         impersonateConfirmDesc: "您将接管 {name} 的账户。页面顶部将显示横幅提醒您处于模拟模式。",
         impersonateConfirm: "确认",
         impersonateCancel: "取消",
-        impersonateSuccess: "模拟已开始 — 您现在以 {name} 身份登录",
+        impersonateSuccess: "模拟已开始, 您现在以 {name} 身份登录",
         impersonateError: "无法启动模拟",
         impersonateAdminError: "您无法模拟管理员账户",
       },
       impersonationBanner: {
-        message: "您正在模拟 {name} — 所有操作均代表该用户执行",
+        message: "您正在模拟 {name}, 所有操作均代表该用户执行",
         stop: "停止模拟",
         stopping: "停止中...",
         stopError: "停止模拟时发生错误",
@@ -16928,8 +16928,8 @@ export const messages: Record<Locale, Messages> = {
         errorSave: "无法保存",
         instantCreditTitle: "即时信用",
         instantCreditLabel: "启用即时信用",
-        instantCreditHelp: "交易被接受后立即将余额入账，无需等待7天交易持有期。关键选项——仅限可信商户。",
-        instantCreditActiveWarning: "即时信用已激活 — 每笔被接受的交易将立即入账。",
+        instantCreditHelp: "交易被接受后立即将余额入账，无需等待7天交易持有期。关键选项, 仅限可信商户。",
+        instantCreditActiveWarning: "即时信用已激活, 每笔被接受的交易将立即入账。",
         instantCreditEnabledTitle: "即时信用已启用",
         instantCreditEnabledDesc: "用户将立即收到资金。",
         instantCreditDisabledTitle: "即时信用已禁用",
@@ -17120,7 +17120,7 @@ export const messages: Record<Locale, Messages> = {
         tooltipForceVerify: "手动强制VERIFIED（管理员覆盖）",
         tooltipForceReject: "通过KYCAID检查（如KYCAID已拒绝则可能被拒绝）",
         kycSyncErrorDesc: "无法更新KYC状态",
-        kycaidSaysVerified: "KYCAID判定为已验证 — 未拒绝",
+        kycaidSaysVerified: "KYCAID判定为已验证, 未拒绝",
         unchanged: "未变更",
         loadError: "加载KYC列表时出错",
         singleUserSyncDesc: "{status}（来源：{source}）",
@@ -17397,18 +17397,18 @@ export const messages: Record<Locale, Messages> = {
         recentTransactionsTitle: "最近交易",
         anonymousPlayer: "匿名玩家",
         noTransactionsYet: "暂无交易",
-        leaderboardTitle: "前10名玩家 — XP & 碎片",
+        leaderboardTitle: "前10名玩家, XP & 碎片",
         loadingLeaderboard: "加载中...",
         level: "等级",
         noPlayersYet: "暂无积分玩家",
-        configSalesTitle: "规则 — 皮肤销售",
+        configSalesTitle: "规则, 皮肤销售",
         pointsPerEuroLabel: "每欧元积分",
         pointsPerEuroHelp: "例：100 = 每欧元100分。50€销售 → 5000分",
         fragmentsPerEuroSaleLabel: "每欧元碎片",
         fragmentsPerEuroSaleHelp: "例：0.1 = 每10€一个碎片。50€销售 → 5碎片",
         simulationTitle: "模拟",
         simulationText: "100€销售：",
-        configDailyTitle: "规则 — 每日登录",
+        configDailyTitle: "规则, 每日登录",
         pointsPerLoginLabel: "每次登录积分",
         pointsPerLoginHelp: "基础积分（连胜倍数前）",
         fragmentsPerLoginLabel: "每次登录碎片",
@@ -17419,13 +17419,13 @@ export const messages: Record<Locale, Messages> = {
         streakMaxDaysHelp: "倍数上限天数",
         streakSimulationTitle: "连胜模拟",
         day: "第",
-        configLevelTitle: "规则 — 等级进度",
+        configLevelTitle: "规则, 等级进度",
         levelUpBonusLabel: "升级奖励积分",
         levelUpBonusHelp: "每次升级自动发放的奖励积分",
         levelFormulaTitle: "等级公式",
         levelFormula: "等级 = √(XP / 100) + 1",
         levelFormulaDesc: "2级 = 100 XP · 5级 = 1600 XP · 10级 = 8100 XP",
-        configFragmentsTitle: "碎片 — 生成与随机掉落",
+        configFragmentsTitle: "碎片, 生成与随机掉落",
         fragmentsPerEuroLabel: "每欧元碎片",
         fragmentsPerEuroHelp: "公式：碎片 = floor(欧元 × 比率)。例：0.2 → 100€ = 20碎片",
         randomDropsConfigTitle: "每次销售的随机掉落",
@@ -17435,7 +17435,7 @@ export const messages: Record<Locale, Messages> = {
         tierProbabilityLabel: "档次概率",
         tierMinLabel: "最少碎片",
         tierMaxLabel: "最多碎片",
-        configGiveawayTitle: "入场费用 — 按类型赠品",
+        configGiveawayTitle: "入场费用, 按类型赠品",
         giveawayNote: "这些值在按类型创建赠品时默认使用，管理员可手动覆盖。",
         cancelButton: "取消修改",
         saveButton: "保存配置",
@@ -17457,7 +17457,7 @@ export const messages: Record<Locale, Messages> = {
         limit: "限额",
         unlimited: "无限制（已解锁）",
         progress: "进度",
-        newLimitLabel: "新限额（€）— 留空 = 无限制（解锁）",
+        newLimitLabel: "新限额（€）,  留空 = 无限制（解锁）",
         placeholder: "例：5000",
         save: "保存",
         invalidAmount: "金额无效",
@@ -17506,7 +17506,7 @@ export const messages: Record<Locale, Messages> = {
       addressDoc: { title: "地址证明", optional: "地址证明（可选）", description: "此步骤为可选，但可加快验证速度。接受文件：水电气账单、银行账单、税务通知（3个月内）。", uploaded: "已上传", skip: "跳过此步骤" },
       review: { complete: "文件完整", description: "在提交KYC文件之前，请核实您的信息。", personalInfo: "个人信息", documents: "已上传文件", identity: "身份证件：", selfie: "验证自拍", addressDocument: "地址证明：", delay: { title: "验证时间", description: "您的文件将在24-48个工作小时内审核完毕。审核完成后您将收到邮件通知。" }, fullName: "全名：", nationality: "国籍：", address: "地址：" },
       navigation: { previous: "上一步", next: "下一步", submit: "提交文件", loading: "加载中..." },
-      status: { verified: { title: "KYC已验证", description: "您的身份已成功验证。您现在可以进行支付。", dashboard: "返回控制台" }, inProgress: { title: "KYC验证中", description: "您的KYC文件正在审核中，将在24-48小时内收到回复。", dashboard: "返回控制台" }, rejected: { title: "KYC已拒绝", description: "您的KYC文件已被拒绝。请查看以下原因并提交新的有效文件。", restart: "重新开始KYC", reasonsTitle: "拒绝原因", declineReasonsMap: { AGE_RESTRICTION: "您不符合最低年龄要求。", ANONYMIZING_NETWORK: "检测到使用匿名网络（VPN/Tor）。", BAD_QUALITY: "文件图像质量差或无法辨认。", COMPROMISED_PERSON: "该人员已在数据库中被标记。", COMPULSION: "文件拍摄可能是被迫的。", DIFFERENT_FACES: "文件上的面部与自拍不匹配。", DOCUMENT_DAMAGED: "文件已物理损坏。", DOCUMENT_INCOMPLETE: "文件不完整——缺少页面或部分。", DUPLICATE: "使用此文件的账户已存在。", EDITED_DOCUMENT: "文件似乎已被修改或编辑。", EXPIRED_DOCUMENT: "文件已过期。", FAKE_DOCUMENT: "文件是伪造的或不符合官方格式。", FRAUDULENT: "检测到欺诈活动。", IP_MISMATCH: "文件所属国家与您的位置不匹配。", LIMIT_REACHED_OTP: "OTP验证码尝试次数过多。", MULTIPLE_PERSON: "图像中可见多人。", NO_SELFIE: "未提供所需的自拍。", OTHER: "您的文件无法验证。请使用更清晰的文件重试。", PROHIBITED_JURISDICTION: "文件来自受限管辖区。", QES_MISMATCH: "电子签名信息与个人资料不匹配。", TAX_ID_REQUIRED: "需要税务识别号但未提供。", WRONG_DOB: "出生日期与文件不匹配。", WRONG_DOCUMENT: "提交的文件类型不被接受。", WRONG_INFO: "提供的信息与文件不匹配。", WRONG_NAME: "提供的姓名与文件不匹配。" } }, loginRequired: { title: "需要登录", description: "您必须登录才能访问KYC流程。", login: "使用Steam登录" } },
+      status: { verified: { title: "KYC已验证", description: "您的身份已成功验证。您现在可以进行支付。", dashboard: "返回控制台" }, inProgress: { title: "KYC验证中", description: "您的KYC文件正在审核中，将在24-48小时内收到回复。", dashboard: "返回控制台" }, rejected: { title: "KYC已拒绝", description: "您的KYC文件已被拒绝。请查看以下原因并提交新的有效文件。", restart: "重新开始KYC", reasonsTitle: "拒绝原因", declineReasonsMap: { AGE_RESTRICTION: "您不符合最低年龄要求。", ANONYMIZING_NETWORK: "检测到使用匿名网络（VPN/Tor）。", BAD_QUALITY: "文件图像质量差或无法辨认。", COMPROMISED_PERSON: "该人员已在数据库中被标记。", COMPULSION: "文件拍摄可能是被迫的。", DIFFERENT_FACES: "文件上的面部与自拍不匹配。", DOCUMENT_DAMAGED: "文件已物理损坏。", DOCUMENT_INCOMPLETE: "文件不完整, 缺少页面或部分。", DUPLICATE: "使用此文件的账户已存在。", EDITED_DOCUMENT: "文件似乎已被修改或编辑。", EXPIRED_DOCUMENT: "文件已过期。", FAKE_DOCUMENT: "文件是伪造的或不符合官方格式。", FRAUDULENT: "检测到欺诈活动。", IP_MISMATCH: "文件所属国家与您的位置不匹配。", LIMIT_REACHED_OTP: "OTP验证码尝试次数过多。", MULTIPLE_PERSON: "图像中可见多人。", NO_SELFIE: "未提供所需的自拍。", OTHER: "您的文件无法验证。请使用更清晰的文件重试。", PROHIBITED_JURISDICTION: "文件来自受限管辖区。", QES_MISMATCH: "电子签名信息与个人资料不匹配。", TAX_ID_REQUIRED: "需要税务识别号但未提供。", WRONG_DOB: "出生日期与文件不匹配。", WRONG_DOCUMENT: "提交的文件类型不被接受。", WRONG_INFO: "提供的信息与文件不匹配。", WRONG_NAME: "提供的姓名与文件不匹配。" } }, loginRequired: { title: "需要登录", description: "您必须登录才能访问KYC流程。", login: "使用Steam登录" } },
       toasts: {
         uploaded: "上传成功",
         submitted: "KYC文件提交成功！您将在24-48小时内收到回复。",
@@ -17536,10 +17536,10 @@ export const messages: Record<Locale, Messages> = {
       steamAccount: {
         label: "Steam 账户",
         hint: "此账户与您的 MoonSkin 登录绑定，无法在此处修改。",
-        noSteamId: "未绑定 Steam ID — 请通过 Steam 登录或在下方配置交易链接。",
+        noSteamId: "未绑定 Steam ID, 请通过 Steam 登录或在下方配置交易链接。",
       },
       tradeLinkSection: {
-        description: "唯一可修改的信息 — 决定加载哪个库存以及接收交易报价的位置。",
+        description: "唯一可修改的信息, 决定加载哪个库存以及接收交易报价的位置。",
         inventoryFromTradeLink: "库存来源：",
       },
       selectionPanel: {
@@ -17689,7 +17689,7 @@ export const messages: Record<Locale, Messages> = {
         afterPurchase: "购买后：",
         entriesCount: "{count} 条目",
         chancePercent: "{percent}% 几率",
-        userEntryLimit: "限制：最多 {max} 条目 — 剩余 {remaining}",
+        userEntryLimit: "限制：最多 {max} 条目, 剩余 {remaining}",
         giveawayEnded: "此抽奖已结束。",
         loginToParticipate: "登录以参与",
         costPerEntry: "每条目",
@@ -19456,7 +19456,7 @@ export const messages: Record<Locale, Messages> = {
         title: "API 即将推出",
         description: "我们的公共 API 正在最后完善中。请稍后回来查看完整文档。",
         badge: "开发中",
-        version: "版本 1.0 — 即将推出",
+        version: "版本 1.0, 即将推出",
         feature1: "REST & SDK",
         feature2: "安全认证",
         feature3: "Webhooks 和事件"
@@ -19994,7 +19994,7 @@ export const messages: Record<Locale, Messages> = {
           unknownError: "未知错误",
         },
         whitepayForm: {
-          title: "加密货币提款 — Whitepay",
+          title: "加密货币提款, Whitepay",
           description: "以30秒保证汇率接收加密货币付款",
           flowStandard: {
             title: "标准",
@@ -20395,7 +20395,7 @@ export const messages: Record<Locale, Messages> = {
           balancedDesc: "比率{ratio}%在目标区间（3–8%）内。无需紧急调整。",
         },
         decisionGrid: {
-          title: "决策矩阵 — 抽奖成本 / 毛利润比",
+          title: "决策矩阵, 抽奖成本 / 毛利润比",
           range1: "< 3%",
           label1: "过难",
           desc1: "→ 降低参与价格或增加获奖人数",
@@ -20622,7 +20622,7 @@ export const messages: Record<Locale, Messages> = {
         "输入您的合作伙伴代码，支持您的创作者并获得碎片和价格奖励",
       promoInputLabel: "推广码",
       promoPlaceholder: "例如 streamerpro",
-      promoAccepted: "代码有效 — 下方估算已包含奖励。",
+      promoAccepted: "代码有效, 下方估算已包含奖励。",
       promoErrorInvalid: "代码无效或联盟未激活。",
       promoErrorSelf: "不能使用您自己的代码。",
       promoErrorOtherAffiliate: "您的账户已绑定其他联盟伙伴。",
@@ -20643,7 +20643,7 @@ export const messages: Record<Locale, Messages> = {
         createSaleButton: "创建出售",
         creatingButton: "创建中...",
         paymentCalcTitle: "付款计算",
-        paymentDelayTitle: "Steam 冻结 — 7 天",
+        paymentDelayTitle: "Steam 冻结, 7 天",
         paymentDelayInfo: "7 天（Steam 交易冻结）",
         paymentDelayDetail: "Steam 验证交易后，余额将自动入账。",
         errorPrefix: "错误",
@@ -20699,7 +20699,7 @@ export const messages: Record<Locale, Messages> = {
       title: "KYC 政策（了解您的客户）",
       subtitle: "身份验证、交易安全与反洗钱/反恐怖融资合规",
       content: "Moonskin 通过 KYCAID 实施 KYC 流程，以保障平台安全并履行监管义务。",
-      comingSoon: "备用内容 — 正式发布版本可能来自法律页面管理后台。",
+      comingSoon: "备用内容, 正式发布版本可能来自法律页面管理后台。",
       warning: "在任何时候都可能要求完成 KYC，特别是提现时。",
       warningText: "我们可能通过服务商 KYCAID 要求进行身份验证。在必须完成 KYC 的情况下，未通过验证则无法提现。",
       sections: {
@@ -20749,7 +20749,7 @@ export const messages: Record<Locale, Messages> = {
       title: "反洗钱政策（AML）",
       subtitle: "打击洗钱与恐怖融资",
       content: "Moonskin 实施 AML 措施，防止非法使用平台。",
-      comingSoon: "备用内容 — 正式发布版本可能来自法律页面管理后台。",
+      comingSoon: "备用内容, 正式发布版本可能来自法律页面管理后台。",
       warning: "对洗钱、恐怖融资与欺诈零容忍。",
       warningText: "可疑活动可能导致账户暂停、交易阻断或资金冻结，并在依法需履行义务时向主管机关报告。",
       sections: {
@@ -20799,7 +20799,7 @@ export const messages: Record<Locale, Messages> = {
       title: "付款与提现条款",
       subtitle: "在 Moonskin 上出售饰品、交易与结算",
       content: "出售、确认与付款规则。付款通过第三方（Flexify、Whitepay）处理。",
-      comingSoon: "备用内容 — 正式发布版本可能来自法律页面管理后台。",
+      comingSoon: "备用内容, 正式发布版本可能来自法律页面管理后台。",
       warning: "时间与金额",
       warningText: "付款时间取决于第三方、支付方式与 KYC 审核。在 payout 最终确认前，Moonskin 不保证确切时间或金额。",
       sections: {
@@ -20869,7 +20869,7 @@ export const messages: Record<Locale, Messages> = {
       title: "法律声明",
       subtitle: "Moonskin 网站运营者、托管与法律框架信息",
       content: "运营者身份、托管、知识产权与责任说明。",
-      comingSoon: "备用内容 — 正式发布版本可能来自法律页面管理后台。",
+      comingSoon: "备用内容, 正式发布版本可能来自法律页面管理后台。",
       warning: "法律信息",
       warningText: "托管方信息可在法律页面管理后台补全。",
       sections: {
@@ -20883,7 +20883,7 @@ export const messages: Record<Locale, Messages> = {
         },
         hosting: {
           title: "3. 托管",
-          content: "Moonskin 网站托管方：\n\n【待填写 — 请注明托管商及依法需公示的地址，例如 Vercel、AWS、OVHcloud 等】"
+          content: "Moonskin 网站托管方：\n\n【待填写, 请注明托管商及依法需公示的地址，例如 Vercel、AWS、OVHcloud 等】"
         },
         intellectualProperty: {
           title: "4. 知识产权",
@@ -20909,9 +20909,9 @@ export const messages: Record<Locale, Messages> = {
     },
     skinSaleTerms: {
       title: "饰品销售特别条款",
-      subtitle: "对服务条款的补充 — 在 Moonskin 上出售 CS2 饰品",
+      subtitle: "对服务条款的补充, 在 Moonskin 上出售 CS2 饰品",
       content: "涉及出售流程、Steam 交易锁定与市场风险的专门规则。",
-      comingSoon: "备用内容 — 正式发布版本可能来自法律页面管理后台。",
+      comingSoon: "备用内容, 正式发布版本可能来自法律页面管理后台。",
       warning: "数字商品",
       warningText: "CS2 饰品并非金融工具；Steam 交易锁与第三方可能影响交易与付款。",
       sections: {

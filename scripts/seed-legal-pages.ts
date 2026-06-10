@@ -338,9 +338,9 @@ Les traitements reposent sur :
 
 Les données peuvent être partagées avec des prestataires de confiance, uniquement lorsque cela est nécessaire au fonctionnement du service :
 
-- **KYCAID** — vérification d'identité (KYC)
-- **Flexify** — traitement des paiements
-- **Whitepay** — solutions de paiement
+- **KYCAID**, vérification d'identité (KYC)
+- **Flexify**, traitement des paiements
+- **Whitepay**, solutions de paiement
 
 Ainsi que :
 
@@ -462,9 +462,9 @@ Processing is based on:
 
 Data may be shared with trusted processors only where necessary:
 
-- **KYCAID** — identity verification (KYC)
-- **Flexify** — payment processing
-- **Whitepay** — payment solutions
+- **KYCAID**, identity verification (KYC)
+- **Flexify**, payment processing
+- **Whitepay**, payment solutions
 
 As well as:
 
@@ -1195,7 +1195,7 @@ Lucas Pallanca
 Le site Moonskin est hébergé par :
 
 **[À compléter]**  
-*(Exemples : Vercel, AWS, OVHcloud — indiquer l'hébergeur et les coordonnées légales requises.)*
+*(Exemples : Vercel, AWS, OVHcloud, indiquer l'hébergeur et les coordonnées légales requises.)*
 
 # 4. Propriété intellectuelle
 
@@ -1260,7 +1260,7 @@ Lucas Pallanca
 The Moonskin website is hosted by:
 
 **[To be completed]**  
-*(e.g. Vercel, AWS, OVHcloud — specify the host and legally required details.)*
+*(e.g. Vercel, AWS, OVHcloud, specify the host and legally required details.)*
 
 # 4. Intellectual property
 
@@ -1309,8 +1309,8 @@ These legal notices are governed by French law.`,
     slug: 'skin-sale-terms',
     titleFr: 'Conditions spécifiques de vente de skins',
     titleEn: 'Specific terms for skin sales',
-    subtitleFr: 'Complément aux CGU — vente de skins CS2 sur Moonskin',
-    subtitleEn: 'Supplement to the Terms — selling CS2 skins on Moonskin',
+    subtitleFr: 'Complément aux CGU, vente de skins CS2 sur Moonskin',
+    subtitleEn: 'Supplement to the Terms, selling CS2 skins on Moonskin',
     contentFr: `# 1. Objet
 
 Les présentes conditions encadrent spécifiquement la vente de skins sur la plateforme Moonskin, en complément des CGU.

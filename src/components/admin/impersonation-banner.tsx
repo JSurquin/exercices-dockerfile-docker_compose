@@ -38,7 +38,7 @@ export function ImpersonationBanner() {
 
   return (
     <>
-      {/* Espaceur dans le flux normal — pousse le header sticky vers le bas */}
+      {/* Espaceur dans le flux normal, pousse le header sticky vers le bas */}
       <div className="h-10 w-full shrink-0" aria-hidden />
       {/* Bandeau fixe au-dessus de tout (z > header z-50) */}
       <div className="fixed top-0 left-0 right-0 z-[100] flex h-10 items-center justify-between gap-3 bg-primary px-4 text-white shadow-lg">

@@ -201,7 +201,7 @@ export default function ModerationPage() {
         </motion.div>
       )}
 
-      {/* Filtres — collapsible sur mobile */}
+      {/* Filtres, collapsible sur mobile */}
       <Card className={cn(adminGlassCard, 'mb-4 sm:mb-6')}>
         <Collapsible defaultOpen={false} className="sm:hidden">
           <CollapsibleTrigger asChild>

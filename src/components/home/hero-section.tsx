@@ -353,7 +353,7 @@ export function HeroSection() {
 
           {/* Right Column - Visual */}
           <div className={`relative ${homeEnter.right}`}>
-            {/* Main Card — 3D glass chrome */}
+            {/* Main Card, 3D glass chrome */}
             <div className="hero-product relative mt-6 lg:-mt-48">
             <CardTilt shimmer className="p-4 sm:p-6 lg:p-8">
               {/* Fake Trade Interface */}

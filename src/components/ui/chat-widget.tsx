@@ -340,7 +340,7 @@ export function ChatWidget() {
           </button>
         </div>
 
-        {/* ── Corps — prend tout l'espace restant ── */}
+        {/* ── Corps, prend tout l'espace restant ── */}
         <div className="flex-1 min-h-0 flex flex-col">
 
           {/* ── Étape 1 : Catégories ── */}
@@ -372,7 +372,7 @@ export function ChatWidget() {
           {chatStep === "subcategories" && selectedCategory && (
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               <p className="text-sm text-muted-foreground pb-1">
-                {selectedCategory.emoji} <strong>{selectedCategory.label}</strong> — {messages.chatWidget.problemQuestion}
+                {selectedCategory.emoji} <strong>{selectedCategory.label}</strong>, {messages.chatWidget.problemQuestion}
               </p>
               {selectedCategory.subcategories.map((sub) => (
                 <button
@@ -395,7 +395,7 @@ export function ChatWidget() {
           {/* ── Étape 3 : Conversation ── */}
           {chatStep === "conversation" && (
             <>
-              {/* Zone messages — scrollable, ne pousse jamais l'input */}
+              {/* Zone messages, scrollable, ne pousse jamais l'input */}
               <div
                 ref={messagesContainerRef}
                 className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3"
@@ -523,7 +523,7 @@ export function ChatWidget() {
                 )}
               </div>
 
-              {/* ── Zone saisie — toujours visible, jamais poussée ── */}
+              {/* ── Zone saisie, toujours visible, jamais poussée ── */}
               <div className="flex-shrink-0 border-t bg-background px-3 py-2.5">
                 <div className="flex items-end gap-2">
                   <textarea

@@ -155,7 +155,7 @@ export function SkinplaceTradeCreator({
     }
   };
 
-  /** Aucun frais à la vente — les frais s'appliquent uniquement au retrait (/payout). */
+  /** Aucun frais à la vente, les frais s'appliquent uniquement au retrait (/payout). */
   const calculateFees = (grossValueCentimes: number) => {
     const indicativePayoutFeesCentimes = platformSettings?.networkFeeCentimes ?? 200;
 

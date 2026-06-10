@@ -232,7 +232,7 @@ export function HowItWorks() {
           ))}
         </div>
 
-        {/* Benefits — glass cards with propagated hover */}
+        {/* Benefits, glass cards with propagated hover */}
         <div className={`grid md:grid-cols-3 gap-6 lg:gap-8 mb-12 ${homeReveal.upSm}`}>
           {benefits.map((benefit, index) => {
             const zoneIndex = steps.length + index;

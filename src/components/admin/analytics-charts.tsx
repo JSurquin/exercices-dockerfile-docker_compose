@@ -255,7 +255,7 @@ function AreaChart({
       .duration(800)
       .attr('r', 4);
 
-    // Axe X — affiche 1 label sur N pour éviter le chevauchement
+    // Axe X, affiche 1 label sur N pour éviter le chevauchement
     const tickStep = Math.ceil(data.length / 8);
     const xAxis = g.append('g')
       .attr('transform', `translate(0,${innerHeight})`)

@@ -350,7 +350,7 @@ export default function DashboardPage() {
             toast.success(
               messages.dashboard.toasts.balanceCredited,
               {
-                description: `${trade.ticketId} — ${messages.dashboard.toasts.fundsReleased}`,
+                description: `${trade.ticketId}, ${messages.dashboard.toasts.fundsReleased}`,
               }
             );
           } else if (result.success && result.trade?.oldStatus && result.trade.oldStatus !== result.trade.status) {
@@ -446,7 +446,7 @@ export default function DashboardPage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
                         <h3 className="text-sm font-semibold sm:text-base">
-                          {levelInfo.level.name} — Palier {levelInfo.tierIndex + 1}/5
+                          {levelInfo.level.name}, Palier {levelInfo.tierIndex + 1}/5
                         </h3>
                         <LevelHelpPopover />
                       </div>
@@ -562,7 +562,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Projection trade hold — entre solde et graphique */}
+              {/* Projection trade hold, entre solde et graphique */}
               {!balanceHistoryLoading && (balanceHistoryData?.pendingBalanceCents ?? 0) > 0 && (
                 <div className="border-y border-theme-highlight/25 bg-gradient-to-r from-theme-highlight/10 via-theme-highlight/5 to-theme-accent/5 px-4 sm:px-5 py-3">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

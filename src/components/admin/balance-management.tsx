@@ -337,7 +337,7 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
                       {tx.amountCents >= 0 ? '+' : ''}{formatCents(tx.amountCents)}
                     </TableCell>
                     <TableCell className="text-white">{formatCents(tx.balanceAfterCents)}</TableCell>
-                    <TableCell className="text-slate-400 max-w-[200px] truncate">{tx.reason || '—'}</TableCell>
+                    <TableCell className="text-slate-400 max-w-[200px] truncate">{tx.reason || '-'}</TableCell>
                   </TableRow>
                 ))
               )}

@@ -4,7 +4,7 @@ import { useLocale } from '@/components/providers/locale-provider';
 import { cn } from '@/lib/utils';
 
 type PageLoadingProps = {
-  /** @deprecated Utiliser compact — même rendu minimal */
+  /** @deprecated Utiliser compact, même rendu minimal */
   variant?: 'full' | 'compact';
   message?: string;
   className?: string;
@@ -26,7 +26,7 @@ function MoonSkinMark({ className }: { className?: string }) {
 
 /**
  * Loader minimal pour pages gated / chargement de données.
- * Pas de splash plein écran — la home et le marketing n’utilisent pas ce composant.
+ * Pas de splash plein écran, la home et le marketing n’utilisent pas ce composant.
  */
 export function PageLoading({ variant = 'compact', message, className }: PageLoadingProps) {
   const { messages } = useLocale();

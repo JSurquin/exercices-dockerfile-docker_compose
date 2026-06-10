@@ -284,7 +284,7 @@ export default function AdminGamificationEconomyPage() {
       {/* Recommandation */}
       <Recommendation ratio30={ratio30} utilRate={utilRate} t={ge.recommendation as unknown as Record<string, string>} />
 
-      {/* Bloc 1 — Finance */}
+      {/* Bloc 1, Finance */}
       <div>
         <h2 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
           <ChartBarIcon className="w-4 h-4 text-theme-accent" />
@@ -329,7 +329,7 @@ export default function AdminGamificationEconomyPage() {
             label={ge.finance.ratio7d}
             value={data.finance.ratioGiveawayCostToBenefit7d != null
               ? `${(data.finance.ratioGiveawayCostToBenefit7d * 100).toFixed(2)}%`
-              : '—'}
+              : '-'}
             icon={<ChartBarIcon className="w-4 h-4" />}
             color={
               data.finance.ratioGiveawayCostToBenefit7d != null && data.finance.ratioGiveawayCostToBenefit7d > 0.12
@@ -339,7 +339,7 @@ export default function AdminGamificationEconomyPage() {
           />
           <KpiCard
             label={ge.finance.ratio30d}
-            value={ratio30 != null ? `${(ratio30 * 100).toFixed(2)}%` : '—'}
+            value={ratio30 != null ? `${(ratio30 * 100).toFixed(2)}%` : '-'}
             icon={<ChartBarIcon className="w-4 h-4" />}
             color={
               ratio30 != null && ratio30 > 0.12 ? 'text-red-400' :
@@ -350,7 +350,7 @@ export default function AdminGamificationEconomyPage() {
         </div>
       </div>
 
-      {/* KPI principaux — jauges */}
+      {/* KPI principaux, jauges */}
       <Card className="bg-slate-900/80 border-slate-700">
         <CardHeader>
           <CardTitle className="text-white text-base flex items-center gap-2">
@@ -370,7 +370,7 @@ export default function AdminGamificationEconomyPage() {
         </CardContent>
       </Card>
 
-      {/* Bloc 2 — Fragments */}
+      {/* Bloc 2, Fragments */}
       <div>
         <h2 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
           <SparklesIcon className="w-4 h-4 text-theme-stat" />
@@ -424,7 +424,7 @@ export default function AdminGamificationEconomyPage() {
         </div>
       </div>
 
-      {/* Bloc 3 — Giveaways */}
+      {/* Bloc 3, Giveaways */}
       <div>
         <h2 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
           <GiftIcon className="w-4 h-4 text-purple-400" />

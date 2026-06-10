@@ -138,7 +138,7 @@ export function AdminPayoutsTable() {
       if (!res.ok) {
         const base = data.error || tp.requestFailed || 'Error';
         const details = typeof data.details === 'string' && data.details.trim() ? data.details.trim() : '';
-        throw new Error(details ? `${base} — ${details}` : base);
+        throw new Error(details ? `${base}, ${details}` : base);
       }
       toast.success(tp.approveSuccess ?? 'Payout approuvé');
       queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: debouncedSearch }) });
@@ -427,7 +427,7 @@ export function AdminPayoutsTable() {
                     </Avatar>
                     <div className="min-w-0">
                       <div className="font-medium text-white truncate max-w-[120px]">
-                        {payout.userSteamUsername || payout.userName || '—'}
+                        {payout.userSteamUsername || payout.userName || '-'}
                       </div>
                       <div className="text-xs text-slate-500 truncate max-w-[120px]" title={payout.userId}>
                         {payout.userId.substring(0, 8)}…
