@@ -983,8 +983,71 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .hero-title .highlight {
-    text-shadow: 0 0 20px rgba(180, 190, 210, 0.25);
-    animation: none;
+    position: relative;
+    display: inline-block;
+  }
+
+  .hero-title .hero-brand-shine {
+    background-size: 250% 100%;
+    animation: hero-brand-shine 3.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+  }
+
+  @keyframes hero-brand-shine {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .moonskin .hero-title .hero-brand-shine {
+    background: linear-gradient(
+      90deg,
+      #8eb4d4 0%,
+      #c0c0c0 18%,
+      #ffffff 45%,
+      #ffffff 55%,
+      #c0c0c0 82%,
+      #8eb4d4 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .cs2 .hero-title .hero-brand-shine {
+    background: linear-gradient(
+      90deg,
+      #facc15 0%,
+      #fb923c 18%,
+      #fffbeb 45%,
+      #fffbeb 55%,
+      #fb923c 82%,
+      #f97316 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 12px rgba(250, 204, 21, 0.35));
+  }
+
+  .light .hero-title .hero-brand-shine {
+    background: linear-gradient(
+      90deg,
+      #f97316 0%,
+      #fb923c 18%,
+      #fff7ed 45%,
+      #fff7ed 55%,
+      #fb923c 82%,
+      #ea580c 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.25));
   }
 
   /* Moonskin ONLY : dégradé chrome blanc→bleu */

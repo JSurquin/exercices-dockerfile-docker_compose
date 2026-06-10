@@ -267,7 +267,7 @@ export function HeroSection() {
                     }
                     if (upper === "MOONSKIN") {
                       return (
-                        <span key={i} className="text-brand-gradient highlight">
+                        <span key={i} className="text-brand-gradient highlight hero-brand-shine">
                           MOONSKIN
                         </span>
                       );
