@@ -13,6 +13,7 @@ import {
   BanknotesIcon,
   GiftIcon,
   ArrowTrendingUpIcon,
+  UserIcon,
 } from '@heroicons/react/24/outline';
 import {
   AreaChart,
@@ -51,8 +52,8 @@ export function DashboardTourDemo() {
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center space-x-3 sm:space-x-4 mb-6">
-            <div className="w-16 h-16 rounded-full bg-cta-gradient-br flex items-center justify-center text-white text-2xl font-bold">
-              🎮
+            <div className="w-16 h-16 rounded-full bg-cta-gradient-br flex items-center justify-center text-white">
+              <UserIcon className="h-8 w-8" aria-hidden />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">

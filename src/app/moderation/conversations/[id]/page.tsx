@@ -23,6 +23,7 @@ import {
   CheckIcon,
   ExclamationTriangleIcon,
   ChevronDownIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
@@ -40,7 +41,7 @@ import { resolveI18nContent } from '@/lib/resolve-i18n-content';
 const senderTypeLabels: Record<string, string> = {
   USER: 'Utilisateur',
   BOT: 'Bot',
-  AI: '✨ IA',
+  AI: 'IA',
   MODERATOR: 'Modérateur',
   SYSTEM: 'Système',
 };

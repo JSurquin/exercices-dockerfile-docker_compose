@@ -9,6 +9,7 @@ import { usePublicStats, formatPlatformVolume, formatCompactCount } from "@/hook
 import { SiteTour } from "@/components/layout/site-tour";
 import { useTourMode } from "@/components/providers/tour-provider";
 import { normalizeStoredTheme } from "@/lib/themes";
+import { MapIcon } from "@heroicons/react/24/outline";
 import {
   MOONSKIN_DISCORD_URL,
   MOONSKIN_X_URL,
@@ -228,7 +229,7 @@ export function Footer() {
                   onClick={() => startTour()}
                   className="text-sm font-medium text-theme-accent hover:text-theme-highlight transition-colors flex items-center gap-1"
                 >
-                  <span>🗺️</span>
+                  <MapIcon className="h-4 w-4 shrink-0" aria-hidden />
                   {messages.footer.tourButton}
                 </button>
               </div>

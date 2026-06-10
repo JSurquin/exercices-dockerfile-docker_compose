@@ -137,7 +137,8 @@ const GiveawayCard = ({
               </Badge>
             )}
             {giveaway.isPrivate && (
-              <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs">
+              <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs flex items-center gap-1">
+                <LockClosedIcon className="h-3 w-3 shrink-0" aria-hidden />
                 {messages.giveaways.card.privateLabel}
               </Badge>
             )}

@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
             conversationId: body.conversationId,
             userId: null,
             content:
-              '✅ Votre demande a bien été transmise à notre équipe. Un modérateur vous répondra rapidement. Merci de votre patience 🙏',
+              'Votre demande a bien été transmise à notre équipe. Un modérateur vous répondra rapidement. Merci de votre patience',
             senderType: 'SYSTEM',
             isRead: false,
           },

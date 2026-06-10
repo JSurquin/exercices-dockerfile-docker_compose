@@ -30,7 +30,7 @@ export function GiveawayAdmin() {
         
         result.results.forEach((drawResult: any) => {
           if (drawResult.status === 'drawn') {
-            toast.success(`🎉 ${messages.admin.giveawayAdmin.toasts.drawn} ${drawResult.giveawayId}`);
+            toast.success(`${messages.admin.giveawayAdmin.toasts.drawn} ${drawResult.giveawayId}`);
           } else if (drawResult.status === 'cancelled') {
             toast.info(`${messages.admin.giveawayAdmin.toasts.cancelled} ${drawResult.giveawayId}`);
           }

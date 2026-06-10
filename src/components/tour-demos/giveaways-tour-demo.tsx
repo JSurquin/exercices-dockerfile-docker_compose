@@ -11,18 +11,31 @@ import {
   ClockIcon,
   UserGroupIcon,
   TrophyIcon,
+  UserIcon,
+  SparklesIcon,
+  BanknotesIcon,
 } from '@heroicons/react/24/outline';
+import type { ComponentType, SVGProps } from 'react';
 import { TourDemoBanner } from './tour-demo-banner';
 import { FragmentAmount, FragmentBadge } from '@/components/ui/level-badge';
 
-const DEMO_GIVEAWAYS = [
+type DemoIcon = ComponentType<SVGProps<SVGSVGElement> & { className?: string }>;
+
+const DEMO_GIVEAWAYS: Array<{
+  title: string;
+  prize: string;
+  participants: number;
+  ticketPrice: number;
+  endIn: string;
+  icon: DemoIcon;
+}> = [
   {
     title: 'AWP | Dragon Lore (FT)',
     prize: '~€ 1 200',
     participants: 248,
     ticketPrice: 50,
     endIn: '3j 12h',
-    emoji: '🐉',
+    icon: SparklesIcon,
   },
   {
     title: 'Knife | Karambit Doppler',
@@ -30,7 +43,7 @@ const DEMO_GIVEAWAYS = [
     participants: 91,
     ticketPrice: 25,
     endIn: '6j 4h',
-    emoji: '🔪',
+    icon: GiftIcon,
   },
   {
     title: 'Cash Reward 50€',
@@ -38,7 +51,7 @@ const DEMO_GIVEAWAYS = [
     participants: 430,
     ticketPrice: 10,
     endIn: '1j 18h',
-    emoji: '💶',
+    icon: BanknotesIcon,
   },
 ];
 
@@ -70,8 +83,8 @@ export function GiveawaysTourDemo() {
             <CardContent className="p-4 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center space-x-3 sm:space-x-4">
-                  <div className="w-12 h-12 rounded-full bg-cta-gradient-br flex items-center justify-center text-white text-xl font-bold">
-                    🎮
+                  <div className="w-12 h-12 rounded-full bg-cta-gradient-br flex items-center justify-center text-white">
+                    <UserIcon className="h-6 w-6" aria-hidden />
                   </div>
                   <div>
                     <h3 className="font-semibold">CS_Player</h3>
@@ -141,7 +154,7 @@ export function GiveawaysTourDemo() {
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <span className="text-3xl">{g.emoji}</span>
+                      <g.icon className="h-8 w-8 text-theme-accent shrink-0" aria-hidden />
                       <div>
                         <h4 className="font-semibold">{g.title}</h4>
                         <p className="text-sm text-theme-accent font-medium">{g.prize}</p>

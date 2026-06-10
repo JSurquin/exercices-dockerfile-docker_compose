@@ -30,6 +30,7 @@ import {
   CubeIcon,
   LinkIcon,
   ClipboardDocumentIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { SkinPickerModal } from '@/components/admin/skin-picker-modal';
@@ -451,8 +452,9 @@ export default function AdminGiveawaysPage() {
                                         </button>
                                       </div>
                                     ) : (
-                                      <p className="text-xs text-theme-highlight px-2">
-                                        ⚠️ Aucun trade link configuré
+                                      <p className="text-xs text-theme-highlight px-2 flex items-center gap-1">
+                                        <ExclamationTriangleIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                                        Aucun trade link configuré
                                       </p>
                                     )}
                                   </div>

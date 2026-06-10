@@ -11,6 +11,8 @@ import {
   ShieldCheckIcon,
   CalendarIcon,
   ExclamationTriangleIcon,
+  EnvelopeIcon,
+  PhoneIcon,
 } from '@heroicons/react/24/outline';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -246,13 +248,15 @@ export function DynamicLegalPage({
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   {page.contactEmail && (
-                    <Badge variant="outline" className="px-4 py-2">
-                      📧 {page.contactEmail}
+                    <Badge variant="outline" className="px-4 py-2 flex items-center gap-1.5">
+                      <EnvelopeIcon className="h-4 w-4 shrink-0" aria-hidden />
+                      {page.contactEmail}
                     </Badge>
                   )}
                   {page.contactPhone && (
-                    <Badge variant="outline" className="px-4 py-2">
-                      📞 {page.contactPhone}
+                    <Badge variant="outline" className="px-4 py-2 flex items-center gap-1.5">
+                      <PhoneIcon className="h-4 w-4 shrink-0" aria-hidden />
+                      {page.contactPhone}
                     </Badge>
                   )}
                 </div>

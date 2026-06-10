@@ -11,13 +11,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLocale } from "@/components/providers/locale-provider";
-import { SwatchIcon } from "@heroicons/react/24/outline";
+import { SwatchIcon, MoonIcon, SunIcon, FireIcon } from "@heroicons/react/24/outline";
+import type { ComponentType, SVGProps } from "react";
 import { APP_THEMES, type AppTheme, normalizeStoredTheme } from "@/lib/themes";
 
-const THEME_ICON: Record<AppTheme, string> = {
-  moonskin: "🌙",
-  light: "☀️",
-  cs2: "🔥",
+type ThemeIcon = ComponentType<SVGProps<SVGSVGElement> & { className?: string }>;
+
+const THEME_ICON: Record<AppTheme, ThemeIcon> = {
+  moonskin: MoonIcon,
+  light: SunIcon,
+  cs2: FireIcon,
 };
 
 const THEME_LABEL_KEY: Record<AppTheme, "themeMoonskin" | "themeLight" | "themeCs2"> = {
@@ -60,16 +63,19 @@ export function ThemeSelector() {
         <DropdownMenuLabel className="text-xs text-muted-foreground">
           {messages.nav.themeLabel}
         </DropdownMenuLabel>
-        {APP_THEMES.map((t) => (
+        {APP_THEMES.map((t) => {
+          const Icon = THEME_ICON[t];
+          return (
           <DropdownMenuItem
             key={t}
             onClick={() => setTheme(t)}
             className={current === t ? "bg-accent font-medium" : ""}
           >
-            <span className="mr-2">{THEME_ICON[t]}</span>
+            <Icon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
             {messages.nav[THEME_LABEL_KEY[t]]}
           </DropdownMenuItem>
-        ))}
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );

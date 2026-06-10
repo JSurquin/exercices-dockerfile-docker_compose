@@ -715,8 +715,9 @@ export default function PayoutPage() {
             <h2 className="text-xl font-semibold mb-2">{text.kyc.required}</h2>
             <p className="text-muted-foreground mb-6">{text.kyc.description}</p>
             {process.env.NODE_ENV === 'development' && (
-              <p className="text-xs text-blue-500 mb-4">
-                🔄 {text.request.autoVerification}
+              <p className="text-xs text-blue-500 mb-4 flex items-center justify-center gap-1">
+                <ArrowPathIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                {text.request.autoVerification}
               </p>
             )}
             <Button 

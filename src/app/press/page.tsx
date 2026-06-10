@@ -11,6 +11,8 @@ import {
   UserGroupIcon,
   TrophyIcon,
   EnvelopeIcon,
+  PhoneIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import { useLocale } from "@/components/providers/locale-provider";
 import { usePublicStats } from "@/hooks/use-public-stats";
@@ -135,9 +137,7 @@ export default function PressPage() {
                   <h3 className="text-lg font-semibold mb-2">{messages.press.noPressReleasesTitle}</h3>
                   <p className="text-muted-foreground leading-relaxed mb-6">{messages.press.noPressReleasesBody}</p>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                    <span className="text-2xl" aria-hidden>
-                      📧
-                    </span>
+                    <EnvelopeIcon className="h-6 w-6 text-theme-accent shrink-0" aria-hidden />
                     <div>
                       <p className="text-sm font-medium text-foreground">{messages.press.pressContact}</p>
                       <a
@@ -261,9 +261,7 @@ export default function PressPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-start gap-3 text-sm">
-                    <span className="text-xl shrink-0" aria-hidden>
-                      📧
-                    </span>
+                    <EnvelopeIcon className="h-5 w-5 text-theme-accent shrink-0" aria-hidden />
                     <div>
                       <a href={`mailto:${PRESS_EMAIL}`} className="text-theme-accent hover:underline font-medium break-all">
                         {PRESS_EMAIL}
@@ -272,12 +270,12 @@ export default function PressPage() {
                   </div>
                   {process.env.NEXT_PUBLIC_SUPPORT_PHONE && (
                     <div className="flex items-center space-x-2 text-sm">
-                      <span aria-hidden>📞</span>
+                      <PhoneIcon className="h-4 w-4 shrink-0" aria-hidden />
                       <span>{process.env.NEXT_PUBLIC_SUPPORT_PHONE}</span>
                     </div>
                   )}
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                    <span aria-hidden>🕐</span>
+                    <ClockIcon className="h-4 w-4 shrink-0" aria-hidden />
                     <span>{messages.press.workingHours}</span>
                   </div>
                   <Button className="w-full mt-4" asChild>

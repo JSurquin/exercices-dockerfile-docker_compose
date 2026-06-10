@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, type ComponentType, type SVGProps } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,12 @@ import {
   PaperAirplaneIcon,
   ArrowLeftIcon,
   ChevronRightIcon,
+  ArrowPathIcon,
+  BanknotesIcon,
+  WrenchScrewdriverIcon,
+  CpuChipIcon,
+  SparklesIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import {
   ChatBubbleBottomCenterTextIcon as ChatBubbleBottomCenterTextIconSolid,
@@ -28,16 +34,17 @@ import {
  * Arbre de catégories / sous-catégories
  * ───────────────────────────────────────────── */
 
+type ChatIcon = ComponentType<SVGProps<SVGSVGElement> & { className?: string }>;
+
 interface Subcategory {
   key: string;
   label: string;
-  emoji: string;
 }
 
 interface Category {
   key: string;
   label: string;
-  emoji: string;
+  icon: ChatIcon;
   description: string;
   subcategories: Subcategory[];
 }
@@ -62,42 +69,42 @@ export function ChatWidget() {
     {
       key: "trade",
       label: messages.chatWidget.categories.trade.label,
-      emoji: "🔄",
+      icon: ArrowPathIcon,
       description: messages.chatWidget.categories.trade.description,
       subcategories: [
-        { key: "trade.pending", label: messages.chatWidget.categories.trade.subcategories.pending, emoji: "⏳" },
-        { key: "trade.blocked", label: messages.chatWidget.categories.trade.subcategories.blocked, emoji: "🚫" },
-        { key: "trade.item_missing", label: messages.chatWidget.categories.trade.subcategories.itemMissing, emoji: "📦" },
-        { key: "trade.lock", label: messages.chatWidget.categories.trade.subcategories.lock, emoji: "🔒" },
-        { key: "trade.bot_issue", label: messages.chatWidget.categories.trade.subcategories.botIssue, emoji: "🤖" },
+        { key: "trade.pending", label: messages.chatWidget.categories.trade.subcategories.pending },
+        { key: "trade.blocked", label: messages.chatWidget.categories.trade.subcategories.blocked },
+        { key: "trade.item_missing", label: messages.chatWidget.categories.trade.subcategories.itemMissing },
+        { key: "trade.lock", label: messages.chatWidget.categories.trade.subcategories.lock },
+        { key: "trade.bot_issue", label: messages.chatWidget.categories.trade.subcategories.botIssue },
       ],
     },
     {
       key: "payment",
       label: messages.chatWidget.categories.payment.label,
-      emoji: "💰",
+      icon: BanknotesIcon,
       description: messages.chatWidget.categories.payment.description,
       subcategories: [
-        { key: "payment.card", label: messages.chatWidget.categories.payment.subcategories.card, emoji: "💳" },
-        { key: "payment.sepa_fr", label: messages.chatWidget.categories.payment.subcategories.sepaFr, emoji: "🏦" },
-        { key: "payment.sepa_eu", label: messages.chatWidget.categories.payment.subcategories.sepaEu, emoji: "🌍" },
-        { key: "payment.crypto", label: messages.chatWidget.categories.payment.subcategories.crypto, emoji: "🪙" },
-        { key: "delay.card", label: messages.chatWidget.categories.payment.subcategories.delayCard, emoji: "⏱️" },
-        { key: "delay.sepa_fr", label: messages.chatWidget.categories.payment.subcategories.delaySepaFr, emoji: "⏱️" },
-        { key: "delay.sepa_eu", label: messages.chatWidget.categories.payment.subcategories.delaySepaEu, emoji: "⏱️" },
-        { key: "delay.crypto", label: messages.chatWidget.categories.payment.subcategories.delayCrypto, emoji: "⏱️" },
+        { key: "payment.card", label: messages.chatWidget.categories.payment.subcategories.card },
+        { key: "payment.sepa_fr", label: messages.chatWidget.categories.payment.subcategories.sepaFr },
+        { key: "payment.sepa_eu", label: messages.chatWidget.categories.payment.subcategories.sepaEu },
+        { key: "payment.crypto", label: messages.chatWidget.categories.payment.subcategories.crypto },
+        { key: "delay.card", label: messages.chatWidget.categories.payment.subcategories.delayCard },
+        { key: "delay.sepa_fr", label: messages.chatWidget.categories.payment.subcategories.delaySepaFr },
+        { key: "delay.sepa_eu", label: messages.chatWidget.categories.payment.subcategories.delaySepaEu },
+        { key: "delay.crypto", label: messages.chatWidget.categories.payment.subcategories.delayCrypto },
       ],
     },
     {
       key: "support",
       label: messages.chatWidget.categories.support.label,
-      emoji: "🛠️",
+      icon: WrenchScrewdriverIcon,
       description: messages.chatWidget.categories.support.description,
       subcategories: [
-        { key: "support.bug", label: messages.chatWidget.categories.support.subcategories.bug, emoji: "🐛" },
-        { key: "support.partnership", label: messages.chatWidget.categories.support.subcategories.partnership, emoji: "🤝" },
-        { key: "support.kyc", label: messages.chatWidget.categories.support.subcategories.kyc, emoji: "🪪" },
-        { key: "support.other", label: messages.chatWidget.categories.support.subcategories.other, emoji: "💬" },
+        { key: "support.bug", label: messages.chatWidget.categories.support.subcategories.bug },
+        { key: "support.partnership", label: messages.chatWidget.categories.support.subcategories.partnership },
+        { key: "support.kyc", label: messages.chatWidget.categories.support.subcategories.kyc },
+        { key: "support.other", label: messages.chatWidget.categories.support.subcategories.other },
       ],
     },
   ];
@@ -322,7 +329,7 @@ export function ChatWidget() {
               <Avatar className="h-8 w-8 border-2 border-white/20">
                 <AvatarImage src="/images/support-avatar.svg" />
                 <AvatarFallback className="bg-white/20 text-white text-sm">
-                  🤖
+                  <CpuChipIcon className="h-4 w-4" aria-hidden />
                 </AvatarFallback>
               </Avatar>
               <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-400 rounded-full border-2 border-white" />
@@ -356,7 +363,7 @@ export function ChatWidget() {
                   className="w-full flex items-center justify-between p-3.5 rounded-xl border bg-card hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 hover:border-theme-accent/30 transition-all duration-150 group text-left"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">{cat.emoji}</span>
+                    <cat.icon className="h-6 w-6 text-theme-accent shrink-0" aria-hidden />
                     <div>
                       <p className="font-semibold text-sm">{cat.label}</p>
                       <p className="text-xs text-muted-foreground">{cat.description}</p>
@@ -371,8 +378,9 @@ export function ChatWidget() {
           {/* ── Étape 2 : Sous-catégories ── */}
           {chatStep === "subcategories" && selectedCategory && (
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              <p className="text-sm text-muted-foreground pb-1">
-                {selectedCategory.emoji} <strong>{selectedCategory.label}</strong>, {messages.chatWidget.problemQuestion}
+              <p className="text-sm text-muted-foreground pb-1 flex items-center gap-1.5">
+                <selectedCategory.icon className="h-4 w-4 text-theme-accent shrink-0" aria-hidden />
+                <span><strong>{selectedCategory.label}</strong>, {messages.chatWidget.problemQuestion}</span>
               </p>
               {selectedCategory.subcategories.map((sub) => (
                 <button
@@ -437,17 +445,26 @@ export function ChatWidget() {
                       >
                         {isModerator && (
                           <div className="flex items-center gap-1 mb-1">
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-white/20 rounded-full px-2 py-0.5">👨‍💼 {messages.chatWidget.moderatorLabel}</span>
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-white/20 rounded-full px-2 py-0.5">
+                              <UserCircleIcon className="h-3 w-3 shrink-0" aria-hidden />
+                              {messages.chatWidget.moderatorLabel}
+                            </span>
                           </div>
                         )}
                         {isBot && (
                           <div className="flex items-center gap-1 mb-1">
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/60 rounded-full px-2 py-0.5">🤖 {messages.chatWidget.botLabel}</span>
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/60 rounded-full px-2 py-0.5">
+                              <CpuChipIcon className="h-3 w-3 shrink-0" aria-hidden />
+                              {messages.chatWidget.botLabel}
+                            </span>
                           </div>
                         )}
                         {isAi && (
                           <div className="flex items-center gap-1 mb-1">
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">✨ {messages.chatWidget.aiLabel}</span>
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">
+                              <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
+                              {messages.chatWidget.aiLabel}
+                            </span>
                           </div>
                         )}
                         {isUser ? (
@@ -511,7 +528,10 @@ export function ChatWidget() {
                   <div className="flex justify-start ai-typing-bubble">
                     <div className="bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 rounded-2xl rounded-tl-sm px-4 py-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">✨ {messages.chatWidget.aiLabel}</span>
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">
+                          <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
+                          {messages.chatWidget.aiLabel}
+                        </span>
                         <div className="flex gap-1">
                           <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
                           <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />

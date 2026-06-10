@@ -25,7 +25,7 @@ const DEMO_CATEGORIES = [
     label: 'Bonus',
     icon: StarIcon,
     missions: [
-      { label: '🎁 Surprise du jour', reward: 5, completed: true, eligible: false },
+      { label: 'Surprise du jour', reward: 5, completed: true, eligible: false },
     ],
   },
   {
@@ -33,8 +33,8 @@ const DEMO_CATEGORIES = [
     label: 'Quotidien',
     icon: ClockIcon,
     missions: [
-      { label: '👋 Visite quotidienne', reward: 2, completed: true, eligible: false },
-      { label: '💰 Vendre un skin aujourd\'hui', reward: 10, completed: false, eligible: true },
+      { label: 'Visite quotidienne', reward: 2, completed: true, eligible: false },
+      { label: 'Vendre un skin aujourd\'hui', reward: 10, completed: false, eligible: true },
     ],
   },
   {
@@ -42,8 +42,8 @@ const DEMO_CATEGORIES = [
     label: 'Hebdomadaire',
     icon: CalendarDaysIcon,
     missions: [
-      { label: '📈 Volume 500 € sur 7 jours', reward: 30, completed: false, eligible: false, progress: 68 },
-      { label: '📊 Volume 1 000 € sur 7 jours', reward: 60, completed: false, eligible: false, progress: 34 },
+      { label: 'Volume 500 € sur 7 jours', reward: 30, completed: false, eligible: false, progress: 68 },
+      { label: 'Volume 1 000 € sur 7 jours', reward: 60, completed: false, eligible: false, progress: 34 },
     ],
   },
   {
@@ -51,7 +51,7 @@ const DEMO_CATEGORIES = [
     label: 'Mensuel',
     icon: ChartBarIcon,
     missions: [
-      { label: '🏆 Volume 5 000 € ce mois', reward: 150, completed: false, eligible: false, progress: 24 },
+      { label: 'Volume 5 000 € ce mois', reward: 150, completed: false, eligible: false, progress: 24 },
     ],
   },
   {
@@ -59,9 +59,9 @@ const DEMO_CATEGORIES = [
     label: 'Social',
     icon: SparklesIcon,
     missions: [
-      { label: '💬 Rejoindre le Discord', reward: 20, completed: true, eligible: false },
-      { label: '📱 Suivre sur Instagram', reward: 15, completed: false, eligible: true },
-      { label: '✈️ Rejoindre le Telegram', reward: 15, completed: false, eligible: false },
+      { label: 'Rejoindre le Discord', reward: 20, completed: true, eligible: false },
+      { label: 'Suivre sur Instagram', reward: 15, completed: false, eligible: true },
+      { label: 'Rejoindre le Telegram', reward: 15, completed: false, eligible: false },
     ],
   },
 ];

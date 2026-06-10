@@ -35,6 +35,7 @@ import {
   CurrencyDollarIcon,
   CheckCircleIcon,
   StarIcon,
+  LightBulbIcon,
 } from "@heroicons/react/24/outline";
 
 const UsdtIcon = () => (
@@ -460,8 +461,9 @@ export function HeroSection() {
                       {fmt(demoNetCents)}
                     </span>
                   </div>
-                  <div className="text-xs text-center text-muted-foreground pt-2">
-                    💡 {messages.trade.automaticPayment}
+                  <div className="text-xs text-center text-muted-foreground pt-2 flex items-center justify-center gap-1">
+                    <LightBulbIcon className="h-3.5 w-3.5 shrink-0 text-theme-accent" aria-hidden />
+                    {messages.trade.automaticPayment}
                   </div>
                 </div>
 

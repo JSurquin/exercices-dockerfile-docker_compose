@@ -8,6 +8,7 @@ import {
   LinkIcon,
   CurrencyDollarIcon,
   CheckCircleIcon,
+  CubeIcon,
 } from '@heroicons/react/24/outline';
 import { TourDemoBanner } from './tour-demo-banner';
 
@@ -77,7 +78,7 @@ export function SellTourDemo() {
                     className="rounded-lg border bg-muted/30 p-2 flex flex-col items-center gap-1 select-none opacity-80"
                   >
                     <div className="w-full aspect-square rounded bg-gradient-to-br from-theme-accent/10 to-primary/10 flex items-center justify-center mb-1">
-                      <span className="text-2xl">🔫</span>
+                      <CubeIcon className="h-6 w-6 text-theme-accent" aria-hidden />
                     </div>
                     <p className="text-[10px] text-center font-medium line-clamp-2 leading-tight">
                       {item.name}

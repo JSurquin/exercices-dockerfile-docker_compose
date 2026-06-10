@@ -28,7 +28,7 @@ function buildTourSteps(locale: string): TourStep[] {
       page: '/',
       waitMs: 600,
       popover: {
-        title: t('👋 Bienvenue sur MoonSkin !', '👋 Welcome to MoonSkin!', '👋 欢迎来到 MoonSkin！'),
+        title: t('Bienvenue sur MoonSkin !', 'Welcome to MoonSkin!', '欢迎来到 MoonSkin！'),
         description: t(
           'MoonSkin est la plateforme la plus rapide pour <strong>vendre vos skins CS2 contre de l\'argent réel</strong>. Ce guide vous emmène page par page pour découvrir chaque fonctionnalité. Utilisez <strong>Précédent / Suivant</strong> pour naviguer.',
           'MoonSkin is the fastest platform to <strong>sell your CS2 skins for real money</strong>. This guide takes you page by page through every feature. Use <strong>Back / Next</strong> to navigate.',
@@ -40,7 +40,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="nav-sell"]',
       popover: {
-        title: t('💰 Vendre vos skins', '💰 Sell your skins', '💰 出售皮肤'),
+        title: t('Vendre vos skins', 'Sell your skins', '出售皮肤'),
         description: t(
           'Point d\'entrée principal : obtenez une <strong>estimation instantanée</strong> de vos skins via notre API, sélectionnez les items à vendre et confirmez. Le paiement arrive sous <strong>7 jours</strong> après le trade hold Steam.',
           'Main entry point: get an <strong>instant estimate</strong> of your skins via our API, select items to sell and confirm. Payment arrives within <strong>7 days</strong> after the Steam trade hold.',
@@ -52,7 +52,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="nav-dashboard"]',
       popover: {
-        title: t('📊 Tableau de bord', '📊 Dashboard', '📊 仪表盘'),
+        title: t('Tableau de bord', 'Dashboard', '仪表盘'),
         description: t(
           'Suivez vos trades en temps réel, consultez votre <strong>solde disponible</strong>, votre progression XP, vos fragments et l\'historique complet de vos paiements. C\'est votre centre de contrôle.',
           'Track your trades in real time, check your <strong>available balance</strong>, XP progress, fragments and full payment history. This is your control center.',
@@ -64,7 +64,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="nav-giveaways"]',
       popover: {
-        title: t('🎁 Concours', '🎁 Giveaways', '🎁 抽奖活动'),
+        title: t('Concours', 'Giveaways', '抽奖活动'),
         description: t(
           'Participez aux concours avec vos <strong>fragments</strong> gagnés lors de vos ventes. Plus vous vendez, plus vous accumulez de fragments pour tenter de gagner des skins, du cash ou des items exclusifs.',
           'Enter giveaways with your <strong>fragments</strong> earned from your sales. The more you sell, the more fragments you collect to win skins, cash or exclusive items.',
@@ -76,7 +76,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="nav-missions"]',
       popover: {
-        title: t('🏆 Missions', '🏆 Missions', '🏆 任务'),
+        title: t('Missions', 'Missions', '任务'),
         description: t(
           'Complétez des défis quotidiens, hebdomadaires et mensuels pour gagner des <strong>fragments</strong>. Chaque fragment peut être dépensé dans un concours. Les missions sociales (Discord, Telegram…) offrent aussi des récompenses.',
           'Complete daily, weekly and monthly challenges to earn <strong>fragments</strong>. Each fragment can be spent in a giveaway. Social missions (Discord, Telegram…) also offer rewards.',
@@ -90,7 +90,7 @@ function buildTourSteps(locale: string): TourStep[] {
       page: '/sell',
       waitMs: 900,
       popover: {
-        title: t('🛒 Page de vente', '🛒 Sell Page', '🛒 出售页面'),
+        title: t('Page de vente', 'Sell Page', '出售页面'),
         description: t(
           'Vous êtes maintenant sur la page de vente. Le processus se déroule en <strong>3 étapes</strong> : sélection de l\'inventaire, récapitulatif du trade, puis confirmation. Chaque étape est guidée.',
           'You are now on the sell page. The process follows <strong>3 steps</strong>: inventory selection, trade summary, then confirmation. Each step is guided.',
@@ -102,7 +102,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="sell-steam-account"]',
       popover: {
-        title: t('👤 Compte Steam connecté', '👤 Connected Steam account', '👤 已连接的 Steam 账户'),
+        title: t('Compte Steam connecté', 'Connected Steam account', '已连接的 Steam 账户'),
         description: t(
           'Votre <strong>compte Steam de connexion</strong> est affiché ici à titre informatif. Il est lié à MoonSkin et <strong>ne peut pas être modifié</strong> sur cette page.',
           'Your <strong>login Steam account</strong> is shown here for information. It is linked to MoonSkin and <strong>cannot be changed</strong> on this page.',
@@ -114,7 +114,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="sell-trade-link"]',
       popover: {
-        title: t('🔗 Trade Link Steam, modifiable', '🔗 Steam Trade Link, editable', '🔗 Steam 交易链接, 可修改'),
+        title: t('Trade Link Steam, modifiable', 'Steam Trade Link, editable', 'Steam 交易链接, 可修改'),
         description: t(
           'C\'est la <strong>seule information modifiable</strong> : elle détermine quel inventaire est chargé et où vous recevez les offres d\'échange. Cliquez sur <em>Modifier</em> pour la mettre à jour.',
           'This is the <strong>only editable field</strong>: it determines which inventory is loaded and where you receive trade offers. Click <em>Edit</em> to update it.',
@@ -126,7 +126,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="sell-steps"]',
       popover: {
-        title: t('📋 Étapes du processus', '📋 Process steps', '📋 流程步骤'),
+        title: t('Étapes du processus', 'Process steps', '流程步骤'),
         description: t(
           'La barre de progression indique où vous en êtes : <strong>Inventaire</strong>, puis <strong>Trade</strong>, puis <strong>Confirmation</strong>. Chaque étape validée reste cochée pour voir votre avancement d\'un seul coup d\'œil.',
           'The progress bar shows where you are: <strong>Inventory</strong>, then <strong>Trade</strong>, then <strong>Confirmation</strong>. Each completed step stays checked so you can see your progress at a glance.',
@@ -138,7 +138,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="sell-inventory"]',
       popover: {
-        title: t('🎒 Votre inventaire CS2', '🎒 Your CS2 Inventory', '🎒 您的 CS2 库存'),
+        title: t('Votre inventaire CS2', 'Your CS2 Inventory', '您的 CS2 库存'),
         description: t(
           'Votre inventaire Steam se charge ici. Cochez les skins que vous souhaitez vendre : le <strong>prix estimé</strong> s\'affiche pour chaque item via notre API. Une fois votre sélection faite, cliquez sur <em>Continuer</em>.',
           'Your Steam inventory loads here. Check the skins you want to sell: the <strong>estimated price</strong> appears for each item via our API. Once selected, click <em>Continue</em>.',
@@ -152,7 +152,7 @@ function buildTourSteps(locale: string): TourStep[] {
       page: '/dashboard',
       waitMs: 1000,
       popover: {
-        title: t('📊 Votre tableau de bord', '📊 Your Dashboard', '📊 您的仪表盘'),
+        title: t('Votre tableau de bord', 'Your Dashboard', '您的仪表盘'),
         description: t(
           'Bienvenue dans votre espace personnel. Ici vous retrouvez votre <strong>solde</strong>, vos trades, vos statistiques et votre progression. Tout est mis à jour en temps réel.',
           'Welcome to your personal space. Here you find your <strong>balance</strong>, trades, statistics and progression. Everything updates in real time.',
@@ -164,7 +164,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="dashboard-xp"]',
       popover: {
-        title: t('⭐ Niveau & XP', '⭐ Level & XP', '⭐ 等级与XP'),
+        title: t('Niveau & XP', 'Level & XP', '等级与XP'),
         description: t(
           'Votre <strong>niveau</strong> et votre <strong>barre XP</strong> progressent avec chaque vente. Monter de niveau débloque des avantages exclusifs comme un taux de cashout amélioré. Chaque euro vendu vous rapporte de l\'XP.',
           'Your <strong>level</strong> and <strong>XP bar</strong> progress with each sale. Leveling up unlocks exclusive perks like an improved cashout rate. Each euro sold earns you XP.',
@@ -176,7 +176,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="dashboard-balance"]',
       popover: {
-        title: t('💳 Votre solde', '💳 Your Balance', '💳 您的余额'),
+        title: t('Votre solde', 'Your Balance', '您的余额'),
         description: t(
           'Le <strong>solde disponible</strong> (en vert) est prêt à être retiré. Le montant en attente (ambre) correspond aux trades dont le trade hold Steam n\'est pas encore levé. Le graphique montre l\'<strong>évolution sur 30 jours</strong>.',
           'The <strong>available balance</strong> (green) is ready to withdraw. The pending amount (amber) corresponds to trades still under Steam trade hold. The chart shows the <strong>30-day evolution</strong>.',
@@ -188,7 +188,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="dashboard-stats"]',
       popover: {
-        title: t('📈 Vos statistiques', '📈 Your Statistics', '📈 您的统计数据'),
+        title: t('Vos statistiques', 'Your Statistics', '您的统计数据'),
         description: t(
           'Ces 4 cartes résument votre activité : <strong>volume total vendu</strong>, <strong>nombre de trades</strong>, votre <strong>niveau actuel</strong> et vos <strong>fragments</strong> disponibles pour les concours. D\'un seul coup d\'œil, vous savez où vous en êtes.',
           'These 4 cards summarize your activity: <strong>total volume sold</strong>, <strong>number of trades</strong>, your <strong>current level</strong> and your <strong>fragments</strong> available for giveaways. At a glance you know where you stand.',
@@ -200,7 +200,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="dashboard-trades"]',
       popover: {
-        title: t('🗂️ Onglets de suivi', '🗂️ Tracking Tabs', '🗂️ 追踪标签'),
+        title: t('Onglets de suivi', 'Tracking Tabs', '追踪标签'),
         description: t(
           'Les onglets vous permettent de consulter : <strong>Trades</strong> (historique et statut de chaque vente), <strong>Analytiques</strong> (graphiques de performance), <strong>Paiements</strong> (historique des retraits) et <strong>Paramètres</strong> (méthode de paiement, IBAN, crypto).',
           'The tabs let you consult: <strong>Trades</strong> (history and status of each sale), <strong>Analytics</strong> (performance charts), <strong>Payments</strong> (withdrawal history) and <strong>Settings</strong> (payment method, IBAN, crypto).',
@@ -214,7 +214,7 @@ function buildTourSteps(locale: string): TourStep[] {
       page: '/giveaways',
       waitMs: 1000,
       popover: {
-        title: t('🎁 Page des concours', '🎁 Giveaways Page', '🎁 抽奖页面'),
+        title: t('Page des concours', 'Giveaways Page', '抽奖页面'),
         description: t(
           'Bienvenue dans la section concours. Les <strong>fragments</strong> que vous avez accumulés en vendant servent de monnaie pour participer. Plus vous en misez, plus vos chances de gagner augmentent.',
           'Welcome to the giveaways section. The <strong>fragments</strong> you accumulated by selling serve as currency to participate. The more you stake, the higher your chances of winning.',
@@ -238,7 +238,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="giveaways-how"]',
       popover: {
-        title: t('📖 Comment ça marche ?', '📖 How does it work?', '📖 如何运作？'),
+        title: t('Comment ça marche ?', 'How does it work?', '如何运作？'),
         description: t(
           'Vendez des skins pour gagner des fragments, puis dépensez vos fragments pour obtenir des entrées dans un concours. Le tirage est <strong>aléatoire déterministe</strong> (seed loggué) et les résultats sont publics et vérifiables.',
           'Sell skins to earn fragments, then spend your fragments to get entries in a giveaway. The draw is <strong>deterministic random</strong> (logged seed) and results are public and verifiable.',
@@ -250,7 +250,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="giveaways-tabs"]',
       popover: {
-        title: t('🗂️ Concours actifs / terminés', '🗂️ Active / ended giveaways', '🗂️ 进行中/已结束的抽奖'),
+        title: t('Concours actifs / terminés', 'Active / ended giveaways', '进行中/已结束的抽奖'),
         description: t(
           'L\'onglet <strong>Actifs</strong> liste les concours en cours. Cliquez sur une carte pour voir le détail, le nombre de participants et entrer vos fragments. L\'onglet <strong>Terminés</strong> affiche les anciens résultats et l\'onglet <strong>Mes participations</strong> résume vos entrées passées.',
           'The <strong>Active</strong> tab lists ongoing giveaways. Click a card for details, participant count and to enter your fragments. The <strong>Ended</strong> tab shows past results and the <strong>My Entries</strong> tab summarizes your past participations.',
@@ -264,7 +264,7 @@ function buildTourSteps(locale: string): TourStep[] {
       page: '/missions',
       waitMs: 1000,
       popover: {
-        title: t('🏆 Page des missions', '🏆 Missions Page', '🏆 任务页面'),
+        title: t('Page des missions', 'Missions Page', '任务页面'),
         description: t(
           'Les missions sont votre source principale de <strong>fragments gratuits</strong>. Complétez-en un maximum chaque jour pour maximiser vos chances aux concours. Certaines missions se renouvellent quotidiennement, d\'autres chaque semaine ou chaque mois.',
           'Missions are your main source of <strong>free fragments</strong>. Complete as many as possible each day to maximize your giveaway chances. Some missions renew daily, others weekly or monthly.',
@@ -276,7 +276,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="missions-stats"]',
       popover: {
-        title: t('📊 Vos compteurs', '📊 Your counters', '📊 您的计数器'),
+        title: t('Vos compteurs', 'Your counters', '您的计数器'),
         description: t(
           'Trois chiffres essentiels : <strong>fragments accumulés</strong>, <strong>fragments à réclamer</strong> (missions complétées en attente de validation) et <strong>missions terminées</strong>. Cliquez sur "Réclamer" pour encaisser chaque récompense.',
           'Three key numbers: <strong>accumulated fragments</strong>, <strong>fragments to claim</strong> (completed missions pending validation) and <strong>completed missions</strong>. Click "Claim" to collect each reward.',
@@ -288,7 +288,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="missions-categories"]',
       popover: {
-        title: t('📂 Catégories de missions', '📂 Mission Categories', '📂 任务类别'),
+        title: t('Catégories de missions', 'Mission Categories', '任务类别'),
         description: t(
           'Les missions sont organisées en <strong>5 catégories</strong> : <em>Bonus</em> (surprises), <em>Quotidiennes</em> (visite journalière, vente du jour), <em>Hebdomadaires</em> (volume de vente sur 7 jours), <em>Mensuelles</em> (grands objectifs) et <em>Sociales</em> (rejoindre Discord, Telegram, suivre sur Instagram…).',
           'Missions are organized into <strong>5 categories</strong>: <em>Bonus</em> (surprises), <em>Daily</em> (daily visit, day\'s sale), <em>Weekly</em> (7-day sales volume), <em>Monthly</em> (big objectives) and <em>Social</em> (join Discord, Telegram, follow on Instagram…).',
@@ -302,7 +302,7 @@ function buildTourSteps(locale: string): TourStep[] {
       page: '/dashboard',
       waitMs: 800,
       popover: {
-        title: t('🔐 KYC & méthode de paiement', '🔐 KYC & Payment Method', '🔐 KYC 与支付方式'),
+        title: t('KYC & méthode de paiement', 'KYC & Payment Method', 'KYC 与支付方式'),
         description: t(
           'Avant de retirer vos gains, vous devez valider votre identité (<strong>KYC</strong>) via la page dédiée. Deux options de retrait : <strong>SEPA</strong> (virement bancaire, 1 à 3 jours ouvrés) ou <strong>crypto</strong> (rapide, via Binance). Configurez votre méthode dans l\'onglet <em>Paramètres</em> du dashboard.',
           'Before withdrawing your earnings, you must verify your identity (<strong>KYC</strong>) on the dedicated page. Two withdrawal options: <strong>SEPA</strong> (bank transfer, 1 to 3 business days) or <strong>crypto</strong> (fast, via Binance). Set up your method in the <em>Settings</em> tab of the dashboard.',
@@ -313,11 +313,11 @@ function buildTourSteps(locale: string): TourStep[] {
     },
     {
       popover: {
-        title: t('🚀 Vous êtes prêt !', '🚀 You are ready!', '🚀 您准备好了！'),
+        title: t('Vous êtes prêt !', 'You are ready!', '您准备好了！'),
         description: t(
-          '<strong>Récap du parcours :</strong> vendez vos skins, suivez l\'état sur le dashboard, accumulez des fragments, participez aux concours et complétez des missions pour en gagner davantage. Relancez ce guide à tout moment depuis le <strong>footer du site</strong>. Bonne vente ! 🎮',
-          '<strong>Tour recap:</strong> sell your skins, track status on the dashboard, accumulate fragments, enter giveaways and complete missions for more fragments. Relaunch this guide anytime from the <strong>site footer</strong>. Happy selling! 🎮',
-          '<strong>旅程回顾：</strong>出售皮肤，在仪表盘跟踪状态，积累碎片，参与抽奖并完成任务获取更多碎片。随时从<strong>网站页脚</strong>重新启动本指南。祝销售顺利！🎮'
+          '<strong>Récap du parcours :</strong> vendez vos skins, suivez l\'état sur le dashboard, accumulez des fragments, participez aux concours et complétez des missions pour en gagner davantage. Relancez ce guide à tout moment depuis le <strong>footer du site</strong>. Bonne vente !',
+          '<strong>Tour recap:</strong> sell your skins, track status on the dashboard, accumulate fragments, enter giveaways and complete missions for more fragments. Relaunch this guide anytime from the <strong>site footer</strong>. Happy selling!',
+          '<strong>旅程回顾：</strong>出售皮肤，在仪表盘跟踪状态，积累碎片，参与抽奖并完成任务获取更多碎片。随时从<strong>网站页脚</strong>重新启动本指南。祝销售顺利！'
         ),
         align: 'center',
       },
@@ -342,7 +342,7 @@ export function SiteTour({ onFinish }: SiteTourProps) {
     'Step {{current}} of {{total}}';
   const nextBtnText = locale === 'fr' ? 'Suivant →' : locale === 'cn' ? '下一步 →' : 'Next →';
   const prevBtnText = locale === 'fr' ? '← Précédent' : locale === 'cn' ? '← 上一步' : '← Back';
-  const doneBtnText = locale === 'fr' ? 'Terminer 🎉' : locale === 'cn' ? '完成 🎉' : 'Done 🎉';
+  const doneBtnText = locale === 'fr' ? 'Terminer' : locale === 'cn' ? '完成' : 'Done';
 
   const buildAndDrive = useCallback(
     async (startAt: number) => {

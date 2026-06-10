@@ -16,6 +16,8 @@ import {
   CpuChipIcon,
   CircleStackIcon,
   CreditCardIcon,
+  EnvelopeIcon,
+  DevicePhoneMobileIcon,
 } from "@heroicons/react/24/outline";
 
 type ServiceStatus =
@@ -461,10 +463,14 @@ export default function StatusPage() {
                 {messages.status.footer.lastUpdate} {new Date().toLocaleString()}
               </p>
               <div className="mt-4">
-                <Badge variant="outline" className="mr-2">
-                  📧 {messages.status.footer.emailAlerts}
+                <Badge variant="outline" className="mr-2 flex items-center gap-1 w-fit">
+                  <EnvelopeIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  {messages.status.footer.emailAlerts}
                 </Badge>
-                <Badge variant="outline">📱 {messages.status.footer.apiStatus}</Badge>
+                <Badge variant="outline" className="flex items-center gap-1 w-fit">
+                  <DevicePhoneMobileIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  {messages.status.footer.apiStatus}
+                </Badge>
               </div>
             </CardContent>
           </Card>

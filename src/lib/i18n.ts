@@ -746,7 +746,7 @@ export const messages: Record<Locale, Messages> = {
         ticketsToUse: "Nombre de fragments à utiliser:",
         participate: "Participer",
         ticketsAvailable: "fragments disponibles",
-        privateLabel: "🔒 Privé",
+        privateLabel: "Privé",
         fragmentsLabel: "fragments",
         fragmentsRemaining: "{count} fragments manquants",
         costLabel: "Coût total : {cost} fragments",
@@ -758,7 +758,7 @@ export const messages: Record<Locale, Messages> = {
       notifications: {
         newWinner: "Nouveau gagnant !",
         newWinners: "Nouveaux gagnants !",
-        winnerToast: "🎉 Tirage terminé : {title}, Gagnant : {name}",
+        winnerToast: "Tirage terminé : {title}, Gagnant : {name}",
         winnerFallback: "Joueur",
         anonymousPlayer: "Joueur anonyme",
       },
@@ -933,14 +933,14 @@ export const messages: Record<Locale, Messages> = {
         kycStatusCheck: "Quel est le statut de ma vérification KYC ?",
       },
       responses: {
-        welcomeMessage: "Salut ! 👋 Je suis Alex de l'équipe MoonSkin. Comment puis-je vous aider aujourd'hui ?",
-        expertResponse: "Merci pour votre message ! Un de nos experts va vous répondre dans quelques instants. 🚀",
-        thankYouMessage: "Merci pour votre message ! Un membre de notre équipe vous répondra rapidement. En attendant, vous pouvez consulter notre FAQ ou nos guides. 😊",
+        welcomeMessage: "Salut ! Je suis Alex de l'équipe MoonSkin. Comment puis-je vous aider aujourd'hui ?",
+        expertResponse: "Merci pour votre message ! Un de nos experts va vous répondre dans quelques instants.",
+        thankYouMessage: "Merci pour votre message ! Un membre de notre équipe vous répondra rapidement. En attendant, vous pouvez consulter notre FAQ ou nos guides.",
       },
       placeholder: "Tapez votre message...",
       poweredBy: "Propulsé par MoonSkin AI",
       responseTimeInfo: "Nous répondons généralement en moins de 5 minutes",
-      tooltip: "💬 Besoin d'aide ? Chatez avec nous !",
+      tooltip: "Besoin d'aide ? Chatez avec nous !",
       categories: {
         trade: {
           label: "Problème de trade",
@@ -2466,7 +2466,7 @@ export const messages: Record<Locale, Messages> = {
         differentAccountNormal: "C'est normal si vous souhaitez vendre les skins d'un autre compte.",
         importantLabel: "Important :",
         inventoryPublicWarning: "Assurez-vous que l'inventaire de ce compte est public, sinon vous aurez une erreur sur la page de vente.",
-        sameAccountSuccess: "✅ Ce Trade Link correspond à votre compte de connexion.",
+        sameAccountSuccess: "Ce Trade Link correspond à votre compte de connexion.",
         tipLabel: "Astuce :",
         deleteTipText: "Si vous supprimez votre Trade Link, l'inventaire de votre compte de connexion",
         deleteTipText2: "sera automatiquement utilisé.",
@@ -3386,7 +3386,7 @@ export const messages: Record<Locale, Messages> = {
           campaignTitleLabel: "Titre de la campagne *",
           campaignTitlePlaceholder: "Ex: Newsletter Novembre 2024",
           emailSubjectLabel: "Sujet de l'email *",
-          emailSubjectPlaceholder: "Ex: 🎮 Nouvelles offres CS2 et giveaways exclusifs !",
+          emailSubjectPlaceholder: "Ex: Nouvelles offres CS2 et giveaways exclusifs !",
           emailContentLabel: "Contenu de l'email *",
           tabTemplates: "Templates",
           tabVisual: "Éditeur Visuel",
@@ -4538,7 +4538,7 @@ export const messages: Record<Locale, Messages> = {
         uploaded: "téléchargé avec succès",
         submitted: "Dossier KYC soumis avec succès ! Vous recevrez une réponse sous 24-48h.",
         error: "Erreur lors de la soumission du dossier KYC",
-        identityVerifiedSuccess: "🎉 Identité vérifiée avec succès !",
+        identityVerifiedSuccess: "Identité vérifiée avec succès !",
         verificationRejected: "Vérification refusée. Vous pouvez réessayer.",
         fileTooLarge: "Le fichier \"{name}\" dépasse la limite de {max} Mo. Veuillez utiliser un fichier plus petit.",
         compressing: "Compression de \"{name}\" en cours...",
@@ -4589,7 +4589,7 @@ export const messages: Record<Locale, Messages> = {
       },
       stepGoBack: "Revenir à l’étape : {step}",
       confirmation: {
-        title: "🎉 Trade créé avec succès !",
+        title: "Trade créé avec succès !",
         description: "Votre trade a été accepté par notre bot. Acceptez l'offre sur Steam pour continuer.",
         tradeId: "ID du trade:",
         tradeIdSteam: "Trade ID Steam:",
@@ -4604,7 +4604,7 @@ export const messages: Record<Locale, Messages> = {
         trackTrade: "Suivre mes trades",
         acceptTrade: "Accepter le trade sur Steam",
         openSteam: "Ouvrir Steam",
-        howItWorksTitle: "💰 Comment ça marche après ?",
+        howItWorksTitle: "Comment ça marche après ?",
         steps: {
           step1: {
             title: "Acceptez le trade sur Steam",
@@ -4623,7 +4623,7 @@ export const messages: Record<Locale, Messages> = {
             description: "Après 7 jours, vous recevrez automatiquement votre paiement sur votre compte"
           }
         },
-        tip: "💡 Astuce : Configurez dès maintenant votre méthode de paiement dans votre dashboard pour recevoir votre argent automatiquement !",
+        tip: "Astuce : Configurez dès maintenant votre méthode de paiement dans votre dashboard pour recevoir votre argent automatiquement !",
         moonSkinBotTitle: "MoonSkin Bot assigné",
         botLevelShort: "Niv.",
         steamIdLabel: "SteamID :",
@@ -4631,7 +4631,7 @@ export const messages: Record<Locale, Messages> = {
         viewProfile: "Voir profil"
       },
       tradeStatusModal: {
-        acceptedTitle: "🎉 Vente confirmée !",
+        acceptedTitle: "Vente confirmée !",
         acceptedDescription: "Vous avez accepté l'offre sur Steam. Vos skins sont maintenant chez notre bot, la période de hold de 7 jours démarre.",
         pendingTitle: "⏳ Offre envoyée sur Steam",
         pendingDescription: "Notre bot vous a envoyé une offre de trade sur Steam. Ouvrez Steam pour l'accepter afin de finaliser la vente.",
@@ -5078,7 +5078,7 @@ export const messages: Record<Locale, Messages> = {
         quickHome: "Page principale",
         quickSell: "Page vente",
         quickGiveaways: "Giveaways",
-        privateGiveawaysLabel: "🔒 Giveaways privés",
+        privateGiveawaysLabel: "Giveaways privés",
         partnerBenefits: "Vos avantages partenaire",
         benefitCommission: "Commission de {rate}% sur le volume",
         benefitPayments: "Paiements mensuels via SEPA ou crypto",
@@ -5635,7 +5635,7 @@ export const messages: Record<Locale, Messages> = {
             step4: "Collez-la dans vos paramètres MoonSkin"
           },
           openSteamTradeLinkPage: "Ouvrir la page Trade Link Steam",
-          warning: "⚠️ Gardez votre Trade Link privé et sécurisé"
+          warning: "Gardez votre Trade Link privé et sécurisé"
         },
         steamId: {
           title: "Configurez votre Steam ID",
@@ -5661,7 +5661,7 @@ export const messages: Record<Locale, Messages> = {
           getUrlHere: "Obtenez votre URL ici",
           getItHere: "Obtenir ici",
           validUrl: "URL de trade Steam valide ✓",
-          tip: "💡 Astuce : Vous pourrez modifier cette URL plus tard dans vos paramètres."
+          tip: "Astuce : Vous pourrez modifier cette URL plus tard dans vos paramètres."
         },
         sellProcess: {
           title: "Vendez vos skins en 3 étapes",
@@ -5714,7 +5714,7 @@ export const messages: Record<Locale, Messages> = {
           placeholder: "votre@email.com",
           invalidEmail: "Veuillez saisir une adresse email valide.",
           validEmail: "Adresse email valide ✓",
-          tip: "🔒 Votre email reste confidentiel. Aucun spam, uniquement les notifications liées à vos activités.",
+          tip: "Votre email reste confidentiel. Aucun spam, uniquement les notifications liées à vos activités.",
           alreadySet: "Email déjà enregistré",
           benefits: {
             title: "Vous recevrez des notifications pour :",
@@ -6634,7 +6634,7 @@ export const messages: Record<Locale, Messages> = {
       code: "404",
       pageNotFound: "Page non trouvée",
       title: "Oops ! Cette page semble avoir disparu",
-      description: "La page que vous recherchez n'existe pas ou a été déplacée. Peut-être qu'elle s'est vendue sur MoonSkin ? 😄",
+      description: "La page que vous recherchez n'existe pas ou a été déplacée. Peut-être qu'elle s'est vendue sur MoonSkin ?",
       message: "Désolé, la page que vous recherchez n'existe pas ou a été déplacée.",
       backHome: "Retour à l'accueil",
       home: "Retour à l'accueil",
@@ -7916,7 +7916,7 @@ export const messages: Record<Locale, Messages> = {
         ticketsToUse: "Number of fragments to use:",
         participate: "Participate",
         ticketsAvailable: "fragments available",
-        privateLabel: "🔒 Private",
+        privateLabel: "Private",
         fragmentsLabel: "fragments",
         fragmentsRemaining: "{count} fragments missing",
         costLabel: "Total cost: {cost} fragments",
@@ -7928,7 +7928,7 @@ export const messages: Record<Locale, Messages> = {
       notifications: {
         newWinner: "New winner!",
         newWinners: "New winners!",
-        winnerToast: "🎉 Draw complete: {title}, Winner: {name}",
+        winnerToast: "Draw complete: {title}, Winner: {name}",
         winnerFallback: "Player",
         anonymousPlayer: "Anonymous player",
       },
@@ -9424,7 +9424,7 @@ export const messages: Record<Locale, Messages> = {
           campaignTitleLabel: "Campaign title *",
           campaignTitlePlaceholder: "Ex: November 2024 Newsletter",
           emailSubjectLabel: "Email subject *",
-          emailSubjectPlaceholder: "Ex: 🎮 New CS2 deals and exclusive giveaways!",
+          emailSubjectPlaceholder: "Ex: New CS2 deals and exclusive giveaways!",
           emailContentLabel: "Email content *",
           tabTemplates: "Templates",
           tabVisual: "Visual Editor",
@@ -10576,7 +10576,7 @@ export const messages: Record<Locale, Messages> = {
         uploaded: "uploaded successfully",
         submitted: "KYC file submitted successfully! You will receive a response within 24-48h.",
         error: "Error submitting KYC file",
-        identityVerifiedSuccess: "🎉 Identity verified successfully!",
+        identityVerifiedSuccess: "Identity verified successfully!",
         verificationRejected: "Verification refused. You can try again.",
         fileTooLarge: "The file \"{name}\" exceeds the {max} MB limit. Please use a smaller file.",
         compressing: "Compressing \"{name}\"...",
@@ -10627,7 +10627,7 @@ export const messages: Record<Locale, Messages> = {
       },
       stepGoBack: "Go back to step: {step}",
       confirmation: {
-        title: "🎉 Trade created successfully!",
+        title: "Trade created successfully!",
         description: "Your trade has been accepted by our bot. Accept the offer on Steam to continue.",
         tradeId: "Trade ID:",
         tradeIdSteam: "Steam Trade ID:",
@@ -10642,7 +10642,7 @@ export const messages: Record<Locale, Messages> = {
         trackTrade: "Track my trades",
         acceptTrade: "Accept trade on Steam",
         openSteam: "Open Steam",
-        howItWorksTitle: "💰 What happens next?",
+        howItWorksTitle: "What happens next?",
         steps: {
           step1: {
             title: "Accept the trade on Steam",
@@ -10661,7 +10661,7 @@ export const messages: Record<Locale, Messages> = {
             description: "After 7 days, you will automatically receive your payment in your account"
           }
         },
-        tip: "💡 Tip: Set up your payment method now in your dashboard to receive your money automatically!",
+        tip: "Tip: Set up your payment method now in your dashboard to receive your money automatically!",
         moonSkinBotTitle: "MoonSkin Bot assigned",
         botLevelShort: "Lvl.",
         steamIdLabel: "Steam ID:",
@@ -10669,7 +10669,7 @@ export const messages: Record<Locale, Messages> = {
         viewProfile: "View profile"
       },
       tradeStatusModal: {
-        acceptedTitle: "🎉 Sale confirmed!",
+        acceptedTitle: "Sale confirmed!",
         acceptedDescription: "You accepted the offer on Steam. Your skins are now with our bot and the 7-day hold period has started.",
         pendingTitle: "⏳ Offer sent on Steam",
         pendingDescription: "Our bot has sent you a trade offer on Steam. Open Steam to accept it and complete the sale.",
@@ -11064,14 +11064,14 @@ export const messages: Record<Locale, Messages> = {
         kycStatusCheck: "What is the status of my KYC verification?",
       },
       responses: {
-        welcomeMessage: "Hi! 👋 I'm Alex from the MoonSkin team. How can I help you today?",
-        expertResponse: "Thank you for your message! One of our experts will respond in a few moments. 🚀",
-        thankYouMessage: "Thank you for your message! A member of our team will respond quickly. In the meantime, you can check our FAQ or guides. 😊",
+        welcomeMessage: "Hi! I'm Alex from the MoonSkin team. How can I help you today?",
+        expertResponse: "Thank you for your message! One of our experts will respond in a few moments.",
+        thankYouMessage: "Thank you for your message! A member of our team will respond quickly. In the meantime, you can check our FAQ or guides.",
       },
       placeholder: "Type your message...",
       poweredBy: "Powered by MoonSkin AI",
       responseTimeInfo: "We usually respond in less than 5 minutes",
-      tooltip: "💬 Need help? Chat with us!",
+      tooltip: "Need help? Chat with us!",
       categories: {
         trade: {
           label: "Trade issue",
@@ -12040,7 +12040,7 @@ export const messages: Record<Locale, Messages> = {
         quickHome: "Home page",
         quickSell: "Sell page",
         quickGiveaways: "Giveaways",
-        privateGiveawaysLabel: "🔒 Private giveaways",
+        privateGiveawaysLabel: "Private giveaways",
         partnerBenefits: "Your partner benefits",
         benefitCommission: "{rate}% commission on volume",
         benefitPayments: "Monthly payments via SEPA or crypto",
@@ -12368,7 +12368,7 @@ export const messages: Record<Locale, Messages> = {
         differentAccountNormal: "This is normal if you want to sell skins from another account.",
         importantLabel: "Important:",
         inventoryPublicWarning: "Make sure this account's inventory is public, otherwise you will get an error on the sales page.",
-        sameAccountSuccess: "✅ This Trade Link corresponds to your login account.",
+        sameAccountSuccess: "This Trade Link corresponds to your login account.",
         tipLabel: "Tip:",
         deleteTipText: "If you delete your Trade Link, your login account's inventory",
         deleteTipText2: "will be automatically used.",
@@ -12805,7 +12805,7 @@ export const messages: Record<Locale, Messages> = {
             step4: "Paste it in your MoonSkin settings"
           },
           openSteamTradeLinkPage: "Open Steam Trade Link page",
-          warning: "⚠️ Keep your Trade Link private and secure"
+          warning: "Keep your Trade Link private and secure"
         },
         steamId: {
           title: "Set up your Steam ID",
@@ -12831,7 +12831,7 @@ export const messages: Record<Locale, Messages> = {
           getUrlHere: "Get your URL here",
           getItHere: "Get it here",
           validUrl: "Valid Steam trade URL ✓",
-          tip: "💡 Tip: You can change this URL later in your settings."
+          tip: "Tip: You can change this URL later in your settings."
         },
         sellProcess: {
           title: "Sell your skins in 3 steps",
@@ -12884,7 +12884,7 @@ export const messages: Record<Locale, Messages> = {
           placeholder: "your@email.com",
           invalidEmail: "Please enter a valid email address.",
           validEmail: "Valid email address ✓",
-          tip: "🔒 Your email stays private. No spam, only notifications related to your activity.",
+          tip: "Your email stays private. No spam, only notifications related to your activity.",
           alreadySet: "Email already registered",
           benefits: {
             title: "You will receive notifications for:",
@@ -13804,7 +13804,7 @@ export const messages: Record<Locale, Messages> = {
       code: "404",
       pageNotFound: "Page not found",
       title: "Oops! This page seems to have disappeared",
-      description: "The page you are looking for doesn't exist or has been moved. Maybe it was sold on MoonSkin? 😄",
+      description: "The page you are looking for doesn't exist or has been moved. Maybe it was sold on MoonSkin?",
       message: "Sorry, the page you are looking for does not exist or has been moved.",
       backHome: "Back to home",
       home: "Back to home",
@@ -15081,7 +15081,7 @@ export const messages: Record<Locale, Messages> = {
         ticketsToUse: "使用碎片数量：",
         participate: "参与",
         ticketsAvailable: "碎片可用",
-        privateLabel: "🔒 私密",
+        privateLabel: "私密",
         fragmentsLabel: "碎片",
         fragmentsRemaining: "还需 {count} 碎片",
         costLabel: "总费用：{cost} 碎片",
@@ -15093,7 +15093,7 @@ export const messages: Record<Locale, Messages> = {
       notifications: {
         newWinner: "新获胜者！",
         newWinners: "新获胜者！",
-        winnerToast: "🎉 抽奖结束：{title}, 获胜者：{name}",
+        winnerToast: "抽奖结束：{title}, 获胜者：{name}",
         winnerFallback: "玩家",
         anonymousPlayer: "匿名玩家",
       },
@@ -16489,7 +16489,7 @@ export const messages: Record<Locale, Messages> = {
           campaignTitleLabel: "活动标题 *",
           campaignTitlePlaceholder: "例如：2024年11月新闻稿",
           emailSubjectLabel: "邮件主题 *",
-          emailSubjectPlaceholder: "例如：🎮 全新CS2优惠和独家赠品活动！",
+          emailSubjectPlaceholder: "例如：全新CS2优惠和独家赠品活动！",
           emailContentLabel: "邮件内容 *",
           tabTemplates: "模板",
           tabVisual: "可视化编辑器",
@@ -17505,7 +17505,7 @@ export const messages: Record<Locale, Messages> = {
         uploaded: "上传成功",
         submitted: "KYC文件提交成功！您将在24-48小时内收到回复。",
         error: "提交KYC文件时出错",
-        identityVerifiedSuccess: "🎉 身份验证成功！",
+        identityVerifiedSuccess: "身份验证成功！",
         verificationRejected: "验证被拒绝。您可以重试。",
         fileTooLarge: "文件 \"{name}\" 超过 {max} MB 的限制，请使用较小的文件。",
         compressing: "正在压缩 \"{name}\"...",
@@ -17546,7 +17546,7 @@ export const messages: Record<Locale, Messages> = {
       },
       stepGoBack: "返回步骤：{step}",
       confirmation: {
-        title: "🎉 交易创建成功！",
+        title: "交易创建成功！",
         description: "您的交易已被我们的机器人接受。在Steam上接受报价以继续。",
         tradeId: "交易ID：",
         tradeIdSteam: "Steam交易ID：",
@@ -17561,7 +17561,7 @@ export const messages: Record<Locale, Messages> = {
         trackTrade: "跟踪我的交易",
         acceptTrade: "在Steam上接受交易",
         openSteam: "打开Steam",
-        howItWorksTitle: "💰 接下来会发生什么？",
+        howItWorksTitle: "接下来会发生什么？",
         steps: {
           step1: {
             title: "在Steam上接受交易",
@@ -17580,7 +17580,7 @@ export const messages: Record<Locale, Messages> = {
             description: "7天后，您将自动收到支付到您的账户"
           }
         },
-        tip: "💡 提示：立即在您的仪表板中设置支付方式，以自动收到您的资金！",
+        tip: "提示：立即在您的仪表板中设置支付方式，以自动收到您的资金！",
         moonSkinBotTitle: "MoonSkin 机器人",
         botLevelShort: "等级",
         steamIdLabel: "Steam ID：",
@@ -17588,7 +17588,7 @@ export const messages: Record<Locale, Messages> = {
         viewProfile: "查看资料"
       },
       tradeStatusModal: {
-        acceptedTitle: "🎉 出售确认！",
+        acceptedTitle: "出售确认！",
         acceptedDescription: "您已在Steam上接受报价，您的皮肤已转至我们的机器人，7天冻结期正式开始。",
         pendingTitle: "⏳ 报价已发送至Steam",
         pendingDescription: "我们的机器人已向您在Steam上发送了交易报价，请打开Steam接受报价以完成出售。",
@@ -17978,14 +17978,14 @@ export const messages: Record<Locale, Messages> = {
         kycStatusCheck: "我的KYC验证状态如何？",
       },
       responses: {
-        welcomeMessage: "你好！👋 我是MoonSkin团队的Alex。今天我能为您做些什么？",
-        expertResponse: "感谢您的消息！我们的专家将在几分钟内回复您。🚀",
-        thankYouMessage: "感谢您的消息！我们的团队成员将快速回复您。同时，您可以查看我们的FAQ或指南。😊",
+        welcomeMessage: "你好！我是MoonSkin团队的Alex。今天我能为您做些什么？",
+        expertResponse: "感谢您的消息！我们的专家将在几分钟内回复您。",
+        thankYouMessage: "感谢您的消息！我们的团队成员将快速回复您。同时，您可以查看我们的FAQ或指南。",
       },
       placeholder: "输入您的消息...",
       poweredBy: "由MoonSkin AI提供支持",
       responseTimeInfo: "我们通常在5分钟内回复",
-      tooltip: "💬 需要帮助？与我们聊天！",
+      tooltip: "需要帮助？与我们聊天！",
       categories: {
         trade: {
           label: "交易问题",
@@ -18919,7 +18919,7 @@ export const messages: Record<Locale, Messages> = {
         targetPage: "目标页面", targetPageOptional: "（可选）", targetPageHint: "留空表示主页。以/开头表示特定页面。",
         generateAndCopy: "生成并复制", lastGenerated: "最后生成的链接",
         quickLinks: "快速链接", quickHome: "主页", quickSell: "出售页面",         quickGiveaways: "抽奖",
-        privateGiveawaysLabel: "🔒 私密抽奖",
+        privateGiveawaysLabel: "私密抽奖",
         partnerBenefits: "您的合作伙伴优势",
         benefitCommission: "{rate}% 佣金", benefitPayments: "每月通过SEPA或加密货币付款",
         benefitAnalytics: "实时分析仪表板", benefitMarketing: "提供营销和创意工具", benefitSupport: "优先专属联盟支持",
@@ -19236,7 +19236,7 @@ export const messages: Record<Locale, Messages> = {
         differentAccountNormal: "如果您想出售另一个账户的皮肤，这是正常的。",
         importantLabel: "重要：",
         inventoryPublicWarning: "请确保此账户的库存是公开的，否则您将在销售页面上收到错误。",
-        sameAccountSuccess: "✅ 此交易链接对应您的登录账户。",
+        sameAccountSuccess: "此交易链接对应您的登录账户。",
         tipLabel: "提示：",
         deleteTipText: "如果您删除交易链接，将自动使用您的登录账户库存",
         deleteTipText2: "。",
@@ -19671,7 +19671,7 @@ export const messages: Record<Locale, Messages> = {
             step4: "将其粘贴到您的MoonSkin设置中"
           },
           openSteamTradeLinkPage: "打开Steam交易链接页面",
-          warning: "⚠️ 保持您的交易链接私密和安全"
+          warning: "保持您的交易链接私密和安全"
         },
         steamId: {
           title: "设置您的Steam ID",
@@ -19697,7 +19697,7 @@ export const messages: Record<Locale, Messages> = {
           getUrlHere: "在此获取您的URL",
           getItHere: "在此获取",
           validUrl: "有效的Steam交易URL ✓",
-          tip: "💡 提示：您可以稍后在设置中更改此URL。"
+          tip: "提示：您可以稍后在设置中更改此URL。"
         },
         sellProcess: {
           title: "3步出售您的皮肤",
@@ -19750,7 +19750,7 @@ export const messages: Record<Locale, Messages> = {
           placeholder: "您的@邮箱.com",
           invalidEmail: "请输入有效的电子邮件地址。",
           validEmail: "有效的电子邮件地址 ✓",
-          tip: "🔒 您的电子邮件保密。无垃圾邮件，仅与您的活动相关的通知。",
+          tip: "您的电子邮件保密。无垃圾邮件，仅与您的活动相关的通知。",
           alreadySet: "邮箱已注册",
           benefits: {
             title: "您将收到以下通知：",
@@ -20669,7 +20669,7 @@ export const messages: Record<Locale, Messages> = {
       code: "404",
       pageNotFound: "页面未找到",
       title: "哎呀！此页面似乎已消失",
-      description: "您正在查找的页面不存在或已被移动。也许它在CashTrade上卖掉了？😄",
+      description: "您正在查找的页面不存在或已被移动。也许它在CashTrade上卖掉了？",
       message: "抱歉，您查找的页面不存在或已被移动。",
       backHome: "返回首页",
       home: "返回首页",

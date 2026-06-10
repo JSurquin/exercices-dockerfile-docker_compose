@@ -16,6 +16,8 @@ import {
   CheckCircleIcon,
   CubeIcon,
   RocketLaunchIcon,
+  EnvelopeIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { useLocale } from "@/components/providers/locale-provider";
 
@@ -672,19 +674,19 @@ export default function ApiDocsPage() {
                 <CardContent className="space-y-3">
                   <div className="space-y-2">
                     <Button variant="outline" className="w-full justify-start" size="sm">
-                      <span className="mr-2">📦</span>
+                      <CubeIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
                       JavaScript/TypeScript
                     </Button>
                     <Button variant="outline" className="w-full justify-start" size="sm">
-                      <span className="mr-2">🐍</span>
+                      <CodeBracketIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
                       Python
                     </Button>
                     <Button variant="outline" className="w-full justify-start" size="sm">
-                      <span className="mr-2">🦀</span>
+                      <ShieldCheckIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
                       Rust
                     </Button>
                     <Button variant="outline" className="w-full justify-start" size="sm">
-                      <span className="mr-2">🐹</span>
+                      <RocketLaunchIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
                       Go
                     </Button>
                   </div>
@@ -705,11 +707,13 @@ export default function ApiDocsPage() {
                     {messages.apiDocs.supportDesc}
                   </p>
                   <div className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full">
-                      📧 api-support@moonskin.gg
+                    <Button variant="outline" size="sm" className="w-full justify-start">
+                      <EnvelopeIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
+                      api-support@moonskin.gg
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full">
-                      💬 {messages.apiDocs.discordDevs}
+                    <Button variant="outline" size="sm" className="w-full justify-start">
+                      <ChatBubbleLeftRightIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
+                      {messages.apiDocs.discordDevs}
                     </Button>
                   </div>
                 </CardContent>

@@ -19,6 +19,7 @@ import {
 } from "@/lib/home-animation-classes";
 import {
   ArrowRightIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { SectionBottomFade } from "@/components/home/section-bottom-fade";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -219,7 +220,7 @@ export function LevelsSection() {
             <Card className="h-full border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-theme-accent/5">
               <CardContent className="p-6 flex flex-col">
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <span aria-hidden>🔮</span>
+                  <SparklesIcon className="h-5 w-5 text-purple-500 shrink-0" aria-hidden />
                   {t.fragmentsTitle}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">{t.fragmentsIntro}</p>
