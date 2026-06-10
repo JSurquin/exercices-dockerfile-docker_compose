@@ -706,7 +706,7 @@ export const messages: Record<Locale, Messages> = {
     },
     giveaways: {
       title: "Giveaways",
-      subtitle: "Dépensez vos fragments pour acheter des entrées — plus d’entrées, plus de chances. Les fragments.",
+      subtitle: "Utilisez vos fragments pour participer aux tirages — plus d’entrées, plus de chances de gagner.",
       userTickets: {
         level: "Niveau",
         tickets: "fragments",
@@ -7878,7 +7878,7 @@ export const messages: Record<Locale, Messages> = {
     },
     giveaways: {
       title: "Giveaways",
-      subtitle: "Spend fragments to buy entries — more entries, better odds.",
+      subtitle: "Use your fragments to enter giveaways — more entries, better chances to win.",
       userTickets: {
         level: "Level",
         tickets: "fragments",

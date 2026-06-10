@@ -37,6 +37,7 @@ import {
 import { toast } from 'sonner';
 import Link from 'next/link';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 const getTimeRemaining = (endDate: Date) => {
   const now = new Date();
@@ -63,6 +64,15 @@ const formatTimeRemaining = (timeRemaining: ReturnType<typeof getTimeRemaining>,
     return `${timeRemaining.minutes}m ${timeRemaining.seconds}s`;
   }
 };
+
+const giveawayIconClass =
+  'how-it-works-benefit-icon flex h-12 w-12 items-center justify-center rounded-full border border-theme-accent/30 bg-gradient-to-br from-white/10 to-theme-accent/10 ring-2 ring-theme-accent/15 mx-auto mb-3';
+
+const getGiveawayGridClass = (count: number) =>
+  cn(
+    'grid gap-6',
+    count === 1 ? 'grid-cols-1 max-w-lg mx-auto' : 'md:grid-cols-2 lg:grid-cols-3',
+  );
 
 const defaultFragmentLabels = {
   costPerEntry: 'fragments / entry',
@@ -114,16 +124,18 @@ const GiveawayCard = ({
             <p className="text-sm text-muted-foreground mb-3">{giveaway.description}</p>
           </div>
           <div className="flex flex-col items-end gap-1">
-            <Badge
-              variant={giveaway.status === 'ACTIVE' ? 'default' : 'secondary'}
-              className={giveaway.status === 'ACTIVE' ? 'bg-green-500' : ''}
-            >
-              {giveaway.status === 'ACTIVE'
-                ? messages.giveaways.card.status.active
-                : giveaway.status === 'ENDED'
+            {giveaway.status === 'ACTIVE' ? (
+              <Badge className="mission-glass-badge gap-1.5 font-normal">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-green-500/70 animate-pulse" />
+                {messages.giveaways.card.status.active}
+              </Badge>
+            ) : (
+              <Badge variant="secondary">
+                {giveaway.status === 'ENDED'
                   ? messages.giveaways.card.status.ended
                   : messages.giveaways.card.status.cancelled}
-            </Badge>
+              </Badge>
+            )}
             {giveaway.isPrivate && (
               <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs">
                 {messages.giveaways.card.privateLabel}
@@ -257,6 +269,7 @@ const GiveawayCard = ({
                 className="flex-1"
               />
               <Button
+                variant="chrome"
                 onClick={() => onParticipate(giveaway, entriesToBuy)}
                 disabled={
                   maxSelectable < 1 ||
@@ -264,7 +277,6 @@ const GiveawayCard = ({
                   entriesToBuy > poolLeft ||
                   entriesToBuy > maxPerUser
                 }
-                className="bg-cta-gradient hover:brightness-110"
               >
                 {messages.giveaways.card.participate}
               </Button>
@@ -590,14 +602,14 @@ export default function GiveawaysPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <TicketIcon className="w-5 h-5 text-purple-500" />
+                <TicketIcon className="w-5 h-5 text-theme-accent" />
                 <span>{messages.giveaways.howTicketsWork.title}</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-theme-accent/15 dark:bg-theme-accent/25 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <div className={giveawayIconClass}>
                     <CurrencyDollarIcon className="w-6 h-6 text-theme-accent" />
                   </div>
                   <h4 className="font-semibold mb-2">{messages.giveaways.howTicketsWork.earn.title}</h4>
@@ -606,8 +618,8 @@ export default function GiveawaysPage() {
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <GiftIcon className="w-6 h-6 text-purple-600" />
+                  <div className={giveawayIconClass}>
+                    <GiftIcon className="w-6 h-6 text-theme-accent" />
                   </div>
                   <h4 className="font-semibold mb-2">{messages.giveaways.howTicketsWork.participate.title}</h4>
                   <p className="text-sm text-muted-foreground">
@@ -615,8 +627,8 @@ export default function GiveawaysPage() {
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <TrophyIcon className="w-6 h-6 text-green-600" />
+                  <div className={giveawayIconClass}>
+                    <TrophyIcon className="w-6 h-6 text-theme-accent" />
                   </div>
                   <h4 className="font-semibold mb-2">{messages.giveaways.howTicketsWork.win.title}</h4>
                   <p className="text-sm text-muted-foreground">
@@ -652,7 +664,7 @@ export default function GiveawaysPage() {
               {loading ? (
                 <PageLoading variant="compact" message={messages.giveawaysPage.loadingGiveaways} />
               ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className={getGiveawayGridClass(activeGiveaways.length)}>
                   {activeGiveaways.map((giveaway, index) => (
                     <motion.div
                       key={giveaway.id}
@@ -683,7 +695,7 @@ export default function GiveawaysPage() {
               {loading ? (
                 <PageLoading variant="compact" message={messages.giveawaysPage.loadingEndedGiveaways} />
               ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className={getGiveawayGridClass(endedGiveaways.length)}>
                   {endedGiveaways.map((giveaway, index) => (
                     <motion.div
                       key={giveaway.id}
