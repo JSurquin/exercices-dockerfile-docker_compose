@@ -135,7 +135,7 @@ export function TradeItemsGallery({ items }: TradeItemsGalleryProps) {
 
       {/* ── Dialog zoom ── */}
       <Dialog open={zoomIndex !== null} onOpenChange={(open) => !open && closeZoom()}>
-        <DialogContent className="max-w-sm sm:max-w-md p-4 gap-0 bg-slate-900 border-slate-700">
+        <DialogContent className="max-w-sm sm:max-w-md p-4 gap-0 lunar-card border-border/60">
           <DialogTitle className="sr-only">
             {zoomedItem?.name ?? 'Item'}
           </DialogTitle>
@@ -164,7 +164,7 @@ export function TradeItemsGallery({ items }: TradeItemsGalleryProps) {
               )}
 
               {/* Image grande */}
-              <div className={`relative w-48 h-48 sm:w-56 sm:h-56 rounded-xl border-2 ${rarityBorder(zoomedItem.rarity)} bg-slate-800/80 flex items-center justify-center`}>
+              <div className={`relative w-48 h-48 sm:w-56 sm:h-56 rounded-xl border-2 ${rarityBorder(zoomedItem.rarity)} bg-card/30 backdrop-blur-sm flex items-center justify-center`}>
                 <SafeImage
                   src={zoomedItem.iconUrl}
                   alt={zoomedItem.name}
