@@ -983,11 +983,15 @@ body.next-dev-overlay-present #sentry-feedback {
 
   /* Hero product float */
   .hero-product {
-    animation: lunar-float 4s ease-in-out infinite;
+    animation: lunar-float 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
     filter:
       drop-shadow(0 40px 80px rgba(0, 0, 0, 0.95))
       drop-shadow(0 8px 20px rgba(0, 0, 0, 0.8))
       drop-shadow(0 0 2px rgba(210, 215, 235, 0.25));
+  }
+
+  .hero-product .chrome-shimmer {
+    animation: chrome-shimmer 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
   }
 
   @keyframes lunar-float {
@@ -996,7 +1000,7 @@ body.next-dev-overlay-present #sentry-feedback {
       transform: translateY(0);
     }
     50% {
-      transform: translateY(-12px);
+      transform: translateY(-8px);
     }
   }
 
@@ -2053,8 +2057,8 @@ body.next-dev-overlay-present #sentry-feedback {
 }
 
 .home-enter-right {
-  animation: home-enter-from-right 0.8s ease both;
-  animation-delay: 0.4s;
+  animation: home-enter-from-right 1.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.55s;
   will-change: transform, opacity;
 }
 
@@ -2238,7 +2242,7 @@ body.next-dev-overlay-present #sentry-feedback {
 }
 
 .card-tilt {
-  transition: transform 0.2s ease-out;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   transform-style: preserve-3d;
   will-change: transform;
 }
