@@ -799,8 +799,9 @@ export function SkinplaceInventoryViewer({
               {selectable && purchasableFiltered.length > 0 && (
                 <Button
                   type="button"
-                  variant={allPurchasableSelected ? 'outline' : 'secondary'}
+                  variant={allPurchasableSelected ? 'outline' : 'ghost'}
                   size="sm"
+                  className={allPurchasableSelected ? undefined : 'btn-select-all'}
                   onClick={handleToggleSelectAllPurchasable}
                 >
                   {allPurchasableSelected

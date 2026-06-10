@@ -7,6 +7,12 @@ import { LevelHelpPopover } from "@/components/ui/level-help-popover";
 import { LevelBadge } from "@/components/ui/level-badge";
 import { LevelProgressBar } from "@/components/ui/level-progress-bar";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import {
   getLevelInfo,
   xpFromCents,
   LEVELS,
@@ -84,24 +90,56 @@ export function XPPreviewBar({
   const hasPending = pendingXPGain > 0;
 
   return (
-    <div className={`w-full rounded-xl border border-border bg-card shadow-sm ${compact ? "px-3 py-2" : "px-4 py-3"}`}>
-      <div className={`flex items-start gap-2 ${compact ? "mb-1.5" : "mb-3"}`}>
+    <div
+      className={cn(
+        "w-full rounded-xl border border-border bg-card shadow-sm",
+        compact ? "px-3 py-2 h-[64px] overflow-hidden" : "px-4 py-3",
+      )}
+    >
+      <div className="flex items-start gap-2 h-full">
         <LevelBadge tierIndex={info.tierIndex} size="sm" className="shrink-0 mt-0.5" />
 
-        <div className="flex-1 min-w-0">
-          <div className={`flex ${compact ? "flex-col items-start gap-1" : "items-center justify-between mb-2 gap-2 flex-wrap"}`}>
-            <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
+          <div
+            className={cn(
+              "flex items-center gap-1.5 min-w-0",
+              compact ? "mb-1" : "mb-2 flex-wrap justify-between gap-2",
+            )}
+          >
+            <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
               <SparklesIcon className="w-3.5 h-3.5 text-theme-accent shrink-0" />
-              <span className={`${compact ? "text-xs" : "text-sm"} font-semibold text-foreground`}>
+              <span
+                className={cn(
+                  compact ? "text-xs" : "text-sm",
+                  "font-semibold text-foreground truncate",
+                )}
+              >
                 {cosmicName}
               </span>
               {!compact && <LevelHelpPopover />}
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[10px] text-muted-foreground shrink-0 whitespace-nowrap">
                 {t.tier(info.tierIndex + 1, TIERS_PER_LEVEL)}
               </span>
 
+              {hasPending && (
+                <>
+                  <span className="text-[10px] text-muted-foreground shrink-0" aria-hidden>
+                    ·
+                  </span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-1.5 py-0.5 shrink-0 cursor-default">
+                        <SparklesIcon className="w-3 h-3" />
+                        {t.gain(pendingXPGain)}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">{t.pendingLabel}</TooltipContent>
+                  </Tooltip>
+                </>
+              )}
+
               {info.saleBonus > 0 && (
-                <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-theme-highlight/15 text-theme-highlight border border-theme-highlight/30">
+                <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-theme-highlight/15 text-theme-highlight border border-theme-highlight/30 shrink-0">
                   {info.saleBonusPct}
                 </span>
               )}
@@ -110,11 +148,11 @@ export function XPPreviewBar({
                 {hasLevelUp && (
                   <motion.span
                     key="levelup"
-                    initial={{ opacity: 0, scale: 0.7, x: -6 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.7, x: -6 }}
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.85 }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-theme-highlight/20 text-theme-stat border border-theme-highlight/40 ml-1"
+                    className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-theme-highlight/20 text-theme-stat border border-theme-highlight/40 shrink-0"
                   >
                     {t.levelUp(projectedCosmicName)}
                   </motion.span>
@@ -122,49 +160,16 @@ export function XPPreviewBar({
               </AnimatePresence>
             </div>
 
-            <div className={`flex items-center gap-2 shrink-0 ${compact ? "w-full justify-between" : ""}`}>
-              {!compact && (
-                <span className="text-xs text-muted-foreground">
-                  {t.progress(info.cappedXP, info.level.xpEnd)}
-                </span>
-              )}
-
-              <AnimatePresence>
-                {hasPending && (
-                  <motion.span
-                    key="gain"
-                    initial={{ opacity: 0, y: -6, scale: 0.85 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -6, scale: 0.85 }}
-                    transition={{ type: "spring", stiffness: 250, damping: 18 }}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-2 py-0.5"
-                  >
-                    <SparklesIcon className="w-3 h-3" />
-                    {t.gain(pendingXPGain)}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </div>
+            {!compact && (
+              <span className="text-xs text-muted-foreground shrink-0">
+                {t.progress(info.cappedXP, info.level.xpEnd)}
+              </span>
+            )}
           </div>
 
           <LevelProgressBar xp={currentXP} pendingXP={pendingXPGain} />
         </div>
       </div>
-
-      <AnimatePresence>
-        {hasPending && (
-          <motion.p
-            key="pending-label"
-            initial={{ opacity: 0, height: 0, marginTop: 0 }}
-            animate={{ opacity: 1, height: "auto", marginTop: 6 }}
-            exit={{ opacity: 0, height: 0, marginTop: 0 }}
-            transition={{ duration: 0.3 }}
-            className="text-xs text-emerald-500 font-medium overflow-hidden pl-11"
-          >
-            {t.pendingLabel}
-          </motion.p>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

@@ -663,6 +663,55 @@ body.next-dev-overlay-present #sentry-feedback {
     border-color: rgba(220, 220, 240, 0.5);
   }
 
+  /* Select-all button — chrome shimmer + sweep */
+  .btn-select-all {
+    background: linear-gradient(135deg, rgba(180, 185, 200, 0.15), rgba(100, 105, 120, 0.08));
+    border: 1px solid rgba(200, 205, 220, 0.35);
+    color: #e8e8f2;
+    position: relative;
+    overflow: hidden;
+    animation: chrome-shimmer 3s ease-in-out infinite;
+  }
+
+  .btn-select-all::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+    animation: sweep 3s ease-in-out infinite;
+  }
+
+  @keyframes sweep {
+    0% {
+      left: -100%;
+    }
+    50% {
+      left: 100%;
+    }
+    100% {
+      left: 100%;
+    }
+  }
+
+  .btn-select-all:hover {
+    box-shadow: 0 0 24px rgba(192, 192, 192, 0.25);
+    border-color: rgba(220, 220, 240, 0.55);
+  }
+
+  .light .btn-select-all {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.02));
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    color: var(--foreground);
+  }
+
+  .light .btn-select-all:hover {
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.15);
+    border-color: rgba(249, 115, 22, 0.3);
+  }
+
   /* Surfaces & dégradés brand — tokens CSS, tous thèmes */
   .brand-panel {
     @apply border border-theme-accent/30 bg-theme-accent/5;
