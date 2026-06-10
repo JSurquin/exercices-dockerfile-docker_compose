@@ -80,10 +80,10 @@
     "@tiptap/react": "^3.7.2",
     "@tiptap/starter-kit": "^3.7.2",
     "@types/d3": "^7.4.3",
-    "@types/nodemailer": "^7.0.2",
+    "@types/nodemailer": "^8.0.0",
     "@types/pg": "^8.20.0",
     "@upstash/redis": "^1.37.0",
-    "better-auth": "1.4.22",
+    "better-auth": "1.6.16",
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -96,14 +96,13 @@
     "framer-motion": "^12.23.16",
     "import-in-the-middle": "^3.0.0",
     "input-otp": "^1.4.2",
-    "jspdf": "^3.0.4",
-    "jspdf-autotable": "^5.0.2",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "lucide-react": "^0.544.0",
-    "next": "15.5.16",
-    "next-intl": "^4.3.9",
+    "next": "15.5.19",
+    "next-intl": "^4.13.0",
     "next-themes": "^0.4.6",
-    "nodemailer": "^7.0.7",
-    "openid": "^2.0.13",
+    "nodemailer": "^8.0.4",
     "pg": "^8.21.0",
     "puppeteer": "^24.22.3",
     "qrcode.react": "^4.2.0",
@@ -132,7 +131,7 @@
     "@types/react-dom": "^19",
     "code-inspector-plugin": "^1.3.2",
     "eslint": "^9",
-    "eslint-config-next": "15.5.16",
+    "eslint-config-next": "15.5.19",
     "jest": "^30.2.0",
     "playwright": "^1.59.1",
     "prisma": "5.22.0",
@@ -144,19 +143,5 @@
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@prisma/client",
-      "@prisma/engines",
-      "@tailwindcss/oxide",
-      "core-js",
-      "esbuild",
-      "prisma",
-      "puppeteer",
-      "puppetter",
-      "sharp",
-      "unrs-resolver"
-    ]
   }
 }
