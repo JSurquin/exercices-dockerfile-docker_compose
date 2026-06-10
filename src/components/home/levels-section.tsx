@@ -196,10 +196,10 @@ export function LevelsSection() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-12 items-stretch">
-          {/* Fragment hero, left half, CTA aligned with right column footer */}
-          <div className={`${homeReveal.upSm} flex flex-col h-full`}>
-            <div className="flex flex-1 items-center justify-center w-full min-h-[280px] sm:min-h-[340px] lg:min-h-[420px]">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-12 items-start">
+          {/* Fragment hero, left half */}
+          <div className={`${homeReveal.upSm} flex flex-col`}>
+            <div className="flex items-center justify-center w-full min-h-[280px] sm:min-h-[340px] lg:min-h-[420px]">
               <img
                 src="/levels/FRAGMENTMS.png"
                 alt={locale === "fr" ? "Fragments" : "Fragments"}
@@ -207,15 +207,17 @@ export function LevelsSection() {
                 draggable={false}
               />
             </div>
-            <Button asChild size="lg" variant="cta" className="mt-6 w-full shrink-0">
-              <Link href="/sell">{t.cta}</Link>
-            </Button>
+            <div className="mt-6 flex justify-center">
+              <Button asChild size="lg" variant="cta" className="w-full max-w-[360px] shrink-0">
+                <Link href="/sell">{t.cta}</Link>
+              </Button>
+            </div>
           </div>
 
           {/* Fragments explanation, right half */}
-          <div className={`${homeReveal.up} flex`}>
-            <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-theme-accent/5 flex-1">
-              <CardContent className="p-6 flex flex-col h-full">
+          <div className={homeReveal.up}>
+            <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-theme-accent/5">
+              <CardContent className="p-6 flex flex-col">
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                   <span aria-hidden>🔮</span>
                   {t.fragmentsTitle}
@@ -244,7 +246,7 @@ export function LevelsSection() {
                   </div>
                 )}
 
-                <Button asChild variant="outline" className="mt-auto border-purple-500/30 hover:border-purple-500/50">
+                <Button asChild variant="outline" className="mt-5 border-purple-500/30 hover:border-purple-500/50">
                   <Link href="/giveaways">{t.fragmentsCta}</Link>
                 </Button>
               </CardContent>
