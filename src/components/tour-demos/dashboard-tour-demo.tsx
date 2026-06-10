@@ -185,14 +185,14 @@ export function DashboardTourDemo() {
               </div>
             </CardContent>
           </Card>
-          <Card className="col-span-full py-0 gap-0 border-theme-accent/20 dark:border-theme-accent/30">
+          <Card className="py-0 gap-0 border-theme-accent/20 dark:border-theme-accent/30">
             <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center gap-3">
-                <GiftIcon className="w-6 h-6 text-theme-accent/70 shrink-0" />
+              <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground">{messages.dashboard.giveawaysLabel}</p>
                   <p className="text-sm font-medium text-theme-accent">{messages.dashboard.participateGiveaway}</p>
                 </div>
+                <GiftIcon className="w-6 h-6 text-theme-accent/70 shrink-0" />
               </div>
             </CardContent>
           </Card>

@@ -102,28 +102,28 @@ export async function GET(request: NextRequest) {
       const status = mapTradeStatusFromDb(item.status);
       const count = item._count.id;
       
-      let color = '#6B7280'; // gray par défaut
+      let color = '#7a7a8c';
       
       switch (item.status) {
         case 'PAID':
-          color = '#10B981'; // green
+          color = '#6eb8a8';
           break;
         case 'PAYOUT_PENDING':
         case 'AVAILABLE':
-          color = '#F59E0B'; // orange
+          color = '#b8d8f8';
           break;
         case 'IN_TRADE_HOLD':
-          color = '#EF4444'; // red
+          color = '#c9a84c';
           break;
         case 'CREATED':
         case 'ACCEPTED_BY_BOT':
-          color = '#3B82F6'; // blue
+          color = '#7eb3e8';
           break;
         case 'FAILED':
-          color = '#DC2626'; // dark red
+          color = '#c47a7a';
           break;
         case 'CANCELLED':
-          color = '#9CA3AF'; // gray
+          color = '#8a8a9c';
           break;
       }
       

@@ -68,28 +68,27 @@ const formatPrice = (centimes: number) => {
   return (centimes / 100).toFixed(2) + "€";
 };
 
-const getStatusColor = (status: string) => {
-  // Mapper les statuts Prisma vers les couleurs
+const getStatusBadgeClass = (status: string) => {
+  const glass =
+    "border backdrop-blur-sm font-normal";
   const colors: Record<string, string> = {
-    // Statuts Prisma
-    CREATED: "bg-blue-500",
-    ACCEPTED_BY_BOT: "bg-indigo-500",
-    IN_TRADE_HOLD: "bg-yellow-500",
-    AVAILABLE: "bg-green-500",
-    PAYOUT_PENDING: "bg-primary",
-    PAID: "bg-emerald-500",
-    FAILED: "bg-red-500",
-    CANCELLED: "bg-red-400",
-    // Anciens statuts français (pour compatibilité)
-    créé: "bg-blue-500",
-    accepté_par_bot: "bg-indigo-500",
-    en_trade_hold: "bg-yellow-500",
-    disponible: "bg-green-500",
-    paiement_en_cours: "bg-primary",
-    payé: "bg-emerald-500",
-    échoué: "bg-red-500",
+    CREATED: `${glass} bg-theme-accent/10 text-theme-highlight border-theme-accent/25`,
+    ACCEPTED_BY_BOT: `${glass} bg-theme-accent/12 text-theme-highlight border-theme-accent/30`,
+    IN_TRADE_HOLD: `${glass} bg-amber-500/10 text-amber-800 dark:text-amber-200/90 border-amber-500/25`,
+    AVAILABLE: `${glass} bg-theme-success/10 text-theme-success border-theme-success/25`,
+    PAYOUT_PENDING: `${glass} bg-theme-stat/10 text-theme-stat border-theme-stat/25`,
+    PAID: `${glass} bg-theme-success/12 text-theme-success border-theme-success/30`,
+    FAILED: `${glass} bg-red-500/10 text-red-700 dark:text-red-300/90 border-red-500/20`,
+    CANCELLED: `${glass} bg-muted/40 text-muted-foreground border-border/60`,
+    créé: `${glass} bg-theme-accent/10 text-theme-highlight border-theme-accent/25`,
+    accepté_par_bot: `${glass} bg-theme-accent/12 text-theme-highlight border-theme-accent/30`,
+    en_trade_hold: `${glass} bg-amber-500/10 text-amber-800 dark:text-amber-200/90 border-amber-500/25`,
+    disponible: `${glass} bg-theme-success/10 text-theme-success border-theme-success/25`,
+    paiement_en_cours: `${glass} bg-theme-stat/10 text-theme-stat border-theme-stat/25`,
+    payé: `${glass} bg-theme-success/12 text-theme-success border-theme-success/30`,
+    échoué: `${glass} bg-red-500/10 text-red-700 dark:text-red-300/90 border-red-500/20`,
   };
-  return colors[status] || "bg-gray-500";
+  return colors[status] || `${glass} bg-muted/40 text-muted-foreground border-border/60`;
 };
 
 const getStatusText = (status: string, messages: Messages) => {
@@ -153,13 +152,14 @@ const formatPayoutReference = (p: DashboardPayoutApi) =>
   `${p.id.slice(0, 10)}…`;
 
 const payoutStatusBadgeClass = (status: string) => {
+  const pill = "rounded-full font-normal backdrop-blur-sm";
   if (["PAID", "FLEXIFY_PAID", "WHITEPAY_COMPLETE"].includes(status)) {
-    return "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30";
+    return `${pill} bg-emerald-500/8 text-emerald-700/90 dark:text-emerald-300/80 border-emerald-500/20`;
   }
   if (["FAILED", "FLEXIFY_FAILED", "WHITEPAY_DECLINED", "CANCELLED"].includes(status)) {
-    return "bg-red-500/15 text-red-800 dark:text-red-300 border-red-500/30";
+    return `${pill} bg-red-500/8 text-red-700/90 dark:text-red-300/80 border-red-500/20`;
   }
-  return "bg-theme-stat/15 text-theme-highlight border-theme-highlight/30";
+  return `${pill} bg-theme-stat/10 text-theme-highlight border-theme-highlight/25`;
 };
 
 const payoutStatusLabel = (
@@ -778,18 +778,16 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="col-span-full py-0 gap-0 border-theme-accent/20 dark:border-theme-accent/30">
+          <Card className="py-0 gap-0 border-theme-accent/20 dark:border-theme-accent/30">
             <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  <GiftIcon className="w-6 h-6 text-theme-accent/70 shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">{messages.dashboard.giveawaysLabel}</p>
-                    <Link href="/giveaways" className="text-theme-accent hover:underline text-sm font-medium">
-                      {messages.dashboard.participateGiveaway}
-                    </Link>
-                  </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground">{messages.dashboard.giveawaysLabel}</p>
+                  <Link href="/giveaways" className="text-theme-accent hover:underline text-sm font-medium">
+                    {messages.dashboard.participateGiveaway}
+                  </Link>
                 </div>
+                <GiftIcon className="w-6 h-6 text-theme-accent/70 shrink-0" />
               </div>
             </CardContent>
           </Card>
@@ -831,16 +829,14 @@ export default function DashboardPage() {
                       <p className="text-sm">{messages.dashboard.tradeHistory.noTradesDescription}</p>
                     </div>
                   ) : (
-                    <div className="space-y-3 sm:space-y-4">
+                    <div className="space-y-2">
                       {tradesData.trades.map((trade) => (
-                      <div key={trade.id} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
+                      <div key={trade.id} className="border rounded-lg p-2.5 sm:p-3">
+                        <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center space-x-3">
                             <Badge
-                              variant="secondary"
-                              className={`${getStatusColor(
-                                trade.status
-                              )} text-white`}
+                              variant="outline"
+                              className={getStatusBadgeClass(trade.status)}
                             >
                               {getStatusText(trade.status, messages)}
                             </Badge>
@@ -1030,15 +1026,15 @@ export default function DashboardPage() {
                       </CardHeader>
                       <CardContent>
                         {statsLoading ? (
-                          <div className="flex items-center justify-center h-[300px]">
+                          <div className="flex items-center justify-center h-[200px]">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                           </div>
                         ) : (
-                          <ResponsiveContainer width="100%" height={300}>
+                          <ResponsiveContainer width="100%" height={200}>
                             <LineChart data={dashboardStats?.volumeData || []}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="date" />
-                              <YAxis />
+                              <CartesianGrid strokeDasharray="3 3" stroke="rgba(200,205,220,0.15)" />
+                              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                              <YAxis tick={{ fontSize: 11 }} />
                               <Tooltip
                                 formatter={(value) => [
                                   formatPrice(value as number),
@@ -1048,9 +1044,10 @@ export default function DashboardPage() {
                               <Line
                                 type="monotone"
                                 dataKey="volume"
-                                stroke="#f97316"
+                                stroke="var(--theme-stat)"
                                 strokeWidth={2}
-                                dot={{ fill: "#f97316" }}
+                                dot={{ fill: "var(--theme-accent)", r: 3 }}
+                                activeDot={{ r: 4, fill: "var(--theme-highlight)" }}
                               />
                             </LineChart>
                           </ResponsiveContainer>
@@ -1064,17 +1061,17 @@ export default function DashboardPage() {
                       </CardHeader>
                       <CardContent>
                         {statsLoading ? (
-                          <div className="flex items-center justify-center h-[300px]">
+                          <div className="flex items-center justify-center h-[200px]">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                           </div>
                         ) : (
-                          <ResponsiveContainer width="100%" height={300}>
+                          <ResponsiveContainer width="100%" height={200}>
                             <PieChart>
                               <Pie
                                 data={dashboardStats?.tradeStatusData || []}
                                 cx="50%"
                                 cy="50%"
-                                outerRadius={80}
+                                outerRadius={64}
                                 fill="#8884d8"
                                 dataKey="count"
                                 label={({ name, percent }) =>
@@ -1101,25 +1098,25 @@ export default function DashboardPage() {
               {/* Quick Actions - Payout & KYC */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* KYC Status Card */}
-                <Card className={`border-2 ${
+                <Card className={`border backdrop-blur-sm ${
                   data?.user?.kycStatus === 'VERIFIED' || data?.user?.kycStatus === 'KYCAID_VERIFIED'
-                    ? 'border-green-500/50 bg-green-500/5'
+                    ? 'border-theme-success/20 bg-theme-success/5'
                     : data?.user?.kycStatus === 'IN_PROGRESS'
-                    ? 'border-yellow-500/50 bg-yellow-500/5'
-                    : 'border-theme-accent/50 bg-primary/5'
+                    ? 'border-amber-500/20 bg-amber-500/5'
+                    : 'border-theme-accent/25 bg-theme-accent/5'
                 }`}>
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center border ${
                           data?.user?.kycStatus === 'VERIFIED' || data?.user?.kycStatus === 'KYCAID_VERIFIED'
-                            ? 'bg-green-500/20'
+                            ? 'bg-theme-success/10 border-theme-success/20'
                             : data?.user?.kycStatus === 'IN_PROGRESS'
-                            ? 'bg-yellow-500/20'
-                            : 'bg-theme-accent/20'
+                            ? 'bg-amber-500/10 border-amber-500/20'
+                            : 'bg-theme-accent/10 border-theme-accent/20'
                         }`}>
                           {data?.user?.kycStatus === 'VERIFIED' || data?.user?.kycStatus === 'KYCAID_VERIFIED' ? (
-                            <CheckIcon className="w-6 h-6 text-green-500" />
+                            <CheckIcon className="w-6 h-6 text-theme-success" />
                           ) : (
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-theme-accent">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
@@ -1144,7 +1141,7 @@ export default function DashboardPage() {
                           </Button>
                         )}
                         <Button 
-                          variant="outline" 
+                          variant="chrome" 
                           size="sm"
                           onClick={async () => {
                             setRefreshingKyc(true);
@@ -1235,7 +1232,7 @@ export default function DashboardPage() {
                   </div>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="chrome"
                     size="sm"
                     className="shrink-0"
                     onClick={() => refetchPayouts()}
@@ -1400,10 +1397,8 @@ export default function DashboardPage() {
                           {messages.dashboard.settings.twoFactorDesc}
                         </p>
                       </div>
-                      <Badge
-                        variant="secondary"
-                        className="bg-green-100 text-green-800"
-                      >
+                      <Badge className="mission-glass-badge gap-1.5 font-normal">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-theme-success/70" />
                         {messages.dashboard.settings.enabled}
                       </Badge>
                     </div>
@@ -1414,10 +1409,8 @@ export default function DashboardPage() {
                           {messages.dashboard.settings.emailNotificationsDesc}
                         </p>
                       </div>
-                      <Badge
-                        variant="secondary"
-                        className="bg-green-100 text-green-800"
-                      >
+                      <Badge className="mission-glass-badge gap-1.5 font-normal">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-theme-success/70" />
                         {messages.dashboard.settings.enabled}
                       </Badge>
                     </div>
