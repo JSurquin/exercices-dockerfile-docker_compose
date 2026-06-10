@@ -20,11 +20,50 @@ export function ConnectedSteamAccountCard({ compact = false }: ConnectedSteamAcc
 
   const hasSteamId = isValidSteamId64(user.steamId64);
 
+  if (compact) {
+    return (
+      <Card className="border-border/60 bg-muted/20">
+        <CardContent className="px-2 py-1.5">
+          <div className="flex items-center gap-2 min-w-0">
+            <Avatar className="h-7 w-7 border border-border shrink-0">
+              {user.avatar ? (
+                <AvatarImage src={user.avatar} alt="" />
+              ) : null}
+              <AvatarFallback className="text-[10px]">
+                {(user.username || "?").slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="flex-1 min-w-0 flex items-center gap-1.5">
+              <p className="font-semibold truncate text-sm" title={user.username}>
+                {user.username}
+              </p>
+              {hasSteamId ? (
+                <>
+                  <span className="text-muted-foreground/40 shrink-0" aria-hidden>
+                    ·
+                  </span>
+                  <p className="font-mono text-[10px] text-muted-foreground truncate" title={user.steamId64}>
+                    {user.steamId64}
+                  </p>
+                </>
+              ) : (
+                <p className="text-[10px] text-muted-foreground truncate">{t.noSteamId}</p>
+              )}
+            </div>
+
+            <Lock className="h-3 w-3 text-muted-foreground/70 shrink-0" aria-hidden />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className={compact ? "border-border/60 bg-muted/20" : "border-border/60 bg-muted/20"}>
-      <CardContent className={compact ? "p-3" : "p-4"}>
-        <div className={`flex items-start ${compact ? "gap-3" : "gap-2.5"}`}>
-          <Avatar className={`${compact ? "h-12 w-12" : "h-12 w-12"} border-2 border-border shrink-0`}>
+    <Card className="border-border/60 bg-muted/20">
+      <CardContent className="p-4">
+        <div className="flex items-start gap-2.5">
+          <Avatar className="h-12 w-12 border-2 border-border shrink-0">
             {user.avatar ? (
               <AvatarImage src={user.avatar} alt="" />
             ) : null}
@@ -35,7 +74,7 @@ export function ConnectedSteamAccountCard({ compact = false }: ConnectedSteamAcc
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
-              <p className={`font-medium uppercase tracking-wide text-muted-foreground ${compact ? "text-sm" : "text-xs"}`}>
+              <p className="font-medium uppercase tracking-wide text-muted-foreground text-xs">
                 {t.label}
               </p>
               <Lock className="h-3 w-3 text-muted-foreground/70 shrink-0" aria-hidden />
@@ -44,15 +83,13 @@ export function ConnectedSteamAccountCard({ compact = false }: ConnectedSteamAcc
               {user.username}
             </p>
             {hasSteamId ? (
-              <p className={`font-mono text-muted-foreground truncate mt-0.5 ${compact ? "text-xs" : "text-[11px]"}`}>
+              <p className="font-mono text-muted-foreground truncate mt-0.5 text-[11px]">
                 {user.steamId64}
               </p>
             ) : (
-              <p className={`text-muted-foreground mt-0.5 ${compact ? "text-xs" : "text-[11px]"}`}>{t.noSteamId}</p>
+              <p className="text-muted-foreground mt-0.5 text-[11px]">{t.noSteamId}</p>
             )}
-            {!compact && (
-              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{t.hint}</p>
-            )}
+            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{t.hint}</p>
           </div>
         </div>
       </CardContent>

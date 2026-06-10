@@ -101,12 +101,12 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
 
   return (
     <Card className="border-theme-accent/40 bg-theme-accent/5 shadow-sm">
-      <CardContent className={compact ? "p-3" : "p-4 sm:p-5"}>
+      <CardContent className={compact ? "px-2 py-1.5" : "p-4 sm:p-5"}>
         {/* Header - Always visible */}
-        <div className={`flex ${compact ? "flex-col" : "flex-col sm:flex-row sm:items-start"} justify-between gap-2 ${compact ? "mb-2" : "mb-2"}`}>
-          <div className="flex items-start gap-2.5 min-w-0">
-            <div className={`${compact ? "p-2" : "p-2"} rounded-lg bg-theme-accent/15 shrink-0`}>
-              <Link className={`${compact ? "w-5 h-5" : "w-5 h-5"} text-theme-accent`} />
+        <div className={`flex ${compact ? "flex-col" : "flex-col sm:flex-row sm:items-start"} justify-between gap-2 ${compact ? "mb-1" : "mb-2"}`}>
+          <div className={`flex items-start min-w-0 ${compact ? "gap-1.5" : "gap-2.5"}`}>
+            <div className={`rounded-lg bg-theme-accent/15 shrink-0 ${compact ? "p-1" : "p-2"}`}>
+              <Link className="w-5 h-5 text-theme-accent" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -119,7 +119,7 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
                   <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
                 )}
               </div>
-              <p className={`text-muted-foreground mt-1 leading-relaxed ${compact ? "text-xs" : "text-[11px]"}`}>
+              <p className={`text-muted-foreground leading-snug ${compact ? "text-xs mt-0" : "text-[11px] mt-1 leading-relaxed"}`}>
                 {sellTradeLink.description}
               </p>
             </div>
@@ -128,7 +128,7 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
             variant={user?.tradeLink && !isExpanded ? "default" : "outline"}
             size="sm"
             onClick={() => setIsExpanded(!isExpanded)}
-            className={`shrink-0 flex items-center gap-1 w-full ${compact ? "" : "sm:w-auto"} ${
+            className={`shrink-0 flex items-center gap-1 w-full ${compact ? "h-7 px-2 py-0" : "sm:w-auto"} ${
               user?.tradeLink && !isExpanded
                 ? "bg-primary hover:bg-primary/90 text-primary-foreground"
                 : ""
@@ -149,7 +149,7 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
 
         {/* Current Trade Link Summary - When collapsed */}
         {!isExpanded && user?.tradeLink && (
-          <div className={`rounded-md border border-theme-accent/20 bg-background/60 space-y-1 ${compact ? "mt-2 px-3 py-2" : "mt-3 px-3 py-2"}`}>
+          <div className={`rounded-md border border-theme-accent/20 bg-background/60 ${compact ? "mt-1 px-2 py-1 space-y-0.5" : "mt-3 px-3 py-2 space-y-1"}`}>
             <p className={`font-medium text-muted-foreground ${compact ? "text-sm" : "text-xs"}`}>
               {messages.settings.tradeLink.currentTradeLink}
             </p>
