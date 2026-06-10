@@ -10618,7 +10618,7 @@ export const messages: Record<Locale, Messages> = {
         noSteamId: "No Steam ID linked, sign in with Steam or configure your Trade Link below.",
       },
       tradeLinkSection: {
-        description: "The only editable field, determines which inventory is loaded and where you receive trade offers.",
+        description: "You can change your Trade Link at any time. Your money always stays in your MoonSkin account, regardless of which link is used.",
         inventoryFromTradeLink: "Inventory loaded from:",
       },
       selectionPanel: {
@@ -17539,7 +17539,7 @@ export const messages: Record<Locale, Messages> = {
         noSteamId: "未绑定 Steam ID, 请通过 Steam 登录或在下方配置交易链接。",
       },
       tradeLinkSection: {
-        description: "唯一可修改的信息, 决定加载哪个库存以及接收交易报价的位置。",
+        description: "您可以随时更改交易链接。无论使用哪个链接，您的资金始终保留在您的 MoonSkin 账户中。",
         inventoryFromTradeLink: "库存来源：",
       },
       selectionPanel: {
