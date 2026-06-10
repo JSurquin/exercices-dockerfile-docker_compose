@@ -4578,7 +4578,7 @@ export const messages: Record<Locale, Messages> = {
         noSteamId: "Aucun Steam ID lié, connectez-vous via Steam ou configurez votre Trade Link ci-dessous.",
       },
       tradeLinkSection: {
-        description: "Seule information modifiable, détermine quel inventaire est chargé et où vous recevez les offres d’échange.",
+        description: "Vous pouvez changer de Trade Link à tout moment. Votre argent reste toujours sur votre compte MoonSkin, quel que soit le lien utilisé.",
         inventoryFromTradeLink: "Inventaire chargé depuis :",
       },
       selectionPanel: {
