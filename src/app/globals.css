@@ -1725,6 +1725,14 @@ body.next-dev-overlay-present #sentry-feedback {
     box-shadow: 0 0 18px rgba(190, 195, 215, 0.16);
   }
 
+  .hero-payment-title {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.88);
+  }
+
   .hero-payment-label {
     font-size: 0.625rem;
     font-weight: 600;
@@ -1759,6 +1767,10 @@ body.next-dev-overlay-present #sentry-feedback {
     background: rgba(0, 0, 0, 0.08);
     border-color: rgba(0, 0, 0, 0.18);
     box-shadow: 0 0 14px rgba(0, 0, 0, 0.1);
+  }
+
+  .light .hero-payment-title {
+    color: rgba(0, 0, 0, 0.78);
   }
 
   .light .hero-payment-label {

@@ -317,7 +317,7 @@ export function HeroSection() {
 
             {/* Payment Methods */}
             <div className={`lunar-card hero-payment-methods-card px-4 py-3 ${homeEnter.up} ${homeDelay[650]}`}>
-              <p className="lunar-label mb-2">
+              <p className="hero-payment-title mb-2">
                 {messages.hero.paymentMethods.title}
               </p>
               <div className="flex flex-wrap items-center gap-3">
