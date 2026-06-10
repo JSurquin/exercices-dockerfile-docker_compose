@@ -103,7 +103,7 @@ export function TradeStatusModal({
                   />
                   <CheckCircleIcon className="w-20 h-20 text-green-500 relative z-10" />
                 </div>
-                <DialogTitle className="text-2xl font-bold text-center">
+                <DialogTitle className="text-2xl font-bold text-center uppercase">
                   {t.acceptedTitle}
                 </DialogTitle>
               </motion.div>
@@ -125,7 +125,7 @@ export function TradeStatusModal({
                   />
                   <ClockIcon className="w-20 h-20 text-theme-accent relative z-10" />
                 </div>
-                <DialogTitle className="text-2xl font-bold text-center">
+                <DialogTitle className="text-2xl font-bold text-center uppercase">
                   {t.pendingTitle}
                 </DialogTitle>
               </motion.div>
