@@ -1,7 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Heart, Play, Youtube } from 'lucide-react';
+import { Play, Youtube } from 'lucide-react';
+import { HeartRainEasterEgg } from '@/components/home/heart-rain-easter-egg';
 import { useLocale } from '@/components/providers/locale-provider';
 import { getYoutubeThumbnailUrl, getYoutubeWatchUrl } from '@/lib/youtube';
 import { cn } from '@/lib/utils';
@@ -205,7 +206,7 @@ export function PartnersSection() {
       <div className="container relative z-10 mx-auto px-4">
         <div className={`mb-12 text-center ${homeReveal.upSm}`}>
           <div className="mb-4 flex justify-center">
-            <Heart className="h-8 w-8 text-theme-accent" strokeWidth={1.5} />
+            <HeartRainEasterEgg />
           </div>
           <h2 className="text-2xl font-bold uppercase tracking-wide md:text-3xl">
             {t.title}

@@ -2577,7 +2577,46 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 }
 
+/* Easter egg — pluie de cœurs (section partenaires) */
+@keyframes heart-rain-fall {
+  0% {
+    transform: translateY(-24px) rotate(-8deg);
+    opacity: 1;
+  }
+  85% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translateY(100vh) rotate(18deg);
+    opacity: 0;
+  }
+}
+
+@keyframes heart-easter-egg-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.28);
+  }
+}
+
+.heart-rain-item {
+  pointer-events: none;
+  animation: heart-rain-fall ease-in forwards;
+}
+
+.heart-easter-egg-pulse {
+  animation: heart-easter-egg-pulse 0.4s ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .heart-rain-item,
+  .heart-easter-egg-pulse {
+    animation: none !important;
+  }
+
   .home-enter-left,
   .home-enter-right,
   .home-enter-up,
