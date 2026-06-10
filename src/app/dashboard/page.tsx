@@ -520,45 +520,58 @@ export default function DashboardPage() {
                   )}
                 </div>
 
-                <div className="mt-3 flex flex-wrap items-end gap-x-6 gap-y-2">
-                  <div>
-                    {balanceHistoryLoading ? (
-                      <div className="h-10 w-36 animate-pulse bg-muted rounded-lg" />
-                    ) : (
-                      <p className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                        <CountUp
-                          end={(balanceHistoryData?.availableCents ?? balanceHistoryData?.currentBalanceCents ?? 0) / 100}
-                          duration={1.5}
-                          decimals={2}
-                          suffix="€"
-                          separator=" "
-                        />
-                      </p>
-                    )}
-                    {balanceHistoryData && balanceHistoryData.variationCents !== 0 && (
-                      <p className={`text-sm mt-1 ${
-                        balanceHistoryData.variationCents >= 0
-                          ? "text-green-600 dark:text-green-400"
-                          : "text-red-600 dark:text-red-400"
-                      }`}>
-                        {balanceHistoryData.variationCents >= 0 ? "+" : ""}
-                        {formatCentsToCurrency(balanceHistoryData.variationCents, "EUR")}{" "}
-                        {messages.dashboard.balance.vsLastWeek}
-                      </p>
+                <div className="mt-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+                  <div className="flex flex-wrap items-end gap-x-6 gap-y-2 min-w-0">
+                    <div>
+                      {balanceHistoryLoading ? (
+                        <div className="h-10 w-36 animate-pulse bg-muted rounded-lg" />
+                      ) : (
+                        <p className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                          <CountUp
+                            end={(balanceHistoryData?.availableCents ?? balanceHistoryData?.currentBalanceCents ?? 0) / 100}
+                            duration={1.5}
+                            decimals={2}
+                            suffix="€"
+                            separator=" "
+                          />
+                        </p>
+                      )}
+                      {balanceHistoryData && balanceHistoryData.variationCents !== 0 && (
+                        <p className={`text-sm mt-1 ${
+                          balanceHistoryData.variationCents >= 0
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-red-600 dark:text-red-400"
+                        }`}>
+                          {balanceHistoryData.variationCents >= 0 ? "+" : ""}
+                          {formatCentsToCurrency(balanceHistoryData.variationCents, "EUR")}{" "}
+                          {messages.dashboard.balance.vsLastWeek}
+                        </p>
+                      )}
+                    </div>
+
+                    {!balanceHistoryLoading && (balanceHistoryData?.frozenBalanceCents ?? 0) > 0 && (
+                      <div className="pb-1">
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Snowflake className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                          {messages.dashboard.balance.frozenBalance}
+                        </p>
+                        <p className="text-base font-bold text-theme-stat tabular-nums">
+                          {formatCentsToCurrency(balanceHistoryData!.frozenBalanceCents, "EUR")}
+                        </p>
+                      </div>
                     )}
                   </div>
 
-                  {!balanceHistoryLoading && (balanceHistoryData?.frozenBalanceCents ?? 0) > 0 && (
-                    <div className="pb-1">
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Snowflake className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                        {messages.dashboard.balance.frozenBalance}
-                      </p>
-                      <p className="text-base font-bold text-theme-stat tabular-nums">
-                        {formatCentsToCurrency(balanceHistoryData!.frozenBalanceCents, "EUR")}
-                      </p>
-                    </div>
-                  )}
+                  <Link href="/payout" className="shrink-0">
+                    <Button
+                      variant="chrome"
+                      size="sm"
+                      className="w-full sm:w-auto"
+                    >
+                      <BanknotesIcon className="w-4 h-4 mr-2" />
+                      {messages.payments.withdraw}
+                    </Button>
+                  </Link>
                 </div>
               </div>
 
@@ -618,20 +631,7 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              <div className="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border/50">
-                <div className="p-3 sm:p-4 flex flex-col justify-center">
-                  <Link href="/payout">
-                    <Button
-                      variant="chrome"
-                      size="sm"
-                      className="w-full sm:w-auto"
-                    >
-                      <BanknotesIcon className="w-4 h-4 mr-2" />
-                      {messages.payments.withdraw}
-                    </Button>
-                  </Link>
-                </div>
-
+              <div className="border-t border-border/50">
                 {/* Graphique de variation */}
                 <div className="p-3 sm:p-4 flex flex-col gap-1.5">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -706,14 +706,14 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-3 sm:mb-4"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-3 sm:mb-4"
         >
           <Card className="py-0 gap-0">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center justify-between">
-                <div>
+            <CardContent className="p-4 sm:p-5 flex items-center min-h-[5.5rem]">
+              <div className="flex items-center justify-between gap-3 w-full">
+                <div className="flex flex-col justify-center gap-1 min-w-0">
                   <p className="text-xs text-muted-foreground">{messages.dashboard.volume}</p>
-                  <p className="text-xl font-bold">
+                  <p className="text-xl sm:text-2xl font-bold tabular-nums">
                     <CountUp
                       end={(tradesData?.totalVolume || 0) / 100}
                       duration={2}
@@ -722,49 +722,49 @@ export default function DashboardPage() {
                     />
                   </p>
                 </div>
-                <CurrencyDollarIcon className="w-6 h-6 text-theme-accent/70" />
+                <CurrencyDollarIcon className="w-7 h-7 text-theme-accent/70 shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="py-0 gap-0">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center justify-between">
-                <div>
+            <CardContent className="p-4 sm:p-5 flex items-center min-h-[5.5rem]">
+              <div className="flex items-center justify-between gap-3 w-full">
+                <div className="flex flex-col justify-center gap-1 min-w-0">
                   <p className="text-xs text-muted-foreground">{messages.dashboard.trades}</p>
-                  <p className="text-xl font-bold">
+                  <p className="text-xl sm:text-2xl font-bold tabular-nums">
                     <CountUp end={tradesData?.totalTrades || 0} duration={2} />
                   </p>
                 </div>
-                <ChartBarIcon className="w-6 h-6 text-theme-accent/70" />
+                <ChartBarIcon className="w-7 h-7 text-theme-accent/70 shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="py-0 gap-0">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center justify-between">
-                <div>
+            <CardContent className="p-4 sm:p-5 flex items-center min-h-[5.5rem]">
+              <div className="flex items-center justify-between gap-3 w-full">
+                <div className="flex flex-col justify-center gap-1 min-w-0">
                   <p className="text-xs text-muted-foreground">{messages.dashboard.level}</p>
-                  <p className="text-xl font-bold">{levelInfo.level.name}</p>
+                  <p className="text-xl sm:text-2xl font-bold">{levelInfo.level.name}</p>
                   <p className="text-xs text-muted-foreground">Palier {levelInfo.tierIndex + 1}/5</p>
                 </div>
-                <StarIcon className="w-6 h-6 text-theme-accent/70" />
+                <StarIcon className="w-7 h-7 text-theme-accent/70 shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="py-0 gap-0 border-theme-highlight/25 dark:border-theme-highlight/35">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center justify-between">
-                <div>
+            <CardContent className="p-4 sm:p-5 flex items-center min-h-[5.5rem]">
+              <div className="flex items-center justify-between gap-3 w-full">
+                <div className="flex flex-col justify-center gap-1 min-w-0">
                   <p className="text-xs text-muted-foreground">{messages.dashboard.fragmentsLabel}</p>
                   <motion.p 
                     key={(user as unknown as { fragments?: number })?.fragments ?? 0}
                     initial={{ scale: 1 }}
                     animate={{ scale: [1, 1.15, 1] }}
                     transition={{ duration: 0.4 }}
-                    className="text-xl font-bold text-theme-stat flex items-center gap-2"
+                    className="text-xl sm:text-2xl font-bold text-theme-stat flex items-center gap-2 tabular-nums"
                   >
                     {(user as unknown as { fragments?: number })?.fragments ?? 0}
                     <FragmentBadge size="sm" />
@@ -778,16 +778,16 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="py-0 gap-0 border-theme-accent/20 dark:border-theme-accent/30">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center justify-between">
-                <div>
+          <Card className="py-0 gap-0 border-theme-accent/20 dark:border-theme-accent/30 col-span-2 sm:col-span-1">
+            <CardContent className="p-4 sm:p-5 flex items-center min-h-[5.5rem]">
+              <div className="flex items-center justify-between gap-3 w-full">
+                <div className="flex flex-col justify-center gap-1 min-w-0">
                   <p className="text-xs text-muted-foreground">{messages.dashboard.giveawaysLabel}</p>
-                  <Link href="/giveaways" className="text-theme-accent hover:underline text-sm font-medium">
+                  <Link href="/giveaways" className="text-theme-accent hover:underline text-sm sm:text-base font-semibold">
                     {messages.dashboard.participateGiveaway}
                   </Link>
                 </div>
-                <GiftIcon className="w-6 h-6 text-theme-accent/70 shrink-0" />
+                <GiftIcon className="w-7 h-7 text-theme-accent/70 shrink-0" />
               </div>
             </CardContent>
           </Card>
