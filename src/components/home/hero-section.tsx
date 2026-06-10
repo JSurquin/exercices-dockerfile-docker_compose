@@ -128,14 +128,14 @@ const HERO_DEMO_SKIN_IMAGES = {
 } as const;
 
 const HERO_PAYMENT_METHOD_ORDER = [
-  "usdt",
   "card",
   "mastercard",
   "bankTransfer",
   "eur",
-  "usd",
   "bitcoin",
   "ethereum",
+  "usdt",
+  "usd",
 ] as const;
 
 type HeroPaymentMethodKey = (typeof HERO_PAYMENT_METHOD_ORDER)[number];
@@ -316,7 +316,7 @@ export function HeroSection() {
             </div>
 
             {/* Payment Methods */}
-            <div className={`lunar-card px-4 py-3 ${homeEnter.up} ${homeDelay[650]}`}>
+            <div className={`lunar-card hero-payment-methods-card px-4 py-3 ${homeEnter.up} ${homeDelay[650]}`}>
               <p className="lunar-label mb-2">
                 {messages.hero.paymentMethods.title}
               </p>
@@ -326,10 +326,10 @@ export function HeroSection() {
                   const label = messages.hero.paymentMethods[key];
                   return (
                   <div key={key} className="flex flex-col items-center gap-1">
-                    <div className="rounded-lg bg-white/5 border border-white/10 p-1.5 hover:bg-white/10 transition-colors">
+                    <div className="hero-payment-chip rounded-lg p-1.5">
                       <Icon />
                     </div>
-                    <span className="text-[10px] text-white/50">{label}</span>
+                    <span className="hero-payment-label">{label}</span>
                   </div>
                   );
                 })}
