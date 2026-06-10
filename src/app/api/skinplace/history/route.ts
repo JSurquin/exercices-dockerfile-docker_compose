@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { skinplaceService } from '@/lib/skinplace';
 import { logger } from '@/lib/logger';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 export async function GET(request: NextRequest) {
   try {
     logger.info('Skinplace history API called');
     
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await requireAdminSessionWithDbCheck(request);
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session) {
       logger.warn('Unauthorized Skinplace history access attempt');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
-import { canUserMakePayout } from '@/lib/gatefi-kyc';
+import { canUserMakePayout } from '@/lib/kycaid';
 import { checkWithdrawalLimit } from '@/lib/balance-service';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { payoutInitiatePostSchema } from '@/lib/validation/schemas/payout-security';

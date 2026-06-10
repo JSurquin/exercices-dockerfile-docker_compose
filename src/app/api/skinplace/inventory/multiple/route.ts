@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { skinplaceService, handleSkinplaceError } from '@/lib/skinplace';
-import { auth } from '~/lib/auth';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { skinplaceInventoryMultipleSchema } from '@/lib/validation/schemas/integrations';
+import { requireUserSession } from '@/lib/require-session-user';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 export async function POST(request: NextRequest) {
   try {
     // Vérifier l'authentification
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await requireUserSession(request);
 
     if (!session?.user) {
       return NextResponse.json(
@@ -25,9 +24,8 @@ export async function POST(request: NextRequest) {
     }
     const { steam_ids } = parsed.data;
 
-    // Exiger uniquement l’inventaire du compte connecté (pas de mélange avec d’autres steam_id).
-    const isAdmin = session.user.role === 'ADMIN';
-    if (!isAdmin) {
+    const adminSession = await requireAdminSessionWithDbCheck(request);
+    if (!adminSession) {
       if (
         !session.user.steamId ||
         steam_ids.length !== 1 ||

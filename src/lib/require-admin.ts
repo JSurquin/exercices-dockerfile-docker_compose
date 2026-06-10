@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 import type { UserRole } from '@prisma/client';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
+import { isUserBanned } from '@/lib/require-session-user';
 
 /**
  * Session admin pour les route handlers. **Revalide le rôle en base** (évite session
@@ -39,6 +40,8 @@ export async function requireAdminSessionWithDbCheck(request: NextRequest) {
     select: {
       id: true,
       role: true,
+      banned: true,
+      banExpires: true,
       accountFrozen: true,
       email: true,
       name: true,
@@ -46,7 +49,7 @@ export async function requireAdminSessionWithDbCheck(request: NextRequest) {
     },
   });
 
-  if (!user || user.role !== 'ADMIN' || user.accountFrozen) {
+  if (!user || user.role !== 'ADMIN' || user.accountFrozen || isUserBanned(user)) {
     return null;
   }
 
@@ -75,11 +78,13 @@ export async function requireAdminOrModeratorSessionWithDbCheck(request: NextReq
     select: {
       id: true,
       role: true,
+      banned: true,
+      banExpires: true,
       accountFrozen: true,
     },
   });
 
-  if (!user || user.accountFrozen) {
+  if (!user || user.accountFrozen || isUserBanned(user)) {
     return null;
   }
   if (user.role !== 'ADMIN' && user.role !== 'MODERATOR') {
@@ -115,9 +120,9 @@ export async function resolveChatIdentity(request: NextRequest): Promise<ChatIde
   }
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { role: true, accountFrozen: true },
+    select: { role: true, banned: true, banExpires: true, accountFrozen: true },
   });
-  if (!user || user.accountFrozen) {
+  if (!user || user.accountFrozen || isUserBanned(user)) {
     return { kind: 'invalid' };
   }
   return {

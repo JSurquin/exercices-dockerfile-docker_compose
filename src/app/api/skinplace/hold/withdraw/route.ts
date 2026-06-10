@@ -1,23 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { skinplaceService, handleSkinplaceError } from '@/lib/skinplace';
-import { auth } from '~/lib/auth';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { skinplaceHoldWithdrawSchema } from '@/lib/validation/schemas/integrations';
 
 export async function POST(request: NextRequest) {
   try {
-    // Vérifier l'authentification
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await requireAdminSessionWithDbCheck(request);
 
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Non authentifié' },
-        { status: 401 }
-      );
-    }
-    if (session.user.role !== 'ADMIN') {
+    if (!session) {
       return NextResponse.json(
         { error: 'Accès non autorisé' },
         { status: 403 }

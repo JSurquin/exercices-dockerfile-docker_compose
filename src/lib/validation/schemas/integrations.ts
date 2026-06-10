@@ -84,15 +84,6 @@ export const whitepayPayoutRequestBodySchema = z
   })
   .strip();
 
-/** GateFi onramp/offramp quote */
-export const gatefiQuoteBodySchema = z
-  .object({
-    fiatAmount: z.coerce.number().positive(),
-    crypto: z.string().min(1),
-    region: z.string().min(1),
-  })
-  .strip();
-
 /** Flexify payout POST — corps polymorphe */
 export const flexifyPayoutBodySchema = z.record(z.string(), z.unknown());
 
@@ -135,9 +126,6 @@ export const payoutsSepaFrBodySchema = z
 
 /** Flexify quote — corps polymorphe (validation métier inchangée après parse) */
 export const flexifyQuoteBodySchema = z.record(z.string(), z.unknown());
-
-/** GateFi buy/sell — corps polymorphe */
-export const gatefiOrderBodySchema = z.record(z.string(), z.unknown());
 
 /** Steam POST create-trade — payload minimal, prix recalculés server-side */
 export const steamCreateTradeBodySchema = z
