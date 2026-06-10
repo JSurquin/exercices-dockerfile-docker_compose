@@ -929,7 +929,7 @@ body.next-dev-overlay-present #sentry-feedback {
 
   /* Hero background artwork — pleine largeur, sans crop */
   .cs2-hero-background__artwork {
-    background-size: 100% auto;
+    background-size: 100% 100%;
   }
 
   /* Hero product float */
