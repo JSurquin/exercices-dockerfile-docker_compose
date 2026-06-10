@@ -41,7 +41,7 @@ export const messages: Record<Locale, Messages> = {
         "La seule plateforme de cashtrade régulée en Europe, la plus rapide et sécurisée pour convertir vos skins Counter-Strike 2 en argent réel avec 0 % de frais de vente",
       cta: "Vendre maintenant",
       secondaryCta: "Comment ça marche",
-      badge: "Plateforme certifiée et sécurisée",
+      badge: "Première plateforme régulée en Europe",
     features: {
       instant: "Estimation instantanée",
       secure: "Paiements sécurisés", 
