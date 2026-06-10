@@ -84,8 +84,8 @@ export function XPPreviewBar({
   const hasPending = pendingXPGain > 0;
 
   return (
-    <div className={`w-full rounded-xl border border-border bg-card shadow-sm ${compact ? "px-3 py-2.5" : "px-4 py-3"}`}>
-      <div className={`flex items-start gap-2 ${compact ? "mb-2" : "mb-3"}`}>
+    <div className={`w-full rounded-xl border border-border bg-card shadow-sm ${compact ? "px-3 py-2" : "px-4 py-3"}`}>
+      <div className={`flex items-start gap-2 ${compact ? "mb-1.5" : "mb-3"}`}>
         <LevelBadge tierIndex={info.tierIndex} size="sm" className="shrink-0 mt-0.5" />
 
         <div className="flex-1 min-w-0">

@@ -203,7 +203,7 @@ export default function SellPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
       <TradeStatusModal
         status={modalStatus}
         onClose={handleModalClose}
@@ -216,7 +216,7 @@ export default function SellPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="max-w-6xl mx-auto mb-4"
+            className="max-w-6xl mx-auto mb-2"
           >
             <div className="flex flex-wrap items-center gap-2 rounded-lg border border-theme-highlight/30 bg-theme-highlight/5 px-3 py-2.5 sm:px-4">
               <UserRoleBadge userTag={user.userTag} size="sm" />
@@ -233,12 +233,12 @@ export default function SellPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className={`max-w-[1600px] mx-auto overflow-x-auto -mx-1 px-1 scrollbar-thin ${
-            currentStep === 0 ? "mb-3" : "mb-6 sm:mb-8"
+            currentStep === 0 ? "mb-2" : "mb-4 sm:mb-5"
           }`}
         >
           <div
             className={`flex items-center justify-center sm:justify-between gap-1 sm:gap-2 min-w-max sm:min-w-0 w-full mx-auto ${
-              currentStep === 0 ? "mb-2" : "mb-4"
+              currentStep === 0 ? "mb-1" : "mb-2"
             }`}
             role="list"
             aria-label={messages.sellPage.title}
@@ -255,7 +255,7 @@ export default function SellPage() {
               const stepContent = (
                 <>
                   <div
-                    className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-colors ${
+                    className={`flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-full border-2 transition-colors ${
                       isCurrent || isCompleted
                         ? "bg-primary border-primary text-primary-foreground"
                         : "border-muted-foreground text-muted-foreground"
@@ -287,14 +287,14 @@ export default function SellPage() {
                     <button
                       type="button"
                       onClick={() => handleStepNavigation(index)}
-                      className="group flex items-center rounded-lg px-1 py-1 -mx-1 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 cursor-pointer"
+                      className="group flex items-center rounded-lg px-1 py-0.5 -mx-1 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 cursor-pointer"
                       aria-label={stepLabel}
                     >
                       {stepContent}
                     </button>
                   ) : (
                     <div
-                      className="flex items-center px-1 py-1 -mx-1"
+                      className="flex items-center px-1 py-0.5 -mx-1"
                       aria-current={isCurrent ? "step" : undefined}
                     >
                       {stepContent}
@@ -322,13 +322,14 @@ export default function SellPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.15 }}
-          className={`max-w-[1600px] mx-auto w-full ${currentStep === 0 ? "mb-3" : "mb-6 sm:mb-8"}`}
+          className={`max-w-[1600px] mx-auto w-full ${currentStep === 0 ? "mb-2" : "mb-4 sm:mb-5"}`}
         >
           <XPPreviewBar
             currentXP={userXP}
             currentLevel={userLevel}
             xpForNextLevel={xpNext}
             pendingXPGain={pendingXPGain}
+            compact
           />
         </motion.div>
 
@@ -344,7 +345,7 @@ export default function SellPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-4 lg:gap-6 items-start"
+              className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-3 lg:gap-4 items-start"
             >
               <div className="min-w-0 w-full order-2 lg:order-none" data-tour="sell-inventory">
                 <SkinplaceInventoryViewer

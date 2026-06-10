@@ -22,7 +22,7 @@ export function ConnectedSteamAccountCard({ compact = false }: ConnectedSteamAcc
 
   return (
     <Card className={compact ? "border-border/60 bg-muted/20" : "border-border/60 bg-muted/20"}>
-      <CardContent className={compact ? "p-4" : "p-4"}>
+      <CardContent className={compact ? "p-3" : "p-4"}>
         <div className={`flex items-start ${compact ? "gap-3" : "gap-2.5"}`}>
           <Avatar className={`${compact ? "h-12 w-12" : "h-12 w-12"} border-2 border-border shrink-0`}>
             {user.avatar ? (

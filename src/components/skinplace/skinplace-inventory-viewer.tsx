@@ -773,8 +773,8 @@ export function SkinplaceInventoryViewer({
       )}
 
       {/* Contrôles et filtres */}
-      <Card className={isSellLayout ? 'rounded-b-none shadow-sm' : undefined}>
-        <CardHeader className={isSellLayout ? 'pb-3' : undefined}>
+      <Card className={isSellLayout ? 'rounded-b-none shadow-sm py-0 gap-0' : undefined}>
+        <CardHeader className={isSellLayout ? 'px-4 py-2.5 pb-1.5' : undefined}>
           <div className="md:flex items-center justify-between gap-3">
             <div className="min-w-0">
               <CardTitle className={`flex items-center gap-2 ${isSellLayout ? 'text-lg' : ''}`}>
@@ -785,7 +785,7 @@ export function SkinplaceInventoryViewer({
                 )}
               </CardTitle>
               {isSellLayout && (
-                <p className="text-sm text-muted-foreground mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                <p className="text-sm text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
                   <span>{stats.tradableItems} {messages.components.skinplace.items}</span>
                   <span aria-hidden>·</span>
                   <ConvertedPrice
@@ -828,9 +828,9 @@ export function SkinplaceInventoryViewer({
           </div>
         </CardHeader>
         
-        <CardContent className={`space-y-4 ${isSellLayout ? 'pt-0' : ''}`}>
+        <CardContent className={`${isSellLayout ? 'px-4 pt-0 pb-2.5 space-y-2' : 'space-y-4'}`}>
           {/* Barre de recherche */}
-          <div className={`${isSellLayout ? 'flex flex-col sm:flex-row' : 'md:flex grid'} items-center gap-3`}>
+          <div className={`${isSellLayout ? 'flex flex-col sm:flex-row' : 'md:flex grid'} items-center ${isSellLayout ? 'gap-2' : 'gap-3'}`}>
             <div className="flex-1">
               {!isSellLayout && <Label htmlFor="search">{messages.components.skinplace.search}</Label>}
               <div className="relative">
@@ -919,7 +919,7 @@ export function SkinplaceInventoryViewer({
 
           {/* Filtres avancés */}
           {showFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+            <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 bg-muted/50 rounded-lg ${isSellLayout ? 'p-3' : 'p-4'}`}>
               <div>
                 <Label>{messages.components.skinplace.rarity}</Label>
                 <Select value={selectedRarity || "all"} onValueChange={(v) => setSelectedRarity(v === "all" ? "" : v)}>
@@ -980,8 +980,8 @@ export function SkinplaceInventoryViewer({
       </Card>
 
       {/* Grille des items avec scroll */}
-      <Card className={isSellLayout ? 'rounded-t-none border-t-0 -mt-px shadow-sm' : undefined}>
-        <CardContent className={isSellLayout ? 'p-4 pt-2' : 'p-6'}>
+      <Card className={isSellLayout ? 'rounded-t-none border-t-0 -mt-px shadow-sm py-0 gap-0' : undefined}>
+        <CardContent className={isSellLayout ? 'px-3 py-2' : 'p-6'}>
           {filteredItems.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               {searchTerm || selectedRarity || selectedExterior || statTrakOnly || purchasableOnly || priceMinUsd.trim() || priceMaxUsd.trim()
@@ -990,8 +990,8 @@ export function SkinplaceInventoryViewer({
             </div>
           ) : (
             <div className="relative">
-              <div className={`${isSellLayout ? 'max-h-[min(720px,calc(100vh-16rem))] min-h-[360px]' : 'max-h-[600px]'} overflow-y-auto px-1 -mx-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent`}>
-                <div className={`grid pb-4 mt-6 ${
+              <div className={`${isSellLayout ? 'max-h-[min(720px,calc(100vh-14rem))] min-h-[360px]' : 'max-h-[600px]'} overflow-y-auto px-1 -mx-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent`}>
+                <div className={`grid pb-4 ${isSellLayout ? 'mt-2' : 'mt-6'} ${
                   isSellLayout
                     ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5'
                     : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3'

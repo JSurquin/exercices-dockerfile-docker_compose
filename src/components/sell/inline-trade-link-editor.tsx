@@ -101,9 +101,9 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
 
   return (
     <Card className="border-theme-accent/40 bg-theme-accent/5 shadow-sm">
-      <CardContent className={compact ? "p-4" : "p-4 sm:p-5"}>
+      <CardContent className={compact ? "p-3" : "p-4 sm:p-5"}>
         {/* Header - Always visible */}
-        <div className={`flex ${compact ? "flex-col" : "flex-col sm:flex-row sm:items-start"} justify-between gap-2 ${compact ? "mb-3" : "mb-2"}`}>
+        <div className={`flex ${compact ? "flex-col" : "flex-col sm:flex-row sm:items-start"} justify-between gap-2 ${compact ? "mb-2" : "mb-2"}`}>
           <div className="flex items-start gap-2.5 min-w-0">
             <div className={`${compact ? "p-2" : "p-2"} rounded-lg bg-theme-accent/15 shrink-0`}>
               <Link className={`${compact ? "w-5 h-5" : "w-5 h-5"} text-theme-accent`} />
@@ -149,7 +149,7 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
 
         {/* Current Trade Link Summary - When collapsed */}
         {!isExpanded && user?.tradeLink && (
-          <div className={`rounded-md border border-theme-accent/20 bg-background/60 space-y-1 ${compact ? "mt-4 px-3.5 py-3" : "mt-3 px-3 py-2"}`}>
+          <div className={`rounded-md border border-theme-accent/20 bg-background/60 space-y-1 ${compact ? "mt-2 px-3 py-2" : "mt-3 px-3 py-2"}`}>
             <p className={`font-medium text-muted-foreground ${compact ? "text-sm" : "text-xs"}`}>
               {messages.settings.tradeLink.currentTradeLink}
             </p>

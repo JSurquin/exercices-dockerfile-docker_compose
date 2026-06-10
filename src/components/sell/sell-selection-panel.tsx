@@ -44,7 +44,7 @@ export function SellSelectionPanel({ items, onContinue, onDeselect }: SellSelect
 
   return (
     <Card className="brand-panel">
-      <CardContent className="p-5 space-y-4">
+      <CardContent className="p-3.5 space-y-3">
         <div>
           <p className="text-sm text-muted-foreground mb-1.5">{t.selectedTotal}</p>
           <p className="text-3xl font-bold text-green-600 dark:text-green-400 tabular-nums">
