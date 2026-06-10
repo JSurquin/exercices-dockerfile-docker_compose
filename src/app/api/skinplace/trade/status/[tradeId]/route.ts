@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { TradeStatus } from '@prisma/client';
 import { skinplaceService } from '@/lib/skinplace';
 import { resolveMoonSkinTradeStatusFromSkinplaceApi } from '@/lib/skinplace-trade-status-resolve';
 import { TradeHooks } from '@/lib/trade-hooks';
 import { logger } from '@/lib/logger';
+import { requireUserSession } from '@/lib/require-session-user';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 /**
  * Endpoint pour récupérer et mettre à jour le statut d'un trade depuis Skinplace
@@ -23,9 +24,7 @@ export async function GET(
   { params }: { params: Promise<{ tradeId: string }> }
 ) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await requireUserSession(request);
 
     if (!session?.user) {
       return NextResponse.json(
@@ -33,6 +32,8 @@ export async function GET(
         { status: 401 }
       );
     }
+
+    const adminSession = await requireAdminSessionWithDbCheck(request);
 
     const { tradeId } = await params;
     logger.info(`[STATUS] GET trade status request for tradeId=${tradeId}`);
@@ -50,7 +51,7 @@ export async function GET(
       );
     }
 
-    if (trade.userId !== session.user.id && session.user.role !== 'ADMIN') {
+    if (trade.userId !== session.user.id && !adminSession) {
       logger.warn(`[STATUS] Access denied for trade ${tradeId}`);
       return NextResponse.json(
         { success: false, error: 'Acces non autorisé' },

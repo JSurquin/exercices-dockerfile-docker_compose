@@ -97,7 +97,6 @@ export const queryKeys = {
 
   // KYC
   kycStatus: ['kyc', 'status'] as const,
-  kycGatefi: ['kyc', 'gatefi'] as const,
 
   // Payment
   payoutHistory: ['payout', 'history'] as const,

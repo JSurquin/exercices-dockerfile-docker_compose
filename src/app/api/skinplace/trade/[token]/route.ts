@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { skinplaceService, handleSkinplaceError } from '@/lib/skinplace';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
+import { requireUserSession } from '@/lib/require-session-user';
+import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 export async function GET(
   request: NextRequest,
@@ -9,9 +10,7 @@ export async function GET(
 ) {
   try {
     // Vérifier l'authentification
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await requireUserSession(request);
 
     if (!session?.user) {
       return NextResponse.json(
@@ -29,8 +28,8 @@ export async function GET(
       );
     }
 
-    const isAdmin = session.user.role === 'ADMIN';
-    if (!isAdmin) {
+    const adminSession = await requireAdminSessionWithDbCheck(request);
+    if (!adminSession) {
       const owned = await prisma.trade.findFirst({
         where: { skinplaceToken: token, userId: session.user.id },
         select: { id: true },

@@ -78,33 +78,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Également vérifier les payouts en PROCESSING pour mettre à jour leur statut via GateFi
-    const processingPayouts = await prisma.payout.findMany({
-      where: {
-        status: 'PROCESSING',
-        gateFiOrderId: {
-          not: null
-        }
-      },
-      include: {
-        paymentMethod: true
-      },
-      take: 50 // Limiter pour éviter de surcharger l'API
-    });
-
-    console.log(`[Cron] Found ${processingPayouts.length} payouts to check status`);
-
-    for (const payout of processingPayouts) {
-      try {
-        // Ici on pourrait appeler l'API GateFi pour vérifier le statut
-        // Mais c'est mieux de laisser les webhooks faire ce travail
-        // On pourrait juste loguer ou faire une vérification périodique
-        console.log(`[Cron] Payout ${payout.id} is still processing`);
-      } catch (error) {
-        console.error(`[Cron] Error checking payout ${payout.id}:`, error);
-      }
-    }
-
     const response = {
       success: true,
       message: 'Trade processing completed',
@@ -112,7 +85,6 @@ export async function POST(request: NextRequest) {
         tradesFound: tradesReadyForPayout.length,
         processed: processedCount,
         errors: errorCount,
-        payoutsChecked: processingPayouts.length
       },
       timestamp: new Date().toISOString()
     };
