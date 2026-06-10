@@ -196,18 +196,18 @@ export function LevelsSection() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-12 items-start">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-12 lg:items-stretch">
           {/* Fragment hero, left half */}
-          <div className={`${homeReveal.upSm} flex flex-col`}>
-            <div className="flex items-center justify-center w-full min-h-[280px] sm:min-h-[340px] lg:min-h-[420px]">
+          <div className={`${homeReveal.upSm} flex flex-col lg:h-full`}>
+            <div className="flex flex-1 items-center justify-center w-full py-4 lg:min-h-0">
               <img
                 src="/levels/FRAGMENTMS.png"
                 alt={locale === "fr" ? "Fragments" : "Fragments"}
-                className="fragment-hero w-full h-full object-contain"
+                className="fragment-hero w-auto max-w-[240px] sm:max-w-[280px] lg:max-w-[300px] h-auto max-h-[180px] sm:max-h-[220px] lg:max-h-[260px] object-contain"
                 draggable={false}
               />
             </div>
-            <div className="mt-6 flex justify-center">
+            <div className="mt-6 lg:mt-auto flex justify-center pt-2">
               <Button asChild size="lg" variant="cta" className="w-full max-w-[360px] shrink-0">
                 <Link href="/sell">{t.cta}</Link>
               </Button>
@@ -215,8 +215,8 @@ export function LevelsSection() {
           </div>
 
           {/* Fragments explanation, right half */}
-          <div className={homeReveal.up}>
-            <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-theme-accent/5">
+          <div className={`${homeReveal.up} lg:h-full`}>
+            <Card className="h-full border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-background to-theme-accent/5">
               <CardContent className="p-6 flex flex-col">
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                   <span aria-hidden>🔮</span>
