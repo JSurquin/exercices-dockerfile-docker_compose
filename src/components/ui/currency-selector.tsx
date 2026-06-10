@@ -12,6 +12,7 @@ import { ChevronDown } from 'lucide-react';
 import { useCurrency } from '@/components/providers/currency-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { SupportedCurrency } from '@/lib/currency-converter';
+import { CurrencyFlag } from '@/components/ui/currency-flag';
 
 interface CurrencySelectorProps {
   variant?: 'default' | 'outline' | 'ghost' | 'chrome';
@@ -45,10 +46,10 @@ export function CurrencySelector({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={variant} size={size} className={`gap-2 ${className}`}>
-          <span className="font-semibold text-base">{currentCurrency.symbol}</span>
-          {showFlag && <span>{currentCurrency.flag}</span>}
-          <span className="font-mono font-bold">{currentCurrency.code}</span>
+        <Button variant={variant} size={size} className={`relative gap-2 ${className}`}>
+          <span className="relative z-[1] font-semibold text-base">{currentCurrency.symbol}</span>
+          {showFlag && <CurrencyFlag currency={selectedCurrency} className="relative z-[1]" />}
+          <span className="relative z-[1] font-mono font-bold">{currentCurrency.code}</span>
           {showName && <span className="hidden sm:inline">{getCurrencyName(currentCurrency.nameKey)}</span>}
           <ChevronDown className="h-4 w-4" />
         </Button>
@@ -60,7 +61,7 @@ export function CurrencySelector({
             onClick={() => handleCurrencyChange(currency.code)}
             className="flex items-center gap-3 cursor-pointer"
           >
-            <span className="text-lg">{currency.flag}</span>
+            <CurrencyFlag currency={currency.code} />
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <span className="font-mono font-bold">{currency.code}</span>
