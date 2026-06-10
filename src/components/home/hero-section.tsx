@@ -253,22 +253,27 @@ export function HeroSection() {
 
             {/* Main Title */}
             <div className={`space-y-3 sm:space-y-4 lunar-card px-5 py-4 ${homeEnter.upLg} ${homeDelay[300]}`}>
-              <h1 className="hero-title text-gaming-title text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
+              <h1 className="hero-title text-gaming-title text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight uppercase">
                 {messages.hero.title
-                  .split(/(CS2|MOONSKIN)/)
-                  .map((part, i) =>
-                    part === "CS2" ? (
-                      <span key={i} className="text-chrome-gradient">
-                        CS2
-                      </span>
-                    ) : part === "MOONSKIN" ? (
-                      <span key={i} className="text-brand-gradient">
-                        MOONSKIN
-                      </span>
-                    ) : (
-                      part
-                    )
-                  )}
+                  .split(/(CS2|MOONSKIN)/i)
+                  .map((part, i) => {
+                    const upper = part.toUpperCase();
+                    if (upper === "CS2") {
+                      return (
+                        <span key={i} className="text-chrome-gradient">
+                          CS2
+                        </span>
+                      );
+                    }
+                    if (upper === "MOONSKIN") {
+                      return (
+                        <span key={i} className="text-brand-gradient text-moonskin-glow">
+                          MOONSKIN
+                        </span>
+                      );
+                    }
+                    return part;
+                  })}
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-gaming-body text-foreground/70 max-w-lg">
                 {messages.hero.subtitle}

@@ -1409,6 +1409,17 @@ body.next-dev-overlay-present #sentry-feedback {
     text-shadow: 0 0 10px rgba(232, 232, 240, 0.5);
   }
 
+  .text-moonskin-glow {
+    filter: drop-shadow(0 0 8px rgba(142, 180, 212, 0.65))
+      drop-shadow(0 0 18px rgba(192, 192, 210, 0.45));
+  }
+
+  .cs2 .text-moonskin-glow,
+  .light .text-moonskin-glow {
+    filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.7))
+      drop-shadow(0 0 18px rgba(249, 115, 22, 0.45));
+  }
+
   .text-theme-accent {
     color: var(--theme-accent);
   }

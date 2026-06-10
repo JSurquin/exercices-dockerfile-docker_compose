@@ -36,7 +36,7 @@ export const messages: Record<Locale, Messages> = {
       xp: "XP",
     },
     hero: {
-      title: "Vendez vos skins CS2 facilement avec MOONSKIN sans frais",
+      title: "VENDEZ VOS SKINS CS2 FACILEMENT AVEC MOONSKIN SANS FRAIS",
       subtitle:
         "La seule plateforme de cashtrade régulée en Europe, la plus rapide et sécurisée pour convertir vos skins Counter-Strike 2 en argent réel avec 0 % de frais de vente",
       cta: "Vendre maintenant",
@@ -7209,7 +7209,7 @@ export const messages: Record<Locale, Messages> = {
       xp: "XP",
     },
     hero: {
-      title: "Sell your CS2 skins easily with MOONSKIN with zero fees",
+      title: "SELL YOUR CS2 SKINS EASILY WITH MOONSKIN WITH ZERO FEES",
       subtitle:
         "The only regulated cashtrade platform in Europe, the fastest and most secure to convert your Counter-Strike 2 skins into real money with 0% selling fees",
       cta: "Sell now",
@@ -14381,7 +14381,7 @@ export const messages: Record<Locale, Messages> = {
       xp: "经验",
     },
     hero: {
-      title: "使用 MOONSKIN 轻松出售你的CS2皮肤, 零手续费",
+      title: "使用 MOONSKIN 轻松出售你的 CS2 皮肤, 零手续费",
       subtitle:
         "欧洲唯一受监管的皮肤变现平台, 将您的反恐精英2皮肤转换为真钱，速度最快、最安全，0%销售手续费",
       cta: "立即出售",
