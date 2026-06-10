@@ -1,12 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import CountUp from "react-countup";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { NormalizedInventoryItem } from "@/hooks/use-skinplace-inventory";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useCurrency } from "@/components/providers/currency-provider";
-import { currencyConverter } from "@/lib/currency-converter";
+import {
+  currencyConverter,
+  SUPPORTED_CURRENCIES,
+  SupportedCurrency,
+} from "@/lib/currency-converter";
+
+function getCurrencyAffixes(currency: SupportedCurrency) {
+  const symbol = SUPPORTED_CURRENCIES[currency].symbol;
+  if (currency === "EUR") {
+    return { prefix: "", suffix: symbol };
+  }
+  return { prefix: symbol, suffix: "" };
+}
 
 interface SellSelectionPanelProps {
   items: NormalizedInventoryItem[];
@@ -21,19 +34,29 @@ export function SellSelectionPanel({ items, onContinue, onDeselect }: SellSelect
   const t = messages.sellPage.selectionPanel;
 
   const totalCentimes = items.reduce((sum, item) => sum + item.price_centimes, 0);
-  const [formattedTotal, setFormattedTotal] = useState("");
+  const [displayCentimes, setDisplayCentimes] = useState(0);
+  const [isConverting, setIsConverting] = useState(false);
+  const { prefix, suffix } = useMemo(
+    () => getCurrencyAffixes(selectedCurrency),
+    [selectedCurrency],
+  );
 
   useEffect(() => {
     let cancelled = false;
+    setIsConverting(true);
     (async () => {
       try {
         const converted = await currencyConverter.convertCents(totalCentimes, "USD", selectedCurrency);
         if (!cancelled) {
-          setFormattedTotal(currencyConverter.formatPrice(converted, selectedCurrency));
+          setDisplayCentimes(Math.round(converted));
         }
       } catch {
         if (!cancelled) {
-          setFormattedTotal(currencyConverter.formatPrice(totalCentimes, selectedCurrency));
+          setDisplayCentimes(totalCentimes);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsConverting(false);
         }
       }
     })();
@@ -48,7 +71,18 @@ export function SellSelectionPanel({ items, onContinue, onDeselect }: SellSelect
         <div>
           <p className="text-sm text-muted-foreground mb-1.5">{t.selectedTotal}</p>
           <p className="text-3xl font-bold text-green-600 dark:text-green-400 tabular-nums">
-            {items.length > 0 ? formattedTotal || "…" : currencyConverter.formatPrice(0, selectedCurrency)}
+            {isConverting && items.length > 0 && displayCentimes === 0 ? (
+              "…"
+            ) : (
+              <CountUp
+                end={displayCentimes / 100}
+                duration={0.3}
+                decimals={2}
+                prefix={prefix}
+                suffix={suffix}
+                preserveValue
+              />
+            )}
           </p>
           <p className="text-sm text-muted-foreground mt-1.5">
             {items.length} {sp.itemsSelected}

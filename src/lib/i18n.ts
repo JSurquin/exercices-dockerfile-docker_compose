@@ -4576,7 +4576,8 @@ export const messages: Record<Locale, Messages> = {
         noSteamId: "Aucun Steam ID lié, connectez-vous via Steam ou configurez votre Trade Link ci-dessous.",
       },
       tradeLinkSection: {
-        description: "Vous pouvez changer de Trade Link à tout moment. Votre argent reste toujours sur votre compte MoonSkin, quel que soit le lien utilisé.",
+        description:
+          "Vendez des skins depuis un autre compte Steam tout en restant connecté sur MoonSkin — plus besoin de refaire des centaines de KYC.",
         inventoryFromTradeLink: "Inventaire chargé depuis :",
       },
       selectionPanel: {
@@ -10614,7 +10615,8 @@ export const messages: Record<Locale, Messages> = {
         noSteamId: "No Steam ID linked, sign in with Steam or configure your Trade Link below.",
       },
       tradeLinkSection: {
-        description: "You can change your Trade Link at any time. Your money always stays in your MoonSkin account, regardless of which link is used.",
+        description:
+          "Sell skins from another Steam account while staying logged into MoonSkin — no need to redo hundreds of KYC checks.",
         inventoryFromTradeLink: "Inventory loaded from:",
       },
       selectionPanel: {
@@ -17533,7 +17535,8 @@ export const messages: Record<Locale, Messages> = {
         noSteamId: "未绑定 Steam ID, 请通过 Steam 登录或在下方配置交易链接。",
       },
       tradeLinkSection: {
-        description: "您可以随时更改交易链接。无论使用哪个链接，您的资金始终保留在您的 MoonSkin 账户中。",
+        description:
+          "在保持 MoonSkin 登录的同时，通过其他 Steam 账户出售皮肤——无需重复数百次 KYC 验证。",
         inventoryFromTradeLink: "库存来源：",
       },
       selectionPanel: {

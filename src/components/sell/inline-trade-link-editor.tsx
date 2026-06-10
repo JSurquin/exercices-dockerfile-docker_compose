@@ -99,70 +99,105 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
 
   const sellTradeLink = messages.sellPage.tradeLinkSection;
 
+  const title = user?.tradeLink
+    ? messages.settings.tradeLink.title
+    : messages.settings.tradeLink.configureTradeLinkTitle;
+
   return (
     <Card className="border-theme-accent/40 bg-theme-accent/5 shadow-sm">
-      <CardContent className={compact ? "px-2 py-1.5" : "p-4 sm:p-5"}>
-        {/* Header - Always visible */}
-        <div className={`flex ${compact ? "flex-col" : "flex-col sm:flex-row sm:items-start"} justify-between gap-2 ${compact ? "mb-1" : "mb-2"}`}>
-          <div className={`flex items-start min-w-0 ${compact ? "gap-1.5" : "gap-2.5"}`}>
-            <div className={`rounded-lg bg-theme-accent/15 shrink-0 ${compact ? "p-1" : "p-2"}`}>
-              <Link className="w-5 h-5 text-theme-accent" />
+      <CardContent className={compact ? "p-3" : "p-4 sm:p-5"}>
+        {compact && !isExpanded ? (
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Link className="w-4 h-4 text-theme-accent shrink-0" />
+              <h3 className="font-semibold text-sm truncate">{title}</h3>
+              {user?.tradeLink && (
+                <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
+              )}
             </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <h3 className="font-semibold text-base">
-                  {user?.tradeLink
-                    ? messages.settings.tradeLink.title
-                    : messages.settings.tradeLink.configureTradeLinkTitle}
-                </h3>
-                {user?.tradeLink && !isExpanded && (
-                  <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
+
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setIsExpanded(true)}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              {user?.tradeLink
+                ? messages.settings.tradeLink.modify
+                : messages.settings.tradeLink.configure}
+            </Button>
+
+            <p className="text-[11px] text-muted-foreground leading-snug">
+              {sellTradeLink.description}
+            </p>
+
+            {user?.tradeLink && (
+              <p
+                className="text-[10px] text-muted-foreground/70 font-mono truncate"
+                title={user.tradeLink}
+              >
+                {user.tradeLink}
+              </p>
+            )}
+          </div>
+        ) : (
+          <>
+            <div
+              className={`flex ${compact ? "flex-col" : "flex-col sm:flex-row sm:items-start"} justify-between gap-2 ${compact ? "mb-2" : "mb-2"}`}
+            >
+              <div className={`flex items-start min-w-0 ${compact ? "gap-1.5" : "gap-2.5"}`}>
+                <div className={`rounded-lg bg-theme-accent/15 shrink-0 ${compact ? "p-1" : "p-2"}`}>
+                  <Link className="w-5 h-5 text-theme-accent" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <h3 className="font-semibold text-base">{title}</h3>
+                  </div>
+                  {!compact && (
+                    <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                      {sellTradeLink.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className={`shrink-0 flex items-center gap-1 w-full ${compact ? "h-8" : "sm:w-auto"}`}
+              >
+                {isExpanded ? (
+                  <>
+                    {messages.settings.tradeLink.hide} <ChevronUp className="w-4 h-4" />
+                  </>
+                ) : (
+                  <>
+                    {user?.tradeLink
+                      ? messages.settings.tradeLink.modify
+                      : messages.settings.tradeLink.configure}{" "}
+                    {!user?.tradeLink && <ChevronDown className="w-4 h-4" />}
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {!isExpanded && !compact && user?.tradeLink && (
+              <div className="mt-3 px-3 py-2 space-y-1 rounded-md border border-theme-accent/20 bg-background/60">
+                <p className="text-xs font-medium text-muted-foreground">
+                  {messages.settings.tradeLink.currentTradeLink}
+                </p>
+                <p className="text-xs font-mono truncate text-foreground/80" title={user.tradeLink}>
+                  {user.tradeLink}
+                </p>
+                {extractedSteamId && (
+                  <p className="text-xs text-muted-foreground">
+                    {sellTradeLink.inventoryFromTradeLink}{" "}
+                    <code className="bg-muted px-1 rounded">{extractedSteamId}</code>
+                  </p>
                 )}
               </div>
-              <p className={`text-muted-foreground leading-snug ${compact ? "text-xs mt-0" : "text-[11px] mt-1 leading-relaxed"}`}>
-                {sellTradeLink.description}
-              </p>
-            </div>
-          </div>
-          <Button
-            variant={user?.tradeLink && !isExpanded ? "default" : "outline"}
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className={`shrink-0 flex items-center gap-1 w-full ${compact ? "h-7 px-2 py-0" : "sm:w-auto"} ${
-              user?.tradeLink && !isExpanded
-                ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-                : ""
-            }`}
-          >
-            {isExpanded ? (
-              <>
-                {messages.settings.tradeLink.hide} <ChevronUp className="w-4 h-4" />
-              </>
-            ) : (
-              <>
-                {user?.tradeLink ? messages.settings.tradeLink.modify : messages.settings.tradeLink.configure}{" "}
-                {!user?.tradeLink && <ChevronDown className="w-4 h-4" />}
-              </>
             )}
-          </Button>
-        </div>
-
-        {/* Current Trade Link Summary - When collapsed */}
-        {!isExpanded && user?.tradeLink && (
-          <div className={`rounded-md border border-theme-accent/20 bg-background/60 ${compact ? "mt-1 px-2 py-1 space-y-0.5" : "mt-3 px-3 py-2 space-y-1"}`}>
-            <p className={`font-medium text-muted-foreground ${compact ? "text-sm" : "text-xs"}`}>
-              {messages.settings.tradeLink.currentTradeLink}
-            </p>
-            <p className="text-xs font-mono truncate text-foreground/80" title={user.tradeLink}>
-              {user.tradeLink}
-            </p>
-            {extractedSteamId && (
-              <p className="text-xs text-muted-foreground">
-                {sellTradeLink.inventoryFromTradeLink}{" "}
-                <code className="bg-muted px-1 rounded">{extractedSteamId}</code>
-              </p>
-            )}
-          </div>
+          </>
         )}
 
         {/* Expanded Content */}
