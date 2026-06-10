@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { autoTable } from 'jspdf-autotable';
 import type { AdminReportData } from './pdf-generator';
 
 const formatPrice = (centimes: number) => `${(centimes / 100).toFixed(2)} €`;
