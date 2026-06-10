@@ -23,6 +23,21 @@
   background-color: hsl(var(--muted-foreground) / 0.5);
 }
 
+/* Sell page — scrollable inventory list fills remaining viewport */
+.inventory-container {
+  height: calc(
+    100vh - 4rem - 0.5rem - 3rem - 5.75rem - 7rem - 5.5rem - 0.5rem - 0.5rem
+  );
+}
+
+@media (min-width: 640px) {
+  .inventory-container {
+    height: calc(
+      100vh - 4rem - 0.75rem - 3.25rem - 5.75rem - 5rem - 3rem - 0.5rem - 0.75rem
+    );
+  }
+}
+
 /* TipTap Editor Styles */
 .ProseMirror {
   outline: none;
