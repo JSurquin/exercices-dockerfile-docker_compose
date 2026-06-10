@@ -344,7 +344,7 @@ export default function SellPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_288px] gap-4 lg:gap-5 items-start"
+              className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-4 lg:gap-6 items-start"
             >
               <div className="min-w-0 w-full order-2 lg:order-none" data-tour="sell-inventory">
                 <SkinplaceInventoryViewer

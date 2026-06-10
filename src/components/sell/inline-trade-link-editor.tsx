@@ -101,16 +101,16 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
 
   return (
     <Card className="border-theme-accent/40 bg-theme-accent/5 shadow-sm">
-      <CardContent className={compact ? "p-3" : "p-4 sm:p-5"}>
+      <CardContent className={compact ? "p-4" : "p-4 sm:p-5"}>
         {/* Header - Always visible */}
-        <div className={`flex ${compact ? "flex-col" : "flex-col sm:flex-row sm:items-start"} justify-between gap-2 mb-2`}>
-          <div className="flex items-start gap-2 min-w-0">
-            <div className={`${compact ? "p-1.5" : "p-2"} rounded-lg bg-theme-accent/15 shrink-0`}>
-              <Link className={`${compact ? "w-4 h-4" : "w-5 h-5"} text-theme-accent`} />
+        <div className={`flex ${compact ? "flex-col" : "flex-col sm:flex-row sm:items-start"} justify-between gap-2 ${compact ? "mb-3" : "mb-2"}`}>
+          <div className="flex items-start gap-2.5 min-w-0">
+            <div className={`${compact ? "p-2" : "p-2"} rounded-lg bg-theme-accent/15 shrink-0`}>
+              <Link className={`${compact ? "w-5 h-5" : "w-5 h-5"} text-theme-accent`} />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h3 className={`font-semibold ${compact ? "text-sm" : "text-base"}`}>
+                <h3 className="font-semibold text-base">
                   {user?.tradeLink
                     ? messages.settings.tradeLink.title
                     : messages.settings.tradeLink.configureTradeLinkTitle}
@@ -119,7 +119,7 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
                   <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
                 )}
               </div>
-              <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+              <p className={`text-muted-foreground mt-1 leading-relaxed ${compact ? "text-xs" : "text-[11px]"}`}>
                 {sellTradeLink.description}
               </p>
             </div>
@@ -149,8 +149,8 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
 
         {/* Current Trade Link Summary - When collapsed */}
         {!isExpanded && user?.tradeLink && (
-          <div className="mt-3 rounded-md border border-theme-accent/20 bg-background/60 px-3 py-2 space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">
+          <div className={`rounded-md border border-theme-accent/20 bg-background/60 space-y-1 ${compact ? "mt-4 px-3.5 py-3" : "mt-3 px-3 py-2"}`}>
+            <p className={`font-medium text-muted-foreground ${compact ? "text-sm" : "text-xs"}`}>
               {messages.settings.tradeLink.currentTradeLink}
             </p>
             <p className="text-xs font-mono truncate text-foreground/80" title={user.tradeLink}>

@@ -19,7 +19,7 @@ export function SellAccountSidebar({
   onDeselect,
 }: SellAccountSidebarProps) {
   return (
-    <aside className="w-full space-y-3 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:scrollbar-thin">
+    <aside className="w-full space-y-4 lg:space-y-5 lg:sticky lg:top-20">
       <div data-tour="sell-steam-account">
         <ConnectedSteamAccountCard compact />
       </div>

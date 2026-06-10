@@ -22,9 +22,9 @@ export function ConnectedSteamAccountCard({ compact = false }: ConnectedSteamAcc
 
   return (
     <Card className={compact ? "border-border/60 bg-muted/20" : "border-border/60 bg-muted/20"}>
-      <CardContent className={compact ? "p-3" : "p-4"}>
-        <div className="flex items-start gap-2.5">
-          <Avatar className={`${compact ? "h-10 w-10" : "h-12 w-12"} border-2 border-border shrink-0`}>
+      <CardContent className={compact ? "p-4" : "p-4"}>
+        <div className={`flex items-start ${compact ? "gap-3" : "gap-2.5"}`}>
+          <Avatar className={`${compact ? "h-12 w-12" : "h-12 w-12"} border-2 border-border shrink-0`}>
             {user.avatar ? (
               <AvatarImage src={user.avatar} alt="" />
             ) : null}
@@ -35,20 +35,20 @@ export function ConnectedSteamAccountCard({ compact = false }: ConnectedSteamAcc
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className={`font-medium uppercase tracking-wide text-muted-foreground ${compact ? "text-sm" : "text-xs"}`}>
                 {t.label}
               </p>
               <Lock className="h-3 w-3 text-muted-foreground/70 shrink-0" aria-hidden />
             </div>
-            <p className={`font-semibold truncate ${compact ? "text-sm" : "text-base"}`} title={user.username}>
+            <p className="font-semibold truncate text-base" title={user.username}>
               {user.username}
             </p>
             {hasSteamId ? (
-              <p className="font-mono text-[11px] text-muted-foreground truncate mt-0.5">
+              <p className={`font-mono text-muted-foreground truncate mt-0.5 ${compact ? "text-xs" : "text-[11px]"}`}>
                 {user.steamId64}
               </p>
             ) : (
-              <p className="text-[11px] text-muted-foreground mt-0.5">{t.noSteamId}</p>
+              <p className={`text-muted-foreground mt-0.5 ${compact ? "text-xs" : "text-[11px]"}`}>{t.noSteamId}</p>
             )}
             {!compact && (
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{t.hint}</p>

@@ -44,18 +44,18 @@ export function SellSelectionPanel({ items, onContinue, onDeselect }: SellSelect
 
   return (
     <Card className="brand-panel">
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="p-5 space-y-4">
         <div>
-          <p className="text-xs text-muted-foreground mb-1">{t.selectedTotal}</p>
-          <p className="text-2xl font-bold text-green-600 dark:text-green-400 tabular-nums">
+          <p className="text-sm text-muted-foreground mb-1.5">{t.selectedTotal}</p>
+          <p className="text-3xl font-bold text-green-600 dark:text-green-400 tabular-nums">
             {items.length > 0 ? formattedTotal || "…" : currencyConverter.formatPrice(0, selectedCurrency)}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-1.5">
             {items.length} {sp.itemsSelected}
           </p>
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <Button
             type="button"
             className="w-full bg-primary hover:bg-primary/90"
@@ -65,7 +65,7 @@ export function SellSelectionPanel({ items, onContinue, onDeselect }: SellSelect
             {sp.continueWithSelection}
           </Button>
           {items.length > 0 && (
-            <Button type="button" variant="outline" size="sm" className="w-full" onClick={onDeselect}>
+            <Button type="button" variant="outline" className="w-full" onClick={onDeselect}>
               {sp.deselectAll}
             </Button>
           )}
