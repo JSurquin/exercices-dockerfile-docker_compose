@@ -28,7 +28,7 @@ import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import { PageLoading } from '@/components/ui/page-loading';
 import { useTourMode } from '@/components/providers/tour-provider';
 import { SellTourDemo } from '@/components/tour-demos/sell-tour-demo';
-import { estimateXPGain, xpForNextLevel, levelFromXP } from '@/components/sell/xp-preview-bar';
+import { estimateXPGain, xpForNextLevel, XPPreviewBar } from '@/components/sell/xp-preview-bar';
 
 const getSteps = (messages: any) => [
   { id: "inventory", title: messages.sellPage.steps.inventory, icon: LinkIcon },
@@ -318,6 +318,20 @@ export default function SellPage() {
           />
         </motion.div>
 
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+          className={`max-w-[1600px] mx-auto w-full ${currentStep === 0 ? "mb-3" : "mb-6 sm:mb-8"}`}
+        >
+          <XPPreviewBar
+            currentXP={userXP}
+            currentLevel={userLevel}
+            xpForNextLevel={xpNext}
+            pendingXPGain={pendingXPGain}
+          />
+        </motion.div>
+
         {/* Step Content */}
         <motion.div
           key={currentStep}
@@ -347,10 +361,6 @@ export default function SellPage() {
               <div className="w-full min-w-0 order-1 lg:order-none">
                 <SellAccountSidebar
                   onTradeLinkUpdate={handleTradeLinkUpdate}
-                  currentXP={userXP}
-                  currentLevel={userLevel}
-                  xpForNextLevel={xpNext}
-                  pendingXPGain={pendingXPGain}
                   previewItems={previewItems}
                   onContinue={() => {
                     if (previewItems.length > 0) handleItemSelect(previewItems);

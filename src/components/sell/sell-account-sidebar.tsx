@@ -2,16 +2,11 @@
 
 import { ConnectedSteamAccountCard } from "@/components/sell/connected-steam-account-card";
 import InlineTradeLinkEditor from "@/components/sell/inline-trade-link-editor";
-import { XPPreviewBar } from "@/components/sell/xp-preview-bar";
 import { SellSelectionPanel } from "@/components/sell/sell-selection-panel";
 import { NormalizedInventoryItem } from "@/hooks/use-skinplace-inventory";
 
 interface SellAccountSidebarProps {
   onTradeLinkUpdate: () => void;
-  currentXP: number;
-  currentLevel: number;
-  xpForNextLevel: number;
-  pendingXPGain: number;
   previewItems: NormalizedInventoryItem[];
   onContinue: () => void;
   onDeselect: () => void;
@@ -19,10 +14,6 @@ interface SellAccountSidebarProps {
 
 export function SellAccountSidebar({
   onTradeLinkUpdate,
-  currentXP,
-  currentLevel,
-  xpForNextLevel,
-  pendingXPGain,
   previewItems,
   onContinue,
   onDeselect,
@@ -36,13 +27,6 @@ export function SellAccountSidebar({
         <InlineTradeLinkEditor compact onSuccess={onTradeLinkUpdate} />
       </div>
       <SellSelectionPanel items={previewItems} onContinue={onContinue} onDeselect={onDeselect} />
-      <XPPreviewBar
-        compact
-        currentXP={currentXP}
-        currentLevel={currentLevel}
-        xpForNextLevel={xpForNextLevel}
-        pendingXPGain={pendingXPGain}
-      />
     </aside>
   );
 }
