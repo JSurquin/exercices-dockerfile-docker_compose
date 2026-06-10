@@ -38,7 +38,6 @@ import {
   ArrowPathIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
-  SparklesIcon,
   GiftIcon,
   ClockIcon,
 } from "@heroicons/react/24/outline";
@@ -410,16 +409,16 @@ export default function DashboardPage() {
     : null;
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-4 sm:mb-5"
+          className="mb-3 sm:mb-4"
         >
-          <div className="flex items-center space-x-3 mb-4">
+          <div className="flex items-center space-x-3 mb-3">
             <Avatar className="w-12 h-12">
               <AvatarImage src={user?.image} alt={user?.name} />
               <AvatarFallback>
@@ -438,44 +437,42 @@ export default function DashboardPage() {
 
           {/* XP Progress */}
           <Card data-tour="dashboard-xp" className="py-0 gap-0">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-start gap-3 mb-3">
+            <CardContent className="p-2.5 sm:p-3">
+              <div className="flex items-start gap-2.5">
                 <LevelBadge tierIndex={levelInfo.tierIndex} size="md" className="shrink-0" />
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <div className="flex items-center space-x-3">
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <h3 className="font-semibold">
-                            {levelInfo.level.name} — Palier {levelInfo.tierIndex + 1}/5
-                          </h3>
-                          <LevelHelpPopover />
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {levelInfo.saleBonus > 0
-                            ? `Bonus vendeur actif : ${levelInfo.saleBonusPct} sur tes ventes`
-                            : "Aucun bonus vendeur encore"}
-                        </p>
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="text-sm font-semibold sm:text-base">
+                          {levelInfo.level.name} — Palier {levelInfo.tierIndex + 1}/5
+                        </h3>
+                        <LevelHelpPopover />
                       </div>
+                      <p className="text-xs text-muted-foreground">
+                        {levelInfo.saleBonus > 0
+                          ? `Bonus vendeur actif : ${levelInfo.saleBonusPct} sur tes ventes`
+                          : "Aucun bonus vendeur encore"}
+                      </p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xl font-bold">
+                    <div className="text-right shrink-0">
+                      <p className="text-base sm:text-lg font-bold tabular-nums">
                         {levelInfo.cappedXP.toLocaleString()} / {levelInfo.level.xpEnd.toLocaleString()} {messages.dashboard.xp}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         −{levelInfo.nextTierXP.toLocaleString()} XP prochain palier
                       </p>
                       {!levelInfo.isMaxLevel && levelInfo.nextLevelXP != null && nextLevelName && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-[11px] text-muted-foreground">
                           −{levelInfo.nextLevelXP.toLocaleString()} XP pour {nextLevelName}
                         </p>
                       )}
                     </div>
                   </div>
 
-                  <div className="mt-4">
-                    <LevelProgressBar xp={userXP} />
+                  <div className="mt-2">
+                    <LevelProgressBar xp={userXP} className="pt-5" />
                   </div>
                 </div>
               </div>
@@ -489,12 +486,12 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-4 sm:mb-5"
+          className="mb-3 sm:mb-4"
         >
           <Card className="overflow-hidden border-theme-highlight/20 bg-gradient-to-br from-theme-highlight/5 via-background to-theme-accent/5 py-0 gap-0">
             <CardContent className="p-0">
               {/* Solde disponible */}
-              <div className="p-4 sm:p-5">
+              <div className="p-3 sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-theme-accent/10 flex items-center justify-center">
@@ -622,7 +619,7 @@ export default function DashboardPage() {
               )}
 
               <div className="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border/50">
-                <div className="p-4 sm:p-5 flex flex-col justify-center">
+                <div className="p-3 sm:p-4 flex flex-col justify-center">
                   <Link href="/payout">
                     <Button
                       variant="chrome"
@@ -636,18 +633,18 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Graphique de variation */}
-                <div className="p-4 sm:p-5 flex flex-col gap-2">
+                <div className="p-3 sm:p-4 flex flex-col gap-1.5">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {messages.dashboard.balance.chart30days}
                   </p>
                   {balanceHistoryLoading ? (
-                    <div className="flex-1 min-h-[120px] animate-pulse bg-muted rounded-lg" />
+                    <div className="h-12 animate-pulse bg-muted rounded-lg" />
                   ) : !balanceHistoryData?.history?.length ? (
-                    <div className="flex-1 min-h-[120px] flex items-center justify-center text-sm text-muted-foreground">
+                    <div className="h-12 flex items-center justify-center text-xs text-muted-foreground">
                       {messages.dashboard.balance.noData}
                     </div>
                   ) : (
-                    <ResponsiveContainer width="100%" height={140}>
+                    <ResponsiveContainer width="100%" height={120}>
                       <AreaChart
                         data={balanceHistoryData.history.map((d) => ({
                           date: new Date(d.date).toLocaleDateString(
@@ -709,7 +706,7 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-5"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-3 sm:mb-4"
         >
           <Card className="py-0 gap-0">
             <CardContent className="p-3 sm:p-4">
@@ -804,7 +801,7 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <Tabs defaultValue="trades" className="space-y-4 sm:space-y-6" data-tour="dashboard-trades">
+          <Tabs defaultValue="trades" className="space-y-3 sm:space-y-4" data-tour="dashboard-trades">
             <TabsList className="grid h-auto w-full grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-0">
               <TabsTrigger value="trades" className="text-xs sm:text-sm px-2">{messages.dashboard.tabs.trades}</TabsTrigger>
               <TabsTrigger value="analytics" className="text-xs sm:text-sm px-2">{messages.dashboard.tabs.analytics}</TabsTrigger>
@@ -938,37 +935,36 @@ export default function DashboardPage() {
             </TabsContent>
 
             {/* Analytics Tab */}
-            <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
+            <TabsContent value="analytics" className="space-y-3 sm:space-y-4">
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="space-y-6"
+                className="space-y-4"
               >
-                <div className="text-center space-y-2 px-2">
-                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+                <div className="text-center space-y-1 px-2">
+                  <h2 className="text-lg sm:text-xl font-bold tracking-tight">
                     {messages.dashboard.analytics.title}
                   </h2>
-                  <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+                  <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl mx-auto">
                     {messages.dashboard.analytics.subtitle}
                   </p>
                 </div>
 
-                <div className="grid gap-4 sm:gap-6">
-                  <Card className="relative overflow-hidden border-theme-accent/30 bg-gradient-to-br from-theme-accent/10 via-theme-accent/5 to-transparent">
-                    <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-theme-accent/10 blur-2xl" />
-                    <CardContent className="relative p-6 sm:p-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                  <Card className="py-0 gap-0 border-theme-highlight/20 bg-gradient-to-br from-theme-highlight/5 via-background to-transparent">
+                    <CardContent className="p-3 sm:p-4">
                       {statsLoading ? (
-                        <div className="flex items-center justify-center h-40">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                        <div className="flex items-center justify-center h-20">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
                         </div>
                       ) : (
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-                          <div className="space-y-3">
-                            <p className="text-sm font-medium text-theme-highlight uppercase tracking-wide">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                               {messages.dashboard.analytics.totalSalesVolume}
                             </p>
-                            <p className="text-5xl sm:text-6xl lg:text-7xl font-bold tabular-nums tracking-tight">
+                            <p className="text-2xl sm:text-3xl font-bold tabular-nums tracking-tight">
                               <CountUp
                                 end={collectedVolumeDisplay.value}
                                 duration={2.5}
@@ -978,44 +974,43 @@ export default function DashboardPage() {
                                 separator=" "
                               />
                             </p>
-                            <p className="text-sm sm:text-base text-muted-foreground max-w-xl">
+                            <p className="text-xs text-muted-foreground line-clamp-2">
                               {messages.dashboard.analytics.totalSalesVolumeDesc}
                             </p>
                           </div>
-                          <div className="flex h-20 w-20 sm:h-24 sm:w-24 shrink-0 items-center justify-center rounded-2xl bg-theme-accent/15 ring-1 ring-primary/20">
-                            <CurrencyDollarIcon className="h-10 w-10 sm:h-12 sm:w-12 text-theme-accent" />
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/50 ring-1 ring-border/60">
+                            <CurrencyDollarIcon className="h-4 w-4 text-muted-foreground" />
                           </div>
                         </div>
                       )}
                     </CardContent>
                   </Card>
 
-                  <Card className="relative overflow-hidden border-purple-500/30 bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent md:max-w-2xl">
-                    <div className="absolute -right-8 -bottom-8 h-32 w-32 rounded-full bg-purple-500/10 blur-2xl" />
-                    <CardContent className="relative p-6 sm:p-8">
+                  <Card className="py-0 gap-0 border-theme-highlight/20 bg-gradient-to-br from-theme-highlight/5 via-background to-transparent">
+                    <CardContent className="p-3 sm:p-4">
                       {statsLoading ? (
-                        <div className="flex items-center justify-center h-40">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+                        <div className="flex items-center justify-center h-20">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
                         </div>
                       ) : (
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium text-purple-600 dark:text-purple-400 uppercase tracking-wide">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                               {messages.dashboard.analytics.totalSkinsSold}
                             </p>
-                            <p className="text-3xl sm:text-4xl lg:text-5xl font-bold tabular-nums tracking-tight">
+                            <p className="text-2xl sm:text-3xl font-bold tabular-nums tracking-tight">
                               <CountUp
                                 end={dashboardStats?.totalSkinsSold ?? 0}
                                 duration={2.5}
                                 separator=" "
                               />
                             </p>
-                            <p className="text-sm text-muted-foreground max-w-sm">
+                            <p className="text-xs text-muted-foreground line-clamp-2">
                               {messages.dashboard.analytics.totalSkinsSoldDesc}
                             </p>
                           </div>
-                          <div className="flex h-16 w-16 sm:h-20 sm:w-20 shrink-0 items-center justify-center rounded-2xl bg-purple-500/15 ring-1 ring-purple-500/20">
-                            <SparklesIcon className="h-8 w-8 sm:h-10 sm:w-10 text-purple-500" />
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/50 ring-1 ring-border/60">
+                            <ChartBarIcon className="h-4 w-4 text-muted-foreground" />
                           </div>
                         </div>
                       )}
@@ -1023,7 +1018,7 @@ export default function DashboardPage() {
                   </Card>
                 </div>
 
-                <div className="space-y-4 pt-2">
+                <div className="space-y-3 pt-1">
                   <div className="px-1">
                     <h3 className="text-lg font-semibold">{messages.dashboard.analytics.personalTitle}</h3>
                     <p className="text-sm text-muted-foreground">{messages.dashboard.analytics.personalSubtitle}</p>
@@ -1070,7 +1065,7 @@ export default function DashboardPage() {
                       <CardContent>
                         {statsLoading ? (
                           <div className="flex items-center justify-center h-[300px]">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                           </div>
                         ) : (
                           <ResponsiveContainer width="100%" height={300}>
