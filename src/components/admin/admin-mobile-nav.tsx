@@ -41,6 +41,7 @@ import { useSession } from '~/lib/auth-client';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { useAffiliateApplications } from '@/hooks/use-affiliate-applications';
+import { useAffiliateGiveawayRequests } from '@/hooks/use-affiliate-giveaway-requests';
 import {
   adminBadgeCount,
   adminNavIcon,
@@ -72,6 +73,7 @@ export function AdminMobileNav() {
   const { messages } = useLocale();
   const t = messages.adminNav;
   const { pendingCount: affiliatePendingCount } = useAffiliateApplications();
+  const { pendingCount: giveawayRequestsPending } = useAffiliateGiveawayRequests();
 
   const { data: pendingCounts } = useQuery<{
     pendingApprovals: number;
@@ -112,6 +114,7 @@ export function AdminMobileNav() {
         { title: t.items.applications, href: '/admin/affiliate-applications', icon: FileDown, badge: affiliatePendingCount, badgeVariant: 'destructive' as const },
         { title: t.items.affiliates, href: '/admin/dashboard?tab=affiliates', icon: UserCheck },
         { title: t.items.commissions, href: '/admin/dashboard?tab=commissions', icon: Percent },
+        { title: t.items.giveawayRequests, href: '/admin/affiliate-giveaway-requests', icon: Gift, badge: giveawayRequestsPending || undefined, badgeVariant: 'destructive' as const },
         { title: t.items.performance, href: '/admin/dashboard?tab=affiliate-performance', icon: TrendingUp },
       ],
     },

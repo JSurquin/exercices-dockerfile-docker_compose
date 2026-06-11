@@ -79,6 +79,8 @@ model User {
   withdrawalLimit          WithdrawalLimit?
   notifications            Notification[]
   notificationPreferences  NotificationPreferences?
+  affiliateGiveawayRequests AffiliateGiveawayRequest[] @relation("AffiliateGiveawayRequestUser")
+  reviewedAffiliateGiveawayRequests AffiliateGiveawayRequest[] @relation("AffiliateGiveawayRequestReviewer")
 
   @@map("user")
 }
@@ -391,6 +393,7 @@ model AffiliateStats {
   updatedAt            DateTime              @updatedAt
   commissions          AffiliateCommission[]
   referrals            AffiliateReferral[]
+  giveawayRequests     AffiliateGiveawayRequest[]
   user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([code])
@@ -461,6 +464,38 @@ model AffiliateApplication {
   @@index([createdAt])
 }
 
+model AffiliateGiveawayRequest {
+  id                  String                         @id @default(cuid())
+  affiliateId         String
+  userId              String
+  startDate           DateTime
+  endDate             DateTime
+  winnerCount         Int
+  costCents           Int
+  adminMessage        String?
+  status              AffiliateGiveawayRequestStatus @default(PENDING)
+  giveawayId          String?                        @unique
+  prize               String?
+  prizeImageUrl       String?
+  steamMarketHashName String?
+  rewardValueCents    Int?
+  reviewedBy          String?
+  reviewedAt          DateTime?
+  rejectionReason     String?
+  createdAt           DateTime                       @default(now())
+  updatedAt           DateTime                       @updatedAt
+  affiliate           AffiliateStats                 @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  user                User                           @relation("AffiliateGiveawayRequestUser", fields: [userId], references: [id], onDelete: Cascade)
+  giveaway            Giveaway?                      @relation(fields: [giveawayId], references: [id], onDelete: SetNull)
+  reviewer            User?                          @relation("AffiliateGiveawayRequestReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([affiliateId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("affiliate_giveaway_request")
+}
+
 model GiveawaySeries {
   id                    String               @id @default(cuid())
   title                 String
@@ -522,6 +557,7 @@ model Giveaway {
   requiredAffiliateCode String?
   seriesId              String?
   series                GiveawaySeries?      @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  affiliateGiveawayRequest AffiliateGiveawayRequest?
   entries               GiveawayEntry[]
   winners               GiveawayWinner[]
 
@@ -867,6 +903,7 @@ enum BalanceTransactionType {
   TRADE_PENDING_CREDIT
   TRADE_PENDING_RELEASE
   AFFILIATE_COMMISSION
+  AFFILIATE_GIVEAWAY
 }
 
 enum PaymentMethodType {
@@ -1006,6 +1043,12 @@ enum AffiliateCommissionStatus {
 }
 
 enum AffiliateApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AffiliateGiveawayRequestStatus {
   PENDING
   APPROVED
   REJECTED

@@ -20,10 +20,13 @@ export const queryKeys = {
   affiliateCommissions: ['affiliate', 'commissions'] as const,
   affiliateLink: ['affiliate', 'link'] as const,
   affiliateApply: ['affiliate', 'apply'] as const,
+  affiliateGiveawayRequests: ['affiliate', 'giveaway-requests'] as const,
 
   // Admin - affiliate applications
   adminAffiliateApplications: (status?: string) =>
     ['admin', 'affiliate-applications', status ?? 'all'] as const,
+  adminAffiliateGiveawayRequests: (status?: string) =>
+    ['admin', 'affiliate-giveaway-requests', status ?? 'all'] as const,
 
   // Admin - stats
   adminStats: ['admin', 'stats'] as const,

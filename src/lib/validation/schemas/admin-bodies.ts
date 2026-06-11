@@ -178,6 +178,42 @@ export const adminAffiliateApplicationsListQuerySchema = z
   })
   .strip();
 
+/** GET /api/admin/affiliate-giveaway-requests */
+export const adminAffiliateGiveawayRequestsListQuerySchema = z
+  .object({
+    page: z
+      .string()
+      .optional()
+      .transform((s) => (s === undefined || s === '' ? 1 : parseInt(s, 10)))
+      .pipe(z.number().int().min(1)),
+    limit: z
+      .string()
+      .optional()
+      .transform((s) => (s === undefined || s === '' ? 20 : parseInt(s, 10)))
+      .pipe(z.number().int().min(1).max(200)),
+    status: z.enum(['all', 'PENDING', 'APPROVED', 'REJECTED']).optional(),
+  })
+  .strip();
+
+export const adminAffiliateGiveawayRequestPostSchema = z.object({
+  action: z.enum(['approve', 'reject']),
+  requestId: z.string().min(1),
+  data: z
+    .object({
+      title: z.string().min(1).max(200).optional(),
+      description: z.string().min(1).max(2000).optional(),
+      prize: z.string().min(1).max(500).optional(),
+      prizeImageUrl: z.string().url().optional().nullable(),
+      steamMarketHashName: z.string().max(500).optional().nullable(),
+      rewardValueCents: z.coerce.number().int().min(0).optional(),
+      ticketPrice: z.coerce.number().int().min(1).optional(),
+      maxTickets: z.coerce.number().int().min(1).optional(),
+      rejectionReason: z.string().max(1000).optional(),
+    })
+    .strip()
+    .optional(),
+});
+
 /** GET /api/admin/affiliates/commissions */
 export const adminAffiliateCommissionsListQuerySchema = z
   .object({

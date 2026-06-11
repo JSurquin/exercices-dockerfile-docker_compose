@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/components/providers/locale-provider';
 import { useAffiliateApplications } from '@/hooks/use-affiliate-applications';
+import { useAffiliateGiveawayRequests } from '@/hooks/use-affiliate-giveaway-requests';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import {
@@ -73,6 +74,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { pendingCount } = useAffiliateApplications();
+  const { pendingCount: giveawayRequestsPending } = useAffiliateGiveawayRequests();
   const { messages } = useLocale();
   const t = messages.adminNav;
 
@@ -116,6 +118,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
         { title: t.items.applications, href: '/admin/affiliate-applications', icon: FileDown, badgeVariant: 'destructive' as const },
         { title: t.items.affiliates, href: '/admin/dashboard?tab=affiliates', icon: UserCheck },
         { title: t.items.commissions, href: '/admin/dashboard?tab=commissions', icon: Percent },
+        { title: t.items.giveawayRequests, href: '/admin/affiliate-giveaway-requests', icon: Gift, badge: giveawayRequestsPending || undefined, badgeVariant: 'destructive' as const },
         { title: t.items.performance, href: '/admin/dashboard?tab=affiliate-performance', icon: TrendingUp },
       ],
     },

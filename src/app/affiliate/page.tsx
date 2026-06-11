@@ -68,6 +68,18 @@ export default function AffiliatePage() {
     enabled: !!userId,
   });
 
+  const { data: balanceData } = useQuery({
+    queryKey: queryKeys.userBalance,
+    queryFn: async () => {
+      const res = await fetch('/api/user/balance');
+      if (!res.ok) return null;
+      return res.json() as Promise<{ availableCents: number }>;
+    },
+    enabled: !!userId && statsData?.success === true,
+  });
+
+  const availableBalanceCents = balanceData?.availableCents ?? 0;
+
   const affiliateData = statsData?.success
     ? {
         ...statsData.data,
@@ -265,18 +277,27 @@ export default function AffiliatePage() {
               </div>
             </div>
 
-            {/* Quick copy */}
-            <Button
-              variant="chrome"
-              onClick={() => generateAffiliateLink('', 'hero')}
-            >
-              {copiedKey === 'hero' ? (
-                <Check className={`h-4 w-4 mr-2 ${CHROME_ICON}`} />
-              ) : (
-                <Copy className="h-4 w-4 mr-2" />
+            {/* Quick actions */}
+            <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+              <Button variant="chrome" onClick={() => generateAffiliateLink('', 'hero')}>
+                {copiedKey === 'hero' ? (
+                  <Check className={`h-4 w-4 mr-2 ${CHROME_ICON}`} />
+                ) : (
+                  <Copy className="h-4 w-4 mr-2" />
+                )}
+                {copiedKey === 'hero'
+                  ? messages.affiliate.dashboard.copied
+                  : messages.affiliate.dashboard.copyMyLink}
+              </Button>
+              {availableBalanceCents > 0 && (
+                <Button asChild variant="outline" className="border-purple-500/30">
+                  <Link href="/affiliate/giveaway-request">
+                    <Gift className="h-4 w-4 mr-2" />
+                    {messages.affiliate.dashboard.requestGiveaway}
+                  </Link>
+                </Button>
               )}
-              {copiedKey === 'hero' ? messages.affiliate.dashboard.copied : messages.affiliate.dashboard.copyMyLink}
-            </Button>
+            </div>
           </div>
         </div>
       </div>

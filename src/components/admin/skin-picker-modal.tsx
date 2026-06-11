@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { MagnifyingGlassIcon, CheckIcon, CubeIcon } from '@heroicons/react/24/outline';
 import { useLocale } from '@/components/providers/locale-provider';
 
-interface SkinItem {
+export interface SkinItem {
   steam_market_hash_name: string;
   icon_url: string | null;
   price: number | null;

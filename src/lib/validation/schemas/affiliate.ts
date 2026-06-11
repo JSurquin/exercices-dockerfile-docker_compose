@@ -28,3 +28,13 @@ export const affiliateCommissionsPostSchema = z
     commissionIds: z.array(z.string()).optional(),
   })
   .strip();
+
+export const affiliateGiveawayRequestPostSchema = z
+  .object({
+    startDate: z.string().min(1),
+    endDate: z.string().min(1),
+    winnerCount: z.coerce.number().int().min(1),
+    costCents: z.coerce.number().int().min(1),
+    adminMessage: z.string().max(2000).optional().nullable(),
+  })
+  .strip();
