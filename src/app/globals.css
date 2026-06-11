@@ -1059,9 +1059,17 @@ body.next-dev-overlay-present #sentry-feedback {
     letter-spacing: -0.02em;
   }
 
-  /* Hero background artwork — pleine largeur, sans crop */
+  /* Hero background artwork — pleine largeur, sans crop (desktop) */
   .cs2-hero-background__artwork {
     background-size: 100% 100%;
+    background-position: center center;
+  }
+
+  @media (max-width: 767px) {
+    .cs2-hero-background__artwork {
+      background-size: cover;
+      background-position: center top;
+    }
   }
 
   /* Hero product float */
@@ -1136,6 +1144,13 @@ body.next-dev-overlay-present #sentry-feedback {
     background-position: center bottom;
     position: relative;
     padding-bottom: 3rem;
+  }
+
+  @media (max-width: 767px) {
+    .lunar-footer--banner {
+      background-size: cover;
+      background-position: center bottom;
+    }
   }
 
   .lunar-footer--banner .lunar-footer__overlay {
