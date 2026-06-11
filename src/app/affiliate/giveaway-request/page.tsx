@@ -2,22 +2,21 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
+import type { Messages } from '~/utils/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { PageLoading } from '@/components/ui/page-loading';
 import { useLocale } from '@/components/providers/locale-provider';
 import { useSession } from '~/lib/auth-client';
 import { queryKeys } from '@/lib/query-keys';
 import { formatCentsToCurrency } from '@/lib/currency-converter';
 import { AFFILIATE_MAX_PENDING_GIVEAWAY_REQUESTS } from '@/lib/affiliate-giveaway-request-logic';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Gift, Loader2 } from 'lucide-react';
 
 interface GiveawayRequestRow {
@@ -49,11 +48,17 @@ function toLocalDatetimeValue(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+const REQUEST_STATUS_LABELS: Record<GiveawayRequestRow['status'], keyof Messages['affiliate']['giveawayRequest']> = {
+  PENDING: 'statusPending',
+  APPROVED: 'statusApproved',
+  REJECTED: 'statusRejected',
+};
+
 export default function AffiliateGiveawayRequestPage() {
   const { messages } = useLocale();
-  const t = messages.affiliate.giveawayRequest;
+  const t = messages.affiliate?.giveawayRequest;
   const td = messages.affiliate.dashboard;
-  const router = useRouter();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: session } = useSession();
   const userId = session?.user?.id;
@@ -129,13 +134,24 @@ export default function AffiliateGiveawayRequestPage() {
 
   const submitMutation = useMutation({
     mutationFn: async () => {
+      const parsedStart = new Date(startDate);
+      const parsedEnd = new Date(endDate);
+      const parsedWinners = parseInt(winnerCount, 10);
+
+      if (Number.isNaN(parsedStart.getTime()) || Number.isNaN(parsedEnd.getTime())) {
+        throw new Error(t?.startDate ? `${t.startDate} / ${t.endDate} invalides` : 'Dates invalides');
+      }
+      if (!Number.isFinite(parsedWinners) || parsedWinners < 1) {
+        throw new Error(t?.winnerCount ? `${t.winnerCount} invalide` : 'Nombre de gagnants invalide');
+      }
+
       const res = await fetch('/api/affiliate/giveaway-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          startDate: new Date(startDate).toISOString(),
-          endDate: new Date(endDate).toISOString(),
-          winnerCount: parseInt(winnerCount, 10),
+          startDate: parsedStart.toISOString(),
+          endDate: parsedEnd.toISOString(),
+          winnerCount: parsedWinners,
           costCents,
           adminMessage: adminMessage.trim() || null,
           requireAffiliateCode,
@@ -146,18 +162,43 @@ export default function AffiliateGiveawayRequestPage() {
       return data;
     },
     onSuccess: () => {
-      toast.success(t.success, { description: t.successDesc });
+      toast({
+        title: t?.success ?? 'Demande envoyée',
+        description: t?.successDesc,
+      });
+      setCostEur('');
+      setAdminMessage('');
       queryClient.invalidateQueries({ queryKey: queryKeys.affiliateGiveawayRequests });
       queryClient.invalidateQueries({ queryKey: queryKeys.userBalance });
-      router.push('/affiliate');
     },
-    onError: (err: Error) => {
-      toast.error(td.payoutError, { description: err.message });
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : td.payoutError;
+      toast({
+        title: td.payoutError,
+        description: message,
+        variant: 'destructive',
+      });
     },
   });
 
   if (statsQuery.isLoading || requestsQuery.isLoading || !session) {
     return <PageLoading variant="compact" message={messages.common.loading} className="min-h-[50vh]" />;
+  }
+
+  if (!t) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="max-w-md w-full border-red-500/20 bg-slate-900/50">
+          <CardContent className="p-8 text-center space-y-4">
+            <h2 className="text-xl font-bold text-white">{messages.common.error}</h2>
+            <p className="text-muted-foreground text-sm">{messages.error.message}</p>
+            <Button asChild variant="outline">
+              <Link href="/affiliate">Retour</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (requestsQuery.isError) {
@@ -196,11 +237,8 @@ export default function AffiliateGiveawayRequestPage() {
     );
   }
 
-  const statusLabel = (status: GiveawayRequestRow['status']) => {
-    if (status === 'PENDING') return t.statusPending;
-    if (status === 'APPROVED') return t.statusApproved;
-    return t.statusRejected;
-  };
+  const getStatusLabel = (status: GiveawayRequestRow['status']) =>
+    t[REQUEST_STATUS_LABELS[status]] ?? status;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-slate-950/50">
@@ -235,7 +273,7 @@ export default function AffiliateGiveawayRequestPage() {
             )}
             {pendingCount >= maxPending && (
               <p className="text-sm text-amber-400">
-                {t.maxPendingReached.replace('{max}', String(maxPending))}
+                {String(t.maxPendingReached).replace('{max}', String(maxPending))}
               </p>
             )}
 
@@ -299,10 +337,12 @@ export default function AffiliateGiveawayRequestPage() {
             </div>
 
             <div className="flex items-start gap-3 rounded-lg border border-slate-700 bg-slate-800/40 p-3">
-              <Checkbox
+              <input
                 id="requireAffiliateCode"
+                type="checkbox"
                 checked={requireAffiliateCode}
-                onCheckedChange={(checked) => setRequireAffiliateCode(checked === true)}
+                onChange={(e) => setRequireAffiliateCode(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-slate-600 bg-slate-800 accent-purple-500"
               />
               <div className="space-y-1">
                 <Label htmlFor="requireAffiliateCode" className="text-slate-200 cursor-pointer">
@@ -356,7 +396,7 @@ export default function AffiliateGiveawayRequestPage() {
                       </Link>
                     )}
                   </div>
-                  <Badge variant="outline">{statusLabel(req.status)}</Badge>
+                  <Badge variant="outline">{getStatusLabel(req.status)}</Badge>
                 </div>
               ))
             )}
