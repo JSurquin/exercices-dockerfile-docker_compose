@@ -34,6 +34,7 @@ export interface SubmitGiveawayRequestInput {
   winnerCount: number;
   costCents: number;
   adminMessage?: string | null;
+  requireAffiliateCode?: boolean;
 }
 
 export interface ApproveGiveawayRequestInput {
@@ -141,6 +142,7 @@ export class AffiliateGiveawayRequestService {
         winnerCount: input.winnerCount,
         costCents: input.costCents,
         adminMessage: input.adminMessage?.trim() || null,
+        requireAffiliateCode: input.requireAffiliateCode !== false,
         status: 'PENDING',
       },
     });
@@ -340,6 +342,7 @@ export class AffiliateGiveawayRequestService {
         },
       });
 
+      const requireAffiliateCode = locked.requireAffiliateCode !== false;
       const giveaway = await tx.giveaway.create({
         data: {
           title: input.title.trim(),
@@ -354,8 +357,8 @@ export class AffiliateGiveawayRequestService {
           winnerCount: locked.winnerCount || GIVEAWAY_DEFAULT_WINNER_COUNT,
           rewardValueCents,
           durationType: GiveawayDurationType.CUSTOM,
-          isPrivate: true,
-          requiredAffiliateCode: existing.affiliate.code,
+          isPrivate: requireAffiliateCode,
+          requiredAffiliateCode: requireAffiliateCode ? existing.affiliate.code : null,
           status: 'ACTIVE',
         },
       });

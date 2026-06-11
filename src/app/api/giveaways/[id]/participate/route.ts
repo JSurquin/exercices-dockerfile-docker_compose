@@ -4,6 +4,7 @@ import { prisma } from '~/prisma/prisma';
 import { auth } from '~/lib/auth';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { giveawayParticipateBodySchema } from '@/lib/validation/schemas/integrations';
+import { canAccessPrivateGiveaway, parseAffiliateRefFromRequest } from '@/lib/giveaway-private-access';
 
 export async function POST(
   request: NextRequest,
@@ -28,16 +29,7 @@ export async function POST(
     }
 
     const userId = session.user.id;
-
-    // Lire le code affilié depuis le cookie ou le query param
-    const cookieHeader = request.headers.get('cookie') ?? '';
-    const affiliateCookie = cookieHeader
-      .split(';')
-      .find((c) => c.trim().startsWith('ctf_affiliate_ref='))
-      ?.split('=')[1]
-      ?.trim();
-    const { searchParams } = new URL(request.url);
-    const affiliateRef = searchParams.get('ref') ?? affiliateCookie ?? null;
+    const affiliateRef = parseAffiliateRefFromRequest(request);
 
     // Early-exit rapide hors transaction (non-ACTIVE ou inexistant)
     const giveaway = await prisma.giveaway.findUnique({ where: { id: giveawayId } });
@@ -56,11 +48,16 @@ export async function POST(
     
     // SÉCURITÉ: Vérifier l'accès aux giveaways privés avec code affilié requis
     if (giveaway.isPrivate && giveaway.requiredAffiliateCode) {
-      if (!affiliateRef || affiliateRef !== giveaway.requiredAffiliateCode) {
+      const allowed = await canAccessPrivateGiveaway({
+        giveaway,
+        affiliateRef,
+        viewerUserId: userId,
+      });
+      if (!allowed) {
         return NextResponse.json(
-          { 
+          {
             error: 'Accès refusé : ce giveaway est réservé aux membres avec un code affilié spécifique',
-            code: 'PRIVATE_GIVEAWAY_ACCESS_DENIED' 
+            code: 'PRIVATE_GIVEAWAY_ACCESS_DENIED',
           },
           { status: 403 }
         );

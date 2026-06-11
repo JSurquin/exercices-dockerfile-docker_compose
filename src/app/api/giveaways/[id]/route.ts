@@ -4,6 +4,7 @@ import { prisma } from '~/prisma/prisma';
 import { auth } from '~/lib/auth';
 import { enrichGiveawayForViewer, redactGiveawayForPublic } from '@/lib/giveaway-public';
 import { withPublicWinnerProfile } from '@/lib/giveaway-winners-public';
+import { canAccessPrivateGiveaway, parseAffiliateRefFromRequest } from '@/lib/giveaway-private-access';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { giveawayPatchBodySchema } from '@/lib/validation/schemas/integrations';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
@@ -47,16 +48,14 @@ export async function GET(
 
     // Vérifier l'accès aux giveaways privés
     if (giveaway.isPrivate && giveaway.requiredAffiliateCode) {
-      const cookieHeader = request.headers.get('cookie') ?? '';
-      const affiliateCookie = cookieHeader
-        .split(';')
-        .find((c) => c.trim().startsWith('ctf_affiliate_ref='))
-        ?.split('=')[1]
-        ?.trim();
-      const refParam = new URL(request.url).searchParams.get('ref');
-      const affiliateRef = refParam ?? affiliateCookie ?? null;
+      const affiliateRef = parseAffiliateRefFromRequest(request);
+      const allowed = await canAccessPrivateGiveaway({
+        giveaway,
+        affiliateRef,
+        viewerUserId: viewerId,
+      });
 
-      if (affiliateRef !== giveaway.requiredAffiliateCode) {
+      if (!allowed) {
         return NextResponse.json({ error: 'Accès non autorisé à ce giveaway' }, { status: 403 });
       }
     }

@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
       return parsed.response;
     }
 
-    const { startDate, endDate, winnerCount, costCents, adminMessage } = parsed.data;
+    const { startDate, endDate, winnerCount, costCents, adminMessage, requireAffiliateCode } =
+      parsed.data;
 
     const requestRow = await AffiliateGiveawayRequestService.submitRequest(session.user.id, {
       startDate: new Date(startDate),
@@ -49,6 +50,7 @@ export async function POST(request: NextRequest) {
       winnerCount,
       costCents,
       adminMessage,
+      requireAffiliateCode,
     });
 
     return NextResponse.json({ success: true, data: requestRow }, { status: 201 });

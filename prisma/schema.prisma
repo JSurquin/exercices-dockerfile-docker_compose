@@ -473,6 +473,8 @@ model AffiliateGiveawayRequest {
   winnerCount         Int
   costCents           Int
   adminMessage        String?
+  /// Si true, le giveaway créé sera privé et réservé au code affilié
+  requireAffiliateCode Boolean                       @default(true)
   status              AffiliateGiveawayRequestStatus @default(PENDING)
   giveawayId          String?                        @unique
   prize               String?

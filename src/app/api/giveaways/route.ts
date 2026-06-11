@@ -5,6 +5,7 @@ import { GiveawayDurationType } from '@prisma/client';
 import { auth } from '~/lib/auth';
 import { enrichGiveawayForViewer, redactGiveawayForPublic } from '@/lib/giveaway-public';
 import { withPublicWinnerProfiles } from '@/lib/giveaway-winners-public';
+import { buildGiveawayVisibilityOr, parseAffiliateRefFromRequest } from '@/lib/giveaway-private-access';
 import { getPointsConfig } from '@/lib/points-service';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { safeParseJson, safeParseSearchParams } from '@/lib/validation/helpers';
@@ -25,22 +26,9 @@ export async function GET(request: NextRequest) {
     const session = await auth.api.getSession({ headers: request.headers });
     const viewerId = session?.user?.id ?? null;
 
-    // Lire le code affilié depuis le cookie ou le query param
-    const cookieHeader = request.headers.get('cookie') ?? '';
-    const affiliateCookie = cookieHeader
-      .split(';')
-      .find((c) => c.trim().startsWith('ctf_affiliate_ref='))
-      ?.split('=')[1]
-      ?.trim();
-    const affiliateRef = parsedQ.data.ref ?? affiliateCookie ?? null;
+    const affiliateRef = parseAffiliateRefFromRequest(request);
 
-    const accessOr: Prisma.GiveawayWhereInput[] = [
-      { isPrivate: false },
-      { isPrivate: true, requiredAffiliateCode: null },
-    ];
-    if (affiliateRef) {
-      accessOr.push({ isPrivate: true, requiredAffiliateCode: affiliateRef });
-    }
+    const accessOr = buildGiveawayVisibilityOr(affiliateRef, viewerId);
     const where: Prisma.GiveawayWhereInput = {
       AND: [
         ...(status ? [{ status }] : []),

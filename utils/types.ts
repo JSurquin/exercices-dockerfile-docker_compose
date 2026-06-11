@@ -4658,6 +4658,11 @@ export interface Messages {
       statusRejected: string;
       noRequests: string;
       maxPendingReached: string;
+      requireAffiliateCode: string;
+      requireAffiliateCodeHint: string;
+      privateAccess: string;
+      publicAccess: string;
+      viewGiveaway: string;
     };
     application: {
       title: string;

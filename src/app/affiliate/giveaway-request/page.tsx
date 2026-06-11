@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { PageLoading } from '@/components/ui/page-loading';
 import { useLocale } from '@/components/providers/locale-provider';
 import { useSession } from '~/lib/auth-client';
@@ -25,9 +26,22 @@ interface GiveawayRequestRow {
   endDate: string;
   winnerCount: number;
   costCents: number;
+  requireAffiliateCode?: boolean;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   adminMessage?: string | null;
   giveaway?: { id: string; title: string; status: string } | null;
+}
+
+async function parseApiJson(res: Response): Promise<Record<string, unknown>> {
+  const text = await res.text();
+  if (!text.trim()) {
+    throw new Error('Réponse serveur vide');
+  }
+  try {
+    return JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    throw new Error('Réponse serveur invalide — réessayez dans un instant');
+  }
 }
 
 function toLocalDatetimeValue(date: Date): string {
@@ -61,6 +75,7 @@ export default function AffiliateGiveawayRequestPage() {
   const [winnerCount, setWinnerCount] = useState('1');
   const [costEur, setCostEur] = useState('');
   const [adminMessage, setAdminMessage] = useState('');
+  const [requireAffiliateCode, setRequireAffiliateCode] = useState(true);
 
   const [statsQuery, requestsQuery] = useQueries({
     queries: [
@@ -78,8 +93,8 @@ export default function AffiliateGiveawayRequestPage() {
         queryKey: queryKeys.affiliateGiveawayRequests,
         queryFn: async () => {
           const res = await fetch('/api/affiliate/giveaway-requests');
-          const data = await res.json();
-          if (!data.success) throw new Error(data.error || 'Load error');
+          const data = await parseApiJson(res);
+          if (!data.success) throw new Error(String(data.error || 'Load error'));
           return data.data as {
             requests: GiveawayRequestRow[];
             balance: { availableCents: number; accountFrozen: boolean };
@@ -123,10 +138,11 @@ export default function AffiliateGiveawayRequestPage() {
           winnerCount: parseInt(winnerCount, 10),
           costCents,
           adminMessage: adminMessage.trim() || null,
+          requireAffiliateCode,
         }),
       });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Error');
+      const data = await parseApiJson(res);
+      if (!data.success) throw new Error(String(data.error || 'Error'));
       return data;
     },
     onSuccess: () => {
@@ -142,6 +158,26 @@ export default function AffiliateGiveawayRequestPage() {
 
   if (statsQuery.isLoading || requestsQuery.isLoading || !session) {
     return <PageLoading variant="compact" message={messages.common.loading} className="min-h-[50vh]" />;
+  }
+
+  if (requestsQuery.isError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="max-w-md w-full border-red-500/20 bg-slate-900/50">
+          <CardContent className="p-8 text-center space-y-4">
+            <h2 className="text-xl font-bold text-white">{td.payoutError}</h2>
+            <p className="text-muted-foreground text-sm">
+              {requestsQuery.error instanceof Error
+                ? requestsQuery.error.message
+                : messages.common.error}
+            </p>
+            <Button variant="outline" onClick={() => requestsQuery.refetch()}>
+              {messages.error.retry}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (!affiliateData) {
@@ -262,6 +298,20 @@ export default function AffiliateGiveawayRequestPage() {
               />
             </div>
 
+            <div className="flex items-start gap-3 rounded-lg border border-slate-700 bg-slate-800/40 p-3">
+              <Checkbox
+                id="requireAffiliateCode"
+                checked={requireAffiliateCode}
+                onCheckedChange={(checked) => setRequireAffiliateCode(checked === true)}
+              />
+              <div className="space-y-1">
+                <Label htmlFor="requireAffiliateCode" className="text-slate-200 cursor-pointer">
+                  {t.requireAffiliateCode}
+                </Label>
+                <p className="text-xs text-slate-400">{t.requireAffiliateCodeHint}</p>
+              </div>
+            </div>
+
             <Button
               className="w-full bg-cta-gradient hover:brightness-110 text-white"
               disabled={!canSubmit || submitMutation.isPending}
@@ -295,7 +345,16 @@ export default function AffiliateGiveawayRequestPage() {
                     </p>
                     <p className="text-xs text-slate-400">
                       {new Date(req.startDate).toLocaleDateString()} → {new Date(req.endDate).toLocaleDateString()}
+                      {req.requireAffiliateCode === false ? ` · ${t.publicAccess}` : ` · ${t.privateAccess}`}
                     </p>
+                    {req.giveaway && (
+                      <Link
+                        href={`/giveaways/${req.giveaway.id}`}
+                        className="text-xs text-purple-400 hover:text-purple-300 underline"
+                      >
+                        {t.viewGiveaway}: {req.giveaway.title}
+                      </Link>
+                    )}
                   </div>
                   <Badge variant="outline">{statusLabel(req.status)}</Badge>
                 </div>

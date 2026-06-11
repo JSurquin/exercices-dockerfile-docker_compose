@@ -36,5 +36,6 @@ export const affiliateGiveawayRequestPostSchema = z
     winnerCount: z.coerce.number().int().min(1),
     costCents: z.coerce.number().int().min(1),
     adminMessage: z.string().max(2000).optional().nullable(),
+    requireAffiliateCode: z.boolean().optional().default(true),
   })
   .strip();
