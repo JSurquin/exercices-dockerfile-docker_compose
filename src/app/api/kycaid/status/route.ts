@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
-import { checkKycStatus } from '@/lib/kycaid';
+import {
+  checkKycStatus,
+  resolveDeclineReasonsFromDb,
+  resolveAllDeclineReasons,
+} from '@/lib/kycaid';
 import { prisma } from '~/prisma/prisma';
 
 // =============================================================================
@@ -15,15 +19,11 @@ export async function GET() {
     });
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Non authentifié' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
     const userId = session.user.id;
 
-    // Récupérer l'utilisateur avec son statut KYC et la dernière vérification
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -50,22 +50,34 @@ export async function GET() {
             kycaidVerificationId: true,
             status: true,
             verified: true,
+            declineReasons: true,
           },
         },
       },
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'Utilisateur non trouvé' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
     }
 
-    // Vérifier le statut actuel
     const currentStatus = await checkKycStatus(userId);
+    const dbReasons = await resolveDeclineReasonsFromDb(userId);
 
-    // Déterminer le message à afficher
+    const latestVerification = user.kycVerifications?.[0];
+    const storedDeclineReasons = Array.isArray(latestVerification?.declineReasons)
+      ? (latestVerification.declineReasons as string[]).filter((r) => typeof r === 'string')
+      : [];
+
+    const declineReasons = resolveAllDeclineReasons(
+      null,
+      null,
+      currentStatus.declineReasons?.length
+        ? currentStatus.declineReasons
+        : storedDeclineReasons.length
+          ? storedDeclineReasons
+          : dbReasons
+    );
+
     let message = '';
     let canRetry = false;
 
@@ -74,7 +86,12 @@ export async function GET() {
         message = 'Votre identité a été vérifiée avec succès.';
         break;
       case 'REJECTED':
-        message = 'Votre vérification a été refusée.';
+        if (declineReasons.length > 0) {
+          message = `Votre vérification a été rejetée pour la raison suivante : ${declineReasons.join(', ')}`;
+        } else {
+          message =
+            'Votre vérification a été rejetée. Veuillez soumettre de nouveaux documents valides ou contacter le support.';
+        }
         canRetry = true;
         break;
       case 'PENDING':
@@ -87,8 +104,6 @@ export async function GET() {
         break;
     }
 
-    // Récupérer le verificationId si disponible
-    const latestVerification = user.kycVerifications?.[0];
     const verificationId = latestVerification?.kycaidVerificationId;
 
     return NextResponse.json({
@@ -96,8 +111,8 @@ export async function GET() {
       message,
       canRetry,
       verificationUrl: currentStatus.verificationUrl,
-      verificationId, // Ajouté pour le polling
-      declineReasons: currentStatus.declineReasons,
+      verificationId,
+      declineReasons,
       documents: user.kycDocuments,
       user: {
         email: user.email,
@@ -112,4 +127,3 @@ export async function GET() {
     );
   }
 }
-

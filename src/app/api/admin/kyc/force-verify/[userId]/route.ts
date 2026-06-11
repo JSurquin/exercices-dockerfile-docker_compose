@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '~/prisma/prisma';
-import {
-  listApplicantVerifications,
-  updateUserKycStatus,
-} from '@/lib/kycaid';
+import { syncUserKycFromKycaid } from '@/lib/kycaid';
 import { getRequestContext, logUnauthorizedAccess } from '@/lib/security/audit-helpers';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
@@ -32,104 +28,32 @@ export async function POST(
   const { userId } = await params;
   const force = new URL(request.url).searchParams.get('force') === 'true';
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      kycStatus: true,
-      kycaidApplicantId: true,
-    },
-  });
-
-  if (!user) {
-    return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
-  }
-
-  if (!user.kycaidApplicantId) {
-    if (force) {
-      // Aucun applicant KYCAID — forcer manuellement (override admin)
-      await updateUserKycStatus(userId, 'VERIFIED');
-      await prisma.auditLog.create({
-        data: {
-          userId,
-          action: 'KYC_FORCE_VERIFIED',
-          details: { adminId: session.user.id, reason: 'Admin force-verify (no applicant)' },
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        },
-      });
-      return NextResponse.json({ success: true, newStatus: 'VERIFIED', source: 'manual_admin_override' });
-    }
-    return NextResponse.json({ error: 'Aucun applicant KYCAID lié à cet utilisateur' }, { status: 400 });
-  }
-
   try {
-    const verifications = await listApplicantVerifications(user.kycaidApplicantId);
-    const latest = verifications.items?.[0];
+    const result = await syncUserKycFromKycaid(userId, {
+      force,
+      adminId: session.user.id,
+      ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+    });
 
-    if (!latest) {
-      if (force) {
-        await updateUserKycStatus(userId, 'VERIFIED');
-        await prisma.auditLog.create({
-          data: {
-            userId,
-            action: 'KYC_FORCE_VERIFIED',
-            details: { adminId: session.user.id, reason: 'Admin force-verify (no verification found)' },
-            ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-          },
-        });
-        return NextResponse.json({ success: true, newStatus: 'VERIFIED', source: 'manual_admin_override' });
-      }
-      return NextResponse.json({
-        success: false,
-        message: 'Aucune vérification trouvée sur KYCAID',
-        kycaidStatus: null,
-      });
+    if (result.kycaidApiError && !result.success) {
+      return NextResponse.json(
+        { error: result.kycaidApiError, message: result.message },
+        { status: 502 }
+      );
     }
 
-    if (latest.verified === true) {
-      await updateUserKycStatus(userId, 'VERIFIED', latest.verification_id);
-      await prisma.auditLog.create({
-        data: {
-          userId,
-          action: 'KYC_FORCE_VERIFIED',
-          details: { adminId: session.user.id, reason: 'Admin force-verify (KYCAID confirmed)', verificationId: latest.verification_id },
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        },
-      });
-      return NextResponse.json({ success: true, newStatus: 'VERIFIED', source: 'kycaid', kycaidStatus: latest.status });
-    }
-
-    if (latest.status === 'declined') {
-      await updateUserKycStatus(userId, 'REJECTED', latest.verification_id);
-      await prisma.auditLog.create({
-        data: {
-          userId,
-          action: 'KYC_FORCE_VERIFIED',
-          details: { adminId: session.user.id, reason: 'Admin force-verify (KYCAID declined)', newStatus: 'REJECTED', verificationId: latest.verification_id },
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        },
-      });
-      return NextResponse.json({ success: true, newStatus: 'REJECTED', source: 'kycaid', kycaidStatus: latest.status });
-    }
-
-    if (force) {
-      await updateUserKycStatus(userId, 'VERIFIED');
-      await prisma.auditLog.create({
-        data: {
-          userId,
-          action: 'KYC_FORCE_VERIFIED',
-          details: { adminId: session.user.id, reason: 'Admin force-verify (override unresolved)', kycaidStatus: latest.status },
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        },
-      });
-      return NextResponse.json({ success: true, newStatus: 'VERIFIED', source: 'manual_admin_override', kycaidStatus: latest.status });
+    if (!result.success && result.message === 'Aucun applicant KYCAID lié à cet utilisateur') {
+      return NextResponse.json({ error: result.message }, { status: 400 });
     }
 
     return NextResponse.json({
-      success: false,
-      message: 'KYCAID ne confirme pas encore la vérification',
-      kycaidStatus: latest.status,
-      verified: latest.verified,
+      success: result.success,
+      newStatus: result.newStatus,
+      source: result.source,
+      kycaidStatus: result.kycaidStatus,
+      verified: result.verified,
+      message: result.message,
+      declineReasons: result.declineReasons,
     });
   } catch (err) {
     console.error(`[Admin KYC Force Verify] Error for user ${userId}:`, err instanceof Error ? err.message : err);

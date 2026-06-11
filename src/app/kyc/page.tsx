@@ -110,7 +110,7 @@ export default function KYCPage() {
   const steps = getSteps(messages);
 
   const isPolling = user?.kycStatus === 'IN_PROGRESS';
-  const isRejected = user?.kycStatus === 'REJECTED';
+  const isRejected = user?.kycStatus === 'REJECTED' || user?.kycStatus === 'KYCAID_REJECTED';
   const prevStatusRef = useRef<string | null>(null);
 
   const { data: kycData } = useQuery({
@@ -364,9 +364,10 @@ export default function KYCPage() {
   }
 
   // Si KYC rejeté (et qu'on ne force pas l'affichage du formulaire)
-  if (user.kycStatus === 'REJECTED' && !forceShowForm) {
+  if (isRejected && !forceShowForm) {
     const declineReasons: string[] = kycData?.declineReasons ?? [];
     const reasonsMap = messages.kycPage.status.rejected.declineReasonsMap;
+    const rejectedCopy = messages.kycPage.status.rejected;
 
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
@@ -374,30 +375,42 @@ export default function KYCPage() {
           <CardContent className="p-6 sm:p-8">
             <div className="text-center">
               <XCircleIcon className="w-16 h-16 mx-auto mb-4 text-red-500" />
-              <h2 className="text-xl font-semibold mb-2">{messages.kycPage.status.rejected.title}</h2>
+              <h2 className="text-xl font-semibold mb-2">{rejectedCopy.title}</h2>
               <p className="text-muted-foreground mb-6">
-                {messages.kycPage.status.rejected.description}
+                {rejectedCopy.description}
               </p>
             </div>
 
-            {declineReasons.length > 0 && (
-              <div className="mb-6 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <ExclamationTriangleIcon className="w-5 h-5 text-red-500 flex-shrink-0" />
-                  <h3 className="font-semibold text-red-900 dark:text-red-100 text-sm">
-                    {messages.kycPage.status.rejected.reasonsTitle}
-                  </h3>
-                </div>
-                <ul className="space-y-2">
-                  {declineReasons.map((reason) => (
-                    <li key={reason} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
-                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
-                      <span>{reasonsMap[reason] ?? reason}</span>
-                    </li>
-                  ))}
-                </ul>
+            <div
+              data-rejection-reason
+              className="mb-6 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 p-4"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <ExclamationTriangleIcon className="w-5 h-5 text-red-500 flex-shrink-0" />
+                <h3 className="font-semibold text-red-900 dark:text-red-100 text-sm">
+                  {rejectedCopy.reasonsTitle}
+                </h3>
               </div>
-            )}
+              {declineReasons.length > 0 ? (
+                <>
+                  <p className="text-sm text-red-800 dark:text-red-200 mb-2">
+                    {rejectedCopy.rejectionIntro}
+                  </p>
+                  <ul className="space-y-2">
+                    {declineReasons.map((reason) => (
+                      <li key={reason} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+                        <span>{reasonsMap[reason as keyof typeof reasonsMap] ?? reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <p className="text-sm text-red-700 dark:text-red-300">
+                  {rejectedCopy.noReasonFallback}
+                </p>
+              )}
+            </div>
 
             <div className="text-center">
               <Button 

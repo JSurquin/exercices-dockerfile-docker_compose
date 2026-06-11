@@ -4499,6 +4499,8 @@ export const messages: Record<Locale, Messages> = {
         rejected: {
           title: "KYC Rejeté",
           description: "Votre dossier KYC a été rejeté. Consultez les raisons ci-dessous et soumettez de nouveaux documents valides.",
+          rejectionIntro: "Votre vérification a été rejetée pour la raison suivante :",
+          noReasonFallback: "Aucune raison détaillée n'a été fournie. Veuillez soumettre de nouveaux documents valides ou contacter le support.",
           restart: "Recommencer le KYC",
           reasonsTitle: "Raisons du refus",
           declineReasonsMap: {
@@ -10543,6 +10545,8 @@ export const messages: Record<Locale, Messages> = {
         rejected: {
           title: "KYC Rejected",
           description: "Your KYC file has been rejected. Please review the reasons below and submit new valid documents.",
+          rejectionIntro: "Your verification was rejected for the following reason:",
+          noReasonFallback: "No detailed reason was provided. Please submit new valid documents or contact support.",
           restart: "Restart KYC",
           reasonsTitle: "Rejection reasons",
           declineReasonsMap: {
@@ -17513,7 +17517,7 @@ export const messages: Record<Locale, Messages> = {
       addressDoc: { title: "地址证明", optional: "地址证明（可选）", description: "此步骤为可选，但可加快验证速度。接受文件：水电气账单、银行账单、税务通知（3个月内）。", uploaded: "已上传", skip: "跳过此步骤" },
       review: { complete: "文件完整", description: "在提交KYC文件之前，请核实您的信息。", personalInfo: "个人信息", documents: "已上传文件", identity: "身份证件：", selfie: "验证自拍", addressDocument: "地址证明：", delay: { title: "验证时间", description: "您的文件将在24-48个工作小时内审核完毕。审核完成后您将收到邮件通知。" }, fullName: "全名：", nationality: "国籍：", address: "地址：" },
       navigation: { previous: "上一步", next: "下一步", submit: "提交文件", loading: "加载中..." },
-      status: { verified: { title: "KYC已验证", description: "您的身份已成功验证。您现在可以进行支付。", dashboard: "返回控制台" }, inProgress: { title: "KYC验证中", description: "您的KYC文件正在审核中，将在24-48小时内收到回复。", dashboard: "返回控制台" }, rejected: { title: "KYC已拒绝", description: "您的KYC文件已被拒绝。请查看以下原因并提交新的有效文件。", restart: "重新开始KYC", reasonsTitle: "拒绝原因", declineReasonsMap: { AGE_RESTRICTION: "您不符合最低年龄要求。", ANONYMIZING_NETWORK: "检测到使用匿名网络（VPN/Tor）。", BAD_QUALITY: "文件图像质量差或无法辨认。", COMPROMISED_PERSON: "该人员已在数据库中被标记。", COMPULSION: "文件拍摄可能是被迫的。", DIFFERENT_FACES: "文件上的面部与自拍不匹配。", DOCUMENT_DAMAGED: "文件已物理损坏。", DOCUMENT_INCOMPLETE: "文件不完整, 缺少页面或部分。", DUPLICATE: "使用此文件的账户已存在。", EDITED_DOCUMENT: "文件似乎已被修改或编辑。", EXPIRED_DOCUMENT: "文件已过期。", FAKE_DOCUMENT: "文件是伪造的或不符合官方格式。", FRAUDULENT: "检测到欺诈活动。", IP_MISMATCH: "文件所属国家与您的位置不匹配。", LIMIT_REACHED_OTP: "OTP验证码尝试次数过多。", MULTIPLE_PERSON: "图像中可见多人。", NO_SELFIE: "未提供所需的自拍。", OTHER: "您的文件无法验证。请使用更清晰的文件重试。", PROHIBITED_JURISDICTION: "文件来自受限管辖区。", QES_MISMATCH: "电子签名信息与个人资料不匹配。", TAX_ID_REQUIRED: "需要税务识别号但未提供。", WRONG_DOB: "出生日期与文件不匹配。", WRONG_DOCUMENT: "提交的文件类型不被接受。", WRONG_INFO: "提供的信息与文件不匹配。", WRONG_NAME: "提供的姓名与文件不匹配。" } }, loginRequired: { title: "需要登录", description: "您必须登录才能访问KYC流程。", login: "使用Steam登录" } },
+      status: { verified: { title: "KYC已验证", description: "您的身份已成功验证。您现在可以进行支付。", dashboard: "返回控制台" }, inProgress: { title: "KYC验证中", description: "您的KYC文件正在审核中，将在24-48小时内收到回复。", dashboard: "返回控制台" }, rejected: { title: "KYC已拒绝", description: "您的KYC文件已被拒绝。请查看以下原因并提交新的有效文件。", rejectionIntro: "您的验证因以下原因被拒绝：", noReasonFallback: "未提供详细原因。请提交新的有效文件或联系客服。", restart: "重新开始KYC", reasonsTitle: "拒绝原因", declineReasonsMap: { AGE_RESTRICTION: "您不符合最低年龄要求。", ANONYMIZING_NETWORK: "检测到使用匿名网络（VPN/Tor）。", BAD_QUALITY: "文件图像质量差或无法辨认。", COMPROMISED_PERSON: "该人员已在数据库中被标记。", COMPULSION: "文件拍摄可能是被迫的。", DIFFERENT_FACES: "文件上的面部与自拍不匹配。", DOCUMENT_DAMAGED: "文件已物理损坏。", DOCUMENT_INCOMPLETE: "文件不完整, 缺少页面或部分。", DUPLICATE: "使用此文件的账户已存在。", EDITED_DOCUMENT: "文件似乎已被修改或编辑。", EXPIRED_DOCUMENT: "文件已过期。", FAKE_DOCUMENT: "文件是伪造的或不符合官方格式。", FRAUDULENT: "检测到欺诈活动。", IP_MISMATCH: "文件所属国家与您的位置不匹配。", LIMIT_REACHED_OTP: "OTP验证码尝试次数过多。", MULTIPLE_PERSON: "图像中可见多人。", NO_SELFIE: "未提供所需的自拍。", OTHER: "您的文件无法验证。请使用更清晰的文件重试。", PROHIBITED_JURISDICTION: "文件来自受限管辖区。", QES_MISMATCH: "电子签名信息与个人资料不匹配。", TAX_ID_REQUIRED: "需要税务识别号但未提供。", WRONG_DOB: "出生日期与文件不匹配。", WRONG_DOCUMENT: "提交的文件类型不被接受。", WRONG_INFO: "提供的信息与文件不匹配。", WRONG_NAME: "提供的姓名与文件不匹配。" } }, loginRequired: { title: "需要登录", description: "您必须登录才能访问KYC流程。", login: "使用Steam登录" } },
       toasts: {
         uploaded: "上传成功",
         submitted: "KYC文件提交成功！您将在24-48小时内收到回复。",

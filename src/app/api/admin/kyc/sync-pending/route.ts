@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
-import {
-  listApplicantVerifications,
-  updateUserKycStatus,
-} from '@/lib/kycaid';
+import { syncUserKycFromKycaid } from '@/lib/kycaid';
 import { getRequestContext, logUnauthorizedAccess } from '@/lib/security/audit-helpers';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
@@ -13,6 +10,9 @@ import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
  * Parcourt tous les utilisateurs avec kycStatus PENDING ou IN_PROGRESS,
  * interroge KYCAID pour leur statut réel et met à jour la base.
  * Utile quand le webhook n'a pas été reçu (callback URL absente, secret incorrect, etc.)
+ *
+ * Le sync unitaire (bouton par user) via force-verify fonctionne pour tous les statuts,
+ * y compris REJECTED et VERIFIED.
  */
 export async function POST(request: NextRequest) {
   const context = getRequestContext(request);
@@ -29,7 +29,6 @@ export async function POST(request: NextRequest) {
     error?: string;
   }[] = [];
 
-  // Récupérer tous les users avec applicant KYCAID et statut non résolu
   const users = await prisma.user.findMany({
     where: {
       kycaidApplicantId: { not: null },
@@ -38,7 +37,6 @@ export async function POST(request: NextRequest) {
     select: {
       id: true,
       kycStatus: true,
-      kycaidApplicantId: true,
     },
   });
 
@@ -46,35 +44,24 @@ export async function POST(request: NextRequest) {
 
   for (const user of users) {
     try {
-      const verifications = await listApplicantVerifications(user.kycaidApplicantId!);
-      const latest = verifications.items?.[0];
+      const result = await syncUserKycFromKycaid(user.id);
 
-      if (!latest) {
-        results.push({ userId: user.id, oldStatus: user.kycStatus, newStatus: null, error: 'No verification found on KYCAID' });
+      if (result.kycaidApiError && !result.success) {
+        results.push({
+          userId: user.id,
+          oldStatus: user.kycStatus,
+          newStatus: null,
+          error: result.kycaidApiError,
+        });
         continue;
       }
 
-      if (latest.verified === true) {
-        await updateUserKycStatus(user.id, 'VERIFIED', latest.verification_id);
-        results.push({ userId: user.id, oldStatus: user.kycStatus, newStatus: 'VERIFIED' });
-      } else if (latest.status === 'declined') {
-        await updateUserKycStatus(user.id, 'REJECTED', latest.verification_id);
-        results.push({ userId: user.id, oldStatus: user.kycStatus, newStatus: 'REJECTED' });
-      } else {
-        // Encore en cours côté KYCAID — mettre à jour le statut kycVerification en base
-        await prisma.kycVerification.upsert({
-          where: { kycaidVerificationId: latest.verification_id },
-          update: { status: latest.status.toUpperCase() as any, verified: false },
-          create: {
-            userId: user.id,
-            kycaidVerificationId: latest.verification_id,
-            kycaidApplicantId: user.kycaidApplicantId!,
-            status: latest.status.toUpperCase() as any,
-            verified: false,
-          },
-        });
-        results.push({ userId: user.id, oldStatus: user.kycStatus, newStatus: null });
-      }
+      results.push({
+        userId: user.id,
+        oldStatus: user.kycStatus,
+        newStatus: result.newStatus ?? null,
+        ...(result.message && !result.success ? { error: result.message } : {}),
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erreur inconnue';
       console.error(`[Admin KYC Sync] Error for user ${user.id}:`, message);

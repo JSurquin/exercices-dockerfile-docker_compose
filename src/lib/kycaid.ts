@@ -1,6 +1,21 @@
 import { prisma } from '~/prisma/prisma';
 import { encrypt } from '@/lib/encryption';
 import { logger } from '@/lib/logger';
+import {
+  isKycaidVerified,
+  isKycaidTerminalRejected,
+  isKycaidTerminal,
+  collectDeclineReasons,
+  resolveAllDeclineReasons,
+} from '@/lib/kycaid-status-helpers';
+
+export {
+  isKycaidVerified,
+  isKycaidTerminalRejected,
+  isKycaidTerminal,
+  collectDeclineReasons,
+  resolveAllDeclineReasons,
+} from '@/lib/kycaid-status-helpers';
 
 // =============================================================================
 // CONFIGURATION KYCAID
@@ -52,6 +67,9 @@ export interface KycaidApplicant {
   phone?: string;
   dob?: string; // Date de naissance (YYYY-MM-DD)
   residence_country?: string; // Code ISO 2 lettres
+  decline_reasons?: string[];
+  verified?: boolean | null;
+  verification_status?: string;
   // Adresse
   address?: {
     full_address?: string;
@@ -78,6 +96,11 @@ export interface KycaidVerification {
   created_at: string;
   updated_at: string;
   verifications?: {
+    profile?: {
+      status?: string;
+      verified: boolean;
+      decline_reasons?: string[];
+    };
     document?: {
       status: string;
       verified: boolean;
@@ -780,7 +803,7 @@ export async function initiateKyc(
 }
 
 /**
- * Vérifie le statut KYC d'un utilisateur
+ * Vérifie le statut KYC d'un utilisateur (live check + fallback DB pour les raisons de rejet).
  */
 export async function checkKycStatus(userId: string): Promise<{
   status: 'PENDING' | 'VERIFIED' | 'REJECTED';
@@ -789,68 +812,76 @@ export async function checkKycStatus(userId: string): Promise<{
 }> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { kycStatus: true },
+    select: { kycStatus: true, kycaidApplicantId: true },
   });
 
   if (!user) {
     throw new Error('User not found');
   }
 
-  // Si déjà vérifié, retourner le statut
-  if (user.kycStatus === 'VERIFIED') {
+  if (user.kycStatus === 'VERIFIED' || user.kycStatus === 'KYCAID_VERIFIED') {
     return { status: 'VERIFIED' };
   }
 
-  // Chercher la vérification KYC la plus récente (source principale)
-  const kycVerification = await prisma.kycVerification.findFirst({
-    where: { userId },
-    orderBy: { createdAt: 'desc' },
-  });
+  const dbReasons = await resolveDeclineReasonsFromDb(userId);
 
-  // Fallback : ancienne table kycDocument
-  const applicantId =
-    kycVerification?.kycaidApplicantId ||
-    (await prisma.kycDocument
-      .findFirst({ where: { userId }, orderBy: { uploadedAt: 'desc' } })
-      .then((d) => d?.kycaidApplicantId ?? null));
+  if (user.kycStatus === 'REJECTED' || user.kycStatus === 'KYCAID_REJECTED') {
+    const syncResult = await syncUserKycFromKycaid(userId);
+    if (syncResult.newStatus === 'VERIFIED') {
+      return { status: 'VERIFIED' };
+    }
+    if (syncResult.newStatus === 'REJECTED') {
+      return {
+        status: 'REJECTED',
+        declineReasons: syncResult.declineReasons?.length
+          ? syncResult.declineReasons
+          : dbReasons,
+      };
+    }
+    return {
+      status: 'REJECTED',
+      declineReasons: dbReasons.length ? dbReasons : syncResult.declineReasons,
+    };
+  }
 
+  const applicantId = await resolveApplicantIdForUser(userId, user.kycaidApplicantId);
   if (!applicantId) {
     return { status: 'PENDING' };
   }
 
   try {
-    // Vérifier le statut via KYCAID
-    const verifications = await listApplicantVerifications(applicantId);
-    const latestVerification = verifications.items[0];
-
-    if (!latestVerification) {
+    const state = await fetchKycaidVerificationState(userId, applicantId);
+    if (state.apiError) {
+      console.error('[KYCAID] Error checking status:', state.apiError);
       return { status: 'PENDING' };
     }
 
-    if (latestVerification.verified) {
-      await updateUserKycStatus(userId, 'VERIFIED', latestVerification.verification_id);
+    const { verification } = state;
+    if (!verification) {
+      return { status: 'PENDING' };
+    }
+
+    if (isKycaidVerified(verification)) {
+      await updateUserKycStatus(userId, 'VERIFIED', verification.verification_id);
+      await persistKycVerificationRecord(userId, applicantId, verification, []);
       return { status: 'VERIFIED' };
     }
 
-    if (latestVerification.status === 'declined' || 
-        (latestVerification.status === 'completed' && latestVerification.verified === false)) {
-      const reasons = collectDeclineReasons(latestVerification);
-      // Mettre à jour le statut en base quand on détecte un refus via polling
+    if (isKycaidTerminalRejected(verification)) {
+      const reasons = resolveAllDeclineReasons(verification, state.applicant, dbReasons);
       await updateUserKycStatus(
         userId,
         'REJECTED',
-        latestVerification.verification_id,
+        verification.verification_id,
         reasons.join(', ') || undefined
       );
-      return {
-        status: 'REJECTED',
-        declineReasons: reasons,
-      };
+      await persistKycVerificationRecord(userId, applicantId, verification, reasons);
+      return { status: 'REJECTED', declineReasons: reasons };
     }
 
     return {
       status: 'PENDING',
-      verificationUrl: latestVerification.form_url,
+      verificationUrl: verification.form_url,
     };
   } catch (error) {
     console.error('[KYCAID] Error checking status:', error);
@@ -1122,6 +1153,344 @@ export async function updateUserKycStatus(
 }
 
 // =============================================================================
+// SYNCHRONISATION KYCAID (source de vérité centralisée)
+// =============================================================================
+
+export type SyncKycResult = {
+  success: boolean;
+  newStatus?: 'VERIFIED' | 'REJECTED' | null;
+  source?: 'kycaid' | 'manual_admin_override';
+  kycaidStatus?: string | null;
+  verified?: boolean | null;
+  message?: string;
+  declineReasons?: string[];
+  kycaidApiError?: string;
+};
+
+export type SyncKycOptions = {
+  force?: boolean;
+  adminId?: string;
+  ipAddress?: string;
+};
+
+export async function resolveDeclineReasonsFromDb(userId: string): Promise<string[]> {
+  const [kycVerification, kycDocument] = await Promise.all([
+    prisma.kycVerification.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: { declineReasons: true },
+    }),
+    prisma.kycDocument.findFirst({
+      where: { userId },
+      orderBy: { uploadedAt: 'desc' },
+      select: { rejectionReason: true },
+    }),
+  ]);
+
+  const reasons: string[] = [];
+  const stored = kycVerification?.declineReasons;
+  if (Array.isArray(stored)) {
+    for (const r of stored) {
+      if (typeof r === 'string' && r) reasons.push(r);
+    }
+  }
+  if (kycDocument?.rejectionReason) {
+    reasons.push(
+      ...kycDocument.rejectionReason
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+    );
+  }
+  return [...new Set(reasons)];
+}
+
+async function resolveApplicantIdForUser(
+  userId: string,
+  kycaidApplicantId?: string | null
+): Promise<string | null> {
+  if (kycaidApplicantId) return kycaidApplicantId;
+
+  const kycVerification = await prisma.kycVerification.findFirst({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    select: { kycaidApplicantId: true },
+  });
+  if (kycVerification?.kycaidApplicantId) return kycVerification.kycaidApplicantId;
+
+  const doc = await prisma.kycDocument.findFirst({
+    where: { userId },
+    orderBy: { uploadedAt: 'desc' },
+    select: { kycaidApplicantId: true },
+  });
+  return doc?.kycaidApplicantId ?? null;
+}
+
+async function resolveLatestVerificationId(userId: string): Promise<string | null> {
+  const record = await prisma.kycVerification.findFirst({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    select: { kycaidVerificationId: true },
+  });
+  return record?.kycaidVerificationId ?? null;
+}
+
+export type KycaidVerificationState = {
+  verification: KycaidVerification | null;
+  applicant: KycaidApplicant | null;
+  apiError?: string;
+};
+
+/**
+ * Interroge KYCAID via les APIs documentées (GET verification + GET applicant).
+ */
+export async function fetchKycaidVerificationState(
+  userId: string,
+  applicantId: string
+): Promise<KycaidVerificationState> {
+  validateConfig();
+
+  let verification: KycaidVerification | null = null;
+  let applicant: KycaidApplicant | null = null;
+  let apiError: string | undefined;
+
+  const verificationId = await resolveLatestVerificationId(userId);
+
+  if (verificationId) {
+    try {
+      verification = await getVerification(verificationId);
+    } catch (err) {
+      apiError = err instanceof Error ? err.message : String(err);
+      logger.warn('[KYCAID] getVerification failed', { userId, verificationId, apiError });
+    }
+  }
+
+  try {
+    applicant = await getApplicant(applicantId);
+  } catch (err) {
+    const applicantError = err instanceof Error ? err.message : String(err);
+    if (!apiError) apiError = applicantError;
+    logger.warn('[KYCAID] getApplicant failed', { userId, applicantId, applicantError });
+  }
+
+  if (!verification && !applicant) {
+    return { verification: null, applicant: null, apiError };
+  }
+
+  return { verification, applicant, apiError };
+}
+
+export async function persistKycVerificationRecord(
+  userId: string,
+  applicantId: string,
+  verification: KycaidVerification,
+  declineReasons: string[]
+): Promise<void> {
+  const dbStatus = isKycaidVerified(verification)
+    ? 'VERIFIED'
+    : isKycaidTerminalRejected(verification)
+      ? 'REJECTED'
+      : (verification.status.toUpperCase() as 'PENDING' | 'COMPLETED' | 'DECLINED');
+
+  const isTerminal = isKycaidTerminal(verification);
+
+  await prisma.kycVerification.upsert({
+    where: { kycaidVerificationId: verification.verification_id },
+    update: {
+      status: dbStatus as any,
+      verified: verification.verified === true,
+      documentStatus: verification.verifications?.document?.status,
+      documentVerified: verification.verifications?.document?.verified,
+      facialStatus: verification.verifications?.facial?.status,
+      facialVerified: verification.verifications?.facial?.verified,
+      addressStatus: verification.verifications?.address?.status,
+      addressVerified: verification.verifications?.address?.verified,
+      amlStatus: verification.verifications?.aml?.status,
+      amlVerified: verification.verifications?.aml?.verified,
+      declineReasons: declineReasons as any,
+      metadata: verification as any,
+      ...(isTerminal && { completedAt: new Date() }),
+    },
+    create: {
+      userId,
+      kycaidVerificationId: verification.verification_id,
+      kycaidApplicantId: applicantId,
+      status: dbStatus as any,
+      verified: verification.verified === true,
+      declineReasons: declineReasons as any,
+      metadata: verification as any,
+      formUrl: verification.form_url,
+      ...(isTerminal && { completedAt: new Date() }),
+    },
+  });
+}
+
+async function applyManualVerifiedOverride(
+  userId: string,
+  options: SyncKycOptions,
+  reason: string
+): Promise<SyncKycResult> {
+  await updateUserKycStatus(userId, 'VERIFIED');
+  if (options.adminId) {
+    await prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'KYC_FORCE_VERIFIED',
+        details: { adminId: options.adminId, reason },
+        ipAddress: options.ipAddress || 'unknown',
+      },
+    });
+  }
+  return { success: true, newStatus: 'VERIFIED', source: 'manual_admin_override' };
+}
+
+/**
+ * Synchronise le statut KYC d'un utilisateur depuis KYCAID (APIs documentées).
+ * Utilisé par le panel admin (force-verify, sync unitaire) et checkKycStatus.
+ */
+export async function syncUserKycFromKycaid(
+  userId: string,
+  options: SyncKycOptions = {}
+): Promise<SyncKycResult> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, kycStatus: true, kycaidApplicantId: true },
+  });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const dbReasons = await resolveDeclineReasonsFromDb(userId);
+
+  if (!user.kycaidApplicantId) {
+    if (options.force) {
+      return applyManualVerifiedOverride(userId, options, 'Admin force-verify (no applicant)');
+    }
+    return {
+      success: false,
+      message: 'Aucun applicant KYCAID lié à cet utilisateur',
+      kycaidStatus: null,
+    };
+  }
+
+  const state = await fetchKycaidVerificationState(userId, user.kycaidApplicantId);
+
+  if (state.apiError && !state.verification && !state.applicant) {
+    if (options.force) {
+      return applyManualVerifiedOverride(
+        userId,
+        options,
+        `Admin force-verify (KYCAID API error: ${state.apiError})`
+      );
+    }
+    return {
+      success: false,
+      message: state.apiError,
+      kycaidApiError: state.apiError,
+      kycaidStatus: null,
+    };
+  }
+
+  const verification = state.verification;
+
+  if (!verification) {
+    if (options.force) {
+      return applyManualVerifiedOverride(userId, options, 'Admin force-verify (no verification found)');
+    }
+    return {
+      success: false,
+      message: 'Aucune vérification trouvée sur KYCAID',
+      kycaidStatus: null,
+    };
+  }
+
+  if (isKycaidVerified(verification)) {
+    const reasons: string[] = [];
+    await persistKycVerificationRecord(userId, user.kycaidApplicantId, verification, reasons);
+    await updateUserKycStatus(userId, 'VERIFIED', verification.verification_id);
+    if (options.adminId) {
+      await prisma.auditLog.create({
+        data: {
+          userId,
+          action: 'KYC_FORCE_VERIFIED',
+          details: {
+            adminId: options.adminId,
+            reason: 'Admin sync (KYCAID confirmed)',
+            verificationId: verification.verification_id,
+          },
+          ipAddress: options.ipAddress || 'unknown',
+        },
+      });
+    }
+    return {
+      success: true,
+      newStatus: 'VERIFIED',
+      source: 'kycaid',
+      kycaidStatus: verification.status,
+      verified: verification.verified,
+    };
+  }
+
+  if (isKycaidTerminalRejected(verification)) {
+    const reasons = resolveAllDeclineReasons(verification, state.applicant, dbReasons);
+    await persistKycVerificationRecord(userId, user.kycaidApplicantId, verification, reasons);
+    await updateUserKycStatus(
+      userId,
+      'REJECTED',
+      verification.verification_id,
+      reasons.join(', ') || undefined
+    );
+    if (options.adminId) {
+      await prisma.auditLog.create({
+        data: {
+          userId,
+          action: 'KYC_FORCE_VERIFIED',
+          details: {
+            adminId: options.adminId,
+            reason: 'Admin sync (KYCAID declined)',
+            newStatus: 'REJECTED',
+            verificationId: verification.verification_id,
+          },
+          ipAddress: options.ipAddress || 'unknown',
+        },
+      });
+    }
+    return {
+      success: true,
+      newStatus: 'REJECTED',
+      source: 'kycaid',
+      kycaidStatus: verification.status,
+      verified: verification.verified,
+      declineReasons: reasons,
+    };
+  }
+
+  if (options.force) {
+    const override = await applyManualVerifiedOverride(
+      userId,
+      options,
+      `Admin force-verify (override unresolved, kycaidStatus: ${verification.status})`
+    );
+    return {
+      ...override,
+      kycaidStatus: verification.status,
+      verified: verification.verified,
+    };
+  }
+
+  await persistKycVerificationRecord(userId, user.kycaidApplicantId, verification, []);
+
+  return {
+    success: false,
+    message: 'KYCAID ne confirme pas encore la vérification',
+    kycaidStatus: verification.status,
+    verified: verification.verified,
+    newStatus: null,
+  };
+}
+
+// =============================================================================
 // HELPERS
 // =============================================================================
 
@@ -1154,28 +1523,6 @@ export async function canUserMakePayout(userId: string): Promise<{
   }
 
   return { allowed: true };
-}
-
-/**
- * Collecte les raisons de refus d'une vérification
- */
-function collectDeclineReasons(verification: KycaidVerification): string[] {
-  const reasons: string[] = [];
-
-  if (verification.verifications?.document?.decline_reasons) {
-    reasons.push(...verification.verifications.document.decline_reasons);
-  }
-  if (verification.verifications?.facial?.decline_reasons) {
-    reasons.push(...verification.verifications.facial.decline_reasons);
-  }
-  if (verification.verifications?.address?.decline_reasons) {
-    reasons.push(...verification.verifications.address.decline_reasons);
-  }
-  if (verification.verifications?.aml?.decline_reasons) {
-    reasons.push(...verification.verifications.aml.decline_reasons);
-  }
-
-  return [...new Set(reasons)]; // Dédupliquer
 }
 
 // =============================================================================

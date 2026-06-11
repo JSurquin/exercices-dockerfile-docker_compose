@@ -220,16 +220,20 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
             {getStatusIcon()}
             <p className="text-muted-foreground max-w-md">{kycStatus.message}</p>
 
-            {kycStatus.declineReasons && kycStatus.declineReasons.length > 0 && (
-              <Alert variant="destructive" className="text-left">
+            {kycStatus.status === 'REJECTED' && (
+              <Alert variant="destructive" className="text-left" data-rejection-reason>
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>{m.declineReasons}</AlertTitle>
                 <AlertDescription>
-                  <ul className="list-disc pl-4 mt-2 space-y-1">
-                    {kycStatus.declineReasons.map((reason: string, index: number) => (
-                      <li key={index}>{reason}</li>
-                    ))}
-                  </ul>
+                  {kycStatus.declineReasons && kycStatus.declineReasons.length > 0 ? (
+                    <ul className="list-disc pl-4 mt-2 space-y-1">
+                      {kycStatus.declineReasons.map((reason: string, index: number) => (
+                        <li key={index}>{reason}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-2">{kycStatus.message}</p>
+                  )}
                 </AlertDescription>
               </Alert>
             )}

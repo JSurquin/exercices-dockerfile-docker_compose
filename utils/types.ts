@@ -3119,6 +3119,8 @@ export interface Messages {
       rejected: {
         title: string;
         description: string;
+        rejectionIntro: string;
+        noReasonFallback: string;
         restart: string;
         reasonsTitle: string;
         declineReasonsMap: Record<string, string>;
