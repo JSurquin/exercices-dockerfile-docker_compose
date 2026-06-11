@@ -2,7 +2,7 @@ import {
   AffiliateService,
   AFFILIATE_SELL_PROMO_FRAGMENTS,
 } from '@/lib/affiliate-service';
-import { creditBalance, creditPendingBalance, releasePendingToBalance, debitPendingBalance } from '@/lib/balance-service';
+import { creditBalance, creditPendingBalance, releasePendingToBalance, debitPendingBalance, forceDebitBalance } from '@/lib/balance-service';
 import { awardTradePoints } from '@/lib/points-service';
 import { grantFragments } from '@/lib/fragment-service';
 import { currencyConverter } from '@/lib/currency-converter';
@@ -523,11 +523,24 @@ export class TradeHooks {
       
       // Supprimer les commissions en attente et annuler leurs effets sur les stats
       const pendingToRemove = await prisma.affiliateCommission.findMany({
-        where: { affiliateId, status: 'PENDING' },
-        include: { trade: { select: { grossCents: true } } },
+        where: { affiliateId, status: { in: ['PENDING', 'CREDITED'] } },
+        include: { trade: { select: { grossCents: true } }, affiliate: { select: { userId: true } } },
       });
 
       for (const commission of pendingToRemove) {
+        if (commission.balanceCreditedAt) {
+          await forceDebitBalance(
+            commission.affiliate.userId,
+            commission.amountCents,
+            `Affiliate commission reversed — recalculation for affiliate ${affiliateId}`,
+            {
+              type: 'AFFILIATE_COMMISSION',
+              commissionId: commission.id,
+              reversal: true,
+            }
+          );
+        }
+
         if (commission.tradeId && commission.trade) {
           if (commission.referralId) {
             await prisma.affiliateReferral.update({
@@ -549,7 +562,7 @@ export class TradeHooks {
       }
 
       await prisma.affiliateCommission.deleteMany({
-        where: { affiliateId, status: 'PENDING' },
+        where: { affiliateId, status: { in: ['PENDING', 'CREDITED'] } },
       });
       
       const referredUserIds = affiliate.referrals.map((r) => r.referredUserId);

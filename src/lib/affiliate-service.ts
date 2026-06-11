@@ -3,8 +3,11 @@ import { prisma } from '../../prisma/prisma';
 import { AffiliateStats, AffiliateReferral, AffiliateCommission } from '@/lib/types';
 import { computeSellPromoBonusCents as computeSellPromoBonusCentsPure } from '@/lib/affiliate-sell-promo';
 import { getUserRewardFlags, isAffiliateRewardsBlocked } from '@/lib/user-rewards-guard';
+import { creditBalance, forceDebitBalance } from '@/lib/balance-service';
+import { currencyConverter } from '@/lib/currency-converter';
 import {
   computeAffiliateCommissionCents,
+  computeAffiliateCommissionEurCents,
   isAffiliateCommissionHoldComplete,
   isTradeEligibleForAffiliateCommission,
   normalizeAffiliateCode,
@@ -232,7 +235,7 @@ export class AffiliateService {
   
   /**
    * Calcule et enregistre les commissions pour un trade validé (statut AVAILABLE+).
-   * Appelé après la période de trade hold (~7 jours), pas au retrait utilisateur.
+   * Crédite automatiquement balanceCents de l'affilié (EUR) au moment de l'attribution.
    */
   static async calculateCommissionForTrade(
     tradeId: string,
@@ -263,18 +266,30 @@ export class AffiliateService {
       return;
     }
 
-    if (trade.affiliateCommissionProcessedAt) {
-      return;
-    }
-
     const existingCommission = await prisma.affiliateCommission.findUnique({
       where: { tradeId: trade.id },
+      include: { affiliate: { select: { userId: true } } },
     });
+
     if (existingCommission) {
+      if (existingCommission.balanceCreditedAt) {
+        if (!trade.affiliateCommissionProcessedAt) {
+          await prisma.trade.update({
+            where: { id: tradeId },
+            data: { affiliateCommissionProcessedAt: new Date() },
+          });
+        }
+        return;
+      }
+      await this.creditExistingCommissionToBalance(existingCommission, trade);
       await prisma.trade.update({
         where: { id: tradeId },
         data: { affiliateCommissionProcessedAt: new Date() },
       });
+      return;
+    }
+
+    if (trade.affiliateCommissionProcessedAt) {
       return;
     }
 
@@ -297,11 +312,24 @@ export class AffiliateService {
       return;
     }
 
-    const commissionCents = computeAffiliateCommissionCents(
+    const commissionUsdCents = computeAffiliateCommissionCents(
       trade.grossCents,
       affiliate.commissionRate
     );
-    if (commissionCents <= 0) {
+    if (commissionUsdCents <= 0) {
+      await prisma.trade.update({
+        where: { id: tradeId },
+        data: { affiliateCommissionProcessedAt: new Date() },
+      });
+      return;
+    }
+
+    const commissionEurCents = await this.resolveCommissionEurCents(
+      trade.grossCents,
+      affiliate.commissionRate,
+      trade.usdToEurRate
+    );
+    if (commissionEurCents <= 0) {
       await prisma.trade.update({
         where: { id: tradeId },
         data: { affiliateCommissionProcessedAt: new Date() },
@@ -342,18 +370,18 @@ export class AffiliateService {
       data: {
         tradeId: trade.id,
         volumeCents: { increment: trade.grossCents },
-        commissionCents: { increment: commissionCents },
+        commissionCents: { increment: commissionEurCents },
       },
     });
 
-    await prisma.affiliateCommission.create({
+    const commission = await prisma.affiliateCommission.create({
       data: {
         affiliateId: affiliate.id,
         referralId: referral.id,
         tradeId: trade.id,
         affiliateCode: affiliate.code,
         commissionRate: affiliate.commissionRate,
-        amountCents: commissionCents,
+        amountCents: commissionEurCents,
         status: 'PENDING',
       },
     });
@@ -362,28 +390,183 @@ export class AffiliateService {
       where: { id: affiliate.id },
       data: {
         totalVolumeCents: { increment: trade.grossCents },
-        totalCommissionCents: { increment: commissionCents },
+        totalCommissionCents: { increment: commissionEurCents },
       },
     });
+
+    await this.creditCommissionToBalance(
+      commission.id,
+      affiliate.userId,
+      commissionEurCents,
+      tradeId
+    );
+  }
+
+  private static async resolveCommissionEurCents(
+    grossUsdCents: number,
+    commissionRate: number,
+    usdToEurRate: number | null
+  ): Promise<number> {
+    const rate = usdToEurRate ?? (await currencyConverter.getUsdToEurRate());
+    return computeAffiliateCommissionEurCents(grossUsdCents, commissionRate, rate);
+  }
+
+  private static async creditExistingCommissionToBalance(
+    commission: {
+      id: string;
+      affiliateId: string;
+      amountCents: number;
+      affiliate: { userId: string };
+    },
+    trade: { id: string; grossCents: number; usdToEurRate: number | null; affiliatePromoCode: string | null }
+  ): Promise<void> {
+    const affiliate = await prisma.affiliateStats.findUnique({
+      where: { id: commission.affiliateId },
+    });
+    if (!affiliate) return;
+
+    const commissionEurCents = await this.resolveCommissionEurCents(
+      trade.grossCents,
+      affiliate.commissionRate,
+      trade.usdToEurRate
+    );
+    const amountToCredit = commissionEurCents > 0 ? commissionEurCents : commission.amountCents;
+
+    await this.creditCommissionToBalance(
+      commission.id,
+      commission.affiliate.userId,
+      amountToCredit,
+      trade.id
+    );
+  }
+
+  private static async creditCommissionToBalance(
+    commissionId: string,
+    affiliateUserId: string,
+    amountCents: number,
+    tradeId: string
+  ): Promise<void> {
+    const lock = await prisma.affiliateCommission.updateMany({
+      where: { id: commissionId, balanceCreditedAt: null },
+      data: { balanceCreditedAt: new Date() },
+    });
+    if (lock.count === 0) return;
+
+    try {
+      await creditBalance(
+        affiliateUserId,
+        amountCents,
+        `Affiliate commission — trade ${tradeId}`,
+        {
+          type: 'AFFILIATE_COMMISSION',
+          tradeId,
+          commissionId,
+        }
+      );
+
+      await prisma.affiliateCommission.update({
+        where: { id: commissionId },
+        data: {
+          status: 'CREDITED',
+          amountCents,
+        },
+      });
+    } catch (err) {
+      await prisma.affiliateCommission.update({
+        where: { id: commissionId },
+        data: { balanceCreditedAt: null },
+      });
+      throw err;
+    }
   }
 
   /**
-   * Annule les commissions en attente liées à un trade annulé / rollback.
+   * Annule une commission (admin fraude) — débite le solde si déjà créditée.
+   */
+  static async cancelCommissionById(commissionId: string): Promise<void> {
+    const commission = await prisma.affiliateCommission.findUnique({
+      where: { id: commissionId },
+      include: { affiliate: { select: { userId: true } } },
+    });
+    if (!commission || commission.status === 'CANCELLED') return;
+
+    const trade = commission.tradeId
+      ? await prisma.trade.findUnique({ where: { id: commission.tradeId } })
+      : null;
+
+    if (commission.balanceCreditedAt) {
+      await forceDebitBalance(
+        commission.affiliate.userId,
+        commission.amountCents,
+        `Affiliate commission reversed — commission ${commissionId} cancelled`,
+        {
+          type: 'AFFILIATE_COMMISSION',
+          commissionId: commission.id,
+          tradeId: commission.tradeId ?? undefined,
+          reversal: true,
+        }
+      );
+    }
+
+    await prisma.affiliateCommission.update({
+      where: { id: commissionId },
+      data: { status: 'CANCELLED' },
+    });
+
+    if (commission.referralId && trade) {
+      await prisma.affiliateReferral.update({
+        where: { id: commission.referralId },
+        data: {
+          volumeCents: { decrement: trade.grossCents },
+          commissionCents: { decrement: commission.amountCents },
+        },
+      });
+    }
+
+    if (trade) {
+      await prisma.affiliateStats.update({
+        where: { id: commission.affiliateId },
+        data: {
+          totalVolumeCents: { decrement: trade.grossCents },
+          totalCommissionCents: { decrement: commission.amountCents },
+        },
+      });
+    }
+  }
+
+  /**
+   * Annule les commissions liées à un trade annulé / rollback.
+   * Débite balanceCents si la commission avait déjà été créditée.
    */
   static async cancelCommissionsForTrade(tradeId: string): Promise<void> {
     const trade = await prisma.trade.findUnique({ where: { id: tradeId } });
     if (!trade) return;
 
-    const pendingCommissions = await prisma.affiliateCommission.findMany({
+    const commissions = await prisma.affiliateCommission.findMany({
       where: {
         tradeId,
-        status: { in: ['PENDING', 'PAYOUT_REQUESTED', 'APPROVED'] },
+        status: { in: ['PENDING', 'PAYOUT_REQUESTED', 'APPROVED', 'CREDITED', 'PAID'] },
       },
+      include: { affiliate: { select: { userId: true } } },
     });
 
-    if (pendingCommissions.length === 0) return;
+    if (commissions.length === 0) return;
 
-    for (const commission of pendingCommissions) {
+    for (const commission of commissions) {
+      if (commission.balanceCreditedAt) {
+        await forceDebitBalance(
+          commission.affiliate.userId,
+          commission.amountCents,
+          `Affiliate commission reversed — trade ${tradeId} cancelled`,
+          {
+            type: 'AFFILIATE_COMMISSION',
+            tradeId,
+            commissionId: commission.id,
+            reversal: true,
+          }
+        );
+      }
+
       await prisma.affiliateCommission.update({
         where: { id: commission.id },
         data: { status: 'CANCELLED' },
@@ -483,13 +666,13 @@ export class AffiliateService {
   }
   
   /**
-   * Récupère les commissions en attente d'un affilié
+   * Récupère les commissions créditées sur le solde d'un affilié.
    */
-  static async getPendingCommissions(affiliateId: string): Promise<AffiliateCommission[]> {
+  static async getCreditedCommissions(affiliateId: string): Promise<AffiliateCommission[]> {
     const commissions = await prisma.affiliateCommission.findMany({
       where: {
         affiliateId,
-        status: 'PENDING'
+        status: 'CREDITED',
       },
       include: {
         referral: {
@@ -497,49 +680,30 @@ export class AffiliateService {
             referredUser: {
               select: {
                 steamUsername: true,
-                steamAvatar: true
-              }
-            }
-          }
-        }
+                steamAvatar: true,
+              },
+            },
+          },
+        },
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
-    
+
     return commissions as any;
-  }
-  
-  /**
-   * L'affilié demande un payout — passe en PAYOUT_REQUESTED (pas APPROVED).
-   * L'approbation réelle reste une action admin.
-   */
-  static async requestCommissionPayout(affiliateId: string, commissionIds: string[]): Promise<void> {
-    await prisma.affiliateCommission.updateMany({
-      where: {
-        id: { in: commissionIds },
-        affiliateId,
-        status: 'PENDING',
-      },
-      data: {
-        status: 'PAYOUT_REQUESTED',
-      },
-    });
   }
 
   /**
-   * Approuve les commissions d'un affilié pour paiement (ADMIN ONLY)
+   * @deprecated Les commissions sont créditées automatiquement sur balanceCents.
    */
-  static async approveCommissions(affiliateId: string, commissionIds: string[]): Promise<void> {
-    await prisma.affiliateCommission.updateMany({
-      where: {
-        id: { in: commissionIds },
-        affiliateId,
-        status: { in: ['PENDING', 'PAYOUT_REQUESTED'] },
-      },
-      data: {
-        status: 'APPROVED',
-      },
-    });
+  static async requestCommissionPayout(_affiliateId: string, _commissionIds: string[]): Promise<void> {
+    throw new Error('Commission payout requests are no longer supported — withdraw via your balance');
+  }
+
+  /**
+   * @deprecated Les commissions sont créditées automatiquement sur balanceCents.
+   */
+  static async approveCommissions(_affiliateId: string, _commissionIds: string[]): Promise<void> {
+    throw new Error('Manual commission approval is no longer supported');
   }
   
   /**

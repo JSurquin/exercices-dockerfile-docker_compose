@@ -2,6 +2,7 @@ import {
   AFFILIATE_COMMISSION_ELIGIBLE_STATUSES,
   AFFILIATE_HOLD_DAYS_AFTER_INSTANT_CREDIT,
   computeAffiliateCommissionCents,
+  computeAffiliateCommissionEurCents,
   isAffiliateCommissionHoldComplete,
   isTradeEligibleForAffiliateCommission,
   normalizeAffiliateCode,
@@ -20,6 +21,11 @@ describe('affiliate-commission-logic', () => {
     expect(computeAffiliateCommissionCents(100_000, 0.02)).toBe(2_000);
     expect(computeAffiliateCommissionCents(10_001, 0.02)).toBe(200);
     expect(computeAffiliateCommissionCents(0, 0.02)).toBe(0);
+  });
+
+  it('computes EUR commission from USD gross and stored rate', () => {
+    expect(computeAffiliateCommissionEurCents(10_000, 0.02, 0.92)).toBe(184);
+    expect(computeAffiliateCommissionEurCents(0, 0.02, 0.92)).toBe(0);
   });
 
   it('normalizes affiliate codes', () => {

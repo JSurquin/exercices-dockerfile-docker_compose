@@ -202,8 +202,9 @@ export interface AffiliateCommission {
   affiliateCode?: string;
   commissionRate?: number;
   amountCents: number;
-  status: 'PENDING' | 'PAYOUT_REQUESTED' | 'APPROVED' | 'PAID' | 'CANCELLED';
+  status: 'PENDING' | 'PAYOUT_REQUESTED' | 'APPROVED' | 'CREDITED' | 'PAID' | 'CANCELLED';
   payoutId?: string;
+  balanceCreditedAt?: Date;
   createdAt: Date;
   paidAt?: Date;
   referral?: AffiliateReferral;

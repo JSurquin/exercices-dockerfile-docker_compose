@@ -1840,6 +1840,7 @@ export interface Messages {
     affiliateCommissions: {
       statusPending: string;
       statusApproved: string;
+      statusCredited: string;
       statusPaid: string;
       statusCancelled: string;
       commissionCount: string;
@@ -4549,6 +4550,10 @@ export interface Messages {
       requestPayout: string;
       noPending: string;
       noPendingSub: string;
+      creditedCommissionsTitle: string;
+      commissionCredited: string;
+      withdrawViaBalanceHint: string;
+      withdrawBalance: string;
       paidCommissionsTitle: string;
       totalReceived: string;
       noPaid: string;

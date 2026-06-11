@@ -19,6 +19,17 @@ export function computeAffiliateCommissionCents(
   return Math.floor(grossCents * commissionRate);
 }
 
+/** Commission affilié en centimes EUR (alignée sur le crédit trade). */
+export function computeAffiliateCommissionEurCents(
+  grossUsdCents: number,
+  commissionRate: number,
+  usdToEurRate: number
+): number {
+  if (grossUsdCents <= 0 || commissionRate <= 0 || usdToEurRate <= 0) return 0;
+  const eurGrossCents = Math.floor(grossUsdCents * usdToEurRate);
+  return Math.floor(eurGrossCents * commissionRate);
+}
+
 export function normalizeAffiliateCode(raw: string): string {
   return raw.trim().toLowerCase();
 }

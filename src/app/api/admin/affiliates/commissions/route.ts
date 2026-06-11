@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../../prisma/prisma';
 import { requireAdminSession } from '@/lib/require-admin';
-import { PayoutLifecycle } from '@/lib/payout-lifecycle';
+import { AffiliateService } from '@/lib/affiliate-service';
 import { safeParseJson, safeParseSearchParams } from '@/lib/validation/helpers';
 import {
   adminAffiliateCommissionsListQuerySchema,
@@ -142,118 +142,27 @@ export async function POST(request: NextRequest) {
     if (!parsed.ok) {
       return parsed.response;
     }
-    const { action, commissionIds, payoutData } = parsed.data;
+    const { action, commissionIds } = parsed.data;
     const ids = commissionIds ?? [];
 
     switch (action) {
-      case 'approve':
-        await prisma.affiliateCommission.updateMany({
-          where: {
-            id: { in: ids },
-            status: 'PENDING'
-          },
-          data: { status: 'APPROVED' }
-        });
-        
-        // Log de l'audit
-        await prisma.auditLog.create({
-          data: {
-            userId: adminUserId,
-            action: 'AFFILIATE_COMMISSIONS_APPROVED',
-            details: {
-              commissionIds: ids,
-              count: ids.length
-            }
-          }
-        });
-        break;
-        
       case 'reject':
-        await prisma.affiliateCommission.updateMany({
-          where: {
-            id: { in: ids },
-            status: 'PENDING'
-          },
-          data: { status: 'CANCELLED' }
-        });
-        
+      case 'cancel':
+        for (const commissionId of ids) {
+          await AffiliateService.cancelCommissionById(commissionId);
+        }
+
         await prisma.auditLog.create({
           data: {
             userId: adminUserId,
             action: 'AFFILIATE_COMMISSIONS_REJECTED',
             details: {
               commissionIds: ids,
-              count: ids.length
-            }
-          }
+              count: ids.length,
+            },
+          },
         });
         break;
-        
-      case 'create_payout': {
-        const payoutPayload = payoutData as {
-          affiliateUserId?: string;
-          paymentMethodId?: string;
-        };
-        if (!payoutPayload.affiliateUserId || !payoutPayload.paymentMethodId) {
-          return NextResponse.json({ error: 'affiliateUserId et paymentMethodId requis' }, { status: 400 });
-        }
-        const totalAmount = await prisma.affiliateCommission.aggregate({
-          where: {
-            id: { in: ids },
-            status: 'APPROVED'
-          },
-          _sum: { amountCents: true }
-        });
-        
-        const payoutAmountCents = totalAmount._sum.amountCents || 0;
-        if (payoutAmountCents <= 0) {
-          return NextResponse.json({ error: 'Aucun montant à payer' }, { status: 400 });
-        }
-
-        const payout = await prisma.payout.create({
-          data: {
-            userId: payoutPayload.affiliateUserId,
-            amountCents: payoutAmountCents,
-            paymentMethodId: payoutPayload.paymentMethodId,
-            status: 'PENDING'
-          }
-        });
-        try {
-          await PayoutLifecycle.onCreated(payoutPayload.affiliateUserId, payout.id, payoutAmountCents);
-        } catch (freezeErr) {
-          await prisma.payout.update({ where: { id: payout.id }, data: { status: 'FAILED', errorMessage: 'freeze_failed' } });
-          if (freezeErr instanceof Error && freezeErr.message === 'INSUFFICIENT_AVAILABLE_BALANCE') {
-            return NextResponse.json({ error: 'Solde affilié insuffisant pour le gel' }, { status: 409 });
-          }
-          throw freezeErr;
-        }
-
-        // Marquer les commissions comme payées
-        await prisma.affiliateCommission.updateMany({
-          where: {
-            id: { in: ids },
-            status: 'APPROVED'
-          },
-          data: {
-            status: 'PAID',
-            payoutId: payout.id,
-            paidAt: new Date()
-          }
-        });
-        
-        await prisma.auditLog.create({
-          data: {
-            userId: adminUserId,
-            action: 'AFFILIATE_PAYOUT_CREATED',
-            details: {
-              payoutId: payout.id,
-              commissionIds: ids,
-              amount: totalAmount._sum.amountCents
-            }
-          }
-        });
-        break;
-      }
 
       default:
         return NextResponse.json(

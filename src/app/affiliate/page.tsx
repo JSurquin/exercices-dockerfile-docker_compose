@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,7 +48,6 @@ export default function AffiliatePage() {
   const { messages } = useLocale();
   const { selectedCurrency } = useCurrency();
   const { data: session } = useSession();
-  const queryClient = useQueryClient();
   const [customPath, setCustomPath] = useState('');
   const [generatedLink, setGeneratedLink] = useState('');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -103,10 +103,10 @@ export default function AffiliatePage() {
     enabled: !!affiliateData,
   });
 
-  const { data: paidCommissionsData } = useQuery({
-    queryKey: [...queryKeys.affiliateCommissions, 'paid', userId],
+  const { data: creditedCommissionsData } = useQuery({
+    queryKey: [...queryKeys.affiliateCommissions, 'credited', userId],
     queryFn: async () => {
-      const res = await fetch(`/api/affiliate/commissions?userId=${userId}&status=PAID`);
+      const res = await fetch(`/api/affiliate/commissions?userId=${userId}&status=CREDITED`);
       const data = await res.json();
       return data.success ? data.data.commissions : [];
     },
@@ -114,7 +114,7 @@ export default function AffiliatePage() {
   });
 
   const commissions = pendingCommissionsData ?? [];
-  const paidCommissions = paidCommissionsData ?? [];
+  const creditedCommissions = creditedCommissionsData ?? [];
 
   useEffect(() => {
     let cancelled = false;
@@ -157,27 +157,6 @@ export default function AffiliatePage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [affiliateData?.code]);
-
-  const payoutMutation = useMutation({
-    mutationFn: async (commissionIds: string[]) => {
-      const res = await fetch('/api/affiliate/commissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, action: 'request_payout', commissionIds }),
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Erreur');
-      return data;
-    },
-    onSuccess: () => {
-      toast.success(messages.affiliate.dashboard.payoutRequested, { description: messages.affiliate.dashboard.payoutRequestedDesc });
-      queryClient.invalidateQueries({ queryKey: queryKeys.affiliateCommissions });
-      queryClient.invalidateQueries({ queryKey: queryKeys.affiliateStats });
-    },
-    onError: (err: Error) => {
-      toast.error(messages.affiliate.dashboard.payoutError, { description: err.message });
-    },
-  });
 
   const generateAffiliateLink = async (path = '', copyKey = 'custom') => {
     // Validation du path
@@ -243,8 +222,8 @@ export default function AffiliatePage() {
     );
   }
 
-  const pendingTotal = commissions.reduce((s: number, c: AffiliateCommission) => s + c.amountCents, 0);
-  const paidTotal = paidCommissions.reduce((s: number, c: AffiliateCommission) => s + c.amountCents, 0);
+  const pendingTotal = affiliateData.metrics?.totalUncreditedCommissions ?? commissions.reduce((s: number, c: AffiliateCommission) => s + c.amountCents, 0);
+  const creditedTotal = affiliateData.metrics?.totalCreditedCommissions ?? creditedCommissions.reduce((s: number, c: AffiliateCommission) => s + c.amountCents, 0);
   const conversionPct = affiliateData.metrics?.conversionRate
     ? (affiliateData.metrics.conversionRate * 100).toFixed(1)
     : '0';
@@ -321,7 +300,7 @@ export default function AffiliatePage() {
             icon={<DollarSign className={`h-5 w-5 ${CHROME_ICON}`} />}
             label={messages.affiliate.dashboard.kpi.totalCommissions}
             value={fmt(affiliateData.totalCommissionCents)}
-            sub={`${fmt(paidTotal)} ${messages.affiliate.dashboard.commissionPaid.toLowerCase()}`}
+            sub={`${fmt(creditedTotal)} ${messages.affiliate.dashboard.commissionCredited.toLowerCase()}`}
           />
           <StatCard
             icon={<Clock className={`h-5 w-5 ${CHROME_ICON}`} />}
@@ -445,9 +424,9 @@ export default function AffiliatePage() {
 
           {/* Commissions */}
           <TabsContent value="commissions" className="space-y-4">
-            {/* En attente */}
+            {/* Legacy : commissions non encore créditées (rattrapage) */}
             <Card className="border-slate-700 bg-slate-900/50">
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader>
                 <div>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Clock className={`h-4 w-4 ${CHROME_ICON}`} />
@@ -455,25 +434,10 @@ export default function AffiliatePage() {
                   </CardTitle>
                   <CardDescription>
                     {messages.affiliate.dashboard.pendingTotal} : <span className="font-semibold text-white">{fmt(pendingTotal)}</span>
+                    {' · '}
+                    {messages.affiliate.dashboard.withdrawViaBalanceHint}
                   </CardDescription>
                 </div>
-                {commissions.length > 0 && (
-                  <Button
-                    size="sm"
-                    onClick={() => payoutMutation.mutate(commissions.map((c: AffiliateCommission) => c.id))}
-                    disabled={payoutMutation.isPending}
-                    className="bg-cta-gradient hover:brightness-110 text-white"
-                  >
-                    {payoutMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <DollarSign className="h-4 w-4 mr-1" />
-                        {messages.affiliate.dashboard.requestPayout}
-                      </>
-                    )}
-                  </Button>
-                )}
               </CardHeader>
               <CardContent>
                 {commissions.length ? (
@@ -488,20 +452,25 @@ export default function AffiliatePage() {
               </CardContent>
             </Card>
 
-            {/* Historique versé */}
+            {/* Historique crédité sur le solde */}
             <Card className="border-slate-700 bg-slate-900/50">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between gap-4">
+                <div>
                   <CardTitle className="text-white flex items-center gap-2">
                   <CheckCircle2 className={`h-4 w-4 ${CHROME_ICON}`} />
-                  {messages.affiliate.dashboard.paidCommissionsTitle}
+                  {messages.affiliate.dashboard.creditedCommissionsTitle}
                 </CardTitle>
                 <CardDescription>
-                  {messages.affiliate.dashboard.totalReceived} : <span className="font-semibold text-white">{fmt(paidTotal)}</span>
+                  {messages.affiliate.dashboard.totalReceived} : <span className="font-semibold text-white">{fmt(creditedTotal)}</span>
                 </CardDescription>
+                </div>
+                <Button asChild size="sm" variant="outline" className="shrink-0">
+                  <Link href="/payout">{messages.affiliate.dashboard.withdrawBalance}</Link>
+                </Button>
               </CardHeader>
               <CardContent>
-                {paidCommissions.length ? (
-                  <CommissionList commissions={paidCommissions} fmt={fmt} fmtDate={fmtDate} paid paidLabel={messages.affiliate.dashboard.commissionPaid} pendingLabel={messages.affiliate.dashboard.commissionPending} />
+                {creditedCommissions.length ? (
+                  <CommissionList commissions={creditedCommissions} fmt={fmt} fmtDate={fmtDate} paid paidLabel={messages.affiliate.dashboard.commissionCredited} pendingLabel={messages.affiliate.dashboard.commissionPending} />
                 ) : (
                   <EmptyState
                     icon={<XCircle className={`h-6 w-6 ${CHROME_ICON} opacity-50`} />}

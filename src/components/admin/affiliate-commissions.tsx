@@ -25,7 +25,7 @@ import { useLocale } from '@/components/providers/locale-provider';
 interface CommissionData {
   id: string;
   amountCents: number;
-  status: 'PENDING' | 'APPROVED' | 'PAID' | 'CANCELLED';
+  status: 'PENDING' | 'APPROVED' | 'CREDITED' | 'PAID' | 'CANCELLED';
   createdAt: string;
   paidAt?: string;
   affiliate: {
@@ -66,7 +66,7 @@ export default function AffiliateCommissions() {
   const { messages } = useLocale();
   const t = messages.admin.affiliateCommissions;
 
-  const [statusFilter, setStatusFilter] = useState('PENDING');
+  const [statusFilter, setStatusFilter] = useState('CREDITED');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [selectedCommissions, setSelectedCommissions] = useState<string[]>([]);
@@ -91,7 +91,7 @@ export default function AffiliateCommissions() {
   const totalPages = data?.pagination?.pages ?? 1;
   const statusTotals: StatusTotals = data?.statusTotals ?? {};
 
-  const handleCommissionAction = async (action: 'approve' | 'reject') => {
+  const handleCommissionAction = async (action: 'reject') => {
     if (selectedCommissions.length === 0) {
       toast({
         title: t.errorTitle,
@@ -115,11 +115,12 @@ export default function AffiliateCommissions() {
       const data = await response.json();
 
       if (data.success) {
-        const desc = action === 'approve'
-          ? t.successActionApproved.replace('{count}', String(selectedCommissions.length))
-          : t.successActionRejected.replace('{count}', String(selectedCommissions.length));
-        toast({ title: t.successTitle, description: desc });
+        toast({
+          title: t.successTitle,
+          description: t.successActionRejected.replace('{count}', String(selectedCommissions.length)),
+        });
         queryClient.invalidateQueries({ queryKey: ['admin', 'affiliate-commissions'] });
+        setSelectedCommissions([]);
       } else {
         toast({
           title: t.errorTitle,
@@ -136,24 +137,6 @@ export default function AffiliateCommissions() {
     } finally {
       setProcessing(false);
     }
-  };
-
-  const createPayout = async () => {
-    if (selectedCommissions.length === 0) {
-      toast({
-        title: t.errorTitle,
-        description: t.errorNoSelection,
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    // TODO: Implémenter la création de payout
-    toast({
-      title: t.infoPayoutTitle,
-      description: t.infoPayoutDesc,
-      variant: 'default'
-    });
   };
 
   const toggleCommissionSelection = (commissionId: string) => {
@@ -193,6 +176,7 @@ export default function AffiliateCommissions() {
     const labels: Record<string, string> = {
       PENDING: t.statusPending,
       APPROVED: t.statusApproved,
+      CREDITED: t.statusCredited,
       PAID: t.statusPaid,
       CANCELLED: t.statusCancelled,
     };
@@ -203,6 +187,7 @@ export default function AffiliateCommissions() {
     const variants = {
       PENDING: { variant: 'secondary' as const, icon: Clock },
       APPROVED: { variant: 'default' as const, icon: CheckCircle },
+      CREDITED: { variant: 'default' as const, icon: CheckCircle },
       PAID: { variant: 'default' as const, icon: CreditCard },
       CANCELLED: { variant: 'destructive' as const, icon: XCircle }
     };
@@ -266,6 +251,7 @@ export default function AffiliateCommissions() {
                 <SelectValue placeholder={t.filterStatus} />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="CREDITED">{t.statusCredited}</SelectItem>
                 <SelectItem value="PENDING">{t.statusPending}</SelectItem>
                 <SelectItem value="APPROVED">{t.statusApproved}</SelectItem>
                 <SelectItem value="PAID">{t.statusPaid}</SelectItem>
@@ -273,16 +259,8 @@ export default function AffiliateCommissions() {
               </SelectContent>
             </Select>
 
-            {statusFilter === 'PENDING' && selectedCommissions.length > 0 && (
+            {selectedCommissions.length > 0 && (
               <div className="flex gap-2">
-                <Button
-                  onClick={() => handleCommissionAction('approve')}
-                  disabled={processing}
-                  size="sm"
-                >
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  {t.approveBtn.replace('{count}', String(selectedCommissions.length))}
-                </Button>
                 <Button
                   variant="destructive"
                   onClick={() => handleCommissionAction('reject')}
@@ -293,17 +271,6 @@ export default function AffiliateCommissions() {
                   {t.rejectBtn.replace('{count}', String(selectedCommissions.length))}
                 </Button>
               </div>
-            )}
-
-            {statusFilter === 'APPROVED' && selectedCommissions.length > 0 && (
-              <Button
-                onClick={createPayout}
-                disabled={processing}
-                size="sm"
-              >
-                <CreditCard className="mr-2 h-4 w-4" />
-                {t.createPayoutBtn.replace('{count}', String(selectedCommissions.length))}
-              </Button>
             )}
           </div>
 

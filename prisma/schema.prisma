@@ -427,6 +427,8 @@ model AffiliateCommission {
   amountCents     Int
   status          AffiliateCommissionStatus @default(PENDING)
   payoutId        String?
+  /// Horodatage du crédit sur balanceCents — verrou d'idempotence
+  balanceCreditedAt DateTime?
   createdAt       DateTime                  @default(now())
   paidAt          DateTime?
   affiliate       AffiliateStats            @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
@@ -864,6 +866,7 @@ enum BalanceTransactionType {
   UNFROZEN
   TRADE_PENDING_CREDIT
   TRADE_PENDING_RELEASE
+  AFFILIATE_COMMISSION
 }
 
 enum PaymentMethodType {
@@ -997,6 +1000,7 @@ enum AffiliateCommissionStatus {
   PENDING
   PAYOUT_REQUESTED
   APPROVED
+  CREDITED
   PAID
   CANCELLED
 }

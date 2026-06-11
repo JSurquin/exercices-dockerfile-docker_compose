@@ -31,7 +31,8 @@ Le système d'affiliation permet aux créateurs de contenu de gagner des commiss
 - **affiliateId**: Référence vers AffiliateStats
 - **referralId**: Référence vers AffiliateReferral
 - **amountCents**: Montant de la commission
-- **status**: PENDING | APPROVED | PAID | CANCELLED
+- **status**: PENDING | PAYOUT_REQUESTED | APPROVED | CREDITED | PAID | CANCELLED
+- **balanceCreditedAt**: Horodatage du crédit sur balanceCents
 - **payoutId**: Référence vers le payout (si payé)
 
 ### Rôles Utilisateur
@@ -211,11 +212,16 @@ NEXT_PUBLIC_APP_URL=https://moonskin.fr  # URL de base pour les liens d'affiliat
 5. Mise à jour des statistiques d'affilié
 
 ### 4. Paiement des Commissions
-1. Admin approuve les commissions PENDING
-2. Commissions passent en statut APPROVED
-3. Admin crée un payout pour les commissions approuvées
-4. Commissions passent en statut PAID
-5. Paiement effectué via SEPA/crypto
+
+1. La vente du filleul est validée (~7 jours, ou instant + 8 jours)
+2. Hook `onTradeAvailable` → `calculateCommissionForTrade`
+3. Commission créée en statut `CREDITED` + `creditBalance` sur `balanceCents` de l'affilié
+4. L'affilié retire via le flux payout classique (même solde que ses ventes perso)
+5. Annulation fraude admin : `cancelCommissionById` débite le solde si déjà crédité
+
+### Rattrapage legacy
+
+`POST /api/admin/affiliates/commissions/backfill` — crédite les commissions `PENDING` sans `balanceCreditedAt`.
 
 ## Maintenance
 
