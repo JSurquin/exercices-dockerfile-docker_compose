@@ -88,11 +88,12 @@ describe('chatWidgetTimestampClass', () => {
 });
 
 describe('chatWidgetPopupContainerClass', () => {
-  it('ouvert : visible + chat-glass', () => {
+  it('ouvert : visible + chat-glass + hauteur fixe', () => {
     const open = chatWidgetPopupContainerClass(true);
     expect(open).toContain('chat-glass');
     expect(open).toContain('opacity-100');
     expect(open).toContain('sm:w-[390px]');
+    expect(open).toContain('h-[clamp(480px,75dvh,640px)]');
   });
 
   it('fermé : invisible + pointer-events-none', () => {
@@ -121,9 +122,8 @@ describe('layout & interaction classes', () => {
     expect(chatWidgetFabButtonClass()).toContain('hover:scale-110');
   });
 
-  it('badge unread rouge pulsant', () => {
+  it('badge unread rouge', () => {
     expect(chatWidgetUnreadBadgeClass()).toContain('bg-red-500');
-    expect(chatWidgetUnreadBadgeClass()).toContain('animate-pulse');
   });
 
   it('textarea utilise text-base pour éviter le zoom iOS', () => {

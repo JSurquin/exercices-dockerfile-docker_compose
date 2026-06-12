@@ -54,18 +54,22 @@ export function chatWidgetTimestampClass(senderType: WidgetSenderType): string {
   return 'text-muted-foreground';
 }
 
+/** Durée de fermeture du popup (alignée sur transition CSS + démontage React). */
+export const CHAT_WIDGET_POPUP_CLOSE_MS = 150;
+
 export function chatWidgetPopupContainerClass(isOpen: boolean): string {
   const base = `
     fixed bottom-24 right-3 left-3
     sm:left-auto sm:right-6 sm:w-[390px]
+    h-[clamp(480px,75dvh,640px)]
     chat-glass rounded-2xl shadow-2xl z-[9999]
     flex flex-col overflow-hidden
-    transition-[opacity,transform] duration-300 ease-out
+    transition-opacity duration-150 ease-out
     pointer-events-auto
   `;
   return isOpen
-    ? `${base} opacity-100 translate-y-0`
-    : `${base} opacity-0 translate-y-4 pointer-events-none`;
+    ? `${base} opacity-100`
+    : `${base} opacity-0 pointer-events-none`;
 }
 
 export function chatWidgetHeaderClass(): string {

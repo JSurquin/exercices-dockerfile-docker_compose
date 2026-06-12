@@ -16,6 +16,7 @@ import {
 } from "@/lib/chat-widget-config";
 import { shouldClearAiTypingIndicator } from "@/lib/chat-logic";
 import {
+  CHAT_WIDGET_POPUP_CLOSE_MS,
   chatWidgetAiTypingBubbleClass,
   chatWidgetCategoryButtonClass,
   chatWidgetFabButtonClass,
@@ -101,6 +102,7 @@ function formatRelativeTime(date: Date | string): string {
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const [popupMounted, setPopupMounted] = useState(false);
   const { messages } = useLocale();
 
   const CATEGORIES: Category[] = [
@@ -176,10 +178,30 @@ export function ChatWidget() {
   const wasOpenBeforeMobileMenuRef = useRef(false);
   const [isHiddenByMobileMenu, setIsHiddenByMobileMenu] = useState(false);
   const aiTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const popupCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevScrollHeightRef = useRef(0);
   const initialNavDoneRef = useRef(false);
   const seenMessageIdsRef = useRef<Set<string>>(new Set());
   const seenMessagesConversationRef = useRef<string | null>(null);
+
+  const openPopup = useCallback(() => {
+    if (popupCloseTimerRef.current) {
+      clearTimeout(popupCloseTimerRef.current);
+      popupCloseTimerRef.current = null;
+    }
+    setPopupMounted(true);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setIsOpen(true));
+    });
+  }, []);
+
+  const closePopup = useCallback(() => {
+    setIsOpen(false);
+    popupCloseTimerRef.current = setTimeout(() => {
+      setPopupMounted(false);
+      popupCloseTimerRef.current = null;
+    }, CHAT_WIDGET_POPUP_CLOSE_MS);
+  }, []);
 
   if (conversationId !== seenMessagesConversationRef.current) {
     seenMessageIdsRef.current = new Set();
@@ -240,16 +262,24 @@ export function ChatWidget() {
 
   const handleToggleChat = () => {
     if (isOpen) {
-      setIsOpen(false);
+      closePopup();
     } else {
-      setIsOpen(true);
+      openPopup();
     }
   };
 
   useEffect(() => {
+    return () => {
+      if (popupCloseTimerRef.current) {
+        clearTimeout(popupCloseTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     const handleOpenSupport = (e: Event) => {
       const detail = (e as CustomEvent<{ prefillMessage?: string }>).detail;
-      setIsOpen(true);
+      openPopup();
       setActiveTab("messages");
       setMessagesStep("conversation");
       if (detail?.prefillMessage) {
@@ -258,7 +288,7 @@ export function ChatWidget() {
     };
     window.addEventListener("open-support-chat", handleOpenSupport);
     return () => window.removeEventListener("open-support-chat", handleOpenSupport);
-  }, []);
+  }, [openPopup]);
 
   useEffect(() => {
     window.dispatchEvent(
@@ -279,6 +309,7 @@ export function ChatWidget() {
         setIsHiddenByMobileMenu(false);
         if (wasOpenBeforeMobileMenuRef.current) {
           wasOpenBeforeMobileMenuRef.current = false;
+          setPopupMounted(true);
           setIsOpen(true);
         }
       }
@@ -833,10 +864,10 @@ export function ChatWidget() {
 
   return (
     <>
+      {popupMounted && (
       <div
         data-testid="chat-popup"
         className={chatWidgetPopupContainerClass(isOpen)}
-        style={{ height: isOpen ? "clamp(480px, 75dvh, 640px)" : 0 }}
       >
         <div className={chatWidgetHeaderClass()}>
           <div className="flex items-center space-x-3">
@@ -867,7 +898,7 @@ export function ChatWidget() {
           </div>
           <button
             type="button"
-            onClick={() => setIsOpen(false)}
+            onClick={closePopup}
             className="p-1.5 rounded-full hover:bg-white/20 transition-colors"
           >
             <XMarkIcon className="h-5 w-5" />
@@ -884,6 +915,7 @@ export function ChatWidget() {
 
         {renderTabBar()}
       </div>
+      )}
 
       <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-[99999] sm:bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:right-[max(1.5rem,env(safe-area-inset-right,0px))] pointer-events-auto">
         <div className="relative">

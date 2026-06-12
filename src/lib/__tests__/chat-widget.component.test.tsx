@@ -220,12 +220,13 @@ afterEach(() => {
 describe('ChatWidget', () => {
   it('ouvre et ferme via le FAB', async () => {
     renderWidget();
-    expect(screen.getByTestId('chat-popup')).toHaveClass('opacity-0');
+    expect(screen.queryByTestId('chat-popup')).not.toBeInTheDocument();
     await openChat();
     expect(screen.getByTestId('chat-popup')).toHaveClass('opacity-100');
     fireEvent.click(screen.getByTestId('chat-fab'));
     expect(screen.getByTestId('chat-popup')).toHaveClass('opacity-0');
-    act(() => jest.advanceTimersByTime(300));
+    act(() => jest.advanceTimersByTime(150));
+    expect(screen.queryByTestId('chat-popup')).not.toBeInTheDocument();
   });
 
   it('affiche le badge unread quand fermé', async () => {
@@ -461,7 +462,7 @@ describe('ChatWidget', () => {
     fireEvent.click(screen.getByText('KYC'));
     await waitFor(() => screen.getByTestId('chat-message-input'));
     expect(screen.getByTestId('chat-send-button')).toBeDisabled();
-    expect(document.querySelectorAll('.animate-bounce').length).toBeGreaterThan(0);
+    expect(document.querySelectorAll('.typing-dot').length).toBeGreaterThan(0);
   });
 
   it('historique conversations pour user connecté', async () => {
@@ -622,6 +623,8 @@ describe('ChatWidget', () => {
     const headerClose = closeButtons.find((b) => b.className.includes('p-1.5'));
     fireEvent.click(headerClose!);
     expect(screen.getByTestId('chat-popup')).toHaveClass('opacity-0');
+    act(() => jest.advanceTimersByTime(150));
+    expect(screen.queryByTestId('chat-popup')).not.toBeInTheDocument();
   });
 
   it('ne charge pas les anciens messages si scroll bas', async () => {
