@@ -34,6 +34,11 @@ export function normalizeAffiliateCode(raw: string): string {
   return raw.trim().toLowerCase();
 }
 
+/** Filtre Prisma pour retrouver un code affilié sans tenir compte de la casse. */
+export function affiliateCodeEqualsFilter(normalizedCode: string) {
+  return { code: { equals: normalizedCode, mode: 'insensitive' as const } };
+}
+
 /** Délai Steam après crédit instantané avant attribution commission affilié. */
 export const AFFILIATE_HOLD_DAYS_AFTER_INSTANT_CREDIT = 8;
 

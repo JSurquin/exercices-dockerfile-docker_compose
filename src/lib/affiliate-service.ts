@@ -10,6 +10,7 @@ import {
   computeAffiliateCommissionEurCents,
   isAffiliateCommissionHoldComplete,
   isTradeEligibleForAffiliateCommission,
+  affiliateCodeEqualsFilter,
   normalizeAffiliateCode,
 } from '@/lib/affiliate-commission-logic';
 
@@ -22,6 +23,14 @@ export {
 export class AffiliateService {
   static computeSellPromoBonusCents(grossCents: number): number {
     return computeSellPromoBonusCentsPure(grossCents);
+  }
+
+  private static async findActiveAffiliateByCode(rawCode: string) {
+    const code = normalizeAffiliateCode(rawCode);
+    if (!code) return null;
+    return prisma.affiliateStats.findFirst({
+      where: { isActive: true, ...affiliateCodeEqualsFilter(code) },
+    });
   }
   /**
    * Génère un code d'affiliation unique pour un utilisateur
@@ -92,10 +101,7 @@ export class AffiliateService {
     const refCode = affiliateCode || (await this.getAffiliateRefFromCookies());
     if (!refCode) return;
 
-    const codeNormalized = refCode.trim().toLowerCase();
-    const affiliate = await prisma.affiliateStats.findFirst({
-      where: { code: codeNormalized, isActive: true },
-    });
+    const affiliate = await this.findActiveAffiliateByCode(refCode);
     if (!affiliate) return;
     if (affiliate.userId === userId) return;
 
@@ -157,12 +163,10 @@ export class AffiliateService {
     | { ok: true; affiliateId: string; code: string }
     | { ok: false; error: 'invalid' | 'self' | 'other_affiliate' }
   > {
-    const code = rawCode.trim().toLowerCase();
+    const code = normalizeAffiliateCode(rawCode);
     if (!code) return { ok: false, error: 'invalid' };
 
-    const affiliate = await prisma.affiliateStats.findFirst({
-      where: { code, isActive: true },
-    });
+    const affiliate = await this.findActiveAffiliateByCode(rawCode);
     if (!affiliate) return { ok: false, error: 'invalid' };
     if (affiliate.userId === userId) return { ok: false, error: 'self' };
 
@@ -598,10 +602,7 @@ export class AffiliateService {
     sellerUserId: string
   ) {
     if (affiliatePromoCode) {
-      const code = normalizeAffiliateCode(affiliatePromoCode);
-      const fromPromo = await prisma.affiliateStats.findFirst({
-        where: { code, isActive: true },
-      });
+      const fromPromo = await this.findActiveAffiliateByCode(affiliatePromoCode);
       if (fromPromo && fromPromo.userId !== sellerUserId) {
         return fromPromo;
       }

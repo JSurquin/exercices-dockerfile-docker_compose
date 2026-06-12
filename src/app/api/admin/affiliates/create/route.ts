@@ -3,6 +3,7 @@ import { prisma } from '~/prisma/prisma';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { emailService } from '@/lib/email';
 import { AffiliateService } from '@/lib/affiliate-service';
+import { affiliateCodeEqualsFilter, normalizeAffiliateCode } from '@/lib/affiliate-commission-logic';
 import { AuditLogger, AuditAction } from '@/lib/security/audit-logger';
 import crypto from 'crypto';
 import { headers } from 'next/headers';
@@ -76,9 +77,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Vérifier l'unicité du code d'affiliation si fourni
-    if (code) {
-      const existingAffiliate = await prisma.affiliateStats.findUnique({
-        where: { code },
+    const normalizedCode = code ? normalizeAffiliateCode(code) : undefined;
+    if (normalizedCode) {
+      const existingAffiliate = await prisma.affiliateStats.findFirst({
+        where: affiliateCodeEqualsFilter(normalizedCode),
       });
 
       if (existingAffiliate) {
@@ -103,9 +105,9 @@ export async function POST(request: NextRequest) {
     // 7. Créer l'AffiliateStats avec le code personnalisé ou auto-généré
     let affiliateCode: string;
     
-    if (code) {
-      // Utiliser le code fourni
-      affiliateCode = code;
+    if (normalizedCode) {
+      // Utiliser le code fourni (normalisé en minuscules)
+      affiliateCode = normalizedCode;
       await prisma.affiliateStats.create({
         data: {
           userId: newUser.id,

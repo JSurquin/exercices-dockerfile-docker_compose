@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AffiliateService } from '@/lib/affiliate-service';
+import { affiliateCodeEqualsFilter, normalizeAffiliateCode } from '@/lib/affiliate-commission-logic';
 import { prisma } from '../../../../../prisma/prisma';
 import { requireAdminSession } from '@/lib/require-admin';
 import { safeParseJson, safeParseSearchParams } from '@/lib/validation/helpers';
@@ -161,7 +162,7 @@ export async function POST(request: NextRequest) {
         break;
 
       case 'update_code': {
-        const trimmedCode = (data.newCode as string)?.trim().toUpperCase();
+        const trimmedCode = normalizeAffiliateCode((data.newCode as string) ?? '');
         if (!trimmedCode || trimmedCode.length < 3 || trimmedCode.length > 20) {
           return NextResponse.json(
             { success: false, error: 'Le code doit contenir entre 3 et 20 caractères' },
@@ -169,7 +170,7 @@ export async function POST(request: NextRequest) {
           );
         }
         const existing = await prisma.affiliateStats.findFirst({
-          where: { code: trimmedCode, NOT: { id: affiliateId } }
+          where: { ...affiliateCodeEqualsFilter(trimmedCode), NOT: { id: affiliateId } },
         });
         if (existing) {
           return NextResponse.json(

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { headers } from 'next/headers';
 import { AffiliateService } from '@/lib/affiliate-service';
+import { affiliateCodeEqualsFilter, normalizeAffiliateCode } from '@/lib/affiliate-commission-logic';
 import { AuditLogger, AuditAction } from '@/lib/security/audit-logger';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { safeParseJson } from '@/lib/validation/helpers';
@@ -64,7 +65,10 @@ export async function POST(
     }
 
     if (code) {
-      const existingCode = await prisma.affiliateStats.findUnique({ where: { code } });
+      const normalizedCode = normalizeAffiliateCode(code);
+      const existingCode = await prisma.affiliateStats.findFirst({
+        where: affiliateCodeEqualsFilter(normalizedCode),
+      });
       if (existingCode) {
         return NextResponse.json(
           { success: false, error: 'Ce code d\'affiliation est déjà utilisé' },
@@ -75,7 +79,7 @@ export async function POST(
       await prisma.affiliateStats.create({
         data: {
           userId,
-          code,
+          code: normalizedCode,
           commissionRate: commissionRateDecimal,
           isActive: true,
         },

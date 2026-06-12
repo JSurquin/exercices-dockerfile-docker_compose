@@ -5,6 +5,7 @@ import {
   computeAffiliateCommissionEurCents,
   isAffiliateCommissionHoldComplete,
   isTradeEligibleForAffiliateCommission,
+  affiliateCodeEqualsFilter,
   normalizeAffiliateCode,
 } from '@/lib/affiliate-commission-logic';
 
@@ -30,6 +31,13 @@ describe('affiliate-commission-logic', () => {
 
   it('normalizes affiliate codes', () => {
     expect(normalizeAffiliateCode('  Streamer123  ')).toBe('streamer123');
+    expect(normalizeAffiliateCode('NYOUZ')).toBe('nyouz');
+  });
+
+  it('builds case-insensitive affiliate code filter', () => {
+    expect(affiliateCodeEqualsFilter('nyouz')).toEqual({
+      code: { equals: 'nyouz', mode: 'insensitive' },
+    });
   });
 
   it('exports stable eligible status list', () => {
