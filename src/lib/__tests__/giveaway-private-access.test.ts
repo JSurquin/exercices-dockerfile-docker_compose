@@ -25,6 +25,11 @@ describe('giveaway-private-access', () => {
       ]);
     });
 
+    it('returns unrestricted filter for admins', () => {
+      const filters = buildGiveawayVisibilityOr(null, 'admin-user', true);
+      expect(filters).toEqual([{}]);
+    });
+
     it('includes affiliate ref and owner filters when provided', () => {
       const filters = buildGiveawayVisibilityOr('NYOUZ', 'user-1');
       expect(filters).toHaveLength(4);

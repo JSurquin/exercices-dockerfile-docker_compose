@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '~/prisma/prisma';
-import { auth } from '~/lib/auth';
 import { enrichGiveawayForViewer, redactGiveawayForPublic } from '@/lib/giveaway-public';
 import { withPublicWinnerProfile } from '@/lib/giveaway-winners-public';
-import { canAccessPrivateGiveaway, parseAffiliateRefFromRequest } from '@/lib/giveaway-private-access';
+import { canAccessPrivateGiveaway } from '@/lib/giveaway-private-access';
+import { resolveGiveawayViewerContext } from '@/lib/giveaway-viewer-context';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { giveawayPatchBodySchema } from '@/lib/validation/schemas/integrations';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
@@ -15,8 +15,8 @@ export async function GET(
 ) {
   try {
     const { id } = await Promise.resolve(params);
-    const session = await auth.api.getSession({ headers: request.headers });
-    const viewerId = session?.user?.id ?? null;
+    const { viewerUserId: viewerId, affiliateRef, viewerIsAdmin } =
+      await resolveGiveawayViewerContext(request);
 
     const giveaway = await prisma.giveaway.findUnique({
       where: { id },
@@ -48,11 +48,11 @@ export async function GET(
 
     // Vérifier l'accès aux giveaways privés
     if (giveaway.isPrivate && giveaway.requiredAffiliateCode) {
-      const affiliateRef = parseAffiliateRefFromRequest(request);
       const allowed = await canAccessPrivateGiveaway({
         giveaway,
         affiliateRef,
         viewerUserId: viewerId,
+        viewerIsAdmin,
       });
 
       if (!allowed) {

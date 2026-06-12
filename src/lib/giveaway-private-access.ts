@@ -25,8 +25,13 @@ export function affiliateCodesMatch(
 /** Filtres Prisma pour la liste publique des giveaways visibles par un visiteur. */
 export function buildGiveawayVisibilityOr(
   affiliateRef: string | null,
-  viewerUserId: string | null
+  viewerUserId: string | null,
+  viewerIsAdmin = false
 ): Prisma.GiveawayWhereInput[] {
+  if (viewerIsAdmin) {
+    return [{}];
+  }
+
   const accessOr: Prisma.GiveawayWhereInput[] = [
     { isPrivate: false },
     { isPrivate: true, requiredAffiliateCode: null },
@@ -64,8 +69,13 @@ export async function canAccessPrivateGiveaway(input: {
   };
   affiliateRef: string | null;
   viewerUserId: string | null;
+  viewerIsAdmin?: boolean;
 }): Promise<boolean> {
-  const { giveaway, affiliateRef, viewerUserId } = input;
+  const { giveaway, affiliateRef, viewerUserId, viewerIsAdmin = false } = input;
+
+  if (viewerIsAdmin) {
+    return true;
+  }
 
   if (!giveaway.isPrivate || !giveaway.requiredAffiliateCode) {
     return true;
