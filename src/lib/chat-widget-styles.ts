@@ -103,12 +103,12 @@ export function chatWidgetTextareaClass(): string {
 }
 
 export function chatWidgetTabBarClass(): string {
-  return 'flex-shrink-0 border-t bg-background/95 backdrop-blur-sm px-2 pt-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom,0px))]';
+  return 'flex flex-row items-stretch flex-shrink-0 border-t bg-background/95 backdrop-blur-sm px-2 pt-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom,0px))]';
 }
 
 export function chatWidgetTabButtonClass(isActive: boolean): string {
   const base =
-    'flex-1 flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-lg transition-colors relative';
+    'flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-1.5 min-h-[48px] rounded-lg transition-colors relative';
   return isActive
     ? `${base} text-foreground font-medium`
     : `${base} text-muted-foreground hover:text-foreground`;

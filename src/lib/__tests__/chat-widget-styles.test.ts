@@ -9,6 +9,8 @@ import {
   chatWidgetSendButtonClass,
   chatWidgetSenderLabelClass,
   chatWidgetSubcategoryButtonClass,
+  chatWidgetTabBarClass,
+  chatWidgetTabButtonClass,
   chatWidgetTextareaClass,
   chatWidgetTimestampClass,
   chatWidgetUnreadBadgeClass,
@@ -135,6 +137,13 @@ describe('layout & interaction classes', () => {
 
   it('bulle AI typing cohérente avec messages AI', () => {
     expect(chatWidgetAiTypingBubbleClass()).toContain('border-violet-200');
+  });
+
+  it('barre d’onglets en ligne avec boutons de taille égale', () => {
+    expect(chatWidgetTabBarClass()).toContain('flex');
+    expect(chatWidgetTabBarClass()).toContain('flex-row');
+    expect(chatWidgetTabButtonClass(true)).toContain('flex-1');
+    expect(chatWidgetTabButtonClass(false)).toContain('min-h-[48px]');
   });
 });
 

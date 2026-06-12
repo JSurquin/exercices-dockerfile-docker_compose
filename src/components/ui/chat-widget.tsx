@@ -777,8 +777,8 @@ export function ChatWidget() {
         className={chatWidgetTabButtonClass(activeTab === "home")}
         aria-label={messages.chatWidget.tabs.home}
       >
-        <HomeIcon className={`h-5 w-5 ${activeTab === "home" ? "text-theme-accent" : ""}`} />
-        <span className="text-[10px]">{messages.chatWidget.tabs.home}</span>
+        <HomeIcon className={`h-5 w-5 shrink-0 ${activeTab === "home" ? "text-theme-accent" : ""}`} />
+        <span className="text-[10px] leading-none truncate max-w-full">{messages.chatWidget.tabs.home}</span>
       </button>
       <button
         type="button"
@@ -791,8 +791,8 @@ export function ChatWidget() {
         className={chatWidgetTabButtonClass(activeTab === "help")}
         aria-label={messages.chatWidget.tabs.help}
       >
-        <QuestionMarkCircleIcon className={`h-5 w-5 ${activeTab === "help" ? "text-theme-accent" : ""}`} />
-        <span className="text-[10px]">{messages.chatWidget.tabs.help}</span>
+        <QuestionMarkCircleIcon className={`h-5 w-5 shrink-0 ${activeTab === "help" ? "text-theme-accent" : ""}`} />
+        <span className="text-[10px] leading-none truncate max-w-full">{messages.chatWidget.tabs.help}</span>
       </button>
       <button
         type="button"
@@ -804,7 +804,7 @@ export function ChatWidget() {
         className={chatWidgetTabButtonClass(activeTab === "messages")}
         aria-label={messages.chatWidget.tabs.messages}
       >
-        <span className="relative">
+        <span className="relative inline-flex h-5 w-5 items-center justify-center shrink-0">
           <ChatBubbleBottomCenterTextIcon
             className={`h-5 w-5 ${activeTab === "messages" ? "text-theme-accent" : ""}`}
           />
@@ -814,7 +814,7 @@ export function ChatWidget() {
             </span>
           )}
         </span>
-        <span className="text-[10px]">{messages.chatWidget.tabs.messages}</span>
+        <span className="text-[10px] leading-none truncate max-w-full">{messages.chatWidget.tabs.messages}</span>
       </button>
     </nav>
   );
