@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, type ComponentType, type SVGProps } from "react";
+import { useState, useRef, useEffect, useCallback, memo, type ComponentType, type SVGProps } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ import {
   isWidgetMessageFromViewer,
   shouldShowWidgetAiTyping,
   shouldShowWidgetUnreadBadge,
+  type WidgetSenderType,
 } from "@/lib/chat-widget-styles";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useChat } from "@/hooks/use-chat";
@@ -95,6 +96,293 @@ function formatRelativeTime(date: Date | string): string {
   if (days < 7) return `${days}d`;
   return new Date(date).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
+
+function formatMessageTime(date: Date | string) {
+  return new Date(date).toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+const CHAT_REMARK_PLUGINS = [remarkGfm];
+
+const CHAT_MARKDOWN_COMPONENTS = {
+  p: ({ children }: { children?: React.ReactNode }) => <p className="mb-1 last:mb-0">{children}</p>,
+  ul: ({ children }: { children?: React.ReactNode }) => <ul className="list-disc pl-4 mb-1 space-y-0.5">{children}</ul>,
+  ol: ({ children }: { children?: React.ReactNode }) => <ol className="list-decimal pl-4 mb-1 space-y-0.5">{children}</ol>,
+  li: ({ children }: { children?: React.ReactNode }) => <li className="text-sm">{children}</li>,
+  strong: ({ children }: { children?: React.ReactNode }) => <strong className="font-semibold">{children}</strong>,
+  em: ({ children }: { children?: React.ReactNode }) => <em className="italic">{children}</em>,
+  code: ({ children }: { children?: React.ReactNode }) => (
+    <code className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5 text-xs font-mono">{children}</code>
+  ),
+  h1: ({ children }: { children?: React.ReactNode }) => <p className="font-semibold text-sm mb-1">{children}</p>,
+  h2: ({ children }: { children?: React.ReactNode }) => <p className="font-semibold text-sm mb-1">{children}</p>,
+  h3: ({ children }: { children?: React.ReactNode }) => <p className="font-medium text-sm mb-0.5">{children}</p>,
+  a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-80">
+      {children}
+    </a>
+  ),
+};
+
+type WidgetMessage = {
+  id: string;
+  content: string;
+  senderType: string;
+  createdAt: string | Date;
+  userId?: string | null;
+};
+
+interface ChatWidgetInputProps {
+  onSend: (content: string) => void | Promise<void>;
+  disabled: boolean;
+  placeholder: string;
+  sendHint: string;
+  prefillMessage?: string;
+}
+
+const ChatWidgetInput = memo(function ChatWidgetInput({
+  onSend,
+  disabled,
+  placeholder,
+  sendHint,
+  prefillMessage,
+}: ChatWidgetInputProps) {
+  const [message, setMessage] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (prefillMessage) {
+      setMessage(prefillMessage);
+      const el = textareaRef.current;
+      if (el) {
+        el.style.height = "auto";
+        el.style.height = Math.min(el.scrollHeight, 100) + "px";
+      }
+    }
+  }, [prefillMessage]);
+
+  const resetTextareaHeight = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "38px";
+  }, []);
+
+  const handleSend = async () => {
+    if (!message.trim() || disabled) return;
+    const content = message;
+    setMessage("");
+    resetTextareaHeight();
+    await onSend(content);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      void handleSend();
+    }
+  };
+
+  return (
+    <div className={chatWidgetInputAreaClass()}>
+      <div className="flex items-end gap-2">
+        <textarea
+          ref={textareaRef}
+          data-testid="chat-message-input"
+          value={message}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            e.target.style.height = "auto";
+            e.target.style.height = Math.min(e.target.scrollHeight, 100) + "px";
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          rows={1}
+          className={chatWidgetTextareaClass()}
+          style={{ height: "38px", fontSize: "16px" }}
+        />
+        <Button
+          size="icon"
+          data-testid="chat-send-button"
+          className={chatWidgetSendButtonClass()}
+          onClick={() => void handleSend()}
+          disabled={!message.trim() || disabled}
+        >
+          {disabled ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+          ) : (
+            <PaperAirplaneIcon className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+      <p className="text-[10px] text-muted-foreground mt-1.5 text-center select-none">
+        {sendHint}
+      </p>
+    </div>
+  );
+});
+
+interface ChatWidgetMessageListProps {
+  conversationId: string | null;
+  messages: WidgetMessage[];
+  viewerUserId?: string;
+  welcomeMessage: string;
+  moderatorLabel: string;
+  botLabel: string;
+  aiLabel: string;
+  resolveContent: (content: string) => string;
+  isLoadingOlderMessages: boolean;
+  isLoading: boolean;
+  showAiTyping: boolean;
+  onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+}
+
+const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
+  conversationId,
+  messages,
+  viewerUserId,
+  welcomeMessage,
+  moderatorLabel,
+  botLabel,
+  aiLabel,
+  resolveContent,
+  isLoadingOlderMessages,
+  isLoading,
+  showAiTyping,
+  onScroll,
+  containerRef,
+}: ChatWidgetMessageListProps) {
+  const seenMessageIdsRef = useRef<Set<string>>(new Set());
+  const seenConversationRef = useRef<string | null>(null);
+
+  if (conversationId !== seenConversationRef.current) {
+    seenMessageIdsRef.current = new Set();
+    seenConversationRef.current = conversationId;
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      data-testid="chat-messages"
+      onScroll={onScroll}
+      className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3"
+    >
+      {isLoadingOlderMessages && (
+        <div className="flex justify-center py-2">
+          <div className="h-4 w-4 border-2 border-theme-accent border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+      {messages.length === 0 && (
+        <div className="flex justify-start">
+          <div className="max-w-[85%] rounded-2xl rounded-tl-sm px-4 py-2.5 bg-muted border text-sm">
+            {welcomeMessage}
+          </div>
+        </div>
+      )}
+
+      {messages.map((msg) => {
+        const isUser = isWidgetMessageFromViewer(msg.senderType, msg.userId, viewerUserId);
+        const isBot = msg.senderType === "BOT";
+        const isAi = msg.senderType === "AI";
+        const isModerator = msg.senderType === "MODERATOR";
+        const bubbleSender: WidgetSenderType = isUser ? "USER" : (msg.senderType as WidgetSenderType);
+        const isNewMessage = !seenMessageIdsRef.current.has(msg.id);
+        if (isNewMessage) {
+          seenMessageIdsRef.current.add(msg.id);
+        }
+
+        return (
+          <div
+            key={msg.id}
+            className={`flex ${chatWidgetMessageAlignment(isUser)} ${chatWidgetMessageEnterClass(isNewMessage)}`}
+          >
+            <div className={chatWidgetMessageBubbleClass(bubbleSender)}>
+              {isModerator && chatWidgetSenderLabelClass("MODERATOR") && (
+                <div className="flex items-center gap-1 mb-1">
+                  <span className={chatWidgetSenderLabelClass("MODERATOR")!}>
+                    <UserCircleIcon className="h-3 w-3 shrink-0" aria-hidden />
+                    {moderatorLabel}
+                  </span>
+                </div>
+              )}
+              {isBot && chatWidgetSenderLabelClass("BOT") && (
+                <div className="flex items-center gap-1 mb-1">
+                  <span className={chatWidgetSenderLabelClass("BOT")!}>
+                    <CpuChipIcon className="h-3 w-3 shrink-0" aria-hidden />
+                    {botLabel}
+                  </span>
+                </div>
+              )}
+              {isAi && chatWidgetSenderLabelClass("AI") && (
+                <div className="flex items-center gap-1 mb-1">
+                  <span className={chatWidgetSenderLabelClass("AI")!}>
+                    <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
+                    {aiLabel}
+                  </span>
+                </div>
+              )}
+              {isUser ? (
+                <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                  {resolveContent(msg.content)}
+                </p>
+              ) : (
+                <div className="text-sm leading-relaxed">
+                  <ReactMarkdown remarkPlugins={CHAT_REMARK_PLUGINS} components={CHAT_MARKDOWN_COMPONENTS}>
+                    {resolveContent(msg.content)}
+                  </ReactMarkdown>
+                </div>
+              )}
+              <div
+                className={`flex items-center justify-between mt-1 gap-2 ${chatWidgetTimestampClass(bubbleSender)}`}
+              >
+                <span className="text-[10px]">{formatMessageTime(msg.createdAt)}</span>
+                {isUser && (
+                  <div className="flex text-green-300">
+                    <CheckIcon className="h-3 w-3" />
+                    <CheckIcon className="h-3 w-3 -ml-1" />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+      {isLoading && (
+        <div className="flex justify-start">
+          <div className="bg-muted border rounded-2xl rounded-tl-sm px-4 py-3">
+            <div className="flex space-x-1.5">
+              <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
+              <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
+              <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAiTyping && (
+        <div className="flex justify-start ai-typing-bubble">
+          <div className={chatWidgetAiTypingBubbleClass()}>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">
+                <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
+                {aiLabel}
+              </span>
+              <div className="flex gap-1">
+                <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
+                <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
+                <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
 
 /* ─────────────────────────────────────────────
  * Composant principal
@@ -169,7 +457,7 @@ export function ChatWidget() {
   const [helpStep, setHelpStep] = useState<ChatWidgetHelpStep>("categories");
   const [messagesStep, setMessagesStep] = useState<ChatWidgetMessagesStep>("list");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [message, setMessage] = useState("");
+  const [inputPrefill, setInputPrefill] = useState<string | undefined>();
   const [isSendingBotMsg, setIsSendingBotMsg] = useState(false);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [aiTypingBaseCount, setAiTypingBaseCount] = useState(0);
@@ -181,8 +469,6 @@ export function ChatWidget() {
   const popupCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevScrollHeightRef = useRef(0);
   const initialNavDoneRef = useRef(false);
-  const seenMessageIdsRef = useRef<Set<string>>(new Set());
-  const seenMessagesConversationRef = useRef<string | null>(null);
 
   const openPopup = useCallback(() => {
     if (popupCloseTimerRef.current) {
@@ -202,11 +488,6 @@ export function ChatWidget() {
       popupCloseTimerRef.current = null;
     }, CHAT_WIDGET_POPUP_CLOSE_MS);
   }, []);
-
-  if (conversationId !== seenMessagesConversationRef.current) {
-    seenMessageIdsRef.current = new Set();
-    seenMessagesConversationRef.current = conversationId;
-  }
 
   const hasExistingMessages = (currentConversation?.messages?.length ?? 0) > 0;
   const recentConversation = conversationListItems[0] ?? null;
@@ -283,7 +564,7 @@ export function ChatWidget() {
       setActiveTab("messages");
       setMessagesStep("conversation");
       if (detail?.prefillMessage) {
-        setMessage(detail.prefillMessage);
+        setInputPrefill(detail.prefillMessage);
       }
     };
     window.addEventListener("open-support-chat", handleOpenSupport);
@@ -396,10 +677,8 @@ export function ChatWidget() {
     setMessagesStep("list");
   };
 
-  const handleSendMessage = async () => {
-    if (!message.trim() || isLoading) return;
-    const content = message;
-    setMessage("");
+  const handleSendMessage = useCallback(async (content: string) => {
+    if (isLoading) return;
     const baseCount = currentConversation?.messages.length ?? 0;
     await sendMessage(content);
     setAiTypingBaseCount(baseCount);
@@ -407,23 +686,12 @@ export function ChatWidget() {
     if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
     aiTypingTimeoutRef.current = setTimeout(() => setIsAiTyping(false), 90_000);
     setTimeout(scrollToBottom, 100);
-  };
+  }, [isLoading, currentConversation?.messages.length, sendMessage, scrollToBottom]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const formatTime = (date: Date | string) =>
-    new Date(date).toLocaleTimeString("fr-FR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-  const resolveContent = (content: string) =>
-    resolveI18nContent(content, messages);
+  const resolveContent = useCallback(
+    (content: string) => resolveI18nContent(content, messages),
+    [messages],
+  );
 
   const unreadCount = getUnreadCount();
 
@@ -635,179 +903,28 @@ export function ChatWidget() {
 
   const renderConversation = () => (
     <>
-      <div
-        ref={messagesContainerRef}
-        data-testid="chat-messages"
+      <ChatWidgetMessageList
+        conversationId={conversationId}
+        messages={currentConversation?.messages ?? []}
+        viewerUserId={user?.id}
+        welcomeMessage={messages.chatWidget.responses.welcomeMessage}
+        moderatorLabel={messages.chatWidget.moderatorLabel}
+        botLabel={messages.chatWidget.botLabel}
+        aiLabel={messages.chatWidget.aiLabel}
+        resolveContent={resolveContent}
+        isLoadingOlderMessages={isLoadingOlderMessages}
+        isLoading={isLoading}
+        showAiTyping={showAiTyping}
         onScroll={handleMessagesScroll}
-        className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3"
-      >
-        {isLoadingOlderMessages && (
-          <div className="flex justify-center py-2">
-            <div className="h-4 w-4 border-2 border-theme-accent border-t-transparent rounded-full animate-spin" />
-          </div>
-        )}
-        {!currentConversation && (
-          <div className="flex justify-start">
-            <div className="max-w-[85%] rounded-2xl rounded-tl-sm px-4 py-2.5 bg-muted border text-sm">
-              {messages.chatWidget.responses.welcomeMessage}
-            </div>
-          </div>
-        )}
-
-        {currentConversation?.messages.map((msg) => {
-          const isUser = isWidgetMessageFromViewer(
-            msg.senderType,
-            msg.userId,
-            user?.id,
-          );
-          const isBot = msg.senderType === "BOT";
-          const isAi = msg.senderType === "AI";
-          const isModerator = msg.senderType === "MODERATOR";
-          const isSystem = msg.senderType === "SYSTEM";
-          const bubbleSender = isUser ? "USER" : msg.senderType;
-          const isNewMessage = !seenMessageIdsRef.current.has(msg.id);
-          if (isNewMessage) {
-            seenMessageIdsRef.current.add(msg.id);
-          }
-
-          return (
-            <div
-              key={msg.id}
-              className={`flex ${chatWidgetMessageAlignment(isUser)} ${chatWidgetMessageEnterClass(isNewMessage)}`}
-            >
-              <div className={chatWidgetMessageBubbleClass(bubbleSender)}>
-                {isModerator && chatWidgetSenderLabelClass("MODERATOR") && (
-                  <div className="flex items-center gap-1 mb-1">
-                    <span className={chatWidgetSenderLabelClass("MODERATOR")!}>
-                      <UserCircleIcon className="h-3 w-3 shrink-0" aria-hidden />
-                      {messages.chatWidget.moderatorLabel}
-                    </span>
-                  </div>
-                )}
-                {isBot && chatWidgetSenderLabelClass("BOT") && (
-                  <div className="flex items-center gap-1 mb-1">
-                    <span className={chatWidgetSenderLabelClass("BOT")!}>
-                      <CpuChipIcon className="h-3 w-3 shrink-0" aria-hidden />
-                      {messages.chatWidget.botLabel}
-                    </span>
-                  </div>
-                )}
-                {isAi && chatWidgetSenderLabelClass("AI") && (
-                  <div className="flex items-center gap-1 mb-1">
-                    <span className={chatWidgetSenderLabelClass("AI")!}>
-                      <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
-                      {messages.chatWidget.aiLabel}
-                    </span>
-                  </div>
-                )}
-                {isUser ? (
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                    {resolveContent(msg.content)}
-                  </p>
-                ) : (
-                  <div className="text-sm leading-relaxed">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
-                        ul: ({ children }) => <ul className="list-disc pl-4 mb-1 space-y-0.5">{children}</ul>,
-                        ol: ({ children }) => <ol className="list-decimal pl-4 mb-1 space-y-0.5">{children}</ol>,
-                        li: ({ children }) => <li className="text-sm">{children}</li>,
-                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                        em: ({ children }) => <em className="italic">{children}</em>,
-                        code: ({ children }) => <code className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5 text-xs font-mono">{children}</code>,
-                        h1: ({ children }) => <p className="font-semibold text-sm mb-1">{children}</p>,
-                        h2: ({ children }) => <p className="font-semibold text-sm mb-1">{children}</p>,
-                        h3: ({ children }) => <p className="font-medium text-sm mb-0.5">{children}</p>,
-                        a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-80">{children}</a>,
-                      }}
-                    >
-                      {resolveContent(msg.content)}
-                    </ReactMarkdown>
-                  </div>
-                )}
-                <div
-                  className={`flex items-center justify-between mt-1 gap-2 ${chatWidgetTimestampClass(bubbleSender)}`}
-                >
-                  <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
-                  {isUser && (
-                    <div className="flex text-green-300">
-                      <CheckIcon className="h-3 w-3" />
-                      <CheckIcon className="h-3 w-3 -ml-1" />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-muted border rounded-2xl rounded-tl-sm px-4 py-3">
-              <div className="flex space-x-1.5">
-                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
-                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
-                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showAiTyping && (
-          <div className="flex justify-start ai-typing-bubble">
-            <div className={chatWidgetAiTypingBubbleClass()}>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">
-                  <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
-                  {messages.chatWidget.aiLabel}
-                </span>
-                <div className="flex gap-1">
-                  <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
-                  <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
-                  <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className={chatWidgetInputAreaClass()}>
-        <div className="flex items-end gap-2">
-          <textarea
-            data-testid="chat-message-input"
-            value={message}
-            onChange={(e) => {
-              setMessage(e.target.value);
-              e.target.style.height = "auto";
-              e.target.style.height = Math.min(e.target.scrollHeight, 100) + "px";
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder={messages.chatWidget.placeholder}
-            disabled={isLoading}
-            rows={1}
-            className={chatWidgetTextareaClass()}
-            style={{ height: "38px", fontSize: "16px" }}
-          />
-          <Button
-            size="icon"
-            data-testid="chat-send-button"
-            className={chatWidgetSendButtonClass()}
-            onClick={handleSendMessage}
-            disabled={!message.trim() || isLoading}
-          >
-            {isLoading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-            ) : (
-              <PaperAirplaneIcon className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-        <p className="text-[10px] text-muted-foreground mt-1.5 text-center select-none">
-          {messages.chatWidget.sendHint}
-        </p>
-      </div>
+        containerRef={messagesContainerRef}
+      />
+      <ChatWidgetInput
+        onSend={handleSendMessage}
+        disabled={isLoading}
+        placeholder={messages.chatWidget.placeholder}
+        sendHint={messages.chatWidget.sendHint}
+        prefillMessage={inputPrefill}
+      />
     </>
   );
 
