@@ -43,6 +43,7 @@ export function useChat(isOpen = false) {
   );
 
   const [pickedConversationId, setPickedConversationId] = useState<string | null>(null);
+  const [awaitingStaffReply, setAwaitingStaffReply] = useState(false);
 
   const { data: conversationsData, isLoading: conversationsLoading } = useQuery({
     queryKey: queryKeys.conversations,
@@ -86,7 +87,12 @@ export function useChat(isOpen = false) {
     getNextPageParam: (lastPage) =>
       lastPage.hasMore ? lastPage.nextCursor : undefined,
     enabled: !!conversationId && isOpen,
-    refetchInterval: isOpen && conversationId ? 15_000 : false,
+    refetchInterval:
+      isOpen && conversationId
+        ? awaitingStaffReply
+          ? 2_000
+          : 15_000
+        : false,
     refetchIntervalInBackground: false,
   });
 
@@ -94,6 +100,20 @@ export function useChat(isOpen = false) {
     () => flattenMessagePages(messagesData?.pages),
     [messagesData],
   );
+
+  useEffect(() => {
+    if (!awaitingStaffReply || allMessages.length === 0) return;
+    const last = allMessages[allMessages.length - 1];
+    if (last && last.senderType !== 'USER') {
+      setAwaitingStaffReply(false);
+    }
+  }, [allMessages, awaitingStaffReply]);
+
+  useEffect(() => {
+    if (!awaitingStaffReply) return;
+    const timeout = setTimeout(() => setAwaitingStaffReply(false), 90_000);
+    return () => clearTimeout(timeout);
+  }, [awaitingStaffReply]);
 
   const staffMsgCount = countClientNotifyMessages(allMessages);
   const prevStaffMsgCountRef = useRef<number | null>(null);
@@ -129,10 +149,11 @@ export function useChat(isOpen = false) {
       if (!res.ok) throw new Error(chatT.sendMessageError);
       return res.json();
     },
-    onSuccess: (data: { conversationId: string; createdNewConversation?: boolean }) => {
+    onSuccess: (data: { conversationId: string; createdNewConversation?: boolean; senderType?: string }) => {
       if (data.createdNewConversation || data.conversationId !== conversationId) {
         setConversationId(data.conversationId);
       }
+      setAwaitingStaffReply(true);
       queryClient.invalidateQueries({
         queryKey: queryKeys.conversationMessages(data.conversationId),
       });

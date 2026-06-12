@@ -99,7 +99,23 @@ export function chatWidgetInputAreaClass(): string {
 }
 
 export function chatWidgetTextareaClass(): string {
-  return 'flex-1 resize-none rounded-xl border bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 transition-all min-h-[38px] max-h-[100px] leading-relaxed';
+  return 'flex-1 resize-none rounded-xl border bg-muted/50 px-3 py-2 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 transition-all min-h-[38px] max-h-[100px] leading-relaxed';
+}
+
+export function chatWidgetTabBarClass(): string {
+  return 'flex-shrink-0 border-t bg-background/95 backdrop-blur-sm px-2 pt-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom,0px))]';
+}
+
+export function chatWidgetTabButtonClass(isActive: boolean): string {
+  const base =
+    'flex-1 flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-lg transition-colors relative';
+  return isActive
+    ? `${base} text-foreground font-medium`
+    : `${base} text-muted-foreground hover:text-foreground`;
+}
+
+export function chatWidgetHomeCardClass(): string {
+  return 'w-full rounded-xl border bg-card p-3.5 text-left transition-colors hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 hover:border-theme-accent/30';
 }
 
 export function chatWidgetSendButtonClass(): string {

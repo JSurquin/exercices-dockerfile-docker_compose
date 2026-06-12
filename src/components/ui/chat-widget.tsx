@@ -8,13 +8,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useLocale } from "@/components/providers/locale-provider";
 import { resolveI18nContent } from "@/lib/resolve-i18n-content";
-import { shouldShowBackButton } from "@/lib/chat-widget-config";
+import {
+  shouldShowBackButton,
+  type ChatWidgetHelpStep,
+  type ChatWidgetMessagesStep,
+  type ChatWidgetTab,
+} from "@/lib/chat-widget-config";
 import { shouldClearAiTypingIndicator } from "@/lib/chat-logic";
 import {
   chatWidgetAiTypingBubbleClass,
   chatWidgetCategoryButtonClass,
   chatWidgetFabButtonClass,
   chatWidgetHeaderClass,
+  chatWidgetHomeCardClass,
   chatWidgetInputAreaClass,
   chatWidgetMessageAlignment,
   chatWidgetMessageBubbleClass,
@@ -22,6 +28,8 @@ import {
   chatWidgetSendButtonClass,
   chatWidgetSenderLabelClass,
   chatWidgetSubcategoryButtonClass,
+  chatWidgetTabBarClass,
+  chatWidgetTabButtonClass,
   chatWidgetTextareaClass,
   chatWidgetTimestampClass,
   chatWidgetUnreadBadgeClass,
@@ -45,8 +53,10 @@ import {
   CpuChipIcon,
   SparklesIcon,
   UserCircleIcon,
-  ClockIcon,
   PlusIcon,
+  HomeIcon,
+  QuestionMarkCircleIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import {
   ChatBubbleBottomCenterTextIcon as ChatBubbleBottomCenterTextIconSolid,
@@ -72,12 +82,17 @@ interface Category {
   subcategories: Subcategory[];
 }
 
-
-/* ─────────────────────────────────────────────
- * Types
- * ───────────────────────────────────────────── */
-
-type ChatStep = "categories" | "subcategories" | "conversation" | "history";
+function formatRelativeTime(date: Date | string): string {
+  const diffMs = Date.now() - new Date(date).getTime();
+  const mins = Math.floor(diffMs / 60_000);
+  if (mins < 1) return "now";
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d`;
+  return new Date(date).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
 
 /* ─────────────────────────────────────────────
  * Composant principal
@@ -85,7 +100,6 @@ type ChatStep = "categories" | "subcategories" | "conversation" | "history";
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
   const { messages } = useLocale();
 
   const CATEGORIES: Category[] = [
@@ -131,6 +145,7 @@ export function ChatWidget() {
       ],
     },
   ];
+
   const { user } = useAuth();
   const {
     currentConversation,
@@ -147,11 +162,9 @@ export function ChatWidget() {
   } = useChat(isOpen);
 
   const queryClient = useQueryClient();
-  const [chatStepOverride, setChatStepOverride] = useState<ChatStep | null>(null);
-  const hasExistingMessages = (currentConversation?.messages?.length ?? 0) > 0;
-  const chatStep: ChatStep =
-    chatStepOverride ?? (hasExistingMessages ? "conversation" : "categories");
-  const setChatStep = setChatStepOverride;
+  const [activeTab, setActiveTab] = useState<ChatWidgetTab>("home");
+  const [helpStep, setHelpStep] = useState<ChatWidgetHelpStep>("categories");
+  const [messagesStep, setMessagesStep] = useState<ChatWidgetMessagesStep>("list");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [message, setMessage] = useState("");
   const [isSendingBotMsg, setIsSendingBotMsg] = useState(false);
@@ -159,11 +172,17 @@ export function ChatWidget() {
   const [aiTypingBaseCount, setAiTypingBaseCount] = useState(0);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const wasOpenBeforeMobileMenuRef = useRef(false);
   const [isHiddenByMobileMenu, setIsHiddenByMobileMenu] = useState(false);
   const aiTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevScrollHeightRef = useRef(0);
+  const initialNavDoneRef = useRef(false);
+
+  const hasExistingMessages = (currentConversation?.messages?.length ?? 0) > 0;
+  const recentConversation = conversationListItems[0] ?? null;
+  const totalListUnread = conversationListItems.reduce((acc, item) => acc + item.unread, 0);
+  const isInConversation =
+    activeTab === "messages" && messagesStep === "conversation";
 
   const effectiveIsAiTyping =
     isAiTyping &&
@@ -187,13 +206,35 @@ export function ChatWidget() {
     }
   }, []);
 
+  const goToConversation = useCallback(() => {
+    setActiveTab("messages");
+    setMessagesStep("conversation");
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) {
+      initialNavDoneRef.current = false;
+      return;
+    }
+    if (initialNavDoneRef.current) return;
+    initialNavDoneRef.current = true;
+    if (hasExistingMessages) {
+      setActiveTab("messages");
+      setMessagesStep("conversation");
+    }
+  }, [isOpen, hasExistingMessages]);
+
+  useEffect(() => {
+    if (isInConversation) {
+      setTimeout(scrollToBottom, 50);
+    }
+  }, [currentConversation?.messages, isInConversation, scrollToBottom]);
+
   const handleToggleChat = () => {
     if (isOpen) {
       setIsOpen(false);
     } else {
-      setIsAnimating(true);
       setIsOpen(true);
-      setTimeout(() => setIsAnimating(false), 300);
     }
   };
 
@@ -201,9 +242,10 @@ export function ChatWidget() {
     const handleOpenSupport = (e: Event) => {
       const detail = (e as CustomEvent<{ prefillMessage?: string }>).detail;
       setIsOpen(true);
+      setActiveTab("messages");
+      setMessagesStep("conversation");
       if (detail?.prefillMessage) {
         setMessage(detail.prefillMessage);
-        setChatStep("conversation");
       }
     };
     window.addEventListener("open-support-chat", handleOpenSupport);
@@ -238,9 +280,21 @@ export function ChatWidget() {
       window.removeEventListener("mobile-menu-open-change", handleMobileMenuChange);
   }, []);
 
+  const handleBack = () => {
+    if (activeTab === "help" && helpStep === "subcategories") {
+      setHelpStep("categories");
+      setSelectedCategory(null);
+      return;
+    }
+    if (activeTab === "messages" && messagesStep === "conversation") {
+      setMessagesStep("list");
+    }
+  };
+
   const handleCategorySelect = (category: Category) => {
     setSelectedCategory(category);
-    setChatStep("subcategories");
+    setHelpStep("subcategories");
+    setActiveTab("help");
   };
 
   const handleSubcategorySelect = async (subcategory: Subcategory) => {
@@ -262,7 +316,8 @@ export function ChatWidget() {
         queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
       }
 
-      setChatStep("conversation");
+      setActiveTab("messages");
+      setMessagesStep("conversation");
     } catch (err) {
       console.error(err);
     } finally {
@@ -288,22 +343,23 @@ export function ChatWidget() {
 
   const handleSelectHistoryItem = (id: string) => {
     setConversationId(id);
-    setChatStep("conversation");
+    setMessagesStep("conversation");
   };
 
   const handleNewConversation = () => {
     startNewConversation();
     setSelectedCategory(null);
-    setChatStep("categories");
+    setHelpStep("categories");
+    setActiveTab("help");
+    setMessagesStep("list");
   };
 
   const handleSendMessage = async () => {
     if (!message.trim() || isLoading) return;
     const content = message;
     setMessage("");
-    await sendMessage(content);
-    // Mémoriser le nombre de messages AVANT la réponse IA, puis activer l'indicateur
     const baseCount = currentConversation?.messages.length ?? 0;
+    await sendMessage(content);
     setAiTypingBaseCount(baseCount);
     setIsAiTyping(true);
     if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
@@ -333,41 +389,452 @@ export function ChatWidget() {
     return null;
   }
 
+  const showBack = shouldShowBackButton({ tab: activeTab, helpStep, messagesStep });
+
+  const renderHomeTab = () => (
+    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="pb-1">
+        <p className="text-lg font-semibold">
+          {messages.chatWidget.greeting}{user ? ` ${user.username}` : ""} 👋
+        </p>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          {messages.chatWidget.home.subtitle}
+        </p>
+      </div>
+
+      {recentConversation ? (
+        <button
+          type="button"
+          onClick={() => {
+            setConversationId(recentConversation.id);
+            goToConversation();
+          }}
+          className={chatWidgetHomeCardClass()}
+        >
+          <div className="flex items-start gap-3">
+            <Avatar className="h-9 w-9 shrink-0">
+              <AvatarImage src="/images/support-avatar.svg" />
+              <AvatarFallback className="text-xs">
+                <CpuChipIcon className="h-4 w-4" aria-hidden />
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold truncate">{recentConversation.title}</p>
+                <span className="text-[10px] text-muted-foreground shrink-0">
+                  {formatRelativeTime(recentConversation.lastMessageAt)}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {messages.chatWidget.home.recentMessage}
+              </p>
+            </div>
+            <ChevronRightIcon className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
+          </div>
+        </button>
+      ) : null}
+
+      <div className={chatWidgetHomeCardClass()}>
+        <div className="flex items-center gap-2 mb-3">
+          <MagnifyingGlassIcon className="h-4 w-4 text-muted-foreground" aria-hidden />
+          <p className="text-sm font-semibold">{messages.chatWidget.home.searchHelp}</p>
+        </div>
+        <div className="space-y-0.5">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.key}
+              type="button"
+              onClick={() => handleCategorySelect(cat)}
+              className="w-full flex items-center justify-between py-2 px-1 rounded-lg hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 transition-colors text-left group"
+            >
+              <div className="flex items-center gap-2.5">
+                <cat.icon className="h-4 w-4 text-theme-accent shrink-0" aria-hidden />
+                <span className="text-sm">{cat.label}</span>
+              </div>
+              <ChevronRightIcon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-theme-accent transition-colors" />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={goToConversation}
+        className={chatWidgetHomeCardClass()}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold">{messages.chatWidget.home.askQuestion}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {messages.chatWidget.home.askQuestionDesc}
+            </p>
+          </div>
+          <ChevronRightIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+        </div>
+      </button>
+    </div>
+  );
+
+  const renderHelpTab = () => {
+    if (helpStep === "subcategories" && selectedCategory) {
+      return (
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          <p className="text-sm text-muted-foreground pb-1 flex items-center gap-1.5">
+            <selectedCategory.icon className="h-4 w-4 text-theme-accent shrink-0" aria-hidden />
+            <span>
+              <strong>{selectedCategory.label}</strong>, {messages.chatWidget.problemQuestion}
+            </span>
+          </p>
+          {selectedCategory.subcategories.map((sub) => (
+            <button
+              key={sub.key}
+              onClick={() => handleSubcategorySelect(sub)}
+              disabled={isSendingBotMsg}
+              className={chatWidgetSubcategoryButtonClass(isSendingBotMsg)}
+            >
+              <span className="text-sm font-medium">{sub.label}</span>
+              {isSendingBotMsg ? (
+                <div className="h-4 w-4 border-2 border-theme-accent border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-theme-accent transition-colors" />
+              )}
+            </button>
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <p className="text-sm text-muted-foreground text-center pb-1">
+          {messages.chatWidget.greeting}{user ? ` ${user.username}` : ""}{messages.chatWidget.greetingSuffix}
+        </p>
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat.key}
+            onClick={() => handleCategorySelect(cat)}
+            className={chatWidgetCategoryButtonClass()}
+          >
+            <div className="flex items-center gap-3">
+              <cat.icon className="h-6 w-6 text-theme-accent shrink-0" aria-hidden />
+              <div>
+                <p className="font-semibold text-sm">{cat.label}</p>
+                <p className="text-xs text-muted-foreground">{cat.description}</p>
+              </div>
+            </div>
+            <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-theme-accent transition-colors flex-shrink-0" />
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  const renderMessagesList = () => (
+    <div className="flex-1 min-h-0 flex flex-col">
+      <div className="p-3 border-b flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold">{messages.chatWidget.historyTitle}</p>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          data-testid="chat-new-conversation"
+          className="h-8 gap-1"
+          onClick={handleNewConversation}
+        >
+          <PlusIcon className="h-3.5 w-3.5" />
+          {messages.chatWidget.newConversation}
+        </Button>
+      </div>
+      <div className="flex-1 overflow-y-auto p-2 space-y-1" data-testid="chat-history-list">
+        {conversationListItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+            <ChatBubbleBottomCenterTextIcon className="h-10 w-10 text-muted-foreground/40 mb-3" />
+            <p className="text-sm text-muted-foreground">{messages.chatWidget.home.noConversations}</p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="mt-3"
+              onClick={goToConversation}
+            >
+              {messages.chatWidget.home.startChat}
+            </Button>
+          </div>
+        ) : (
+          conversationListItems.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => handleSelectHistoryItem(item.id)}
+              className={`w-full text-left rounded-xl border px-3 py-2.5 transition-colors hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 ${
+                item.id === conversationId ? "border-theme-accent/40 bg-theme-accent/5" : "bg-card"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-medium line-clamp-2">{item.title}</p>
+                {item.unread > 0 && (
+                  <Badge className="h-5 min-w-5 px-1 text-[10px]">{item.unread}</Badge>
+                )}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {new Date(item.lastMessageAt).toLocaleDateString(undefined, {
+                  day: "numeric",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
+  const renderConversation = () => (
+    <>
+      <div
+        ref={messagesContainerRef}
+        data-testid="chat-messages"
+        onScroll={handleMessagesScroll}
+        className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3"
+      >
+        {isLoadingOlderMessages && (
+          <div className="flex justify-center py-2">
+            <div className="h-4 w-4 border-2 border-theme-accent border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        {!currentConversation && (
+          <div className="flex justify-start">
+            <div className="max-w-[85%] rounded-2xl rounded-tl-sm px-4 py-2.5 bg-muted border text-sm">
+              {messages.chatWidget.responses.welcomeMessage}
+            </div>
+          </div>
+        )}
+
+        {currentConversation?.messages.map((msg) => {
+          const isUser = isWidgetMessageFromViewer(
+            msg.senderType,
+            msg.userId,
+            user?.id,
+          );
+          const isBot = msg.senderType === "BOT";
+          const isAi = msg.senderType === "AI";
+          const isModerator = msg.senderType === "MODERATOR";
+          const isSystem = msg.senderType === "SYSTEM";
+          const bubbleSender = isUser ? "USER" : msg.senderType;
+
+          return (
+            <div
+              key={msg.id}
+              className={`flex ${chatWidgetMessageAlignment(isUser)} message-slide-in`}
+            >
+              <div className={chatWidgetMessageBubbleClass(bubbleSender)}>
+                {isModerator && chatWidgetSenderLabelClass("MODERATOR") && (
+                  <div className="flex items-center gap-1 mb-1">
+                    <span className={chatWidgetSenderLabelClass("MODERATOR")!}>
+                      <UserCircleIcon className="h-3 w-3 shrink-0" aria-hidden />
+                      {messages.chatWidget.moderatorLabel}
+                    </span>
+                  </div>
+                )}
+                {isBot && chatWidgetSenderLabelClass("BOT") && (
+                  <div className="flex items-center gap-1 mb-1">
+                    <span className={chatWidgetSenderLabelClass("BOT")!}>
+                      <CpuChipIcon className="h-3 w-3 shrink-0" aria-hidden />
+                      {messages.chatWidget.botLabel}
+                    </span>
+                  </div>
+                )}
+                {isAi && chatWidgetSenderLabelClass("AI") && (
+                  <div className="flex items-center gap-1 mb-1">
+                    <span className={chatWidgetSenderLabelClass("AI")!}>
+                      <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
+                      {messages.chatWidget.aiLabel}
+                    </span>
+                  </div>
+                )}
+                {isUser ? (
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                    {resolveContent(msg.content)}
+                  </p>
+                ) : (
+                  <div className="text-sm leading-relaxed">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc pl-4 mb-1 space-y-0.5">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal pl-4 mb-1 space-y-0.5">{children}</ol>,
+                        li: ({ children }) => <li className="text-sm">{children}</li>,
+                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                        em: ({ children }) => <em className="italic">{children}</em>,
+                        code: ({ children }) => <code className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5 text-xs font-mono">{children}</code>,
+                        h1: ({ children }) => <p className="font-semibold text-sm mb-1">{children}</p>,
+                        h2: ({ children }) => <p className="font-semibold text-sm mb-1">{children}</p>,
+                        h3: ({ children }) => <p className="font-medium text-sm mb-0.5">{children}</p>,
+                        a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-80">{children}</a>,
+                      }}
+                    >
+                      {resolveContent(msg.content)}
+                    </ReactMarkdown>
+                  </div>
+                )}
+                <div
+                  className={`flex items-center justify-between mt-1 gap-2 ${chatWidgetTimestampClass(bubbleSender)}`}
+                >
+                  <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
+                  {isUser && (
+                    <div className="flex text-green-300">
+                      <CheckIcon className="h-3 w-3" />
+                      <CheckIcon className="h-3 w-3 -ml-1" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-muted border rounded-2xl rounded-tl-sm px-4 py-3">
+              <div className="flex space-x-1.5">
+                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showAiTyping && (
+          <div className="flex justify-start ai-typing-bubble">
+            <div className={chatWidgetAiTypingBubbleClass()}>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">
+                  <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
+                  {messages.chatWidget.aiLabel}
+                </span>
+                <div className="flex gap-1">
+                  <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
+                  <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
+                  <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className={chatWidgetInputAreaClass()}>
+        <div className="flex items-end gap-2">
+          <textarea
+            data-testid="chat-message-input"
+            value={message}
+            onChange={(e) => {
+              setMessage(e.target.value);
+              e.target.style.height = "auto";
+              e.target.style.height = Math.min(e.target.scrollHeight, 100) + "px";
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder={messages.chatWidget.placeholder}
+            disabled={isLoading}
+            rows={1}
+            className={chatWidgetTextareaClass()}
+            style={{ height: "38px", fontSize: "16px" }}
+          />
+          <Button
+            size="icon"
+            data-testid="chat-send-button"
+            className={chatWidgetSendButtonClass()}
+            onClick={handleSendMessage}
+            disabled={!message.trim() || isLoading}
+          >
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+            ) : (
+              <PaperAirplaneIcon className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-1.5 text-center select-none">
+          {messages.chatWidget.sendHint}
+        </p>
+      </div>
+    </>
+  );
+
+  const renderTabBar = () => (
+    <nav className={chatWidgetTabBarClass()} data-testid="chat-tab-bar">
+      <button
+        type="button"
+        data-testid="chat-tab-home"
+        onClick={() => {
+          setActiveTab("home");
+          setHelpStep("categories");
+        }}
+        className={chatWidgetTabButtonClass(activeTab === "home")}
+        aria-label={messages.chatWidget.tabs.home}
+      >
+        <HomeIcon className={`h-5 w-5 ${activeTab === "home" ? "text-theme-accent" : ""}`} />
+        <span className="text-[10px]">{messages.chatWidget.tabs.home}</span>
+      </button>
+      <button
+        type="button"
+        data-testid="chat-tab-help"
+        onClick={() => {
+          setActiveTab("help");
+          setHelpStep("categories");
+          setSelectedCategory(null);
+        }}
+        className={chatWidgetTabButtonClass(activeTab === "help")}
+        aria-label={messages.chatWidget.tabs.help}
+      >
+        <QuestionMarkCircleIcon className={`h-5 w-5 ${activeTab === "help" ? "text-theme-accent" : ""}`} />
+        <span className="text-[10px]">{messages.chatWidget.tabs.help}</span>
+      </button>
+      <button
+        type="button"
+        data-testid="chat-tab-messages"
+        onClick={() => {
+          setActiveTab("messages");
+          setMessagesStep("list");
+        }}
+        className={chatWidgetTabButtonClass(activeTab === "messages")}
+        aria-label={messages.chatWidget.tabs.messages}
+      >
+        <span className="relative">
+          <ChatBubbleBottomCenterTextIcon
+            className={`h-5 w-5 ${activeTab === "messages" ? "text-theme-accent" : ""}`}
+          />
+          {totalListUnread > 0 && (
+            <span className="absolute -top-1.5 -right-2 h-4 min-w-4 px-0.5 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center font-medium">
+              {totalListUnread > 9 ? "9+" : totalListUnread}
+            </span>
+          )}
+        </span>
+        <span className="text-[10px]">{messages.chatWidget.tabs.messages}</span>
+      </button>
+    </nav>
+  );
+
   return (
     <>
-      {/* ── Popup chat ── */}
       <div
         data-testid="chat-popup"
         className={chatWidgetPopupContainerClass(isOpen)}
         style={{ height: isOpen ? "clamp(480px, 75dvh, 640px)" : 0 }}
       >
-        {/* ── Header ── */}
         <div className={chatWidgetHeaderClass()}>
           <div className="flex items-center space-x-3">
-            {shouldShowBackButton({
-              step: chatStep === "history" ? "conversation" : chatStep,
-              hasConversationMessages: hasExistingMessages,
-            }) && (
+            {showBack && (
               <button
-                onClick={() => {
-                  if (chatStep === "history") setChatStep("conversation");
-                  else if (chatStep === "subcategories") setChatStep("categories");
-                  else { setChatStep("categories"); setSelectedCategory(null); }
-                }}
+                type="button"
+                onClick={handleBack}
                 className="p-1 rounded-full hover:bg-white/20 transition-colors"
               >
                 <ArrowLeftIcon className="h-4 w-4" />
-              </button>
-            )}
-            {user && conversationListItems.length > 0 && chatStep !== "history" && (
-              <button
-                type="button"
-                data-testid="chat-history-button"
-                onClick={() => setChatStep("history")}
-                className="p-1 rounded-full hover:bg-white/20 transition-colors"
-                aria-label={messages.chatWidget.historyTitle}
-              >
-                <ClockIcon className="h-4 w-4" />
               </button>
             )}
             <div className="relative">
@@ -381,10 +848,13 @@ export function ChatWidget() {
             </div>
             <div>
               <h3 className="font-semibold text-sm">{messages.chatWidget.support}</h3>
-              <p className="text-xs text-white/80">{messages.chatWidget.online} · {messages.chatWidget.responseTime}</p>
+              <p className="text-xs text-white/80">
+                {messages.chatWidget.online} · {messages.chatWidget.responseTime}
+              </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={() => setIsOpen(false)}
             className="p-1.5 rounded-full hover:bg-white/20 transition-colors"
           >
@@ -392,288 +862,17 @@ export function ChatWidget() {
           </button>
         </div>
 
-        {/* ── Corps, prend tout l'espace restant ── */}
         <div className="flex-1 min-h-0 flex flex-col">
-
-          {/* ── Historique des conversations (utilisateurs connectés) ── */}
-          {chatStep === "history" && (
-            <div className="flex-1 min-h-0 flex flex-col">
-              <div className="p-3 border-b flex items-center justify-between gap-2">
-                <p className="text-sm font-semibold">{messages.chatWidget.historyTitle}</p>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  data-testid="chat-new-conversation"
-                  className="h-8 gap-1"
-                  onClick={handleNewConversation}
-                >
-                  <PlusIcon className="h-3.5 w-3.5" />
-                  {messages.chatWidget.newConversation}
-                </Button>
-              </div>
-              <div className="flex-1 overflow-y-auto p-2 space-y-1" data-testid="chat-history-list">
-                {conversationListItems.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => handleSelectHistoryItem(item.id)}
-                    className={`w-full text-left rounded-xl border px-3 py-2.5 transition-colors hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 ${
-                      item.id === conversationId ? "border-theme-accent/40 bg-theme-accent/5" : "bg-card"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-medium line-clamp-2">{item.title}</p>
-                      {item.unread > 0 && (
-                        <Badge className="h-5 min-w-5 px-1 text-[10px]">{item.unread}</Badge>
-                      )}
-                    </div>
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      {new Date(item.lastMessageAt).toLocaleDateString(undefined, {
-                        day: "numeric",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── Étape 1 : Catégories ── */}
-          {chatStep === "categories" && (
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              <p className="text-sm text-muted-foreground text-center pb-1">
-                {messages.chatWidget.greeting}{user ? ` ${user.username}` : ""}{messages.chatWidget.greetingSuffix}
-              </p>
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.key}
-                  onClick={() => handleCategorySelect(cat)}
-                  className={chatWidgetCategoryButtonClass()}
-                >
-                  <div className="flex items-center gap-3">
-                    <cat.icon className="h-6 w-6 text-theme-accent shrink-0" aria-hidden />
-                    <div>
-                      <p className="font-semibold text-sm">{cat.label}</p>
-                      <p className="text-xs text-muted-foreground">{cat.description}</p>
-                    </div>
-                  </div>
-                  <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-theme-accent transition-colors flex-shrink-0" />
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* ── Étape 2 : Sous-catégories ── */}
-          {chatStep === "subcategories" && selectedCategory && (
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              <p className="text-sm text-muted-foreground pb-1 flex items-center gap-1.5">
-                <selectedCategory.icon className="h-4 w-4 text-theme-accent shrink-0" aria-hidden />
-                <span><strong>{selectedCategory.label}</strong>, {messages.chatWidget.problemQuestion}</span>
-              </p>
-              {selectedCategory.subcategories.map((sub) => (
-                <button
-                  key={sub.key}
-                  onClick={() => handleSubcategorySelect(sub)}
-                  disabled={isSendingBotMsg}
-                  className={chatWidgetSubcategoryButtonClass(isSendingBotMsg)}
-                >
-                  <span className="text-sm font-medium">{sub.label}</span>
-                  {isSendingBotMsg ? (
-                    <div className="h-4 w-4 border-2 border-theme-accent border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-theme-accent transition-colors" />
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* ── Étape 3 : Conversation ── */}
-          {chatStep === "conversation" && (
-            <>
-              {/* Zone messages, scrollable, ne pousse jamais l'input */}
-              <div
-                ref={messagesContainerRef}
-                data-testid="chat-messages"
-                onScroll={handleMessagesScroll}
-                className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3"
-              >
-                {isLoadingOlderMessages && (
-                  <div className="flex justify-center py-2">
-                    <div className="h-4 w-4 border-2 border-theme-accent border-t-transparent rounded-full animate-spin" />
-                  </div>
-                )}
-                {/* Message de bienvenue si pas encore de conversation */}
-                {!currentConversation && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[85%] rounded-2xl rounded-tl-sm px-4 py-2.5 bg-muted border text-sm">
-                      {messages.chatWidget.responses.welcomeMessage}
-                    </div>
-                  </div>
-                )}
-
-                {currentConversation?.messages.map((msg) => {
-                  const isUser = isWidgetMessageFromViewer(
-                    msg.senderType,
-                    msg.userId,
-                    user?.id,
-                  );
-                  const isBot = msg.senderType === "BOT";
-                  const isAi = msg.senderType === "AI";
-                  const isModerator = msg.senderType === "MODERATOR";
-                  const isSystem = msg.senderType === "SYSTEM";
-                  const bubbleSender = isUser ? "USER" : msg.senderType;
-
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`flex ${chatWidgetMessageAlignment(isUser)} message-slide-in`}
-                    >
-                      <div className={chatWidgetMessageBubbleClass(bubbleSender)}>
-                        {isModerator && chatWidgetSenderLabelClass("MODERATOR") && (
-                          <div className="flex items-center gap-1 mb-1">
-                            <span className={chatWidgetSenderLabelClass("MODERATOR")!}>
-                              <UserCircleIcon className="h-3 w-3 shrink-0" aria-hidden />
-                              {messages.chatWidget.moderatorLabel}
-                            </span>
-                          </div>
-                        )}
-                        {isBot && chatWidgetSenderLabelClass("BOT") && (
-                          <div className="flex items-center gap-1 mb-1">
-                            <span className={chatWidgetSenderLabelClass("BOT")!}>
-                              <CpuChipIcon className="h-3 w-3 shrink-0" aria-hidden />
-                              {messages.chatWidget.botLabel}
-                            </span>
-                          </div>
-                        )}
-                        {isAi && chatWidgetSenderLabelClass("AI") && (
-                          <div className="flex items-center gap-1 mb-1">
-                            <span className={chatWidgetSenderLabelClass("AI")!}>
-                              <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
-                              {messages.chatWidget.aiLabel}
-                            </span>
-                          </div>
-                        )}
-                        {isUser ? (
-                          <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                            {resolveContent(msg.content)}
-                          </p>
-                        ) : (
-                          <div className="text-sm leading-relaxed">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            components={{
-                              p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
-                              ul: ({ children }) => <ul className="list-disc pl-4 mb-1 space-y-0.5">{children}</ul>,
-                              ol: ({ children }) => <ol className="list-decimal pl-4 mb-1 space-y-0.5">{children}</ol>,
-                              li: ({ children }) => <li className="text-sm">{children}</li>,
-                              strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                              em: ({ children }) => <em className="italic">{children}</em>,
-                              code: ({ children }) => <code className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5 text-xs font-mono">{children}</code>,
-                              h1: ({ children }) => <p className="font-semibold text-sm mb-1">{children}</p>,
-                              h2: ({ children }) => <p className="font-semibold text-sm mb-1">{children}</p>,
-                              h3: ({ children }) => <p className="font-medium text-sm mb-0.5">{children}</p>,
-                              a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-80">{children}</a>,
-                            }}
-                          >
-                            {resolveContent(msg.content)}
-                          </ReactMarkdown>
-                          </div>
-                        )}
-                        <div
-                          className={`flex items-center justify-between mt-1 gap-2 ${chatWidgetTimestampClass(bubbleSender)}`}
-                        >
-                          <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
-                          {isUser && (
-                            <div className="flex text-green-300">
-                              <CheckIcon className="h-3 w-3" />
-                              <CheckIcon className="h-3 w-3 -ml-1" />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-muted border rounded-2xl rounded-tl-sm px-4 py-3">
-                      <div className="flex space-x-1.5">
-                        <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                        <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                        <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {showAiTyping && (
-                  <div className="flex justify-start ai-typing-bubble">
-                    <div className={chatWidgetAiTypingBubbleClass()}>
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">
-                          <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
-                          {messages.chatWidget.aiLabel}
-                        </span>
-                        <div className="flex gap-1">
-                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
-                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
-                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* ── Zone saisie — toujours visible, jamais poussée ── */}
-              <div className={chatWidgetInputAreaClass()}>
-                <div className="flex items-end gap-2">
-                  <textarea
-                    ref={textareaRef}
-                    data-testid="chat-message-input"
-                    value={message}
-                    onChange={(e) => {
-                      setMessage(e.target.value);
-                      e.target.style.height = "auto";
-                      e.target.style.height = Math.min(e.target.scrollHeight, 100) + "px";
-                    }}
-                    onKeyDown={handleKeyDown}
-                    placeholder={messages.chatWidget.placeholder}
-                    disabled={isLoading}
-                    rows={1}
-                    className={chatWidgetTextareaClass()}
-                    style={{ height: "38px" }}
-                  />
-                  <Button
-                    size="icon"
-                    data-testid="chat-send-button"
-                    className={chatWidgetSendButtonClass()}
-                    onClick={handleSendMessage}
-                    disabled={!message.trim() || isLoading}
-                  >
-                    {isLoading ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                    ) : (
-                      <PaperAirplaneIcon className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-                <p className="text-[10px] text-muted-foreground mt-1.5 text-center select-none">
-                  {messages.chatWidget.sendHint}
-                </p>
-              </div>
-            </>
+          {activeTab === "home" && renderHomeTab()}
+          {activeTab === "help" && renderHelpTab()}
+          {activeTab === "messages" && (
+            messagesStep === "conversation" ? renderConversation() : renderMessagesList()
           )}
         </div>
+
+        {renderTabBar()}
       </div>
 
-      {/* ── Bouton flottant ── */}
       <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-[99999] sm:bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:right-[max(1.5rem,env(safe-area-inset-right,0px))] pointer-events-auto">
         <div className="relative">
           {shouldShowWidgetUnreadBadge(unreadCount, isOpen) && (
@@ -689,15 +888,11 @@ export function ChatWidget() {
             onClick={handleToggleChat}
             className={chatWidgetFabButtonClass()}
           >
-            <div
-              className={`transition-all duration-200 ${isOpen ? "rotate-0" : "rotate-0"}`}
-            >
-              {isOpen ? (
-                <XMarkIcon className="h-6 w-6 text-white" />
-              ) : (
-                <ChatBubbleBottomCenterTextIconSolid className="h-6 w-6 text-white" />
-              )}
-            </div>
+            {isOpen ? (
+              <XMarkIcon className="h-6 w-6 text-white" />
+            ) : (
+              <ChatBubbleBottomCenterTextIconSolid className="h-6 w-6 text-white" />
+            )}
           </button>
 
           {!isOpen && (

@@ -97,6 +97,16 @@ const mockMessages = {
     sendHint: 'Entrée pour envoyer',
     historyTitle: 'Historique',
     newConversation: 'Nouvelle conversation',
+    tabs: { home: 'Accueil', help: 'Aide', messages: 'Messages' },
+    home: {
+      subtitle: 'Comment pouvons-nous vous aider ?',
+      searchHelp: 'Rechercher de l\'aide',
+      askQuestion: 'Poser une question',
+      askQuestionDesc: 'Notre assistant IA et l\'équipe vous répondent',
+      recentMessage: 'Message récent',
+      noConversations: 'Aucune conversation',
+      startChat: 'Démarrer une conversation',
+    },
     placeholder: 'Tapez votre message...',
     tooltip: 'Besoin d aide ?',
     responses: {
@@ -180,6 +190,10 @@ function renderWidget() {
   return { ...view, rerenderWidget, client };
 }
 
+async function openHelpTab() {
+  fireEvent.click(screen.getByTestId('chat-tab-help'));
+}
+
 async function openChat() {
   fireEvent.click(screen.getByTestId('chat-fab'));
 }
@@ -225,6 +239,7 @@ describe('ChatWidget', () => {
   it('affiche les catégories pour une nouvelle conversation', async () => {
     renderWidget();
     await openChat();
+    await openHelpTab();
     expect(screen.getByText('Problème de trade')).toBeInTheDocument();
     expect(screen.getByText('Paiement')).toBeInTheDocument();
     expect(screen.getByText('Support général')).toBeInTheDocument();
@@ -240,6 +255,7 @@ describe('ChatWidget', () => {
   it('navigue catégorie → sous-catégorie → conversation', async () => {
     renderWidget();
     await openChat();
+    await openHelpTab();
     fireEvent.click(screen.getByText('Problème de trade'));
     expect(screen.getByText('Trade en attente')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Trade en attente'));
@@ -255,6 +271,7 @@ describe('ChatWidget', () => {
   it('retour depuis sous-catégories vers catégories', async () => {
     renderWidget();
     await openChat();
+    await openHelpTab();
     fireEvent.click(screen.getByText('Paiement'));
     const backButtons = screen.getAllByRole('button');
     const back = backButtons.find((b) => b.querySelector('svg') && b.className.includes('rounded-full'));
@@ -267,6 +284,7 @@ describe('ChatWidget', () => {
     mockSendMessage.mockRejectedValueOnce(new Error('network'));
     renderWidget();
     await openChat();
+    await openHelpTab();
     fireEvent.click(screen.getByText('Support général'));
     fireEvent.click(screen.getByText('Bug'));
     await waitFor(() => expect(errSpy).toHaveBeenCalled());
@@ -278,6 +296,7 @@ describe('ChatWidget', () => {
     chatMock = buildChatMock({ conversationId: null });
     renderWidget();
     await openChat();
+    await openHelpTab();
     fireEvent.click(screen.getByText('Support général'));
     fireEvent.click(screen.getByText('Autre'));
     await waitFor(() => expect(mockSendMessage).toHaveBeenCalled());
@@ -289,6 +308,7 @@ describe('ChatWidget', () => {
     mockSendMessage.mockReturnValueOnce(new Promise((r) => { resolveSend = r; }));
     renderWidget();
     await openChat();
+    await openHelpTab();
     fireEvent.click(screen.getByText('Problème de trade'));
     fireEvent.click(screen.getByText('Trade bloqué'));
     expect(document.querySelector('.animate-spin')).toBeInTheDocument();
@@ -466,10 +486,10 @@ describe('ChatWidget', () => {
     });
     renderWidget();
     await openChat();
-    fireEvent.click(screen.getByTestId('chat-history-button'));
+    fireEvent.click(screen.getByTestId('chat-tab-messages'));
     expect(screen.getByTestId('chat-history-list')).toBeInTheDocument();
     expect(screen.getByText('Trade bloqué')).toBeInTheDocument();
-    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByTestId('chat-history-list').querySelector('[data-slot="badge"]')).toHaveTextContent('2');
     fireEvent.click(screen.getByText('Paiement SEPA'));
     expect(mockSetConversationId).toHaveBeenCalledWith('c2');
   });
@@ -483,7 +503,7 @@ describe('ChatWidget', () => {
     });
     renderWidget();
     await openChat();
-    fireEvent.click(screen.getByTestId('chat-history-button'));
+    fireEvent.click(screen.getByTestId('chat-tab-messages'));
     fireEvent.click(screen.getByTestId('chat-new-conversation'));
     expect(mockStartNewConversation).toHaveBeenCalled();
     expect(screen.getByText('Problème de trade')).toBeInTheDocument();
@@ -498,9 +518,8 @@ describe('ChatWidget', () => {
     });
     renderWidget();
     await openChat();
-    fireEvent.click(screen.getByTestId('chat-history-button'));
-    const back = screen.getAllByRole('button').find((b) => b.className.includes('p-1 rounded-full hover:bg-white/20'));
-    fireEvent.click(back!);
+    fireEvent.click(screen.getByTestId('chat-tab-messages'));
+    fireEvent.click(screen.getByText('Old'));
     expect(screen.getByTestId('chat-message-input')).toBeInTheDocument();
   });
 
@@ -508,12 +527,14 @@ describe('ChatWidget', () => {
     chatMock = buildChatMock({ currentConversation: { id: 'c1', status: 'ACTIVE', messages: [] }, conversationId: 'c1' });
     renderWidget();
     await openChat();
+    await openHelpTab();
     fireEvent.click(screen.getByText('Support général'));
     fireEvent.click(screen.getByText('KYC'));
     await waitFor(() => screen.getByTestId('chat-message-input'));
     const backs = screen.getAllByRole('button');
     const back = backs.find((b) => b.querySelector('svg') && b.className.includes('hover:bg-white'));
     fireEvent.click(back!);
+    await openHelpTab();
     expect(screen.getByText('Problème de trade')).toBeInTheDocument();
   });
 
@@ -544,6 +565,7 @@ describe('ChatWidget', () => {
     });
     renderWidget();
     await openChat();
+    await openHelpTab();
     fireEvent.click(screen.getByText('Support général'));
     fireEvent.click(screen.getByText('KYC'));
     await waitFor(() => expect(document.querySelector('.animate-spin')).toBeInTheDocument());

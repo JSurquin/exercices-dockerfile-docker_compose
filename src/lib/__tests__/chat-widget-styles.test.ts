@@ -123,6 +123,10 @@ describe('layout & interaction classes', () => {
     expect(chatWidgetUnreadBadgeClass()).toContain('animate-pulse');
   });
 
+  it('textarea utilise text-base pour éviter le zoom iOS', () => {
+    expect(chatWidgetTextareaClass()).toContain('text-base');
+  });
+
   it('zone saisie et bouton envoi', () => {
     expect(chatWidgetInputAreaClass()).toContain('border-t');
     expect(chatWidgetTextareaClass()).toContain('focus:ring-primary');

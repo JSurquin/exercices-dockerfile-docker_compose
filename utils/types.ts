@@ -3671,6 +3671,20 @@ export interface Messages {
     sendHint: string;
     historyTitle: string;
     newConversation: string;
+    tabs: {
+      home: string;
+      help: string;
+      messages: string;
+    };
+    home: {
+      subtitle: string;
+      searchHelp: string;
+      askQuestion: string;
+      askQuestionDesc: string;
+      recentMessage: string;
+      noConversations: string;
+      startChat: string;
+    };
     loadOlderMessages: string;
     quickActions: string;
     tradeProblem: string;

@@ -38,25 +38,41 @@ describe('assertWidgetBotTemplateParity', () => {
 describe('shouldShowBackButton', () => {
   it('visible sur sous-catégories', () => {
     expect(
-      shouldShowBackButton({ step: 'subcategories', hasConversationMessages: false }),
+      shouldShowBackButton({
+        tab: 'help',
+        helpStep: 'subcategories',
+        messagesStep: 'list',
+      }),
     ).toBe(true);
   });
 
-  it('visible en conversation vide', () => {
+  it('visible en conversation', () => {
     expect(
-      shouldShowBackButton({ step: 'conversation', hasConversationMessages: false }),
+      shouldShowBackButton({
+        tab: 'messages',
+        helpStep: 'categories',
+        messagesStep: 'conversation',
+      }),
     ).toBe(true);
   });
 
-  it('masqué en conversation avec messages', () => {
+  it('masqué en liste messages', () => {
     expect(
-      shouldShowBackButton({ step: 'conversation', hasConversationMessages: true }),
+      shouldShowBackButton({
+        tab: 'messages',
+        helpStep: 'categories',
+        messagesStep: 'list',
+      }),
     ).toBe(false);
   });
 
   it('masqué sur l’écran catégories', () => {
     expect(
-      shouldShowBackButton({ step: 'categories', hasConversationMessages: false }),
+      shouldShowBackButton({
+        tab: 'help',
+        helpStep: 'categories',
+        messagesStep: 'list',
+      }),
     ).toBe(false);
   });
 });

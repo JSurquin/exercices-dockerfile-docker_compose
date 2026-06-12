@@ -27,6 +27,11 @@ export const CHAT_WIDGET_SUBCATEGORIES: Record<ChatWidgetCategoryKey, readonly s
   support: ['support.bug', 'support.partnership', 'support.kyc', 'support.other'],
 };
 
+export type ChatWidgetTab = 'home' | 'help' | 'messages';
+export type ChatWidgetHelpStep = 'categories' | 'subcategories';
+export type ChatWidgetMessagesStep = 'list' | 'conversation';
+
+/** @deprecated use ChatWidgetTab */
 export type ChatWidgetStep = 'categories' | 'subcategories' | 'conversation';
 
 export function getAllWidgetSubcategoryKeys(): string[] {
@@ -42,6 +47,17 @@ export function assertWidgetBotTemplateParity(): { ok: boolean; missing: string[
 }
 
 export function shouldShowBackButton(params: {
+  tab: ChatWidgetTab;
+  helpStep: ChatWidgetHelpStep;
+  messagesStep: ChatWidgetMessagesStep;
+}): boolean {
+  if (params.tab === 'help' && params.helpStep === 'subcategories') return true;
+  if (params.tab === 'messages' && params.messagesStep === 'conversation') return true;
+  return false;
+}
+
+/** @deprecated */
+export function shouldShowBackButtonLegacy(params: {
   step: ChatWidgetStep;
   hasConversationMessages: boolean;
 }): boolean {
