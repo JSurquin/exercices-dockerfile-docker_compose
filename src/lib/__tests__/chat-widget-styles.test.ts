@@ -134,6 +134,11 @@ describe('layout & interaction classes', () => {
     expect(chatWidgetTextareaClass()).toContain('text-base');
   });
 
+  it('textarea masque la barre de défilement native', () => {
+    expect(chatWidgetTextareaClass()).toContain('scrollbar-none');
+    expect(chatWidgetTextareaClass()).toContain('overflow-y-auto');
+  });
+
   it('zone saisie et bouton envoi', () => {
     expect(chatWidgetInputAreaClass()).toContain('border-t');
     expect(chatWidgetTextareaClass()).toContain('focus:ring-primary');

@@ -23,6 +23,15 @@
   background-color: hsl(var(--muted-foreground) / 0.5);
 }
 
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* Sell page — scrollable inventory list fills remaining viewport */
 .inventory-container {
   height: calc(
