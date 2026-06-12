@@ -135,6 +135,7 @@ export interface Giveaway {
   maxEntriesPerUser?: number | null;
   isPrivate?: boolean;
   requiredAffiliateCode?: string | null;
+  canParticipate?: boolean;
   seriesId?: string | null;
   startDate?: Date | string | null;
   createdAt?: Date | string;

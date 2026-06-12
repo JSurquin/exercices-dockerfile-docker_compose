@@ -114,9 +114,20 @@ const GiveawayCard = ({
     giveaway.ticketPrice > 0 ? Math.floor(userFragments / giveaway.ticketPrice) : 0;
   const maxSelectable = Math.max(0, Math.min(poolLeft, maxPerUser, maxAffordable));
   const totalCost = entriesToBuy * giveaway.ticketPrice;
+  const isParticipationLocked =
+    giveaway.isPrivate &&
+    !!giveaway.requiredAffiliateCode &&
+    giveaway.canParticipate === false;
 
   return (
-    <Card className="h-full hover:shadow-lg transition-all duration-300">
+    <Card
+      className={cn(
+        'h-full transition-all duration-300',
+        isParticipationLocked
+          ? 'opacity-60 grayscale-[0.35] hover:shadow-none'
+          : 'hover:shadow-lg'
+      )}
+    >
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -231,7 +242,24 @@ const GiveawayCard = ({
           </div>
         )}
 
-        {giveaway.status === 'ACTIVE' && !timeRemaining.expired && (
+        {isParticipationLocked && (
+          <div className="rounded-lg border border-purple-500/30 bg-purple-500/10 p-3 text-sm text-purple-200/90 space-y-1">
+            <div className="flex items-start gap-2">
+              <LockClosedIcon className="h-4 w-4 shrink-0 mt-0.5" aria-hidden />
+              <p>
+                {messages.giveaways.card.reservedForAffiliateCode.replace(
+                  '{code}',
+                  giveaway.requiredAffiliateCode ?? ''
+                )}
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground pl-6">
+              {messages.giveaways.card.reservedForAffiliateCodeHint}
+            </p>
+          </div>
+        )}
+
+        {giveaway.status === 'ACTIVE' && !timeRemaining.expired && !isParticipationLocked && (
           <div className="border-t pt-4 space-y-3">
             {/* Barre de progression vers la participation */}
             {userFragments < giveaway.ticketPrice && (

@@ -3512,6 +3512,8 @@ export interface Messages {
       participate: string;
       ticketsAvailable: string;
       privateLabel: string;
+      reservedForAffiliateCode: string;
+      reservedForAffiliateCodeHint: string;
       winnersCount: string;
       fragmentsLabel: string;
       fragmentsRemaining: string;

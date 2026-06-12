@@ -27,6 +27,7 @@ import {
   ArrowLeftIcon,
   CheckCircleIcon,
   ChartBarIcon,
+  LockClosedIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { SafeImage } from '@/components/ui/safe-image';
@@ -48,6 +49,8 @@ interface GiveawayDetails {
   winnerCount: number;
   maxEntriesPerUser?: number | null;
   isPrivate: boolean;
+  requiredAffiliateCode?: string | null;
+  canParticipate?: boolean;
   totalParticipants: number;
   totalEntries: number;
   myEntries: number;
@@ -165,6 +168,10 @@ export default function GiveawayDetailsPage() {
   const progress = (giveaway.soldTickets / giveaway.maxTickets) * 100;
   const timeLeft = getTimeRemaining(giveaway.endDate);
   const isActive = giveaway.status === 'ACTIVE' && timeLeft !== null;
+  const isParticipationLocked =
+    giveaway.isPrivate &&
+    !!giveaway.requiredAffiliateCode &&
+    giveaway.canParticipate === false;
 
   const poolLeft = giveaway.maxTickets - giveaway.soldTickets;
   const maxPerUser = giveaway.maxEntriesPerUser != null
@@ -319,7 +326,24 @@ export default function GiveawayDetailsPage() {
                     </div>
                   </div>
 
-                  {isActive && (
+                  {isParticipationLocked && (
+                    <div className="rounded-lg border border-purple-500/30 bg-purple-500/10 p-4 text-sm text-purple-200/90 space-y-1">
+                      <div className="flex items-start gap-2">
+                        <LockClosedIcon className="h-4 w-4 shrink-0 mt-0.5" aria-hidden />
+                        <p>
+                          {messages.giveaways.card.reservedForAffiliateCode.replace(
+                            '{code}',
+                            giveaway.requiredAffiliateCode ?? ''
+                          )}
+                        </p>
+                      </div>
+                      <p className="text-xs text-muted-foreground pl-6">
+                        {messages.giveaways.card.reservedForAffiliateCodeHint}
+                      </p>
+                    </div>
+                  )}
+
+                  {isActive && !isParticipationLocked && (
                     <div className="space-y-3 pt-2 border-t">
                       {fragments < giveaway.ticketPrice ? (
                         <div className="space-y-1.5">

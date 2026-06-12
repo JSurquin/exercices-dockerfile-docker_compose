@@ -46,25 +46,21 @@ export async function GET(
       return NextResponse.json({ error: 'Giveaway introuvable' }, { status: 404 });
     }
 
-    // Vérifier l'accès aux giveaways privés
-    if (giveaway.isPrivate && giveaway.requiredAffiliateCode) {
-      const allowed = await canAccessPrivateGiveaway({
-        giveaway,
-        affiliateRef,
-        viewerUserId: viewerId,
-        viewerIsAdmin,
-      });
-
-      if (!allowed) {
-        return NextResponse.json({ error: 'Accès non autorisé à ce giveaway' }, { status: 403 });
-      }
-    }
+    const canParticipate = await canAccessPrivateGiveaway({
+      giveaway,
+      affiliateRef,
+      viewerUserId: viewerId,
+      viewerIsAdmin,
+    });
 
     const gWithWinners = await withPublicWinnerProfile(giveaway);
 
     return NextResponse.json(
       redactGiveawayForPublic(
-        enrichGiveawayForViewer(gWithWinners, viewerId) as Record<string, unknown>,
+        {
+          ...(enrichGiveawayForViewer(gWithWinners, viewerId) as Record<string, unknown>),
+          canParticipate,
+        },
         'detail'
       )
     );

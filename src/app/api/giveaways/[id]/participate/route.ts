@@ -56,7 +56,7 @@ export async function POST(
       if (!allowed) {
         return NextResponse.json(
           {
-            error: 'Accès refusé : ce giveaway est réservé aux membres avec un code affilié spécifique',
+            error: `Accès refusé : ce giveaway est réservé aux utilisateurs du code « ${giveaway.requiredAffiliateCode} » (vente récente avec ce code ou parrainage affilié requis)`,
             code: 'PRIVATE_GIVEAWAY_ACCESS_DENIED',
           },
           { status: 403 }

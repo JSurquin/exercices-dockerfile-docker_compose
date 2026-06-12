@@ -5,7 +5,11 @@ import { GiveawayDurationType } from '@prisma/client';
 import { auth } from '~/lib/auth';
 import { enrichGiveawayForViewer, redactGiveawayForPublic } from '@/lib/giveaway-public';
 import { withPublicWinnerProfiles } from '@/lib/giveaway-winners-public';
-import { buildGiveawayVisibilityOr } from '@/lib/giveaway-private-access';
+import {
+  buildGiveawayVisibilityOr,
+  checkPrivateGiveawayParticipation,
+  loadGiveawayParticipationEligibility,
+} from '@/lib/giveaway-private-access';
 import { resolveGiveawayViewerContext } from '@/lib/giveaway-viewer-context';
 import { getPointsConfig } from '@/lib/points-service';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
@@ -62,13 +66,24 @@ export async function GET(request: NextRequest) {
 
     const withWinners = await withPublicWinnerProfiles(giveaways);
 
+    const eligibility =
+      viewerId && !viewerIsAdmin
+        ? await loadGiveawayParticipationEligibility(viewerId)
+        : null;
+
     return NextResponse.json(
-      withWinners.map((g) =>
-        redactGiveawayForPublic(
-          enrichGiveawayForViewer(g, viewerId) as Record<string, unknown>,
-          'list'
-        )
-      )
+      withWinners.map((g) => {
+        const enriched = enrichGiveawayForViewer(g, viewerId) as Record<string, unknown>;
+        const canParticipate = checkPrivateGiveawayParticipation(
+          {
+            id: g.id,
+            isPrivate: g.isPrivate,
+            requiredAffiliateCode: g.requiredAffiliateCode,
+          },
+          { viewerUserId: viewerId, viewerIsAdmin, eligibility }
+        );
+        return redactGiveawayForPublic({ ...enriched, canParticipate }, 'list');
+      })
     );
   } catch (error) {
     console.error('Error fetching giveaways:', error);
