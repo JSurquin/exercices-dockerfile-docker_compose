@@ -347,6 +347,31 @@ describe('POST/DELETE /api/chat/conversations/[id]/assign', () => {
     );
   });
 
+  it('refuse l’assignation d’un utilisateur non modérateur', async () => {
+    mockRequireStaff.mockResolvedValue({ user: { id: 'admin-1' } });
+    (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      assignedTo: null,
+    });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'u1',
+      role: 'USER',
+      name: 'User',
+      email: 'user@test.com',
+    });
+
+    const res = await postAssign(
+      makeRequest('http://localhost/api/chat/conversations/c1/assign', {
+        method: 'POST',
+        body: { moderatorId: 'u1' },
+      }),
+      { params: Promise.resolve({ id: 'c1' }) },
+    );
+
+    expect(res.status).toBe(400);
+    expect(prisma.conversation.update).not.toHaveBeenCalled();
+  });
+
   it('désassigne une conversation', async () => {
     mockRequireStaff.mockResolvedValue({ user: { id: 'mod-1' } });
     (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
@@ -473,6 +498,43 @@ describe('POST /api/chat/messages — modération', () => {
     expect(res.status).toBe(201);
     const createArg = (prisma.chatMessage.create as jest.Mock).mock.calls[0][0];
     expect(createArg.data.senderType).toBe('MODERATOR');
+  });
+
+  it('message modérateur visible côté client avec senderType MODERATOR', async () => {
+    mockResolveChatIdentity.mockResolvedValue({
+      kind: 'user',
+      role: 'MODERATOR',
+      session: { user: { id: 'mod-1' } },
+    });
+    (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      userId: 'u1',
+      status: 'ACTIVE',
+      assignedTo: 'mod-1',
+      lastMessageAt: new Date(),
+      category: 'trade',
+      user: null,
+    });
+    (prisma.chatMessage.create as jest.Mock).mockResolvedValue({
+      id: 'm-mod',
+      senderType: 'MODERATOR',
+      content: 'Votre trade est en cours de vérification',
+      conversationId: 'c1',
+    });
+    (prisma.conversation.update as jest.Mock).mockResolvedValue({});
+    (prisma.chatMessage.findMany as jest.Mock).mockResolvedValue([]);
+
+    const res = await postMessage(
+      makeRequest('http://localhost/api/chat/messages', {
+        method: 'POST',
+        body: { conversationId: 'c1', content: 'Votre trade est en cours de vérification' },
+      }),
+    );
+
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.senderType).toBe('MODERATOR');
+    expect(body.content).toContain('vérification');
   });
 });
 

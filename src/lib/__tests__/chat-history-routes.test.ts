@@ -33,6 +33,8 @@ jest.mock('@/lib/logger', () => ({
 jest.mock('@/lib/chat-message-service', () => ({
   createChatMessageRecord: jest.fn(),
   fetchConversationMessagesPage: jest.fn(),
+  markConversationMessagesAsReadForViewer: jest.fn(),
+  applyReadStateToMessagesForViewer: jest.fn((messages: unknown[]) => messages),
 }));
 
 import { prisma } from '~/prisma/prisma';
@@ -40,6 +42,7 @@ import { resolveChatIdentity } from '@/lib/require-admin';
 import {
   createChatMessageRecord,
   fetchConversationMessagesPage,
+  markConversationMessagesAsReadForViewer,
 } from '@/lib/chat-message-service';
 import {
   GET as getMessages,
@@ -49,6 +52,7 @@ import {
 const mockIdentity = resolveChatIdentity as jest.Mock;
 const mockFetchPage = fetchConversationMessagesPage as jest.Mock;
 const mockCreateMsg = createChatMessageRecord as jest.Mock;
+const mockMarkRead = markConversationMessagesAsReadForViewer as jest.Mock;
 
 function makeRequest(url: string, init?: { method?: string; body?: unknown }) {
   return new NextRequest(url, {
@@ -109,6 +113,10 @@ describe('GET /api/chat/conversations/[id]/messages', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.messages).toHaveLength(1);
+    expect(mockMarkRead).toHaveBeenCalledWith({
+      conversationId: 'c1',
+      role: 'USER',
+    });
     expect(mockFetchPage).toHaveBeenCalledWith({
       conversationId: 'c1',
       cursor: null,
@@ -136,6 +144,10 @@ describe('GET /api/chat/conversations/[id]/messages', () => {
       { params: Promise.resolve({ id: 'c1' }) },
     );
     expect(res.status).toBe(200);
+    expect(mockMarkRead).toHaveBeenCalledWith({
+      conversationId: 'c1',
+      role: 'MODERATOR',
+    });
   });
 });
 

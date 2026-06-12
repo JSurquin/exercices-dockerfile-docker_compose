@@ -260,7 +260,12 @@ describe('ChatWidget', () => {
     fireEvent.click(screen.getByText('Problème de trade'));
     expect(screen.getByText('Trade en attente')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Trade en attente'));
-    await waitFor(() => expect(mockSendMessage).toHaveBeenCalledWith('Trade en attente', { category: 'trade' }));
+    await waitFor(() =>
+      expect(mockSendMessage).toHaveBeenCalledWith('Trade en attente', {
+        category: 'trade',
+        forceNew: true,
+      }),
+    );
     expect(global.fetch).toHaveBeenCalledWith(
       '/api/chat/conversations/conv-1/bot-message',
       expect.objectContaining({ method: 'POST' }),
