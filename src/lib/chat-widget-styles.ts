@@ -59,10 +59,9 @@ export const CHAT_WIDGET_POPUP_CLOSE_MS = 150;
 
 export function chatWidgetPopupContainerClass(isOpen: boolean): string {
   const base = `
-    fixed bottom-24 right-3 left-3
-    sm:left-auto sm:right-6 sm:w-[390px]
-    h-[clamp(480px,75dvh,640px)]
-    chat-glass rounded-2xl shadow-2xl z-[9999]
+    fixed top-[env(safe-area-inset-top,0px)] bottom-24 left-0 right-0
+    sm:top-auto sm:left-auto sm:right-6 sm:w-[390px] sm:h-[clamp(480px,75dvh,640px)]
+    chat-glass rounded-none sm:rounded-2xl shadow-2xl z-[9999]
     flex flex-col overflow-hidden
     transition-opacity duration-150 ease-out
     pointer-events-auto
