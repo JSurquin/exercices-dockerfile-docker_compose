@@ -95,14 +95,15 @@ describe('chatWidgetPopupContainerClass', () => {
     expect(open).toContain('opacity-100');
     expect(open).toContain('sm:w-[390px]');
     expect(open).toContain('top-[env(safe-area-inset-top,0px)]');
-    expect(open).toContain('bottom-24');
+    expect(open).toContain('bottom-0');
     expect(open).toContain('sm:h-[clamp(480px,75dvh,640px)]');
   });
 
-  it('fermé : invisible + pointer-events-none', () => {
+  it('fermé : invisible + pointer-events-none + marge FAB mobile', () => {
     const closed = chatWidgetPopupContainerClass(false);
     expect(closed).toContain('opacity-0');
     expect(closed).toContain('pointer-events-none');
+    expect(closed).toContain('bottom-24');
   });
 });
 

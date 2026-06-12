@@ -58,8 +58,9 @@ export function chatWidgetTimestampClass(senderType: WidgetSenderType): string {
 export const CHAT_WIDGET_POPUP_CLOSE_MS = 150;
 
 export function chatWidgetPopupContainerClass(isOpen: boolean): string {
+  const mobileBottom = isOpen ? "bottom-0" : "bottom-24";
   const base = `
-    fixed top-[env(safe-area-inset-top,0px)] bottom-24 left-0 right-0
+    fixed top-[env(safe-area-inset-top,0px)] ${mobileBottom} left-0 right-0
     sm:top-auto sm:left-auto sm:right-6 sm:w-[390px] sm:h-[clamp(480px,75dvh,640px)]
     chat-glass rounded-none sm:rounded-2xl shadow-2xl z-[9999]
     flex flex-col overflow-hidden

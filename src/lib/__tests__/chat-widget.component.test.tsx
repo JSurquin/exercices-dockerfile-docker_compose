@@ -198,6 +198,12 @@ async function openChat() {
   fireEvent.click(screen.getByTestId('chat-fab'));
 }
 
+function closeChatViaHeader() {
+  const closeButtons = screen.getAllByRole('button');
+  const headerClose = closeButtons.find((b) => b.className.includes('p-1.5'));
+  fireEvent.click(headerClose!);
+}
+
 function openConversationView() {
   fireEvent.click(screen.getByText('Poser une question'));
 }
@@ -222,15 +228,17 @@ afterEach(() => {
 });
 
 describe('ChatWidget', () => {
-  it('ouvre et ferme via le FAB', async () => {
+  it('ouvre via le FAB et ferme via le header', async () => {
     renderWidget();
     expect(screen.queryByTestId('chat-popup')).not.toBeInTheDocument();
     await openChat();
     expect(screen.getByTestId('chat-popup')).toHaveClass('opacity-100');
-    fireEvent.click(screen.getByTestId('chat-fab'));
+    expect(screen.queryByTestId('chat-fab')).not.toBeInTheDocument();
+    closeChatViaHeader();
     expect(screen.getByTestId('chat-popup')).toHaveClass('opacity-0');
     act(() => jest.advanceTimersByTime(150));
     expect(screen.queryByTestId('chat-popup')).not.toBeInTheDocument();
+    expect(screen.getByTestId('chat-fab')).toBeInTheDocument();
   });
 
   it('affiche le badge unread quand fermé', async () => {
@@ -350,7 +358,7 @@ describe('ChatWidget', () => {
     openConversationView();
     expect(screen.getByTestId('chat-message-input')).toBeInTheDocument();
     expect(screen.getByText('Hello')).toBeInTheDocument();
-    fireEvent.click(screen.getByTestId('chat-fab'));
+    closeChatViaHeader();
     act(() => jest.advanceTimersByTime(150));
     await openChat();
     expect(screen.queryByTestId('chat-message-input')).not.toBeInTheDocument();
@@ -619,7 +627,7 @@ describe('ChatWidget', () => {
     act(() => {
       window.dispatchEvent(new CustomEvent('mobile-menu-open-change', { detail: { open: false } }));
     });
-    expect(screen.getByTestId('chat-fab')).toBeInTheDocument();
+    expect(screen.queryByTestId('chat-fab')).not.toBeInTheDocument();
     expect(screen.getByTestId('chat-popup')).toHaveClass('opacity-100');
   });
 

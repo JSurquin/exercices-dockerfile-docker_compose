@@ -1041,33 +1041,29 @@ export function ChatWidget() {
       </div>
       )}
 
-      <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-[99999] sm:bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:right-[max(1.5rem,env(safe-area-inset-right,0px))] pointer-events-auto">
-        <div className="relative">
-          {shouldShowWidgetUnreadBadge(unreadCount, isOpen) && (
-            <Badge className={chatWidgetUnreadBadgeClass()}>
-              {unreadCount}
-            </Badge>
-          )}
-
-          <button
-            type="button"
-            data-testid="chat-fab"
-            aria-label={messages.chatWidget.tooltip}
-            onClick={handleToggleChat}
-            className={chatWidgetFabButtonClass()}
-          >
-            {isOpen ? (
-              <XMarkIcon className="h-6 w-6 text-white" />
-            ) : (
-              <ChatBubbleBottomCenterTextIconSolid className="h-6 w-6 text-white" />
+      {!isOpen && (
+        <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-[99999] sm:bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:right-[max(1.5rem,env(safe-area-inset-right,0px))] pointer-events-auto">
+          <div className="relative">
+            {shouldShowWidgetUnreadBadge(unreadCount, isOpen) && (
+              <Badge className={chatWidgetUnreadBadgeClass()}>
+                {unreadCount}
+              </Badge>
             )}
-          </button>
 
-          {!isOpen && (
+            <button
+              type="button"
+              data-testid="chat-fab"
+              aria-label={messages.chatWidget.tooltip}
+              onClick={handleToggleChat}
+              className={chatWidgetFabButtonClass()}
+            >
+              <ChatBubbleBottomCenterTextIconSolid className="h-6 w-6 text-white" />
+            </button>
+
             <div className="absolute inset-0 rounded-full bg-cta-gradient chat-pulse-ring opacity-20 pointer-events-none" />
-          )}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
