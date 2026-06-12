@@ -35,6 +35,7 @@ import {
   chatWidgetTimestampClass,
   chatWidgetUnreadBadgeClass,
   chatWidgetMessageEnterClass,
+  preserveChatLineBreaks,
   isWidgetMessageFromViewer,
   shouldShowWidgetAiTyping,
   shouldShowWidgetUnreadBadge,
@@ -124,6 +125,7 @@ const CHAT_MARKDOWN_COMPONENTS = {
       {children}
     </a>
   ),
+  br: () => <br />,
 };
 
 type WidgetMessage = {
@@ -331,7 +333,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
               ) : (
                 <div className="text-sm leading-relaxed">
                   <ReactMarkdown remarkPlugins={CHAT_REMARK_PLUGINS} components={CHAT_MARKDOWN_COMPONENTS}>
-                    {resolveContent(msg.content)}
+                    {preserveChatLineBreaks(resolveContent(msg.content))}
                   </ReactMarkdown>
                 </div>
               )}

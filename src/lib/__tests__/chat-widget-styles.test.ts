@@ -17,6 +17,7 @@ import {
   chatWidgetUnreadBadgeClass,
   chatWidgetInputAreaClass,
   isWidgetMessageFromViewer,
+  preserveChatLineBreaks,
   shouldShowWidgetAiTyping,
   shouldShowWidgetUnreadBadge,
 } from '@/lib/chat-widget-styles';
@@ -186,6 +187,16 @@ describe('shouldShowWidgetAiTyping', () => {
         baseMessageCount: 3,
       }),
     ).toBe(false);
+  });
+});
+
+describe('preserveChatLineBreaks', () => {
+  it('convertit les sauts de ligne simples en hard breaks Markdown', () => {
+    expect(preserveChatLineBreaks('ligne 1\nligne 2')).toBe('ligne 1  \nligne 2');
+  });
+
+  it('laisse les paragraphes (double saut de ligne) inchangés', () => {
+    expect(preserveChatLineBreaks('para 1\n\npara 2')).toBe('para 1\n\npara 2');
   });
 });
 

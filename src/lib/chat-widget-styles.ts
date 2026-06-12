@@ -134,6 +134,11 @@ export function shouldShowWidgetUnreadBadge(unreadCount: number, isOpen: boolean
   return unreadCount > 0 && !isOpen;
 }
 
+/** Convertit les sauts de ligne simples en retours à la ligne Markdown (hard breaks). */
+export function preserveChatLineBreaks(content: string): string {
+  return content.replace(/(?<!\n)\n(?!\n)/g, '  \n');
+}
+
 export function shouldShowWidgetAiTyping(params: {
   isAiTyping: boolean;
   isLoading: boolean;
