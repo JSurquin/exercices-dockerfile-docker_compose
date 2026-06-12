@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { prisma } from '~/prisma/prisma';
 import { logger, logAudit } from '@/lib/logger';
+import {
+  canDemoteModerator,
+  isModeratorDetailViewable,
+  resolveRoleAfterModeratorDemote,
+} from '@/lib/chat-moderation-logic';
 
 // DELETE /api/admin/moderators/[id] - Rétrograder un modérateur
 export async function DELETE(
@@ -24,13 +29,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
     }
 
-    if (user.role !== 'MODERATOR') {
-      return NextResponse.json({ error: 'L\'utilisateur n\'est pas modérateur' }, { status: 400 });
-    }
-
-    // Empêcher de se rétrograder soi-même
-    if (user.id === session.user.id) {
-      return NextResponse.json({ error: 'Impossible de se rétrograder soi-même' }, { status: 400 });
+    const demoteCheck = canDemoteModerator({
+      targetRole: user.role,
+      targetId: user.id,
+      actorId: session.user.id,
+    });
+    if (!demoteCheck.ok) {
+      return NextResponse.json({ error: demoteCheck.reason }, { status: demoteCheck.status });
     }
 
     const affiliateRow = await prisma.affiliateStats.findUnique({
@@ -38,8 +43,7 @@ export async function DELETE(
       select: { isActive: true },
     });
 
-    // Rétablir AFFILIATE si le compte a encore un programme affilié actif (promotion modérateur écrase le rôle)
-    const roleAfterDemote = affiliateRow?.isActive ? 'AFFILIATE' : 'USER';
+    const roleAfterDemote = resolveRoleAfterModeratorDemote(affiliateRow?.isActive ?? false);
 
     // Désassigner toutes les conversations assignées à ce modérateur
     await prisma.conversation.updateMany({
@@ -167,7 +171,7 @@ export async function GET(
       return NextResponse.json({ error: 'Modérateur non trouvé' }, { status: 404 });
     }
 
-    if (moderator.role !== 'MODERATOR' && moderator.role !== 'ADMIN') {
+    if (!isModeratorDetailViewable(moderator.role)) {
       return NextResponse.json({ error: 'L\'utilisateur n\'est pas modérateur' }, { status: 400 });
     }
 

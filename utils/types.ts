@@ -3669,6 +3669,9 @@ export interface Messages {
     botLabel: string;
     aiLabel: string;
     sendHint: string;
+    historyTitle: string;
+    newConversation: string;
+    loadOlderMessages: string;
     quickActions: string;
     tradeProblem: string;
     urgentSupport: string;

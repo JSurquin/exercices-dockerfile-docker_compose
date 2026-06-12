@@ -8,6 +8,27 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useLocale } from "@/components/providers/locale-provider";
 import { resolveI18nContent } from "@/lib/resolve-i18n-content";
+import { shouldShowBackButton } from "@/lib/chat-widget-config";
+import { shouldClearAiTypingIndicator } from "@/lib/chat-logic";
+import {
+  chatWidgetAiTypingBubbleClass,
+  chatWidgetCategoryButtonClass,
+  chatWidgetFabButtonClass,
+  chatWidgetHeaderClass,
+  chatWidgetInputAreaClass,
+  chatWidgetMessageAlignment,
+  chatWidgetMessageBubbleClass,
+  chatWidgetPopupContainerClass,
+  chatWidgetSendButtonClass,
+  chatWidgetSenderLabelClass,
+  chatWidgetSubcategoryButtonClass,
+  chatWidgetTextareaClass,
+  chatWidgetTimestampClass,
+  chatWidgetUnreadBadgeClass,
+  isWidgetMessageFromViewer,
+  shouldShowWidgetAiTyping,
+  shouldShowWidgetUnreadBadge,
+} from "@/lib/chat-widget-styles";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useChat } from "@/hooks/use-chat";
 import { useQueryClient } from "@tanstack/react-query";
@@ -24,6 +45,8 @@ import {
   CpuChipIcon,
   SparklesIcon,
   UserCircleIcon,
+  ClockIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 import {
   ChatBubbleBottomCenterTextIcon as ChatBubbleBottomCenterTextIconSolid,
@@ -54,7 +77,7 @@ interface Category {
  * Types
  * ───────────────────────────────────────────── */
 
-type ChatStep = "categories" | "subcategories" | "conversation";
+type ChatStep = "categories" | "subcategories" | "conversation" | "history";
 
 /* ─────────────────────────────────────────────
  * Composant principal
@@ -112,13 +135,23 @@ export function ChatWidget() {
   const {
     currentConversation,
     conversationId,
+    conversationListItems,
+    setConversationId,
+    startNewConversation,
     sendMessage,
+    loadOlderMessages,
+    hasOlderMessages,
+    isLoadingOlderMessages,
     getUnreadCount,
     isLoading,
   } = useChat(isOpen);
 
   const queryClient = useQueryClient();
-  const [chatStep, setChatStep] = useState<ChatStep>("categories");
+  const [chatStepOverride, setChatStepOverride] = useState<ChatStep | null>(null);
+  const hasExistingMessages = (currentConversation?.messages?.length ?? 0) > 0;
+  const chatStep: ChatStep =
+    chatStepOverride ?? (hasExistingMessages ? "conversation" : "categories");
+  const setChatStep = setChatStepOverride;
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [message, setMessage] = useState("");
   const [isSendingBotMsg, setIsSendingBotMsg] = useState(false);
@@ -130,14 +163,22 @@ export function ChatWidget() {
   const wasOpenBeforeMobileMenuRef = useRef(false);
   const [isHiddenByMobileMenu, setIsHiddenByMobileMenu] = useState(false);
   const aiTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const aiTypingBaseMsgCountRef = useRef<number>(0);
+  const prevScrollHeightRef = useRef(0);
 
-  // Si une conversation existe déjà, aller directement au chat
-  useEffect(() => {
-    if (currentConversation && currentConversation.messages.length > 0) {
-      setChatStep("conversation");
-    }
-  }, [currentConversation]);
+  const effectiveIsAiTyping =
+    isAiTyping &&
+    !shouldClearAiTypingIndicator({
+      isAiTyping,
+      messages: currentConversation?.messages ?? [],
+      baseMessageCount: aiTypingBaseCount,
+    });
+
+  const showAiTyping = shouldShowWidgetAiTyping({
+    isAiTyping: effectiveIsAiTyping,
+    isLoading,
+    messageCount: currentConversation?.messages.length ?? 0,
+    baseMessageCount: aiTypingBaseCount,
+  });
 
   const scrollToBottom = useCallback(() => {
     if (messagesContainerRef.current) {
@@ -145,29 +186,6 @@ export function ChatWidget() {
         messagesContainerRef.current.scrollHeight;
     }
   }, []);
-
-  useEffect(() => {
-    if (chatStep === "conversation") {
-      setTimeout(scrollToBottom, 50);
-    }
-  }, [currentConversation?.messages, chatStep, scrollToBottom]);
-
-  // Désactiver l'indicateur quand un NOUVEAU message non-user arrive
-  useEffect(() => {
-    if (!isAiTyping || !currentConversation?.messages) return;
-    const msgs = currentConversation.messages;
-    const currentCount = msgs.length;
-    const lastMsg = msgs[currentCount - 1];
-    // +2 car on attend : le message user + la réponse IA
-    if (
-      currentCount > aiTypingBaseCount + 1 &&
-      lastMsg &&
-      lastMsg.senderType !== "USER"
-    ) {
-      setIsAiTyping(false);
-      if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
-    }
-  }, [currentConversation?.messages, isAiTyping, aiTypingBaseCount]);
 
   const handleToggleChat = () => {
     if (isOpen) {
@@ -228,24 +246,20 @@ export function ChatWidget() {
   const handleSubcategorySelect = async (subcategory: Subcategory) => {
     setIsSendingBotMsg(true);
     try {
-      let convId = conversationId;
+      const categoryKey = selectedCategory?.key;
+      const result = await sendMessage(subcategory.label, { category: categoryKey });
+      const convId = result.conversationId ?? conversationId;
 
-      if (!convId) {
-        // Créer la conversation avec la sélection comme message initial
-        const result = await sendMessage(subcategory.label) as any;
-        // sendMessage retourne la conversation quand elle est créée
-        convId = result?.id ?? localStorage.getItem("guest_conversation_id");
-      }
-
-      // Envoyer le message bot de la sous-catégorie
       if (convId) {
         await fetch(`/api/chat/conversations/${convId}/bot-message`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ subcategoryKey: subcategory.key }),
         });
-        // Forcer le rechargement de la conversation pour afficher le message bot
-        queryClient.invalidateQueries({ queryKey: queryKeys.conversation(convId) });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.conversationMessages(convId),
+        });
+        queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
       }
 
       setChatStep("conversation");
@@ -256,6 +270,33 @@ export function ChatWidget() {
     }
   };
 
+  const handleMessagesScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    if (el.scrollTop < 64 && hasOlderMessages && !isLoadingOlderMessages) {
+      prevScrollHeightRef.current = el.scrollHeight;
+      void loadOlderMessages().then(() => {
+        requestAnimationFrame(() => {
+          if (messagesContainerRef.current) {
+            const diff =
+              messagesContainerRef.current.scrollHeight - prevScrollHeightRef.current;
+            messagesContainerRef.current.scrollTop = diff;
+          }
+        });
+      });
+    }
+  };
+
+  const handleSelectHistoryItem = (id: string) => {
+    setConversationId(id);
+    setChatStep("conversation");
+  };
+
+  const handleNewConversation = () => {
+    startNewConversation();
+    setSelectedCategory(null);
+    setChatStep("categories");
+  };
+
   const handleSendMessage = async () => {
     if (!message.trim() || isLoading) return;
     const content = message;
@@ -263,7 +304,6 @@ export function ChatWidget() {
     await sendMessage(content);
     // Mémoriser le nombre de messages AVANT la réponse IA, puis activer l'indicateur
     const baseCount = currentConversation?.messages.length ?? 0;
-    aiTypingBaseMsgCountRef.current = baseCount;
     setAiTypingBaseCount(baseCount);
     setIsAiTyping(true);
     if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
@@ -297,32 +337,37 @@ export function ChatWidget() {
     <>
       {/* ── Popup chat ── */}
       <div
-        className={`
-          fixed bottom-24 right-3 left-3
-          sm:left-auto sm:right-6 sm:w-[390px]
-          chat-glass rounded-2xl shadow-2xl z-[9999]
-          flex flex-col overflow-hidden
-          transition-all duration-300 ease-out
-          pointer-events-auto
-          ${isOpen
-            ? "opacity-100 translate-y-0 scale-100"
-            : "opacity-0 translate-y-4 scale-95 pointer-events-none"
-          }
-        `}
+        data-testid="chat-popup"
+        className={chatWidgetPopupContainerClass(isOpen)}
         style={{ height: isOpen ? "clamp(480px, 75dvh, 640px)" : 0 }}
       >
         {/* ── Header ── */}
-        <div className="flex items-center justify-between p-4 bg-cta-gradient text-white flex-shrink-0">
+        <div className={chatWidgetHeaderClass()}>
           <div className="flex items-center space-x-3">
-            {(chatStep === "subcategories" || (chatStep === "conversation" && !currentConversation?.messages?.length)) && (
+            {shouldShowBackButton({
+              step: chatStep === "history" ? "conversation" : chatStep,
+              hasConversationMessages: hasExistingMessages,
+            }) && (
               <button
                 onClick={() => {
-                  if (chatStep === "subcategories") setChatStep("categories");
+                  if (chatStep === "history") setChatStep("conversation");
+                  else if (chatStep === "subcategories") setChatStep("categories");
                   else { setChatStep("categories"); setSelectedCategory(null); }
                 }}
                 className="p-1 rounded-full hover:bg-white/20 transition-colors"
               >
                 <ArrowLeftIcon className="h-4 w-4" />
+              </button>
+            )}
+            {user && conversationListItems.length > 0 && chatStep !== "history" && (
+              <button
+                type="button"
+                data-testid="chat-history-button"
+                onClick={() => setChatStep("history")}
+                className="p-1 rounded-full hover:bg-white/20 transition-colors"
+                aria-label={messages.chatWidget.historyTitle}
+              >
+                <ClockIcon className="h-4 w-4" />
               </button>
             )}
             <div className="relative">
@@ -350,6 +395,53 @@ export function ChatWidget() {
         {/* ── Corps, prend tout l'espace restant ── */}
         <div className="flex-1 min-h-0 flex flex-col">
 
+          {/* ── Historique des conversations (utilisateurs connectés) ── */}
+          {chatStep === "history" && (
+            <div className="flex-1 min-h-0 flex flex-col">
+              <div className="p-3 border-b flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold">{messages.chatWidget.historyTitle}</p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  data-testid="chat-new-conversation"
+                  className="h-8 gap-1"
+                  onClick={handleNewConversation}
+                >
+                  <PlusIcon className="h-3.5 w-3.5" />
+                  {messages.chatWidget.newConversation}
+                </Button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-2 space-y-1" data-testid="chat-history-list">
+                {conversationListItems.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleSelectHistoryItem(item.id)}
+                    className={`w-full text-left rounded-xl border px-3 py-2.5 transition-colors hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 ${
+                      item.id === conversationId ? "border-theme-accent/40 bg-theme-accent/5" : "bg-card"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-medium line-clamp-2">{item.title}</p>
+                      {item.unread > 0 && (
+                        <Badge className="h-5 min-w-5 px-1 text-[10px]">{item.unread}</Badge>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {new Date(item.lastMessageAt).toLocaleDateString(undefined, {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* ── Étape 1 : Catégories ── */}
           {chatStep === "categories" && (
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -360,7 +452,7 @@ export function ChatWidget() {
                 <button
                   key={cat.key}
                   onClick={() => handleCategorySelect(cat)}
-                  className="w-full flex items-center justify-between p-3.5 rounded-xl border bg-card hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 hover:border-theme-accent/30 transition-all duration-150 group text-left"
+                  className={chatWidgetCategoryButtonClass()}
                 >
                   <div className="flex items-center gap-3">
                     <cat.icon className="h-6 w-6 text-theme-accent shrink-0" aria-hidden />
@@ -387,7 +479,7 @@ export function ChatWidget() {
                   key={sub.key}
                   onClick={() => handleSubcategorySelect(sub)}
                   disabled={isSendingBotMsg}
-                  className="w-full flex items-center justify-between p-3 rounded-xl border bg-card hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 hover:border-theme-accent/30 transition-all duration-150 group text-left disabled:opacity-60"
+                  className={chatWidgetSubcategoryButtonClass(isSendingBotMsg)}
                 >
                   <span className="text-sm font-medium">{sub.label}</span>
                   {isSendingBotMsg ? (
@@ -406,8 +498,15 @@ export function ChatWidget() {
               {/* Zone messages, scrollable, ne pousse jamais l'input */}
               <div
                 ref={messagesContainerRef}
+                data-testid="chat-messages"
+                onScroll={handleMessagesScroll}
                 className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3"
               >
+                {isLoadingOlderMessages && (
+                  <div className="flex justify-center py-2">
+                    <div className="h-4 w-4 border-2 border-theme-accent border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
                 {/* Message de bienvenue si pas encore de conversation */}
                 {!currentConversation && (
                   <div className="flex justify-start">
@@ -418,50 +517,42 @@ export function ChatWidget() {
                 )}
 
                 {currentConversation?.messages.map((msg) => {
-                  const isUser =
-                    msg.senderType === "USER" && msg.userId === user?.id;
+                  const isUser = isWidgetMessageFromViewer(
+                    msg.senderType,
+                    msg.userId,
+                    user?.id,
+                  );
                   const isBot = msg.senderType === "BOT";
                   const isAi = msg.senderType === "AI";
                   const isModerator = msg.senderType === "MODERATOR";
                   const isSystem = msg.senderType === "SYSTEM";
+                  const bubbleSender = isUser ? "USER" : msg.senderType;
 
                   return (
                     <div
                       key={msg.id}
-                      className={`flex ${isUser ? "justify-end" : "justify-start"} message-slide-in`}
+                      className={`flex ${chatWidgetMessageAlignment(isUser)} message-slide-in`}
                     >
-                      <div
-                        className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
-                          isUser
-                            ? "bg-cta-gradient text-white rounded-tr-sm"
-                            : isModerator
-                            ? "bg-blue-500 text-white rounded-tl-sm"
-                            : isAi
-                            ? "bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 rounded-tl-sm"
-                            : isSystem
-                            ? "bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 rounded-tl-sm text-xs"
-                            : "bg-muted border rounded-tl-sm"
-                        }`}
-                      >
-                        {isModerator && (
+                      <div className={chatWidgetMessageBubbleClass(bubbleSender)}>
+                        {isModerator && chatWidgetSenderLabelClass("MODERATOR") && (
                           <div className="flex items-center gap-1 mb-1">
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-white/20 rounded-full px-2 py-0.5">
+                            <span className={chatWidgetSenderLabelClass("MODERATOR")!}>
                               <UserCircleIcon className="h-3 w-3 shrink-0" aria-hidden />
                               {messages.chatWidget.moderatorLabel}
                             </span>
                           </div>
                         )}
-                        {isBot && (
+                        {isBot && chatWidgetSenderLabelClass("BOT") && (
                           <div className="flex items-center gap-1 mb-1">
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/60 rounded-full px-2 py-0.5">
+                            <span className={chatWidgetSenderLabelClass("BOT")!}>
                               <CpuChipIcon className="h-3 w-3 shrink-0" aria-hidden />
                               {messages.chatWidget.botLabel}
                             </span>
                           </div>
                         )}
-                        {isAi && (
+                        {isAi && chatWidgetSenderLabelClass("AI") && (
                           <div className="flex items-center gap-1 mb-1">
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">
+                            <span className={chatWidgetSenderLabelClass("AI")!}>
                               <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
                               {messages.chatWidget.aiLabel}
                             </span>
@@ -494,9 +585,7 @@ export function ChatWidget() {
                           </div>
                         )}
                         <div
-                          className={`flex items-center justify-between mt-1 gap-2 ${
-                            isUser ? "text-white/70" : isSystem ? "text-emerald-600" : isAi ? "text-violet-500 dark:text-violet-400" : "text-muted-foreground"
-                          }`}
+                          className={`flex items-center justify-between mt-1 gap-2 ${chatWidgetTimestampClass(bubbleSender)}`}
                         >
                           <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
                           {isUser && (
@@ -523,10 +612,9 @@ export function ChatWidget() {
                   </div>
                 )}
 
-                {isAiTyping && !isLoading &&
-                  (currentConversation?.messages.length ?? 0) > aiTypingBaseCount && (
+                {showAiTyping && (
                   <div className="flex justify-start ai-typing-bubble">
-                    <div className="bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 rounded-2xl rounded-tl-sm px-4 py-2.5">
+                    <div className={chatWidgetAiTypingBubbleClass()}>
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">
                           <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
@@ -543,11 +631,12 @@ export function ChatWidget() {
                 )}
               </div>
 
-              {/* ── Zone saisie, toujours visible, jamais poussée ── */}
-              <div className="flex-shrink-0 border-t bg-background px-3 py-2.5">
+              {/* ── Zone saisie — toujours visible, jamais poussée ── */}
+              <div className={chatWidgetInputAreaClass()}>
                 <div className="flex items-end gap-2">
                   <textarea
                     ref={textareaRef}
+                    data-testid="chat-message-input"
                     value={message}
                     onChange={(e) => {
                       setMessage(e.target.value);
@@ -558,12 +647,13 @@ export function ChatWidget() {
                     placeholder={messages.chatWidget.placeholder}
                     disabled={isLoading}
                     rows={1}
-                    className="flex-1 resize-none rounded-xl border bg-muted/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 transition-all min-h-[38px] max-h-[100px] leading-relaxed"
+                    className={chatWidgetTextareaClass()}
                     style={{ height: "38px" }}
                   />
                   <Button
                     size="icon"
-                    className="h-[38px] w-[38px] flex-shrink-0 bg-cta-gradient hover:brightness-110 rounded-xl"
+                    data-testid="chat-send-button"
+                    className={chatWidgetSendButtonClass()}
                     onClick={handleSendMessage}
                     disabled={!message.trim() || isLoading}
                   >
@@ -586,15 +676,18 @@ export function ChatWidget() {
       {/* ── Bouton flottant ── */}
       <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-[99999] sm:bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:right-[max(1.5rem,env(safe-area-inset-right,0px))] pointer-events-auto">
         <div className="relative">
-          {unreadCount > 0 && !isOpen && (
-            <Badge className="absolute -top-2 -left-2 h-6 w-6 rounded-full bg-red-500 hover:bg-red-500 text-white text-xs flex items-center justify-center animate-pulse z-10">
+          {shouldShowWidgetUnreadBadge(unreadCount, isOpen) && (
+            <Badge className={chatWidgetUnreadBadgeClass()}>
               {unreadCount}
             </Badge>
           )}
 
           <button
+            type="button"
+            data-testid="chat-fab"
+            aria-label={messages.chatWidget.tooltip}
             onClick={handleToggleChat}
-            className="h-14 w-14 rounded-full bg-cta-gradient shadow-lg shadow-[var(--cta-shadow)] border-0 flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95"
+            className={chatWidgetFabButtonClass()}
           >
             <div
               className={`transition-all duration-200 ${isOpen ? "rotate-0" : "rotate-0"}`}

@@ -11,9 +11,31 @@ import { searchSimilarChunks } from '@/lib/rag-client';
 import type { SenderType } from '@prisma/client';
 
 const MAX_CONTEXT_MESSAGES = 12;
-const RAG_ENABLED = process.env.RAG_DATABASE_URL !== undefined && isOllamaConfigured();
 
-function buildSystemPrompt(username: string, ragContext?: string): string {
+function isRagEnabled(): boolean {
+  return process.env.RAG_DATABASE_URL !== undefined && isOllamaConfigured();
+}
+
+export function stripI18nPlaceholder(content: string): string {
+  return content.replace(/^__i18n:.+__$/, '[Message automatique MoonSkin]');
+}
+
+export function mapSenderToRole(senderType: SenderType): 'system' | 'user' | 'assistant' | null {
+  switch (senderType) {
+    case 'USER':
+      return 'user';
+    case 'BOT':
+    case 'AI':
+    case 'MODERATOR':
+      return 'assistant';
+    case 'SYSTEM':
+      return null;
+    default:
+      return null;
+  }
+}
+
+export function buildSystemPrompt(username: string, ragContext?: string): string {
   const base = `Tu es l'assistant support de MoonSkin, une plateforme de vente de skins Counter-Strike 2. Tu parles avec ${username}.
 
 Règles :
@@ -39,25 +61,6 @@ Si la réponse n'est pas dans ces extraits, dis-le clairement sans improviser.
 
 ${ragContext}
 ---`;
-}
-
-function mapSenderToRole(senderType: SenderType): OllamaMessage['role'] | null {
-  switch (senderType) {
-    case 'USER':
-      return 'user';
-    case 'BOT':
-    case 'AI':
-    case 'MODERATOR':
-      return 'assistant';
-    case 'SYSTEM':
-      return null;
-    default:
-      return null;
-  }
-}
-
-function stripI18nPlaceholder(content: string): string {
-  return content.replace(/^__i18n:.+__$/, '[Message automatique MoonSkin]');
 }
 
 export async function maybeGenerateAiReply(conversationId: string): Promise<void> {
@@ -104,20 +107,20 @@ export async function maybeGenerateAiReply(conversationId: string): Promise<void
     });
 
     if (!messageCheck.allowed) {
-      await prisma.chatMessage.create({
-        data: {
-          conversationId,
-          userId: null,
-          content: messageCheck.refusalMessage ?? OFF_TOPIC_REFUSAL_MESSAGE,
-          senderType: 'AI',
-          isRead: false,
-        },
-      });
+    await prisma.chatMessage.create({
+      data: {
+        conversationId,
+        userId: null,
+        content: messageCheck.refusalMessage ?? OFF_TOPIC_REFUSAL_MESSAGE,
+        senderType: 'AI',
+        isRead: false,
+      },
+    });
 
-      await prisma.conversation.update({
-        where: { id: conversationId },
-        data: { updatedAt: new Date() },
-      });
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date(), lastMessageAt: new Date() },
+    });
       return;
     }
 
@@ -126,7 +129,7 @@ export async function maybeGenerateAiReply(conversationId: string): Promise<void
 
     // RAG : récupérer les chunks pertinents pour enrichir le prompt
     let ragContext: string | undefined;
-    if (RAG_ENABLED) {
+    if (isRagEnabled()) {
       try {
         const queryText = stripI18nPlaceholder(lastUserMessage.content);
         const embedding = await generateEmbedding(queryText);
@@ -166,12 +169,16 @@ export async function maybeGenerateAiReply(conversationId: string): Promise<void
         content: result.content,
         senderType: 'AI',
         isRead: false,
+        metadata: {
+          model: process.env.OLLAMA_MODEL ?? 'llama3.2',
+          promptTokens: ollamaMessages.length,
+        },
       },
     });
 
     await prisma.conversation.update({
       where: { id: conversationId },
-      data: { updatedAt: new Date() },
+      data: { updatedAt: new Date(), lastMessageAt: new Date() },
     });
   } catch (error) {
     logger.error('[chat-ai] Échec génération réponse Ollama:', error);

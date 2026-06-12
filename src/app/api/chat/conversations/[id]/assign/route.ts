@@ -4,6 +4,7 @@ import { logger, logAudit } from '@/lib/logger';
 import { requireAdminOrModeratorSessionWithDbCheck } from '@/lib/require-admin';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { assignConversationPostSchema } from '@/lib/validation/schemas/chat-api';
+import { isValidModeratorRole } from '@/lib/chat-logic';
 
 // POST /api/chat/conversations/[id]/assign
 export async function POST(
@@ -47,7 +48,7 @@ export async function POST(
       return NextResponse.json({ error: 'Modérateur non trouvé' }, { status: 404 });
     }
 
-    if (moderator.role !== 'MODERATOR' && moderator.role !== 'ADMIN') {
+    if (!isValidModeratorRole(moderator.role)) {
       return NextResponse.json({ error: 'L\'utilisateur n\'est pas un modérateur' }, { status: 400 });
     }
 

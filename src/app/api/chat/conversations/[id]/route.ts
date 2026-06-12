@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
+import { softDeleteConversation } from '@/lib/chat-message-service';
 import {
   requireAdminOrModeratorSessionWithDbCheck,
   requireAdminSessionWithDbCheck,
@@ -12,6 +13,11 @@ import {
 } from '@/lib/chat-response-redact';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { patchConversationSchema } from '@/lib/validation/schemas/chat-api';
+import {
+  canGuestAccessConversation,
+  canUserAccessConversation,
+  shouldRedactEmailsForViewer,
+} from '@/lib/chat-logic';
 
 // GET /api/chat/conversations/[id] - Récupérer une conversation spécifique
 export async function GET(
@@ -64,16 +70,17 @@ export async function GET(
 
     if (identity.kind === 'user') {
       const session = identity.session;
-      const isAdmin = identity.role === 'ADMIN';
-      const isModerator = identity.role === 'MODERATOR';
-      const isOwner = conversation.userId === session.user.id;
-      const isAssigned = conversation.assignedTo === session.user.id;
-
-      if (!isAdmin && !isModerator && !isOwner && !isAssigned) {
+      if (
+        !canUserAccessConversation({
+          role: identity.role,
+          userId: session.user.id,
+          conversationUserId: conversation.userId,
+          assignedTo: conversation.assignedTo,
+        })
+      ) {
         return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
       }
 
-      // Marquer les messages comme lus
       await prisma.chatMessage.updateMany({
         where: {
           conversationId: resolvedParams.id,
@@ -82,21 +89,19 @@ export async function GET(
         },
         data: { isRead: true },
       });
-    } else {
-      // Invité : accès uniquement aux conversations sans userId (guest)
-      if (conversation.userId !== null) {
-        return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-      }
+    } else if (!canGuestAccessConversation(conversation.userId)) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const isStaff =
-      identity.kind === 'user' &&
-      (identity.role === 'ADMIN' || identity.role === 'MODERATOR');
     const raw = conversation as unknown as Record<string, unknown>;
+    const redactMode = shouldRedactEmailsForViewer({
+      identityKind: identity.kind,
+      role: identity.kind === 'user' ? identity.role : undefined,
+    });
     let payload: Record<string, unknown> = raw;
-    if (identity.kind === 'guest') {
+    if (redactMode === 'guest') {
       payload = redactEmailsInConversationForGuest(raw);
-    } else if (identity.kind === 'user' && !isStaff) {
+    } else if (redactMode === 'non-staff-user' && identity.kind === 'user') {
       payload = redactEmailsForNonStaffViewer(raw, identity.session.user.id);
     }
     return NextResponse.json(payload);
@@ -194,17 +199,14 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/chat/conversations/[id] - Supprimer une conversation (admin seulement)
+// DELETE /api/chat/conversations/[id] - Soft delete (propriétaire ou admin)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const resolvedParams = await params;
-    const session = await requireAdminSessionWithDbCheck(request);
-    if (!session) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-    }
+    const identity = await resolveChatIdentity(request);
 
     const conversation = await prisma.conversation.findUnique({
       where: { id: resolvedParams.id },
@@ -214,14 +216,24 @@ export async function DELETE(
       return NextResponse.json({ error: 'Conversation non trouvée' }, { status: 404 });
     }
 
-    await prisma.conversation.delete({
-      where: { id: resolvedParams.id },
-    });
+    if (identity.kind === 'user') {
+      const isOwner = conversation.userId === identity.session.user.id;
+      const isStaff = identity.role === 'ADMIN' || identity.role === 'MODERATOR';
+      if (!isOwner && !isStaff) {
+        return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+      }
+    } else {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    }
 
-    // Log de l'audit
-    await logger.info(session.user.id, 'CONVERSATION_DELETED', {
-      conversationId: resolvedParams.id,
-    });
+    await softDeleteConversation(resolvedParams.id);
+
+    if (identity.kind === 'user') {
+      await logger.info(identity.session.user.id, 'CONVERSATION_DELETED', {
+        conversationId: resolvedParams.id,
+        soft: true,
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -3,6 +3,7 @@ import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
 import { ChatStats, ModeratorStats } from '@/lib/types/chat';
 import { requireAdminOrModeratorSessionWithDbCheck, requireAdminSessionWithDbCheck } from '@/lib/require-admin';
+import { computeAverageResponseTimeMinutes } from '@/lib/chat-logic';
 
 // GET /api/chat/stats - Récupérer les statistiques du chat
 export async function GET(request: NextRequest) {
@@ -91,23 +92,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    let totalResponseTime = 0;
-    let responseCount = 0;
-
-    conversationsWithMessages.forEach((conv) => {
-      if (conv.messages.length >= 2) {
-        const userMessage = conv.messages.find(m => m.senderType === 'USER');
-        const moderatorMessage = conv.messages.find(m => m.senderType === 'MODERATOR' || m.senderType === 'BOT');
-        
-        if (userMessage && moderatorMessage && moderatorMessage.createdAt > userMessage.createdAt) {
-          const responseTime = moderatorMessage.createdAt.getTime() - userMessage.createdAt.getTime();
-          totalResponseTime += responseTime;
-          responseCount++;
-        }
-      }
-    });
-
-    const averageResponseTime = responseCount > 0 ? Math.round(totalResponseTime / responseCount / 1000 / 60) : 0; // en minutes
+    const averageResponseTime = computeAverageResponseTimeMinutes(conversationsWithMessages);
 
     // Formater les données
     const priorityStats = conversationsByPriority.reduce((acc, item) => {
@@ -224,27 +209,9 @@ export async function POST(request: NextRequest) {
           }),
         ]);
 
-        // Calculer le temps de réponse moyen
-        let totalResponseTime = 0;
-        let responseCount = 0;
-
-        conversationsWithResponse.forEach((conv) => {
-          const userMessages = conv.messages.filter(m => m.senderType === 'USER');
-          const moderatorMessages = conv.messages.filter(m => m.userId === moderator.id && m.senderType === 'MODERATOR');
-
-          userMessages.forEach((userMsg) => {
-            const nextModeratorMsg = moderatorMessages.find(
-              modMsg => modMsg.createdAt > userMsg.createdAt
-            );
-            if (nextModeratorMsg) {
-              const responseTime = nextModeratorMsg.createdAt.getTime() - userMsg.createdAt.getTime();
-              totalResponseTime += responseTime;
-              responseCount++;
-            }
-          });
+        const averageResponseTime = computeAverageResponseTimeMinutes(conversationsWithResponse, {
+          moderatorId: moderator.id,
         });
-
-        const averageResponseTime = responseCount > 0 ? Math.round(totalResponseTime / responseCount / 1000 / 60) : 0;
 
         return {
           id: moderator.id,

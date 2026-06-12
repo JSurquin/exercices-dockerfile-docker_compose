@@ -10,6 +10,7 @@ export const queryKeys = {
   // Chat
   conversations: ['chat', 'conversations'] as const,
   conversation: (id: string | null) => ['chat', 'conversation', id] as const,
+  conversationMessages: (id: string | null) => ['chat', 'conversation', id, 'messages'] as const,
 
   // Giveaways
   giveaways: (status?: string) => ['giveaways', status ?? 'all'] as const,

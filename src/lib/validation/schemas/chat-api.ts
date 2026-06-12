@@ -28,15 +28,29 @@ export const createConversationPostSchema = z
 
 export const createChatMessageSchema = z
   .object({
-    conversationId: z.string().min(1, 'ID de conversation requis'),
+    conversationId: z.string().min(1, 'ID de conversation requis').optional(),
     content: z.string().min(1, 'Contenu du message requis'),
     senderType: z.enum(['USER', 'BOT', 'MODERATOR', 'SYSTEM']).optional(),
+    category: z.string().max(64).optional(),
+    forceNew: z.boolean().optional(),
+  })
+  .strip();
+
+export const conversationMessagesQuerySchema = z
+  .object({
+    cursor: z.string().max(128).optional(),
+    limit: z
+      .string()
+      .optional()
+      .transform((s) => (s === undefined || s === '' ? 30 : parseInt(s, 10)))
+      .pipe(z.number().int().min(1).max(100)),
   })
   .strip();
 
 export const patchConversationSchema = z
   .object({
-    status: z.enum(['ACTIVE', 'CLOSED', 'ARCHIVED']),
+    status: z.enum(['ACTIVE', 'CLOSED', 'ARCHIVED', 'DELETED']),
+    subject: z.string().max(200).optional(),
     conversationId: z.string().optional(),
   })
   .strip();

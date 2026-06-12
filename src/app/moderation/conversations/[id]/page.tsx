@@ -37,6 +37,11 @@ import {
 import { cn } from '@/lib/utils';
 import { PageLoading } from '@/components/ui/page-loading';
 import { resolveI18nContent } from '@/lib/resolve-i18n-content';
+import {
+  countUserMessagesForModerator,
+  shouldPlayModeratorNotificationSound,
+} from '@/lib/chat-notification-logic';
+import { playNotificationSound } from '@/lib/play-notification-sound';
 
 const senderTypeLabels: Record<string, string> = {
   USER: 'Utilisateur',
@@ -57,6 +62,7 @@ export default function ConversationPage() {
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const prevUserMsgCountRef = useRef<number | null>(null);
 
   const { data: conversation, isLoading: loading, refetch: refetchConversation } = useQuery({
     queryKey: queryKeys.moderationConversation(params.id as string),
@@ -76,6 +82,20 @@ export default function ConversationPage() {
     refetchInterval: 10_000,
     refetchIntervalInBackground: false,
   });
+
+  useEffect(() => {
+    if (!conversation?.messages) return;
+    const userCount = countUserMessagesForModerator(conversation.messages);
+    if (
+      shouldPlayModeratorNotificationSound({
+        previousUserCount: prevUserMsgCountRef.current,
+        currentUserCount: userCount,
+      })
+    ) {
+      playNotificationSound(520, 350, 0.3);
+    }
+    prevUserMsgCountRef.current = userCount;
+  }, [conversation?.messages]);
 
   const sendMessage = async () => {
     if (!message.trim() || sending) return;
@@ -380,6 +400,7 @@ export default function ConversationPage() {
             <div className="flex-shrink-0 border-t border-border/50 bg-background/30 backdrop-blur-sm px-3 sm:px-4 py-2.5 sm:py-3">
               <div className="flex gap-2 items-end">
                 <Textarea
+                  data-testid="moderation-reply-input"
                   placeholder={messages.moderation.conversation.typeYourReply}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
@@ -393,6 +414,7 @@ export default function ConversationPage() {
                   disabled={sending}
                 />
                 <Button
+                  data-testid="moderation-reply-send"
                   onClick={sendMessage}
                   disabled={!message.trim() || sending}
                   size="icon"

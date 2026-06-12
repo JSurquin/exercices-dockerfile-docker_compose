@@ -10,6 +10,7 @@ import {
   chatConversationsQuerySchema,
   createConversationPostSchema,
 } from '@/lib/validation/schemas/chat-api';
+import { buildConversationWhereClause } from '@/lib/chat-logic';
 
 // GET /api/chat/conversations - Récupérer les conversations
 export async function GET(request: NextRequest) {
@@ -41,47 +42,11 @@ export async function GET(request: NextRequest) {
       limit: q.limit,
     };
 
-    // Vérifier les permissions (rôle DB, pas seulement le cookie)
-    const isAdmin = role === 'ADMIN';
-    const isModerator = role === 'MODERATOR';
-    const isUser = role === 'USER' || role === 'AFFILIATE';
-
-    const whereClause: any = {};
-
-    if (isUser && !isAdmin && !isModerator) {
-      // Les utilisateurs ne peuvent voir que leurs propres conversations
-      whereClause.userId = session.user.id;
-    } else if (isModerator && !isAdmin) {
-      // Les modérateurs peuvent voir toutes les conversations ou celles qui leur sont assignées
-      if (filters.assignedTo === 'me') {
-        whereClause.assignedTo = session.user.id;
-      }
-    }
-
-    // Appliquer les filtres
-    if (filters.status) {
-      whereClause.status = filters.status;
-    }
-    if (filters.assignedTo && filters.assignedTo !== 'me') {
-      whereClause.assignedTo = filters.assignedTo;
-    }
-    if (filters.category) {
-      whereClause.category = filters.category;
-    }
-    if (filters.priority) {
-      whereClause.priority = filters.priority;
-    }
-    // Filtre par userId : admin uniquement (évite fuite / abus côté modérateur)
-    if (filters.userId && isAdmin) {
-      whereClause.userId = filters.userId;
-    }
-    if (filters.search) {
-      whereClause.OR = [
-        { subject: { contains: filters.search, mode: 'insensitive' } },
-        { user: { name: { contains: filters.search, mode: 'insensitive' } } },
-        { user: { email: { contains: filters.search, mode: 'insensitive' } } },
-      ];
-    }
+    const whereClause = buildConversationWhereClause({
+      role,
+      userId: session.user.id,
+      filters,
+    });
 
     const skip = ((filters.page || 1) - 1) * (filters.limit || 20);
 
@@ -126,7 +91,7 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { lastMessageAt: 'desc' },
         skip,
         take: filters.limit || 20,
       }),
@@ -175,6 +140,7 @@ export async function POST(request: NextRequest) {
         category: body.category || null,
         priority: body.priority || 'NORMAL',
         status: 'ACTIVE',
+        lastMessageAt: new Date(),
         messages: {
           create: {
             userId: session?.user?.id || null,

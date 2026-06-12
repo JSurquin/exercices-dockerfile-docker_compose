@@ -112,4 +112,69 @@ describe('evaluateUserMessageForAi', () => {
 
     expect(result.allowed).toBe(false);
   });
+
+  it('refuse un message vide', () => {
+    const result = evaluateUserMessageForAi({ message: '   ' });
+    expect(result.allowed).toBe(false);
+  });
+
+  it('refuse si CHAT_AI_ENABLED=false via shouldAiReply', () => {
+    process.env.CHAT_AI_ENABLED = 'false';
+    expect(
+      shouldAiReplyToConversation({
+        assignedTo: null,
+        status: 'ACTIVE',
+        hasModeratorMessage: false,
+      }),
+    ).toBe(false);
+  });
+
+  it('refuse une conversation ARCHIVED', () => {
+    process.env.CHAT_AI_ENABLED = 'true';
+    expect(
+      shouldAiReplyToConversation({
+        assignedTo: null,
+        status: 'ARCHIVED',
+        hasModeratorMessage: false,
+      }),
+    ).toBe(false);
+  });
+
+  it('accepte une question courte ambiguë avec point d’interrogation', () => {
+    const result = evaluateUserMessageForAi({
+      message: 'Comment ça marche ?',
+    });
+    expect(result.allowed).toBe(true);
+  });
+
+  it('refuse une demande de code sans contexte MoonSkin', () => {
+    const result = evaluateUserMessageForAi({
+      message: 'Écris-moi un script Python',
+    });
+    expect(result.allowed).toBe(false);
+  });
+
+  it('refuse un message ambigu sans contexte ni mot-clé MoonSkin', () => {
+    const result = evaluateUserMessageForAi({
+      message: 'Parle-moi de philosophie antique',
+    });
+    expect(result.allowed).toBe(false);
+    expect(result.refusalMessage).toBe(OFF_TOPIC_REFUSAL_MESSAGE);
+  });
+
+  it('accepte les catégories payment et trade', () => {
+    expect(
+      evaluateUserMessageForAi({ message: 'J\'ai un souci', category: 'payment' }).allowed,
+    ).toBe(true);
+    expect(
+      evaluateUserMessageForAi({ message: 'J\'ai un souci', category: 'trade' }).allowed,
+    ).toBe(true);
+  });
+
+  it('normalise les espaces dans le message', () => {
+    const result = evaluateUserMessageForAi({
+      message: '  Mon   trade   Steam   bloqué  ',
+    });
+    expect(result.allowed).toBe(true);
+  });
 });

@@ -3,6 +3,7 @@ import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
 import { ModeratorStats } from '@/lib/types/chat';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
+import { computeAverageResponseTimeMinutes } from '@/lib/chat-logic';
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,25 +50,9 @@ export async function GET(request: NextRequest) {
             }),
           ]);
 
-        let totalResponseTime = 0;
-        let responseCount = 0;
-
-        conversationsWithResponse.forEach((conv) => {
-          const userMessages = conv.messages.filter((m) => m.senderType === 'USER');
-          const moderatorMessages = conv.messages.filter(
-            (m) => m.userId === moderator.id && m.senderType === 'MODERATOR'
-          );
-          userMessages.forEach((userMsg) => {
-            const nextModMsg = moderatorMessages.find((m) => m.createdAt > userMsg.createdAt);
-            if (nextModMsg) {
-              totalResponseTime += nextModMsg.createdAt.getTime() - userMsg.createdAt.getTime();
-              responseCount++;
-            }
-          });
+        const averageResponseTime = computeAverageResponseTimeMinutes(conversationsWithResponse, {
+          moderatorId: moderator.id,
         });
-
-        const averageResponseTime =
-          responseCount > 0 ? Math.round(totalResponseTime / responseCount / 1000 / 60) : 0;
 
         return {
           id: moderator.id,

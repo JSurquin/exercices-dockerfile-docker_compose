@@ -78,7 +78,7 @@ export default defineConfig({
     /* Tests admin */
     {
       name: 'admin',
-      testMatch: /admin\.spec\.ts/,
+      testMatch: /admin\.spec\.ts|chat\.moderation\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         storageState: '.auth/admin.json',
@@ -102,5 +102,8 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
+    env: {
+      ENABLE_TEST_AUTH: 'true',
+    },
   },
 });

@@ -6,8 +6,20 @@ import { resolveChatIdentity } from '@/lib/require-admin';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { createChatMessageSchema } from '@/lib/validation/schemas/chat-api';
 import { maybeGenerateAiReply } from '@/lib/chat-ai-service';
+import {
+  canGuestAccessConversation,
+  canUserAccessConversation,
+  isConversationWriteBlockedForIdentity,
+  resolveOutgoingSenderType,
+  shouldInsertTicketTransmittedMessage,
+} from '@/lib/chat-logic';
+import { createChatMessageRecord } from '@/lib/chat-message-service';
+import {
+  extractCategoryFromSubcategoryKey,
+  resolveConversationRoutingWithMessage,
+} from '@/lib/chat-conversation-router';
 
-// POST /api/chat/messages - Créer un nouveau message
+// POST /api/chat/messages — création auto de conversation si conversationId absent
 export async function POST(request: NextRequest) {
   try {
     const identity = await resolveChatIdentity(request);
@@ -18,17 +30,67 @@ export async function POST(request: NextRequest) {
       raw = {};
     }
     const parsed = safeParseJson(raw, createChatMessageSchema);
-    if (!parsed.ok) {
-      return parsed.response;
-    }
+    if (!parsed.ok) return parsed.response;
     const body = parsed.data;
 
-    // Vérifier que la conversation existe
+    let conversationId = body.conversationId;
+    let createdNewConversation = false;
+
+    if (!conversationId) {
+      const conv = await prisma.conversation.create({
+        data: {
+          userId: identity.kind === 'user' ? identity.session.user.id : null,
+          category: body.category ?? null,
+          priority: 'NORMAL',
+          status: 'ACTIVE',
+          lastMessageAt: new Date(),
+        },
+      });
+      conversationId = conv.id;
+      createdNewConversation = true;
+    } else {
+      const existing = await prisma.conversation.findUnique({
+        where: { id: conversationId },
+      });
+      if (!existing) {
+        return NextResponse.json({ error: 'Conversation non trouvée' }, { status: 404 });
+      }
+
+      const priorUserMessages = await prisma.chatMessage.findMany({
+        where: { conversationId, senderType: 'USER' },
+        orderBy: { createdAt: 'asc' },
+        select: { content: true },
+        take: 10,
+      });
+
+      const newCategory = body.category ?? extractCategoryFromSubcategoryKey(body.category ?? null);
+      const routing = resolveConversationRoutingWithMessage({
+        lastMessageAt: existing.lastMessageAt,
+        currentCategory: existing.category,
+        newCategory,
+        priorUserMessages: priorUserMessages.map((m) => m.content),
+        newMessage: body.content,
+        forceNew: body.forceNew,
+      });
+
+      if (routing === 'new') {
+        const conv = await prisma.conversation.create({
+          data: {
+            userId: identity.kind === 'user' ? identity.session.user.id : existing.userId,
+            category: newCategory ?? existing.category,
+            priority: 'NORMAL',
+            status: 'ACTIVE',
+            lastMessageAt: new Date(),
+          },
+        });
+        conversationId = conv.id;
+        createdNewConversation = true;
+      }
+    }
+
     const conversation = await prisma.conversation.findUnique({
-      where: { id: body.conversationId },
-      include: {
-        user: true,
-      },
+      where: { id: conversationId },
+      include: { user: true },
     });
 
     if (!conversation) {
@@ -39,114 +101,78 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
-    // Vérifier les permissions
-    let senderType = body.senderType || 'USER';
-
     if (identity.kind === 'user') {
-      const session = identity.session;
-      const isAdmin = identity.role === 'ADMIN';
-      const isModerator = identity.role === 'MODERATOR';
-      const isOwner = conversation.userId === session.user.id;
-      const isAssigned = conversation.assignedTo === session.user.id;
-
-      if (!isAdmin && !isModerator && !isOwner && !isAssigned) {
+      if (
+        !canUserAccessConversation({
+          role: identity.role,
+          userId: identity.session.user.id,
+          conversationUserId: conversation.userId,
+          assignedTo: conversation.assignedTo,
+        })
+      ) {
         return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
       }
-
-      senderType = isModerator || isAdmin ? 'MODERATOR' : 'USER';
-    } else {
-      // Invité : autorisé uniquement sur les conversations sans userId
-      if (conversation.userId !== null) {
-        return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-      }
-      senderType = 'USER';
+    } else if (!canGuestAccessConversation(conversation.userId)) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    // Vérifier que la conversation n'est pas fermée
-    if (conversation.status === 'CLOSED' || conversation.status === 'ARCHIVED') {
-      const staffOk =
-        identity.kind === 'user' &&
-        (identity.role === 'ADMIN' || identity.role === 'MODERATOR');
-      if (!staffOk) {
-        return NextResponse.json({ error: 'Conversation fermée' }, { status: 400 });
-      }
+    const senderType = resolveOutgoingSenderType({
+      identityKind: identity.kind,
+      role: identity.kind === 'user' ? identity.role : undefined,
+    });
+
+    if (
+      isConversationWriteBlockedForIdentity(
+        conversation.status,
+        identity.kind,
+        identity.kind === 'user' ? identity.role : undefined,
+      )
+    ) {
+      return NextResponse.json({ error: 'Conversation fermée' }, { status: 400 });
     }
 
-    // Créer le message
-    const message = await prisma.chatMessage.create({
-      data: {
-        conversationId: body.conversationId,
-        userId: identity.kind === 'user' ? identity.session.user.id : null,
-        content: body.content,
-        senderType,
-        isRead: false,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            steamUsername: true,
-            steamAvatar: true,
-          },
-        },
-      },
+    const message = await createChatMessageRecord({
+      conversationId,
+      userId: identity.kind === 'user' ? identity.session.user.id : null,
+      content: body.content,
+      senderType,
     });
 
-    // Mettre à jour la conversation
-    await prisma.conversation.update({
-      where: { id: body.conversationId },
-      data: {
-        updatedAt: new Date(),
-        status: conversation.status === 'CLOSED' && senderType === 'USER' ? 'ACTIVE' : conversation.status,
-      },
-    });
-
-    // Ajouter un message système "ticket transmis" si c'est la première réponse de l'utilisateur après un message BOT
     if (senderType === 'USER') {
       const existingMessages = await prisma.chatMessage.findMany({
-        where: { conversationId: body.conversationId },
+        where: { conversationId },
         orderBy: { createdAt: 'asc' },
         select: { senderType: true, id: true },
       });
 
-      const hasBotMessage = existingMessages.some((m) => m.senderType === 'BOT');
-      const userMessagesBeforeThis = existingMessages.filter(
-        (m) => m.senderType === 'USER' && m.id !== message.id
-      );
-
-      if (hasBotMessage && userMessagesBeforeThis.length === 0) {
-        await prisma.chatMessage.create({
-          data: {
-            conversationId: body.conversationId,
-            userId: null,
-            content:
-              'Votre demande a bien été transmise à notre équipe. Un modérateur vous répondra rapidement. Merci de votre patience',
-            senderType: 'SYSTEM',
-            isRead: false,
-          },
+      if (shouldInsertTicketTransmittedMessage(existingMessages, message.id, senderType)) {
+        await createChatMessageRecord({
+          conversationId,
+          userId: null,
+          content:
+            'Votre demande a bien été transmise à notre équipe. Un modérateur vous répondra rapidement. Merci de votre patience',
+          senderType: 'SYSTEM',
         });
       }
     }
 
-    // Log de l'audit
     if (identity.kind === 'user') {
       await logger.info(identity.session.user.id, 'MESSAGE_SENT', {
         messageId: message.id,
-        conversationId: body.conversationId,
+        conversationId,
         senderType,
         contentLength: body.content.length,
       });
     }
 
-    // Réponse IA (Ollama) schedulée après envoi de la réponse HTTP.
-    // after() garantit l'exécution complète même en environnement serverless.
     if (senderType === 'USER') {
-      after(() => maybeGenerateAiReply(body.conversationId));
+      after(() => maybeGenerateAiReply(conversationId));
     }
 
-    return NextResponse.json(message, { status: 201 });
+    return NextResponse.json(
+      { ...message, conversationId, createdNewConversation },
+      { status: 201 },
+    );
   } catch (error) {
     logger.error('Erreur lors de la création du message:', error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });

@@ -4,6 +4,7 @@ import { prisma } from '~/prisma/prisma';
 import { logger, logAudit } from '@/lib/logger';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { adminModeratorPromoteSchema } from '@/lib/validation/schemas/admin-bodies';
+import { canPromoteToModerator } from '@/lib/chat-moderation-logic';
 
 // GET /api/admin/moderators - Récupérer la liste des modérateurs
 export async function GET(request: NextRequest) {
@@ -71,12 +72,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
     }
 
-    if (user.role === 'MODERATOR') {
-      return NextResponse.json({ error: 'L\'utilisateur est déjà modérateur' }, { status: 400 });
-    }
-
-    if (user.role === 'ADMIN') {
-      return NextResponse.json({ error: 'Impossible de modifier le rôle d\'un administrateur' }, { status: 400 });
+    const promoteCheck = canPromoteToModerator(user.role);
+    if (!promoteCheck.ok) {
+      return NextResponse.json({ error: promoteCheck.reason }, { status: promoteCheck.status });
     }
 
     // Promouvoir l'utilisateur

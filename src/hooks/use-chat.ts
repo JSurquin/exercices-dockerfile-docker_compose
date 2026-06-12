@@ -1,175 +1,198 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { queryKeys } from '@/lib/query-keys';
 import { useLocale } from '@/components/providers/locale-provider';
 import { playNotificationSound } from '@/lib/play-notification-sound';
+import {
+  countClientNotifyMessages,
+  shouldPlayClientNotificationSound,
+} from '@/lib/chat-notification-logic';
+import {
+  getUnreadMessageCount,
+  selectInitialConversationId,
+} from '@/lib/chat-logic';
+import { formatConversationDisplayTitle } from '@/lib/chat-conversation-router';
+import {
+  fetchConversationsList,
+  fetchMessagesPage,
+  flattenMessagePages,
+  persistConversationId,
+  readStoredConversationId,
+  resolveActiveConversationId,
+  subscribeStorage,
+} from '@/lib/chat-client';
 
-interface ChatMessage {
-  id: string;
-  content: string;
-  senderType: 'USER' | 'BOT' | 'AI' | 'MODERATOR' | 'SYSTEM';
-  createdAt: string;
-  userId?: string;
-  isRead: boolean;
-}
-
-interface Conversation {
-  id: string;
-  userId?: string;
-  status: string;
-  subject?: string;
-  messages: ChatMessage[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-const GUEST_CONVERSATION_KEY = 'guest_conversation_id';
+export type { ChatMessage, ConversationSummary } from '@/lib/chat-client-types';
 
 export function useChat(isOpen = false) {
   const queryClient = useQueryClient();
-  const { messages } = useLocale();
-  const t = messages.hooks.chat;
-  const [conversationId, setConversationId] = useState<string | null>(null);
-  const [initialized, setInitialized] = useState(false);
-  const [hasLocalConversation, setHasLocalConversation] = useState(false);
+  const { messages: t } = useLocale();
+  const chatT = t.hooks.chat;
 
-  // Détecter si un conversationId existe en localStorage (sans déclencher de requête)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const savedId = localStorage.getItem(GUEST_CONVERSATION_KEY);
-    if (savedId) {
-      setHasLocalConversation(true);
-      setConversationId(savedId);
-    }
-  }, []);
+  const storedId = useSyncExternalStore(
+    subscribeStorage,
+    readStoredConversationId,
+    () => null,
+  );
 
-  // Charger la liste des conversations uniquement si le chat est ouvert
-  const { data: conversationsData } = useQuery({
+  const [pickedConversationId, setPickedConversationId] = useState<string | null>(null);
+
+  const { data: conversationsData, isLoading: conversationsLoading } = useQuery({
     queryKey: queryKeys.conversations,
-    queryFn: async () => {
-      const res = await fetch('/api/chat/conversations');
-      if (!res.ok) return { conversations: [] };
-      const data = await res.json();
-      return Array.isArray(data) ? { conversations: data } : data;
-    },
+    queryFn: fetchConversationsList,
     enabled: isOpen,
     staleTime: 30_000,
   });
 
-  const conversations: Conversation[] = useMemo(
+  const conversations = useMemo(
     () => conversationsData?.conversations ?? [],
-    [conversationsData]
+    [conversationsData],
   );
 
-  // Initialiser l'ID de conversation depuis l'API une fois le chat ouvert
-  useEffect(() => {
-    if (!isOpen || initialized) return;
+  const conversationId = useMemo(
+    () =>
+      resolveActiveConversationId({
+        pickedId: pickedConversationId,
+        storedId,
+        conversations,
+        selectInitial: selectInitialConversationId,
+      }),
+    [pickedConversationId, conversations, storedId],
+  );
 
-    if (conversations.length > 0) {
-      const active = conversations.find((c) => c.status === 'ACTIVE') ?? conversations[0];
-      if (active) {
-        setConversationId(active.id);
-        localStorage.setItem(GUEST_CONVERSATION_KEY, active.id);
-        setInitialized(true);
-        return;
-      }
-    }
+  const setConversationId = useCallback((id: string | null) => {
+    setPickedConversationId(id);
+    persistConversationId(id);
+  }, []);
 
-    setInitialized(true);
-  }, [conversations, initialized, isOpen]);
-
-  // Charger la conversation courante avec polling uniquement si le chat est ouvert
-  const { data: currentConversation } = useQuery<Conversation>({
-    queryKey: queryKeys.conversation(conversationId),
-    queryFn: async () => {
-      if (!conversationId) throw new Error(t.noConversationId);
-      const res = await fetch(`/api/chat/conversations/${conversationId}`);
-      if (!res.ok) throw new Error(t.fetchConversationError);
-      return res.json();
-    },
+  const {
+    data: messagesData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: messagesLoading,
+    isFetching: messagesFetching,
+  } = useInfiniteQuery({
+    queryKey: queryKeys.conversationMessages(conversationId),
+    queryFn: ({ pageParam }) => fetchMessagesPage(conversationId!, pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? lastPage.nextCursor : undefined,
     enabled: !!conversationId && isOpen,
     refetchInterval: isOpen && conversationId ? 15_000 : false,
     refetchIntervalInBackground: false,
   });
 
-  // Track staff message count to play a sound when a new one arrives
+  const allMessages = useMemo(
+    () => flattenMessagePages(messagesData?.pages),
+    [messagesData],
+  );
+
+  const staffMsgCount = countClientNotifyMessages(allMessages);
   const prevStaffMsgCountRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!currentConversation) return;
-    const staffMsgCount = currentConversation.messages.filter(
-      (m) => m.senderType === 'MODERATOR' || m.senderType === 'BOT' || m.senderType === 'SYSTEM',
-    ).length;
-
     if (
-      prevStaffMsgCountRef.current !== null &&
-      staffMsgCount > prevStaffMsgCountRef.current
+      shouldPlayClientNotificationSound({
+        previousCount: prevStaffMsgCountRef.current,
+        currentCount: staffMsgCount,
+      })
     ) {
       playNotificationSound(660, 400, 0.25);
     }
-
     prevStaffMsgCountRef.current = staffMsgCount;
-  }, [currentConversation]);
-
-  const createConversationMutation = useMutation({
-    mutationFn: async (initialMessage: string) => {
-      const res = await fetch('/api/chat/conversations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subject: 'Support',
-          category: 'SUPPORT',
-          initialMessage,
-        }),
-      });
-      if (!res.ok) throw new Error(t.createConversationError);
-      return res.json();
-    },
-    onSuccess: (data) => {
-      const newConvId = data.id;
-      setConversationId(newConvId);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(GUEST_CONVERSATION_KEY, newConvId);
-      }
-      queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
-      queryClient.invalidateQueries({ queryKey: queryKeys.conversation(newConvId) });
-    },
-  });
+  }, [staffMsgCount]);
 
   const sendMessageMutation = useMutation({
-    mutationFn: async (content: string) => {
-      if (!conversationId) {
-        return createConversationMutation.mutateAsync(content);
-      }
+    mutationFn: async (params: {
+      content: string;
+      category?: string;
+      forceNew?: boolean;
+    }) => {
       const res = await fetch('/api/chat/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversationId, content }),
+        body: JSON.stringify({
+          conversationId: conversationId ?? undefined,
+          content: params.content,
+          category: params.category,
+          forceNew: params.forceNew,
+        }),
       });
-      if (!res.ok) throw new Error(t.sendMessageError);
+      if (!res.ok) throw new Error(chatT.sendMessageError);
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.conversation(conversationId) });
+    onSuccess: (data: { conversationId: string; createdNewConversation?: boolean }) => {
+      if (data.createdNewConversation || data.conversationId !== conversationId) {
+        setConversationId(data.conversationId);
+      }
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.conversationMessages(data.conversationId),
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
     },
   });
 
-  const getUnreadCount = () => {
-    if (!currentConversation) return 0;
-    return currentConversation.messages.filter(
-      (m) => !m.isRead && m.senderType !== 'USER'
-    ).length;
-  };
+  const startNewConversation = useCallback(() => {
+    setPickedConversationId(null);
+    persistConversationId(null);
+  }, []);
+
+  const conversationListItems = useMemo(
+    () =>
+      conversations.map((conv) => ({
+        id: conv.id,
+        title: formatConversationDisplayTitle({
+          subject: conv.subject ?? null,
+          summary: conv.summary ?? null,
+          messages: conv.messages,
+        }),
+        lastMessageAt: conv.lastMessageAt ?? conv.updatedAt,
+        status: conv.status,
+        unread: getUnreadMessageCount(conv.messages ?? []),
+      })),
+    [conversations],
+  );
+
+  const currentConversation = useMemo(() => {
+    if (!conversationId) return null;
+    const meta = conversations.find((c) => c.id === conversationId);
+    return {
+      id: conversationId,
+      status: meta?.status ?? 'ACTIVE',
+      subject: meta?.subject,
+      summary: meta?.summary,
+      messages: allMessages,
+      createdAt: meta?.createdAt ?? new Date().toISOString(),
+      updatedAt: meta?.updatedAt ?? new Date().toISOString(),
+      lastMessageAt: meta?.lastMessageAt,
+    };
+  }, [conversationId, conversations, allMessages]);
 
   return {
     conversations,
+    conversationListItems,
     currentConversation,
     conversationId,
-    sendMessage: (content: string) => sendMessageMutation.mutateAsync(content),
-    getUnreadCount,
-    isLoading: createConversationMutation.isPending || sendMessageMutation.isPending,
+    setConversationId,
+    startNewConversation,
+    sendMessage: (content: string, options?: { category?: string; forceNew?: boolean }) =>
+      sendMessageMutation.mutateAsync({ content, ...options }),
+    loadOlderMessages: fetchNextPage,
+    hasOlderMessages: hasNextPage,
+    isLoadingOlderMessages: isFetchingNextPage,
+    getUnreadCount: () => getUnreadMessageCount(allMessages),
+    isLoading:
+      conversationsLoading ||
+      messagesLoading ||
+      sendMessageMutation.isPending,
+    isRefreshingMessages: messagesFetching && !messagesLoading,
   };
 }

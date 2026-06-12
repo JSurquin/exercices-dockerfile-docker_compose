@@ -24,6 +24,9 @@ export interface ConversationWithMessages {
   createdAt: Date;
   updatedAt: Date;
   closedAt: Date | null;
+  summary?: string | null;
+  lastMessageAt?: Date | null;
+  deletedAt?: Date | null;
   user?: {
     id: string;
     name: string | null;
@@ -51,6 +54,7 @@ export interface ChatMessageWithUser {
   isRead: boolean;
   createdAt: Date;
   updatedAt: Date;
+  metadata?: Record<string, unknown> | null;
   user?: {
     id: string;
     name: string | null;

@@ -6,6 +6,7 @@ import { emailService } from '@/lib/email';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { adminModeratorInviteSchema } from '@/lib/validation/schemas/admin-bodies';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
+import { canInviteAsModerator } from '@/lib/chat-moderation-logic';
 
 function generateTempPassword(length = 16): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
@@ -38,11 +39,9 @@ export async function POST(request: NextRequest) {
     const existingUser = await prisma.user.findUnique({ where: { email } });
 
     if (existingUser) {
-      if (existingUser.role === 'MODERATOR' || existingUser.role === 'ADMIN') {
-        return NextResponse.json(
-          { error: 'Cet utilisateur est déjà modérateur ou administrateur' },
-          { status: 400 }
-        );
+      const inviteCheck = canInviteAsModerator(existingUser.role);
+      if (!inviteCheck.ok) {
+        return NextResponse.json({ error: inviteCheck.reason }, { status: inviteCheck.status });
       }
 
       const updatedUser = await prisma.user.update({
