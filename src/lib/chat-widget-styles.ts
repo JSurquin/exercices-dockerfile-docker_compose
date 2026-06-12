@@ -60,12 +60,12 @@ export function chatWidgetPopupContainerClass(isOpen: boolean): string {
     sm:left-auto sm:right-6 sm:w-[390px]
     chat-glass rounded-2xl shadow-2xl z-[9999]
     flex flex-col overflow-hidden
-    transition-all duration-300 ease-out
+    transition-[opacity,transform] duration-300 ease-out
     pointer-events-auto
   `;
   return isOpen
-    ? `${base} opacity-100 translate-y-0 scale-100`
-    : `${base} opacity-0 translate-y-4 scale-95 pointer-events-none`;
+    ? `${base} opacity-100 translate-y-0`
+    : `${base} opacity-0 translate-y-4 pointer-events-none`;
 }
 
 export function chatWidgetHeaderClass(): string {
@@ -87,7 +87,12 @@ export function chatWidgetFabButtonClass(): string {
 }
 
 export function chatWidgetUnreadBadgeClass(): string {
-  return 'absolute -top-2 -left-2 h-6 w-6 rounded-full bg-red-500 hover:bg-red-500 text-white text-xs flex items-center justify-center animate-pulse z-10';
+  return 'absolute -top-2 -left-2 h-6 w-6 rounded-full bg-red-500 hover:bg-red-500 text-white text-xs flex items-center justify-center z-10';
+}
+
+/** Animation d’entrée uniquement pour les messages pas encore affichés. */
+export function chatWidgetMessageEnterClass(isNew: boolean): string {
+  return isNew ? 'message-slide-in' : '';
 }
 
 export function chatWidgetAiTypingBubbleClass(): string {

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -265,22 +264,17 @@ export default function AdminChatPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <div className="chat-page-enter">
         <h1 className="text-2xl sm:text-3xl font-bold mb-1 flex items-center gap-2 text-white">
           <ChatBubbleLeftRightIcon className="w-7 h-7 sm:w-8 sm:h-8 text-theme-accent shrink-0" />
           {messages.admin.chat.title}
         </h1>
         <p className="text-slate-400">{messages.admin.chat.subtitle}</p>
-      </motion.div>
+      </div>
 
       {/* Stats */}
       {chatStats && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 lg:grid-cols-4 gap-4"
-        >
+        <div className="chat-page-enter grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="bg-slate-800/50 border-slate-700">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -325,7 +319,7 @@ export default function AdminChatPage() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       )}
 
       <Tabs defaultValue="conversations" className="space-y-6">

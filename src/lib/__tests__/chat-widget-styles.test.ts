@@ -5,6 +5,7 @@ import {
   chatWidgetHeaderClass,
   chatWidgetMessageAlignment,
   chatWidgetMessageBubbleClass,
+  chatWidgetMessageEnterClass,
   chatWidgetPopupContainerClass,
   chatWidgetSendButtonClass,
   chatWidgetSenderLabelClass,
@@ -183,5 +184,12 @@ describe('shouldShowWidgetAiTyping', () => {
         baseMessageCount: 3,
       }),
     ).toBe(false);
+  });
+});
+
+describe('chatWidgetMessageEnterClass', () => {
+  it('anime uniquement les nouveaux messages', () => {
+    expect(chatWidgetMessageEnterClass(true)).toBe('message-slide-in');
+    expect(chatWidgetMessageEnterClass(false)).toBe('');
   });
 });

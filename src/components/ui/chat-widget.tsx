@@ -33,6 +33,7 @@ import {
   chatWidgetTextareaClass,
   chatWidgetTimestampClass,
   chatWidgetUnreadBadgeClass,
+  chatWidgetMessageEnterClass,
   isWidgetMessageFromViewer,
   shouldShowWidgetAiTyping,
   shouldShowWidgetUnreadBadge,
@@ -177,6 +178,13 @@ export function ChatWidget() {
   const aiTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevScrollHeightRef = useRef(0);
   const initialNavDoneRef = useRef(false);
+  const seenMessageIdsRef = useRef<Set<string>>(new Set());
+  const seenMessagesConversationRef = useRef<string | null>(null);
+
+  if (conversationId !== seenMessagesConversationRef.current) {
+    seenMessageIdsRef.current = new Set();
+    seenMessagesConversationRef.current = conversationId;
+  }
 
   const hasExistingMessages = (currentConversation?.messages?.length ?? 0) > 0;
   const recentConversation = conversationListItems[0] ?? null;
@@ -623,11 +631,15 @@ export function ChatWidget() {
           const isModerator = msg.senderType === "MODERATOR";
           const isSystem = msg.senderType === "SYSTEM";
           const bubbleSender = isUser ? "USER" : msg.senderType;
+          const isNewMessage = !seenMessageIdsRef.current.has(msg.id);
+          if (isNewMessage) {
+            seenMessageIdsRef.current.add(msg.id);
+          }
 
           return (
             <div
               key={msg.id}
-              className={`flex ${chatWidgetMessageAlignment(isUser)} message-slide-in`}
+              className={`flex ${chatWidgetMessageAlignment(isUser)} ${chatWidgetMessageEnterClass(isNewMessage)}`}
             >
               <div className={chatWidgetMessageBubbleClass(bubbleSender)}>
                 {isModerator && chatWidgetSenderLabelClass("MODERATOR") && (
@@ -700,9 +712,9 @@ export function ChatWidget() {
           <div className="flex justify-start">
             <div className="bg-muted border rounded-2xl rounded-tl-sm px-4 py-3">
               <div className="flex space-x-1.5">
-                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
+                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
+                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
               </div>
             </div>
           </div>
@@ -896,10 +908,7 @@ export function ChatWidget() {
           </button>
 
           {!isOpen && (
-            <>
-              <div className="absolute inset-0 rounded-full bg-cta-gradient chat-pulse-ring opacity-20 pointer-events-none" />
-              <div className="absolute inset-0 rounded-full bg-cta-gradient animate-pulse opacity-10 pointer-events-none" />
-            </>
+            <div className="absolute inset-0 rounded-full bg-cta-gradient chat-pulse-ring opacity-20 pointer-events-none" />
           )}
         </div>
       </div>

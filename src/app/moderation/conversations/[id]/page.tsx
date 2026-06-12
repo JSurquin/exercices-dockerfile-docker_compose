@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -63,6 +62,13 @@ export default function ConversationPage() {
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const prevUserMsgCountRef = useRef<number | null>(null);
+  const seenMessageIdsRef = useRef<Set<string>>(new Set());
+  const seenMessagesConversationRef = useRef<string | null>(null);
+
+  if (params.id !== seenMessagesConversationRef.current) {
+    seenMessageIdsRef.current = new Set();
+    seenMessagesConversationRef.current = params.id as string;
+  }
 
   const { data: conversation, isLoading: loading, refetch: refetchConversation } = useQuery({
     queryKey: queryKeys.moderationConversation(params.id as string),
@@ -264,11 +270,7 @@ export default function ConversationPage() {
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl">
 
       {/* ── Header ── */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6"
-      >
+      <div className="chat-page-enter flex items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Button
             variant="outline"
@@ -296,7 +298,7 @@ export default function ConversationPage() {
             {conversation.priority}
           </Badge>
         </div>
-      </motion.div>
+      </div>
 
       {/* ── Layout principal ── */}
       <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 lg:gap-6 lg:items-start">
@@ -364,13 +366,16 @@ export default function ConversationPage() {
                   Aucun message dans cette conversation.
                 </div>
               ) : (
-                conversation.messages.map((msg: ChatMessageWithUser) => (
-                  <motion.div
+                conversation.messages.map((msg: ChatMessageWithUser) => {
+                  const isNewMessage = !seenMessageIdsRef.current.has(msg.id);
+                  if (isNewMessage) {
+                    seenMessageIdsRef.current.add(msg.id);
+                  }
+
+                  return (
+                  <div
                     key={msg.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className={`flex ${msg.senderType === 'USER' ? 'justify-start' : 'justify-end'}`}
+                    className={`flex ${msg.senderType === 'USER' ? 'justify-start' : 'justify-end'} ${isNewMessage ? 'message-slide-in' : ''}`}
                   >
                     <div className="max-w-[85%] sm:max-w-[72%] min-w-0">
                       <div className="flex items-center gap-1.5 mb-1 flex-wrap">
@@ -390,8 +395,9 @@ export default function ConversationPage() {
                         </p>
                       </div>
                     </div>
-                  </motion.div>
-                ))
+                  </div>
+                );
+                })
               )}
               <div ref={messagesEndRef} />
             </div>
