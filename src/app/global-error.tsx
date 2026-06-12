@@ -3,23 +3,32 @@
 import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { defaultLocale, getMessages, locales, type Locale } from "@/lib/i18n";
 
 interface GlobalErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
 }
 
-// Textes en fallback : global-error remplace le layout, useLocale n'est pas disponible
-const messages = {
-  title: "Erreur critique",
-  message: "Une erreur critique s'est produite. L'application doit être rechargée.",
-  errorDetails: "Détails de l'erreur :",
-  reload: "Recharger l'application",
-  home: "Retour à l'accueil",
-  supportDesc: "Si ce problème persiste, contactez notre support",
-};
+function detectErrorLocale(): Locale {
+  if (typeof window === "undefined") return defaultLocale;
+
+  const storedLocale = localStorage.getItem("user-locale-preference");
+  if (storedLocale && locales.includes(storedLocale as Locale)) {
+    return storedLocale as Locale;
+  }
+
+  const browserLang = navigator.language.toLowerCase();
+  if (browserLang.startsWith("fr")) return "fr";
+  if (browserLang.startsWith("en")) return "en";
+  if (browserLang.startsWith("zh") || browserLang.startsWith("cn")) return "cn";
+
+  return defaultLocale;
+}
 
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
+  const messages = getMessages(detectErrorLocale());
+
   useEffect(() => {
     console.error("Global error:", error);
     Sentry.captureException(error);
@@ -48,21 +57,21 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             </div>
 
             {/* Error Message */}
-            <h1 className="text-2xl font-bold mb-4">{messages.title}</h1>
-            <p className="text-zinc-600 dark:text-zinc-400 mb-6">{messages.message}</p>
+            <h1 className="text-2xl font-bold mb-4">{messages.globalError.title}</h1>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-6">{messages.globalError.message}</p>
 
             {/* Error Details (en mode développement) */}
             {process.env.NODE_ENV === "development" && (
               <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
                 <h3 className="font-semibold text-red-900 dark:text-red-100 mb-2 text-sm">
-                  {messages.errorDetails}
+                  {messages.globalError.errorDetails}
                 </h3>
                 <pre className="text-xs text-red-700 dark:text-red-300 overflow-auto">
                   {error.message}
                 </pre>
                 {error.digest && (
                   <p className="text-xs text-red-600 dark:text-red-400 mt-2">
-                    Error ID: {error.digest}
+                    {messages.error.errorId} {error.digest}
                   </p>
                 )}
               </div>
@@ -74,21 +83,21 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 onClick={reset}
                 className="w-full bg-cta-gradient hover:brightness-110 text-white"
               >
-                {messages.reload}
+                {messages.globalError.reload}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => (window.location.href = "/")}
                 className="w-full"
               >
-                {messages.home}
+                {messages.globalError.home}
               </Button>
             </div>
 
             {/* Support Info */}
             <div className="mt-8 p-4 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-lg">
               <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                {messages.supportDesc}{" "}
+                {messages.globalError.supportDesc}{" "}
                 <a
                   href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@moonskin.gg"}`}
                   className="text-theme-accent hover:underline"

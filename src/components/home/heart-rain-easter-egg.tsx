@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface FallingHeart {
   id: number;
@@ -33,6 +34,7 @@ function spawnHearts(batchId: number): FallingHeart[] {
 }
 
 export function HeartRainEasterEgg() {
+  const { messages } = useLocale();
   const [hearts, setHearts] = useState<FallingHeart[]>([]);
   const [pulsing, setPulsing] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -86,7 +88,7 @@ export function HeartRainEasterEgg() {
           'rounded-full p-1 transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent/50',
           pulsing && 'heart-easter-egg-pulse',
         )}
-        aria-label="Merci à nos partenaires"
+        aria-label={messages.partners.thanksAria}
       >
         <Heart className="h-8 w-8 text-theme-accent" strokeWidth={1.5} />
       </button>

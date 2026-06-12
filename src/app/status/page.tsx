@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useLocale } from "@/components/providers/locale-provider";
 import { Messages } from "~/utils/types";
+import { formatMessage } from "@/lib/i18n";
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
@@ -81,7 +82,7 @@ const getStatusText = (status: ServiceStatus, messages: Messages) => {
     case "maintenance":
       return messages.status.overall.maintenance;
     default:
-      return "Unknown";
+      return messages.status.overall.unknown;
   }
 };
 
@@ -103,7 +104,8 @@ const getStatusColor = (status: ServiceStatus) => {
 };
 
 export default function StatusPage() {
-  const { messages } = useLocale();
+  const { messages, locale } = useLocale();
+  const dateLocaleTag = locale === "en" ? "en-GB" : locale === "cn" ? "zh-CN" : "fr-FR";
   const [services] = useState<Service[]>([
     {
       name: messages.status.services.website.name,
@@ -155,31 +157,31 @@ export default function StatusPage() {
     },
   ]);
 
-  const [incidents] = useState<Incident[]>([
-    {
-      id: "inc_001",
-      title: "Lenteurs API Steam", // TODO: translate
-      status: "monitoring",
-      impact: "low",
-      createdAt: new Date("2024-09-21T10:30:00Z"),
-      description:
-        "Nous observons des temps de réponse plus lents que d'habitude avec l&apos;API Steam, pouvant affecter les estimations de prix.",
-      updates: [
-        {
-          time: new Date("2024-09-21T11:15:00Z"),
-          message:
-            "Nous continuons de surveiller la situation. Les services fonctionnent normalement mais avec des délais légèrement plus longs.",
-          status: "monitoring",
-        },
-        {
-          time: new Date("2024-09-21T10:30:00Z"),
-          message:
-            "Nous avons identifié des lenteurs avec l&apos;API Steam. Notre équipe technique enquête.",
-          status: "identified",
-        },
-      ],
-    },
-  ]);
+  const incidents = useMemo<Incident[]>(() => {
+    const sampleIncident = messages.status.incidents.sample;
+    return [
+      {
+        id: "inc_001",
+        title: sampleIncident.title,
+        status: "monitoring",
+        impact: "low",
+        createdAt: new Date("2024-09-21T10:30:00Z"),
+        description: sampleIncident.description,
+        updates: [
+          {
+            time: new Date("2024-09-21T11:15:00Z"),
+            message: sampleIncident.updates.monitoring,
+            status: "monitoring",
+          },
+          {
+            time: new Date("2024-09-21T10:30:00Z"),
+            message: sampleIncident.updates.identified,
+            status: "identified",
+          },
+        ],
+      },
+    ];
+  }, [messages]);
 
   const [overallStatus, setOverallStatus] =
     useState<ServiceStatus>("operational");
@@ -329,8 +331,8 @@ export default function StatusPage() {
                           </Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          <p>Uptime: {service.uptime}%</p>
-                          <p>Latence: {service.responseTime}ms</p>
+                          <p>{formatMessage(messages.status.services.metrics.uptime, { value: service.uptime })}</p>
+                          <p>{formatMessage(messages.status.services.metrics.latency, { value: service.responseTime })}</p>
                         </div>
                       </div>
                     </div>
@@ -338,7 +340,7 @@ export default function StatusPage() {
                     {/* Uptime bar */}
                     <div className="mt-4">
                       <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                        <span>Disponibilité (30 jours)</span> {/* TODO: translate */}
+                        <span>{messages.status.services.metrics.availability30d}</span>
                         <span>{service.uptime}%</span>
                       </div>
                       <Progress value={service.uptime} className="h-2" />
@@ -384,7 +386,7 @@ export default function StatusPage() {
                                 : "border-red-500 text-red-700"
                             }
                           >
-                            Impact{" "}
+                            {messages.status.incidents.impactLabel}{" "}
                             {incident.impact === "low"
                               ? messages.status.incidents.impact.low
                               : incident.impact === "medium"
@@ -427,10 +429,16 @@ export default function StatusPage() {
                           >
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-sm font-medium">
-                                {update.time.toLocaleString("fr-FR")}
+                                {update.time.toLocaleString(dateLocaleTag)}
                               </span>
                               <span className="text-xs text-muted-foreground">
-                                {update.status}
+                                {update.status === "investigating"
+                                  ? messages.status.incidents.status.investigating
+                                  : update.status === "identified"
+                                  ? messages.status.incidents.status.identified
+                                  : update.status === "monitoring"
+                                  ? messages.status.incidents.status.monitoring
+                                  : messages.status.incidents.status.resolved}
                               </span>
                             </div>
                             <p className="text-sm text-muted-foreground">

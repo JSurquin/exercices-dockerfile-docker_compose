@@ -10,8 +10,11 @@ import {
   LEVELS,
   XP_RATE,
   getTierReward,
+  getTierRewardDescription,
+  getLevelName,
   TIERS_PER_LEVEL,
   type LevelDef,
+  type LevelLocale,
 } from "@/lib/level-system";
 import {
   homeReveal,
@@ -24,6 +27,7 @@ import {
 import { SectionBottomFade } from "@/components/home/section-bottom-fade";
 import { useAuth } from "@/components/providers/auth-provider";
 import { FragmentAmount } from "@/components/ui/level-badge";
+import { formatMessage } from "@/lib/i18n";
 
 const LEVEL_BADGE_SIZES = [44, 58, 74, 92, 112, 136] as const;
 
@@ -43,83 +47,44 @@ function formatBonus(level: LevelDef): string {
 
 function getShortRewardSummary(
   levelIndex: number,
-  locale: "fr" | "en"
+  locale: LevelLocale,
+  labels: {
+    rewardFragments: string;
+    rewardBonus: string;
+    firstTiers: string;
+  },
 ): string {
   const level = LEVELS[levelIndex];
   const firstReward = getTierReward(levelIndex * TIERS_PER_LEVEL);
   const parts: string[] = [];
 
   if (firstReward.fragments) {
-    parts.push(`+${firstReward.fragments} fragments`);
+    parts.push(formatMessage(labels.rewardFragments, { count: firstReward.fragments }));
   }
   if (level.saleBonus > 0) {
-    parts.push(`${formatBonus(level)} bonus`);
+    parts.push(formatMessage(labels.rewardBonus, { bonus: formatBonus(level) }));
   }
   if (parts.length === 0) {
-    return locale === "en" ? "First tiers" : "Premiers paliers";
+    return labels.firstTiers;
   }
   return parts.join(", ");
 }
 
-function getLevelTierRewards(levelIndex: number, locale: "fr" | "en"): string[] {
+function getLevelTierRewards(levelIndex: number, locale: LevelLocale): string[] {
   return Array.from({ length: TIERS_PER_LEVEL }, (_, i) => {
     const reward = getTierReward(levelIndex * TIERS_PER_LEVEL + i);
-    return locale === "en" ? reward.descriptionEn : reward.description;
+    return getTierRewardDescription(reward, locale);
   });
 }
-
-const COPY = {
-  fr: {
-    badge: "Programme fidélité",
-    title: "Montez en niveau,",
-    titleHighlight: " gagnez plus",
-    tagline: "Vendez → gagnez de l'XP → débloquez des récompenses.",
-    xpRate: (rate: string) => `1 XP = ${rate} € vendus`,
-    fragmentsTitle: "Fragments, comment ça marche ?",
-    fragmentsIntro:
-      "Les fragments sont la monnaie de récompense de MoonSkin. Tu en gagnes automatiquement à chaque vente, selon ton niveau de fidélité.",
-    fragmentsBullet1: "Utilise tes fragments pour entrer dans les giveaways",
-    fragmentsBullet2: "Plus tu as de fragments, plus tu as de chances de gagner",
-    fragmentsBullet3: "Chaque palier débloque un bonus de fragments sur tes ventes",
-    fragmentsFooter:
-      "Les fragments ne se dépensent pas, ils s'accumulent et te donnent des tickets d'entrée aux giveaways exclusifs MoonSkin.",
-    fragmentsCta: "Voir les giveaways actifs",
-    fragmentsBalance: "Ton solde de fragments",
-    cta: "Commencer à vendre",
-    bonusLabel: "Bonus vente",
-    xpRequired: "XP requis",
-    fullRewards: "Récompenses complètes",
-  },
-  en: {
-    badge: "Loyalty program",
-    title: "Level up,",
-    titleHighlight: " earn more",
-    tagline: "Sell → earn XP → unlock rewards.",
-    xpRate: (rate: string) => `1 XP = ${rate} € sold`,
-    fragmentsTitle: "Fragments, how does it work?",
-    fragmentsIntro:
-      "Fragments are MoonSkin's reward currency. You earn them automatically with every sale, based on your loyalty level.",
-    fragmentsBullet1: "Use your fragments to enter giveaways",
-    fragmentsBullet2: "The more fragments you have, the better your chances of winning",
-    fragmentsBullet3: "Each tier unlocks a fragment bonus on your sales",
-    fragmentsFooter:
-      "Fragments are not spent, they accumulate and earn you entry tickets to exclusive MoonSkin giveaways.",
-    fragmentsCta: "View active giveaways",
-    fragmentsBalance: "Your fragment balance",
-    cta: "Start selling",
-    bonusLabel: "Sale bonus",
-    xpRequired: "XP required",
-    fullRewards: "Full rewards",
-  },
-} as const;
 
 const FRAGMENT_BULLETS = ["fragmentsBullet1", "fragmentsBullet2", "fragmentsBullet3"] as const;
 
 export function LevelsSection() {
-  const { locale } = useLocale();
+  const { locale, messages } = useLocale();
+  const t = messages.homeLevels;
+  const levelLabels = messages.levelHelp;
+  const lang = locale as LevelLocale;
   const { user } = useAuth();
-  const t = COPY[locale as keyof typeof COPY] ?? COPY.en;
-  const lang = (locale === "fr" ? "fr" : "en") as "fr" | "en";
   const xpPerEuro = (1 / XP_RATE).toFixed(2);
 
   return (
@@ -142,15 +107,19 @@ export function LevelsSection() {
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">{t.tagline}</p>
-          <p className="text-sm text-muted-foreground mt-2">{t.xpRate(xpPerEuro)}</p>
+          <p className="text-sm text-muted-foreground mt-2">{formatMessage(t.xpRate, { rate: xpPerEuro })}</p>
         </div>
 
         {/* Cosmic levels pyramid */}
         <div className={`mb-10 ${homeReveal.up} ${homeStagger(1)}`}>
           <div className="flex flex-wrap items-end justify-center md:justify-between gap-4 sm:gap-6 md:gap-7 lg:gap-8 w-full max-w-6xl mx-auto px-0">
             {LEVELS.map((level, i) => {
-              const name = lang === "en" ? level.nameEn : level.name;
-              const shortSummary = getShortRewardSummary(level.index, lang);
+              const name = getLevelName(level.index, lang);
+              const shortSummary = getShortRewardSummary(level.index, lang, {
+                rewardFragments: t.rewardFragments,
+                rewardBonus: levelLabels.rewardBonus,
+                firstTiers: levelLabels.firstTiers,
+              });
               const tierRewards = getLevelTierRewards(level.index, lang);
               const badgeTier = Math.min(level.index, 3);
 
@@ -203,7 +172,7 @@ export function LevelsSection() {
             <div className="flex flex-1 items-center justify-center w-full py-4 lg:min-h-0">
               <img
                 src="/levels/FRAGMENTMS.png"
-                alt={locale === "fr" ? "Fragments" : "Fragments"}
+                alt={t.fragmentsAlt}
                 className="fragment-hero w-auto max-w-[240px] sm:max-w-[280px] lg:max-w-[300px] h-auto max-h-[180px] sm:max-h-[220px] lg:max-h-[260px] object-contain"
                 draggable={false}
               />

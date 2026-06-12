@@ -11,9 +11,12 @@ import { LevelBadge } from "@/components/ui/level-badge";
 import {
   getLevelInfo,
   getTierReward,
+  getTierRewardDescription,
   TIERS_PER_LEVEL,
+  type LevelLocale,
 } from "@/lib/level-system";
 import { useLocale } from "@/components/providers/locale-provider";
+import { formatMessage } from "@/lib/i18n";
 
 interface LevelProgressBarProps {
   xp: number;
@@ -30,8 +33,9 @@ export function LevelProgressBar({
   className,
   barClassName,
 }: LevelProgressBarProps) {
-  const { locale } = useLocale();
-  const isFr = locale !== "en";
+  const { locale, messages } = useLocale();
+  const lang = locale as LevelLocale;
+  const t = messages.levelHelp;
 
   const info = getLevelInfo(xp);
   const projectedInfo = getLevelInfo(xp + pendingXP);
@@ -45,7 +49,7 @@ export function LevelProgressBar({
     ? Math.max(100 - currentPct, 0)
     : Math.max(projectedPct - currentPct, 0);
 
-  const tierLabel = (n: number) => (isFr ? `Palier ${n}` : `Tier ${n}`);
+  const tierLabel = (n: number) => formatMessage(t.tier, { n });
 
   return (
     <div className={cn("relative pt-7", className)}>
@@ -55,7 +59,7 @@ export function LevelProgressBar({
             const position = ((i + 1) / TIERS_PER_LEVEL) * 100;
             const globalTier = info.levelIndex * TIERS_PER_LEVEL + i;
             const reward = getTierReward(globalTier);
-            const rewardText = isFr ? reward.description : reward.descriptionEn;
+            const rewardText = getTierRewardDescription(reward, lang);
             const isReached = info.tierIndex > i;
             const isCurrent = info.tierIndex === i;
 

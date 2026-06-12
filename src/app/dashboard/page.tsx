@@ -59,7 +59,8 @@ import {
 import CountUp from "react-countup";
 import { formatCentsToCurrency } from "@/lib/currency-converter";
 import { ConvertedPrice } from "@/components/ui/converted-price";
-import { getLevelInfo, getLevelName, LEVELS } from "@/lib/level-system";
+import { getLevelInfo, getLevelName, LEVELS, type LevelLocale } from "@/lib/level-system";
+import { formatMessage } from "@/lib/i18n";
 import { LevelHelpPopover } from "@/components/ui/level-help-popover";
 import { LevelBadge, FragmentBadge } from "@/components/ui/level-badge";
 import { LevelProgressBar } from "@/components/ui/level-progress-bar";
@@ -224,7 +225,7 @@ export default function DashboardPage() {
       .then((r) => r.json())
       .then((j) => {
         if (j.ok && j.fragments) {
-          toast.success(`+${j.fragments} fragments`, {
+          toast.success(formatMessage(messages.dashboard.dailyVisitFragments, { count: j.fragments }), {
             description: messages.dashboard.dailyVisitClaimed,
             duration: 3000,
           });
@@ -237,7 +238,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (searchParams.get('steam_login') === 'success') {
       toast.success(messages.toast.steamLoginSuccess, {
-        description: `${messages.dashboard.welcome} ${data?.user?.name || 'sur MoonSkin'} !`,
+        description: `${messages.dashboard.welcome} ${data?.user?.name || messages.dashboard.welcomeOnPlatform} !`,
         duration: 4000,
       });
       
@@ -404,9 +405,12 @@ export default function DashboardPage() {
 
   const userXP = user?.xp ?? 0;
   const levelInfo = getLevelInfo(userXP);
+  const levelLocale = appLocale as LevelLocale;
   const nextLevelName = !levelInfo.isMaxLevel && levelInfo.levelIndex < LEVELS.length - 1
-    ? getLevelName(levelInfo.levelIndex + 1)
+    ? getLevelName(levelInfo.levelIndex + 1, levelLocale)
     : null;
+  const currentLevelName = getLevelName(levelInfo.levelIndex, levelLocale);
+  const lp = messages.dashboard.levelProgress;
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5">
@@ -446,14 +450,18 @@ export default function DashboardPage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
                         <h3 className="text-sm font-semibold sm:text-base">
-                          {levelInfo.level.name}, Palier {levelInfo.tierIndex + 1}/5
+                          {currentLevelName},{" "}
+                          {formatMessage(lp.tierLabel, {
+                            current: levelInfo.tierIndex + 1,
+                            total: 5,
+                          })}
                         </h3>
                         <LevelHelpPopover />
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {levelInfo.saleBonus > 0
-                          ? `Bonus vendeur actif : ${levelInfo.saleBonusPct} sur tes ventes`
-                          : "Aucun bonus vendeur encore"}
+                          ? formatMessage(lp.saleBonusActive, { bonus: levelInfo.saleBonusPct })
+                          : lp.noSaleBonus}
                       </p>
                     </div>
                     <div className="text-right shrink-0">
@@ -461,11 +469,16 @@ export default function DashboardPage() {
                         {levelInfo.cappedXP.toLocaleString()} / {levelInfo.level.xpEnd.toLocaleString()} {messages.dashboard.xp}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        −{levelInfo.nextTierXP.toLocaleString()} XP prochain palier
+                        {formatMessage(lp.xpToNextTier, {
+                          xp: levelInfo.nextTierXP.toLocaleString(),
+                        })}
                       </p>
                       {!levelInfo.isMaxLevel && levelInfo.nextLevelXP != null && nextLevelName && (
                         <p className="text-[11px] text-muted-foreground">
-                          −{levelInfo.nextLevelXP.toLocaleString()} XP pour {nextLevelName}
+                          {formatMessage(lp.xpToNextLevel, {
+                            xp: levelInfo.nextLevelXP.toLocaleString(),
+                            level: nextLevelName,
+                          })}
                         </p>
                       )}
                     </div>
@@ -746,8 +759,13 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between gap-3 w-full">
                 <div className="flex flex-col justify-center gap-1 min-w-0">
                   <p className="text-xs text-muted-foreground">{messages.dashboard.level}</p>
-                  <p className="text-xl sm:text-2xl font-bold">{levelInfo.level.name}</p>
-                  <p className="text-xs text-muted-foreground">Palier {levelInfo.tierIndex + 1}/5</p>
+                  <p className="text-xl sm:text-2xl font-bold">{currentLevelName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatMessage(lp.tierLabel, {
+                      current: levelInfo.tierIndex + 1,
+                      total: 5,
+                    })}
+                  </p>
                 </div>
                 <StarIcon className="w-7 h-7 text-theme-accent/70 shrink-0" />
               </div>
@@ -1372,10 +1390,10 @@ export default function DashboardPage() {
                       <div>
                         <h3 className="font-semibold">{user?.name}</h3>
                         <p className="text-sm text-muted-foreground">
-                          Steam ID: {user?.steamId}
+                          {messages.dashboard.settings.steamIdLabel} {user?.steamId}
                         </p>
                         <Badge variant="secondary" className="mt-1">
-                          KYC{" "}
+                          {messages.dashboard.settings.kycLabel}{" "}
                           {user?.kycStatus === "APPROVED"
                             ? messages.kyc.approved
                             : messages.kyc.pending}

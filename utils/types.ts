@@ -352,6 +352,7 @@ export interface Messages {
     title: string;
     contactPrefix: string;
     contactEmail: string;
+    thanksAria: string;
   };
     dashboard: {
       title: string;
@@ -370,6 +371,15 @@ export interface Messages {
       nextLevel: string;
       totalXp: string;
       xpForNext: string;
+      levelProgress: {
+        tierLabel: string;
+        saleBonusActive: string;
+        noSaleBonus: string;
+        xpToNextTier: string;
+        xpToNextLevel: string;
+      };
+      welcomeOnPlatform: string;
+      dailyVisitFragments: string;
       tabs: {
         trades: string;
         analytics: string;
@@ -461,6 +471,8 @@ export interface Messages {
         emailNotifications: string;
         emailNotificationsDesc: string;
         enabled: string;
+        steamIdLabel: string;
+        kycLabel: string;
       };
       toasts: {
         statusUpdated: string;
@@ -946,6 +958,7 @@ export interface Messages {
       partialOutage: string;
       majorOutage: string;
       maintenance: string;
+      unknown: string;
     };
     stats: {
       uptime: string;
@@ -978,6 +991,11 @@ export interface Messages {
         name: string;
         description: string;
       };
+      metrics: {
+        uptime: string;
+        latency: string;
+        availability30d: string;
+      };
     };
     incidents: {
       title: string;
@@ -993,6 +1011,15 @@ export interface Messages {
         resolved: string;
       };
       updates: string;
+      impactLabel: string;
+      sample: {
+        title: string;
+        description: string;
+        updates: {
+          monitoring: string;
+          identified: string;
+        };
+      };
     };
     footer: {
       updateFrequency: string;
@@ -2532,7 +2559,10 @@ export interface Messages {
         drawSuccess: string;
         deleteSuccess: string;
         deleteError: string;
+        tradeLinkCopied: string;
       };
+      copyTradeLink: string;
+      noTradeLink: string;
       list: {
         title: string;
         refresh: string;
@@ -2580,6 +2610,13 @@ export interface Messages {
         maxTicketsLabel: string;
         winnerCountLabel: string;
         durationTypeLabel: string;
+        durationTypes: {
+          daily: string;
+          weekly: string;
+          monthly: string;
+          yearly: string;
+          custom: string;
+        };
         maxEntriesPerUserLabel: string;
         maxEntriesPlaceholder: string;
         durationLabel: string;
@@ -3213,6 +3250,14 @@ export interface Messages {
     };
     selectionPanel: {
       selectedTotal: string;
+    };
+    xpPreview: {
+      tier: string;
+      gain: string;
+      levelUp: string;
+      progress: string;
+      pendingLabel: string;
+      saleBonus: string;
     };
     steps: {
       inventory: string;
@@ -5989,6 +6034,40 @@ export interface Messages {
     tip3: string;
     tip4: string;
     checkStatus: string;
+    errorId: string;
+  };
+  levelHelp: {
+    title: string;
+    xpRate: string;
+    colLevel: string;
+    colBonus: string;
+    tierInfo: string;
+    capInfo: string;
+    tierRewardsTitle: string;
+    tier: string;
+    firstTiers: string;
+    rewardBonus: string;
+  };
+  homeLevels: {
+    badge: string;
+    title: string;
+    titleHighlight: string;
+    tagline: string;
+    xpRate: string;
+    fragmentsTitle: string;
+    fragmentsIntro: string;
+    fragmentsBullet1: string;
+    fragmentsBullet2: string;
+    fragmentsBullet3: string;
+    fragmentsFooter: string;
+    fragmentsCta: string;
+    fragmentsBalance: string;
+    cta: string;
+    bonusLabel: string;
+    xpRequired: string;
+    fullRewards: string;
+    fragmentsAlt: string;
+    rewardFragments: string;
   };
   globalError: {
     title: string;

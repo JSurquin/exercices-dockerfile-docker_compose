@@ -18,7 +18,10 @@ import {
   LEVELS,
   TIERS_PER_LEVEL,
   XP_CAP,
+  getLevelName,
+  type LevelLocale,
 } from "@/lib/level-system";
+import { formatMessage } from "@/lib/i18n";
 
 // ─── Exported helpers (used by sell/page.tsx) ────────────────────────────────
 
@@ -50,41 +53,21 @@ interface XPPreviewBarProps {
   compact?: boolean;
 }
 
-const LABELS = {
-  fr: {
-    tier: (cur: number, total: number) => `Palier ${cur}/${total}`,
-    gain: (n: number) => `+${n.toLocaleString("fr-FR")} XP`,
-    levelUp: (name: string) => `→ ${name}`,
-    progress: (cur: number, max: number) =>
-      `${cur.toLocaleString("fr-FR")} / ${max.toLocaleString("fr-FR")} XP`,
-    pendingLabel: "XP gagné à la vente",
-    saleBonus: "Bonus vendeur",
-  },
-  en: {
-    tier: (cur: number, total: number) => `Tier ${cur}/${total}`,
-    gain: (n: number) => `+${n.toLocaleString("en-US")} XP`,
-    levelUp: (name: string) => `→ ${name}`,
-    progress: (cur: number, max: number) =>
-      `${cur.toLocaleString("en-US")} / ${max.toLocaleString("en-US")} XP`,
-    pendingLabel: "XP earned on sale",
-    saleBonus: "Seller bonus",
-  },
-} as const;
-
 export function XPPreviewBar({
   currentXP,
   pendingXPGain,
   compact = false,
 }: XPPreviewBarProps) {
-  const { locale } = useLocale();
-  const t = LABELS[locale as keyof typeof LABELS] ?? LABELS.en;
+  const { locale, messages } = useLocale();
+  const t = messages.sellPage.xpPreview;
+  const lang = locale as LevelLocale;
+  const numberLocale = locale === "fr" ? "fr-FR" : locale === "cn" ? "zh-CN" : "en-US";
 
   const info = getLevelInfo(currentXP);
   const projectedInfo = getLevelInfo(currentXP + pendingXPGain);
 
-  const cosmicName = locale === "en" ? info.level.nameEn : info.level.name;
-  const projectedCosmicName =
-    locale === "en" ? projectedInfo.level.nameEn : projectedInfo.level.name;
+  const cosmicName = getLevelName(info.levelIndex, lang);
+  const projectedCosmicName = getLevelName(projectedInfo.levelIndex, lang);
 
   const hasLevelUp = projectedInfo.levelIndex > info.levelIndex;
   const hasPending = pendingXPGain > 0;
@@ -118,7 +101,10 @@ export function XPPreviewBar({
               </span>
               {!compact && <LevelHelpPopover />}
               <span className="text-[10px] text-muted-foreground shrink-0 whitespace-nowrap">
-                {t.tier(info.tierIndex + 1, TIERS_PER_LEVEL)}
+                {formatMessage(t.tier, {
+                  current: info.tierIndex + 1,
+                  total: TIERS_PER_LEVEL,
+                })}
               </span>
 
               {hasPending && (
@@ -130,7 +116,9 @@ export function XPPreviewBar({
                     <TooltipTrigger asChild>
                       <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-1.5 py-0.5 shrink-0 cursor-default">
                         <SparklesIcon className="w-3 h-3" />
-                        {t.gain(pendingXPGain)}
+                        {formatMessage(t.gain, {
+                          n: pendingXPGain.toLocaleString(numberLocale),
+                        })}
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="top">{t.pendingLabel}</TooltipContent>
@@ -154,7 +142,7 @@ export function XPPreviewBar({
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-theme-highlight/20 text-theme-stat border border-theme-highlight/40 shrink-0"
                   >
-                    {t.levelUp(projectedCosmicName)}
+                    {formatMessage(t.levelUp, { name: projectedCosmicName })}
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -162,7 +150,10 @@ export function XPPreviewBar({
 
             {!compact && (
               <span className="text-xs text-muted-foreground shrink-0">
-                {t.progress(info.cappedXP, info.level.xpEnd)}
+                {formatMessage(t.progress, {
+                  current: info.cappedXP.toLocaleString(numberLocale),
+                  max: info.level.xpEnd.toLocaleString(numberLocale),
+                })}
               </span>
             )}
           </div>

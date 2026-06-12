@@ -78,7 +78,7 @@ export default function Error({ error, reset }: ErrorProps) {
                   </pre>
                   {error.digest && (
                     <p className="text-xs text-red-600 dark:text-red-400 mt-2">
-                      Error ID: {error.digest}
+                      {messages.error.errorId} {error.digest}
                     </p>
                   )}
                 </CardContent>

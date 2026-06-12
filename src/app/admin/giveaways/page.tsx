@@ -443,10 +443,10 @@ export default function AdminGiveawaysPage() {
                                           type="button"
                                           onClick={() => {
                                             navigator.clipboard.writeText(w.user!.tradeLink!);
-                                            toast.success('Trade link copié !');
+                                            toast.success(messages.admin.giveaways.toasts.tradeLinkCopied);
                                           }}
                                           className="shrink-0 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 transition-colors"
-                                          title="Copier le trade link"
+                                          title={messages.admin.giveaways.copyTradeLink}
                                         >
                                           <ClipboardDocumentIcon className="w-4 h-4" />
                                         </button>
@@ -454,7 +454,7 @@ export default function AdminGiveawaysPage() {
                                     ) : (
                                       <p className="text-xs text-theme-highlight px-2 flex items-center gap-1">
                                         <ExclamationTriangleIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                                        Aucun trade link configuré
+                                        {messages.admin.giveaways.noTradeLink}
                                       </p>
                                     )}
                                   </div>
@@ -641,11 +641,11 @@ export default function AdminGiveawaysPage() {
                           value={form.durationType}
                           onChange={(e) => setForm((prev) => ({ ...prev, durationType: e.target.value }))}
                         >
-                          <option value="DAILY">Daily</option>
-                          <option value="WEEKLY">Weekly</option>
-                          <option value="MONTHLY">Monthly</option>
-                          <option value="YEARLY">Yearly</option>
-                          <option value="CUSTOM">Custom</option>
+                          <option value="DAILY">{messages.admin.giveaways.form.durationTypes.daily}</option>
+                          <option value="WEEKLY">{messages.admin.giveaways.form.durationTypes.weekly}</option>
+                          <option value="MONTHLY">{messages.admin.giveaways.form.durationTypes.monthly}</option>
+                          <option value="YEARLY">{messages.admin.giveaways.form.durationTypes.yearly}</option>
+                          <option value="CUSTOM">{messages.admin.giveaways.form.durationTypes.custom}</option>
                         </select>
                       </div>
                       <div>

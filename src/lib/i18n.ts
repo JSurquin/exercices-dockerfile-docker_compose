@@ -235,6 +235,7 @@ export const messages: Record<Locale, Messages> = {
       title: "Merci à tous nos partenaires talentueux",
       contactPrefix: "Contactez-nous pour les partenariats :",
       contactEmail: "contact@moonskin.fun",
+      thanksAria: "Merci à nos partenaires",
     },
     trade: {
       title: "Vendre mes skins",
@@ -330,6 +331,15 @@ export const messages: Record<Locale, Messages> = {
       nextLevel: "pour le niveau",
       totalXp: "XP",
       xpForNext: "XP pour le niveau",
+      levelProgress: {
+        tierLabel: "Palier {current}/{total}",
+        saleBonusActive: "Bonus vendeur actif : {bonus} sur tes ventes",
+        noSaleBonus: "Aucun bonus vendeur encore",
+        xpToNextTier: "−{xp} XP prochain palier",
+        xpToNextLevel: "−{xp} XP pour {level}",
+      },
+      welcomeOnPlatform: "sur MoonSkin",
+      dailyVisitFragments: "+{count} fragments",
       tabs: {
         trades: "Mes Trades",
         analytics: "Analytics",
@@ -419,6 +429,8 @@ export const messages: Record<Locale, Messages> = {
         emailNotifications: "Notifications Email",
         emailNotificationsDesc: "Alertes de trading",
         enabled: "Activé",
+        steamIdLabel: "Steam ID:",
+        kycLabel: "KYC",
       },
       toasts: {
         statusUpdated: "Statut mis à jour",
@@ -2256,7 +2268,8 @@ export const messages: Record<Locale, Messages> = {
         degraded: "Dégradé",
         partialOutage: "Panne partielle",
         majorOutage: "Panne majeure",
-        maintenance: "Maintenance"
+        maintenance: "Maintenance",
+        unknown: "Inconnu"
       },
       stats: {
         uptime: "Disponibilité moyenne (30j)",
@@ -2288,6 +2301,11 @@ export const messages: Record<Locale, Messages> = {
         steamApi: {
           name: "API Steam",
           description: "Intégration avec Steam"
+        },
+        metrics: {
+          uptime: "Uptime : {value}%",
+          latency: "Latence : {value}ms",
+          availability30d: "Disponibilité (30 jours)",
         }
       },
       incidents: {
@@ -2303,7 +2321,16 @@ export const messages: Record<Locale, Messages> = {
           monitoring: "Surveillance",
           resolved: "Résolu"
         },
-        updates: "Mises à jour :"
+        updates: "Mises à jour :",
+        impactLabel: "Impact",
+        sample: {
+          title: "Lenteurs API Steam",
+          description: "Nous observons des temps de réponse plus lents que d'habitude avec l'API Steam, pouvant affecter les estimations de prix.",
+          updates: {
+            monitoring: "Nous continuons de surveiller la situation. Les services fonctionnent normalement mais avec des délais légèrement plus longs.",
+            identified: "Nous avons identifié des lenteurs avec l'API Steam. Notre équipe technique enquête.",
+          },
+        },
       },
       footer: {
         updateFrequency: "Cette page est mise à jour automatiquement toutes les 30 secondes",
@@ -3122,6 +3149,8 @@ export const messages: Record<Locale, Messages> = {
           recurring: "Giveaways récurrents",
           manage: "Gestion Automatique"
         },
+        copyTradeLink: "Copier le trade link",
+        noTradeLink: "Aucun trade link configuré",
         list: {
           title: "Tous les Giveaways",
           refresh: "Actualiser",
@@ -3185,6 +3214,7 @@ export const messages: Record<Locale, Messages> = {
           drawSuccess: "Tirage effectué ! Gagnant(s) :",
           deleteSuccess: "Giveaway supprimé avec succès",
           deleteError: "Erreur lors de la suppression",
+          tradeLinkCopied: "Trade link copié !",
         },
         form: {
           titleLabel: "Titre *",
@@ -3197,6 +3227,13 @@ export const messages: Record<Locale, Messages> = {
           maxTicketsLabel: "Nombre maximum d'entrées (pool)",
           winnerCountLabel: "Nombre de gagnants",
           durationTypeLabel: "Type (durée marketing)",
+          durationTypes: {
+            daily: "Quotidien",
+            weekly: "Hebdomadaire",
+            monthly: "Mensuel",
+            yearly: "Annuel",
+            custom: "Personnalisé",
+          },
           maxEntriesPerUserLabel: "Max entrées / user (vide = illimité)",
           maxEntriesPlaceholder: "Illimité",
           durationLabel: "Durée (en minutes)",
@@ -4624,6 +4661,14 @@ export const messages: Record<Locale, Messages> = {
       },
       selectionPanel: {
         selectedTotal: "Total sélectionné",
+      },
+      xpPreview: {
+        tier: "Palier {current}/{total}",
+        gain: "+{n} XP",
+        levelUp: "→ {name}",
+        progress: "{current} / {max} XP",
+        pendingLabel: "XP gagné à la vente",
+        saleBonus: "Bonus vendeur",
       },
       steps: {
         inventory: "Sélection des items",
@@ -6569,6 +6614,39 @@ export const messages: Record<Locale, Messages> = {
       inventory: "Inventaire",
       skins: "Skins",
     },
+    levelHelp: {
+      title: "Système de niveaux",
+      xpRate: "1 XP = {rate} € vendus",
+      colLevel: "Niveau",
+      colBonus: "Bonus vente",
+      tierInfo: "Chaque niveau contient 5 paliers, débloquez des récompenses (fragments, skins) à chaque palier.",
+      capInfo: "Cap maximum : 100 000 XP (~64 000 € vendus)",
+      tierRewardsTitle: "Récompenses par palier (ex. Étoile)",
+      tier: "Palier {n}",
+      firstTiers: "Premiers paliers",
+      rewardBonus: "{bonus} bonus",
+    },
+    homeLevels: {
+      badge: "Programme fidélité",
+      title: "Montez en niveau,",
+      titleHighlight: " gagnez plus",
+      tagline: "Vendez → gagnez de l'XP → débloquez des récompenses.",
+      xpRate: "1 XP = {rate} € vendus",
+      fragmentsTitle: "Fragments, comment ça marche ?",
+      fragmentsIntro: "Les fragments sont la monnaie de récompense de MoonSkin. Tu en gagnes automatiquement à chaque vente, selon ton niveau de fidélité.",
+      fragmentsBullet1: "Utilise tes fragments pour entrer dans les giveaways",
+      fragmentsBullet2: "Plus tu as de fragments, plus tu as de chances de gagner",
+      fragmentsBullet3: "Chaque palier débloque un bonus de fragments sur tes ventes",
+      fragmentsFooter: "Les fragments ne se dépensent pas, ils s'accumulent et te donnent des tickets d'entrée aux giveaways exclusifs MoonSkin.",
+      fragmentsCta: "Voir les giveaways actifs",
+      fragmentsBalance: "Ton solde de fragments",
+      cta: "Commencer à vendre",
+      bonusLabel: "Bonus vente",
+      xpRequired: "XP requis",
+      fullRewards: "Récompenses complètes",
+      fragmentsAlt: "Fragments",
+      rewardFragments: "+{count} fragments",
+    },
     error: {
       title: "Oops ! Quelque chose s'est mal passé",
       message: "Une erreur inattendue s'est produite. Ne vous inquiétez pas, nos équipes ont été automatiquement notifiées et travaillent déjà sur une solution.",
@@ -6582,6 +6660,7 @@ export const messages: Record<Locale, Messages> = {
       tip3: "Essayez de vider le cache de votre navigateur",
       tip4: "Si le problème persiste, contactez notre support",
       checkStatus: "Vérifiez le statut de nos services sur",
+      errorId: "ID d'erreur :",
     },
     globalError: {
       title: "Erreur critique",
@@ -7486,6 +7565,7 @@ export const messages: Record<Locale, Messages> = {
       title: "Thank you to all our talented partners",
       contactPrefix: "Contact us for partnerships:",
       contactEmail: "contact@moonskin.fun",
+      thanksAria: "Thanks to our partners",
     },
     trade: {
       title: "Sell my skins",
@@ -7580,6 +7660,15 @@ export const messages: Record<Locale, Messages> = {
       nextLevel: "to level",
       totalXp: "XP",
       xpForNext: "XP to level",
+      levelProgress: {
+        tierLabel: "Tier {current}/{total}",
+        saleBonusActive: "Active seller bonus: {bonus} on your sales",
+        noSaleBonus: "No seller bonus yet",
+        xpToNextTier: "−{xp} XP to next tier",
+        xpToNextLevel: "−{xp} XP to {level}",
+      },
+      welcomeOnPlatform: "on MoonSkin",
+      dailyVisitFragments: "+{count} fragments",
       tabs: {
         trades: "My Trades",
         analytics: "Analytics",
@@ -7669,6 +7758,8 @@ export const messages: Record<Locale, Messages> = {
         emailNotifications: "Email Notifications",
         emailNotificationsDesc: "Trading alerts",
         enabled: "Enabled",
+        steamIdLabel: "Steam ID:",
+        kycLabel: "KYC",
       },
       toasts: {
         statusUpdated: "Status updated",
@@ -8582,7 +8673,8 @@ export const messages: Record<Locale, Messages> = {
         degraded: "Degraded",
         partialOutage: "Partial Outage",
         majorOutage: "Major Outage",
-        maintenance: "Maintenance"
+        maintenance: "Maintenance",
+        unknown: "Unknown"
       },
       stats: {
         uptime: "Average uptime (30d)",
@@ -8614,6 +8706,11 @@ export const messages: Record<Locale, Messages> = {
         steamApi: {
           name: "Steam API",
           description: "Steam integration"
+        },
+        metrics: {
+          uptime: "Uptime: {value}%",
+          latency: "Latency: {value}ms",
+          availability30d: "Availability (30 days)",
         }
       },
       incidents: {
@@ -8629,7 +8726,16 @@ export const messages: Record<Locale, Messages> = {
           monitoring: "Monitoring",
           resolved: "Resolved"
         },
-        updates: "Updates:"
+        updates: "Updates:",
+        impactLabel: "Impact",
+        sample: {
+          title: "Steam API slowdowns",
+          description: "We are observing slower than usual response times with the Steam API, which may affect price estimates.",
+          updates: {
+            monitoring: "We continue to monitor the situation. Services are operating normally but with slightly longer delays.",
+            identified: "We have identified slowdowns with the Steam API. Our technical team is investigating.",
+          },
+        },
       },
       footer: {
         updateFrequency: "This page is automatically updated every 30 seconds",
@@ -9240,6 +9346,8 @@ export const messages: Record<Locale, Messages> = {
           recurring: "Recurring Giveaways",
           manage: "Automatic Management"
         },
+        copyTradeLink: "Copy trade link",
+        noTradeLink: "No trade link configured",
         list: {
           title: "All Giveaways",
           refresh: "Refresh",
@@ -9303,6 +9411,7 @@ export const messages: Record<Locale, Messages> = {
           drawSuccess: "Draw completed! Winner(s):",
           deleteSuccess: "Giveaway deleted successfully",
           deleteError: "Error deleting giveaway",
+          tradeLinkCopied: "Trade link copied!",
         },
         form: {
           titleLabel: "Title *",
@@ -9315,6 +9424,13 @@ export const messages: Record<Locale, Messages> = {
           maxTicketsLabel: "Maximum number of entries (pool)",
           winnerCountLabel: "Number of winners",
           durationTypeLabel: "Type (marketing duration)",
+          durationTypes: {
+            daily: "Daily",
+            weekly: "Weekly",
+            monthly: "Monthly",
+            yearly: "Yearly",
+            custom: "Custom",
+          },
           maxEntriesPerUserLabel: "Max entries / user (empty = unlimited)",
           maxEntriesPlaceholder: "Unlimited",
           durationLabel: "Duration (in minutes)",
@@ -10742,6 +10858,14 @@ export const messages: Record<Locale, Messages> = {
       },
       selectionPanel: {
         selectedTotal: "Selected total",
+      },
+      xpPreview: {
+        tier: "Tier {current}/{total}",
+        gain: "+{n} XP",
+        levelUp: "→ {name}",
+        progress: "{current} / {max} XP",
+        pendingLabel: "XP earned on sale",
+        saleBonus: "Seller bonus",
       },
       steps: {
         inventory: "Item selection",
@@ -13819,6 +13943,39 @@ export const messages: Record<Locale, Messages> = {
       inventory: "Inventory",
       skins: "Skins",
     },
+    levelHelp: {
+      title: "Level system",
+      xpRate: "1 XP = {rate} € sold",
+      colLevel: "Level",
+      colBonus: "Sale bonus",
+      tierInfo: "Each level has 5 tiers, unlock rewards (fragments, skins) at each tier.",
+      capInfo: "Max cap: 100,000 XP (~€64,000 sold)",
+      tierRewardsTitle: "Tier rewards (e.g. Star)",
+      tier: "Tier {n}",
+      firstTiers: "First tiers",
+      rewardBonus: "{bonus} bonus",
+    },
+    homeLevels: {
+      badge: "Loyalty program",
+      title: "Level up,",
+      titleHighlight: " earn more",
+      tagline: "Sell → earn XP → unlock rewards.",
+      xpRate: "1 XP = {rate} € sold",
+      fragmentsTitle: "Fragments, how does it work?",
+      fragmentsIntro: "Fragments are MoonSkin's reward currency. You earn them automatically with every sale, based on your loyalty level.",
+      fragmentsBullet1: "Use your fragments to enter giveaways",
+      fragmentsBullet2: "The more fragments you have, the better your chances of winning",
+      fragmentsBullet3: "Each tier unlocks a fragment bonus on your sales",
+      fragmentsFooter: "Fragments are not spent, they accumulate and earn you entry tickets to exclusive MoonSkin giveaways.",
+      fragmentsCta: "View active giveaways",
+      fragmentsBalance: "Your fragment balance",
+      cta: "Start selling",
+      bonusLabel: "Sale bonus",
+      xpRequired: "XP required",
+      fullRewards: "Full rewards",
+      fragmentsAlt: "Fragments",
+      rewardFragments: "+{count} fragments",
+    },
     error: {
       title: "Oops! Something went wrong",
       message: "An unexpected error occurred. Don't worry, our teams have been automatically notified and are already working on a solution.",
@@ -13832,6 +13989,7 @@ export const messages: Record<Locale, Messages> = {
       tip3: "Try clearing your browser cache",
       tip4: "If the problem persists, contact our support",
       checkStatus: "Check the status of our services at",
+      errorId: "Error ID:",
     },
     globalError: {
       title: "Critical error",
@@ -14736,6 +14894,7 @@ export const messages: Record<Locale, Messages> = {
       title: "感谢所有才华横溢的合作伙伴",
       contactPrefix: "商务合作请联系：",
       contactEmail: "contact@moonskin.fun",
+      thanksAria: "感谢我们的合作伙伴",
     },
     trade: {
       title: "出售我的皮肤",
@@ -14826,6 +14985,15 @@ export const messages: Record<Locale, Messages> = {
       nextLevel: "至等级",
       totalXp: "经验值",
       xpForNext: "经验值至等级",
+      levelProgress: {
+        tierLabel: "阶段 {current}/{total}",
+        saleBonusActive: "卖家奖励已激活：销售可获得 {bonus}",
+        noSaleBonus: "暂无卖家奖励",
+        xpToNextTier: "−{xp} XP 至下一阶段",
+        xpToNextLevel: "−{xp} XP 至 {level}",
+      },
+      welcomeOnPlatform: "在 MoonSkin",
+      dailyVisitFragments: "+{count} 碎片",
       tabs: {
         trades: "我的交易",
         analytics: "分析",
@@ -14914,6 +15082,8 @@ export const messages: Record<Locale, Messages> = {
         emailNotifications: "邮件通知",
         emailNotificationsDesc: "交易提醒",
         enabled: "已启用",
+        steamIdLabel: "Steam ID：",
+        kycLabel: "KYC",
       },
       toasts: {
         statusUpdated: "状态已更新",
@@ -15727,7 +15897,8 @@ export const messages: Record<Locale, Messages> = {
         degraded: "性能下降",
         partialOutage: "部分中断",
         majorOutage: "重大中断",
-        maintenance: "维护中"
+        maintenance: "维护中",
+        unknown: "未知"
       },
       stats: {
         uptime: "平均正常运行时间 (30天)",
@@ -15759,6 +15930,11 @@ export const messages: Record<Locale, Messages> = {
         steamApi: {
           name: "Steam API",
           description: "Steam 集成服务"
+        },
+        metrics: {
+          uptime: "正常运行时间：{value}%",
+          latency: "延迟：{value}ms",
+          availability30d: "可用性（30 天）",
         }
       },
       incidents: {
@@ -15774,7 +15950,16 @@ export const messages: Record<Locale, Messages> = {
           monitoring: "监控中",
           resolved: "已解决"
         },
-        updates: "更新："
+        updates: "更新：",
+        impactLabel: "影响",
+        sample: {
+          title: "Steam API 响应缓慢",
+          description: "我们观察到 Steam API 的响应时间比平时更长，可能会影响价格估算。",
+          updates: {
+            monitoring: "我们仍在监控情况。服务正常运行，但延迟略有增加。",
+            identified: "我们已确认 Steam API 存在延迟。技术团队正在调查。",
+          },
+        },
       },
       footer: {
         updateFrequency: "此页面每30秒自动更新",
@@ -16385,6 +16570,8 @@ export const messages: Record<Locale, Messages> = {
           recurring: "定期赠品",
           manage: "自动管理"
         },
+        copyTradeLink: "复制交易链接",
+        noTradeLink: "未配置交易链接",
         list: {
           title: "所有赠品",
           refresh: "刷新",
@@ -16448,6 +16635,7 @@ export const messages: Record<Locale, Messages> = {
           drawSuccess: "抽奖完成！获胜者：",
           deleteSuccess: "赠品已成功删除",
           deleteError: "删除赠品时出错",
+          tradeLinkCopied: "交易链接已复制！",
         },
         form: {
           titleLabel: "标题 *",
@@ -16460,6 +16648,13 @@ export const messages: Record<Locale, Messages> = {
           maxTicketsLabel: "最大参赛次数（池）",
           winnerCountLabel: "获胜者数量",
           durationTypeLabel: "类型（营销持续时间）",
+          durationTypes: {
+            daily: "每日",
+            weekly: "每周",
+            monthly: "每月",
+            yearly: "每年",
+            custom: "自定义",
+          },
           maxEntriesPerUserLabel: "每用户最大参赛次数（空 = 无限）",
           maxEntriesPlaceholder: "无限",
           durationLabel: "持续时间（分钟）",
@@ -17739,6 +17934,14 @@ export const messages: Record<Locale, Messages> = {
       },
       selectionPanel: {
         selectedTotal: "已选总额",
+      },
+      xpPreview: {
+        tier: "阶段 {current}/{total}",
+        gain: "+{n} XP",
+        levelUp: "→ {name}",
+        progress: "{current} / {max} XP",
+        pendingLabel: "销售获得的经验值",
+        saleBonus: "卖家奖励",
       },
       steps: {
         inventory: "物品选择",
@@ -20760,6 +20963,39 @@ export const messages: Record<Locale, Messages> = {
       inventory: "库存",
       skins: "皮肤",
     },
+    levelHelp: {
+      title: "等级系统",
+      xpRate: "1 XP = 售出 {rate} €",
+      colLevel: "等级",
+      colBonus: "销售奖励",
+      tierInfo: "每个等级包含 5 个阶段，在每个阶段解锁奖励（碎片、皮肤）。",
+      capInfo: "最高上限：100,000 XP（约售出 €64,000）",
+      tierRewardsTitle: "阶段奖励（例如：星星）",
+      tier: "阶段 {n}",
+      firstTiers: "初始阶段",
+      rewardBonus: "{bonus} 奖励",
+    },
+    homeLevels: {
+      badge: "忠诚度计划",
+      title: "提升等级，",
+      titleHighlight: " 赚取更多",
+      tagline: "出售 → 获得 XP → 解锁奖励。",
+      xpRate: "1 XP = 售出 {rate} €",
+      fragmentsTitle: "碎片是如何运作的？",
+      fragmentsIntro: "碎片是 MoonSkin 的奖励货币。每次销售都会根据您的忠诚度等级自动获得碎片。",
+      fragmentsBullet1: "使用碎片参与抽奖活动",
+      fragmentsBullet2: "碎片越多，中奖机会越大",
+      fragmentsBullet3: "每个阶段都会解锁销售碎片奖励",
+      fragmentsFooter: "碎片不会被消耗，它们会累积并为您赢得专属 MoonSkin 抽奖活动的入场券。",
+      fragmentsCta: "查看进行中的抽奖",
+      fragmentsBalance: "您的碎片余额",
+      cta: "开始出售",
+      bonusLabel: "销售奖励",
+      xpRequired: "所需 XP",
+      fullRewards: "完整奖励",
+      fragmentsAlt: "碎片",
+      rewardFragments: "+{count} 碎片",
+    },
     error: {
       title: "哎呀！出错了",
       message: "发生了意外错误。别担心，我们的团队已自动收到通知并正在解决问题。",
@@ -20773,6 +21009,7 @@ export const messages: Record<Locale, Messages> = {
       tip3: "尝试清除浏览器缓存",
       tip4: "如果问题仍然存在，请联系我们的客服",
       checkStatus: "在以下网址检查我们的服务状态",
+      errorId: "错误 ID：",
     },
     globalError: {
       title: "严重错误",
@@ -21448,6 +21685,14 @@ export const messages: Record<Locale, Messages> = {
     },
   },
 };
+
+export function pickLocalized<T>(locale: Locale, texts: Record<Locale, T>): T {
+  return texts[locale] ?? texts[defaultLocale];
+}
+
+export function formatMessage(template: string, vars: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (_, key) => String(vars[key] ?? `{${key}}`));
+}
 
 export function getMessages(locale: Locale): Messages {
   return messages[locale] || messages[defaultLocale];

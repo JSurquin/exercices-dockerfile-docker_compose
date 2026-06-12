@@ -72,12 +72,24 @@ export function getTierThresholds(levelIndex: number): number[] {
 
 // ─── Récompenses ─────────────────────────────────────────────────────────────
 
+export type LevelLocale = "fr" | "en" | "cn";
+
 export interface TierReward {
   fragments?: number;
   skinValueEur?: number;
   xpBonusMultiplier?: number;
   description: string;
   descriptionEn: string;
+  descriptionCn?: string;
+}
+
+export function getTierRewardDescription(
+  reward: TierReward,
+  locale: LevelLocale = "fr",
+): string {
+  if (locale === "en") return reward.descriptionEn;
+  if (locale === "cn") return reward.descriptionCn ?? reward.descriptionEn;
+  return reward.description;
 }
 
 export function getTierReward(globalTierIndex: number): TierReward {
@@ -106,6 +118,7 @@ export function getTierReward(globalTierIndex: number): TierReward {
       skinValueEur: isMax ? 0 : s,
       description: isMax ? `+${n} fragments (NIVEAU MAX)` : `+${n} fragments + skin ~${s}€`,
       descriptionEn: isMax ? `+${n} fragments (MAX LEVEL)` : `+${n} fragments + ~${s}€ skin`,
+      descriptionCn: isMax ? `+${n} 碎片（最高等级）` : `+${n} 碎片 + 约 ${s}€ 皮肤`,
     };
   }
 }
@@ -194,7 +207,7 @@ export function globalTierFromXP(xp: number): number {
 }
 
 /** Nom localisé du niveau */
-export function getLevelName(levelIndex: number, locale: "fr" | "en" | "cn" = "fr"): string {
+export function getLevelName(levelIndex: number, locale: LevelLocale = "fr"): string {
   const l = LEVELS[levelIndex] ?? LEVELS[0];
   if (locale === "en") return l.nameEn;
   if (locale === "cn") return l.nameCn;
