@@ -17,8 +17,10 @@ import {
   shouldInsertTicketTransmittedMessage,
 } from '@/lib/chat-logic';
 import {
+  applyReadStateToMessagesForViewer,
   createChatMessageRecord,
   fetchConversationMessagesPage,
+  markConversationMessagesAsReadForViewer,
 } from '@/lib/chat-message-service';
 import {
   extractCategoryFromSubcategoryKey,
@@ -111,17 +113,18 @@ export async function GET(
     });
 
     if (identity?.kind === 'user') {
-      await prisma.chatMessage.updateMany({
-        where: {
-          conversationId: resolvedParams.id,
-          isRead: false,
-          NOT: { userId: identity.session.user.id },
-        },
-        data: { isRead: true },
+      await markConversationMessagesAsReadForViewer({
+        conversationId: resolvedParams.id,
+        role: identity.role,
       });
     }
 
-    const messages = page.messages.map((m) =>
+    const readAdjusted =
+      identity?.kind === 'user'
+        ? applyReadStateToMessagesForViewer(page.messages, identity.role)
+        : page.messages;
+
+    const messages = readAdjusted.map((m) =>
       redactMessagePayload(m as unknown as Record<string, unknown>, identity),
     );
 

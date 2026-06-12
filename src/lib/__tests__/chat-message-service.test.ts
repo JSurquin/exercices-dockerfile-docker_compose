@@ -1,6 +1,8 @@
 import {
+  applyReadStateToMessagesForViewer,
   createChatMessageRecord,
   fetchConversationMessagesPage,
+  markConversationMessagesAsReadForViewer,
   softDeleteConversation,
   touchConversationAfterMessage,
 } from '@/lib/chat-message-service';
@@ -15,6 +17,7 @@ jest.mock('~/prisma/prisma', () => ({
       create: jest.fn(),
       findUnique: jest.fn(),
       findMany: jest.fn(),
+      updateMany: jest.fn(),
     },
   },
 }));
@@ -185,6 +188,45 @@ describe('fetchConversationMessagesPage', () => {
     await expect(
       fetchConversationMessagesPage({ conversationId: 'c1', cursor: 'm1', limit: 10 }),
     ).rejects.toThrow('INVALID_CURSOR');
+  });
+});
+
+describe('markConversationMessagesAsReadForViewer', () => {
+  it('marque les messages staff pour un client', async () => {
+    (prisma.chatMessage.updateMany as jest.Mock).mockResolvedValue({ count: 2 });
+
+    await markConversationMessagesAsReadForViewer({ conversationId: 'c1', role: 'USER' });
+
+    const arg = (prisma.chatMessage.updateMany as jest.Mock).mock.calls[0][0];
+    expect(arg.where).toEqual({
+      conversationId: 'c1',
+      isRead: false,
+      senderType: { not: 'USER' },
+    });
+    expect(arg.data).toEqual({ isRead: true });
+  });
+
+  it('marque les messages USER pour un modérateur', async () => {
+    (prisma.chatMessage.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+
+    await markConversationMessagesAsReadForViewer({ conversationId: 'c1', role: 'MODERATOR' });
+
+    const arg = (prisma.chatMessage.updateMany as jest.Mock).mock.calls[0][0];
+    expect(arg.where.senderType).toBe('USER');
+  });
+});
+
+describe('applyReadStateToMessagesForViewer', () => {
+  it('force isRead sur les messages staff pour un client', () => {
+    const result = applyReadStateToMessagesForViewer(
+      [
+        { id: '1', isRead: false, senderType: 'BOT' },
+        { id: '2', isRead: false, senderType: 'USER' },
+      ],
+      'USER',
+    );
+    expect(result[0].isRead).toBe(true);
+    expect(result[1].isRead).toBe(false);
   });
 });
 

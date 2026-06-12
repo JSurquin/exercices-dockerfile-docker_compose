@@ -115,6 +115,16 @@ export function useChat(isOpen = false) {
     return () => clearTimeout(timeout);
   }, [awaitingStaffReply]);
 
+  const syncedReadListForRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!conversationId || !isOpen || messagesLoading) return;
+    if (allMessages.length === 0) return;
+    if (syncedReadListForRef.current === conversationId) return;
+    syncedReadListForRef.current = conversationId;
+    queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
+  }, [conversationId, isOpen, messagesLoading, allMessages.length, queryClient]);
+
   const staffMsgCount = countClientNotifyMessages(allMessages);
   const prevStaffMsgCountRef = useRef<number | null>(null);
 

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
-import { softDeleteConversation } from '@/lib/chat-message-service';
+import {
+  applyReadStateToMessagesForViewer,
+  markConversationMessagesAsReadForViewer,
+  softDeleteConversation,
+} from '@/lib/chat-message-service';
 import {
   requireAdminOrModeratorSessionWithDbCheck,
   requireAdminSessionWithDbCheck,
@@ -81,13 +85,9 @@ export async function GET(
         return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
       }
 
-      await prisma.chatMessage.updateMany({
-        where: {
-          conversationId: resolvedParams.id,
-          isRead: false,
-          NOT: { userId: session.user.id },
-        },
-        data: { isRead: true },
+      await markConversationMessagesAsReadForViewer({
+        conversationId: resolvedParams.id,
+        role: identity.role,
       });
     } else if (!canGuestAccessConversation(conversation.userId)) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
@@ -103,6 +103,15 @@ export async function GET(
       payload = redactEmailsInConversationForGuest(raw);
     } else if (redactMode === 'non-staff-user' && identity.kind === 'user') {
       payload = redactEmailsForNonStaffViewer(raw, identity.session.user.id);
+    }
+    if (identity.kind === 'user' && Array.isArray(payload.messages)) {
+      payload = {
+        ...payload,
+        messages: applyReadStateToMessagesForViewer(
+          payload.messages as Array<{ isRead: boolean; senderType: string }>,
+          identity.role,
+        ),
+      };
     }
     return NextResponse.json(payload);
   } catch (error) {

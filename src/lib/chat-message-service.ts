@@ -1,8 +1,8 @@
 import type { Prisma } from '@prisma/client';
-import type { ConversationStatus, SenderType } from '@prisma/client';
+import type { ConversationStatus, SenderType, UserRole } from '@prisma/client';
 import { prisma } from '~/prisma/prisma';
 import { deriveConversationTitle } from '@/lib/chat-conversation-router';
-import { resolveStatusAfterMessage } from '@/lib/chat-logic';
+import { isStaffRole, resolveStatusAfterMessage } from '@/lib/chat-logic';
 
 type MessageUserSelect = {
   id: true;
@@ -82,6 +82,34 @@ export async function createChatMessageRecord(params: {
   }
 
   return message;
+}
+
+/** Marque comme lus les messages pertinents pour le lecteur (client vs staff). */
+export async function markConversationMessagesAsReadForViewer(params: {
+  conversationId: string;
+  role: UserRole;
+}) {
+  const isStaff = isStaffRole(params.role);
+  await prisma.chatMessage.updateMany({
+    where: {
+      conversationId: params.conversationId,
+      isRead: false,
+      senderType: isStaff ? 'USER' : { not: 'USER' },
+    },
+    data: { isRead: true },
+  });
+}
+
+/** Aligne le payload API avec l'état lu après marquage (évite isRead obsolète côté client). */
+export function applyReadStateToMessagesForViewer<T extends { isRead: boolean; senderType: string }>(
+  messages: T[],
+  role: UserRole,
+): T[] {
+  const isStaff = isStaffRole(role);
+  return messages.map((m) => {
+    const shouldBeRead = isStaff ? m.senderType === 'USER' : m.senderType !== 'USER';
+    return shouldBeRead ? { ...m, isRead: true } : m;
+  });
 }
 
 export async function fetchConversationMessagesPage(params: {
