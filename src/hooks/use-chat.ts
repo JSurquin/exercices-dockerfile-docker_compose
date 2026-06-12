@@ -43,6 +43,8 @@ export function useChat(isOpen = false) {
   );
 
   const [pickedConversationId, setPickedConversationId] = useState<string | null>(null);
+  const [isComposingNewConversation, setIsComposingNewConversation] = useState(false);
+  const isComposingNewConversationRef = useRef(false);
   const [awaitingStaffReply, setAwaitingStaffReply] = useState(false);
 
   const { data: conversationsData, isLoading: conversationsLoading } = useQuery({
@@ -57,18 +59,19 @@ export function useChat(isOpen = false) {
     [conversationsData],
   );
 
-  const conversationId = useMemo(
-    () =>
-      resolveActiveConversationId({
-        pickedId: pickedConversationId,
-        storedId,
-        conversations,
-        selectInitial: selectInitialConversationId,
-      }),
-    [pickedConversationId, conversations, storedId],
-  );
+  const conversationId = useMemo(() => {
+    if (isComposingNewConversation) return null;
+    return resolveActiveConversationId({
+      pickedId: pickedConversationId,
+      storedId,
+      conversations,
+      selectInitial: selectInitialConversationId,
+    });
+  }, [isComposingNewConversation, pickedConversationId, conversations, storedId]);
 
   const setConversationId = useCallback((id: string | null) => {
+    isComposingNewConversationRef.current = false;
+    setIsComposingNewConversation(false);
     setPickedConversationId(id);
     persistConversationId(id);
   }, []);
@@ -146,20 +149,23 @@ export function useChat(isOpen = false) {
       category?: string;
       forceNew?: boolean;
     }) => {
+      const shouldForceNew = params.forceNew || isComposingNewConversationRef.current;
       const res = await fetch('/api/chat/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          conversationId: conversationId ?? undefined,
+          conversationId: shouldForceNew ? undefined : (conversationId ?? undefined),
           content: params.content,
           category: params.category,
-          forceNew: params.forceNew,
+          forceNew: shouldForceNew || undefined,
         }),
       });
       if (!res.ok) throw new Error(chatT.sendMessageError);
       return res.json();
     },
     onSuccess: (data: { conversationId: string; createdNewConversation?: boolean; senderType?: string }) => {
+      isComposingNewConversationRef.current = false;
+      setIsComposingNewConversation(false);
       if (data.createdNewConversation || data.conversationId !== conversationId) {
         setConversationId(data.conversationId);
       }
@@ -172,6 +178,8 @@ export function useChat(isOpen = false) {
   });
 
   const startNewConversation = useCallback(() => {
+    isComposingNewConversationRef.current = true;
+    setIsComposingNewConversation(true);
     setPickedConversationId(null);
     persistConversationId(null);
   }, []);

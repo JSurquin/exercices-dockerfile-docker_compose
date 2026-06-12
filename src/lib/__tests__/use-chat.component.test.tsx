@@ -76,6 +76,70 @@ describe('useChat', () => {
     expect(result.current.conversationId).toBeNull();
   });
 
+  it('startNewConversation ignore la conversation active existante', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
+      conversations: [
+        {
+          id: 'c1',
+          status: 'ACTIVE',
+          createdAt: '2026-01-01',
+          updatedAt: '2026-01-01',
+          lastMessageAt: '2026-01-02',
+          messages: [],
+        },
+      ],
+    });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
+      messages: [],
+      nextCursor: null,
+      hasMore: false,
+    });
+
+    const { result } = renderHook(() => useChat(true), { wrapper });
+    await waitFor(() => expect(result.current.conversationId).toBe('c1'));
+
+    result.current.startNewConversation();
+    await waitFor(() => expect(result.current.conversationId).toBeNull());
+  });
+
+  it('sendMessage en mode nouvelle conversation force un nouveau fil', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
+      conversations: [
+        { id: 'c1', status: 'ACTIVE', createdAt: '', updatedAt: '', lastMessageAt: '', messages: [] },
+      ],
+    });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
+      messages: [],
+      nextCursor: null,
+      hasMore: false,
+    });
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 'm1',
+        conversationId: 'c-new',
+        createdNewConversation: true,
+      }),
+    });
+
+    const { result } = renderHook(() => useChat(true), { wrapper });
+    await waitFor(() => expect(result.current.conversationId).toBe('c1'));
+
+    result.current.startNewConversation();
+    await waitFor(() => expect(result.current.conversationId).toBeNull());
+    await result.current.sendMessage('Trade bloqué', { category: 'trade' });
+
+    expect(global.fetch).toHaveBeenCalledWith('/api/chat/messages', expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({
+        content: 'Trade bloqué',
+        category: 'trade',
+        forceNew: true,
+      }),
+    }));
+    await waitFor(() => expect(result.current.conversationId).toBe('c-new'));
+  });
+
   it('sendMessage appelle l’API', async () => {
     jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
       conversations: [{ id: 'c1', status: 'ACTIVE', createdAt: '', updatedAt: '', messages: [] }],

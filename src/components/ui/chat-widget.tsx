@@ -340,7 +340,10 @@ export function ChatWidget() {
     setIsSendingBotMsg(true);
     try {
       const categoryKey = selectedCategory?.key;
-      const result = await sendMessage(subcategory.label, { category: categoryKey });
+      const result = await sendMessage(subcategory.label, {
+        category: categoryKey,
+        forceNew: true,
+      });
       const convId = result.conversationId ?? conversationId;
 
       if (convId) {
