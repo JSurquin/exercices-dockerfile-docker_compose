@@ -16,6 +16,7 @@ import {
 } from '@/lib/chat-notification-logic';
 import {
   getUnreadMessageCount,
+  markStaffMessagesReadForClientViewer,
   selectInitialConversationId,
 } from '@/lib/chat-logic';
 import { formatConversationDisplayTitle } from '@/lib/chat-conversation-router';
@@ -31,7 +32,7 @@ import {
 
 export type { ChatMessage, ConversationSummary } from '@/lib/chat-client-types';
 
-export function useChat(isOpen = false) {
+export function useChat(isOpen = false, isViewingConversation = false) {
   const queryClient = useQueryClient();
   const { messages: t } = useLocale();
   const chatT = t.hooks.chat;
@@ -104,6 +105,14 @@ export function useChat(isOpen = false) {
     [messagesData],
   );
 
+  const visibleMessages = useMemo(
+    () =>
+      isViewingConversation
+        ? markStaffMessagesReadForClientViewer(allMessages)
+        : allMessages,
+    [allMessages, isViewingConversation],
+  );
+
   useEffect(() => {
     if (!awaitingStaffReply || allMessages.length === 0) return;
     const last = allMessages[allMessages.length - 1];
@@ -118,21 +127,24 @@ export function useChat(isOpen = false) {
     return () => clearTimeout(timeout);
   }, [awaitingStaffReply]);
 
-  const syncedReadListForRef = useRef<string | null>(null);
+  const messageSyncToken = useMemo(() => {
+    if (!allMessages.length) return '';
+    const last = allMessages[allMessages.length - 1];
+    return `${conversationId ?? ''}:${allMessages.length}:${last.id}:${last.isRead}`;
+  }, [conversationId, allMessages]);
 
   useEffect(() => {
     if (!conversationId || !isOpen || messagesLoading) return;
-    if (allMessages.length === 0) return;
-    if (syncedReadListForRef.current === conversationId) return;
-    syncedReadListForRef.current = conversationId;
+    if (!messageSyncToken) return;
     queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
-  }, [conversationId, isOpen, messagesLoading, allMessages.length, queryClient]);
+  }, [conversationId, isOpen, messagesLoading, messageSyncToken, queryClient]);
 
   const staffMsgCount = countClientNotifyMessages(allMessages);
   const prevStaffMsgCountRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (
+      !isViewingConversation &&
       shouldPlayClientNotificationSound({
         previousCount: prevStaffMsgCountRef.current,
         currentCount: staffMsgCount,
@@ -141,7 +153,7 @@ export function useChat(isOpen = false) {
       playNotificationSound(660, 400, 0.25);
     }
     prevStaffMsgCountRef.current = staffMsgCount;
-  }, [staffMsgCount]);
+  }, [staffMsgCount, isViewingConversation]);
 
   const sendMessageMutation = useMutation({
     mutationFn: async (params: {
@@ -195,9 +207,12 @@ export function useChat(isOpen = false) {
         }),
         lastMessageAt: conv.lastMessageAt ?? conv.updatedAt,
         status: conv.status,
-        unread: getUnreadMessageCount(conv.messages ?? []),
+        unread:
+          isViewingConversation && conv.id === conversationId
+            ? 0
+            : getUnreadMessageCount(conv.messages ?? []),
       })),
-    [conversations],
+    [conversations, conversationId, isViewingConversation],
   );
 
   const currentConversation = useMemo(() => {
@@ -208,12 +223,12 @@ export function useChat(isOpen = false) {
       status: meta?.status ?? 'ACTIVE',
       subject: meta?.subject,
       summary: meta?.summary,
-      messages: allMessages,
+      messages: visibleMessages,
       createdAt: meta?.createdAt ?? new Date().toISOString(),
       updatedAt: meta?.updatedAt ?? new Date().toISOString(),
       lastMessageAt: meta?.lastMessageAt,
     };
-  }, [conversationId, conversations, allMessages]);
+  }, [conversationId, conversations, visibleMessages]);
 
   return {
     conversations,
@@ -227,7 +242,8 @@ export function useChat(isOpen = false) {
     loadOlderMessages: fetchNextPage,
     hasOlderMessages: hasNextPage,
     isLoadingOlderMessages: isFetchingNextPage,
-    getUnreadCount: () => getUnreadMessageCount(allMessages),
+    getUnreadCount: () =>
+      isViewingConversation ? 0 : getUnreadMessageCount(allMessages),
     isLoading:
       conversationsLoading ||
       messagesLoading ||

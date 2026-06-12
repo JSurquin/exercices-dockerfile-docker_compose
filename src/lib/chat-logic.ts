@@ -165,6 +165,26 @@ export function getUnreadMessageCount(
   return messages.filter((m) => !m.isRead && m.senderType !== 'USER').length;
 }
 
+/** Messages staff/BOT considérés lus tant que le client consulte la conversation. */
+export function markStaffMessagesReadForClientViewer<
+  T extends { isRead: boolean; senderType: string },
+>(messages: T[]): T[] {
+  return messages.map((m) =>
+    m.senderType !== 'USER' ? { ...m, isRead: true } : m,
+  );
+}
+
+export function getConversationListUnreadTotal(
+  items: Array<{ id: string; unread: number }>,
+  activeConversationId: string | null,
+  isViewingConversation: boolean,
+): number {
+  return items.reduce((acc, item) => {
+    if (isViewingConversation && item.id === activeConversationId) return acc;
+    return acc + item.unread;
+  }, 0);
+}
+
 export function countStaffMessagesForNotification(
   messages: Array<{ senderType: string }>,
 ): number {

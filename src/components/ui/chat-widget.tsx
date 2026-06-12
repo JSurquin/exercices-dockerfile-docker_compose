@@ -440,6 +440,11 @@ export function ChatWidget() {
   ];
 
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<ChatWidgetTab>("home");
+  const [helpStep, setHelpStep] = useState<ChatWidgetHelpStep>("categories");
+  const [messagesStep, setMessagesStep] = useState<ChatWidgetMessagesStep>("list");
+  const isInConversation =
+    activeTab === "messages" && messagesStep === "conversation";
   const {
     currentConversation,
     conversationId,
@@ -452,12 +457,9 @@ export function ChatWidget() {
     isLoadingOlderMessages,
     getUnreadCount,
     isLoading,
-  } = useChat(isOpen);
+  } = useChat(isOpen, isInConversation);
 
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<ChatWidgetTab>("home");
-  const [helpStep, setHelpStep] = useState<ChatWidgetHelpStep>("categories");
-  const [messagesStep, setMessagesStep] = useState<ChatWidgetMessagesStep>("list");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [inputPrefill, setInputPrefill] = useState<string | undefined>();
   const [isSendingBotMsg, setIsSendingBotMsg] = useState(false);
@@ -508,9 +510,11 @@ export function ChatWidget() {
 
 
   const recentConversation = conversationListItems[0] ?? null;
-  const totalListUnread = conversationListItems.reduce((acc, item) => acc + item.unread, 0);
-  const isInConversation =
-    activeTab === "messages" && messagesStep === "conversation";
+  const totalListUnread = conversationListItems.reduce(
+    (acc, item) =>
+      acc + (isInConversation && item.id === conversationId ? 0 : item.unread),
+    0,
+  );
 
   const effectiveIsAiTyping =
     isAiTyping &&

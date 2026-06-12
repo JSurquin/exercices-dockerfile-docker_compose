@@ -5,6 +5,8 @@ import {
   computeAverageResponseTimeMinutes,
   countStaffMessagesForNotification,
   getUnreadMessageCount,
+  getConversationListUnreadTotal,
+  markStaffMessagesReadForClientViewer,
   isConversationWriteBlockedForIdentity,
   isStaffRole,
   isValidModeratorRole,
@@ -344,6 +346,35 @@ describe('getUnreadMessageCount', () => {
         { isRead: false, senderType: 'MODERATOR' },
       ]),
     ).toBe(2);
+  });
+});
+
+describe('markStaffMessagesReadForClientViewer', () => {
+  it('marque BOT/MODERATOR/AI/SYSTEM comme lus sans toucher USER', () => {
+    const input = [
+      { isRead: false, senderType: 'USER' },
+      { isRead: false, senderType: 'BOT' },
+      { isRead: false, senderType: 'MODERATOR' },
+    ];
+    const result = markStaffMessagesReadForClientViewer(input);
+    expect(result[0].isRead).toBe(false);
+    expect(result[1].isRead).toBe(true);
+    expect(result[2].isRead).toBe(true);
+  });
+});
+
+describe('getConversationListUnreadTotal', () => {
+  it('ignore la conversation consultée', () => {
+    expect(
+      getConversationListUnreadTotal(
+        [
+          { id: 'c1', unread: 2 },
+          { id: 'c2', unread: 1 },
+        ],
+        'c1',
+        true,
+      ),
+    ).toBe(1);
   });
 });
 
