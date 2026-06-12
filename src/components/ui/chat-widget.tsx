@@ -470,7 +470,21 @@ export function ChatWidget() {
   const aiTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const popupCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevScrollHeightRef = useRef(0);
-  const initialNavDoneRef = useRef(false);
+
+  const resetWidgetNavigation = useCallback(() => {
+    setActiveTab("home");
+    setHelpStep("categories");
+    setMessagesStep("list");
+    setSelectedCategory(null);
+    setInputPrefill(undefined);
+    setIsSendingBotMsg(false);
+    setIsAiTyping(false);
+    setAiTypingBaseCount(0);
+    if (aiTypingTimeoutRef.current) {
+      clearTimeout(aiTypingTimeoutRef.current);
+      aiTypingTimeoutRef.current = null;
+    }
+  }, []);
 
   const openPopup = useCallback(() => {
     if (popupCloseTimerRef.current) {
@@ -485,13 +499,14 @@ export function ChatWidget() {
 
   const closePopup = useCallback(() => {
     setIsOpen(false);
+    resetWidgetNavigation();
     popupCloseTimerRef.current = setTimeout(() => {
       setPopupMounted(false);
       popupCloseTimerRef.current = null;
     }, CHAT_WIDGET_POPUP_CLOSE_MS);
-  }, []);
+  }, [resetWidgetNavigation]);
 
-  const hasExistingMessages = (currentConversation?.messages?.length ?? 0) > 0;
+
   const recentConversation = conversationListItems[0] ?? null;
   const totalListUnread = conversationListItems.reduce((acc, item) => acc + item.unread, 0);
   const isInConversation =
@@ -523,19 +538,6 @@ export function ChatWidget() {
     setActiveTab("messages");
     setMessagesStep("conversation");
   }, []);
-
-  useEffect(() => {
-    if (!isOpen) {
-      initialNavDoneRef.current = false;
-      return;
-    }
-    if (initialNavDoneRef.current) return;
-    initialNavDoneRef.current = true;
-    if (hasExistingMessages) {
-      setActiveTab("messages");
-      setMessagesStep("conversation");
-    }
-  }, [isOpen, hasExistingMessages]);
 
   useEffect(() => {
     if (isInConversation) {

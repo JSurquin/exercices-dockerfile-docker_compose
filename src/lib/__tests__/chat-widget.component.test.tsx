@@ -198,6 +198,10 @@ async function openChat() {
   fireEvent.click(screen.getByTestId('chat-fab'));
 }
 
+function openConversationView() {
+  fireEvent.click(screen.getByText('Poser une question'));
+}
+
 beforeEach(() => {
   jest.clearAllMocks();
   jest.useFakeTimers({ advanceTimers: true });
@@ -322,7 +326,7 @@ describe('ChatWidget', () => {
     await waitFor(() => expect(mockSendMessage).toHaveBeenCalled());
   });
 
-  it('ouvre directement en conversation si messages existants', async () => {
+  it('rouvre sur accueil après fermeture même si messages existants', async () => {
     chatMock = buildChatMock({
       currentConversation: {
         id: 'c1',
@@ -343,8 +347,14 @@ describe('ChatWidget', () => {
     authUser = { id: 'u1', username: 'Me' };
     renderWidget();
     await openChat();
+    openConversationView();
     expect(screen.getByTestId('chat-message-input')).toBeInTheDocument();
     expect(screen.getByText('Hello')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('chat-fab'));
+    act(() => jest.advanceTimersByTime(150));
+    await openChat();
+    expect(screen.queryByTestId('chat-message-input')).not.toBeInTheDocument();
+    expect(screen.getByText(/Comment pouvons-nous vous aider/i)).toBeInTheDocument();
   });
 
   it('affiche tous les types de messages et le markdown staff', async () => {
@@ -365,6 +375,7 @@ describe('ChatWidget', () => {
     authUser = { id: 'u1', username: 'Me' };
     renderWidget();
     await openChat();
+    openConversationView();
     expect(screen.getByText('Mon message')).toBeInTheDocument();
     expect(screen.getByText('Réponse bot')).toBeInTheDocument();
     expect(screen.getAllByTestId('markdown').length).toBeGreaterThan(0);
@@ -394,6 +405,7 @@ describe('ChatWidget', () => {
     });
     renderWidget();
     await openChat();
+    openConversationView();
     expect(screen.getByText(/Merci pour votre message/)).toBeInTheDocument();
   });
 
@@ -556,6 +568,7 @@ describe('ChatWidget', () => {
     });
     renderWidget();
     await openChat();
+    openConversationView();
     const container = screen.getByTestId('chat-messages');
     Object.defineProperty(container, 'scrollTop', { value: 0, writable: true, configurable: true });
     Object.defineProperty(container, 'scrollHeight', { value: 800, writable: true, configurable: true });
@@ -644,6 +657,7 @@ describe('ChatWidget', () => {
     });
     renderWidget();
     await openChat();
+    openConversationView();
     const container = screen.getByTestId('chat-messages');
     Object.defineProperty(container, 'scrollTop', { value: 200, writable: true, configurable: true });
     fireEvent.scroll(container, { target: container });
@@ -662,6 +676,7 @@ describe('ChatWidget', () => {
     });
     renderWidget();
     await openChat();
+    openConversationView();
     const input = screen.getByTestId('chat-message-input');
     fireEvent.change(input, { target: { value: 'test' } });
     fireEvent.keyDown(input, { key: 'Enter' });
@@ -681,6 +696,7 @@ describe('ChatWidget', () => {
     });
     renderWidget();
     await openChat();
+    openConversationView();
     expect(screen.getByText('Guest msg')).toBeInTheDocument();
   });
 
@@ -714,6 +730,7 @@ describe('ChatWidget', () => {
       return { conversationId: 'c1' };
     });
     await openChat();
+    openConversationView();
     const input = screen.getByTestId('chat-message-input');
     await act(async () => {
       fireEvent.change(input, { target: { value: 'Question IA' } });
