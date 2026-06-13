@@ -1,6 +1,6 @@
 import {
   evaluateUserMessageForAi,
-  OFF_TOPIC_REFUSAL_MESSAGE,
+  OFF_TOPIC_REFUSAL_I18N_KEY,
   shouldAiReplyToConversation,
 } from '@/lib/chat-ai-guards';
 
@@ -68,7 +68,7 @@ describe('evaluateUserMessageForAi', () => {
     });
 
     expect(result.allowed).toBe(false);
-    expect(result.refusalMessage).toBe(OFF_TOPIC_REFUSAL_MESSAGE);
+    expect(result.refusalMessage).toBe(OFF_TOPIC_REFUSAL_I18N_KEY);
   });
 
   it('accepte une question sur un trade MoonSkin', () => {
@@ -159,7 +159,7 @@ describe('evaluateUserMessageForAi', () => {
       message: 'Parle-moi de philosophie antique',
     });
     expect(result.allowed).toBe(false);
-    expect(result.refusalMessage).toBe(OFF_TOPIC_REFUSAL_MESSAGE);
+    expect(result.refusalMessage).toBe(OFF_TOPIC_REFUSAL_I18N_KEY);
   });
 
   it('accepte les catégories payment et trade', () => {

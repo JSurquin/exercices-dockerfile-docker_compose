@@ -298,7 +298,7 @@ describe('POST /api/chat/conversations/[id]/bot-message', () => {
     expect(res.status).toBe(201);
     const createArg = (prisma.chatMessage.create as jest.Mock).mock.calls[0][0];
     expect(createArg.data.senderType).toBe('BOT');
-    expect(createArg.data.content).toContain('Player');
+    expect(createArg.data.content).toBe('__i18n:chatWidget.botTemplates.trade.pending|Player__');
   });
 
   it('rejette une sous-catégorie invalide', async () => {

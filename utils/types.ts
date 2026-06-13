@@ -3699,6 +3699,35 @@ export interface Messages {
       welcomeMessage: string;
       expertResponse: string;
       thankYouMessage: string;
+      ticketTransmitted: string;
+      offTopicRefusal: string;
+    };
+    botTemplates: {
+      trade: {
+        pending: string;
+        blocked: string;
+        item_missing: string;
+        lock: string;
+        bot_issue: string;
+      };
+      payment: {
+        card: string;
+        sepa_fr: string;
+        sepa_eu: string;
+        crypto: string;
+      };
+      delay: {
+        card: string;
+        sepa_fr: string;
+        sepa_eu: string;
+        crypto: string;
+      };
+      support: {
+        bug: string;
+        partnership: string;
+        kyc: string;
+        other: string;
+      };
     };
     placeholder: string;
     poweredBy: string;
@@ -4866,6 +4895,7 @@ export interface Messages {
       };
       messages: {
         title: string;
+        empty: string;
         messageSent: string;
         sendError: string;
         loadError: string;
@@ -4874,6 +4904,14 @@ export interface Messages {
         assigned: string;
         assignError: string;
       };
+      senderTypes: {
+        USER: string;
+        BOT: string;
+        AI: string;
+        MODERATOR: string;
+        SYSTEM: string;
+      };
+      sendHint: string;
     };
   };
   help: {

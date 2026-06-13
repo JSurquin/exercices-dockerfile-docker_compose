@@ -149,8 +149,7 @@ export async function POST(request: NextRequest) {
         await createChatMessageRecord({
           conversationId,
           userId: null,
-          content:
-            'Votre demande a bien été transmise à notre équipe. Un modérateur vous répondra rapidement. Merci de votre patience',
+          content: '__i18n:chatWidget.responses.ticketTransmitted__',
           senderType: 'SYSTEM',
         });
       }

@@ -1,5 +1,8 @@
 import { isOllamaConfigured } from '@/lib/ollama';
 
+export const OFF_TOPIC_REFUSAL_I18N_KEY = '__i18n:chatWidget.responses.offTopicRefusal__';
+
+/** @deprecated Utiliser OFF_TOPIC_REFUSAL_I18N_KEY — conservé pour les tests existants */
 export const OFF_TOPIC_REFUSAL_MESSAGE =
   "Je suis l'assistant MoonSkin et je ne peux répondre qu'aux questions liées à la plateforme : vente de skins CS2, trades Steam, paiements, KYC ou support. Pour toute autre demande, merci de contacter un modérateur humain.";
 
@@ -71,7 +74,7 @@ export function evaluateUserMessageForAi(input: {
   const message = normalizeMessage(input.message);
 
   if (!message) {
-    return { allowed: false, refusalMessage: OFF_TOPIC_REFUSAL_MESSAGE };
+    return { allowed: false, refusalMessage: OFF_TOPIC_REFUSAL_I18N_KEY };
   }
 
   if (GREETING_ONLY.test(message)) {
@@ -82,7 +85,7 @@ export function evaluateUserMessageForAi(input: {
 
   const isOffTopic = OFF_TOPIC_PATTERNS.some((pattern) => pattern.test(message));
   if (isOffTopic && !hasContext) {
-    return { allowed: false, refusalMessage: OFF_TOPIC_REFUSAL_MESSAGE };
+    return { allowed: false, refusalMessage: OFF_TOPIC_REFUSAL_I18N_KEY };
   }
 
   if (MOONSKIN_KEYWORDS.test(message)) {
@@ -98,5 +101,5 @@ export function evaluateUserMessageForAi(input: {
     return { allowed: true };
   }
 
-  return { allowed: false, refusalMessage: OFF_TOPIC_REFUSAL_MESSAGE };
+  return { allowed: false, refusalMessage: OFF_TOPIC_REFUSAL_I18N_KEY };
 }

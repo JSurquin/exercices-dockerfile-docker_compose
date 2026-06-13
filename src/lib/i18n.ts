@@ -1,6 +1,10 @@
 export const locales = ["fr", "en", "cn"] as const;
 export type Locale = (typeof locales)[number];
 import type { Messages } from "~/utils/types";
+import {
+  chatBotTemplatesFr,
+  chatBotTemplatesEn,
+} from "@/lib/chat-bot-i18n-templates";
 
 export const defaultLocale: Locale = "fr";
 
@@ -967,7 +971,10 @@ export const messages: Record<Locale, Messages> = {
         welcomeMessage: "Salut ! Je suis Alex de l'équipe MoonSkin. Comment puis-je vous aider aujourd'hui ?",
         expertResponse: "Merci pour votre message ! Un de nos experts va vous répondre dans quelques instants.",
         thankYouMessage: "Merci pour votre message ! Un membre de notre équipe vous répondra rapidement. En attendant, vous pouvez consulter notre FAQ ou nos guides.",
+        ticketTransmitted: "Votre demande a bien été transmise à notre équipe. Un modérateur vous répondra rapidement. Merci de votre patience",
+        offTopicRefusal: "Je suis l'assistant MoonSkin et je ne peux répondre qu'aux questions liées à la plateforme : vente de skins CS2, trades Steam, paiements, KYC ou support. Pour toute autre demande, merci de contacter un modérateur humain.",
       },
+      botTemplates: chatBotTemplatesFr,
       placeholder: "Tapez votre message...",
       poweredBy: "Propulsé par MoonSkin AI",
       responseTimeInfo: "Nous répondons généralement en moins de 5 minutes",
@@ -5381,6 +5388,7 @@ export const messages: Record<Locale, Messages> = {
         },
         messages: {
           title: "Messages",
+          empty: "Aucun message dans cette conversation.",
           messageSent: "Message envoyé",
           sendError: "Erreur lors de l'envoi du message",
           loadError: "Erreur lors du chargement de la conversation",
@@ -5388,7 +5396,15 @@ export const messages: Record<Locale, Messages> = {
           updateError: "Erreur lors de la mise à jour",
           assigned: "Conversation assignée",
           assignError: "Erreur lors de l'assignation"
-        }
+        },
+        senderTypes: {
+          USER: "Utilisateur",
+          BOT: "Bot",
+          AI: "IA",
+          MODERATOR: "Modérateur",
+          SYSTEM: "Système",
+        },
+        sendHint: "Entrée pour envoyer · Shift+Entrée pour nouvelle ligne",
       }
     },
     help: {
@@ -11348,7 +11364,10 @@ export const messages: Record<Locale, Messages> = {
         welcomeMessage: "Hi! I'm Alex from the MoonSkin team. How can I help you today?",
         expertResponse: "Thank you for your message! One of our experts will respond in a few moments.",
         thankYouMessage: "Thank you for your message! A member of our team will respond quickly. In the meantime, you can check our FAQ or guides.",
+        ticketTransmitted: "Your request has been forwarded to our team. A moderator will respond shortly. Thank you for your patience.",
+        offTopicRefusal: "I'm the MoonSkin assistant and can only answer questions related to the platform: CS2 skin sales, Steam trades, payments, KYC, or support. For any other request, please contact a human moderator.",
       },
+      botTemplates: chatBotTemplatesEn,
       placeholder: "Type your message...",
       poweredBy: "Powered by MoonSkin AI",
       responseTimeInfo: "We usually respond in less than 5 minutes",
@@ -12519,6 +12538,7 @@ export const messages: Record<Locale, Messages> = {
         },
         messages: {
           title: "Messages",
+          empty: "No messages in this conversation.",
           messageSent: "Message sent",
           sendError: "Error sending message",
           loadError: "Error loading conversation",
@@ -12526,7 +12546,15 @@ export const messages: Record<Locale, Messages> = {
           updateError: "Error updating",
           assigned: "Conversation assigned",
           assignError: "Error assigning"
-        }
+        },
+        senderTypes: {
+          USER: "User",
+          BOT: "Bot",
+          AI: "AI",
+          MODERATOR: "Moderator",
+          SYSTEM: "System",
+        },
+        sendHint: "Enter to send · Shift+Enter for new line",
       }
     },
     settings: {
@@ -18436,7 +18464,10 @@ export const messages: Record<Locale, Messages> = {
         welcomeMessage: "你好！我是MoonSkin团队的Alex。今天我能为您做些什么？",
         expertResponse: "感谢您的消息！我们的专家将在几分钟内回复您。",
         thankYouMessage: "感谢您的消息！我们的团队成员将快速回复您。同时，您可以查看我们的FAQ或指南。",
+        ticketTransmitted: "您的请求已转交给我们的团队。客服人员将尽快回复。感谢您的耐心。",
+        offTopicRefusal: "我是MoonSkin助手，只能回答与平台相关的问题：CS2皮肤销售、Steam交易、支付、KYC或支持。如有其他请求，请联系人工客服。",
       },
+      botTemplates: chatBotTemplatesEn,
       placeholder: "输入您的消息...",
       poweredBy: "由MoonSkin AI提供支持",
       responseTimeInfo: "我们通常在5分钟内回复",
@@ -19559,6 +19590,7 @@ export const messages: Record<Locale, Messages> = {
         },
         messages: {
           title: "消息",
+          empty: "此对话中没有消息。",
           messageSent: "消息已发送",
           sendError: "发送消息时出错",
           loadError: "加载对话时出错",
@@ -19566,7 +19598,15 @@ export const messages: Record<Locale, Messages> = {
           updateError: "更新时出错",
           assigned: "对话已分配",
           assignError: "分配时出错"
-        }
+        },
+        senderTypes: {
+          USER: "用户",
+          BOT: "机器人",
+          AI: "AI",
+          MODERATOR: "客服",
+          SYSTEM: "系统",
+        },
+        sendHint: "回车发送 · Shift+回车换行",
       }
     },
     settings: {

@@ -36,25 +36,18 @@ import {
 import { cn } from '@/lib/utils';
 import { PageLoading } from '@/components/ui/page-loading';
 import { resolveI18nContent } from '@/lib/resolve-i18n-content';
+import { localeToBcp47 } from '@/lib/locale-date';
 import {
   countUserMessagesForModerator,
   shouldPlayModeratorNotificationSound,
 } from '@/lib/chat-notification-logic';
 import { playNotificationSound } from '@/lib/play-notification-sound';
 
-const senderTypeLabels: Record<string, string> = {
-  USER: 'Utilisateur',
-  BOT: 'Bot',
-  AI: 'IA',
-  MODERATOR: 'Modérateur',
-  SYSTEM: 'Système',
-};
-
 export default function ConversationPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
-  const { messages } = useLocale();
+  const { messages, locale } = useLocale();
   const { data: session, isPending } = useSession();
   const queryClient = useQueryClient();
 
@@ -190,14 +183,14 @@ export default function ConversationPage() {
   }, [conversation?.messages?.length, scrollToBottom]);
 
   const formatTime = (date: Date) => {
-    return new Date(date).toLocaleTimeString('fr-FR', {
+    return new Date(date).toLocaleTimeString(localeToBcp47(locale), {
       hour: '2-digit',
       minute: '2-digit',
     });
   };
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('fr-FR', {
+    return new Date(date).toLocaleDateString(localeToBcp47(locale), {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -223,9 +216,9 @@ export default function ConversationPage() {
         <Card className={adminGlassCard}>
           <CardContent className="p-8 text-center">
             <ExclamationTriangleIcon className="w-16 h-16 mx-auto mb-4 text-theme-accent" />
-            <h2 className="text-2xl font-bold mb-2">Accès refusé</h2>
+            <h2 className="text-2xl font-bold mb-2">{messages.moderation.accessDenied.title}</h2>
             <p className="text-muted-foreground">
-              Vous devez être modérateur ou administrateur pour accéder à cette page.
+              {messages.moderation.accessDenied.description}
             </p>
           </CardContent>
         </Card>
@@ -363,7 +356,7 @@ export default function ConversationPage() {
             >
               {conversation.messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                  Aucun message dans cette conversation.
+                  {messages.moderation.conversation.messages.empty}
                 </div>
               ) : (
                 conversation.messages.map((msg: ChatMessageWithUser) => {
@@ -383,7 +376,7 @@ export default function ConversationPage() {
                           variant="outline"
                           className={`text-[10px] px-1.5 py-0 ${chatSenderBadgeClass(msg.senderType)}`}
                         >
-                          {senderTypeLabels[msg.senderType] ?? msg.senderType}
+                          {messages.moderation.conversation.senderTypes[msg.senderType as keyof typeof messages.moderation.conversation.senderTypes] ?? msg.senderType}
                         </Badge>
                         <span className="text-[10px] text-muted-foreground">
                           {formatTime(msg.createdAt)}
@@ -435,7 +428,7 @@ export default function ConversationPage() {
                 </Button>
               </div>
               <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 select-none">
-                Entrée pour envoyer · Shift+Entrée pour nouvelle ligne
+                {messages.moderation.conversation.sendHint}
               </p>
             </div>
           </Card>

@@ -33,9 +33,14 @@ jest.mock('@/lib/play-notification-sound', () => ({
 
 jest.mock('@/components/providers/locale-provider', () => ({
   useLocale: () => ({
+    locale: 'fr',
     messages: {
       moderation: {
         loading: 'Chargement…',
+        accessDenied: {
+          title: 'Accès refusé',
+          description: 'Vous devez être modérateur ou administrateur pour accéder à cette page.',
+        },
         conversation: {
           notFound: { title: 'Introuvable', backButton: 'Retour' },
           header: {
@@ -45,6 +50,7 @@ jest.mock('@/components/providers/locale-provider', () => ({
           },
           messages: {
             title: 'Messages',
+            empty: 'Aucun message dans cette conversation.',
             messageSent: 'Message envoyé',
             sendError: 'Erreur envoi',
             statusUpdated: 'Statut mis à jour',
@@ -52,6 +58,14 @@ jest.mock('@/components/providers/locale-provider', () => ({
             assigned: 'Conversation assignée',
             assignError: 'Erreur assignation',
           },
+          senderTypes: {
+            USER: 'Utilisateur',
+            BOT: 'Bot',
+            AI: 'IA',
+            MODERATOR: 'Modérateur',
+            SYSTEM: 'Système',
+          },
+          sendHint: 'Entrée pour envoyer · Shift+Entrée pour nouvelle ligne',
           typeYourReply: 'Votre réponse…',
           info: {
             title: 'Informations',

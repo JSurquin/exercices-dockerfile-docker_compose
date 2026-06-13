@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useLocale } from "@/components/providers/locale-provider";
 import { resolveI18nContent } from "@/lib/resolve-i18n-content";
+import { localeToBcp47 } from "@/lib/locale-date";
 import {
   shouldShowBackButton,
   type ChatWidgetHelpStep,
@@ -98,8 +99,8 @@ function formatRelativeTime(date: Date | string): string {
   return new Date(date).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
-function formatMessageTime(date: Date | string) {
-  return new Date(date).toLocaleTimeString("fr-FR", {
+function formatMessageTime(date: Date | string, locale: string) {
+  return new Date(date).toLocaleTimeString(locale, {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -235,6 +236,7 @@ interface ChatWidgetMessageListProps {
   botLabel: string;
   aiLabel: string;
   resolveContent: (content: string) => string;
+  dateLocale: string;
   isLoadingOlderMessages: boolean;
   isLoading: boolean;
   showAiTyping: boolean;
@@ -251,6 +253,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
   botLabel,
   aiLabel,
   resolveContent,
+  dateLocale,
   isLoadingOlderMessages,
   isLoading,
   showAiTyping,
@@ -340,7 +343,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
               <div
                 className={`flex items-center justify-between mt-1 gap-2 ${chatWidgetTimestampClass(bubbleSender)}`}
               >
-                <span className="text-[10px]">{formatMessageTime(msg.createdAt)}</span>
+                <span className="text-[10px]">{formatMessageTime(msg.createdAt, dateLocale)}</span>
                 {isUser && (
                   <div className="flex text-green-300">
                     <CheckIcon className="h-3 w-3" />
@@ -393,7 +396,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [popupMounted, setPopupMounted] = useState(false);
-  const { messages } = useLocale();
+  const { messages, locale } = useLocale();
 
   const CATEGORIES: Category[] = [
     {
@@ -920,6 +923,7 @@ export function ChatWidget() {
         botLabel={messages.chatWidget.botLabel}
         aiLabel={messages.chatWidget.aiLabel}
         resolveContent={resolveContent}
+        dateLocale={localeToBcp47(locale)}
         isLoadingOlderMessages={isLoadingOlderMessages}
         isLoading={isLoading}
         showAiTyping={showAiTyping}

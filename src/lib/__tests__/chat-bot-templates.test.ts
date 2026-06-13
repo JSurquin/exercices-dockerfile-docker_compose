@@ -3,6 +3,8 @@ import {
   getBotMessageContent,
   isValidBotSubcategoryKey,
 } from '@/lib/chat-bot-templates';
+import { chatBotTemplatesFr } from '@/lib/chat-bot-i18n-templates';
+import { resolveI18nContent } from '@/lib/resolve-i18n-content';
 
 /** Clés affichées dans le widget chat (doivent correspondre aux templates BOT). */
 const WIDGET_SUBCATEGORY_KEYS = [
@@ -25,6 +27,8 @@ const WIDGET_SUBCATEGORY_KEYS = [
   'support.other',
 ];
 
+const mockMessages = { chatWidget: { botTemplates: chatBotTemplatesFr } };
+
 describe('CHAT_BOT_SUBCATEGORY_KEYS', () => {
   it('couvre exactement les 17 sous-catégories du widget', () => {
     expect([...CHAT_BOT_SUBCATEGORY_KEYS].sort()).toEqual(
@@ -46,21 +50,25 @@ describe('isValidBotSubcategoryKey', () => {
 });
 
 describe('getBotMessageContent', () => {
-  it('personnalise le message avec le pseudo', () => {
+  it('retourne une clé i18n avec le pseudo', () => {
     const content = getBotMessageContent('trade.pending', 'Jimmy');
-    expect(content).toContain('Bonjour Jimmy');
-    expect(content).toContain('Moonskin');
+    expect(content).toBe('__i18n:chatWidget.botTemplates.trade.pending|Jimmy__');
   });
 
-  it('génère un contenu non vide pour chaque sous-catégorie', () => {
+  it('génère une clé résolvable pour chaque sous-catégorie', () => {
     for (const key of CHAT_BOT_SUBCATEGORY_KEYS) {
       const content = getBotMessageContent(key, 'TestUser');
-      expect(content.trim().length).toBeGreaterThan(20);
+      const resolved = resolveI18nContent(content, mockMessages);
+      expect(resolved.trim().length).toBeGreaterThan(20);
+      if (key !== 'support.bug' && key !== 'support.other') {
+        expect(resolved).toContain('TestUser');
+      }
     }
   });
 
   it('mentionne marketing@moonskin.com pour les partenariats', () => {
     const content = getBotMessageContent('support.partnership', 'Creator');
-    expect(content).toContain('marketing@moonskin.com');
+    const resolved = resolveI18nContent(content, mockMessages);
+    expect(resolved).toContain('marketing@moonskin.com');
   });
 });

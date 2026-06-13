@@ -4,7 +4,7 @@ import {
   maybeGenerateAiReply,
   stripI18nPlaceholder,
 } from '@/lib/chat-ai-service';
-import { OFF_TOPIC_REFUSAL_MESSAGE } from '@/lib/chat-ai-guards';
+import { OFF_TOPIC_REFUSAL_I18N_KEY, OFF_TOPIC_REFUSAL_MESSAGE } from '@/lib/chat-ai-guards';
 
 jest.mock('~/prisma/prisma', () => ({
   prisma: {
@@ -157,7 +157,7 @@ describe('maybeGenerateAiReply', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           senderType: 'AI',
-          content: OFF_TOPIC_REFUSAL_MESSAGE,
+          content: OFF_TOPIC_REFUSAL_I18N_KEY,
         }),
       }),
     );

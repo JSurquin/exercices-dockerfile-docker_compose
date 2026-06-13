@@ -40,12 +40,13 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
+import { localeToBcp47 } from '@/lib/locale-date';
 
 export default function ModerationPage() {
   const { user } = useAuth();
   const router = useRouter();
   const { data: session, isPending } = useSession();
-  const { messages } = useLocale();
+  const { messages, locale } = useLocale();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<ConversationFilters>({
     status: 'ACTIVE',
@@ -116,7 +117,7 @@ export default function ModerationPage() {
   };
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('fr-FR', {
+    return new Date(date).toLocaleDateString(localeToBcp47(locale), {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',

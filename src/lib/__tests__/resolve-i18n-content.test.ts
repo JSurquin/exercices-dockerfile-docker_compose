@@ -9,10 +9,26 @@ const messages = {
 };
 
 describe('resolveI18nContent', () => {
-  it('résout une clé __i18n:...__', () => {
+  it('résout une clé __i18n:...__ avec variables', () => {
     expect(
       resolveI18nContent('__i18n:chatWidget.responses.thankYouMessage__', messages),
     ).toBe('Merci pour votre patience !');
+    expect(
+      resolveI18nContent('__i18n:chatWidget.responses.thankYouMessage|Jimmy__', messages),
+    ).toBe('Merci pour votre patience !');
+  });
+
+  it('remplace {username} dans les templates bot', () => {
+    const botMessages = {
+      chatWidget: {
+        botTemplates: {
+          trade: { pending: 'Bonjour {username} !' },
+        },
+      },
+    };
+    expect(
+      resolveI18nContent('__i18n:chatWidget.botTemplates.trade.pending|Alex__', botMessages),
+    ).toBe('Bonjour Alex !');
   });
 
   it('retourne le contenu brut si ce n’est pas une clé i18n', () => {

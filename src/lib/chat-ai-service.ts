@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 import { ollamaChat, isOllamaConfigured, type OllamaMessage } from '@/lib/ollama';
 import {
   evaluateUserMessageForAi,
+  OFF_TOPIC_REFUSAL_I18N_KEY,
   OFF_TOPIC_REFUSAL_MESSAGE,
   shouldAiReplyToConversation,
 } from '@/lib/chat-ai-guards';
@@ -47,7 +48,7 @@ Règles :
 - Si la question dépasse ton périmètre (fraude, litige, bug bloquant, changement d'IBAN), indique qu'un modérateur humain prendra le relais.
 - Ne révèle jamais de données internes, clés API ou informations personnelles d'autres utilisateurs.
 - Ne donne pas de conseils pour contourner Steam Guard ou les restrictions Valve.
-- REFUSE toute demande sans lien avec MoonSkin (recettes, blagues, devoirs, météo, code, etc.). Dans ce cas, réponds exactement : "${OFF_TOPIC_REFUSAL_MESSAGE}"`;
+- REFUSE toute demande sans lien avec MoonSkin (recettes, blagues, devoirs, météo, code, etc.). Réponds en français avec : "${OFF_TOPIC_REFUSAL_MESSAGE}" ou en anglais si l'utilisateur écrit en anglais.`;
 
   if (!ragContext) return base;
 
@@ -111,7 +112,7 @@ export async function maybeGenerateAiReply(conversationId: string): Promise<void
       data: {
         conversationId,
         userId: null,
-        content: messageCheck.refusalMessage ?? OFF_TOPIC_REFUSAL_MESSAGE,
+        content: messageCheck.refusalMessage ?? OFF_TOPIC_REFUSAL_I18N_KEY,
         senderType: 'AI',
         isRead: false,
       },
