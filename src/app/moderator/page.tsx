@@ -125,7 +125,7 @@ export default function ModeratorLoginPage() {
 
             <p className="text-center text-sm">
               <Link href="/" className="text-primary hover:underline">
-                Retour à l&apos;accueil
+                {t.backToHome}
               </Link>
             </p>
           </div>

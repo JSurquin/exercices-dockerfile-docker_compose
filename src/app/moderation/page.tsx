@@ -41,6 +41,11 @@ import {
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
 import { localeToBcp47 } from '@/lib/locale-date';
+import {
+  chatCategoryLabel,
+  chatPriorityLabel,
+  chatStatusLabel,
+} from '@/lib/chat-moderation-labels';
 
 export default function ModerationPage() {
   const { user } = useAuth();
@@ -262,14 +267,14 @@ export default function ModerationPage() {
                           {conversation.subject || messages.moderation.noSubject}
                         </h3>
                         <Badge variant="outline" className={`text-[10px] sm:text-xs ${chatPriorityBadgeClass(conversation.priority)}`}>
-                          {conversation.priority}
+                          {chatPriorityLabel(conversation.priority, messages)}
                         </Badge>
                         <Badge variant="outline" className={`text-[10px] sm:text-xs ${chatStatusBadgeClass(conversation.status)}`}>
-                          {conversation.status}
+                          {chatStatusLabel(conversation.status, messages)}
                         </Badge>
                         {conversation.category && (
                           <Badge variant="outline" className={cn('text-[10px] sm:text-xs', adminBadgeStatus)}>
-                            {conversation.category}
+                            {chatCategoryLabel(conversation.category, messages)}
                           </Badge>
                         )}
                       </div>
@@ -279,7 +284,7 @@ export default function ModerationPage() {
                           {conversation.user?.name || conversation.user?.email || messages.moderation.anonymousUser}
                         </span>
                         {conversation.user?.steamUsername && (
-                          <span className="break-all"> • Steam: {conversation.user.steamUsername}</span>
+                          <span className="break-all"> • {messages.moderation.conversation.info.steam} {conversation.user.steamUsername}</span>
                         )}
                       </div>
 

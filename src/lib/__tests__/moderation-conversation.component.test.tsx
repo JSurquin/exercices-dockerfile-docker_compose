@@ -41,6 +41,15 @@ jest.mock('@/components/providers/locale-provider', () => ({
           title: 'Accès refusé',
           description: 'Vous devez être modérateur ou administrateur pour accéder à cette page.',
         },
+        filters: {
+          active: 'Actives',
+          closed: 'Fermées',
+          archived: 'Archivées',
+          low: 'Faible',
+          normal: 'Normale',
+          high: 'Élevée',
+          urgent: 'Urgente',
+        },
         conversation: {
           notFound: { title: 'Introuvable', backButton: 'Retour' },
           header: {

@@ -4809,6 +4809,7 @@ export interface Messages {
     accessDeniedDesc: string;
     reservedInterface: string;
     twoFactorNotAvailable: string;
+    backToHome: string;
   };
   moderation: {
     title: string;

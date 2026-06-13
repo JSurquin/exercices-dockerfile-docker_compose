@@ -94,7 +94,7 @@ export function ModerationHeader() {
               <DropdownMenuItem asChild className="text-foreground focus:bg-theme-accent/10 focus:text-theme-highlight">
                 <Link href="/">
                   <HomeIcon className="h-4 w-4 mr-2" />
-                  Accueil
+                  {messages.nav.home}
                 </Link>
               </DropdownMenuItem>
               {user?.role === 'ADMIN' && (
@@ -110,7 +110,7 @@ export function ModerationHeader() {
                 className="text-destructive focus:bg-destructive/10 focus:text-destructive"
               >
                 <ArrowLeftOnRectangleIcon className="h-4 w-4 mr-2" />
-                Déconnexion
+                {messages.nav.logout}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

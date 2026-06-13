@@ -38,6 +38,10 @@ import { PageLoading } from '@/components/ui/page-loading';
 import { resolveI18nContent } from '@/lib/resolve-i18n-content';
 import { localeToBcp47 } from '@/lib/locale-date';
 import {
+  chatPriorityLabel,
+  chatStatusLabel,
+} from '@/lib/chat-moderation-labels';
+import {
   countUserMessagesForModerator,
   shouldPlayModeratorNotificationSound,
 } from '@/lib/chat-notification-logic';
@@ -73,7 +77,7 @@ export default function ConversationPage() {
           router.push('/moderation');
           return null;
         }
-        throw new Error('Erreur lors du chargement');
+        throw new Error(messages.moderation.conversation.messages.loadError);
       }
       return response.json();
     },
@@ -110,7 +114,7 @@ export default function ConversationPage() {
         }),
       });
 
-      if (!response.ok) throw new Error('Erreur lors de l\'envoi');
+      if (!response.ok) throw new Error(messages.moderation.conversation.messages.sendError);
       
       setMessage('');
       await refetchConversation();
@@ -131,7 +135,7 @@ export default function ConversationPage() {
         body: JSON.stringify({ status }),
       });
 
-      if (!response.ok) throw new Error('Erreur lors de la mise à jour');
+      if (!response.ok) throw new Error(messages.moderation.conversation.messages.updateError);
       
       await refetchConversation();
       toast.success(messages.moderation.conversation.messages.statusUpdated);
@@ -149,7 +153,7 @@ export default function ConversationPage() {
         body: JSON.stringify({ moderatorId: session?.user?.id || user?.id || '' }),
       });
 
-      if (!response.ok) throw new Error('Erreur lors de l\'assignation');
+      if (!response.ok) throw new Error(messages.moderation.conversation.messages.assignError);
       
       await refetchConversation();
       toast.success(messages.moderation.conversation.messages.assigned);
@@ -285,10 +289,10 @@ export default function ConversationPage() {
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <Badge variant="outline" className={`text-xs px-1.5 py-0.5 ${chatStatusBadgeClass(conversation.status)}`}>
-            {conversation.status}
+            {chatStatusLabel(conversation.status, messages)}
           </Badge>
           <Badge variant="outline" className={`text-xs px-1.5 py-0.5 hidden sm:inline-flex ${chatPriorityBadgeClass(conversation.priority)}`}>
-            {conversation.priority}
+            {chatPriorityLabel(conversation.priority, messages)}
           </Badge>
         </div>
       </div>
@@ -476,7 +480,7 @@ function SidebarContent({
             </p>
             {(conversation as any).user?.steamUsername && (
               <p className="text-xs text-muted-foreground truncate">
-                Steam: {(conversation as any).user.steamUsername}
+                {messages.moderation.conversation.info.steam} {(conversation as any).user.steamUsername}
               </p>
             )}
           </div>

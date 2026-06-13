@@ -5302,6 +5302,7 @@ export const messages: Record<Locale, Messages> = {
       accessDeniedDesc: "Vous n'avez pas les permissions nécessaires",
       reservedInterface: "Interface réservée aux modérateurs",
       twoFactorNotAvailable: "La 2FA n'est pas disponible pour les comptes moderateur.",
+      backToHome: "Retour à l'accueil",
     },
     moderation: {
       title: "Modération",
@@ -12452,6 +12453,7 @@ export const messages: Record<Locale, Messages> = {
       accessDeniedDesc: "You do not have the necessary permissions",
       reservedInterface: "Interface reserved for moderators",
       twoFactorNotAvailable: "2FA is not available for moderator accounts.",
+      backToHome: "Back to home",
     },
     moderation: {
       title: "Moderation",
@@ -19504,6 +19506,7 @@ export const messages: Record<Locale, Messages> = {
       accessDeniedDesc: "您没有必要的权限",
       reservedInterface: "管理员专用界面",
       twoFactorNotAvailable: "管理员帐户不支持双因素认证。",
+      backToHome: "返回首页",
     },
     moderation: {
       title: "审核管理",
