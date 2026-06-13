@@ -46,6 +46,7 @@ import {
   chatPriorityLabel,
   chatStatusLabel,
 } from '@/lib/chat-moderation-labels';
+import { resolveI18nContent } from '@/lib/resolve-i18n-content';
 
 export default function ModerationPage() {
   const { user } = useAuth();
@@ -196,7 +197,7 @@ export default function ModerationPage() {
           />
           <ModStatCard
             label={messages.moderation.stats.responseTime}
-            value={`${stats.averageResponseTime}min`}
+            value={`${stats.averageResponseTime}${messages.moderation.stats.minutesShort}`}
             icon={ClockIcon}
           />
           <ModStatCard
@@ -290,7 +291,7 @@ export default function ModerationPage() {
 
                       {conversation.messages.length > 0 && (
                         <p className="text-sm text-muted-foreground/80 line-clamp-2 break-words">
-                          {conversation.messages[0].content}
+                          {resolveI18nContent(conversation.messages[0].content, messages)}
                         </p>
                       )}
 

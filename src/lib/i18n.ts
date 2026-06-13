@@ -2909,10 +2909,11 @@ export const messages: Record<Locale, Messages> = {
         accessDenied: "Accès refusé",
         accessDeniedDesc: "Vous devez être administrateur pour accéder à cette page.",
         stats: {
-          totalConversations: "Total conversations",
+          totalConversations: "Total des conversations",
           activeConversations: "Conversations actives",
           unassigned: "Non assignées",
-          responseTime: "Temps de réponse"
+          responseTime: "Temps de réponse",
+          minutesShort: "min",
         },
         tabs: {
           conversations: "Conversations",
@@ -2966,7 +2967,7 @@ export const messages: Record<Locale, Messages> = {
           invalidEmail: "Adresse email invalide",
           accountCreatedEmailFailed: "Compte créé mais l'email n'a pas pu être envoyé.",
           deleteTicket: "Supprimer le ticket",
-          closeTicket: "Clore le ticket",
+          closeTicket: "Fermer le ticket",
           reopenTicket: "Réouvrir le ticket",
           confirmDelete: "Supprimer définitivement ce ticket et tous ses messages ?",
           successDelete: "Ticket supprimé avec succès",
@@ -3146,8 +3147,8 @@ export const messages: Record<Locale, Messages> = {
             desc: "Newsletter : abonnés (liste, recherche, statut actif/inactif, export), campagnes (création, envoi, historique). Envoi d'emails groupés et suivi des envois.",
           },
           chatSupport: {
-            title: "Chat Support",
-            desc: "Chat support : conversations avec les utilisateurs, attribution aux modérateurs, statistiques (conversations, messages). Gestion des modérateurs et des discussions en direct.",
+            title: "Support chat",
+            desc: "Support chat : conversations avec les utilisateurs, attribution aux modérateurs, statistiques (conversations, messages). Gestion des modérateurs et des discussions en direct.",
           },
           legalPages: {
             title: "Pages légales",
@@ -5314,7 +5315,7 @@ export const messages: Record<Locale, Messages> = {
     },
     moderation: {
       title: "Modération",
-      adminChatLink: "Admin chat",
+      adminChatLink: "Gestion du chat",
       subtitle: "Gérez les conversations et demandes d'assistance",
       noSubject: "(Sans sujet)",
       accessDenied: {
@@ -5325,7 +5326,8 @@ export const messages: Record<Locale, Messages> = {
         activeConversations: "Conversations actives",
         unassigned: "Non assignées",
         responseTime: "Temps de réponse",
-        closed: "Fermées"
+        closed: "Fermées",
+        minutesShort: "min",
       },
       filtersTitle: "Filtres",
       loading: "Chargement...",
@@ -5418,7 +5420,7 @@ export const messages: Record<Locale, Messages> = {
           assigned: "Conversation assignée à {username}",
           unassigned: "Conversation désassignée",
         },
-        sendHint: "Entrée pour envoyer · Shift+Entrée pour nouvelle ligne",
+        sendHint: "Entrée pour envoyer · Maj+Entrée pour nouvelle ligne",
       }
     },
     help: {
@@ -6418,7 +6420,7 @@ export const messages: Record<Locale, Messages> = {
         gamificationEconomy: "Économie gamification",
         newsletter: "Newsletter",
         notifications: "Notifications",
-        chatSupport: "Chat Support",
+        chatSupport: "Support chat",
         partners: "Partenaires",
         legalPages: "Pages légales",
         audit: "Audit & Sécurité",
@@ -9131,7 +9133,8 @@ export const messages: Record<Locale, Messages> = {
           totalConversations: "Total conversations",
           activeConversations: "Active conversations",
           unassigned: "Unassigned",
-          responseTime: "Response time"
+          responseTime: "Response time",
+          minutesShort: "min",
         },
         tabs: {
           conversations: "Conversations",
@@ -12488,7 +12491,8 @@ export const messages: Record<Locale, Messages> = {
         activeConversations: "Active Conversations",
         unassigned: "Unassigned",
         responseTime: "Response Time",
-        closed: "Closed"
+        closed: "Closed",
+        minutesShort: "min",
       },
       filtersTitle: "Filters",
       loading: "Loading...",
@@ -16397,7 +16401,8 @@ export const messages: Record<Locale, Messages> = {
           totalConversations: "总对话",
           activeConversations: "活跃对话",
           unassigned: "未分配",
-          responseTime: "响应时间"
+          responseTime: "响应时间",
+          minutesShort: "分钟",
         },
         tabs: {
           conversations: "对话",
@@ -19553,7 +19558,8 @@ export const messages: Record<Locale, Messages> = {
         activeConversations: "活跃对话",
         unassigned: "未分配",
         responseTime: "响应时间",
-        closed: "已关闭"
+        closed: "已关闭",
+        minutesShort: "分钟",
       },
       filtersTitle: "过滤器",
       loading: "加载中...",
@@ -19601,7 +19607,7 @@ export const messages: Record<Locale, Messages> = {
         typeYourReply: "输入您的回复...",
         notFound: {
           title: "未找到对话",
-          backButton: "返回管理"
+          backButton: "返回审核"
         },
         header: {
           noSubject: "无主题对话",

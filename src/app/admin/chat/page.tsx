@@ -324,7 +324,7 @@ export default function AdminChatPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-400">{messages.admin.chat.stats.responseTime}</p>
-                  <p className="text-2xl font-bold text-white">{chatStats.averageResponseTime}min</p>
+                  <p className="text-2xl font-bold text-white">{chatStats.averageResponseTime}{messages.admin.chat.stats.minutesShort}</p>
                 </div>
                 <ClockIcon className="w-8 h-8 text-purple-400" />
               </div>
@@ -704,7 +704,7 @@ export default function AdminChatPage() {
                             <p className="text-xs text-slate-400">{messages.admin.chat.performance.messages}</p>
                           </div>
                           <div>
-                            <p className="text-2xl font-bold text-white">{stat.averageResponseTime}min</p>
+                            <p className="text-2xl font-bold text-white">{stat.averageResponseTime}{messages.admin.chat.stats.minutesShort}</p>
                             <p className="text-xs text-slate-400">{messages.admin.chat.performance.avgTime}</p>
                           </div>
                         </div>

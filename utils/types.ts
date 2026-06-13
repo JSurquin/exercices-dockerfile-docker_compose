@@ -2298,6 +2298,7 @@ export interface Messages {
         activeConversations: string;
         unassigned: string;
         responseTime: string;
+        minutesShort: string;
       };
       tabs: {
         conversations: string;
@@ -4852,6 +4853,7 @@ export interface Messages {
       unassigned: string;
       responseTime: string;
       closed: string;
+      minutesShort: string;
     };
     filtersTitle: string;
     loading: string;
