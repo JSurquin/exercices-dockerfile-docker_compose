@@ -1131,6 +1131,11 @@ body.next-dev-overlay-present #sentry-feedback {
     background: linear-gradient(90deg, #c0c0c0 0%, #8eb4d4 50%, #e8e8f0 100%);
   }
 
+  /* Menu profil — au-dessus de la navbar (z-100) */
+  .profile-dropdown {
+    z-index: 9999;
+  }
+
   .lunar-nav-link-active {
     color: #e8e8f0;
   }
