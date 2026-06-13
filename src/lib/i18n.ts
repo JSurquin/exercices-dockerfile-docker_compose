@@ -3817,6 +3817,7 @@ export const messages: Record<Locale, Messages> = {
         impersonateSuccess: "Impersonation démarrée, vous êtes maintenant connecté en tant que {name}",
         impersonateError: "Impossible de démarrer l'impersonation",
         impersonateAdminError: "Vous ne pouvez pas impersonnifier un administrateur",
+        viewSteamProfile: "Voir le profil Steam",
       },
       impersonationBanner: {
         message: "Vous impersonnifiez {name}, toutes vos actions sont effectuées en son nom",
@@ -3859,6 +3860,7 @@ export const messages: Record<Locale, Messages> = {
         instantCreditDisabledTitle: "Crédit instantané désactivé",
         instantCreditDisabledDesc: "L'utilisateur attendra le trade hold classique (7 jours).",
         referredByLabel: "Parrainé par l'affilié :",
+        viewSteamProfile: "Voir le profil Steam",
       },
       userRewardsBlock: {
         sectionTitle: "Blocage des récompenses (anti-abus)",
@@ -10038,6 +10040,7 @@ export const messages: Record<Locale, Messages> = {
         impersonateSuccess: "Impersonation started, you are now logged in as {name}",
         impersonateError: "Failed to start impersonation",
         impersonateAdminError: "You cannot impersonate an administrator",
+        viewSteamProfile: "View Steam profile",
       },
       impersonationBanner: {
         message: "You are impersonating {name}, all your actions are performed on their behalf",
@@ -10080,6 +10083,7 @@ export const messages: Record<Locale, Messages> = {
         instantCreditDisabledTitle: "Instant credit disabled",
         instantCreditDisabledDesc: "The user will wait for the standard trade hold (7 days).",
         referredByLabel: "Referred by affiliate:",
+        viewSteamProfile: "View Steam profile",
       },
       userRewardsBlock: {
         sectionTitle: "Reward blocks (anti-abuse)",
@@ -17345,6 +17349,7 @@ export const messages: Record<Locale, Messages> = {
         impersonateSuccess: "模拟已开始, 您现在以 {name} 身份登录",
         impersonateError: "无法启动模拟",
         impersonateAdminError: "您无法模拟管理员账户",
+        viewSteamProfile: "查看Steam个人资料",
       },
       impersonationBanner: {
         message: "您正在模拟 {name}, 所有操作均代表该用户执行",
@@ -17387,6 +17392,7 @@ export const messages: Record<Locale, Messages> = {
         instantCreditDisabledTitle: "即时信用已禁用",
         instantCreditDisabledDesc: "用户将等待标准交易持有期（7天）。",
         referredByLabel: "推荐人联盟代码：",
+        viewSteamProfile: "查看Steam个人资料",
       },
       userRewardsBlock: {
         sectionTitle: "奖励封锁（防滥用）",

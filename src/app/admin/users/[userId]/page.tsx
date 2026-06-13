@@ -21,6 +21,8 @@ import { UserRoleBadge } from '@/components/ui/user-role-badge';
 import { useLocale } from '@/components/providers/locale-provider';
 import { UserRewardsBlockControls } from '@/components/admin/user-rewards-block-controls';
 import { ConvertedPrice } from '@/components/ui/converted-price';
+import { SteamIcon } from '@/components/ui/cs2-icons';
+import { getSteamProfileUrl } from '@/lib/steam-id';
 
 interface UserDetail {
   id: string;
@@ -281,6 +283,24 @@ export default function AdminUserDetailPage() {
             </p>
           </div>
           </div>
+          <div className="flex flex-wrap gap-2">
+          {user.steamId && (
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="border-slate-600 text-white hover:bg-slate-700"
+            >
+              <a
+                href={getSteamProfileUrl(user.steamId)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <SteamIcon className="h-4 w-4 mr-2" />
+                {t.viewSteamProfile}
+              </a>
+            </Button>
+          )}
           {user.kycaidApplicantId && (
             <Button
               variant="outline"
@@ -302,6 +322,7 @@ export default function AdminUserDetailPage() {
               )}
             </Button>
           )}
+          </div>
         </CardContent>
       </Card>
 

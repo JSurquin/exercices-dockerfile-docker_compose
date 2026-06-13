@@ -1522,6 +1522,7 @@ export interface Messages {
       impersonateSuccess: string;
       impersonateError: string;
       impersonateAdminError: string;
+      viewSteamProfile: string;
     };
     impersonationBanner: {
       message: string;
@@ -1564,6 +1565,7 @@ export interface Messages {
       instantCreditDisabledTitle: string;
       instantCreditDisabledDesc: string;
       referredByLabel: string;
+      viewSteamProfile: string;
     };
     platformConfig: {
       infoDb: string;

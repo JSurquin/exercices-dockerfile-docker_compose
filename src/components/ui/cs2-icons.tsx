@@ -157,6 +157,12 @@ export const WeaponGradeIndicator: React.FC<{
   );
 };
 
+export const SteamIcon: React.FC<IconProps> = ({ className = "h-4 w-4" }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 2.112a3.017 3.017 0 0 0-2.548.088 3.025 3.025 0 0 0-.962 2.158 3.018 3.018 0 0 0 1.023 2.25l-2.237 2.385a8.978 8.978 0 0 1-2.51-1.653 9.015 9.015 0 0 1-3.24-5.96 8.982 8.982 0 0 1 .456-3.078l5.967-3.393a3.005 3.005 0 0 0 2.543-.08 2.996 2.996 0 0 0 1.46 1.78l2.027 2.291-2.237 2.388zm-4.673 1.03a1.25 1.25 0 1 0-2.5 0 1.25 1.25 0 0 0 2.5 0z" />
+  </svg>
+);
+
 export const StatTrakIcon: React.FC<IconProps> = ({
   className = "h-4 w-4",
 }) => (

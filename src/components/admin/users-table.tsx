@@ -45,6 +45,8 @@ import { queryKeys } from '@/lib/query-keys';
 import { UserRoleBadge } from '@/components/ui/user-role-badge';
 import { authClient } from '~/lib/auth-client';
 import { ConvertedPrice } from '@/components/ui/converted-price';
+import { SteamIcon } from '@/components/ui/cs2-icons';
+import { getSteamProfileUrl } from '@/lib/steam-id';
 
 interface PromoteDialogState {
   open: boolean;
@@ -438,7 +440,21 @@ export function AdminUsersTable() {
                   </div>
                 </TableCell>
                 <TableCell className="font-mono text-sm text-slate-300">
-                  {user.steamId64}
+                  <div className="flex items-center gap-1.5">
+                    <span>{user.steamId64}</span>
+                    {user.steamId64 && (
+                      <a
+                        href={getSteamProfileUrl(user.steamId64)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={t.viewSteamProfile}
+                        aria-label={t.viewSteamProfile}
+                        className="text-slate-400 hover:text-slate-200 transition-colors shrink-0"
+                      >
+                        <SteamIcon className="h-3.5 w-3.5" />
+                      </a>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   {getKYCBadge(user.kycStatus)}

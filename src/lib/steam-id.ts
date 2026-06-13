@@ -7,6 +7,10 @@ export function isValidSteamId64(id: string): boolean {
   return STEAMID64_REGEX.test(id.trim());
 }
 
+export function getSteamProfileUrl(steamId64: string): string {
+  return `https://steamcommunity.com/profiles/${steamId64.trim()}`;
+}
+
 /**
  * Accepte un SteamID64 ou une URL / fragment contenant `partner=` (trade link Steam).
  */
