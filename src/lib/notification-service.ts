@@ -1,5 +1,6 @@
 import { prisma } from "~/prisma/prisma";
 import { NotificationType, NotificationPriority, Prisma } from "@prisma/client";
+import { currencyConverter } from "@/lib/currency-converter";
 
 interface CreateNotificationParams {
   userId: string;
@@ -19,6 +20,15 @@ interface CreateNotificationParams {
  * Service pour créer et gérer les notifications
  */
 export class NotificationService {
+  private static formatEurCents(eurCents: number): string {
+    return currencyConverter.formatEurPrice(eurCents);
+  }
+
+  private static async formatUsdCentsAsEur(usdCents: number): Promise<string> {
+    const eurCents = await currencyConverter.convertUsdCentsToEurCents(usdCents);
+    return this.formatEurCents(eurCents);
+  }
+
   /**
    * Crée une notification pour un utilisateur spécifique
    */
@@ -81,17 +91,17 @@ export class NotificationService {
    * Notifie les admins d'un nouveau trade
    */
   static async notifyNewTrade(tradeId: string, userId: string, username: string, amount: number) {
-    const amountEur = (amount / 100).toFixed(2);
-    
+    const amountFormatted = await this.formatUsdCentsAsEur(amount);
+
     await this.notifyAdmins({
       type: NotificationType.TRADE_UPDATE,
       priority: amount > 100000 ? NotificationPriority.HIGH : NotificationPriority.NORMAL,
       titleFr: "Nouveau trade créé",
       titleEn: "New trade created",
       titleCn: "新交易已创建",
-      messageFr: `${username} a créé un trade de ${amountEur}€`,
-      messageEn: `${username} created a trade of €${amountEur}`,
-      messageCn: `${username} 创建了 ${amountEur}€ 的交易`,
+      messageFr: `${username} a créé un trade de ${amountFormatted}`,
+      messageEn: `${username} created a trade of ${amountFormatted}`,
+      messageCn: `${username} 创建了 ${amountFormatted} 的交易`,
       link: `/admin/dashboard?tab=trades`,
       metadata: { tradeId, userId, amount },
     });
@@ -101,17 +111,17 @@ export class NotificationService {
    * Notifie les admins d'un nouveau payout
    */
   static async notifyNewPayout(payoutId: string, userId: string, username: string, amount: number, method: string) {
-    const amountEur = (amount / 100).toFixed(2);
-    
+    const amountFormatted = this.formatEurCents(amount);
+
     await this.notifyAdmins({
       type: NotificationType.PAYOUT_UPDATE,
       priority: amount > 50000 ? NotificationPriority.HIGH : NotificationPriority.NORMAL,
       titleFr: "Nouvelle demande de paiement",
       titleEn: "New payout request",
       titleCn: "新的付款请求",
-      messageFr: `${username} demande un retrait de ${amountEur}€ via ${method}`,
-      messageEn: `${username} requests a withdrawal of €${amountEur} via ${method}`,
-      messageCn: `${username} 请求通过 ${method} 提取 ${amountEur}€`,
+      messageFr: `${username} demande un retrait de ${amountFormatted} via ${method}`,
+      messageEn: `${username} requests a withdrawal of ${amountFormatted} via ${method}`,
+      messageCn: `${username} 请求通过 ${method} 提取 ${amountFormatted}`,
       link: `/admin/dashboard?tab=payouts`,
       metadata: { payoutId, userId, amount, method },
     });
@@ -178,7 +188,7 @@ export class NotificationService {
     amount: number,
     method: string,
   ) {
-    const amountEur = (amount / 100).toFixed(2);
+    const amountFormatted = this.formatEurCents(amount);
 
     await this.notifyAdmins({
       type: NotificationType.PAYOUT_UPDATE,
@@ -186,9 +196,9 @@ export class NotificationService {
       titleFr: "Retrait en attente d'approbation",
       titleEn: "Withdrawal pending approval",
       titleCn: "提现待批准",
-      messageFr: `${username} demande un retrait de ${amountEur}€ via ${method} — approbation requise`,
-      messageEn: `${username} requests a withdrawal of €${amountEur} via ${method} — approval required`,
-      messageCn: `${username} 请求通过 ${method} 提取 ${amountEur}€ — 需要批准`,
+      messageFr: `${username} demande un retrait de ${amountFormatted} via ${method} — approbation requise`,
+      messageEn: `${username} requests a withdrawal of ${amountFormatted} via ${method} — approval required`,
+      messageCn: `${username} 请求通过 ${method} 提取 ${amountFormatted} — 需要批准`,
       link: method === 'SEPA FR' ? '/admin/sepa-requests' : '/admin/dashboard?tab=payouts',
       metadata: { payoutId, userId, amount, method, event: "pending_approval" },
     });
@@ -216,17 +226,17 @@ export class NotificationService {
    * Notifie les admins d'un paiement échoué
    */
   static async notifyPayoutFailed(payoutId: string, userId: string, username: string, amount: number, reason: string) {
-    const amountEur = (amount / 100).toFixed(2);
-    
+    const amountFormatted = this.formatEurCents(amount);
+
     await this.notifyAdmins({
       type: NotificationType.SECURITY_ALERT,
       priority: NotificationPriority.URGENT,
       titleFr: "Échec de paiement",
       titleEn: "Payout failed",
       titleCn: "付款失败",
-      messageFr: `Échec du paiement de ${amountEur}€ pour ${username}: ${reason}`,
-      messageEn: `Payout of €${amountEur} failed for ${username}: ${reason}`,
-      messageCn: `${username} 的 ${amountEur}€ 付款失败: ${reason}`,
+      messageFr: `Échec du paiement de ${amountFormatted} pour ${username}: ${reason}`,
+      messageEn: `Payout of ${amountFormatted} failed for ${username}: ${reason}`,
+      messageCn: `${username} 的 ${amountFormatted} 付款失败: ${reason}`,
       link: `/admin/dashboard?tab=payouts`,
       metadata: { payoutId, userId, amount, reason },
     });
