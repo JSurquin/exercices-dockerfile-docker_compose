@@ -65,7 +65,7 @@ export function ModerationHeader() {
             >
               <Link href="/admin/chat">
                 <ShieldCheckIcon className="h-3.5 w-3.5 mr-1.5" />
-                Admin
+                {messages.moderation.adminChatLink}
               </Link>
             </Button>
           )}
@@ -101,7 +101,7 @@ export function ModerationHeader() {
                 <DropdownMenuItem asChild className="text-foreground focus:bg-theme-accent/10 focus:text-theme-highlight sm:hidden">
                   <Link href="/admin/chat">
                     <ShieldCheckIcon className="h-4 w-4 mr-2" />
-                    Admin
+                    {messages.moderation.adminChatLink}
                   </Link>
                 </DropdownMenuItem>
               )}

@@ -5,6 +5,7 @@ import {
   chatBotTemplatesFr,
   chatBotTemplatesEn,
 } from "@/lib/chat-bot-i18n-templates";
+import { chatBotTemplatesCn } from "@/lib/chat-bot-i18n-templates-cn";
 
 export const defaultLocale: Locale = "fr";
 
@@ -2916,7 +2917,10 @@ export const messages: Record<Locale, Messages> = {
         tabs: {
           conversations: "Conversations",
           moderators: "Modérateurs",
-          stats: "Statistiques"
+          stats: "Statistiques",
+          conversationsShort: "Convs",
+          moderatorsShort: "Modos",
+          statsShort: "Stats",
         },
         conversations: {
           title: "Conversations récentes",
@@ -2970,7 +2974,11 @@ export const messages: Record<Locale, Messages> = {
           successReopen: "Ticket réouvert avec succès",
           errorDelete: "Erreur lors de la suppression",
           errorClose: "Erreur lors de la clôture",
-          errorReopen: "Erreur lors de la réouverture"
+          errorReopen: "Erreur lors de la réouverture",
+          steamLabel: "Steam :",
+          roleAdmin: "Administrateur",
+          roleModerator: "Modérateur",
+          messagesLabel: "messages",
         },
         performance: {
           title: "Performance des modérateurs",
@@ -5306,6 +5314,7 @@ export const messages: Record<Locale, Messages> = {
     },
     moderation: {
       title: "Modération",
+      adminChatLink: "Admin chat",
       subtitle: "Gérez les conversations et demandes d'assistance",
       noSubject: "(Sans sujet)",
       accessDenied: {
@@ -5404,6 +5413,10 @@ export const messages: Record<Locale, Messages> = {
           AI: "IA",
           MODERATOR: "Modérateur",
           SYSTEM: "Système",
+        },
+        system: {
+          assigned: "Conversation assignée à {username}",
+          unassigned: "Conversation désassignée",
         },
         sendHint: "Entrée pour envoyer · Shift+Entrée pour nouvelle ligne",
       }
@@ -9123,7 +9136,10 @@ export const messages: Record<Locale, Messages> = {
         tabs: {
           conversations: "Conversations",
           moderators: "Moderators",
-          stats: "Statistics"
+          stats: "Statistics",
+          conversationsShort: "Convs",
+          moderatorsShort: "Modos",
+          statsShort: "Stats",
         },
         conversations: {
           title: "Recent conversations",
@@ -9177,7 +9193,11 @@ export const messages: Record<Locale, Messages> = {
           successReopen: "Ticket reopened successfully",
           errorDelete: "Error deleting ticket",
           errorClose: "Error closing ticket",
-          errorReopen: "Error reopening ticket"
+          errorReopen: "Error reopening ticket",
+          steamLabel: "Steam:",
+          roleAdmin: "Administrator",
+          roleModerator: "Moderator",
+          messagesLabel: "messages",
         },
         performance: {
           title: "Moderator Performance",
@@ -12457,6 +12477,7 @@ export const messages: Record<Locale, Messages> = {
     },
     moderation: {
       title: "Moderation",
+      adminChatLink: "Admin chat",
       subtitle: "Manage conversations and support requests",
       noSubject: "(No subject)",
       accessDenied: {
@@ -12555,6 +12576,10 @@ export const messages: Record<Locale, Messages> = {
           AI: "AI",
           MODERATOR: "Moderator",
           SYSTEM: "System",
+        },
+        system: {
+          assigned: "Conversation assigned to {username}",
+          unassigned: "Conversation unassigned",
         },
         sendHint: "Enter to send · Shift+Enter for new line",
       }
@@ -16377,7 +16402,10 @@ export const messages: Record<Locale, Messages> = {
         tabs: {
           conversations: "对话",
           moderators: "版主",
-          stats: "统计"
+          stats: "统计",
+          conversationsShort: "对话",
+          moderatorsShort: "版主",
+          statsShort: "统计",
         },
         conversations: {
           title: "最近对话",
@@ -16431,7 +16459,11 @@ export const messages: Record<Locale, Messages> = {
           successReopen: "工单重新打开成功",
           errorDelete: "删除工单时出错",
           errorClose: "关闭工单时出错",
-          errorReopen: "重新打开工单时出错"
+          errorReopen: "重新打开工单时出错",
+          steamLabel: "Steam：",
+          roleAdmin: "管理员",
+          roleModerator: "版主",
+          messagesLabel: "消息",
         },
         performance: {
           title: "版主表现",
@@ -18469,7 +18501,7 @@ export const messages: Record<Locale, Messages> = {
         ticketTransmitted: "您的请求已转交给我们的团队。客服人员将尽快回复。感谢您的耐心。",
         offTopicRefusal: "我是MoonSkin助手，只能回答与平台相关的问题：CS2皮肤销售、Steam交易、支付、KYC或支持。如有其他请求，请联系人工客服。",
       },
-      botTemplates: chatBotTemplatesEn,
+      botTemplates: chatBotTemplatesCn,
       placeholder: "输入您的消息...",
       poweredBy: "由MoonSkin AI提供支持",
       responseTimeInfo: "我们通常在5分钟内回复",
@@ -19510,6 +19542,7 @@ export const messages: Record<Locale, Messages> = {
     },
     moderation: {
       title: "审核管理",
+      adminChatLink: "聊天管理",
       subtitle: "管理对话和支持请求",
       noSubject: "（无主题）",
       accessDenied: {
@@ -19608,6 +19641,10 @@ export const messages: Record<Locale, Messages> = {
           AI: "AI",
           MODERATOR: "客服",
           SYSTEM: "系统",
+        },
+        system: {
+          assigned: "对话已分配给 {username}",
+          unassigned: "对话已取消分配",
         },
         sendHint: "回车发送 · Shift+回车换行",
       }

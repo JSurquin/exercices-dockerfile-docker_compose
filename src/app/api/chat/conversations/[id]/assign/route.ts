@@ -84,7 +84,7 @@ export async function POST(
       data: {
         conversationId: resolvedParams.id,
         userId: null,
-        content: `Conversation assignée à ${moderator.name || moderator.email}`,
+        content: `__i18n:moderation.conversation.system.assigned|${moderator.name || moderator.email}__`,
         senderType: 'SYSTEM',
         isRead: false,
       },
@@ -158,7 +158,7 @@ export async function DELETE(
       data: {
         conversationId: resolvedParams.id,
         userId: null,
-        content: 'Conversation désassignée',
+        content: '__i18n:moderation.conversation.system.unassigned__',
         senderType: 'SYSTEM',
         isRead: false,
       },

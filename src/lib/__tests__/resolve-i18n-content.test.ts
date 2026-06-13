@@ -31,6 +31,25 @@ describe('resolveI18nContent', () => {
     ).toBe('Bonjour Alex !');
   });
 
+  it('résout les messages système de modération', () => {
+    const modMessages = {
+      moderation: {
+        conversation: {
+          system: {
+            assigned: 'Assignée à {username}',
+            unassigned: 'Conversation désassignée',
+          },
+        },
+      },
+    };
+    expect(
+      resolveI18nContent('__i18n:moderation.conversation.system.assigned|Alex__', modMessages),
+    ).toBe('Assignée à Alex');
+    expect(
+      resolveI18nContent('__i18n:moderation.conversation.system.unassigned__', modMessages),
+    ).toBe('Conversation désassignée');
+  });
+
   it('retourne le contenu brut si ce n’est pas une clé i18n', () => {
     expect(resolveI18nContent('Message bot en texte libre', messages)).toBe(
       'Message bot en texte libre',

@@ -2303,6 +2303,9 @@ export interface Messages {
         conversations: string;
         moderators: string;
         stats: string;
+        conversationsShort: string;
+        moderatorsShort: string;
+        statsShort: string;
       };
       conversations: {
         title: string;
@@ -2357,6 +2360,10 @@ export interface Messages {
         errorDelete: string;
         errorClose: string;
         errorReopen: string;
+        steamLabel: string;
+        roleAdmin: string;
+        roleModerator: string;
+        messagesLabel: string;
       };
       performance: {
         title: string;
@@ -4813,6 +4820,7 @@ export interface Messages {
   };
   moderation: {
     title: string;
+    adminChatLink: string;
     subtitle: string;
     noSubject: string;
     anonymousUser: string;
@@ -4911,6 +4919,10 @@ export interface Messages {
         AI: string;
         MODERATOR: string;
         SYSTEM: string;
+      };
+      system: {
+        assigned: string;
+        unassigned: string;
       };
       sendHint: string;
     };

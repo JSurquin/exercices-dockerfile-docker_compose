@@ -4,6 +4,8 @@ import {
   isValidBotSubcategoryKey,
 } from '@/lib/chat-bot-templates';
 import { chatBotTemplatesFr } from '@/lib/chat-bot-i18n-templates';
+import { chatBotTemplatesCn } from '@/lib/chat-bot-i18n-templates-cn';
+import { messages } from '@/lib/i18n';
 import { resolveI18nContent } from '@/lib/resolve-i18n-content';
 
 /** Clés affichées dans le widget chat (doivent correspondre aux templates BOT). */
@@ -70,5 +72,15 @@ describe('getBotMessageContent', () => {
     const content = getBotMessageContent('support.partnership', 'Creator');
     const resolved = resolveI18nContent(content, mockMessages);
     expect(resolved).toContain('marketing@moonskin.com');
+  });
+
+  it('expose des templates chinois complets pour la locale cn', () => {
+    const cnMessages = { chatWidget: { botTemplates: chatBotTemplatesCn } };
+    const resolved = resolveI18nContent(
+      getBotMessageContent('trade.pending', '玩家'),
+      cnMessages,
+    );
+    expect(resolved).toContain('玩家');
+    expect(messages.cn.chatWidget.botTemplates).toBe(chatBotTemplatesCn);
   });
 });

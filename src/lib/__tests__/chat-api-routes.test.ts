@@ -342,7 +342,10 @@ describe('POST/DELETE /api/chat/conversations/[id]/assign', () => {
     expect(res.status).toBe(200);
     expect(prisma.chatMessage.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ senderType: 'SYSTEM' }),
+        data: expect.objectContaining({
+          senderType: 'SYSTEM',
+          content: '__i18n:moderation.conversation.system.assigned|Mod Test__',
+        }),
       }),
     );
   });

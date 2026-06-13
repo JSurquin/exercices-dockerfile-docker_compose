@@ -33,6 +33,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { chatPriorityBadgeClass, chatStatusBadgeClass } from '@/lib/chat-badges';
 import { PageLoading } from '@/components/ui/page-loading';
+import { localeToBcp47 } from '@/lib/locale-date';
+import {
+  chatCategoryLabel,
+  chatPriorityLabel,
+  chatStatusLabel,
+} from '@/lib/chat-moderation-labels';
 
 interface Moderator {
   id: string;
@@ -60,8 +66,9 @@ interface User {
 export default function AdminChatPage() {
   const { data: session } = useSession();
   const user = session?.user;
-  const { messages } = useLocale();
+  const { messages, locale } = useLocale();
   const t = messages.admin.chat.moderators;
+  const chatT = messages.admin.chat;
   const queryClient = useQueryClient();
 
   // State, promotion utilisateur existant
@@ -245,7 +252,11 @@ export default function AdminChatPage() {
   };
 
   const formatDate = (date: Date) =>
-    new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    new Date(date).toLocaleDateString(localeToBcp47(locale), {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
 
   if (!user || (user as any).role !== 'ADMIN') {
     return (
@@ -329,24 +340,24 @@ export default function AdminChatPage() {
             className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white"
           >
             <ChatBubbleLeftRightIcon className="w-4 h-4 shrink-0" />
-            <span className="hidden sm:inline">{messages.admin.chat.tabs.conversations}</span>
-            <span className="sm:hidden text-[10px]">Convs</span>
+            <span className="hidden sm:inline">{chatT.tabs.conversations}</span>
+            <span className="sm:hidden text-[10px]">{chatT.tabs.conversationsShort}</span>
           </TabsTrigger>
           <TabsTrigger
             value="moderators"
             className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white"
           >
             <UserGroupIcon className="w-4 h-4 shrink-0" />
-            <span className="hidden sm:inline">{messages.admin.chat.tabs.moderators}</span>
-            <span className="sm:hidden text-[10px]">Modos</span>
+            <span className="hidden sm:inline">{chatT.tabs.moderators}</span>
+            <span className="sm:hidden text-[10px]">{chatT.tabs.moderatorsShort}</span>
           </TabsTrigger>
           <TabsTrigger
             value="stats"
             className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white"
           >
             <ChartBarIcon className="w-4 h-4 shrink-0" />
-            <span className="hidden sm:inline">{messages.admin.chat.tabs.stats}</span>
-            <span className="sm:hidden text-[10px]">Stats</span>
+            <span className="hidden sm:inline">{chatT.tabs.stats}</span>
+            <span className="sm:hidden text-[10px]">{chatT.tabs.statsShort}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -382,10 +393,10 @@ export default function AdminChatPage() {
                             {conv.subject || messages.admin.chat.conversations.noSubject}
                           </h3>
                           <Badge variant="outline" className={`text-xs ${chatStatusBadgeClass(conv.status)}`}>
-                            {conv.status}
+                            {chatStatusLabel(conv.status, messages)}
                           </Badge>
                           <Badge variant="outline" className={`text-xs ${chatPriorityBadgeClass(conv.priority)}`}>
-                            {conv.priority}
+                            {chatPriorityLabel(conv.priority, messages)}
                           </Badge>
                         </div>
                         <div className="text-sm text-slate-400">
@@ -563,7 +574,9 @@ export default function AdminChatPage() {
                                       <p className="font-medium text-white truncate">{u.name || t.noName}</p>
                                       <p className="text-sm text-slate-400 truncate">{u.email}</p>
                                       {u.steamUsername && (
-                                        <p className="text-xs text-slate-500 truncate">Steam: {u.steamUsername}</p>
+                                        <p className="text-xs text-slate-500 truncate">
+                                        {t.steamLabel} {u.steamUsername}
+                                      </p>
                                       )}
                                     </div>
                                   </div>
@@ -609,7 +622,9 @@ export default function AdminChatPage() {
                             <h3 className="font-semibold text-white truncate">{moderator.name || t.noName}</h3>
                             <p className="text-sm text-slate-400 truncate">{moderator.email}</p>
                             {moderator.steamUsername && (
-                              <p className="text-xs text-slate-500 truncate">Steam: {moderator.steamUsername}</p>
+                              <p className="text-xs text-slate-500 truncate">
+                                {t.steamLabel} {moderator.steamUsername}
+                              </p>
                             )}
                           </div>
                           <Badge
@@ -620,14 +635,16 @@ export default function AdminChatPage() {
                                 : 'bg-blue-500/20 border-blue-500/30 text-blue-400 shrink-0'
                             }
                           >
-                            {moderator.role}
+                            {moderator.role === 'ADMIN' ? t.roleAdmin : t.roleModerator}
                           </Badge>
                         </div>
 
                         <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-700/50">
                           <div className="text-sm">
                             <p className="font-medium text-white">{moderator._count.assignedConversations} {t.conversations}</p>
-                            <p className="text-slate-400">{moderator._count.chatMessages} messages</p>
+                            <p className="text-slate-400">
+                              {moderator._count.chatMessages} {t.messagesLabel}
+                            </p>
                           </div>
                           {moderator.role === 'MODERATOR' && moderator.id !== user.id && (
                             <Button
@@ -709,7 +726,7 @@ export default function AdminChatPage() {
                       {Object.entries(chatStats.conversationsByPriority).map(([priority, count]) => (
                         <div key={priority} className="flex items-center justify-between">
                           <Badge variant="outline" className={`text-xs ${chatPriorityBadgeClass(priority)}`}>
-                            {priority}
+                            {chatPriorityLabel(priority, messages)}
                           </Badge>
                           <span className="font-semibold text-white">{count as string}</span>
                         </div>
@@ -726,7 +743,9 @@ export default function AdminChatPage() {
                     <div className="space-y-3">
                       {Object.entries(chatStats.conversationsByCategory).map(([category, count]) => (
                         <div key={category} className="flex items-center justify-between">
-                          <Badge variant="outline" className="text-xs border-slate-600 text-slate-300">{category}</Badge>
+                          <Badge variant="outline" className="text-xs border-slate-600 text-slate-300">
+                            {chatCategoryLabel(category, messages)}
+                          </Badge>
                           <span className="font-semibold text-white">{count as string}</span>
                         </div>
                       ))}

@@ -8,6 +8,7 @@ import {
 describe('chat-moderation-labels', () => {
   const fr = messages.fr;
   const en = messages.en;
+  const cn = messages.cn;
 
   it('traduit les statuts de conversation', () => {
     expect(chatStatusLabel('ACTIVE', fr)).toBe('Actives');
@@ -23,5 +24,6 @@ describe('chat-moderation-labels', () => {
   it('traduit les catégories chat', () => {
     expect(chatCategoryLabel('trade', fr)).toBe('Problème de trade');
     expect(chatCategoryLabel('payment', en)).toBe('Payment');
+    expect(chatCategoryLabel('support', cn)).toBe('一般支持');
   });
 });
