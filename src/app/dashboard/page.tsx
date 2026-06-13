@@ -915,7 +915,7 @@ export default function DashboardPage() {
                                   <p className="text-xs text-theme-highlight">
                                     {messages.dashboard.tradeHistory.tradeHoldReminder}{" "}
                                     <span className="font-semibold">
-                                      {new Date(trade.disponibleLe).toLocaleDateString()}
+                                      {new Date(new Date(trade.disponibleLe).getTime() + 86400000).toLocaleDateString()}
                                     </span>
                                   </p>
                                 </div>
