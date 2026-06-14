@@ -422,6 +422,21 @@ describe('shouldClearAiTypingIndicator', () => {
     ).toBe(false);
   });
 
+  it('ignore le message SYSTEM ticket transmis avant la réponse IA', () => {
+    expect(
+      shouldClearAiTypingIndicator({
+        isAiTyping: true,
+        baseMessageCount: 2,
+        messages: [
+          { senderType: 'USER' },
+          { senderType: 'BOT' },
+          { senderType: 'USER' },
+          { senderType: 'SYSTEM' },
+        ],
+      }),
+    ).toBe(false);
+  });
+
   it('false si isAiTyping off ou messages vides', () => {
     expect(
       shouldClearAiTypingIndicator({

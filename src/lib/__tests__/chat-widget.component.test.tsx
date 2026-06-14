@@ -109,6 +109,12 @@ const mockMessages = {
     },
     placeholder: 'Tapez votre message...',
     tooltip: 'Besoin d aide ?',
+    relativeTime: {
+      now: 'now',
+      minutes: '{n}m',
+      hours: '{n}h',
+      days: '{n}d',
+    },
     responses: {
       welcomeMessage: 'Bienvenue sur le support MoonSkin',
       thankYouMessage: 'Merci pour votre message ! Un membre de notre équipe vous répondra rapidement.',
@@ -164,7 +170,7 @@ jest.mock('@/components/providers/auth-provider', () => ({
 }));
 
 jest.mock('@/components/providers/locale-provider', () => ({
-  useLocale: () => ({ messages: mockMessages }),
+  useLocale: () => ({ messages: mockMessages, locale: 'fr' }),
 }));
 
 jest.mock('@tanstack/react-query', () => ({

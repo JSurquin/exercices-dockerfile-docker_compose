@@ -101,7 +101,7 @@ export async function GET(
     const resolvedParams = await params;
     const access = await assertConversationAccess(request, resolvedParams.id);
     if ('error' in access && access.error) return access.error;
-    const { identity } = access;
+    const { identity, conversation } = access;
 
     const { searchParams } = new URL(request.url);
     const parsedQ = safeParseSearchParams(searchParams, conversationMessagesQuerySchema);
@@ -133,6 +133,7 @@ export async function GET(
       messages,
       nextCursor: page.nextCursor,
       hasMore: page.hasMore,
+      status: conversation.status,
     });
   } catch (error) {
     if (error instanceof Error && error.message === 'INVALID_CURSOR') {

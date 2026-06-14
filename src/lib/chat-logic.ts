@@ -204,6 +204,8 @@ export function countStaffMessagesForNotification(
   ).length;
 }
 
+const AI_TYPING_CLEAR_SENDER_TYPES = ['AI', 'BOT', 'MODERATOR'] as const;
+
 /** Indique si l'indicateur « IA en train d'écrire » doit disparaître. */
 export function shouldClearAiTypingIndicator(params: {
   isAiTyping: boolean;
@@ -216,7 +218,7 @@ export function shouldClearAiTypingIndicator(params: {
   return (
     currentCount > params.baseMessageCount + 1 &&
     lastMsg !== undefined &&
-    lastMsg.senderType !== 'USER'
+    (AI_TYPING_CLEAR_SENDER_TYPES as readonly string[]).includes(lastMsg.senderType)
   );
 }
 

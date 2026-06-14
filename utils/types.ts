@@ -3695,6 +3695,12 @@ export interface Messages {
       noConversations: string;
       startChat: string;
     };
+    relativeTime: {
+      now: string;
+      minutes: string;
+      hours: string;
+      days: string;
+    };
     loadOlderMessages: string;
     quickActions: string;
     tradeProblem: string;

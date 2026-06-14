@@ -106,6 +106,11 @@ export function useChat(isOpen = false, isViewingConversation = false) {
     [messagesData],
   );
 
+  const loadedConversationStatus = useMemo(() => {
+    const latestPage = messagesData?.pages?.[0];
+    return latestPage?.status;
+  }, [messagesData]);
+
   const visibleMessages = useMemo(
     () =>
       isViewingConversation
@@ -165,12 +170,11 @@ export function useChat(isOpen = false, isViewingConversation = false) {
       const activeMeta = conversationId
         ? conversations.find((c) => c.id === conversationId)
         : undefined;
+      const activeStatus = activeMeta?.status ?? loadedConversationStatus;
       const shouldForceNew =
         params.forceNew ||
         isComposingNewConversationRef.current ||
-        Boolean(
-          activeMeta?.status && isTerminalConversationStatus(activeMeta.status),
-        );
+        Boolean(activeStatus && isTerminalConversationStatus(activeStatus));
 
       const postMessage = (forceNew: boolean) =>
         fetch('/api/chat/messages', {
@@ -269,7 +273,7 @@ export function useChat(isOpen = false, isViewingConversation = false) {
     const meta = conversations.find((c) => c.id === conversationId);
     return {
       id: conversationId,
-      status: meta?.status ?? 'ACTIVE',
+      status: meta?.status ?? loadedConversationStatus ?? 'ACTIVE',
       subject: meta?.subject,
       summary: meta?.summary,
       messages: visibleMessages,
@@ -277,7 +281,7 @@ export function useChat(isOpen = false, isViewingConversation = false) {
       updatedAt: meta?.updatedAt ?? new Date().toISOString(),
       lastMessageAt: meta?.lastMessageAt,
     };
-  }, [conversationId, conversations, visibleMessages]);
+  }, [conversationId, conversations, visibleMessages, loadedConversationStatus]);
 
   return {
     conversations,

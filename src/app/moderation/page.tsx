@@ -389,7 +389,11 @@ function FiltersGrid({
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       <Select
         value={filters.status || 'ALL'}
-        onValueChange={(value) => setFilters(prev => ({ ...prev, status: value === 'ALL' ? undefined : value as ConversationStatus }))}
+        onValueChange={(value) => setFilters(prev => ({
+          ...prev,
+          page: 1,
+          status: value === 'ALL' ? undefined : value as ConversationStatus,
+        }))}
       >
         <SelectTrigger className={cn(panelGlassField, 'h-9')}>
           <SelectValue placeholder={messages.moderation.filters.statusPlaceholder} />
@@ -404,7 +408,11 @@ function FiltersGrid({
 
       <Select
         value={filters.priority || 'ALL'}
-        onValueChange={(value) => setFilters(prev => ({ ...prev, priority: value === 'ALL' ? undefined : value as ConversationPriority }))}
+        onValueChange={(value) => setFilters(prev => ({
+          ...prev,
+          page: 1,
+          priority: value === 'ALL' ? undefined : value as ConversationPriority,
+        }))}
       >
         <SelectTrigger className={cn(panelGlassField, 'h-9')}>
           <SelectValue placeholder={messages.moderation.filters.priorityPlaceholder} />
@@ -420,7 +428,11 @@ function FiltersGrid({
 
       <Select
         value={filters.assignedTo || 'ALL'}
-        onValueChange={(value) => setFilters(prev => ({ ...prev, assignedTo: value === 'ALL' ? undefined : value }))}
+        onValueChange={(value) => setFilters(prev => ({
+          ...prev,
+          page: 1,
+          assignedTo: value === 'ALL' ? undefined : value,
+        }))}
       >
         <SelectTrigger className={cn(panelGlassField, 'h-9')}>
           <SelectValue placeholder={messages.moderation.filters.assignmentPlaceholder} />
@@ -438,7 +450,7 @@ function FiltersGrid({
           placeholder={messages.moderation.filters.searchPlaceholder}
           className={cn('pl-9 h-9', panelGlassField)}
           value={filters.search || ''}
-          onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+          onChange={(e) => setFilters(prev => ({ ...prev, page: 1, search: e.target.value }))}
         />
       </div>
     </div>

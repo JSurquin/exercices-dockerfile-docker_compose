@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, memo, type ComponentType, type SVGProps } from "react";
+import { useState, useRef, useEffect, useCallback, memo, useMemo, type ComponentType, type SVGProps } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
@@ -87,16 +87,25 @@ interface Category {
   subcategories: Subcategory[];
 }
 
-function formatRelativeTime(date: Date | string): string {
+function formatRelativeTime(
+  date: Date | string,
+  labels: {
+    now: string;
+    minutes: (n: number) => string;
+    hours: (n: number) => string;
+    days: (n: number) => string;
+  },
+  locale: string,
+): string {
   const diffMs = Date.now() - new Date(date).getTime();
   const mins = Math.floor(diffMs / 60_000);
-  if (mins < 1) return "now";
-  if (mins < 60) return `${mins}m`;
+  if (mins < 1) return labels.now;
+  if (mins < 60) return labels.minutes(mins);
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h`;
+  if (hours < 24) return labels.hours(hours);
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d`;
-  return new Date(date).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  if (days < 7) return labels.days(days);
+  return new Date(date).toLocaleDateString(locale, { day: "numeric", month: "short" });
 }
 
 function formatMessageTime(date: Date | string, locale: string) {
@@ -694,18 +703,45 @@ export function ChatWidget() {
   const handleSendMessage = useCallback(async (content: string) => {
     if (isLoading) return;
     const baseCount = currentConversation?.messages.length ?? 0;
-    await sendMessage(content);
-    setAiTypingBaseCount(baseCount);
-    setIsAiTyping(true);
-    if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
-    aiTypingTimeoutRef.current = setTimeout(() => setIsAiTyping(false), 90_000);
-    setTimeout(scrollToBottom, 100);
+    try {
+      await sendMessage(content);
+      setInputPrefill(undefined);
+      setAiTypingBaseCount(baseCount);
+      setIsAiTyping(true);
+      if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
+      aiTypingTimeoutRef.current = setTimeout(() => setIsAiTyping(false), 90_000);
+      setTimeout(scrollToBottom, 100);
+    } catch {
+      setIsAiTyping(false);
+    }
   }, [isLoading, currentConversation?.messages.length, sendMessage, scrollToBottom]);
 
   const resolveContent = useCallback(
     (content: string) => resolveI18nContent(content, messages),
     [messages],
   );
+
+  const relativeTimeLabels = useMemo(
+    () => ({
+      now: messages.chatWidget.relativeTime.now,
+      minutes: (n: number) => messages.chatWidget.relativeTime.minutes.replace("{n}", String(n)),
+      hours: (n: number) => messages.chatWidget.relativeTime.hours.replace("{n}", String(n)),
+      days: (n: number) => messages.chatWidget.relativeTime.days.replace("{n}", String(n)),
+    }),
+    [messages],
+  );
+
+  const dateLocale = localeToBcp47(locale);
+
+  useEffect(() => {
+    if (!effectiveIsAiTyping && isAiTyping) {
+      setIsAiTyping(false);
+      if (aiTypingTimeoutRef.current) {
+        clearTimeout(aiTypingTimeoutRef.current);
+        aiTypingTimeoutRef.current = null;
+      }
+    }
+  }, [effectiveIsAiTyping, isAiTyping]);
 
   const unreadCount = getUnreadCount();
 
@@ -746,7 +782,7 @@ export function ChatWidget() {
               <div className="flex items-center justify-between gap-2">
                 <p className="text-sm font-semibold truncate">{recentConversation.title}</p>
                 <span className="text-[10px] text-muted-foreground shrink-0">
-                  {formatRelativeTime(recentConversation.lastMessageAt)}
+                  {formatRelativeTime(recentConversation.lastMessageAt, relativeTimeLabels, dateLocale)}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -926,7 +962,7 @@ export function ChatWidget() {
         botLabel={messages.chatWidget.botLabel}
         aiLabel={messages.chatWidget.aiLabel}
         resolveContent={resolveContent}
-        dateLocale={localeToBcp47(locale)}
+        dateLocale={dateLocale}
         isLoadingOlderMessages={isLoadingOlderMessages}
         isLoading={isLoading}
         showAiTyping={showAiTyping}

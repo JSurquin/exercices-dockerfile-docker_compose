@@ -55,6 +55,7 @@ export async function fetchMessagesPage(conversationId: string, cursor: string |
     messages: ChatMessage[];
     nextCursor: string | null;
     hasMore: boolean;
+    status?: string;
   }>;
 }
 
