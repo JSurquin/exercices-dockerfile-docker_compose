@@ -1,5 +1,6 @@
 import type { ConversationStatus, UserRole } from '@prisma/client';
 import type { ConversationFilters } from '@/lib/types/chat';
+import { isConversationAwaitingStaffReply } from '@/lib/chat-conversation-router';
 
 export type ChatIdentityKind = 'guest' | 'invalid' | 'user';
 
@@ -14,6 +15,10 @@ export function isTerminalConversationStatus(status: string): boolean {
 /** Contenu SYSTEM multilingue après la première réponse utilisateur post-BOT. */
 export const TICKET_TRANSMITTED_I18N_KEY =
   '__i18n:chatWidget.responses.ticketTransmitted__';
+
+/** Réponse BOT classique (sans IA) quand l'utilisateur relance en attendant le staff. */
+export const FOLLOW_UP_AWAITING_ACK_I18N_KEY =
+  '__i18n:chatWidget.responses.followUpAcknowledged__';
 
 export function isStaffRole(role: UserRole): boolean {
   return role === 'ADMIN' || role === 'MODERATOR';
@@ -82,6 +87,21 @@ export function shouldInsertTicketTransmittedMessage(
     .filter((m) => m.senderType === 'USER');
 
   return userMessagesAfterBot.length === 0;
+}
+
+/** Accusé de réception BOT pour les relances tant qu'aucun staff n'a répondu au dernier message user. */
+export function shouldInsertFollowUpAwaitingAcknowledgment(
+  messages: Array<{ senderType: string; id: string }>,
+  newMessageId: string,
+  senderType: string,
+): boolean {
+  if (senderType !== 'USER') return false;
+  if (shouldInsertTicketTransmittedMessage(messages, newMessageId, senderType)) {
+    return false;
+  }
+
+  const messagesBeforeNew = messages.filter((m) => m.id !== newMessageId);
+  return isConversationAwaitingStaffReply(messagesBeforeNew);
 }
 
 export function buildConversationWhereClause(params: {

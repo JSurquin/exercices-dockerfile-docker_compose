@@ -15,6 +15,7 @@ import {
   selectInitialConversationId,
   shouldClearAiTypingIndicator,
   shouldInsertTicketTransmittedMessage,
+  shouldInsertFollowUpAwaitingAcknowledgment,
   shouldRedactEmailsForViewer,
   STAFF_SENDER_TYPES_FOR_NOTIFICATION,
 } from '@/lib/chat-logic';
@@ -183,6 +184,49 @@ describe('shouldInsertTicketTransmittedMessage', () => {
       shouldInsertTicketTransmittedMessage(
         [{ id: '1', senderType: 'USER' }],
         '2',
+        'USER',
+      ),
+    ).toBe(false);
+  });
+});
+
+describe('shouldInsertFollowUpAwaitingAcknowledgment', () => {
+  it('accuse réception BOT sur une relance en attente de modérateur', () => {
+    expect(
+      shouldInsertFollowUpAwaitingAcknowledgment(
+        [
+          { id: '1', senderType: 'USER' },
+          { id: '2', senderType: 'BOT' },
+          { id: '3', senderType: 'USER' },
+          { id: '4', senderType: 'SYSTEM' },
+        ],
+        '5',
+        'USER',
+      ),
+    ).toBe(true);
+  });
+
+  it('ne remplace pas le message ticket transmis initial', () => {
+    expect(
+      shouldInsertFollowUpAwaitingAcknowledgment(
+        [
+          { id: '1', senderType: 'USER' },
+          { id: '2', senderType: 'BOT' },
+        ],
+        '3',
+        'USER',
+      ),
+    ).toBe(false);
+  });
+
+  it('ignore si un modérateur a déjà répondu', () => {
+    expect(
+      shouldInsertFollowUpAwaitingAcknowledgment(
+        [
+          { id: '1', senderType: 'USER' },
+          { id: '2', senderType: 'MODERATOR' },
+        ],
+        '3',
         'USER',
       ),
     ).toBe(false);

@@ -34,7 +34,7 @@ export function hasTopicChanged(
 
 export type ConversationRoutingDecision = 'same' | 'new';
 
-const STAFF_REPLY_SENDER_TYPES = ['MODERATOR', 'BOT', 'AI'] as const;
+const STAFF_REPLY_SENDER_TYPES = ['MODERATOR', 'AI'] as const;
 
 /** True when the user sent the last message and no staff reply followed yet. */
 export function isConversationAwaitingStaffReply(

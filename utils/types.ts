@@ -3718,6 +3718,7 @@ export interface Messages {
       expertResponse: string;
       thankYouMessage: string;
       ticketTransmitted: string;
+      followUpAcknowledged: string;
       offTopicRefusal: string;
     };
     botTemplates: {

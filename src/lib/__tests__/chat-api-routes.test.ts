@@ -196,7 +196,8 @@ describe('POST /api/chat/messages', () => {
       content: 'Mon trade est bloqué',
     });
     (prisma.chatMessage.findMany as jest.Mock)
-      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ content: 'Mon trade est bloqué' }])
+      .mockResolvedValueOnce([{ senderType: 'BOT' }])
       .mockResolvedValueOnce([
         { id: 'm0', senderType: 'BOT' },
         { id: 'm1', senderType: 'USER' },
@@ -214,6 +215,49 @@ describe('POST /api/chat/messages', () => {
     expect(res.status).toBe(201);
     expect(mockMaybeAi).toHaveBeenCalledWith('c1');
     expect(prisma.chatMessage.create).toHaveBeenCalledTimes(2);
+  });
+
+  it('envoie un accusé BOT classique sur une relance en attente de modérateur', async () => {
+    mockResolveChatIdentity.mockResolvedValue({ kind: 'guest' });
+    (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
+      ...conversation,
+      lastMessageAt: new Date(),
+      category: 'trade',
+    });
+    (prisma.chatMessage.create as jest.Mock).mockResolvedValue({
+      id: 'm4',
+      senderType: 'USER',
+      content: 'Toujours en attente',
+    });
+    (prisma.chatMessage.findMany as jest.Mock)
+      .mockResolvedValueOnce([{ content: 'Premier message' }, { content: 'Relance' }])
+      .mockResolvedValueOnce([
+        { senderType: 'USER' },
+        { senderType: 'BOT' },
+        { senderType: 'USER' },
+        { senderType: 'SYSTEM' },
+      ])
+      .mockResolvedValueOnce([
+        { id: 'm0', senderType: 'USER' },
+        { id: 'm1', senderType: 'BOT' },
+        { id: 'm2', senderType: 'USER' },
+        { id: 'm3', senderType: 'SYSTEM' },
+        { id: 'm4', senderType: 'USER' },
+      ]);
+    mockMaybeAi.mockResolvedValue(undefined);
+
+    const res = await postMessage(
+      makeRequest('http://localhost/api/chat/messages', {
+        method: 'POST',
+        body: { conversationId: 'c1', content: 'Toujours en attente' },
+      }),
+    );
+
+    expect(res.status).toBe(201);
+    expect(prisma.chatMessage.create).toHaveBeenCalledTimes(2);
+    const followUpArg = (prisma.chatMessage.create as jest.Mock).mock.calls[1][0];
+    expect(followUpArg.data.senderType).toBe('BOT');
+    expect(followUpArg.data.content).toContain('followUpAcknowledged');
   });
 
   it('bloque user sur conversation fermée', async () => {

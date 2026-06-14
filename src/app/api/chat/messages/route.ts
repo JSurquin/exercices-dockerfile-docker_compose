@@ -12,7 +12,9 @@ import {
   isConversationWriteBlockedForIdentity,
   resolveOutgoingSenderType,
   shouldInsertTicketTransmittedMessage,
+  shouldInsertFollowUpAwaitingAcknowledgment,
   TICKET_TRANSMITTED_I18N_KEY,
+  FOLLOW_UP_AWAITING_ACK_I18N_KEY,
 } from '@/lib/chat-logic';
 import { createChatMessageRecord } from '@/lib/chat-message-service';
 import {
@@ -162,6 +164,19 @@ export async function POST(request: NextRequest) {
           userId: null,
           content: TICKET_TRANSMITTED_I18N_KEY,
           senderType: 'SYSTEM',
+        });
+      } else if (
+        shouldInsertFollowUpAwaitingAcknowledgment(
+          existingMessages,
+          message.id,
+          senderType,
+        )
+      ) {
+        await createChatMessageRecord({
+          conversationId,
+          userId: null,
+          content: FOLLOW_UP_AWAITING_ACK_I18N_KEY,
+          senderType: 'BOT',
         });
       }
 

@@ -228,6 +228,15 @@ describe('isConversationAwaitingStaffReply', () => {
     ).toBe(false);
   });
 
+  it('false après une réponse IA', () => {
+    expect(
+      isConversationAwaitingStaffReply([
+        { senderType: 'USER' },
+        { senderType: 'AI' },
+      ]),
+    ).toBe(false);
+  });
+
   it('true si l’utilisateur relance après une réponse bot', () => {
     expect(
       isConversationAwaitingStaffReply([
