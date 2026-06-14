@@ -115,16 +115,19 @@ export async function GET(
       limit: parsedQ.data.limit,
     });
 
-    if (identity?.kind === 'user') {
+    if (identity?.kind === 'user' || identity?.kind === 'guest') {
       await markConversationMessagesAsReadForViewer({
         conversationId: resolvedParams.id,
-        role: identity.role,
+        role: identity.kind === 'user' ? identity.role : 'USER',
       });
     }
 
     const readAdjusted =
-      identity?.kind === 'user'
-        ? applyReadStateToMessagesForViewer(page.messages, identity.role)
+      identity?.kind === 'user' || identity?.kind === 'guest'
+        ? applyReadStateToMessagesForViewer(
+            page.messages,
+            identity.kind === 'user' ? identity.role : 'USER',
+          )
         : page.messages;
 
     const messages = readAdjusted.map((m) =>

@@ -344,6 +344,29 @@ describe('useChat', () => {
     expect(result.current.conversationListItems[0]?.unread).toBe(0);
   });
 
+  it('getListUnreadTotal retourne 0 avec plusieurs réponses bot pendant la consultation', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({ conversations: [] });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
+      messages: [
+        { id: 'm1', senderType: 'USER', isRead: true, content: 'q', createdAt: '' },
+        { id: 'm2', senderType: 'BOT', isRead: false, content: 'b1', createdAt: '' },
+        { id: 'm3', senderType: 'SYSTEM', isRead: false, content: 's1', createdAt: '' },
+        { id: 'm4', senderType: 'BOT', isRead: false, content: 'b2', createdAt: '' },
+        { id: 'm5', senderType: 'AI', isRead: false, content: 'a1', createdAt: '' },
+      ],
+      nextCursor: null,
+      hasMore: false,
+    });
+    localStorage.setItem('chat_active_conversation_id', 'c1');
+
+    const { result } = renderHook(() => useChat(true, true), { wrapper });
+    await waitFor(() => expect(result.current.conversationId).toBe('c1'));
+    await waitFor(() => expect(result.current.conversationListItems.length).toBeGreaterThan(0));
+    expect(result.current.getUnreadCount()).toBe(0);
+    expect(result.current.getListUnreadTotal()).toBe(0);
+    expect(result.current.conversationListItems[0]?.unread).toBe(0);
+  });
+
   it('getUnreadCount retourne 0 pendant awaitingStaffReply sur la conversation active', async () => {
     jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
       conversations: [

@@ -510,7 +510,7 @@ export function ChatWidget() {
 
 
   const recentConversation = conversationListItems[0] ?? null;
-  const totalListUnread = getListUnreadTotal();
+  const totalListUnread = isInConversation ? 0 : getListUnreadTotal();
 
   const effectiveIsAiTyping =
     isAiTyping &&

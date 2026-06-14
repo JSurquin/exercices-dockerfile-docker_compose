@@ -15,7 +15,6 @@ import {
   shouldPlayClientNotificationSound,
 } from '@/lib/chat-notification-logic';
 import {
-  getConversationListUnreadTotal,
   getUnreadMessageCount,
   isTerminalConversationStatus,
   markStaffMessagesReadForClientViewer,
@@ -112,14 +111,43 @@ export function useChat(isOpen = false, isViewingConversation = false) {
     return latestPage?.status;
   }, [messagesData]);
 
+  const isClientEngagedWithChat = isViewingConversation || awaitingStaffReply;
+
   const isEngagedWithConversation = useCallback(
     (convId: string | null | undefined) =>
       Boolean(
         convId &&
           conversationId === convId &&
-          (isViewingConversation || awaitingStaffReply),
+          isClientEngagedWithChat,
       ),
-    [conversationId, isViewingConversation, awaitingStaffReply],
+    [conversationId, isClientEngagedWithChat],
+  );
+
+  const messagesForUnreadCount = useMemo(
+    () =>
+      isClientEngagedWithChat
+        ? markStaffMessagesReadForClientViewer(allMessages)
+        : allMessages,
+    [allMessages, isClientEngagedWithChat],
+  );
+
+  const resolveConversationUnread = useCallback(
+    (convId: string, previewMessages: Array<{ isRead: boolean; senderType: string }>) => {
+      if (isEngagedWithConversation(convId)) return 0;
+      if (convId === conversationId && !messagesLoading && allMessages.length > 0) {
+        const loadedUnread = getUnreadMessageCount(messagesForUnreadCount);
+        const previewUnread = getUnreadMessageCount(previewMessages);
+        return Math.max(loadedUnread, previewUnread);
+      }
+      return getUnreadMessageCount(previewMessages);
+    },
+    [
+      conversationId,
+      isEngagedWithConversation,
+      messagesForUnreadCount,
+      messagesLoading,
+      allMessages.length,
+    ],
   );
 
   const visibleMessages = useMemo(
@@ -129,6 +157,16 @@ export function useChat(isOpen = false, isViewingConversation = false) {
         : allMessages,
     [allMessages, isViewingConversation],
   );
+
+  const wasViewingConversationRef = useRef(false);
+  useEffect(() => {
+    const enteredView = isViewingConversation && !wasViewingConversationRef.current;
+    wasViewingConversationRef.current = isViewingConversation;
+    if (!conversationId || !isOpen || !enteredView) return;
+    void queryClient.invalidateQueries({
+      queryKey: queryKeys.conversationMessages(conversationId),
+    });
+  }, [conversationId, isOpen, isViewingConversation, queryClient]);
 
   useEffect(() => {
     if (!awaitingStaffReply || allMessages.length === 0) return;
@@ -242,9 +280,7 @@ export function useChat(isOpen = false, isViewingConversation = false) {
       }),
       lastMessageAt: conv.lastMessageAt ?? conv.updatedAt,
       status: conv.status,
-      unread: isEngagedWithConversation(conv.id)
-        ? 0
-        : getUnreadMessageCount(conv.messages ?? []),
+      unread: resolveConversationUnread(conv.id, conv.messages ?? []),
     }));
 
     if (
@@ -265,9 +301,7 @@ export function useChat(isOpen = false, isViewingConversation = false) {
             allMessages[allMessages.length - 1]?.createdAt ??
             new Date().toISOString(),
           status: loadedConversationStatus ?? 'ACTIVE',
-          unread: isEngagedWithConversation(conversationId)
-            ? 0
-            : getUnreadMessageCount(allMessages),
+          unread: resolveConversationUnread(conversationId, allMessages),
         },
       ];
     }
@@ -276,7 +310,7 @@ export function useChat(isOpen = false, isViewingConversation = false) {
   }, [
     conversations,
     conversationId,
-    isEngagedWithConversation,
+    resolveConversationUnread,
     isComposingNewConversation,
     allMessages,
     messagesLoading,
@@ -310,16 +344,9 @@ export function useChat(isOpen = false, isViewingConversation = false) {
     loadOlderMessages: fetchNextPage,
     hasOlderMessages: hasNextPage,
     isLoadingOlderMessages: isFetchingNextPage,
-    getUnreadCount: () =>
-      isEngagedWithConversation(conversationId)
-        ? 0
-        : getUnreadMessageCount(allMessages),
+    getUnreadCount: () => getUnreadMessageCount(messagesForUnreadCount),
     getListUnreadTotal: () =>
-      getConversationListUnreadTotal(
-        conversationListItems,
-        conversationId,
-        isViewingConversation || awaitingStaffReply,
-      ),
+      conversationListItems.reduce((sum, item) => sum + item.unread, 0),
     isLoading:
       conversationsLoading ||
       messagesLoading ||

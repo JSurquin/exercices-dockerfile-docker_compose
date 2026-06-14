@@ -1009,6 +1009,27 @@ describe('ChatWidget', () => {
     clearTimeoutSpy.mockRestore();
   });
 
+  it('masque le badge unread sur l onglet messages pendant la consultation', async () => {
+    chatMock = buildChatMock({
+      conversationListItems: [
+        { id: 'c1', title: 'Unread', lastMessageAt: '2026-06-12T10:00:00Z', status: 'ACTIVE', unread: 4 },
+      ],
+      getListUnreadTotal: jest.fn(() => 4),
+      conversationId: 'c1',
+      currentConversation: {
+        id: 'c1',
+        status: 'ACTIVE',
+        messages: [
+          { id: 'm1', content: 'Q', senderType: 'USER', createdAt: '2026-06-12T10:00:00Z', isRead: true, userId: 'u1' },
+        ],
+      },
+    });
+    renderWidget();
+    await openChat();
+    openConversationView();
+    expect(screen.queryByText('4')).not.toBeInTheDocument();
+  });
+
   it('affiche le badge unread sur l onglet messages', async () => {
     chatMock = buildChatMock({
       conversationListItems: [
