@@ -12,9 +12,26 @@ import { AuditAction } from '@/lib/security';
 import crypto from 'crypto';
 import { hashPassword } from 'better-auth/crypto';
 
+function resolvePublicOrigin(fallbackOrigin: string): string {
+  const configured =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    fallbackOrigin;
+  return configured.replace(/\/$/, '');
+}
+
+function resolvePublicAppUrl(fallbackOrigin: string): string {
+  const configured =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    fallbackOrigin;
+  return configured.replace(/\/$/, '');
+}
+
 export async function GET(request: NextRequest) {
   const context = getRequestContext(request);
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+  const baseUrl = resolvePublicAppUrl(request.nextUrl.origin);
+  const authOrigin = resolvePublicOrigin(request.nextUrl.origin);
   
   try {
     // Vérifier la réponse OpenID de Steam
@@ -159,11 +176,11 @@ export async function GET(request: NextRequest) {
       data: { password: hashedPassword },
     });
 
-    const signInRequest = new Request(`${request.nextUrl.origin}/api/auth/sign-in/email`, {
+    const signInRequest = new Request(`${authOrigin}/api/auth/sign-in/email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Origin': request.nextUrl.origin,
+        'Origin': authOrigin,
       },
       body: JSON.stringify({
         email: email,
@@ -239,8 +256,7 @@ export async function GET(request: NextRequest) {
     // Log de l'erreur système
     await logSystemError(context, error, 'steam_callback');
     
-    const baseUrlFallback = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
-    const errorUrl = new URL('/', baseUrlFallback);
+    const errorUrl = new URL('/', baseUrl);
     errorUrl.searchParams.set('error', 'steam_callback_error');
     return NextResponse.redirect(errorUrl.toString());
   }
