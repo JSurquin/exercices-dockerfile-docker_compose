@@ -124,11 +124,11 @@ export async function POST(request: NextRequest) {
               <p style="color:#fff;margin:0"><strong>Mot de passe temporaire :</strong> <span style="color:#f97316;font-family:monospace">${tempPassword}</span></p>
             </div>
             <p style="color:#94a3b8;margin:0 0 16px">Connectez-vous et changez votre mot de passe dès que possible.</p>
-            <a href="${appUrl}/admin/login" style="display:inline-block;background:#f97316;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Se connecter</a>
+            <a href="${appUrl}/moderator" style="display:inline-block;background:#f97316;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Se connecter</a>
             <p style="color:#64748b;font-size:13px;margin:16px 0 0">Ne transférez pas cet email.</p>
           </div>
         `,
-        text: `MoonSkin — Email: ${email} — Mot de passe temporaire: ${tempPassword} — ${appUrl}/admin/login`,
+        text: `MoonSkin — Email: ${email} — Mot de passe temporaire: ${tempPassword} — ${appUrl}/moderator`,
       });
     } catch {
       emailError = true;

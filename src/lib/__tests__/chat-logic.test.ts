@@ -60,24 +60,13 @@ describe('canUserAccessConversation', () => {
     ).toBe(true);
   });
 
-  it('autorise le modérateur assigné même sans être owner', () => {
-    expect(
-      canUserAccessConversation({
-        role: 'USER',
-        userId: 'mod-assigned',
-        conversationUserId: 'other',
-        assignedTo: 'mod-assigned',
-      }),
-    ).toBe(true);
-  });
-
   it('refuse un utilisateur tiers', () => {
     expect(
       canUserAccessConversation({
         role: 'USER',
         userId: 'u1',
         conversationUserId: 'u2',
-        assignedTo: null,
+        assignedTo: 'u1',
       }),
     ).toBe(false);
   });

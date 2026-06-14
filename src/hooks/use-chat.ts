@@ -196,24 +196,57 @@ export function useChat(isOpen = false, isViewingConversation = false) {
     persistConversationId(null);
   }, []);
 
-  const conversationListItems = useMemo(
-    () =>
-      conversations.map((conv) => ({
-        id: conv.id,
-        title: formatConversationDisplayTitle({
-          subject: conv.subject ?? null,
-          summary: conv.summary ?? null,
-          messages: conv.messages,
-        }),
-        lastMessageAt: conv.lastMessageAt ?? conv.updatedAt,
-        status: conv.status,
-        unread:
-          isViewingConversation && conv.id === conversationId
-            ? 0
-            : getUnreadMessageCount(conv.messages ?? []),
-      })),
-    [conversations, conversationId, isViewingConversation],
-  );
+  const conversationListItems = useMemo(() => {
+    const items = conversations.map((conv) => ({
+      id: conv.id,
+      title: formatConversationDisplayTitle({
+        subject: conv.subject ?? null,
+        summary: conv.summary ?? null,
+        messages: conv.messages,
+      }),
+      lastMessageAt: conv.lastMessageAt ?? conv.updatedAt,
+      status: conv.status,
+      unread:
+        isViewingConversation && conv.id === conversationId
+          ? 0
+          : getUnreadMessageCount(conv.messages ?? []),
+    }));
+
+    if (
+      items.length === 0 &&
+      conversationId &&
+      !isComposingNewConversation &&
+      (allMessages.length > 0 || !messagesLoading)
+    ) {
+      const meta = conversations.find((c) => c.id === conversationId);
+      return [
+        {
+          id: conversationId,
+          title: formatConversationDisplayTitle({
+            subject: meta?.subject ?? null,
+            summary: meta?.summary ?? null,
+            messages: allMessages,
+          }),
+          lastMessageAt:
+            meta?.lastMessageAt ??
+            meta?.updatedAt ??
+            allMessages[allMessages.length - 1]?.createdAt ??
+            new Date().toISOString(),
+          status: meta?.status ?? 'ACTIVE',
+          unread: isViewingConversation ? 0 : getUnreadMessageCount(allMessages),
+        },
+      ];
+    }
+
+    return items;
+  }, [
+    conversations,
+    conversationId,
+    isViewingConversation,
+    isComposingNewConversation,
+    allMessages,
+    messagesLoading,
+  ]);
 
   const currentConversation = useMemo(() => {
     if (!conversationId) return null;

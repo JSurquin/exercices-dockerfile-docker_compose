@@ -46,10 +46,11 @@ import {
   chatPriorityLabel,
   chatStatusLabel,
 } from '@/lib/chat-moderation-labels';
+import { isValidModeratorRole } from '@/lib/chat-logic';
 import { resolveI18nContent } from '@/lib/resolve-i18n-content';
 
 export default function ModerationPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const { messages, locale } = useLocale();
@@ -97,7 +98,7 @@ export default function ModerationPage() {
       if (!response.ok) throw new Error(messages.moderation.errors.assignError);
       
       toast.success(messages.moderation.success.assigned);
-      queryClient.invalidateQueries({ queryKey: ['admin', 'chat', 'conversations'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminChatConversations(filters as Record<string, unknown>) });
     } catch (error) {
       toast.error(messages.moderation.errors.assignError);
       console.error(error);
@@ -115,7 +116,7 @@ export default function ModerationPage() {
       if (!response.ok) throw new Error(messages.moderation.errors.updateError);
       
       toast.success(messages.moderation.success.statusUpdated);
-      queryClient.invalidateQueries({ queryKey: ['admin', 'chat', 'conversations'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminChatConversations(filters as Record<string, unknown>) });
     } catch (error) {
       toast.error(messages.moderation.errors.updateError);
       console.error(error);
@@ -133,7 +134,7 @@ export default function ModerationPage() {
   };
 
   // Attendre le chargement de la session
-  if (isPending) {
+  if (isPending || authLoading) {
     return (
       <PageLoading
         variant="compact"
@@ -144,7 +145,7 @@ export default function ModerationPage() {
   }
 
   // Vérifier les permissions
-  if (!session?.user || (session.user.role !== 'MODERATOR' && session.user.role !== 'ADMIN')) {
+  if (!user || !isValidModeratorRole(user.role ?? '')) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card className={adminGlassCard}>

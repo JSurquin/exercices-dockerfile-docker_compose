@@ -45,12 +45,13 @@ import {
   countUserMessagesForModerator,
   shouldPlayModeratorNotificationSound,
 } from '@/lib/chat-notification-logic';
+import { isValidModeratorRole } from '@/lib/chat-logic';
 import { playNotificationSound } from '@/lib/play-notification-sound';
 
 export default function ConversationPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { messages, locale } = useLocale();
   const { data: session, isPending } = useSession();
   const queryClient = useQueryClient();
@@ -203,7 +204,7 @@ export default function ConversationPage() {
 
 
   // Attendre le chargement de la session
-  if (isPending) {
+  if (isPending || authLoading) {
     return (
       <PageLoading
         variant="compact"
@@ -214,7 +215,7 @@ export default function ConversationPage() {
   }
 
   // Vérifier les permissions
-  if (!session?.user || (session.user.role !== 'MODERATOR' && session.user.role !== 'ADMIN')) {
+  if (!user || !isValidModeratorRole(user.role ?? '')) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card className={adminGlassCard}>

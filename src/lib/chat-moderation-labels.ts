@@ -6,6 +6,7 @@ export function chatStatusLabel(status: string, messages: Messages): string {
     ACTIVE: filters?.active,
     CLOSED: filters?.closed,
     ARCHIVED: filters?.archived,
+    DELETED: filters?.deleted,
   };
   return labels[status] ?? status;
 }

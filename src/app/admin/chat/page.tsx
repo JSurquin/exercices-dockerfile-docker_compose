@@ -28,6 +28,7 @@ import {
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
@@ -65,7 +66,8 @@ interface User {
 
 export default function AdminChatPage() {
   const { data: session } = useSession();
-  const user = session?.user;
+  const { user: profileUser, isLoading: authLoading } = useAuth();
+  const user = profileUser ?? session?.user;
   const { messages, locale } = useLocale();
   const t = messages.admin.chat.moderators;
   const chatT = messages.admin.chat;
@@ -258,7 +260,17 @@ export default function AdminChatPage() {
       year: 'numeric',
     });
 
-  if (!user || (user as any).role !== 'ADMIN') {
+  if (authLoading) {
+    return (
+      <PageLoading
+        variant="compact"
+        message={messages.admin.chat.conversations.loading}
+        className="min-h-[60vh]"
+      />
+    );
+  }
+
+  if (!user || (user as { role?: string }).role !== 'ADMIN') {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card className="bg-slate-800/50 border-slate-700">

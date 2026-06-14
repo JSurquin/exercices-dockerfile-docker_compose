@@ -4870,6 +4870,7 @@ export interface Messages {
       active: string;
       closed: string;
       archived: string;
+      deleted: string;
       allPriorities: string;
       low: string;
       normal: string;

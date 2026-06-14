@@ -13,6 +13,7 @@ describe('chat-moderation-labels', () => {
   it('traduit les statuts de conversation', () => {
     expect(chatStatusLabel('ACTIVE', fr)).toBe('Actives');
     expect(chatStatusLabel('CLOSED', en)).toBe('Closed');
+    expect(chatStatusLabel('DELETED', fr)).toBe('Supprimées');
     expect(chatStatusLabel('UNKNOWN', fr)).toBe('UNKNOWN');
   });
 

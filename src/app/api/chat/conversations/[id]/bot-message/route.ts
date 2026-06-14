@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
+import { resolveChatIdentity } from '@/lib/require-admin';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { botSubcategoryPostSchema } from '@/lib/validation/schemas/chat-api';
 import { getBotMessageContent, isValidBotSubcategoryKey } from '@/lib/chat-bot-templates';
 import { createChatMessageRecord } from '@/lib/chat-message-service';
+import {
+  canGuestAccessConversation,
+  canUserAccessConversation,
+  isConversationWriteBlockedForIdentity,
+} from '@/lib/chat-logic';
 
 export async function POST(
   request: NextRequest,
@@ -13,7 +18,7 @@ export async function POST(
 ) {
   try {
     const resolvedParams = await params;
-    const session = await auth.api.getSession({ headers: request.headers });
+    const identity = await resolveChatIdentity(request);
 
     let raw: unknown;
     try {
@@ -38,10 +43,40 @@ export async function POST(
       return NextResponse.json({ error: 'Conversation non trouvée' }, { status: 404 });
     }
 
+    if (identity.kind === 'invalid') {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    }
+
+    if (identity.kind === 'user') {
+      if (
+        !canUserAccessConversation({
+          role: identity.role,
+          userId: identity.session.user.id,
+          conversationUserId: conversation.userId,
+          assignedTo: conversation.assignedTo,
+        })
+      ) {
+        return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+      }
+    } else if (!canGuestAccessConversation(conversation.userId)) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    }
+
+    if (
+      isConversationWriteBlockedForIdentity(
+        conversation.status,
+        identity.kind,
+        identity.kind === 'user' ? identity.role : undefined,
+      )
+    ) {
+      return NextResponse.json({ error: 'Conversation fermée' }, { status: 400 });
+    }
+
     const username =
       conversation.user?.steamUsername ||
       conversation.user?.name ||
-      (session?.user?.name ?? 'Utilisateur');
+      (identity.kind === 'user' ? identity.session.user.name : null) ||
+      'Utilisateur';
 
     if (!isValidBotSubcategoryKey(body.subcategoryKey)) {
       return NextResponse.json({ error: 'Clé de sous-catégorie invalide' }, { status: 400 });

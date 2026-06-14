@@ -5,6 +5,10 @@ export type ChatIdentityKind = 'guest' | 'invalid' | 'user';
 
 export const STAFF_SENDER_TYPES_FOR_NOTIFICATION = ['MODERATOR', 'BOT', 'SYSTEM'] as const;
 
+/** Contenu SYSTEM multilingue après la première réponse utilisateur post-BOT. */
+export const TICKET_TRANSMITTED_I18N_KEY =
+  '__i18n:chatWidget.responses.ticketTransmitted__';
+
 export function isStaffRole(role: UserRole): boolean {
   return role === 'ADMIN' || role === 'MODERATOR';
 }
@@ -22,7 +26,7 @@ export function canUserAccessConversation(params: {
 }): boolean {
   const { role, userId, conversationUserId, assignedTo } = params;
   if (isStaffRole(role)) return true;
-  return conversationUserId === userId || assignedTo === userId;
+  return conversationUserId === userId;
 }
 
 export function resolveOutgoingSenderType(params: {

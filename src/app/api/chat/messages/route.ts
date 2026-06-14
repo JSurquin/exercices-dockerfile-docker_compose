@@ -12,6 +12,7 @@ import {
   isConversationWriteBlockedForIdentity,
   resolveOutgoingSenderType,
   shouldInsertTicketTransmittedMessage,
+  TICKET_TRANSMITTED_I18N_KEY,
 } from '@/lib/chat-logic';
 import { createChatMessageRecord } from '@/lib/chat-message-service';
 import {
@@ -149,7 +150,7 @@ export async function POST(request: NextRequest) {
         await createChatMessageRecord({
           conversationId,
           userId: null,
-          content: '__i18n:chatWidget.responses.ticketTransmitted__',
+          content: TICKET_TRANSMITTED_I18N_KEY,
           senderType: 'SYSTEM',
         });
       }

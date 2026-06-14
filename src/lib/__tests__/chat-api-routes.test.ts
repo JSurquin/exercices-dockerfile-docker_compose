@@ -273,13 +273,14 @@ describe('PATCH /api/chat/conversations/[id]', () => {
 });
 
 describe('POST /api/chat/conversations/[id]/bot-message', () => {
-  it('envoie un template BOT valide', async () => {
-    mockGetSession.mockResolvedValue(null);
+  it('envoie un template BOT valide pour une conversation invité', async () => {
+    mockResolveChatIdentity.mockResolvedValue({ kind: 'guest' });
     (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
       id: 'c1',
-      user: { steamUsername: 'Player', name: null },
+      userId: null,
+      user: null,
       status: 'ACTIVE',
-      subject: null,
+      assignedTo: null,
     });
     (prisma.chatMessage.create as jest.Mock).mockResolvedValue({
       id: 'bot-1',
@@ -298,11 +299,40 @@ describe('POST /api/chat/conversations/[id]/bot-message', () => {
     expect(res.status).toBe(201);
     const createArg = (prisma.chatMessage.create as jest.Mock).mock.calls[0][0];
     expect(createArg.data.senderType).toBe('BOT');
-    expect(createArg.data.content).toBe('__i18n:chatWidget.botTemplates.trade.pending|Player__');
+    expect(createArg.data.content).toBe('__i18n:chatWidget.botTemplates.trade.pending|Utilisateur__');
+  });
+
+  it('refuse l injection sur une conversation d un autre utilisateur', async () => {
+    mockResolveChatIdentity.mockResolvedValue({ kind: 'guest' });
+    (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      userId: 'user-1',
+      user: { steamUsername: 'Player', name: null },
+      status: 'ACTIVE',
+      assignedTo: null,
+    });
+
+    const res = await postBotMessage(
+      makeRequest('http://localhost/api/chat/conversations/c1/bot-message', {
+        method: 'POST',
+        body: { subcategoryKey: 'trade.pending' },
+      }),
+      { params: Promise.resolve({ id: 'c1' }) },
+    );
+
+    expect(res.status).toBe(401);
+    expect(prisma.chatMessage.create).not.toHaveBeenCalled();
   });
 
   it('rejette une sous-catégorie invalide', async () => {
-    (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({ id: 'c1', user: null });
+    mockResolveChatIdentity.mockResolvedValue({ kind: 'guest' });
+    (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      userId: null,
+      user: null,
+      status: 'ACTIVE',
+      assignedTo: null,
+    });
 
     const res = await postBotMessage(
       makeRequest('http://localhost/api/chat/conversations/c1/bot-message', {

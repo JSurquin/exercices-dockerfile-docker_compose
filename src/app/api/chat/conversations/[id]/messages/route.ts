@@ -15,6 +15,7 @@ import {
   isConversationWriteBlockedForIdentity,
   resolveOutgoingSenderType,
   shouldInsertTicketTransmittedMessage,
+  TICKET_TRANSMITTED_I18N_KEY,
 } from '@/lib/chat-logic';
 import {
   applyReadStateToMessagesForViewer,
@@ -266,8 +267,7 @@ export async function POST(
         await createChatMessageRecord({
           conversationId: conversation.id,
           userId: null,
-          content:
-            'Votre demande a bien été transmise à notre équipe. Un modérateur vous répondra rapidement. Merci de votre patience',
+          content: TICKET_TRANSMITTED_I18N_KEY,
           senderType: 'SYSTEM',
         });
       }
