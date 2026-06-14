@@ -768,7 +768,7 @@ describe('ChatWidget', () => {
         isLoading: false,
       });
       rerenderWidget();
-      return { conversationId: 'c1' };
+      return { conversationId: 'c1', aiQueueHint: { waiting: false, ahead: 0 } };
     });
     await openChat();
     openConversationView();
@@ -781,6 +781,31 @@ describe('ChatWidget', () => {
       expect(document.querySelector('.ai-typing-bubble')).toBeInTheDocument(),
     );
     act(() => jest.advanceTimersByTime(90_000));
+  });
+
+  it('n affiche pas l indicateur IA quand le serveur signale que l IA ne répondra pas', async () => {
+    chatMock = buildChatMock({
+      currentConversation: {
+        id: 'c1',
+        status: 'ACTIVE',
+        messages: [
+          { id: 'm1', content: 'Q', senderType: 'USER', createdAt: '2026-06-12T10:00:00Z', isRead: true, userId: 'u1' },
+        ],
+      },
+      conversationId: 'c1',
+    });
+    authUser = { id: 'u1', username: 'Me' };
+    renderWidget();
+    mockSendMessage.mockResolvedValueOnce({ conversationId: 'c1', aiQueueHint: null });
+    await openChat();
+    openConversationView();
+    const input = screen.getByTestId('chat-message-input');
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'Question sans IA' } });
+      fireEvent.click(screen.getByTestId('chat-send-button'));
+    });
+    await waitFor(() => expect(mockSendMessage).toHaveBeenCalled());
+    expect(document.querySelector('.ai-typing-bubble')).not.toBeInTheDocument();
   });
 
   it('affiche un message de file d attente IA quand le serveur signale une attente', async () => {

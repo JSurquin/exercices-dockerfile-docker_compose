@@ -685,16 +685,18 @@ export function ChatWidget() {
     try {
       const data = await sendMessage(content);
       setInputPrefill(undefined);
-      setAiTypingBaseCount(baseCount);
-      setAiTypingQueuedHint(
-        data.aiQueueHint?.waiting ? messages.chatWidget.aiTypingQueued : undefined,
-      );
-      setIsAiTyping(true);
-      if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
-      aiTypingTimeoutRef.current = setTimeout(() => {
-        setIsAiTyping(false);
-        setAiTypingQueuedHint(undefined);
-      }, 90_000);
+      if (data.aiQueueHint != null) {
+        setAiTypingBaseCount(baseCount);
+        setAiTypingQueuedHint(
+          data.aiQueueHint.waiting ? messages.chatWidget.aiTypingQueued : undefined,
+        );
+        setIsAiTyping(true);
+        if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
+        aiTypingTimeoutRef.current = setTimeout(() => {
+          setIsAiTyping(false);
+          setAiTypingQueuedHint(undefined);
+        }, 90_000);
+      }
       setTimeout(scrollToBottom, 100);
     } catch {
       setIsAiTyping(false);
