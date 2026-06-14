@@ -35,8 +35,17 @@ jest.mock('@/lib/require-admin', () => ({
   requireAdminSessionWithDbCheck: jest.fn(),
 }));
 
-jest.mock('@/lib/chat-ai-service', () => ({
-  maybeGenerateAiReply: jest.fn(),
+jest.mock('@/lib/chat-ai-service', () => {
+  const actual = jest.requireActual<typeof import('@/lib/chat-ai-service')>('@/lib/chat-ai-service');
+  return {
+    ...actual,
+    maybeGenerateAiReply: jest.fn(),
+  };
+});
+
+jest.mock('@/lib/ollama', () => ({
+  isOllamaConfigured: jest.fn(() => false),
+  checkOllamaHealth: jest.fn(),
 }));
 
 jest.mock('next/server', () => {
@@ -60,6 +69,7 @@ import {
   requireAdminSessionWithDbCheck,
 } from '@/lib/require-admin';
 import { maybeGenerateAiReply } from '@/lib/chat-ai-service';
+import { checkOllamaHealth, isOllamaConfigured } from '@/lib/ollama';
 import { GET as getConversations, POST as postConversations } from '@/app/api/chat/conversations/route';
 import { POST as postMessage } from '@/app/api/chat/messages/route';
 import {
@@ -76,6 +86,8 @@ const mockRequireStaff = requireAdminOrModeratorSessionWithDbCheck as jest.Mock;
 const mockRequireAdmin = requireAdminSessionWithDbCheck as jest.Mock;
 const mockGetSession = auth.api.getSession as unknown as jest.Mock;
 const mockMaybeAi = maybeGenerateAiReply as jest.Mock;
+const mockIsOllamaConfigured = isOllamaConfigured as jest.Mock;
+const mockCheckOllamaHealth = checkOllamaHealth as jest.Mock;
 
 function makeRequest(
   url: string,
@@ -91,6 +103,7 @@ function makeRequest(
 beforeEach(() => {
   jest.clearAllMocks();
   delete process.env.CHAT_AI_ENABLED;
+  mockIsOllamaConfigured.mockReturnValue(false);
 });
 
 describe('GET /api/chat/conversations', () => {
@@ -573,9 +586,31 @@ describe('POST /api/chat/messages — modération', () => {
 
 describe('GET /api/chat/ai/health', () => {
   it('signale IA désactivée quand CHAT_AI_ENABLED=false', async () => {
+    mockIsOllamaConfigured.mockReturnValue(false);
     const res = await getAiHealth();
     const body = await res.json();
     expect(body.enabled).toBe(false);
     expect(body.ok).toBe(false);
+  });
+
+  it('expose l état Ollama et la file d attente quand l IA est activée', async () => {
+    mockIsOllamaConfigured.mockReturnValue(true);
+    mockCheckOllamaHealth.mockResolvedValue({
+      ok: true,
+      model: 'llama3.2',
+      baseUrl: 'http://127.0.0.1:11434',
+    });
+
+    const res = await getAiHealth();
+    const body = await res.json();
+
+    expect(body.enabled).toBe(true);
+    expect(body.ok).toBe(true);
+    expect(body.queue).toEqual({
+      active: 0,
+      waiting: 0,
+      maxConcurrent: 2,
+      trackedConversations: 0,
+    });
   });
 });
