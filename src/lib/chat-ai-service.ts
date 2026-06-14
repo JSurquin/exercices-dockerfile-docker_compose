@@ -9,6 +9,7 @@ import {
 } from '@/lib/chat-ai-guards';
 import { generateEmbedding } from '@/lib/ollama-embed';
 import { searchSimilarChunks } from '@/lib/rag-client';
+import { enqueueChatAiReply } from '@/lib/chat-ai-queue';
 import type { SenderType } from '@prisma/client';
 
 const MAX_CONTEXT_MESSAGES = 12;
@@ -64,7 +65,11 @@ ${ragContext}
 ---`;
 }
 
-export async function maybeGenerateAiReply(conversationId: string): Promise<void> {
+export function maybeGenerateAiReply(conversationId: string): Promise<void> {
+  return enqueueChatAiReply(conversationId, () => generateAiReply(conversationId));
+}
+
+async function generateAiReply(conversationId: string): Promise<void> {
   try {
     const conversation = await prisma.conversation.findUnique({
       where: { id: conversationId },
@@ -159,6 +164,16 @@ export async function maybeGenerateAiReply(conversationId: string): Promise<void
         role,
         content: stripI18nPlaceholder(msg.content),
       });
+    }
+
+    const latestMessage = await prisma.chatMessage.findFirst({
+      where: { conversationId },
+      orderBy: { createdAt: 'desc' },
+      select: { senderType: true },
+    });
+
+    if (latestMessage?.senderType !== 'USER') {
+      return;
     }
 
     const result = await ollamaChat({ messages: ollamaMessages });

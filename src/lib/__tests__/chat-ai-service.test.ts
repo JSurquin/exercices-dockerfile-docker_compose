@@ -14,6 +14,7 @@ jest.mock('~/prisma/prisma', () => ({
     },
     chatMessage: {
       create: jest.fn(),
+      findFirst: jest.fn(),
     },
   },
 }));
@@ -43,6 +44,7 @@ import { searchSimilarChunks } from '@/lib/rag-client';
 const mockFindUnique = prisma.conversation.findUnique as jest.Mock;
 const mockUpdate = prisma.conversation.update as jest.Mock;
 const mockCreate = prisma.chatMessage.create as jest.Mock;
+const mockFindFirst = prisma.chatMessage.findFirst as jest.Mock;
 const mockIsOllamaConfigured = isOllamaConfigured as jest.Mock;
 const mockOllamaChat = ollamaChat as jest.Mock;
 const mockGenerateEmbedding = generateEmbedding as jest.Mock;
@@ -55,6 +57,7 @@ beforeEach(() => {
   mockIsOllamaConfigured.mockReturnValue(true);
   mockUpdate.mockResolvedValue({});
   mockCreate.mockResolvedValue({ id: 'ai-msg' });
+  mockFindFirst.mockResolvedValue({ senderType: 'USER' });
 });
 
 describe('stripI18nPlaceholder', () => {

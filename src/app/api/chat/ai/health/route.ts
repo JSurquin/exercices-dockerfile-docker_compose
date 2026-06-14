@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getChatAiQueueStats } from '@/lib/chat-ai-queue';
 import { checkOllamaHealth, isOllamaConfigured } from '@/lib/ollama';
 
 /** GET /api/chat/ai/health — vérifie qu'Ollama est joignable et que le modèle est présent */
@@ -12,6 +13,7 @@ export async function GET() {
   }
 
   const health = await checkOllamaHealth();
+  const queue = getChatAiQueueStats();
 
   return NextResponse.json({
     enabled: true,
@@ -19,5 +21,6 @@ export async function GET() {
     model: health.model,
     baseUrl: health.baseUrl,
     error: health.error,
+    queue,
   });
 }
