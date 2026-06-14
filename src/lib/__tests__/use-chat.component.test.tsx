@@ -2,11 +2,13 @@
  * @jest-environment jsdom
  */
 import '@testing-library/jest-dom';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useChat } from '@/hooks/use-chat';
 import * as chatClient from '@/lib/chat-client';
+import type { ChatMessage } from '@/lib/chat-client-types';
+import { queryKeys } from '@/lib/query-keys';
 import * as sound from '@/lib/play-notification-sound';
 
 jest.mock('@/components/providers/locale-provider', () => ({
@@ -467,6 +469,193 @@ describe('useChat', () => {
     await waitFor(() => expect(result.current.conversationId).toBe('c1'));
     await result.current.sendMessage('nouveau sujet', { forceNew: true });
     await waitFor(() => expect(result.current.conversationId).toBe('c-new'));
+  });
+
+  it('réessaie avec forceNew après erreur 400', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
+      conversations: [{ id: 'c1', status: 'ACTIVE', createdAt: '', updatedAt: '', messages: [] }],
+    });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
+      messages: [],
+      nextCursor: null,
+      hasMore: false,
+    });
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({ ok: false, status: 400 })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'm1', conversationId: 'c1' }),
+      });
+
+    const { result } = renderHook(() => useChat(true), { wrapper });
+    await waitFor(() => expect(result.current.conversationId).toBe('c1'));
+    await result.current.sendMessage('retry me');
+
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(JSON.parse((global.fetch as jest.Mock).mock.calls[1][1].body)).toEqual({
+      content: 'retry me',
+      forceNew: true,
+    });
+  });
+
+  it('construit un item de liste si conversations vides mais messages chargés', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({ conversations: [] });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
+      messages: [
+        { id: 'm1', senderType: 'USER', isRead: true, content: 'Bonjour', createdAt: '2026-06-01' },
+      ],
+      nextCursor: null,
+      hasMore: false,
+      status: 'ACTIVE',
+    });
+    localStorage.setItem('chat_active_conversation_id', 'orphan-c');
+
+    const { result } = renderHook(() => useChat(true), { wrapper });
+    await waitFor(() => expect(result.current.conversationId).toBe('orphan-c'));
+    await waitFor(() => expect(result.current.conversationListItems).toHaveLength(1));
+    expect(result.current.conversationListItems[0]?.id).toBe('orphan-c');
+  });
+
+  it('expire awaitingStaffReply après 90 secondes', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
+      conversations: [
+        {
+          id: 'c1',
+          status: 'ACTIVE',
+          createdAt: '',
+          updatedAt: '',
+          messages: [{ id: 'm0', senderType: 'BOT', isRead: false, content: 'bot', createdAt: '' }],
+        },
+      ],
+    });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
+      messages: [{ id: 'm1', senderType: 'USER', isRead: true, content: 'q', createdAt: '' }],
+      nextCursor: null,
+      hasMore: false,
+    });
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 'm2', conversationId: 'c1' }),
+    });
+    jest.useFakeTimers({ advanceTimers: true });
+    const { result } = renderHook(() => useChat(true, false), { wrapper });
+    await waitFor(() => expect(result.current.conversationId).toBe('c1'));
+    await act(async () => {
+      await result.current.sendMessage('question');
+    });
+    await waitFor(() => expect(result.current.getListUnreadTotal()).toBe(0));
+    await act(async () => {
+      jest.advanceTimersByTime(90_000);
+    });
+    await waitFor(() => expect(result.current.getListUnreadTotal()).toBe(1));
+    jest.useRealTimers();
+  });
+
+  it('réinitialise awaitingStaffReply quand le staff répond', async () => {
+    let convMessages: ChatMessage[] = [
+      { id: 'm1', senderType: 'USER', isRead: true, content: 'q', createdAt: '' },
+    ];
+    jest.spyOn(chatClient, 'fetchConversationsList').mockImplementation(async () => ({
+      conversations: [
+        { id: 'c1', status: 'ACTIVE', createdAt: '', updatedAt: '', messages: convMessages },
+      ],
+    }));
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockImplementation(async () => ({
+      messages: convMessages,
+      nextCursor: null,
+      hasMore: false,
+    }));
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 'm2', conversationId: 'c1' }),
+    });
+
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: 0 } },
+    });
+    const w = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+
+    const { result } = renderHook(() => useChat(true, false), { wrapper: w });
+    await waitFor(() => expect(result.current.conversationId).toBe('c1'));
+    await act(async () => {
+      await result.current.sendMessage('question');
+    });
+    await waitFor(() => expect(result.current.getUnreadCount()).toBe(0));
+
+    convMessages = [
+      { id: 'm1', senderType: 'USER', isRead: true, content: 'q', createdAt: '' },
+      { id: 'm2', senderType: 'USER', isRead: true, content: 'q2', createdAt: '' },
+      { id: 'm3', senderType: 'BOT', isRead: false, content: 'r', createdAt: '' },
+    ];
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: queryKeys.conversationMessages('c1') });
+      await client.invalidateQueries({ queryKey: queryKeys.conversations });
+    });
+    await waitFor(() =>
+      expect(result.current.currentConversation?.messages.at(-1)?.senderType).toBe('BOT'),
+    );
+    await waitFor(() => expect(result.current.getUnreadCount()).toBe(1));
+  });
+
+  it('calcule getListUnreadTotal hors conversation active', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
+      conversations: [
+        {
+          id: 'c1',
+          status: 'ACTIVE',
+          createdAt: '',
+          updatedAt: '',
+          messages: [{ id: 'm1', senderType: 'BOT', isRead: false, content: 'bot', createdAt: '' }],
+        },
+        {
+          id: 'c2',
+          status: 'ACTIVE',
+          createdAt: '',
+          updatedAt: '',
+          messages: [{ id: 'm2', senderType: 'MODERATOR', isRead: false, content: 'mod', createdAt: '' }],
+        },
+      ],
+    });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
+      messages: [],
+      nextCursor: null,
+      hasMore: false,
+    });
+
+    const { result } = renderHook(() => useChat(true, false), { wrapper });
+    await waitFor(() => expect(result.current.conversationId).toBe('c1'));
+    expect(result.current.getListUnreadTotal()).toBe(2);
+  });
+
+  it('utilise les paramètres par défaut (fermé, hors conversation)', () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({ conversations: [] });
+    const { result } = renderHook(() => useChat(), { wrapper });
+    expect(result.current.conversations).toEqual([]);
+    expect(chatClient.fetchConversationsList).not.toHaveBeenCalled();
+  });
+
+  it('charge les pages de messages plus anciennes', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
+      conversations: [{ id: 'c1', status: 'ACTIVE', createdAt: '', updatedAt: '', messages: [] }],
+    });
+    jest.spyOn(chatClient, 'fetchMessagesPage')
+      .mockResolvedValueOnce({
+        messages: [{ id: 'm2', senderType: 'BOT', isRead: true, content: 'recent', createdAt: '' }],
+        nextCursor: 'cursor-1',
+        hasMore: true,
+      })
+      .mockResolvedValueOnce({
+        messages: [{ id: 'm1', senderType: 'USER', isRead: true, content: 'old', createdAt: '' }],
+        nextCursor: null,
+        hasMore: false,
+      });
+
+    const { result } = renderHook(() => useChat(true), { wrapper });
+    await waitFor(() => expect(result.current.conversationId).toBe('c1'));
+    await result.current.loadOlderMessages();
+    await waitFor(() => expect(chatClient.fetchMessagesPage).toHaveBeenCalledTimes(2));
   });
 
   it('sendMessage propage l’erreur API', async () => {

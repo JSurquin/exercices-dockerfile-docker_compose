@@ -781,4 +781,229 @@ describe('ChatWidget', () => {
     );
     act(() => jest.advanceTimersByTime(90_000));
   });
+
+  it('affiche la date absolue pour une conversation de plus de 7 jours', async () => {
+    const oldDate = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
+    const expectedDate = new Date(oldDate).toLocaleDateString('fr', {
+      day: 'numeric',
+      month: 'short',
+    });
+    chatMock = buildChatMock({
+      conversationListItems: [
+        { id: 'c-old', title: 'Ancien ticket', lastMessageAt: oldDate, status: 'CLOSED', unread: 0 },
+      ],
+    });
+    renderWidget();
+    await openChat();
+    expect(screen.getByText('Ancien ticket')).toBeInTheDocument();
+    expect(screen.getByText(expectedDate)).toBeInTheDocument();
+  });
+
+  it('rouvre le chat pendant l animation de fermeture', async () => {
+    renderWidget();
+    await openChat();
+    closeChatViaHeader();
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent('open-support-chat', { detail: { prefillMessage: 'Reprise' } }),
+      );
+    });
+    expect(screen.getByTestId('chat-popup')).toHaveClass('opacity-100');
+    expect(screen.getByTestId('chat-message-input')).toHaveValue('Reprise');
+  });
+
+  it('gère l échec de l API bot-message', async () => {
+    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    (global.fetch as jest.Mock).mockResolvedValue({ ok: false, status: 500 });
+    renderWidget();
+    await openChat();
+    await openHelpTab();
+    fireEvent.click(screen.getByText('Problème de trade'));
+    fireEvent.click(screen.getByText('Trade en attente'));
+    await waitFor(() => expect(errSpy).toHaveBeenCalled());
+    errSpy.mockRestore();
+  });
+
+  it('annule l indicateur IA si l envoi échoue', async () => {
+    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockSendMessage.mockRejectedValueOnce(new Error('send failed'));
+    chatMock = buildChatMock({
+      currentConversation: { id: 'c1', status: 'ACTIVE', messages: [] },
+      conversationId: 'c1',
+    });
+    renderWidget();
+    await openChat();
+    openConversationView();
+    const input = screen.getByTestId('chat-message-input');
+    fireEvent.change(input, { target: { value: 'échec' } });
+    fireEvent.click(screen.getByTestId('chat-send-button'));
+    await waitFor(() => expect(mockSendMessage).toHaveBeenCalled());
+    expect(document.querySelector('.ai-typing-bubble')).not.toBeInTheDocument();
+    errSpy.mockRestore();
+  });
+
+  it('retire l indicateur IA quand une réponse IA arrive', async () => {
+    chatMock = buildChatMock({
+      currentConversation: {
+        id: 'c1',
+        status: 'ACTIVE',
+        messages: [
+          { id: 'm1', content: 'Q', senderType: 'USER', createdAt: '2026-06-12T10:00:00Z', isRead: true, userId: 'u1' },
+          { id: 'm2', content: 'Q2', senderType: 'USER', createdAt: '2026-06-12T10:01:00Z', isRead: true, userId: 'u1' },
+          { id: 'm3', content: 'Voici la réponse du bot', senderType: 'AI', createdAt: '2026-06-12T10:02:00Z', isRead: false, userId: null },
+        ],
+      },
+      conversationId: 'c1',
+    });
+    authUser = { id: 'u1', username: 'Me' };
+    renderWidget();
+    await openChat();
+    openConversationView();
+    expect(document.querySelector('.ai-typing-bubble')).not.toBeInTheDocument();
+    expect(screen.getByText('Voici la réponse du bot')).toBeInTheDocument();
+  });
+
+  it('ouvre la conversation récente depuis l accueil', async () => {
+    chatMock = buildChatMock({
+      conversationListItems: [
+        { id: 'c-recent', title: 'Dernier échange', lastMessageAt: '2026-06-12T10:00:00Z', status: 'ACTIVE', unread: 0 },
+      ],
+      currentConversation: {
+        id: 'c-recent',
+        status: 'ACTIVE',
+        messages: [{ id: 'm1', content: 'Salut', senderType: 'USER', createdAt: '2026-06-12T10:00:00Z', isRead: true, userId: 'u1' }],
+      },
+      conversationId: 'c-recent',
+    });
+    authUser = { id: 'u1', username: 'Me' };
+    renderWidget();
+    await openChat();
+    fireEvent.click(screen.getByText('Dernier échange'));
+    expect(mockSetConversationId).toHaveBeenCalledWith('c-recent');
+    expect(screen.getByTestId('chat-message-input')).toBeInTheDocument();
+  });
+
+  it('retourne à l accueil via l onglet home', async () => {
+    renderWidget();
+    await openChat();
+    await openHelpTab();
+    fireEvent.click(screen.getByText('Problème de trade'));
+    expect(screen.getByText('Trade en attente')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('chat-tab-home'));
+    expect(screen.getByText(/Comment pouvons-nous vous aider/i)).toBeInTheDocument();
+  });
+
+  it('nettoie les timers au démontage', async () => {
+    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+    const { unmount } = renderWidget();
+    await openChat();
+    closeChatViaHeader();
+    unmount();
+    expect(clearTimeoutSpy).toHaveBeenCalled();
+    clearTimeoutSpy.mockRestore();
+  });
+
+  it('affiche le badge unread sur l onglet messages', async () => {
+    chatMock = buildChatMock({
+      conversationListItems: [
+        { id: 'c1', title: 'Unread', lastMessageAt: '2026-06-12T10:00:00Z', status: 'ACTIVE', unread: 3 },
+      ],
+      getListUnreadTotal: jest.fn(() => 3),
+    });
+    renderWidget();
+    await openChat();
+    expect(screen.getByText('3')).toBeInTheDocument();
+  });
+
+  it('affiche le temps relatif en minutes sur l accueil', async () => {
+    const recentDate = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    chatMock = buildChatMock({
+      conversationListItems: [
+        { id: 'c-recent', title: 'Ticket récent', lastMessageAt: recentDate, status: 'ACTIVE', unread: 0 },
+      ],
+    });
+    renderWidget();
+    await openChat();
+    expect(screen.getByText('5m')).toBeInTheDocument();
+  });
+
+  it('affiche le temps relatif en heures sur l accueil', async () => {
+    const recentDate = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+    chatMock = buildChatMock({
+      conversationListItems: [
+        { id: 'c-recent', title: 'Ticket hier', lastMessageAt: recentDate, status: 'ACTIVE', unread: 0 },
+      ],
+    });
+    renderWidget();
+    await openChat();
+    expect(screen.getByText('3h')).toBeInTheDocument();
+  });
+
+  it('ferme l indicateur IA et nettoie le timer quand le staff répond', async () => {
+    chatMock = buildChatMock({
+      currentConversation: {
+        id: 'c1',
+        status: 'ACTIVE',
+        messages: [
+          { id: 'm1', content: 'Q', senderType: 'USER', createdAt: '2026-06-12T10:00:00Z', isRead: true, userId: 'u1' },
+        ],
+      },
+      conversationId: 'c1',
+    });
+    authUser = { id: 'u1', username: 'Me' };
+    const { rerenderWidget } = renderWidget();
+    mockSendMessage.mockImplementation(async () => {
+      chatMock = buildChatMock({
+        currentConversation: {
+          id: 'c1',
+          status: 'ACTIVE',
+          messages: [
+            { id: 'm1', content: 'Q', senderType: 'USER', createdAt: '2026-06-12T10:00:00Z', isRead: true, userId: 'u1' },
+            { id: 'm2', content: 'Question', senderType: 'USER', createdAt: '2026-06-12T10:01:00Z', isRead: true, userId: 'u1' },
+            { id: 'm3', content: 'Réponse bot', senderType: 'BOT', createdAt: '2026-06-12T10:02:00Z', isRead: false, userId: null },
+          ],
+        },
+        conversationId: 'c1',
+      });
+      rerenderWidget();
+      return { conversationId: 'c1' };
+    });
+    await openChat();
+    openConversationView();
+    const input = screen.getByTestId('chat-message-input');
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'Question' } });
+      fireEvent.click(screen.getByTestId('chat-send-button'));
+    });
+    await waitFor(() => expect(document.querySelector('.ai-typing-bubble')).not.toBeInTheDocument());
+    expect(screen.getByText('Réponse bot')).toBeInTheDocument();
+  });
+
+  it('nettoie le timer IA à la fermeture du widget', async () => {
+    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+    chatMock = buildChatMock({
+      currentConversation: { id: 'c1', status: 'ACTIVE', messages: [] },
+      conversationId: 'c1',
+    });
+    renderWidget();
+    await openChat();
+    openConversationView();
+    const input = screen.getByTestId('chat-message-input');
+    fireEvent.change(input, { target: { value: 'test' } });
+    fireEvent.click(screen.getByTestId('chat-send-button'));
+    await waitFor(() => expect(mockSendMessage).toHaveBeenCalled());
+    closeChatViaHeader();
+    expect(clearTimeoutSpy).toHaveBeenCalled();
+    clearTimeoutSpy.mockRestore();
+  });
+
+  it('historique vide propose de démarrer une conversation', async () => {
+    authUser = { id: 'u1', username: 'Me' };
+    renderWidget();
+    await openChat();
+    fireEvent.click(screen.getByTestId('chat-tab-messages'));
+    expect(screen.getByText('Aucune conversation')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Démarrer une conversation'));
+    expect(screen.getByTestId('chat-message-input')).toBeInTheDocument();
+  });
 });

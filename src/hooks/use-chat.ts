@@ -248,21 +248,18 @@ export function useChat(isOpen = false, isViewingConversation = false) {
       !isComposingNewConversation &&
       (allMessages.length > 0 || !messagesLoading)
     ) {
-      const meta = conversations.find((c) => c.id === conversationId);
       return [
         {
           id: conversationId,
           title: formatConversationDisplayTitle({
-            subject: meta?.subject ?? null,
-            summary: meta?.summary ?? null,
+            subject: null,
+            summary: null,
             messages: allMessages,
           }),
           lastMessageAt:
-            meta?.lastMessageAt ??
-            meta?.updatedAt ??
             allMessages[allMessages.length - 1]?.createdAt ??
             new Date().toISOString(),
-          status: meta?.status ?? 'ACTIVE',
+          status: loadedConversationStatus ?? 'ACTIVE',
           unread: isEngagedWithConversation(conversationId)
             ? 0
             : getUnreadMessageCount(allMessages),
@@ -278,6 +275,7 @@ export function useChat(isOpen = false, isViewingConversation = false) {
     isComposingNewConversation,
     allMessages,
     messagesLoading,
+    loadedConversationStatus,
   ]);
 
   const currentConversation = useMemo(() => {

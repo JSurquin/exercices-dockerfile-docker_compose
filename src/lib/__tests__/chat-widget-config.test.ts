@@ -4,6 +4,7 @@ import {
   CHAT_WIDGET_SUBCATEGORIES,
   getAllWidgetSubcategoryKeys,
   shouldShowBackButton,
+  shouldShowBackButtonLegacy,
 } from '@/lib/chat-widget-config';
 
 describe('CHAT_WIDGET_CATEGORY_KEYS', () => {
@@ -73,6 +74,32 @@ describe('shouldShowBackButton', () => {
         helpStep: 'categories',
         messagesStep: 'list',
       }),
+    ).toBe(false);
+  });
+});
+
+describe('shouldShowBackButtonLegacy', () => {
+  it('visible sur sous-catégories', () => {
+    expect(
+      shouldShowBackButtonLegacy({ step: 'subcategories', hasConversationMessages: false }),
+    ).toBe(true);
+  });
+
+  it('visible en conversation sans messages', () => {
+    expect(
+      shouldShowBackButtonLegacy({ step: 'conversation', hasConversationMessages: false }),
+    ).toBe(true);
+  });
+
+  it('masqué en conversation avec messages', () => {
+    expect(
+      shouldShowBackButtonLegacy({ step: 'conversation', hasConversationMessages: true }),
+    ).toBe(false);
+  });
+
+  it('masqué sur catégories', () => {
+    expect(
+      shouldShowBackButtonLegacy({ step: 'categories', hasConversationMessages: false }),
     ).toBe(false);
   });
 });

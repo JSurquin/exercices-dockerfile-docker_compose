@@ -530,11 +530,7 @@ export function ChatWidget() {
   }, [currentConversation?.messages, isInConversation, scrollToBottom]);
 
   const handleToggleChat = () => {
-    if (isOpen) {
-      closePopup();
-    } else {
-      openPopup();
-    }
+    openPopup();
   };
 
   useEffect(() => {
