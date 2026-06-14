@@ -26,6 +26,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
+import { ChatMarkdownContent } from '@/lib/chat-markdown';
 import { chatMessageBubbleClass, chatPriorityBadgeClass, chatSenderBadgeClass, chatStatusBadgeClass } from '@/lib/chat-badges';
 import {
   adminBtnOutline,
@@ -395,9 +396,13 @@ export default function ConversationPage() {
                         </span>
                       </div>
                       <div className={chatMessageBubbleClass(msg.senderType)}>
-                        <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                          {resolveI18nContent(msg.content, messages)}
-                        </p>
+                        {msg.senderType === 'USER' ? (
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                            {resolveI18nContent(msg.content, messages)}
+                          </p>
+                        ) : (
+                          <ChatMarkdownContent content={resolveI18nContent(msg.content, messages)} />
+                        )}
                       </div>
                     </div>
                   </div>

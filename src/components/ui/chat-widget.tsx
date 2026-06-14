@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, memo, useMemo, type ComponentType, type SVGProps } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { ChatMarkdownContent } from "@/lib/chat-markdown";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +35,6 @@ import {
   chatWidgetTimestampClass,
   chatWidgetUnreadBadgeClass,
   chatWidgetMessageEnterClass,
-  preserveChatLineBreaks,
   isWidgetMessageFromViewer,
   shouldShowWidgetAiTyping,
   shouldShowWidgetUnreadBadge,
@@ -114,29 +112,6 @@ function formatMessageTime(date: Date | string, locale: string) {
     minute: "2-digit",
   });
 }
-
-const CHAT_REMARK_PLUGINS = [remarkGfm];
-
-const CHAT_MARKDOWN_COMPONENTS = {
-  p: ({ children }: { children?: React.ReactNode }) => <p className="mb-1 last:mb-0">{children}</p>,
-  ul: ({ children }: { children?: React.ReactNode }) => <ul className="list-disc pl-4 mb-1 space-y-0.5">{children}</ul>,
-  ol: ({ children }: { children?: React.ReactNode }) => <ol className="list-decimal pl-4 mb-1 space-y-0.5">{children}</ol>,
-  li: ({ children }: { children?: React.ReactNode }) => <li className="text-sm">{children}</li>,
-  strong: ({ children }: { children?: React.ReactNode }) => <strong className="font-semibold">{children}</strong>,
-  em: ({ children }: { children?: React.ReactNode }) => <em className="italic">{children}</em>,
-  code: ({ children }: { children?: React.ReactNode }) => (
-    <code className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5 text-xs font-mono">{children}</code>
-  ),
-  h1: ({ children }: { children?: React.ReactNode }) => <p className="font-semibold text-sm mb-1">{children}</p>,
-  h2: ({ children }: { children?: React.ReactNode }) => <p className="font-semibold text-sm mb-1">{children}</p>,
-  h3: ({ children }: { children?: React.ReactNode }) => <p className="font-medium text-sm mb-0.5">{children}</p>,
-  a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-80">
-      {children}
-    </a>
-  ),
-  br: () => <br />,
-};
 
 type WidgetMessage = {
   id: string;
@@ -343,11 +318,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
                   {resolveContent(msg.content)}
                 </p>
               ) : (
-                <div className="text-sm leading-relaxed">
-                  <ReactMarkdown remarkPlugins={CHAT_REMARK_PLUGINS} components={CHAT_MARKDOWN_COMPONENTS}>
-                    {preserveChatLineBreaks(resolveContent(msg.content))}
-                  </ReactMarkdown>
-                </div>
+                <ChatMarkdownContent content={resolveContent(msg.content)} />
               )}
               <div
                 className={`flex items-center justify-between mt-1 gap-2 ${chatWidgetTimestampClass(bubbleSender)}`}

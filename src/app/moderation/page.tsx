@@ -15,7 +15,7 @@ import { useLocale } from '@/components/providers/locale-provider';
 import { ConversationWithMessages, ConversationFilters } from '@/lib/types/chat';
 import { ConversationStatus, ConversationPriority } from '@prisma/client';
 import { useSession } from '~/lib/auth-client';
-import { chatPriorityBadgeClass, chatStatusBadgeClass } from '@/lib/chat-badges';
+import { chatPriorityBadgeClass, chatSenderBadgeClass, chatStatusBadgeClass } from '@/lib/chat-badges';
 import {
   adminBadgeStatus,
   adminBtnOutline,
@@ -37,6 +37,7 @@ import {
   UserIcon,
   ChevronDownIcon,
   FunnelIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/query-keys';
@@ -293,9 +294,20 @@ export default function ModerationPage() {
                       </div>
 
                       {conversation.messages.length > 0 && (
-                        <p className="text-sm text-muted-foreground/80 line-clamp-2 break-words">
-                          {resolveI18nContent(conversation.messages[0].content, messages)}
-                        </p>
+                        <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                          {conversation.messages[0].senderType === 'AI' && (
+                            <Badge
+                              variant="outline"
+                              className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0 ${chatSenderBadgeClass('AI')}`}
+                            >
+                              <SparklesIcon className="w-3 h-3 shrink-0" aria-hidden />
+                              {messages.chatWidget.aiLabel}
+                            </Badge>
+                          )}
+                          <p className="text-sm text-muted-foreground/80 line-clamp-2 break-words min-w-0 flex-1">
+                            {resolveI18nContent(conversation.messages[0].content, messages)}
+                          </p>
+                        </div>
                       )}
 
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-muted-foreground">

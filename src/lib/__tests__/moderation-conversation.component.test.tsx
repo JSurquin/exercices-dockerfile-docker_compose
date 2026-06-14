@@ -100,6 +100,28 @@ jest.mock('@/components/providers/locale-provider', () => ({
   }),
 }));
 
+jest.mock('@/lib/chat-markdown', () => ({
+  ChatMarkdownContent: ({ content }: { content: string }) => {
+    const boldMatch = content.match(/\*\*(.+?)\*\*([\s\S]*)/);
+    if (boldMatch) {
+      return (
+        <div data-testid="markdown">
+          <p>
+            <strong>{boldMatch[1]}</strong>
+            {boldMatch[2]}
+          </p>
+        </div>
+      );
+    }
+    return (
+      <div data-testid="markdown">
+        <p>{content}</p>
+      </div>
+    );
+  },
+  shouldRenderChatMarkdown: (senderType: string) => senderType !== 'USER',
+}));
+
 import ConversationPage from '@/app/moderation/conversations/[id]/page';
 import * as sound from '@/lib/play-notification-sound';
 import { toast } from 'sonner';
@@ -324,6 +346,30 @@ describe('ModerationConversationPage', () => {
     expect(await screen.findByText('Réponse IA')).toBeInTheDocument();
     expect(screen.getByText('Voici une réponse générée automatiquement.')).toBeInTheDocument();
     expect(screen.queryByText('Modérateur')).not.toBeInTheDocument();
+  });
+
+  it('affiche le markdown des réponses IA et modérateur', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () =>
+        buildConversation({
+          messages: [
+            {
+              id: 'm1',
+              content: '**Important** : vérifiez votre trade link.',
+              senderType: 'AI',
+              createdAt: '2026-06-12T11:01:00Z',
+              isRead: false,
+            },
+          ],
+        }),
+    });
+
+    renderPage();
+
+    const bold = await screen.findByText('Important');
+    expect(bold.tagName).toBe('STRONG');
+    expect(screen.getByText(/vérifiez votre trade link/)).toBeInTheDocument();
   });
 
   it('ne joue pas de son quand le modérateur répond lui-même', async () => {
