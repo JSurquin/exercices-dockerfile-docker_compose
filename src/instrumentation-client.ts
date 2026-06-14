@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
+import { shouldIgnoreSentryEvent } from "./lib/sentry-filters";
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -43,6 +44,10 @@ Sentry.init({
 
   // Désactiver en développement si pas de DSN
   enabled: !!process.env.NEXT_PUBLIC_SENTRY_DSN,
+
+  beforeSend(event) {
+    return shouldIgnoreSentryEvent(event) ? null : event;
+  },
 });
 
 // Instrumentation des navigations pour le tracing

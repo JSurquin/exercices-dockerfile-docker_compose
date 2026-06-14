@@ -69,7 +69,6 @@ export default defineConfig({
       testMatch: /.*\.logged-in\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
-        // Utilise l'état d'authentification créé par le setup
         storageState: '.auth/user.json',
       },
       dependencies: ['setup'],
@@ -102,8 +101,5 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
-    env: {
-      ENABLE_TEST_AUTH: 'true',
-    },
   },
 });
