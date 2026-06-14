@@ -47,12 +47,12 @@ export function ScrollToTopButton() {
   return (
     <div
       className={cn(
-        "fixed right-[max(1rem,env(safe-area-inset-right,0px))] z-[99998] pointer-events-none sm:right-[max(1.5rem,env(safe-area-inset-right,0px))]",
+        "pointer-events-auto absolute right-[max(1rem,env(safe-area-inset-right,0px))] z-[99998] sm:right-[max(1.5rem,env(safe-area-inset-right,0px))]",
         "bottom-[calc(max(1rem,env(safe-area-inset-bottom,0px))+var(--scroll-top-offset))]",
         "sm:bottom-[calc(max(1.5rem,env(safe-area-inset-bottom,0px))+var(--scroll-top-offset))]",
         "transition-all duration-200",
         showButton
-          ? "opacity-100 translate-y-0 pointer-events-auto"
+          ? "opacity-100 translate-y-0"
           : "opacity-0 translate-y-2 pointer-events-none"
       )}
       style={

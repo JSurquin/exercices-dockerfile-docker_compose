@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, memo, useMemo, type ComponentType, type SVGProps } from "react";
-import { createPortal } from "react-dom";
 import { ChatMarkdownContent } from "@/lib/chat-markdown";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,6 +17,7 @@ import {
 import { shouldClearAiTypingIndicator } from "@/lib/chat-logic";
 import {
   CHAT_WIDGET_POPUP_CLOSE_MS,
+  getChatWidgetSavedScrollY,
   setChatWidgetBodyScrollLock,
   chatWidgetAiTypingBubbleClass,
   chatWidgetCategoryButtonClass,
@@ -389,7 +389,6 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [popupMounted, setPopupMounted] = useState(false);
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const { messages, locale } = useLocale();
 
   const CATEGORIES: Category[] = [
@@ -601,8 +600,18 @@ export function ChatWidget() {
   }, [isOpen]);
 
   useEffect(() => {
-    setPortalTarget(document.body);
-  }, []);
+    if (!isOpen) return;
+
+    const savedY = getChatWidgetSavedScrollY();
+    const lockScrollPosition = () => {
+      if (window.scrollY !== savedY) {
+        window.scrollTo(0, savedY);
+      }
+    };
+
+    window.addEventListener("scroll", lockScrollPosition, { passive: true });
+    return () => window.removeEventListener("scroll", lockScrollPosition);
+  }, [isOpen]);
 
   useEffect(() => {
     const handleMobileMenuChange = (e: Event) => {
@@ -1125,7 +1134,7 @@ export function ChatWidget() {
       )}
 
       {!isOpen && (
-        <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-[99999] sm:bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:right-[max(1.5rem,env(safe-area-inset-right,0px))] pointer-events-auto">
+        <div className="pointer-events-auto absolute bottom-[max(1rem,env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-[99999] sm:bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:right-[max(1.5rem,env(safe-area-inset-right,0px))]">
           <div className="relative">
             {shouldShowWidgetUnreadBadge(unreadCount, isOpen) && (
               <Badge className={chatWidgetUnreadBadgeClass()}>
@@ -1150,6 +1159,5 @@ export function ChatWidget() {
     </>
   );
 
-  if (!portalTarget) return null;
-  return createPortal(widgetUi, portalTarget);
+  return widgetUi;
 }

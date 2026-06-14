@@ -11,6 +11,7 @@ import { TourModeProvider } from '@/components/providers/tour-provider';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { ChatWidget } from '@/components/ui/chat-widget';
+import { FloatingUiPortal } from '@/components/ui/floating-ui-portal';
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button';
 import { Toaster } from '@/components/ui/sonner';
 import { PayoutReconciler } from '@/components/payout-reconciler';
@@ -42,8 +43,12 @@ export function RootLayoutShell({ children }: { children: React.ReactNode }) {
                 <main className={isAdminRoute ? '' : 'relative z-0 flex-1'}>{children}</main>
 
                 {!isAdminRoute && <Footer />}
-                {!isAdminRoute && <ScrollToTopButton />}
-                {!isAdminRoute && <ChatWidget />}
+                {!isAdminRoute && (
+                  <FloatingUiPortal>
+                    <ScrollToTopButton />
+                    <ChatWidget />
+                  </FloatingUiPortal>
+                )}
 
                 <PayoutReconciler />
                 <UpdateNotifier />

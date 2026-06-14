@@ -691,7 +691,7 @@ describe('ChatWidget', () => {
     Object.defineProperty(window, 'scrollY', { value: 120, writable: true, configurable: true });
     const scrollTo = jest.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
     setChatWidgetBodyScrollLock(true);
-    expect(document.body.style.top).toBe('-120px');
+    expect(document.body.style.top).toBe('');
     setChatWidgetBodyScrollLock(false);
     expect(scrollTo).toHaveBeenCalledWith(0, 120);
     scrollTo.mockRestore();

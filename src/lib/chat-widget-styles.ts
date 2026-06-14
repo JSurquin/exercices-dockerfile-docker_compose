@@ -62,7 +62,7 @@ export const CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS = 'chat-widget-scroll-lock';
 
 let chatWidgetSavedScrollY = 0;
 
-/** Bloque le scroll de la page (position fixed + restauration du scroll à la fermeture). */
+/** Bloque le scroll de la page (overflow hidden + restauration du scroll à la fermeture). */
 export function setChatWidgetBodyScrollLock(locked: boolean): void {
   if (typeof document === 'undefined') return;
 
@@ -73,14 +73,16 @@ export function setChatWidgetBodyScrollLock(locked: boolean): void {
     chatWidgetSavedScrollY = window.scrollY;
     html.classList.add(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS);
     body.classList.add(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS);
-    body.style.top = `-${chatWidgetSavedScrollY}px`;
     return;
   }
 
   html.classList.remove(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS);
   body.classList.remove(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS);
-  body.style.top = '';
   window.scrollTo(0, chatWidgetSavedScrollY);
+}
+
+export function getChatWidgetSavedScrollY(): number {
+  return chatWidgetSavedScrollY;
 }
 
 export function chatWidgetScrollAreaClass(extra = ''): string {
@@ -91,7 +93,7 @@ export function chatWidgetPopupContainerClass(isOpen: boolean): string {
   const mobileBottom = isOpen ? "bottom-0" : "bottom-24";
   const desktopBottom = isOpen ? "sm:bottom-6" : "sm:bottom-24";
   const base = `
-    fixed top-[env(safe-area-inset-top,0px)] ${mobileBottom} ${desktopBottom} left-0 right-0
+    absolute top-[env(safe-area-inset-top,0px)] ${mobileBottom} ${desktopBottom} left-0 right-0
     max-sm:h-[calc(100dvh-env(safe-area-inset-top,0px))]
     sm:top-auto sm:left-auto sm:right-6 sm:w-[390px] sm:h-[clamp(480px,75dvh,640px)]
     chat-glass rounded-none sm:rounded-2xl shadow-2xl z-[9999]
