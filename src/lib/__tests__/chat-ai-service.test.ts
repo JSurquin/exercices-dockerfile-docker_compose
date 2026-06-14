@@ -349,4 +349,20 @@ describe('maybeGenerateAiReply', () => {
     const roles = mockOllamaChat.mock.calls[0][0].messages.map((m: { role: string }) => m.role);
     expect(roles.filter((r: string) => r === 'system')).toHaveLength(1);
   });
+
+  it('abandonne si un message staff arrive entre-temps (race)', async () => {
+    mockFindUnique.mockResolvedValue({
+      ...baseConversation,
+      messages: [
+        { content: 'Mon trade Steam bloqué', senderType: 'USER', createdAt: new Date() },
+      ],
+    });
+    mockFindFirst.mockResolvedValue({ senderType: 'MODERATOR' });
+    mockOllamaChat.mockResolvedValue({ content: 'Réponse', model: 'llama3.2', done: true });
+
+    await maybeGenerateAiReply('conv-1');
+
+    expect(mockOllamaChat).not.toHaveBeenCalled();
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
 });
