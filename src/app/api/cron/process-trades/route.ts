@@ -1,128 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '~/prisma/prisma';
-import { TradeHooks } from '@/lib/trade-hooks';
 import { requireCronSecret } from '@/lib/cron-auth';
+import { runProcessTradesJob } from '@/lib/cron-jobs/process-trades';
 
 /**
  * POST /api/cron/process-trades
- * Cron job pour traiter les trades qui ont terminé leur période de hold
- * À exécuter toutes les heures ou toutes les 6 heures
+ * Traite les trades en fin de période de hold (déclenchement manuel via CRON_SECRET).
+ * Planification automatique : node-cron au démarrage du serveur (`pnpm start`).
  */
 export async function POST(request: NextRequest) {
   try {
     const cron = requireCronSecret(request);
     if (!cron.ok) {
-      return NextResponse.json(
-        { error: cron.message },
-        { status: cron.status }
-      );
+      return NextResponse.json({ error: cron.message }, { status: cron.status });
     }
 
-    console.log('[Cron] Starting trade processing...');
-
-    // Récupérer tous les trades en IN_TRADE_HOLD dont la période est terminée
-    const tradesReadyForPayout = await prisma.trade.findMany({
-      where: {
-        status: 'IN_TRADE_HOLD',
-        availableAt: {
-          lte: new Date() // Date disponible <= maintenant
-        }
-      },
-      include: {
-        user: true,
-        items: true
-      }
-    });
-
-    console.log(`[Cron] Found ${tradesReadyForPayout.length} trades ready for payout`);
-
-    let processedCount = 0;
-    let errorCount = 0;
-
-    // Traiter chaque trade
-    for (const trade of tradesReadyForPayout) {
-      try {
-        console.log(`[Cron] Processing trade ${trade.id}...`);
-
-        // Mettre à jour le statut du trade
-        await prisma.trade.update({
-          where: { id: trade.id },
-          data: { status: 'AVAILABLE' }
-        });
-
-        // Déclencher le hook qui créera le payout
-        await TradeHooks.onTradeStatusChanged(
-          trade.id,
-          'IN_TRADE_HOLD',
-          'AVAILABLE'
-        );
-
-        processedCount++;
-        console.log(`[Cron] Successfully processed trade ${trade.id}`);
-      } catch (error) {
-        errorCount++;
-        console.error(`[Cron] Error processing trade ${trade.id}:`, error);
-        
-        // Log de l'erreur
-        await prisma.auditLog.create({
-          data: {
-            userId: 'system',
-            action: 'CRON_ERROR',
-            details: {
-              tradeId: trade.id,
-              error: error instanceof Error ? error.message : 'Unknown error',
-              step: 'process_trade'
-            }
-          }
-        }).catch(err => console.error('Failed to log error:', err));
-      }
-    }
-
-    const response = {
-      success: true,
-      message: 'Trade processing completed',
-      stats: {
-        tradesFound: tradesReadyForPayout.length,
-        processed: processedCount,
-        errors: errorCount,
-      },
-      timestamp: new Date().toISOString()
-    };
-
-    console.log('[Cron] Trade processing completed:', response);
-
-    // Rattrapage : XP + commissions affilié via onTradeAvailable (même chemin que le webhook / cron principal)
-    const tradesMissingCommission = await prisma.trade.findMany({
-      where: {
-        status: { in: ['AVAILABLE', 'PAYOUT_PENDING', 'PAID'] },
-        affiliateCommissionProcessedAt: null,
-        balanceCreditedAt: { not: null },
-        OR: [
-          { affiliatePromoCode: { not: null } },
-          { user: { referredByAffiliateId: { not: null } } },
-        ],
-      },
-      select: { id: true },
-      take: 50,
-    });
-
-    let commissionsProcessed = 0;
-    for (const { id } of tradesMissingCommission) {
-      try {
-        await TradeHooks.onTradeAvailable(id);
-        commissionsProcessed++;
-      } catch (err) {
-        console.error(`[Cron] Affiliate commission catchup failed for trade ${id}:`, err);
-      }
-    }
-
-    return NextResponse.json({
-      ...response,
-      stats: {
-        ...response.stats,
-        affiliateCommissionsCatchup: commissionsProcessed,
-      },
-    });
+    const result = await runProcessTradesJob();
+    return NextResponse.json(result);
   } catch (error) {
     console.error('[Cron] Fatal error in trade processing:', error);
     return NextResponse.json(
@@ -135,19 +28,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * GET /api/cron/process-trades
- * Endpoint de test (désactiver en production)
- */
 export async function GET(request: NextRequest) {
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json(
-      { error: 'GET method not allowed in production' },
-      { status: 405 }
-    );
-  }
-
-  // En développement, permettre un GET pour tester
   return POST(request);
 }
-
