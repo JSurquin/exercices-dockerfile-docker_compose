@@ -3,11 +3,14 @@
  */
 import {
   ACTIVE_CONVERSATION_KEY,
+  appendGuestConversationId,
   fetchConversationsList,
   fetchMessagesPage,
   flattenMessagePages,
+  GUEST_CONVERSATION_HISTORY_KEY,
   GUEST_CONVERSATION_KEY,
   persistConversationId,
+  readGuestConversationIds,
   readStoredConversationId,
   resolveActiveConversationId,
   subscribeStorage,
@@ -33,6 +36,18 @@ describe('readStoredConversationId / persistConversationId', () => {
     persistConversationId(null);
     expect(localStorage.getItem(ACTIVE_CONVERSATION_KEY)).toBeNull();
   });
+
+  it('conserve un historique invité multi-conversations', () => {
+    appendGuestConversationId('c1');
+    appendGuestConversationId('c2');
+    expect(readGuestConversationIds()).toEqual(['c2', 'c1']);
+    expect(readStoredConversationId()).toBe('c2');
+  });
+
+  it('migre l’ancien ID invité unique vers l’historique', () => {
+    localStorage.setItem(GUEST_CONVERSATION_KEY, 'legacy-1');
+    expect(readGuestConversationIds()).toEqual(['legacy-1']);
+  });
 });
 
 describe('subscribeStorage', () => {
@@ -42,7 +57,10 @@ describe('subscribeStorage', () => {
     window.dispatchEvent(
       new StorageEvent('storage', { key: ACTIVE_CONVERSATION_KEY, newValue: 'x' }),
     );
-    expect(listener).toHaveBeenCalled();
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: GUEST_CONVERSATION_HISTORY_KEY, newValue: '[]' }),
+    );
+    expect(listener).toHaveBeenCalledTimes(2);
     unsub();
   });
 
@@ -60,8 +78,27 @@ describe('fetchConversationsList', () => {
   });
 
   it('retourne liste vide si non ok', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue({ ok: false });
+    (global.fetch as jest.Mock).mockResolvedValue({ ok: false, status: 500 });
     await expect(fetchConversationsList()).resolves.toEqual({ conversations: [] });
+  });
+
+  it('charge l’historique invité si la liste connectée renvoie 401', async () => {
+    localStorage.setItem(GUEST_CONVERSATION_HISTORY_KEY, JSON.stringify(['c1', 'c2']));
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({ ok: false, status: 401 })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          conversations: [
+            { id: 'c2', status: 'ACTIVE' },
+            { id: 'c1', status: 'ACTIVE' },
+          ],
+        }),
+      });
+
+    const data = await fetchConversationsList();
+    expect(data.conversations).toHaveLength(2);
+    expect((global.fetch as jest.Mock).mock.calls[1][0]).toContain('ids=c1%2Cc2');
   });
 
   it('normalise réponse tableau', async () => {

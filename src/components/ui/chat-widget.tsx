@@ -454,7 +454,7 @@ export function ChatWidget() {
     getUnreadCount,
     getListUnreadTotal,
     isLoading,
-  } = useChat(isOpen, isInConversation);
+  } = useChat(isOpen, isInConversation, !user);
 
   const queryClient = useQueryClient();
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);

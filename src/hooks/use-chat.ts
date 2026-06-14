@@ -25,6 +25,7 @@ import {
   fetchConversationsList,
   fetchMessagesPage,
   flattenMessagePages,
+  appendGuestConversationId,
   persistConversationId,
   readStoredConversationId,
   resolveActiveConversationId,
@@ -33,7 +34,7 @@ import {
 
 export type { ChatMessage, ConversationSummary } from '@/lib/chat-client-types';
 
-export function useChat(isOpen = false, isViewingConversation = false) {
+export function useChat(isOpen = false, isViewingConversation = false, isGuest = false) {
   const queryClient = useQueryClient();
   const { messages: t } = useLocale();
   const chatT = t.hooks.chat;
@@ -75,8 +76,12 @@ export function useChat(isOpen = false, isViewingConversation = false) {
     isComposingNewConversationRef.current = false;
     setIsComposingNewConversation(false);
     setPickedConversationId(id);
-    persistConversationId(id);
-  }, []);
+    if (id && isGuest) {
+      appendGuestConversationId(id);
+    } else {
+      persistConversationId(id);
+    }
+  }, [isGuest]);
 
   const {
     data: messagesData,

@@ -87,5 +87,7 @@ export const chatConversationsQuerySchema = z
       .optional()
       .transform((s) => (s === undefined || s === '' ? 20 : parseInt(s, 10)))
       .pipe(z.number().int().min(1).max(100)),
+    /** Invité : IDs locaux séparés par des virgules (max 20). */
+    ids: z.string().max(2000).optional(),
   })
   .strip();

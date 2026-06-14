@@ -12,18 +12,52 @@ import {
 } from '@/lib/validation/schemas/chat-api';
 import { buildConversationWhereClause } from '@/lib/chat-logic';
 
+const conversationListInclude = {
+  user: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      steamUsername: true,
+      steamAvatar: true,
+    },
+  },
+  assignedModerator: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  },
+  messages: {
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          steamUsername: true,
+          steamAvatar: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' as const },
+    take: 1,
+  },
+  _count: {
+    select: {
+      messages: true,
+    },
+  },
+};
+
 // GET /api/chat/conversations - Récupérer les conversations
 export async function GET(request: NextRequest) {
   try {
     const identity = await resolveChatIdentity(request);
-    if (identity.kind === 'guest') {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-    }
     if (identity.kind === 'invalid') {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
-    const session = identity.session;
-    const role = identity.role;
 
     const { searchParams } = new URL(request.url);
     const parsedQ = safeParseSearchParams(searchParams, chatConversationsQuerySchema);
@@ -31,6 +65,42 @@ export async function GET(request: NextRequest) {
       return parsedQ.response;
     }
     const q = parsedQ.data;
+
+    if (identity.kind === 'guest') {
+      const ids = (q.ids ?? '')
+        .split(',')
+        .map((id) => id.trim())
+        .filter(Boolean)
+        .slice(0, 20);
+
+      if (ids.length === 0) {
+        return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+      }
+
+      const conversations = await prisma.conversation.findMany({
+        where: {
+          id: { in: ids },
+          userId: null,
+          status: { not: 'DELETED' },
+        },
+        include: conversationListInclude,
+        orderBy: { lastMessageAt: 'desc' },
+      });
+
+      return NextResponse.json({
+        conversations,
+        pagination: {
+          page: 1,
+          limit: conversations.length,
+          total: conversations.length,
+          pages: 1,
+        },
+      });
+    }
+
+    const session = identity.session;
+    const role = identity.role;
+
     const filters: ConversationFilters = {
       status: (q.status as ConversationStatus) || undefined,
       assignedTo: q.assignedTo || undefined,
@@ -53,44 +123,7 @@ export async function GET(request: NextRequest) {
     const [conversations, total] = await Promise.all([
       prisma.conversation.findMany({
         where: whereClause,
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              steamUsername: true,
-              steamAvatar: true,
-            },
-          },
-          assignedModerator: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-          messages: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  steamUsername: true,
-                  steamAvatar: true,
-                },
-              },
-            },
-            orderBy: { createdAt: 'desc' },
-            take: 1, // Dernier message seulement pour la liste
-          },
-          _count: {
-            select: {
-              messages: true,
-            },
-          },
-        },
+        include: conversationListInclude,
         orderBy: { lastMessageAt: 'desc' },
         skip,
         take: filters.limit || 20,

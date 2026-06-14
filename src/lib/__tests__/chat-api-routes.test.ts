@@ -107,10 +107,30 @@ beforeEach(() => {
 });
 
 describe('GET /api/chat/conversations', () => {
-  it('retourne 401 pour invité', async () => {
+  it('retourne 401 pour invité sans ids', async () => {
     mockResolveChatIdentity.mockResolvedValue({ kind: 'guest' });
     const res = await getConversations(makeRequest('http://localhost/api/chat/conversations'));
     expect(res.status).toBe(401);
+  });
+
+  it('liste les conversations invité par ids locaux', async () => {
+    mockResolveChatIdentity.mockResolvedValue({ kind: 'guest' });
+    (prisma.conversation.findMany as jest.Mock).mockResolvedValue([
+      { id: 'c2' },
+      { id: 'c1' },
+    ]);
+
+    const res = await getConversations(
+      makeRequest('http://localhost/api/chat/conversations?ids=c1,c2'),
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.conversations).toHaveLength(2);
+    const findArg = (prisma.conversation.findMany as jest.Mock).mock.calls[0][0];
+    expect(findArg.where).toMatchObject({
+      id: { in: ['c1', 'c2'] },
+      userId: null,
+    });
   });
 
   it('retourne 403 pour compte gelé', async () => {

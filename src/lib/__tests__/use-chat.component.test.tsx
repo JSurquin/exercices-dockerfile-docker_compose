@@ -696,4 +696,47 @@ describe('useChat', () => {
     await waitFor(() => expect(result.current.conversationId).toBe('c1'));
     await expect(result.current.sendMessage('fail')).rejects.toThrow('send err');
   });
+
+  it('invité : conserve plusieurs fils dans la liste après création', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
+      conversations: [
+        {
+          id: 'c-new',
+          status: 'ACTIVE',
+          createdAt: '2026-06-14',
+          updatedAt: '2026-06-14',
+          lastMessageAt: '2026-06-14',
+          messages: [],
+        },
+        {
+          id: 'c-old',
+          status: 'ACTIVE',
+          createdAt: '2026-06-13',
+          updatedAt: '2026-06-13',
+          lastMessageAt: '2026-06-13',
+          messages: [],
+        },
+      ],
+    });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
+      messages: [],
+      nextCursor: null,
+      hasMore: false,
+    });
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 'm1',
+        conversationId: 'c-new',
+        createdNewConversation: true,
+      }),
+    });
+
+    const { result } = renderHook(() => useChat(true, false, true), { wrapper });
+    await waitFor(() => expect(result.current.conversationListItems).toHaveLength(2));
+    expect(result.current.conversationListItems.map((item) => item.id)).toEqual(['c-new', 'c-old']);
+
+    await result.current.sendMessage('Nouveau sujet', { forceNew: true });
+    expect(chatClient.readGuestConversationIds()).toContain('c-new');
+  });
 });
