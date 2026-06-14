@@ -4,9 +4,8 @@ import { runProcessTradesJob } from '@/lib/cron-jobs/process-trades';
 
 /**
  * POST /api/cron/process-trades
- * Cron job pour traiter les trades qui ont terminé leur période de hold.
- * En production : déclenché par Vercel Cron ou un reverse proxy avec CRON_SECRET.
- * En développement : préférer `pnpm cron:worker` (node-cron, sans endpoint HTTP ouvert).
+ * Traite les trades en fin de période de hold (déclenchement manuel via CRON_SECRET).
+ * Planification automatique : worker `pnpm cron:worker`.
  */
 export async function POST(request: NextRequest) {
   try {

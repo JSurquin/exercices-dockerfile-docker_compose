@@ -2,8 +2,8 @@ import type { NextRequest } from 'next/server';
 import { isProductionApp } from '@/lib/env-production';
 
 /**
- * Vérifie `Authorization: Bearer <CRON_SECRET>` pour les appels HTTP externes (Vercel Cron, curl).
- * En développement local, préférer le worker `pnpm cron:worker` qui exécute la logique sans HTTP.
+ * Vérifie `Authorization: Bearer <CRON_SECRET>` pour un déclenchement HTTP manuel (curl, scripts ops).
+ * Les tâches planifiées passent par le worker `pnpm cron:worker` (node-cron).
  */
 export function requireCronSecret(request: NextRequest):
   | { ok: true }
