@@ -32,7 +32,10 @@ export function chatSenderBadgeClass(senderType: string): string {
   if (senderType === 'MODERATOR') {
     return `${badgeBase} admin-badge-status admin-badge-status--pending`;
   }
-  if (senderType === 'BOT' || senderType === 'AI' || senderType === 'SYSTEM') {
+  if (senderType === 'AI') {
+    return `${badgeBase} admin-badge-status text-violet-700 dark:text-violet-300 border-violet-300/50 dark:border-violet-700/50 bg-violet-50/80 dark:bg-violet-950/40`;
+  }
+  if (senderType === 'BOT' || senderType === 'SYSTEM') {
     return `${badgeBase} admin-badge-status`;
   }
   return `${badgeBase} admin-badge-status`;

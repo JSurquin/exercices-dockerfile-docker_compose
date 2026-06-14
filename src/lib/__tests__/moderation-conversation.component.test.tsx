@@ -93,6 +93,9 @@ jest.mock('@/components/providers/locale-provider', () => ({
           },
         },
       },
+      chatWidget: {
+        aiLabel: 'Réponse IA',
+      },
     },
   }),
 }));
@@ -290,6 +293,37 @@ describe('ModerationConversationPage', () => {
       expect(screen.getByText('Deuxième message')).toBeInTheDocument();
       expect(sound.playNotificationSound).toHaveBeenCalledWith(520, 350, 0.3);
     });
+  });
+
+  it('affiche le badge Réponse IA pour les messages automatiques', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () =>
+        buildConversation({
+          messages: [
+            {
+              id: 'm1',
+              content: 'Question utilisateur',
+              senderType: 'USER',
+              createdAt: '2026-06-12T11:00:00Z',
+              isRead: false,
+            },
+            {
+              id: 'm2',
+              content: 'Voici une réponse générée automatiquement.',
+              senderType: 'AI',
+              createdAt: '2026-06-12T11:01:00Z',
+              isRead: false,
+            },
+          ],
+        }),
+    });
+
+    renderPage();
+
+    expect(await screen.findByText('Réponse IA')).toBeInTheDocument();
+    expect(screen.getByText('Voici une réponse générée automatiquement.')).toBeInTheDocument();
+    expect(screen.queryByText('Modérateur')).not.toBeInTheDocument();
   });
 
   it('ne joue pas de son quand le modérateur répond lui-même', async () => {

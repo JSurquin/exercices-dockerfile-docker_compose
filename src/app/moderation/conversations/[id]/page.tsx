@@ -379,9 +379,16 @@ export default function ConversationPage() {
                       <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                         <Badge
                           variant="outline"
-                          className={`text-[10px] px-1.5 py-0 ${chatSenderBadgeClass(msg.senderType)}`}
+                          className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0 ${chatSenderBadgeClass(msg.senderType)}`}
                         >
-                          {messages.moderation.conversation.senderTypes[msg.senderType as keyof typeof messages.moderation.conversation.senderTypes] ?? msg.senderType}
+                          {msg.senderType === 'AI' ? (
+                            <>
+                              <SparklesIcon className="w-3 h-3 shrink-0" aria-hidden />
+                              {messages.chatWidget.aiLabel}
+                            </>
+                          ) : (
+                            messages.moderation.conversation.senderTypes[msg.senderType as keyof typeof messages.moderation.conversation.senderTypes] ?? msg.senderType
+                          )}
                         </Badge>
                         <span className="text-[10px] text-muted-foreground">
                           {formatTime(msg.createdAt)}

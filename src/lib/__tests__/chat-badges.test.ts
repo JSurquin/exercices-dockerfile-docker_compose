@@ -42,6 +42,11 @@ describe('chatSenderBadgeClass', () => {
       expect(chatSenderBadgeClass(type)).toContain('admin-badge-status');
     }
   });
+
+  it('applique un style violet distinct pour AI', () => {
+    expect(chatSenderBadgeClass('AI')).toContain('violet');
+    expect(chatSenderBadgeClass('BOT')).not.toContain('violet');
+  });
 });
 
 describe('chatMessageBubbleClass', () => {
