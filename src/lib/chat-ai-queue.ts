@@ -46,6 +46,18 @@ export function getChatAiQueueStats(): {
   };
 }
 
+/** Estime si une nouvelle réponse IA devra attendre un créneau Ollama libre. */
+export function peekChatAiQueueAdmission(): {
+  willWait: boolean;
+  positionAhead: number;
+} {
+  const maxConcurrent = parseMaxConcurrent();
+  if (activeCount < maxConcurrent) {
+    return { willWait: false, positionAhead: 0 };
+  }
+  return { willWait: true, positionAhead: slotWaiters.length + 1 };
+}
+
 /** Limite les appels Ollama et sérialise les réponses par conversation. */
 export function enqueueChatAiReply(
   conversationId: string,

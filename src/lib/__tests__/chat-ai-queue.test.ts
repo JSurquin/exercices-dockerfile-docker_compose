@@ -1,6 +1,7 @@
 import {
   enqueueChatAiReply,
   getChatAiQueueStats,
+  peekChatAiQueueAdmission,
 } from '@/lib/chat-ai-queue';
 
 describe('chat-ai-queue', () => {
@@ -65,5 +66,35 @@ describe('chat-ai-queue', () => {
       maxConcurrent: 4,
       trackedConversations: 0,
     });
+  });
+
+  it('signale une attente quand la concurrence est saturée', async () => {
+    process.env.OLLAMA_MAX_CONCURRENT = '1';
+
+    let releaseFirst: (() => void) | undefined;
+    const firstStarted = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+
+    const first = enqueueChatAiReply('conv-a', async () => {
+      await firstStarted;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(peekChatAiQueueAdmission()).toEqual({
+      willWait: true,
+      positionAhead: 1,
+    });
+
+    const second = enqueueChatAiReply('conv-b', async () => undefined);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(peekChatAiQueueAdmission()).toEqual({
+      willWait: true,
+      positionAhead: 2,
+    });
+
+    releaseFirst?.();
+    await Promise.all([first, second]);
   });
 });

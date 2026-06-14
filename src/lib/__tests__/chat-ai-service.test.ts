@@ -1,5 +1,6 @@
 import {
   buildSystemPrompt,
+  getChatAiQueueHint,
   mapSenderToRole,
   maybeGenerateAiReply,
   stripI18nPlaceholder,
@@ -94,6 +95,47 @@ describe('buildSystemPrompt', () => {
     const prompt = buildSystemPrompt('Player1', '[1] FAQ trade hold 7 jours');
     expect(prompt).toContain('SOURCE DE VÉRITÉ');
     expect(prompt).toContain('trade hold 7 jours');
+  });
+});
+
+describe('getChatAiQueueHint', () => {
+  it('retourne null si l IA est désactivée', () => {
+    mockIsOllamaConfigured.mockReturnValue(false);
+    expect(
+      getChatAiQueueHint({
+        assignedTo: null,
+        status: 'ACTIVE',
+        hasModeratorMessage: false,
+      }),
+    ).toBeNull();
+  });
+
+  it('indique une attente quand tous les créneaux sont pris', async () => {
+    process.env.CHAT_AI_ENABLED = 'true';
+    process.env.OLLAMA_MAX_CONCURRENT = '1';
+    mockIsOllamaConfigured.mockReturnValue(true);
+
+    const { enqueueChatAiReply } = await import('@/lib/chat-ai-queue');
+    let release: (() => void) | undefined;
+    const started = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+
+    const running = enqueueChatAiReply('conv-block', async () => {
+      await started;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(
+      getChatAiQueueHint({
+        assignedTo: null,
+        status: 'ACTIVE',
+        hasModeratorMessage: false,
+      }),
+    ).toEqual({ waiting: true, ahead: 1 });
+
+    release?.();
+    await running;
   });
 });
 

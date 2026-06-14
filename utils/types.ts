@@ -3678,6 +3678,7 @@ export interface Messages {
     moderatorLabel: string;
     botLabel: string;
     aiLabel: string;
+    aiTypingQueued: string;
     sendHint: string;
     historyTitle: string;
     newConversation: string;

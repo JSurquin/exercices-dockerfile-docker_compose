@@ -941,6 +941,8 @@ export const messages: Record<Locale, Messages> = {
       moderatorLabel: "Modérateur",
       botLabel: "Bot",
       aiLabel: "Réponse IA",
+      aiTypingQueued:
+        "Plusieurs demandes en cours. Votre réponse arrive dans un instant, merci de patienter.",
       sendHint: "Entrée pour envoyer · Maj+Entrée pour un saut de ligne",
       historyTitle: "Historique",
       newConversation: "Nouvelle conversation",
@@ -11390,6 +11392,8 @@ export const messages: Record<Locale, Messages> = {
       moderatorLabel: "Moderator",
       botLabel: "Bot",
       aiLabel: "AI Response",
+      aiTypingQueued:
+        "Several requests are in progress. Your reply is on its way — thank you for your patience.",
       sendHint: "Enter to send · Shift+Enter for new line",
       historyTitle: "History",
       newConversation: "New conversation",
@@ -18536,6 +18540,7 @@ export const messages: Record<Locale, Messages> = {
       moderatorLabel: "客服人员",
       botLabel: "机器人",
       aiLabel: "AI 回复",
+      aiTypingQueued: "当前请求较多，您的回复即将到达，请稍候。",
       sendHint: "回车发送 · Shift+回车换行",
       historyTitle: "历史记录",
       newConversation: "新对话",

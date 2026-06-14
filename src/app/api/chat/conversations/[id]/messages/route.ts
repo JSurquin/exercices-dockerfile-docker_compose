@@ -8,7 +8,7 @@ import {
   conversationMessagesQuerySchema,
   createChatMessageSchema,
 } from '@/lib/validation/schemas/chat-api';
-import { maybeGenerateAiReply } from '@/lib/chat-ai-service';
+import { getChatAiQueueHint, maybeGenerateAiReply } from '@/lib/chat-ai-service';
 import {
   canGuestAccessConversation,
   canUserAccessConversation,
@@ -257,6 +257,8 @@ export async function POST(
       senderType,
     });
 
+    let aiQueueHint = null;
+
     if (senderType === 'USER') {
       const existingMessages = await prisma.chatMessage.findMany({
         where: { conversationId: conversation.id },
@@ -272,6 +274,12 @@ export async function POST(
           senderType: 'SYSTEM',
         });
       }
+
+      aiQueueHint = getChatAiQueueHint({
+        assignedTo: conversation.assignedTo,
+        status: conversation.status,
+        hasModeratorMessage: existingMessages.some((m) => m.senderType === 'MODERATOR'),
+      });
     }
 
     if (identity.kind === 'user') {
@@ -292,6 +300,7 @@ export async function POST(
         message,
         conversationId: conversation.id,
         createdNewConversation: conversation.id !== resolvedParams.id,
+        aiQueueHint,
       },
       { status: 201 },
     );

@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 import { resolveChatIdentity } from '@/lib/require-admin';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { createChatMessageSchema } from '@/lib/validation/schemas/chat-api';
-import { maybeGenerateAiReply } from '@/lib/chat-ai-service';
+import { getChatAiQueueHint, maybeGenerateAiReply } from '@/lib/chat-ai-service';
 import {
   canGuestAccessConversation,
   canUserAccessConversation,
@@ -139,6 +139,8 @@ export async function POST(request: NextRequest) {
       senderType,
     });
 
+    let aiQueueHint = null;
+
     if (senderType === 'USER') {
       const existingMessages = await prisma.chatMessage.findMany({
         where: { conversationId },
@@ -154,6 +156,12 @@ export async function POST(request: NextRequest) {
           senderType: 'SYSTEM',
         });
       }
+
+      aiQueueHint = getChatAiQueueHint({
+        assignedTo: conversation.assignedTo,
+        status: conversation.status,
+        hasModeratorMessage: existingMessages.some((m) => m.senderType === 'MODERATOR'),
+      });
     }
 
     if (identity.kind === 'user') {
@@ -170,7 +178,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { ...message, conversationId, createdNewConversation },
+      { ...message, conversationId, createdNewConversation, aiQueueHint },
       { status: 201 },
     );
   } catch (error) {

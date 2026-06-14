@@ -95,6 +95,7 @@ const mockMessages = {
     moderatorLabel: 'Modérateur',
     botLabel: 'Bot',
     aiLabel: 'Réponse IA',
+    aiTypingQueued: 'Plusieurs demandes en cours. Votre réponse arrive dans un instant, merci de patienter.',
     sendHint: 'Entrée pour envoyer',
     historyTitle: 'Historique',
     newConversation: 'Nouvelle conversation',
@@ -780,6 +781,54 @@ describe('ChatWidget', () => {
       expect(document.querySelector('.ai-typing-bubble')).toBeInTheDocument(),
     );
     act(() => jest.advanceTimersByTime(90_000));
+  });
+
+  it('affiche un message de file d attente IA quand le serveur signale une attente', async () => {
+    chatMock = buildChatMock({
+      currentConversation: {
+        id: 'c1',
+        status: 'ACTIVE',
+        messages: [
+          { id: 'm1', content: 'Q', senderType: 'USER', createdAt: '2026-06-12T10:00:00Z', isRead: true, userId: 'u1' },
+        ],
+      },
+      conversationId: 'c1',
+    });
+    authUser = { id: 'u1', username: 'Me' };
+    const { rerenderWidget } = renderWidget();
+    mockSendMessage.mockImplementation(async () => {
+      chatMock = buildChatMock({
+        currentConversation: {
+          id: 'c1',
+          status: 'ACTIVE',
+          messages: [
+            { id: 'm1', content: 'Q', senderType: 'USER', createdAt: '2026-06-12T10:00:00Z', isRead: true, userId: 'u1' },
+            { id: 'm2', content: 'Question IA', senderType: 'USER', createdAt: '2026-06-12T10:01:00Z', isRead: true, userId: 'u1' },
+          ],
+        },
+        conversationId: 'c1',
+        isLoading: false,
+      });
+      rerenderWidget();
+      return {
+        conversationId: 'c1',
+        aiQueueHint: { waiting: true, ahead: 1 },
+      };
+    });
+    await openChat();
+    openConversationView();
+    const input = screen.getByTestId('chat-message-input');
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'Question IA' } });
+      fireEvent.click(screen.getByTestId('chat-send-button'));
+    });
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          'Plusieurs demandes en cours. Votre réponse arrive dans un instant, merci de patienter.',
+        ),
+      ).toBeInTheDocument(),
+    );
   });
 
   it('affiche la date absolue pour une conversation de plus de 7 jours', async () => {

@@ -9,10 +9,29 @@ import {
 } from '@/lib/chat-ai-guards';
 import { generateEmbedding } from '@/lib/ollama-embed';
 import { searchSimilarChunks } from '@/lib/rag-client';
-import { enqueueChatAiReply } from '@/lib/chat-ai-queue';
+import { enqueueChatAiReply, peekChatAiQueueAdmission } from '@/lib/chat-ai-queue';
 import type { SenderType } from '@prisma/client';
 
 const MAX_CONTEXT_MESSAGES = 12;
+
+export type ChatAiQueueHint = {
+  waiting: boolean;
+  ahead: number;
+};
+
+export function getChatAiQueueHint(input: {
+  assignedTo: string | null;
+  status: string;
+  hasModeratorMessage: boolean;
+}): ChatAiQueueHint | null {
+  if (!shouldAiReplyToConversation(input)) return null;
+
+  const admission = peekChatAiQueueAdmission();
+  return {
+    waiting: admission.willWait,
+    ahead: admission.positionAhead,
+  };
+}
 
 function isRagEnabled(): boolean {
   return process.env.RAG_DATABASE_URL !== undefined && isOllamaConfigured();

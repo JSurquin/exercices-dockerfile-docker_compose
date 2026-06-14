@@ -206,7 +206,12 @@ export function useChat(isOpen = false, isViewingConversation = false) {
       if (!res.ok) throw new Error(chatT.sendMessageError);
       return res.json();
     },
-    onSuccess: (data: { conversationId: string; createdNewConversation?: boolean; senderType?: string }) => {
+    onSuccess: (data: {
+      conversationId: string;
+      createdNewConversation?: boolean;
+      senderType?: string;
+      aiQueueHint?: { waiting: boolean; ahead: number } | null;
+    }) => {
       isComposingNewConversationRef.current = false;
       setIsComposingNewConversation(false);
       if (data.createdNewConversation || data.conversationId !== conversationId) {

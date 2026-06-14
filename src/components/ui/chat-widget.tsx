@@ -224,6 +224,7 @@ interface ChatWidgetMessageListProps {
   isLoadingOlderMessages: boolean;
   isLoading: boolean;
   showAiTyping: boolean;
+  aiTypingQueuedHint?: string;
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   containerRef: React.RefObject<HTMLDivElement | null>;
 }
@@ -241,6 +242,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
   isLoadingOlderMessages,
   isLoading,
   showAiTyping,
+  aiTypingQueuedHint,
   onScroll,
   containerRef,
 }: ChatWidgetMessageListProps) {
@@ -351,16 +353,23 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
       {showAiTyping && (
         <div className="flex justify-start ai-typing-bubble">
           <div className={chatWidgetAiTypingBubbleClass()}>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">
-                <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
-                {aiLabel}
-              </span>
-              <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
-                <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
-                <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">
+                  <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
+                  {aiLabel}
+                </span>
+                <div className="flex gap-1">
+                  <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
+                  <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
+                  <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
+                </div>
               </div>
+              {aiTypingQueuedHint && (
+                <p className="text-[11px] leading-snug text-muted-foreground max-w-[240px]">
+                  {aiTypingQueuedHint}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -449,6 +458,7 @@ export function ChatWidget() {
   const [isSendingBotMsg, setIsSendingBotMsg] = useState(false);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [aiTypingBaseCount, setAiTypingBaseCount] = useState(0);
+  const [aiTypingQueuedHint, setAiTypingQueuedHint] = useState<string | undefined>();
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const wasOpenBeforeMobileMenuRef = useRef(false);
@@ -466,6 +476,7 @@ export function ChatWidget() {
     setIsSendingBotMsg(false);
     setIsAiTyping(false);
     setAiTypingBaseCount(0);
+    setAiTypingQueuedHint(undefined);
     if (aiTypingTimeoutRef.current) {
       clearTimeout(aiTypingTimeoutRef.current);
       aiTypingTimeoutRef.current = null;
@@ -672,17 +683,30 @@ export function ChatWidget() {
     if (isLoading) return;
     const baseCount = currentConversation?.messages.length ?? 0;
     try {
-      await sendMessage(content);
+      const data = await sendMessage(content);
       setInputPrefill(undefined);
       setAiTypingBaseCount(baseCount);
+      setAiTypingQueuedHint(
+        data.aiQueueHint?.waiting ? messages.chatWidget.aiTypingQueued : undefined,
+      );
       setIsAiTyping(true);
       if (aiTypingTimeoutRef.current) clearTimeout(aiTypingTimeoutRef.current);
-      aiTypingTimeoutRef.current = setTimeout(() => setIsAiTyping(false), 90_000);
+      aiTypingTimeoutRef.current = setTimeout(() => {
+        setIsAiTyping(false);
+        setAiTypingQueuedHint(undefined);
+      }, 90_000);
       setTimeout(scrollToBottom, 100);
     } catch {
       setIsAiTyping(false);
+      setAiTypingQueuedHint(undefined);
     }
-  }, [isLoading, currentConversation?.messages.length, sendMessage, scrollToBottom]);
+  }, [
+    isLoading,
+    currentConversation?.messages.length,
+    sendMessage,
+    scrollToBottom,
+    messages.chatWidget.aiTypingQueued,
+  ]);
 
   const resolveContent = useCallback(
     (content: string) => resolveI18nContent(content, messages),
@@ -704,6 +728,7 @@ export function ChatWidget() {
   useEffect(() => {
     if (!effectiveIsAiTyping && isAiTyping) {
       setIsAiTyping(false);
+      setAiTypingQueuedHint(undefined);
       if (aiTypingTimeoutRef.current) {
         clearTimeout(aiTypingTimeoutRef.current);
         aiTypingTimeoutRef.current = null;
@@ -934,6 +959,7 @@ export function ChatWidget() {
         isLoadingOlderMessages={isLoadingOlderMessages}
         isLoading={isLoading}
         showAiTyping={showAiTyping}
+        aiTypingQueuedHint={aiTypingQueuedHint}
         onScroll={handleMessagesScroll}
         containerRef={messagesContainerRef}
       />
