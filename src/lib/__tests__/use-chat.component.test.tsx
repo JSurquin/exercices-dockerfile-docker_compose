@@ -342,6 +342,39 @@ describe('useChat', () => {
     expect(result.current.conversationListItems[0]?.unread).toBe(0);
   });
 
+  it('getUnreadCount retourne 0 pendant awaitingStaffReply sur la conversation active', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
+      conversations: [
+        {
+          id: 'c1',
+          status: 'ACTIVE',
+          createdAt: '',
+          updatedAt: '',
+          messages: [{ id: 'm2', senderType: 'BOT', isRead: false, content: 'bot', createdAt: '' }],
+        },
+      ],
+    });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
+      messages: [{ id: 'm1', senderType: 'USER', isRead: true, content: 'q', createdAt: '' }],
+      nextCursor: null,
+      hasMore: false,
+    });
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 'm3', conversationId: 'c1' }),
+    });
+
+    const { result } = renderHook(() => useChat(true, false), { wrapper });
+    await waitFor(() => expect(result.current.conversationId).toBe('c1'));
+    expect(result.current.getUnreadCount()).toBe(0);
+    expect(result.current.conversationListItems[0]?.unread).toBe(1);
+
+    await result.current.sendMessage('nouvelle question');
+    await waitFor(() => expect(result.current.getUnreadCount()).toBe(0));
+    expect(result.current.getListUnreadTotal()).toBe(0);
+    expect(result.current.conversationListItems[0]?.unread).toBe(0);
+  });
+
   it('ne joue pas de son pour un message bot reçu pendant la consultation', async () => {
     jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
       conversations: [{ id: 'c1', status: 'ACTIVE', createdAt: '', updatedAt: '', messages: [] }],

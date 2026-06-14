@@ -468,6 +468,7 @@ export function ChatWidget() {
     hasOlderMessages,
     isLoadingOlderMessages,
     getUnreadCount,
+    getListUnreadTotal,
     isLoading,
   } = useChat(isOpen, isInConversation);
 
@@ -522,11 +523,7 @@ export function ChatWidget() {
 
 
   const recentConversation = conversationListItems[0] ?? null;
-  const totalListUnread = conversationListItems.reduce(
-    (acc, item) =>
-      acc + (isInConversation && item.id === conversationId ? 0 : item.unread),
-    0,
-  );
+  const totalListUnread = getListUnreadTotal();
 
   const effectiveIsAiTyping =
     isAiTyping &&
@@ -648,6 +645,10 @@ export function ChatWidget() {
       const convId = result.conversationId ?? conversationId;
 
       if (convId) {
+        setConversationId(convId);
+        setActiveTab("messages");
+        setMessagesStep("conversation");
+
         const botRes = await fetch(`/api/chat/conversations/${convId}/bot-message`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -660,10 +661,10 @@ export function ChatWidget() {
           queryKey: queryKeys.conversationMessages(convId),
         });
         queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
+      } else {
+        setActiveTab("messages");
+        setMessagesStep("conversation");
       }
-
-      setActiveTab("messages");
-      setMessagesStep("conversation");
     } catch (err) {
       console.error(err);
     } finally {

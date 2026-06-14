@@ -15,6 +15,7 @@ import {
   shouldPlayClientNotificationSound,
 } from '@/lib/chat-notification-logic';
 import {
+  getConversationListUnreadTotal,
   getUnreadMessageCount,
   isTerminalConversationStatus,
   markStaffMessagesReadForClientViewer,
@@ -110,6 +111,16 @@ export function useChat(isOpen = false, isViewingConversation = false) {
     const latestPage = messagesData?.pages?.[0];
     return latestPage?.status;
   }, [messagesData]);
+
+  const isEngagedWithConversation = useCallback(
+    (convId: string | null | undefined) =>
+      Boolean(
+        convId &&
+          conversationId === convId &&
+          (isViewingConversation || awaitingStaffReply),
+      ),
+    [conversationId, isViewingConversation, awaitingStaffReply],
+  );
 
   const visibleMessages = useMemo(
     () =>
@@ -226,10 +237,9 @@ export function useChat(isOpen = false, isViewingConversation = false) {
       }),
       lastMessageAt: conv.lastMessageAt ?? conv.updatedAt,
       status: conv.status,
-      unread:
-        isViewingConversation && conv.id === conversationId
-          ? 0
-          : getUnreadMessageCount(conv.messages ?? []),
+      unread: isEngagedWithConversation(conv.id)
+        ? 0
+        : getUnreadMessageCount(conv.messages ?? []),
     }));
 
     if (
@@ -253,7 +263,9 @@ export function useChat(isOpen = false, isViewingConversation = false) {
             allMessages[allMessages.length - 1]?.createdAt ??
             new Date().toISOString(),
           status: meta?.status ?? 'ACTIVE',
-          unread: isViewingConversation ? 0 : getUnreadMessageCount(allMessages),
+          unread: isEngagedWithConversation(conversationId)
+            ? 0
+            : getUnreadMessageCount(allMessages),
         },
       ];
     }
@@ -262,7 +274,7 @@ export function useChat(isOpen = false, isViewingConversation = false) {
   }, [
     conversations,
     conversationId,
-    isViewingConversation,
+    isEngagedWithConversation,
     isComposingNewConversation,
     allMessages,
     messagesLoading,
@@ -296,7 +308,15 @@ export function useChat(isOpen = false, isViewingConversation = false) {
     hasOlderMessages: hasNextPage,
     isLoadingOlderMessages: isFetchingNextPage,
     getUnreadCount: () =>
-      isViewingConversation ? 0 : getUnreadMessageCount(allMessages),
+      isEngagedWithConversation(conversationId)
+        ? 0
+        : getUnreadMessageCount(allMessages),
+    getListUnreadTotal: () =>
+      getConversationListUnreadTotal(
+        conversationListItems,
+        conversationId,
+        isViewingConversation || awaitingStaffReply,
+      ),
     isLoading:
       conversationsLoading ||
       messagesLoading ||

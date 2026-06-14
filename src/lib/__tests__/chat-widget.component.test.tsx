@@ -78,6 +78,7 @@ function buildChatMock(overrides: Record<string, unknown> = {}) {
     hasOlderMessages: false,
     isLoadingOlderMessages: false,
     getUnreadCount: mockGetUnreadCount,
+    getListUnreadTotal: jest.fn(() => 0),
     isLoading: false,
     ...overrides,
   };
@@ -284,12 +285,37 @@ describe('ChatWidget', () => {
         forceNew: true,
       }),
     );
+    await waitFor(() => expect(screen.getByTestId('chat-message-input')).toBeInTheDocument());
     expect(global.fetch).toHaveBeenCalledWith(
       '/api/chat/conversations/conv-1/bot-message',
       expect.objectContaining({ method: 'POST' }),
     );
+    expect(mockSetConversationId).toHaveBeenCalledWith('conv-1');
     expect(mockInvalidateQueries).toHaveBeenCalled();
+  });
+
+  it('ouvre la conversation avant la réponse bot automatique', async () => {
+    let resolveBot!: (value: { ok: boolean }) => void;
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (String(url).includes('bot-message')) {
+        return new Promise((resolve) => {
+          resolveBot = resolve;
+        });
+      }
+      return Promise.resolve({ ok: true });
+    });
+
+    renderWidget();
+    await openChat();
+    await openHelpTab();
+    fireEvent.click(screen.getByText('Support général'));
+    fireEvent.click(screen.getByText('KYC'));
+
+    await waitFor(() => expect(mockSendMessage).toHaveBeenCalled());
     await waitFor(() => expect(screen.getByTestId('chat-message-input')).toBeInTheDocument());
+    expect(global.fetch).toHaveBeenCalled();
+    resolveBot({ ok: true });
+    await waitFor(() => expect(mockInvalidateQueries).toHaveBeenCalled());
   });
 
   it('retour depuis sous-catégories vers catégories', async () => {
