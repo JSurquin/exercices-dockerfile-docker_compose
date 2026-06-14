@@ -18,56 +18,66 @@ import {
 import { TourDemoBanner } from './tour-demo-banner';
 import { FragmentAmount, FragmentBadge } from '@/components/ui/level-badge';
 import Link from 'next/link';
+import type { Messages } from '~/utils/types';
 
-const DEMO_CATEGORIES = [
+type MissionKey = keyof Messages['missions']['items'];
+type CategoryId = keyof Messages['missions']['categories'];
+
+const DEMO_CATEGORIES: Array<{
+  id: CategoryId;
+  icon: typeof StarIcon;
+  missions: Array<{
+    key: MissionKey;
+    reward: number;
+    completed: boolean;
+    eligible: boolean;
+    progress?: number;
+  }>;
+}> = [
   {
     id: 'BONUS',
-    label: 'Bonus',
     icon: StarIcon,
     missions: [
-      { label: 'Surprise du jour', reward: 5, completed: true, eligible: false },
+      { key: 'BONUS_DAILY_SURPRISE', reward: 5, completed: true, eligible: false },
     ],
   },
   {
     id: 'DAILY',
-    label: 'Quotidien',
     icon: ClockIcon,
     missions: [
-      { label: 'Visite quotidienne', reward: 2, completed: true, eligible: false },
-      { label: 'Vendre un skin aujourd\'hui', reward: 10, completed: false, eligible: true },
+      { key: 'DAILY_VISIT', reward: 2, completed: true, eligible: false },
+      { key: 'DAILY_SELL_SKIN', reward: 10, completed: false, eligible: true },
     ],
   },
   {
     id: 'WEEKLY',
-    label: 'Hebdomadaire',
     icon: CalendarDaysIcon,
     missions: [
-      { label: 'Volume 500 € sur 7 jours', reward: 30, completed: false, eligible: false, progress: 68 },
-      { label: 'Volume 1 000 € sur 7 jours', reward: 60, completed: false, eligible: false, progress: 34 },
+      { key: 'WEEKLY_SELL_500', reward: 30, completed: false, eligible: false, progress: 68 },
+      { key: 'WEEKLY_SELL_1000', reward: 60, completed: false, eligible: false, progress: 34 },
     ],
   },
   {
     id: 'MONTHLY',
-    label: 'Mensuel',
     icon: ChartBarIcon,
     missions: [
-      { label: 'Volume 5 000 € ce mois', reward: 150, completed: false, eligible: false, progress: 24 },
+      { key: 'MONTHLY_SELL_5000', reward: 150, completed: false, eligible: false, progress: 24 },
     ],
   },
   {
     id: 'SOCIAL',
-    label: 'Social',
     icon: SparklesIcon,
     missions: [
-      { label: 'Rejoindre le Discord', reward: 20, completed: true, eligible: false },
-      { label: 'Suivre sur Instagram', reward: 15, completed: false, eligible: true },
-      { label: 'Rejoindre le Telegram', reward: 15, completed: false, eligible: false },
+      { key: 'SOCIAL_DISCORD', reward: 20, completed: true, eligible: false },
+      { key: 'SOCIAL_INSTAGRAM', reward: 15, completed: false, eligible: true },
+      { key: 'SOCIAL_TELEGRAM', reward: 15, completed: false, eligible: false },
     ],
   },
 ];
 
 export function MissionsTourDemo() {
   const { messages } = useLocale();
+  const t = messages.missions;
 
   const totalCompleted = DEMO_CATEGORIES.flatMap((c) => c.missions).filter((m) => m.completed).length;
   const totalMissions = DEMO_CATEGORIES.flatMap((c) => c.missions).length;
@@ -85,30 +95,23 @@ export function MissionsTourDemo() {
             <SparklesIcon className="w-8 h-8 text-theme-accent" />
             {messages.nav.missions}
           </h1>
-          <p className="text-muted-foreground mt-1">
-            {messages.missions?.pageSubtitle ?? 'Complétez des missions pour gagner des fragments'}
-          </p>
+          <p className="text-muted-foreground mt-1">{t.pageSubtitle}</p>
         </div>
         <Link href="/giveaways">
           <Button variant="outline">{messages.giveaways.title}</Button>
         </Link>
       </div>
 
-      {/* Stats counters */}
       <div data-tour="missions-stats" className="grid md:grid-cols-3 gap-3">
         <Card className="lunar-card border-border/60 bg-card/40">
           <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground mb-1">
-              {messages.missions?.statsFragments ?? 'Fragments accumulés'}
-            </p>
+            <p className="text-xs text-muted-foreground mb-1">{t.statsFragments}</p>
             <FragmentAmount amount={340} size="sm" className="text-2xl font-bold text-theme-accent justify-center" />
           </CardContent>
         </Card>
         <Card className="lunar-card border-border/60 bg-card/40">
           <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground mb-1">
-              {messages.missions?.statsToClaim ?? 'À réclamer'}
-            </p>
+            <p className="text-xs text-muted-foreground mb-1">{t.statsToClaim}</p>
             <FragmentAmount
               amount={totalClaimable}
               prefix="+"
@@ -119,9 +122,7 @@ export function MissionsTourDemo() {
         </Card>
         <Card className="lunar-card border-border/60 bg-card/40">
           <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground mb-1">
-              {messages.missions?.statsCompleted ?? 'Complétées'}
-            </p>
+            <p className="text-xs text-muted-foreground mb-1">{t.statsCompleted}</p>
             <p className="text-2xl font-bold text-theme-accent tabular-nums">
               {totalCompleted}/{totalMissions}
             </p>
@@ -129,19 +130,18 @@ export function MissionsTourDemo() {
         </Card>
       </div>
 
-      {/* Global progress */}
       <div className="space-y-1.5">
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Progression globale</span>
+          <span className="text-muted-foreground">{t.globalProgress}</span>
           <span className="font-medium">{Math.round((totalCompleted / totalMissions) * 100)}%</span>
         </div>
         <Progress value={(totalCompleted / totalMissions) * 100} className="mission-progress h-2" />
       </div>
 
-      {/* Mission categories */}
       <div data-tour="missions-categories" className="space-y-8">
         {DEMO_CATEGORIES.map((cat) => {
           const CatIcon = cat.icon;
+          const catCopy = t.categories[cat.id];
           const catCompleted = cat.missions.filter((m) => m.completed).length;
 
           return (
@@ -150,7 +150,7 @@ export function MissionsTourDemo() {
                 <CardTitle className="flex items-center justify-between text-base text-foreground">
                   <div className="flex items-center gap-2">
                     <CatIcon className="w-5 h-5 text-theme-accent" />
-                    {cat.label}
+                    {catCopy.label}
                   </div>
                   <span className="text-sm text-muted-foreground font-normal">
                     {catCompleted}/{cat.missions.length}
@@ -176,7 +176,7 @@ export function MissionsTourDemo() {
                         <LockClosedIcon className="w-5 h-5 text-muted-foreground shrink-0" />
                       )}
                       <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{m.label}</p>
+                        <p className="text-sm font-medium truncate">{t.items[m.key].label}</p>
                         {'progress' in m && m.progress !== undefined && (
                           <div className="mt-1 space-y-0.5">
                             <Progress value={m.progress} className="mission-progress h-1.5" />
@@ -191,7 +191,7 @@ export function MissionsTourDemo() {
                       </Badge>
                       {m.eligible && !m.completed && (
                         <Button size="sm" variant="cta" className="h-7 text-xs" disabled>
-                          Réclamer
+                          {t.claim}
                         </Button>
                       )}
                     </div>

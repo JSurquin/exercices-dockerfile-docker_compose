@@ -14,6 +14,7 @@ import { AdminSidebar } from '@/components/admin/admin-sidebar';
 import { AdminMobileNav } from '@/components/admin/admin-mobile-nav';
 import { AdminHeader } from '@/components/admin/admin-header';
 import { PageLoading } from '@/components/ui/page-loading';
+import { useLocale } from '@/components/providers/locale-provider';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -23,6 +24,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const { data: session, isPending } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const { messages } = useLocale();
+  const adminMessages = messages.admin;
 
   // Si on est sur la page de login, pas de vérification
   const isLoginPage = pathname === '/admin/login';
@@ -43,7 +46,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   if (isPending) {
     return (
       <div className="admin-shell moonskin min-h-screen">
-        <PageLoading variant="compact" message="Vérification des permissions..." className="min-h-screen" />
+        <PageLoading variant="compact" message={adminMessages.loading.verifyingPermissions} className="min-h-screen" />
       </div>
     );
   }
@@ -57,16 +60,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <div className="mx-auto w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
               <Shield className="w-6 h-6 text-red-500" />
             </div>
-            <CardTitle className="text-slate-100">Accès refusé</CardTitle>
+            <CardTitle className="text-slate-100">{adminMessages.accessDenied.title}</CardTitle>
             <CardDescription className="text-slate-400">
-              Vous n&apos;avez pas les permissions nécessaires pour accéder à cette zone.
+              {adminMessages.accessDenied.description}
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
             <Button asChild variant="outline" className="w-full">
               <Link href="/admin/login" className="flex items-center justify-center gap-2">
                 <ArrowLeft className="w-4 h-4" />
-                Connexion Admin
+                {adminMessages.accessDenied.loginAdmin}
               </Link>
             </Button>
           </CardContent>

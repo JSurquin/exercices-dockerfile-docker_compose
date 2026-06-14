@@ -80,7 +80,7 @@ export function CurrencyRateInfo() {
             
             {lastUpdate && (
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{t?.lastUpdate ?? 'Dernière MAJ:'}</span>
+                <span className="text-sm text-muted-foreground">{t?.lastUpdate ?? 'Last update:'}</span>
                 <span className="text-sm">
                   {lastUpdate.toLocaleString()}
                 </span>
@@ -160,7 +160,7 @@ export function CurrencyRateInfo() {
             <CheckCircle className="h-4 w-4 text-green-500" />
           )}
           <span className="text-muted-foreground">
-            {t?.apiStatus ?? 'API Frankfurter:'} {error ? (t?.apiError ?? 'Erreur') : (t?.apiOk ?? 'Opérationnelle')}
+            {t?.apiStatus ?? 'Frankfurter API:'} {error ? (t?.apiError ?? 'Error') : (t?.apiOk ?? 'Operational')}
           </span>
         </div>
       </CardContent>

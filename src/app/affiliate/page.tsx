@@ -62,7 +62,7 @@ export default function AffiliatePage() {
     queryFn: async () => {
       const response = await fetch(`/api/affiliate/stats?userId=${userId}`);
       const data = await response.json();
-      if (!data.success && response.status !== 404) throw new Error('Erreur stats affilié');
+      if (!data.success && response.status !== 404) throw new Error('Failed to load affiliate stats');
       return { ...data, status: response.status };
     },
     enabled: !!userId,

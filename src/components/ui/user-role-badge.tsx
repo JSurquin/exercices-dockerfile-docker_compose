@@ -1,4 +1,7 @@
+'use client';
+
 import { Crown, Store, UserCheck } from 'lucide-react';
+import { useLocale } from '@/components/providers/locale-provider';
 
 type UserRoleBadgeProps = {
   role?: string;
@@ -17,29 +20,21 @@ const TAG_CONFIG: Record<string, { className: string; icon: typeof Crown }> = {
   },
 };
 
-const ROLE_CONFIG: Record<string, { className: string; icon: typeof UserCheck; label: string }> = {
-  AFFILIATE: {
-    className: 'bg-purple-500/20 border border-purple-500/40 text-purple-400',
-    icon: UserCheck,
-    label: 'Affilié',
-  },
-};
-
 export function UserRoleBadge({ role, userTag, size = 'xs' }: UserRoleBadgeProps) {
+  const { messages } = useLocale();
   const badges: React.ReactNode[] = [];
 
-  if (role && ROLE_CONFIG[role]) {
-    const cfg = ROLE_CONFIG[role];
-    const Icon = cfg.icon;
+  if (role === 'AFFILIATE') {
+    const Icon = UserCheck;
     badges.push(
       <span
-        key={`role-${role}`}
-        className={`inline-flex items-center gap-1 rounded-full font-semibold leading-none ${cfg.className} ${
+        key="role-AFFILIATE"
+        className={`inline-flex items-center gap-1 rounded-full font-semibold leading-none bg-purple-500/20 border border-purple-500/40 text-purple-400 ${
           size === 'xs' ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-xs'
         }`}
       >
         <Icon className={size === 'xs' ? 'h-2.5 w-2.5' : 'h-3 w-3'} />
-        {cfg.label}
+        {messages.nav.affiliateBadge}
       </span>
     );
   }

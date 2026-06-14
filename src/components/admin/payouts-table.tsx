@@ -120,7 +120,7 @@ export function AdminPayoutsTable() {
         body: JSON.stringify({ enabled: autoApproveEnabled, thresholdCents }),
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || tp.requestFailed || 'Error');
-      toast.success(tp.autoApproveSaved ?? 'Paramètres enregistrés');
+      toast.success(tp.autoApproveSaved ?? 'Settings saved');
     } catch (e) {
       toast.error(tp.toastErrorTitle ?? 'Error', {
         description: e instanceof Error ? e.message : (tp.toastSaveFailed ?? ''),
@@ -140,7 +140,7 @@ export function AdminPayoutsTable() {
         const details = typeof data.details === 'string' && data.details.trim() ? data.details.trim() : '';
         throw new Error(details ? `${base}, ${details}` : base);
       }
-      toast.success(tp.approveSuccess ?? 'Payout approuvé');
+      toast.success(tp.approveSuccess ?? 'Payout approved');
       queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: debouncedSearch }) });
     } catch (e) {
       toast.error(tp.toastErrorTitle ?? 'Error', {
@@ -169,7 +169,7 @@ export function AdminPayoutsTable() {
       'exécuté': { variant: 'default' as const, icon: CheckCircle, text: tp.executed },
       'payé': { variant: 'default' as const, icon: CheckCircle, text: tp.paid },
       'échoué': { variant: 'destructive' as const, icon: XCircle, text: tp.failed },
-      'annulé': { variant: 'outline' as const, icon: Ban, text: tp.cancelled ?? 'Annulé' },
+      'annulé': { variant: 'outline' as const, icon: Ban, text: tp.cancelled ?? 'Cancelled' },
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['en_attente'];
@@ -218,7 +218,7 @@ export function AdminPayoutsTable() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || tp.requestFailed || 'Error');
       toast.success(
-        tp.resyncSuccess ?? 'Statut resynchronisé avec Flexify',
+        tp.resyncSuccess ?? 'Status resynced with Flexify',
         { description: `${data.previousStatus} → ${data.newStatus}` }
       );
       queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: debouncedSearch }) });
@@ -241,7 +241,7 @@ export function AdminPayoutsTable() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || tp.requestFailed || 'Error');
-      toast.success(tp.cancelSuccess ?? 'Payout annulé');
+      toast.success(tp.cancelSuccess ?? 'Payout cancelled');
       queryClient.invalidateQueries({ queryKey: queryKeys.adminPayouts({ ...filters, search: debouncedSearch }) });
     } catch (e) {
       toast.error(tp.toastErrorTitle ?? 'Error', {
@@ -405,9 +405,9 @@ export function AdminPayoutsTable() {
               <TableHead className="text-slate-300 whitespace-nowrap">{tp.colUser ?? 'Utilisateur'}</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">{tp.colStatus ?? 'Statut'}</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">{tp.colAmount ?? 'Montant'}</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">{tp.colMethod ?? 'Méthode'}</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">{tp.colReference ?? 'Référence'}</TableHead>
-              <TableHead className="text-slate-300 whitespace-nowrap">{tp.colCreatedAt ?? 'Créé le'}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{tp.colMethod ?? 'Method'}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{tp.colReference ?? 'Reference'}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{tp.colCreatedAt ?? 'Created'}</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">{tp.colActions ?? 'Actions'}</TableHead>
             </TableRow>
           </TableHeader>
@@ -514,7 +514,7 @@ export function AdminPayoutsTable() {
       {payouts.length === 0 && (
         <Card className="bg-slate-800/30 border-slate-700">
           <CardContent className="p-8 text-center">
-            <p className="text-slate-300">{tp.noPayouts ?? 'Aucun paiement trouvé'}</p>
+            <p className="text-slate-300">{tp.noPayouts ?? 'No payouts found'}</p>
           </CardContent>
         </Card>
       )}
@@ -548,7 +548,7 @@ export function AdminPayoutsTable() {
                 disabled={!data.pagination.page || data.pagination.page <= 1}
                 className="border-slate-600 text-white hover:bg-slate-700"
               >
-                {tp.previous || 'Précédent'}
+                {tp.previous || 'Previous'}
               </Button>
               <Button
                 variant="outline"

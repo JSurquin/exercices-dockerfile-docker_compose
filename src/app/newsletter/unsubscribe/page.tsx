@@ -35,20 +35,21 @@ export default function UnsubscribePage() {
 
         if (response.ok) {
           setEmail(data.email || '');
-          if (data.message?.includes('déjà désabonné')) {
+          if (data.error === 'ALREADY_UNSUBSCRIBED') {
             setStatus('already_unsubscribed');
+            setMessage(t.alreadyUnsubscribedDesc);
           } else {
             setStatus('success');
+            setMessage(data.message || t.successDesc);
           }
-          setMessage(data.message);
         } else {
           setStatus('error');
-          setMessage(data.message || 'Une erreur est survenue.');
+          setMessage(data.message || t.defaultError);
         }
       } catch (error) {
         console.error('Unsubscribe error:', error);
         setStatus('error');
-        setMessage('Une erreur est survenue lors du désabonnement.');
+        setMessage(t.unexpectedError);
       }
     };
 

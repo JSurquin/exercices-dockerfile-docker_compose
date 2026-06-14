@@ -234,7 +234,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
                   <TableHead className="text-slate-400">{t.colUser}</TableHead>
                   <TableHead className="text-slate-400">{t.colBonus}</TableHead>
                   <TableHead className="text-slate-400">{t.colVolume}</TableHead>
-                  <TableHead className="text-slate-400">{t.colRewardsBlock ?? 'Récompenses'}</TableHead>
+                  <TableHead className="text-slate-400">{t.colRewardsBlock ?? 'Rewards'}</TableHead>
                   <TableHead className="text-slate-400">{t.colActions}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -334,7 +334,7 @@ export function VipMerchantManagement({ tag }: VipMerchantProps) {
                 disabled={page <= 1}
                 className="border-slate-600 text-white hover:bg-slate-700"
               >
-                {t.previous || 'Précédent'}
+                {t.previous || 'Previous'}
               </Button>
               <Button
                 variant="outline"

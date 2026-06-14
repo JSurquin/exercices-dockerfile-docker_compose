@@ -590,7 +590,7 @@ export function AdminUsersTable() {
                 disabled={!data.pagination.page || data.pagination.page <= 1}
                 className="border-slate-600 text-white hover:bg-slate-700"
               >
-                {t.previous || 'Précédent'}
+                {t.previous || 'Previous'}
               </Button>
               <Button
                 variant="outline"
@@ -599,7 +599,7 @@ export function AdminUsersTable() {
                 disabled={!data.pagination.pages || data.pagination.page >= data.pagination.pages}
                 className="border-slate-600 text-white hover:bg-slate-700"
               >
-                {t.next || 'Suivant'}
+                {t.next || 'Next'}
               </Button>
             </div>
           </div>

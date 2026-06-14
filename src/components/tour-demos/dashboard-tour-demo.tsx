@@ -43,6 +43,7 @@ const DEMO_TRADES = [
 
 export function DashboardTourDemo() {
   const { messages } = useLocale();
+  const td = messages.tourDemo;
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -76,7 +77,9 @@ export function DashboardTourDemo() {
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold">7 400 XP</p>
-                  <p className="text-sm text-muted-foreground">2 600 XP for level 6</p>
+                  <p className="text-sm text-muted-foreground">
+                    {td.xpForLevel.replace('{xp}', '2 600').replace('{level}', '6')}
+                  </p>
                 </div>
               </div>
               <Progress value={48} className="h-3" />
@@ -127,7 +130,7 @@ export function DashboardTourDemo() {
                       </defs>
                       <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'currentColor' }} tickLine={false} axisLine={false} />
                       <YAxis hide />
-                      <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} formatter={(v: number) => [`${v.toFixed(2)} €`, 'Solde']} />
+                      <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} formatter={(v: number) => [`${v.toFixed(2)} €`, td.balanceLabel]} />
                       <Area type="monotone" dataKey="solde" stroke="var(--theme-accent)" strokeWidth={2} fill="url(#demoGradient)" dot={false} activeDot={{ r: 4, fill: 'var(--theme-accent)' }} />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -217,7 +220,7 @@ export function DashboardTourDemo() {
                   <div key={i} className="border rounded-lg p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Badge variant="secondary" className={`${t.status === 'PAID' ? 'bg-emerald-500' : 'bg-yellow-500'} text-white`}>
-                        {t.status === 'PAID' ? '✓ Payé' : '⏳ En cours'}
+                        {t.status === 'PAID' ? td.statusPaidBadge : td.statusInProgressBadge}
                       </Badge>
                       <span className="font-mono text-sm text-muted-foreground">{t.ticket}</span>
                     </div>
@@ -232,13 +235,13 @@ export function DashboardTourDemo() {
             </Card>
           </TabsContent>
           <TabsContent value="analytics">
-            <Card><CardContent className="p-8 text-center text-muted-foreground">Analytics, demo</CardContent></Card>
+            <Card><CardContent className="p-8 text-center text-muted-foreground">{td.analyticsTab}</CardContent></Card>
           </TabsContent>
           <TabsContent value="payments">
-            <Card><CardContent className="p-8 text-center text-muted-foreground">Paiements, demo</CardContent></Card>
+            <Card><CardContent className="p-8 text-center text-muted-foreground">{td.paymentsTab}</CardContent></Card>
           </TabsContent>
           <TabsContent value="settings">
-            <Card><CardContent className="p-8 text-center text-muted-foreground">Paramètres, demo</CardContent></Card>
+            <Card><CardContent className="p-8 text-center text-muted-foreground">{td.settingsTab}</CardContent></Card>
           </TabsContent>
         </Tabs>
       </div>

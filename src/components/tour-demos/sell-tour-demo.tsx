@@ -23,6 +23,7 @@ const DEMO_ITEMS = [
 
 export function SellTourDemo() {
   const { messages } = useLocale();
+  const td = messages.tourDemo;
 
   const steps = [
     { id: 'inventory', title: messages.sellPage.steps.inventory, icon: LinkIcon },
@@ -62,10 +63,12 @@ export function SellTourDemo() {
             <CardContent className="p-4 pb-2">
               <div className="flex items-center justify-between mb-2">
                 <div>
-                  <h2 className="text-lg font-semibold">Inventaire CS2</h2>
-                  <p className="text-sm text-muted-foreground">6 items · 182,20 €</p>
+                  <h2 className="text-lg font-semibold">{td.inventoryTitle}</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {td.itemsSummary.replace('{count}', '6').replace('{total}', '182,20 €')}
+                  </p>
                 </div>
-                <Badge variant="secondary" className="text-xs">Demo</Badge>
+                <Badge variant="secondary" className="text-xs">{td.demoBadge}</Badge>
               </div>
             </CardContent>
           </Card>
@@ -112,13 +115,13 @@ export function SellTourDemo() {
               <CardContent className="p-3 space-y-2">
                 <div className="flex items-center gap-2">
                   <LinkIcon className="w-4 h-4 text-theme-accent shrink-0" />
-                  <p className="text-sm font-semibold">Steam Trade Link</p>
+                  <p className="text-sm font-semibold">{messages.trade.tradeLink}</p>
                 </div>
                 <p className="text-[11px] font-mono text-muted-foreground truncate">
                   https://steamcommunity.com/tradeoffer/new/?partner=…
                 </p>
                 <Badge variant="outline" className="text-green-600 border-green-500/30 bg-green-500/10 text-[10px]">
-                  ✓ Valide
+                  {td.validShort}
                 </Badge>
               </CardContent>
             </Card>

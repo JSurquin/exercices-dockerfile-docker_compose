@@ -6965,6 +6965,28 @@ export interface Messages {
       sendMessageError: string;
     };
   };
+  tourDemo: {
+    banner: string;
+    demoBadge: string;
+    inventoryTitle: string;
+    itemsSummary: string;
+    validShort: string;
+    balanceLabel: string;
+    statusPaidBadge: string;
+    statusInProgressBadge: string;
+    analyticsTab: string;
+    paymentsTab: string;
+    settingsTab: string;
+    xpForLevel: string;
+    moreNeededShort: string;
+    howStep1: string;
+    howStep2: string;
+    howStep3: string;
+    perEntry: string;
+    participateDemo: string;
+    endedEmpty: string;
+    myEntriesEmpty: string;
+  };
   updateNotifier: {
     title: string;
     countdown: string;

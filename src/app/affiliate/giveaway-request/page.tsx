@@ -39,7 +39,7 @@ async function parseApiJson(res: Response): Promise<Record<string, unknown>> {
   try {
     return JSON.parse(text) as Record<string, unknown>;
   } catch {
-    throw new Error('Réponse serveur invalide — réessayez dans un instant');
+    throw new Error('Invalid server response — please try again in a moment');
   }
 }
 
@@ -163,7 +163,7 @@ export default function AffiliateGiveawayRequestPage() {
     },
     onSuccess: () => {
       toast({
-        title: t?.success ?? 'Demande envoyée',
+        title: t?.success ?? 'Request sent',
         description: t?.successDesc,
       });
       setCostEur('');

@@ -90,20 +90,20 @@ export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: Skin
       <DialogContent className="bg-slate-900 border-slate-700 max-w-4xl w-full p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-700/60">
           <DialogTitle className="text-white text-xl flex items-center gap-2">
-            {t?.title ?? 'Choisir un article à faire gagner'}
+            {t.title}
           </DialogTitle>
           <div className="relative mt-3">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <Input
               autoFocus
               className="pl-9 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus-visible:ring-primary"
-              placeholder={t?.searchPlaceholder ?? 'Rechercher un skin (ex: AK-47, AWP, Karambit...)'}
+              placeholder={t.searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
             {loading && (
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 animate-pulse">
-                {t?.loading ?? 'Chargement…'}
+                {t.loading}
               </span>
             )}
           </div>
@@ -112,14 +112,14 @@ export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: Skin
         <div className="overflow-y-auto" style={{ maxHeight: '60vh' }}>
           {loading && (
             <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-              <span className="text-sm animate-pulse">{t?.loadingItems ?? 'Chargement des articles…'}</span>
+              <span className="text-sm animate-pulse">{t.loadingItems}</span>
             </div>
           )}
           {!loading && items.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-slate-400">
               <MagnifyingGlassIcon className="w-12 h-12 mb-3 opacity-40" />
               <p className="text-sm">
-                {debouncedSearch ? (t?.noResults ?? 'Aucun résultat pour cette recherche') : (t?.noItems ?? 'Aucun article disponible')}
+                {debouncedSearch ? t.noResults : t.noItems}
               </p>
             </div>
           )}
@@ -212,8 +212,8 @@ export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: Skin
           <p className="text-xs text-slate-400">
             {!loading && items.length > 0 && (
               debouncedSearch
-                ? (items.length === 1 ? (t?.itemCountFound_one ?? `${items.length} article trouvé`) : (t?.itemCountFound_other ?? `${items.length} articles trouvés`)).replace('{{count}}', String(items.length))
-                : (items.length === 1 ? (t?.itemCount_one ?? `${items.length} article`) : (t?.itemCount_other ?? `${items.length} articles`)).replace('{{count}}', String(items.length))
+                ? (items.length === 1 ? t.itemCountFound_one : t.itemCountFound_other).replace('{{count}}', String(items.length))
+                : (items.length === 1 ? t.itemCount_one : t.itemCount_other).replace('{{count}}', String(items.length))
             )}
           </p>
           <Button
@@ -222,7 +222,7 @@ export function SkinPickerModal({ open, onOpenChange, onSelect, selected }: Skin
             onClick={() => onOpenChange(false)}
             className="border-slate-600 text-slate-300 hover:bg-slate-800"
           >
-            {t?.cancel ?? 'Annuler'}
+            {t.cancel}
           </Button>
         </div>
       </DialogContent>
