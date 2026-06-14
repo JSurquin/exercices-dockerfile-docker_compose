@@ -681,20 +681,17 @@ describe('ChatWidget', () => {
     renderWidget();
     expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(false);
     await openChat();
-    expect(document.documentElement.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(true);
     expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(true);
     closeChatViaHeader();
     expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(false);
   });
 
-  it('mémorise et restaure la position de scroll à la fermeture', () => {
-    Object.defineProperty(window, 'scrollY', { value: 120, writable: true, configurable: true });
-    const scrollTo = jest.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+  it('toggle la classe body sans modifier le style inline', () => {
     setChatWidgetBodyScrollLock(true);
+    expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(true);
     expect(document.body.style.top).toBe('');
     setChatWidgetBodyScrollLock(false);
-    expect(scrollTo).toHaveBeenCalledWith(0, 120);
-    scrollTo.mockRestore();
+    expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(false);
   });
 
   it('retire le verrouillage body si menu mobile ouvre pendant chat', async () => {

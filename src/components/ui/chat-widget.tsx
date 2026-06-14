@@ -17,7 +17,6 @@ import {
 import { shouldClearAiTypingIndicator } from "@/lib/chat-logic";
 import {
   CHAT_WIDGET_POPUP_CLOSE_MS,
-  getChatWidgetSavedScrollY,
   setChatWidgetBodyScrollLock,
   chatWidgetAiTypingBubbleClass,
   chatWidgetCategoryButtonClass,
@@ -580,37 +579,6 @@ export function ChatWidget() {
   useEffect(() => {
     setChatWidgetBodyScrollLock(isOpen);
     return () => setChatWidgetBodyScrollLock(false);
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const preventBackgroundScroll = (event: WheelEvent | TouchEvent) => {
-      const root = document.querySelector("[data-chat-widget-root]");
-      if (root && event.target instanceof Node && root.contains(event.target)) return;
-      event.preventDefault();
-    };
-
-    document.addEventListener("wheel", preventBackgroundScroll, { passive: false });
-    document.addEventListener("touchmove", preventBackgroundScroll, { passive: false });
-    return () => {
-      document.removeEventListener("wheel", preventBackgroundScroll);
-      document.removeEventListener("touchmove", preventBackgroundScroll);
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const savedY = getChatWidgetSavedScrollY();
-    const lockScrollPosition = () => {
-      if (window.scrollY !== savedY) {
-        window.scrollTo(0, savedY);
-      }
-    };
-
-    window.addEventListener("scroll", lockScrollPosition, { passive: true });
-    return () => window.removeEventListener("scroll", lockScrollPosition);
   }, [isOpen]);
 
   useEffect(() => {

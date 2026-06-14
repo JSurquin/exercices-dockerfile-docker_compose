@@ -57,32 +57,13 @@ export function chatWidgetTimestampClass(senderType: WidgetSenderType): string {
 /** Durée de fermeture du popup (alignée sur transition CSS + démontage React). */
 export const CHAT_WIDGET_POPUP_CLOSE_MS = 150;
 
-/** Classe appliquée sur html/body quand le popup chat est ouvert (bloque le scroll page). */
+/** Classe appliquée sur body quand le popup chat est ouvert (bloque le scroll page). */
 export const CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS = 'chat-widget-scroll-lock';
 
-let chatWidgetSavedScrollY = 0;
-
-/** Bloque le scroll de la page (overflow hidden + restauration du scroll à la fermeture). */
+/** Bloque le scroll de la page via overflow hidden sur body. */
 export function setChatWidgetBodyScrollLock(locked: boolean): void {
   if (typeof document === 'undefined') return;
-
-  const html = document.documentElement;
-  const body = document.body;
-
-  if (locked) {
-    chatWidgetSavedScrollY = window.scrollY;
-    html.classList.add(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS);
-    body.classList.add(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS);
-    return;
-  }
-
-  html.classList.remove(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS);
-  body.classList.remove(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS);
-  window.scrollTo(0, chatWidgetSavedScrollY);
-}
-
-export function getChatWidgetSavedScrollY(): number {
-  return chatWidgetSavedScrollY;
+  document.body.classList.toggle(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS, locked);
 }
 
 export function chatWidgetScrollAreaClass(extra = ''): string {
