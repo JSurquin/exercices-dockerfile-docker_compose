@@ -5,6 +5,7 @@ import {
   extractCategoryFromSubcategoryKey,
   formatConversationDisplayTitle,
   hasTopicChanged,
+  isConversationAwaitingStaffReply,
   isConversationInactive,
   resolveConversationRouting,
   resolveConversationRoutingWithMessage,
@@ -155,6 +156,22 @@ describe('resolveConversationRoutingWithMessage', () => {
     ).toBe('new');
   });
 
+  it('reste sur le même fil si l’utilisateur attend une réponse', () => {
+    expect(
+      resolveConversationRoutingWithMessage({
+        lastMessageAt: new Date(Date.now() - CONVERSATION_INACTIVITY_MS - 1000),
+        currentCategory: 'trade',
+        newCategory: 'payment',
+        priorUserMessages: ['Mon trade est bloqué'],
+        newMessage: 'Où est mon virement SEPA ?',
+        existingMessages: [
+          { senderType: 'USER' },
+          { senderType: 'SYSTEM' },
+        ],
+      }),
+    ).toBe('same');
+  });
+
   it('nouveau thread si shift sujet détecté', () => {
     expect(
       resolveConversationRoutingWithMessage({
@@ -189,5 +206,35 @@ describe('hasTopicChanged', () => {
 describe('isConversationInactive', () => {
   it('retourne false sans date', () => {
     expect(isConversationInactive(null)).toBe(false);
+  });
+});
+
+describe('isConversationAwaitingStaffReply', () => {
+  it('true si le dernier message utilisateur n’a pas reçu de réponse staff', () => {
+    expect(
+      isConversationAwaitingStaffReply([
+        { senderType: 'USER' },
+        { senderType: 'SYSTEM' },
+      ]),
+    ).toBe(true);
+  });
+
+  it('false après une réponse modérateur', () => {
+    expect(
+      isConversationAwaitingStaffReply([
+        { senderType: 'USER' },
+        { senderType: 'MODERATOR' },
+      ]),
+    ).toBe(false);
+  });
+
+  it('true si l’utilisateur relance après une réponse bot', () => {
+    expect(
+      isConversationAwaitingStaffReply([
+        { senderType: 'USER' },
+        { senderType: 'BOT' },
+        { senderType: 'USER' },
+      ]),
+    ).toBe(true);
   });
 });

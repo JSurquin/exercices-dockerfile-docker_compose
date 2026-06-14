@@ -57,13 +57,17 @@ export function chatWidgetTimestampClass(senderType: WidgetSenderType): string {
 /** Durée de fermeture du popup (alignée sur transition CSS + démontage React). */
 export const CHAT_WIDGET_POPUP_CLOSE_MS = 150;
 
+export function chatWidgetScrollAreaClass(extra = ''): string {
+  return `flex-1 min-h-0 overflow-y-auto overscroll-y-contain ${extra}`.trim();
+}
+
 export function chatWidgetPopupContainerClass(isOpen: boolean): string {
   const mobileBottom = isOpen ? "bottom-0" : "bottom-24";
   const base = `
     fixed top-[env(safe-area-inset-top,0px)] ${mobileBottom} left-0 right-0
     sm:top-auto sm:left-auto sm:right-6 sm:w-[390px] sm:h-[clamp(480px,75dvh,640px)]
     chat-glass rounded-none sm:rounded-2xl shadow-2xl z-[9999]
-    flex flex-col overflow-hidden
+    flex flex-col overflow-hidden overscroll-contain
     transition-opacity duration-150 ease-out
     pointer-events-auto
   `;

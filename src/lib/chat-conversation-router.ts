@@ -34,6 +34,31 @@ export function hasTopicChanged(
 
 export type ConversationRoutingDecision = 'same' | 'new';
 
+const STAFF_REPLY_SENDER_TYPES = ['MODERATOR', 'BOT', 'AI'] as const;
+
+/** True when the user sent the last message and no staff reply followed yet. */
+export function isConversationAwaitingStaffReply(
+  messages: Array<{ senderType: string }>,
+): boolean {
+  let lastUserIdx = -1;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].senderType === 'USER') {
+      lastUserIdx = i;
+      break;
+    }
+  }
+  if (lastUserIdx < 0) return false;
+
+  for (let i = lastUserIdx + 1; i < messages.length; i++) {
+    if (
+      (STAFF_REPLY_SENDER_TYPES as readonly string[]).includes(messages[i].senderType)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export function resolveConversationRouting(params: {
   lastMessageAt: Date | null | undefined;
   currentCategory: string | null | undefined;
@@ -76,7 +101,15 @@ export function resolveConversationRoutingWithMessage(params: {
   priorUserMessages: string[];
   newMessage: string;
   forceNew?: boolean;
+  existingMessages?: Array<{ senderType: string }>;
 }): ConversationRoutingDecision {
+  if (params.forceNew) return 'new';
+  if (
+    params.existingMessages &&
+    isConversationAwaitingStaffReply(params.existingMessages)
+  ) {
+    return 'same';
+  }
   const base = resolveConversationRouting(params);
   if (base === 'new') return 'new';
   if (detectSubjectShift(params.priorUserMessages, params.newMessage)) return 'new';

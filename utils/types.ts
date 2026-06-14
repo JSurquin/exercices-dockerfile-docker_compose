@@ -3682,6 +3682,7 @@ export interface Messages {
     sendHint: string;
     historyTitle: string;
     newConversation: string;
+    newConversationNotice: string;
     tabs: {
       home: string;
       help: string;

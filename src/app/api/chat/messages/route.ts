@@ -64,6 +64,13 @@ export async function POST(request: NextRequest) {
         take: 10,
       });
 
+      const existingMessages = await prisma.chatMessage.findMany({
+        where: { conversationId },
+        orderBy: { createdAt: 'asc' },
+        select: { senderType: true },
+        take: 50,
+      });
+
       const newCategory = body.category ?? extractCategoryFromSubcategoryKey(body.category ?? null);
       const routing = resolveConversationRoutingWithMessage({
         lastMessageAt: existing.lastMessageAt,
@@ -72,6 +79,7 @@ export async function POST(request: NextRequest) {
         priorUserMessages: priorUserMessages.map((m) => m.content),
         newMessage: body.content,
         forceNew: body.forceNew,
+        existingMessages,
       });
 
       if (routing === 'new') {

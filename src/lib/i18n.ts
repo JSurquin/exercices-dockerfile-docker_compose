@@ -946,6 +946,8 @@ export const messages: Record<Locale, Messages> = {
       sendHint: "Entrée pour envoyer · Maj+Entrée pour un saut de ligne",
       historyTitle: "Historique",
       newConversation: "Nouvelle conversation",
+      newConversationNotice:
+        "Une nouvelle conversation a été ouverte. Nous attendons toujours la réponse du modérateur sur votre fil précédent.",
       tabs: {
         home: "Accueil",
         help: "Aide",
@@ -11397,6 +11399,8 @@ export const messages: Record<Locale, Messages> = {
       sendHint: "Enter to send · Shift+Enter for new line",
       historyTitle: "History",
       newConversation: "New conversation",
+      newConversationNotice:
+        "A new conversation has been opened. We are still waiting for the moderator's reply on your previous thread.",
       tabs: {
         home: "Home",
         help: "Help",
@@ -18544,6 +18548,8 @@ export const messages: Record<Locale, Messages> = {
       sendHint: "回车发送 · Shift+回车换行",
       historyTitle: "历史记录",
       newConversation: "新对话",
+      newConversationNotice:
+        "已开启新对话。我们仍在等待版主在您之前的会话中回复。",
       tabs: {
         home: "首页",
         help: "帮助",

@@ -182,6 +182,13 @@ export async function POST(
       take: 10,
     });
 
+    const existingMessages = await prisma.chatMessage.findMany({
+      where: { conversationId: conversation.id },
+      orderBy: { createdAt: 'asc' },
+      select: { senderType: true },
+      take: 50,
+    });
+
     const newCategory =
       body.category ?? extractCategoryFromSubcategoryKey(body.category ?? null);
 
@@ -192,6 +199,7 @@ export async function POST(
       priorUserMessages: priorUserMessages.map((m) => m.content),
       newMessage: body.content,
       forceNew: body.forceNew,
+      existingMessages,
     });
 
     if (routing === 'new' && identity.kind === 'user') {
