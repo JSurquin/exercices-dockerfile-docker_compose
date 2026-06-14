@@ -4,7 +4,7 @@ import { runGiveawayDrawJob } from '@/lib/cron-jobs/giveaway-draw';
 
 /**
  * CRON Job pour effectuer automatiquement le tirage des giveaways expirés.
- * Planification automatique : worker `pnpm cron:worker`.
+ * Planification automatique : node-cron au démarrage du serveur (`pnpm start`).
  */
 export async function GET(request: NextRequest) {
   try {

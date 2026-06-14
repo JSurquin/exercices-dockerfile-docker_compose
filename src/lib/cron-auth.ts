@@ -3,7 +3,7 @@ import { isProductionApp } from '@/lib/env-production';
 
 /**
  * Vérifie `Authorization: Bearer <CRON_SECRET>` pour un déclenchement HTTP manuel (curl, scripts ops).
- * Les tâches planifiées passent par le worker `pnpm cron:worker` (node-cron).
+ * Les tâches planifiées sont gérées par node-cron au démarrage du serveur (`pnpm start`).
  */
 export function requireCronSecret(request: NextRequest):
   | { ok: true }
@@ -19,7 +19,7 @@ export function requireCronSecret(request: NextRequest):
     return {
       ok: false,
       status: 503,
-      message: 'CRON_SECRET requis — lancez pnpm cron:worker en local ou définissez CRON_SECRET',
+      message: 'CRON_SECRET requis — définissez CRON_SECRET ou lancez pnpm start / pnpm dev',
     };
   }
 

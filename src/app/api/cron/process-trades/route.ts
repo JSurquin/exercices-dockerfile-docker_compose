@@ -5,7 +5,7 @@ import { runProcessTradesJob } from '@/lib/cron-jobs/process-trades';
 /**
  * POST /api/cron/process-trades
  * Traite les trades en fin de période de hold (déclenchement manuel via CRON_SECRET).
- * Planification automatique : worker `pnpm cron:worker`.
+ * Planification automatique : node-cron au démarrage du serveur (`pnpm start`).
  */
 export async function POST(request: NextRequest) {
   try {

@@ -1,4 +1,4 @@
-/** Expressions cron du worker node-cron (`pnpm cron:worker`). */
+/** Expressions cron du planificateur node-cron (démarré avec `pnpm start` / `pnpm dev`). */
 export const CRON_SCHEDULES = {
   /** Mise à jour des statuts trades via Skinplace */
   updateTradesStatus: '*/10 * * * *',

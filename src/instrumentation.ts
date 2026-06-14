@@ -4,6 +4,9 @@ import { isRemovedTestApiPath } from "./lib/sentry-filters";
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     await import("./sentry.server.config");
+
+    const { startCronWorker } = await import("./lib/cron-jobs/start-worker");
+    startCronWorker();
   }
 
   if (process.env.NEXT_RUNTIME === "edge") {
