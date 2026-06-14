@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
+import { isRemovedTestApiPath } from "./lib/sentry-filters";
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
@@ -11,4 +12,14 @@ export async function register() {
 }
 
 // Capture errors from Server Components, middleware, and proxies
-export const onRequestError = Sentry.captureRequestError;
+export const onRequestError: typeof Sentry.captureRequestError = (
+  error,
+  request,
+  errorContext,
+) => {
+  if (isRemovedTestApiPath(request.path)) {
+    return;
+  }
+
+  Sentry.captureRequestError(error, request, errorContext);
+};

@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+test.describe.configure({ mode: 'skip' });
+
 test.describe('Auth - Test session', () => {
   test('user session redirects to dashboard', async ({ page }) => {
     await page.goto('/api/test/auth?role=user');

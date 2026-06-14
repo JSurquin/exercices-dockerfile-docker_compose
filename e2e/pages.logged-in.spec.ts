@@ -1,11 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Tests E2E pour les pages accessibles avec authentification
- * Ces tests utilisent l'état d'authentification créé par auth.setup.ts
- * 
- * PRÉREQUIS : Vous devez implémenter l'endpoint /api/test/auth
- * ou modifier auth.setup.ts pour créer une vraie session.
+ * Tests E2E pour les pages accessibles avec authentification.
+ * Désactivés : l'endpoint /api/test/auth a été supprimé (sécurité).
  */
 
 test.describe('Pages protégées - Connecté', () => {
