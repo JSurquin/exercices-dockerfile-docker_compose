@@ -98,7 +98,8 @@ export default function ModerationPage() {
       if (!response.ok) throw new Error(messages.moderation.errors.assignError);
       
       toast.success(messages.moderation.success.assigned);
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminChatConversations(filters as Record<string, unknown>) });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'chat', 'conversations'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminChatStats });
     } catch (error) {
       toast.error(messages.moderation.errors.assignError);
       console.error(error);
@@ -116,7 +117,8 @@ export default function ModerationPage() {
       if (!response.ok) throw new Error(messages.moderation.errors.updateError);
       
       toast.success(messages.moderation.success.statusUpdated);
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminChatConversations(filters as Record<string, unknown>) });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'chat', 'conversations'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminChatStats });
     } catch (error) {
       toast.error(messages.moderation.errors.updateError);
       console.error(error);

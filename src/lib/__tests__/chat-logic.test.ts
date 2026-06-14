@@ -220,6 +220,16 @@ describe('buildConversationWhereClause', () => {
     ).toEqual({ status: { not: 'DELETED' }, assignedTo: 'mod-2' });
   });
 
+  it('filtre assignedTo=unassigned avec assignedTo null', () => {
+    expect(
+      buildConversationWhereClause({
+        role: 'MODERATOR',
+        userId: 'mod-1',
+        filters: { assignedTo: 'unassigned' },
+      }),
+    ).toEqual({ status: { not: 'DELETED' }, assignedTo: null });
+  });
+
   it('applique category et priority', () => {
     expect(
       buildConversationWhereClause({
@@ -469,6 +479,18 @@ describe('selectInitialConversationId', () => {
         'c1',
       ),
     ).toBeNull();
+  });
+
+  it('ignore storedId fermé si une conversation active existe', () => {
+    expect(
+      selectInitialConversationId(
+        [
+          { id: 'c-closed', status: 'CLOSED', lastMessageAt: '2026-06-01' },
+          { id: 'c-active', status: 'ACTIVE', lastMessageAt: '2026-01-01' },
+        ],
+        'c-closed',
+      ),
+    ).toBe('c-active');
   });
 });
 

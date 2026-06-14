@@ -639,11 +639,14 @@ export function ChatWidget() {
       const convId = result.conversationId ?? conversationId;
 
       if (convId) {
-        await fetch(`/api/chat/conversations/${convId}/bot-message`, {
+        const botRes = await fetch(`/api/chat/conversations/${convId}/bot-message`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ subcategoryKey: subcategory.key }),
         });
+        if (!botRes.ok) {
+          throw new Error("bot-message failed");
+        }
         queryClient.invalidateQueries({
           queryKey: queryKeys.conversationMessages(convId),
         });

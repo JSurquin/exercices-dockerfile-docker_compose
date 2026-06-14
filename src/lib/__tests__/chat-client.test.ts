@@ -140,4 +140,15 @@ describe('resolveActiveConversationId', () => {
       }),
     ).toBe('c1');
   });
+
+  it('restaure storedId invité sans liste API', () => {
+    expect(
+      resolveActiveConversationId({
+        pickedId: null,
+        storedId: 'guest-c',
+        conversations: [],
+        selectInitial: selectInitialConversationId,
+      }),
+    ).toBe('guest-c');
+  });
 });

@@ -78,5 +78,11 @@ export function resolveActiveConversationId(params: {
   ) => string | null;
 }): string | null {
   if (params.pickedId) return params.pickedId;
-  return params.selectInitial(params.conversations, params.storedId);
+  const selected = params.selectInitial(params.conversations, params.storedId);
+  if (selected) return selected;
+  // Invité : l’API liste renvoie 401, restaurer l’ID local si présent
+  if (!params.conversations.length && params.storedId) {
+    return params.storedId;
+  }
+  return null;
 }

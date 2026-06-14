@@ -160,6 +160,40 @@ describe('useChat', () => {
     expect(global.fetch).toHaveBeenCalled();
   });
 
+  it('sendMessage sur conversation fermée force un nouveau fil', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
+      conversations: [
+        { id: 'c1', status: 'CLOSED', createdAt: '', updatedAt: '', lastMessageAt: '', messages: [] },
+      ],
+    });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
+      messages: [],
+      nextCursor: null,
+      hasMore: false,
+    });
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 'm1',
+        conversationId: 'c-new',
+        createdNewConversation: true,
+      }),
+    });
+
+    const { result } = renderHook(() => useChat(true), { wrapper });
+    result.current.setConversationId('c1');
+    await waitFor(() => expect(result.current.conversationId).toBe('c1'));
+    await result.current.sendMessage('nouveau message');
+
+    expect(global.fetch).toHaveBeenCalledWith('/api/chat/messages', expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({
+        content: 'nouveau message',
+        forceNew: true,
+      }),
+    }));
+  });
+
   it('ne charge pas les queries si fermé', () => {
     jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({ conversations: [] });
     const { result } = renderHook(() => useChat(false), { wrapper });

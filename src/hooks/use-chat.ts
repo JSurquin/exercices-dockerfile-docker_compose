@@ -16,6 +16,7 @@ import {
 } from '@/lib/chat-notification-logic';
 import {
   getUnreadMessageCount,
+  isTerminalConversationStatus,
   markStaffMessagesReadForClientViewer,
   selectInitialConversationId,
 } from '@/lib/chat-logic';
@@ -161,17 +162,32 @@ export function useChat(isOpen = false, isViewingConversation = false) {
       category?: string;
       forceNew?: boolean;
     }) => {
-      const shouldForceNew = params.forceNew || isComposingNewConversationRef.current;
-      const res = await fetch('/api/chat/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conversationId: shouldForceNew ? undefined : (conversationId ?? undefined),
-          content: params.content,
-          category: params.category,
-          forceNew: shouldForceNew || undefined,
-        }),
-      });
+      const activeMeta = conversationId
+        ? conversations.find((c) => c.id === conversationId)
+        : undefined;
+      const shouldForceNew =
+        params.forceNew ||
+        isComposingNewConversationRef.current ||
+        Boolean(
+          activeMeta?.status && isTerminalConversationStatus(activeMeta.status),
+        );
+
+      const postMessage = (forceNew: boolean) =>
+        fetch('/api/chat/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conversationId: forceNew ? undefined : (conversationId ?? undefined),
+            content: params.content,
+            category: params.category,
+            forceNew: forceNew || undefined,
+          }),
+        });
+
+      let res = await postMessage(shouldForceNew);
+      if (!res.ok && res.status === 400 && !shouldForceNew) {
+        res = await postMessage(true);
+      }
       if (!res.ok) throw new Error(chatT.sendMessageError);
       return res.json();
     },

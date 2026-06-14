@@ -5,6 +5,12 @@ export type ChatIdentityKind = 'guest' | 'invalid' | 'user';
 
 export const STAFF_SENDER_TYPES_FOR_NOTIFICATION = ['MODERATOR', 'BOT', 'SYSTEM'] as const;
 
+export const TERMINAL_CONVERSATION_STATUSES = ['CLOSED', 'ARCHIVED', 'DELETED'] as const;
+
+export function isTerminalConversationStatus(status: string): boolean {
+  return (TERMINAL_CONVERSATION_STATUSES as readonly string[]).includes(status);
+}
+
 /** Contenu SYSTEM multilingue après la première réponse utilisateur post-BOT. */
 export const TICKET_TRANSMITTED_I18N_KEY =
   '__i18n:chatWidget.responses.ticketTransmitted__';
@@ -100,7 +106,8 @@ export function buildConversationWhereClause(params: {
 
   if (filters.status) whereClause.status = filters.status;
   if (filters.assignedTo && filters.assignedTo !== 'me') {
-    whereClause.assignedTo = filters.assignedTo;
+    whereClause.assignedTo =
+      filters.assignedTo === 'unassigned' ? null : filters.assignedTo;
   }
   if (filters.category) whereClause.category = filters.category;
   if (filters.priority) whereClause.priority = filters.priority;
@@ -216,7 +223,12 @@ export function shouldClearAiTypingIndicator(params: {
 export function selectInitialConversationId<
   T extends { id: string; status: string; lastMessageAt?: string | Date | null },
 >(conversations: T[], storedId?: string | null): string | null {
-  if (storedId && conversations.some((c) => c.id === storedId && c.status !== 'DELETED')) {
+  if (
+    storedId &&
+    conversations.some(
+      (c) => c.id === storedId && !isTerminalConversationStatus(c.status),
+    )
+  ) {
     return storedId;
   }
   if (conversations.length === 0) return null;
