@@ -104,6 +104,7 @@ describe('chatWidgetPopupContainerClass', () => {
     expect(closed).toContain('opacity-0');
     expect(closed).toContain('pointer-events-none');
     expect(closed).toContain('bottom-24');
+    expect(closed).toContain('sm:bottom-24');
   });
 });
 

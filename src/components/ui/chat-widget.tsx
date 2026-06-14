@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, memo, useMemo, type ComponentType, type SVGProps } from "react";
+import { createPortal } from "react-dom";
 import { ChatMarkdownContent } from "@/lib/chat-markdown";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -388,6 +389,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [popupMounted, setPopupMounted] = useState(false);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const { messages, locale } = useLocale();
 
   const CATEGORIES: Category[] = [
@@ -580,6 +582,27 @@ export function ChatWidget() {
     setChatWidgetBodyScrollLock(isOpen);
     return () => setChatWidgetBodyScrollLock(false);
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const preventBackgroundScroll = (event: WheelEvent | TouchEvent) => {
+      const root = document.querySelector("[data-chat-widget-root]");
+      if (root && event.target instanceof Node && root.contains(event.target)) return;
+      event.preventDefault();
+    };
+
+    document.addEventListener("wheel", preventBackgroundScroll, { passive: false });
+    document.addEventListener("touchmove", preventBackgroundScroll, { passive: false });
+    return () => {
+      document.removeEventListener("wheel", preventBackgroundScroll);
+      document.removeEventListener("touchmove", preventBackgroundScroll);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    setPortalTarget(document.body);
+  }, []);
 
   useEffect(() => {
     const handleMobileMenuChange = (e: Event) => {
@@ -1045,10 +1068,11 @@ export function ChatWidget() {
     </nav>
   );
 
-  return (
+  const widgetUi = (
     <>
       {popupMounted && (
       <div
+        data-chat-widget-root
         data-testid="chat-popup"
         className={chatWidgetPopupContainerClass(isOpen)}
       >
@@ -1125,4 +1149,7 @@ export function ChatWidget() {
       )}
     </>
   );
+
+  if (!portalTarget) return null;
+  return createPortal(widgetUi, portalTarget);
 }

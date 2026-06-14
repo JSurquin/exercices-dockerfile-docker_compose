@@ -38,7 +38,7 @@ jest.mock('remark-gfm', () => ({
 
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS } from '@/lib/chat-widget-styles';
+import { CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS, setChatWidgetBodyScrollLock } from '@/lib/chat-widget-styles';
 import { ChatWidget } from '@/components/ui/chat-widget';
 
 const mockInvalidateQueries = jest.fn();
@@ -681,9 +681,20 @@ describe('ChatWidget', () => {
     renderWidget();
     expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(false);
     await openChat();
+    expect(document.documentElement.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(true);
     expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(true);
     closeChatViaHeader();
     expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(false);
+  });
+
+  it('mémorise et restaure la position de scroll à la fermeture', () => {
+    Object.defineProperty(window, 'scrollY', { value: 120, writable: true, configurable: true });
+    const scrollTo = jest.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    setChatWidgetBodyScrollLock(true);
+    expect(document.body.style.top).toBe('-120px');
+    setChatWidgetBodyScrollLock(false);
+    expect(scrollTo).toHaveBeenCalledWith(0, 120);
+    scrollTo.mockRestore();
   });
 
   it('retire le verrouillage body si menu mobile ouvre pendant chat', async () => {

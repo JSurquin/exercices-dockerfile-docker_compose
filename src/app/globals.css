@@ -2033,9 +2033,17 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   /* Bloque le scroll de la page quand le widget chat est ouvert */
-  body.chat-widget-scroll-lock {
+  html.chat-widget-scroll-lock,
+  html.chat-widget-scroll-lock body {
     overflow: hidden;
     overscroll-behavior: none;
+  }
+
+  body.chat-widget-scroll-lock {
+    position: fixed;
+    width: 100%;
+    left: 0;
+    right: 0;
   }
 
   /* Chat popup — fond quasi opaque, sans backdrop-filter (coûteux au scroll) */
