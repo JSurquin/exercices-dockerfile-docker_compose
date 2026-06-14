@@ -38,6 +38,7 @@ jest.mock('remark-gfm', () => ({
 
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS } from '@/lib/chat-widget-styles';
 import { ChatWidget } from '@/components/ui/chat-widget';
 
 const mockInvalidateQueries = jest.fn();
@@ -225,6 +226,7 @@ beforeEach(() => {
   mockSendMessage.mockResolvedValue({ conversationId: 'conv-1' });
   mockLoadOlderMessages.mockResolvedValue(undefined);
   global.fetch = jest.fn().mockResolvedValue({ ok: true });
+  document.body.classList.remove(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS);
   global.requestAnimationFrame = (cb: FrameRequestCallback) => {
     cb(0);
     return 0;
@@ -673,6 +675,25 @@ describe('ChatWidget', () => {
       window.dispatchEvent(new CustomEvent('mobile-menu-open-change', { detail: { open: false } }));
     });
     expect(screen.getByTestId('chat-fab')).toBeInTheDocument();
+  });
+
+  it('bloque le scroll du body quand le chat est ouvert', async () => {
+    renderWidget();
+    expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(false);
+    await openChat();
+    expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(true);
+    closeChatViaHeader();
+    expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(false);
+  });
+
+  it('retire le verrouillage body si menu mobile ouvre pendant chat', async () => {
+    renderWidget();
+    await openChat();
+    expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(true);
+    act(() => {
+      window.dispatchEvent(new CustomEvent('mobile-menu-open-change', { detail: { open: true } }));
+    });
+    expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(false);
   });
 
   it('ferme via le bouton X du header', async () => {

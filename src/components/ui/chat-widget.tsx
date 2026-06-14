@@ -17,6 +17,7 @@ import {
 import { shouldClearAiTypingIndicator } from "@/lib/chat-logic";
 import {
   CHAT_WIDGET_POPUP_CLOSE_MS,
+  setChatWidgetBodyScrollLock,
   chatWidgetAiTypingBubbleClass,
   chatWidgetCategoryButtonClass,
   chatWidgetFabButtonClass,
@@ -573,6 +574,11 @@ export function ChatWidget() {
     window.dispatchEvent(
       new CustomEvent("chat-widget-open-change", { detail: { open: isOpen } })
     );
+  }, [isOpen]);
+
+  useEffect(() => {
+    setChatWidgetBodyScrollLock(isOpen);
+    return () => setChatWidgetBodyScrollLock(false);
   }, [isOpen]);
 
   useEffect(() => {

@@ -57,6 +57,14 @@ export function chatWidgetTimestampClass(senderType: WidgetSenderType): string {
 /** Durée de fermeture du popup (alignée sur transition CSS + démontage React). */
 export const CHAT_WIDGET_POPUP_CLOSE_MS = 150;
 
+/** Classe appliquée sur body quand le popup chat est ouvert (bloque le scroll page). */
+export const CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS = 'chat-widget-scroll-lock';
+
+export function setChatWidgetBodyScrollLock(locked: boolean): void {
+  if (typeof document === 'undefined') return;
+  document.body.classList.toggle(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS, locked);
+}
+
 export function chatWidgetScrollAreaClass(extra = ''): string {
   return `flex-1 min-h-0 overflow-y-auto overscroll-y-contain ${extra}`.trim();
 }

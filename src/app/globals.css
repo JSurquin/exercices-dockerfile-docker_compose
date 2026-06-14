@@ -2032,6 +2032,12 @@ body.next-dev-overlay-present #sentry-feedback {
     }
   }
 
+  /* Bloque le scroll de la page quand le widget chat est ouvert */
+  body.chat-widget-scroll-lock {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
   /* Chat popup — fond quasi opaque, sans backdrop-filter (coûteux au scroll) */
   .chat-glass {
     background: rgba(255, 255, 255, 0.98);
