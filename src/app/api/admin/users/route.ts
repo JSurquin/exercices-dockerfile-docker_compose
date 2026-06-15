@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
       status: searchParams.get('status') || undefined,
       role: searchParams.get('role') || undefined,
       tag: searchParams.get('tag') || undefined,
+      banned: searchParams.get('banned') || undefined,
       search: searchParams.get('search') || undefined,
       page: Math.max(1, parseInt(searchParams.get('page') || '1') || 1),
       limit: Math.min(Math.max(1, rawLimit || 20), 100),
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
 
     // Construire les conditions de filtrage Prisma
     const whereConditions: any = {};
+    const andConditions: any[] = [];
 
     if (filters.status) {
       const f = filters.status.toLowerCase();
@@ -60,12 +62,28 @@ export async function GET(request: NextRequest) {
     }
 
     if (filters.search) {
-      whereConditions.OR = [
-        { name: { contains: filters.search, mode: 'insensitive' } },
-        { email: { contains: filters.search, mode: 'insensitive' } },
-        { steamId: { contains: filters.search, mode: 'insensitive' } },
-        { id: { contains: filters.search, mode: 'insensitive' } },
-      ];
+      andConditions.push({
+        OR: [
+          { name: { contains: filters.search, mode: 'insensitive' } },
+          { email: { contains: filters.search, mode: 'insensitive' } },
+          { steamId: { contains: filters.search, mode: 'insensitive' } },
+          { id: { contains: filters.search, mode: 'insensitive' } },
+        ],
+      });
+    }
+
+    if (filters.banned === 'true') {
+      whereConditions.banned = true;
+      andConditions.push({
+        OR: [
+          { banExpires: null },
+          { banExpires: { gt: new Date() } },
+        ],
+      });
+    }
+
+    if (andConditions.length > 0) {
+      whereConditions.AND = andConditions;
     }
 
     // Récupérer les utilisateurs de la base de données

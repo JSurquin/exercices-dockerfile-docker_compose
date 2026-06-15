@@ -307,6 +307,7 @@ export interface AdminFilters {
   status?: string;
   role?: string;
   tag?: string;
+  banned?: string;
   userId?: string;
   search?: string;
   page?: number;

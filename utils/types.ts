@@ -1608,6 +1608,27 @@ export interface Messages {
       errorTitle: string;
       errorSave: string;
     };
+    bannedUsers: {
+      pageTitle: string;
+      pageSubtitle: string;
+      searchTitle: string;
+      searchDesc: string;
+      searchPlaceholder: string;
+      listTitle: string;
+      entriesFound: string;
+      noEntries: string;
+      permanent: string;
+      unbanButton: string;
+      viewProfile: string;
+      loading: string;
+      loadError: string;
+      table: {
+        user: string;
+        reason: string;
+        expires: string;
+        actions: string;
+      };
+    };
     blockedIps: {
       pageTitle: string;
       pageSubtitle: string;
@@ -6023,6 +6044,7 @@ export interface Messages {
         legalPages: string;
         audit: string;
         blockedIps: string;
+        bannedUsers: string;
         exports: string;
         settings: string;
         help: string;

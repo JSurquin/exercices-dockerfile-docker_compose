@@ -38,6 +38,7 @@ import {
   Store,
   Heart,
   Ban,
+  UserX,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -107,6 +108,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
       title: t.groups.management,
       items: [
         { title: t.items.users, href: '/admin/dashboard?tab=users', icon: Users },
+        { title: t.items.bannedUsers, href: '/admin/banned-users', icon: UserX },
         { title: t.items.trades, href: '/admin/dashboard?tab=trades', icon: ShoppingCart },
         { title: t.items.payouts, href: '/admin/dashboard?tab=payouts', icon: CreditCard, badge: pendingCounts?.pendingApprovals, badgeVariant: 'destructive' as const },
         { title: t.items.sepaRequests, href: '/admin/sepa-requests', icon: Landmark, badge: pendingCounts?.sepaPending, badgeVariant: 'destructive' as const },
