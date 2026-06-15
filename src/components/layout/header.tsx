@@ -511,6 +511,13 @@ export function Header() {
                     <ThemeSelector />
                   </div>
 
+                  <div className="flex items-center justify-between px-3">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {messages.ui.currency}
+                    </p>
+                    <CurrencySelector variant="ghost" size="sm" showFlag={true} />
+                  </div>
+
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="w-full justify-start">
