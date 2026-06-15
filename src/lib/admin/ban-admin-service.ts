@@ -75,6 +75,39 @@ export async function banUser(
   );
 }
 
+export interface BulkBanResult {
+  banned: number;
+  skipped: number;
+  errors: { userId: string; error: string }[];
+}
+
+/**
+ * Bannit plusieurs utilisateurs avec le même motif et la même date d'expiration.
+ */
+export async function banUsers(
+  adminId: string,
+  targetUserIds: string[],
+  reason: string,
+  banExpires: Date | null,
+  ipAddress?: string
+): Promise<BulkBanResult> {
+  const uniqueIds = [...new Set(targetUserIds.filter(Boolean))];
+  const result: BulkBanResult = { banned: 0, skipped: 0, errors: [] };
+
+  for (const targetUserId of uniqueIds) {
+    try {
+      await banUser(adminId, targetUserId, reason, banExpires, ipAddress);
+      result.banned += 1;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erreur inconnue';
+      result.errors.push({ userId: targetUserId, error: message });
+      result.skipped += 1;
+    }
+  }
+
+  return result;
+}
+
 /**
  * Lève le bannissement d'un utilisateur.
  */

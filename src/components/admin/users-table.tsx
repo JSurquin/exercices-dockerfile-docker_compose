@@ -9,8 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Dialog,
@@ -36,6 +38,7 @@ import {
   UserCog,
   Loader2,
   CloudDownload,
+  Ban,
 } from 'lucide-react';
 import { User as UserType, AdminFilters } from '@/lib/types';
 import { prismaKycStatusToAdminBadgeKey } from '@/lib/status-mapper';
@@ -47,6 +50,7 @@ import { authClient } from '~/lib/auth-client';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 import { SteamIcon } from '@/components/ui/cs2-icons';
 import { getSteamProfileUrl } from '@/lib/steam-id';
+import { isUserBanned } from '@/lib/user-ban-logic';
 
 interface PromoteDialogState {
   open: boolean;
@@ -101,6 +105,11 @@ export function AdminUsersTable() {
     username: '',
   });
   const [impersonating, setImpersonating] = useState(false);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [bulkBanDialogOpen, setBulkBanDialogOpen] = useState(false);
+  const [bulkBanReason, setBulkBanReason] = useState('');
+  const [bulkBanExpiresAt, setBulkBanExpiresAt] = useState('');
+  const [bulkBanning, setBulkBanning] = useState(false);
 
   const { data, isLoading, isFetching, error } = useQuery({
     queryKey: queryKeys.adminUsers({ ...filters, search: debouncedSearch }),
@@ -124,6 +133,13 @@ export function AdminUsersTable() {
   });
 
   const users: UserType[] = data?.users ?? [];
+  const bannableUsers = users.filter((user) => user.role !== 'ADMIN');
+  const allBannableSelected =
+    bannableUsers.length > 0 && bannableUsers.every((user) => selectedUserIds.includes(user.id));
+
+  useEffect(() => {
+    setSelectedUserIds([]);
+  }, [filters.page, debouncedSearch, filters.status, filters.role, filters.tag, limit]);
 
   const handleKYCFilter = (status: string) => {
     setFilters(prev => ({ 
@@ -288,6 +304,72 @@ export function AdminUsersTable() {
     setImpersonateDialog({ open: true, userId: user.id, username: user.username });
   };
 
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUserIds((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
+
+  const toggleAllBannableUsers = () => {
+    if (allBannableSelected) {
+      setSelectedUserIds([]);
+      return;
+    }
+    setSelectedUserIds(bannableUsers.map((user) => user.id));
+  };
+
+  const openBulkBanDialog = () => {
+    setBulkBanReason('');
+    setBulkBanExpiresAt('');
+    setBulkBanDialogOpen(true);
+  };
+
+  const handleBulkBan = async () => {
+    if (!bulkBanReason.trim()) {
+      toast({
+        title: t.errorTitle,
+        description: t.bulkBanReasonRequired,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setBulkBanning(true);
+    try {
+      const res = await fetch('/api/admin/users/bulk-ban', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userIds: selectedUserIds,
+          reason: bulkBanReason.trim(),
+          banExpires: bulkBanExpiresAt ? new Date(bulkBanExpiresAt).toISOString() : null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || t.errorTitle);
+
+      const description =
+        data.skipped > 0
+          ? t.bulkBanPartialDesc
+              .replace('{banned}', String(data.banned))
+              .replace('{skipped}', String(data.skipped))
+          : t.bulkBanSuccessDesc.replace('{banned}', String(data.banned));
+
+      toast({ title: t.bulkBanSuccessTitle, description });
+      setBulkBanDialogOpen(false);
+      setSelectedUserIds([]);
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+    } catch (err) {
+      toast({
+        title: t.errorTitle,
+        description: err instanceof Error ? err.message : t.errorUnknown,
+        variant: 'destructive',
+      });
+    } finally {
+      setBulkBanning(false);
+    }
+  };
+
   const handleImpersonate = async () => {
     setImpersonating(true);
     try {
@@ -399,6 +481,20 @@ export function AdminUsersTable() {
           </Button>
 
           <CreateUserDialog onUserCreated={() => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })} />
+
+          {selectedUserIds.length > 0 && (
+            <Button
+              onClick={openBulkBanDialog}
+              size="sm"
+              variant="destructive"
+            >
+              <Ban className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">
+                {t.bulkBanButton} ({selectedUserIds.length})
+              </span>
+              <span className="sm:hidden">{selectedUserIds.length}</span>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -408,6 +504,14 @@ export function AdminUsersTable() {
         <Table>
           <TableHeader>
             <TableRow className="border-slate-700">
+              <TableHead className="w-12 text-slate-300">
+                <Checkbox
+                  checked={allBannableSelected}
+                  onCheckedChange={toggleAllBannableUsers}
+                  disabled={bannableUsers.length === 0}
+                  aria-label={t.selectAll}
+                />
+              </TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">{t.tableUser}</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">{t.tableSteamId}</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">{t.tableKyc}</TableHead>
@@ -420,8 +524,26 @@ export function AdminUsersTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user) => (
+            {users.map((user) => {
+              const isActiveBan =
+                user.banned &&
+                isUserBanned({
+                  banned: user.banned,
+                  banExpires: user.banExpires ? new Date(user.banExpires) : null,
+                });
+              const canSelect = user.role !== 'ADMIN';
+
+              return (
               <TableRow key={user.id} className="border-slate-700 hover:bg-slate-800/50">
+                <TableCell>
+                  {canSelect ? (
+                    <Checkbox
+                      checked={selectedUserIds.includes(user.id)}
+                      onCheckedChange={() => toggleUserSelection(user.id)}
+                      aria-label={user.username}
+                    />
+                  ) : null}
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
@@ -434,6 +556,11 @@ export function AdminUsersTable() {
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-white">{user.username}</span>
                         <UserRoleBadge role={user.role} userTag={user.userTag} />
+                        {isActiveBan && (
+                          <Badge variant="destructive" className="text-xs">
+                            {t.bannedBadge}
+                          </Badge>
+                        )}
                       </div>
                       <div className="text-xs text-slate-400">ID: {user.id}</div>
                     </div>
@@ -547,7 +674,8 @@ export function AdminUsersTable() {
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
+            );
+            })}
           </TableBody>
         </Table>
         </div>
@@ -725,6 +853,76 @@ export function AdminUsersTable() {
                 <>
                   <UserCog className="mr-2 h-4 w-4" />
                   {t.impersonateConfirm}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={bulkBanDialogOpen} onOpenChange={setBulkBanDialogOpen}>
+        <DialogContent className="sm:max-w-[480px] bg-slate-800 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Ban className="h-5 w-5 text-red-400" />
+              {t.bulkBanDialogTitle.replace('{count}', String(selectedUserIds.length))}
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              {t.bulkBanDialogDesc}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="bulk-ban-reason" className="text-slate-300">
+                {t.bulkBanReasonLabel}
+              </Label>
+              <Textarea
+                id="bulk-ban-reason"
+                value={bulkBanReason}
+                onChange={(e) => setBulkBanReason(e.target.value)}
+                placeholder={t.bulkBanReasonPlaceholder}
+                className="bg-slate-700 border-slate-600 text-white min-h-[80px]"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bulk-ban-expires" className="text-slate-300">
+                {t.bulkBanExpiresLabel}
+              </Label>
+              <Input
+                id="bulk-ban-expires"
+                type="datetime-local"
+                value={bulkBanExpiresAt}
+                onChange={(e) => setBulkBanExpiresAt(e.target.value)}
+                className="bg-slate-700 border-slate-600 text-white"
+              />
+              <p className="text-xs text-slate-500">{t.bulkBanExpiresHelp}</p>
+            </div>
+          </div>
+          <DialogFooter className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setBulkBanDialogOpen(false)}
+              disabled={bulkBanning}
+              className="border-slate-600 text-white hover:bg-slate-700"
+            >
+              {messages.common.cancel}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleBulkBan}
+              disabled={bulkBanning}
+              variant="destructive"
+            >
+              {bulkBanning ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t.bulkBanProcessing}
+                </>
+              ) : (
+                <>
+                  <Ban className="mr-2 h-4 w-4" />
+                  {t.bulkBanConfirm.replace('{count}', String(selectedUserIds.length))}
                 </>
               )}
             </Button>

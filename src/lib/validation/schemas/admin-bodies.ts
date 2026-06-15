@@ -148,6 +148,12 @@ export const adminUserBanSchema = z.object({
   banExpires: z.union([z.string().datetime(), z.null()]).optional(),
 });
 
+export const adminUsersBulkBanSchema = z.object({
+  userIds: z.array(z.string().min(1)).min(1).max(100),
+  reason: z.string().min(3).max(500),
+  banExpires: z.union([z.string().datetime(), z.null()]).optional(),
+});
+
 export const adminBlockedIpSchema = z.object({
   ipAddress: z.string().min(3).max(45),
   reason: z.string().min(3).max(500),

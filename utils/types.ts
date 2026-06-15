@@ -1523,6 +1523,22 @@ export interface Messages {
       impersonateError: string;
       impersonateAdminError: string;
       viewSteamProfile: string;
+      selectAll: string;
+      selectedCount: string;
+      bulkBanButton: string;
+      bulkBanDialogTitle: string;
+      bulkBanDialogDesc: string;
+      bulkBanReasonLabel: string;
+      bulkBanReasonPlaceholder: string;
+      bulkBanReasonRequired: string;
+      bulkBanExpiresLabel: string;
+      bulkBanExpiresHelp: string;
+      bulkBanConfirm: string;
+      bulkBanProcessing: string;
+      bulkBanSuccessTitle: string;
+      bulkBanSuccessDesc: string;
+      bulkBanPartialDesc: string;
+      bannedBadge: string;
     };
     impersonationBanner: {
       message: string;

@@ -21,6 +21,9 @@ export interface User {
   tickets: number;
   fragments?: number;
   joinedAt: Date;
+  banned?: boolean;
+  banReason?: string | null;
+  banExpires?: Date | string | null;
 }
 
 export interface Trade {
