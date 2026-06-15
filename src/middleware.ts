@@ -1,34 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isIpBlocked } from '@/lib/blocked-ip-service';
 
-function getClientIP(request: NextRequest): string {
-  const forwarded = request.headers.get('x-forwarded-for');
-  const realIP = request.headers.get('x-real-ip');
-
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
-  }
-
-  if (realIP) {
-    return realIP;
-  }
-
-  return 'unknown';
-}
-
-export async function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
-
-  if (!pathname.startsWith('/admin') && !pathname.startsWith('/api/admin')) {
-    const clientIp = getClientIP(request);
-    if (clientIp !== 'unknown' && (await isIpBlocked(clientIp))) {
-      const blockedUrl = request.nextUrl.clone();
-      blockedUrl.pathname = '/';
-      blockedUrl.searchParams.set('error', 'ip_blocked');
-      return NextResponse.redirect(blockedUrl);
-    }
-  }
-
+export function middleware(request: NextRequest) {
   const response = NextResponse.next();
   
   // Tracking des codes d'affiliation
