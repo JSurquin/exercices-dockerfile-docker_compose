@@ -12,8 +12,9 @@ import {
   usePublicStats,
   formatPlatformVolume,
   formatCompactCount,
+  type PublicStats,
 } from "@/hooks/use-public-stats";
-import { usePlatformSettings } from "@/hooks/use-platform-settings";
+import type { PlatformSettings } from "@/hooks/use-platform-settings";
 import {
   homeDelay,
   homeEnter,
@@ -153,18 +154,24 @@ const HERO_PAYMENT_METHOD_ICONS: Record<HeroPaymentMethodKey, ComponentType> = {
 };
 
 
-export function HeroSection() {
+export function HeroSection({
+  publicStats: publicStatsProp,
+  platformSettings: platformSettingsProp,
+}: {
+  publicStats?: PublicStats;
+  platformSettings?: PlatformSettings;
+}) {
   const { messages } = useLocale();
   const { user } = useAuth();
-  const { data: publicStats } = usePublicStats();
-  const { data: platformSettings } = usePlatformSettings();
+  const { data: publicStatsFromQuery } = usePublicStats();
+  const publicStats = publicStatsProp ?? publicStatsFromQuery;
 
   // Calculs de la carte démo basés sur les vrais taux
   const demoAk47Cents = 22403;
   const demoAwpCents = 886858;
   const demoGrossCents = demoAk47Cents + demoAwpCents;
-  const demoCashoutFeeCents = Math.round(demoGrossCents * (platformSettings?.cashoutFeeRate ?? 0.005));
-  const demoNetworkFeeCents = platformSettings?.networkFeeCentimes ?? 200;
+  const demoCashoutFeeCents = Math.round(demoGrossCents * (platformSettingsProp?.cashoutFeeRate ?? 0.005));
+  const demoNetworkFeeCents = platformSettingsProp?.networkFeeCentimes ?? 200;
   const demoNetCents = demoGrossCents - demoCashoutFeeCents - demoNetworkFeeCents;
   const fmt = (cents: number) => `${(cents / 100).toFixed(2)}€`;
 

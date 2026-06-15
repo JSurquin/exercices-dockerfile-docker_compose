@@ -1,4 +1,4 @@
-import { unstable_cache } from 'next/cache';
+import { cache } from 'react';
 import { fetchPlatformStatsFromDb } from '@/lib/platform-stats';
 import { obfuscatePublicCount } from '@/lib/privacy-obfuscation';
 import type { PublicStats } from '@/hooks/use-public-stats';
@@ -24,6 +24,5 @@ export async function getPublicStats(): Promise<PublicStats> {
   };
 }
 
-export const getCachedPublicStats = unstable_cache(getPublicStats, ['public-stats'], {
-  revalidate: 300,
-});
+/** Deduped per request — safe in layout + page server components. */
+export const getServerPublicStats = cache(getPublicStats);

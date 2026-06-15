@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
-import { usePublicStats, formatPlatformVolume, formatCompactCount } from "@/hooks/use-public-stats";
+import { usePublicStats, formatPlatformVolume, formatCompactCount, type PublicStats } from "@/hooks/use-public-stats";
 import { SiteTour } from "@/components/layout/site-tour";
 import { useTourMode } from "@/components/providers/tour-provider";
 import { normalizeStoredTheme } from "@/lib/themes";
@@ -64,9 +64,10 @@ function FooterSocialIcons({ labels }: { labels: Record<(typeof FOOTER_SOCIAL_LI
   );
 }
 
-export function Footer() {
+export function Footer({ publicStats: publicStatsProp }: { publicStats?: PublicStats }) {
   const { messages } = useLocale();
-  const { data: publicStats } = usePublicStats();
+  const { data: publicStatsFromQuery } = usePublicStats();
+  const publicStats = publicStatsProp ?? publicStatsFromQuery;
   const volumeDisplay = formatPlatformVolume(publicStats?.totalVolumeCents ?? 0);
   const tradesDisplay = formatCompactCount(publicStats?.completedTrades ?? 0);
   const skinsDisplay = formatCompactCount(publicStats?.totalSkinsSold ?? 0);

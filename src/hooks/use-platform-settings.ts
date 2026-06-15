@@ -13,7 +13,7 @@ const DEFAULTS: PlatformSettings = {
 };
 
 async function fetchPlatformSettings(): Promise<PlatformSettings> {
-  const res = await fetch('/api/settings/public');
+  const res = await fetch('/api/settings/public', { redirect: 'error' });
   if (!res.ok) return DEFAULTS;
   return res.json();
 }
@@ -24,5 +24,7 @@ export function usePlatformSettings() {
     queryFn: fetchPlatformSettings,
     staleTime: 5 * 60 * 1000,
     placeholderData: DEFAULTS,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
 }

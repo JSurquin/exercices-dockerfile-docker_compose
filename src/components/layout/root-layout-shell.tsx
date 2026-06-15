@@ -53,7 +53,7 @@ export function RootLayoutShell({
 
                 <main className={isAdminRoute ? '' : 'relative z-0 flex-1'}>{children}</main>
 
-                {!isAdminRoute && <Footer />}
+                {!isAdminRoute && <Footer publicStats={initialPublicStats} />}
                 {!isAdminRoute && (
                   <FloatingUiPortal>
                     <ScrollToTopButton />

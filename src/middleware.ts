@@ -37,11 +37,11 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
+     * - api/ (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico, icon, apple-icon (metadata static files)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|icon|apple-icon|health).*)',
+    '/((?!api/|api$|_next/static|_next/image|favicon.ico|icon|apple-icon|health|monitoring).*)',
   ],
 };

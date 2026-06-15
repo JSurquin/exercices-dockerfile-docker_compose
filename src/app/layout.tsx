@@ -1,7 +1,9 @@
 import { Inter, Poppins, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import type { Metadata } from 'next';
 import { RootLayoutShell } from '@/components/layout/root-layout-shell';
-import { EMPTY_PUBLIC_STATS, getCachedPublicStats } from '@/lib/get-public-stats';
+import { EMPTY_PUBLIC_STATS, getServerPublicStats } from '@/lib/get-public-stats';
+
+export const revalidate = 300;
 import './globals.css';
 
 const inter = Inter({
@@ -60,7 +62,7 @@ export default async function RootLayout({
 }>) {
   let initialPublicStats = EMPTY_PUBLIC_STATS;
   try {
-    initialPublicStats = await getCachedPublicStats();
+    initialPublicStats = await getServerPublicStats();
   } catch {
     // Keep zeroed fallback; client can still refetch /api/stats.
   }

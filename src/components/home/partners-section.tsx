@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import type { PublicPartnersResponse } from '@/lib/get-public-partners';
 import { Play, Youtube } from 'lucide-react';
 import { HeartRainEasterEgg } from '@/components/home/heart-rain-easter-egg';
 import { useLocale } from '@/components/providers/locale-provider';
@@ -30,9 +31,11 @@ interface PartnerLogo {
   profileUrl: string | null;
 }
 
-interface PartnersResponse {
-  videos: PartnerVideo[];
-  logos: PartnerLogo[];
+function fetchPartners(): Promise<PublicPartnersResponse> {
+  return fetch('/api/partners', { redirect: 'error' }).then(async (res) => {
+    if (!res.ok) throw new Error('Failed to load partners');
+    return res.json();
+  });
 }
 
 function XIcon({ className }: { className?: string }) {
@@ -174,22 +177,30 @@ function LogoItem({ logo }: { logo: PartnerLogo }) {
   return <div className="group flex flex-col items-center gap-2">{inner}</div>;
 }
 
-export function PartnersSection() {
+export function PartnersSection({
+  initialPartners,
+}: {
+  initialPartners?: PublicPartnersResponse;
+}) {
   const { messages } = useLocale();
   const t = messages.partners;
 
-  const { data, isLoading } = useQuery<PartnersResponse>({
+  const { data, isLoading: isQueryLoading } = useQuery<PublicPartnersResponse>({
     queryKey: ['partners', 'public'],
-    queryFn: async () => {
-      const res = await fetch('/api/partners');
-      if (!res.ok) throw new Error('Failed to load partners');
-      return res.json();
-    },
+    queryFn: fetchPartners,
+    initialData: initialPartners,
+    initialDataUpdatedAt: initialPartners ? Date.now() : undefined,
     staleTime: 5 * 60 * 1000,
+    refetchOnMount: !initialPartners,
+    refetchOnWindowFocus: false,
+    retry: false,
+    enabled: !initialPartners,
   });
 
-  const videos = data?.videos ?? [];
-  const logos = data?.logos ?? [];
+  const resolved = initialPartners ?? data;
+  const videos = resolved?.videos ?? [];
+  const logos = resolved?.logos ?? [];
+  const isLoading = !initialPartners && isQueryLoading;
 
   if (!isLoading && videos.length === 0 && logos.length === 0) {
     return null;

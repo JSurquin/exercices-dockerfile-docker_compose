@@ -6,8 +6,10 @@ import type { PublicStats } from '@/hooks/use-public-stats';
 
 const PublicStatsContext = createContext<UseQueryResult<PublicStats> | null>(null);
 
+const PUBLIC_STATS_STALE_MS = 5 * 60 * 1000;
+
 async function fetchPublicStats(): Promise<PublicStats> {
-  const res = await fetch('/api/stats');
+  const res = await fetch('/api/stats', { redirect: 'error' });
   if (!res.ok) {
     throw new Error(`Failed to fetch public stats (${res.status})`);
   }
@@ -25,7 +27,11 @@ export function PublicStatsProvider({
     queryKey: ['public-stats'],
     queryFn: fetchPublicStats,
     initialData: initialStats,
-    staleTime: 5 * 60 * 1000,
+    initialDataUpdatedAt: Date.now(),
+    staleTime: PUBLIC_STATS_STALE_MS,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
 
   return <PublicStatsContext.Provider value={query}>{children}</PublicStatsContext.Provider>;

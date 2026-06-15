@@ -9,7 +9,7 @@ import {
   CSGO_REP_TESTIMONIAL_SOURCE,
   formatTestimonialDate,
 } from '@/lib/csgo-rep-testimonials';
-import { usePublicStats, formatPlatformVolume, formatCompactCount } from '@/hooks/use-public-stats';
+import { usePublicStats, formatPlatformVolume, formatCompactCount, type PublicStats } from '@/hooks/use-public-stats';
 import {
   homeHover,
   homeReveal,
@@ -58,9 +58,10 @@ function CsgoRepLink({ size = 'default' }: { size?: 'default' | 'large' }) {
   );
 }
 
-export function TestimonialsSection() {
+export function TestimonialsSection({ publicStats: publicStatsProp }: { publicStats?: PublicStats }) {
   const { locale, messages } = useLocale();
-  const { data: publicStats } = usePublicStats();
+  const { data: publicStatsFromQuery } = usePublicStats();
+  const publicStats = publicStatsProp ?? publicStatsFromQuery;
   const volumeDisplay = formatPlatformVolume(publicStats?.totalVolumeCents ?? 0);
   const skinsDisplay = formatCompactCount(publicStats?.totalSkinsSold ?? 0);
   const usersDisplay = formatCompactCount(publicStats?.totalUsers ?? 0);
