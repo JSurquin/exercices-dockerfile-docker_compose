@@ -10,6 +10,7 @@ import {
   ArrowPathIcon,
   HomeIcon,
   ChatBubbleLeftRightIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useLocale } from "@/components/providers/locale-provider";
@@ -21,6 +22,9 @@ interface ErrorProps {
 
 export default function Error({ error, reset }: ErrorProps) {
   const { messages } = useLocale();
+  const t = messages.error;
+  const links = messages.notFound;
+
   useEffect(() => {
     Sentry.captureException(error);
   }, [error]);
@@ -33,15 +37,25 @@ export default function Error({ error, reset }: ErrorProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          {/* Error Icon */}
+          {/* Error Code */}
+          <div className="mb-8">
+            <div className="text-8xl md:text-9xl font-bold bg-cta-gradient bg-clip-text text-transparent">
+              {t.code}
+            </div>
+            <div className="text-2xl md:text-3xl font-semibold text-muted-foreground mt-2">
+              {t.serverError}
+            </div>
+          </div>
+
+          {/* Icon */}
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2, type: "spring" }}
+            transition={{ duration: 0.5, delay: 0.2 }}
             className="mb-8"
           >
-            <div className="w-24 h-24 mx-auto bg-red-50 dark:bg-red-950/20 rounded-full flex items-center justify-center">
-              <ExclamationTriangleIcon className="w-12 h-12 text-red-500" />
+            <div className="w-24 h-24 mx-auto bg-muted/50 rounded-full flex items-center justify-center">
+              <ExclamationTriangleIcon className="w-12 h-12 text-theme-accent" />
             </div>
           </motion.div>
 
@@ -52,12 +66,8 @@ export default function Error({ error, reset }: ErrorProps) {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="mb-8"
           >
-            <h1 className="text-3xl font-bold mb-4">
-              {messages.error.title}
-            </h1>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
-              {messages.error.message}
-            </p>
+            <h1 className="text-2xl font-bold mb-4">{t.title}</h1>
+            <p className="text-muted-foreground mb-6 leading-relaxed">{t.message}</p>
           </motion.div>
 
           {/* Error Details (en mode développement) */}
@@ -71,14 +81,14 @@ export default function Error({ error, reset }: ErrorProps) {
               <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20">
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-red-900 dark:text-red-100 mb-2">
-                    {messages.error.errorDetails}
+                    {t.errorDetails}
                   </h3>
                   <pre className="text-xs text-red-700 dark:text-red-300 overflow-auto bg-red-100 dark:bg-red-900/20 p-2 rounded">
                     {error.message}
                   </pre>
                   {error.digest && (
                     <p className="text-xs text-red-600 dark:text-red-400 mt-2">
-                      {messages.error.errorId} {error.digest}
+                      {t.errorId} {error.digest}
                     </p>
                   )}
                 </CardContent>
@@ -94,36 +104,69 @@ export default function Error({ error, reset }: ErrorProps) {
             className="space-y-3 sm:space-y-4"
           >
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                onClick={reset}
-                className="bg-cta-gradient hover:brightness-110"
-              >
+              <Button onClick={reset} className="bg-cta-gradient hover:brightness-110">
                 <ArrowPathIcon className="w-4 h-4 mr-2" />
-                {messages.error.retry}
+                {t.retry}
               </Button>
               <Button variant="outline" asChild>
                 <Link href="/">
                   <HomeIcon className="w-4 h-4 mr-2" />
-                  {messages.error.home}
+                  {t.home}
                 </Link>
               </Button>
               <Button variant="outline" asChild>
                 <Link href="/help">
                   <ChatBubbleLeftRightIcon className="w-4 h-4 mr-2" />
-                  {messages.error.contactSupport}
+                  {t.contactSupport}
                 </Link>
               </Button>
             </div>
 
-            {/* Quick Tips */}
+            {/* Quick Links */}
             <Card className="mt-8">
               <CardContent className="p-4 sm:p-6">
-                <h3 className="font-semibold mb-4">{messages.error.suggestions}</h3>
+                <h3 className="font-semibold mb-4 flex items-center justify-center">
+                  <MagnifyingGlassIcon className="w-5 h-5 mr-2" />
+                  {links.usefulLinks}
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <Link
+                    href="/sell"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {links.sellSkins}
+                  </Link>
+                  <Link
+                    href="/dashboard"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {links.myDashboard}
+                  </Link>
+                  <Link
+                    href="/giveaways"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {links.giveaways}
+                  </Link>
+                  <Link
+                    href="/help"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {links.support}
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Tips */}
+            <Card>
+              <CardContent className="p-4 sm:p-6">
+                <h3 className="font-semibold mb-4">{t.suggestions}</h3>
                 <ul className="text-sm text-muted-foreground space-y-2 text-left">
-                  <li>• {messages.error.tip1}</li>
-                  <li>• {messages.error.tip2}</li>
-                  <li>• {messages.error.tip3}</li>
-                  <li>• {messages.error.tip4}</li>
+                  <li>• {t.tip1}</li>
+                  <li>• {t.tip2}</li>
+                  <li>• {t.tip3}</li>
+                  <li>• {t.tip4}</li>
                 </ul>
               </CardContent>
             </Card>
@@ -137,14 +180,17 @@ export default function Error({ error, reset }: ErrorProps) {
             className="mt-12"
           >
             <p className="text-sm text-muted-foreground">
-              {messages.error.checkStatus}{" "}
+              {t.checkStatus}{" "}
               <a
-                href={process.env.NEXT_PUBLIC_STATUS_URL ?? 'https://status.moonskin.gg'}
+                href={process.env.NEXT_PUBLIC_STATUS_URL ?? "https://status.moonskin.gg"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-theme-accent hover:underline"
               >
-                {(process.env.NEXT_PUBLIC_STATUS_URL ?? 'https://status.moonskin.gg').replace('https://', '')}
+                {(process.env.NEXT_PUBLIC_STATUS_URL ?? "https://status.moonskin.gg").replace(
+                  "https://",
+                  ""
+                )}
               </a>
             </p>
           </motion.div>

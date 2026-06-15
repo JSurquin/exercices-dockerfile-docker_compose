@@ -6184,6 +6184,8 @@ export interface Messages {
       };
     };
   error: {
+    code: string;
+    serverError: string;
     title: string;
     message: string;
     errorDetails: string;
@@ -6232,6 +6234,7 @@ export interface Messages {
     rewardFragments: string;
   };
   globalError: {
+    code: string;
     title: string;
     message: string;
     errorDetails: string;

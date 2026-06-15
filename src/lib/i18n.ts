@@ -6791,6 +6791,8 @@ export const messages: Record<Locale, Messages> = {
       rewardFragments: "+{count} fragments",
     },
     error: {
+      code: "500",
+      serverError: "Erreur serveur",
       title: "Oops ! Quelque chose s'est mal passé",
       message: "Une erreur inattendue s'est produite. Ne vous inquiétez pas, nos équipes ont été automatiquement notifiées et travaillent déjà sur une solution.",
       errorDetails: "Détails de l'erreur (mode développement)",
@@ -6806,6 +6808,7 @@ export const messages: Record<Locale, Messages> = {
       errorId: "ID d'erreur :",
     },
     globalError: {
+      code: "500",
       title: "Erreur critique",
       message: "Une erreur critique s'est produite. L'application doit être rechargée.",
       errorDetails: "Détails de l'erreur :",
@@ -14280,6 +14283,8 @@ export const messages: Record<Locale, Messages> = {
       rewardFragments: "+{count} fragments",
     },
     error: {
+      code: "500",
+      serverError: "Server error",
       title: "Oops! Something went wrong",
       message: "An unexpected error occurred. Don't worry, our teams have been automatically notified and are already working on a solution.",
       errorDetails: "Error details (development mode)",
@@ -14295,6 +14300,7 @@ export const messages: Record<Locale, Messages> = {
       errorId: "Error ID:",
     },
     globalError: {
+      code: "500",
       title: "Critical error",
       message: "A critical error occurred. The application needs to be reloaded.",
       errorDetails: "Error details:",
@@ -21459,6 +21465,8 @@ export const messages: Record<Locale, Messages> = {
       rewardFragments: "+{count} 碎片",
     },
     error: {
+      code: "500",
+      serverError: "服务器错误",
       title: "哎呀！出错了",
       message: "发生了意外错误。别担心，我们的团队已自动收到通知并正在解决问题。",
       errorDetails: "错误详情（开发模式）",
@@ -21474,6 +21482,7 @@ export const messages: Record<Locale, Messages> = {
       errorId: "错误 ID：",
     },
     globalError: {
+      code: "500",
       title: "严重错误",
       message: "发生了严重错误。需要重新加载应用程序。",
       errorDetails: "错误详情：",
