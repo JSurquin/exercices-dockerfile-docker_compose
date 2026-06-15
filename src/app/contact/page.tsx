@@ -379,11 +379,11 @@ export default function ContactPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <h4 className="font-medium">MoonSkin SAS</h4>
+                    <h4 className="font-medium">COUNTER TRADE FRANCE</h4>
                     <div className="text-sm text-muted-foreground space-y-1">
-                      <p>123 Rue de la Tech</p>
-                      <p>75001 Paris, France</p>
-                      <p>SIRET : 123 456 789 00012</p>
+                      <p>53 T rue Auguste Blanqui</p>
+                      <p>78800 Houilles, France</p>
+                      <p>SIREN : 939 155 875</p>
                     </div>
                   </div>
                   <div className="pt-3 border-t">
