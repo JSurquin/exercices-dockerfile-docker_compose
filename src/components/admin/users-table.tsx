@@ -520,6 +520,7 @@ export function AdminUsersTable() {
               <TableHead className="text-slate-300 whitespace-nowrap">{t.tablePendingVol}</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">{t.tableTickets}</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">{t.tableJoined}</TableHead>
+              <TableHead className="text-slate-300 whitespace-nowrap">{t.tableLastLoginIp}</TableHead>
               <TableHead className="text-slate-300 whitespace-nowrap">{t.tableActions}</TableHead>
             </TableRow>
           </TableHeader>
@@ -619,6 +620,16 @@ export function AdminUsersTable() {
                 </TableCell>
                 <TableCell className="text-slate-300">
                   {formatDate(user.joinedAt)}
+                </TableCell>
+                <TableCell className="text-slate-300">
+                  <p className="font-mono text-xs text-white break-all">
+                    {user.lastLoginIp ?? t.tableLastLoginIpUnknown}
+                  </p>
+                  {user.lastLoginAt && (
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {formatDate(user.lastLoginAt)}
+                    </p>
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2 flex-wrap">

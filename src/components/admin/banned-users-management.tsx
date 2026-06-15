@@ -129,6 +129,7 @@ export function BannedUsersManagement() {
                 <TableHeader>
                   <TableRow className="border-slate-700 hover:bg-transparent">
                     <TableHead className="text-slate-400">{t.table.user}</TableHead>
+                    <TableHead className="text-slate-400">{t.table.lastLoginIp}</TableHead>
                     <TableHead className="text-slate-400">{t.table.reason}</TableHead>
                     <TableHead className="text-slate-400">{t.table.expires}</TableHead>
                     <TableHead className="text-slate-400 text-right">{t.table.actions}</TableHead>
@@ -151,6 +152,18 @@ export function BannedUsersManagement() {
                             {banT.bannedBadge}
                           </Badge>
                         </div>
+                      </TableCell>
+                      <TableCell className="text-slate-300">
+                        <p className="font-mono text-xs text-white break-all">
+                          {user.lastLoginIp ?? t.lastLoginIpUnknown}
+                        </p>
+                        {user.lastLoginAt && (
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {format(new Date(user.lastLoginAt), 'dd/MM/yyyy HH:mm', {
+                              locale: getDateFnsLocale(),
+                            })}
+                          </p>
+                        )}
                       </TableCell>
                       <TableCell className="text-slate-300 max-w-xs">
                         <p className="truncate">{user.banReason || banT.noReason}</p>

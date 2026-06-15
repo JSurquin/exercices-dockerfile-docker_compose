@@ -112,6 +112,8 @@ export async function GET(request: NextRequest) {
           banned: true,
           banReason: true,
           banExpires: true,
+          lastLoginIp: true,
+          lastLoginAt: true,
         },
         skip: ((filters.page || 1) - 1) * (filters.limit || 20),
         take: filters.limit || 20,
@@ -173,6 +175,8 @@ export async function GET(request: NextRequest) {
       banned: user.banned,
       banReason: user.banReason,
       banExpires: user.banExpires,
+      lastLoginIp: user.lastLoginIp,
+      lastLoginAt: user.lastLoginAt,
     }));
 
     await logAdminAccess(context, 'users_list_accessed', undefined, {

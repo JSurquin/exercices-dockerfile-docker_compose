@@ -1500,6 +1500,8 @@ export interface Messages {
       tablePendingVol: string;
       tableTickets: string;
       tableJoined: string;
+      tableLastLoginIp: string;
+      tableLastLoginIpUnknown: string;
       tableActions: string;
       levelLabel: string;
       filterAffiliate: string;
@@ -1624,10 +1626,12 @@ export interface Messages {
       loadError: string;
       table: {
         user: string;
+        lastLoginIp: string;
         reason: string;
         expires: string;
         actions: string;
       };
+      lastLoginIpUnknown: string;
     };
     blockedIps: {
       pageTitle: string;

@@ -24,6 +24,8 @@ export interface User {
   banned?: boolean;
   banReason?: string | null;
   banExpires?: Date | string | null;
+  lastLoginIp?: string | null;
+  lastLoginAt?: Date | string | null;
 }
 
 export interface Trade {
