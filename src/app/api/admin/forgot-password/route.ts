@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { safeParseJson } from '@/lib/validation/helpers';
+import { resolvePublicAppUrl } from '@/lib/public-app-url';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Adresse email invalide'),
@@ -29,10 +30,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (user && ADMIN_PANEL_ROLES.has(user.role)) {
+      const resetUrl = `${resolvePublicAppUrl(request.nextUrl.origin)}/password/reset-password`;
       await auth.api.requestPasswordReset({
         body: {
           email: user.email,
-          redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/password/reset-password`,
+          redirectTo: resetUrl,
         },
       });
     }

@@ -11,6 +11,7 @@ import { prisma } from "~/prisma/prisma";
 const ac = createAccessControl(defaultStatements);
 const adminRole = ac.newRole({ ...adminAc.statements });
 import { emailService } from "../src/lib/email";
+import { getTrustedAuthOrigins } from "../src/lib/public-app-url";
 
 // Better Auth 1.2.12 a un bug de typage sur viewBackupCodes (GET avec body dans un GET endpoint).
 // Le cast est sans impact runtime — le plugin fonctionne normalement.
@@ -143,7 +144,7 @@ export const auth = betterAuth({
     },
     modelName: "user",
   },
-  trustedOrigins: [process.env.NEXT_PUBLIC_BASE_URL!],
+  trustedOrigins: getTrustedAuthOrigins(),
   secret: process.env.BETTER_AUTH_SECRET!,
 
   plugins: [
