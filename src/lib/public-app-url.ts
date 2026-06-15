@@ -2,6 +2,24 @@ function normalizePublicUrl(url: string): string {
   return url.replace(/\/$/, '');
 }
 
+function expandOriginVariants(raw: string): string[] {
+  try {
+    const url = new URL(normalizePublicUrl(raw));
+    const variants = new Set<string>([url.origin]);
+    const host = url.hostname;
+
+    if (host.startsWith('www.')) {
+      variants.add(`${url.protocol}//${host.slice(4)}`);
+    } else if (!host.includes('localhost') && !host.startsWith('127.')) {
+      variants.add(`${url.protocol}//www.${host}`);
+    }
+
+    return [...variants];
+  } catch {
+    return [normalizePublicUrl(raw)];
+  }
+}
+
 export function resolvePublicAppUrl(fallbackOrigin?: string): string {
   const configured =
     process.env.NEXT_PUBLIC_APP_URL ||
@@ -21,10 +39,8 @@ export function getTrustedAuthOrigins(): string[] {
     process.env.BETTER_AUTH_URL,
   ]) {
     if (!raw) continue;
-    try {
-      origins.add(new URL(normalizePublicUrl(raw)).origin);
-    } catch {
-      origins.add(normalizePublicUrl(raw));
+    for (const origin of expandOriginVariants(raw)) {
+      origins.add(origin);
     }
   }
 

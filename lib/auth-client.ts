@@ -5,8 +5,20 @@ import { inferAdditionalFields, twoFactorClient, adminClient } from "better-auth
 import type { BetterAuthClientPlugin } from "better-auth/client";
 import type { auth } from "./auth";
 
+function resolveAuthClientBaseUrl(): string {
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+
+  return (
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    "http://localhost:3000"
+  );
+}
+
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+  baseURL: resolveAuthClientBaseUrl(),
   plugins: [
     inferAdditionalFields<typeof auth>(),
     // Better Auth 1.2.12 a un bug de typage sur viewBackupCodes (GET avec body).
