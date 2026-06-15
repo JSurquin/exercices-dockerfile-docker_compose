@@ -1,6 +1,7 @@
 import { Inter, Poppins, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import type { Metadata } from 'next';
 import { RootLayoutShell } from '@/components/layout/root-layout-shell';
+import { EMPTY_PUBLIC_STATS, getCachedPublicStats } from '@/lib/get-public-stats';
 import './globals.css';
 
 const inter = Inter({
@@ -52,11 +53,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let initialPublicStats = EMPTY_PUBLIC_STATS;
+  try {
+    initialPublicStats = await getCachedPublicStats();
+  } catch {
+    // Keep zeroed fallback; client can still refetch /api/stats.
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -64,7 +72,7 @@ export default function RootLayout({
           process.env.NODE_ENV === 'development' ? ' next-dev-overlay-present' : ''
         }`}
       >
-        <RootLayoutShell>{children}</RootLayoutShell>
+        <RootLayoutShell initialPublicStats={initialPublicStats}>{children}</RootLayoutShell>
       </body>
     </html>
   );

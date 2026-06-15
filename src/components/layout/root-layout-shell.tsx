@@ -7,6 +7,8 @@ import { LocaleProvider } from '@/components/providers/locale-provider';
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { CurrencyProvider } from '@/components/providers/currency-provider';
 import { QueryProvider } from '@/components/providers/query-provider';
+import { PublicStatsProvider } from '@/components/providers/public-stats-provider';
+import type { PublicStats } from '@/hooks/use-public-stats';
 import { TourModeProvider } from '@/components/providers/tour-provider';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
@@ -19,7 +21,13 @@ import UpdateNotifier from '@/components/update-notifier';
 import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
 import { AuthCallbackNotifier } from '@/components/auth/auth-callback-notifier';
 
-export function RootLayoutShell({ children }: { children: React.ReactNode }) {
+export function RootLayoutShell({
+  children,
+  initialPublicStats,
+}: {
+  children: React.ReactNode;
+  initialPublicStats: PublicStats;
+}) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
 
@@ -35,6 +43,7 @@ export function RootLayoutShell({ children }: { children: React.ReactNode }) {
       <LocaleProvider>
         <CurrencyProvider>
           <QueryProvider>
+            <PublicStatsProvider initialStats={initialPublicStats}>
             <AuthProvider>
               <TourModeProvider>
                 <ImpersonationBanner />
@@ -57,6 +66,7 @@ export function RootLayoutShell({ children }: { children: React.ReactNode }) {
                 <Toaster />
               </TourModeProvider>
             </AuthProvider>
+            </PublicStatsProvider>
           </QueryProvider>
         </CurrencyProvider>
       </LocaleProvider>
