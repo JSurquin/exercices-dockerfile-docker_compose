@@ -232,6 +232,12 @@ export async function GET(request: NextRequest) {
 
       const errorUrl = new URL('/', baseUrl);
       errorUrl.searchParams.set('error', 'account_banned');
+      if (user.banReason?.trim()) {
+        errorUrl.searchParams.set('reason', user.banReason.trim().slice(0, 200));
+      }
+      if (user.banExpires) {
+        errorUrl.searchParams.set('expires', user.banExpires.toISOString());
+      }
       return NextResponse.redirect(errorUrl.toString());
     }
 

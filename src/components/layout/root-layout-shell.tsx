@@ -17,6 +17,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { PayoutReconciler } from '@/components/payout-reconciler';
 import UpdateNotifier from '@/components/update-notifier';
 import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
+import { AuthCallbackNotifier } from '@/components/auth/auth-callback-notifier';
 
 export function RootLayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -37,6 +38,7 @@ export function RootLayoutShell({ children }: { children: React.ReactNode }) {
             <AuthProvider>
               <TourModeProvider>
                 <ImpersonationBanner />
+                <AuthCallbackNotifier />
                 {!isAdminRoute && <CosmicBackground />}
                 {!isAdminRoute && <Header />}
 

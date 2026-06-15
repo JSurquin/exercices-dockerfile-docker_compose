@@ -6320,6 +6320,23 @@ export interface Messages {
     logoutError: string;
     logoutErrorDesc: string;
   };
+  authCallback: {
+    genericTitle: string;
+    genericDescription: string;
+    accountBannedTitle: string;
+    accountBannedDescription: string;
+    accountBannedReason: string;
+    accountBannedExpires: string;
+    accountBannedPermanent: string;
+    ipBlockedTitle: string;
+    ipBlockedDescription: string;
+    steamVerificationFailedTitle: string;
+    steamVerificationFailedDescription: string;
+    steamProfileFailedTitle: string;
+    steamProfileFailedDescription: string;
+    steamCallbackErrorTitle: string;
+    steamCallbackErrorDescription: string;
+  };
   tradeCreator: {
     invalidTradeLink: string;
     tradeLinkSaved: string;
