@@ -45,6 +45,8 @@ interface UserDetail {
   banned: boolean;
   banReason: string | null;
   banExpires: string | null;
+  lastLoginIp: string | null;
+  lastLoginAt: string | null;
   bonusRatePercent: number;
   userTag: string | null;
   instantCreditEnabled: boolean;
@@ -262,6 +264,17 @@ export default function AdminUserDetailPage() {
             </p>
           )}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+          <div>
+            <p className="text-slate-400">{t.lastLoginIpLabel}</p>
+            <p className="text-white font-mono text-xs break-all">
+              {user.lastLoginIp ?? t.lastLoginIpUnknown}
+            </p>
+            {user.lastLoginAt && (
+              <p className="text-xs text-slate-500 mt-0.5">
+                {new Date(user.lastLoginAt).toLocaleString()}
+              </p>
+            )}
+          </div>
           <div>
             <p className="text-slate-400">{t.kycLabel}</p>
             <p className="text-white">{user.kycStatus}</p>

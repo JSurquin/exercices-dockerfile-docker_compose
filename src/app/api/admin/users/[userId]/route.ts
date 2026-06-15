@@ -41,6 +41,8 @@ export async function GET(
         banned: true,
         banReason: true,
         banExpires: true,
+        lastLoginIp: true,
+        lastLoginAt: true,
         bonusRatePercent: true,
         userTag: true,
         instantCreditEnabled: true,

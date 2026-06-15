@@ -1536,6 +1536,8 @@ export interface Messages {
       userNotFound: string;
       frozenAccount: string;
       bannedAccount: string;
+      lastLoginIpLabel: string;
+      lastLoginIpUnknown: string;
       kycLabel: string;
       levelXp: string;
       fragments: string;

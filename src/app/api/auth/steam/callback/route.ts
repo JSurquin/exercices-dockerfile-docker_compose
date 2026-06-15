@@ -293,8 +293,16 @@ export async function GET(request: NextRequest) {
       requiresTwoFactor = false;
     }
 
-    // Log de connexion réussie
+    // Log de connexion réussie + mémorisation IP pour l'admin
     context.userId = user.id;
+    const loginAt = new Date();
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        lastLoginIp: clientIp,
+        lastLoginAt: loginAt,
+      },
+    });
     await logUserAction(
       context,
       AuditAction.USER_LOGIN,
@@ -303,7 +311,8 @@ export async function GET(request: NextRequest) {
         userId: user.id,
         steamId: steamUser.steamid,
         steamUsername: steamUser.personaname,
-        timestamp: new Date().toISOString(),
+        ipAddress: clientIp,
+        timestamp: loginAt.toISOString(),
       },
       'low'
     );

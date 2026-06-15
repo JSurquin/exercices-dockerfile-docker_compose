@@ -44,6 +44,8 @@ model User {
   banned                   Boolean                 @default(false)
   banReason                String?
   banExpires               DateTime?
+  lastLoginIp              String?
+  lastLoginAt              DateTime?
   contactEmail             String?
   /// Bonus VIP en % sur la valeur brute du trade (ex: 2.0 = +2%)
   bonusRatePercent         Float                   @default(0)
