@@ -75,23 +75,25 @@ export default function AdminLoginPage() {
     setForgotPasswordLoading(true);
 
     try {
-      const { data, error } = await authClient.requestPasswordReset({
-        email: forgotPasswordEmail,
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}password/reset-password`,
+      const response = await fetch('/api/admin/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotPasswordEmail.trim() }),
       });
 
-      if (data) {
-        toast.success(messages.admin.login.emailSent, {
-          description: messages.admin.login.checkEmailReset,
-        });
-        setShowForgotPassword(false);
-        setForgotPasswordEmail('');
-      } else {
+      if (!response.ok) {
         toast.error(messages.admin.login.errorLabel, {
-          description: error.message || messages.admin.login.cannotSendEmail,
+          description: messages.admin.login.cannotSendResetEmail,
         });
+        return;
       }
-    } catch (error) {
+
+      toast.success(messages.admin.login.emailSent, {
+        description: messages.admin.login.checkEmailReset,
+      });
+      setShowForgotPassword(false);
+      setForgotPasswordEmail('');
+    } catch {
       toast.error(messages.admin.login.errorLabel, {
         description: messages.admin.login.cannotSendResetEmail,
       });

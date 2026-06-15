@@ -79,10 +79,13 @@ export const auth = betterAuth({
           true,
         );
       } else {
+        const isAdminAccount =
+          fullUser?.role === "ADMIN" || fullUser?.role === "MODERATOR";
         await emailService.sendPasswordResetEmail(
           user.email,
           token,
           user.name || user.email,
+          isAdminAccount,
         );
       }
     },
