@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import type { UserRole } from '@prisma/client';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
-import { isUserBanned } from '@/lib/require-session-user';
+import { isUserBanned } from '@/lib/user-ban-logic';
 
 /**
  * Session admin pour les route handlers. **Revalide le rôle en base** (évite session

@@ -6,9 +6,12 @@ import { headers } from 'next/headers';
 import { 
   getRequestContext, 
   logUserAction, 
-  logSystemError 
+  logSystemError,
+  getClientIP,
 } from '@/lib/security/audit-helpers';
 import { AuditAction } from '@/lib/security';
+import { isUserBanned } from '@/lib/user-ban-logic';
+import { isIpBlocked, isPrivilegedRole } from '@/lib/blocked-ip-service';
 import crypto from 'crypto';
 import { hashPassword } from 'better-auth/crypto';
 
@@ -82,15 +85,41 @@ export async function GET(request: NextRequest) {
 
     // Chercher par steamId, puis fallback par email si le steamId a été corrompu
     let user = await prisma.user.findUnique({
-      where: { steamId: steamUser.steamid }
+      where: { steamId: steamUser.steamid },
+      select: {
+        id: true,
+        role: true,
+        banned: true,
+        banReason: true,
+        banExpires: true,
+        email: true,
+      },
     });
 
     if (!user) {
-      const userByEmail = await prisma.user.findFirst({ where: { email } });
+      const userByEmail = await prisma.user.findFirst({
+        where: { email },
+        select: {
+          id: true,
+          role: true,
+          banned: true,
+          banReason: true,
+          banExpires: true,
+          email: true,
+        },
+      });
       if (userByEmail) {
         user = await prisma.user.update({
           where: { id: userByEmail.id },
           data: { steamId: steamUser.steamid },
+          select: {
+            id: true,
+            role: true,
+            banned: true,
+            banReason: true,
+            banExpires: true,
+            email: true,
+          },
         });
       }
     }
@@ -139,7 +168,15 @@ export async function GET(request: NextRequest) {
           totalVolumeCents: 0,
           kycStatus: 'PENDING',
           acceptedTermsAt: new Date(),
-        }
+        },
+        select: {
+          id: true,
+          role: true,
+          banned: true,
+          banReason: true,
+          banExpires: true,
+          email: true,
+        },
       });
     } else {
       // Log de connexion utilisateur existant
@@ -165,8 +202,56 @@ export async function GET(request: NextRequest) {
           image: steamUser.avatarfull || steamUser.avatar,
           steamUsername: steamUser.personaname,
           steamAvatar: steamUser.avatarfull || steamUser.avatar,
-        }
+        },
+        select: {
+          id: true,
+          role: true,
+          banned: true,
+          banReason: true,
+          banExpires: true,
+          email: true,
+        },
       });
+    }
+
+    const clientIp = getClientIP(request);
+
+    if (isUserBanned(user)) {
+      context.userId = user.id;
+      await logUserAction(
+        context,
+        AuditAction.USER_LOGIN_FAILED,
+        {
+          type: 'account_banned',
+          userId: user.id,
+          banReason: user.banReason,
+          timestamp: new Date().toISOString(),
+        },
+        'high'
+      );
+
+      const errorUrl = new URL('/', baseUrl);
+      errorUrl.searchParams.set('error', 'account_banned');
+      return NextResponse.redirect(errorUrl.toString());
+    }
+
+    if (!isPrivilegedRole(user.role) && (await isIpBlocked(clientIp))) {
+      context.userId = user.id;
+      await logUserAction(
+        context,
+        AuditAction.USER_LOGIN_FAILED,
+        {
+          type: 'ip_blocked',
+          userId: user.id,
+          ipAddress: clientIp,
+          timestamp: new Date().toISOString(),
+        },
+        'high'
+      );
+
+      const errorUrl = new URL('/', baseUrl);
+      errorUrl.searchParams.set('error', 'ip_blocked');
+      return NextResponse.redirect(errorUrl.toString());
     }
 
     // Mettre à jour le hash du password avec le nouveau random pour cet utilisateur

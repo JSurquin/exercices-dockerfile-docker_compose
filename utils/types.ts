@@ -1535,6 +1535,7 @@ export interface Messages {
       missingId: string;
       userNotFound: string;
       frozenAccount: string;
+      bannedAccount: string;
       kycLabel: string;
       levelXp: string;
       fragments: string;
@@ -1566,6 +1567,62 @@ export interface Messages {
       instantCreditDisabledDesc: string;
       referredByLabel: string;
       viewSteamProfile: string;
+    };
+    userBanManagement: {
+      sectionTitle: string;
+      bannedBadge: string;
+      reasonLabel: string;
+      reasonPlaceholder: string;
+      reasonRequired: string;
+      expiresLabel: string;
+      expiresHelp: string;
+      banButton: string;
+      unbanButton: string;
+      processing: string;
+      currentBanReason: string;
+      noReason: string;
+      expiresAt: string;
+      permanentBan: string;
+      banSuccessTitle: string;
+      banSuccessDesc: string;
+      unbanSuccessTitle: string;
+      unbanSuccessDesc: string;
+      errorTitle: string;
+      errorSave: string;
+    };
+    blockedIps: {
+      pageTitle: string;
+      pageSubtitle: string;
+      blockTitle: string;
+      blockDesc: string;
+      ipLabel: string;
+      ipPlaceholder: string;
+      reasonLabel: string;
+      reasonPlaceholder: string;
+      expiresLabel: string;
+      blockButton: string;
+      listTitle: string;
+      entriesFound: string;
+      noEntries: string;
+      permanent: string;
+      unblockButton: string;
+      processing: string;
+      loading: string;
+      loadError: string;
+      invalidInput: string;
+      blockSuccessTitle: string;
+      blockSuccessDesc: string;
+      unblockSuccessTitle: string;
+      unblockSuccessDesc: string;
+      errorTitle: string;
+      errorSave: string;
+      table: {
+        ip: string;
+        reason: string;
+        expires: string;
+        created: string;
+        actions: string;
+      };
     };
     platformConfig: {
       infoDb: string;
@@ -2966,6 +3023,28 @@ export interface Messages {
         "admin.action": string;
         "security.suspicious_activity": string;
         "security.rate_limit_exceeded": string;
+        ADMIN_USER_BAN: string;
+        ADMIN_USER_UNBAN: string;
+        ADMIN_IP_BLOCKED: string;
+        ADMIN_IP_UNBLOCKED: string;
+        ADMIN_BALANCE_ADJUSTMENT: string;
+        ADMIN_ACCOUNT_FREEZE: string;
+        ADMIN_ACCOUNT_UNFREEZE: string;
+        ADMIN_WITHDRAWAL_LIMIT_UPDATE: string;
+        ADMIN_PAYOUT_CANCELLED: string;
+      };
+      detailLabels: {
+        reason: string;
+        targetUser: string;
+        amount: string;
+        payout: string;
+        blockedIp: string;
+        expiresAt: string;
+        type: string;
+        endpoint: string;
+        steamId: string;
+        balanceAfter: string;
+        noDetails: string;
       };
       severity: {
         low: string;
@@ -5925,6 +6004,7 @@ export interface Messages {
         partners: string;
         legalPages: string;
         audit: string;
+        blockedIps: string;
         exports: string;
         settings: string;
         help: string;

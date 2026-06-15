@@ -1,19 +1,20 @@
 import type { NextRequest } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
+import { isIpBlocked, isPrivilegedRole } from '@/lib/blocked-ip-service';
+import { getClientIP } from '@/lib/security/audit-helpers';
+export { isUserBanned } from '@/lib/user-ban-logic';
+import { isUserBanned } from '@/lib/user-ban-logic';
 
-/** Compte banni actif (expiration passée = ban levé). */
-export function isUserBanned(user: {
-  banned: boolean;
-  banExpires: Date | null;
-}): boolean {
-  if (!user.banned) return false;
-  if (user.banExpires && user.banExpires < new Date()) return false;
-  return true;
+async function isRequestIpBlocked(request: NextRequest, role: string): Promise<boolean> {
+  if (isPrivilegedRole(role)) {
+    return false;
+  }
+  return isIpBlocked(getClientIP(request));
 }
 
 /**
- * Utilisateur authentifié (tout rôle). Revalide banned / accountFrozen en base.
+ * Utilisateur authentifié (tout rôle). Revalide banned / accountFrozen / IP en base.
  * L'id ne doit jamais venir du body/query sans contrôle.
  */
 export async function requireUserSession(request: NextRequest) {
@@ -34,6 +35,10 @@ export async function requireUserSession(request: NextRequest) {
   });
 
   if (!user || user.accountFrozen || isUserBanned(user)) {
+    return null;
+  }
+
+  if (await isRequestIpBlocked(request, user.role)) {
     return null;
   }
 

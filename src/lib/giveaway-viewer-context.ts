@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
-import { isUserBanned } from '@/lib/require-session-user';
+import { isUserBanned } from '@/lib/user-ban-logic';
 import { parseAffiliateRefFromRequest } from '@/lib/giveaway-private-access';
 
 export interface GiveawayViewerContext {

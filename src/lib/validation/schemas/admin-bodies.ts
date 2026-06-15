@@ -143,6 +143,17 @@ export const adminBalanceUnfreezeSchema = z.object({
   userId: z.string().min(1),
 });
 
+export const adminUserBanSchema = z.object({
+  reason: z.string().min(3).max(500),
+  banExpires: z.union([z.string().datetime(), z.null()]).optional(),
+});
+
+export const adminBlockedIpSchema = z.object({
+  ipAddress: z.string().min(3).max(45),
+  reason: z.string().min(3).max(500),
+  expiresAt: z.union([z.string().datetime(), z.null()]).optional(),
+});
+
 /** GET /api/admin/affiliates */
 export const adminAffiliatesListQuerySchema = z
   .object({

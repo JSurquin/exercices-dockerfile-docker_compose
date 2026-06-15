@@ -99,6 +99,20 @@ model AuditLog {
   @@map("audit_log")
 }
 
+model BlockedIp {
+  id        String    @id @default(cuid())
+  ipAddress String    @unique
+  reason    String
+  createdBy String
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([ipAddress])
+  @@index([expiresAt])
+  @@map("blocked_ip")
+}
+
 model BalanceTransaction {
   id                String                 @id @default(cuid())
   userId            String

@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { UserRoleBadge } from '@/components/ui/user-role-badge';
 import { useLocale } from '@/components/providers/locale-provider';
 import { UserRewardsBlockControls } from '@/components/admin/user-rewards-block-controls';
+import { UserBanManagement } from '@/components/admin/user-ban-management';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 import { SteamIcon } from '@/components/ui/cs2-icons';
 import { getSteamProfileUrl } from '@/lib/steam-id';
@@ -41,6 +42,9 @@ interface UserDetail {
   balanceCents: number;
   frozenBalanceCents: number;
   accountFrozen: boolean;
+  banned: boolean;
+  banReason: string | null;
+  banExpires: string | null;
   bonusRatePercent: number;
   userTag: string | null;
   instantCreditEnabled: boolean;
@@ -238,6 +242,9 @@ export default function AdminUserDetailPage() {
                 {user.accountFrozen && (
                   <Badge variant="destructive">{t.frozenAccount}</Badge>
                 )}
+                {user.banned && (!user.banExpires || new Date(user.banExpires) > new Date()) && (
+                  <Badge variant="destructive">{t.bannedAccount}</Badge>
+                )}
               </div>
             </div>
           </CardTitle>
@@ -330,6 +337,14 @@ export default function AdminUserDetailPage() {
         <BalanceManagement userId={userId} onUpdate={() => {}} />
         <WithdrawalLimits userId={userId} onUpdate={() => {}} />
       </div>
+
+      <UserBanManagement
+        userId={userId}
+        banned={user.banned}
+        banReason={user.banReason}
+        banExpires={user.banExpires}
+        onUpdate={() => refetchUser()}
+      />
 
       <Card className={`bg-slate-800/30 border-slate-700 ${user.instantCreditEnabled ? 'border-theme-highlight/40 shadow-lg shadow-[var(--cta-shadow)]' : ''}`}>
         <CardHeader className="pb-2">

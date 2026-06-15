@@ -14,6 +14,7 @@ import { fr, enUS, zhCN } from 'date-fns/locale';
 import { useLocale } from '@/components/providers/locale-provider';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
+import { formatAuditLogDetails } from '@/lib/audit-log-formatter';
 import { PageLoading } from '@/components/ui/page-loading';
 
 interface AuditLog {
@@ -102,6 +103,10 @@ export default function AuditPage() {
   // Helper pour traduire les actions
   const formatActionName = (action: string) => {
     return auditMessages.actions[action as keyof typeof auditMessages.actions] || action;
+  };
+
+  const formatLogDetails = (log: AuditLog) => {
+    return formatAuditLogDetails(log.details, auditMessages.detailLabels);
   };
 
   // Helper pour obtenir le badge de sévérité traduit
@@ -374,8 +379,8 @@ export default function AuditPage() {
                           </code>
                         </TableCell>
                         <TableCell className="min-w-[200px]">
-                          <div className="max-w-[180px] truncate text-xs text-muted-foreground">
-                            {JSON.stringify(log.details, null, 0)}
+                          <div className="max-w-[280px] text-xs text-muted-foreground leading-relaxed">
+                            {formatLogDetails(log)}
                           </div>
                         </TableCell>
                       </TableRow>
