@@ -1,0 +1,227 @@
+================================================================================
+DEVIS TECHNIQUE — API PRIVÉE PARTENAIRES
+Projet : MoonSkin (Counter-Strike / cashout skins)
+Date : 10 juin 2026 (révision : 16 juin 2026)
+Montant proposé : 1 500 € HT
+================================================================================
+
+
+1. PRÉAMBULE
+
+Ce document présente l'analyse du code existant et le périmètre proposé pour
+mettre à disposition une API privée permettant à certains clients professionnels
+d'automatiser leurs opérations (consultation d'inventaire, estimation, création
+de ventes, suivi des transactions, consultation de solde), avec notifications
+automatiques lors des changements de statut.
+
+L'analyse a porté sur l'ensemble de l'application : 191 routes API internes,
+117 modules métier dans "src/lib", schéma PostgreSQL via Prisma, authentification
+Better Auth, sécurité (rate limiting, audit, anti-fraude), et la page de
+documentation API déjà préparée côté interface (actuellement en mode
+« bientôt disponible »).
+
+
+2. OBJECTIF DE LA PRESTATION
+
+Transformer la plateforme web existante en fournisseur d'une API privée REST,
+accessible par clé API (Bearer token), pour que des partenaires sélectionnés
+puissent brancher leurs propres outils, bots ou back-offices sans passer par
+l'interface graphique.
+
+L'objectif n'est pas de reconstruire la plateforme, mais d'exposer proprement
+les fonctions déjà opérationnelles côté site, avec une couche d'authentification
+et de contrôle adaptée aux usages automatisés, complétée par des webhooks
+sortants pour notifier les partenaires en temps réel des évolutions de leurs
+ventes et retraits.
+
+
+3. ÉTAT DES LIEUX — CE QUI EXISTE DÉJÀ
+
+3.1 Architecture technique
+   • Application Next.js 15 (App Router) + TypeScript + Tailwind + shadcn/ui
+   • Base PostgreSQL (Prisma) : utilisateurs, trades, payouts, KYC, affiliations,
+     giveaways, soldes en centimes (pas de flottants — conforme aux règles métier)
+   • 191 endpoints sous "src/app/api/" couvrant tout le cycle de vie
+   • Couche métier structurée : balance-service, payout-lifecycle, trade-hooks,
+     validation Zod, journalisation d'audit, détection de fraude
+
+3.2 Authentification actuelle
+   • Connexion utilisateur via session web (cookies Better Auth)
+   • Steam OpenID comme identifiant principal côté joueur
+   • 2FA disponible, rôles USER / ADMIN / AFFILIATE / MODERATOR
+   • Tag métier « MERCHANT » déjà prévu pour les comptes professionnels (bonus,
+     crédit instantané, etc.)
+   • AUCUNE clé API partenaire n'existe encore en base ni en middleware
+
+3.3 Sécurité et limites
+   • Rate limiting en place (mémoire locale + option Redis Upstash)
+   • Middleware de sécurité (fraude, audit)
+   • Modèle de secret Bearer déjà utilisé pour les tâches planifiées (cron)
+     — réutilisable comme patron technique pour les clés API
+   • Webhooks entrants (paiements, KYC) déjà gérés ; le modèle "WebhookEvent"
+     (idempotence) et les hooks métier existants (trade-hooks) serviront de base
+     pour les notifications sortantes vers les partenaires
+
+3.4 Documentation
+   • Page "/api-docs" prête visuellement avec exemples JS/Python/cURL
+   • Contenu partiellement anticipé (Bearer token, rate limits, codes erreur)
+   • Désactivée par défaut via réglage "api-docs-enabled" en base
+   • Pas de spécification OpenAPI réelle ni de SDK publié
+
+3.5 Fonctions métier réutilisables sans refonte majeure
+   • Consultation inventaire Steam d'un compte lié
+   • Estimation de prix d'items CS2
+   • Création et suivi de ventes (trade) avec calcul automatique des frais
+   • Historique des trades et statuts (créé → hold → disponible → payé)
+   • Consultation solde (disponible, en attente, gelé)
+   • Initiation de retraits (sous réserve KYC validé)
+   • Statistiques affilié (pour partenaires revendeurs)
+
+
+4. CE QUI MANQUE POUR UNE API PRIVÉE OPÉRATIONNELLE
+
+4.1 Authentification par clé API
+   • Table "ApiClient" ou équivalent : nom partenaire, clé hashée, scopes,
+     date d'expiration, statut actif/révoqué, liaison à un compte utilisateur
+   • Middleware "requireApiKey" vérifiant le header Authorization: Bearer
+   • Journalisation de chaque appel (client, endpoint, IP, statut)
+
+4.2 Namespace API dédié
+   • Préfixe propre : "/api/v1/partner/" (séparé des routes web internes)
+   • Réponses JSON homogènes : { success, data, error } comme le front attend
+   • Réutilisation des services existants (pas de duplication de logique métier)
+
+4.3 Endpoints V1 proposés (périmètre minimal compétitif à 1 500 € HT)
+   GET  /api/v1/partner/me              — profil et statut du compte lié
+   GET  /api/v1/partner/balance         — solde détaillé en centimes
+   GET  /api/v1/partner/inventory       — inventaire CS2 du Steam ID lié
+   POST /api/v1/partner/estimate        — estimation prix + frais + net
+   POST /api/v1/partner/trades          — créer une vente
+   GET  /api/v1/partner/trades          — liste des ventes
+   GET  /api/v1/partner/trades/{id}     — détail et statut d'une vente
+   POST /api/v1/partner/payouts         — demander un retrait (si KYC OK)
+   PUT  /api/v1/partner/webhook         — configurer l'URL de notification
+   GET  /api/v1/partner/webhook         — consulter la config webhook active
+
+4.4 Webhooks sortants (inclus dans V1)
+   • Enregistrement d'une URL HTTPS par partenaire (via endpoint API ou admin)
+   • Secret de signature HMAC-SHA256 partagé (généré à la création de la clé)
+   • Envoi automatique lors des changements de statut pertinents :
+     trade (créé, accepté, en hold, disponible, payé, échoué)
+     payout (en cours, exécuté, payé, échoué)
+   • Payload JSON signé : type d'événement, identifiant ressource, statut,
+     horodatage, montants en centimes
+   • Retries avec backoff exponentiel (3 tentatives sur échec HTTP ou timeout)
+   • Idempotence via identifiant d'événement unique (réutilisation du modèle
+     WebhookEvent existant)
+   • Journalisation de chaque livraison (succès, échec, code HTTP, durée)
+   • Consultation des derniers événements envoyés depuis l'écran admin
+
+4.5 Gouvernance admin
+   • Interface back-office minimale : créer / révoquer une clé, voir les logs
+   • Quotas par client (ex. 100 req/min par défaut, ajustable)
+   • Activation de la page documentation publique
+   • Vue des livraisons webhook récentes par partenaire (statut, retries)
+
+4.6 Documentation livrable
+   • Fiche endpoints (méthode, paramètres, exemples réponse/erreur)
+   • Guide d'intégration rapide (authentification + premier trade)
+   • Guide webhooks : format payload, vérification signature HMAC, exemples
+   • Liste des codes erreur standardisés
+
+
+5. PÉRIMÈTRE INCLUS DANS LE DEVIS — 1 500 € HT
+
+   ✓ Analyse et branchement sur l'architecture existante (pas de refonte)
+   ✓ Modèle de données + migration Prisma pour les clés API partenaires
+   ✓ Middleware d'authentification Bearer + rate limit par clé
+   ✓ 10 endpoints REST V1 listés ci-dessus (8 métier + 2 webhook config)
+   ✓ Webhooks sortants : URL partenaire, signature HMAC, retries, idempotence
+   ✓ Notifications automatiques sur changements de statut trade et payout
+   ✓ Réutilisation des validations Zod et services métier existants
+   ✓ Journalisation des appels API et livraisons webhook dans les logs d'audit
+   ✓ Écran admin minimal de gestion des clés et suivi webhooks
+   ✓ Activation et mise à jour de la page "/api-docs" avec contenu réel
+   ✓ Tests de non-régression sur les flux web existants
+   ✓ 1 session de mise en service avec le client (clé test + exemple cURL
+     + test webhook avec endpoint de réception fourni par le partenaire)
+
+Estimation charge : 14 à 18 heures de développement senior, rendant le tarif
+très compétitif grâce à la maturité du code existant (191 routes, 117 modules
+métier, hooks trade et modèle WebhookEvent déjà en place).
+
+Flux recommandé au partenaire :
+   1. Configurer l'URL webhook (PUT /api/v1/partner/webhook)
+   2. Créer une vente (POST /api/v1/partner/trades)
+   3. Recevoir les notifications push à chaque changement de statut
+   4. En complément ou secours : interroger GET /api/v1/partner/trades/{id}
+
+
+6. HORS PÉRIMÈTRE (OPTIONS FUTURES — NON INCLUSES)
+
+   ✗ SDK officiels (npm, pip, Rust, Go) — la page les annonce mais ils
+     n'existent pas encore ; développement séparé
+   ✗ Sandbox / environnement de test isolé
+   ✗ Portail self-service pour que le partenaire génère ses propres clés
+   ✗ Facturation à l'usage ou dashboard analytics avancé
+   ✗ Support multi-comptes Steam par une seule clé API
+   ✗ Endpoints d'achat d'items ou marketplace inverse
+   ✗ SLA contractuel, monitoring dédié, support 24/7
+   ✗ Webhooks configurables par type d'événement (filtres granulaires) —
+     V1 envoie tous les changements de statut trade/payout
+
+
+7. PLANNING INDICATIF
+
+   Semaine 1 : modèle clés API, middleware, 4 premiers endpoints (profil,
+               solde, inventaire, estimation)
+   Semaine 2 : endpoints trades + payouts, webhooks sortants (config URL,
+               signature, retries, branchement sur trade-hooks), admin clés
+   Semaine 3 : documentation (API + webhooks), tests, recette avec partenaire
+   Livraison cible : 12 à 18 jours ouvrés après validation du devis
+
+
+8. PRÉREQUIS CÔTÉ CLIENT
+
+   • Compte MoonSkin validé (Steam lié, CGV acceptées)
+   • KYC complété avant tout retrait automatisé
+   • Trade Link Steam valide et vérifié
+   • URL HTTPS publique pour recevoir les webhooks (endpoint de test fourni
+     pour la recette)
+   • Accord sur les limites de débit (rate limits) et le périmètre V1
+   • Contact technique pour la recette (email ou Telegram)
+
+
+9. GARANTIES ET CONTRAINTES RESPECTÉES
+
+   • Style et architecture existants conservés (Next.js, TypeScript, Prisma)
+   • Périmètre minimal : pas de refactor hors sujet
+   • Aucune régression sur le site web et les parcours utilisateurs actuels
+   • Calculs financiers toujours en centimes, transactions DB atomiques
+   • Conformité KYC et anti-fraude héritées du socle existant
+
+
+10. JUSTIFICATION DU PRIX — 1 500 € HT
+
+Le socle applicatif est déjà très avancé : la majorité du travail consiste à
+ajouter une porte d'entrée sécurisée (clé API), à exposer proprement des
+services qui tournent déjà en production pour le site, et à brancher les
+webhooks sortants sur les hooks métier existants (trade-hooks, payout-lifecycle).
+Sans ce socle, un projet équivalent partirait de 10 000 à 18 000 € HT.
+
+À 1 500 € HT, le client obtient une API privée fonctionnelle V1, documentée,
+administrable, avec notifications push automatiques, suffisante pour automatiser
+le cycle vente → suivi → retrait sur un ou plusieurs comptes partenaires
+identifiés — sans polling permanent ni serveur intermédiaire côté partenaire
+(bien qu'un GET de secours reste disponible).
+
+
+11. VALIDITÉ DU DEVIS
+
+   Valable 30 jours — 1 500 € HT (TVA en sus selon statut)
+   Paiement : 50 % à la commande, 50 % à la livraison recettée
+
+
+================================================================================
+FIN DU DOCUMENT
+================================================================================
