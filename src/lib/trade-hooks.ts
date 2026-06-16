@@ -6,9 +6,13 @@ import { creditBalance, creditPendingBalance, releasePendingToBalance, debitPend
 import { awardTradePoints } from '@/lib/points-service';
 import { grantFragments } from '@/lib/fragment-service';
 import { currencyConverter } from '@/lib/currency-converter';
+import { TradeStatus } from '@prisma/client';
 import { prisma } from '../../prisma/prisma';
 import { logger } from '@/lib/logger';
 import { getUserRewardFlags, isAffiliateRewardsBlocked } from '@/lib/user-rewards-guard';
+
+/** Statuts où le trade est accepté côté Steam — déclenche pending ou instant credit (idempotent). */
+export const TRADE_ACCEPTANCE_CREDIT_STATUSES: TradeStatus[] = ['ACCEPTED_BY_BOT', 'IN_TRADE_HOLD'];
 
 /**
  * Service pour gérer les hooks et événements liés aux trades.
@@ -16,6 +20,53 @@ import { getUserRewardFlags, isAffiliateRewardsBlocked } from '@/lib/user-reward
  * à partir de la somme des price_centimes des items (pas le montant client brut).
  */
 export class TradeHooks {
+  /**
+   * Hooks de crédit / statut à appliquer après une progression de statut trade.
+   * IN_TRADE_HOLD inclut le cas IPN Skinplace status=complete (saut direct sans ACCEPTED_BY_BOT).
+   */
+  static async applyStatusProgressionHooks(
+    userId: string,
+    tradeId: string,
+    oldStatus: string,
+    newStatus: TradeStatus
+  ): Promise<void> {
+    if (TRADE_ACCEPTANCE_CREDIT_STATUSES.includes(newStatus)) {
+      await this.onTradeAccepted(userId, tradeId);
+    } else if (newStatus === 'AVAILABLE') {
+      await this.onTradeAvailable(tradeId);
+    } else if (newStatus === 'FAILED' || newStatus === 'CANCELLED') {
+      logger.error(`[TradeHooks] Trade ${tradeId} ${newStatus.toLowerCase()}`);
+      await this.onTradeStatusChanged(tradeId, oldStatus, newStatus);
+    }
+  }
+
+  /**
+   * Rattrapage : trades acceptés (hold) sans crédit pending/instant (IPN #1 manqué ou status=complete).
+   */
+  static async catchupMissingAcceptanceCredit(limit = 50): Promise<number> {
+    const trades = await prisma.trade.findMany({
+      where: {
+        status: { in: TRADE_ACCEPTANCE_CREDIT_STATUSES },
+        pendingCreditedAt: null,
+      },
+      select: { id: true, userId: true },
+      take: limit,
+      orderBy: { createdAt: 'asc' },
+    });
+
+    let processed = 0;
+    for (const trade of trades) {
+      try {
+        await this.onTradeAccepted(trade.userId, trade.id);
+        processed += 1;
+        logger.info(`[TradeHooks] Catchup acceptance credit applied for trade ${trade.id}`);
+      } catch (err) {
+        logger.error(`[TradeHooks] Catchup acceptance credit failed for trade ${trade.id}`, err);
+      }
+    }
+    return processed;
+  }
+
   /**
    * Hook legacy post-PAID (retrait utilisateur).
    * Les commissions affilié sont désormais attribuées dans onTradeAvailable (après validation ~7j).
