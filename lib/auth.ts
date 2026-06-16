@@ -80,6 +80,11 @@ export const auth = betterAuth({
           true,
         );
       } else {
+        // Les joueurs Steam/Discord (role USER) se connectent sans mot de passe e-mail.
+        if (fullUser?.role === "USER") {
+          return;
+        }
+
         const isAdminAccount =
           fullUser?.role === "ADMIN" || fullUser?.role === "MODERATOR";
         await emailService.sendPasswordResetEmail(

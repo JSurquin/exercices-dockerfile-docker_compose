@@ -4,6 +4,62 @@ import { prisma } from "~/prisma/prisma";
 
 const handler = toNextJsHandler(auth);
 
+const PASSWORD_RESET_GENERIC_SUCCESS = {
+  status: true,
+  message:
+    "If this email exists in our system, check your email for the reset link",
+};
+
+/**
+ * Bloque la réinitialisation auto-service pour les comptes joueurs (role USER)
+ * qui possèdent déjà un mot de passe interne (Steam/Discord).
+ * Les comptes en onboarding admin (sans mot de passe) restent autorisés.
+ */
+async function blockPasswordResetForStandardUsers(
+  request: Request,
+): Promise<Response | null> {
+  const pathname = new URL(request.url).pathname;
+  if (!pathname.endsWith("/request-password-reset")) {
+    return null;
+  }
+
+  try {
+    const body = (await request.clone().json()) as { email?: string };
+    const email = body.email?.trim();
+    if (!email) {
+      return null;
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: "insensitive" } },
+      select: {
+        role: true,
+        accounts: {
+          where: { providerId: "credential" },
+          select: { password: true },
+          take: 1,
+        },
+      },
+    });
+
+    if (!user || user.role !== "USER") {
+      return null;
+    }
+
+    const credentialAccount = user.accounts[0];
+    if (!credentialAccount?.password) {
+      return null;
+    }
+
+    return new Response(JSON.stringify(PASSWORD_RESET_GENERIC_SUCCESS), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Pour les endpoints two-factor/*, on vérifie que l'utilisateur n'est pas
  * ADMIN ou MODERATOR. On lit son ID soit depuis la session normale (si connecté)
@@ -79,7 +135,11 @@ export const GET = async (request: Request) => {
 };
 
 export const POST = async (request: Request) => {
-  const blocked = await blockTwoFactorForPrivilegedRoles(request);
-  if (blocked) return blocked;
+  const blockedTwoFactor = await blockTwoFactorForPrivilegedRoles(request);
+  if (blockedTwoFactor) return blockedTwoFactor;
+
+  const blockedPasswordReset = await blockPasswordResetForStandardUsers(request);
+  if (blockedPasswordReset) return blockedPasswordReset;
+
   return handler.POST(request);
 };
