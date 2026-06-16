@@ -137,13 +137,7 @@ async function updateTradeStatus(trade: {
     console.log(`✅ Trade ${trade.id} mis à jour: ${oldStatus} -> ${newStatus} (Skinplace: ${skinplaceStatus})`);
 
     try {
-      if (newStatus === 'ACCEPTED_BY_BOT') {
-        await TradeHooks.onTradeAccepted(trade.userId, trade.id);
-      } else if (newStatus === 'AVAILABLE') {
-        await TradeHooks.onTradeAvailable(trade.id);
-      } else if (newStatus === 'FAILED' || newStatus === 'CANCELLED') {
-        await TradeHooks.onTradeStatusChanged(trade.id, oldStatus, newStatus);
-      }
+      await TradeHooks.applyStatusProgressionHooks(trade.userId, trade.id, oldStatus, newStatus);
     } catch (hookError) {
       console.error(`[Cron] TradeHooks error for trade ${trade.id}:`, hookError);
     }
@@ -245,6 +239,11 @@ export async function runUpdateTradesStatusJob() {
 
   console.log(`✅ Cron job terminé: ${updated} mis à jour, ${unchanged} inchangés, ${errors} erreurs`);
 
+  const catchupCount = await TradeHooks.catchupMissingAcceptanceCredit(50);
+  if (catchupCount > 0) {
+    console.log(`[Cron] Catchup: ${catchupCount} trade(s) crédité(s) (acceptation manquée)`);
+  }
+
   return {
     success: true as const,
     message: 'Mise à jour des trades terminée',
@@ -253,6 +252,7 @@ export async function runUpdateTradesStatusJob() {
       updated,
       unchanged,
       errors,
+      acceptanceCreditCatchup: catchupCount,
     },
     details: details.filter((d) => d.status === 'updated' || d.status === 'error'),
   };

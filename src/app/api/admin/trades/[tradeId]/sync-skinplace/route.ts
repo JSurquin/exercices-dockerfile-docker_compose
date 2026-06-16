@@ -189,14 +189,8 @@ export async function POST(
       },
     });
 
-    // Appliquer les mêmes hooks que le webhook IPN #1
-    if (newStatus === 'ACCEPTED_BY_BOT') {
-      await TradeHooks.onTradeAccepted(trade.userId, tradeId);
-    } else if (newStatus === 'AVAILABLE') {
-      await TradeHooks.onTradeAvailable(tradeId);
-    } else if (newStatus === 'FAILED' || newStatus === 'CANCELLED') {
-      await TradeHooks.onTradeStatusChanged(tradeId, oldStatus, newStatus);
-    }
+    // Appliquer les mêmes hooks que le webhook IPN #1 (y compris IN_TRADE_HOLD / status=complete)
+    await TradeHooks.applyStatusProgressionHooks(trade.userId, tradeId, oldStatus, newStatus);
 
     return NextResponse.json({
       synced: true,

@@ -219,13 +219,9 @@ export async function GET(
         // Déclencher les hooks de balance (même logique que le webhook IPN)
         let balanceCredited = false;
         try {
-          if (newStatus === 'ACCEPTED_BY_BOT') {
-            await TradeHooks.onTradeAccepted(trade.userId, trade.id);
-          } else if (newStatus === 'AVAILABLE') {
-            await TradeHooks.onTradeAvailable(trade.id);
+          await TradeHooks.applyStatusProgressionHooks(trade.userId, trade.id, oldStatus, newStatus);
+          if (newStatus === 'AVAILABLE') {
             balanceCredited = true;
-          } else if (newStatus === 'FAILED' || newStatus === 'CANCELLED') {
-            await TradeHooks.onTradeStatusChanged(trade.id, oldStatus, newStatus);
           }
         } catch (hookError) {
           console.error(`[STATUS] TradeHooks error for trade ${trade.id}:`, hookError);
