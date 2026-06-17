@@ -14,6 +14,7 @@ import { useLocale } from "@/components/providers/locale-provider";
 import { SwatchIcon, MoonIcon, SunIcon, FireIcon } from "@heroicons/react/24/outline";
 import type { ComponentType, SVGProps } from "react";
 import { APP_THEMES, type AppTheme, normalizeStoredTheme } from "@/lib/themes";
+import { cn } from "@/lib/utils";
 
 type ThemeIcon = ComponentType<SVGProps<SVGSVGElement> & { className?: string }>;
 
@@ -29,7 +30,11 @@ const THEME_LABEL_KEY: Record<AppTheme, "themeMoonskin" | "themeLight" | "themeC
   cs2: "themeCs2",
 };
 
-export function ThemeSelector() {
+interface ThemeSelectorProps {
+  menuClassName?: string;
+}
+
+export function ThemeSelector({ menuClassName }: ThemeSelectorProps = {}) {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { messages } = useLocale();
   const [mounted, setMounted] = useState(false);
@@ -59,7 +64,7 @@ export function ThemeSelector() {
           <span className="sr-only">{messages.nav.themeLabel}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[180px]">
+      <DropdownMenuContent align="end" className={cn("min-w-[180px]", menuClassName)}>
         <DropdownMenuLabel className="text-xs text-muted-foreground">
           {messages.nav.themeLabel}
         </DropdownMenuLabel>

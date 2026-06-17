@@ -192,7 +192,7 @@ export function Header() {
         {/* Actions Desktop */}
         <div className="hidden md:flex items-center justify-end gap-2">
           {/* Currency Selector */}
-          <CurrencySelector variant="chrome" size="sm" showFlag={true} />
+          <CurrencySelector variant="chrome" size="sm" showFlag={true} menuClassName="nav-dropdown" />
           
           {/* Stats Badge */}
           {/* <div className="hidden lg:flex items-center space-x-4 mr-4 px-3 py-1.5 bg-muted/50 rounded-lg border">
@@ -203,7 +203,7 @@ export function Header() {
             <div className="text-xs text-muted-foreground">€2.4M traded</div>
           </div> */}
 
-          <ThemeSelector />
+          <ThemeSelector menuClassName="nav-dropdown" />
 
           {/* Language Toggle */}
           <DropdownMenu>
@@ -216,7 +216,7 @@ export function Header() {
                 <LanguageIcon className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-[120px]">
+            <DropdownMenuContent align="end" className="min-w-[120px] nav-dropdown">
               {locales.map((loc) => (
                 <DropdownMenuItem
                   key={loc}
@@ -381,8 +381,8 @@ export function Header() {
                 <Bars3Icon className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] sm:w-[320px] overflow-y-auto">
-              <div className="flex flex-col space-y-3 sm:space-y-4 px-4 pt-12 pb-8">
+            <SheetContent side="right" className="w-[280px] sm:w-[320px] overflow-y-auto z-[200]">
+              <div className="relative z-[1] flex flex-col space-y-3 sm:space-y-4 px-4 pt-12 pb-8">
                 {/* User Section */}
                 {user ? (
                   <div className="flex items-center space-x-3 p-4 border rounded-lg">
@@ -503,19 +503,19 @@ export function Header() {
                 )}
 
                 {/* Settings */}
-                <div className="border-t pt-4 space-y-2">
+                <div className="relative z-[1] border-t pt-4 space-y-2 pointer-events-auto">
                   <div className="flex items-center justify-between px-3">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       {messages.nav.themeLabel}
                     </p>
-                    <ThemeSelector />
+                    <ThemeSelector menuClassName="nav-dropdown" />
                   </div>
 
                   <div className="flex items-center justify-between px-3">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       {messages.ui.currency}
                     </p>
-                    <CurrencySelector variant="ghost" size="sm" showFlag={true} />
+                    <CurrencySelector variant="ghost" size="sm" showFlag={true} menuClassName="nav-dropdown" />
                   </div>
 
                   <DropdownMenu>
@@ -525,7 +525,7 @@ export function Header() {
                         {messages.nav.language} ({locale.toUpperCase()})
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="nav-dropdown">
                       {locales.map((loc) => (
                         <DropdownMenuItem
                           key={loc}

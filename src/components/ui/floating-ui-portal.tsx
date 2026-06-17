@@ -19,7 +19,7 @@ export function FloatingUiPortal({ children }: { children: ReactNode }) {
   return createPortal(
     <div
       data-floating-ui-root
-      className="pointer-events-none fixed inset-0 z-[99990] overflow-visible"
+      className="pointer-events-none fixed bottom-0 right-0 z-[99990] size-0 overflow-visible"
       aria-hidden={false}
     >
       {children}

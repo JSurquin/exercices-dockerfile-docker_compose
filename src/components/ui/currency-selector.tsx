@@ -13,6 +13,7 @@ import { useCurrency } from '@/components/providers/currency-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { SupportedCurrency } from '@/lib/currency-converter';
 import { CurrencyFlag } from '@/components/ui/currency-flag';
+import { cn } from '@/lib/utils';
 
 interface CurrencySelectorProps {
   variant?: 'default' | 'outline' | 'ghost' | 'chrome';
@@ -20,6 +21,7 @@ interface CurrencySelectorProps {
   showFlag?: boolean;
   showName?: boolean;
   className?: string;
+  menuClassName?: string;
 }
 
 export function CurrencySelector({ 
@@ -27,7 +29,8 @@ export function CurrencySelector({
   size = 'default',
   showFlag = true,
   showName = false,
-  className = ''
+  className = '',
+  menuClassName,
 }: CurrencySelectorProps) {
   const { selectedCurrency, setSelectedCurrency, supportedCurrencies } = useCurrency();
   const { messages } = useLocale();
@@ -54,7 +57,7 @@ export function CurrencySelector({
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className={cn("w-48", menuClassName)}>
         {Object.values(supportedCurrencies).map((currency) => (
           <DropdownMenuItem
             key={currency.code}

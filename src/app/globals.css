@@ -1136,6 +1136,11 @@ body.next-dev-overlay-present #sentry-feedback {
     z-index: 9999;
   }
 
+  /* Devise, langue, thème — au-dessus navbar (z-100) et menu mobile (z-200) */
+  .nav-dropdown {
+    z-index: 210;
+  }
+
   .lunar-nav-link-active {
     color: #e8e8f0;
   }
