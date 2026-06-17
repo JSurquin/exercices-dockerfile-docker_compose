@@ -32,36 +32,17 @@ export interface SecurityLimits {
   cooldownAfterIbanChange: number; // en heures
 }
 
-export interface UserPayoutStats {
-  avgAmount: number;
-  paidPayoutCount: number;
-}
-
-/** Seuils anti-fraude « montant inhabituel » (volume spike). */
-export const VOLUME_SPIKE_LIMITS = {
-  /** Historique minimum pour comparer au montant moyen. */
-  minPaidPayouts: 3,
-  /** Ratio montant demandé / moyenne historique. */
-  ratioThreshold: 3,
-} as const;
-
 /**
  * Détermine si un montant doit être bloqué pour pic de volume.
- * Le seuil absolu est la limite de retrait mensuelle du profil utilisateur
- * (1 000 € par défaut, configurable par admin). Les montants en dessous ne bloquent
- * jamais, même si > 3× la moyenne.
+ * Seuil unique : limite de retrait mensuelle du profil utilisateur
+ * (1 000 € par défaut, configurable par admin).
  */
 export function shouldBlockVolumeSpike(
   amountCents: number,
-  stats: UserPayoutStats,
   userWithdrawalLimitCents: number,
-  limits = VOLUME_SPIKE_LIMITS,
 ): boolean {
-  if (stats.paidPayoutCount < limits.minPaidPayouts) return false;
-  if (stats.avgAmount <= 0) return false;
   if (userWithdrawalLimitCents <= 0) return false;
-  if (amountCents < userWithdrawalLimitCents) return false;
-  return amountCents > stats.avgAmount * limits.ratioThreshold;
+  return amountCents > userWithdrawalLimitCents;
 }
 
 export interface SecurityCheck {
@@ -237,22 +218,18 @@ export class SecurityService {
       }
 
       // Détection de pics de volume (seuil = limite de retrait du profil utilisateur)
-      const payoutStats = await this.getUserPayoutStats(userId);
       let spikeThresholdCents = await getMonthlyWithdrawalLimitCents(userId);
       if (spikeThresholdCents == null) {
         const config = await getPlatformConfig();
         spikeThresholdCents = config.defaultWithdrawalLimit;
       }
-      if (shouldBlockVolumeSpike(amountCents, payoutStats, spikeThresholdCents)) {
+      if (shouldBlockVolumeSpike(amountCents, spikeThresholdCents)) {
         await this.createFraudAlert({
           userId,
           type: 'VOLUME_SPIKE',
           severity: 'HIGH',
           details: {
             requestedAmount: amountCents,
-            averageAmount: payoutStats.avgAmount,
-            ratio: amountCents / payoutStats.avgAmount,
-            paidPayoutCount: payoutStats.paidPayoutCount,
             userWithdrawalLimitCents: spikeThresholdCents,
             ipAddress,
           },
@@ -372,30 +349,6 @@ export class SecurityService {
     }
 
     return { allowed: true };
-  }
-
-  /**
-   * Statistiques des payouts payés d'un utilisateur (derniers 10).
-   */
-  private async getUserPayoutStats(userId: string): Promise<UserPayoutStats> {
-    const payouts = await prisma.payout.findMany({
-      where: {
-        userId,
-        status: 'PAID',
-      },
-      select: { amountCents: true },
-      take: 10,
-    });
-
-    if (payouts.length === 0) {
-      return { avgAmount: 0, paidPayoutCount: 0 };
-    }
-
-    const total = payouts.reduce((sum, p) => sum + p.amountCents, 0);
-    return {
-      avgAmount: Math.round(total / payouts.length),
-      paidPayoutCount: payouts.length,
-    };
   }
 
   /**
