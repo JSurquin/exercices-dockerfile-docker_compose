@@ -4,7 +4,9 @@
  */
 
 import { prisma } from '~/prisma/prisma';
+import { getMonthlyWithdrawalLimitCents } from '@/lib/balance-service';
 import { logger } from '@/lib/logger';
+import { getPlatformConfig } from '@/lib/platform-config-service';
 import { AuditAction } from '@/lib/security';
 
 export interface AuditLogRecord {
@@ -41,22 +43,24 @@ export const VOLUME_SPIKE_LIMITS = {
   minPaidPayouts: 3,
   /** Ratio montant demandé / moyenne historique. */
   ratioThreshold: 3,
-  /** Montant absolu minimum avant blocage (12 000 €, aligné admin). */
-  absoluteMinCents: 1_200_000,
 } as const;
 
 /**
  * Détermine si un montant doit être bloqué pour pic de volume.
- * Les montants courants (< 12 000 €) ne bloquent jamais, même si > 3× la moyenne.
+ * Le seuil absolu est la limite de retrait mensuelle du profil utilisateur
+ * (1 000 € par défaut, configurable par admin). Les montants en dessous ne bloquent
+ * jamais, même si > 3× la moyenne.
  */
 export function shouldBlockVolumeSpike(
   amountCents: number,
   stats: UserPayoutStats,
+  userWithdrawalLimitCents: number,
   limits = VOLUME_SPIKE_LIMITS,
 ): boolean {
   if (stats.paidPayoutCount < limits.minPaidPayouts) return false;
   if (stats.avgAmount <= 0) return false;
-  if (amountCents < limits.absoluteMinCents) return false;
+  if (userWithdrawalLimitCents <= 0) return false;
+  if (amountCents < userWithdrawalLimitCents) return false;
   return amountCents > stats.avgAmount * limits.ratioThreshold;
 }
 
@@ -232,9 +236,14 @@ export class SecurityService {
         }
       }
 
-      // Détection de pics de volume (blocage uniquement au-dessus de 12 000 €)
+      // Détection de pics de volume (seuil = limite de retrait du profil utilisateur)
       const payoutStats = await this.getUserPayoutStats(userId);
-      if (shouldBlockVolumeSpike(amountCents, payoutStats)) {
+      let spikeThresholdCents = await getMonthlyWithdrawalLimitCents(userId);
+      if (spikeThresholdCents == null) {
+        const config = await getPlatformConfig();
+        spikeThresholdCents = config.defaultWithdrawalLimit;
+      }
+      if (shouldBlockVolumeSpike(amountCents, payoutStats, spikeThresholdCents)) {
         await this.createFraudAlert({
           userId,
           type: 'VOLUME_SPIKE',
@@ -244,6 +253,7 @@ export class SecurityService {
             averageAmount: payoutStats.avgAmount,
             ratio: amountCents / payoutStats.avgAmount,
             paidPayoutCount: payoutStats.paidPayoutCount,
+            userWithdrawalLimitCents: spikeThresholdCents,
             ipAddress,
           },
           triggeredAt: new Date(),
