@@ -30,6 +30,36 @@ export interface SecurityLimits {
   cooldownAfterIbanChange: number; // en heures
 }
 
+export interface UserPayoutStats {
+  avgAmount: number;
+  paidPayoutCount: number;
+}
+
+/** Seuils anti-fraude « montant inhabituel » (volume spike). */
+export const VOLUME_SPIKE_LIMITS = {
+  /** Historique minimum pour comparer au montant moyen. */
+  minPaidPayouts: 3,
+  /** Ratio montant demandé / moyenne historique. */
+  ratioThreshold: 3,
+  /** Montant absolu minimum avant blocage (12 000 €, aligné admin). */
+  absoluteMinCents: 1_200_000,
+} as const;
+
+/**
+ * Détermine si un montant doit être bloqué pour pic de volume.
+ * Les montants courants (< 12 000 €) ne bloquent jamais, même si > 3× la moyenne.
+ */
+export function shouldBlockVolumeSpike(
+  amountCents: number,
+  stats: UserPayoutStats,
+  limits = VOLUME_SPIKE_LIMITS,
+): boolean {
+  if (stats.paidPayoutCount < limits.minPaidPayouts) return false;
+  if (stats.avgAmount <= 0) return false;
+  if (amountCents < limits.absoluteMinCents) return false;
+  return amountCents > stats.avgAmount * limits.ratioThreshold;
+}
+
 export interface SecurityCheck {
   allowed: boolean;
   reason?: string;
@@ -202,18 +232,19 @@ export class SecurityService {
         }
       }
 
-      // Détection de pics de volume
-      const avgAmount = await this.getUserAveragePayoutAmount(userId);
-      if (avgAmount > 0 && amountCents > avgAmount * 3) {
+      // Détection de pics de volume (blocage uniquement au-dessus de 12 000 €)
+      const payoutStats = await this.getUserPayoutStats(userId);
+      if (shouldBlockVolumeSpike(amountCents, payoutStats)) {
         await this.createFraudAlert({
           userId,
           type: 'VOLUME_SPIKE',
           severity: 'HIGH',
-          details: { 
-            requestedAmount: amountCents, 
-            averageAmount: avgAmount,
-            ratio: amountCents / avgAmount,
-            ipAddress 
+          details: {
+            requestedAmount: amountCents,
+            averageAmount: payoutStats.avgAmount,
+            ratio: amountCents / payoutStats.avgAmount,
+            paidPayoutCount: payoutStats.paidPayoutCount,
+            ipAddress,
           },
           triggeredAt: new Date(),
         });
@@ -334,22 +365,27 @@ export class SecurityService {
   }
 
   /**
-   * Calcule le montant moyen des payouts d'un utilisateur
+   * Statistiques des payouts payés d'un utilisateur (derniers 10).
    */
-  private async getUserAveragePayoutAmount(userId: string): Promise<number> {
+  private async getUserPayoutStats(userId: string): Promise<UserPayoutStats> {
     const payouts = await prisma.payout.findMany({
       where: {
         userId,
         status: 'PAID',
       },
       select: { amountCents: true },
-      take: 10, // Derniers 10 payouts
+      take: 10,
     });
 
-    if (payouts.length === 0) return 0;
+    if (payouts.length === 0) {
+      return { avgAmount: 0, paidPayoutCount: 0 };
+    }
 
     const total = payouts.reduce((sum, p) => sum + p.amountCents, 0);
-    return Math.round(total / payouts.length);
+    return {
+      avgAmount: Math.round(total / payouts.length),
+      paidPayoutCount: payouts.length,
+    };
   }
 
   /**
