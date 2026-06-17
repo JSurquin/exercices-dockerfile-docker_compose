@@ -106,19 +106,36 @@ export const kycaidInitiateBodySchema = z
   })
   .strip();
 
+const normalizeOptionalBic = (val: unknown) => {
+  if (typeof val !== 'string') return val;
+  const trimmed = val.replace(/\s/g, '').toUpperCase();
+  return trimmed === '' ? undefined : trimmed;
+};
+
+const normalizeIban = (val: unknown) => {
+  if (typeof val !== 'string') return val;
+  return val.replace(/\s/g, '').toUpperCase();
+};
+
 /** Payouts SEPA FR */
 export const payoutsSepaFrBodySchema = z
   .object({
-    amountCents: z.coerce.number().int().positive().max(1_000_000_00), // max 1 000 000 €
-    iban: z
-      .string()
-      .min(15)
-      .max(34)
-      .regex(/^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/, 'Format IBAN invalide'),
-    bic: z
-      .string()
-      .regex(/^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/, 'Format BIC invalide')
-      .optional(),
+    amountCents: z.union([z.number(), z.string()]),
+    iban: z.preprocess(
+      normalizeIban,
+      z
+        .string()
+        .min(15)
+        .max(34)
+        .regex(/^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/, 'Format IBAN invalide'),
+    ),
+    bic: z.preprocess(
+      normalizeOptionalBic,
+      z
+        .string()
+        .regex(/^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/, 'Format BIC invalide')
+        .optional(),
+    ),
     firstName: z.string().min(1).max(100),
     lastName: z.string().min(1).max(100),
   })

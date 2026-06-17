@@ -10,6 +10,7 @@ import { getBalance } from '@/lib/balance-service';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import { notifyAdminsPayoutPendingApproval } from '@/lib/admin-notification-hooks';
 import crypto from 'crypto';
+import { validateAmountCents } from '@/lib/amount-validation';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { payoutsSepaFrBodySchema } from '@/lib/validation/schemas/integrations';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
@@ -27,14 +28,6 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
-
-    const rateCheck = await payoutRateLimiter.checkLimit(request, userId);
-    if (!rateCheck.allowed) {
-      return NextResponse.json(
-        { success: false, error: 'Trop de requêtes. Réessayez plus tard.' },
-        { status: 429 }
-      );
-    }
 
     const frozenCheck = await prisma.user.findUnique({
       where: { id: userId },
@@ -54,13 +47,16 @@ export async function POST(request: NextRequest) {
     if (!parsed.ok) {
       return parsed.response;
     }
-    const { amountCents, iban, bic, firstName, lastName } = parsed.data;
-
-    if (!amountCents || amountCents <= 0) {
+    const { iban, bic, firstName, lastName } = parsed.data;
+    const amountCents = validateAmountCents(parsed.data.amountCents);
+    if (amountCents === null) {
       return NextResponse.json({ error: 'Montant invalide' }, { status: 400 });
     }
     if (amountCents < 1000) {
       return NextResponse.json({ error: 'Montant minimum : 10 €' }, { status: 400 });
+    }
+    if (amountCents > 1_000_000_00) {
+      return NextResponse.json({ error: 'Montant maximum dépassé' }, { status: 400 });
     }
 
     if (!iban) {
@@ -126,6 +122,14 @@ export async function POST(request: NextRequest) {
     const secCheck = await securityService.checkPayoutEligibility(userId, amountCents, paymentMethod.id, ipAddress);
     if (!secCheck.allowed) {
       return NextResponse.json({ error: secCheck.reason }, { status: 403 });
+    }
+
+    const rateCheck = await payoutRateLimiter.checkLimit(request, userId);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Trop de requêtes. Réessayez plus tard.' },
+        { status: 429 }
+      );
     }
 
     // Store beneficiary info encrypted for admin view

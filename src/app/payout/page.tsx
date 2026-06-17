@@ -1325,9 +1325,13 @@ export default function PayoutPage() {
                               toast.error(text.toast.amountTooLow);
                               return;
                             }
-                            const amountCents = Math.round(parseFloat(amount) * 100);
+                            const amountCents = toCents(parseFloat(amount));
                             if (amountCents < 1000) {
                               toast.error(text.request.minAmount);
+                              return;
+                            }
+                            if (amountCents > (availableBalanceCents ?? 0)) {
+                              toast.error(text.toast.insufficientBalance);
                               return;
                             }
                             const ibanClean = sepaFrForm.iban.replace(/\s/g, '').toUpperCase();
@@ -1341,13 +1345,14 @@ export default function PayoutPage() {
                             }
                             setSepaFrLoading(true);
                             try {
+                              const bicClean = sepaFrForm.bic.replace(/\s/g, '').toUpperCase();
                               const res = await fetch('/api/payouts/sepa-fr', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                   amountCents,
                                   iban: ibanClean,
-                                  bic: sepaFrForm.bic,
+                                  ...(bicClean ? { bic: bicClean } : {}),
                                   firstName: sepaFrForm.firstName.trim(),
                                   lastName: sepaFrForm.lastName.trim(),
                                 }),
