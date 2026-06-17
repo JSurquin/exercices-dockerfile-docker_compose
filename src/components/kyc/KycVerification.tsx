@@ -89,7 +89,7 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
       if (response.ok) {
         setAddressSubmitted(true);
         setStep('verification');
-        await handleInitiateKyc();
+        await handleInitiateKyc({ skipInitiatingGuard: true });
       } else {
         const data = await response.json();
         throw new Error(data.error || m.errors.addressSave);
@@ -101,13 +101,13 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
     }
   };
 
-  const handleInitiateKyc = async () => {
+  const handleInitiateKyc = async (options?: { skipInitiatingGuard?: boolean }) => {
     const now = Date.now();
     if (now - lastInitiateTimeRef.current < 10_000) {
       setError(m.errors.pleaseWait);
       return;
     }
-    if (initiating) return;
+    if (!options?.skipInitiatingGuard && initiating) return;
 
     lastInitiateTimeRef.current = now;
     setInitiating(true);
@@ -267,7 +267,7 @@ export function KycVerification({ onStatusChange }: KycVerificationProps) {
                 ) : (
                   <Button
                     size="lg"
-                    onClick={handleInitiateKyc}
+                    onClick={() => handleInitiateKyc()}
                     disabled={initiating}
                   >
                     {initiating ? (

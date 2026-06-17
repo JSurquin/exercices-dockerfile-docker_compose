@@ -112,6 +112,12 @@ export default function KYCPage() {
   const isPolling = user?.kycStatus === 'IN_PROGRESS';
   const isRejected = user?.kycStatus === 'REJECTED' || user?.kycStatus === 'KYCAID_REJECTED';
   const prevStatusRef = useRef<string | null>(null);
+  const currentStepRef = useRef<KYCStep>(currentStep);
+  const isSubmittingRef = useRef(false);
+
+  useEffect(() => {
+    currentStepRef.current = currentStep;
+  }, [currentStep]);
 
   const { data: kycData } = useQuery({
     queryKey: queryKeys.kycStatus,
@@ -193,19 +199,24 @@ export default function KYCPage() {
 
   const ACTIVE_STEPS: KYCStep[] = ['info', 'documents', 'selfie', 'review'];
 
-  const handleNextStep = async () => {
+  const handleSubmitKyc = async () => {
+    if (isSubmittingRef.current || isLoading) return;
+    isSubmittingRef.current = true;
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const currentIndex = ACTIVE_STEPS.indexOf(currentStep);
-      if (currentIndex < ACTIVE_STEPS.length - 1) {
-        setCurrentStep(ACTIVE_STEPS[currentIndex + 1]);
-      } else {
-        await submitKYC();
-      }
+      await submitKYC();
     } finally {
+      isSubmittingRef.current = false;
       setIsLoading(false);
     }
+  };
+
+  const handleNextStep = () => {
+    if (isLoading || isSubmittingRef.current) return;
+    const step = currentStepRef.current;
+    const currentIndex = ACTIVE_STEPS.indexOf(step);
+    if (currentIndex < 0 || currentIndex >= ACTIVE_STEPS.length - 1) return;
+    setCurrentStep(ACTIVE_STEPS[currentIndex + 1]);
   };
 
   const handlePrevStep = () => {
@@ -839,7 +850,7 @@ export default function KYCPage() {
                     )}
                   </div>
 
-                  <Button variant="outline" className="w-full" onClick={handleNextStep}>
+                  <Button variant="outline" type="button" className="w-full" onClick={handleNextStep}>
                     {messages.kycPage.addressDoc.skip}
                   </Button>
                 </div>
@@ -925,15 +936,17 @@ export default function KYCPage() {
               {/* Navigation */}
               <div className="flex justify-between gap-3 pt-5 sm:pt-6 border-t">
                 <Button
+                  type="button"
                   variant="outline"
                   onClick={handlePrevStep}
-                  disabled={currentStep === 'info'}
+                  disabled={currentStep === 'info' || isLoading}
                   className="min-w-[90px] sm:min-w-[110px]"
                 >
                   {messages.kycPage.navigation.previous}
                 </Button>
                 <Button
-                  onClick={handleNextStep}
+                  type="button"
+                  onClick={currentStep === 'review' ? handleSubmitKyc : handleNextStep}
                   disabled={!isStepValid() || isLoading}
                   className="flex-1 sm:flex-none sm:min-w-[160px] bg-cta-gradient hover:brightness-110"
                 >
