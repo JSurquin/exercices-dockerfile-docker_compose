@@ -83,12 +83,17 @@ export async function GET(request: NextRequest) {
         }
       }
 
+      const processingFeeCents = p.processingFeeCents ?? 0;
+      const networkFeeCents = p.networkFeeCents ?? 0;
+
       return {
         id: p.id,
         reference: p.gateFiOrderId,
         status: p.status,
         amountCents: p.amountCents,
-        netCents: p.amountCents - (p.processingFeeCents ?? 0) - (p.networkFeeCents ?? 0),
+        processingFeeCents,
+        networkFeeCents,
+        netCents: p.amountCents - processingFeeCents - networkFeeCents,
         createdAt: p.createdAt,
         paidAt: p.paidAt,
         errorMessage: p.errorMessage,

@@ -6714,6 +6714,11 @@ export interface Messages {
     statusPaid: string;
     statusRejected: string;
     perPage: string;
+    amountLabels: {
+      gross: string;
+      fees: string;
+      netToTransfer: string;
+    };
   };
   kycPolicy: {
     title: string;

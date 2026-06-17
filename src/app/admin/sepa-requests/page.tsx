@@ -42,6 +42,7 @@ interface SepaFrRequest {
   reference: string | null;
   status: string;
   amountCents: number;
+  processingFeeCents: number;
   netCents: number;
   createdAt: string;
   paidAt: string | null;
@@ -100,6 +101,37 @@ export default function AdminSepaRequestsPage() {
   const totalPages: number = data?.totalPages ?? 1;
 
   const pendingCount = requests.filter((r) => r.status === 'PENDING_APPROVAL').length;
+
+  const renderAmountBreakdown = (req: SepaFrRequest, highlightNet = true) => (
+    <div className="space-y-1 min-w-[120px]">
+      {highlightNet && (
+        <div>
+          <p className="text-green-400 font-bold text-sm">
+            {formatCentsToCurrency(req.netCents, 'EUR')}
+          </p>
+          <p className="text-slate-500 text-[10px] uppercase tracking-wide">
+            {t.amountLabels.netToTransfer}
+          </p>
+        </div>
+      )}
+      <div className={`text-xs space-y-0.5 ${highlightNet ? 'pt-1 border-t border-slate-700/50' : ''}`}>
+        <p className="text-slate-400">
+          <span className="text-slate-500">{t.amountLabels.gross}: </span>
+          {formatCentsToCurrency(req.amountCents, 'EUR')}
+        </p>
+        <p className="text-amber-400">
+          <span className="text-slate-500">{t.amountLabels.fees}: </span>
+          -{formatCentsToCurrency(req.processingFeeCents, 'EUR')}
+        </p>
+        {!highlightNet && (
+          <p className="text-green-400 font-semibold">
+            <span className="text-slate-500">{t.amountLabels.netToTransfer}: </span>
+            {formatCentsToCurrency(req.netCents, 'EUR')}
+          </p>
+        )}
+      </div>
+    </div>
+  );
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -268,9 +300,7 @@ export default function AdminSepaRequestsPage() {
                         </div>
                       </td>
                       <td className="py-4 pr-4">
-                        <span className="text-white font-semibold">
-                          {formatCentsToCurrency(req.amountCents, 'EUR')}
-                        </span>
+                        {renderAmountBreakdown(req)}
                       </td>
                       <td className="py-4 pr-4">
                         <div>
@@ -446,11 +476,25 @@ export default function AdminSepaRequestsPage() {
                     {approveModal.user?.name ?? approveModal.user?.steamUsername ?? '-'}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">{t.modalLabelAmountToTransfer}</span>
-                  <span className="text-green-400 font-bold text-base">
-                    {formatCentsToCurrency(approveModal.amountCents, 'EUR')}
-                  </span>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">{t.amountLabels.gross}</span>
+                    <span className="text-white font-medium">
+                      {formatCentsToCurrency(approveModal.amountCents, 'EUR')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">{t.amountLabels.fees}</span>
+                    <span className="text-amber-400 font-medium">
+                      -{formatCentsToCurrency(approveModal.processingFeeCents, 'EUR')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-slate-700">
+                    <span className="text-slate-300 font-medium">{t.modalLabelAmountToTransfer}</span>
+                    <span className="text-green-400 font-bold text-base">
+                      {formatCentsToCurrency(approveModal.netCents, 'EUR')}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -513,12 +557,7 @@ export default function AdminSepaRequestsPage() {
                     {rejectModal.user?.name ?? rejectModal.user?.steamUsername ?? '-'}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">{t.modalLabelAmount}</span>
-                  <span className="text-white font-semibold">
-                    {formatCentsToCurrency(rejectModal.amountCents, 'EUR')}
-                  </span>
-                </div>
+                {renderAmountBreakdown(rejectModal, false)}
               </div>
 
               <div className="space-y-2">

@@ -5183,7 +5183,7 @@ export const messages: Record<Locale, Messages> = {
       emptyState: 'Aucune demande SEPA Premium pour le moment.',
       columns: {
         user: 'Utilisateur',
-        amount: 'Montant',
+        amount: 'Montants',
         iban: 'IBAN',
         bic: 'BIC',
         date: 'Date',
@@ -5246,6 +5246,11 @@ export const messages: Record<Locale, Messages> = {
       statusPaid: 'Payé',
       statusRejected: 'Refusé',
       perPage: 'Par page',
+      amountLabels: {
+        gross: 'Brut demandé',
+        fees: 'Frais 1,7%',
+        netToTransfer: 'Net à virer',
+      },
     },
     paymentMethodsList: {
       title: 'Méthodes de paiement',
@@ -11573,7 +11578,7 @@ export const messages: Record<Locale, Messages> = {
       emptyState: 'No France SEPA requests yet.',
       columns: {
         user: 'User',
-        amount: 'Amount',
+        amount: 'Amounts',
         iban: 'IBAN',
         bic: 'BIC',
         date: 'Date',
@@ -11636,6 +11641,11 @@ export const messages: Record<Locale, Messages> = {
       statusPaid: 'Paid',
       statusRejected: 'Rejected',
       perPage: 'Per page',
+      amountLabels: {
+        gross: 'Gross requested',
+        fees: 'Fees (1.7%)',
+        netToTransfer: 'Net to transfer',
+      },
     },
     paymentMethodsList: {
       title: 'Payment methods',
@@ -18931,6 +18941,11 @@ export const messages: Record<Locale, Messages> = {
       statusPaid: '已支付',
       statusRejected: '已拒绝',
       perPage: '每页',
+      amountLabels: {
+        gross: '申请总额',
+        fees: '费用（1.7%）',
+        netToTransfer: '实际转账金额',
+      },
     },
     paymentMethodsList: {
       title: '支付方式',
