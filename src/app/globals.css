@@ -1236,6 +1236,31 @@ body.next-dev-overlay-present #sentry-feedback {
     color: var(--theme-stat);
   }
 
+  .lunar-footer--banner .lunar-footer__card h3.font-semibold {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .lunar-footer--banner .lunar-footer__card .text-muted-foreground,
+  .lunar-footer--banner .lunar-footer__card .text-muted-foreground\/70 {
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .lunar-footer--banner .lunar-footer__card .font-medium.text-foreground\/80 {
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  .lunar-footer--banner .lunar-footer__link {
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .lunar-footer--banner .lunar-footer__link:hover {
+    color: rgba(255, 255, 255, 0.96);
+  }
+
+  .lunar-footer--banner .lunar-footer__card .font-bold.text-xl.text-foreground {
+    color: rgba(255, 255, 255, 0.95);
+  }
+
   .lunar-nav-link {
     color: var(--muted-foreground);
     transition: color 0.2s ease;

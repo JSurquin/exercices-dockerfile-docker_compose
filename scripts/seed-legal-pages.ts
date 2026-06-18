@@ -138,7 +138,7 @@ Tout litige sera soumis aux juridictions compétentes.
 
 # 12. Contact
 
-Pour toute question : **contact@moonskin.com**`,
+Pour toute question : **marketing@moonskin.eu**`,
     contentEn: `# 1. Purpose
 
 These Terms of Service set out the terms of access to and use of the services offered by Moonskin, a platform specialising in intermediation, purchase, sale and exchange of skins related to Counter-Strike 2 (CS2).
@@ -262,8 +262,8 @@ Any dispute shall be submitted to the competent courts.
 
 # 12. Contact
 
-For any questions: **contact@moonskin.com**`,
-    contactEmail: 'contact@moonskin.com',
+For any questions: **marketing@moonskin.eu**`,
+    contactEmail: 'marketing@moonskin.eu',
     contactPhone: null,
     isPublished: true,
   },

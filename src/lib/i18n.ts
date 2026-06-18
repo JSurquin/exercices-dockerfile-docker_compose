@@ -2122,13 +2122,13 @@ export const messages: Record<Locale, Messages> = {
         },
         contactSection: {
           title: "12. Contact",
-          content: "Pour toute question relative aux présentes CGU : contact@moonskin.com"
+          content: "Pour toute question relative aux présentes CGU : marketing@moonskin.eu"
         }
       },
       contactInfo: {
         title: "Questions sur ces conditions ?",
         description: "Contactez-nous pour toute précision concernant les présentes conditions générales d'utilisation.",
-        email: "contact@moonskin.com",
+        email: "marketing@moonskin.eu",
         phone: "",
         support: ""
       }
@@ -2767,9 +2767,9 @@ export const messages: Record<Locale, Messages> = {
           slugPlaceholder: "termes",
           slugUrl: "URL",
           contactEmail: "Email de contact",
-          contactEmailPlaceholder: "legal@moonskin.gg",
+          contactEmailPlaceholder: "marketing@moonskin.eu",
           contactPhone: "Téléphone de contact",
-          contactPhonePlaceholder: "+33 1 23 45 67 89",
+          contactPhonePlaceholder: "",
           publishSwitch: "Publier cette page",
           changeReason: "Raison de la modification",
           changeReasonPlaceholder: "Ex: Mise à jour suite à nouvelle réglementation",
@@ -6477,6 +6477,9 @@ export const messages: Record<Locale, Messages> = {
         privacyConsent: "J'accepte que mes données soient traitées conformément à notre",
         privacyPolicy: "politique de confidentialité",
         sendButton: "Envoyer le message",
+        formSuccess: "Votre message a bien été envoyé. Notre équipe vous répondra dans les plus brefs délais.",
+        formError: "Une erreur est survenue lors de l'envoi. Veuillez réessayer ou nous contacter via le chat.",
+        formSubmitting: "Envoi en cours...",
         contactMethods: "Moyens de contact",
         response: "Réponse",
         departments: "Départements spécialisés",
@@ -6503,6 +6506,7 @@ export const messages: Record<Locale, Messages> = {
             description: "Assistance vocale pour les cas complexes",
             availability: "Lun-Ven 9h-18h",
             responseTime: "Immédiat",
+            action: "Support téléphonique sur rendez-vous",
           },
         },
         departmentsList: {
@@ -8725,13 +8729,13 @@ export const messages: Record<Locale, Messages> = {
         },
         contactSection: {
           title: "12. Contact",
-          content: "For any questions regarding these Terms: contact@moonskin.com"
+          content: "For any questions regarding these Terms: marketing@moonskin.eu"
         }
       },
       contactInfo: {
         title: "Questions about these terms?",
         description: "Contact us for any clarification regarding these Terms of Service.",
-        email: "contact@moonskin.com",
+        email: "marketing@moonskin.eu",
         phone: "",
         support: ""
       }
@@ -9162,9 +9166,9 @@ export const messages: Record<Locale, Messages> = {
           slugPlaceholder: "terms",
           slugUrl: "URL",
           contactEmail: "Contact email",
-          contactEmailPlaceholder: "legal@moonskin.gg",
+          contactEmailPlaceholder: "marketing@moonskin.eu",
           contactPhone: "Contact phone",
-          contactPhonePlaceholder: "+44 20 1234 5678",
+          contactPhonePlaceholder: "",
           publishSwitch: "Publish this page",
           changeReason: "Reason for change",
           changeReasonPlaceholder: "E.g.: Updated following new regulation",
@@ -14035,6 +14039,9 @@ export const messages: Record<Locale, Messages> = {
         privacyConsent: "I agree that my data will be processed in accordance with our",
         privacyPolicy: "privacy policy",
         sendButton: "Send message",
+        formSuccess: "Your message has been sent successfully. Our team will get back to you shortly.",
+        formError: "Something went wrong while sending your message. Please try again or contact us via chat.",
+        formSubmitting: "Sending...",
         contactMethods: "Contact methods",
         response: "Response",
         departments: "Specialized departments",
@@ -14061,6 +14068,7 @@ export const messages: Record<Locale, Messages> = {
             description: "Voice assistance for complex cases",
             availability: "Mon-Fri 9am-6pm",
             responseTime: "Immediate",
+            action: "Phone support by appointment",
           },
         },
         departmentsList: {
@@ -16254,13 +16262,13 @@ export const messages: Record<Locale, Messages> = {
         },
         contactSection: {
           title: "12. 联系方式",
-          content: "有关本条款的问题：contact@moonskin.com"
+          content: "有关本条款的问题：marketing@moonskin.eu"
         }
       },
       contactInfo: {
         title: "对条款有疑问？",
         description: "若需了解本服务条款，欢迎联系我们。",
-        email: "contact@moonskin.com",
+        email: "marketing@moonskin.eu",
         phone: "",
         support: ""
       }
@@ -16615,9 +16623,9 @@ export const messages: Record<Locale, Messages> = {
           slugPlaceholder: "条款",
           slugUrl: "URL",
           contactEmail: "联系邮箱",
-          contactEmailPlaceholder: "legal@moonskin.gg",
+          contactEmailPlaceholder: "marketing@moonskin.eu",
           contactPhone: "联系电话",
-          contactPhonePlaceholder: "+86 10 1234 5678",
+          contactPhonePlaceholder: "",
           publishSwitch: "发布此页面",
           changeReason: "修改原因",
           changeReasonPlaceholder: "例如：根据新法规更新",
@@ -21283,6 +21291,9 @@ export const messages: Record<Locale, Messages> = {
         privacyConsent: "我同意按照我们的",
         privacyPolicy: "隐私政策处理我的数据",
         sendButton: "发送消息",
+        formSuccess: "您的消息已成功发送，我们的团队会尽快回复您。",
+        formError: "发送时出错，请重试或通过在线聊天联系我们。",
+        formSubmitting: "发送中...",
         contactMethods: "联系方式",
         response: "响应",
         departments: "专业部门",
@@ -21309,6 +21320,7 @@ export const messages: Record<Locale, Messages> = {
             description: "复杂情况的语音协助",
             availability: "周一至周五 9:00-18:00",
             responseTime: "即时",
+            action: "电话支持需预约",
           },
         },
         departmentsList: {

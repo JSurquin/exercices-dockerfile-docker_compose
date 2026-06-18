@@ -70,9 +70,9 @@ export function Header() {
 
       if (currentY <= 16) {
         setNavVisible(true);
-      } else if (delta > 2) {
+      } else if (delta > 0) {
         setNavVisible(false);
-      } else if (delta < -4) {
+      } else if (delta < -2) {
         setNavVisible(true);
       }
 
@@ -143,7 +143,7 @@ export function Header() {
   return (
     <header
       className={cn(
-        "lunar-nav sticky top-0 z-[100] w-full transition-transform duration-200 ease-in-out will-change-transform",
+        "lunar-nav sticky top-0 z-[100] w-full transition-transform duration-100 ease-out will-change-transform",
         navVisible ? "translate-y-0 shadow-sm" : "-translate-y-full pointer-events-none"
       )}
     >
@@ -172,7 +172,7 @@ export function Header() {
                   key={item.name}
                   href={item.href}
                   data-tour={item.tourId}
-                  className={`group relative flex items-center space-x-2 text-xs font-medium transition-all duration-200 ${
+                  className={`group relative flex cursor-pointer items-center space-x-2 text-xs font-medium transition-all duration-200 ${
                     isActive
                       ? "text-foreground"
                       : "text-muted-foreground hover:text-foreground"

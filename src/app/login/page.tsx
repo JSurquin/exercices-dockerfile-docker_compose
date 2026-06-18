@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,7 +43,7 @@ export default function LoginPage() {
       }
 
       if (result.data?.user) {
-        const role = (result.data.user as any).role;
+        const role = (result.data.user as { role?: string }).role;
 
         switch (role) {
           case 'ADMIN':
@@ -60,7 +61,7 @@ export default function LoginPage() {
       } else {
         router.push('/dashboard');
       }
-    } catch (err) {
+    } catch {
       setError(messages.loginPage.errors.invalidCredentials);
       setLoading(false);
     }
@@ -69,7 +70,7 @@ export default function LoginPage() {
   const handleSteamLogin = async () => {
     try {
       window.location.href = '/api/auth/steam/login';
-    } catch (error) {
+    } catch {
       setError(messages.loginPage.errors.steamError);
     }
   };
@@ -77,30 +78,30 @@ export default function LoginPage() {
   const handleDiscordLogin = async () => {
     try {
       await signInWithDiscord();
-    } catch (error) {
+    } catch {
       setError(messages.loginPage.errors.discordError);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10 sm:py-14">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
-          <Link href="/" className="inline-flex items-center space-x-2 mb-2">
-            <div className="h-12 w-12 rounded-lg bg-cta-gradient-br flex items-center justify-center">
-              <span className="text-white font-bold text-xl">CS</span>
+          <Link href="/" className="inline-flex items-center space-x-3 mb-3 cursor-pointer">
+            <div className="h-12 w-12 rounded-lg overflow-hidden ring-1 ring-white/10">
+              <Image src="/images/logo.webp" alt="MoonSkin" width={48} height={48} />
             </div>
-            <span className="font-bold text-3xl text-white">MoonSkin</span>
+            <span className="font-bold text-3xl text-chrome-gradient">MoonSkin</span>
           </Link>
-          <p className="text-slate-400 mt-2">{messages.loginPage.subtitle}</p>
+          <p className="text-muted-foreground mt-2">{messages.loginPage.subtitle}</p>
         </div>
 
-        <Card className="bg-slate-800/50 border-slate-700 backdrop-blur">
+        <Card className="lunar-card border-white/10 bg-white/[0.04] backdrop-blur-xl shadow-none">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center text-white">
+            <CardTitle className="text-2xl text-center">
               {messages.loginPage.title}
             </CardTitle>
-            <CardDescription className="text-center text-slate-400">
+            <CardDescription className="text-center">
               {messages.loginPage.chooseMethod}
             </CardDescription>
           </CardHeader>
@@ -117,7 +118,7 @@ export default function LoginPage() {
 
               <Button
                 variant="outline"
-                className="w-full bg-[#171A21] hover:bg-[#0E1015] text-white border-0"
+                className="w-full bg-[#171A21] hover:bg-[#0E1015] text-white border border-white/10"
                 onClick={handleSteamLogin}
               >
                 <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -129,17 +130,17 @@ export default function LoginPage() {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-700" />
+                <span className="w-full border-t border-white/10" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-slate-800 px-2 text-slate-400">
+                <span className="bg-transparent px-2 text-muted-foreground">
                   {messages.loginPage.orContinueWithEmail}
                 </span>
               </div>
             </div>
 
             {error && (
-              <Alert variant="destructive" className="bg-red-900/20 border-red-900">
+              <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
@@ -147,11 +148,11 @@ export default function LoginPage() {
 
             <form onSubmit={handleEmailLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-300">
+                <Label htmlFor="email">
                   {messages.loginPage.emailLabel}
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
@@ -159,17 +160,17 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                    className="pl-10 bg-white/[0.04] border-white/10"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-300">
+                <Label htmlFor="password">
                   {messages.loginPage.passwordLabel}
                 </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
                     type="password"
@@ -177,14 +178,15 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                    className="pl-10 bg-white/[0.04] border-white/10"
                   />
                 </div>
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-cta-gradient hover:brightness-110 text-white"
+                variant="cta"
+                className="w-full"
                 disabled={loading}
               >
                 {loading ? (
@@ -198,23 +200,23 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="text-center text-sm text-slate-400">
+            <div className="text-center text-sm text-muted-foreground">
               {messages.loginPage.noAccountYet}{' '}
-              <Link href="/" className="text-theme-highlight hover:text-theme-highlight transition-colors">
+              <Link href="/" className="text-theme-highlight hover:underline cursor-pointer">
                 {messages.loginPage.loginWithSteam}
               </Link>
             </div>
           </CardContent>
         </Card>
 
-        <div className="text-center text-xs text-slate-500">
+        <div className="text-center text-xs text-muted-foreground">
           <p>
             {messages.loginPage.legalNotice}{' '}
-            <Link href="/terms" className="text-theme-highlight hover:text-theme-highlight">
+            <Link href="/terms" className="text-theme-highlight hover:underline cursor-pointer">
               {messages.loginPage.termsOfService}
             </Link>
             {' '}{messages.loginPage.and}{' '}
-            <Link href="/privacy" className="text-theme-highlight hover:text-theme-highlight">
+            <Link href="/privacy" className="text-theme-highlight hover:underline cursor-pointer">
               {messages.loginPage.privacyPolicy}
             </Link>
           </p>

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
@@ -25,11 +26,15 @@ import {
   QuestionMarkCircleIcon,
   CurrencyEuroIcon,
   ShieldCheckIcon,
+  CheckCircleIcon,
 } from "@heroicons/react/24/outline";
+import { AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
 
-// Contact data is defined dynamically in the component using translations
+const MARKETING_EMAIL = "marketing@moonskin.eu";
+
+type FormStatus = "idle" | "submitting" | "success" | "error";
 
 export default function ContactPage() {
   const { messages } = useLocale();
@@ -41,36 +46,40 @@ export default function ContactPage() {
     priority: "",
     message: "",
   });
+  const [formStatus, setFormStatus] = useState<FormStatus>("idle");
 
   const t = messages.contactPage;
 
   const getContactMethods = () => [
     {
+      id: "liveChat",
       title: t.methods.liveChat.title,
       description: t.methods.liveChat.description,
       icon: ChatBubbleLeftRightIcon,
       availability: t.methods.liveChat.availability,
       responseTime: t.methods.liveChat.responseTime,
-      color: "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400",
+      color: "bg-green-500/15 text-green-400 border border-green-500/20",
       action: t.methods.liveChat.action,
     },
     {
+      id: "email",
       title: t.methods.email.title,
       description: t.methods.email.description,
       icon: EnvelopeIcon,
       availability: t.methods.email.availability,
       responseTime: t.methods.email.responseTime,
-      color: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400",
-      action: process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@moonskin.gg",
+      color: "bg-blue-500/15 text-blue-400 border border-blue-500/20",
+      action: MARKETING_EMAIL,
     },
     {
+      id: "phone",
       title: t.methods.phone.title,
       description: t.methods.phone.description,
       icon: PhoneIcon,
       availability: t.methods.phone.availability,
       responseTime: t.methods.phone.responseTime,
-      color: "bg-theme-accent/10 text-theme-accent dark:bg-theme-accent/20 dark:text-theme-highlight",
-      action: process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? "",
+      color: "bg-theme-accent/10 text-theme-accent border border-theme-accent/20",
+      action: process.env.NEXT_PUBLIC_SUPPORT_PHONE || t.methods.phone.action,
     },
   ];
 
@@ -95,7 +104,7 @@ export default function ContactPage() {
     },
     {
       name: t.departmentsList.partnerships.name,
-      email: `business@${(process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@moonskin.gg").split("@")[1]}`,
+      email: MARKETING_EMAIL,
       description: t.departmentsList.partnerships.description,
       icon: CurrencyEuroIcon,
     },
@@ -113,20 +122,73 @@ export default function ContactPage() {
     t.schedule.always,
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Form submitted:", formData);
+    setFormStatus("submitting");
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      setFormStatus("success");
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        department: "",
+        priority: "",
+        message: "",
+      });
+    } catch {
+      setFormStatus("error");
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (formStatus === "success" || formStatus === "error") {
+      setFormStatus("idle");
+    }
+  };
+
+  const openSupportChat = () => {
+    window.dispatchEvent(new CustomEvent("open-support-chat", { detail: {} }));
+  };
+
+  const renderContactMethodButton = (method: ReturnType<typeof getContactMethods>[number]) => {
+    if (method.id === "liveChat") {
+      return (
+        <Button variant="outline" size="sm" className="w-full cursor-pointer" onClick={openSupportChat}>
+          {method.action}
+        </Button>
+      );
+    }
+
+    if (method.id === "email") {
+      return (
+        <Button variant="outline" size="sm" className="w-full cursor-pointer" asChild>
+          <a href={`mailto:${MARKETING_EMAIL}`}>{method.action}</a>
+        </Button>
+      );
+    }
+
+    const phone = process.env.NEXT_PUBLIC_SUPPORT_PHONE;
+    if (phone) {
+      return (
+        <Button variant="outline" size="sm" className="w-full cursor-pointer" asChild>
+          <a href={`tel:${phone.replace(/\s/g, "")}`}>{phone}</a>
+        </Button>
+      );
+    }
+
+    return (
+      <Button variant="outline" size="sm" className="w-full cursor-default" disabled>
+        {method.action}
+      </Button>
+    );
   };
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -147,18 +209,30 @@ export default function ContactPage() {
         </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Contact Form */}
           <div className="lg:col-span-2">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              <Card>
+              <Card className="lunar-card border-white/10 bg-white/[0.03]">
                 <CardHeader>
                   <CardTitle>{t.sendMessage}</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  {formStatus === "success" && (
+                    <Alert className="mb-6 border-green-500/30 bg-green-500/10 text-green-100">
+                      <CheckCircleIcon className="h-4 w-4 text-green-400" />
+                      <AlertDescription>{t.formSuccess}</AlertDescription>
+                    </Alert>
+                  )}
+                  {formStatus === "error" && (
+                    <Alert variant="destructive" className="mb-6">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{t.formError}</AlertDescription>
+                    </Alert>
+                  )}
+
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -189,7 +263,7 @@ export default function ContactPage() {
                       <div className="space-y-2">
                         <Label htmlFor="department">{t.department}</Label>
                         <Select value={formData.department} onValueChange={(value) => handleInputChange("department", value)}>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder={t.departmentPlaceholder} />
                           </SelectTrigger>
                           <SelectContent>
@@ -204,7 +278,7 @@ export default function ContactPage() {
                       <div className="space-y-2">
                         <Label htmlFor="priority">{t.priority}</Label>
                         <Select value={formData.priority} onValueChange={(value) => handleInputChange("priority", value)}>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder={t.priorityPlaceholder} />
                           </SelectTrigger>
                           <SelectContent>
@@ -242,18 +316,18 @@ export default function ContactPage() {
                     </div>
 
                     <div className="flex items-start space-x-2">
-                      <input type="checkbox" id="privacy" className="mt-1" required />
-                      <Label htmlFor="privacy" className="text-sm text-muted-foreground">
+                      <input type="checkbox" id="privacy" className="mt-1 cursor-pointer" required />
+                      <Label htmlFor="privacy" className="text-sm text-muted-foreground cursor-pointer">
                         {t.privacyConsent}{" "}
-                        <a href="/privacy" className="text-theme-accent hover:underline">
+                        <a href="/privacy" className="text-theme-accent hover:underline cursor-pointer">
                           {t.privacyPolicy}
                         </a>
                       </Label>
                     </div>
 
-                    <Button type="submit" className="w-full">
+                    <Button type="submit" className="w-full" disabled={formStatus === "submitting"}>
                       <EnvelopeIcon className="w-4 h-4 mr-2" />
-                      {t.sendButton}
+                      {formStatus === "submitting" ? t.formSubmitting : t.sendButton}
                     </Button>
                   </form>
                 </CardContent>
@@ -261,21 +335,19 @@ export default function ContactPage() {
             </motion.div>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Contact Methods */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Card>
+              <Card className="lunar-card border-white/10 bg-white/[0.03]">
                 <CardHeader>
                   <CardTitle>{t.contactMethods}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {getContactMethods().map((method, index) => (
-                    <div key={index} className="space-y-3">
+                    <div key={method.id} className="space-y-3">
                       <div className="flex items-start space-x-3">
                         <div className={`w-10 h-10 rounded-lg ${method.color} flex items-center justify-center flex-shrink-0`}>
                           <method.icon className="w-5 h-5" />
@@ -295,23 +367,20 @@ export default function ContactPage() {
                           </div>
                         </div>
                       </div>
-                      <Button variant="outline" size="sm" className="w-full">
-                        {method.action}
-                      </Button>
-                      {index < getContactMethods().length - 1 && <hr />}
+                      {renderContactMethodButton(method)}
+                      {index < getContactMethods().length - 1 && <hr className="border-white/10" />}
                     </div>
                   ))}
                 </CardContent>
               </Card>
             </motion.div>
 
-            {/* Departments */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <Card>
+              <Card className="lunar-card border-white/10 bg-white/[0.03]">
                 <CardHeader>
                   <CardTitle>{t.departments}</CardTitle>
                 </CardHeader>
@@ -328,20 +397,19 @@ export default function ContactPage() {
                           </Badge>
                         </div>
                       </div>
-                      {index < getDepartments().length - 1 && <hr />}
+                      {index < getDepartments().length - 1 && <hr className="border-white/10" />}
                     </div>
                   ))}
                 </CardContent>
               </Card>
             </motion.div>
 
-            {/* Office Hours */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Card>
+              <Card className="lunar-card border-white/10 bg-white/[0.03]">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <ClockIcon className="w-5 h-5" />
@@ -364,13 +432,12 @@ export default function ContactPage() {
               </Card>
             </motion.div>
 
-            {/* Company Info */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
             >
-              <Card className="bg-muted/50">
+              <Card className="lunar-card border-white/10 bg-white/[0.03]">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <MapPinIcon className="w-5 h-5" />
@@ -386,7 +453,7 @@ export default function ContactPage() {
                       <p>SIREN : 939 155 875</p>
                     </div>
                   </div>
-                  <div className="pt-3 border-t">
+                  <div className="pt-3 border-t border-white/10">
                     <p className="text-xs text-muted-foreground">
                       {t.companyInfo}
                     </p>

@@ -228,7 +228,7 @@ export function Footer({ publicStats: publicStatsProp }: { publicStats?: PublicS
                 <button
                   data-tour="footer-guide"
                   onClick={() => startTour()}
-                  className="text-sm font-medium text-theme-accent hover:text-theme-highlight transition-colors flex items-center gap-1"
+                  className="cursor-pointer text-sm font-medium text-theme-accent hover:text-theme-highlight transition-colors flex items-center gap-1"
                 >
                   <MapIcon className="h-4 w-4 shrink-0" aria-hidden />
                   {messages.footer.tourButton}

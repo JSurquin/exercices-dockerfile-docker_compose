@@ -5956,6 +5956,9 @@ export interface Messages {
       privacyConsent: string;
       privacyPolicy: string;
       sendButton: string;
+      formSuccess: string;
+      formError: string;
+      formSubmitting: string;
       contactMethods: string;
       response: string;
       departments: string;
@@ -5982,6 +5985,7 @@ export interface Messages {
           description: string;
           availability: string;
           responseTime: string;
+          action: string;
         };
       };
       departmentsList: {
