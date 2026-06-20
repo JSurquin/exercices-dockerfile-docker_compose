@@ -11,6 +11,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import {
   Search,
@@ -38,6 +46,7 @@ interface KycUser {
   email: string;
   kycStatus: string;
   kycaidApplicantId: string | null;
+  hasKycRequest: boolean;
   createdAt: string;
   latestVerification: {
     kycaidVerificationId: string;
@@ -71,6 +80,13 @@ export function AdminKYCManagement() {
 
   const [syncing, setSyncing] = useState(false);
   const [syncingUserId, setSyncingUserId] = useState<string | null>(null);
+  const [manualAction, setManualAction] = useState<{
+    open: boolean;
+    user: KycUser | null;
+    action: 'verify' | 'reject';
+  }>({ open: false, user: null, action: 'verify' });
+  const [manualReason, setManualReason] = useState('');
+  const [manualSubmitting, setManualSubmitting] = useState(false);
 
   useEffect(() => {
     setPage(1);
@@ -162,8 +178,17 @@ export function AdminKYCManagement() {
   };
 
   // ─── Helpers ─────────────────────────────────────────────────────────────────
-  const getKYCBadge = (kycStatus: string) => {
-    const key = prismaKycStatusToAdminBadgeKey(kycStatus);
+  const getKYCBadge = (u: KycUser) => {
+    if (!u.hasKycRequest) {
+      return (
+        <Badge variant="outline" className="flex items-center gap-1 border-slate-500 text-slate-300">
+          <User className="h-3 w-3" />
+          {t.statusNoRequest}
+        </Badge>
+      );
+    }
+
+    const key = prismaKycStatusToAdminBadgeKey(u.kycStatus);
     const cfg = {
       pending:     { variant: 'secondary' as const, icon: Clock,         label: t.statusPending    },
       in_progress: { variant: 'default'   as const, icon: ShieldCheck,   label: t.statusInProgress },
@@ -195,6 +220,57 @@ export function AdminKYCManagement() {
 
   const displayName = (u: KycUser) =>
     u.steamUsername || u.name || u.email || u.userId;
+
+  const openManualAction = (user: KycUser, action: 'verify' | 'reject') => {
+    setManualReason('');
+    setManualAction({ open: true, user, action });
+  };
+
+  const handleManualAction = async () => {
+    if (!manualAction.user) return;
+    const reason = manualReason.trim();
+    if (!reason) {
+      toast({ title: t.errorTitle, description: t.manualReasonRequired, variant: 'destructive' });
+      return;
+    }
+
+    setManualSubmitting(true);
+    const u = manualAction.user;
+    const isVerify = manualAction.action === 'verify';
+    try {
+      const params = isVerify ? '?force=true' : '?forceReject=true';
+      const r = await fetch(`/api/admin/kyc/force-verify/${u.userId}${params}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d?.success || !d?.newStatus) {
+        toast({
+          title: t.errorTitle,
+          description: d?.error || d?.message || t.kycSyncErrorDesc,
+          variant: 'destructive',
+        });
+        return;
+      }
+      toast({
+        title: isVerify ? t.kycForcedTitle : t.rejectResultTitle,
+        description: t.kycForcedDesc.replace('{status}', d.newStatus),
+      });
+      setManualAction({ open: false, user: null, action: 'verify' });
+      setManualReason('');
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
+    } catch (err) {
+      toast({
+        title: t.errorTitle,
+        description: err instanceof Error ? err.message : t.kycSyncErrorDesc,
+        variant: 'destructive',
+      });
+    } finally {
+      setManualSubmitting(false);
+    }
+  };
 
   const exportKYC = async () => {
     try {
@@ -325,7 +401,7 @@ export function AdminKYCManagement() {
                     </div>
                   </TableCell>
 
-                  <TableCell>{getKYCBadge(u.kycStatus)}</TableCell>
+                  <TableCell>{getKYCBadge(u)}</TableCell>
 
                   <TableCell className="text-slate-300 text-sm">
                     {u.latestDocument ? getDocumentTypeLabel(u.latestDocument.type) : '-'}
@@ -345,96 +421,122 @@ export function AdminKYCManagement() {
 
                   <TableCell>
                     <div className="flex gap-2 flex-wrap">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={syncingUserId === u.userId}
-                        onClick={() => handleSyncUser(u.userId)}
-                        className="border-theme-highlight text-theme-highlight hover:bg-theme-highlight/15"
-                        title={t.tooltipSyncKycaid}
-                      >
-                        {syncingUserId === u.userId
-                          ? <Loader2 className="h-4 w-4 animate-spin" />
-                          : <CloudDownload className="h-4 w-4" />}
-                      </Button>
-
-                      {u.kycStatus !== 'VERIFIED' && u.kycStatus !== 'KYCAID_VERIFIED' && (
+                      {u.hasKycRequest && (
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={async () => {
-                            if (!confirm(t.forceVerifyConfirm.replace('{name}', displayName(u)))) return;
-                            try {
-                              const r = await fetch(`/api/admin/kyc/force-verify/${u.userId}?force=true`, { method: 'POST' });
-                              const d = await r.json().catch(() => ({}));
-                              if (!r.ok || !d?.success || !d?.newStatus) {
-                                toast({
-                                  title: t.errorTitle,
-                                  description: d?.error || d?.message || t.kycSyncErrorDesc,
-                                  variant: 'destructive',
-                                });
-                                return;
-                              }
-                              toast({ title: t.kycForcedTitle, description: t.kycForcedDesc.replace('{status}', d.newStatus) });
-                              queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-                              queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
-                            } catch (err) {
-                              toast({
-                                title: t.errorTitle,
-                                description: err instanceof Error ? err.message : t.kycSyncErrorDesc,
-                                variant: 'destructive',
-                              });
-                            }
-                          }}
-                          className="border-green-700 text-green-400 hover:bg-green-900/30"
-                          title={t.tooltipForceVerify}
+                          disabled={syncingUserId === u.userId}
+                          onClick={() => handleSyncUser(u.userId)}
+                          className="border-theme-highlight text-theme-highlight hover:bg-theme-highlight/15"
+                          title={t.tooltipSyncKycaid}
                         >
-                          <ShieldCheck className="h-4 w-4" />
+                          {syncingUserId === u.userId
+                            ? <Loader2 className="h-4 w-4 animate-spin" />
+                            : <CloudDownload className="h-4 w-4" />}
                         </Button>
                       )}
 
-                      {u.kycStatus !== 'REJECTED' && u.kycStatus !== 'KYCAID_REJECTED' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={async () => {
-                            if (!confirm(t.rejectConfirm.replace('{name}', displayName(u)))) return;
-                            try {
-                              const r = await fetch(`/api/admin/kyc/force-verify/${u.userId}`, { method: 'POST' });
-                              const d = await r.json().catch(() => ({}));
-                              if (!r.ok) {
+                      {u.kycStatus !== 'VERIFIED' && u.kycStatus !== 'KYCAID_VERIFIED' && (
+                        u.hasKycRequest ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
+                              if (!confirm(t.forceVerifyConfirm.replace('{name}', displayName(u)))) return;
+                              try {
+                                const r = await fetch(`/api/admin/kyc/force-verify/${u.userId}?force=true`, { method: 'POST' });
+                                const d = await r.json().catch(() => ({}));
+                                if (!r.ok || !d?.success || !d?.newStatus) {
+                                  toast({
+                                    title: t.errorTitle,
+                                    description: d?.error || d?.message || t.kycSyncErrorDesc,
+                                    variant: 'destructive',
+                                  });
+                                  return;
+                                }
+                                toast({ title: t.kycForcedTitle, description: t.kycForcedDesc.replace('{status}', d.newStatus) });
+                                queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+                                queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
+                              } catch (err) {
                                 toast({
                                   title: t.errorTitle,
-                                  description: d?.error || d?.message || t.kycSyncErrorDesc,
+                                  description: err instanceof Error ? err.message : t.kycSyncErrorDesc,
                                   variant: 'destructive',
                                 });
-                                return;
                               }
-                              toast({
-                                title: t.rejectResultTitle,
-                                description:
-                                  d.newStatus === 'VERIFIED'
-                                    ? t.kycaidSaysVerified
-                                    : t.kycForcedDesc.replace(
-                                        '{status}',
-                                        String(d.newStatus ?? t.unchanged),
-                                      ),
-                              });
-                              queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-                              queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
-                            } catch (err) {
-                              toast({
-                                title: t.errorTitle,
-                                description: err instanceof Error ? err.message : t.kycSyncErrorDesc,
-                                variant: 'destructive',
-                              });
-                            }
-                          }}
-                          className="border-red-700 text-red-400 hover:bg-red-900/30"
-                          title={t.tooltipForceReject}
-                        >
-                          <ShieldX className="h-4 w-4" />
-                        </Button>
+                            }}
+                            className="border-green-700 text-green-400 hover:bg-green-900/30"
+                            title={t.tooltipForceVerify}
+                          >
+                            <ShieldCheck className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openManualAction(u, 'verify')}
+                            className="border-green-700 text-green-400 hover:bg-green-900/30"
+                            title={t.tooltipForceVerify}
+                          >
+                            <ShieldCheck className="h-4 w-4" />
+                          </Button>
+                        )
+                      )}
+
+                      {u.kycStatus !== 'REJECTED' && u.kycStatus !== 'KYCAID_REJECTED' && (
+                        u.hasKycRequest ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
+                              if (!confirm(t.rejectConfirm.replace('{name}', displayName(u)))) return;
+                              try {
+                                const r = await fetch(`/api/admin/kyc/force-verify/${u.userId}`, { method: 'POST' });
+                                const d = await r.json().catch(() => ({}));
+                                if (!r.ok) {
+                                  toast({
+                                    title: t.errorTitle,
+                                    description: d?.error || d?.message || t.kycSyncErrorDesc,
+                                    variant: 'destructive',
+                                  });
+                                  return;
+                                }
+                                toast({
+                                  title: t.rejectResultTitle,
+                                  description:
+                                    d.newStatus === 'VERIFIED'
+                                      ? t.kycaidSaysVerified
+                                      : t.kycForcedDesc.replace(
+                                          '{status}',
+                                          String(d.newStatus ?? t.unchanged),
+                                        ),
+                                });
+                                queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+                                queryClient.invalidateQueries({ queryKey: queryKeys.adminKyc(queryParams as any) });
+                              } catch (err) {
+                                toast({
+                                  title: t.errorTitle,
+                                  description: err instanceof Error ? err.message : t.kycSyncErrorDesc,
+                                  variant: 'destructive',
+                                });
+                              }
+                            }}
+                            className="border-red-700 text-red-400 hover:bg-red-900/30"
+                            title={t.tooltipForceReject}
+                          >
+                            <ShieldX className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openManualAction(u, 'reject')}
+                            className="border-red-700 text-red-400 hover:bg-red-900/30"
+                            title={t.tooltipForceRejectManual}
+                          >
+                            <ShieldX className="h-4 w-4" />
+                          </Button>
+                        )
                       )}
                     </div>
                   </TableCell>
@@ -452,6 +554,65 @@ export function AdminKYCManagement() {
           </CardContent>
         </Card>
       )}
+
+      <Dialog
+        open={manualAction.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setManualAction({ open: false, user: null, action: 'verify' });
+            setManualReason('');
+          }
+        }}
+      >
+        <DialogContent className="bg-slate-800 border-slate-700 text-white">
+          <DialogHeader>
+            <DialogTitle>
+              {manualAction.action === 'verify' ? t.manualVerifyTitle : t.manualRejectTitle}
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              {(manualAction.action === 'verify' ? t.manualVerifyDesc : t.manualRejectDesc).replace(
+                '{name}',
+                manualAction.user ? displayName(manualAction.user) : '',
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="manual-kyc-reason" className="text-slate-300">
+              {t.manualReasonLabel}
+            </Label>
+            <Input
+              id="manual-kyc-reason"
+              value={manualReason}
+              onChange={(e) => setManualReason(e.target.value)}
+              placeholder={t.manualReasonPlaceholder}
+              className="bg-slate-700 border-slate-600 text-white"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setManualAction({ open: false, user: null, action: 'verify' });
+                setManualReason('');
+              }}
+              className="border-slate-600 text-white hover:bg-slate-700"
+            >
+              {t.manualCancel}
+            </Button>
+            <Button
+              onClick={handleManualAction}
+              disabled={manualSubmitting}
+              className={
+                manualAction.action === 'verify'
+                  ? 'bg-green-700 hover:bg-green-800'
+                  : 'bg-red-700 hover:bg-red-800'
+              }
+            >
+              {manualSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t.manualConfirm}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Pagination */}
       {data?.totalPages > 1 && (

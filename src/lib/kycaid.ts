@@ -1169,6 +1169,8 @@ export type SyncKycResult = {
 
 export type SyncKycOptions = {
   force?: boolean;
+  forceReject?: boolean;
+  manualReason?: string;
   adminId?: string;
   ipAddress?: string;
 };
@@ -1344,6 +1346,25 @@ async function applyManualVerifiedOverride(
   return { success: true, newStatus: 'VERIFIED', source: 'manual_admin_override' };
 }
 
+async function applyManualRejectedOverride(
+  userId: string,
+  options: SyncKycOptions,
+  reason: string
+): Promise<SyncKycResult> {
+  await updateUserKycStatus(userId, 'REJECTED', undefined, reason);
+  if (options.adminId) {
+    await prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'KYC_FORCE_REJECTED',
+        details: { adminId: options.adminId, reason },
+        ipAddress: options.ipAddress || 'unknown',
+      },
+    });
+  }
+  return { success: true, newStatus: 'REJECTED', source: 'manual_admin_override' };
+}
+
 /**
  * Synchronise le statut KYC d'un utilisateur depuis KYCAID (APIs documentées).
  * Utilisé par le panel admin (force-verify, sync unitaire) et checkKycStatus.
@@ -1364,8 +1385,13 @@ export async function syncUserKycFromKycaid(
   const dbReasons = await resolveDeclineReasonsFromDb(userId);
 
   if (!user.kycaidApplicantId) {
+    if (options.forceReject) {
+      const reason = options.manualReason?.trim() || 'Admin force-reject (no applicant)';
+      return applyManualRejectedOverride(userId, options, reason);
+    }
     if (options.force) {
-      return applyManualVerifiedOverride(userId, options, 'Admin force-verify (no applicant)');
+      const reason = options.manualReason?.trim() || 'Admin force-verify (no applicant)';
+      return applyManualVerifiedOverride(userId, options, reason);
     }
     return {
       success: false,

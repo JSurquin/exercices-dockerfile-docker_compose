@@ -26,11 +26,25 @@ export async function POST(
   }
 
   const { userId } = await params;
-  const force = new URL(request.url).searchParams.get('force') === 'true';
+  const searchParams = new URL(request.url).searchParams;
+  const force = searchParams.get('force') === 'true';
+  const forceReject = searchParams.get('forceReject') === 'true';
+
+  let manualReason: string | undefined;
+  try {
+    const body = await request.json();
+    if (body && typeof body.reason === 'string') {
+      manualReason = body.reason.trim() || undefined;
+    }
+  } catch {
+    // Corps vide : comportement existant (sync / override sans raison personnalisée)
+  }
 
   try {
     const result = await syncUserKycFromKycaid(userId, {
       force,
+      forceReject,
+      manualReason,
       adminId: session.user.id,
       ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
     });

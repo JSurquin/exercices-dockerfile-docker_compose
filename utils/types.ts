@@ -1858,6 +1858,16 @@ export interface Messages {
       statusInProgress: string;
       statusVerified: string;
       statusRejected: string;
+      statusNoRequest: string;
+      manualVerifyTitle: string;
+      manualRejectTitle: string;
+      manualVerifyDesc: string;
+      manualRejectDesc: string;
+      manualReasonLabel: string;
+      manualReasonPlaceholder: string;
+      manualReasonRequired: string;
+      manualCancel: string;
+      manualConfirm: string;
       docIdCard: string;
       docPassport: string;
       docSelfie: string;
@@ -1877,6 +1887,7 @@ export interface Messages {
       tooltipSyncKycaid: string;
       tooltipForceVerify: string;
       tooltipForceReject: string;
+      tooltipForceRejectManual: string;
       kycSyncErrorDesc: string;
       kycaidSaysVerified: string;
       unchanged: string;

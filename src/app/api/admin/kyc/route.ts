@@ -34,8 +34,8 @@ export async function GET(request: NextRequest) {
       } else if (s === 'REJECTED') {
         where.kycStatus = { in: [KycStatus.REJECTED, KycStatus.KYCAID_REJECTED] };
       }
-    } else {
-      // Par défaut : uniquement les users qui ont au moins soumis un KYC
+    } else if (!search) {
+      // Sans recherche : uniquement les users qui ont au moins soumis un KYC
       where.OR = [
         { kycaidApplicantId: { not: null } },
         { kycDocuments: { some: {} } },
@@ -112,6 +112,11 @@ export async function GET(request: NextRequest) {
       email: u.email,
       kycStatus: u.kycStatus,           // ← source de vérité
       kycaidApplicantId: u.kycaidApplicantId,
+      hasKycRequest: !!(
+        u.kycaidApplicantId ||
+        u.kycVerifications.length > 0 ||
+        u.kycDocuments.length > 0
+      ),
       createdAt: u.createdAt,
       latestVerification: u.kycVerifications[0] ?? null,
       latestDocument: u.kycDocuments[0] ?? null,
