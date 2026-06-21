@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { useLocale } from '@/components/providers/locale-provider';
 import { useCurrency } from '@/components/providers/currency-provider';
 import { PageLoading } from '@/components/ui/page-loading';
+import { useAuth } from '@/components/providers/auth-provider';
 import { useSession } from '~/lib/auth-client';
 import { queryKeys } from '@/lib/query-keys';
 import { AffiliateCommission } from '@/lib/types';
@@ -46,7 +47,8 @@ import {
 export default function AffiliatePage() {
   const { messages } = useLocale();
   const { selectedCurrency } = useCurrency();
-  const { data: session } = useSession();
+  const { user, isLoading: authLoading } = useAuth();
+  const { data: session, isPending: sessionPending } = useSession();
   const [customPath, setCustomPath] = useState('');
   const [generatedLink, setGeneratedLink] = useState('');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -54,43 +56,50 @@ export default function AffiliatePage() {
     (cents) => formatCentsToCurrency(cents, 'EUR')
   );
 
-  const userId = session?.user?.id;
+  const userId = session?.user?.id ?? user?.id;
+  const authReady = !authLoading && !sessionPending;
 
-  const { data: statsData, isLoading } = useQuery({
-    queryKey: queryKeys.affiliateStats,
+  const {
+    data: statsData,
+    isLoading: statsLoading,
+    isFetching: statsFetching,
+    isError: statsError,
+    refetch: refetchStats,
+  } = useQuery({
+    queryKey: [...queryKeys.affiliateStats, userId],
     queryFn: async () => {
-      const response = await fetch(`/api/affiliate/stats?userId=${userId}`);
-      const data = await response.json();
-      if (!data.success && response.status !== 404) throw new Error('Failed to load affiliate stats');
+      const response = await fetch('/api/affiliate/stats', { credentials: 'include' });
+      const data = await response.json().catch(() => ({}));
       return { ...data, status: response.status };
     },
-    enabled: !!userId,
+    enabled: authReady && !!userId,
   });
 
   const { data: balanceData } = useQuery({
     queryKey: queryKeys.userBalance,
     queryFn: async () => {
-      const res = await fetch('/api/user/balance');
+      const res = await fetch('/api/user/balance', { credentials: 'include' });
       if (!res.ok) return null;
       return res.json() as Promise<{ availableCents: number }>;
     },
-    enabled: !!userId && statsData?.success === true,
+    enabled: authReady && !!userId && statsData?.success === true,
   });
 
   const availableBalanceCents = balanceData?.availableCents ?? 0;
 
-  const affiliateData = statsData?.success
-    ? {
-        ...statsData.data,
-        metrics: statsData.data?.metrics || {
-          totalPendingCommissions: 0,
-          totalPaidCommissions: 0,
-          conversionRate: 0,
-          averageOrderValue: 0,
-        },
-        recentReferrals: statsData.data?.recentReferrals || [],
-      }
-    : null;
+  const affiliateData =
+    statsData?.success && statsData.data
+      ? {
+          ...statsData.data,
+          metrics: statsData.data.metrics || {
+            totalPendingCommissions: 0,
+            totalPaidCommissions: 0,
+            conversionRate: 0,
+            averageOrderValue: 0,
+          },
+          recentReferrals: statsData.data.recentReferrals || [],
+        }
+      : null;
 
   // Giveaways privés liés au code de cet affilié
   const { data: privateGiveaways = [] } = useQuery<{ id: string; title: string; status: string }[]>({
@@ -107,21 +116,25 @@ export default function AffiliatePage() {
   const { data: pendingCommissionsData } = useQuery({
     queryKey: [...queryKeys.affiliateCommissions, 'pending', userId],
     queryFn: async () => {
-      const res = await fetch(`/api/affiliate/commissions?userId=${userId}&status=PENDING`);
-      const data = await res.json();
+      const res = await fetch('/api/affiliate/commissions?status=PENDING', {
+        credentials: 'include',
+      });
+      const data = await res.json().catch(() => ({}));
       return data.success ? data.data.commissions : [];
     },
-    enabled: !!affiliateData,
+    enabled: authReady && !!affiliateData,
   });
 
   const { data: creditedCommissionsData } = useQuery({
     queryKey: [...queryKeys.affiliateCommissions, 'credited', userId],
     queryFn: async () => {
-      const res = await fetch(`/api/affiliate/commissions?userId=${userId}&status=CREDITED`);
-      const data = await res.json();
+      const res = await fetch('/api/affiliate/commissions?status=CREDITED', {
+        credentials: 'include',
+      });
+      const data = await res.json().catch(() => ({}));
       return data.success ? data.data.commissions : [];
     },
-    enabled: !!affiliateData,
+    enabled: authReady && !!affiliateData,
   });
 
   const commissions = pendingCommissionsData ?? [];
@@ -181,7 +194,8 @@ export default function AffiliatePage() {
       const res = await fetch('/api/affiliate/link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, path: normalizedPath }),
+        credentials: 'include',
+        body: JSON.stringify({ path: normalizedPath }),
       });
       const data = await res.json();
       if (!data.success) {
@@ -209,9 +223,28 @@ export default function AffiliatePage() {
   const fmtDate = (d: string | Date) =>
     new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(d));
 
-  if (isLoading || !session) {
+  if (!authReady || statsLoading || (statsFetching && !statsData)) {
     return (
       <PageLoading variant="compact" message={messages.common.loading} className="min-h-[50vh]" />
+    );
+  }
+
+  if (statsError && statsData?.status !== 404) {
+    return (
+      <div className="container max-w-md mx-auto px-4 py-16">
+        <Card className="lunar-card border-border/60 bg-card/40">
+          <CardContent className="p-8 text-center space-y-4">
+            <div className="mx-auto h-16 w-16 rounded-2xl border border-border/40 bg-red-500/10 flex items-center justify-center">
+              <AlertTriangle className="h-8 w-8 text-red-400" />
+            </div>
+            <h2 className="text-xl font-bold">{messages.common.error}</h2>
+            <p className="text-muted-foreground text-sm">{messages.error.message}</p>
+            <Button variant="outline" onClick={() => refetchStats()}>
+              {messages.error.retry}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -269,7 +302,7 @@ export default function AffiliatePage() {
             {' · '}
             {messages.affiliate.dashboard.commissionLabel} :{' '}
             <span className="font-semibold text-theme-accent">
-              {(affiliateData.commissionRate * 100).toFixed(1)}%
+              {((affiliateData.commissionRate ?? 0) * 100).toFixed(1)}%
             </span>
           </p>
         </div>
@@ -302,19 +335,19 @@ export default function AffiliatePage() {
           <StatCard
             icon={<Users className="h-5 w-5 text-theme-accent" />}
             label={messages.affiliate.dashboard.kpi.referrals}
-            value={affiliateData.totalReferrals.toString()}
+            value={String(affiliateData.totalReferrals ?? 0)}
             sub={messages.affiliate.dashboard.kpi.referralsSub}
           />
           <StatCard
             icon={<TrendingUp className="h-5 w-5 text-theme-accent" />}
             label={messages.affiliate.dashboard.kpi.totalVolume}
-            value={fmt(affiliateData.totalVolumeCents)}
+            value={fmt(affiliateData.totalVolumeCents ?? 0)}
             sub={messages.affiliate.dashboard.kpi.totalVolumeSub}
           />
           <StatCard
             icon={<DollarSign className="h-5 w-5 text-theme-accent" />}
             label={messages.affiliate.dashboard.kpi.totalCommissions}
-            value={fmt(affiliateData.totalCommissionCents)}
+            value={fmt(affiliateData.totalCommissionCents ?? 0)}
             sub={`${fmt(creditedTotal)} ${messages.affiliate.dashboard.commissionCredited.toLowerCase()}`}
           />
           <StatCard
@@ -360,11 +393,11 @@ export default function AffiliatePage() {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-muted-foreground">{messages.affiliate.dashboard.commissionRate}</span>
                 <span className="text-sm font-bold text-theme-accent">
-                  {(affiliateData.commissionRate * 100).toFixed(1)}%
+                  {((affiliateData.commissionRate ?? 0) * 100).toFixed(1)}%
                 </span>
               </div>
               <Progress
-                value={affiliateData.commissionRate * 100}
+                value={(affiliateData.commissionRate ?? 0) * 100}
                 className="mission-progress h-2"
               />
             </div>
@@ -612,7 +645,10 @@ export default function AffiliatePage() {
                   {[
                     {
                       icon: <DollarSign className="h-4 w-4 text-theme-accent" />,
-                      label: messages.affiliate.dashboard.benefitCommission.replace('{rate}', (affiliateData.commissionRate * 100).toFixed(1)),
+                      label: messages.affiliate.dashboard.benefitCommission.replace(
+                        '{rate}',
+                        ((affiliateData.commissionRate ?? 0) * 100).toFixed(1)
+                      ),
                     },
                     {
                       icon: <Gift className="h-4 w-4 text-theme-accent" />,
