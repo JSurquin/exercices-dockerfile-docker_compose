@@ -171,8 +171,10 @@ export function LevelsSection() {
           <div className={`${homeReveal.upSm} flex flex-col lg:h-full`}>
             <div className="flex flex-1 items-center justify-center w-full py-4 lg:min-h-0">
               <img
-                src="/levels/FRAGMENTMS.png"
+                src="/levels/FRAGMENTMS.webp"
                 alt={t.fragmentsAlt}
+                loading="lazy"
+                decoding="async"
                 className="fragment-hero w-auto max-w-[240px] sm:max-w-[280px] lg:max-w-[300px] h-auto max-h-[180px] sm:max-h-[220px] lg:max-h-[260px] object-contain"
                 draggable={false}
               />

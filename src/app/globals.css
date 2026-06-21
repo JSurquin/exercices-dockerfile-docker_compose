@@ -603,12 +603,16 @@ body.next-dev-overlay-present #sentry-feedback {
     border: 1px solid rgba(200, 205, 220, 0.12);
     border-radius: 16px;
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     box-shadow:
       0 24px 70px rgba(0, 0, 0, 0.88),
       0 6px 20px rgba(0, 0, 0, 0.7),
       0 1px 0 rgba(255, 255, 255, 0.1) inset,
       0 0 0 1px rgba(180, 180, 200, 0.08) inset;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
   }
 
   .lunar-card:hover {
@@ -1110,6 +1114,8 @@ body.next-dev-overlay-present #sentry-feedback {
     -webkit-backdrop-filter: blur(20px);
     background: rgba(255, 255, 255, 0.04);
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    backface-visibility: hidden;
+    isolation: isolate;
   }
 
   .moonskin .lunar-nav {
@@ -1157,7 +1163,7 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .lunar-footer--banner {
-    background-image: url("/assets/FOOTER.png");
+    background-image: url("/assets/FOOTER.webp");
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: center bottom;
@@ -1197,6 +1203,9 @@ body.next-dev-overlay-present #sentry-feedback {
       0 6px 20px rgba(0, 0, 0, 0.7),
       0 1px 0 rgba(255, 255, 255, 0.1) inset,
       0 0 0 1px rgba(180, 180, 200, 0.08) inset;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
   }
 
   .lunar-footer__social-icon {
@@ -2490,6 +2499,9 @@ body.next-dev-overlay-present #sentry-feedback {
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  backface-visibility: hidden;
   background: #060608;
   background-image:
     radial-gradient(ellipse at 20% 50%, rgba(140, 150, 170, 0.05) 0%, transparent 60%),

@@ -73,7 +73,7 @@ export function FragmentBadge({
 }: FragmentBadgeProps) {
   const img = (
     <img
-      src="/levels/FRAGMENTMS.png"
+      src="/levels/FRAGMENTMS.webp"
       alt={alt}
       className={cn(
         "block shrink-0 overflow-visible object-contain drop-shadow-[0_0_12px_rgba(236,72,153,0.35)]",

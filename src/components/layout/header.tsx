@@ -59,24 +59,32 @@ export function Header() {
   }, [isMenuOpen]);
 
   useEffect(() => {
+    let ticking = false;
+
     const onScroll = () => {
-      if (isMenuOpen) {
-        setNavVisible(true);
-        return;
-      }
+      if (ticking) return;
+      ticking = true;
 
-      const currentY = window.scrollY;
-      const delta = currentY - lastScrollY.current;
+      requestAnimationFrame(() => {
+        if (isMenuOpen) {
+          setNavVisible(true);
+          ticking = false;
+          return;
+        }
 
-      if (currentY <= 16) {
-        setNavVisible(true);
-      } else if (delta > 0) {
-        setNavVisible(false);
-      } else if (delta < -2) {
-        setNavVisible(true);
-      }
+        const currentY = window.scrollY;
+        const delta = currentY - lastScrollY.current;
 
-      lastScrollY.current = currentY;
+        setNavVisible((prev) => {
+          if (currentY <= 16) return prev === true ? prev : true;
+          if (delta > 8) return prev === false ? prev : false;
+          if (delta < -8) return prev === true ? prev : true;
+          return prev;
+        });
+
+        lastScrollY.current = currentY;
+        ticking = false;
+      });
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });

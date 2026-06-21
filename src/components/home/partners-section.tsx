@@ -52,6 +52,8 @@ function PartnerAvatar({ src, name }: { src: string | null; name: string }) {
       <img
         src={src}
         alt={name}
+        loading="lazy"
+        decoding="async"
         className="h-9 w-9 rounded-full object-cover ring-2 ring-border"
       />
     );
@@ -79,6 +81,8 @@ function VideoCard({ video }: { video: PartnerVideo }) {
         <img
           src={thumbUrl}
           alt=""
+          loading="lazy"
+          decoding="async"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           onError={(e) => {
             const target = e.currentTarget;
@@ -153,7 +157,7 @@ function LogoItem({ logo }: { logo: PartnerLogo }) {
   const inner = (
     <>
       <div className="relative h-14 w-14 overflow-hidden rounded-full border border-border bg-card transition-all duration-300 group-hover:border-theme-accent/30 group-hover:ring-2 group-hover:ring-theme-accent/15">
-        <img src={logo.logoUrl} alt={logo.name} className="h-full w-full object-cover" />
+        <img src={logo.logoUrl} alt={logo.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
       </div>
       <span className="max-w-[72px] truncate text-center text-[10px] text-muted-foreground transition-colors group-hover:text-foreground">
         {logo.name}

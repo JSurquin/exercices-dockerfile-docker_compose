@@ -251,7 +251,7 @@ export default function AffiliatePage() {
             <Badge
               variant="outline"
               className={cn(
-                'border-border/60 bg-card/40 backdrop-blur-sm',
+                'border-border/60 bg-card/40',
                 affiliateData.isActive && 'text-theme-success border-theme-success/30'
               )}
             >
@@ -373,7 +373,7 @@ export default function AffiliatePage() {
 
         {/* Tabs */}
         <Tabs defaultValue="referrals" className="space-y-6">
-          <TabsList className="w-full justify-start bg-muted/30 border border-border/60 backdrop-blur-sm">
+          <TabsList className="w-full justify-start bg-muted/30 border border-border/60">
             <TabsTrigger value="referrals">
               <Users className="h-4 w-4 mr-2" />
               {messages.affiliate.dashboard.tabs.referrals}
@@ -401,7 +401,7 @@ export default function AffiliatePage() {
                     {affiliateData.recentReferrals.map((ref: any) => (
                       <div
                         key={ref.id}
-                        className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-card/30 hover:bg-muted/20 transition-colors backdrop-blur-sm"
+                        className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-card/30 hover:bg-muted/20 transition-colors"
                       >
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10">

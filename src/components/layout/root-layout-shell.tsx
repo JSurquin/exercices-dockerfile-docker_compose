@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { CosmicBackground } from '@/components/ui/cosmic-background';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { LocaleProvider } from '@/components/providers/locale-provider';
@@ -12,7 +13,6 @@ import type { PublicStats } from '@/hooks/use-public-stats';
 import { TourModeProvider } from '@/components/providers/tour-provider';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
-import { ChatWidget } from '@/components/ui/chat-widget';
 import { FloatingUiPortal } from '@/components/ui/floating-ui-portal';
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button';
 import { Toaster } from '@/components/ui/sonner';
@@ -20,6 +20,11 @@ import { PayoutReconciler } from '@/components/payout-reconciler';
 import UpdateNotifier from '@/components/update-notifier';
 import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
 import { AuthCallbackNotifier } from '@/components/auth/auth-callback-notifier';
+
+const ChatWidget = dynamic(
+  () => import('@/components/ui/chat-widget').then((mod) => mod.ChatWidget),
+  { ssr: false }
+);
 
 export function RootLayoutShell({
   children,

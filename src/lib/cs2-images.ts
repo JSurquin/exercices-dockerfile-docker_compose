@@ -28,16 +28,16 @@ export const CS2ImageURLsLight = {
   // Arrière-plans CS2 optimisés pour le thème clair
   backgrounds: {
     // Images de cartes avec des tons plus clairs - tu peux remplacer ces URLs par tes propres images
-    dust2: "/images/cs2/backgrounds/light/3.png", 
-    mirage: "/images/cs2/backgrounds/light/1.png", 
-    inferno: "/images/cs2/backgrounds/light/2.png", 
-    nuke: "/images/cs2/backgrounds/light/3.png", 
+    dust2: "/images/cs2/backgrounds/light/3.webp", 
+    mirage: "/images/cs2/backgrounds/light/1.webp", 
+    inferno: "/images/cs2/backgrounds/light/2.webp", 
+    nuke: "/images/cs2/backgrounds/light/3.webp", 
 
     // Wallpapers CS2 alternatifs pour le thème clair
-    steam_bg_1: "/images/cs2/backgrounds/light/1.png", 
-    community_1: "/images/cs2/backgrounds/light/1.png", 
-    community_2: "/images/cs2/backgrounds/light/1.png", 
-    trading_bg: "/images/cs2/backgrounds/light/1.png", 
+    steam_bg_1: "/images/cs2/backgrounds/light/1.webp", 
+    community_1: "/images/cs2/backgrounds/light/1.webp", 
+    community_2: "/images/cs2/backgrounds/light/1.webp", 
+    trading_bg: "/images/cs2/backgrounds/light/1.webp", 
   },
 };
 

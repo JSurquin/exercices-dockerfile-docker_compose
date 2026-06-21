@@ -39,12 +39,12 @@ export const TOTAL_TIERS = LEVELS.length * TIERS_PER_LEVEL; // 30
 // ─── Assets visuels (public/levels/) ────────────────────────────────────────
 
 export const LEVEL_ASSETS = {
-  fragment: "/levels/FRAGMENTMS.png",
+  fragment: "/levels/FRAGMENTMS.webp",
   tiers: [
-    "/levels/lvl1.png",
-    "/levels/lvl2.png",
-    "/levels/lvl3.png",
-    "/levels/lvl4.png",
+    "/levels/lvl1.webp",
+    "/levels/lvl2.webp",
+    "/levels/lvl3.webp",
+    "/levels/lvl4.webp",
   ] as const,
 } as const;
 

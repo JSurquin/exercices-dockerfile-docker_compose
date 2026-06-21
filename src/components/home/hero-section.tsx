@@ -125,8 +125,8 @@ const UsdIcon = () => (
 
 /** Vignettes Steam (512×512) servies depuis public/images/hero-demo-skins */
 const HERO_DEMO_SKIN_IMAGES = {
-  ak47RedlineFt: "/images/hero-demo-skins/ak47-redline-field-tested.png",
-  awpDragonLoreFn: "/images/hero-demo-skins/awp-dragon-lore-factory-new.png",
+  ak47RedlineFt: "/images/hero-demo-skins/ak47-redline-field-tested.webp",
+  awpDragonLoreFn: "/images/hero-demo-skins/awp-dragon-lore-factory-new.webp",
 } as const;
 
 const HERO_PAYMENT_METHOD_ORDER = [
