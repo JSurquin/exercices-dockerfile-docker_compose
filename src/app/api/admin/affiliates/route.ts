@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AffiliateService } from '@/lib/affiliate-service';
 import { affiliateCodeEqualsFilter, normalizeAffiliateCode } from '@/lib/affiliate-commission-logic';
+import { computeAffiliateAttributedTotalsBatch } from '@/lib/affiliate-metrics';
 import { prisma } from '../../../../../prisma/prisma';
 import { requireAdminSession } from '@/lib/require-admin';
 import { safeParseJson, safeParseSearchParams } from '@/lib/validation/helpers';
@@ -67,6 +68,19 @@ export async function GET(request: NextRequest) {
       }),
       prisma.affiliateStats.count({ where })
     ]);
+
+    const attributedTotals = await computeAffiliateAttributedTotalsBatch(
+      affiliates.map((a) => a.id)
+    );
+
+    const affiliatesWithTotals = affiliates.map((affiliate) => {
+      const totals = attributedTotals.get(affiliate.id);
+      return {
+        ...affiliate,
+        totalVolumeCents: totals?.totalVolumeCents ?? affiliate.totalVolumeCents,
+        totalCommissionCents: totals?.totalCommissionCents ?? affiliate.totalCommissionCents,
+      };
+    });
     
     const globalStats = await prisma.affiliateStats.aggregate({
       _sum: {
@@ -80,10 +94,26 @@ export async function GET(request: NextRequest) {
       where: { isActive: true }
     });
     
+    const activeAffiliateIds = await prisma.affiliateStats.findMany({
+      where: { isActive: true },
+      select: { id: true },
+    });
+    const activeTotals = await computeAffiliateAttributedTotalsBatch(
+      activeAffiliateIds.map((a) => a.id)
+    );
+    const globalVolume = [...activeTotals.values()].reduce(
+      (sum, t) => sum + t.totalVolumeCents,
+      0
+    );
+    const globalCommissions = [...activeTotals.values()].reduce(
+      (sum, t) => sum + t.totalCommissionCents,
+      0
+    );
+
     return NextResponse.json({
       success: true,
       data: {
-        affiliates,
+        affiliates: affiliatesWithTotals,
         pagination: {
           page,
           limit,
@@ -93,8 +123,8 @@ export async function GET(request: NextRequest) {
         globalStats: {
           totalAffiliates: globalStats._count.id || 0,
           totalReferrals: globalStats._sum.totalReferrals || 0,
-          totalVolume: globalStats._sum.totalVolumeCents || 0,
-          totalCommissions: globalStats._sum.totalCommissionCents || 0
+          totalVolume: globalVolume,
+          totalCommissions: globalCommissions
         }
       }
     });

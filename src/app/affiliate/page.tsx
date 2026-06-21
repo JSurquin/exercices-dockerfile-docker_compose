@@ -424,13 +424,10 @@ export default function AffiliatePage() {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-muted-foreground">{messages.affiliate.dashboard.commissionRate}</span>
                 <span className="text-sm font-bold text-theme-accent">
+                  {messages.affiliate.dashboard.commissionLabel} :{' '}
                   {((affiliateData.commissionRate ?? 0) * 100).toFixed(1)}%
                 </span>
               </div>
-              <Progress
-                value={(affiliateData.commissionRate ?? 0) * 100}
-                className="mission-progress h-2"
-              />
             </div>
           </CardContent>
         </Card>
