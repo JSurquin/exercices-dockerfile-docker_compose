@@ -1106,7 +1106,7 @@ export function SkinplaceInventoryViewer({
                                     />
                                     <ConvertedPrice
                                       usdCents={item.price_centimes + Math.round(item.price_centimes * bonusRatePercent / 100)}
-                                      className="text-base font-bold text-blue-600 dark:text-blue-400 truncate"
+                                      className="text-base font-bold text-blue-500 dark:text-blue-400 truncate"
                                       showOriginal={false}
                                     />
                                   </div>

@@ -5,6 +5,7 @@ import CountUp from "react-countup";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { NormalizedInventoryItem } from "@/hooks/use-skinplace-inventory";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useCurrency } from "@/components/providers/currency-provider";
 import {
@@ -12,6 +13,17 @@ import {
   SUPPORTED_CURRENCIES,
   SupportedCurrency,
 } from "@/lib/currency-converter";
+
+/** Same blue as merchant prices on inventory cards (#3B82F6 / blue-500). */
+const MERCHANT_PRICE_TEXT_CLASS = "text-blue-500 dark:text-blue-400";
+
+function getItemPriceWithBonusCentimes(
+  item: NormalizedInventoryItem,
+  bonusRatePercent: number,
+): number {
+  if (bonusRatePercent <= 0) return item.price_centimes;
+  return item.price_centimes + Math.round(item.price_centimes * bonusRatePercent / 100);
+}
 
 function getCurrencyAffixes(currency: SupportedCurrency) {
   const symbol = SUPPORTED_CURRENCIES[currency].symbol;
@@ -28,12 +40,18 @@ interface SellSelectionPanelProps {
 }
 
 export function SellSelectionPanel({ items, onContinue, onDeselect }: SellSelectionPanelProps) {
+  const { user } = useAuth();
   const { messages } = useLocale();
   const { selectedCurrency } = useCurrency();
   const sp = messages.components.skinplace;
   const t = messages.sellPage.selectionPanel;
+  const bonusRatePercent = user?.bonusRatePercent ?? 0;
+  const hasMerchantPricing = bonusRatePercent > 0;
 
-  const totalCentimes = items.reduce((sum, item) => sum + item.price_centimes, 0);
+  const totalCentimes = items.reduce(
+    (sum, item) => sum + getItemPriceWithBonusCentimes(item, bonusRatePercent),
+    0,
+  );
   const [displayCentimes, setDisplayCentimes] = useState(0);
   const [isConverting, setIsConverting] = useState(false);
   const { prefix, suffix } = useMemo(
@@ -70,7 +88,13 @@ export function SellSelectionPanel({ items, onContinue, onDeselect }: SellSelect
       <CardContent className="p-3.5 space-y-3">
         <div>
           <p className="text-sm text-muted-foreground mb-1.5">{t.selectedTotal}</p>
-          <p className="text-3xl font-bold text-green-600 dark:text-green-400 tabular-nums">
+          <p
+            className={`text-3xl font-bold tabular-nums ${
+              hasMerchantPricing
+                ? MERCHANT_PRICE_TEXT_CLASS
+                : "text-green-600 dark:text-green-400"
+            }`}
+          >
             {isConverting && items.length > 0 && displayCentimes === 0 ? (
               "…"
             ) : (
