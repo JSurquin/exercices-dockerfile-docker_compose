@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { SparklesIcon } from "@heroicons/react/24/solid";
+import { Store } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { LevelHelpPopover } from "@/components/ui/level-help-popover";
 import { LevelBadge } from "@/components/ui/level-badge";
@@ -50,12 +51,16 @@ interface XPPreviewBarProps {
   currentLevel: number;
   xpForNextLevel: number;
   pendingXPGain: number;
+  bonusRatePercent?: number;
+  userTag?: string | null;
   compact?: boolean;
 }
 
 export function XPPreviewBar({
   currentXP,
   pendingXPGain,
+  bonusRatePercent = 0,
+  userTag,
   compact = false,
 }: XPPreviewBarProps) {
   const { locale, messages } = useLocale();
@@ -99,6 +104,12 @@ export function XPPreviewBar({
               >
                 {cosmicName}
               </span>
+              {bonusRatePercent > 0 && userTag && (
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold leading-none px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30 shrink-0">
+                  {userTag === "MERCHANT" && <Store className="h-2.5 w-2.5" />}
+                  {userTag} +{bonusRatePercent}%
+                </span>
+              )}
               {!compact && <LevelHelpPopover />}
               <span className="text-[10px] text-muted-foreground shrink-0 whitespace-nowrap">
                 {formatMessage(t.tier, {

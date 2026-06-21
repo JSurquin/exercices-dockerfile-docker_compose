@@ -168,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!response.ok) throw new Error('Failed to update user');
       
       const updatedUser = await response.json();
-      setUser(updatedUser);
+      setUser((prev) => (prev ? { ...prev, ...updatedUser } : updatedUser));
       return updatedUser;
     } catch (error) {
       console.error('Update user error:', error);

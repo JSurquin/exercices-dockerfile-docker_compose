@@ -23,7 +23,6 @@ import {
   UserIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
-import { UserRoleBadge } from "@/components/ui/user-role-badge";
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import { PageLoading } from '@/components/ui/page-loading';
 import { useTourMode } from '@/components/providers/tour-provider';
@@ -211,22 +210,6 @@ export default function SellPage() {
         bot={tradeData?.bot}
       />
       <div>
-        {user && (user.bonusRatePercent ?? 0) > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="max-w-6xl mx-auto mb-2"
-          >
-            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-theme-highlight/30 bg-theme-highlight/5 px-3 py-2.5 sm:px-4">
-              <UserRoleBadge userTag={user.userTag} size="sm" />
-              <span className="text-sm text-theme-highlight">
-                {messages.sellPage.bonusBanner.replace('{percent}', String(user.bonusRatePercent))}
-              </span>
-            </div>
-          </motion.div>
-        )}
-
         <motion.div
           data-tour="sell-steps"
           initial={{ opacity: 0, y: 20 }}
@@ -329,6 +312,8 @@ export default function SellPage() {
             currentLevel={userLevel}
             xpForNextLevel={xpNext}
             pendingXPGain={pendingXPGain}
+            bonusRatePercent={user.bonusRatePercent ?? 0}
+            userTag={user.userTag}
             compact
           />
         </motion.div>

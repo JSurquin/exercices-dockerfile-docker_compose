@@ -1098,18 +1098,18 @@ export function SkinplaceInventoryViewer({
                             <div className="flex items-start justify-between gap-1.5 min-w-0">
                               <div className="flex min-w-0 flex-col flex-1">
                                 {bonusRatePercent > 0 && !isDisabled ? (
-                                  <>
-                                    <ConvertedPrice
-                                      usdCents={item.price_centimes + Math.round(item.price_centimes * bonusRatePercent / 100)}
-                                      className="text-lg font-bold text-theme-stat truncate"
-                                      showOriginal={false}
-                                    />
+                                  <div className="flex items-center gap-1.5 flex-wrap min-w-0">
                                     <ConvertedPrice
                                       usdCents={item.price_centimes}
-                                      className="text-xs text-muted-foreground line-through truncate"
+                                      className="text-sm text-muted-foreground line-through shrink-0"
                                       showOriginal={false}
                                     />
-                                  </>
+                                    <ConvertedPrice
+                                      usdCents={item.price_centimes + Math.round(item.price_centimes * bonusRatePercent / 100)}
+                                      className="text-base font-bold text-blue-600 dark:text-blue-400 truncate"
+                                      showOriginal={false}
+                                    />
+                                  </div>
                                 ) : (
                                   <ConvertedPrice
                                     usdCents={item.price_centimes}
