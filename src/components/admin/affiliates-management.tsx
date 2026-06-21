@@ -124,6 +124,25 @@ export default function AffiliatesManagement() {
   const globalStats: GlobalStats = data?.data?.globalStats ?? defaultGlobalStats;
   const totalPages: number = data?.data?.pagination?.pages ?? 1;
 
+  const { data: rankingsData } = useQuery({
+    queryKey: ['admin', 'affiliates', 'rankings'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/affiliates/rankings?limit=15');
+      if (!res.ok) throw new Error('rankings');
+      return res.json();
+    },
+  });
+
+  const rankings: Array<{
+    affiliateId: string;
+    code: string;
+    steamUsername: string | null;
+    totalVolumeCents: number;
+    activeReferrals: number;
+    retentionRate: number;
+    totalReferredUsers: number;
+  }> = rankingsData?.data?.rankings ?? [];
+
   const invalidateAffiliates = () =>
     queryClient.invalidateQueries({ queryKey: ['admin', 'affiliates'] });
 
@@ -297,6 +316,52 @@ export default function AffiliatesManagement() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Classement des affiliés */}
+      {rankings.length > 0 && (
+        <Card className="bg-slate-800/50 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-white">{t.rankingsTitle}</CardTitle>
+            <CardDescription className="text-slate-400">{t.rankingsDesc}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-md border border-slate-700 overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-slate-700">
+                    <TableHead className="text-slate-400">#</TableHead>
+                    <TableHead className="text-slate-400">{t.colAffiliate}</TableHead>
+                    <TableHead className="text-slate-400">{t.colCode}</TableHead>
+                    <TableHead className="text-slate-400">{t.colVolume}</TableHead>
+                    <TableHead className="text-slate-400">{t.rankingsActiveReferrals}</TableHead>
+                    <TableHead className="text-slate-400">{t.rankingsRetention}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rankings.map((row, idx) => (
+                    <TableRow key={row.affiliateId} className="border-slate-700">
+                      <TableCell className="text-slate-300">{idx + 1}</TableCell>
+                      <TableCell className="text-white">
+                        {row.steamUsername || row.code}
+                      </TableCell>
+                      <TableCell>
+                        <code className="bg-muted px-2 py-1 rounded text-sm">{row.code}</code>
+                      </TableCell>
+                      <TableCell className="text-white">
+                        {formatCurrency(row.totalVolumeCents)}
+                      </TableCell>
+                      <TableCell className="text-white">{row.activeReferrals}</TableCell>
+                      <TableCell className="text-emerald-400">
+                        {(row.retentionRate * 100).toFixed(0)}%
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Filters and search */}
       <Card className="bg-slate-800/50 border-slate-700">

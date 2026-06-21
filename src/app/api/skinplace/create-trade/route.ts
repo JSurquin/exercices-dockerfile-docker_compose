@@ -174,6 +174,7 @@ export async function POST(request: NextRequest) {
 
     let affiliatePromoCode: string | null = null;
     let affiliatePromoBonusCents = 0;
+    let affiliateSwitch: { replaced: boolean; affiliateName: string } | null = null;
     const rawPromo =
       typeof body.affiliate_promo_code === 'string' ? body.affiliate_promo_code.trim() : '';
     if (rawPromo) {
@@ -182,12 +183,17 @@ export async function POST(request: NextRequest) {
         const err =
           promo.error === 'self'
             ? 'Vous ne pouvez pas utiliser votre propre code affilié.'
-            : promo.error === 'other_affiliate'
-              ? 'Un autre partenaire est déjà associé à votre compte : ce code ne peut pas être appliqué.'
-              : 'Code promo invalide ou affilié inactif.';
+            : 'Code promo invalide ou affilié inactif.';
         return NextResponse.json({ success: false, error: err }, { status: 400 });
       }
-      await AffiliateService.bindUserToAffiliateForSellPromo(user.id, promo.affiliateId);
+      const bindResult = await AffiliateService.bindUserToAffiliateForSellPromo(
+        user.id,
+        promo.affiliateId
+      );
+      affiliateSwitch = {
+        replaced: bindResult.replaced || promo.willReplace,
+        affiliateName: bindResult.affiliateName || promo.affiliateName,
+      };
       affiliatePromoCode = promo.code;
       if (
         !isAffiliateRewardsBlocked({
@@ -428,6 +434,7 @@ export async function POST(request: NextRequest) {
         },
         items_count: trade.items?.length || 0,
         bot: botInfo,
+        affiliateSwitch,
       },
     });
 

@@ -1586,6 +1586,8 @@ export interface Messages {
       instantCreditDisabledTitle: string;
       instantCreditDisabledDesc: string;
       referredByLabel: string;
+      affiliateHistoryTitle: string;
+      affiliateHistoryCurrent: string;
       viewSteamProfile: string;
     };
     userBanManagement: {
@@ -1969,13 +1971,20 @@ export interface Messages {
         loadError: string;
         colUser: string;
         colJoined: string;
+        colChurned: string;
         colVolume: string;
         colCommission: string;
         rewardsBlockedBadge: string;
+        tabActive: string;
+        tabChurned: string;
         page: string;
         previous: string;
         next: string;
       };
+      rankingsTitle: string;
+      rankingsDesc: string;
+      rankingsActiveReferrals: string;
+      rankingsRetention: string;
     };
     affiliateCommissions: {
       statusPending: string;
@@ -4818,6 +4827,14 @@ export interface Messages {
         totalVolumeSub: string;
         totalCommissions: string;
         pending: string;
+        totalReferredEver: string;
+        totalReferredEverSub: string;
+        churnedUsers: string;
+        churnedUsersSub: string;
+        activeSellingUsers: string;
+        activeSellingUsersSub: string;
+        monthlyVolume: string;
+        monthlyVolumeSub: string;
       };
       performance: string;
       conversionRate: string;
@@ -6419,9 +6436,10 @@ export interface Messages {
     promoInputLabel: string;
     promoPlaceholder: string;
     promoAccepted: string;
+    promoWillReplace: string;
+    promoAffiliateUpdated: string;
     promoErrorInvalid: string;
     promoErrorSelf: string;
-    promoErrorOtherAffiliate: string;
     promoErrorUnauthorized: string;
     promoMustBeValid: string;
     promoBonusLine: string;

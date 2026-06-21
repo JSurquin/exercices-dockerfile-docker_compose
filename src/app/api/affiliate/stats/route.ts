@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AffiliateService } from '@/lib/affiliate-service';
+import { computeAffiliateExtendedMetrics } from '@/lib/affiliate-metrics';
 import { requireUserSession } from '@/lib/require-session-user';
 
 export async function GET(request: NextRequest) {
@@ -37,6 +38,7 @@ export async function GET(request: NextRequest) {
       }, 0) || 0;
 
     const recentReferrals = stats.referrals?.slice(0, 10) || [];
+    const extendedMetrics = await computeAffiliateExtendedMetrics(stats.id);
 
     return NextResponse.json({
       success: true,
@@ -56,6 +58,7 @@ export async function GET(request: NextRequest) {
             stats.totalReferrals > 0
               ? stats.totalVolumeCents / stats.totalReferrals
               : 0,
+          ...extendedMetrics,
         },
         recentReferrals,
       },

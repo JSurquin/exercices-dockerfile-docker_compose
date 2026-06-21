@@ -78,6 +78,8 @@ export function SkinplaceTradeCreator({
   const [promoState, setPromoState] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
   const [promoErrorCode, setPromoErrorCode] = useState<string | null>(null);
   const [appliedPromoCode, setAppliedPromoCode] = useState<string | null>(null);
+  const [promoWillReplace, setPromoWillReplace] = useState(false);
+  const [promoAffiliateName, setPromoAffiliateName] = useState<string | null>(null);
   const promoAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -86,6 +88,8 @@ export function SkinplaceTradeCreator({
       setPromoState('idle');
       setPromoErrorCode(null);
       setAppliedPromoCode(null);
+      setPromoWillReplace(false);
+      setPromoAffiliateName(null);
       return;
     }
 
@@ -104,14 +108,20 @@ export function SkinplaceTradeCreator({
           valid?: boolean;
           code?: string;
           error?: string;
+          willReplace?: boolean;
+          affiliateName?: string;
         };
         if (ctrl.signal.aborted) return;
         if (data.valid && data.code) {
           setPromoState('valid');
           setAppliedPromoCode(data.code);
+          setPromoWillReplace(!!data.willReplace);
+          setPromoAffiliateName(data.affiliateName ?? null);
         } else {
           setPromoState('invalid');
           setAppliedPromoCode(null);
+          setPromoWillReplace(false);
+          setPromoAffiliateName(null);
           setPromoErrorCode(data.error ?? 'invalid');
         }
       } catch (e) {
@@ -252,6 +262,18 @@ export function SkinplaceTradeCreator({
       
       onTradeCreated?.(tradeData);
       toast.success(messages.tradeCreator.tradeCreatedSuccess);
+
+      const switchInfo = result.data?.affiliateSwitch as
+        | { replaced?: boolean; affiliateName?: string }
+        | undefined;
+      if (switchInfo?.affiliateName) {
+        toast.success(
+          messages.tradeCreator.promoAffiliateUpdated.replace(
+            '{name}',
+            switchInfo.affiliateName
+          )
+        );
+      }
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : messages.tradeCreator.errorUnknown;
@@ -415,17 +437,19 @@ export function SkinplaceTradeCreator({
                 </div>
               </div>
               {promoState === 'valid' && (
-                <p className="text-xs text-green-600 dark:text-green-400">{messages.tradeCreator.promoAccepted}</p>
+                <p className="text-xs text-green-600 dark:text-green-400">
+                  {promoWillReplace && promoAffiliateName
+                    ? messages.tradeCreator.promoWillReplace.replace('{name}', promoAffiliateName)
+                    : messages.tradeCreator.promoAccepted}
+                </p>
               )}
               {promoState === 'invalid' && promoErrorCode && (
                 <p className="text-xs text-destructive">
                   {promoErrorCode === 'self'
                     ? messages.tradeCreator.promoErrorSelf
-                    : promoErrorCode === 'other_affiliate'
-                      ? messages.tradeCreator.promoErrorOtherAffiliate
-                      : promoErrorCode === 'unauthorized'
-                        ? messages.tradeCreator.promoErrorUnauthorized
-                        : messages.tradeCreator.promoErrorInvalid}
+                    : promoErrorCode === 'unauthorized'
+                      ? messages.tradeCreator.promoErrorUnauthorized
+                      : messages.tradeCreator.promoErrorInvalid}
                 </p>
               )}
             </div>

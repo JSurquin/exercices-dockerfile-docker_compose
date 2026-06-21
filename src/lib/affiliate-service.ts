@@ -30,7 +30,147 @@ export class AffiliateService {
     if (!code) return null;
     return prisma.affiliateStats.findFirst({
       where: { isActive: true, ...affiliateCodeEqualsFilter(code) },
+      include: {
+        user: { select: { steamUsername: true } },
+      },
     });
+  }
+
+  private static affiliateDisplayName(affiliate: {
+    code: string;
+    user?: { steamUsername?: string | null } | null;
+  }): string {
+    return affiliate.user?.steamUsername?.trim() || affiliate.code;
+  }
+
+  /**
+   * Assure qu'un filleul actif et une entrée d'historique existent pour l'affilié courant.
+   */
+  private static async ensureActiveReferral(
+    userId: string,
+    affiliateId: string,
+    affiliateCode: string
+  ): Promise<void> {
+    const existingRef = await prisma.affiliateReferral.findFirst({
+      where: { affiliateId, referredUserId: userId },
+    });
+    if (!existingRef) {
+      await prisma.affiliateReferral.create({
+        data: {
+          affiliateId,
+          referredUserId: userId,
+          volumeCents: 0,
+          commissionCents: 0,
+          isActive: true,
+        },
+      });
+      await prisma.affiliateStats.update({
+        where: { id: affiliateId },
+        data: { totalReferrals: { increment: 1 } },
+      });
+    } else if (!existingRef.isActive) {
+      await prisma.affiliateReferral.update({
+        where: { id: existingRef.id },
+        data: { isActive: true, churnedAt: null },
+      });
+    }
+
+    const activeHistory = await prisma.userAffiliateHistory.findFirst({
+      where: { userId, affiliateId, isActive: true },
+    });
+    if (!activeHistory) {
+      await prisma.userAffiliateHistory.create({
+        data: { userId, affiliateId, affiliateCode, isActive: true },
+      });
+    }
+  }
+
+  /**
+   * Remplace l'affilié du profil utilisateur par un nouveau code.
+   * Les commissions passées restent chez l'ancien affilié.
+   */
+  static async switchUserToAffiliate(
+    userId: string,
+    affiliate: { id: string; code: string; user?: { steamUsername?: string | null } | null }
+  ): Promise<{ replaced: boolean; affiliateName: string }> {
+    const affiliateName = this.affiliateDisplayName(affiliate);
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { referredByAffiliateId: true },
+    });
+    if (!user) return { replaced: false, affiliateName };
+
+    if (user.referredByAffiliateId === affiliate.id) {
+      await this.ensureActiveReferral(userId, affiliate.id, affiliate.code);
+      return { replaced: false, affiliateName };
+    }
+
+    const previousAffiliateId = user.referredByAffiliateId;
+    const now = new Date();
+
+    await prisma.$transaction(async (tx) => {
+      if (previousAffiliateId) {
+        await tx.affiliateReferral.updateMany({
+          where: {
+            affiliateId: previousAffiliateId,
+            referredUserId: userId,
+            isActive: true,
+          },
+          data: { isActive: false, churnedAt: now },
+        });
+
+        await tx.userAffiliateHistory.updateMany({
+          where: {
+            userId,
+            affiliateId: previousAffiliateId,
+            isActive: true,
+          },
+          data: { isActive: false, endedAt: now },
+        });
+      }
+
+      await tx.user.update({
+        where: { id: userId },
+        data: { referredByAffiliateId: affiliate.id },
+      });
+
+      const existingRef = await tx.affiliateReferral.findFirst({
+        where: { affiliateId: affiliate.id, referredUserId: userId },
+      });
+
+      if (!existingRef) {
+        await tx.affiliateReferral.create({
+          data: {
+            affiliateId: affiliate.id,
+            referredUserId: userId,
+            volumeCents: 0,
+            commissionCents: 0,
+            isActive: true,
+          },
+        });
+        await tx.affiliateStats.update({
+          where: { id: affiliate.id },
+          data: { totalReferrals: { increment: 1 } },
+        });
+      } else if (!existingRef.isActive) {
+        await tx.affiliateReferral.update({
+          where: { id: existingRef.id },
+          data: { isActive: true, churnedAt: null },
+        });
+      }
+
+      await tx.userAffiliateHistory.create({
+        data: {
+          userId,
+          affiliateId: affiliate.id,
+          affiliateCode: affiliate.code,
+          isActive: true,
+        },
+      });
+    });
+
+    return { replaced: !!previousAffiliateId, affiliateName };
   }
   /**
    * Génère un code d'affiliation unique pour un utilisateur
@@ -105,52 +245,7 @@ export class AffiliateService {
     if (!affiliate) return;
     if (affiliate.userId === userId) return;
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { referredByAffiliateId: true },
-    });
-    if (!user) return;
-
-    if (user.referredByAffiliateId) {
-      if (user.referredByAffiliateId !== affiliate.id) {
-        return;
-      }
-      const existingRef = await prisma.affiliateReferral.findFirst({
-        where: { affiliateId: affiliate.id, referredUserId: userId },
-      });
-      if (!existingRef) {
-        await prisma.affiliateReferral.create({
-          data: {
-            affiliateId: affiliate.id,
-            referredUserId: userId,
-            volumeCents: 0,
-            commissionCents: 0,
-          },
-        });
-        await prisma.affiliateStats.update({
-          where: { id: affiliate.id },
-          data: { totalReferrals: { increment: 1 } },
-        });
-      }
-      return;
-    }
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: { referredByAffiliateId: affiliate.id },
-    });
-    await prisma.affiliateReferral.create({
-      data: {
-        affiliateId: affiliate.id,
-        referredUserId: userId,
-        volumeCents: 0,
-        commissionCents: 0,
-      },
-    });
-    await prisma.affiliateStats.update({
-      where: { id: affiliate.id },
-      data: { totalReferrals: { increment: 1 } },
-    });
+    await this.switchUserToAffiliate(userId, affiliate);
   }
 
   /**
@@ -160,8 +255,14 @@ export class AffiliateService {
     userId: string,
     rawCode: string
   ): Promise<
-    | { ok: true; affiliateId: string; code: string }
-    | { ok: false; error: 'invalid' | 'self' | 'other_affiliate' }
+    | {
+        ok: true;
+        affiliateId: string;
+        code: string;
+        willReplace: boolean;
+        affiliateName: string;
+      }
+    | { ok: false; error: 'invalid' | 'self' }
   > {
     const code = normalizeAffiliateCode(rawCode);
     if (!code) return { ok: false, error: 'invalid' };
@@ -174,11 +275,18 @@ export class AffiliateService {
       where: { id: userId },
       select: { referredByAffiliateId: true },
     });
-    if (user?.referredByAffiliateId && user.referredByAffiliateId !== affiliate.id) {
-      return { ok: false, error: 'other_affiliate' };
-    }
 
-    return { ok: true, affiliateId: affiliate.id, code: affiliate.code };
+    const willReplace = !!(
+      user?.referredByAffiliateId && user.referredByAffiliateId !== affiliate.id
+    );
+
+    return {
+      ok: true,
+      affiliateId: affiliate.id,
+      code: affiliate.code,
+      willReplace,
+      affiliateName: this.affiliateDisplayName(affiliate),
+    };
   }
 
   /**
@@ -187,54 +295,16 @@ export class AffiliateService {
   static async bindUserToAffiliateForSellPromo(
     userId: string,
     affiliateId: string
-  ): Promise<void> {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { referredByAffiliateId: true },
+  ): Promise<{ replaced: boolean; affiliateName: string }> {
+    const affiliate = await prisma.affiliateStats.findUnique({
+      where: { id: affiliateId, isActive: true },
+      include: { user: { select: { steamUsername: true } } },
     });
-    if (!user) return;
-
-    if (user.referredByAffiliateId === affiliateId) {
-      const existingRef = await prisma.affiliateReferral.findFirst({
-        where: { affiliateId, referredUserId: userId },
-      });
-      if (!existingRef) {
-        await prisma.affiliateReferral.create({
-          data: {
-            affiliateId,
-            referredUserId: userId,
-            volumeCents: 0,
-            commissionCents: 0,
-          },
-        });
-        await prisma.affiliateStats.update({
-          where: { id: affiliateId },
-          data: { totalReferrals: { increment: 1 } },
-        });
-      }
-      return;
+    if (!affiliate || affiliate.userId === userId) {
+      return { replaced: false, affiliateName: '' };
     }
 
-    if (user.referredByAffiliateId) {
-      return;
-    }
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: { referredByAffiliateId: affiliateId },
-    });
-    await prisma.affiliateReferral.create({
-      data: {
-        affiliateId,
-        referredUserId: userId,
-        volumeCents: 0,
-        commissionCents: 0,
-      },
-    });
-    await prisma.affiliateStats.update({
-      where: { id: affiliateId },
-      data: { totalReferrals: { increment: 1 } },
-    });
+    return this.switchUserToAffiliate(userId, affiliate);
   }
   
   /**
@@ -628,6 +698,7 @@ export class AffiliateService {
       where: { userId },
       include: {
         referrals: {
+          where: { isActive: true },
           include: {
             referredUser: {
               select: {

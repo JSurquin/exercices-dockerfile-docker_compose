@@ -102,11 +102,34 @@ export async function GET(
     }
 
     const { referredByAffiliateId: _refId, totalVolumeCents: _storedVolume, ...userPayload } = user;
+
+    const affiliateHistory = await prisma.userAffiliateHistory.findMany({
+      where: { userId },
+      include: {
+        affiliate: {
+          select: {
+            code: true,
+            user: { select: { steamUsername: true } },
+          },
+        },
+      },
+      orderBy: { startedAt: 'desc' },
+    });
+
     return NextResponse.json({
       ...userPayload,
       totalVolumeCents,
       pendingVolumeCents,
       referredBy,
+      affiliateHistory: affiliateHistory.map((h) => ({
+        id: h.id,
+        affiliateId: h.affiliateId,
+        affiliateCode: h.affiliateCode,
+        affiliateName: h.affiliate.user.steamUsername,
+        startedAt: h.startedAt,
+        endedAt: h.endedAt,
+        isActive: h.isActive,
+      })),
     });
   } catch (err) {
     console.error('[admin/users/[userId]]', err);

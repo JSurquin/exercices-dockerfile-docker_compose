@@ -83,6 +83,7 @@ model User {
   notificationPreferences  NotificationPreferences?
   affiliateGiveawayRequests AffiliateGiveawayRequest[] @relation("AffiliateGiveawayRequestUser")
   reviewedAffiliateGiveawayRequests AffiliateGiveawayRequest[] @relation("AffiliateGiveawayRequestReviewer")
+  affiliateHistory         UserAffiliateHistory[]
 
   @@map("user")
 }
@@ -410,6 +411,7 @@ model AffiliateStats {
   commissions          AffiliateCommission[]
   referrals            AffiliateReferral[]
   giveawayRequests     AffiliateGiveawayRequest[]
+  affiliateHistory     UserAffiliateHistory[]
   user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([code])
@@ -423,6 +425,9 @@ model AffiliateReferral {
   tradeId         String?
   volumeCents     Int                   @default(0)
   commissionCents Int                   @default(0)
+  /// false lorsque le filleul a changé d'affilié
+  isActive        Boolean               @default(true)
+  churnedAt       DateTime?
   createdAt       DateTime              @default(now())
   commissions     AffiliateCommission[]
   affiliate       AffiliateStats        @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
@@ -432,6 +437,26 @@ model AffiliateReferral {
   @@index([affiliateId])
   @@index([referredUserId])
   @@index([createdAt])
+  @@index([isActive])
+}
+
+/// Historique des affiliés utilisés par un utilisateur (parcours influenceur → influenceur)
+model UserAffiliateHistory {
+  id            String         @id @default(cuid())
+  userId        String
+  affiliateId   String
+  affiliateCode String
+  startedAt     DateTime       @default(now())
+  endedAt       DateTime?
+  isActive      Boolean        @default(true)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  affiliate     AffiliateStats @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([affiliateId])
+  @@index([isActive])
+  @@index([startedAt])
+  @@map("user_affiliate_history")
 }
 
 model AffiliateCommission {

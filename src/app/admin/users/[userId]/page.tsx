@@ -53,6 +53,14 @@ interface UserDetail {
   affiliateRewardsBlocked: boolean;
   xpRewardsBlocked: boolean;
   referredBy: { affiliateId: string; code: string; steamUsername: string | null } | null;
+  affiliateHistory?: Array<{
+    id: string;
+    affiliateCode: string;
+    affiliateName: string | null;
+    startedAt: string;
+    endedAt: string | null;
+    isActive: boolean;
+  }>;
   createdAt: string;
   role: string;
 }
@@ -451,6 +459,28 @@ export default function AdminUserDetailPage() {
               <code className="text-theme-highlight">{user.referredBy.code}</code>
               {user.referredBy.steamUsername ? ` (${user.referredBy.steamUsername})` : ''}
             </p>
+          )}
+          {user.affiliateHistory && user.affiliateHistory.length > 0 && (
+            <div className="border-t border-slate-700 pt-3 space-y-2">
+              <p className="text-sm font-medium text-slate-200">{t.affiliateHistoryTitle}</p>
+              <ul className="space-y-1.5">
+                {user.affiliateHistory.map((entry: NonNullable<UserDetail['affiliateHistory']>[number]) => (
+                  <li key={entry.id} className="text-xs text-slate-400 flex flex-wrap gap-1">
+                    <code className="text-theme-highlight">{entry.affiliateCode}</code>
+                    {entry.affiliateName ? `(${entry.affiliateName})` : ''}
+                    <span>—</span>
+                    <span>
+                      {new Date(entry.startedAt).toLocaleDateString('fr-FR')}
+                      {entry.endedAt
+                        ? ` → ${new Date(entry.endedAt).toLocaleDateString('fr-FR')}`
+                        : entry.isActive
+                          ? ` (${t.affiliateHistoryCurrent})`
+                          : ''}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </CardContent>
       </Card>

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Search, Loader2, ExternalLink } from 'lucide-react';
+import { Search, Loader2, ExternalLink, UserMinus } from 'lucide-react';
 import { queryKeys } from '@/lib/query-keys';
 import { UserRoleBadge } from '@/components/ui/user-role-badge';
 import { useLocale } from '@/components/providers/locale-provider';
@@ -30,6 +30,8 @@ interface ReferralUser {
 interface ReferralRow {
   id: string;
   referredAt: string;
+  churnedAt?: string | null;
+  isActive?: boolean;
   volumeCents: number;
   commissionCents: number;
   tradeId: string | null;
@@ -46,6 +48,7 @@ export function AffiliateReferralsList({ affiliateId }: Props) {
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [referralStatus, setReferralStatus] = useState<'active' | 'churned'>('active');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -56,11 +59,12 @@ export function AffiliateReferralsList({ affiliateId }: Props) {
   }, [searchInput]);
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: queryKeys.adminAffiliateReferrals(affiliateId, { page, search: debouncedSearch }),
+    queryKey: queryKeys.adminAffiliateReferrals(affiliateId, { page, search: debouncedSearch, status: referralStatus }),
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
         limit: '15',
+        status: referralStatus,
       });
       if (debouncedSearch) params.set('search', debouncedSearch);
       const res = await fetch(`/api/admin/affiliates/${affiliateId}/referrals?${params}`);
@@ -88,12 +92,31 @@ export function AffiliateReferralsList({ affiliateId }: Props) {
     <div className="border-t pt-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <h4 className="text-sm font-medium text-white">{t.title}</h4>
-        {pagination && (
-          <span className="text-xs text-slate-400">
-            {t.totalCount.replace('{count}', String(pagination.total))}
-          </span>
-        )}
+        <div className="flex gap-1">
+          <Button
+            variant={referralStatus === 'active' ? 'default' : 'outline'}
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => { setReferralStatus('active'); setPage(1); }}
+          >
+            {t.tabActive}
+          </Button>
+          <Button
+            variant={referralStatus === 'churned' ? 'default' : 'outline'}
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => { setReferralStatus('churned'); setPage(1); }}
+          >
+            <UserMinus className="h-3 w-3 mr-1" />
+            {t.tabChurned}
+          </Button>
+        </div>
       </div>
+      {pagination && (
+        <span className="text-xs text-slate-400 block">
+          {t.totalCount.replace('{count}', String(pagination.total))}
+        </span>
+      )}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <Input
@@ -120,6 +143,9 @@ export function AffiliateReferralsList({ affiliateId }: Props) {
               <TableRow className="border-slate-700 hover:bg-transparent">
                 <TableHead className="text-slate-400">{t.colUser}</TableHead>
                 <TableHead className="text-slate-400">{t.colJoined}</TableHead>
+                {referralStatus === 'churned' && (
+                  <TableHead className="text-slate-400">{t.colChurned}</TableHead>
+                )}
                 <TableHead className="text-slate-400">{t.colVolume}</TableHead>
                 <TableHead className="text-slate-400">{t.colCommission}</TableHead>
               </TableRow>
@@ -154,6 +180,11 @@ export function AffiliateReferralsList({ affiliateId }: Props) {
                     </Link>
                   </TableCell>
                   <TableCell className="text-slate-300 text-sm">{formatDate(ref.referredAt)}</TableCell>
+                  {referralStatus === 'churned' && (
+                    <TableCell className="text-slate-300 text-sm">
+                      {ref.churnedAt ? formatDate(ref.churnedAt) : '—'}
+                    </TableCell>
+                  )}
                   <TableCell className="text-white text-sm">{formatCurrency(ref.volumeCents)}</TableCell>
                   <TableCell className="text-emerald-400 text-sm">
                     {formatCurrency(ref.commissionCents)}

@@ -8,6 +8,7 @@ const querySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   search: z.string().optional(),
+  status: z.enum(['active', 'churned', 'all']).default('active'),
 });
 
 export async function GET(
@@ -38,15 +39,24 @@ export async function GET(
     if (!parsedQ.ok) {
       return parsedQ.response;
     }
-    const { page, limit, search } = parsedQ.data;
+    const { page, limit, search, status } = parsedQ.data;
     const skip = (page - 1) * limit;
 
     const where: {
       affiliateId: string;
+      isActive?: boolean;
+      churnedAt?: { not: null } | null;
       referredUser?: {
         OR: Array<{ steamUsername?: { contains: string; mode: 'insensitive' }; email?: { contains: string; mode: 'insensitive' }; steamId?: { contains: string } }>;
       };
     } = { affiliateId };
+
+    if (status === 'active') {
+      where.isActive = true;
+    } else if (status === 'churned') {
+      where.isActive = false;
+      where.churnedAt = { not: null };
+    }
 
     if (search?.trim()) {
       const q = search.trim();
@@ -93,6 +103,8 @@ export async function GET(
         referrals: referrals.map((r) => ({
           id: r.id,
           referredAt: r.createdAt,
+          churnedAt: r.churnedAt,
+          isActive: r.isActive,
           volumeCents: r.volumeCents,
           commissionCents: r.commissionCents,
           tradeId: r.tradeId,

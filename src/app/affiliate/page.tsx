@@ -42,6 +42,7 @@ import {
   UserCheck,
   AlertTriangle,
   Check,
+  UserX,
 } from 'lucide-react';
 
 export default function AffiliatePage() {
@@ -355,6 +356,36 @@ export default function AffiliatePage() {
             label={messages.affiliate.dashboard.kpi.pending}
             value={fmt(pendingTotal)}
             sub={`${commissions.length} commission(s)`}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            icon={<Users className="h-5 w-5 text-theme-accent" />}
+            label={messages.affiliate.dashboard.kpi.totalReferredEver}
+            value={String(affiliateData.metrics?.totalReferredUsers ?? 0)}
+            sub={messages.affiliate.dashboard.kpi.totalReferredEverSub}
+          />
+          <StatCard
+            icon={<UserX className="h-5 w-5 text-theme-accent" />}
+            label={messages.affiliate.dashboard.kpi.churnedUsers}
+            value={String(affiliateData.metrics?.churnedUsers ?? 0)}
+            sub={messages.affiliate.dashboard.kpi.churnedUsersSub}
+          />
+          <StatCard
+            icon={<Zap className="h-5 w-5 text-theme-accent" />}
+            label={messages.affiliate.dashboard.kpi.activeSellingUsers}
+            value={String(affiliateData.metrics?.activeSellingUsers ?? 0)}
+            sub={messages.affiliate.dashboard.kpi.activeSellingUsersSub}
+          />
+          <StatCard
+            icon={<BarChart3 className="h-5 w-5 text-theme-accent" />}
+            label={messages.affiliate.dashboard.kpi.monthlyVolume}
+            value={fmt(affiliateData.metrics?.volumeThisMonthCents ?? 0)}
+            sub={messages.affiliate.dashboard.kpi.monthlyVolumeSub.replace(
+              '{prev}',
+              fmt(affiliateData.metrics?.volumePreviousMonthCents ?? 0)
+            )}
           />
         </div>
 

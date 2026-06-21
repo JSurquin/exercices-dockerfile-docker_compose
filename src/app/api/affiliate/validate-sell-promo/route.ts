@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { AffiliateService } from '@/lib/affiliate-service';
+import { computeAffiliateExtendedMetrics } from '@/lib/affiliate-metrics';
 
 /**
  * Vérifie qu’un code saisi sur /sell correspond à un affilié actif
@@ -22,5 +23,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ valid: false, error: result.error });
   }
 
-  return NextResponse.json({ valid: true, code: result.code });
+  return NextResponse.json({
+    valid: true,
+    code: result.code,
+    willReplace: result.willReplace,
+    affiliateName: result.affiliateName,
+  });
 }
