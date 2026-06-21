@@ -4835,7 +4835,7 @@ export const messages: Record<Locale, Messages> = {
       },
       tradeLinkSection: {
         description:
-          "Vendez des skins depuis un autre compte Steam tout en restant connecté sur MoonSkin — plus besoin de refaire des centaines de KYC.",
+          "Vendez des skins depuis un autre compte Steam tout en restant connecté sur MoonSkin, plus besoin de refaire des centaines de KYC.",
         inventoryFromTradeLink: "Inventaire chargé depuis :",
       },
       selectionPanel: {
@@ -11245,7 +11245,7 @@ export const messages: Record<Locale, Messages> = {
       },
       tradeLinkSection: {
         description:
-          "Sell skins from another Steam account while staying logged into MoonSkin — no need to redo hundreds of KYC checks.",
+          "Sell skins from another Steam account while staying logged into MoonSkin, no need to redo hundreds of KYC checks.",
         inventoryFromTradeLink: "Inventory loaded from:",
       },
       selectionPanel: {
@@ -18565,7 +18565,7 @@ export const messages: Record<Locale, Messages> = {
       },
       tradeLinkSection: {
         description:
-          "在保持 MoonSkin 登录的同时，通过其他 Steam 账户出售皮肤——无需重复数百次 KYC 验证。",
+          "在保持 MoonSkin 登录的同时，通过其他 Steam 账户出售皮肤，无需重复数百次 KYC 验证。",
         inventoryFromTradeLink: "库存来源：",
       },
       selectionPanel: {

@@ -9,13 +9,14 @@ export const MOONSKIN_X_URL =
   process.env.NEXT_PUBLIC_TWITTER_URL ?? "https://x.com/MoonSkinCs";
 
 export const MOONSKIN_INSTAGRAM_URL =
-  process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? "https://www.instagram.com/moonskinscs";
+  process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? "https://www.instagram.com/moonskinscs_";
 
 export const MOONSKIN_TIKTOK_URL =
-  process.env.NEXT_PUBLIC_TIKTOK_URL ?? "https://www.tiktok.com/@moonskincs";
+  process.env.NEXT_PUBLIC_TIKTOK_URL ?? "https://www.tiktok.com/@moonskincs2";
 
 export const MOONSKIN_YOUTUBE_URL =
-  process.env.NEXT_PUBLIC_YOUTUBE_URL ?? "https://www.youtube.com/@MoonSkinCs";
+  process.env.NEXT_PUBLIC_YOUTUBE_URL ??
+  "https://www.youtube.com/channel/UCOg5lSlkUGVxMc9ImUsCq-Q";
 
 export const MOONSKIN_TELEGRAM_URL =
   process.env.NEXT_PUBLIC_TELEGRAM_URL ?? "https://t.me/+1gKVtRrz9p81OTM0";
