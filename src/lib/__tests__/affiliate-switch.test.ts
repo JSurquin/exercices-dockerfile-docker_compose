@@ -24,12 +24,12 @@ jest.mock('next/headers', () => ({
 
 import { AffiliateService } from '@/lib/affiliate-service';
 
-describe('AffiliateService.attachUserToAffiliateOnce', () => {
+describe('AffiliateService.switchUserToAffiliate', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('creates permanent referral when user has no parrain yet', async () => {
+  it('creates referral when user has no parrain yet', async () => {
     prismaMock.user.findUnique.mockResolvedValue({ referredByAffiliateId: null });
     prismaMock.affiliateReferral.findFirst.mockResolvedValue(null);
     prismaMock.affiliateReferral.create.mockResolvedValue({ id: 'ref-new' });
@@ -37,13 +37,14 @@ describe('AffiliateService.attachUserToAffiliateOnce', () => {
     prismaMock.user.update.mockResolvedValue({});
     prismaMock.userAffiliateHistory.create.mockResolvedValue({ id: 'hist-1' });
 
-    const result = await AffiliateService.attachUserToAffiliateOnce('user-1', {
+    const result = await AffiliateService.switchUserToAffiliate('user-1', {
       id: 'aff-new',
       code: 'STREAMER',
       user: { steamUsername: 'StreamerPro' },
     });
 
     expect(result.attached).toBe(true);
+    expect(result.replaced).toBe(false);
     expect(result.alreadyLinked).toBe(false);
     expect(result.affiliateName).toBe('StreamerPro');
     expect(prismaMock.user.update).toHaveBeenCalledWith(
@@ -51,22 +52,40 @@ describe('AffiliateService.attachUserToAffiliateOnce', () => {
         data: { referredByAffiliateId: 'aff-new' },
       })
     );
-    expect(prismaMock.affiliateReferral.updateMany).not.toHaveBeenCalled();
   });
 
-  it('does not overwrite an existing parrain (first wins)', async () => {
+  it('switches parrain when another affiliate is already linked (last wins)', async () => {
     prismaMock.user.findUnique.mockResolvedValue({ referredByAffiliateId: 'aff-old' });
+    prismaMock.affiliateReferral.findFirst.mockResolvedValue(null);
+    prismaMock.affiliateReferral.create.mockResolvedValue({ id: 'ref-new' });
+    prismaMock.affiliateReferral.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.userAffiliateHistory.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.affiliateStats.update.mockResolvedValue({});
+    prismaMock.user.update.mockResolvedValue({});
+    prismaMock.userAffiliateHistory.create.mockResolvedValue({ id: 'hist-2' });
 
-    const result = await AffiliateService.attachUserToAffiliateOnce('user-1', {
+    const result = await AffiliateService.switchUserToAffiliate('user-1', {
       id: 'aff-new',
       code: 'NEWCODE',
       user: { steamUsername: 'NewPartner' },
     });
 
+    expect(result.replaced).toBe(true);
     expect(result.attached).toBe(false);
-    expect(result.alreadyLinked).toBe(true);
-    expect(prismaMock.$transaction).not.toHaveBeenCalled();
-    expect(prismaMock.user.update).not.toHaveBeenCalled();
+    expect(result.alreadyLinked).toBe(false);
+    expect(prismaMock.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { referredByAffiliateId: 'aff-new' },
+      })
+    );
+    expect(prismaMock.affiliateReferral.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ affiliateId: 'aff-old', referredUserId: 'user-1' }),
+        data: expect.objectContaining({ isActive: false }),
+      })
+    );
+    expect(prismaMock.userAffiliateHistory.updateMany).toHaveBeenCalled();
+    expect(prismaMock.userAffiliateHistory.create).toHaveBeenCalled();
   });
 
   it('is idempotent when user already has the same affiliate', async () => {
@@ -77,14 +96,14 @@ describe('AffiliateService.attachUserToAffiliateOnce', () => {
     });
     prismaMock.userAffiliateHistory.findFirst.mockResolvedValue({ id: 'hist-1' });
 
-    const result = await AffiliateService.attachUserToAffiliateOnce('user-1', {
+    const result = await AffiliateService.switchUserToAffiliate('user-1', {
       id: 'aff-1',
       code: 'CODE1',
       user: { steamUsername: 'Partner' },
     });
 
-    expect(result.attached).toBe(false);
     expect(result.alreadyLinked).toBe(true);
+    expect(result.replaced).toBe(false);
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 });

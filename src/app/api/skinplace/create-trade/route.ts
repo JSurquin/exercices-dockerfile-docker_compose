@@ -173,6 +173,7 @@ export async function POST(request: NextRequest) {
     }
 
     let affiliatePromoCode: string | null = null;
+    let affiliateAttributionCode: string | null = null;
     let affiliatePromoBonusCents = 0;
     let affiliateSwitch: { attached: boolean; affiliateName: string } | null = null;
     const rawPromo =
@@ -195,6 +196,7 @@ export async function POST(request: NextRequest) {
         affiliateName: bindResult.affiliateName || promo.affiliateName,
       };
       affiliatePromoCode = promo.code;
+      affiliateAttributionCode = promo.code;
       if (
         !isAffiliateRewardsBlocked({
           affiliateRewardsBlocked: user.affiliateRewardsBlocked ?? false,
@@ -204,6 +206,14 @@ export async function POST(request: NextRequest) {
         affiliatePromoBonusCents = AffiliateService.computeSellPromoBonusCents(
           serverGrossCentimes
         );
+      }
+    } else if (user.referredByAffiliateId) {
+      const refAffiliate = await prisma.affiliateStats.findUnique({
+        where: { id: user.referredByAffiliateId, isActive: true },
+        select: { code: true, userId: true },
+      });
+      if (refAffiliate && refAffiliate.userId !== user.id) {
+        affiliateAttributionCode = refAffiliate.code;
       }
     }
 
@@ -358,6 +368,7 @@ export async function POST(request: NextRequest) {
         networkFees: ledger.networkFees,
         netCents: netCentsWithPromo,
         affiliatePromoCode,
+        affiliateAttributionCode,
         affiliatePromoBonusCents,
         vipBonusCents,
         availableAt: tradeStatus !== 'FAILED' ? availableAt : undefined,
@@ -384,6 +395,7 @@ export async function POST(request: NextRequest) {
           grossValue: serverGrossCentimes,
           netValue: netCentsWithPromo,
           affiliatePromoCode,
+          affiliateAttributionCode,
           affiliatePromoBonusCents,
           vipBonusCents,
           initialStatus: tradeStatus,

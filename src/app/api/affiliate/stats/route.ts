@@ -54,7 +54,10 @@ export async function GET(request: NextRequest) {
         computeAffiliateExtendedMetrics(stats.id),
         computeAffiliateAttributedTotals(stats.id),
         computeAffiliatePendingVolumeCents(stats.id),
-        loadPendingSalesByUserIds(referralUserIds),
+        loadPendingSalesByUserIds(referralUserIds, {
+          affiliateId: stats.id,
+          affiliateCode: stats.code,
+        }),
       ]);
 
     const recentReferralsWithPending = recentReferrals.map((ref) => {

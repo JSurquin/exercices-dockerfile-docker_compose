@@ -98,7 +98,10 @@ export async function GET(
     ]);
 
     const userIds = referrals.map((r) => r.referredUserId);
-    const pendingSalesByUser = await loadPendingSalesByUserIds(userIds);
+    const pendingSalesByUser = await loadPendingSalesByUserIds(userIds, {
+      affiliateId: affiliate.id,
+      affiliateCode: affiliate.code,
+    });
 
     return NextResponse.json({
       success: true,

@@ -497,7 +497,11 @@ export class TradeHooks {
         await this.updateUserExperience(tradeId);
       }
 
-      if (trade.affiliatePromoCode && !trade.affiliatePromoFragmentsGrantedAt) {
+      if (
+        trade.affiliatePromoCode &&
+        trade.affiliatePromoBonusCents > 0 &&
+        !trade.affiliatePromoFragmentsGrantedAt
+      ) {
         const promoFlags = await getUserRewardFlags(trade.userId);
         if (isAffiliateRewardsBlocked(promoFlags)) {
           logger.warn(

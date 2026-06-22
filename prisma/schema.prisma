@@ -155,6 +155,8 @@ model Trade {
   netCents           Int
   /// Code affilié utilisé comme promo sur cette vente (si applicable)
   affiliatePromoCode              String?
+  /// Parrain actif au moment de la vente (snapshot — fige la commission même si transfert ultérieur)
+  affiliateAttributionCode        String?
   /// Bonus net (centimes) = 0,2 % de la valeur brute, crédité avec le trade
   affiliatePromoBonusCents        Int       @default(0)
   /// Bonus VIP (centimes) = bonusRatePercent % de la valeur brute

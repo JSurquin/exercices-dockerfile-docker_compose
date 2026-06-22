@@ -85,7 +85,19 @@ describe('AffiliateService commission balance credit', () => {
     });
   });
 
-  it('credits affiliate balance when trade commission is calculated', async () => {
+  it('credits affiliate balance when trade commission is calculated from attribution snapshot', async () => {
+    statsFindFirst.mockResolvedValue({
+      id: 'aff-nyouz',
+      userId: 'nyouz-user',
+      code: 'nyouz',
+      commissionRate: 0.02,
+      isActive: true,
+    });
+    (prisma.affiliateStats.findUnique as jest.Mock).mockResolvedValue({
+      id: 'aff-nyouz',
+      userId: 'nyouz-user',
+      commissionRate: 0.02,
+    });
     tradeFindUnique.mockResolvedValue({
       id: 'trade-1',
       status: 'AVAILABLE',
@@ -95,6 +107,37 @@ describe('AffiliateService commission balance credit', () => {
       availableAt: new Date(0),
       affiliateCommissionProcessedAt: null,
       affiliatePromoCode: null,
+      affiliateAttributionCode: 'nyouz',
+      userId: 'seller-1',
+      user: { id: 'seller-1', referredByAffiliateId: 'aff-other' },
+    });
+    commissionFindUnique.mockResolvedValue(null);
+
+    await AffiliateService.calculateCommissionForTrade('trade-1', { skipHoldCheck: true });
+
+    expect(creditBalance).toHaveBeenCalledWith(
+      'nyouz-user',
+      184,
+      'Affiliate commission — trade trade-1',
+      expect.objectContaining({
+        type: 'AFFILIATE_COMMISSION',
+        tradeId: 'trade-1',
+        commissionId: 'comm-1',
+      })
+    );
+  });
+
+  it('credits affiliate balance when trade commission is calculated via current referral fallback', async () => {
+    tradeFindUnique.mockResolvedValue({
+      id: 'trade-1',
+      status: 'AVAILABLE',
+      grossCents: 10_000,
+      usdToEurRate: 0.92,
+      instantCreditedAt: null,
+      availableAt: new Date(0),
+      affiliateCommissionProcessedAt: null,
+      affiliatePromoCode: null,
+      affiliateAttributionCode: null,
       userId: 'seller-1',
       user: { id: 'seller-1', referredByAffiliateId: 'aff-1' },
     });
@@ -130,6 +173,7 @@ describe('AffiliateService commission balance credit', () => {
       availableAt: new Date(0),
       affiliateCommissionProcessedAt: null,
       affiliatePromoCode: null,
+      affiliateAttributionCode: null,
       user: { id: 'seller-1', referredByAffiliateId: 'aff-1' },
     });
     commissionFindUnique.mockResolvedValue({
@@ -154,6 +198,7 @@ describe('AffiliateService commission balance credit', () => {
       availableAt: new Date(0),
       affiliateCommissionProcessedAt: new Date(),
       affiliatePromoCode: null,
+      affiliateAttributionCode: null,
       user: { id: 'seller-1', referredByAffiliateId: 'aff-1' },
     });
     commissionFindUnique.mockResolvedValue({
@@ -192,6 +237,7 @@ describe('AffiliateService commission balance credit', () => {
       availableAt: new Date(0),
       affiliateCommissionProcessedAt: null,
       affiliatePromoCode: null,
+      affiliateAttributionCode: null,
       userId: 'seller-1',
       user: { id: 'seller-1', referredByAffiliateId: 'aff-1' },
     });

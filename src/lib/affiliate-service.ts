@@ -86,10 +86,10 @@ export class AffiliateService {
   }
 
   /**
-   * Rattache définitivement un utilisateur à un affilié (premier parrain = définitif).
-   * Ne remplace jamais un parrain déjà enregistré en base.
+   * Transfère un utilisateur vers un affilié (last-wins, sans verrou).
+   * Les commissions déjà attribuées par trade restent acquises à l'ancien parrain.
    */
-  static async attachUserToAffiliateOnce(
+  static async switchUserToAffiliate(
     userId: string,
     affiliate: {
       id: string;
@@ -97,31 +97,59 @@ export class AffiliateService {
       userId?: string;
       user?: { steamUsername?: string | null } | null;
     }
-  ): Promise<{ attached: boolean; alreadyLinked: boolean; affiliateName: string }> {
+  ): Promise<{
+    replaced: boolean;
+    attached: boolean;
+    alreadyLinked: boolean;
+    affiliateName: string;
+  }> {
     const affiliateName = this.affiliateDisplayName(affiliate);
 
     if (affiliate.userId === userId) {
-      return { attached: false, alreadyLinked: false, affiliateName: '' };
+      return { replaced: false, attached: false, alreadyLinked: false, affiliateName: '' };
     }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { referredByAffiliateId: true },
     });
-    if (!user) return { attached: false, alreadyLinked: false, affiliateName };
-
-    if (user.referredByAffiliateId) {
-      if (user.referredByAffiliateId === affiliate.id) {
-        await this.ensureActiveReferral(userId, affiliate.id, affiliate.code);
-      }
-      return { attached: false, alreadyLinked: true, affiliateName };
+    if (!user) {
+      return { replaced: false, attached: false, alreadyLinked: false, affiliateName };
     }
+
+    if (user.referredByAffiliateId === affiliate.id) {
+      await this.ensureActiveReferral(userId, affiliate.id, affiliate.code);
+      return { replaced: false, attached: false, alreadyLinked: true, affiliateName };
+    }
+
+    const previousAffiliateId = user.referredByAffiliateId;
+    const now = new Date();
 
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: userId },
         data: { referredByAffiliateId: affiliate.id },
       });
+
+      if (previousAffiliateId) {
+        await tx.affiliateReferral.updateMany({
+          where: {
+            affiliateId: previousAffiliateId,
+            referredUserId: userId,
+            isActive: true,
+          },
+          data: { isActive: false, churnedAt: now },
+        });
+
+        await tx.userAffiliateHistory.updateMany({
+          where: {
+            userId,
+            affiliateId: previousAffiliateId,
+            isActive: true,
+          },
+          data: { isActive: false, endedAt: now },
+        });
+      }
 
       const existingRef = await tx.affiliateReferral.findFirst({
         where: { affiliateId: affiliate.id, referredUserId: userId },
@@ -158,17 +186,30 @@ export class AffiliateService {
       });
     });
 
-    return { attached: true, alreadyLinked: false, affiliateName };
+    return {
+      replaced: !!previousAffiliateId,
+      attached: !previousAffiliateId,
+      alreadyLinked: false,
+      affiliateName,
+    };
   }
 
-  /** @deprecated Utiliser attachUserToAffiliateOnce — conservé pour compatibilité interne. */
-  static async switchUserToAffiliate(
+  /**
+   * Rattache un utilisateur à un affilié (last-wins).
+   */
+  static async attachUserToAffiliateOnce(
     userId: string,
-    affiliate: { id: string; code: string; user?: { steamUsername?: string | null } | null }
-  ): Promise<{ replaced: boolean; affiliateName: string }> {
-    const result = await this.attachUserToAffiliateOnce(userId, affiliate);
+    affiliate: {
+      id: string;
+      code: string;
+      userId?: string;
+      user?: { steamUsername?: string | null } | null;
+    }
+  ): Promise<{ attached: boolean; alreadyLinked: boolean; affiliateName: string }> {
+    const result = await this.switchUserToAffiliate(userId, affiliate);
     return {
-      replaced: false,
+      attached: result.attached || result.replaced,
+      alreadyLinked: result.alreadyLinked,
       affiliateName: result.affiliateName,
     };
   }
@@ -369,6 +410,7 @@ export class AffiliateService {
 
     const affiliate = await this.resolveAffiliateForTrade(
       trade.affiliatePromoCode,
+      trade.affiliateAttributionCode,
       trade.user.referredByAffiliateId,
       trade.user.id
     );
@@ -668,13 +710,15 @@ export class AffiliateService {
 
   private static async resolveAffiliateForTrade(
     affiliatePromoCode: string | null,
+    affiliateAttributionCode: string | null,
     referredByAffiliateId: string | null,
     sellerUserId: string
   ) {
-    if (affiliatePromoCode) {
-      const fromPromo = await this.findActiveAffiliateByCode(affiliatePromoCode);
-      if (fromPromo && fromPromo.userId !== sellerUserId) {
-        return fromPromo;
+    const snapshotCode = affiliatePromoCode ?? affiliateAttributionCode;
+    if (snapshotCode) {
+      const fromSnapshot = await this.findActiveAffiliateByCode(snapshotCode);
+      if (fromSnapshot && fromSnapshot.userId !== sellerUserId) {
+        return fromSnapshot;
       }
     }
 

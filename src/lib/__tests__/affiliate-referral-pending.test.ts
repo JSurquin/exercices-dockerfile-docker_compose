@@ -4,6 +4,9 @@ jest.mock('../../../prisma/prisma', () => ({
       aggregate: jest.fn(),
       findMany: jest.fn(),
     },
+    affiliateStats: {
+      findUnique: jest.fn(),
+    },
   },
 }));
 
@@ -21,7 +24,10 @@ describe('computeAffiliatePendingVolumeCents', () => {
     jest.clearAllMocks();
   });
 
-  it('sums gross cents for in-progress referral trades', async () => {
+  it('sums gross cents for in-progress trades attributed to the affiliate', async () => {
+    (prisma.affiliateStats.findUnique as jest.Mock).mockResolvedValue({
+      code: 'NYOUZ',
+    });
     tradeAggregate.mockResolvedValue({ _sum: { grossCents: 25_800 } });
 
     const result = await computeAffiliatePendingVolumeCents('aff-1');
@@ -30,7 +36,15 @@ describe('computeAffiliatePendingVolumeCents', () => {
     expect(tradeAggregate).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          user: { referredByAffiliateId: 'aff-1' },
+          OR: expect.arrayContaining([
+            expect.objectContaining({
+              affiliateAttributionCode: expect.objectContaining({ equals: 'nyouz' }),
+            }),
+            expect.objectContaining({
+              affiliateAttributionCode: null,
+              user: { referredByAffiliateId: 'aff-1' },
+            }),
+          ]),
         }),
       })
     );
