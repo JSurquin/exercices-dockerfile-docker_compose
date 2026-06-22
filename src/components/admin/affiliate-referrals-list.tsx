@@ -35,6 +35,7 @@ interface ReferralRow {
   volumeCents: number;
   commissionCents: number;
   tradeId: string | null;
+  pendingSale?: { grossCents: number; status: string } | null;
   user: ReferralUser;
 }
 
@@ -185,7 +186,22 @@ export function AffiliateReferralsList({ affiliateId }: Props) {
                       {ref.churnedAt ? formatDate(ref.churnedAt) : '—'}
                     </TableCell>
                   )}
-                  <TableCell className="text-white text-sm">{formatCurrency(ref.volumeCents)}</TableCell>
+                  <TableCell className="text-white text-sm">
+                    <div className="flex flex-col items-start gap-1">
+                      <span>{formatCurrency(ref.volumeCents)}</span>
+                      {ref.pendingSale && ref.pendingSale.grossCents > 0 && (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-amber-500/40 bg-amber-500/10 text-amber-300"
+                        >
+                          {t.saleInProgressBadge.replace(
+                            '{amount}',
+                            formatCurrency(ref.pendingSale.grossCents)
+                          )}
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-emerald-400 text-sm">
                     {formatCurrency(ref.commissionCents)}
                   </TableCell>

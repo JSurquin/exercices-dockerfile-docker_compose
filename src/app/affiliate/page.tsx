@@ -387,6 +387,12 @@ export default function AffiliatePage() {
               fmt(affiliateData.metrics?.volumePreviousMonthCents ?? 0)
             )}
           />
+          <StatCard
+            icon={<Clock className="h-5 w-5 text-amber-500" />}
+            label={messages.affiliate.dashboard.kpi.pendingVolume}
+            value={fmt(affiliateData.metrics?.pendingVolumeCents ?? 0)}
+            sub={messages.affiliate.dashboard.kpi.pendingVolumeSub}
+          />
         </div>
 
         {/* Taux de conversion */}
@@ -481,8 +487,27 @@ export default function AffiliatePage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-sm">{fmt(ref.volumeCents)}</p>
-                          <p className="text-xs text-theme-accent">+{fmt(ref.commissionCents)}</p>
+                          {ref.pendingSale && ref.pendingSale.grossCents > 0 ? (
+                            <div className="space-y-1">
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-200"
+                              >
+                                {messages.affiliate.dashboard.saleInProgressBadge.replace(
+                                  '{amount}',
+                                  fmt(ref.pendingSale.grossCents)
+                                )}
+                              </Badge>
+                              <p className="text-xs text-muted-foreground">
+                                {messages.affiliate.dashboard.commissionedVolume}: {fmt(ref.volumeCents)}
+                              </p>
+                            </div>
+                          ) : (
+                            <>
+                              <p className="font-semibold text-sm">{fmt(ref.volumeCents)}</p>
+                              <p className="text-xs text-theme-accent">+{fmt(ref.commissionCents)}</p>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}

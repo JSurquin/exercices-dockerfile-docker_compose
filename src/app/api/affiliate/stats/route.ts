@@ -4,6 +4,10 @@ import {
   computeAffiliateExtendedMetrics,
   computeAffiliateAttributedTotals,
 } from '@/lib/affiliate-metrics';
+import {
+  computeAffiliatePendingVolumeCents,
+  loadPendingSalesByUserIds,
+} from '@/lib/affiliate-referral-pending';
 import { requireUserSession } from '@/lib/require-session-user';
 
 export async function GET(request: NextRequest) {
@@ -41,10 +45,23 @@ export async function GET(request: NextRequest) {
       }, 0) || 0;
 
     const recentReferrals = stats.referrals?.slice(0, 10) || [];
-    const [extendedMetrics, attributedTotals] = await Promise.all([
-      computeAffiliateExtendedMetrics(stats.id),
-      computeAffiliateAttributedTotals(stats.id),
-    ]);
+    const referralUserIds = recentReferrals
+      .map((r) => r.referredUser?.id)
+      .filter((id): id is string => !!id);
+
+    const [extendedMetrics, attributedTotals, pendingVolumeCents, pendingSalesByUser] =
+      await Promise.all([
+        computeAffiliateExtendedMetrics(stats.id),
+        computeAffiliateAttributedTotals(stats.id),
+        computeAffiliatePendingVolumeCents(stats.id),
+        loadPendingSalesByUserIds(referralUserIds),
+      ]);
+
+    const recentReferralsWithPending = recentReferrals.map((ref) => {
+      const userId = ref.referredUser?.id;
+      const pendingSale = userId ? pendingSalesByUser.get(userId) ?? null : null;
+      return { ...ref, pendingSale };
+    });
 
     return NextResponse.json({
       success: true,
@@ -57,6 +74,7 @@ export async function GET(request: NextRequest) {
           totalCreditedCommissions,
           totalPaidCommissions,
           totalPendingCommissions: totalUncreditedCommissions,
+          pendingVolumeCents,
           conversionRate:
             stats.totalReferrals > 0
               ? (stats.referrals?.filter((r) => r.volumeCents > 0).length || 0) /
@@ -68,7 +86,7 @@ export async function GET(request: NextRequest) {
               : 0,
           ...extendedMetrics,
         },
-        recentReferrals,
+        recentReferrals: recentReferralsWithPending,
       },
     });
   } catch (error) {

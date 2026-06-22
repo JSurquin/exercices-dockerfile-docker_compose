@@ -5,6 +5,7 @@ import {
   computeAffiliateAttributedTotals,
   computeAffiliateExtendedMetrics,
 } from '@/lib/affiliate-metrics';
+import { computeAffiliatePendingVolumeCents } from '@/lib/affiliate-referral-pending';
 
 export async function GET(
   request: NextRequest,
@@ -40,9 +41,10 @@ export async function GET(
       return NextResponse.json({ success: false, error: 'Affilié introuvable' }, { status: 404 });
     }
 
-    const [attributedTotals, extendedMetrics] = await Promise.all([
+    const [attributedTotals, extendedMetrics, pendingVolumeCents] = await Promise.all([
       computeAffiliateAttributedTotals(affiliateId),
       computeAffiliateExtendedMetrics(affiliateId),
+      computeAffiliatePendingVolumeCents(affiliateId),
     ]);
 
     return NextResponse.json({
@@ -51,7 +53,10 @@ export async function GET(
         ...affiliate,
         totalVolumeCents: attributedTotals.totalVolumeCents,
         totalCommissionCents: attributedTotals.totalCommissionCents,
-        metrics: extendedMetrics,
+        metrics: {
+          ...extendedMetrics,
+          pendingVolumeCents,
+        },
       },
     });
   } catch (error) {

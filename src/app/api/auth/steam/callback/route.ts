@@ -12,6 +12,7 @@ import {
 import { AuditAction } from '@/lib/security';
 import { isUserBanned } from '@/lib/user-ban-logic';
 import { isIpBlocked, isPrivilegedRole } from '@/lib/blocked-ip-service';
+import { AffiliateService } from '@/lib/affiliate-service';
 import crypto from 'crypto';
 import { hashPassword } from 'better-auth/crypto';
 
@@ -316,6 +317,12 @@ export async function GET(request: NextRequest) {
       },
       'low'
     );
+
+    try {
+      await AffiliateService.associateUserToAffiliate(user.id);
+    } catch (affiliateErr) {
+      console.error('[steam/callback] affiliate attach failed:', affiliateErr);
+    }
 
     // Créer la réponse avec redirection
     const redirectPath = requiresTwoFactor ? '/two-factor' : '/dashboard';

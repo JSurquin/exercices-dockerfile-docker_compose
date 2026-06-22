@@ -23,10 +23,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ valid: false, error: result.error });
   }
 
+  const bindResult = await AffiliateService.bindUserToAffiliateForSellPromo(
+    session.user.id,
+    result.affiliateId
+  );
+
   return NextResponse.json({
     valid: true,
     code: result.code,
-    willReplace: result.willReplace,
-    affiliateName: result.affiliateName,
+    alreadyLinked: result.alreadyLinked || bindResult.alreadyLinked,
+    alreadyLinkedToOther: result.alreadyLinkedToOther,
+    attached: bindResult.attached,
+    affiliateName: bindResult.affiliateName || result.affiliateName,
   });
 }

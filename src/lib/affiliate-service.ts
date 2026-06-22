@@ -86,50 +86,38 @@ export class AffiliateService {
   }
 
   /**
-   * Remplace l'affilié du profil utilisateur par un nouveau code.
-   * Les commissions passées restent chez l'ancien affilié.
+   * Rattache définitivement un utilisateur à un affilié (premier parrain = définitif).
+   * Ne remplace jamais un parrain déjà enregistré en base.
    */
-  static async switchUserToAffiliate(
+  static async attachUserToAffiliateOnce(
     userId: string,
-    affiliate: { id: string; code: string; user?: { steamUsername?: string | null } | null }
-  ): Promise<{ replaced: boolean; affiliateName: string }> {
+    affiliate: {
+      id: string;
+      code: string;
+      userId?: string;
+      user?: { steamUsername?: string | null } | null;
+    }
+  ): Promise<{ attached: boolean; alreadyLinked: boolean; affiliateName: string }> {
     const affiliateName = this.affiliateDisplayName(affiliate);
+
+    if (affiliate.userId === userId) {
+      return { attached: false, alreadyLinked: false, affiliateName: '' };
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { referredByAffiliateId: true },
     });
-    if (!user) return { replaced: false, affiliateName };
+    if (!user) return { attached: false, alreadyLinked: false, affiliateName };
 
-    if (user.referredByAffiliateId === affiliate.id) {
-      await this.ensureActiveReferral(userId, affiliate.id, affiliate.code);
-      return { replaced: false, affiliateName };
+    if (user.referredByAffiliateId) {
+      if (user.referredByAffiliateId === affiliate.id) {
+        await this.ensureActiveReferral(userId, affiliate.id, affiliate.code);
+      }
+      return { attached: false, alreadyLinked: true, affiliateName };
     }
 
-    const previousAffiliateId = user.referredByAffiliateId;
-    const now = new Date();
-
     await prisma.$transaction(async (tx) => {
-      if (previousAffiliateId) {
-        await tx.affiliateReferral.updateMany({
-          where: {
-            affiliateId: previousAffiliateId,
-            referredUserId: userId,
-            isActive: true,
-          },
-          data: { isActive: false, churnedAt: now },
-        });
-
-        await tx.userAffiliateHistory.updateMany({
-          where: {
-            userId,
-            affiliateId: previousAffiliateId,
-            isActive: true,
-          },
-          data: { isActive: false, endedAt: now },
-        });
-      }
-
       await tx.user.update({
         where: { id: userId },
         data: { referredByAffiliateId: affiliate.id },
@@ -170,7 +158,19 @@ export class AffiliateService {
       });
     });
 
-    return { replaced: !!previousAffiliateId, affiliateName };
+    return { attached: true, alreadyLinked: false, affiliateName };
+  }
+
+  /** @deprecated Utiliser attachUserToAffiliateOnce — conservé pour compatibilité interne. */
+  static async switchUserToAffiliate(
+    userId: string,
+    affiliate: { id: string; code: string; user?: { steamUsername?: string | null } | null }
+  ): Promise<{ replaced: boolean; affiliateName: string }> {
+    const result = await this.attachUserToAffiliateOnce(userId, affiliate);
+    return {
+      replaced: false,
+      affiliateName: result.affiliateName,
+    };
   }
   /**
    * Génère un code d'affiliation unique pour un utilisateur
@@ -235,7 +235,8 @@ export class AffiliateService {
   }
   
   /**
-   * Associe un utilisateur à un affilié lors de l'inscription
+   * Associe un utilisateur à un affilié via le cookie de lien (?ref=, fenêtre 30 jours).
+   * Écrit referredByAffiliateId + affiliateReferral en base (définitif).
    */
   static async associateUserToAffiliate(userId: string, affiliateCode?: string): Promise<void> {
     const refCode = affiliateCode || (await this.getAffiliateRefFromCookies());
@@ -243,9 +244,8 @@ export class AffiliateService {
 
     const affiliate = await this.findActiveAffiliateByCode(refCode);
     if (!affiliate) return;
-    if (affiliate.userId === userId) return;
 
-    await this.switchUserToAffiliate(userId, affiliate);
+    await this.attachUserToAffiliateOnce(userId, affiliate);
   }
 
   /**
@@ -259,7 +259,8 @@ export class AffiliateService {
         ok: true;
         affiliateId: string;
         code: string;
-        willReplace: boolean;
+        alreadyLinked: boolean;
+        alreadyLinkedToOther: boolean;
         affiliateName: string;
       }
     | { ok: false; error: 'invalid' | 'self' }
@@ -276,15 +277,14 @@ export class AffiliateService {
       select: { referredByAffiliateId: true },
     });
 
-    const willReplace = !!(
-      user?.referredByAffiliateId && user.referredByAffiliateId !== affiliate.id
-    );
+    const referredId = user?.referredByAffiliateId ?? null;
 
     return {
       ok: true,
       affiliateId: affiliate.id,
       code: affiliate.code,
-      willReplace,
+      alreadyLinked: referredId === affiliate.id,
+      alreadyLinkedToOther: !!referredId && referredId !== affiliate.id,
       affiliateName: this.affiliateDisplayName(affiliate),
     };
   }
@@ -295,16 +295,16 @@ export class AffiliateService {
   static async bindUserToAffiliateForSellPromo(
     userId: string,
     affiliateId: string
-  ): Promise<{ replaced: boolean; affiliateName: string }> {
+  ): Promise<{ attached: boolean; alreadyLinked: boolean; affiliateName: string }> {
     const affiliate = await prisma.affiliateStats.findUnique({
       where: { id: affiliateId, isActive: true },
       include: { user: { select: { steamUsername: true } } },
     });
     if (!affiliate || affiliate.userId === userId) {
-      return { replaced: false, affiliateName: '' };
+      return { attached: false, alreadyLinked: false, affiliateName: '' };
     }
 
-    return this.switchUserToAffiliate(userId, affiliate);
+    return this.attachUserToAffiliateOnce(userId, affiliate);
   }
   
   /**

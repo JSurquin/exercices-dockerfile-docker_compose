@@ -24,61 +24,67 @@ jest.mock('next/headers', () => ({
 
 import { AffiliateService } from '@/lib/affiliate-service';
 
-describe('AffiliateService.switchUserToAffiliate', () => {
+describe('AffiliateService.attachUserToAffiliateOnce', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('replaces previous affiliate and marks old referral as churned', async () => {
-    prismaMock.user.findUnique.mockResolvedValue({
-      referredByAffiliateId: 'aff-old',
-    });
+  it('creates permanent referral when user has no parrain yet', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ referredByAffiliateId: null });
     prismaMock.affiliateReferral.findFirst.mockResolvedValue(null);
     prismaMock.affiliateReferral.create.mockResolvedValue({ id: 'ref-new' });
     prismaMock.affiliateStats.update.mockResolvedValue({});
     prismaMock.user.update.mockResolvedValue({});
-    prismaMock.affiliateReferral.updateMany.mockResolvedValue({ count: 1 });
-    prismaMock.userAffiliateHistory.updateMany.mockResolvedValue({ count: 1 });
     prismaMock.userAffiliateHistory.create.mockResolvedValue({ id: 'hist-1' });
 
-    const result = await AffiliateService.switchUserToAffiliate('user-1', {
+    const result = await AffiliateService.attachUserToAffiliateOnce('user-1', {
       id: 'aff-new',
       code: 'STREAMER',
       user: { steamUsername: 'StreamerPro' },
     });
 
-    expect(result.replaced).toBe(true);
+    expect(result.attached).toBe(true);
+    expect(result.alreadyLinked).toBe(false);
     expect(result.affiliateName).toBe('StreamerPro');
-    expect(prismaMock.affiliateReferral.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ affiliateId: 'aff-old', isActive: true }),
-        data: expect.objectContaining({ isActive: false }),
-      })
-    );
     expect(prismaMock.user.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: { referredByAffiliateId: 'aff-new' },
       })
     );
+    expect(prismaMock.affiliateReferral.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('does not overwrite an existing parrain (first wins)', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ referredByAffiliateId: 'aff-old' });
+
+    const result = await AffiliateService.attachUserToAffiliateOnce('user-1', {
+      id: 'aff-new',
+      code: 'NEWCODE',
+      user: { steamUsername: 'NewPartner' },
+    });
+
+    expect(result.attached).toBe(false);
+    expect(result.alreadyLinked).toBe(true);
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
   });
 
   it('is idempotent when user already has the same affiliate', async () => {
-    prismaMock.user.findUnique.mockResolvedValue({
-      referredByAffiliateId: 'aff-1',
-    });
+    prismaMock.user.findUnique.mockResolvedValue({ referredByAffiliateId: 'aff-1' });
     prismaMock.affiliateReferral.findFirst.mockResolvedValue({
       id: 'ref-1',
       isActive: true,
     });
     prismaMock.userAffiliateHistory.findFirst.mockResolvedValue({ id: 'hist-1' });
 
-    const result = await AffiliateService.switchUserToAffiliate('user-1', {
+    const result = await AffiliateService.attachUserToAffiliateOnce('user-1', {
       id: 'aff-1',
       code: 'CODE1',
       user: { steamUsername: 'Partner' },
     });
 
-    expect(result.replaced).toBe(false);
+    expect(result.attached).toBe(false);
+    expect(result.alreadyLinked).toBe(true);
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 });
@@ -88,7 +94,7 @@ describe('AffiliateService.validateAffiliateSellPromoCode', () => {
     jest.clearAllMocks();
   });
 
-  it('accepts a new code even when another affiliate is already linked', async () => {
+  it('flags alreadyLinkedToOther when another affiliate is already linked', async () => {
     prismaMock.affiliateStats.findFirst.mockResolvedValue({
       id: 'aff-new',
       code: 'NEWCODE',
@@ -103,7 +109,8 @@ describe('AffiliateService.validateAffiliateSellPromoCode', () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.willReplace).toBe(true);
+      expect(result.alreadyLinkedToOther).toBe(true);
+      expect(result.alreadyLinked).toBe(false);
       expect(result.affiliateName).toBe('NewPartner');
     }
   });

@@ -108,14 +108,16 @@ export function SkinplaceTradeCreator({
           valid?: boolean;
           code?: string;
           error?: string;
-          willReplace?: boolean;
+          alreadyLinked?: boolean;
+          alreadyLinkedToOther?: boolean;
+          attached?: boolean;
           affiliateName?: string;
         };
         if (ctrl.signal.aborted) return;
         if (data.valid && data.code) {
           setPromoState('valid');
           setAppliedPromoCode(data.code);
-          setPromoWillReplace(!!data.willReplace);
+          setPromoWillReplace(!!data.alreadyLinkedToOther);
           setPromoAffiliateName(data.affiliateName ?? null);
         } else {
           setPromoState('invalid');
@@ -264,9 +266,9 @@ export function SkinplaceTradeCreator({
       toast.success(messages.tradeCreator.tradeCreatedSuccess);
 
       const switchInfo = result.data?.affiliateSwitch as
-        | { replaced?: boolean; affiliateName?: string }
+        | { attached?: boolean; affiliateName?: string }
         | undefined;
-      if (switchInfo?.affiliateName) {
+      if (switchInfo?.attached && switchInfo?.affiliateName) {
         toast.success(
           messages.tradeCreator.promoAffiliateUpdated.replace(
             '{name}',

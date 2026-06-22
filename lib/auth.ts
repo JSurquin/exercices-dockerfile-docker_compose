@@ -12,6 +12,7 @@ const ac = createAccessControl(defaultStatements);
 const adminRole = ac.newRole({ ...adminAc.statements });
 import { emailService } from "../src/lib/email";
 import { getTrustedAuthOrigins } from "../src/lib/public-app-url";
+import { affiliateAttachPlugin } from "../src/lib/affiliate-auth-plugin";
 
 // Better Auth 1.2.12 a un bug de typage sur viewBackupCodes (GET avec body dans un GET endpoint).
 // Le cast est sans impact runtime — le plugin fonctionne normalement.
@@ -154,6 +155,7 @@ export const auth = betterAuth({
 
   plugins: [
     nextCookies(),
+    affiliateAttachPlugin(),
     twoFactorPlugin,
     admin({
       defaultRole: "USER",

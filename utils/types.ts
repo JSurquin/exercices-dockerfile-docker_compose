@@ -1940,6 +1940,7 @@ export interface Messages {
       labelCommissionRate: string;
       labelReferrals: string;
       labelVolume: string;
+      labelPendingVolume: string;
       labelCommissions: string;
       removeAffiliation: string;
       removeTitle: string;
@@ -1974,6 +1975,7 @@ export interface Messages {
         colChurned: string;
         colVolume: string;
         colCommission: string;
+        saleInProgressBadge: string;
         rewardsBlockedBadge: string;
         tabActive: string;
         tabChurned: string;
@@ -4835,7 +4837,11 @@ export interface Messages {
         activeSellingUsersSub: string;
         monthlyVolume: string;
         monthlyVolumeSub: string;
+        pendingVolume: string;
+        pendingVolumeSub: string;
       };
+      saleInProgressBadge: string;
+      commissionedVolume: string;
       performance: string;
       conversionRate: string;
       avgOrderValue: string;

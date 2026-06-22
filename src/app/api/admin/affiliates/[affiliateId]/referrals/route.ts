@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../../../../../../../prisma/prisma';
 import { requireAdminSession } from '@/lib/require-admin';
 import { safeParseSearchParams } from '@/lib/validation/helpers';
+import { loadPendingSalesByUserIds } from '@/lib/affiliate-referral-pending';
 
 const querySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -96,6 +97,9 @@ export async function GET(
       prisma.affiliateReferral.count({ where }),
     ]);
 
+    const userIds = referrals.map((r) => r.referredUserId);
+    const pendingSalesByUser = await loadPendingSalesByUserIds(userIds);
+
     return NextResponse.json({
       success: true,
       data: {
@@ -108,6 +112,7 @@ export async function GET(
           volumeCents: r.volumeCents,
           commissionCents: r.commissionCents,
           tradeId: r.tradeId,
+          pendingSale: pendingSalesByUser.get(r.referredUserId) ?? null,
           user: r.referredUser,
         })),
         pagination: {

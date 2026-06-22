@@ -65,6 +65,7 @@ interface AffiliateData {
     churnedUsers: number;
     activeReferrals: number;
     activeSellingUsers: number;
+    pendingVolumeCents?: number;
   };
 }
 
@@ -596,12 +597,18 @@ export default function AffiliatesManagement() {
                   <TrendingUp className="h-4 w-4" />
                   {t.statGeneratedVolume}
                 </h3>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 text-center">
                     <p className="text-2xl font-bold text-white">
                       {formatCurrency(selectedAffiliate.totalVolumeCents)}
                     </p>
                     <p className="text-xs text-slate-400 mt-1">{t.labelVolume}</p>
+                  </div>
+                  <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 text-center">
+                    <p className="text-2xl font-bold text-amber-400">
+                      {formatCurrency(selectedAffiliate.metrics?.pendingVolumeCents ?? 0)}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">{t.labelPendingVolume}</p>
                   </div>
                   <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 text-center">
                     <p className="text-2xl font-bold text-emerald-400">

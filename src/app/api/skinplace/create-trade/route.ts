@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
 
     let affiliatePromoCode: string | null = null;
     let affiliatePromoBonusCents = 0;
-    let affiliateSwitch: { replaced: boolean; affiliateName: string } | null = null;
+    let affiliateSwitch: { attached: boolean; affiliateName: string } | null = null;
     const rawPromo =
       typeof body.affiliate_promo_code === 'string' ? body.affiliate_promo_code.trim() : '';
     if (rawPromo) {
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
         promo.affiliateId
       );
       affiliateSwitch = {
-        replaced: bindResult.replaced || promo.willReplace,
+        attached: bindResult.attached,
         affiliateName: bindResult.affiliateName || promo.affiliateName,
       };
       affiliatePromoCode = promo.code;
