@@ -91,6 +91,8 @@ describe('chatWidgetTimestampClass', () => {
 describe('chatWidgetPopupContainerClass', () => {
   it('ouvert : visible + chat-glass + pleine hauteur mobile', () => {
     const open = chatWidgetPopupContainerClass(true);
+    expect(open).toContain('fixed');
+    expect(open).not.toContain('absolute');
     expect(open).toContain('chat-glass');
     expect(open).toContain('opacity-100');
     expect(open).toContain('sm:w-[390px]');

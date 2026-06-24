@@ -74,7 +74,7 @@ export function chatWidgetPopupContainerClass(isOpen: boolean): string {
   const mobileBottom = isOpen ? "bottom-0" : "bottom-24";
   const desktopBottom = isOpen ? "sm:bottom-6" : "sm:bottom-24";
   const base = `
-    absolute top-[env(safe-area-inset-top,0px)] ${mobileBottom} ${desktopBottom} left-0 right-0
+    fixed top-[env(safe-area-inset-top,0px)] ${mobileBottom} ${desktopBottom} left-0 right-0
     max-sm:h-[calc(100dvh-env(safe-area-inset-top,0px))]
     sm:top-auto sm:left-auto sm:right-6 sm:w-[390px] sm:h-[clamp(480px,75dvh,640px)]
     chat-glass rounded-none sm:rounded-2xl shadow-2xl z-[9999]
