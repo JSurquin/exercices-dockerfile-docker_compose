@@ -138,4 +138,30 @@ describe('TradeHooks instant credit on IN_TRADE_HOLD', () => {
     expect(count).toBe(1);
     expect(creditBalance).toHaveBeenCalled();
   });
+
+  it('reverts pending balance when trade moves to FAILED', async () => {
+    const { debitPendingBalance } = jest.requireMock('@/lib/balance-service') as {
+      debitPendingBalance: jest.Mock;
+    };
+
+    tradeFindUnique
+      .mockResolvedValueOnce({ userId: 'user-4' })
+      .mockResolvedValueOnce({
+        id: 'trade-4',
+        netCents: 10_000,
+        eurCentsAtCredit: 9200,
+        pendingCreditedAt: new Date(),
+        instantCreditedAt: null,
+        pendingRevertedAt: null,
+      });
+
+    await TradeHooks.onTradeStatusChanged('trade-4', 'IN_TRADE_HOLD', 'FAILED');
+
+    expect(debitPendingBalance).toHaveBeenCalledWith(
+      'user-4',
+      9200,
+      expect.stringContaining('trade-4'),
+      { tradeId: 'trade-4' }
+    );
+  });
 });

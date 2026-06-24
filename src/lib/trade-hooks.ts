@@ -281,12 +281,26 @@ export class TradeHooks {
    *
    * Idempotence : pendingRevertedAt sert de verrou atomique.
    */
-  static async onTradeRolledBack(userId: string, tradeId: string): Promise<void> {
+  static async onTradeRolledBack(
+    userId: string,
+    tradeId: string,
+    source: string = 'skinplace_ipn2_rollback'
+  ): Promise<void> {
     try {
-      logger.info(`[TradeHooks] Rollback trade ${tradeId}`);
+      logger.info(`[TradeHooks] Rollback trade ${tradeId} (source=${source})`);
 
       const trade = await prisma.trade.findUnique({ where: { id: tradeId } });
       if (!trade) throw new Error(`Trade ${tradeId} not found`);
+
+      if (trade.pendingRevertedAt) {
+        logger.warn(`[TradeHooks] Pending balance already reverted for trade ${tradeId}`);
+        return;
+      }
+
+      if (!trade.pendingCreditedAt && !trade.instantCreditedAt) {
+        logger.info(`[TradeHooks] No pending/instant credit to revert for trade ${tradeId}`);
+        return;
+      }
 
       const lockResult = await prisma.trade.updateMany({
         where: { id: tradeId, pendingRevertedAt: null },
@@ -342,7 +356,7 @@ export class TradeHooks {
             netCentsUsd: trade.netCents,
             eurCents,
             wasInstantCredit: !!trade.instantCreditedAt,
-            source: 'skinplace_ipn2_rollback',
+            source,
           },
         },
       });
@@ -350,8 +364,41 @@ export class TradeHooks {
       await AffiliateService.cancelCommissionsForTrade(tradeId);
     } catch (error) {
       logger.error(`[TradeHooks] Error reverting balance for trade ${tradeId}`, error);
+      try {
+        await prisma.trade.update({ where: { id: tradeId }, data: { pendingRevertedAt: null } });
+      } catch (rollbackErr) {
+        logger.error(`[TradeHooks] CRITICAL: Failed to rollback pendingRevertedAt for trade ${tradeId}`, rollbackErr);
+      }
       throw error;
     }
+  }
+
+  /**
+   * Rattrapage : trades CANCELLED/FAILED avec crédit pending/instant non reverté.
+   */
+  static async catchupMissingPendingRevert(limit = 50): Promise<number> {
+    const trades = await prisma.trade.findMany({
+      where: {
+        status: { in: ['CANCELLED', 'FAILED'] },
+        pendingRevertedAt: null,
+        OR: [{ pendingCreditedAt: { not: null } }, { instantCreditedAt: { not: null } }],
+      },
+      select: { id: true, userId: true },
+      take: limit,
+      orderBy: { updatedAt: 'asc' },
+    });
+
+    let processed = 0;
+    for (const trade of trades) {
+      try {
+        await this.onTradeRolledBack(trade.userId, trade.id, 'cron_catchup_pending_revert');
+        processed += 1;
+        logger.info(`[TradeHooks] Catchup pending revert applied for trade ${trade.id}`);
+      } catch (err) {
+        logger.error(`[TradeHooks] Catchup pending revert failed for trade ${trade.id}`, err);
+      }
+    }
+    return processed;
   }
 
   /**
@@ -371,12 +418,19 @@ export class TradeHooks {
         await this.onTradePaid(tradeId);
       }
 
-      if (newStatus === 'FAILED' && oldStatus !== 'FAILED') {
-        await AffiliateService.cancelCommissionsForTrade(tradeId);
-      }
-
-      if (newStatus === 'CANCELLED' && oldStatus !== 'CANCELLED') {
-        await AffiliateService.cancelCommissionsForTrade(tradeId);
+      if (
+        (newStatus === 'FAILED' || newStatus === 'CANCELLED') &&
+        oldStatus !== newStatus
+      ) {
+        const trade = await prisma.trade.findUnique({
+          where: { id: tradeId },
+          select: { userId: true },
+        });
+        if (trade) {
+          await this.onTradeRolledBack(trade.userId, tradeId, 'trade_status_cancelled_or_failed');
+        } else {
+          await AffiliateService.cancelCommissionsForTrade(tradeId);
+        }
       }
       
       // Log de l'audit

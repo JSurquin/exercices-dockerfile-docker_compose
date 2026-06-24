@@ -244,6 +244,11 @@ export async function runUpdateTradesStatusJob() {
     console.log(`[Cron] Catchup: ${catchupCount} trade(s) crédité(s) (acceptation manquée)`);
   }
 
+  const pendingRevertCatchup = await TradeHooks.catchupMissingPendingRevert(50);
+  if (pendingRevertCatchup > 0) {
+    console.log(`[Cron] Catchup: ${pendingRevertCatchup} trade(s) pending reverté(s) (annulation/échec)`);
+  }
+
   return {
     success: true as const,
     message: 'Mise à jour des trades terminée',
@@ -253,6 +258,7 @@ export async function runUpdateTradesStatusJob() {
       unchanged,
       errors,
       acceptanceCreditCatchup: catchupCount,
+      pendingRevertCatchup,
     },
     details: details.filter((d) => d.status === 'updated' || d.status === 'error'),
   };
