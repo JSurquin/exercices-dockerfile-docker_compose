@@ -7,7 +7,9 @@ MoonSkin est une plateforme moderne et sécurisée qui permet aux joueurs de Cou
 ## 🚀 Fonctionnalités
 
 ### 🔐 Authentification & Sécurité
-- **Connexion Steam OpenID** - Authentification unique et sécurisée
+- **Connexion Steam OpenID** - Login joueur via Steam
+- **Connexion Discord** - Alternative via Better Auth (Trade Link Steam requis pour vendre)
+- **E-mail / mot de passe** - Comptes admin, modérateurs et affiliés
 - **KYC obligatoire** - Processus de vérification d'identité complet
 - **Chiffrement SSL 256-bit** - Protection maximale des données
 - **Conformité RGPD** - Respect des réglementations européennes
@@ -20,8 +22,8 @@ MoonSkin est une plateforme moderne et sécurisée qui permet aux joueurs de Cou
 - **Proxy API intelligent** - Cache, retry et gestion d'erreurs
 
 ### 💳 Paiements Sécurisés
-- **SEPA instantané** - Via Qonto avec vérification renforcée
-- **Cryptomonnaies** - Bitcoin, Ethereum, USDT, USDC
+- **SEPA & carte bancaire** - Via Flexify avec vérification renforcée (KYC, OTP)
+- **Cryptomonnaies** - Via Whitepay (BTC, ETH, USDT, USDC, etc.)
 - **Frais transparents** - 0,5% de cashout, pas de frais cachés
 - **Paiements automatiques** - Après trade hold Steam (7 jours)
 
@@ -51,19 +53,21 @@ MoonSkin est une plateforme moderne et sécurisée qui permet aux joueurs de Cou
 - **TypeScript**: Support complet
 
 ### Backend & APIs
-- **Auth**: Better Auth avec Steam OpenID
-- **Database**: Prisma ORM
-- **Payment**: Stripe (cartes, SEPA)
+- **Auth**: Better Auth (Steam OpenID, Discord, e-mail)
+- **Database**: PostgreSQL + Prisma ORM
+- **Paiements**: Flexify (carte / SEPA), Whitepay (crypto)
+- **KYC**: KYCAID
 - **Trading**: Skinplace API v3 (proxy intelligent)
-- **Cache**: Redis (production) / Memory (dev)
+- **Cache / rate limiting**: Upstash Redis (prod) ou mémoire (dev)
+- **Monitoring**: Sentry
 - **Validation**: Zod schemas
 
 ## 📦 Installation
 
 1. **Cloner le repository**
 ```bash
-git clone https://github.com/moonskin/counter-strike-skin.git
-cd counter-strike-skin
+git clone https://github.com/JSurquin/cashtrade.git
+cd cashtrade
 ```
 
 2. **Installer les dépendances**
@@ -73,8 +77,8 @@ pnpm install
 
 3. **Configurer les variables d'environnement**
 ```bash
-cp env.example env.local
-# Éditer env.local avec vos clés API
+cp env.example .env.local
+# Éditer .env.local avec vos clés API (voir env.example pour la liste complète)
 ```
 
 4. **Démarrer le serveur de développement**
@@ -86,90 +90,82 @@ L'application sera disponible sur `http://localhost:3000`
 
 ## 🌐 Variables d'environnement
 
+Copier `env.example` vers `.env.local`. Variables principales :
+
 ```env
-# Better Auth Configuration
+# Auth (Better Auth)
 BETTER_AUTH_SECRET=your-secret-key-here
 BETTER_AUTH_URL=http://localhost:3000
-
-# Discord OAuth (optionnel pour test)
 DISCORD_CLIENT_ID=your-discord-client-id
 DISCORD_CLIENT_SECRET=your-discord-client-secret
-
-# Steam API
 STEAM_API_KEY=your-steam-api-key
 
-# App Configuration
+# App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# Database
 DATABASE_URL=postgresql://username:password@localhost:5432/cashtrade_dev
 
-# Stripe
-STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
-STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-publishable-key
-STRIPE_WEBHOOK_SECRET=whsec_your-stripe-webhook-secret
-STRIPE_WEBHOOK_ENDPOINT_SECRET=whsec_your-webhook-endpoint-secret
+# Skinplace API v3
+SKINPLACE_API_KEY_PRIVATE=your-skinplace-private-key
+SKINPLACE_API_KEY_PUBLIC=your-skinplace-public-key
+SKINPLACE_API_URL=https://api.skin.place
 
-# Skinplace API
-SKINPLACE_API_KEY=your-skinplace-api-key
-SKINPLACE_API_URL=https://api.skinplace.com
+# Paiements
+FLEXIFY_API_KEY=your-flexify-api-key
+FLEXIFY_API_SECRET=your-flexify-api-secret
+WHITEPAY_API_KEY=your-whitepay-api-key
+WHITEPAY_SECRET_KEY=your-whitepay-secret-key
+
+# KYC (KYCAID)
+KYCAID_API_TOKEN=your-kycaid-api-token
+KYCAID_FORM_ID=your-kycaid-form-id
 ```
+
+Voir `env.example` pour Flexify, Whitepay, KYCAID, Sentry, SMTP et le reste de la configuration.
 
 ## 📁 Structure du projet
 
 ```
-src/
-├── app/                    # Pages Next.js (App Router)
-│   ├── admin/             # Interface d'administration
-│   ├── api/               # Routes API
-│   │   ├── admin/         # APIs d'administration
-│   │   ├── auth/          # Authentification Steam
-│   │   ├── skinplace/     # Proxy API Skinplace
-│   │   └── stripe/        # Paiements Stripe
-│   ├── dashboard/         # Dashboard utilisateur
-│   ├── giveaways/         # Page des concours
-│   ├── kyc/               # Processus KYC
-│   ├── sell/              # Pages de vente
-│   ├── settings/          # Paramètres utilisateur
-│   └── support/           # Centre d'aide
-├── components/            # Composants React
-│   ├── admin/             # Composants d'administration
-│   ├── home/              # Composants page d'accueil
-│   ├── layout/            # Layout et navigation
-│   ├── providers/         # Context providers
-│   ├── skinplace/         # Composants Skinplace
-│   └── ui/                # Composants UI (shadcn)
-├── hooks/                 # Custom React hooks
-│   └── use-skinplace.ts   # Hook pour API Skinplace
-└── lib/                   # Utilitaires et types
-    ├── auth.ts            # Gestion authentification
-    ├── i18n.ts            # Internationalisation
-    ├── mock-data.ts       # Données de test
-    ├── skinplace.ts       # Service API Skinplace
-    ├── stripe.ts          # Configuration Stripe
-    ├── types.ts           # Types TypeScript
-    └── utils.ts           # Fonctions utilitaires
+src/app/              # Pages et routes API (App Router)
+  admin/              # Backoffice
+  api/                # Routes API (auth, skinplace, flexify, whitepay, kycaid…)
+  dashboard/          # Espace utilisateur
+  sell/               # Vente de skins
+  payout/             # Retraits
+  kyc/                # Vérification d'identité
+  giveaways/          # Concours
+  affiliate/          # Espace affilié
+src/components/       # Composants React (ui, layout, sell, admin…)
+src/hooks/            # Hooks React
+src/lib/              # Services, utilitaires, i18n, sécurité
+lib/                  # Auth Better Auth (auth.ts, auth-client.ts)
+prisma/               # Schéma PostgreSQL et migrations
+e2e/                  # Tests Playwright
+scripts/              # Scripts CLI (cron, seed, réconciliation…)
 ```
 
 ## 🔧 Scripts disponibles
 
 ```bash
 # Développement
-pnpm run dev         # Démarrer le serveur de développement
-pnpm run build       # Build de production
-pnpm run start       # Démarrer le serveur de production
-pnpm run lint        # Linter le code
-pnpm check           # Vérifier TypeScript + Lint
+pnpm run dev              # Serveur de dev (Turbopack)
+pnpm run build            # Build de production
+pnpm run start            # Serveur de production
+pnpm run lint             # ESLint
+pnpm run check            # Prisma generate + ESLint + TypeScript
 
 # Base de données
-pnpm run db:generate # Générer le client Prisma
-pnpm run db:push     # Pousser le schéma vers la DB
-pnpm run db:migrate  # Appliquer les migrations
-pnpm run db:seed     # Peupler la base de données
-pnpm run db:studio   # Interface Prisma Studio
+pnpm run db:seed          # Peupler la base (seed Prisma)
+npx prisma generate       # Générer le client Prisma
+npx prisma migrate dev    # Appliquer les migrations en dev
+npx prisma studio         # Interface Prisma Studio
 
-# Deployment
-pnpm run type-check  # Vérifier les types TypeScript
+# Tests
+pnpm run test             # Tests unitaires (Jest)
+pnpm run test:e2e         # Tests end-to-end (Playwright)
+pnpm run test:e2e:smoke   # Smoke tests Playwright
+
+# Cron / maintenance
+pnpm run cron:worker      # Worker cron (trades, giveaways…)
 ```
 
 ## 🚦 Roadmap
@@ -182,7 +178,7 @@ pnpm run type-check  # Vérifier les types TypeScript
 - [x] Interface utilisateur
 
 ### Phase 2 - Fonctionnalités avancées ✅
-- [x] Support crypto (Stripe)
+- [x] Support crypto (Whitepay)
 - [x] Système de gamification
 - [x] Interface admin complète
 - [x] Support multilingue
@@ -197,7 +193,7 @@ pnpm run type-check  # Vérifier les types TypeScript
 - [x] Build optimisé Next.js 15
 
 ### Phase 4 - Extensions 📋
-- [ ] Tests automatisés (Jest, Playwright)
+- [x] Tests automatisés (Jest, Playwright)
 - [ ] CI/CD Pipeline (GitHub Actions)
 - [ ] Application mobile (React Native)
 - [ ] API publique (OpenAPI)
@@ -256,28 +252,22 @@ POST   /api/kycaid/webhook       # Webhook KYCAID
 Variables d'environnement KYCAID :
 
 ```env
-KYCAID_API_TOKEN=your_api_token_here
-KYCAID_FORM_ID=your_form_id_here
-KYCAID_WEBHOOK_SECRET=your_webhook_secret_here
+KYCAID_API_TOKEN=your-kycaid-api-token
+KYCAID_FORM_ID=your-kycaid-form-id
 KYCAID_BASE_URL=https://api.kycaid.com
 KYCAID_SANDBOX_MODE=true
-KYCAID_CALLBACK_URL=https://yourdomain.com/api/kycaid/webhook
-KYCAID_REDIRECT_URL=https://yourdomain.com/kyc/complete
+KYCAID_CALLBACK_URL=
+KYCAID_REDIRECT_URL=http://localhost:3000/kyc/complete
 ```
 
 ### Tests
 
-Script de test du flow KYC complet :
+Script de test du flow KYC (nécessite `.env.local` configuré) :
 
 ```bash
-# Test complet du flow
-npm run test:kyc full
-
-# Test création applicant seulement
-npm run test:kyc applicant
-
-# Test création adresse
-npm run test:kyc address <applicant_id>
+npx tsx scripts/test-kyc-flow.ts full
+npx tsx scripts/test-kyc-flow.ts applicant
+npx tsx scripts/test-kyc-flow.ts address <applicant_id>
 ```
 
 ### Conformité réglementaire
@@ -360,15 +350,6 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 
 - **Email**: support@moonskin.gg
 - **Discord**: [discord.gg/moonskin](https://discord.gg/moonskin)
-- **Documentation**: [docs.moonskin.gg](https://docs.moonskin.gg)
-- **Status**: [status.moonskin.gg](https://status.moonskin.gg)
-
-## 📈 Statistiques
-
-- **Volume traité**: €2.4M+
-- **Utilisateurs actifs**: 15,420+
-- **Trades réalisés**: 8,967+
-- **Taux de satisfaction**: 99.8%
 
 ---
 
