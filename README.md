@@ -1,6 +1,6 @@
 # MoonSkin - Plateforme de vente de skins CS2
 
-![MoonSkin Logo](public/logo.svg)
+![MoonSkin Logo](public/images/logo.webp)
 
 MoonSkin est une plateforme moderne et sécurisée qui permet aux joueurs de Counter-Strike 2 de vendre leurs skins contre de l'argent réel. Construite avec Next.js 15 et intégrée à l'API Skinplace, elle offre une expérience utilisateur exceptionnelle avec des paiements SEPA et crypto.
 
