@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
     const body = parsed.data as unknown as CreateTradeBody;
 
-    const { parseSteamId64FromUserInput } = await import('@/lib/steam-id');
+    const { isSteamIdAllowedForUser } = await import('@/lib/steam-access');
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -71,16 +71,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Vérifier ownership du steam_id
-    const allowedSteamIds = [session.user.steamId];
-    if (user.tradeLink) {
-      const tradeLinkSteamId = parseSteamId64FromUserInput(user.tradeLink);
-      if (tradeLinkSteamId) {
-        allowedSteamIds.push(tradeLinkSteamId);
-      }
-    }
-
-    if (!allowedSteamIds.includes(body.steam_id)) {
+    if (!isSteamIdAllowedForUser(body.steam_id, session.user.steamId, user)) {
       return NextResponse.json(
         { success: false, error: 'Vous ne pouvez vendre que vos propres items' },
         { status: 403 }

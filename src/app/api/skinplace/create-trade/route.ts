@@ -87,12 +87,12 @@ export async function POST(request: NextRequest) {
     }
     const body = parsed.data as unknown as CreateTradeBody;
 
-    const { parseSteamId64FromUserInput } = await import('@/lib/steam-id');
-    
+    const { isSteamIdAllowedForUser } = await import('@/lib/steam-access');
+
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
     });
-    
+
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'Utilisateur non trouvé' },
@@ -106,16 +106,8 @@ export async function POST(request: NextRequest) {
         { status: 403 }
       );
     }
-    
-    const allowedSteamIds = [session.user.steamId];
-    if (user.tradeLink) {
-      const tradeLinkSteamId = parseSteamId64FromUserInput(user.tradeLink);
-      if (tradeLinkSteamId) {
-        allowedSteamIds.push(tradeLinkSteamId);
-      }
-    }
-    
-    if (!allowedSteamIds.includes(body.steam_id)) {
+
+    if (!isSteamIdAllowedForUser(body.steam_id, session.user.steamId, user)) {
       return NextResponse.json(
         { success: false, error: 'Accès non autorisé' },
         { status: 403 }

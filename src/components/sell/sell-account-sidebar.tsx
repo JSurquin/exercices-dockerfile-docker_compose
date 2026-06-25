@@ -6,7 +6,7 @@ import { SellSelectionPanel } from "@/components/sell/sell-selection-panel";
 import { NormalizedInventoryItem } from "@/hooks/use-skinplace-inventory";
 
 interface SellAccountSidebarProps {
-  onTradeLinkUpdate: () => void;
+  onTradeLinkUpdate: (tradeLink: string) => void;
   previewItems: NormalizedInventoryItem[];
   onContinue: () => void;
   onDeselect: () => void;

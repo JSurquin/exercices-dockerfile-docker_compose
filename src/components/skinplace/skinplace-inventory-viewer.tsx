@@ -87,7 +87,7 @@ export function SkinplaceInventoryViewer({
   const profileSteamId64 = (profileSteamId64Prop ?? '').trim();
   const { messages } = useLocale();
   const { selectedCurrency } = useCurrency();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const bonusRatePercent = user?.bonusRatePercent ?? 0;
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -96,6 +96,7 @@ export function SkinplaceInventoryViewer({
   const [convertedSelectedValue, setConvertedSelectedValue] = useState<string>('');
   
   // Steam ID change functionality
+  const [identifierGateSaving, setIdentifierGateSaving] = useState(false);
   const [showSteamIdInput, setShowSteamIdInput] = useState(false);
   const [customSteamId, setCustomSteamId] = useState(profileSteamId64);
   const [currentSteamId, setCurrentSteamId] = useState(profileSteamId64);
@@ -176,17 +177,35 @@ export function SkinplaceInventoryViewer({
     }
   };
 
-  const handleIdentifierGateSubmit = () => {
+  const handleIdentifierGateSubmit = async () => {
     const ig = messages.components.skinplace.identifierGate;
-    const resolved = parseSteamId64FromUserInput(customSteamId);
+    const trimmedInput = customSteamId.trim();
+    const resolved = parseSteamId64FromUserInput(trimmedInput);
     if (!resolved || !isValidSteamId64(resolved)) {
       toast.error(ig.invalidPaste);
       return;
     }
-    setCurrentSteamId(resolved);
-    setCustomSteamId(resolved);
-    setSelectedItems([]);
-    onSteamIdChange?.(resolved);
+
+    const isTradeLink = /steamcommunity\.com\/tradeoffer/i.test(trimmedInput);
+
+    setIdentifierGateSaving(true);
+    try {
+      if (isTradeLink) {
+        await updateUser({ tradeLink: trimmedInput });
+      } else if (!user?.steamId64) {
+        await updateUser({ steamId64: resolved });
+      }
+
+      setCurrentSteamId(resolved);
+      setCustomSteamId(resolved);
+      setSelectedItems([]);
+      onSteamIdChange?.(resolved);
+    } catch (error) {
+      console.error('Erreur enregistrement identifiant Steam:', error);
+      toast.error(messages.settings.tradeLink.saveError);
+    } finally {
+      setIdentifierGateSaving(false);
+    }
   };
 
   // Appliquer les filtres
@@ -413,10 +432,14 @@ export function SkinplaceInventoryViewer({
             <Button
               type="button"
               className="bg-primary hover:bg-primary/90"
-              onClick={handleIdentifierGateSubmit}
-              disabled={!customSteamInputLooksValid}
+              onClick={() => void handleIdentifierGateSubmit()}
+              disabled={!customSteamInputLooksValid || identifierGateSaving}
             >
-              {ig.cta}
+              {identifierGateSaving ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                ig.cta
+              )}
             </Button>
             <Button type="button" variant="outline" asChild>
               <Link href="/settings">{ig.openSettings}</Link>

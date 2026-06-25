@@ -76,9 +76,11 @@ export default function SellPage() {
   }, [user?.tradeLink, user?.steamId64]);
 
   // Callback pour rafraîchir après modification du Trade Link
-  const handleTradeLinkUpdate = () => {
-    const newSteamId = getInventorySteamId();
-    setActiveSteamId(newSteamId);
+  const handleTradeLinkUpdate = (tradeLink: string) => {
+    const extractedId = parseSteamId64FromUserInput(tradeLink);
+    if (extractedId) {
+      setActiveSteamId(extractedId);
+    }
   };
 
   const stopPolling = useCallback(() => {
@@ -338,6 +340,7 @@ export default function SellPage() {
                   initialSelectedIds={selectedItems.map((item) => item.id)}
                   onItemSelect={handleItemSelect}
                   onSelectionChange={handleSelectionChange}
+                  onSteamIdChange={setActiveSteamId}
                   selectable={true}
                   layout="sell"
                   hideSelectionBar

@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { parseSteamId64FromUserInput } from "@/lib/steam-id";
 
 interface InlineTradeLinkEditorProps {
-  onSuccess?: () => void;
+  onSuccess?: (tradeLink: string) => void;
   compact?: boolean;
 }
 
@@ -78,7 +78,7 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
       await updateUser({ tradeLink: tradeUrl });
       toast.success(messages.settings.tradeLink.savedSuccess);
       setIsExpanded(false);
-      onSuccess?.();
+      onSuccess?.(tradeUrl);
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du Trade Link:', error);
       toast.error(messages.settings.tradeLink.saveError);
