@@ -19,7 +19,7 @@ import {
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
 import { toast } from "sonner";
-import { parseSteamId64FromUserInput } from "@/lib/steam-id";
+import { parseSteamId64FromUserInput, normalizeSteamTradeLink } from "@/lib/steam-id";
 
 interface InlineTradeLinkEditorProps {
   onSuccess?: (tradeLink: string) => void;
@@ -68,17 +68,19 @@ export default function InlineTradeLinkEditor({ onSuccess, compact = false }: In
   };
 
   const handleSave = async () => {
-    if (!isValidUrl || !tradeUrl) {
+    const normalized = normalizeSteamTradeLink(tradeUrl);
+    if (!normalized) {
       toast.error(messages.settings.tradeLink.invalidFormat);
       return;
     }
 
     setLoading(true);
     try {
-      await updateUser({ tradeLink: tradeUrl });
+      await updateUser({ tradeLink: normalized });
       toast.success(messages.settings.tradeLink.savedSuccess);
+      setTradeUrl(normalized);
       setIsExpanded(false);
-      onSuccess?.(tradeUrl);
+      onSuccess?.(normalized);
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du Trade Link:', error);
       toast.error(messages.settings.tradeLink.saveError);

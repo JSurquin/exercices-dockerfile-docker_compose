@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
+import { normalizeSteamTradeLink } from '@/lib/steam-id';
 import {
   getRequestContext,
   logUnauthorizedAccess,
@@ -30,6 +31,19 @@ export async function POST(request: NextRequest) {
       raw = await request.json();
     } catch {
       raw = {};
+    }
+
+    if (
+      typeof raw === 'object' &&
+      raw !== null &&
+      'tradeLink' in raw &&
+      typeof (raw as { tradeLink?: unknown }).tradeLink === 'string' &&
+      (raw as { tradeLink: string }).tradeLink
+    ) {
+      const normalized = normalizeSteamTradeLink((raw as { tradeLink: string }).tradeLink);
+      if (normalized) {
+        (raw as { tradeLink: string }).tradeLink = normalized;
+      }
     }
 
     const parsed = safeParseJson(raw, userUpdateBodySchema);

@@ -42,3 +42,32 @@ export function parseSteamId64FromUserInput(raw: string): string | null {
 
   return null;
 }
+
+/**
+ * Normalise un Trade Link Steam (partner + token uniquement) pour l'enregistrement en base.
+ * Retourne null si l'entrée n'est pas un trade link exploitable.
+ */
+export function normalizeSteamTradeLink(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!/steamcommunity\.com\/tradeoffer/i.test(trimmed)) {
+    return null;
+  }
+
+  try {
+    const href = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
+    const u = new URL(href);
+    const partner = u.searchParams.get('partner');
+    const token = u.searchParams.get('token');
+    if (
+      !partner ||
+      !/^\d+$/.test(partner) ||
+      !token ||
+      !/^[a-zA-Z0-9_-]+$/.test(token)
+    ) {
+      return null;
+    }
+    return `https://steamcommunity.com/tradeoffer/new/?partner=${partner}&token=${token}`;
+  } catch {
+    return null;
+  }
+}

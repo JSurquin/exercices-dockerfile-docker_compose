@@ -31,7 +31,11 @@ import { useLocale } from '@/components/providers/locale-provider';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 import { useCurrency } from '@/components/providers/currency-provider';
 import { currencyConverter } from '@/lib/currency-converter';
-import { isValidSteamId64, parseSteamId64FromUserInput } from '@/lib/steam-id';
+import {
+  isValidSteamId64,
+  normalizeSteamTradeLink,
+  parseSteamId64FromUserInput,
+} from '@/lib/steam-id';
 import { useAuth } from '@/components/providers/auth-provider';
 import Link from 'next/link';
 import { isInventoryPrivateError } from '@/lib/inventory-api-errors';
@@ -87,7 +91,7 @@ export function SkinplaceInventoryViewer({
   const profileSteamId64 = (profileSteamId64Prop ?? '').trim();
   const { messages } = useLocale();
   const { selectedCurrency } = useCurrency();
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, refreshUser } = useAuth();
   const bonusRatePercent = user?.bonusRatePercent ?? 0;
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -186,20 +190,26 @@ export function SkinplaceInventoryViewer({
       return;
     }
 
-    const isTradeLink = /steamcommunity\.com\/tradeoffer/i.test(trimmedInput);
+    const normalizedTradeLink = normalizeSteamTradeLink(trimmedInput);
 
     setIdentifierGateSaving(true);
     try {
-      if (isTradeLink) {
-        await updateUser({ tradeLink: trimmedInput });
+      if (normalizedTradeLink) {
+        await updateUser({ tradeLink: normalizedTradeLink });
       } else if (!user?.steamId64) {
         await updateUser({ steamId64: resolved });
+      } else if (user.steamId64 !== resolved) {
+        toast.error(ig.invalidPaste);
+        return;
       }
+
+      await refreshUser();
 
       setCurrentSteamId(resolved);
       setCustomSteamId(resolved);
       setSelectedItems([]);
       onSteamIdChange?.(resolved);
+      await loadInventory(resolved);
     } catch (error) {
       console.error('Erreur enregistrement identifiant Steam:', error);
       toast.error(messages.settings.tradeLink.saveError);
