@@ -1575,6 +1575,9 @@ export interface Messages {
       bonusUpdatedTitle: string;
       bonusUpdatedDesc: string;
       noTagLabel: string;
+      bonusRangeError: string;
+      bonusTagRequiresRate: string;
+      bonusRateRequiresTag: string;
       errorTitle: string;
       errorSave: string;
       instantCreditTitle: string;

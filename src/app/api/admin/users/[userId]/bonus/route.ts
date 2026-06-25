@@ -3,6 +3,8 @@ import { prisma } from '~/prisma/prisma';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { getRequestContext, getClientIP, logUnauthorizedAccess } from '@/lib/security/audit-helpers';
 
+const ALLOWED_USER_TAGS = new Set(['VIP', 'MERCHANT']);
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
@@ -33,16 +35,25 @@ export async function PATCH(
       }
     }
 
-    if (userTag !== undefined && userTag !== null) {
+    if (userTag !== undefined && userTag !== null && userTag !== '') {
       if (typeof userTag !== 'string' || userTag.length > 20) {
         return NextResponse.json(
           { error: 'userTag doit être une chaîne de 20 caractères max' },
           { status: 400 }
         );
       }
+      if (!ALLOWED_USER_TAGS.has(userTag)) {
+        return NextResponse.json(
+          { error: 'userTag doit être VIP ou MERCHANT' },
+          { status: 400 }
+        );
+      }
     }
 
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, bonusRatePercent: true, userTag: true },
+    });
     if (!user) {
       return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
     }
@@ -55,20 +66,42 @@ export async function PATCH(
       updateData.userTag = userTag || null;
     }
 
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'Aucune donnée à mettre à jour' }, { status: 400 });
+    }
+
+    const nextRate =
+      updateData.bonusRatePercent !== undefined
+        ? (updateData.bonusRatePercent as number)
+        : user.bonusRatePercent;
+    const nextTag =
+      updateData.userTag !== undefined ? (updateData.userTag as string | null) : user.userTag;
+
+    if (nextTag && nextRate <= 0) {
+      return NextResponse.json(
+        { error: 'Un pourcentage de bonus supérieur à 0 est requis pour VIP ou MERCHANT' },
+        { status: 400 }
+      );
+    }
+
     const updated = await prisma.user.update({
       where: { id: userId },
       data: updateData,
       select: { bonusRatePercent: true, userTag: true },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        userId: session.user.id,
-        action: 'ADMIN_VIP_BONUS_UPDATE',
-        details: { targetUserId: userId, ...updateData },
-        ipAddress: getClientIP(request),
-      },
-    });
+    try {
+      await prisma.auditLog.create({
+        data: {
+          userId: session.user.id,
+          action: 'ADMIN_VIP_BONUS_UPDATE',
+          details: { targetUserId: userId, ...updateData },
+          ipAddress: getClientIP(request),
+        },
+      });
+    } catch (auditErr) {
+      console.error('[admin/users/[userId]/bonus] audit log failed', auditErr);
+    }
 
     return NextResponse.json({ success: true, ...updated });
   } catch (err) {

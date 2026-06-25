@@ -77,7 +77,6 @@ export default function AdminUserDetailPage() {
   const [bonusRate, setBonusRate] = useState('');
   const [userTag, setUserTag] = useState('');
   const [bonusSaving, setBonusSaving] = useState(false);
-  const [bonusInitialized, setBonusInitialized] = useState(false);
   const [instantCreditSaving, setInstantCreditSaving] = useState(false);
 
   const { data: user, isLoading: loading, error: queryError, refetch: refetchUser } = useQuery({
@@ -96,30 +95,74 @@ export default function AdminUserDetailPage() {
   const error = queryError instanceof Error ? queryError.message : null;
 
   useEffect(() => {
-    if (user && !bonusInitialized) {
-      setBonusRate(String(user.bonusRatePercent ?? 0));
-      setUserTag(user.userTag ?? '');
-      setBonusInitialized(true);
-    }
-  }, [user, bonusInitialized]);
+    if (!user || user.id !== userId) return;
+    setBonusRate(String(user.bonusRatePercent ?? 0));
+    setUserTag(user.userTag ?? '');
+  }, [user, userId]);
 
   const handleSaveBonus = async () => {
     if (!userId) return;
+
+    const rate = parseFloat(bonusRate);
+    const tag = userTag.trim() || null;
+
+    if (isNaN(rate) || rate < 0 || rate > 100) {
+      toast({
+        title: t.errorTitle,
+        description: t.bonusRangeError,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (tag && rate <= 0) {
+      toast({
+        title: t.errorTitle,
+        description: t.bonusTagRequiresRate,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!tag && rate > 0) {
+      toast({
+        title: t.errorTitle,
+        description: t.bonusRateRequiresTag,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setBonusSaving(true);
     try {
       const res = await fetch(`/api/admin/users/${userId}/bonus`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          bonusRatePercent: parseFloat(bonusRate) || 0,
-          userTag: userTag || null,
+          bonusRatePercent: rate,
+          userTag: tag,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || t.errorTitle);
+
+      setBonusRate(String(data.bonusRatePercent ?? 0));
+      setUserTag(data.userTag ?? '');
+
+      queryClient.setQueryData(queryKeys.adminUser(userId), (current: UserDetail | undefined) =>
+        current
+          ? {
+              ...current,
+              bonusRatePercent: data.bonusRatePercent ?? 0,
+              userTag: data.userTag ?? null,
+            }
+          : current
+      );
+
       toast({ title: t.bonusUpdatedTitle, description: t.bonusUpdatedDesc.replace('{rate}', String(data.bonusRatePercent)).replace('{tag}', data.userTag || t.noTagLabel) });
       await refetchUser();
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminUser(userId) });
     } catch (e) {
       toast({
         title: t.errorTitle,
@@ -396,7 +439,7 @@ export default function AdminUserDetailPage() {
         </CardContent>
       </Card>
 
-      <Card className="bg-slate-800/30 border-slate-700">
+      <Card key={`bonus-${userId}`} className="bg-slate-800/30 border-slate-700">
         <CardHeader className="pb-2">
           <CardTitle className="text-white flex items-center gap-2">
             <Crown className="h-5 w-5 text-theme-highlight" />
