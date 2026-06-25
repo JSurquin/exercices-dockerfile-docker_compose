@@ -59,6 +59,7 @@ import {
 import CountUp from "react-countup";
 import { formatCentsToCurrency } from "@/lib/currency-converter";
 import { ConvertedPrice } from "@/components/ui/converted-price";
+import { ConvertedAmount } from "@/components/ui/converted-amount";
 import { getLevelInfo, getLevelName, LEVELS, type LevelLocale } from "@/lib/level-system";
 import { formatMessage } from "@/lib/i18n";
 import { LevelHelpPopover } from "@/components/ui/level-help-popover";
@@ -540,12 +541,9 @@ export default function DashboardPage() {
                         <div className="h-10 w-36 animate-pulse bg-muted rounded-lg" />
                       ) : (
                         <p className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                          <CountUp
-                            end={(balanceHistoryData?.availableCents ?? balanceHistoryData?.currentBalanceCents ?? 0) / 100}
-                            duration={1.5}
-                            decimals={2}
-                            suffix="€"
-                            separator=" "
+                          <ConvertedAmount
+                            cents={balanceHistoryData?.availableCents ?? balanceHistoryData?.currentBalanceCents ?? 0}
+                            countUp
                           />
                         </p>
                       )}
@@ -555,8 +553,8 @@ export default function DashboardPage() {
                             ? "text-green-600 dark:text-green-400"
                             : "text-red-600 dark:text-red-400"
                         }`}>
-                          {balanceHistoryData.variationCents >= 0 ? "+" : ""}
-                          {formatCentsToCurrency(balanceHistoryData.variationCents, "EUR")}{" "}
+                          {balanceHistoryData.variationCents >= 0 ? "+" : "-"}
+                          <ConvertedAmount cents={Math.abs(balanceHistoryData.variationCents)} />{" "}
                           {messages.dashboard.balance.vsLastWeek}
                         </p>
                       )}
@@ -569,7 +567,7 @@ export default function DashboardPage() {
                           {messages.dashboard.balance.frozenBalance}
                         </p>
                         <p className="text-base font-bold text-theme-stat tabular-nums">
-                          {formatCentsToCurrency(balanceHistoryData!.frozenBalanceCents, "EUR")}
+                          <ConvertedAmount cents={balanceHistoryData!.frozenBalanceCents} />
                         </p>
                       </div>
                     )}
@@ -616,19 +614,25 @@ export default function DashboardPage() {
                     </div>
                     <div className="sm:text-right shrink-0 pl-12 sm:pl-0">
                       <p className="text-xl sm:text-2xl font-bold text-theme-stat tabular-nums">
-                        <CountUp
-                          end={(balanceHistoryData?.projectedAvailableCents ?? 0) / 100}
-                          duration={1.5}
-                          decimals={2}
-                          suffix="€"
-                          separator=" "
+                        <ConvertedAmount
+                          cents={balanceHistoryData?.projectedAvailableCents ?? 0}
+                          countUp
                         />
                       </p>
                       <p className="text-xs font-medium text-theme-highlight mt-0.5">
-                        {messages.dashboard.balance.projectedPending.replace(
-                          '{amount}',
-                          formatCentsToCurrency(balanceHistoryData!.pendingBalanceCents, 'EUR'),
-                        )}
+                        {(() => {
+                          const parts = messages.dashboard.balance.projectedPending.split('{amount}');
+                          return (
+                            <>
+                              {parts[0]}
+                              <ConvertedAmount
+                                cents={balanceHistoryData!.pendingBalanceCents}
+                                className="inline"
+                              />
+                              {parts[1] ?? ''}
+                            </>
+                          );
+                        })()}
                       </p>
                       {balanceHistoryData?.nextReleaseAt && (
                         <p className="text-[11px] text-muted-foreground mt-1">
@@ -727,11 +731,11 @@ export default function DashboardPage() {
                 <div className="flex flex-col justify-center gap-1 min-w-0">
                   <p className="text-xs text-muted-foreground">{messages.dashboard.volume}</p>
                   <p className="text-xl sm:text-2xl font-bold tabular-nums">
-                    <CountUp
-                      end={(tradesData?.totalVolume || 0) / 100}
-                      duration={2}
-                      decimals={2}
-                      suffix="€"
+                    <ConvertedAmount
+                      cents={tradesData?.totalVolume || 0}
+                      fromCurrency="USD"
+                      countUp
+                      countUpDuration={2}
                     />
                   </p>
                 </div>
@@ -878,7 +882,10 @@ export default function DashboardPage() {
                           </div>
                           <div className="text-right">
                             <p className="font-bold text-lg">
-                              <ConvertedPrice usdCents={trade.brutCentimes} fromCurrency="USD" />
+                              <ConvertedPrice
+                                usdCents={trade.brutCentimes + (trade.vipBonusCentimes ?? 0)}
+                                fromCurrency="USD"
+                              />
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {(trade.status === 'en_trade_hold' && !trade.balanceCreditedAt)

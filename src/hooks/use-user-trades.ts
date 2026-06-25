@@ -25,6 +25,7 @@ export interface Trade {
     réseau: number;
   };
   netCentimes: number;
+  vipBonusCentimes?: number;
   ticketId: string;
   tradeAcceptéLe?: Date;
   disponibleLe?: Date;

@@ -62,6 +62,7 @@ export async function GET(request: NextRequest) {
         réseau: trade.networkFees
       },
       netCentimes: trade.netCents,
+      vipBonusCentimes: trade.vipBonusCents ?? 0,
       ticketId: trade.ticketId,
       tradeAcceptéLe: trade.tradeAcceptedAt,
       disponibleLe: trade.availableAt,
@@ -84,7 +85,10 @@ export async function GET(request: NextRequest) {
       totalTrades: trades.length,
       totalVolume: trades
         .filter(trade => !TERMINAL_STATUSES.has(trade.status))
-        .reduce((sum, trade) => sum + trade.grossCents, 0),
+        .reduce(
+          (sum, trade) => sum + trade.grossCents + (trade.vipBonusCents ?? 0),
+          0,
+        ),
     });
 
   } catch (error) {
