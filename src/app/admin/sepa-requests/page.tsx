@@ -27,6 +27,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { formatCentsToCurrency } from '@/lib/currency-converter';
 import { useLocale } from '@/components/providers/locale-provider';
+import Link from 'next/link';
+import { AdminUserLink } from '@/components/admin/admin-user-link';
 import {
   BanknotesIcon,
   CheckCircleIcon,
@@ -278,26 +280,22 @@ export default function AdminSepaRequestsPage() {
                   {requests.map((req) => (
                     <tr key={req.id} className="hover:bg-slate-700/20 transition-colors">
                       <td className="py-4 pr-4">
-                        <div className="flex items-center gap-2">
-                          {req.user?.steamAvatar ? (
-                            <img src={req.user.steamAvatar} alt="" className="w-8 h-8 rounded-full" />
-                          ) : (
-                            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
-                              <UserIcon className="w-4 h-4 text-slate-400" />
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-white font-medium text-sm">
-                              {req.user?.name ?? req.user?.steamUsername ?? t.columns.user}
-                            </p>
-                            <p className="text-slate-400 text-xs">{req.user?.email ?? '-'}</p>
-                            {req.beneficiary?.firstName && (
-                              <p className="text-slate-300 text-xs">
-                                {req.beneficiary.firstName} {req.beneficiary.lastName}
-                              </p>
-                            )}
-                          </div>
-                        </div>
+                        {req.user ? (
+                          <AdminUserLink
+                            userId={req.user.id}
+                            name={req.user.name ?? req.user.steamUsername ?? t.columns.user}
+                            avatar={req.user.steamAvatar}
+                            email={req.user.email}
+                            showEmail
+                            subtitle={
+                              req.beneficiary?.firstName
+                                ? `${req.beneficiary.firstName} ${req.beneficiary.lastName}`
+                                : undefined
+                            }
+                          />
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
                       </td>
                       <td className="py-4 pr-4">
                         {renderAmountBreakdown(req)}

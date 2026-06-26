@@ -23,6 +23,7 @@ import {
   Clock,
   ExternalLink
 } from 'lucide-react';
+import { AdminUserLink } from '@/components/admin/admin-user-link';
 
 interface AffiliateApplication {
   id: string;
@@ -265,23 +266,13 @@ export default function AffiliateApplications() {
                 {applications.map((app) => (
                   <TableRow key={app.id}>
                     <TableCell>
-                      <div className="flex items-center space-x-3">
-                        <SafeImg
-                          src={app.user.steamAvatar || '/images/default-avatar.png'}
-                          alt="Avatar"
-                          className="w-8 h-8 rounded-full"
-                          fallbackClassName="w-8 h-8 rounded-full"
-                          fallbackIcon={<UserCircleIcon className="w-5 h-5" />}
-                        />
-                        <div>
-                          <p className="font-medium">
-                            {app.user.steamUsername || t.defaultUsername}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {app.user.email}
-                          </p>
-                        </div>
-                      </div>
+                      <AdminUserLink
+                        userId={app.user.id}
+                        name={app.user.steamUsername || t.defaultUsername}
+                        avatar={app.user.steamAvatar}
+                        email={app.user.email}
+                        showEmail
+                      />
                     </TableCell>
                     <TableCell>
                       <span className="text-sm">{formatDate(app.createdAt)}</span>

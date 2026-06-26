@@ -192,6 +192,7 @@ export async function computeAffiliateExtendedMetrics(
 
 export interface AffiliateRankingRow {
   affiliateId: string;
+  userId: string;
   code: string;
   steamUsername: string | null;
   steamAvatar: string | null;
@@ -208,7 +209,7 @@ export async function getAffiliateRankings(limit = 20): Promise<AffiliateRanking
   const affiliates = await prisma.affiliateStats.findMany({
     where: { isActive: true },
     include: {
-      user: { select: { steamUsername: true, steamAvatar: true } },
+      user: { select: { id: true, steamUsername: true, steamAvatar: true } },
     },
     orderBy: { totalVolumeCents: 'desc' },
     take: limit,
@@ -223,6 +224,7 @@ export async function getAffiliateRankings(limit = 20): Promise<AffiliateRanking
     const totals = attributedTotals.get(aff.id);
     rows.push({
       affiliateId: aff.id,
+      userId: aff.userId,
       code: aff.code,
       steamUsername: aff.user.steamUsername,
       steamAvatar: aff.user.steamAvatar,

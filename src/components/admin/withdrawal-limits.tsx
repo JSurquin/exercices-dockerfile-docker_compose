@@ -130,7 +130,13 @@ export function WithdrawalLimits({
               className="bg-slate-700 border-slate-600 text-white mt-1 w-40"
             />
           </div>
-          <Button size="sm" onClick={handleSave} disabled={saving}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleSave}
+            disabled={saving}
+            className="h-9 border border-theme-highlight/50 bg-theme-stat/10 text-theme-highlight hover:bg-theme-stat/20"
+          >
             {t.save}
           </Button>
         </div>

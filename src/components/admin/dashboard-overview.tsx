@@ -3,7 +3,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   ChartBarIcon,
   UsersIcon,
@@ -18,6 +17,7 @@ import { useLocale } from '@/components/providers/locale-provider';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 import { adminGlassCard, adminIconAccent, panelListRow } from '@/lib/admin-ui';
 import { cn } from '@/lib/utils';
+import { AdminUserLink } from '@/components/admin/admin-user-link';
 
 interface AdminStats {
   recentTrades: any[];
@@ -176,19 +176,13 @@ export function DashboardOverview() {
                 key={trade.id} 
                 className={cn(panelListRow, 'sm:flex-row sm:items-center sm:justify-between')}
               >
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                    <AvatarImage src={trade.userAvatar || ''} />
-                    <AvatarFallback className="bg-cta-gradient-br text-xs font-bold text-white">
-                      {trade.userName ? trade.userName.slice(0, 2).toUpperCase() : 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium text-foreground sm:text-base">
-                      {trade.userName || `User #${trade.userId.slice(0, 8)}`}
-                    </p>
-                    <p className="text-xs text-muted-foreground sm:text-sm">{trade.ticketId}</p>
-                  </div>
+                <div className="flex items-center gap-3 min-w-0">
+                  <AdminUserLink
+                    userId={trade.userId}
+                    name={trade.userName || `User #${trade.userId.slice(0, 8)}`}
+                    avatar={trade.userAvatar}
+                    subtitle={trade.ticketId}
+                  />
                 </div>
                 <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end">
                   <p className="text-sm font-bold text-foreground sm:text-base">

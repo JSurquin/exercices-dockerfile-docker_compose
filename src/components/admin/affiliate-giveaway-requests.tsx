@@ -25,6 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLocale } from '@/components/providers/locale-provider';
 import { formatCentsToCurrency } from '@/lib/currency-converter';
 import { Gift, Check, X, Loader2 } from 'lucide-react';
+import { AdminUserLink } from '@/components/admin/admin-user-link';
 
 interface GiveawayRequestRow {
   id: string;
@@ -245,21 +246,12 @@ export default function AffiliateGiveawayRequests() {
                     requests.map((row) => (
                       <TableRow key={row.id} className="border-slate-700">
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            {row.user.steamAvatar && (
-                              <SafeImg
-                                src={row.user.steamAvatar}
-                                alt=""
-                                className="h-8 w-8 rounded-full"
-                              />
-                            )}
-                            <div>
-                              <p className="text-white text-sm">
-                                {row.user.steamUsername || row.user.email}
-                              </p>
-                              <p className="text-xs text-slate-400 font-mono">{row.affiliate.code}</p>
-                            </div>
-                          </div>
+                          <AdminUserLink
+                            userId={row.user.id}
+                            name={row.user.steamUsername || row.user.email}
+                            avatar={row.user.steamAvatar}
+                            subtitle={row.affiliate.code}
+                          />
                         </TableCell>
                         <TableCell className="text-slate-300 text-sm">
                           {new Date(row.startDate).toLocaleDateString()} →{' '}

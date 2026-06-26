@@ -3,6 +3,7 @@ import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { User, AdminFilters } from '@/lib/types';
 import { prisma } from '~/prisma/prisma';
 import { KycStatus } from '@prisma/client';
+import { CREDITED_TRADE_STATUSES } from '@/lib/trade-volume';
 import { 
   getRequestContext, 
   logUnauthorizedAccess, 
@@ -124,13 +125,13 @@ export async function GET(request: NextRequest) {
 
     const userIds = users.map(u => u.id);
 
-    // Volume total : tous les trades hors échec/annulation (aligné sur /api/user/trades)
+    // Volume total : trades complétés et crédités uniquement
     const [totalVolumeRows, pendingVolumeRows] = await Promise.all([
       prisma.trade.groupBy({
         by: ['userId'],
         where: {
           userId: { in: userIds },
-          status: { notIn: ['FAILED', 'CANCELLED'] },
+          status: { in: CREDITED_TRADE_STATUSES },
         },
         _sum: { grossCents: true },
       }),
@@ -161,7 +162,7 @@ export async function GET(request: NextRequest) {
       acceptedTermsAt: user.acceptedTermsAt || undefined,
       kycStatus: user.kycStatus as 'PENDING' | 'IN_PROGRESS' | 'VERIFIED' | 'REJECTED' | 'KYCAID_PENDING' | 'KYCAID_VERIFIED' | 'KYCAID_REJECTED',
       role: user.role,
-      totalVolume: Math.max(user.totalVolumeCents, totalVolumeMap.get(user.id) ?? 0),
+      totalVolume: totalVolumeMap.get(user.id) ?? user.totalVolumeCents,
       pendingVolume: pendingVolumeMap.get(user.id) ?? 0,
       pendingBalanceCents: user.pendingBalanceCents,
       bonusRatePercent: user.bonusRatePercent,

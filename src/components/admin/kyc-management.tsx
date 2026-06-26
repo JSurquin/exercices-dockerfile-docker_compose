@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Dialog,
   DialogContent,
@@ -36,6 +35,7 @@ import {
 } from 'lucide-react';
 import { useLocale } from '@/components/providers/locale-provider';
 import { prismaKycStatusToAdminBadgeKey } from '@/lib/status-mapper';
+import { AdminUserLink } from '@/components/admin/admin-user-link';
 
 interface KycUser {
   userId: string;
@@ -378,27 +378,14 @@ export function AdminKYCManagement() {
               {users.map((u) => (
                 <TableRow key={u.userId} className="border-slate-700 hover:bg-slate-800/50">
                   <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={u.steamAvatar ?? undefined} alt={displayName(u)} />
-                        <AvatarFallback className="bg-slate-600 text-slate-300">
-                          <User className="h-4 w-4" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium text-white">{displayName(u)}</div>
-                        <div className="text-xs text-slate-400 space-x-1">
-                          {u.steamId && <span>Steam: {u.steamId}</span>}
-                          {u.steamId && u.email && <span>·</span>}
-                          <span>{u.email}</span>
-                        </div>
-                        {u.kycaidApplicantId && (
-                          <div className="text-xs text-slate-500 font-mono truncate max-w-[200px]" title={u.kycaidApplicantId}>
-                            {u.kycaidApplicantId}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    <AdminUserLink
+                      userId={u.userId}
+                      name={displayName(u)}
+                      avatar={u.steamAvatar}
+                      email={u.email}
+                      showEmail
+                      subtitle={u.kycaidApplicantId ? u.kycaidApplicantId : undefined}
+                    />
                   </TableCell>
 
                   <TableCell>{getKYCBadge(u)}</TableCell>

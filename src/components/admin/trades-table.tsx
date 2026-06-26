@@ -34,6 +34,7 @@ import {
 import { Trade, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
 import { queryKeys } from '@/lib/query-keys';
+import { AdminUserLink } from '@/components/admin/admin-user-link';
 
 // Statuts pour lesquels le polling Skinplace a du sens
 const SYNCABLE_STATUSES = ['créé', 'accepté_par_bot', 'en_trade_hold', 'disponible'];
@@ -323,13 +324,14 @@ export function AdminTradesTable() {
                   {trade.ticketId}
                 </TableCell>
                 <TableCell className="text-slate-300">
-                  <div>
-                    <div className="font-medium">{trade.userName || trade.userId}</div>
-                    {trade.userEmail && (
-                      <div className="text-xs text-slate-400">{trade.userEmail}</div>
-                    )}
-                    <div className="text-xs text-slate-500 font-mono">{trade.userId}</div>
-                  </div>
+                  <AdminUserLink
+                    userId={trade.userId}
+                    name={trade.userName}
+                    email={trade.userEmail}
+                    showEmail
+                    showUserId
+                    avatarSize="sm"
+                  />
                 </TableCell>
                 <TableCell>
                   {getStatusBadge(trade.status)}
@@ -463,13 +465,13 @@ export function AdminTradesTable() {
                 </div>
 
                 <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4 text-sm">
-                  <p className="font-medium text-white">
-                    {detailTrade.userName || detailTrade.userId}
-                  </p>
-                  {detailTrade.userEmail && (
-                    <p className="text-slate-400">{detailTrade.userEmail}</p>
-                  )}
-                  <p className="mt-1 font-mono text-xs text-slate-500">{detailTrade.userId}</p>
+                  <AdminUserLink
+                    userId={detailTrade.userId}
+                    name={detailTrade.userName}
+                    email={detailTrade.userEmail}
+                    showEmail
+                    showUserId
+                  />
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">

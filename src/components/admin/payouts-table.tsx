@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Search, 
   Download, 
@@ -32,6 +31,7 @@ import {
 import { toast } from 'sonner';
 import { Payout, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
+import { AdminUserLink } from '@/components/admin/admin-user-link';
 
 const CANCELLABLE_STATUSES = ['en_attente', 'en_attente_approbation', 'vérification_requise', 'vérifié', 'planifié'];
 const APPROVABLE_STATUS = 'en_attente_approbation';
@@ -418,22 +418,13 @@ export function AdminPayoutsTable() {
                   {payout.id}
                 </TableCell>
                 <TableCell className="text-slate-300">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-7 w-7 shrink-0">
-                      <AvatarImage src={payout.userSteamAvatar} />
-                      <AvatarFallback className="bg-slate-700 text-xs text-slate-300">
-                        {(payout.userSteamUsername || payout.userName || '?').charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <div className="font-medium text-white truncate max-w-[120px]">
-                        {payout.userSteamUsername || payout.userName || '-'}
-                      </div>
-                      <div className="text-xs text-slate-500 truncate max-w-[120px]" title={payout.userId}>
-                        {payout.userId.substring(0, 8)}…
-                      </div>
-                    </div>
-                  </div>
+                  <AdminUserLink
+                    userId={payout.userId}
+                    name={payout.userSteamUsername || payout.userName}
+                    avatar={payout.userSteamAvatar}
+                    subtitle={`${payout.userId.substring(0, 8)}…`}
+                    avatarSize="sm"
+                  />
                 </TableCell>
                 <TableCell>
                   {getStatusBadge(payout.status)}

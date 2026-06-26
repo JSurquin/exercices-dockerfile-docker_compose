@@ -3,6 +3,7 @@ import { auth } from '~/lib/auth';
 import { getRequestContext, logUnauthorizedAccess } from '@/lib/security/audit-helpers';
 import { prisma } from '~/prisma/prisma';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
+import { CREDITED_TRADE_STATUSES } from '@/lib/trade-volume';
 
 export async function GET(
   request: NextRequest,
@@ -61,7 +62,7 @@ export async function GET(
       prisma.trade.aggregate({
         where: {
           userId,
-          status: { notIn: ['FAILED', 'CANCELLED'] },
+          status: { in: CREDITED_TRADE_STATUSES },
         },
         _sum: { grossCents: true },
       }),
@@ -75,7 +76,7 @@ export async function GET(
     ]);
 
     const tradeTotalVolumeCents = totalVolumeAgg._sum.grossCents ?? 0;
-    const totalVolumeCents = Math.max(user.totalVolumeCents, tradeTotalVolumeCents);
+    const totalVolumeCents = tradeTotalVolumeCents;
     const pendingVolumeCents = pendingVolumeAgg._sum.grossCents ?? 0;
 
     let referredBy: {

@@ -21,6 +21,7 @@ import {
   Filter
 } from 'lucide-react';
 import { useLocale } from '@/components/providers/locale-provider';
+import { AdminUserLink } from '@/components/admin/admin-user-link';
 
 interface CommissionData {
   id: string;
@@ -32,6 +33,7 @@ interface CommissionData {
     id: string;
     code: string;
     user: {
+      id: string;
       steamUsername?: string;
       steamAvatar?: string;
       email: string;
@@ -39,6 +41,7 @@ interface CommissionData {
   };
   referral?: {
     referredUser: {
+      id: string;
       steamUsername?: string;
       steamAvatar?: string;
     };
@@ -303,41 +306,25 @@ export default function AffiliateCommissions() {
                       />
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center space-x-3">
-                        <SafeImg
-                          src={commission.affiliate.user.steamAvatar || '/images/default-avatar.png'}
-                          alt="Avatar"
-                          className="w-8 h-8 rounded-full"
-                          fallbackClassName="w-8 h-8 rounded-full"
-                          fallbackIcon={<UserCircleIcon className="w-5 h-5" />}
-                        />
-                        <div>
-                          <p className="font-medium">
-                            {commission.affiliate.user.steamUsername || t.defaultUser}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {commission.affiliate.code}
-                          </p>
-                        </div>
-                      </div>
+                      <AdminUserLink
+                        userId={commission.affiliate.user.id}
+                        name={commission.affiliate.user.steamUsername || t.defaultUser}
+                        avatar={commission.affiliate.user.steamAvatar}
+                        subtitle={commission.affiliate.code}
+                        avatarSize="sm"
+                      />
                     </TableCell>
                     <TableCell className="font-medium">
                       {formatCurrency(commission.amountCents)}
                     </TableCell>
                     <TableCell>
                       {commission.referral ? (
-                        <div className="flex items-center space-x-2">
-                          <SafeImg
-                            src={commission.referral.referredUser.steamAvatar || '/images/default-avatar.png'}
-                            alt="Avatar"
-                            className="w-6 h-6 rounded-full"
-                            fallbackClassName="w-6 h-6 rounded-full"
-                            fallbackIcon={<UserCircleIcon className="w-4 h-4" />}
-                          />
-                          <span className="text-sm">
-                            {commission.referral.referredUser.steamUsername || t.defaultUser}
-                          </span>
-                        </div>
+                        <AdminUserLink
+                          userId={commission.referral.referredUser.id}
+                          name={commission.referral.referredUser.steamUsername || t.defaultUser}
+                          avatar={commission.referral.referredUser.steamAvatar}
+                          avatarSize="sm"
+                        />
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}

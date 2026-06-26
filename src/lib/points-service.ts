@@ -214,7 +214,6 @@ export async function awardTradePoints(
         level: info.levelIndex + 1,
         saleBonus: info.saleBonus,
         currentTier: info.globalTierIndex,
-        totalVolumeCents: { increment: grossCents },
       },
     });
   });

@@ -246,9 +246,10 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
             <div className="flex gap-2 items-end">
               <Button
                 size="sm"
+                variant="outline"
                 onClick={() => handleAdjust('add')}
                 disabled={adjusting}
-                className="bg-green-600 hover:bg-green-700"
+                className="border border-theme-highlight/50 bg-theme-stat/10 text-theme-highlight hover:bg-theme-stat/20 h-9"
               >
                 <Plus className="h-4 w-4 mr-1" />
                 {t.credit}
@@ -258,6 +259,7 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
                 variant="destructive"
                 onClick={() => handleAdjust('subtract')}
                 disabled={adjusting}
+                className="h-9"
               >
                 <Minus className="h-4 w-4 mr-1" />
                 {t.debit}
@@ -290,6 +292,7 @@ export function BalanceManagement({ userId, initialContext, onUpdate }: BalanceM
                   variant="destructive"
                   onClick={handleFreeze}
                   disabled={freezing || !freezeReason.trim()}
+                  className="h-9"
                 >
                   <Snowflake className="h-4 w-4 mr-2" />
                   {t.freezeButton}

@@ -36,6 +36,7 @@ import {
 import AffiliateTools from './affiliate-tools';
 import { CreateAffiliateDialog } from './create-affiliate-dialog';
 import { AffiliateReferralsList } from './affiliate-referrals-list';
+import { AdminUserLink } from '@/components/admin/admin-user-link';
 import { queryKeys } from '@/lib/query-keys';
 import { useLocale } from '@/components/providers/locale-provider';
 
@@ -157,6 +158,7 @@ export default function AffiliatesManagement() {
 
   const rankings: Array<{
     affiliateId: string;
+    userId: string;
     code: string;
     steamUsername: string | null;
     totalVolumeCents: number;
@@ -400,21 +402,13 @@ export default function AffiliatesManagement() {
                     className={selectedAffiliateId === affiliate.id ? 'bg-slate-700/30' : undefined}
                   >
                     <TableCell>
-                      <div className="flex items-center space-x-3">
-                        <SafeImg
-                          src={affiliate.user.steamAvatar || '/images/default-avatar.png'}
-                          alt="Avatar"
-                          className="w-8 h-8 rounded-full"
-                          fallbackClassName="w-8 h-8 rounded-full"
-                          fallbackIcon={<UserCircleIcon className="w-5 h-5" />}
-                        />
-                        <div>
-                          <p className="font-medium">
-                            {affiliate.user.steamUsername || t.defaultUser}
-                          </p>
-                          <p className="text-sm text-muted-foreground">{affiliate.user.email}</p>
-                        </div>
-                      </div>
+                      <AdminUserLink
+                        userId={affiliate.user.id}
+                        name={affiliate.user.steamUsername || t.defaultUser}
+                        avatar={affiliate.user.steamAvatar}
+                        email={affiliate.user.email}
+                        showEmail
+                      />
                     </TableCell>
                     <TableCell>
                       <code className="bg-muted px-2 py-1 rounded text-sm">{affiliate.code}</code>
@@ -525,7 +519,14 @@ export default function AffiliatesManagement() {
                   {rankings.map((row, idx) => (
                     <TableRow key={row.affiliateId} className="border-slate-700">
                       <TableCell className="text-slate-300">{idx + 1}</TableCell>
-                      <TableCell className="text-white">{row.steamUsername || row.code}</TableCell>
+                      <TableCell>
+                        <AdminUserLink
+                          userId={row.userId}
+                          name={row.steamUsername || row.code}
+                          subtitle={row.code}
+                          avatarSize="sm"
+                        />
+                      </TableCell>
                       <TableCell>
                         <code className="bg-muted px-2 py-1 rounded text-sm">{row.code}</code>
                       </TableCell>

@@ -31,6 +31,7 @@ import {
   adminTableRow,
 } from '@/lib/admin-ui';
 import { cn } from '@/lib/utils';
+import { AdminUserLink } from '@/components/admin/admin-user-link';
 
 function StatCard({
   title,
@@ -272,9 +273,11 @@ export function AdminStatsOverview() {
                 {stats.recentTrades.slice(0, 5).map((trade) => (
                   <TableRow key={trade.id} className={adminTableRow}>
                     <TableCell className={adminTableCell}>
-                      <span className="font-medium">
-                        {trade.userName || `User #${trade.userId.slice(0, 8)}`}
-                      </span>
+                      <AdminUserLink
+                        userId={trade.userId}
+                        name={trade.userName || `User #${trade.userId.slice(0, 8)}`}
+                        avatarSize="sm"
+                      />
                     </TableCell>
                     <TableCell className={adminTableCell}>
                       <ConvertedPrice

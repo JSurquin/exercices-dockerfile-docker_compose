@@ -224,10 +224,10 @@ export class TradeHooks {
       trade.grossCents
     );
 
-    // Mettre à jour le volume total
+    // Volume comptabilisé une seule fois à la fin du hold (crédit balance)
     const updatedUser = await prisma.user.update({
       where: { id: trade.userId },
-      data: { totalVolumeCents: { increment: trade.grossCents } }
+      data: { totalVolumeCents: { increment: trade.grossCents } },
     });
     
     // Calculer le nouveau niveau (racine carrée de XP / 100)

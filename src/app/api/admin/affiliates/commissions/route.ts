@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
             include: {
               user: {
                 select: {
+                  id: true,
                   steamUsername: true,
                   steamAvatar: true,
                   email: true
@@ -58,6 +59,7 @@ export async function GET(request: NextRequest) {
             include: {
               referredUser: {
                 select: {
+                  id: true,
                   steamUsername: true,
                   steamAvatar: true
                 }
