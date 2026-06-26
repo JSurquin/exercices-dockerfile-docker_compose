@@ -40,6 +40,7 @@ import { useAuth } from '@/components/providers/auth-provider';
 import Link from 'next/link';
 import { isInventoryPrivateError } from '@/lib/inventory-api-errors';
 import { extractCs2SkinName, extractCs2WeaponType } from '@/lib/cs2-constants';
+import { SellInventoryItemCard } from '@/components/sell/sell-inventory-item-card';
 
 function isPurchasable(item: NormalizedInventoryItem): boolean {
   return item.tradable && !item.skip_reason;
@@ -1032,6 +1033,30 @@ export function SkinplaceInventoryViewer({
                     : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3'
                 }`}>
                 {filteredItems.map((item) => {
+                  if (isSellLayout) {
+                    return (
+                      <SellInventoryItemCard
+                        key={item.id}
+                        item={item}
+                        isSelected={selectedItems.includes(item.id)}
+                        selectable={selectable}
+                        bonusRatePercent={bonusRatePercent}
+                        getRarityColor={getRarityColor}
+                        getSkipReasonCategory={getSkipReasonCategory}
+                        translateSkipReason={translateSkipReason}
+                        onItemClick={handleItemClick}
+                        onAskSupport={openSupportForItem}
+                        labels={{
+                          statTrak: messages.components.skinplace.statTrak,
+                          unavailable: messages.components.skinplace.unavailable,
+                          selected: messages.components.skinplace.selected,
+                          askSupport: messages.components.skinplace.askSupport,
+                          askSupportDisabled: messages.components.skinplace.askSupportDisabled,
+                        }}
+                      />
+                    );
+                  }
+
                   const isSelected = selectedItems.includes(item.id);
                   const isDisabled = !!item.skip_reason;
                   const skipCategory = getSkipReasonCategory(item.skip_reason);
@@ -1058,13 +1083,7 @@ export function SkinplaceInventoryViewer({
                     <Card
                       key={item.id}
                       className={`transition-all ${
-                        isSellLayout
-                          ? `sell-inventory-card py-0 gap-0 rounded-lg border-border/70 bg-card/80 shadow-none hover:border-border/90${
-                              isDisabled ? ' sell-inventory-card--disabled' : ''
-                            }`
-                          : ''
-                      } ${
-                        !isDisabled ? (isSellLayout ? 'hover:shadow-md' : 'hover:shadow-lg') : ''
+                        !isDisabled ? 'hover:shadow-lg' : ''
                       } ${
                         selectable && !isDisabled ? 'cursor-pointer' : isDisabled ? 'cursor-not-allowed' : ''
                       } ${
@@ -1076,17 +1095,17 @@ export function SkinplaceInventoryViewer({
                       }`}
                       onClick={() => handleItemClick(item)}
                     >
-                      <CardContent className={isSellLayout ? 'px-2.5 py-2' : 'p-3'}>
-                        <div className={isSellLayout ? 'space-y-1.5' : 'space-y-2'}>
+                      <CardContent className="p-3">
+                        <div className="space-y-2">
                           {/* Image et badges */}
                           <div className="relative">
                             <SafeImg
                               src={item.icon_url}
                               alt={item.name}
-                              className={`w-full object-contain mx-auto ${
-                                isSellLayout ? 'h-16' : 'h-20'
-                              } ${isDisabled ? 'grayscale' : ''}`}
-                              fallbackClassName={`w-full ${isSellLayout ? 'h-16' : 'h-20'} ${isDisabled ? 'grayscale' : ''}`}
+                              className={`w-full object-contain mx-auto h-20 ${
+                                isDisabled ? 'grayscale' : ''
+                              }`}
+                              fallbackClassName={`w-full h-20 ${isDisabled ? 'grayscale' : ''}`}
                               fallbackIcon={<Package className="w-10 h-10 text-muted-foreground" />}
                             />
                             {badgeCfg && (

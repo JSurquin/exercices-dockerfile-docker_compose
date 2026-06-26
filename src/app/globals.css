@@ -160,6 +160,71 @@
   isolation: isolate;
 }
 
+.sell-inventory-card--interactive {
+  transition:
+    transform 175ms ease-out,
+    border-color 175ms ease-out,
+    box-shadow 175ms ease-out;
+}
+
+.sell-inventory-card--interactive:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--theme-accent) 55%, transparent);
+  box-shadow:
+    0 8px 20px -6px rgba(0, 0, 0, 0.18),
+    0 0 0 1px color-mix(in srgb, var(--theme-accent) 35%, transparent),
+    0 0 16px color-mix(in srgb, var(--theme-accent) 28%, transparent);
+}
+
+.skin-card-easter-egg {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  z-index: 20;
+  max-width: min(168px, 92vw);
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: var(--theme-accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  pointer-events: none;
+  transform: translateX(-50%) scale(0);
+  transform-origin: bottom center;
+  animation: skin-card-easter-egg-pop 200ms ease-out forwards;
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.22),
+    0 0 0 2px rgba(255, 255, 255, 0.18);
+}
+
+.skin-card-easter-egg-text {
+  display: block;
+}
+
+.skin-card-easter-egg-tail {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  background: var(--theme-accent);
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 2px;
+}
+
+@keyframes skin-card-easter-egg-pop {
+  from {
+    transform: translateX(-50%) scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+}
+
 .sell-inventory-card:not(.sell-inventory-card--disabled)::after {
   content: "";
   position: absolute;
@@ -177,6 +242,20 @@
 @media (prefers-reduced-motion: reduce) {
   .sell-inventory-grid > * {
     animation: none;
+  }
+
+  .sell-inventory-card--interactive {
+    transition: none;
+  }
+
+  .sell-inventory-card--interactive:hover {
+    transform: none;
+  }
+
+  .skin-card-easter-egg {
+    animation: none;
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
   }
 
   .sell-inventory-card:not(.sell-inventory-card--disabled):active::after {
