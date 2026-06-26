@@ -39,6 +39,7 @@ import {
 import { useAuth } from '@/components/providers/auth-provider';
 import Link from 'next/link';
 import { isInventoryPrivateError } from '@/lib/inventory-api-errors';
+import { extractCs2SkinName, extractCs2WeaponType } from '@/lib/cs2-constants';
 
 function isPurchasable(item: NormalizedInventoryItem): boolean {
   return item.tradable && !item.skip_reason;
@@ -1027,7 +1028,7 @@ export function SkinplaceInventoryViewer({
               <div className={`${isSellLayout ? 'inventory-container min-h-[360px]' : 'max-h-[600px]'} overflow-y-auto px-1 -mx-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent`}>
                 <div className={`grid pb-4 ${isSellLayout ? 'mt-2' : 'mt-6'} ${
                   isSellLayout
-                    ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5'
+                    ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3'
                     : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3'
                 }`}>
                 {filteredItems.map((item) => {
@@ -1049,11 +1050,19 @@ export function SkinplaceInventoryViewer({
                   };
                   const badgeCfg = skipCategory ? skipBadgeConfig[skipCategory] : null;
                   
+                  const weaponType =
+                    item.type?.trim() || extractCs2WeaponType(item.market_name);
+                  const skinName = extractCs2SkinName(item.market_name);
+
                   return (
                     <Card
                       key={item.id}
                       className={`transition-all ${
-                        !isDisabled ? 'hover:shadow-lg' : ''
+                        isSellLayout
+                          ? 'rounded-lg border-border/70 bg-card/80 shadow-none hover:border-border/90'
+                          : ''
+                      } ${
+                        !isDisabled ? (isSellLayout ? 'hover:shadow-md' : 'hover:shadow-lg') : ''
                       } ${
                         selectable && !isDisabled ? 'cursor-pointer' : isDisabled ? 'cursor-not-allowed' : ''
                       } ${
@@ -1065,8 +1074,8 @@ export function SkinplaceInventoryViewer({
                       }`}
                       onClick={() => handleItemClick(item)}
                     >
-                      <CardContent className="p-3">
-                        <div className="space-y-2">
+                      <CardContent className={isSellLayout ? 'p-3.5' : 'p-3'}>
+                        <div className={isSellLayout ? 'space-y-2.5' : 'space-y-2'}>
                           {/* Image et badges */}
                           <div className="relative">
                             <SafeImg
@@ -1092,16 +1101,24 @@ export function SkinplaceInventoryViewer({
                             )}
                           </div>
                           
-                          {/* Nom */}
-                          <div>
-                            <h3 className="font-medium text-sm truncate" title={item.name}>
-                              {item.name}
+                          {/* Type + nom du skin */}
+                          <div className="min-w-0 space-y-0.5">
+                            {weaponType && (
+                              <p
+                                className="text-[10px] sm:text-xs uppercase tracking-wide font-medium leading-tight text-theme-accent/90 dark:text-theme-highlight/90 break-words"
+                                title={weaponType}
+                              >
+                                {weaponType}
+                              </p>
+                            )}
+                            <h3
+                              className="font-semibold text-sm text-foreground leading-snug break-words"
+                              title={skinName}
+                            >
+                              {skinName}
                             </h3>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {item.steam_short_name}
-                            </p>
                           </div>
-                          
+
                           {/* Badges de propriétés */}
                           <div className="flex flex-wrap gap-1">
                             <Badge 

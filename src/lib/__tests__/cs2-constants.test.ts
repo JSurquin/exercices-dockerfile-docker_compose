@@ -4,6 +4,8 @@ import {
   normalizeRarity,
   getRarityHexColor,
   RARITY_ORDER,
+  extractCs2WeaponType,
+  extractCs2SkinName,
 } from '../cs2-constants';
 
 describe('CS2_RARITIES — structure', () => {
@@ -118,5 +120,25 @@ describe('RARITY_ORDER', () => {
     expect(RARITY_ORDER['Classified']).toBe(5);
     expect(RARITY_ORDER['Covert']).toBe(6);
     expect(RARITY_ORDER['Exceedingly Rare']).toBe(7);
+  });
+});
+
+describe('extractCs2WeaponType() / extractCs2SkinName()', () => {
+  it('parse un skin classique avec extérieur', () => {
+    const name = 'Desert Eagle | Printstream (Field-Tested)';
+    expect(extractCs2WeaponType(name)).toBe('Desert Eagle');
+    expect(extractCs2SkinName(name)).toBe('Printstream');
+  });
+
+  it('parse gants et couteaux avec préfixe ★', () => {
+    const name = '★ Sport Gloves | Hedge Maze (Factory New)';
+    expect(extractCs2WeaponType(name)).toBe('Sport Gloves');
+    expect(extractCs2SkinName(name)).toBe('Hedge Maze');
+  });
+
+  it('parse StatTrak™', () => {
+    const name = 'StatTrak™ AK-47 | Redline (Minimal Wear)';
+    expect(extractCs2WeaponType(name)).toBe('AK-47');
+    expect(extractCs2SkinName(name)).toBe('Redline');
   });
 });

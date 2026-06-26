@@ -47,3 +47,31 @@ export const RARITY_ORDER: Record<CS2Rarity, number> = {
   'Covert': 6,
   'Exceedingly Rare': 7,
 };
+
+/** Strip exterior suffix e.g. "(Field-Tested)" from a CS2 market name. */
+function stripExteriorSuffix(marketName: string): string {
+  return marketName.replace(/\s*\([^)]*\)\s*$/, '').trim();
+}
+
+/** Extract weapon type from market_name e.g. "AK-47 | Redline" → "AK-47". */
+export function extractCs2WeaponType(marketName: string): string {
+  const base = stripExteriorSuffix(marketName);
+  const pipeIdx = base.indexOf('|');
+  if (pipeIdx === -1) return '';
+  return base
+    .slice(0, pipeIdx)
+    .replace(/^★\s*/, '')
+    .replace(/^StatTrak™\s*/i, '')
+    .replace(/^Souvenir\s*/i, '')
+    .trim();
+}
+
+/** Extract skin name from market_name e.g. "AK-47 | Redline (FT)" → "Redline". */
+export function extractCs2SkinName(marketName: string): string {
+  const base = stripExteriorSuffix(marketName);
+  const pipeIdx = base.indexOf('|');
+  if (pipeIdx !== -1) {
+    return base.slice(pipeIdx + 1).trim();
+  }
+  return base;
+}
