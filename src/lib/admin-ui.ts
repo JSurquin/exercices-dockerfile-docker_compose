@@ -62,6 +62,17 @@ export const adminBtnOutline = cn(
 export const panelGlassField =
   'bg-background/30 border-border/50 text-foreground backdrop-blur-sm focus-visible:border-theme-accent/40 focus-visible:ring-theme-accent/20';
 
+/** Dialog Radix (porté hors .admin-shell) — aligné sur admin-panel.css */
+export const adminDialogContent =
+  'admin-dialog max-h-[90vh] w-full max-w-[calc(100%-2rem)] overflow-y-auto sm:max-w-3xl';
+
+export const adminDialogContentSm =
+  'admin-dialog max-w-md';
+
+/** Tuile stat dans un dialog admin */
+export const adminDialogStatTile =
+  'admin-dialog-stat rounded-lg border p-4 text-center';
+
 /** Conversation list row */
 export const panelListRow = cn(
   adminInteractive,

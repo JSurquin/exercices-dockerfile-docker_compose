@@ -851,6 +851,99 @@ export class AffiliateService {
   }
   
   /**
+   * Répare le lien filleul (referral + historique) pour un utilisateur déjà parrainé.
+   */
+  static async repairUserReferralLink(userId: string): Promise<boolean> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { referredByAffiliateId: true },
+    });
+    if (!user?.referredByAffiliateId) return false;
+
+    const affiliate = await prisma.affiliateStats.findUnique({
+      where: { id: user.referredByAffiliateId },
+      select: { id: true, code: true },
+    });
+    if (!affiliate) return false;
+
+    await this.ensureActiveReferral(userId, affiliate.id, affiliate.code);
+    return true;
+  }
+
+  /**
+   * Rattrapage : filleuls avec parrain en base mais sans entrée AffiliateReferral,
+   * et utilisateurs avec ventes attribuées à un code affilié sans parrain enregistré.
+   */
+  static async repairMissingReferralRecords(options?: {
+    dryRun?: boolean;
+  }): Promise<{
+    linkedFromParrain: number;
+    linkedFromTrades: number;
+    syncedAffiliateCounts: number;
+  }> {
+    const dryRun = options?.dryRun ?? false;
+    let linkedFromParrain = 0;
+    let linkedFromTrades = 0;
+
+    const referredUsers = await prisma.user.findMany({
+      where: { referredByAffiliateId: { not: null } },
+      select: { id: true, referredByAffiliateId: true },
+    });
+
+    for (const user of referredUsers) {
+      const affiliateId = user.referredByAffiliateId!;
+      const existing = await prisma.affiliateReferral.findFirst({
+        where: { affiliateId, referredUserId: user.id },
+      });
+      if (existing) continue;
+      if (!dryRun) {
+        await this.repairUserReferralLink(user.id);
+      }
+      linkedFromParrain++;
+    }
+
+    const tradeAttributions = await prisma.trade.findMany({
+      where: {
+        affiliateAttributionCode: { not: null },
+        user: { referredByAffiliateId: null },
+      },
+      select: {
+        userId: true,
+        affiliateAttributionCode: true,
+      },
+      distinct: ['userId'],
+    });
+
+    for (const row of tradeAttributions) {
+      const code = row.affiliateAttributionCode?.trim();
+      if (!code) continue;
+      const affiliate = await this.findActiveAffiliateByCode(code);
+      if (!affiliate || affiliate.userId === row.userId) continue;
+      if (!dryRun) {
+        await this.attachUserToAffiliateOnce(row.userId, affiliate);
+      }
+      linkedFromTrades++;
+    }
+
+    let syncedAffiliateCounts = 0;
+    const affiliates = await prisma.affiliateStats.findMany({ select: { id: true } });
+    for (const affiliate of affiliates) {
+      const activeCount = await prisma.affiliateReferral.count({
+        where: { affiliateId: affiliate.id, isActive: true },
+      });
+      if (!dryRun) {
+        await prisma.affiliateStats.update({
+          where: { id: affiliate.id },
+          data: { totalReferrals: activeCount },
+        });
+      }
+      syncedAffiliateCounts++;
+    }
+
+    return { linkedFromParrain, linkedFromTrades, syncedAffiliateCounts };
+  }
+
+  /**
    * Récupère le top des affiliés (pour l'admin)
    */
   static async getTopAffiliates(limit: number = 10): Promise<AffiliateStats[]> {

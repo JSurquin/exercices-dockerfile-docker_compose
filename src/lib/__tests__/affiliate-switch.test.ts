@@ -1,13 +1,20 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const prismaMock: any = {
-  user: { findUnique: jest.fn(), update: jest.fn(), count: jest.fn() },
+  user: { findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn(), count: jest.fn() },
   affiliateReferral: {
     findFirst: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
     updateMany: jest.fn(),
+    count: jest.fn(),
   },
-  affiliateStats: { update: jest.fn(), findFirst: jest.fn(), findUnique: jest.fn() },
+  affiliateStats: {
+    update: jest.fn(),
+    findFirst: jest.fn(),
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+  },
+  trade: { findMany: jest.fn() },
   userAffiliateHistory: {
     findFirst: jest.fn(),
     create: jest.fn(),
@@ -142,6 +149,27 @@ describe('AffiliateService.associateUserToAffiliate', () => {
         data: { referredByAffiliateId: 'aff-new' },
       })
     );
+  });
+});
+
+describe('AffiliateService.repairMissingReferralRecords', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('reports users missing referral rows without writing in dry-run', async () => {
+    prismaMock.user.findMany.mockResolvedValue([
+      { id: 'user-1', referredByAffiliateId: 'aff-1' },
+    ]);
+    prismaMock.affiliateReferral.findFirst.mockResolvedValue(null);
+    prismaMock.trade.findMany.mockResolvedValue([]);
+    prismaMock.affiliateStats.findMany.mockResolvedValue([{ id: 'aff-1' }]);
+    prismaMock.affiliateReferral.count.mockResolvedValue(1);
+
+    const result = await AffiliateService.repairMissingReferralRecords({ dryRun: true });
+
+    expect(result.linkedFromParrain).toBe(1);
+    expect(prismaMock.affiliateReferral.create).not.toHaveBeenCalled();
   });
 });
 

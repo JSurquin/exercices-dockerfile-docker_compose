@@ -8,8 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { SafeImg } from '@/components/ui/safe-image';
-import { UserCircleIcon } from '@heroicons/react/24/outline';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -30,13 +28,13 @@ import {
   Check,
   X,
   Loader2,
-  UserMinus,
   BarChart3,
 } from 'lucide-react';
 import AffiliateTools from './affiliate-tools';
 import { CreateAffiliateDialog } from './create-affiliate-dialog';
 import { AffiliateReferralsList } from './affiliate-referrals-list';
 import { AdminUserLink } from '@/components/admin/admin-user-link';
+import { adminDialogContent, adminDialogContentSm, adminDialogStatTile } from '@/lib/admin-ui';
 import { queryKeys } from '@/lib/query-keys';
 import { useLocale } from '@/components/providers/locale-provider';
 
@@ -562,130 +560,99 @@ export default function AffiliatesManagement() {
 
       {/* Affiliate details dialog */}
       <Dialog open={!!selectedAffiliateId} onOpenChange={(open) => { if (!open) closeAffiliateDetails(); }}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-slate-900/95 backdrop-blur-xl border-slate-700/80 shadow-2xl shadow-black/40">
+        <DialogContent className={adminDialogContent}>
           <DialogHeader>
-            <DialogTitle className="text-white">{t.detailsTitle}</DialogTitle>
-            <DialogDescription className="text-slate-400">{t.detailsDesc}</DialogDescription>
+            <DialogTitle>{t.detailsTitle}</DialogTitle>
+            <DialogDescription>{t.detailsDesc}</DialogDescription>
           </DialogHeader>
 
           {detailsLoading || !selectedAffiliate ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Profile header */}
-              <div className="flex items-center gap-4">
-                <SafeImg
-                  src={selectedAffiliate.user.steamAvatar || '/images/default-avatar.png'}
-                  alt="Avatar"
-                  className="w-12 h-12 rounded-full"
-                  fallbackClassName="w-12 h-12 rounded-full"
-                  fallbackIcon={<UserCircleIcon className="w-7 h-7" />}
+              <div className="flex items-center gap-4 flex-wrap">
+                <AdminUserLink
+                  userId={selectedAffiliate.user.id}
+                  name={selectedAffiliate.user.steamUsername || t.defaultUser}
+                  avatar={selectedAffiliate.user.steamAvatar}
+                  email={selectedAffiliate.user.email}
+                  showEmail
+                  avatarSize="md"
+                  className="flex-1 min-w-[200px] hover:bg-transparent p-0 m-0"
                 />
-                <div>
-                  <p className="text-lg font-semibold text-white">
-                    {selectedAffiliate.user.steamUsername || t.defaultUser}
-                  </p>
-                  <p className="text-sm text-slate-400">{selectedAffiliate.user.email}</p>
-                </div>
                 <Badge variant={selectedAffiliate.isActive ? 'default' : 'secondary'} className="ml-auto">
                   {selectedAffiliate.isActive ? t.statusActive : t.statusInactive}
                 </Badge>
               </div>
 
-              {/* Performance */}
               <section className="space-y-3">
-                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wide flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-theme-accent" />
                   {t.statGeneratedVolume}
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 text-center">
+                  <div className={adminDialogStatTile}>
                     <p className="text-2xl font-bold text-white">
                       {formatCurrency(selectedAffiliate.totalVolumeCents)}
                     </p>
-                    <p className="text-xs text-slate-400 mt-1">{t.labelVolume}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t.labelVolume}</p>
                   </div>
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 text-center">
-                    <p className="text-2xl font-bold text-amber-400">
+                  <div className={adminDialogStatTile}>
+                    <p className="text-2xl font-bold text-theme-accent">
                       {formatCurrency(selectedAffiliate.metrics?.pendingVolumeCents ?? 0)}
                     </p>
-                    <p className="text-xs text-slate-400 mt-1">{t.labelPendingVolume}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t.labelPendingVolume}</p>
                   </div>
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 text-center">
-                    <p className="text-2xl font-bold text-emerald-400">
+                  <div className={adminDialogStatTile}>
+                    <p className="text-2xl font-bold text-theme-success">
                       {formatCurrency(selectedAffiliate.totalCommissionCents)}
                     </p>
-                    <p className="text-xs text-slate-400 mt-1">{t.labelCommissions}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t.labelCommissions}</p>
                   </div>
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 text-center">
+                  <div className={adminDialogStatTile}>
                     <p className="text-2xl font-bold text-white">
                       {(selectedAffiliate.commissionRate * 100).toFixed(1)}%
                     </p>
-                    <p className="text-xs text-slate-400 mt-1">{t.labelCommissionRate}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t.labelCommissionRate}</p>
                   </div>
                 </div>
               </section>
 
-              <Separator className="bg-slate-700" />
+              <Separator />
 
-              {/* Referrals */}
               <section className="space-y-3">
-                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wide flex items-center gap-2">
-                  <Users className="h-4 w-4" />
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                  <Users className="h-4 w-4 text-theme-accent" />
                   {t.referrals.title}
                 </h3>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-3 text-center">
-                    <p className="text-xl font-bold text-white">
-                      {selectedAffiliate.metrics?.activeReferrals ?? selectedAffiliate.totalReferrals}
-                    </p>
-                    <p className="text-xs text-slate-400">{t.referrals.tabActive}</p>
-                  </div>
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-3 text-center">
-                    <p className="text-xl font-bold text-white">
-                      {selectedAffiliate.metrics?.churnedUsers ?? 0}
-                    </p>
-                    <p className="text-xs text-slate-400 flex items-center justify-center gap-1">
-                      <UserMinus className="h-3 w-3" />
-                      {t.referrals.tabChurned}
-                    </p>
-                  </div>
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-3 text-center">
-                    <p className="text-xl font-bold text-white">
-                      {selectedAffiliate.metrics?.totalReferredUsers ?? selectedAffiliate.totalReferrals}
-                    </p>
-                    <p className="text-xs text-slate-400">{t.labelReferrals}</p>
-                  </div>
-                </div>
-                <AffiliateReferralsList affiliateId={selectedAffiliate.id} />
+                <AffiliateReferralsList affiliateId={selectedAffiliate.id} embedded />
               </section>
 
-              <Separator className="bg-slate-700" />
+              <Separator />
 
-              {/* Profile / history */}
               <section className="space-y-3">
-                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                   {t.detailsTitle}
                 </h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <Label className="text-slate-400">{t.labelMemberSince}</Label>
+                    <Label className="text-muted-foreground">{t.labelMemberSince}</Label>
                     <p className="font-medium text-white">{formatDate(selectedAffiliate.user.createdAt)}</p>
                   </div>
                   <div>
-                    <Label className="text-slate-400">{t.labelAffiliateSince}</Label>
+                    <Label className="text-muted-foreground">{t.labelAffiliateSince}</Label>
                     <p className="font-medium text-white">{formatDate(selectedAffiliate.createdAt)}</p>
                   </div>
                   <div>
-                    <Label className="text-slate-400">{t.labelKycStatus}</Label>
+                    <Label className="text-muted-foreground">{t.labelKycStatus}</Label>
                     <Badge variant={selectedAffiliate.user.kycStatus === 'VERIFIED' ? 'default' : 'secondary'}>
                       {selectedAffiliate.user.kycStatus}
                     </Badge>
                   </div>
                   <div>
-                    <Label className="text-slate-400">{t.labelCommissionRate}</Label>
+                    <Label className="text-muted-foreground">{t.labelCommissionRate}</Label>
                     {editingCommissionRate ? (
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <Input
@@ -695,9 +662,9 @@ export default function AffiliatesManagement() {
                           min="0"
                           max="100"
                           step="0.1"
-                          className="w-24 h-8 bg-slate-800 border-slate-600 text-white"
+                          className="w-24 h-8 admin-panel-field"
                         />
-                        <span className="text-sm text-slate-300">%</span>
+                        <span className="text-sm text-muted-foreground">%</span>
                         <Button size="sm" onClick={updateCommissionRate} className="h-8">
                           <Check className="h-4 w-4" />
                         </Button>
@@ -708,7 +675,7 @@ export default function AffiliatesManagement() {
                             setEditingCommissionRate(false);
                             setNewCommissionRate(selectedAffiliate.commissionRate * 100);
                           }}
-                          className="h-8 text-slate-400 hover:text-white"
+                          className="h-8 text-muted-foreground hover:text-white"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -722,7 +689,7 @@ export default function AffiliatesManagement() {
                           variant="outline"
                           size="sm"
                           onClick={() => setEditingCommissionRate(true)}
-                          className="h-7 border-slate-600 text-slate-200 hover:bg-slate-800"
+                          className="h-7 border-border/50 text-foreground hover:bg-accent/30"
                         >
                           <Edit className="h-3 w-3 mr-1" />
                           {t.colRate}
@@ -730,15 +697,15 @@ export default function AffiliatesManagement() {
                       </div>
                     )}
                   </div>
-                  <div>
-                    <Label className="text-slate-400">{t.labelAffiliateCode}</Label>
+                  <div className="col-span-2 sm:col-span-1">
+                    <Label className="text-muted-foreground">{t.labelAffiliateCode}</Label>
                     {editingCode ? (
                       <div className="flex items-center gap-2 mt-1">
                         <Input
                           value={newCode}
                           onChange={(e) => setNewCode(e.target.value.toUpperCase())}
                           maxLength={20}
-                          className="w-32 font-mono uppercase h-8 bg-slate-800 border-slate-600 text-white"
+                          className="w-32 font-mono uppercase h-8 admin-panel-field"
                         />
                         <Button size="sm" onClick={updateCode}><Check className="h-4 w-4" /></Button>
                         <Button size="sm" variant="ghost" onClick={() => setEditingCode(false)}>
@@ -775,13 +742,13 @@ export default function AffiliatesManagement() {
 
       {/* Remove affiliation confirmation */}
       <Dialog open={removeConfirmOpen} onOpenChange={(open) => { if (!open && !isRemoving) setRemoveConfirmOpen(false); }}>
-        <DialogContent className="max-w-md bg-slate-900/95 backdrop-blur-xl border-slate-700/80 shadow-2xl shadow-black/40">
+        <DialogContent className={adminDialogContentSm}>
           <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2">
               <UserX className="h-5 w-5 text-red-500" />
               {t.removeTitle}
             </DialogTitle>
-            <DialogDescription className="text-slate-400">
+            <DialogDescription>
               {t.removeDesc
                 .replace('{user}', affiliateToRemoveRef.current?.user.steamUsername || affiliateToRemoveRef.current?.user.email || '')
                 .replace('{code}', affiliateToRemoveRef.current?.code || '')}
@@ -792,7 +759,7 @@ export default function AffiliatesManagement() {
               variant="outline"
               onClick={() => setRemoveConfirmOpen(false)}
               disabled={isRemoving}
-              className="border-slate-600 text-white hover:bg-slate-700"
+              className="border-border/50 text-foreground hover:bg-accent/30"
             >
               {t.cancel}
             </Button>
