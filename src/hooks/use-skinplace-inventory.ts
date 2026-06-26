@@ -148,7 +148,7 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
   // Catégories de skip_reason pour l'affichage conditionnel
   type SkipReasonCategory = 'overstock' | 'low_price' | 'high_volatility' | 'unliquid' | 'trade_lock' | 'other';
 
-  const getSkipReasonCategory = useCallback((skipReason?: string): SkipReasonCategory | null => {
+  const getSkipReasonCategory = useCallback((skipReason?: string | null): SkipReasonCategory | null => {
     if (!skipReason) return null;
     const r = skipReason.toLowerCase().trim();
     if (!r) return null;
@@ -164,7 +164,7 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
   }, []);
 
   // Traduire les skip_reason
-  const translateSkipReason = useCallback((skipReason?: string): string => {
+  const translateSkipReason = useCallback((skipReason?: string | null): string => {
     if (!skipReason) return '';
     
     const skipReasons = messages.components?.skinplace?.skipReasons;
