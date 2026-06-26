@@ -169,11 +169,11 @@ export function SellInventoryItemCard({
 
   return (
     <Card
-      className={`sell-inventory-card py-0 gap-0 rounded-lg border-border/70 bg-card/80 shadow-none transition-all duration-[175ms] ease-out ${
+      className={`sell-inventory-card py-0 gap-0 rounded-lg border-border/70 bg-card/80 shadow-none ${
         isDisabled ? 'sell-inventory-card--disabled' : 'sell-inventory-card--interactive'
       } ${selectable && !isDisabled ? 'cursor-pointer' : isDisabled ? 'cursor-not-allowed' : ''} ${
         selectable && isSelected
-          ? 'ring-2 ring-primary bg-theme-accent/5 dark:bg-theme-accent/10'
+          ? 'sell-inventory-card--selected ring-2 ring-primary bg-theme-accent/5 dark:bg-theme-accent/10'
           : ''
       } ${isDisabled ? 'opacity-60 bg-muted/50' : ''}`}
       onMouseEnter={handleMouseEnter}
@@ -187,9 +187,9 @@ export function SellInventoryItemCard({
             <SafeImg
               src={item.icon_url}
               alt={item.name}
-              className={`w-full object-contain mx-auto h-16 ${isDisabled ? 'grayscale' : ''}`}
-              fallbackClassName={`w-full h-16 ${isDisabled ? 'grayscale' : ''}`}
-              fallbackIcon={<Package className="w-10 h-10 text-muted-foreground" />}
+              className={`w-full object-contain mx-auto h-[7.5rem] ${isDisabled ? 'grayscale' : ''}`}
+              fallbackClassName={`w-full h-[7.5rem] ${isDisabled ? 'grayscale' : ''}`}
+              fallbackIcon={<Package className="w-12 h-12 text-muted-foreground" />}
             />
             {badgeCfg && (
               <div className="absolute top-0 right-0 z-[2]">

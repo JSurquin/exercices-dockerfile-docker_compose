@@ -34,7 +34,7 @@
 
 /* Sell page — scrollable inventory list fills remaining viewport (min. 3 card rows) */
 .inventory-container {
-  --sell-inventory-row-height: 11.25rem;
+  --sell-inventory-row-height: 14.75rem;
   --sell-inventory-gap: 0.75rem;
   --sell-inventory-min-height: calc(
     3 * var(--sell-inventory-row-height) + 2 * var(--sell-inventory-gap)
@@ -66,7 +66,6 @@
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -168,12 +167,22 @@
 }
 
 .sell-inventory-card--interactive:hover {
+  z-index: 10;
   transform: translateY(-4px);
   border-color: color-mix(in srgb, var(--theme-accent) 55%, transparent);
   box-shadow:
     0 8px 20px -6px rgba(0, 0, 0, 0.18),
     0 0 0 1px color-mix(in srgb, var(--theme-accent) 35%, transparent),
     0 0 16px color-mix(in srgb, var(--theme-accent) 28%, transparent);
+}
+
+.sell-inventory-card--selected {
+  z-index: 5;
+}
+
+.sell-inventory-card [data-slot="card-content"] {
+  position: relative;
+  z-index: 2;
 }
 
 .skin-card-easter-egg {
