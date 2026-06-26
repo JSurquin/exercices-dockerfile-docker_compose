@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useLocale } from '@/components/providers/locale-provider';
 import {
   Users,
@@ -16,11 +17,19 @@ import {
   CheckCircle,
   type LucideIcon,
 } from 'lucide-react';
-import { AdminStats } from '@/lib/types';
+import { AdminStats, Trade } from '@/lib/types';
 import { queryKeys } from '@/lib/query-keys';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 import { formatCentsToCurrency } from '@/lib/currency-converter';
-import { adminBadgeStatus, adminIconAccent, adminStatCard } from '@/lib/admin-ui';
+import {
+  adminBadgeStatus,
+  adminGlassCard,
+  adminIconAccent,
+  adminStatCard,
+  adminTableCell,
+  adminTableHead,
+  adminTableRow,
+} from '@/lib/admin-ui';
 import { cn } from '@/lib/utils';
 
 function StatCard({
@@ -46,6 +55,30 @@ function StatCard({
       </CardContent>
     </Card>
   );
+}
+
+function formatTradeDate(date: Date | string) {
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(date));
+}
+
+function getStatusBadgeClass(status: Trade['status']) {
+  const colors: Record<Trade['status'], string> = {
+    créé: 'admin-badge-status--pending',
+    accepté_par_bot: 'admin-badge-status--pending',
+    en_trade_hold: 'admin-badge-status--pending',
+    disponible: 'admin-badge-status--success',
+    paiement_en_cours: 'admin-badge-status--pending',
+    payé: 'admin-badge-status--success',
+    échoué: 'admin-badge-status--danger',
+    annulé: 'admin-badge-status--danger',
+  };
+  return cn(adminBadgeStatus, colors[status] ?? '');
 }
 
 export function AdminStatsOverview() {
@@ -93,127 +126,178 @@ export function AdminStatsOverview() {
     return null;
   }
 
-  const monthlyVolumeCents =
-    stats.monthlyStats[stats.monthlyStats.length - 1]?.volumeCentimes || 0;
+  const currentMonthStats = stats.monthlyStats[stats.monthlyStats.length - 1];
+  const tradesThisMonth = currentMonthStats?.trades || 0;
+  const monthlyVolumeCents = currentMonthStats?.volumeCentimes || 0;
   const volumeMonthParts = t.totalVolumeMonth.split('{amount}');
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <StatCard
-        title={t.totalUsers}
-        icon={Users}
-        footer={
-          <p className="text-xs text-muted-foreground">
-            {t.totalUsersMonth.replace(
-              '{count}',
-              String(stats.monthlyStats[stats.monthlyStats.length - 1]?.newUsers || 0)
-            )}
-          </p>
-        }
-      >
-        {formatNumber(stats.totalUsers)}
-      </StatCard>
+    <div className="space-y-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title={t.totalUsers}
+          icon={Users}
+          footer={
+            <p className="text-xs text-muted-foreground">
+              {t.totalUsersMonth.replace(
+                '{count}',
+                String(currentMonthStats?.newUsers || 0)
+              )}
+            </p>
+          }
+        >
+          {formatNumber(stats.totalUsers)}
+        </StatCard>
 
-      <StatCard
-        title={t.totalTrades}
-        icon={ShoppingCart}
-        footer={
-          <Badge variant="outline" className={adminBadgeStatus}>
-            {t.activeTrades.replace('{count}', String(stats.activeTrades))}
-          </Badge>
-        }
-      >
-        {formatNumber(stats.totalTrades)}
-      </StatCard>
+        <StatCard
+          title={t.totalTrades}
+          icon={ShoppingCart}
+          footer={
+            <Badge variant="outline" className={adminBadgeStatus}>
+              {t.tradesThisMonth.replace('{count}', String(tradesThisMonth))}
+            </Badge>
+          }
+        >
+          {formatNumber(stats.totalTrades)}
+        </StatCard>
 
-      <StatCard
-        title={t.totalVolume}
-        icon={Euro}
-        footer={
-          <p className="text-xs text-muted-foreground inline-flex items-center gap-0.5 flex-wrap">
-            {volumeMonthParts[0]}
+        <StatCard
+          title={t.totalVolume}
+          icon={Euro}
+          footer={
+            <p className="text-xs text-muted-foreground inline-flex items-center gap-0.5 flex-wrap">
+              {volumeMonthParts[0]}
+              <ConvertedPrice
+                usdCents={monthlyVolumeCents}
+                fromCurrency="USD"
+                className="text-xs text-muted-foreground"
+              />
+              {volumeMonthParts[1]}
+            </p>
+          }
+        >
+          <ConvertedPrice
+            usdCents={stats.totalVolumeCentimes}
+            fromCurrency="USD"
+            className="text-2xl font-bold text-foreground"
+          />
+        </StatCard>
+
+        <StatCard
+          title={t.payments}
+          icon={TrendingUp}
+          footer={
+            <Badge
+              variant="outline"
+              className={cn(
+                adminBadgeStatus,
+                stats.pendingPayouts > 0 && 'admin-badge-status--pending'
+              )}
+            >
+              {t.pendingPayouts.replace('{count}', String(stats.pendingPayouts))}
+            </Badge>
+          }
+        >
+          {formatEurAmount(stats.totalPayoutsCentimes)}
+        </StatCard>
+
+        <StatCard
+          title={t.kycPending}
+          icon={Shield}
+          footer={
+            stats.kycPending > 0 ? (
+              <Badge variant="outline" className={cn(adminBadgeStatus, 'admin-badge-status--pending')}>
+                <Clock className="h-3 w-3 mr-1" />
+                {t.kycToProcess}
+              </Badge>
+            ) : (
+              <Badge variant="outline" className={cn(adminBadgeStatus, 'admin-badge-status--success')}>
+                <CheckCircle className="h-3 w-3 mr-1" />
+                {t.kycUpToDate}
+              </Badge>
+            )
+          }
+        >
+          {stats.kycPending}
+        </StatCard>
+
+        <StatCard
+          title={t.successRate}
+          icon={CheckCircle}
+          footer={<p className="text-xs text-muted-foreground">{t.successRateSub}</p>}
+        >
+          {stats.totalTrades > 0
+            ? Math.round(((stats.totalTrades - (stats.failedTrades ?? 0)) / stats.totalTrades) * 100)
+            : 0}
+          %
+        </StatCard>
+
+        <StatCard
+          title={t.topUser}
+          icon={Users}
+          footer={
             <ConvertedPrice
-              usdCents={monthlyVolumeCents}
+              usdCents={stats.topUsers[0]?.totalVolumeCentimes || 0}
               fromCurrency="USD"
               className="text-xs text-muted-foreground"
             />
-            {volumeMonthParts[1]}
-          </p>
-        }
-      >
-        <ConvertedPrice
-          usdCents={stats.totalVolumeCentimes}
-          fromCurrency="USD"
-          className="text-2xl font-bold text-foreground"
-        />
-      </StatCard>
+          }
+        >
+          <span className="text-lg truncate block">{stats.topUsers[0]?.username || 'N/A'}</span>
+        </StatCard>
+      </div>
 
-      <StatCard
-        title={t.payments}
-        icon={TrendingUp}
-        footer={
-          <Badge
-            variant="outline"
-            className={cn(
-              adminBadgeStatus,
-              stats.pendingPayouts > 0 && 'admin-badge-status--pending'
-            )}
-          >
-            {t.pendingPayouts.replace('{count}', String(stats.pendingPayouts))}
-          </Badge>
-        }
-      >
-        {formatEurAmount(stats.totalPayoutsCentimes)}
-      </StatCard>
-
-      <StatCard
-        title={t.kycPending}
-        icon={Shield}
-        footer={
-          stats.kycPending > 0 ? (
-            <Badge variant="outline" className={cn(adminBadgeStatus, 'admin-badge-status--pending')}>
-              <Clock className="h-3 w-3 mr-1" />
-              {t.kycToProcess}
-            </Badge>
+      <Card className={adminGlassCard}>
+        <CardHeader>
+          <CardTitle className="text-foreground flex items-center gap-2 text-base md:text-lg">
+            <Clock className={cn('h-5 w-5', adminIconAccent)} />
+            {t.recentTrades}
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">{t.recentTradesSub}</p>
+        </CardHeader>
+        <CardContent>
+          {stats.recentTrades.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">{t.recentTradesEmpty}</p>
           ) : (
-            <Badge variant="outline" className={cn(adminBadgeStatus, 'admin-badge-status--success')}>
-              <CheckCircle className="h-3 w-3 mr-1" />
-              {t.kycUpToDate}
-            </Badge>
-          )
-        }
-      >
-        {stats.kycPending}
-      </StatCard>
-
-      <StatCard
-        title={t.successRate}
-        icon={CheckCircle}
-        footer={<p className="text-xs text-muted-foreground">{t.successRateSub}</p>}
-      >
-        {stats.totalTrades > 0
-          ? Math.round(((stats.totalTrades - (stats.failedTrades ?? 0)) / stats.totalTrades) * 100)
-          : 0}
-        %
-      </StatCard>
-
-      <StatCard
-        title={t.topUser}
-        icon={Users}
-        footer={
-          <ConvertedPrice
-            usdCents={stats.topUsers[0]?.totalVolumeCentimes || 0}
-            fromCurrency="USD"
-            className="text-xs text-muted-foreground"
-          />
-        }
-      >
-        <span className="text-lg truncate block">{stats.topUsers[0]?.username || 'N/A'}</span>
-      </StatCard>
-
-      <StatCard title={t.recentTrades} icon={Clock} footer={<p className="text-xs text-muted-foreground">{t.recentTradesSub}</p>}>
-        {stats.recentTrades.length}
-      </StatCard>
+            <Table>
+              <TableHeader>
+                <TableRow className={adminTableRow}>
+                  <TableHead className={adminTableHead}>{t.recentTradesColUser}</TableHead>
+                  <TableHead className={adminTableHead}>{t.recentTradesColAmount}</TableHead>
+                  <TableHead className={adminTableHead}>{t.recentTradesColStatus}</TableHead>
+                  <TableHead className={adminTableHead}>{t.recentTradesColDate}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {stats.recentTrades.slice(0, 5).map((trade) => (
+                  <TableRow key={trade.id} className={adminTableRow}>
+                    <TableCell className={adminTableCell}>
+                      <span className="font-medium">
+                        {trade.userName || `User #${trade.userId.slice(0, 8)}`}
+                      </span>
+                    </TableCell>
+                    <TableCell className={adminTableCell}>
+                      <ConvertedPrice
+                        usdCents={trade.netCentimes}
+                        fromCurrency="USD"
+                        className="text-foreground"
+                      />
+                    </TableCell>
+                    <TableCell className={adminTableCell}>
+                      <Badge variant="outline" className={getStatusBadgeClass(trade.status)}>
+                        {trade.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className={cn(adminTableCell, 'text-muted-foreground text-sm')}>
+                      {formatTradeDate(trade.créédLe)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -221,7 +305,7 @@ export function AdminStatsOverview() {
 function StatsSkeleton() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {[...Array(8)].map((_, i) => (
+      {[...Array(7)].map((_, i) => (
         <Card key={i} className={adminStatCard}>
           <CardContent className="p-6">
             <div className="animate-pulse space-y-2">

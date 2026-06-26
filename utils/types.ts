@@ -6216,7 +6216,7 @@ export interface Messages {
         totalUsers: string;
         totalUsersMonth: string;
         totalTrades: string;
-        activeTrades: string;
+        tradesThisMonth: string;
         totalVolume: string;
         totalVolumeMonth: string;
         payments: string;
@@ -6229,6 +6229,11 @@ export interface Messages {
         topUser: string;
         recentTrades: string;
         recentTradesSub: string;
+        recentTradesEmpty: string;
+        recentTradesColUser: string;
+        recentTradesColAmount: string;
+        recentTradesColStatus: string;
+        recentTradesColDate: string;
         errorPrefix: string;
       };
       dashboardOverview: {
@@ -6266,6 +6271,9 @@ export interface Messages {
         retry: string;
         dashboardLink: string;
         fetchError: string;
+        syncing: string;
+        syncSuccess: string;
+        syncError: string;
       };
     };
   error: {

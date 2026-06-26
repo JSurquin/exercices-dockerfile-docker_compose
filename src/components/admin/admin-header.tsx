@@ -7,7 +7,6 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import {
   Bell,
-  Search,
   Settings,
   User,
   LogOut,
@@ -18,7 +17,6 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +33,12 @@ import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { adminBtnOutline } from '@/lib/admin-ui';
+import { adminBtnOutline, adminGlassCard } from '@/lib/admin-ui';
+
+const adminDropdownContent = cn('border p-1', adminGlassCard);
+const adminDropdownItem =
+  'text-foreground focus:bg-theme-accent/10 focus:text-theme-highlight cursor-pointer';
+const adminDropdownSeparator = 'bg-border/60';
 
 interface Breadcrumb {
   label: string;
@@ -126,18 +129,6 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
         {/* On mobile without title, spacer */}
         {!title && <div className="flex-1 lg:hidden" />}
 
-        {/* Search Bar */}
-        <div className="hidden w-full max-w-sm md:flex">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              type="search"
-              placeholder={t.searchPlaceholder}
-              className="h-9 w-full border-slate-700 bg-slate-800/50 pl-9 text-sm text-white placeholder:text-slate-400 focus-visible:ring-primary"
-            />
-          </div>
-        </div>
-
         {/* Actions */}
         <div className="flex items-center gap-2">
           {/* Custom Actions */}
@@ -151,18 +142,18 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
                   <Settings className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 border-slate-700 bg-slate-900">
-                <DropdownMenuLabel className="text-slate-300">{t.quickActions}</DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-slate-700" />
-                <DropdownMenuItem className="text-slate-300 focus:bg-slate-800 focus:text-white">
+              <DropdownMenuContent align="end" className={cn('w-56', adminDropdownContent)}>
+                <DropdownMenuLabel className="text-foreground">{t.quickActions}</DropdownMenuLabel>
+                <DropdownMenuSeparator className={adminDropdownSeparator} />
+                <DropdownMenuItem className={adminDropdownItem}>
                   <Download className="mr-2 h-4 w-4" />
                   {t.exportData}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-slate-300 focus:bg-slate-800 focus:text-white">
+                <DropdownMenuItem className={adminDropdownItem}>
                   <FileText className="mr-2 h-4 w-4" />
                   {t.generateReport}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-slate-300 focus:bg-slate-800 focus:text-white">
+                <DropdownMenuItem className={adminDropdownItem}>
                   <HelpCircle className="mr-2 h-4 w-4" />
                   {t.documentation}
                 </DropdownMenuItem>
@@ -186,32 +177,32 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 border-slate-700 bg-slate-900">
-              <DropdownMenuLabel className="flex items-center justify-between">
-                <span className="text-slate-300">{t.notifications}</span>
+            <DropdownMenuContent align="end" className={cn('w-80', adminDropdownContent)}>
+              <DropdownMenuLabel className="flex items-center justify-between text-foreground">
+                <span>{t.notifications}</span>
                 {unreadCount > 0 && (
                   <Badge variant="secondary" className="text-xs">
                     {unreadCount} {unreadCount > 1 ? t.newNotificationPlural : t.newNotificationSingular}
                   </Badge>
                 )}
               </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-slate-700" />
+              <DropdownMenuSeparator className={adminDropdownSeparator} />
               <div className="max-h-[300px] overflow-y-auto">
                 {recentNotifications.length === 0 ? (
-                  <div className="p-4 text-center text-sm text-slate-400">
+                  <div className="p-4 text-center text-sm text-muted-foreground">
                     {t.noUnreadNotifications}
                   </div>
                 ) : (
                   recentNotifications.map((notification: Notification, index: number) => (
                     <div key={notification.id}>
-                      {index > 0 && <DropdownMenuSeparator className="bg-slate-700" />}
+                      {index > 0 && <DropdownMenuSeparator className={adminDropdownSeparator} />}
                       <DropdownMenuItem 
                         asChild
-                        className="flex flex-col items-start gap-1 p-3 text-slate-300 focus:bg-slate-800 cursor-pointer"
+                        className={cn(adminDropdownItem, 'flex flex-col items-start gap-1 p-3')}
                       >
                         <Link href={notification.link || '/notifications'}>
                           <div className="flex w-full items-center justify-between">
-                            <span className="font-medium text-white">{notification.titleFr}</span>
+                            <span className="font-medium text-foreground">{notification.titleFr}</span>
                             <Badge 
                               variant={
                                 notification.priority === 'URGENT' ? 'destructive' :
@@ -225,10 +216,10 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
                                notification.priority === 'NORMAL' ? t.priorityNormal : t.priorityInfo}
                             </Badge>
                           </div>
-                          <span className="text-xs text-slate-400 line-clamp-1">
+                          <span className="text-xs text-muted-foreground line-clamp-1">
                             {notification.messageFr}
                           </span>
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-muted-foreground/80">
                             {format(new Date(notification.createdAt), 'dd/MM/yyyy à HH:mm', { locale: fr })}
                           </span>
                         </Link>
@@ -237,8 +228,8 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
                   ))
                 )}
               </div>
-              <DropdownMenuSeparator className="bg-slate-700" />
-              <DropdownMenuItem asChild className="justify-center text-theme-highlight focus:bg-slate-800 focus:text-theme-highlight cursor-pointer">
+              <DropdownMenuSeparator className={adminDropdownSeparator} />
+              <DropdownMenuItem asChild className={cn(adminDropdownItem, 'justify-center text-theme-highlight focus:text-theme-highlight')}>
                 <Link href="/notifications">
                   {t.viewAllNotifications}
                 </Link>
@@ -258,37 +249,40 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
                 </span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 border-slate-700 bg-slate-900">
-              <DropdownMenuLabel className="text-slate-300">
+            <DropdownMenuContent align="end" className={cn('w-56', adminDropdownContent)}>
+              <DropdownMenuLabel className="text-foreground">
                 <div className="flex flex-col">
-                  <span className="text-white">{session?.user?.name || 'Admin'}</span>
-                  <span className="text-xs font-normal text-slate-400">
+                  <span className="font-medium">{session?.user?.name || 'Admin'}</span>
+                  <span className="text-xs font-normal text-muted-foreground">
                     {session?.user?.email || 'admin@moonskin.fr'}
                   </span>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-slate-700" />
-              <DropdownMenuItem asChild className="text-slate-300 focus:bg-slate-800 focus:text-white">
+              <DropdownMenuSeparator className={adminDropdownSeparator} />
+              <DropdownMenuItem asChild className={adminDropdownItem}>
                 <Link href="/admin/settings">
                   <User className="mr-2 h-4 w-4" />
                   {t.myProfile}
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className="text-slate-300 focus:bg-slate-800 focus:text-white">
+              <DropdownMenuItem asChild className={adminDropdownItem}>
                 <Link href="/admin/settings">
                   <Settings className="mr-2 h-4 w-4" />
                   {t.settings}
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-slate-700" />
-              <DropdownMenuItem asChild className="text-slate-300 focus:bg-slate-800 focus:text-white">
+              <DropdownMenuSeparator className={adminDropdownSeparator} />
+              <DropdownMenuItem asChild className={adminDropdownItem}>
                 <Link href="/">
                   <Shield className="mr-2 h-4 w-4" />
                   {t.backToSite}
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-slate-700" />
-              <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-400 focus:bg-red-500/10 focus:text-red-300">
+              <DropdownMenuSeparator className={adminDropdownSeparator} />
+              <DropdownMenuItem
+                onClick={logout}
+                className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 {t.logout}
               </DropdownMenuItem>
@@ -297,7 +291,6 @@ export function AdminHeader({ breadcrumbs, title, actions }: AdminHeaderProps) {
         </div>
       </div>
 
-      {/* Mobile Search Bar - only show if user triggers it, hidden by default */}
     </header>
   );
 }

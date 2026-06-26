@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { ADMIN_SKINPLACE_REFETCH_INTERVAL_MS } from '@/lib/admin-constants';
@@ -7,17 +8,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Wallet, 
-  TrendingUp, 
-  Clock, 
-  RefreshCw, 
+import {
+  Wallet,
+  Clock,
+  RefreshCw,
   AlertCircle,
   CheckCircle,
   ExternalLink,
-  Activity
+  Activity,
 } from 'lucide-react';
 import { useLocale } from '@/components/providers/locale-provider';
+import { formatCentsToCurrency } from '@/lib/currency-converter';
+import {
+  adminBadgeStatus,
+  adminBtnOutline,
+  adminGlassCard,
+  adminIconAccentLg,
+  adminStatCard,
+} from '@/lib/admin-ui';
+import { cn } from '@/lib/utils';
 
 interface SkinplaceMetrics {
   balance?: {
@@ -37,33 +46,58 @@ interface SkinplaceMetrics {
   lastSync: string;
 }
 
+type SyncFeedback = 'idle' | 'syncing' | 'success' | 'error';
+
+function MetricTile({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+}) {
+  return (
+    <div className={cn(adminStatCard, 'p-4')}>
+      <p className="text-sm text-muted-foreground mb-1">{label}</p>
+      <p className="text-2xl font-bold text-foreground">{value}</p>
+      {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
+    </div>
+  );
+}
+
 export function AdminSkinplaceMetrics() {
   const { messages } = useLocale();
   const t = messages.adminNav.skinplaceMetrics;
   const queryClient = useQueryClient();
+  const [syncFeedback, setSyncFeedback] = useState<SyncFeedback>('idle');
 
   const { data: platformConfig } = useQuery({
     queryKey: queryKeys.adminPlatformConfig,
-    queryFn: () => fetch('/api/admin/platform-config').then(r => r.json()),
+    queryFn: () => fetch('/api/admin/platform-config').then((r) => r.json()),
     staleTime: 5 * 60 * 1000,
   });
 
   const skinplaceDashboardUrl: string =
     platformConfig?.config?.skinplaceDashboardUrl ?? 'https://skin.place';
 
-  const { data: metrics, isLoading, error: queryError } = useQuery({
+  const {
+    data: metrics,
+    isLoading,
+    error: queryError,
+  } = useQuery({
     queryKey: queryKeys.skinplaceBalance,
     queryFn: async (): Promise<SkinplaceMetrics> => {
       const [balanceRes, historyRes, holdRes] = await Promise.all([
         fetch('/api/skinplace/balance').catch(() => null),
         fetch('/api/skinplace/history').catch(() => null),
-        fetch('/api/skinplace/hold').catch(() => null)
+        fetch('/api/skinplace/hold').catch(() => null),
       ]);
 
       const skinplaceMetrics: SkinplaceMetrics = {
         apiStatus: 'offline',
         recentTransactions: 0,
-        lastSync: new Date().toISOString()
+        lastSync: new Date().toISOString(),
       };
 
       if (balanceRes?.ok) {
@@ -87,8 +121,8 @@ export function AdminSkinplaceMetrics() {
           const orders = holdData.data.orders;
           skinplaceMetrics.holdOrders = {
             total: orders.length,
-            pending: orders.filter((o: any) => o.status === 'pending').length,
-            completed: orders.filter((o: any) => o.status === 'completed').length
+            pending: orders.filter((o: { status: string }) => o.status === 'pending').length,
+            completed: orders.filter((o: { status: string }) => o.status === 'completed').length,
           };
         }
       }
@@ -99,97 +133,103 @@ export function AdminSkinplaceMetrics() {
 
       return skinplaceMetrics;
     },
-    refetchInterval: ADMIN_SKINPLACE_REFETCH_INTERVAL_MS
+    refetchInterval: ADMIN_SKINPLACE_REFETCH_INTERVAL_MS,
   });
 
   const error: string | null = queryError
-    ? (queryError instanceof Error ? queryError.message : t.fetchError)
+    ? queryError instanceof Error ? queryError.message : t.fetchError
     : null;
-  const loading = isLoading;
+
+  const formatEuro = (centimes: number) => formatCentsToCurrency(Math.round(centimes), 'EUR');
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'text-green-500';
-      case 'offline': return 'text-yellow-500';
-      case 'error': return 'text-red-500';
-      default: return 'text-slate-400';
+      case 'online':
+        return 'text-theme-success';
+      case 'offline':
+        return 'text-muted-foreground';
+      case 'error':
+        return 'text-destructive';
+      default:
+        return 'text-muted-foreground';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'online': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'offline': return <Clock className="h-4 w-4 text-yellow-500" />;
-      case 'error': return <AlertCircle className="h-4 w-4 text-red-500" />;
-      default: return <Activity className="h-4 w-4 text-slate-400" />;
+      case 'online':
+        return <CheckCircle className="h-4 w-4 text-theme-success" />;
+      case 'offline':
+        return <Clock className="h-4 w-4 text-muted-foreground" />;
+      case 'error':
+        return <AlertCircle className="h-4 w-4 text-destructive" />;
+      default:
+        return <Activity className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'online': return t.statusOnline;
-      case 'offline': return t.statusOffline;
-      case 'error': return t.statusError;
-      default: return t.statusOffline;
+      case 'online':
+        return t.statusOnline;
+      case 'offline':
+        return t.statusOffline;
+      case 'error':
+        return t.statusError;
+      default:
+        return t.statusOffline;
     }
   };
 
   const getStatusOperationalLabel = (status: string) => {
     switch (status) {
-      case 'online': return t.statusOperational;
-      case 'offline': return t.statusUnavailable;
-      case 'error': return t.statusError;
-      default: return t.statusUnavailable;
+      case 'online':
+        return t.statusOperational;
+      case 'offline':
+        return t.statusUnavailable;
+      case 'error':
+        return t.statusError;
+      default:
+        return t.statusUnavailable;
     }
   };
 
-  if (loading) {
+  const handleRefresh = async () => {
+    setSyncFeedback('syncing');
+    try {
+      await queryClient.refetchQueries({ queryKey: queryKeys.skinplaceBalance });
+      setSyncFeedback('success');
+      window.setTimeout(() => setSyncFeedback('idle'), 2500);
+    } catch {
+      setSyncFeedback('error');
+      window.setTimeout(() => setSyncFeedback('idle'), 3000);
+    }
+  };
+
+  const isSyncing = syncFeedback === 'syncing';
+
+  if (isLoading) {
     return (
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className={adminGlassCard}>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-slate-100 flex items-center gap-2">
-              <Wallet className="h-5 w-5" />
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <Wallet className={adminIconAccentLg} />
               {t.title}
             </CardTitle>
             <div className="flex items-center gap-2">
-              <Skeleton className="h-4 w-4 bg-slate-600" />
-              <Skeleton className="h-4 w-16 bg-slate-600" />
-              <Skeleton className="h-8 w-8 bg-slate-600" />
+              <Skeleton className="h-4 w-4" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-8 w-8" />
             </div>
           </div>
-          <CardDescription className="text-slate-400">
-            {t.loadingDesc}
-          </CardDescription>
+          <CardDescription className="text-muted-foreground">{t.loadingDesc}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="text-center p-4 bg-slate-900/50 rounded-lg">
-                  <Skeleton className="h-4 w-24 bg-slate-600 mx-auto mb-2" />
-                  <Skeleton className="h-8 w-20 bg-slate-600 mx-auto mb-1" />
-                  <Skeleton className="h-3 w-16 bg-slate-600 mx-auto" />
-                </div>
-              ))}
-            </div>
-
-            <div>
-              <Skeleton className="h-5 w-24 bg-slate-600 mb-3" />
-              <div className="grid grid-cols-3 gap-4">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="text-center p-3 bg-slate-900/30 rounded">
-                    <Skeleton className="h-6 w-8 bg-slate-600 mx-auto mb-1" />
-                    <Skeleton className="h-3 w-12 bg-slate-600 mx-auto" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-700">
-              <Skeleton className="h-6 w-32 bg-slate-600" />
-              <Skeleton className="h-6 w-24 bg-slate-600" />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full rounded-xl" />
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -197,11 +237,11 @@ export function AdminSkinplaceMetrics() {
   }
 
   return (
-    <Card className="bg-slate-800/50 border-slate-700">
+    <Card className={adminGlassCard}>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-slate-100 flex items-center gap-2">
-            <Wallet className="h-5 w-5" />
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="text-foreground flex items-center gap-2">
+            <Wallet className={adminIconAccentLg} />
             {t.title}
           </CardTitle>
           <div className="flex items-center gap-2">
@@ -209,70 +249,72 @@ export function AdminSkinplaceMetrics() {
             <span className={`text-sm font-medium ${getStatusColor(metrics?.apiStatus || 'offline')}`}>
               {getStatusLabel(metrics?.apiStatus || 'offline')}
             </span>
-            <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.skinplaceBalance })} variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4" />
+            <Button
+              onClick={handleRefresh}
+              variant="outline"
+              size="sm"
+              disabled={isSyncing}
+              className={cn(
+                adminBtnOutline,
+                syncFeedback === 'success' && 'border-theme-success/40 text-theme-success',
+                syncFeedback === 'error' && 'border-destructive/40 text-destructive'
+              )}
+            >
+              <RefreshCw className={cn('h-4 w-4', isSyncing && 'animate-spin')} />
+              <span className="sr-only">{t.syncing}</span>
             </Button>
           </div>
         </div>
-        <CardDescription className="text-slate-400">
-          {t.realtimeDesc}
+        <CardDescription className="text-muted-foreground">
+          {syncFeedback === 'success'
+            ? t.syncSuccess
+            : syncFeedback === 'error'
+              ? t.syncError
+              : isSyncing
+                ? t.syncing
+                : t.realtimeDesc}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {error ? (
           <div className="text-center py-6">
-            <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-            <p className="text-red-400 text-sm">{error}</p>
-            <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.skinplaceBalance })} variant="outline" size="sm" className="mt-3">
+            <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
+            <p className="text-destructive text-sm">{error}</p>
+            <Button onClick={handleRefresh} variant="outline" size="sm" className={cn('mt-3', adminBtnOutline)}>
               {t.retry}
             </Button>
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Solde */}
             {metrics?.balance && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-slate-900/50 rounded-lg border-l-4 border-green-500">
-                  <p className="text-sm text-slate-400 mb-1">{t.totalBalance}</p>
-                  <p className="text-2xl font-bold text-green-400">
-                    {metrics.balance.balance?.toFixed(2) || '0.00'} €
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">{t.balanceAvailable}</p>
-                </div>
-
-                <div className="text-center p-4 bg-slate-900/50 rounded-lg border-l-4 border-yellow-500">
-                  <p className="text-sm text-slate-400 mb-1">{t.holdBalance}</p>
-                  <p className="text-2xl font-bold text-yellow-400">
-                    {metrics.balance.pending_balance?.toFixed(2) || '0.00'} €
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">{t.holdBalanceSub}</p>
-                </div>
-
-                <div className="text-center p-4 bg-slate-900/50 rounded-lg border-l-4 border-blue-500">
-                  <p className="text-sm text-slate-400 mb-1">{t.deposits}</p>
-                  <p className="text-2xl font-bold text-blue-400">
-                    {metrics.balance.available_balance?.toFixed(2) || '0.00'} €
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {t.depositsUpdated} {new Date(metrics.balance.last_updated).toLocaleString('fr-FR')}
-                  </p>
-                </div>
+                <MetricTile
+                  label={t.totalBalance}
+                  value={formatEuro(metrics.balance.balance ?? 0)}
+                  sub={t.balanceAvailable}
+                />
+                <MetricTile
+                  label={t.holdBalance}
+                  value={formatEuro(metrics.balance.pending_balance ?? 0)}
+                  sub={t.holdBalanceSub}
+                />
+                <MetricTile
+                  label={t.deposits}
+                  value={formatEuro(metrics.balance.available_balance ?? 0)}
+                  sub={`${t.depositsUpdated} ${new Date(metrics.balance.last_updated).toLocaleString('fr-FR')}`}
+                />
               </div>
             )}
 
-            {/* Métriques supplémentaires */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="text-center p-4 bg-slate-900/50 rounded-lg">
-                <p className="text-sm text-slate-400 mb-1">{t.recentTransactions}</p>
-                <p className="text-2xl font-bold text-slate-100">
-                  {metrics?.recentTransactions || 0}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">{t.recentTransactionsSub}</p>
-              </div>
-
-              <div className="text-center p-4 bg-slate-900/50 rounded-lg">
-                <p className="text-sm text-slate-400 mb-1">{t.apiStatus}</p>
-                <div className="flex items-center justify-center gap-2 mt-2">
+              <MetricTile
+                label={t.recentTransactions}
+                value={String(metrics?.recentTransactions || 0)}
+                sub={t.recentTransactionsSub}
+              />
+              <div className={cn(adminStatCard, 'p-4')}>
+                <p className="text-sm text-muted-foreground mb-2">{t.apiStatus}</p>
+                <div className="flex items-center gap-2">
                   {getStatusIcon(metrics?.apiStatus || 'offline')}
                   <span className={`text-sm font-medium ${getStatusColor(metrics?.apiStatus || 'offline')}`}>
                     {getStatusOperationalLabel(metrics?.apiStatus || 'offline')}
@@ -281,52 +323,40 @@ export function AdminSkinplaceMetrics() {
               </div>
             </div>
 
-            {/* Hold Orders */}
             {metrics?.holdOrders && (
               <div>
-                <h4 className="text-sm font-medium text-slate-300 mb-3">{t.holdOrdersTitle}</h4>
+                <h4 className="text-sm font-medium text-foreground mb-3">{t.holdOrdersTitle}</h4>
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-3 bg-slate-900/30 rounded">
-                    <p className="text-lg font-bold text-slate-100">{metrics.holdOrders.total}</p>
-                    <p className="text-xs text-slate-400">{t.holdTotal}</p>
-                  </div>
-                  <div className="text-center p-3 bg-slate-900/30 rounded">
-                    <p className="text-lg font-bold text-yellow-400">{metrics.holdOrders.pending}</p>
-                    <p className="text-xs text-slate-400">{t.holdPending}</p>
-                  </div>
-                  <div className="text-center p-3 bg-slate-900/30 rounded">
-                    <p className="text-lg font-bold text-green-400">{metrics.holdOrders.completed}</p>
-                    <p className="text-xs text-slate-400">{t.holdCompleted}</p>
-                  </div>
+                  <MetricTile label={t.holdTotal} value={String(metrics.holdOrders.total)} />
+                  <MetricTile label={t.holdPending} value={String(metrics.holdOrders.pending)} />
+                  <MetricTile label={t.holdCompleted} value={String(metrics.holdOrders.completed)} />
                 </div>
               </div>
             )}
 
-            {/* Actions rapides */}
-            <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-700">
-              <Badge variant="outline" className="text-xs">
+            <div className="flex flex-wrap gap-2 pt-4 border-t border-border/40">
+              <Badge variant="outline" className={adminBadgeStatus}>
                 <Clock className="h-3 w-3 mr-1" />
                 {t.lastSync} {new Date(metrics?.lastSync || '').toLocaleTimeString('fr-FR')}
               </Badge>
-              
+
               {metrics?.apiStatus === 'online' && (
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="outline" className={cn(adminBadgeStatus, 'admin-badge-status--success')}>
                   <CheckCircle className="h-3 w-3 mr-1" />
                   {t.apiFunctional}
                 </Badge>
               )}
-              
+
               {metrics?.apiStatus === 'error' && (
-                <Badge variant="destructive" className="text-xs">
+                <Badge variant="outline" className={cn(adminBadgeStatus, 'admin-badge-status--danger')}>
                   <AlertCircle className="h-3 w-3 mr-1" />
                   {t.connectionIssue}
                 </Badge>
               )}
             </div>
 
-            {/* Liens utiles */}
             <div className="flex gap-2 pt-2">
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="outline" size="sm" asChild className={adminBtnOutline}>
                 <a href={skinplaceDashboardUrl} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   {t.dashboardLink}
