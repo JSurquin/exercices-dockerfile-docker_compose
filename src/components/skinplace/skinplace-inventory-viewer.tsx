@@ -1059,7 +1059,7 @@ export function SkinplaceInventoryViewer({
                       key={item.id}
                       className={`transition-all ${
                         isSellLayout
-                          ? `sell-inventory-card rounded-lg border-border/70 bg-card/80 shadow-none hover:border-border/90${
+                          ? `sell-inventory-card py-0 gap-0 rounded-lg border-border/70 bg-card/80 shadow-none hover:border-border/90${
                               isDisabled ? ' sell-inventory-card--disabled' : ''
                             }`
                           : ''
@@ -1076,17 +1076,17 @@ export function SkinplaceInventoryViewer({
                       }`}
                       onClick={() => handleItemClick(item)}
                     >
-                      <CardContent className={isSellLayout ? 'p-3.5' : 'p-3'}>
-                        <div className={isSellLayout ? 'space-y-2.5' : 'space-y-2'}>
+                      <CardContent className={isSellLayout ? 'px-2.5 py-2' : 'p-3'}>
+                        <div className={isSellLayout ? 'space-y-1.5' : 'space-y-2'}>
                           {/* Image et badges */}
                           <div className="relative">
                             <SafeImg
                               src={item.icon_url}
                               alt={item.name}
-                              className={`w-full h-20 object-contain mx-auto ${
-                                isDisabled ? 'grayscale' : ''
-                              }`}
-                              fallbackClassName={`w-full h-20 ${isDisabled ? 'grayscale' : ''}`}
+                              className={`w-full object-contain mx-auto ${
+                                isSellLayout ? 'h-16' : 'h-20'
+                              } ${isDisabled ? 'grayscale' : ''}`}
+                              fallbackClassName={`w-full ${isSellLayout ? 'h-16' : 'h-20'} ${isDisabled ? 'grayscale' : ''}`}
                               fallbackIcon={<Package className="w-10 h-10 text-muted-foreground" />}
                             />
                             {badgeCfg && (
