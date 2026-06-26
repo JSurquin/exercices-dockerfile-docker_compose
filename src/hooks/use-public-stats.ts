@@ -18,6 +18,11 @@ function roundCompact(value: number, decimals: number): number {
   return Math.round(value * factor) / factor;
 }
 
+/** Arrondit au millier le plus proche (pas de troncature vers le bas). */
+function roundToNearestThousand(value: number): number {
+  return Math.round(value / 1_000) * 1_000;
+}
+
 /** Formate un montant en centimes (€) : k / M / Md selon l'ampleur. */
 export function formatPlatformVolume(cents: number): CompactNumberDisplay {
   const euros = cents / 100;
@@ -39,12 +44,20 @@ export function formatPlatformVolume(cents: number): CompactNumberDisplay {
     };
   }
   if (euros >= 10_000) {
-    const decimals = euros >= 100_000 ? 0 : 1;
+    const roundedEuros = roundToNearestThousand(euros);
+    if (roundedEuros >= 1_000_000) {
+      return {
+        value: roundCompact(roundedEuros / 1_000_000, 1),
+        prefix: '€',
+        suffix: ' M',
+        decimals: 1,
+      };
+    }
     return {
-      value: roundCompact(euros / 1_000, decimals),
+      value: roundedEuros / 1_000,
       prefix: '€',
       suffix: ' k',
-      decimals,
+      decimals: 0,
     };
   }
   if (euros >= 1_000) {
@@ -72,12 +85,28 @@ export function formatCompactCount(count: number): CompactNumberDisplay {
     };
   }
   if (count >= 10_000) {
-    const decimals = count >= 100_000 ? 0 : 1;
+    const rounded = roundToNearestThousand(count);
+    if (rounded >= 1_000_000_000) {
+      return {
+        value: roundCompact(rounded / 1_000_000_000, 1),
+        prefix: '',
+        suffix: ' Md+',
+        decimals: 1,
+      };
+    }
+    if (rounded >= 1_000_000) {
+      return {
+        value: roundCompact(rounded / 1_000_000, 1),
+        prefix: '',
+        suffix: ' M+',
+        decimals: 1,
+      };
+    }
     return {
-      value: roundCompact(count / 1_000, decimals),
+      value: rounded / 1_000,
       prefix: '',
       suffix: ' k+',
-      decimals,
+      decimals: 0,
     };
   }
   return {

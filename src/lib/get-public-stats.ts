@@ -1,6 +1,5 @@
 import { cache } from 'react';
 import { fetchPlatformStatsFromDb } from '@/lib/platform-stats';
-import { obfuscatePublicCount } from '@/lib/privacy-obfuscation';
 import type { PublicStats } from '@/hooks/use-public-stats';
 
 export const EMPTY_PUBLIC_STATS: PublicStats = {
@@ -16,11 +15,11 @@ export async function getPublicStats(): Promise<PublicStats> {
   const volumeCents = raw.totalVolumeCents;
 
   return {
-    totalUsers: obfuscatePublicCount(raw.totalUsers),
-    completedTrades: obfuscatePublicCount(raw.totalTrades),
+    totalUsers: raw.totalUsers,
+    completedTrades: raw.totalTrades,
     volumeMillions: Math.round((volumeCents / 100 / 1_000_000) * 10) / 10,
-    totalVolumeCents: obfuscatePublicCount(volumeCents),
-    totalSkinsSold: obfuscatePublicCount(raw.totalSkinsSold),
+    totalVolumeCents: volumeCents,
+    totalSkinsSold: raw.totalSkinsSold,
   };
 }
 
