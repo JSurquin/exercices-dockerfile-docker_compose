@@ -32,18 +32,133 @@
   display: none;
 }
 
-/* Sell page — scrollable inventory list fills remaining viewport */
+/* Sell page — scrollable inventory list fills remaining viewport (min. 3 card rows) */
 .inventory-container {
-  height: calc(
-    100vh - 4rem - 0.5rem - 3rem - 5.75rem - 7rem - 5.5rem - 0.5rem - 0.5rem
+  --sell-inventory-row-height: 13.75rem;
+  --sell-inventory-gap: 0.75rem;
+  --sell-inventory-min-height: calc(
+    3 * var(--sell-inventory-row-height) + 2 * var(--sell-inventory-gap)
+  );
+  height: max(
+    var(--sell-inventory-min-height),
+    calc(
+      100vh - 4rem - 0.5rem - 3rem - 5.75rem - 7rem - 5.5rem - 0.5rem - 0.5rem
+    )
   );
 }
 
 @media (min-width: 640px) {
   .inventory-container {
-    height: calc(
-      100vh - 4rem - 0.75rem - 3.25rem - 5.75rem - 5rem - 3rem - 0.5rem - 0.75rem
+    height: max(
+      var(--sell-inventory-min-height),
+      calc(
+        100vh - 4rem - 0.75rem - 3.25rem - 5.75rem - 5rem - 3rem - 0.5rem - 0.75rem
+      )
     );
+  }
+}
+
+/* Sell page — inventory card motion (CSS only) */
+@keyframes sell-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sell-card-select-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.sell-inventory-grid > * {
+  animation: sell-card-enter 0.38s ease-out both;
+}
+
+.sell-inventory-grid > :nth-child(1) {
+  animation-delay: 0ms;
+}
+.sell-inventory-grid > :nth-child(2) {
+  animation-delay: 40ms;
+}
+.sell-inventory-grid > :nth-child(3) {
+  animation-delay: 80ms;
+}
+.sell-inventory-grid > :nth-child(4) {
+  animation-delay: 120ms;
+}
+.sell-inventory-grid > :nth-child(5) {
+  animation-delay: 160ms;
+}
+.sell-inventory-grid > :nth-child(6) {
+  animation-delay: 200ms;
+}
+.sell-inventory-grid > :nth-child(7) {
+  animation-delay: 240ms;
+}
+.sell-inventory-grid > :nth-child(8) {
+  animation-delay: 280ms;
+}
+.sell-inventory-grid > :nth-child(9) {
+  animation-delay: 320ms;
+}
+.sell-inventory-grid > :nth-child(10) {
+  animation-delay: 360ms;
+}
+.sell-inventory-grid > :nth-child(11) {
+  animation-delay: 400ms;
+}
+.sell-inventory-grid > :nth-child(12) {
+  animation-delay: 440ms;
+}
+.sell-inventory-grid > :nth-child(13) {
+  animation-delay: 480ms;
+}
+.sell-inventory-grid > :nth-child(14) {
+  animation-delay: 520ms;
+}
+.sell-inventory-grid > :nth-child(15) {
+  animation-delay: 560ms;
+}
+.sell-inventory-grid > :nth-child(16) {
+  animation-delay: 600ms;
+}
+.sell-inventory-grid > :nth-child(17) {
+  animation-delay: 640ms;
+}
+.sell-inventory-grid > :nth-child(18) {
+  animation-delay: 680ms;
+}
+.sell-inventory-grid > :nth-child(19) {
+  animation-delay: 720ms;
+}
+.sell-inventory-grid > :nth-child(20) {
+  animation-delay: 760ms;
+}
+.sell-inventory-grid > :nth-child(n + 21) {
+  animation-delay: 800ms;
+}
+
+.sell-inventory-card:not(.sell-inventory-card--disabled):active {
+  animation: sell-card-select-pulse 0.22s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sell-inventory-grid > * {
+    animation: none;
+  }
+
+  .sell-inventory-card:not(.sell-inventory-card--disabled):active {
+    animation: none;
   }
 }
 

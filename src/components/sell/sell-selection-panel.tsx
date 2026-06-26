@@ -100,7 +100,7 @@ export function SellSelectionPanel({ items, onContinue, onDeselect }: SellSelect
             ) : (
               <CountUp
                 end={displayCentimes / 100}
-                duration={0.3}
+                duration={0.45}
                 decimals={2}
                 prefix={prefix}
                 suffix={suffix}
@@ -116,7 +116,8 @@ export function SellSelectionPanel({ items, onContinue, onDeselect }: SellSelect
         <div className="flex flex-col gap-3">
           <Button
             type="button"
-            className="w-full bg-primary hover:bg-primary/90"
+            variant="cta"
+            className="w-full"
             disabled={items.length === 0}
             onClick={onContinue}
           >

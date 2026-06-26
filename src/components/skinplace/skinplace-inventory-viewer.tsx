@@ -1025,8 +1025,8 @@ export function SkinplaceInventoryViewer({
             </div>
           ) : (
             <div className="relative">
-              <div className={`${isSellLayout ? 'inventory-container min-h-[360px]' : 'max-h-[600px]'} overflow-y-auto px-1 -mx-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent`}>
-                <div className={`grid pb-4 ${isSellLayout ? 'mt-2' : 'mt-6'} ${
+              <div className={`${isSellLayout ? 'inventory-container' : 'max-h-[600px]'} overflow-y-auto px-1 -mx-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent`}>
+                <div className={`grid pb-4 ${isSellLayout ? 'mt-2 sell-inventory-grid' : 'mt-6'} ${
                   isSellLayout
                     ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3'
                     : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3'
@@ -1059,7 +1059,9 @@ export function SkinplaceInventoryViewer({
                       key={item.id}
                       className={`transition-all ${
                         isSellLayout
-                          ? 'rounded-lg border-border/70 bg-card/80 shadow-none hover:border-border/90'
+                          ? `sell-inventory-card rounded-lg border-border/70 bg-card/80 shadow-none hover:border-border/90${
+                              isDisabled ? ' sell-inventory-card--disabled' : ''
+                            }`
                           : ''
                       } ${
                         !isDisabled ? (isSellLayout ? 'hover:shadow-md' : 'hover:shadow-lg') : ''
