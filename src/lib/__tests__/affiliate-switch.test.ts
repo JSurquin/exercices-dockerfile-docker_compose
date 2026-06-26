@@ -108,6 +108,43 @@ describe('AffiliateService.switchUserToAffiliate', () => {
   });
 });
 
+describe('AffiliateService.associateUserToAffiliate', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('uses explicit affiliate code when cookies are unavailable', async () => {
+    prismaMock.affiliateStats.findFirst.mockResolvedValue({
+      id: 'aff-new',
+      code: 'STREAMER',
+      userId: 'affiliate-user',
+      user: { steamUsername: 'StreamerPro' },
+    });
+    prismaMock.user.findUnique.mockResolvedValue({ referredByAffiliateId: null });
+    prismaMock.affiliateReferral.findFirst.mockResolvedValue(null);
+    prismaMock.affiliateReferral.create.mockResolvedValue({ id: 'ref-new' });
+    prismaMock.affiliateStats.update.mockResolvedValue({});
+    prismaMock.user.update.mockResolvedValue({});
+    prismaMock.userAffiliateHistory.create.mockResolvedValue({ id: 'hist-1' });
+
+    await AffiliateService.associateUserToAffiliate('user-1', 'STREAMER');
+
+    expect(prismaMock.affiliateStats.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          isActive: true,
+          code: { equals: 'streamer', mode: 'insensitive' },
+        }),
+      })
+    );
+    expect(prismaMock.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { referredByAffiliateId: 'aff-new' },
+      })
+    );
+  });
+});
+
 describe('AffiliateService.validateAffiliateSellPromoCode', () => {
   beforeEach(() => {
     jest.clearAllMocks();

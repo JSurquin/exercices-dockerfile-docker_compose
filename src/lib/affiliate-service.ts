@@ -274,13 +274,14 @@ export class AffiliateService {
     const cookieStore = await cookies();
     return cookieStore.get('ctf_affiliate_ref')?.value || null;
   }
-  
+
   /**
    * Associe un utilisateur à un affilié via le cookie de lien (?ref=, fenêtre 30 jours).
    * Écrit referredByAffiliateId + affiliateReferral en base (définitif).
+   * Passer affiliateCode explicitement quand cookies() n'est plus fiable (ex. callback Steam après sign-in interne).
    */
   static async associateUserToAffiliate(userId: string, affiliateCode?: string): Promise<void> {
-    const refCode = affiliateCode || (await this.getAffiliateRefFromCookies());
+    const refCode = affiliateCode?.trim() || (await this.getAffiliateRefFromCookies());
     if (!refCode) return;
 
     const affiliate = await this.findActiveAffiliateByCode(refCode);

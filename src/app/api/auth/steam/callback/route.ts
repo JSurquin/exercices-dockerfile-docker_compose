@@ -36,7 +36,9 @@ export async function GET(request: NextRequest) {
   const context = getRequestContext(request);
   const baseUrl = resolvePublicAppUrl(request.nextUrl.origin);
   const authOrigin = resolvePublicOrigin(request.nextUrl.origin);
-  
+  // Lire le cookie ref avant auth.handler : cookies() peut perdre le contexte requête après sign-in interne.
+  const affiliateRefCode = request.cookies.get('ctf_affiliate_ref')?.value ?? undefined;
+
   try {
     // Vérifier la réponse OpenID de Steam
     const steamId = await verifySteamOpenID(request);
@@ -319,7 +321,7 @@ export async function GET(request: NextRequest) {
     );
 
     try {
-      await AffiliateService.associateUserToAffiliate(user.id);
+      await AffiliateService.associateUserToAffiliate(user.id, affiliateRefCode);
     } catch (affiliateErr) {
       console.error('[steam/callback] affiliate attach failed:', affiliateErr);
     }

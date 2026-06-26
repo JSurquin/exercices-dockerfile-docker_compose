@@ -560,7 +560,7 @@ export default function AffiliatesManagement() {
 
       {/* Affiliate details dialog */}
       <Dialog open={!!selectedAffiliateId} onOpenChange={(open) => { if (!open) closeAffiliateDetails(); }}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-slate-900/95 backdrop-blur-xl border-slate-700/80 shadow-2xl shadow-black/40">
           <DialogHeader>
             <DialogTitle className="text-white">{t.detailsTitle}</DialogTitle>
             <DialogDescription className="text-slate-400">{t.detailsDesc}</DialogDescription>
@@ -618,35 +618,9 @@ export default function AffiliatesManagement() {
                     <p className="text-xs text-slate-400 mt-1">{t.labelCommissions}</p>
                   </div>
                   <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-4 text-center">
-                    {editingCommissionRate ? (
-                      <div className="flex items-center justify-center gap-1">
-                        <Input
-                          type="number"
-                          value={newCommissionRate}
-                          onChange={(e) => setNewCommissionRate(parseFloat(e.target.value))}
-                          min="0"
-                          max="100"
-                          step="0.1"
-                          className="w-16 h-8 text-center"
-                        />
-                        <span className="text-sm">%</span>
-                        <Button size="sm" variant="ghost" onClick={updateCommissionRate}>
-                          <Check className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => setEditingCommissionRate(false)}>
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center gap-2">
-                        <p className="text-2xl font-bold text-white">
-                          {(selectedAffiliate.commissionRate * 100).toFixed(1)}%
-                        </p>
-                        <Button variant="ghost" size="sm" onClick={() => setEditingCommissionRate(true)}>
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    )}
+                    <p className="text-2xl font-bold text-white">
+                      {(selectedAffiliate.commissionRate * 100).toFixed(1)}%
+                    </p>
                     <p className="text-xs text-slate-400 mt-1">{t.labelCommissionRate}</p>
                   </div>
                 </div>
@@ -709,6 +683,52 @@ export default function AffiliatesManagement() {
                     </Badge>
                   </div>
                   <div>
+                    <Label className="text-slate-400">{t.labelCommissionRate}</Label>
+                    {editingCommissionRate ? (
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <Input
+                          type="number"
+                          value={newCommissionRate}
+                          onChange={(e) => setNewCommissionRate(parseFloat(e.target.value))}
+                          min="0"
+                          max="100"
+                          step="0.1"
+                          className="w-24 h-8 bg-slate-800 border-slate-600 text-white"
+                        />
+                        <span className="text-sm text-slate-300">%</span>
+                        <Button size="sm" onClick={updateCommissionRate} className="h-8">
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setEditingCommissionRate(false);
+                            setNewCommissionRate(selectedAffiliate.commissionRate * 100);
+                          }}
+                          className="h-8 text-slate-400 hover:text-white"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="font-medium text-white">
+                          {(selectedAffiliate.commissionRate * 100).toFixed(1)}%
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingCommissionRate(true)}
+                          className="h-7 border-slate-600 text-slate-200 hover:bg-slate-800"
+                        >
+                          <Edit className="h-3 w-3 mr-1" />
+                          {t.colRate}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  <div>
                     <Label className="text-slate-400">{t.labelAffiliateCode}</Label>
                     {editingCode ? (
                       <div className="flex items-center gap-2 mt-1">
@@ -716,7 +736,7 @@ export default function AffiliatesManagement() {
                           value={newCode}
                           onChange={(e) => setNewCode(e.target.value.toUpperCase())}
                           maxLength={20}
-                          className="w-32 font-mono uppercase h-8"
+                          className="w-32 font-mono uppercase h-8 bg-slate-800 border-slate-600 text-white"
                         />
                         <Button size="sm" onClick={updateCode}><Check className="h-4 w-4" /></Button>
                         <Button size="sm" variant="ghost" onClick={() => setEditingCode(false)}>
@@ -753,7 +773,7 @@ export default function AffiliatesManagement() {
 
       {/* Remove affiliation confirmation */}
       <Dialog open={removeConfirmOpen} onOpenChange={(open) => { if (!open && !isRemoving) setRemoveConfirmOpen(false); }}>
-        <DialogContent className="max-w-md bg-slate-900 border-slate-700">
+        <DialogContent className="max-w-md bg-slate-900/95 backdrop-blur-xl border-slate-700/80 shadow-2xl shadow-black/40">
           <DialogHeader>
             <DialogTitle className="text-white flex items-center gap-2">
               <UserX className="h-5 w-5 text-red-500" />

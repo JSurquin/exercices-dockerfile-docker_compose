@@ -90,7 +90,7 @@ export function AffiliateReferralsList({ affiliateId }: Props) {
     });
 
   return (
-    <div className="border-t pt-4 space-y-3">
+    <div className="rounded-lg border border-slate-700/80 bg-slate-800/30 p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <h4 className="text-sm font-medium text-white">{t.title}</h4>
         <div className="flex gap-1">
