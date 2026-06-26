@@ -173,7 +173,7 @@ export function SellInventoryItemCard({
         isDisabled ? 'sell-inventory-card--disabled' : 'sell-inventory-card--interactive'
       } ${selectable && !isDisabled ? 'cursor-pointer' : isDisabled ? 'cursor-not-allowed' : ''} ${
         selectable && isSelected
-          ? 'sell-inventory-card--selected ring-2 ring-primary bg-theme-accent/5 dark:bg-theme-accent/10'
+          ? 'sell-inventory-card--selected bg-theme-accent/5 dark:bg-theme-accent/10'
           : ''
       } ${isDisabled ? 'opacity-60 bg-muted/50' : ''}`}
       onMouseEnter={handleMouseEnter}
@@ -182,7 +182,7 @@ export function SellInventoryItemCard({
     >
       <CardContent className="px-2.5 py-2">
         <div className="space-y-1.5">
-          <div className="relative">
+          <div className="sell-inventory-card-image-wrap">
             <SkinCardEasterEggBubble message={easterEggMessage} visible={easterEggVisible} />
             <SafeImg
               src={item.icon_url}
@@ -192,8 +192,8 @@ export function SellInventoryItemCard({
               fallbackIcon={<Package className="w-12 h-12 text-muted-foreground" />}
             />
             {badgeCfg && (
-              <div className="absolute top-0 right-0 z-[2]">
-                <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${badgeCfg.className}`}>
+              <div className="sell-inventory-card-skip-badge">
+                <span className={`text-xs px-1.5 py-0.5 rounded font-medium shadow-sm ${badgeCfg.className}`}>
                   {badgeCfg.label}
                 </span>
               </div>
@@ -277,7 +277,7 @@ export function SellInventoryItemCard({
               )}
             </div>
             {selectable && isSelected && (
-              <span className="block w-full rounded bg-primary px-1.5 py-0.5 text-center text-[10px] font-medium leading-tight text-white">
+              <span className="sell-inventory-selected-label block w-full rounded bg-primary px-1.5 py-0.5 text-center text-[10px] font-medium leading-tight text-white">
                 {labels.selected}
               </span>
             )}

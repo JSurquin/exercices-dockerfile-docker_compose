@@ -88,6 +88,7 @@
 
 .sell-inventory-grid > * {
   animation: sell-card-enter 0.38s ease-out both;
+  overflow: visible;
 }
 
 .sell-inventory-grid > :nth-child(1) {
@@ -157,13 +158,15 @@
 .sell-inventory-card:not(.sell-inventory-card--disabled) {
   position: relative;
   isolation: isolate;
+  overflow: visible;
 }
 
 .sell-inventory-card--interactive {
   transition:
-    transform 175ms ease-out,
-    border-color 175ms ease-out,
-    box-shadow 175ms ease-out;
+    transform 200ms ease-out,
+    border-color 200ms ease-out,
+    box-shadow 200ms ease-out,
+    background-color 200ms ease-out;
 }
 
 .sell-inventory-card--interactive:hover {
@@ -176,13 +179,65 @@
     0 0 16px color-mix(in srgb, var(--theme-accent) 28%, transparent);
 }
 
+.sell-inventory-card--interactive:active {
+  transform: translateY(-2px) scale(0.985);
+  transition-duration: 100ms;
+}
+
 .sell-inventory-card--selected {
   z-index: 5;
+  border-color: hsl(var(--primary) / 0.85);
+  box-shadow:
+    0 0 0 2px hsl(var(--primary) / 0.85),
+    0 0 14px hsl(var(--primary) / 0.28);
+  transition:
+    transform 220ms cubic-bezier(0.34, 1.2, 0.64, 1),
+    border-color 200ms ease-out,
+    box-shadow 220ms ease-out,
+    background-color 200ms ease-out;
+}
+
+.sell-inventory-card--selected.sell-inventory-card--interactive:hover {
+  box-shadow:
+    0 8px 20px -6px rgba(0, 0, 0, 0.18),
+    0 0 0 2px hsl(var(--primary) / 0.9),
+    0 0 18px hsl(var(--primary) / 0.35);
 }
 
 .sell-inventory-card [data-slot="card-content"] {
   position: relative;
   z-index: 2;
+  overflow: visible;
+}
+
+.sell-inventory-card-image-wrap {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+}
+
+.sell-inventory-card-skip-badge {
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  z-index: 30;
+  pointer-events: none;
+  animation: skin-card-tag-pop 150ms ease-out both;
+}
+
+.sell-inventory-selected-label {
+  animation: skin-card-tag-pop 150ms ease-out both;
+}
+
+@keyframes skin-card-tag-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .skin-card-easter-egg {
@@ -202,7 +257,7 @@
   pointer-events: none;
   transform: translateX(-50%) scale(0);
   transform-origin: bottom center;
-  animation: skin-card-easter-egg-pop 200ms ease-out forwards;
+  animation: skin-card-easter-egg-pop 150ms ease-out forwards;
   box-shadow:
     0 4px 14px rgba(0, 0, 0, 0.22),
     0 0 0 2px rgba(255, 255, 255, 0.18);
@@ -257,8 +312,18 @@
     transition: none;
   }
 
-  .sell-inventory-card--interactive:hover {
+  .sell-inventory-card--interactive:hover,
+  .sell-inventory-card--interactive:active {
     transform: none;
+  }
+
+  .sell-inventory-card--selected {
+    transition: none;
+  }
+
+  .sell-inventory-card-skip-badge,
+  .sell-inventory-selected-label {
+    animation: none;
   }
 
   .skin-card-easter-egg {
