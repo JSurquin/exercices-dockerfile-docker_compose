@@ -276,6 +276,7 @@ export function AdminStatsOverview() {
                       <AdminUserLink
                         userId={trade.userId}
                         name={trade.userName || `User #${trade.userId.slice(0, 8)}`}
+                        avatar={trade.userAvatar}
                         avatarSize="sm"
                       />
                     </TableCell>

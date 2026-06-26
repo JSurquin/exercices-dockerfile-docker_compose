@@ -54,6 +54,8 @@ export async function GET(request: NextRequest) {
               id: true,
               name: true,
               email: true,
+              steamAvatar: true,
+              image: true,
             },
           },
         },
@@ -70,6 +72,7 @@ export async function GET(request: NextRequest) {
       userId: trade.userId,
       userName: trade.user?.name || undefined,
       userEmail: trade.user?.email || undefined,
+      userAvatar: trade.user?.steamAvatar || trade.user?.image || null,
       status: mapTradeStatusFromDb(trade.status),
       brutCentimes: trade.grossCents,
       frais: {

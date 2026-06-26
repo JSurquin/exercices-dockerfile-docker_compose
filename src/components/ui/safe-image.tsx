@@ -102,6 +102,7 @@ export function SafeImg({
       src={src}
       alt={alt}
       className={className}
+      referrerPolicy="no-referrer"
       onError={() => {
         setError(true);
         onError?.();

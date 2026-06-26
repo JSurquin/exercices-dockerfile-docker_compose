@@ -327,6 +327,7 @@ export function AdminTradesTable() {
                   <AdminUserLink
                     userId={trade.userId}
                     name={trade.userName}
+                    avatar={trade.userAvatar}
                     email={trade.userEmail}
                     showEmail
                     showUserId
@@ -468,6 +469,7 @@ export function AdminTradesTable() {
                   <AdminUserLink
                     userId={detailTrade.userId}
                     name={detailTrade.userName}
+                    avatar={detailTrade.userAvatar}
                     email={detailTrade.userEmail}
                     showEmail
                     showUserId

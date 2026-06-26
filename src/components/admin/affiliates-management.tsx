@@ -161,6 +161,7 @@ export default function AffiliatesManagement() {
     userId: string;
     code: string;
     steamUsername: string | null;
+    steamAvatar: string | null;
     totalVolumeCents: number;
     activeReferrals: number;
     retentionRate: number;
@@ -523,6 +524,7 @@ export default function AffiliatesManagement() {
                         <AdminUserLink
                           userId={row.userId}
                           name={row.steamUsername || row.code}
+                          avatar={row.steamAvatar}
                           subtitle={row.code}
                           avatarSize="sm"
                         />

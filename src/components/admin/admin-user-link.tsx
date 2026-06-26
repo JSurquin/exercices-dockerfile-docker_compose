@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
+import { SafeImg } from '@/components/ui/safe-image';
 import { cn } from '@/lib/utils';
 
 type AdminUserLinkProps = {
@@ -30,6 +30,7 @@ export function AdminUserLink({
 }: AdminUserLinkProps) {
   const displayName = name || email || userId.slice(0, 8);
   const avatarClass = avatarSize === 'sm' ? 'h-7 w-7' : 'h-8 w-8';
+  const avatarSrc = avatar?.trim() || undefined;
 
   return (
     <Link
@@ -39,12 +40,13 @@ export function AdminUserLink({
         className,
       )}
     >
-      <Avatar className={cn(avatarClass, 'shrink-0')}>
-        <AvatarImage src={avatar ?? undefined} alt={displayName} />
-        <AvatarFallback className="bg-slate-600 text-slate-300">
-          <User className={avatarSize === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
-        </AvatarFallback>
-      </Avatar>
+      <SafeImg
+        src={avatarSrc}
+        alt={displayName}
+        className={cn(avatarClass, 'shrink-0 rounded-full object-cover')}
+        fallbackClassName={cn(avatarClass, 'shrink-0 rounded-full bg-slate-600 text-slate-300')}
+        fallbackIcon={<User className={avatarSize === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} />}
+      />
       <div className="min-w-0">
         <div className="font-medium text-white truncate group-hover:text-theme-highlight transition-colors">
           {displayName}
