@@ -200,7 +200,7 @@ export function Header() {
         {/* Actions Desktop */}
         <div className="hidden md:flex items-center justify-end gap-2">
           {/* Currency Selector */}
-          <CurrencySelector variant="chrome" size="sm" showFlag={true} menuClassName="nav-dropdown" />
+          <CurrencySelector variant="chrome" size="sm" showFlag={true} menuClassName="z-[210]" />
           
           {/* Stats Badge */}
           {/* <div className="hidden lg:flex items-center space-x-4 mr-4 px-3 py-1.5 bg-muted/50 rounded-lg border">
@@ -211,7 +211,7 @@ export function Header() {
             <div className="text-xs text-muted-foreground">€2.4M traded</div>
           </div> */}
 
-          <ThemeSelector menuClassName="nav-dropdown" />
+          <ThemeSelector menuClassName="z-[210]" />
 
           {/* Language Toggle */}
           <DropdownMenu>
@@ -224,7 +224,7 @@ export function Header() {
                 <LanguageIcon className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-[120px] nav-dropdown">
+            <DropdownMenuContent align="end" className="min-w-[120px] z-[210]">
               {locales.map((loc) => (
                 <DropdownMenuItem
                   key={loc}
@@ -516,14 +516,14 @@ export function Header() {
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       {messages.nav.themeLabel}
                     </p>
-                    <ThemeSelector menuClassName="nav-dropdown" />
+                    <ThemeSelector menuClassName="z-[210]" />
                   </div>
 
                   <div className="flex items-center justify-between px-3">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       {messages.ui.currency}
                     </p>
-                    <CurrencySelector variant="ghost" size="sm" showFlag={true} menuClassName="nav-dropdown" />
+                    <CurrencySelector variant="ghost" size="sm" showFlag={true} menuClassName="z-[210]" />
                   </div>
 
                   <DropdownMenu>
@@ -533,7 +533,7 @@ export function Header() {
                         {messages.nav.language} ({locale.toUpperCase()})
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="nav-dropdown">
+                    <DropdownMenuContent align="end" className="z-[210]">
                       {locales.map((loc) => (
                         <DropdownMenuItem
                           key={loc}
