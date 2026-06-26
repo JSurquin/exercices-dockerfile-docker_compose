@@ -1050,9 +1050,9 @@ export function SkinplaceInventoryViewer({
                   };
                   const badgeCfg = skipCategory ? skipBadgeConfig[skipCategory] : null;
                   
-                  const weaponType =
-                    item.type?.trim() || extractCs2WeaponType(item.market_name);
-                  const skinName = extractCs2SkinName(item.market_name);
+                  const marketHashName = item.market_hash_name || item.market_name;
+                  const weaponType = extractCs2WeaponType(marketHashName);
+                  const skinName = extractCs2SkinName(marketHashName);
 
                   return (
                     <Card
@@ -1105,7 +1105,7 @@ export function SkinplaceInventoryViewer({
                           <div className="min-w-0 space-y-0.5">
                             {weaponType && (
                               <p
-                                className="text-[10px] sm:text-xs uppercase tracking-wide font-medium leading-tight text-theme-accent/90 dark:text-theme-highlight/90 break-words"
+                                className="text-xs font-medium leading-tight text-muted-foreground break-words"
                                 title={weaponType}
                               >
                                 {weaponType}
