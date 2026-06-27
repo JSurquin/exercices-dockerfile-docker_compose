@@ -86,6 +86,16 @@
   }
 }
 
+.sell-inventory-grid {
+  padding-top: 3rem;
+  overflow: visible;
+}
+
+.sell-inventory-scroll-area {
+  overflow-y: auto;
+  overflow-x: clip;
+}
+
 .sell-inventory-grid > * {
   animation: sell-card-enter 0.38s ease-out both;
   overflow: visible;
@@ -155,10 +165,17 @@
   animation-delay: 800ms;
 }
 
-.sell-inventory-card:not(.sell-inventory-card--disabled) {
+.sell-inventory-card {
   position: relative;
-  isolation: isolate;
   overflow: visible;
+}
+
+.sell-inventory-card--disabled {
+  z-index: 2;
+}
+
+.sell-inventory-card:not(.sell-inventory-card--disabled) {
+  isolation: isolate;
 }
 
 .sell-inventory-card--interactive {
@@ -218,11 +235,19 @@
 
 .sell-inventory-card-skip-badge {
   position: absolute;
-  top: -4px;
-  right: -2px;
-  z-index: 30;
+  top: 6px;
+  right: 6px;
+  z-index: 40;
   pointer-events: none;
   animation: skin-card-tag-pop 150ms ease-out both;
+}
+
+.sell-inventory-card-skip-badge span {
+  display: inline-block;
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
 }
 
 .sell-inventory-selected-label {
@@ -244,8 +269,8 @@
   position: absolute;
   left: 50%;
   bottom: calc(100% + 8px);
-  z-index: 20;
-  max-width: min(168px, 92vw);
+  z-index: 35;
+  max-width: min(240px, calc(100vw - 2rem));
   padding: 6px 10px;
   border-radius: 12px;
   background: var(--theme-accent);
@@ -265,6 +290,11 @@
 
 .skin-card-easter-egg-text {
   display: block;
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .skin-card-easter-egg-tail {

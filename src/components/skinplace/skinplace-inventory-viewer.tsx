@@ -1016,8 +1016,8 @@ export function SkinplaceInventoryViewer({
       </Card>
 
       {/* Grille des items avec scroll */}
-      <Card className={isSellLayout ? 'rounded-t-none border-t-0 -mt-px shadow-sm py-0 gap-0' : undefined}>
-        <CardContent className={isSellLayout ? 'px-3 py-2' : 'p-6'}>
+      <Card className={isSellLayout ? 'rounded-t-none border-t-0 -mt-px shadow-sm py-0 gap-0 overflow-visible' : undefined}>
+        <CardContent className={isSellLayout ? 'px-3 py-2 overflow-visible' : 'p-6'}>
           {filteredItems.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               {searchTerm || selectedRarity || selectedExterior || statTrakOnly || purchasableOnly || priceMinUsd.trim() || priceMaxUsd.trim()
@@ -1025,9 +1025,9 @@ export function SkinplaceInventoryViewer({
                 : messages.components.skinplace.noTradableItems}
             </div>
           ) : (
-            <div className="relative">
-              <div className={`${isSellLayout ? 'inventory-container' : 'max-h-[600px]'} overflow-y-auto overflow-x-visible px-1 -mx-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent`}>
-                <div className={`grid pb-4 ${isSellLayout ? 'pt-2 mt-2 sell-inventory-grid' : 'mt-6'} ${
+            <div className="relative overflow-visible">
+              <div className={`${isSellLayout ? 'inventory-container sell-inventory-scroll-area' : 'max-h-[600px] overflow-y-auto'} px-1 -mx-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent`}>
+                <div className={`grid pb-4 ${isSellLayout ? 'sell-inventory-grid' : 'mt-6'} ${
                   isSellLayout
                     ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3'
                     : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3'
