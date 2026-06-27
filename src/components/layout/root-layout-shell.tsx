@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { CosmicBackground } from '@/components/ui/cosmic-background';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { LocaleProvider } from '@/components/providers/locale-provider';
+import type { Locale } from '@/lib/i18n';
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { CurrencyProvider } from '@/components/providers/currency-provider';
 import { QueryProvider } from '@/components/providers/query-provider';
@@ -29,9 +30,11 @@ const ChatWidget = dynamic(
 export function RootLayoutShell({
   children,
   initialPublicStats,
+  initialLocale,
 }: {
   children: React.ReactNode;
   initialPublicStats: PublicStats;
+  initialLocale: Locale;
 }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
@@ -45,7 +48,7 @@ export function RootLayoutShell({
       disableTransitionOnChange
       storageKey="moonskin-theme"
     >
-      <LocaleProvider>
+      <LocaleProvider initialLocale={initialLocale}>
         <CurrencyProvider>
           <QueryProvider>
             <PublicStatsProvider initialStats={initialPublicStats}>

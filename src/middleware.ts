@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  LOCALE_COOKIE,
+  isValidLocale,
+  resolveLocale,
+  shouldPersistLocaleCookie,
+} from '@/lib/locale-detection';
 
 const AFFILIATE_COOKIE = 'ctf_affiliate_ref';
 
@@ -15,56 +21,128 @@ function isBackgroundNavigation(request: NextRequest): boolean {
 
 function setAffiliateCookie(response: NextResponse, affiliateCode: string) {
   response.cookies.set(AFFILIATE_COOKIE, affiliateCode, {
-    maxAge: 30 * 24 * 60 * 60, // 30 jours
-    httpOnly: false, // Accessible côté client pour les analytics
+    maxAge: 30 * 24 * 60 * 60,
+    httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
   });
 }
 
+function setLocaleCookie(response: NextResponse, locale: string) {
+  response.cookies.set(LOCALE_COOKIE, locale, {
+    maxAge: 365 * 24 * 60 * 60,
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  });
+}
+
+function applyLocale(request: NextRequest, response: NextResponse) {
+  const urlLang = request.nextUrl.searchParams.get('lang');
+  const existingCookie = request.cookies.get(LOCALE_COOKIE)?.value;
+  const locale = resolveLocale({
+    cookieLocale: urlLang ? null : existingCookie,
+    urlLang,
+    acceptLanguage: request.headers.get('accept-language'),
+  });
+
+  if (shouldPersistLocaleCookie(existingCookie, urlLang)) {
+    setLocaleCookie(response, locale);
+  }
+
+  response.headers.set('x-moonskin-locale', locale);
+}
+
+function nextWithLocale(request: NextRequest, locale: string) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-moonskin-locale', locale);
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+}
+
+function resolveRequestLocale(request: NextRequest) {
+  const urlLang = request.nextUrl.searchParams.get('lang');
+  const existingCookie = request.cookies.get(LOCALE_COOKIE)?.value;
+
+  return resolveLocale({
+    cookieLocale: urlLang ? null : existingCookie,
+    urlLang,
+    acceptLanguage: request.headers.get('accept-language'),
+  });
+}
+
+function buildCleanUrl(request: NextRequest): {
+  cleanUrl: URL;
+  needsRedirect: boolean;
+} {
+  const cleanUrl = request.nextUrl.clone();
+  let changed = false;
+  const urlLang = request.nextUrl.searchParams.get('lang');
+
+  if (urlLang && isValidLocale(urlLang)) {
+    cleanUrl.searchParams.delete('lang');
+    changed = true;
+  }
+
+  if (cleanUrl.searchParams.has('ref')) {
+    cleanUrl.searchParams.delete('ref');
+    changed = true;
+  }
+
+  if (cleanUrl.searchParams.has('affiliate')) {
+    cleanUrl.searchParams.delete('affiliate');
+    changed = true;
+  }
+
+  return {
+    cleanUrl,
+    needsRedirect: changed && cleanUrl.toString() !== request.nextUrl.toString(),
+  };
+}
+
 export function middleware(request: NextRequest) {
   const refCode = request.nextUrl.searchParams.get('ref');
   const affiliateId = request.nextUrl.searchParams.get('affiliate');
   const affiliateCode = refCode || affiliateId;
+  const urlLang = request.nextUrl.searchParams.get('lang');
+  const locale = resolveRequestLocale(request);
+  const { cleanUrl, needsRedirect } = buildCleanUrl(request);
+  const shouldRedirectForLang = Boolean(urlLang && isValidLocale(urlLang));
 
-  if (!affiliateCode) {
-    return NextResponse.next();
-  }
-
-  const cleanUrl = request.nextUrl.clone();
-  cleanUrl.searchParams.delete('ref');
-  cleanUrl.searchParams.delete('affiliate');
-  const needsRedirect =
-    cleanUrl.searchParams.toString() !== request.nextUrl.searchParams.toString();
-
-  // Ne jamais rediriger les requêtes RSC/prefetch : cela provoque ERR_TOO_MANY_REDIRECTS
-  // et "Failed to fetch RSC payload" lors de la navigation client-side.
   if (isBackgroundNavigation(request)) {
-    const response = NextResponse.next();
-    setAffiliateCookie(response, affiliateCode);
+    const response = nextWithLocale(request, locale);
+    applyLocale(request, response);
+    if (affiliateCode) {
+      setAffiliateCookie(response, affiliateCode);
+    }
     return response;
   }
 
-  if (needsRedirect) {
+  if (needsRedirect && (affiliateCode || shouldRedirectForLang)) {
     const redirectResponse = NextResponse.redirect(cleanUrl, 307);
-    setAffiliateCookie(redirectResponse, affiliateCode);
+    applyLocale(request, redirectResponse);
+    if (affiliateCode) {
+      setAffiliateCookie(redirectResponse, affiliateCode);
+    }
     return redirectResponse;
   }
 
-  const response = NextResponse.next();
-  setAffiliateCookie(response, affiliateCode);
+  const response = nextWithLocale(request, locale);
+  applyLocale(request, response);
+  if (affiliateCode) {
+    setAffiliateCookie(response, affiliateCode);
+  }
   return response;
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api/ (API routes)
-     * - _next/ (Next.js internals, including RSC)
-     * - favicon.ico, icon, apple-icon (metadata static files)
-     */
     '/((?!api/|api$|_next/|_next$|favicon.ico|icon|apple-icon|health|monitoring).*)',
   ],
 };

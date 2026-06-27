@@ -1,7 +1,15 @@
 import { Inter, Poppins, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import type { Metadata } from 'next';
+import { cookies, headers } from 'next/headers';
 import { RootLayoutShell } from '@/components/layout/root-layout-shell';
 import { EMPTY_PUBLIC_STATS, getServerPublicStats } from '@/lib/get-public-stats';
+import type { Locale } from '@/lib/i18n';
+import {
+  LOCALE_COOKIE,
+  isValidLocale,
+  localeSiteMetadata,
+  localeToHtmlLang,
+} from '@/lib/locale-detection';
 
 export const revalidate = 300;
 import './globals.css';
@@ -32,28 +40,62 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: 'MoonSkin - Sell your CS2 skins easily',
-  description:
-    'The fastest and most secure platform to convert your Counter-Strike 2 skins into real money. SEPA and crypto payments available.',
-  keywords: ['CS2', 'Counter-Strike', 'skins', 'trading', 'cashout', 'SEPA', 'crypto'],
-  authors: [{ name: 'MoonSkin Team' }],
-  openGraph: {
-    title: 'MoonSkin - Sell your CS2 skins easily',
-    description:
-      'The fastest and most secure platform to convert your Counter-Strike 2 skins into real money.',
-    type: 'website',
-    url: 'https://moonskin.gg',
-    siteName: 'MoonSkin',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'MoonSkin - Sell your CS2 skins easily',
-    description:
-      'The fastest and most secure platform to convert your Counter-Strike 2 skins into real money.',
-    creator: '@moonskin',
-  },
-};
+const siteUrl = 'https://moonskin.gg';
+
+async function getRequestLocale(): Promise<Locale> {
+  const headerStore = await headers();
+  const headerLocale = headerStore.get('x-moonskin-locale');
+  if (isValidLocale(headerLocale)) {
+    return headerLocale;
+  }
+
+  const cookieStore = await cookies();
+  const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value;
+
+  if (isValidLocale(cookieLocale)) {
+    return cookieLocale;
+  }
+
+  return 'en';
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const localized = localeSiteMetadata[locale];
+
+  return {
+    title: localized.title,
+    description: localized.description,
+    keywords: ['CS2', 'Counter-Strike', 'skins', 'trading', 'cashout', 'SEPA', 'crypto'],
+    authors: [{ name: 'MoonSkin Team' }],
+    alternates: {
+      canonical: siteUrl,
+      languages: {
+        fr: `${siteUrl}/?lang=fr`,
+        en: `${siteUrl}/?lang=en`,
+        zh: `${siteUrl}/?lang=cn`,
+        'x-default': `${siteUrl}/?lang=en`,
+      },
+    },
+    openGraph: {
+      title: localized.title,
+      description: localized.description,
+      type: 'website',
+      url: siteUrl,
+      siteName: 'MoonSkin',
+      locale: localized.openGraphLocale,
+      alternateLocale: Object.values(localeSiteMetadata)
+        .map((entry) => entry.openGraphLocale)
+        .filter((entry) => entry !== localized.openGraphLocale),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: localized.title,
+      description: localized.description,
+      creator: '@moonskin',
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -67,14 +109,18 @@ export default async function RootLayout({
     // Keep zeroed fallback; client can still refetch /api/stats.
   }
 
+  const initialLocale = await getRequestLocale();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={localeToHtmlLang(initialLocale)} suppressHydrationWarning>
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen flex flex-col overflow-x-hidden${
           process.env.NODE_ENV === 'development' ? ' next-dev-overlay-present' : ''
         }`}
       >
-        <RootLayoutShell initialPublicStats={initialPublicStats}>{children}</RootLayoutShell>
+        <RootLayoutShell initialPublicStats={initialPublicStats} initialLocale={initialLocale}>
+          {children}
+        </RootLayoutShell>
       </body>
     </html>
   );

@@ -1,7 +1,13 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Locale, defaultLocale, locales, getMessages } from '@/lib/i18n';
+import { Locale, getMessages } from '@/lib/i18n';
+import {
+  LOCALE_STORAGE_KEY,
+  buildLocaleCookieValue,
+  isValidLocale,
+  localeToHtmlLang,
+} from '@/lib/locale-detection';
 import { Messages } from '~/utils/types';
 
 interface LocaleContextType {
@@ -12,45 +18,46 @@ interface LocaleContextType {
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
 
-const LOCALE_STORAGE_KEY = 'user-locale-preference';
+function persistLocalePreference(locale: Locale) {
+  if (typeof window === 'undefined') return;
 
-function detectBrowserLocale(): Locale {
-  if (typeof window === 'undefined') return defaultLocale;
-
-  const storedLocale = localStorage.getItem(LOCALE_STORAGE_KEY);
-  if (storedLocale && locales.includes(storedLocale as Locale)) {
-    return storedLocale as Locale;
-  }
-
-  const browserLang = navigator.language.toLowerCase();
-
-  if (browserLang.startsWith('fr')) return 'fr';
-  if (browserLang.startsWith('en')) return 'en';
-  if (browserLang.startsWith('zh') || browserLang.startsWith('cn')) return 'cn';
-
-  const primaryLang = browserLang.split('-')[0];
-  if (primaryLang === 'fr') return 'fr';
-  if (primaryLang === 'en') return 'en';
-  if (primaryLang === 'zh') return 'cn';
-
-  return defaultLocale;
+  localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  document.cookie = buildLocaleCookieValue(
+    locale,
+    window.location.protocol === 'https:'
+  );
 }
 
-export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() =>
-    typeof window !== 'undefined' ? detectBrowserLocale() : defaultLocale
-  );
+export function LocaleProvider({
+  children,
+  initialLocale,
+}: {
+  children: ReactNode;
+  initialLocale: Locale;
+}) {
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
   const messages = getMessages(locale);
 
   useEffect(() => {
-    setLocaleState(detectBrowserLocale());
-  }, []);
+    const storedLocale = localStorage.getItem(LOCALE_STORAGE_KEY);
+    if (isValidLocale(storedLocale)) {
+      if (storedLocale !== initialLocale) {
+        setLocaleState(storedLocale);
+      }
+      persistLocalePreference(storedLocale);
+      return;
+    }
+
+    persistLocalePreference(initialLocale);
+  }, [initialLocale]);
+
+  useEffect(() => {
+    document.documentElement.lang = localeToHtmlLang(locale);
+  }, [locale]);
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
-    }
+    persistLocalePreference(newLocale);
   };
 
   return (

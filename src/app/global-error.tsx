@@ -14,6 +14,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { defaultLocale, getMessages, locales, type Locale } from "@/lib/i18n";
+import { LOCALE_STORAGE_KEY, parseAcceptLanguage } from "@/lib/locale-detection";
 import "./globals.css";
 
 interface GlobalErrorProps {
@@ -24,17 +25,12 @@ interface GlobalErrorProps {
 function detectErrorLocale(): Locale {
   if (typeof window === "undefined") return defaultLocale;
 
-  const storedLocale = localStorage.getItem("user-locale-preference");
+  const storedLocale = localStorage.getItem(LOCALE_STORAGE_KEY);
   if (storedLocale && locales.includes(storedLocale as Locale)) {
     return storedLocale as Locale;
   }
 
-  const browserLang = navigator.language.toLowerCase();
-  if (browserLang.startsWith("fr")) return "fr";
-  if (browserLang.startsWith("en")) return "en";
-  if (browserLang.startsWith("zh") || browserLang.startsWith("cn")) return "cn";
-
-  return defaultLocale;
+  return parseAcceptLanguage(navigator.language);
 }
 
 function detectThemeClass(): string {
