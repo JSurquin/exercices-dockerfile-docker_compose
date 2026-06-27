@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -76,14 +77,66 @@ interface SellInventoryItemCardProps {
   };
 }
 
-function SkinCardEasterEggBubble({ message, visible }: { message: string | null; visible: boolean }) {
-  if (!visible || !message) return null;
+function SkinCardEasterEggBubble({
+  message,
+  visible,
+  anchorRef,
+}: {
+  message: string | null;
+  visible: boolean;
+  anchorRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const [mounted, setMounted] = useState(false);
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
 
-  return (
-    <div className="skin-card-easter-egg" role="tooltip" aria-hidden="true">
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!visible || !message) {
+      setPosition(null);
+      return;
+    }
+
+    const updatePosition = () => {
+      const anchor = anchorRef.current;
+      if (!anchor) return;
+
+      const rect = anchor.getBoundingClientRect();
+      setPosition({
+        top: rect.top - 8,
+        left: rect.left + rect.width / 2,
+      });
+    };
+
+    updatePosition();
+
+    const scrollArea = anchorRef.current?.closest('.sell-inventory-scroll-area');
+    scrollArea?.addEventListener('scroll', updatePosition, { passive: true });
+    window.addEventListener('scroll', updatePosition, { passive: true });
+    window.addEventListener('resize', updatePosition);
+
+    return () => {
+      scrollArea?.removeEventListener('scroll', updatePosition);
+      window.removeEventListener('scroll', updatePosition);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [anchorRef, message, visible]);
+
+  if (!mounted || !visible || !message || !position) return null;
+
+  return createPortal(
+    <div
+      className="skin-card-easter-egg skin-card-easter-egg--portaled"
+      style={{ top: position.top, left: position.left }}
+      role="tooltip"
+      aria-hidden="true"
+    >
       <span className="skin-card-easter-egg-text">{message}</span>
       <div className="skin-card-easter-egg-tail" aria-hidden="true" />
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -109,6 +162,7 @@ export function SellInventoryItemCard({
   const [easterEggMessage, setEasterEggMessage] = useState<string | null>(null);
   const [easterEggVisible, setEasterEggVisible] = useState(false);
   const easterEggTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const easterEggAnchorRef = useRef<HTMLDivElement>(null);
 
   const clearEasterEggTimers = useCallback(() => {
     easterEggTimersRef.current.forEach(clearTimeout);
@@ -182,8 +236,12 @@ export function SellInventoryItemCard({
     >
       <CardContent className="px-2.5 py-2">
         <div className="space-y-1.5">
-          <div className="sell-inventory-card-image-wrap">
-            <SkinCardEasterEggBubble message={easterEggMessage} visible={easterEggVisible} />
+          <div ref={easterEggAnchorRef} className="sell-inventory-card-image-wrap">
+            <SkinCardEasterEggBubble
+              message={easterEggMessage}
+              visible={easterEggVisible}
+              anchorRef={easterEggAnchorRef}
+            />
             <SafeImg
               src={item.icon_url}
               alt={item.name}

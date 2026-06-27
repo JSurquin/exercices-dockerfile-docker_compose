@@ -288,6 +288,29 @@
     0 0 0 2px rgba(255, 255, 255, 0.18);
 }
 
+.skin-card-easter-egg--portaled {
+  position: fixed;
+  bottom: auto;
+  z-index: 99995;
+  transform: translate(-50%, -100%) scale(0);
+  transform-origin: bottom center;
+}
+
+.skin-card-easter-egg--portaled.skin-card-easter-egg {
+  animation: skin-card-easter-egg-pop-portaled 150ms ease-out forwards;
+}
+
+@keyframes skin-card-easter-egg-pop-portaled {
+  from {
+    transform: translate(-50%, -100%) scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -100%) scale(1);
+    opacity: 1;
+  }
+}
+
 .skin-card-easter-egg-text {
   display: block;
   max-width: none;
@@ -359,6 +382,12 @@
   .skin-card-easter-egg {
     animation: none;
     transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+
+  .skin-card-easter-egg--portaled.skin-card-easter-egg {
+    animation: none;
+    transform: translate(-50%, -100%) scale(1);
     opacity: 1;
   }
 
