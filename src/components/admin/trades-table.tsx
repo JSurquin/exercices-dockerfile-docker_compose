@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ConvertedPrice } from '@/components/ui/converted-price';
-import { TradeItemsGallery } from '@/components/trade/trade-items-gallery';
+import { AdminTradeItemsGrid } from '@/components/admin/admin-trade-items-grid';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Search, 
@@ -450,22 +450,23 @@ export function AdminTradesTable() {
       )}
 
       <Dialog open={detailTrade !== null} onOpenChange={(open) => !open && setDetailTrade(null)}>
-        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-slate-700 bg-slate-900 text-slate-100">
+        <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col gap-0 overflow-hidden border-slate-700 bg-slate-900 p-0 text-slate-100 sm:max-w-4xl">
           {detailTrade && (
             <>
-              <DialogHeader>
-                <DialogTitle className="text-white">Trade {detailTrade.ticketId}</DialogTitle>
-                <DialogDescription className="text-slate-400">
-                  {t.detailDescAmounts}
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-4 pt-2">
-                <div className="flex flex-wrap items-center gap-2">
+              <DialogHeader className="space-y-0 border-b border-slate-700 px-6 py-5 pr-14 text-left">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 space-y-1">
+                    <DialogTitle className="font-mono text-lg text-white">
+                      {detailTrade.ticketId}
+                    </DialogTitle>
+                    <DialogDescription className="text-xs text-slate-500">
+                      {t.detailDescAmounts}
+                    </DialogDescription>
+                  </div>
                   {getStatusBadge(detailTrade.status)}
                 </div>
 
-                <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4 text-sm">
+                <div className="mt-4 rounded-lg border border-slate-700/80 bg-slate-800/50 p-3">
                   <AdminUserLink
                     userId={detailTrade.userId}
                     name={detailTrade.userName}
@@ -476,9 +477,9 @@ export function AdminTradesTable() {
                   />
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-3">
-                    <p className="text-xs text-slate-400">{t.labelNet}</p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2.5">
+                    <p className="text-[11px] uppercase tracking-wide text-blue-300/80">{t.labelNet}</p>
                     <p className="text-lg font-semibold text-white">
                       <ConvertedPrice
                         usdCents={detailTrade.netCentimes}
@@ -487,9 +488,9 @@ export function AdminTradesTable() {
                       />
                     </p>
                   </div>
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-3">
-                    <p className="text-xs text-slate-400">{t.labelGross}</p>
-                    <p className="text-lg font-semibold text-white">
+                  <div className="rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-2.5">
+                    <p className="text-[11px] uppercase tracking-wide text-slate-500">{t.labelGross}</p>
+                    <p className="text-base font-semibold text-slate-200">
                       <ConvertedPrice
                         usdCents={detailTrade.brutCentimes}
                         fromCurrency="USD"
@@ -497,9 +498,27 @@ export function AdminTradesTable() {
                       />
                     </p>
                   </div>
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-3 sm:col-span-2">
-                    <p className="text-xs text-slate-400">{t.labelFees}</p>
-                    <p className="text-sm text-slate-200">
+                  <div className="rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-2.5">
+                    <p className="text-[11px] uppercase tracking-wide text-slate-500">{t.labelItemsCount}</p>
+                    <p className="text-base font-semibold text-white">
+                      {detailTrade.items.length} item{detailTrade.items.length > 1 ? 's' : ''}
+                    </p>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 py-5">
+                <div>
+                  <p className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                    {t.labelItemsCount} ({detailTrade.items.length})
+                  </p>
+                  <AdminTradeItemsGrid items={detailTrade.items} />
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-lg border border-slate-700 bg-slate-800/30 p-3">
+                    <p className="text-xs text-slate-500">{t.labelFees}</p>
+                    <p className="mt-1 text-sm text-slate-200">
                       {t.labelCashout} :{' '}
                       <ConvertedPrice
                         usdCents={detailTrade.frais.cashout}
@@ -519,32 +538,24 @@ export function AdminTradesTable() {
                       )}
                     </p>
                   </div>
-                </div>
-
-                <div className="space-y-1 text-sm text-slate-300">
-                  <p>
-                    <span className="text-slate-500">{t.labelCreatedAt} :</span>{' '}
-                    {formatDate(detailTrade.créédLe)}
-                  </p>
-                  {detailTrade.tradeAcceptéLe && (
+                  <div className="rounded-lg border border-slate-700 bg-slate-800/30 p-3 text-sm text-slate-300">
                     <p>
-                      <span className="text-slate-500">{t.labelAcceptedAt} :</span>{' '}
-                      {formatDate(detailTrade.tradeAcceptéLe)}
+                      <span className="text-slate-500">{t.labelCreatedAt} :</span>{' '}
+                      {formatDate(detailTrade.créédLe)}
                     </p>
-                  )}
-                  {detailTrade.disponibleLe && (
-                    <p>
-                      <span className="text-slate-500">{t.labelAvailableAt} :</span>{' '}
-                      {formatDate(detailTrade.disponibleLe)}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-                    {t.labelItemsCount} ({detailTrade.items.length})
-                  </p>
-                  <TradeItemsGallery items={detailTrade.items} />
+                    {detailTrade.tradeAcceptéLe && (
+                      <p className="mt-1">
+                        <span className="text-slate-500">{t.labelAcceptedAt} :</span>{' '}
+                        {formatDate(detailTrade.tradeAcceptéLe)}
+                      </p>
+                    )}
+                    {detailTrade.disponibleLe && (
+                      <p className="mt-1">
+                        <span className="text-slate-500">{t.labelAvailableAt} :</span>{' '}
+                        {formatDate(detailTrade.disponibleLe)}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </>
