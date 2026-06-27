@@ -35,6 +35,8 @@ import { Trade, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
 import { queryKeys } from '@/lib/query-keys';
 import { AdminUserLink } from '@/components/admin/admin-user-link';
+import { adminDialogContent, adminDialogStatTile } from '@/lib/admin-ui';
+import { cn } from '@/lib/utils';
 
 // Statuts pour lesquels le polling Skinplace a du sens
 const SYNCABLE_STATUSES = ['créé', 'accepté_par_bot', 'en_trade_hold', 'disponible'];
@@ -450,23 +452,28 @@ export function AdminTradesTable() {
       )}
 
       <Dialog open={detailTrade !== null} onOpenChange={(open) => !open && setDetailTrade(null)}>
-        <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col gap-0 overflow-hidden border-slate-700 bg-slate-900 p-0 text-slate-100 sm:max-w-4xl">
+        <DialogContent
+          className={cn(
+            adminDialogContent,
+            'flex max-h-[90vh] max-w-4xl flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl'
+          )}
+        >
           {detailTrade && (
             <>
-              <DialogHeader className="space-y-0 border-b border-slate-700 px-6 py-5 pr-14 text-left">
+              <DialogHeader className="shrink-0 space-y-0 border-b border-border/40 px-6 py-5 pr-14 text-left">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 space-y-1">
-                    <DialogTitle className="font-mono text-lg text-white">
+                    <DialogTitle className="font-mono text-lg">
                       {detailTrade.ticketId}
                     </DialogTitle>
-                    <DialogDescription className="text-xs text-slate-500">
+                    <DialogDescription className="text-xs">
                       {t.detailDescAmounts}
                     </DialogDescription>
                   </div>
                   {getStatusBadge(detailTrade.status)}
                 </div>
 
-                <div className="mt-4 rounded-lg border border-slate-700/80 bg-slate-800/50 p-3">
+                <div className={cn(adminDialogStatTile, 'mt-4 p-3 text-left')}>
                   <AdminUserLink
                     userId={detailTrade.userId}
                     name={detailTrade.userName}
@@ -478,9 +485,11 @@ export function AdminTradesTable() {
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2.5">
-                    <p className="text-[11px] uppercase tracking-wide text-blue-300/80">{t.labelNet}</p>
-                    <p className="text-lg font-semibold text-white">
+                  <div className={cn(adminDialogStatTile, 'px-3 py-2.5 text-left')}>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-theme-accent">
+                      {t.labelNet}
+                    </p>
+                    <p className="text-lg font-semibold text-foreground">
                       <ConvertedPrice
                         usdCents={detailTrade.netCentimes}
                         fromCurrency="USD"
@@ -488,9 +497,11 @@ export function AdminTradesTable() {
                       />
                     </p>
                   </div>
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-2.5">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-500">{t.labelGross}</p>
-                    <p className="text-base font-semibold text-slate-200">
+                  <div className={cn(adminDialogStatTile, 'px-3 py-2.5 text-left')}>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t.labelGross}
+                    </p>
+                    <p className="text-base font-semibold text-foreground">
                       <ConvertedPrice
                         usdCents={detailTrade.brutCentimes}
                         fromCurrency="USD"
@@ -498,27 +509,29 @@ export function AdminTradesTable() {
                       />
                     </p>
                   </div>
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-2.5">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-500">{t.labelItemsCount}</p>
-                    <p className="text-base font-semibold text-white">
+                  <div className={cn(adminDialogStatTile, 'px-3 py-2.5 text-left')}>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t.labelItemsCount}
+                    </p>
+                    <p className="text-base font-semibold text-foreground">
                       {detailTrade.items.length} item{detailTrade.items.length > 1 ? 's' : ''}
                     </p>
                   </div>
                 </div>
               </DialogHeader>
 
-              <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 py-5">
+              <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-y-contain px-6 py-5 scrollbar-thin">
                 <div>
-                  <p className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {t.labelItemsCount} ({detailTrade.items.length})
                   </p>
                   <AdminTradeItemsGrid items={detailTrade.items} />
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/30 p-3">
-                    <p className="text-xs text-slate-500">{t.labelFees}</p>
-                    <p className="mt-1 text-sm text-slate-200">
+                  <div className={cn(adminDialogStatTile, 'p-3 text-left')}>
+                    <p className="text-xs text-muted-foreground">{t.labelFees}</p>
+                    <p className="mt-1 text-sm text-foreground">
                       {t.labelCashout} :{' '}
                       <ConvertedPrice
                         usdCents={detailTrade.frais.cashout}
@@ -534,24 +547,24 @@ export function AdminTradesTable() {
                           showOriginal
                         />
                       ) : (
-                        <span className="text-slate-400">{t.labelAtWithdrawal}</span>
+                        <span className="text-muted-foreground">{t.labelAtWithdrawal}</span>
                       )}
                     </p>
                   </div>
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/30 p-3 text-sm text-slate-300">
+                  <div className={cn(adminDialogStatTile, 'p-3 text-left text-sm text-foreground')}>
                     <p>
-                      <span className="text-slate-500">{t.labelCreatedAt} :</span>{' '}
+                      <span className="text-muted-foreground">{t.labelCreatedAt} :</span>{' '}
                       {formatDate(detailTrade.créédLe)}
                     </p>
                     {detailTrade.tradeAcceptéLe && (
                       <p className="mt-1">
-                        <span className="text-slate-500">{t.labelAcceptedAt} :</span>{' '}
+                        <span className="text-muted-foreground">{t.labelAcceptedAt} :</span>{' '}
                         {formatDate(detailTrade.tradeAcceptéLe)}
                       </p>
                     )}
                     {detailTrade.disponibleLe && (
                       <p className="mt-1">
-                        <span className="text-slate-500">{t.labelAvailableAt} :</span>{' '}
+                        <span className="text-muted-foreground">{t.labelAvailableAt} :</span>{' '}
                         {formatDate(detailTrade.disponibleLe)}
                       </p>
                     )}

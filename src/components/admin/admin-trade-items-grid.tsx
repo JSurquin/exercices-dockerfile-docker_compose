@@ -2,9 +2,13 @@
 
 import { SafeImage } from '@/components/ui/safe-image';
 import { Badge } from '@/components/ui/badge';
-import { ConvertedPrice } from '@/components/ui/converted-price';
 import { Package } from 'lucide-react';
 import { TradeItem } from '@/lib/types';
+import { currencyConverter } from '@/lib/currency-converter';
+import { useCurrency } from '@/components/providers/currency-provider';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
+import { useMemo } from 'react';
 
 interface AdminTradeItemsGridProps {
   items: TradeItem[];
@@ -23,78 +27,97 @@ const rarityColors: Record<string, string> = {
 
 function rarityBorder(rarity: string) {
   const key = rarity?.toLowerCase().replace(/ /g, '_');
-  return rarityColors[key] ?? 'border-slate-500';
+  return rarityColors[key] ?? 'border-border/50';
+}
+
+function useItemPriceFormatter() {
+  const { selectedCurrency } = useCurrency();
+
+  const { data: usdToSelectedRate } = useQuery({
+    queryKey: [...queryKeys.currencyRate, selectedCurrency],
+    queryFn: async () => {
+      if (selectedCurrency === 'USD') return 1;
+      return currencyConverter.getExchangeRate('USD', selectedCurrency);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  return useMemo(() => {
+    return (usdCents: number) => {
+      const usdLabel = currencyConverter.formatUsdPrice(usdCents);
+      if (selectedCurrency === 'USD' || usdToSelectedRate == null) {
+        return usdLabel;
+      }
+      const convertedCents = Math.round(usdCents * usdToSelectedRate);
+      const convertedLabel = currencyConverter.formatPrice(convertedCents, selectedCurrency);
+      return `${convertedLabel} (${usdLabel})`;
+    };
+  }, [selectedCurrency, usdToSelectedRate]);
 }
 
 export function AdminTradeItemsGrid({ items }: AdminTradeItemsGridProps) {
+  const formatItemPrice = useItemPriceFormatter();
+
   if (!items.length) {
     return (
-      <p className="rounded-lg border border-dashed border-slate-700 bg-slate-800/30 px-4 py-8 text-center text-sm text-slate-400">
+      <p className="admin-dialog-stat rounded-lg border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
         Aucun item
       </p>
     );
   }
 
   return (
-    <div className="max-h-[min(50vh,28rem)] overflow-y-auto rounded-lg border border-slate-700 bg-slate-950/40 p-3">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {items.map((item) => (
-          <div
-            key={item.id}
-            className={`flex flex-col overflow-hidden rounded-lg border-2 ${rarityBorder(item.rarity)} bg-slate-900/70`}
-          >
-            <div className="relative flex aspect-square items-center justify-center bg-slate-950/50 p-2">
-              <SafeImage
-                src={item.iconUrl}
-                alt={item.name}
-                width={96}
-                height={96}
-                className="h-full w-full object-contain"
-                fallbackIcon={<Package className="h-10 w-10 text-slate-600" />}
-                unoptimized
-              />
-              {item.statTrak && (
-                <span className="absolute left-1.5 top-1.5 rounded bg-black/75 px-1 text-[10px] font-bold leading-tight text-yellow-400">
-                  ST
-                </span>
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
+      {items.map((item) => (
+        <div
+          key={item.id}
+          className={`flex flex-col overflow-hidden rounded-md border bg-background/20 ${rarityBorder(item.rarity)}`}
+        >
+          <div className="relative flex h-12 items-center justify-center bg-background/30 p-1 sm:h-14">
+            <SafeImage
+              src={item.iconUrl}
+              alt={item.name}
+              width={48}
+              height={48}
+              className="h-10 w-10 object-contain sm:h-11 sm:w-11"
+              fallbackIcon={<Package className="h-6 w-6 text-muted-foreground/50" />}
+              unoptimized
+            />
+            {item.statTrak && (
+              <span className="absolute left-1 top-1 rounded bg-black/75 px-0.5 text-[8px] font-bold leading-tight text-yellow-400">
+                ST
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-1 flex-col gap-1 p-1.5">
+            <p
+              className="line-clamp-2 text-[10px] font-medium leading-tight text-foreground"
+              title={item.name}
+            >
+              {item.name}
+            </p>
+
+            <div className="flex flex-wrap gap-0.5">
+              {item.exterior && (
+                <Badge
+                  variant="outline"
+                  className="admin-panel-field px-1 py-0 text-[9px] leading-tight text-muted-foreground"
+                >
+                  {item.exterior}
+                </Badge>
               )}
             </div>
 
-            <div className="flex flex-1 flex-col gap-1.5 p-2.5">
-              <p className="line-clamp-2 text-xs font-medium leading-snug text-white" title={item.name}>
-                {item.name}
-              </p>
-
-              <div className="flex flex-wrap gap-1">
-                {item.exterior && (
-                  <Badge
-                    variant="outline"
-                    className="border-slate-600 px-1.5 py-0 text-[10px] text-slate-300"
-                  >
-                    {item.exterior}
-                  </Badge>
-                )}
-                {item.rarity && (
-                  <Badge
-                    variant="outline"
-                    className={`px-1.5 py-0 text-[10px] capitalize text-slate-400 ${rarityBorder(item.rarity)}`}
-                  >
-                    {item.rarity.replace(/_/g, ' ')}
-                  </Badge>
-                )}
-              </div>
-
-              <p className="mt-auto text-sm font-semibold text-blue-400">
-                <ConvertedPrice
-                  usdCents={item.prixCentimes}
-                  fromCurrency="USD"
-                  showOriginal
-                />
-              </p>
-            </div>
+            <p
+              className="mt-auto truncate text-[10px] font-semibold tabular-nums text-theme-accent sm:text-[11px]"
+              title={formatItemPrice(item.prixCentimes)}
+            >
+              {formatItemPrice(item.prixCentimes)}
+            </p>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }
