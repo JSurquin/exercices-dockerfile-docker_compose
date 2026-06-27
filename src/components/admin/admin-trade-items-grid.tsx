@@ -2,13 +2,9 @@
 
 import { SafeImage } from '@/components/ui/safe-image';
 import { Badge } from '@/components/ui/badge';
+import { ConvertedPrice } from '@/components/ui/converted-price';
 import { Package } from 'lucide-react';
 import { TradeItem } from '@/lib/types';
-import { currencyConverter } from '@/lib/currency-converter';
-import { useCurrency } from '@/components/providers/currency-provider';
-import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/query-keys';
-import { useMemo } from 'react';
 
 interface AdminTradeItemsGridProps {
   items: TradeItem[];
@@ -30,34 +26,7 @@ function rarityBorder(rarity: string) {
   return rarityColors[key] ?? 'border-border/50';
 }
 
-function useItemPriceFormatter() {
-  const { selectedCurrency } = useCurrency();
-
-  const { data: usdToSelectedRate } = useQuery({
-    queryKey: [...queryKeys.currencyRate, selectedCurrency],
-    queryFn: async () => {
-      if (selectedCurrency === 'USD') return 1;
-      return currencyConverter.getExchangeRate('USD', selectedCurrency);
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
-  return useMemo(() => {
-    return (usdCents: number) => {
-      const usdLabel = currencyConverter.formatUsdPrice(usdCents);
-      if (selectedCurrency === 'USD' || usdToSelectedRate == null) {
-        return usdLabel;
-      }
-      const convertedCents = Math.round(usdCents * usdToSelectedRate);
-      const convertedLabel = currencyConverter.formatPrice(convertedCents, selectedCurrency);
-      return `${convertedLabel} (${usdLabel})`;
-    };
-  }, [selectedCurrency, usdToSelectedRate]);
-}
-
 export function AdminTradeItemsGrid({ items }: AdminTradeItemsGridProps) {
-  const formatItemPrice = useItemPriceFormatter();
-
   if (!items.length) {
     return (
       <p className="admin-dialog-stat rounded-lg border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
@@ -67,53 +36,52 @@ export function AdminTradeItemsGrid({ items }: AdminTradeItemsGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
+    <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
       {items.map((item) => (
         <div
           key={item.id}
-          className={`flex flex-col overflow-hidden rounded-md border bg-background/20 ${rarityBorder(item.rarity)}`}
+          className={`admin-dialog-stat flex flex-col overflow-hidden rounded-md border p-0 ${rarityBorder(item.rarity)}`}
         >
-          <div className="relative flex h-12 items-center justify-center bg-background/30 p-1 sm:h-14">
+          <div className="relative flex h-10 items-center justify-center bg-background/30 p-0.5">
             <SafeImage
               src={item.iconUrl}
               alt={item.name}
-              width={48}
-              height={48}
-              className="h-10 w-10 object-contain sm:h-11 sm:w-11"
-              fallbackIcon={<Package className="h-6 w-6 text-muted-foreground/50" />}
+              width={36}
+              height={36}
+              className="h-8 w-8 object-contain"
+              fallbackIcon={<Package className="h-4 w-4 text-muted-foreground/50" />}
               unoptimized
             />
             {item.statTrak && (
-              <span className="absolute left-1 top-1 rounded bg-black/75 px-0.5 text-[8px] font-bold leading-tight text-yellow-400">
+              <span className="absolute left-0.5 top-0.5 rounded bg-black/75 px-0.5 text-[7px] font-bold leading-tight text-yellow-400">
                 ST
               </span>
             )}
           </div>
 
-          <div className="flex flex-1 flex-col gap-1 p-1.5">
+          <div className="flex flex-1 flex-col gap-0.5 px-1 pb-1 pt-0.5">
             <p
-              className="line-clamp-2 text-[10px] font-medium leading-tight text-foreground"
+              className="line-clamp-2 text-[9px] font-medium leading-tight text-foreground"
               title={item.name}
             >
               {item.name}
             </p>
 
-            <div className="flex flex-wrap gap-0.5">
-              {item.exterior && (
-                <Badge
-                  variant="outline"
-                  className="admin-panel-field px-1 py-0 text-[9px] leading-tight text-muted-foreground"
-                >
-                  {item.exterior}
-                </Badge>
-              )}
-            </div>
+            {item.exterior && (
+              <Badge
+                variant="outline"
+                className="admin-panel-field w-fit px-1 py-0 text-[8px] leading-tight text-muted-foreground"
+              >
+                {item.exterior}
+              </Badge>
+            )}
 
-            <p
-              className="mt-auto truncate text-[10px] font-semibold tabular-nums text-theme-accent sm:text-[11px]"
-              title={formatItemPrice(item.prixCentimes)}
-            >
-              {formatItemPrice(item.prixCentimes)}
+            <p className="mt-auto truncate text-[9px] font-semibold tabular-nums text-theme-accent">
+              <ConvertedPrice
+                usdCents={item.prixCentimes}
+                fromCurrency="USD"
+                showOriginal
+              />
             </p>
           </div>
         </div>

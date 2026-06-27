@@ -295,3 +295,13 @@
   border-color: rgba(200, 205, 220, 0.12);
   color: #e0e0e0;
 }
+
+/* Bloque le scroll du main admin quand un dialog Radix est ouvert (évite scroll chaining) */
+body[data-scroll-locked] .admin-shell main {
+  overflow: hidden !important;
+}
+
+.admin-dialog-scroll {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}

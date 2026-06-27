@@ -66,6 +66,10 @@ export const panelGlassField =
 export const adminDialogContent =
   'admin-dialog max-h-[90vh] w-full max-w-[calc(100%-2rem)] overflow-y-auto sm:max-w-3xl';
 
+/** Dialog avec en-tête fixe + zone scrollable interne (évite double scroll) */
+export const adminDialogContentFixed =
+  'admin-dialog flex max-h-[90vh] w-full max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl';
+
 export const adminDialogContentSm =
   'admin-dialog max-w-md';
 

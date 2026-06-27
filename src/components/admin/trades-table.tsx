@@ -35,7 +35,7 @@ import { Trade, AdminFilters } from '@/lib/types';
 import { useLocale } from '@/components/providers/locale-provider';
 import { queryKeys } from '@/lib/query-keys';
 import { AdminUserLink } from '@/components/admin/admin-user-link';
-import { adminDialogContent, adminDialogStatTile } from '@/lib/admin-ui';
+import { adminDialogContentFixed, adminDialogStatTile } from '@/lib/admin-ui';
 import { cn } from '@/lib/utils';
 
 // Statuts pour lesquels le polling Skinplace a du sens
@@ -453,10 +453,7 @@ export function AdminTradesTable() {
 
       <Dialog open={detailTrade !== null} onOpenChange={(open) => !open && setDetailTrade(null)}>
         <DialogContent
-          className={cn(
-            adminDialogContent,
-            'flex max-h-[90vh] max-w-4xl flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl'
-          )}
+          className={cn(adminDialogContentFixed, 'sm:max-w-4xl')}
         >
           {detailTrade && (
             <>
@@ -520,7 +517,16 @@ export function AdminTradesTable() {
                 </div>
               </DialogHeader>
 
-              <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-y-contain px-6 py-5 scrollbar-thin">
+              <div
+                className="admin-dialog-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 py-5 scrollbar-thin"
+                onWheel={(e) => {
+                  const el = e.currentTarget;
+                  const atTop = el.scrollTop <= 0 && e.deltaY < 0;
+                  const atBottom =
+                    el.scrollTop + el.clientHeight >= el.scrollHeight - 1 && e.deltaY > 0;
+                  if (atTop || atBottom) e.stopPropagation();
+                }}
+              >
                 <div>
                   <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {t.labelItemsCount} ({detailTrade.items.length})
