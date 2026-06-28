@@ -30,6 +30,7 @@ import {
   adminTableHead,
   adminTableRow,
 } from '@/lib/admin-ui';
+import { getTradeStatusLabel } from '@/lib/trade-status-display';
 import { cn } from '@/lib/utils';
 import { AdminUserLink } from '@/components/admin/admin-user-link';
 
@@ -289,7 +290,7 @@ export function AdminStatsOverview() {
                     </TableCell>
                     <TableCell className={adminTableCell}>
                       <Badge variant="outline" className={getStatusBadgeClass(trade.status)}>
-                        {trade.status}
+                        {getTradeStatusLabel(trade.status, messages)}
                       </Badge>
                     </TableCell>
                     <TableCell className={cn(adminTableCell, 'text-muted-foreground text-sm')}>

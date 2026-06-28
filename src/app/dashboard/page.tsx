@@ -66,6 +66,8 @@ import { LevelHelpPopover } from "@/components/ui/level-help-popover";
 import { LevelBadge, FragmentBadge } from "@/components/ui/level-badge";
 import { LevelProgressBar } from "@/components/ui/level-progress-bar";
 
+import { getTradeStatusLabel } from "@/lib/trade-status-display";
+
 const formatPrice = (centimes: number) => {
   return (centimes / 100).toFixed(2) + "€";
 };
@@ -89,25 +91,13 @@ const getStatusBadgeClass = (status: string) => {
     paiement_en_cours: `${glass} bg-theme-stat/10 text-theme-stat border-theme-stat/25`,
     payé: `${glass} bg-theme-success/12 text-theme-success border-theme-success/30`,
     échoué: `${glass} bg-red-500/10 text-red-700 dark:text-red-300/90 border-red-500/20`,
+    annulé: `${glass} bg-muted/40 text-muted-foreground border-border/60`,
   };
   return colors[status] || `${glass} bg-muted/40 text-muted-foreground border-border/60`;
 };
 
 const getStatusText = (status: string, messages: Messages) => {
-  // Mapper les statuts Prisma vers les clés de traduction
-  const statusKeyMap: Record<string, string> = {
-    CREATED: "créé",
-    ACCEPTED_BY_BOT: "accepté_par_bot",
-    IN_TRADE_HOLD: "en_trade_hold",
-    AVAILABLE: "disponible",
-    PAYOUT_PENDING: "paiement_en_cours",
-    PAID: "payé",
-    FAILED: "échoué",
-    CANCELLED: "annulé",
-  };
-  
-  const statusKey = statusKeyMap[status] || status;
-  return messages.trade.status[statusKey as keyof typeof messages.trade.status] || status;
+  return getTradeStatusLabel(status, messages);
 };
 
 type DashboardPayoutApi = {

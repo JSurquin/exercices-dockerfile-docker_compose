@@ -310,7 +310,7 @@ export const messages: Record<Locale, Messages> = {
       },
       status: {
         créé: "Créé",
-        accepté_par_bot: "Accepté",
+        accepté_par_bot: "Offre envoyée",
         en_trade_hold: "Trade Hold (7j)",
         disponible: "Prêt à payer",
         paiement_en_cours: "Paiement en cours",
@@ -6099,9 +6099,10 @@ export const messages: Record<Locale, Messages> = {
       admin: {
         trades: {
           created: "Créé",
-          accepted: "Accepté",
+          accepted: "Offre envoyée",
           paid: "Payé",
           failed: "Échoué",
+          cancelled: "Annulé",
           tradeHold: "Trade Hold",
           available: "Disponible",
           payment: "Paiement",
@@ -7918,7 +7919,7 @@ export const messages: Record<Locale, Messages> = {
       },
       status: {
         créé: "Created",
-        accepté_par_bot: "Accepted",
+        accepté_par_bot: "Offer Sent",
         en_trade_hold: "Trade Hold (7d)",
         disponible: "Ready to pay",
         paiement_en_cours: "Payment processing",
@@ -13707,9 +13708,10 @@ export const messages: Record<Locale, Messages> = {
       admin: {
         trades: {
           created: "Created",
-          accepted: "Accepted",
+          accepted: "Offer Sent",
           paid: "Paid",
           failed: "Failed",
+          cancelled: "Cancelled",
           tradeHold: "Trade Hold",
           available: "Available",
           payment: "Payment",
@@ -15522,7 +15524,7 @@ export const messages: Record<Locale, Messages> = {
       },
       status: {
         créé: "已创建",
-        accepté_par_bot: "已接受",
+        accepté_par_bot: "报价已发送",
         en_trade_hold: "交易锁定 (7天)",
         disponible: "准备付款",
         paiement_en_cours: "付款处理中",
@@ -20996,9 +20998,10 @@ export const messages: Record<Locale, Messages> = {
       admin: {
         trades: {
           created: "已创建",
-          accepted: "已接受",
+          accepted: "报价已发送",
           paid: "已支付",
           failed: "失败",
+          cancelled: "已取消",
           tradeHold: "交易冻结",
           available: "可用",
           payment: "支付中",

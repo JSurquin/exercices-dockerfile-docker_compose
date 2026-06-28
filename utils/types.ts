@@ -5597,6 +5597,7 @@ export interface Messages {
         accepted: string;
         paid: string;
         failed: string;
+        cancelled: string;
         tradeHold: string;
         available: string;
         payment: string;

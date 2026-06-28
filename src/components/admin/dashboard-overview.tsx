@@ -16,6 +16,7 @@ const ADMIN_CHART_BRAND = CHART_COLORS.moonskin;
 import { useLocale } from '@/components/providers/locale-provider';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 import { adminGlassCard, adminIconAccent, panelListRow } from '@/lib/admin-ui';
+import { getTradeStatusLabel } from '@/lib/trade-status-display';
 import { cn } from '@/lib/utils';
 import { AdminUserLink } from '@/components/admin/admin-user-link';
 
@@ -33,6 +34,7 @@ const getStatusColor = (status: string) => {
     'paiement_en_cours': 'bg-theme-accent/80',
     'payé': 'bg-emerald-500',
     'échoué': 'bg-red-500',
+    'annulé': 'bg-gray-500',
   };
   return colors[status as keyof typeof colors] || 'bg-gray-500';
 };
@@ -194,7 +196,7 @@ export function DashboardOverview() {
                     />
                   </p>
                   <Badge className={`${getStatusColor(trade.status)} text-white text-xs`}>
-                    {trade.status}
+                    {getTradeStatusLabel(trade.status, messages)}
                   </Badge>
                 </div>
               </div>

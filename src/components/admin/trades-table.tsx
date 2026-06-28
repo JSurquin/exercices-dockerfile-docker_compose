@@ -37,6 +37,7 @@ import { queryKeys } from '@/lib/query-keys';
 import { AdminUserLink } from '@/components/admin/admin-user-link';
 import { adminDialogContentFixed, adminDialogStatTile } from '@/lib/admin-ui';
 import { cn } from '@/lib/utils';
+import { getAdminTradeStatusLabel } from '@/lib/trade-status-display';
 
 // Statuts pour lesquels le polling Skinplace a du sens
 const SYNCABLE_STATUSES = ['créé', 'accepté_par_bot', 'en_trade_hold', 'disponible'];
@@ -103,15 +104,20 @@ export function AdminTradesTable() {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       'créé': { variant: 'secondary' as const, icon: Clock, text: t.created },
-      'accepté_par_bot': { variant: 'default' as const, icon: CheckCircle, text: t.accepted },
+      'accepté_par_bot': { variant: 'default' as const, icon: Clock, text: t.accepted },
       'en_trade_hold': { variant: 'default' as const, icon: Clock, text: t.tradeHold },
       'disponible': { variant: 'default' as const, icon: CheckCircle, text: t.available },
       'paiement_en_cours': { variant: 'default' as const, icon: Clock, text: t.payment },
       'payé': { variant: 'default' as const, icon: CheckCircle, text: t.paid },
       'échoué': { variant: 'destructive' as const, icon: XCircle, text: t.failed },
+      'annulé': { variant: 'outline' as const, icon: XCircle, text: t.cancelled },
     };
 
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['créé'];
+    const config = statusConfig[status as keyof typeof statusConfig] ?? {
+      variant: 'outline' as const,
+      icon: AlertTriangle,
+      text: getAdminTradeStatusLabel(status, t),
+    };
     const Icon = config.icon;
 
     return (
@@ -275,6 +281,7 @@ export function AdminTradesTable() {
               <SelectItem value="paiement_en_cours">{t.payment}</SelectItem>
               <SelectItem value="payé">{t.paid}</SelectItem>
               <SelectItem value="échoué">{t.failed}</SelectItem>
+              <SelectItem value="annulé">{t.cancelled}</SelectItem>
             </SelectContent>
           </Select>
         </div>
