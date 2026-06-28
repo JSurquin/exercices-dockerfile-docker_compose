@@ -165,16 +165,16 @@ export async function GET(request: NextRequest) {
     const oldStatus = trade.status;
 
     // =========================================================================
-    // IPN #2 — protection_status (~8 jours après l'échange)
-    // Valeurs : 'unconfirmed' (en hold), 'confirmed' (libéré), 'rollback'
+    // IPN #2 — protection_status confirmé ou rollback (~8 jours après l'échange)
     //
-    // IMPORTANT : Skinplace peut envoyer protection_status=unconfirmed ET
-    // status=cancelled dans le même IPN (ex. annulation côté utilisateur).
-    // Dans ce cas, l'annulation est prioritaire : on ne doit pas ignorer le
-    // status=cancelled sous prétexte que protectionStatus est présent.
-    // On n'entre dans le bloc IPN #2 que si le statut n'est pas une annulation.
+    // Skinplace envoie souvent protection_status=unconfirmed + status=complete
+    // dès l'acceptation Steam (IPN #1). Ce cas ne doit PAS entrer ici : il est
+    // traité plus bas via le champ status (→ IN_TRADE_HOLD).
+    //
+    // Skinplace peut aussi envoyer protection_status=unconfirmed ET status=cancelled
+    // dans le même IPN : l'annulation est alors traitée via IPN #1.
     // =========================================================================
-    if (protectionStatus !== null && status !== 'cancelled') {
+    if (protectionStatus === 'confirmed' || protectionStatus === 'rollback') {
       logger.info(`[WEBHOOK] IPN #2 protection_status=${protectionStatus} for trade ${trade.id}`);
 
       await prisma.auditLog.create({
