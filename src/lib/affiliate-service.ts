@@ -2,7 +2,11 @@ import { cookies } from 'next/headers';
 import { prisma } from '../../prisma/prisma';
 import { AffiliateStats, AffiliateReferral, AffiliateCommission } from '@/lib/types';
 import { computeSellPromoBonusCents as computeSellPromoBonusCentsPure } from '@/lib/affiliate-sell-promo';
-import { getUserRewardFlags, isAffiliateRewardsBlocked } from '@/lib/user-rewards-guard';
+import {
+  getUserRewardFlags,
+  isAffiliateRewardsBlocked,
+  isMerchantAccount,
+} from '@/lib/user-rewards-guard';
 import { creditBalance, forceDebitBalance } from '@/lib/balance-service';
 import { currencyConverter } from '@/lib/currency-converter';
 import {
@@ -111,10 +115,14 @@ export class AffiliateService {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { referredByAffiliateId: true },
+      select: { referredByAffiliateId: true, userTag: true },
     });
     if (!user) {
       return { replaced: false, attached: false, alreadyLinked: false, affiliateName };
+    }
+
+    if (isMerchantAccount(user)) {
+      return { replaced: false, attached: false, alreadyLinked: false, affiliateName: '' };
     }
 
     if (user.referredByAffiliateId === affiliate.id) {
@@ -305,7 +313,7 @@ export class AffiliateService {
         alreadyLinkedToOther: boolean;
         affiliateName: string;
       }
-    | { ok: false; error: 'invalid' | 'self' }
+    | { ok: false; error: 'invalid' | 'self' | 'merchant' }
   > {
     const code = normalizeAffiliateCode(rawCode);
     if (!code) return { ok: false, error: 'invalid' };
@@ -316,8 +324,12 @@ export class AffiliateService {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { referredByAffiliateId: true },
+      select: { referredByAffiliateId: true, userTag: true },
     });
+
+    if (isMerchantAccount(user)) {
+      return { ok: false, error: 'merchant' };
+    }
 
     const referredId = user?.referredByAffiliateId ?? null;
 
@@ -406,6 +418,18 @@ export class AffiliateService {
     }
 
     if (trade.affiliateCommissionProcessedAt) {
+      return;
+    }
+
+    const sellerProfile = await prisma.user.findUnique({
+      where: { id: trade.userId },
+      select: { userTag: true },
+    });
+    if (isMerchantAccount(sellerProfile)) {
+      await prisma.trade.update({
+        where: { id: tradeId },
+        data: { affiliateCommissionProcessedAt: new Date() },
+      });
       return;
     }
 

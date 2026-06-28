@@ -11,7 +11,7 @@ import {
   getCashoutFeeRate,
 } from '@/lib/trade-platform-fees';
 import { AffiliateService } from '@/lib/affiliate-service';
-import { isAffiliateRewardsBlocked } from '@/lib/user-rewards-guard';
+import { isAffiliateRewardsBlocked, isMerchantAccount } from '@/lib/user-rewards-guard';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { skinplaceCreateTradeBodySchema } from '@/lib/validation/schemas/integrations';
 import { verifyAndPriceItems } from '@/lib/skinplace-price-verifier';
@@ -170,12 +170,24 @@ export async function POST(request: NextRequest) {
     let affiliateSwitch: { attached: boolean; affiliateName: string } | null = null;
     const rawPromo =
       typeof body.affiliate_promo_code === 'string' ? body.affiliate_promo_code.trim() : '';
+    const isMerchant = isMerchantAccount(user);
     if (rawPromo) {
+      if (isMerchant) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Les comptes merchant ne peuvent pas utiliser de code promotionnel.',
+          },
+          { status: 400 }
+        );
+      }
       const promo = await AffiliateService.validateAffiliateSellPromoCode(user.id, rawPromo);
       if (!promo.ok) {
         const err =
           promo.error === 'self'
             ? 'Vous ne pouvez pas utiliser votre propre code affilié.'
+            : promo.error === 'merchant'
+              ? 'Les comptes merchant ne peuvent pas utiliser de code promotionnel.'
             : 'Code promo invalide ou affilié inactif.';
         return NextResponse.json({ success: false, error: err }, { status: 400 });
       }
@@ -199,7 +211,7 @@ export async function POST(request: NextRequest) {
           serverGrossCentimes
         );
       }
-    } else if (user.referredByAffiliateId) {
+    } else if (user.referredByAffiliateId && !isMerchant) {
       const refAffiliate = await prisma.affiliateStats.findUnique({
         where: { id: user.referredByAffiliateId, isActive: true },
         select: { code: true, userId: true },

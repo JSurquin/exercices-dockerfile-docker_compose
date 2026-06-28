@@ -6461,6 +6461,7 @@ export interface Messages {
     promoErrorUnauthorized: string;
     promoMustBeValid: string;
     promoBonusLine: string;
+    promoMerchantNotice: string;
     createYourSale: string;
     tradeUrlLabel: string;
     tradeLinkConfigured: string;

@@ -69,6 +69,7 @@ export function SkinplaceTradeCreator({
   const { user, updateUser } = useAuth();
   const { messages } = useLocale();
   const { data: platformSettings } = usePlatformSettings();
+  const isMerchant = user?.userTag === 'MERCHANT';
   const [tradeUrl, setTradeUrl] = useState(user?.tradeLink || '');
   const [isValidUrl, setIsValidUrl] = useState<boolean | null>(user?.tradeLink ? true : null);
   const [loading, setLoading] = useState(false);
@@ -83,6 +84,15 @@ export function SkinplaceTradeCreator({
   const promoAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    if (isMerchant) {
+      setPromoState('idle');
+      setPromoErrorCode(null);
+      setAppliedPromoCode(null);
+      setPromoWillReplace(false);
+      setPromoAffiliateName(null);
+      return;
+    }
+
     const trimmed = promoInput.trim();
     if (!trimmed) {
       setPromoState('idle');
@@ -135,7 +145,7 @@ export function SkinplaceTradeCreator({
     }, 450);
 
     return () => clearTimeout(timer);
-  }, [promoInput]);
+  }, [promoInput, isMerchant]);
 
   const validateTradeUrl = (url: string) => {
     // Accepte avec ou sans / après "new" (Steam peut renvoyer les deux formats)
@@ -225,7 +235,7 @@ export function SkinplaceTradeCreator({
         body: JSON.stringify({
           steam_id: steamId64,
           trade_url: tradeUrl,
-          affiliate_promo_code: appliedPromoCode ?? undefined,
+          affiliate_promo_code: isMerchant ? undefined : appliedPromoCode ?? undefined,
           items: selectedItems.map(item => ({
             asset_id: item.assetid,
           })),
@@ -409,51 +419,59 @@ export function SkinplaceTradeCreator({
               <Gift className="h-5 w-5 text-theme-accent shrink-0 mt-0.5" />
               <div className="space-y-1 min-w-0">
                 <p className="text-sm font-medium">{messages.tradeCreator.promoSectionTitle}</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {messages.tradeCreator.promoSectionDescription
-                    .replace('{percent}', promoPercentLabel)
-                    .replace('{fragments}', String(AFFILIATE_SELL_PROMO_FRAGMENTS))}
-                </p>
+                {isMerchant ? (
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {messages.tradeCreator.promoMerchantNotice}
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {messages.tradeCreator.promoSectionDescription
+                        .replace('{percent}', promoPercentLabel)
+                        .replace('{fragments}', String(AFFILIATE_SELL_PROMO_FRAGMENTS))}
+                    </p>
+                    <div className="space-y-2 pt-2">
+                      <Label htmlFor="affiliate-promo-code">{messages.tradeCreator.promoInputLabel}</Label>
+                      <div className="relative">
+                        <Input
+                          id="affiliate-promo-code"
+                          placeholder={messages.tradeCreator.promoPlaceholder}
+                          value={promoInput}
+                          onChange={(e) => setPromoInput(e.target.value)}
+                          className="pr-10"
+                          autoComplete="off"
+                          spellCheck={false}
+                        />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                          {promoState === 'checking' ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          ) : promoState === 'valid' ? (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          ) : promoState === 'invalid' && trimmedPromoInput ? (
+                            <XCircle className="h-4 w-4 text-destructive" />
+                          ) : null}
+                        </div>
+                      </div>
+                      {promoState === 'valid' && (
+                        <p className="text-xs text-green-600 dark:text-green-400">
+                          {promoWillReplace && promoAffiliateName
+                            ? messages.tradeCreator.promoWillReplace.replace('{name}', promoAffiliateName)
+                            : messages.tradeCreator.promoAccepted}
+                        </p>
+                      )}
+                      {promoState === 'invalid' && promoErrorCode && (
+                        <p className="text-xs text-destructive">
+                          {promoErrorCode === 'self'
+                            ? messages.tradeCreator.promoErrorSelf
+                            : promoErrorCode === 'unauthorized'
+                              ? messages.tradeCreator.promoErrorUnauthorized
+                              : messages.tradeCreator.promoErrorInvalid}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="affiliate-promo-code">{messages.tradeCreator.promoInputLabel}</Label>
-              <div className="relative">
-                <Input
-                  id="affiliate-promo-code"
-                  placeholder={messages.tradeCreator.promoPlaceholder}
-                  value={promoInput}
-                  onChange={(e) => setPromoInput(e.target.value)}
-                  className="pr-10"
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-                <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                  {promoState === 'checking' ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  ) : promoState === 'valid' ? (
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  ) : promoState === 'invalid' && trimmedPromoInput ? (
-                    <XCircle className="h-4 w-4 text-destructive" />
-                  ) : null}
-                </div>
-              </div>
-              {promoState === 'valid' && (
-                <p className="text-xs text-green-600 dark:text-green-400">
-                  {promoWillReplace && promoAffiliateName
-                    ? messages.tradeCreator.promoWillReplace.replace('{name}', promoAffiliateName)
-                    : messages.tradeCreator.promoAccepted}
-                </p>
-              )}
-              {promoState === 'invalid' && promoErrorCode && (
-                <p className="text-xs text-destructive">
-                  {promoErrorCode === 'self'
-                    ? messages.tradeCreator.promoErrorSelf
-                    : promoErrorCode === 'unauthorized'
-                      ? messages.tradeCreator.promoErrorUnauthorized
-                      : messages.tradeCreator.promoErrorInvalid}
-                </p>
-              )}
             </div>
           </div>
 

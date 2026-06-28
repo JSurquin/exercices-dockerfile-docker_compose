@@ -187,6 +187,7 @@ describe('AffiliateService.validateAffiliateSellPromoCode', () => {
     });
     prismaMock.user.findUnique.mockResolvedValue({
       referredByAffiliateId: 'aff-old',
+      userTag: null,
     });
 
     const result = await AffiliateService.validateAffiliateSellPromoCode('user-1', 'NEWCODE');
@@ -197,5 +198,49 @@ describe('AffiliateService.validateAffiliateSellPromoCode', () => {
       expect(result.alreadyLinked).toBe(false);
       expect(result.affiliateName).toBe('NewPartner');
     }
+  });
+
+  it('rejects promo validation for merchant accounts', async () => {
+    prismaMock.affiliateStats.findFirst.mockResolvedValue({
+      id: 'aff-new',
+      code: 'NEWCODE',
+      userId: 'affiliate-user',
+      user: { steamUsername: 'NewPartner' },
+    });
+    prismaMock.user.findUnique.mockResolvedValue({
+      referredByAffiliateId: null,
+      userTag: 'MERCHANT',
+    });
+
+    const result = await AffiliateService.validateAffiliateSellPromoCode('user-1', 'NEWCODE');
+
+    expect(result).toEqual({ ok: false, error: 'merchant' });
+  });
+});
+
+describe('AffiliateService.switchUserToAffiliate — merchant', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('does not attach merchant users as filleuls', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      referredByAffiliateId: null,
+      userTag: 'MERCHANT',
+    });
+
+    const result = await AffiliateService.switchUserToAffiliate('user-1', {
+      id: 'aff-new',
+      code: 'STREAMER',
+      user: { steamUsername: 'StreamerPro' },
+    });
+
+    expect(result).toEqual({
+      replaced: false,
+      attached: false,
+      alreadyLinked: false,
+      affiliateName: '',
+    });
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 });

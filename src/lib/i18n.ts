@@ -7010,6 +7010,8 @@ export const messages: Record<Locale, Messages> = {
       promoErrorUnauthorized: "Connectez-vous pour vérifier un code.",
       promoMustBeValid: "Vérifiez ou effacez le code promo avant de créer la vente.",
       promoBonusLine: "Bonus code promo ({percent} % du brut)",
+      promoMerchantNotice:
+        "En tant que merchant, vous bénéficiez déjà de taux préférentiels sur vos ventes. Les codes promotionnels ne sont pas cumulables avec cet avantage.",
         createYourSale: "Créer votre vente",
         tradeUrlLabel: "URL de Trade Steam",
         tradeLinkConfigured: "Trade Link configuré :",
@@ -14619,6 +14621,8 @@ export const messages: Record<Locale, Messages> = {
       promoErrorUnauthorized: "Sign in to validate a code.",
       promoMustBeValid: "Clear or fix the promo code before creating the sale.",
       promoBonusLine: "Promo bonus ({percent}% of gross)",
+      promoMerchantNotice:
+        "As a merchant, you already benefit from preferential rates on your sales. Promotion codes cannot be combined with this advantage.",
         createYourSale: "Create your sale",
         tradeUrlLabel: "Steam Trade URL",
         tradeLinkConfigured: "Trade Link configured:",
@@ -21908,6 +21912,8 @@ export const messages: Record<Locale, Messages> = {
       promoErrorUnauthorized: "请先登录以验证代码。",
       promoMustBeValid: "请修正或清空推广码后再创建出售。",
       promoBonusLine: "推广奖励（毛利 {percent}%）",
+      promoMerchantNotice:
+        "作为商家，您的销售已享受优惠费率。推广码无法与此优惠叠加。",
         createYourSale: "创建您的出售",
         tradeUrlLabel: "Steam 交易 URL",
         tradeLinkConfigured: "已配置交易链接：",

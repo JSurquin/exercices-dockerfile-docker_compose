@@ -1,5 +1,6 @@
 import {
   isAffiliateRewardsBlocked,
+  isMerchantAccount,
   isXpRewardsBlocked,
   type UserRewardFlags,
 } from '@/lib/user-rewards-guard';
@@ -23,5 +24,12 @@ describe('user-rewards-guard', () => {
 
   it('returns true when XP rewards are blocked', () => {
     expect(isXpRewardsBlocked({ ...defaultFlags, xpRewardsBlocked: true })).toBe(true);
+  });
+
+  it('detects merchant accounts by userTag', () => {
+    expect(isMerchantAccount({ userTag: 'MERCHANT' })).toBe(true);
+    expect(isMerchantAccount({ userTag: 'VIP' })).toBe(false);
+    expect(isMerchantAccount({ userTag: null })).toBe(false);
+    expect(isMerchantAccount(undefined)).toBe(false);
   });
 });

@@ -5,6 +5,15 @@ export type UserRewardFlags = {
   xpRewardsBlocked: boolean;
 };
 
+export type MerchantCheckFields = {
+  userTag?: string | null;
+};
+
+/** Compte merchant (taux boostés) — exclu des codes promo et du parrainage affilié. */
+export function isMerchantAccount(user: MerchantCheckFields | null | undefined): boolean {
+  return user?.userTag === 'MERCHANT';
+}
+
 /**
  * Flags anti-abus par profil (VIP/merchant référé, etc.).
  * Utilisé avant toute attribution de commission affilié ou de XP/fragments.
