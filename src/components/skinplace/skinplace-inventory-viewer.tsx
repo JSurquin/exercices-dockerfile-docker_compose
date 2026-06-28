@@ -39,7 +39,7 @@ import {
 import { useAuth } from '@/components/providers/auth-provider';
 import Link from 'next/link';
 import { isInventoryPrivateError } from '@/lib/inventory-api-errors';
-import { extractCs2SkinName, extractCs2WeaponType } from '@/lib/cs2-constants';
+import { extractCs2SkinDisplayName, extractCs2WeaponType } from '@/lib/cs2-constants';
 import { SellInventoryItemCard } from '@/components/sell/sell-inventory-item-card';
 
 function isPurchasable(item: NormalizedInventoryItem): boolean {
@@ -1077,7 +1077,7 @@ export function SkinplaceInventoryViewer({
                   
                   const marketHashName = item.market_hash_name || item.market_name;
                   const weaponType = extractCs2WeaponType(marketHashName);
-                  const skinName = extractCs2SkinName(marketHashName);
+                  const skinName = extractCs2SkinDisplayName(marketHashName, item.phase);
 
                   return (
                     <Card

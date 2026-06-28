@@ -6,6 +6,8 @@ import {
   RARITY_ORDER,
   extractCs2WeaponType,
   extractCs2SkinName,
+  formatCs2SkinDisplayName,
+  extractCs2SkinDisplayName,
 } from '../cs2-constants';
 
 describe('CS2_RARITIES — structure', () => {
@@ -140,5 +142,34 @@ describe('extractCs2WeaponType() / extractCs2SkinName()', () => {
     const name = 'StatTrak™ AK-47 | Redline (Minimal Wear)';
     expect(extractCs2WeaponType(name)).toBe('AK-47');
     expect(extractCs2SkinName(name)).toBe('Redline');
+  });
+});
+
+describe('formatCs2SkinDisplayName() / extractCs2SkinDisplayName()', () => {
+  it('ajoute la phase pour un Doppler classique', () => {
+    expect(formatCs2SkinDisplayName('Doppler', 'Phase 2')).toBe('Doppler Phase 2');
+    expect(formatCs2SkinDisplayName('Doppler', 'Ruby')).toBe('Doppler Ruby');
+    expect(formatCs2SkinDisplayName('Doppler', 'Black Pearl')).toBe('Doppler Black Pearl');
+    expect(formatCs2SkinDisplayName('Doppler', 'Sapphire')).toBe('Doppler Sapphire');
+  });
+
+  it('ajoute la phase pour un Gamma Doppler', () => {
+    expect(formatCs2SkinDisplayName('Gamma Doppler', 'Phase 3')).toBe('Gamma Doppler Phase 3');
+    expect(formatCs2SkinDisplayName('Gamma Doppler', 'Emerald')).toBe('Gamma Doppler Emerald');
+  });
+
+  it('ignore la phase pour les skins non-Doppler', () => {
+    expect(formatCs2SkinDisplayName('Redline', 'Phase 1')).toBe('Redline');
+  });
+
+  it('ne duplique pas une phase déjà présente', () => {
+    expect(formatCs2SkinDisplayName('Doppler Ruby', 'Ruby')).toBe('Doppler Ruby');
+  });
+
+  it('extrait le nom complet depuis le market hash name', () => {
+    const name = '★ Navaja Knife | Doppler (Factory New)';
+    expect(extractCs2SkinDisplayName(name, 'Phase 4')).toBe('Doppler Phase 4');
+    expect(extractCs2SkinDisplayName(name, null)).toBe('Doppler');
+    expect(extractCs2SkinDisplayName('AK-47 | Redline (Field-Tested)', null)).toBe('Redline');
   });
 });

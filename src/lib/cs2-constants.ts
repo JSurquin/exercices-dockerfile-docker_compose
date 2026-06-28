@@ -75,3 +75,23 @@ export function extractCs2SkinName(marketName: string): string {
   }
   return base;
 }
+
+/** Append Doppler/Gamma Doppler phase when provided by Skinplace (e.g. "Doppler" + "Ruby" → "Doppler Ruby"). */
+export function formatCs2SkinDisplayName(
+  skinName: string,
+  phase: string | null | undefined,
+): string {
+  const trimmedPhase = phase?.trim();
+  if (!trimmedPhase) return skinName;
+  if (skinName.includes(trimmedPhase)) return skinName;
+  if (!/\bDoppler\b/i.test(skinName)) return skinName;
+  return `${skinName} ${trimmedPhase}`;
+}
+
+/** Extract skin display name from market_name, including Doppler phase when available. */
+export function extractCs2SkinDisplayName(
+  marketName: string,
+  phase?: string | null,
+): string {
+  return formatCs2SkinDisplayName(extractCs2SkinName(marketName), phase);
+}

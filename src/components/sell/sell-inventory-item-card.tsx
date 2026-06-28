@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { SafeImg } from '@/components/ui/safe-image';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 import { NormalizedInventoryItem } from '@/hooks/use-skinplace-inventory';
-import { extractCs2SkinName, extractCs2WeaponType } from '@/lib/cs2-constants';
+import { extractCs2SkinDisplayName, extractCs2WeaponType } from '@/lib/cs2-constants';
 import { AlertCircle, Package } from 'lucide-react';
 
 const EASTER_EGG_STAGE_1_MS = 3000;
@@ -219,7 +219,7 @@ export function SellInventoryItemCard({
 
   const marketHashName = item.market_hash_name || item.market_name;
   const weaponType = extractCs2WeaponType(marketHashName);
-  const skinName = extractCs2SkinName(marketHashName);
+  const skinName = extractCs2SkinDisplayName(marketHashName, item.phase);
 
   return (
     <Card
