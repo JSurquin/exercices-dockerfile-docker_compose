@@ -14,8 +14,6 @@ const ADMIN_CHART_BRAND = CHART_COLORS.moonskin;
 import { useLocale } from '@/components/providers/locale-provider';
 import { adminGlassCard, adminIconAccent } from '@/lib/admin-ui';
 import { cn } from '@/lib/utils';
-import { RecentTradesGallery } from '@/components/admin/recent-trades-gallery';
-
 interface AdminStats {
   recentTrades: any[];
   monthlyStats: any[];
@@ -144,8 +142,6 @@ export function DashboardOverview() {
           </CardContent>
         </Card>
       </div>
-
-      <RecentTradesGallery />
     </div>
   );
 }

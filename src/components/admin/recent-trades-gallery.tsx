@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -20,8 +20,10 @@ import { TradeItem } from '@/lib/types';
 import { Images, Package } from 'lucide-react';
 
 const GALLERY_LIMITS = [5, 10, 20, 100] as const;
+const GALLERY_PERIODS = ['today', 'yesterday', 'week', 'month', 'all'] as const;
 
 type GalleryLimit = (typeof GALLERY_LIMITS)[number];
+type GalleryPeriod = (typeof GALLERY_PERIODS)[number];
 
 interface GalleryTrade {
   id: string;
@@ -33,6 +35,7 @@ interface GalleryTrade {
 interface GalleryResponse {
   trades: GalleryTrade[];
   limit: number;
+  period: GalleryPeriod;
 }
 
 const rarityGlow: Record<string, string> = {
@@ -55,15 +58,25 @@ export function RecentTradesGallery() {
   const { messages } = useLocale();
   const t = messages.adminNav.dashboardOverview;
   const [limit, setLimit] = useState<GalleryLimit>(5);
+  const [period, setPeriod] = useState<GalleryPeriod>('all');
+
+  const periodLabels: Record<GalleryPeriod, string> = {
+    today: t.tradesGalleryPeriodToday,
+    yesterday: t.tradesGalleryPeriodYesterday,
+    week: t.tradesGalleryPeriodWeek,
+    month: t.tradesGalleryPeriodMonth,
+    all: t.tradesGalleryPeriodAll,
+  };
 
   const { data, isLoading, isFetching } = useQuery<GalleryResponse>({
-    queryKey: queryKeys.adminTradesGallery(limit),
+    queryKey: queryKeys.adminTradesGallery(limit, period),
     queryFn: async () => {
-      const response = await fetch(`/api/admin/trades/gallery?limit=${limit}`);
+      const response = await fetch(`/api/admin/trades/gallery?limit=${limit}&period=${period}`);
       if (!response.ok) throw new Error(t.galleryLoadError);
       return response.json();
     },
     staleTime: 30_000,
+    placeholderData: keepPreviousData,
   });
 
   const galleryItems = useMemo(
@@ -81,7 +94,6 @@ export function RecentTradesGallery() {
             <Images className={cn('h-5 w-5', adminIconAccent)} />
             {t.tradesGalleryTitle}
           </CardTitle>
-          <p className="text-sm text-muted-foreground">{t.tradesGallerySub}</p>
           {!isLoading && tradeCount > 0 && (
             <p className="text-xs text-muted-foreground tabular-nums">
               {t.tradesGalleryMeta
@@ -91,7 +103,24 @@ export function RecentTradesGallery() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <span className="text-xs text-muted-foreground whitespace-nowrap">{t.tradesGalleryPeriodLabel}</span>
+          <Select
+            value={period}
+            onValueChange={(value) => setPeriod(value as GalleryPeriod)}
+          >
+            <SelectTrigger className={cn('w-[148px]', panelGlassField)}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {GALLERY_PERIODS.map((value) => (
+                <SelectItem key={value} value={value}>
+                  {periodLabels[value]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <span className="text-xs text-muted-foreground whitespace-nowrap">{t.tradesGalleryLimitLabel}</span>
           <Select
             value={String(limit)}

@@ -33,6 +33,7 @@ import {
 import { getTradeStatusLabel } from '@/lib/trade-status-display';
 import { cn } from '@/lib/utils';
 import { AdminUserLink } from '@/components/admin/admin-user-link';
+import { RecentTradesGallery } from '@/components/admin/recent-trades-gallery';
 
 function StatCard({
   title,
@@ -248,6 +249,8 @@ export function AdminStatsOverview() {
           <span className="text-lg truncate block">{stats.topUsers[0]?.username || 'N/A'}</span>
         </StatCard>
       </div>
+
+      <RecentTradesGallery />
 
       <Card className={adminGlassCard}>
         <CardHeader>

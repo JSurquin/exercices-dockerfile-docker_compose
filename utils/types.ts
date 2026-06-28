@@ -6244,8 +6244,13 @@ export interface Messages {
         statusHold: string;
         statusCreated: string;
         tradesGalleryTitle: string;
-        tradesGallerySub: string;
         tradesGalleryEmpty: string;
+        tradesGalleryPeriodLabel: string;
+        tradesGalleryPeriodToday: string;
+        tradesGalleryPeriodYesterday: string;
+        tradesGalleryPeriodWeek: string;
+        tradesGalleryPeriodMonth: string;
+        tradesGalleryPeriodAll: string;
         tradesGalleryLimitLabel: string;
         tradesGalleryMeta: string;
         galleryLoadError: string;
