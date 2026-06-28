@@ -21,9 +21,11 @@ import { Images, Package } from 'lucide-react';
 
 const GALLERY_LIMITS = [5, 10, 20, 100] as const;
 const GALLERY_PERIODS = ['today', 'yesterday', 'week', 'month', 'all'] as const;
+const GALLERY_SORTS = ['recent', 'price_desc', 'price_asc'] as const;
 
 type GalleryLimit = (typeof GALLERY_LIMITS)[number];
 type GalleryPeriod = (typeof GALLERY_PERIODS)[number];
+type GallerySort = (typeof GALLERY_SORTS)[number];
 
 interface GalleryTrade {
   id: string;
@@ -59,6 +61,7 @@ export function RecentTradesGallery() {
   const t = messages.adminNav.dashboardOverview;
   const [limit, setLimit] = useState<GalleryLimit>(5);
   const [period, setPeriod] = useState<GalleryPeriod>('all');
+  const [sort, setSort] = useState<GallerySort>('recent');
 
   const periodLabels: Record<GalleryPeriod, string> = {
     today: t.tradesGalleryPeriodToday,
@@ -66,6 +69,12 @@ export function RecentTradesGallery() {
     week: t.tradesGalleryPeriodWeek,
     month: t.tradesGalleryPeriodMonth,
     all: t.tradesGalleryPeriodAll,
+  };
+
+  const sortLabels: Record<GallerySort, string> = {
+    recent: t.tradesGallerySortRecent,
+    price_desc: t.tradesGallerySortPriceDesc,
+    price_asc: t.tradesGallerySortPriceAsc,
   };
 
   const { data, isLoading, isFetching } = useQuery<GalleryResponse>({
@@ -79,10 +88,16 @@ export function RecentTradesGallery() {
     placeholderData: keepPreviousData,
   });
 
-  const galleryItems = useMemo(
-    () => (data?.trades ?? []).flatMap((trade) => trade.items),
-    [data?.trades]
-  );
+  const galleryItems = useMemo(() => {
+    const items = (data?.trades ?? []).flatMap((trade) => trade.items);
+    if (sort === 'price_desc') {
+      return [...items].sort((a, b) => b.prixCentimes - a.prixCentimes);
+    }
+    if (sort === 'price_asc') {
+      return [...items].sort((a, b) => a.prixCentimes - b.prixCentimes);
+    }
+    return items;
+  }, [data?.trades, sort]);
 
   const tradeCount = data?.trades.length ?? 0;
 
@@ -133,6 +148,23 @@ export function RecentTradesGallery() {
               {GALLERY_LIMITS.map((value) => (
                 <SelectItem key={value} value={String(value)}>
                   {value}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <span className="text-xs text-muted-foreground whitespace-nowrap">{t.tradesGallerySortLabel}</span>
+          <Select
+            value={sort}
+            onValueChange={(value) => setSort(value as GallerySort)}
+          >
+            <SelectTrigger className={cn('w-[160px]', panelGlassField)}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {GALLERY_SORTS.map((value) => (
+                <SelectItem key={value} value={value}>
+                  {sortLabels[value]}
                 </SelectItem>
               ))}
             </SelectContent>

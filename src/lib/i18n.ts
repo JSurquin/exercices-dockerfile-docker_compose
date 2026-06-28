@@ -6771,6 +6771,10 @@ export const messages: Record<Locale, Messages> = {
         tradesGalleryPeriodAll: "Tout",
         tradesGalleryLimitLabel: "Trades",
         tradesGalleryMeta: "{trades} trades · {items} items",
+        tradesGallerySortLabel: "Tri",
+        tradesGallerySortRecent: "Plus récents",
+        tradesGallerySortPriceDesc: "Prix décroissant",
+        tradesGallerySortPriceAsc: "Prix croissant",
         galleryLoadError: "Erreur lors du chargement de la galerie",
       },
       skinplaceMetrics: {
@@ -14393,6 +14397,10 @@ export const messages: Record<Locale, Messages> = {
         tradesGalleryPeriodAll: "All",
         tradesGalleryLimitLabel: "Trades",
         tradesGalleryMeta: "{trades} trades · {items} items",
+        tradesGallerySortLabel: "Sort",
+        tradesGallerySortRecent: "Most recent",
+        tradesGallerySortPriceDesc: "Price (high to low)",
+        tradesGallerySortPriceAsc: "Price (low to high)",
         galleryLoadError: "Error loading gallery",
       },
       skinplaceMetrics: {
@@ -21695,6 +21703,10 @@ export const messages: Record<Locale, Messages> = {
         tradesGalleryPeriodAll: "全部",
         tradesGalleryLimitLabel: "交易数",
         tradesGalleryMeta: "{trades} 笔交易 · {items} 个物品",
+        tradesGallerySortLabel: "排序",
+        tradesGallerySortRecent: "最近",
+        tradesGallerySortPriceDesc: "价格（降序）",
+        tradesGallerySortPriceAsc: "价格（升序）",
         galleryLoadError: "加载图库时出错",
       },
       skinplaceMetrics: {

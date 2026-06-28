@@ -6253,6 +6253,10 @@ export interface Messages {
         tradesGalleryPeriodAll: string;
         tradesGalleryLimitLabel: string;
         tradesGalleryMeta: string;
+        tradesGallerySortLabel: string;
+        tradesGallerySortRecent: string;
+        tradesGallerySortPriceDesc: string;
+        tradesGallerySortPriceAsc: string;
         galleryLoadError: string;
       };
       skinplaceMetrics: {
