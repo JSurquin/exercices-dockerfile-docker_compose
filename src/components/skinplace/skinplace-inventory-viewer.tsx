@@ -41,6 +41,7 @@ import Link from 'next/link';
 import { isInventoryPrivateError } from '@/lib/inventory-api-errors';
 import { extractCs2SkinDisplayName, extractCs2WeaponType } from '@/lib/cs2-constants';
 import { SellInventoryItemCard } from '@/components/sell/sell-inventory-item-card';
+import { MOONSKIN_DISCORD_URL } from '@/lib/moonskin-social';
 
 function isPurchasable(item: NormalizedInventoryItem): boolean {
   return item.tradable && !item.skip_reason;
@@ -395,13 +396,15 @@ export function SkinplaceInventoryViewer({
     if (onSelectionChange) onSelectionChange(purchasableFiltered);
   };
 
-  const openSupportForItem = (item: NormalizedInventoryItem) => {
-    const reason = translateSkipReason(item.skip_reason);
-    const template = messages.components.skinplace.blockedItemMessage;
-    const prefillMessage = template
-      .replace('{name}', item.name)
-      .replace('{reason}', reason);
-    window.dispatchEvent(new CustomEvent('open-support-chat', { detail: { prefillMessage } }));
+  const openSupportForItem = (_item: NormalizedInventoryItem) => {
+    // Chat IA support désactivé temporairement — réactiver open-support-chat quand prêt :
+    // const reason = translateSkipReason(item.skip_reason);
+    // const template = messages.components.skinplace.blockedItemMessage;
+    // const prefillMessage = template
+    //   .replace('{name}', item.name)
+    //   .replace('{reason}', reason);
+    // window.dispatchEvent(new CustomEvent('open-support-chat', { detail: { prefillMessage } }));
+    window.open(MOONSKIN_DISCORD_URL, '_blank', 'noopener,noreferrer');
   };
 
   const hasValidSteamId = isValidSteamId64(currentSteamId.trim());
