@@ -43,6 +43,7 @@ export const queryKeys = {
   // Admin - trades
   adminTrades: (filters?: Record<string, unknown>) =>
     ['admin', 'trades', filters ?? {}] as const,
+  adminTradesGallery: (limit: number) => ['admin', 'trades', 'gallery', limit] as const,
 
   // Admin - payouts
   adminPayouts: (filters?: Record<string, unknown>) =>

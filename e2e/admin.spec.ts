@@ -77,15 +77,11 @@ test.describe('Admin - Dashboard', () => {
     }
   });
 
-  test('Activité récente - Liste des dernières actions', async ({ page }) => {
+  test('Galerie des derniers trades - Grille visuelle promo', async ({ page }) => {
     await page.goto('/admin/dashboard');
-    
-    const recentActivity = page.locator('[data-activity], .activity, text=/activité.*récente|recent.*activity/i').first();
-    const hasActivity = await recentActivity.count() > 0;
-    
-    if (hasActivity) {
-      await expect(recentActivity).toBeVisible();
-    }
+
+    const gallery = page.getByTestId('recent-trades-gallery');
+    await expect(gallery).toBeVisible();
   });
 
   test('Alertes système - Notifications importantes', async ({ page }) => {

@@ -6243,6 +6243,12 @@ export interface Messages {
         statusInProgress: string;
         statusHold: string;
         statusCreated: string;
+        tradesGalleryTitle: string;
+        tradesGallerySub: string;
+        tradesGalleryEmpty: string;
+        tradesGalleryLimitLabel: string;
+        tradesGalleryMeta: string;
+        galleryLoadError: string;
       };
       skinplaceMetrics: {
         title: string;

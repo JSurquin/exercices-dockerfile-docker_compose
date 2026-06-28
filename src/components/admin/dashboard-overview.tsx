@@ -2,11 +2,9 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   ChartBarIcon,
   UsersIcon,
-  ClockIcon,
 } from '@heroicons/react/24/outline';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { queryKeys } from '@/lib/query-keys';
@@ -14,30 +12,14 @@ import { CHART_COLORS, RECHARTS_TOOLTIP_STYLE } from '@/lib/chart-colors';
 
 const ADMIN_CHART_BRAND = CHART_COLORS.moonskin;
 import { useLocale } from '@/components/providers/locale-provider';
-import { ConvertedPrice } from '@/components/ui/converted-price';
-import { adminGlassCard, adminIconAccent, panelListRow } from '@/lib/admin-ui';
-import { getTradeStatusLabel } from '@/lib/trade-status-display';
+import { adminGlassCard, adminIconAccent } from '@/lib/admin-ui';
 import { cn } from '@/lib/utils';
-import { AdminUserLink } from '@/components/admin/admin-user-link';
+import { RecentTradesGallery } from '@/components/admin/recent-trades-gallery';
 
 interface AdminStats {
   recentTrades: any[];
   monthlyStats: any[];
 }
-
-const getStatusColor = (status: string) => {
-  const colors = {
-    'créé': 'bg-blue-500',
-    'accepté_par_bot': 'bg-indigo-500',
-    'en_trade_hold': 'bg-yellow-500',
-    'disponible': 'bg-green-500',
-    'paiement_en_cours': 'bg-theme-accent/80',
-    'payé': 'bg-emerald-500',
-    'échoué': 'bg-red-500',
-    'annulé': 'bg-gray-500',
-  };
-  return colors[status as keyof typeof colors] || 'bg-gray-500';
-};
 
 export function DashboardOverview() {
   const { messages } = useLocale();
@@ -163,47 +145,7 @@ export function DashboardOverview() {
         </Card>
       </div>
 
-      {/* Activité récente */}
-      <Card className={cn(adminGlassCard, 'transition-all duration-300')}>
-        <CardHeader>
-          <CardTitle className="text-foreground flex items-center gap-2 text-base md:text-lg">
-            <ClockIcon className={cn('h-5 w-5', adminIconAccent)} />
-            {messages.adminDashboard.overview.recentActivity}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {stats.recentTrades.slice(0, 5).map((trade) => (
-              <div 
-                key={trade.id} 
-                className={cn(panelListRow, 'sm:flex-row sm:items-center sm:justify-between')}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <AdminUserLink
-                    userId={trade.userId}
-                    name={trade.userName || `User #${trade.userId.slice(0, 8)}`}
-                    avatar={trade.userAvatar}
-                    subtitle={trade.ticketId}
-                  />
-                </div>
-                <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end">
-                  <p className="text-sm font-bold text-foreground sm:text-base">
-                    <ConvertedPrice
-                      usdCents={trade.netCentimes}
-                      fromCurrency="USD"
-                      showOriginal
-                      className="text-foreground"
-                    />
-                  </p>
-                  <Badge className={`${getStatusColor(trade.status)} text-white text-xs`}>
-                    {getTradeStatusLabel(trade.status, messages)}
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <RecentTradesGallery />
     </div>
   );
 }
