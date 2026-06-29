@@ -1,9 +1,27 @@
-import { TradeStatus } from '@prisma/client';
+import { Prisma, TradeStatus } from '@prisma/client';
 import { prisma } from '~/prisma/prisma';
 
 /** Même filtre que le panel admin pour le volume (hors annulés / échecs). */
 const PLATFORM_VOLUME_TRADE_WHERE = {
   status: { notIn: [TradeStatus.CANCELLED, TradeStatus.FAILED] },
+};
+
+/** Trades complétés (AVAILABLE / PAYOUT_PENDING / PAID). */
+export const COMPLETED_TRADE_STATUSES: TradeStatus[] = [
+  TradeStatus.AVAILABLE,
+  TradeStatus.PAYOUT_PENDING,
+  TradeStatus.PAID,
+];
+
+/**
+ * Compteur cumulatif « skins échangés » : trades complétés + trades déjà crédités
+ * (balanceCreditedAt) même si annulés ensuite — le total ne diminue jamais.
+ */
+export const EXCHANGED_SKINS_TRADE_WHERE: Prisma.TradeWhereInput = {
+  OR: [
+    { status: { in: COMPLETED_TRADE_STATUSES } },
+    { balanceCreditedAt: { not: null } },
+  ],
 };
 
 export type PlatformStatsRaw = {
@@ -23,7 +41,7 @@ export async function fetchPlatformStatsFromDb(): Promise<PlatformStatsRaw> {
       where: PLATFORM_VOLUME_TRADE_WHERE,
     }),
     prisma.tradeItem.count({
-      where: { trade: PLATFORM_VOLUME_TRADE_WHERE },
+      where: { trade: EXCHANGED_SKINS_TRADE_WHERE },
     }),
   ]);
 
