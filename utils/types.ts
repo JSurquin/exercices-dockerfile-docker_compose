@@ -1151,6 +1151,7 @@ export interface Messages {
       configured: string;
       howToGetTitle: string;
       instructions: string[];
+      instructionHighlights: string[];
       openSteam: string;
       copyExample: string;
       urlLabel: string;
@@ -1160,6 +1161,7 @@ export interface Messages {
       invalidFormat: string;
       invalidFormatDesc: string;
       validFormat: string;
+      validBadge: string;
       currentTradeLink: string;
       saving: string;
       save: string;

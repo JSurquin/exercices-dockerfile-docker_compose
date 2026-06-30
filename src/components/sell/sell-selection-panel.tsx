@@ -15,8 +15,7 @@ import {
 } from "@/lib/currency-converter";
 import { cn } from "@/lib/utils";
 
-/** Same blue as merchant prices on inventory cards (#3B82F6 / blue-500). */
-const MERCHANT_PRICE_TEXT_CLASS = "text-blue-500 dark:text-blue-400";
+const AMOUNT_TEXT_CLASS = "text-green-600 dark:text-green-400";
 
 function getItemPriceWithBonusCentimes(
   item: NormalizedInventoryItem,
@@ -53,7 +52,6 @@ export function SellSelectionPanel({
   const sp = messages.components.skinplace;
   const t = messages.sellPage.selectionPanel;
   const bonusRatePercent = user?.bonusRatePercent ?? 0;
-  const hasMerchantPricing = bonusRatePercent > 0;
 
   const totalCentimes = items.reduce(
     (sum, item) => sum + getItemPriceWithBonusCentimes(item, bonusRatePercent),
@@ -108,9 +106,7 @@ export function SellSelectionPanel({
           className={cn(
             "font-bold tabular-nums",
             embedded ? "text-2xl" : "text-3xl",
-            hasMerchantPricing
-              ? MERCHANT_PRICE_TEXT_CLASS
-              : "text-green-600 dark:text-green-400",
+            AMOUNT_TEXT_CLASS,
           )}
         >
           {isConverting && hasSelection && displayCentimes === 0 ? (

@@ -25,6 +25,7 @@ import { useLocale } from "@/components/providers/locale-provider";
 import { toast } from "sonner";
 import { parseSteamId64FromUserInput, normalizeSteamTradeLink } from "@/lib/steam-id";
 import { cn } from "@/lib/utils";
+import { Fragment } from "react";
 
 interface InlineTradeLinkEditorProps {
   onSuccess?: (tradeLink: string) => void;
@@ -44,6 +45,36 @@ const EXPAND_ANIMATION =
 function truncateTradeUrl(url: string): string {
   if (url.length <= 52) return url;
   return `${url.slice(0, 32)}…${url.slice(-14)}`;
+}
+
+function renderHighlightedInstruction(text: string, highlights: string[]) {
+  if (highlights.length === 0) return text;
+
+  const sortedHighlights = [...highlights].sort((a, b) => b.length - a.length);
+  const pattern = sortedHighlights
+    .map((highlight) => highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("|");
+  const regex = new RegExp(`(${pattern})`, "g");
+  const parts = text.split(regex).filter((part) => part.length > 0);
+
+  return parts.map((part, index) =>
+    sortedHighlights.includes(part) ? (
+      <span key={index} className="text-theme-accent font-medium">
+        {part}
+      </span>
+    ) : (
+      <Fragment key={index}>{part}</Fragment>
+    ),
+  );
+}
+
+function TradeLinkValidBadge({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center gap-0.5 rounded-full border border-[rgba(159,196,255,0.22)] bg-theme-accent/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-theme-accent shrink-0">
+      <CheckCircle className="w-2.5 h-2.5" aria-hidden />
+      {label}
+    </span>
+  );
 }
 
 export default function InlineTradeLinkEditor({
@@ -139,7 +170,7 @@ export default function InlineTradeLinkEditor({
 
   const renderExpandedForm = (formEmbedded = false) => (
     <div className={GLASS_SURFACE}>
-      <Accordion type="single" collapsible className="px-3">
+      <Accordion type="single" collapsible defaultValue="help" className="px-3">
         <AccordionItem value="help" className="border-0">
           <AccordionTrigger
             className={cn(
@@ -159,7 +190,12 @@ export default function InlineTradeLinkEditor({
               )}
             >
               {tradeLinkMessages.instructions.map((instruction, index) => (
-                <li key={index}>{instruction}</li>
+                <li key={index}>
+                  {renderHighlightedInstruction(
+                    instruction,
+                    tradeLinkMessages.instructionHighlights,
+                  )}
+                </li>
               ))}
             </ol>
             <Button
@@ -291,7 +327,7 @@ export default function InlineTradeLinkEditor({
             {title}
           </span>
           {user?.tradeLink && isValidUrl && (
-            <CheckCircle className="w-3 h-3 text-theme-accent shrink-0" aria-hidden />
+            <TradeLinkValidBadge label={tradeLinkMessages.validBadge} />
           )}
         </div>
         <Button
@@ -345,7 +381,7 @@ export default function InlineTradeLinkEditor({
           <Link className="w-4 h-4 text-theme-accent shrink-0" />
           <h3 className="font-semibold text-sm truncate">{title}</h3>
           {user?.tradeLink && isValidUrl && (
-            <CheckCircle className="w-3.5 h-3.5 text-theme-accent shrink-0" />
+            <TradeLinkValidBadge label={tradeLinkMessages.validBadge} />
           )}
         </div>
 
