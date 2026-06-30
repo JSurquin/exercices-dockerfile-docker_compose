@@ -13,6 +13,7 @@ import {
   SUPPORTED_CURRENCIES,
   SupportedCurrency,
 } from "@/lib/currency-converter";
+import { cn } from "@/lib/utils";
 
 /** Same blue as merchant prices on inventory cards (#3B82F6 / blue-500). */
 const MERCHANT_PRICE_TEXT_CLASS = "text-blue-500 dark:text-blue-400";
@@ -37,9 +38,15 @@ interface SellSelectionPanelProps {
   items: NormalizedInventoryItem[];
   onContinue: () => void;
   onDeselect: () => void;
+  embedded?: boolean;
 }
 
-export function SellSelectionPanel({ items, onContinue, onDeselect }: SellSelectionPanelProps) {
+export function SellSelectionPanel({
+  items,
+  onContinue,
+  onDeselect,
+  embedded = false,
+}: SellSelectionPanelProps) {
   const { user } = useAuth();
   const { messages } = useLocale();
   const { selectedCurrency } = useCurrency();
@@ -83,53 +90,92 @@ export function SellSelectionPanel({ items, onContinue, onDeselect }: SellSelect
     };
   }, [totalCentimes, selectedCurrency]);
 
-  return (
-    <Card className="brand-panel">
-      <CardContent className="p-3.5 space-y-3">
-        <div>
-          <p className="text-sm text-muted-foreground mb-1.5">{t.selectedTotal}</p>
-          <p
-            className={`text-3xl font-bold tabular-nums ${
-              hasMerchantPricing
-                ? MERCHANT_PRICE_TEXT_CLASS
-                : "text-green-600 dark:text-green-400"
-            }`}
-          >
-            {isConverting && items.length > 0 && displayCentimes === 0 ? (
-              "…"
-            ) : (
-              <CountUp
-                end={displayCentimes / 100}
-                duration={0.45}
-                decimals={2}
-                prefix={prefix}
-                suffix={suffix}
-                preserveValue
-              />
-            )}
-          </p>
-          <p className="text-sm text-muted-foreground mt-1.5">
-            {items.length} {sp.itemsSelected}
-          </p>
-        </div>
+  const hasSelection = items.length > 0;
 
-        <div className="flex flex-col gap-3">
+  const panelBody = (
+    <div className={embedded ? "space-y-2" : "space-y-3"}>
+      <div>
+        <p
+          className={
+            embedded
+              ? "text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70 mb-0.5"
+              : "text-sm text-muted-foreground mb-1.5"
+          }
+        >
+          {t.selectedTotal}
+        </p>
+        <p
+          className={cn(
+            "font-bold tabular-nums",
+            embedded ? "text-2xl" : "text-3xl",
+            hasMerchantPricing
+              ? MERCHANT_PRICE_TEXT_CLASS
+              : "text-green-600 dark:text-green-400",
+          )}
+        >
+          {isConverting && hasSelection && displayCentimes === 0 ? (
+            "…"
+          ) : (
+            <CountUp
+              end={displayCentimes / 100}
+              duration={0.45}
+              decimals={2}
+              prefix={prefix}
+              suffix={suffix}
+              preserveValue
+            />
+          )}
+        </p>
+        <p
+          className={
+            embedded
+              ? "text-[11px] text-muted-foreground/80 mt-0.5"
+              : "text-sm text-muted-foreground mt-1.5"
+          }
+        >
+          {items.length} {sp.itemsSelected}
+        </p>
+      </div>
+
+      <div className={cn("flex flex-col", embedded ? "gap-1.5" : "gap-3")}>
+        <Button
+          type="button"
+          variant="cta"
+          className={cn(
+            "w-full transition-all duration-200",
+            hasSelection &&
+              "shadow-[0_4px_24px_var(--cta-shadow),0_0_32px_rgba(126,179,232,0.22)] hover:shadow-[0_8px_32px_var(--cta-shadow),0_0_40px_rgba(126,179,232,0.28)]",
+          )}
+          disabled={!hasSelection}
+          onClick={onContinue}
+        >
+          {sp.continueWithSelection}
+        </Button>
+        {hasSelection && (
           <Button
             type="button"
-            variant="cta"
-            className="w-full"
-            disabled={items.length === 0}
-            onClick={onContinue}
+            variant="outline"
+            size="sm"
+            className={cn(
+              "w-full border-[rgba(159,196,255,0.22)] bg-white/[0.03] hover:bg-white/[0.06]",
+              embedded && "h-8 text-xs",
+            )}
+            onClick={onDeselect}
           >
-            {sp.continueWithSelection}
+            {sp.deselectAll}
           </Button>
-          {items.length > 0 && (
-            <Button type="button" variant="outline" className="w-full" onClick={onDeselect}>
-              {sp.deselectAll}
-            </Button>
-          )}
-        </div>
-      </CardContent>
+        )}
+      </div>
+    </div>
+  );
+
+  if (embedded) {
+    return panelBody;
+  }
+
+  return (
+    <Card className="brand-panel">
+      <CardContent className="p-3.5">{panelBody}</CardContent>
     </Card>
   );
 }

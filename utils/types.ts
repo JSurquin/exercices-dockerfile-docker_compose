@@ -3404,6 +3404,7 @@ export interface Messages {
     tradeLinkSection: {
       description: string;
       inventoryFromTradeLink: string;
+      viewLink: string;
     };
     selectionPanel: {
       selectedTotal: string;

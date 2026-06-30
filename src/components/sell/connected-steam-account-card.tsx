@@ -9,9 +9,18 @@ import { isValidSteamId64 } from "@/lib/steam-id";
 
 interface ConnectedSteamAccountCardProps {
   compact?: boolean;
+  embedded?: boolean;
 }
 
-export function ConnectedSteamAccountCard({ compact = false }: ConnectedSteamAccountCardProps) {
+function truncateSteamId(steamId64: string): string {
+  if (steamId64.length <= 14) return steamId64;
+  return `${steamId64.slice(0, 8)}…${steamId64.slice(-4)}`;
+}
+
+export function ConnectedSteamAccountCard({
+  compact = false,
+  embedded = false,
+}: ConnectedSteamAccountCardProps) {
   const { user } = useAuth();
   const { messages } = useLocale();
   const t = messages.sellPage.steamAccount;
@@ -20,12 +29,12 @@ export function ConnectedSteamAccountCard({ compact = false }: ConnectedSteamAcc
 
   const hasSteamId = isValidSteamId64(user.steamId64);
 
-  if (compact) {
-    return (
-      <Card className="border-border/60 bg-muted/20">
-        <CardContent className="px-2 py-1.5">
-          <div className="flex items-center gap-2 min-w-0">
-            <Avatar className="h-7 w-7 border border-border shrink-0">
+  if (embedded || compact) {
+    const row = (
+      <div className="flex items-center gap-2 min-w-0">
+        <Avatar
+          className={`${embedded ? "h-6 w-6" : "h-7 w-7"} border border-border shrink-0`}
+        >
               {user.avatar ? (
                 <AvatarImage src={user.avatar} alt="" />
               ) : null}
@@ -43,8 +52,11 @@ export function ConnectedSteamAccountCard({ compact = false }: ConnectedSteamAcc
                   <span className="text-muted-foreground/40 shrink-0" aria-hidden>
                     ·
                   </span>
-                  <p className="font-mono text-[10px] text-muted-foreground truncate" title={user.steamId64}>
-                    {user.steamId64}
+                  <p
+                    className="font-mono text-[10px] text-muted-foreground/70 truncate"
+                    title={user.steamId64}
+                  >
+                    {embedded ? truncateSteamId(user.steamId64) : user.steamId64}
                   </p>
                 </>
               ) : (
@@ -52,9 +64,15 @@ export function ConnectedSteamAccountCard({ compact = false }: ConnectedSteamAcc
               )}
             </div>
 
-            <Lock className="h-3 w-3 text-muted-foreground/70 shrink-0" aria-hidden />
-          </div>
-        </CardContent>
+        <Lock className="h-3 w-3 text-muted-foreground/60 shrink-0" aria-hidden />
+      </div>
+    );
+
+    if (embedded) return row;
+
+    return (
+      <Card className="border-border/60 bg-muted/20">
+        <CardContent className="px-2 py-1.5">{row}</CardContent>
       </Card>
     );
   }
