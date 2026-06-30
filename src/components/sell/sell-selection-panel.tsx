@@ -151,15 +151,12 @@ export function SellSelectionPanel({
         >
           {sp.continueWithSelection}
         </Button>
-        {hasSelection && (
+        {hasSelection && !embedded && (
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className={cn(
-              "w-full border-[rgba(159,196,255,0.22)] bg-white/[0.03] hover:bg-white/[0.06]",
-              embedded && "h-8 text-xs",
-            )}
+            className="w-full border-[rgba(159,196,255,0.22)] bg-white/[0.03] hover:bg-white/[0.06]"
             onClick={onDeselect}
           >
             {sp.deselectAll}

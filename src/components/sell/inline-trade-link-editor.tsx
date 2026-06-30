@@ -6,20 +6,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  Link, 
-  CheckCircle, 
-  AlertTriangle, 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Link,
+  CheckCircle,
+  AlertTriangle,
   RefreshCw,
-  Info,
   ChevronDown,
-  ChevronUp,
-  ExternalLink
+  ExternalLink,
 } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLocale } from "@/components/providers/locale-provider";
 import { toast } from "sonner";
 import { parseSteamId64FromUserInput, normalizeSteamTradeLink } from "@/lib/steam-id";
+import { cn } from "@/lib/utils";
 
 interface InlineTradeLinkEditorProps {
   onSuccess?: (tradeLink: string) => void;
@@ -30,6 +35,17 @@ interface InlineTradeLinkEditorProps {
 const EMBEDDED_MODIFY_BUTTON_CLASS =
   "h-7 px-2.5 text-[11px] shrink-0 border-[rgba(159,196,255,0.22)] bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur-sm";
 
+const GLASS_SURFACE =
+  "rounded-md border border-[rgba(159,196,255,0.14)] bg-white/[0.03] backdrop-blur-sm divide-y divide-[rgba(159,196,255,0.12)]";
+
+const EXPAND_ANIMATION =
+  "grid transition-[grid-template-rows,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none";
+
+function truncateTradeUrl(url: string): string {
+  if (url.length <= 52) return url;
+  return `${url.slice(0, 32)}…${url.slice(-14)}`;
+}
+
 export default function InlineTradeLinkEditor({
   onSuccess,
   compact = false,
@@ -37,10 +53,10 @@ export default function InlineTradeLinkEditor({
 }: InlineTradeLinkEditorProps) {
   const { user, updateUser } = useAuth();
   const { messages } = useLocale();
-  const [isExpanded, setIsExpanded] = useState(!user?.tradeLink); // Déplié par défaut si pas de Trade Link
-  const [tradeUrl, setTradeUrl] = useState(user?.tradeLink || '');
+  const [isExpanded, setIsExpanded] = useState(!user?.tradeLink);
+  const [tradeUrl, setTradeUrl] = useState(user?.tradeLink || "");
   const [isValidUrl, setIsValidUrl] = useState<boolean | null>(
-    user?.tradeLink ? validateTradeUrl(user.tradeLink) : null
+    user?.tradeLink ? validateTradeUrl(user.tradeLink) : null,
   );
   const [loading, setLoading] = useState(false);
   const [extractedSteamId, setExtractedSteamId] = useState<string | null>(null);
@@ -58,8 +74,8 @@ export default function InlineTradeLinkEditor({
   }, [user?.tradeLink]);
 
   function validateTradeUrl(url: string): boolean {
-    // Accepte avec ou sans / après "new" (Steam peut renvoyer les deux formats)
-    const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/?\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
+    const steamTradeUrlRegex =
+      /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/?\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
     return steamTradeUrlRegex.test(url);
   }
 
@@ -90,7 +106,7 @@ export default function InlineTradeLinkEditor({
       setIsExpanded(false);
       onSuccess?.(normalized);
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde du Trade Link:', error);
+      console.error("Erreur lors de la sauvegarde du Trade Link:", error);
       toast.error(messages.settings.tradeLink.saveError);
     } finally {
       setLoading(false);
@@ -98,62 +114,229 @@ export default function InlineTradeLinkEditor({
   };
 
   const handleClear = () => {
-    setTradeUrl('');
+    setTradeUrl("");
     setIsValidUrl(null);
     setExtractedSteamId(null);
   };
 
   const openSteamTradeUrl = () => {
-    window.open('https://steamcommunity.com/id/me/tradeoffers/privacy#trade_offer_access_url', '_blank');
+    window.open(
+      "https://steamcommunity.com/id/me/tradeoffers/privacy#trade_offer_access_url",
+      "_blank",
+    );
   };
 
   const sellTradeLink = messages.sellPage.tradeLinkSection;
+  const tradeLinkMessages = messages.settings.tradeLink;
 
   const title = user?.tradeLink
-    ? messages.settings.tradeLink.title
-    : messages.settings.tradeLink.configureTradeLinkTitle;
+    ? tradeLinkMessages.title
+    : tradeLinkMessages.configureTradeLinkTitle;
 
-  const modifyLabel = user?.tradeLink
-    ? messages.settings.tradeLink.modify
-    : messages.settings.tradeLink.configure;
+  const modifyLabel = user?.tradeLink ? tradeLinkMessages.modify : tradeLinkMessages.configure;
 
-  const collapsedEmbeddedView =
-    embedded && !isExpanded ? (
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between gap-2 min-w-0">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <Link className="w-3.5 h-3.5 text-theme-accent shrink-0" />
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80 truncate">
-              {title}
-            </span>
-            {user?.tradeLink && <CheckCircle className="w-3 h-3 text-green-500 shrink-0" />}
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setIsExpanded(true)}
-            className={EMBEDDED_MODIFY_BUTTON_CLASS}
+  const toggleExpanded = () => setIsExpanded((prev) => !prev);
+
+  const renderExpandedForm = (formEmbedded = false) => (
+    <div className={GLASS_SURFACE}>
+      <Accordion type="single" collapsible className="px-3">
+        <AccordionItem value="help" className="border-0">
+          <AccordionTrigger
+            className={cn(
+              "py-2.5 text-left hover:no-underline [&>svg]:size-3 [&>svg]:text-muted-foreground/60",
+              formEmbedded
+                ? "text-[10px] text-muted-foreground/75 hover:text-muted-foreground"
+                : "text-xs text-muted-foreground/80 hover:text-muted-foreground",
+            )}
           >
-            {modifyLabel}
-          </Button>
+            {tradeLinkMessages.howToGetTitle}
+          </AccordionTrigger>
+          <AccordionContent className="pb-2.5">
+            <ol
+              className={cn(
+                "list-decimal list-inside space-y-0.5 text-muted-foreground/75 ml-1",
+                formEmbedded ? "text-[10px]" : "text-xs",
+              )}
+            >
+              {tradeLinkMessages.instructions.map((instruction, index) => (
+                <li key={index}>{instruction}</li>
+              ))}
+            </ol>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={openSteamTradeUrl}
+              className={cn(
+                "mt-2 border-[rgba(159,196,255,0.22)] bg-white/[0.03] hover:bg-white/[0.06]",
+                formEmbedded ? "h-7 text-[10px]" : "h-8 text-xs",
+              )}
+            >
+              <ExternalLink className="w-3 h-3 mr-1" />
+              {tradeLinkMessages.openSteam}
+            </Button>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+
+      <div className={cn("px-3 space-y-2", formEmbedded ? "py-2.5" : "py-3")}>
+        <Label
+          htmlFor="trade-url-inline"
+          className={formEmbedded ? "text-[10px] text-muted-foreground/80" : "text-sm"}
+        >
+          {tradeLinkMessages.urlLabel}
+        </Label>
+        <div className="relative">
+          <Input
+            id="trade-url-inline"
+            placeholder={tradeLinkMessages.placeholder}
+            value={tradeUrl}
+            onChange={(e) => handleUrlChange(e.target.value)}
+            className={cn(
+              "bg-white/[0.02] border-[rgba(159,196,255,0.18)] transition-colors duration-200",
+              formEmbedded && "h-8 text-xs",
+              isValidUrl === false && "border-destructive/60 focus-visible:ring-destructive/20",
+              isValidUrl === true &&
+                "border-theme-accent/45 focus-visible:ring-theme-accent/25 pr-8",
+            )}
+          />
+          {isValidUrl === true && (
+            <CheckCircle
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-theme-accent pointer-events-none"
+              aria-hidden
+            />
+          )}
         </div>
 
-        <p className="text-[10px] text-muted-foreground/70 leading-snug line-clamp-2">
-          {sellTradeLink.description}
-        </p>
+        {isValidUrl === false && (
+          <Alert variant="destructive" className="py-2 bg-destructive/5 border-destructive/30">
+            <AlertTriangle className="h-3 w-3" />
+            <AlertDescription className="text-xs">
+              {tradeLinkMessages.invalidFormatDesc}
+            </AlertDescription>
+          </Alert>
+        )}
 
-        {user?.tradeLink && (
-          <button
-            type="button"
-            className="text-[10px] text-theme-accent/80 hover:text-theme-accent underline-offset-2 hover:underline"
-            title={user.tradeLink}
+        {isValidUrl === true && (
+          <p
+            className={cn(
+              "flex items-center gap-1 text-muted-foreground/75",
+              formEmbedded ? "text-[10px]" : "text-xs",
+            )}
           >
-            {sellTradeLink.viewLink}
-          </button>
+            <CheckCircle className="w-3 h-3 text-theme-accent shrink-0" />
+            {tradeLinkMessages.validFormat}
+          </p>
+        )}
+
+        {extractedSteamId && isValidUrl && (
+          <p
+            className={cn(
+              "text-muted-foreground/70 leading-snug",
+              formEmbedded ? "text-[10px]" : "text-xs",
+            )}
+          >
+            {sellTradeLink.inventoryFromTradeLink}{" "}
+            <span className="font-mono text-muted-foreground/90">{extractedSteamId}</span>
+            {" · "}
+            {tradeLinkMessages.extractedSteamIdDesc}
+          </p>
         )}
       </div>
-    ) : null;
+
+      <div className={cn("px-3 flex gap-2", formEmbedded ? "py-2.5" : "py-3")}>
+        <Button
+          onClick={handleSave}
+          disabled={loading || !isValidUrl || !tradeUrl || tradeUrl === user?.tradeLink}
+          size="sm"
+          className={cn("flex-1", formEmbedded && "h-8 text-xs")}
+        >
+          {loading && <RefreshCw className="w-3 h-3 animate-spin mr-2" />}
+          <span>{loading ? tradeLinkMessages.saving : tradeLinkMessages.save}</span>
+        </Button>
+
+        {tradeUrl && !user?.tradeLink && (
+          <Button
+            variant="outline"
+            onClick={handleClear}
+            disabled={loading}
+            size="sm"
+            className={cn(
+              "border-[rgba(159,196,255,0.22)] bg-white/[0.03] hover:bg-white/[0.06]",
+              formEmbedded && "h-8 text-xs",
+            )}
+          >
+            {tradeLinkMessages.clear}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
+  const modifyButtonChevron = (
+    <ChevronDown
+      className={cn(
+        "w-3.5 h-3.5 transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none",
+        isExpanded && "rotate-180",
+      )}
+      aria-hidden
+    />
+  );
+
+  const embeddedView = embedded ? (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between gap-2 min-w-0">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <Link className="w-3.5 h-3.5 text-theme-accent shrink-0" />
+          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80 truncate">
+            {title}
+          </span>
+          {user?.tradeLink && isValidUrl && (
+            <CheckCircle className="w-3 h-3 text-theme-accent shrink-0" aria-hidden />
+          )}
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={toggleExpanded}
+          className={cn(EMBEDDED_MODIFY_BUTTON_CLASS, "gap-1")}
+        >
+          {isExpanded ? tradeLinkMessages.hide : modifyLabel}
+          {modifyButtonChevron}
+        </Button>
+      </div>
+
+      <div
+        className={cn(
+          EXPAND_ANIMATION,
+          !isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+        )}
+      >
+        <div className="overflow-hidden min-h-0 space-y-1">
+          <p className="text-[10px] text-muted-foreground/70 leading-snug line-clamp-2">
+            {sellTradeLink.description}
+          </p>
+          {user?.tradeLink && (
+            <p
+              className="text-[10px] text-muted-foreground/55 font-mono truncate"
+              title={user.tradeLink}
+            >
+              {truncateTradeUrl(user.tradeLink)}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div
+        className={cn(
+          EXPAND_ANIMATION,
+          isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+        )}
+      >
+        <div className="overflow-hidden min-h-0 pt-1">{renderExpandedForm(true)}</div>
+      </div>
+    </div>
+  ) : null;
 
   const collapsedCompactView =
     !embedded && compact && !isExpanded ? (
@@ -161,7 +344,9 @@ export default function InlineTradeLinkEditor({
         <div className="flex items-center gap-1.5 min-w-0">
           <Link className="w-4 h-4 text-theme-accent shrink-0" />
           <h3 className="font-semibold text-sm truncate">{title}</h3>
-          {user?.tradeLink && <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />}
+          {user?.tradeLink && isValidUrl && (
+            <CheckCircle className="w-3.5 h-3.5 text-theme-accent shrink-0" />
+          )}
         </div>
 
         <Button
@@ -180,31 +365,9 @@ export default function InlineTradeLinkEditor({
             className="text-[10px] text-muted-foreground/70 font-mono truncate"
             title={user.tradeLink}
           >
-            {user.tradeLink}
+            {truncateTradeUrl(user.tradeLink)}
           </p>
         )}
-      </div>
-    ) : null;
-
-  const embeddedExpandedHeader =
-    embedded && isExpanded ? (
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <Link className="w-3.5 h-3.5 text-theme-accent shrink-0" />
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80 truncate">
-            {title}
-          </span>
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => setIsExpanded(false)}
-          className={EMBEDDED_MODIFY_BUTTON_CLASS}
-        >
-          {messages.settings.tradeLink.hide}
-          <ChevronUp className="w-3.5 h-3.5" />
-        </Button>
       </div>
     ) : null;
 
@@ -232,25 +395,23 @@ export default function InlineTradeLinkEditor({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={toggleExpanded}
             className={`shrink-0 flex items-center gap-1 w-full ${compact ? "h-8" : "sm:w-auto"}`}
           >
-            {isExpanded ? (
-              <>
-                {messages.settings.tradeLink.hide} <ChevronUp className="w-4 h-4" />
-              </>
-            ) : (
-              <>
-                {modifyLabel} {!user?.tradeLink && <ChevronDown className="w-4 h-4" />}
-              </>
-            )}
+            {isExpanded ? tradeLinkMessages.hide : modifyLabel}
+            <ChevronDown
+              className={cn(
+                "w-4 h-4 transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
+                isExpanded && "rotate-180",
+              )}
+            />
           </Button>
         </div>
 
         {!isExpanded && !compact && user?.tradeLink && (
-          <div className="mt-3 px-3 py-2 space-y-1 rounded-md border border-theme-accent/20 bg-background/60">
+          <div className="mt-3 px-3 py-2 space-y-1 rounded-md border border-[rgba(159,196,255,0.14)] bg-white/[0.03]">
             <p className="text-xs font-medium text-muted-foreground">
-              {messages.settings.tradeLink.currentTradeLink}
+              {tradeLinkMessages.currentTradeLink}
             </p>
             <p className="text-xs font-mono truncate text-foreground/80" title={user.tradeLink}>
               {user.tradeLink}
@@ -258,7 +419,7 @@ export default function InlineTradeLinkEditor({
             {extractedSteamId && (
               <p className="text-xs text-muted-foreground">
                 {sellTradeLink.inventoryFromTradeLink}{" "}
-                <code className="bg-muted px-1 rounded">{extractedSteamId}</code>
+                <code className="font-mono text-muted-foreground/90">{extractedSteamId}</code>
               </p>
             )}
           </div>
@@ -266,104 +427,14 @@ export default function InlineTradeLinkEditor({
       </>
     ) : null;
 
-  const expandedContent = isExpanded ? (
-    <div className={`space-y-3 ${embedded ? "mt-0" : "space-y-4 mt-4"}`}>
-      <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-        <div className="flex items-start gap-2">
-          <Info className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-          <div className="space-y-2 text-xs text-blue-700 dark:text-blue-300">
-            <p className="font-medium text-blue-900 dark:text-blue-100">
-              {messages.settings.tradeLink.howToGetTitle}
-            </p>
-            <ol className="list-decimal list-inside space-y-1 ml-2">
-              {messages.settings.tradeLink.instructions.map((instruction, index) => (
-                <li key={index}>{instruction}</li>
-              ))}
-            </ol>
-            <Button variant="outline" size="sm" onClick={openSteamTradeUrl} className="mt-2">
-              <ExternalLink className="w-3 h-3 mr-1" />
-              {messages.settings.tradeLink.openSteam}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="trade-url-inline" className="text-sm">
-          {messages.settings.tradeLink.urlLabel}
-        </Label>
-        <Input
-          id="trade-url-inline"
-          placeholder={messages.settings.tradeLink.placeholder}
-          value={tradeUrl}
-          onChange={(e) => handleUrlChange(e.target.value)}
-          className={
-            isValidUrl === false
-              ? "border-red-500"
-              : isValidUrl === true
-                ? "border-green-500"
-                : ""
-          }
-        />
-
-        {isValidUrl === false && (
-          <Alert variant="destructive" className="py-2">
-            <AlertTriangle className="h-3 w-3" />
-            <AlertDescription className="text-xs">
-              {messages.settings.tradeLink.invalidFormatDesc}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {isValidUrl === true && (
-          <Alert className="py-2 border-green-500 bg-green-50 dark:bg-green-950/20">
-            <CheckCircle className="h-3 w-3 text-green-500" />
-            <AlertDescription className="text-xs text-green-700 dark:text-green-300">
-              {messages.settings.tradeLink.validFormat}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {extractedSteamId && isValidUrl && (
-          <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2">
-            <p className="text-xs font-medium text-blue-900 dark:text-blue-100">
-              {messages.settings.tradeLink.extractedSteamIdTitle}
-            </p>
-            <p className="text-xs text-blue-700 dark:text-blue-300 font-mono bg-blue-100 dark:bg-blue-900/40 px-2 py-1 rounded mt-1">
-              {extractedSteamId}
-            </p>
-            <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-              {messages.settings.tradeLink.extractedSteamIdDesc}
-            </p>
-          </div>
-        )}
-      </div>
-
-      <div className="flex gap-2">
-        <Button
-          onClick={handleSave}
-          disabled={loading || !isValidUrl || !tradeUrl || tradeUrl === user?.tradeLink}
-          size="sm"
-          className="flex-1"
-        >
-          {loading && <RefreshCw className="w-3 h-3 animate-spin mr-2" />}
-          <span>{loading ? messages.settings.tradeLink.saving : messages.settings.tradeLink.save}</span>
-        </Button>
-
-        {tradeUrl && !user?.tradeLink && (
-          <Button variant="outline" onClick={handleClear} disabled={loading} size="sm">
-            {messages.settings.tradeLink.clear}
-          </Button>
-        )}
-      </div>
-    </div>
+  const expandedContent = !embedded && isExpanded ? (
+    <div className={`${compact ? "space-y-3 mt-3" : "space-y-4 mt-4"}`}>{renderExpandedForm()}</div>
   ) : null;
 
   const body = (
     <>
-      {collapsedEmbeddedView}
+      {embeddedView}
       {collapsedCompactView}
-      {embeddedExpandedHeader}
       {headerView}
       {expandedContent}
     </>
