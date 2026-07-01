@@ -265,7 +265,7 @@ class SkinplaceService {
       const resp = await fetch(url, {
         method: 'GET',
         headers,
-        body: JSON.stringify({ order_ids: orderIds, limit: 1 }),
+        body: JSON.stringify({ order_ids: orderIds, limit: orderIds.length }),
         signal: AbortSignal.timeout(this.config.timeout),
       });
       logger.api('GET', '/api/v3/instant/history (body)', resp.status);
