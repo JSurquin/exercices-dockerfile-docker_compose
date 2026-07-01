@@ -6220,6 +6220,8 @@ export interface Messages {
         totalUsers: string;
         totalUsersMonth: string;
         totalTrades: string;
+        skinsExchanged: string;
+        skinsCountSince: string;
         tradesThisMonth: string;
         totalVolume: string;
         totalVolumeMonth: string;
@@ -6256,11 +6258,32 @@ export interface Messages {
         tradesGalleryPeriodAll: string;
         tradesGalleryLimitLabel: string;
         tradesGalleryMeta: string;
+        tradesGalleryTotal: string;
         tradesGallerySortLabel: string;
         tradesGallerySortRecent: string;
         tradesGallerySortPriceDesc: string;
         tradesGallerySortPriceAsc: string;
         galleryLoadError: string;
+      };
+      profitSection: {
+        title: string;
+        subtitle: string;
+        totalProfit: string;
+        todayProfit: string;
+        monthProfit: string;
+        avgMargin: string;
+        matchedTrades: string;
+        recentTradesTitle: string;
+        recentTradesSub: string;
+        recentTradesEmpty: string;
+        colUser: string;
+        colPaid: string;
+        colSkinplace: string;
+        colProfit: string;
+        colMargin: string;
+        colDate: string;
+        loadError: string;
+        errorPrefix: string;
       };
       skinplaceMetrics: {
         title: string;

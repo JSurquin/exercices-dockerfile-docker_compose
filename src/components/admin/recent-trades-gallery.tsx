@@ -38,6 +38,8 @@ interface GalleryResponse {
   trades: GalleryTrade[];
   limit: number;
   period: GalleryPeriod;
+  totalVolumeCentimes: number;
+  totalItems: number;
 }
 
 const rarityGlow: Record<string, string> = {
@@ -110,11 +112,24 @@ export function RecentTradesGallery() {
             {t.tradesGalleryTitle}
           </CardTitle>
           {!isLoading && tradeCount > 0 && (
-            <p className="text-xs text-muted-foreground tabular-nums">
-              {t.tradesGalleryMeta
-                .replace('{trades}', String(tradeCount))
-                .replace('{items}', String(galleryItems.length))}
-            </p>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground tabular-nums">
+                {t.tradesGalleryMeta
+                  .replace('{trades}', String(tradeCount))
+                  .replace('{items}', String(galleryItems.length))}
+              </p>
+              {data?.totalVolumeCentimes != null && data.totalVolumeCentimes > 0 && (
+                <p className="text-sm font-semibold text-foreground tabular-nums">
+                  {t.tradesGalleryTotal.split('{amount}')[0]}
+                  <ConvertedPrice
+                    usdCents={data.totalVolumeCentimes}
+                    fromCurrency="USD"
+                    className="text-sm font-semibold text-foreground"
+                  />
+                  {t.tradesGalleryTotal.split('{amount}')[1] ?? ''}
+                </p>
+              )}
+            </div>
           )}
         </div>
 

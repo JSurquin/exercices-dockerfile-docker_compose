@@ -34,6 +34,7 @@ import { getTradeStatusLabel } from '@/lib/trade-status-display';
 import { cn } from '@/lib/utils';
 import { AdminUserLink } from '@/components/admin/admin-user-link';
 import { RecentTradesGallery } from '@/components/admin/recent-trades-gallery';
+import { AdminProfitSection } from '@/components/admin/admin-profit-section';
 
 function StatCard({
   title,
@@ -133,6 +134,16 @@ export function AdminStatsOverview() {
   const tradesThisMonth = currentMonthStats?.trades || 0;
   const monthlyVolumeCents = currentMonthStats?.volumeCentimes || 0;
   const volumeMonthParts = t.totalVolumeMonth.split('{amount}');
+  const skinsCountSinceLabel = stats.skinsCountSince
+    ? t.skinsCountSince.replace(
+        '{date}',
+        new Intl.DateTimeFormat('fr-FR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        }).format(new Date(stats.skinsCountSince)),
+      )
+    : null;
 
   return (
     <div className="space-y-6 mb-8">
@@ -153,15 +164,20 @@ export function AdminStatsOverview() {
         </StatCard>
 
         <StatCard
-          title={t.totalTrades}
+          title={t.skinsExchanged}
           icon={ShoppingCart}
           footer={
-            <Badge variant="outline" className={adminBadgeStatus}>
-              {t.tradesThisMonth.replace('{count}', String(tradesThisMonth))}
-            </Badge>
+            <div className="space-y-1">
+              {skinsCountSinceLabel && (
+                <p className="text-xs text-muted-foreground">{skinsCountSinceLabel}</p>
+              )}
+              <Badge variant="outline" className={adminBadgeStatus}>
+                {t.tradesThisMonth.replace('{count}', String(tradesThisMonth))}
+              </Badge>
+            </div>
           }
         >
-          {formatNumber(stats.totalTrades)}
+          {formatNumber(stats.totalSkinsSold ?? 0)}
         </StatCard>
 
         <StatCard
@@ -249,6 +265,8 @@ export function AdminStatsOverview() {
           <span className="text-lg truncate block">{stats.topUsers[0]?.username || 'N/A'}</span>
         </StatCard>
       </div>
+
+      <AdminProfitSection />
 
       <RecentTradesGallery />
 

@@ -24,15 +24,31 @@ export const EXCHANGED_SKINS_TRADE_WHERE: Prisma.TradeWhereInput = {
   ],
 };
 
+/** Date de début du comptage public « skins échangés » (affichée admin + homepage). */
+export const EXCHANGED_SKINS_COUNT_SINCE = new Date(
+  process.env.PLATFORM_EXCHANGED_SKINS_COUNT_SINCE ?? '2025-01-01T00:00:00.000Z',
+);
+
+export function exchangedSkinsTradeWhereSince(
+  since: Date = EXCHANGED_SKINS_COUNT_SINCE,
+): Prisma.TradeWhereInput {
+  return {
+    AND: [EXCHANGED_SKINS_TRADE_WHERE, { createdAt: { gte: since } }],
+  };
+}
+
 export type PlatformStatsRaw = {
   totalUsers: number;
   totalTrades: number;
   totalVolumeCents: number;
   totalSkinsSold: number;
+  skinsCountSince: string;
 };
 
 /** Métriques plateforme — mêmes requêtes que /api/admin/stats (Total Users, Trades, Volume). */
 export async function fetchPlatformStatsFromDb(): Promise<PlatformStatsRaw> {
+  const skinsWhere = exchangedSkinsTradeWhereSince();
+
   const [totalUsers, totalTrades, volumeResult, totalSkinsSold] = await Promise.all([
     prisma.user.count(),
     prisma.trade.count(),
@@ -41,7 +57,7 @@ export async function fetchPlatformStatsFromDb(): Promise<PlatformStatsRaw> {
       where: PLATFORM_VOLUME_TRADE_WHERE,
     }),
     prisma.tradeItem.count({
-      where: { trade: EXCHANGED_SKINS_TRADE_WHERE },
+      where: { trade: skinsWhere },
     }),
   ]);
 
@@ -50,5 +66,6 @@ export async function fetchPlatformStatsFromDb(): Promise<PlatformStatsRaw> {
     totalTrades,
     totalVolumeCents: volumeResult._sum?.grossCents ?? 0,
     totalSkinsSold,
+    skinsCountSince: EXCHANGED_SKINS_COUNT_SINCE.toISOString(),
   };
 }

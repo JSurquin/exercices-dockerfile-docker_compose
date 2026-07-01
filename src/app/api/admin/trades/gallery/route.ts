@@ -58,6 +58,14 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    const periodVolumeResult = await prisma.tradeItem.aggregate({
+      where: {
+        trade: createdAtFilter ? { createdAt: createdAtFilter } : undefined,
+      },
+      _sum: { priceCents: true },
+      _count: { id: true },
+    });
+
     const trades = tradesRaw.map((trade) => ({
       id: trade.id,
       ticketId: trade.ticketId,
@@ -74,7 +82,13 @@ export async function GET(request: NextRequest) {
       })),
     }));
 
-    return NextResponse.json({ trades, limit, period });
+    return NextResponse.json({
+      trades,
+      limit,
+      period,
+      totalVolumeCentimes: periodVolumeResult._sum.priceCents ?? 0,
+      totalItems: periodVolumeResult._count.id ?? 0,
+    });
   } catch (error) {
     console.error('Erreur lors de la récupération de la galerie trades:', error);
     return NextResponse.json({ error: 'Erreur interne du serveur' }, { status: 500 });
