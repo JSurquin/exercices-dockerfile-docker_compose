@@ -17,6 +17,7 @@ export type AdminProfitTradeRow = {
   userName: string;
   paidToUserCentimes: number;
   skinplaceCentimes: number;
+  bonusCentimes: number;
   profitCentimes: number;
   marginPercent: number;
   createdAt: string;
@@ -36,6 +37,8 @@ type ProfitTradeRow = {
   id: string;
   ticketId: string;
   grossCents: number;
+  affiliatePromoBonusCents: number;
+  vipBonusCents: number;
   createdAt: Date;
   pendingCreditedAt: Date | null;
   tradeAcceptedAt: Date | null;
@@ -72,14 +75,23 @@ function priceToCents(value: unknown): number | null {
   return null;
 }
 
+/** Prix marché Skinplace (sans multiplicateur user) — base de la marge plateforme (~5 % / ~1 %). */
 export function extractSkinplacePriceCents(entry: Record<string, unknown>): number | null {
+  const steamtrade = entry.steamtrade as Record<string, unknown> | undefined;
+  const marketPrice = priceToCents(steamtrade?.price_market);
+  if (marketPrice != null) return marketPrice;
+
   const payment = entry.payment as Record<string, unknown> | undefined;
   const paymentAmount = priceToCents(payment?.amount);
-  if (paymentAmount != null) return paymentAmount;
+  const multiplierAmount = priceToCents(payment?.multiplier_amount);
+  if (paymentAmount != null && multiplierAmount != null) {
+    return paymentAmount + multiplierAmount;
+  }
 
-  const steamtrade = entry.steamtrade as Record<string, unknown> | undefined;
-  const tradePrice = priceToCents(steamtrade?.price ?? steamtrade?.price_market);
+  const tradePrice = priceToCents(steamtrade?.price);
   if (tradePrice != null) return tradePrice;
+
+  if (paymentAmount != null) return paymentAmount;
 
   return null;
 }
@@ -159,6 +171,7 @@ export function buildAdminProfitTradeRow(
   if (skinplaceCentimes == null) return null;
 
   const paidToUserCentimes = trade.grossCents;
+  const bonusCentimes = trade.affiliatePromoBonusCents + trade.vipBonusCents;
   const profitCentimes = skinplaceCentimes - paidToUserCentimes;
   const tradeDate = profitAttributionDate(trade);
 
@@ -168,6 +181,7 @@ export function buildAdminProfitTradeRow(
     userName: (trade.user?.steamUsername || trade.user?.name || 'Inconnu').trim() || 'Inconnu',
     paidToUserCentimes,
     skinplaceCentimes,
+    bonusCentimes,
     profitCentimes,
     marginPercent: marginPercent(profitCentimes, skinplaceCentimes),
     createdAt: tradeDate.toISOString(),
@@ -181,6 +195,8 @@ export async function getAdminProfitMetrics(): Promise<AdminProfitMetrics> {
       id: true,
       ticketId: true,
       grossCents: true,
+      affiliatePromoBonusCents: true,
+      vipBonusCents: true,
       createdAt: true,
       pendingCreditedAt: true,
       tradeAcceptedAt: true,

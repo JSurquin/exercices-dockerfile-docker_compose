@@ -170,6 +170,7 @@ export function AdminProfitSection() {
                 <TableRow className={adminTableRow}>
                   <TableHead className={adminTableHead}>{t.colUser}</TableHead>
                   <TableHead className={adminTableHead}>{t.colPaid}</TableHead>
+                  <TableHead className={adminTableHead}>{t.colBonus}</TableHead>
                   <TableHead className={adminTableHead}>{t.colSkinplace}</TableHead>
                   <TableHead className={adminTableHead}>{t.colProfit}</TableHead>
                   <TableHead className={adminTableHead}>{t.colMargin}</TableHead>
@@ -186,6 +187,17 @@ export function AdminProfitSection() {
                         fromCurrency="USD"
                         className="text-foreground"
                       />
+                    </TableCell>
+                    <TableCell className={adminTableCell}>
+                      {trade.bonusCentimes > 0 ? (
+                        <ConvertedPrice
+                          usdCents={trade.bonusCentimes}
+                          fromCurrency="USD"
+                          className="text-amber-500"
+                        />
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                     <TableCell className={adminTableCell}>
                       <ConvertedPrice

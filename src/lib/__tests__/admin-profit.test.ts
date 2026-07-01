@@ -27,11 +27,13 @@ describe('admin-profit', () => {
     ).toEqual(holdDate);
   });
 
-  it('computes profit from Skinplace price minus gross (without promo bonuses)', () => {
+  it('computes profit from Skinplace market price minus gross (bonuses noted separately)', () => {
     const trade = {
       id: 'trade-1',
       ticketId: 'ORDER-123',
-      grossCents: 10_000,
+      grossCents: 9_500,
+      affiliatePromoBonusCents: 20,
+      vipBonusCents: 100,
       createdAt: new Date('2026-07-01T12:00:00.000Z'),
       pendingCreditedAt: new Date('2026-07-01T14:00:00.000Z'),
       tradeAcceptedAt: null,
@@ -42,23 +44,33 @@ describe('admin-profit', () => {
 
     const row = buildAdminProfitTradeRow(
       trade,
-      new Map([['ORDER-123', 10_700]]),
+      new Map([['ORDER-123', 10_000]]),
     );
 
     expect(row).toMatchObject({
-      paidToUserCentimes: 10_000,
-      skinplaceCentimes: 10_700,
-      profitCentimes: 700,
-      marginPercent: 6.5,
+      paidToUserCentimes: 9_500,
+      skinplaceCentimes: 10_000,
+      bonusCentimes: 120,
+      profitCentimes: 500,
+      marginPercent: 5,
     });
   });
 
-  it('extracts Skinplace price from payment.amount when present', () => {
+  it('prefers price_market over payment.amount for Skinplace payout', () => {
     expect(
       extractSkinplacePriceCents({
-        payment: { order_id: 'ORDER-1', amount: 42.5 },
-        steamtrade: { price: 40 },
+        payment: { order_id: 'ORDER-1', amount: 95, multiplier_amount: 5 },
+        steamtrade: { price: 95, price_market: 100 },
       }),
-    ).toBe(4250);
+    ).toBe(10_000);
+  });
+
+  it('falls back to payment.amount + multiplier_amount when price_market is missing', () => {
+    expect(
+      extractSkinplacePriceCents({
+        payment: { order_id: 'ORDER-1', amount: 99, multiplier_amount: 1 },
+        steamtrade: { price: 99 },
+      }),
+    ).toBe(10_000);
   });
 });

@@ -6278,6 +6278,7 @@ export interface Messages {
         recentTradesEmpty: string;
         colUser: string;
         colPaid: string;
+        colBonus: string;
         colSkinplace: string;
         colProfit: string;
         colMargin: string;
