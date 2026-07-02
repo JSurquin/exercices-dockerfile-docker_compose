@@ -18,31 +18,13 @@ import {
 } from '@/components/ui/select';
 import { Loader2, Wallet, Building2, AlertCircle, CheckCircle, Euro, Clock, Shield } from 'lucide-react';
 import { useLocale } from '@/components/providers/locale-provider';
+import {
+  WHITEPAY_SUPPORTED_CRYPTOS,
+  MEMO_REQUIRED_NETWORKS,
+  getWhitepayAddressPlaceholder,
+} from '@/lib/whitepay';
 
-// Cryptos supportées par Whitepay
-const SUPPORTED_CRYPTOS = [
-  { ticker: 'USDT', name: 'Tether (USDT)', networks: ['ERC20', 'TRC20', 'BEP20', 'TON', 'SOL'], is_stable: true },
-  { ticker: 'USDC', name: 'USD Coin (USDC)', networks: ['ERC20', 'TRC20', 'BEP20', 'SOL'], is_stable: true },
-  { ticker: 'BTC', name: 'Bitcoin (BTC)', networks: ['BTC'], is_stable: false },
-  { ticker: 'ETH', name: 'Ethereum (ETH)', networks: ['ERC20'], is_stable: false },
-  { ticker: 'SOL', name: 'Solana (SOL)', networks: ['SOL'], is_stable: false },
-  { ticker: 'TON', name: 'Toncoin (TON)', networks: ['TON'], is_stable: false },
-  { ticker: 'BNB', name: 'BNB (BNB)', networks: ['BEP20'], is_stable: false },
-];
-
-const MEMO_REQUIRED_NETWORKS = ['TON', 'STELLAR', 'XLM', 'COSMOS', 'ATOM'];
-
-function getAddressPlaceholder(network: string): string {
-  switch (network) {
-    case 'BTC': return 'bc1q...';
-    case 'ERC20':
-    case 'BEP20': return '0x...';
-    case 'TRC20': return 'T...';
-    case 'SOL': return 'So1...';
-    case 'TON': return 'EQ...';
-    default: return '0x...';
-  }
-}
+// Cryptos supportées par Whitepay — config centralisée dans @/lib/whitepay
 
 interface PayoutFormProps {
   availableAmountCents: number;
@@ -86,7 +68,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
   const [lastName, setLastName] = useState('');
 
   // Réseaux disponibles pour la crypto sélectionnée
-  const availableNetworks = SUPPORTED_CRYPTOS.find((c) => c.ticker === selectedCrypto)?.networks || [];
+  const availableNetworks = WHITEPAY_SUPPORTED_CRYPTOS.find((c) => c.ticker === selectedCrypto)?.networks || [];
   const needsMemo = MEMO_REQUIRED_NETWORKS.includes(selectedNetwork);
 
   const formatCents = (cents: number) => {
@@ -100,7 +82,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
 
   // Quand on change de crypto, reset le réseau
   useEffect(() => {
-    const crypto = SUPPORTED_CRYPTOS.find((c) => c.ticker === selectedCrypto);
+    const crypto = WHITEPAY_SUPPORTED_CRYPTOS.find((c) => c.ticker === selectedCrypto);
     if (crypto && crypto.networks.length > 0) {
       setSelectedNetwork(crypto.networks[0]);
     }
@@ -340,7 +322,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
                     <SelectValue placeholder={t.chooseCrypto} />
                   </SelectTrigger>
                   <SelectContent>
-                    {SUPPORTED_CRYPTOS.map((c) => (
+                    {WHITEPAY_SUPPORTED_CRYPTOS.map((c) => (
                       <SelectItem key={c.ticker} value={c.ticker}>
                         {c.name}
                       </SelectItem>
@@ -373,7 +355,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
                   id="walletAddress"
                   value={walletAddress}
                   onChange={(e) => setWalletAddress(e.target.value.trim())}
-                  placeholder={getAddressPlaceholder(selectedNetwork)}
+                  placeholder={getWhitepayAddressPlaceholder(selectedNetwork)}
                   required={method === 'CRYPTO'}
                 />
                 <p className="text-xs text-muted-foreground">

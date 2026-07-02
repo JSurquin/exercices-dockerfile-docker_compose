@@ -58,11 +58,13 @@ export const whitepayPayoutTransactionBodySchema = z
   })
   .strip();
 
-/** Whitepay quote / refresh — montant flexible */
+/** Whitepay quote / refresh — montant flexible + crypto/réseau pour frais réseau */
 export const whitepayAmountBodySchema = z
   .object({
     amountCents: z.union([z.number(), z.string()]).optional(),
     amount: z.union([z.number(), z.string()]).optional(),
+    targetCurrency: z.string().optional(),
+    network: z.string().optional(),
   })
   .strip()
   .refine((b) => b.amountCents != null || b.amount != null, {

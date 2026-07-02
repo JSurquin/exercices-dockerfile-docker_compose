@@ -11,7 +11,8 @@ import {
   validateWalletAddress,
   networkRequiresMemo,
   convertWhitepayStatus,
-  WHITEPAY_SUPPORTED_CRYPTOS,
+  isWhitepayCryptoNetworkSupported,
+  getWhitepayCryptoByTicker,
   type WhitepayInstantWithdrawalRequest,
   type WhitepayTravelRule,
 } from '@/lib/whitepay';
@@ -112,9 +113,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supportedCrypto = WHITEPAY_SUPPORTED_CRYPTOS.find(
-      (c) => c.ticker === targetCurrency.toUpperCase()
-    );
+    const supportedCrypto = getWhitepayCryptoByTicker(targetCurrency);
     if (!supportedCrypto) {
       return NextResponse.json(
         { error: `Crypto non supportée: ${targetCurrency}` },
@@ -122,7 +121,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!supportedCrypto.networks.includes(network.toUpperCase() as never)) {
+    if (!isWhitepayCryptoNetworkSupported(targetCurrency, network)) {
       return NextResponse.json(
         { error: `Réseau ${network} non supporté pour ${targetCurrency}` },
         { status: 400 }

@@ -3,7 +3,10 @@ import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
 import {
   calculateWhitepayFees,
+  estimateNetworkFeeCents,
+  estimateNetworkFeeCentsSync,
   getWhitepayLimits,
+  isWhitepayCryptoNetworkSupported,
   centsToEur,
 } from '@/lib/whitepay';
 import { safeParseJson } from '@/lib/validation/helpers';
@@ -42,6 +45,10 @@ export async function POST(request: NextRequest) {
     }
     const body = parsed.data;
     const amountCents = body.amountCents ?? body.amount;
+    const targetCurrency =
+      typeof body.targetCurrency === 'string' ? body.targetCurrency.toUpperCase() : undefined;
+    const network =
+      typeof body.network === 'string' ? body.network.toUpperCase() : undefined;
 
     if (amountCents == null || Number(amountCents) <= 0) {
       LOG('✗ Montant invalide', { amountCents });
@@ -69,12 +76,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const fees = calculateWhitepayFees(amount);
+    if (targetCurrency && network && !isWhitepayCryptoNetworkSupported(targetCurrency, network)) {
+      LOG('✗ Combinaison crypto/réseau non supportée', { targetCurrency, network });
+      return NextResponse.json(
+        { error: `Réseau ${network} non supporté pour ${targetCurrency}` },
+        { status: 400 }
+      );
+    }
+
+    let networkFeeCents = 0;
+    if (targetCurrency && network) {
+      try {
+        networkFeeCents = await estimateNetworkFeeCents(targetCurrency, network);
+      } catch {
+        networkFeeCents = estimateNetworkFeeCentsSync(targetCurrency, network);
+      }
+    }
+
+    const fees = calculateWhitepayFees(amount, networkFeeCents);
     const netCents = amount - fees.totalFeeCents;
 
     const quote = {
       method: 'CRYPTO',
       amountCents: amount,
+      targetCurrency: targetCurrency ?? null,
+      network: network ?? null,
       fees: {
         processingCents: fees.processingFeeCents,
         networkCents: fees.networkFeeCents,
@@ -87,7 +113,7 @@ export async function POST(request: NextRequest) {
       quoteId: `wp-quote-${Date.now()}-${session.user.id.slice(0, 8)}`,
     };
 
-    LOG('✓ Devis crypto calculé', { amountCents: amount, netCents });
+    LOG('✓ Devis crypto calculé', { amountCents: amount, netCents, networkFeeCents });
     return NextResponse.json({
       quote,
       limits: {

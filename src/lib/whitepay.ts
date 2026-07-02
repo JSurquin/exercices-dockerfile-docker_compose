@@ -234,18 +234,181 @@ export interface WhitepaySupportedNetwork {
 }
 
 /** Réseaux nécessitant un memo obligatoire */
-export const MEMO_REQUIRED_NETWORKS = ['TON', 'STELLAR', 'XLM', 'COSMOS', 'ATOM'];
+export const MEMO_REQUIRED_NETWORKS = ['TON', 'STELLAR', 'XLM', 'COSMOS', 'ATOM', 'NEAR', 'DOTASSETHUB'];
 
-/** Cryptos supportées pour les retraits Whitepay */
-export const WHITEPAY_SUPPORTED_CRYPTOS = [
-  { ticker: 'USDT', name: 'Tether', networks: ['ERC20', 'TRC20', 'BEP20', 'TON', 'SOL'], is_stable: true },
-  { ticker: 'USDC', name: 'USD Coin', networks: ['ERC20', 'TRC20', 'BEP20', 'SOL'], is_stable: true },
-  { ticker: 'BTC', name: 'Bitcoin', networks: ['BTC'], is_stable: false },
-  { ticker: 'ETH', name: 'Ethereum', networks: ['ERC20'], is_stable: false },
-  { ticker: 'SOL', name: 'Solana', networks: ['SOL'], is_stable: false },
-  { ticker: 'TON', name: 'Toncoin', networks: ['TON'], is_stable: false },
-  { ticker: 'BNB', name: 'BNB', networks: ['BEP20'], is_stable: false },
+/** Réseaux EVM (adresse 0x…) */
+export const WHITEPAY_EVM_NETWORKS = [
+  'ERC20',
+  'BEP20',
+  'POLYGON',
+  'ARBITRUM',
+  'BASE',
+  'OPTIMISM',
+  'CCHAIN',
+  'WHITECHAIN',
 ] as const;
+
+/**
+ * Cryptos / réseaux supportés pour les retraits Whitepay (convert-withdrawal).
+ * Source : doc Whitepay /private-api/withdrawals/fees + convert-withdrawal.
+ */
+export const WHITEPAY_SUPPORTED_CRYPTOS = [
+  {
+    ticker: 'USDT',
+    name: 'Tether (USDT)',
+    networks: ['ERC20', 'TRC20', 'BEP20', 'TON', 'SOL', 'POLYGON', 'ARBITRUM', 'NEAR', 'CCHAIN'],
+    is_stable: true,
+  },
+  {
+    ticker: 'USDC',
+    name: 'USD Coin (USDC)',
+    networks: ['ERC20', 'SOL', 'POLYGON', 'ARBITRUM', 'BASE', 'OPTIMISM', 'NEAR', 'STELLAR', 'CCHAIN', 'WHITECHAIN', 'DOTASSETHUB'],
+    is_stable: true,
+  },
+  { ticker: 'BTC', name: 'Bitcoin (BTC)', networks: ['BTC'], is_stable: false },
+  { ticker: 'ETH', name: 'Ethereum (ETH)', networks: ['ERC20'], is_stable: false },
+  { ticker: 'SOL', name: 'Solana (SOL)', networks: ['SOL'], is_stable: false },
+  { ticker: 'TON', name: 'Toncoin (TON)', networks: ['TON'], is_stable: false },
+  { ticker: 'BNB', name: 'BNB (BNB)', networks: ['BEP20'], is_stable: false },
+] as const;
+
+export type WhitepaySupportedCrypto = (typeof WHITEPAY_SUPPORTED_CRYPTOS)[number];
+
+/** Frais réseau fixes de repli (unités crypto) — alignés sur la doc Whitepay withdrawals/fees */
+const WHITEPAY_STATIC_NETWORK_FEE_UNITS: Record<string, Record<string, number>> = {
+  USDT: { TRC20: 1, TON: 1, CCHAIN: 1, ERC20: 9.54, NEAR: 1, ARBITRUM: 1, POLYGON: 1, SOL: 1, BEP20: 1 },
+  USDC: { ERC20: 9.54, SOL: 1, POLYGON: 1, ARBITRUM: 1, BASE: 1, OPTIMISM: 1, NEAR: 1, STELLAR: 1, CCHAIN: 1, WHITECHAIN: 1, DOTASSETHUB: 1 },
+  BTC: { BTC: 0.0001 },
+  ETH: { ERC20: 0.002 },
+  SOL: { SOL: 0.01 },
+  TON: { TON: 0.5 },
+  BNB: { BEP20: 0.001 },
+};
+
+/** Taux EUR approximatifs pour convertir les frais réseau crypto → centimes (devis indicatif) */
+const WHITEPAY_EUR_PER_CRYPTO_UNIT: Record<string, number> = {
+  USDT: 1,
+  USDC: 1,
+  BTC: 85_000,
+  ETH: 2_500,
+  SOL: 150,
+  TON: 5,
+  BNB: 600,
+};
+
+export interface WhitepayNetworkFeeDetail {
+  fixed: string;
+  max_amount: string;
+  min_amount: string;
+  is_memo_required: boolean;
+  flex?: { minFee: string; maxFee: string; percent: string };
+}
+
+export interface WhitepayWithdrawalFeesCurrency {
+  fees: unknown;
+  network_fees: Record<string, WhitepayNetworkFeeDetail>;
+  networks: string[];
+  currency: { ticker: string };
+}
+
+const withdrawalFeesCache = new Map<string, { data: WhitepayWithdrawalFeesCurrency; fetchedAt: number }>();
+const WITHDRAWAL_FEES_CACHE_MS = 5 * 60 * 1000;
+
+export function getWhitepayCryptoByTicker(ticker: string): WhitepaySupportedCrypto | undefined {
+  return WHITEPAY_SUPPORTED_CRYPTOS.find((c) => c.ticker === ticker.toUpperCase());
+}
+
+export function isWhitepayCryptoNetworkSupported(ticker: string, network: string): boolean {
+  const crypto = getWhitepayCryptoByTicker(ticker);
+  if (!crypto) return false;
+  return (crypto.networks as readonly string[]).includes(network.toUpperCase());
+}
+
+export function getWhitepayAddressPlaceholder(network: string): string {
+  switch (network.toUpperCase()) {
+    case 'BTC':
+      return 'bc1q...';
+    case 'TRC20':
+      return 'T...';
+    case 'SOL':
+      return 'So1...';
+    case 'TON':
+      return 'EQ...';
+    case 'STELLAR':
+      return 'G...';
+    case 'NEAR':
+      return 'user.near';
+    case 'DOTASSETHUB':
+      return '1...';
+    default:
+      return '0x...';
+  }
+}
+
+function cryptoNetworkFeeUnitsToEurCents(units: number, ticker: string): number {
+  if (units <= 0 || Number.isNaN(units)) return 0;
+  const rate = WHITEPAY_EUR_PER_CRYPTO_UNIT[ticker.toUpperCase()] ?? 1;
+  return Math.ceil(units * rate * 100);
+}
+
+function getStaticNetworkFeeUnits(ticker: string, network: string): number {
+  const byCrypto = WHITEPAY_STATIC_NETWORK_FEE_UNITS[ticker.toUpperCase()];
+  if (!byCrypto) return 0;
+  return byCrypto[network.toUpperCase()] ?? 0;
+}
+
+/** Estimation synchrone (UI) — frais réseau en centimes EUR */
+export function estimateNetworkFeeCentsSync(ticker: string, network: string): number {
+  const units = getStaticNetworkFeeUnits(ticker, network);
+  return cryptoNetworkFeeUnitsToEurCents(units, ticker);
+}
+
+/** Récupère les frais / réseaux depuis l'API Whitepay (cache 5 min) */
+export async function getWithdrawalFeesForTicker(
+  ticker: string
+): Promise<WhitepayWithdrawalFeesCurrency | null> {
+  const key = ticker.toUpperCase();
+  const cached = withdrawalFeesCache.get(key);
+  if (cached && Date.now() - cached.fetchedAt < WITHDRAWAL_FEES_CACHE_MS) {
+    return cached.data;
+  }
+
+  try {
+    validateConfig();
+    const qs = new URLSearchParams({ ticker: key });
+    const resp = await whitepayRequest<{ currencies: WhitepayWithdrawalFeesCurrency[] }>(
+      'GET',
+      `/private-api/withdrawals/fees?${qs.toString()}`
+    );
+    const found = resp.currencies.find((c) => c.currency?.ticker?.toUpperCase() === key);
+    if (found) {
+      withdrawalFeesCache.set(key, { data: found, fetchedAt: Date.now() });
+      return found;
+    }
+  } catch (error) {
+    console.error('[Whitepay] Failed to fetch withdrawal fees', { ticker: key, error });
+  }
+
+  return null;
+}
+
+/** Estimation async — préfère l'API Whitepay, repli sur les valeurs statiques */
+export async function estimateNetworkFeeCents(
+  ticker: string,
+  network: string
+): Promise<number> {
+  const networkU = network.toUpperCase();
+  const tickerU = ticker.toUpperCase();
+  const feesData = await getWithdrawalFeesForTicker(tickerU);
+  const live = feesData?.network_fees?.[networkU];
+  if (live?.fixed) {
+    const fixed = parseFloat(live.fixed);
+    if (!Number.isNaN(fixed) && fixed > 0) {
+      return cryptoNetworkFeeUnitsToEurCents(fixed, tickerU);
+    }
+  }
+  return estimateNetworkFeeCentsSync(tickerU, networkU);
+}
 
 // =============================================================================
 // SIGNATURE HMAC
@@ -758,13 +921,21 @@ export const WHITEPAY_FEE_RATE = 0.011; // 1,1%
  * Calcule les frais estimés pour un retrait crypto Whitepay (1,1% du montant).
  * Utiliser parseWhitepayFeesFromResponse() pour les frais réels issus de l'API.
  */
-export function calculateWhitepayFees(amountCents: number): {
+export function calculateWhitepayFees(
+  amountCents: number,
+  networkFeeCents: number = 0
+): {
   processingFeeCents: number;
   networkFeeCents: number;
   totalFeeCents: number;
 } {
-  const totalFeeCents = Math.ceil(amountCents * WHITEPAY_FEE_RATE);
-  return { processingFeeCents: totalFeeCents, networkFeeCents: 0, totalFeeCents };
+  const processingFeeCents = Math.ceil(amountCents * WHITEPAY_FEE_RATE);
+  const safeNetworkFeeCents = Math.max(0, Math.round(networkFeeCents));
+  return {
+    processingFeeCents,
+    networkFeeCents: safeNetworkFeeCents,
+    totalFeeCents: processingFeeCents + safeNetworkFeeCents,
+  };
 }
 
 /**
@@ -878,39 +1049,39 @@ export function validateWalletAddress(
     return { isValid: false, error: 'Adresse wallet requise' };
   }
 
+  const networkU = network.toUpperCase();
+
   // Validations basiques par réseau
-  switch (network.toUpperCase()) {
-    case 'BTC':
-      if (!/^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,62}$/.test(address)) {
-        return { isValid: false, error: 'Adresse Bitcoin invalide' };
-      }
-      break;
-    case 'ERC20':
-    case 'BEP20':
-      if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
-        return { isValid: false, error: 'Adresse EVM invalide (doit commencer par 0x)' };
-      }
-      break;
-    case 'TRC20':
-      if (!/^T[a-zA-Z0-9]{33}$/.test(address)) {
-        return { isValid: false, error: 'Adresse TRON invalide (doit commencer par T)' };
-      }
-      break;
-    case 'SOL':
-      if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)) {
-        return { isValid: false, error: 'Adresse Solana invalide' };
-      }
-      break;
-    case 'TON':
-      if (address.length < 48) {
-        return { isValid: false, error: 'Adresse TON invalide' };
-      }
-      break;
-    default:
-      // Validation générique: au moins 20 caractères
-      if (address.length < 20) {
-        return { isValid: false, error: 'Adresse wallet trop courte' };
-      }
+  if (networkU === 'BTC') {
+    if (!/^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,62}$/.test(address)) {
+      return { isValid: false, error: 'Adresse Bitcoin invalide' };
+    }
+  } else if ((WHITEPAY_EVM_NETWORKS as readonly string[]).includes(networkU)) {
+    if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+      return { isValid: false, error: 'Adresse EVM invalide (doit commencer par 0x)' };
+    }
+  } else if (networkU === 'TRC20') {
+    if (!/^T[a-zA-Z0-9]{33}$/.test(address)) {
+      return { isValid: false, error: 'Adresse TRON invalide (doit commencer par T)' };
+    }
+  } else if (networkU === 'SOL') {
+    if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)) {
+      return { isValid: false, error: 'Adresse Solana invalide' };
+    }
+  } else if (networkU === 'TON') {
+    if (address.length < 48) {
+      return { isValid: false, error: 'Adresse TON invalide' };
+    }
+  } else if (networkU === 'STELLAR') {
+    if (!/^G[A-Z0-9]{55}$/.test(address)) {
+      return { isValid: false, error: 'Adresse Stellar invalide (doit commencer par G)' };
+    }
+  } else if (networkU === 'NEAR') {
+    if (address.length < 2 || address.length > 64) {
+      return { isValid: false, error: 'Adresse NEAR invalide' };
+    }
+  } else if (address.length < 20) {
+    return { isValid: false, error: 'Adresse wallet trop courte' };
   }
 
   return { isValid: true };

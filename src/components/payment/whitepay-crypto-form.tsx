@@ -28,10 +28,11 @@ import {
   Copy,
 } from 'lucide-react';
 import { useLocale } from '@/components/providers/locale-provider';
-
-// =============================================================================
-// TYPES
-// =============================================================================
+import {
+  WHITEPAY_SUPPORTED_CRYPTOS,
+  MEMO_REQUIRED_NETWORKS,
+  getWhitepayAddressPlaceholder,
+} from '@/lib/whitepay';
 
 interface WhitepayCryptoFormProps {
   /** ID du trade associé (optionnel) */
@@ -65,35 +66,7 @@ interface WhitepayQuote {
 }
 
 // =============================================================================
-// CRYPTOS SUPPORTÉES
-// =============================================================================
-
-const SUPPORTED_CRYPTOS = [
-  { ticker: 'USDT', name: 'Tether (USDT)', networks: ['ERC20', 'TRC20', 'BEP20', 'TON', 'SOL'], is_stable: true },
-  { ticker: 'USDC', name: 'USD Coin (USDC)', networks: ['ERC20', 'TRC20', 'BEP20', 'SOL'], is_stable: true },
-  { ticker: 'BTC', name: 'Bitcoin (BTC)', networks: ['BTC'], is_stable: false },
-  { ticker: 'ETH', name: 'Ethereum (ETH)', networks: ['ERC20'], is_stable: false },
-  { ticker: 'SOL', name: 'Solana (SOL)', networks: ['SOL'], is_stable: false },
-  { ticker: 'TON', name: 'Toncoin (TON)', networks: ['TON'], is_stable: false },
-  { ticker: 'BNB', name: 'BNB (BNB)', networks: ['BEP20'], is_stable: false },
-];
-
-const MEMO_REQUIRED_NETWORKS = ['TON', 'STELLAR', 'XLM', 'COSMOS', 'ATOM'];
-
-function getAddressPlaceholder(network: string): string {
-  switch (network) {
-    case 'BTC': return 'bc1q...';
-    case 'ERC20':
-    case 'BEP20': return '0x...';
-    case 'TRC20': return 'T...';
-    case 'SOL': return 'So1...';
-    case 'TON': return 'EQ...';
-    default: return '0x...';
-  }
-}
-
-// =============================================================================
-// COMPOSANT PRINCIPAL
+// TYPES
 // =============================================================================
 
 export function WhitepayCryptoForm({
@@ -131,12 +104,12 @@ export function WhitepayCryptoForm({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Réseaux disponibles pour la crypto sélectionnée
-  const availableNetworks = SUPPORTED_CRYPTOS.find((c) => c.ticker === selectedCrypto)?.networks || [];
+  const availableNetworks = WHITEPAY_SUPPORTED_CRYPTOS.find((c) => c.ticker === selectedCrypto)?.networks || [];
   const needsMemo = MEMO_REQUIRED_NETWORKS.includes(selectedNetwork);
 
   // Quand on change de crypto, reset le réseau
   useEffect(() => {
-    const crypto = SUPPORTED_CRYPTOS.find((c) => c.ticker === selectedCrypto);
+    const crypto = WHITEPAY_SUPPORTED_CRYPTOS.find((c) => c.ticker === selectedCrypto);
     if (crypto && crypto.networks.length > 0) {
       setSelectedNetwork(crypto.networks[0]);
     }
@@ -615,7 +588,7 @@ export function WhitepayCryptoForm({
               <SelectValue placeholder={t.selectCryptoPlaceholder} />
             </SelectTrigger>
             <SelectContent>
-              {SUPPORTED_CRYPTOS.map((c) => (
+              {WHITEPAY_SUPPORTED_CRYPTOS.map((c) => (
                 <SelectItem key={c.ticker} value={c.ticker}>
                   <span className="flex items-center gap-2">
                     {c.name}
@@ -654,7 +627,7 @@ export function WhitepayCryptoForm({
             <Input
               id="walletAddress"
               type="text"
-              placeholder={getAddressPlaceholder(selectedNetwork)}
+              placeholder={getWhitepayAddressPlaceholder(selectedNetwork)}
               value={walletAddress}
               onChange={(e) => setWalletAddress(e.target.value.trim())}
               className="pl-9"

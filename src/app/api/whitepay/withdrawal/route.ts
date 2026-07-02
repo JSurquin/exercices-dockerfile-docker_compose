@@ -10,7 +10,8 @@ import {
   centsToEur,
   validateWalletAddress,
   networkRequiresMemo,
-  WHITEPAY_SUPPORTED_CRYPTOS,
+  isWhitepayCryptoNetworkSupported,
+  getWhitepayCryptoByTicker,
   WhitepayApiError,
   type WhitepayWithdrawalRequest,
   type WhitepayTravelRule,
@@ -122,9 +123,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supportedCrypto = WHITEPAY_SUPPORTED_CRYPTOS.find(
-      (c) => c.ticker === targetCurrency.toUpperCase()
-    );
+    const supportedCrypto = getWhitepayCryptoByTicker(targetCurrency);
     if (!supportedCrypto) {
       LOG('✗ Crypto non supportée', { targetCurrency });
       return NextResponse.json(
@@ -133,7 +132,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!supportedCrypto.networks.includes(network.toUpperCase() as never)) {
+    if (!isWhitepayCryptoNetworkSupported(targetCurrency, network)) {
       LOG('✗ Réseau non supporté', { network, targetCurrency });
       return NextResponse.json(
         { error: `Réseau ${network} non supporté pour ${targetCurrency}` },
