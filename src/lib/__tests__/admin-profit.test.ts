@@ -27,7 +27,7 @@ describe('admin-profit', () => {
     ).toEqual(holdDate);
   });
 
-  it('computes profit from Skinplace market price minus gross (bonuses noted separately)', () => {
+  it('computes profit from Skinplace market price minus gross and VIP/promo bonuses', () => {
     const trade = {
       id: 'trade-1',
       ticketId: 'ORDER-123',
@@ -51,8 +51,8 @@ describe('admin-profit', () => {
       paidToUserCentimes: 9_500,
       skinplaceCentimes: 10_000,
       bonusCentimes: 120,
-      profitCentimes: 500,
-      marginPercent: 5,
+      profitCentimes: 380,
+      marginPercent: 3.8,
     });
   });
 
