@@ -5,7 +5,9 @@ import { prisma } from '~/prisma/prisma';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import {
   createInstantWithdrawal,
-  parseWhitepayFeesFromResponse,
+  calculateWhitepayFees,
+  calculateWhitepayNetCents,
+  parseWhitepayNetworkFeeCents,
   getWhitepayLimits,
   centsToEur,
   validateWalletAddress,
@@ -187,7 +189,8 @@ export async function POST(request: NextRequest) {
     }
 
     const orderId = generateOrderId();
-    const amountEur = amountCents / 100;
+    const fees = calculateWhitepayFees(amountCents);
+    const amountEur = calculateWhitepayNetCents(amountCents) / 100;
 
     const travelRuleObj = travelRule as Record<string, unknown> | null | undefined;
 
@@ -237,6 +240,8 @@ export async function POST(request: NextRequest) {
         whitepayNetwork: network.toUpperCase(),
         whitepayAddress: walletAddress,
         whitepayMemo: memo || null,
+        processingFeeCents: fees.processingFeeCents,
+        networkFeeCents: 0,
       },
     });
     try {
@@ -277,7 +282,7 @@ export async function POST(request: NextRequest) {
     }
 
     const internalStatus = convertWhitepayStatus(tx.status);
-    const realFees = parseWhitepayFeesFromResponse(tx.fee);
+    const networkFeeCents = parseWhitepayNetworkFeeCents(tx.fee);
 
     await prisma.payout.update({
       where: { id: payout.id },
@@ -290,8 +295,8 @@ export async function POST(request: NextRequest) {
         whitepayFee: tx.fee,
         whitepayEstimatedAt: new Date(tx.estimated_at),
         whitepayConfirmedAt: new Date(),
-        processingFeeCents: realFees.processingFeeCents,
-        networkFeeCents: realFees.networkFeeCents,
+        processingFeeCents: fees.processingFeeCents,
+        networkFeeCents,
       },
     });
 
@@ -331,11 +336,11 @@ export async function POST(request: NextRequest) {
         status: internalStatus,
         amountCents,
         fees: {
-          processingCents: realFees.processingFeeCents,
-          networkCents: realFees.networkFeeCents,
-          totalCents: realFees.totalFeeCents,
+          processingCents: fees.processingFeeCents,
+          networkCents: networkFeeCents,
+          totalCents: fees.processingFeeCents + networkFeeCents,
         },
-        netCents: amountCents - realFees.totalFeeCents,
+        netCents: calculateWhitepayNetCents(amountCents),
       },
       whitepay: {
         transactionId: tx.id,
