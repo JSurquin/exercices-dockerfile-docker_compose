@@ -379,7 +379,7 @@ export async function POST(request: NextRequest) {
       }
 
       const internalStatus = convertWhitepayStatus(tx.status);
-      const networkFeeCents = parseWhitepayNetworkFeeCents(tx.fee);
+      const actualNetworkFeeCents = parseWhitepayNetworkFeeCents(tx.fee);
 
       await prisma.payout.update({
         where: { id: payout.id },
@@ -393,7 +393,7 @@ export async function POST(request: NextRequest) {
           whitepayEstimatedAt: new Date(tx.estimated_at),
           whitepayConfirmedAt: new Date(),
           processingFeeCents: fees.processingFeeCents,
-          networkFeeCents,
+          networkFeeCents: actualNetworkFeeCents,
         },
       });
 
@@ -434,8 +434,8 @@ export async function POST(request: NextRequest) {
           amountCents,
           fees: {
             processingCents: fees.processingFeeCents,
-            networkCents: networkFeeCents,
-            totalCents: fees.processingFeeCents + networkFeeCents,
+            networkCents: actualNetworkFeeCents,
+            totalCents: fees.processingFeeCents + actualNetworkFeeCents,
           },
           netCents: calculateWhitepayNetCents(amountCents),
         },
