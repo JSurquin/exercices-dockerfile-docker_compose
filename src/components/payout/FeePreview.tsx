@@ -5,6 +5,7 @@ import { ClockIcon } from '@heroicons/react/24/outline';
 import { Separator } from '@/components/ui/separator';
 import { formatCentsToCurrency } from '@/lib/currency-converter';
 import { useLocale } from '@/components/providers/locale-provider';
+import { calculateWhitepayFees, estimateNetworkFeeCentsSync } from '@/lib/whitepay';
 
 type PayoutMethod = 'card' | 'sepa' | 'crypto';
 
@@ -13,22 +14,36 @@ interface FeeNumericConfig {
   fixedCents: number;
 }
 
-const FEE_CONFIG: Record<PayoutMethod, FeeNumericConfig> = {
-  card:   { rate: 0.042, fixedCents: 50 },
-  sepa:   { rate: 0.02,  fixedCents: 350 },
-  crypto: { rate: 0.011, fixedCents: 0 },   // 1,1% Whitepay, pas de frais fixe
+const FEE_CONFIG: Record<Exclude<PayoutMethod, 'crypto'>, FeeNumericConfig> = {
+  card: { rate: 0.042, fixedCents: 50 },
+  sepa: { rate: 0.02, fixedCents: 350 },
 };
 
-export function computeFees(method: PayoutMethod, amountCents: number) {
+export function computeFees(
+  method: PayoutMethod,
+  amountCents: number,
+  crypto?: { targetCurrency: string; network: string }
+) {
+  if (method === 'crypto') {
+    const networkFeeCents =
+      crypto?.targetCurrency && crypto?.network
+        ? estimateNetworkFeeCentsSync(crypto.targetCurrency, crypto.network)
+        : 0;
+    const fees = calculateWhitepayFees(amountCents, networkFeeCents);
+    return { totalCents: fees.totalFeeCents, netCents: amountCents - fees.totalFeeCents, networkCents: fees.networkFeeCents, processingCents: fees.processingFeeCents };
+  }
+
   const cfg = FEE_CONFIG[method];
   const proportional = cfg.rate > 0 ? Math.ceil(amountCents * cfg.rate) : 0;
   const totalCents = proportional + cfg.fixedCents;
-  return { totalCents, netCents: amountCents - totalCents };
+  return { totalCents, netCents: amountCents - totalCents, networkCents: cfg.fixedCents, processingCents: proportional };
 }
 
 interface FeePreviewProps {
   method: PayoutMethod;
   amountCents: number;
+  targetCurrency?: string;
+  network?: string;
   labels: {
     feesPreview: string;
     grossAmount: string;
@@ -36,10 +51,18 @@ interface FeePreviewProps {
   };
 }
 
-export function FeePreview({ method, amountCents, labels }: FeePreviewProps) {
+export function FeePreview({ method, amountCents, targetCurrency, network, labels }: FeePreviewProps) {
   const { messages } = useLocale();
   const fees = messages.payoutComponents.fees;
-  const { totalCents, netCents } = computeFees(method, amountCents);
+  const cryptoContext =
+    method === 'crypto' && targetCurrency && network
+      ? { targetCurrency, network }
+      : undefined;
+  const { totalCents, netCents, networkCents, processingCents } = computeFees(
+    method,
+    amountCents,
+    cryptoContext
+  );
 
   const labelMap: Record<PayoutMethod, string> = {
     card: fees.cardLabel,
@@ -71,8 +94,14 @@ export function FeePreview({ method, amountCents, labels }: FeePreviewProps) {
       </div>
       <div className="flex justify-between text-theme-accent">
         <span>{label}</span>
-        <span>-{formatCentsToCurrency(totalCents, 'EUR')}</span>
+        <span>-{formatCentsToCurrency(method === 'crypto' ? processingCents : totalCents, 'EUR')}</span>
       </div>
+      {method === 'crypto' && networkCents > 0 && (
+        <div className="flex justify-between text-theme-accent">
+          <span>{String('networkFees' in fees ? fees.networkFees : 'Frais réseau')}</span>
+          <span>-{formatCentsToCurrency(networkCents, 'EUR')}</span>
+        </div>
+      )}
       <Separator />
       <div className="flex justify-between font-semibold">
         <span>{labels.youReceive}</span>

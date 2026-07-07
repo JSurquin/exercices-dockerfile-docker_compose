@@ -7,6 +7,9 @@ import { notifyAdminsPayoutPendingApproval } from '@/lib/admin-notification-hook
 import {
   createInstantWithdrawal,
   calculateWhitepayFees,
+  estimateNetworkFeeCents,
+  estimateNetworkFeeCentsSync,
+  parseWhitepayFeesFromResponse,
   calculateWhitepayNetCents,
   parseWhitepayNetworkFeeCents,
   getWhitepayLimits,
@@ -14,7 +17,8 @@ import {
   validateWalletAddress,
   networkRequiresMemo,
   convertWhitepayStatus,
-  WHITEPAY_SUPPORTED_CRYPTOS,
+  isWhitepayCryptoNetworkSupported,
+  getWhitepayCryptoByTicker,
   type WhitepayInstantWithdrawalRequest,
   type WhitepayTravelRule,
 } from '@/lib/whitepay';
@@ -207,9 +211,7 @@ export async function POST(request: NextRequest) {
     const targetCurrencyU = targetCurrency.toUpperCase();
     const networkU = network.toUpperCase();
 
-    const supportedCrypto = WHITEPAY_SUPPORTED_CRYPTOS.find(
-      (c) => c.ticker === targetCurrencyU
-    );
+    const supportedCrypto = getWhitepayCryptoByTicker(targetCurrencyU);
     if (!supportedCrypto) {
       return NextResponse.json(
         { error: `Crypto non supportée: ${targetCurrencyU}` },
@@ -217,7 +219,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!supportedCrypto.networks.includes(networkU as never)) {
+    if (!isWhitepayCryptoNetworkSupported(targetCurrencyU, networkU)) {
       return NextResponse.json(
         { error: `Réseau ${networkU} non supporté pour ${targetCurrencyU}` },
         { status: 400 }
@@ -273,8 +275,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const fees = calculateWhitepayFees(amountCents);
-    const amountEur = calculateWhitepayNetCents(amountCents) / 100;
+    let networkFeeCents = estimateNetworkFeeCentsSync(targetCurrencyU, networkU);
+    try {
+      networkFeeCents = await estimateNetworkFeeCents(targetCurrencyU, networkU);
+    } catch {
+      // repli déjà calculé
+    }
+
+    const fees = calculateWhitepayFees(amountCents, networkFeeCents);
+    const amountEur = amountCents / 100;
 
     const travelRulePayload = toWhitepayTravelRule(travelRuleRaw, {
       name: user.name,
@@ -314,6 +323,7 @@ export async function POST(request: NextRequest) {
 
     if (shouldAutoApprove) {
       const orderId = generateOrderId();
+      const fees = calculateWhitepayFees(amountCents, networkFeeCents);
 
       // Create payout in DB BEFORE calling WhitePay API (prevents orphaned payments)
       const payout = await prisma.payout.create({

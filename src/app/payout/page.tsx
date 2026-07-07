@@ -30,6 +30,11 @@ import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import { PageLoading } from '@/components/ui/page-loading';
 import { FeePreview } from '@/components/payout/FeePreview';
 import {
+  WHITEPAY_SUPPORTED_CRYPTOS,
+  MEMO_REQUIRED_NETWORKS,
+  getWhitepayAddressPlaceholder,
+} from '@/lib/whitepay';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -39,48 +44,7 @@ import {
 
 type PayoutMethod = 'card' | 'sepa' | 'crypto' | 'sepa_fr';
 
-// Cryptos supportées par Whitepay
-// USDC : réseaux officiels Whitepay triés du plus au moins utilisé
-const SUPPORTED_CRYPTOS = [
-  { ticker: 'USDT', name: 'Tether (USDT)', networks: ['ERC20', 'TRC20', 'BEP20', 'TON', 'SOL'], is_stable: true },
-  {
-    ticker: 'USDC',
-    name: 'USD Coin (USDC)',
-    networks: ['ERC20', 'SOL', 'POLYGON', 'ARBITRUM', 'BASE', 'OPTIMISM', 'NEAR', 'STELLAR', 'CCHAIN', 'WHITECHAIN', 'DOTASSETHUB'],
-    is_stable: true,
-  },
-  { ticker: 'BTC', name: 'Bitcoin (BTC)', networks: ['BTC'], is_stable: false },
-  { ticker: 'ETH', name: 'Ethereum (ETH)', networks: ['ERC20'], is_stable: false },
-  { ticker: 'SOL', name: 'Solana (SOL)', networks: ['SOL'], is_stable: false },
-  { ticker: 'TON', name: 'Toncoin (TON)', networks: ['TON'], is_stable: false },
-  { ticker: 'BNB', name: 'BNB (BNB)', networks: ['BEP20'], is_stable: false },
-];
-
-const MEMO_REQUIRED_NETWORKS = ['TON', 'STELLAR', 'XLM', 'COSMOS', 'ATOM', 'NEAR', 'DOTASSETHUB'];
-
-// Minimum retrait crypto (Whitepay) : 21,20 €
 const CRYPTO_MIN_CENTS = 2120;
-
-function getAddressPlaceholder(network: string): string {
-  switch (network) {
-    case 'BTC':        return 'bc1q...';
-    case 'ERC20':
-    case 'BEP20':
-    case 'POLYGON':
-    case 'ARBITRUM':
-    case 'BASE':
-    case 'OPTIMISM':
-    case 'CCHAIN':
-    case 'WHITECHAIN': return '0x...';
-    case 'TRC20':      return 'T...';
-    case 'SOL':        return 'So1...';
-    case 'TON':        return 'EQ...';
-    case 'STELLAR':    return 'G...';
-    case 'NEAR':       return 'user.near';
-    case 'DOTASSETHUB': return '1...';
-    default:           return '0x...';
-  }
-}
 
 /** Flexify envoie processingFeeCents / Whitepay processingCents, évite NaN dans le récap */
 function normalizeWithdrawalFeesCents(fees: unknown): { processingCents: number; networkCents: number } {
@@ -429,7 +393,7 @@ export default function PayoutPage() {
   // validé, l'utilisateur voit le bloc "KYC requis" avec un lien vers /kyc.
 
   // Réseaux disponibles pour la crypto sélectionnée
-  const availableNetworks = SUPPORTED_CRYPTOS.find((c) => c.ticker === formData.selectedCrypto)?.networks || [];
+  const availableNetworks = WHITEPAY_SUPPORTED_CRYPTOS.find((c) => c.ticker === formData.selectedCrypto)?.networks || [];
   const needsMemo = MEMO_REQUIRED_NETWORKS.includes(formData.selectedNetwork);
 
   // Obtenir un devis (Flexify pour SEPA, Whitepay pour Crypto)
@@ -474,7 +438,12 @@ export default function PayoutPage() {
       const quoteUrl = payoutMethod === 'crypto' ? '/api/whitepay/quote' : '/api/flexify/quote';
       const requestBody =
         payoutMethod === 'crypto'
-          ? { amountCents, currency: 'EUR' }
+          ? {
+              amountCents,
+              currency: 'EUR',
+              targetCurrency: formData.selectedCrypto,
+              network: formData.selectedNetwork,
+            }
           : { amountCents, currency: 'EUR', method: payoutMethod === 'card' ? 'CARD' : 'SEPA' };
       const response = await fetch(quoteUrl, {
         method: 'POST',
@@ -1442,7 +1411,7 @@ export default function PayoutPage() {
                         <Select
                           value={formData.selectedCrypto}
                           onValueChange={(v) => {
-                            const crypto = SUPPORTED_CRYPTOS.find((c) => c.ticker === v);
+                            const crypto = WHITEPAY_SUPPORTED_CRYPTOS.find((c) => c.ticker === v);
                             setFormData(prev => ({
                               ...prev,
                               selectedCrypto: v,
@@ -1455,7 +1424,7 @@ export default function PayoutPage() {
                             <SelectValue placeholder={text.request.cryptoPlaceholder} />
                           </SelectTrigger>
                           <SelectContent>
-                            {SUPPORTED_CRYPTOS.map((c) => (
+                            {WHITEPAY_SUPPORTED_CRYPTOS.map((c) => (
                               <SelectItem key={c.ticker} value={c.ticker}>
                                 <span className="flex items-center gap-2">
                                   {c.name}
@@ -1499,7 +1468,7 @@ export default function PayoutPage() {
                           id="walletAddress"
                           value={formData.walletAddress}
                           onChange={(e) => setFormData(prev => ({ ...prev, walletAddress: e.target.value.trim() }))}
-                          placeholder={getAddressPlaceholder(formData.selectedNetwork)}
+                          placeholder={getWhitepayAddressPlaceholder(formData.selectedNetwork)}
                         />
                         <p className="text-xs text-muted-foreground">{text.request.walletAddressWarning}</p>
                       </div>
@@ -1534,6 +1503,8 @@ export default function PayoutPage() {
                   <FeePreview
                     method={payoutMethod as 'card' | 'sepa' | 'crypto'}
                     amountCents={toCents(parseFloat(amount))}
+                    targetCurrency={payoutMethod === 'crypto' ? formData.selectedCrypto : undefined}
+                    network={payoutMethod === 'crypto' ? formData.selectedNetwork : undefined}
                     labels={{
                       feesPreview: text.request.feesPreview,
                       grossAmount: text.request.grossAmount,
