@@ -10,6 +10,8 @@ import {
   estimateNetworkFeeCents,
   estimateNetworkFeeCentsSync,
   parseWhitepayFeesFromResponse,
+  calculateWhitepayNetCents,
+  parseWhitepayNetworkFeeCents,
   getWhitepayLimits,
   centsToEur,
   validateWalletAddress,
@@ -377,7 +379,7 @@ export async function POST(request: NextRequest) {
       }
 
       const internalStatus = convertWhitepayStatus(tx.status);
-      const realFees = parseWhitepayFeesFromResponse(tx.fee);
+      const networkFeeCents = parseWhitepayNetworkFeeCents(tx.fee);
 
       await prisma.payout.update({
         where: { id: payout.id },
@@ -390,8 +392,8 @@ export async function POST(request: NextRequest) {
           whitepayFee: tx.fee,
           whitepayEstimatedAt: new Date(tx.estimated_at),
           whitepayConfirmedAt: new Date(),
-          processingFeeCents: realFees.processingFeeCents,
-          networkFeeCents: realFees.networkFeeCents,
+          processingFeeCents: fees.processingFeeCents,
+          networkFeeCents,
         },
       });
 
@@ -431,11 +433,11 @@ export async function POST(request: NextRequest) {
           status: internalStatus,
           amountCents,
           fees: {
-            processingCents: realFees.processingFeeCents,
-            networkCents: realFees.networkFeeCents,
-            totalCents: realFees.totalFeeCents,
+            processingCents: fees.processingFeeCents,
+            networkCents: networkFeeCents,
+            totalCents: fees.processingFeeCents + networkFeeCents,
           },
-          netCents: amountCents - realFees.totalFeeCents,
+          netCents: calculateWhitepayNetCents(amountCents),
         },
         whitepay: {
           transactionId: tx.id,

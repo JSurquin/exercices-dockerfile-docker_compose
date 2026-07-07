@@ -6793,7 +6793,7 @@ export const messages: Record<Locale, Messages> = {
       },
       profitSection: {
         title: "Profit réel",
-        subtitle: "Prix marché Skinplace vs montant brut versé — bonus VIP/promo affichés à part",
+        subtitle: "Prix marché Skinplace moins brut versé et bonus VIP/promo",
         totalProfit: "Profit cumulé",
         todayProfit: "Profit du jour",
         monthProfit: "Profit du mois",
@@ -14454,7 +14454,7 @@ export const messages: Record<Locale, Messages> = {
       },
       profitSection: {
         title: "Real profit",
-        subtitle: "Skinplace market price vs gross paid to user — VIP/promo bonuses shown separately",
+        subtitle: "Skinplace market price minus gross paid and VIP/promo bonuses",
         totalProfit: "Cumulative profit",
         todayProfit: "Today's profit",
         monthProfit: "Monthly profit",

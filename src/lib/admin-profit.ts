@@ -172,7 +172,7 @@ export function buildAdminProfitTradeRow(
 
   const paidToUserCentimes = trade.grossCents;
   const bonusCentimes = trade.affiliatePromoBonusCents + trade.vipBonusCents;
-  const profitCentimes = skinplaceCentimes - paidToUserCentimes;
+  const profitCentimes = skinplaceCentimes - paidToUserCentimes - bonusCentimes;
   const tradeDate = profitAttributionDate(trade);
 
   return {

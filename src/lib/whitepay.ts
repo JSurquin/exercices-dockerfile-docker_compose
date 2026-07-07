@@ -938,6 +938,18 @@ export function calculateWhitepayFees(
   };
 }
 
+/** Net EUR centimes après déduction de la marge plateforme (1,1 %), même formule que le devis / FeePreview. */
+export function calculateWhitepayNetCents(amountCents: number): number {
+  const fees = calculateWhitepayFees(amountCents);
+  return amountCents - fees.processingFeeCents;
+}
+
+/** Frais réseau/conversion Whitepay issus de tx.fee (ne pas confondre avec processingFeeCents). */
+export function parseWhitepayNetworkFeeCents(txFee: string | null): number {
+  if (!txFee) return 0;
+  return Math.round(parseFloat(txFee) * 100);
+}
+
 /**
  * Extrait les frais réels depuis la réponse Whitepay (tx.fee = total en EUR string).
  * Si txFee est null (non fourni par l'API), on estime à partir du taux de 1,1%.

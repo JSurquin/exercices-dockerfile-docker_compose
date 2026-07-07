@@ -4,7 +4,9 @@ import { getRequestContext, getClientIP, logUnauthorizedAccess } from '@/lib/sec
 import { prisma } from '~/prisma/prisma';
 import {
   createInstantWithdrawal,
+  calculateWhitepayFees,
   convertWhitepayStatus,
+  parseWhitepayNetworkFeeCents,
   type WhitepayInstantWithdrawalRequest,
   type WhitepayTravelRule,
   type WhitepayTransactionStatus,
@@ -214,7 +216,9 @@ export async function POST(
       );
     }
 
-    const amountEur = payout.amountCents / 100;
+    const platformFees =
+      payout.processingFeeCents ?? calculateWhitepayFees(payout.amountCents).processingFeeCents;
+    const amountEur = (payout.amountCents - platformFees) / 100;
     const orderId = generateOrderId();
     const user = payout.user;
     const travelRulePayload: WhitepayTravelRule = {
@@ -268,6 +272,8 @@ export async function POST(
         whitepayFee: tx.fee,
         whitepayEstimatedAt: new Date(tx.estimated_at),
         whitepayConfirmedAt: new Date(),
+        processingFeeCents: platformFees,
+        networkFeeCents: parseWhitepayNetworkFeeCents(tx.fee),
       },
     });
 
