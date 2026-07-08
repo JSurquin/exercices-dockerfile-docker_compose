@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { defaultLocale, getMessages, locales, type Locale } from "@/lib/i18n";
 import { LOCALE_STORAGE_KEY, parseAcceptLanguage } from "@/lib/locale-detection";
+import { isSentryEnabled } from "@/lib/sentry-config";
 import "./globals.css";
 
 interface GlobalErrorProps {
@@ -53,7 +54,9 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
   const themeClass = detectThemeClass();
 
   useEffect(() => {
-    Sentry.captureException(error);
+    if (isSentryEnabled()) {
+      Sentry.captureException(error);
+    }
   }, [error]);
 
   return (

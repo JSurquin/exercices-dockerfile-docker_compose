@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { isSentryEnabled } from "@/lib/sentry-config";
 import {
   ExclamationTriangleIcon,
   ArrowPathIcon,
@@ -26,7 +27,9 @@ export default function Error({ error, reset }: ErrorProps) {
   const links = messages.notFound;
 
   useEffect(() => {
-    Sentry.captureException(error);
+    if (isSentryEnabled()) {
+      Sentry.captureException(error);
+    }
   }, [error]);
 
   return (

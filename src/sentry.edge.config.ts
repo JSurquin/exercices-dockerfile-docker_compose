@@ -1,19 +1,23 @@
 import * as Sentry from "@sentry/nextjs";
+import { getSentryDsn, isSentryEnabled } from "./lib/sentry-config";
 import { shouldIgnoreSentryEvent } from "./lib/sentry-filters";
 
-Sentry.init({
-  dsn: process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN,
+const sentryDsn = getSentryDsn();
 
-  // Performance monitoring pour Edge Runtime
-  tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
+if (isSentryEnabled() && sentryDsn) {
+  Sentry.init({
+    dsn: sentryDsn,
 
-  // Environnement
-  environment: process.env.NODE_ENV,
+    // Performance monitoring pour Edge Runtime
+    tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
 
-  // Désactiver si pas de DSN configuré
-  enabled: !!(process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN),
+    // Environnement
+    environment: process.env.NODE_ENV,
 
-  beforeSend(event) {
-    return shouldIgnoreSentryEvent(event) ? null : event;
-  },
-});
+    enabled: true,
+
+    beforeSend(event) {
+      return shouldIgnoreSentryEvent(event) ? null : event;
+    },
+  });
+}

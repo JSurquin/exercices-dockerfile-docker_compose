@@ -1,54 +1,58 @@
 import * as Sentry from "@sentry/nextjs";
+import { getSentryDsn, isSentryEnabled } from "./lib/sentry-config";
 import { shouldIgnoreSentryEvent } from "./lib/sentry-filters";
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+const sentryDsn = getSentryDsn();
 
-  sendDefaultPii: false,
+if (isSentryEnabled() && sentryDsn) {
+  Sentry.init({
+    dsn: sentryDsn,
 
-  // Performance monitoring : 100% en dev, 10% en production
-  tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
+    sendDefaultPii: false,
 
-  integrations: [
-    // Session Replay pour reproduire les sessions utilisateur
-    Sentry.replayIntegration({
-      maskAllText: true,
-      maskAllInputs: true,
-      blockAllMedia: true,
-    }),
-    // Widget de feedback utilisateur (bouton flottant « Report a Bug » + formulaire)
-    Sentry.feedbackIntegration({
-      colorScheme: "system",
-      showBranding: false,
-      themeLight: {
-        accentBackground: "#ea580c",
-        accentForeground: "#ffffff",
-        boxShadow: "0 12px 40px -12px rgba(234, 88, 12, 0.22)",
-        outline: "1px auto #ea580c",
-      },
-      themeDark: {
-        accentBackground: "#f97316",
-        accentForeground: "#ffffff",
-        boxShadow: "0 12px 48px -16px rgba(0, 0, 0, 0.55)",
-        outline: "1px auto #f97316",
-      },
-    }),
-  ],
+    // Performance monitoring : 100% en dev, 10% en production
+    tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
 
-  // 10% des sessions normales, 100% des sessions avec erreur
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
+    integrations: [
+      // Session Replay pour reproduire les sessions utilisateur
+      Sentry.replayIntegration({
+        maskAllText: true,
+        maskAllInputs: true,
+        blockAllMedia: true,
+      }),
+      // Widget de feedback utilisateur (bouton flottant « Report a Bug » + formulaire)
+      Sentry.feedbackIntegration({
+        colorScheme: "system",
+        showBranding: false,
+        themeLight: {
+          accentBackground: "#ea580c",
+          accentForeground: "#ffffff",
+          boxShadow: "0 12px 40px -12px rgba(234, 88, 12, 0.22)",
+          outline: "1px auto #ea580c",
+        },
+        themeDark: {
+          accentBackground: "#f97316",
+          accentForeground: "#ffffff",
+          boxShadow: "0 12px 48px -16px rgba(0, 0, 0, 0.55)",
+          outline: "1px auto #f97316",
+        },
+      }),
+    ],
 
-  // Environnement (dev, staging, production)
-  environment: process.env.NODE_ENV,
+    // 10% des sessions normales, 100% des sessions avec erreur
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
 
-  // Désactiver en développement si pas de DSN
-  enabled: !!process.env.NEXT_PUBLIC_SENTRY_DSN,
+    // Environnement (dev, staging, production)
+    environment: process.env.NODE_ENV,
 
-  beforeSend(event) {
-    return shouldIgnoreSentryEvent(event) ? null : event;
-  },
-});
+    enabled: true,
+
+    beforeSend(event) {
+      return shouldIgnoreSentryEvent(event) ? null : event;
+    },
+  });
+}
 
 // Instrumentation des navigations pour le tracing
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

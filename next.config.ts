@@ -3,7 +3,17 @@ import { withSentryConfig } from '@sentry/nextjs';
 
 import { codeInspectorPlugin } from 'code-inspector-plugin';
 
+function parseBooleanEnv(value: string | undefined): boolean {
+  if (value === undefined || value === '') return false;
+  return value === 'true' || value === '1';
+}
+
+const showSentry = parseBooleanEnv(process.env.SHOW_SENTRY);
+
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_SHOW_SENTRY: showSentry ? 'true' : 'false',
+  },
   poweredByHeader: false,
   async headers() {
     const isProd = process.env.NODE_ENV === 'production';
@@ -98,7 +108,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
+export default showSentry
+  ? withSentryConfig(nextConfig, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
@@ -134,4 +145,5 @@ export default withSentryConfig(nextConfig, {
       removeDebugLogging: true,
     },
   },
-});
+})
+  : nextConfig;

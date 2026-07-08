@@ -1,15 +1,18 @@
 import * as Sentry from "@sentry/nextjs";
+import { isSentryEnabled } from "./lib/sentry-config";
 import { isRemovedTestApiPath } from "./lib/sentry-filters";
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    await import("./sentry.server.config");
+    if (isSentryEnabled()) {
+      await import("./sentry.server.config");
+    }
 
     const { startCronWorker } = await import("./lib/cron-jobs/start-worker");
     startCronWorker();
   }
 
-  if (process.env.NEXT_RUNTIME === "edge") {
+  if (process.env.NEXT_RUNTIME === "edge" && isSentryEnabled()) {
     await import("./sentry.edge.config");
   }
 }
@@ -20,7 +23,7 @@ export const onRequestError: typeof Sentry.captureRequestError = (
   request,
   errorContext,
 ) => {
-  if (isRemovedTestApiPath(request.path)) {
+  if (!isSentryEnabled() || isRemovedTestApiPath(request.path)) {
     return;
   }
 
