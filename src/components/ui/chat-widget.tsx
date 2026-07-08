@@ -132,6 +132,9 @@ interface ChatWidgetInputProps {
   prefillMessage?: string;
 }
 
+/** Fenêtre anti-doublon : même contenu renvoyé trop vite (Entrée + clic, double-clic, etc.) */
+const SEND_DEDUPE_MS = 8_000;
+
 const ChatWidgetInput = memo(function ChatWidgetInput({
   onSend,
   disabled,
@@ -141,6 +144,7 @@ const ChatWidgetInput = memo(function ChatWidgetInput({
 }: ChatWidgetInputProps) {
   const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isSendingRef = useRef(false);
 
   useEffect(() => {
     if (prefillMessage) {
@@ -160,11 +164,16 @@ const ChatWidgetInput = memo(function ChatWidgetInput({
   }, []);
 
   const handleSend = async () => {
-    if (!message.trim() || disabled) return;
+    if (!message.trim() || disabled || isSendingRef.current) return;
+    isSendingRef.current = true;
     const content = message;
     setMessage("");
     resetTextareaHeight();
-    await onSend(content);
+    try {
+      await onSend(content);
+    } finally {
+      isSendingRef.current = false;
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -471,6 +480,8 @@ export function ChatWidget() {
   const aiTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const popupCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevScrollHeightRef = useRef(0);
+  const sendInFlightRef = useRef(false);
+  const lastSentRef = useRef<{ content: string; at: number } | null>(null);
 
   const resetWidgetNavigation = useCallback(() => {
     setActiveTab("home");
@@ -699,12 +710,29 @@ export function ChatWidget() {
   };
 
   const handleSendMessage = useCallback(async (content: string) => {
-    if (isLoading) return;
+    if (isLoading || sendInFlightRef.current) return;
+
+    const normalized = content.trim();
+    if (!normalized) return;
+
+    const now = Date.now();
+    const last = lastSentRef.current;
+    if (
+      last &&
+      last.content === normalized &&
+      now - last.at < SEND_DEDUPE_MS
+    ) {
+      return;
+    }
+
+    sendInFlightRef.current = true;
+    lastSentRef.current = { content: normalized, at: now };
+
     const baseCount = currentConversation?.messages.length ?? 0;
     const askFlow = isAskQuestionFlow;
     try {
       const data = await sendMessage(
-        content,
+        normalized,
         askFlow ? { category: "support", forceNew: true } : undefined,
       );
       setInputPrefill(undefined);
@@ -730,8 +758,11 @@ export function ChatWidget() {
       }
       setTimeout(scrollToBottom, 100);
     } catch {
+      lastSentRef.current = null;
       setIsAiTyping(false);
       setAiTypingQueuedHint(undefined);
+    } finally {
+      sendInFlightRef.current = false;
     }
   }, [
     isLoading,
