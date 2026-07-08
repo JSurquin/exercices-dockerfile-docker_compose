@@ -31,13 +31,14 @@ describe('canGuestAccessConversation', () => {
 });
 
 describe('canUserAccessConversation', () => {
-  it('autorise admin et modérateur sur toute conversation', () => {
+  it('autorise admin et modérateur sur toute conversation en scope staff', () => {
     expect(
       canUserAccessConversation({
         role: 'ADMIN',
         userId: 'a',
         conversationUserId: 'b',
         assignedTo: null,
+        scope: 'staff',
       }),
     ).toBe(true);
     expect(
@@ -45,6 +46,26 @@ describe('canUserAccessConversation', () => {
         role: 'MODERATOR',
         userId: 'm',
         conversationUserId: 'b',
+        assignedTo: null,
+        scope: 'staff',
+      }),
+    ).toBe(true);
+  });
+
+  it('restreint admin et modérateur à leurs propres conversations en scope widget', () => {
+    expect(
+      canUserAccessConversation({
+        role: 'ADMIN',
+        userId: 'a',
+        conversationUserId: 'b',
+        assignedTo: null,
+      }),
+    ).toBe(false);
+    expect(
+      canUserAccessConversation({
+        role: 'MODERATOR',
+        userId: 'm',
+        conversationUserId: 'm',
         assignedTo: null,
       }),
     ).toBe(true);
@@ -283,42 +304,56 @@ describe('buildConversationWhereClause', () => {
     ).toEqual({ userId: 'u1', status: { not: 'DELETED' } });
   });
 
-  it('filtre assignedTo=me pour modérateur', () => {
+  it('restreint admin/modérateur à leurs propres conversations en scope widget', () => {
+    expect(
+      buildConversationWhereClause({
+        role: 'ADMIN',
+        userId: 'admin-1',
+        filters: { category: 'trade', assignedTo: 'mod-2' },
+      }),
+    ).toEqual({ userId: 'admin-1', status: { not: 'DELETED' } });
+  });
+
+  it('filtre assignedTo=me pour modérateur en scope staff', () => {
     expect(
       buildConversationWhereClause({
         role: 'MODERATOR',
         userId: 'mod-1',
         filters: { assignedTo: 'me' },
+        scope: 'staff',
       }),
     ).toEqual({ assignedTo: 'mod-1' });
   });
 
-  it('filtre assignedTo par id modérateur cible', () => {
+  it('filtre assignedTo par id modérateur cible en scope staff', () => {
     expect(
       buildConversationWhereClause({
         role: 'MODERATOR',
         userId: 'mod-1',
         filters: { assignedTo: 'mod-2' },
+        scope: 'staff',
       }),
     ).toEqual({ status: { not: 'DELETED' }, assignedTo: 'mod-2' });
   });
 
-  it('filtre assignedTo=unassigned avec assignedTo null', () => {
+  it('filtre assignedTo=unassigned avec assignedTo null en scope staff', () => {
     expect(
       buildConversationWhereClause({
         role: 'MODERATOR',
         userId: 'mod-1',
         filters: { assignedTo: 'unassigned' },
+        scope: 'staff',
       }),
     ).toEqual({ status: { not: 'DELETED' }, assignedTo: null });
   });
 
-  it('applique category et priority', () => {
+  it('applique category et priority en scope staff', () => {
     expect(
       buildConversationWhereClause({
         role: 'ADMIN',
         userId: 'admin',
         filters: { category: 'trade', priority: 'HIGH' },
+        scope: 'staff',
       }),
     ).toEqual({
       status: { not: 'DELETED' },
@@ -327,22 +362,24 @@ describe('buildConversationWhereClause', () => {
     });
   });
 
-  it('n’expose pas userId aux modérateurs', () => {
+  it('n’expose pas userId aux modérateurs en scope staff', () => {
     expect(
       buildConversationWhereClause({
         role: 'MODERATOR',
         userId: 'mod-1',
         filters: { userId: 'victim' },
+        scope: 'staff',
       }),
     ).toEqual({ status: { not: 'DELETED' } });
   });
 
-  it('permet le filtre userId aux admins', () => {
+  it('permet le filtre userId aux admins en scope staff', () => {
     expect(
       buildConversationWhereClause({
         role: 'ADMIN',
         userId: 'admin',
         filters: { userId: 'target', status: 'ACTIVE', search: 'steam' },
+        scope: 'staff',
       }),
     ).toEqual({
       status: 'ACTIVE',

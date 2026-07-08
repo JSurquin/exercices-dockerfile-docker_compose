@@ -11,7 +11,7 @@ import {
   chatConversationsQuerySchema,
   createConversationPostSchema,
 } from '@/lib/validation/schemas/chat-api';
-import { buildConversationWhereClause } from '@/lib/chat-logic';
+import { buildConversationWhereClause, isStaffRole } from '@/lib/chat-logic';
 import { maybeGenerateAiReply } from '@/lib/chat-ai-service';
 
 const conversationListInclude = {
@@ -103,6 +103,10 @@ export async function GET(request: NextRequest) {
     const session = identity.session;
     const role = identity.role;
 
+    if (q.scope === 'staff' && !isStaffRole(role)) {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    }
+
     const filters: ConversationFilters = {
       status: (q.status as ConversationStatus) || undefined,
       assignedTo: q.assignedTo || undefined,
@@ -118,6 +122,7 @@ export async function GET(request: NextRequest) {
       role,
       userId: session.user.id,
       filters,
+      scope: q.scope,
     });
 
     const skip = ((filters.page || 1) - 1) * (filters.limit || 20);

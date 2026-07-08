@@ -89,7 +89,7 @@ export default function AdminChatPage() {
   const { data: convData, isLoading: loading } = useQuery({
     queryKey: queryKeys.adminChatConversations({ limit: 50 }),
     queryFn: async () => {
-      const res = await fetch('/api/chat/conversations?limit=50');
+      const res = await fetch('/api/chat/conversations?scope=staff&limit=50');
       if (!res.ok) return { conversations: [] };
       return res.json();
     },

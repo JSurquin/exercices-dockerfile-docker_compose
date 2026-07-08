@@ -13,6 +13,8 @@ import {
   canGuestAccessConversation,
   canUserAccessConversation,
   isConversationWriteBlockedForIdentity,
+  isStaffRole,
+  resolveChatAccessScope,
   resolveOutgoingSenderType,
   shouldInsertTicketTransmittedMessage,
   shouldInsertFollowUpAwaitingAcknowledgment,
@@ -38,6 +40,7 @@ import { shouldRedactEmailsForViewer } from '@/lib/chat-logic';
 async function assertConversationAccess(
   request: NextRequest,
   conversationId: string,
+  options?: { scope?: 'widget' | 'staff'; replyContext?: 'widget' | 'moderation' },
 ) {
   const identity = await resolveChatIdentity(request);
   const conversation = await prisma.conversation.findUnique({
@@ -53,14 +56,23 @@ async function assertConversationAccess(
     return { error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) };
   }
 
+  const scope = resolveChatAccessScope({
+    explicitScope: options?.scope,
+    replyContext: options?.replyContext,
+  });
+
   if (identity.kind === 'user') {
     const session = identity.session;
+    if (scope === 'staff' && !isStaffRole(identity.role)) {
+      return { error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) };
+    }
     if (
       !canUserAccessConversation({
         role: identity.role,
         userId: session.user.id,
         conversationUserId: conversation.userId,
         assignedTo: conversation.assignedTo,
+        scope,
       })
     ) {
       return { error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) };
@@ -69,7 +81,7 @@ async function assertConversationAccess(
     return { error: NextResponse.json({ error: 'Non authentifié' }, { status: 401 }) };
   }
 
-  return { identity, conversation };
+  return { identity, conversation, scope };
 }
 
 function redactMessagePayload(
@@ -101,13 +113,15 @@ export async function GET(
 ) {
   try {
     const resolvedParams = await params;
-    const access = await assertConversationAccess(request, resolvedParams.id);
-    if ('error' in access && access.error) return access.error;
-    const { identity, conversation } = access;
-
     const { searchParams } = new URL(request.url);
     const parsedQ = safeParseSearchParams(searchParams, conversationMessagesQuerySchema);
     if (!parsedQ.ok) return parsedQ.response;
+
+    const access = await assertConversationAccess(request, resolvedParams.id, {
+      scope: parsedQ.data.scope,
+    });
+    if ('error' in access && access.error) return access.error;
+    const { identity, conversation } = access;
 
     const page = await fetchConversationMessagesPage({
       conversationId: resolvedParams.id,
@@ -236,6 +250,7 @@ export async function POST(
         include: { user: true },
       });
     } else {
+      const accessScope = resolveChatAccessScope({ replyContext: body.replyContext });
       if (identity.kind === 'user') {
         if (
           !canUserAccessConversation({
@@ -243,6 +258,7 @@ export async function POST(
             userId: identity.session.user.id,
             conversationUserId: conversation.userId,
             assignedTo: conversation.assignedTo,
+            scope: accessScope,
           })
         ) {
           return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });

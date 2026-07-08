@@ -10,6 +10,8 @@ import {
   canGuestAccessConversation,
   canUserAccessConversation,
   isConversationWriteBlockedForIdentity,
+  isStaffRole,
+  resolveChatAccessScope,
   resolveOutgoingSenderType,
   shouldInsertTicketTransmittedMessage,
   shouldInsertFollowUpAwaitingAcknowledgment,
@@ -116,12 +118,17 @@ export async function POST(request: NextRequest) {
     }
 
     if (identity.kind === 'user') {
+      const accessScope = resolveChatAccessScope({ replyContext: body.replyContext });
+      if (accessScope === 'staff' && !isStaffRole(identity.role)) {
+        return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+      }
       if (
         !canUserAccessConversation({
           role: identity.role,
           userId: identity.session.user.id,
           conversationUserId: conversation.userId,
           assignedTo: conversation.assignedTo,
+          scope: accessScope,
         })
       ) {
         return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });

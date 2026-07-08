@@ -29,15 +29,31 @@ export function canGuestAccessConversation(conversationUserId: string | null): b
   return conversationUserId === null;
 }
 
+export type ChatAccessScope = 'widget' | 'staff';
+
+export function resolveChatAccessScope(params: {
+  explicitScope?: ChatAccessScope;
+  replyContext?: ChatReplyContext;
+}): ChatAccessScope {
+  if (params.explicitScope) return params.explicitScope;
+  if (params.replyContext === 'moderation') return 'staff';
+  return 'widget';
+}
+
+/** widget = support client (propriétaire uniquement) ; staff = backoffice modération */
 export function canUserAccessConversation(params: {
   role: UserRole;
   userId: string;
   conversationUserId: string | null;
   assignedTo: string | null;
+  scope?: ChatAccessScope;
 }): boolean {
-  const { role, userId, conversationUserId, assignedTo } = params;
-  if (isStaffRole(role)) return true;
-  return conversationUserId === userId;
+  const scope = params.scope ?? 'widget';
+  if (scope === 'widget') {
+    return params.conversationUserId === params.userId;
+  }
+  if (isStaffRole(params.role)) return true;
+  return params.conversationUserId === params.userId;
 }
 
 export type ChatReplyContext = 'widget' | 'moderation';
@@ -141,8 +157,20 @@ export function buildConversationWhereClause(params: {
   role: UserRole;
   userId: string;
   filters: ConversationFilters;
+  scope?: ChatAccessScope;
 }): Record<string, unknown> {
+  const scope = params.scope ?? 'widget';
   const { role, userId, filters } = params;
+
+  if (scope === 'widget') {
+    const whereClause: Record<string, unknown> = {
+      userId,
+      status: { not: 'DELETED' },
+    };
+    if (filters.status) whereClause.status = filters.status;
+    return whereClause;
+  }
+
   const whereClause: Record<string, unknown> = {};
   const isAdmin = role === 'ADMIN';
   const isModerator = role === 'MODERATOR';

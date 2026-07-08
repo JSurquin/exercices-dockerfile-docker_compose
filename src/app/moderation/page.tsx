@@ -66,6 +66,7 @@ export default function ModerationPage() {
     queryKey: queryKeys.adminChatConversations(filters as Record<string, unknown>),
     queryFn: async () => {
       const params = new URLSearchParams();
+      params.append('scope', 'staff');
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
           params.append(key, value.toString());

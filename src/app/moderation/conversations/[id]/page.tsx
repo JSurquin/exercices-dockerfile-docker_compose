@@ -81,7 +81,7 @@ export default function ConversationPage() {
   const { data: conversation, isLoading: loading, refetch: refetchConversation } = useQuery({
     queryKey: queryKeys.moderationConversation(routeConversationId),
     queryFn: async () => {
-      const response = await fetch(`/api/chat/conversations/${routeConversationId}`);
+      const response = await fetch(`/api/chat/conversations/${routeConversationId}?scope=staff`);
       if (!response.ok) {
         if (response.status === 404) {
           toast.error(messages.moderation.conversation.notFound.title);

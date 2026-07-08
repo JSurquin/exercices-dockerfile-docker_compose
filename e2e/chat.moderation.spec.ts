@@ -59,7 +59,7 @@ test.describe('Chat — modération complète (admin)', () => {
   });
 
   test('API — conversation accessible par staff avec messages modérateur', async ({ request }) => {
-    const res = await request.get(`/api/chat/conversations/${conversationId}`);
+    const res = await request.get(`/api/chat/conversations/${conversationId}?scope=staff`);
     expect(res.ok()).toBeTruthy();
     const conv = await res.json();
 

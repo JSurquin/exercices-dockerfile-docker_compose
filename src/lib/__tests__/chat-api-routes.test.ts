@@ -152,6 +152,36 @@ describe('GET /api/chat/conversations', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.conversations).toHaveLength(1);
+    const findArg = (prisma.conversation.findMany as jest.Mock).mock.calls[0][0];
+    expect(findArg.where).toMatchObject({ userId: 'u1' });
+  });
+
+  it('restreint le widget admin à ses propres conversations (scope widget par défaut)', async () => {
+    mockResolveChatIdentity.mockResolvedValue({
+      kind: 'user',
+      role: 'ADMIN',
+      session: { user: { id: 'admin-1' } },
+    });
+    (prisma.conversation.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.conversation.count as jest.Mock).mockResolvedValue(0);
+
+    const res = await getConversations(makeRequest('http://localhost/api/chat/conversations'));
+    expect(res.status).toBe(200);
+    const findArg = (prisma.conversation.findMany as jest.Mock).mock.calls[0][0];
+    expect(findArg.where).toEqual({ userId: 'admin-1', status: { not: 'DELETED' } });
+  });
+
+  it('refuse scope=staff aux non-staff', async () => {
+    mockResolveChatIdentity.mockResolvedValue({
+      kind: 'user',
+      role: 'USER',
+      session: { user: { id: 'u1' } },
+    });
+
+    const res = await getConversations(
+      makeRequest('http://localhost/api/chat/conversations?scope=staff'),
+    );
+    expect(res.status).toBe(403);
   });
 });
 

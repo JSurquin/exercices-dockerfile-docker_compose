@@ -39,6 +39,7 @@ export const createChatMessageSchema = z
 
 export const conversationMessagesQuerySchema = z
   .object({
+    scope: z.enum(['widget', 'staff']).optional().default('widget'),
     cursor: z.string().max(128).optional(),
     limit: z
       .string()
@@ -69,9 +70,17 @@ export const botSubcategoryPostSchema = z
   })
   .strip();
 
+export const chatAccessScopeQuerySchema = z
+  .object({
+    /** widget = fil client (défaut) ; staff = backoffice modération */
+    scope: z.enum(['widget', 'staff']).optional().default('widget'),
+  })
+  .strip();
+
 /** GET /api/chat/conversations — filtres + pagination */
 export const chatConversationsQuerySchema = z
   .object({
+    scope: z.enum(['widget', 'staff']).optional().default('widget'),
     status: z.string().max(32).optional(),
     assignedTo: z.string().max(128).optional(),
     category: z.string().max(64).optional(),

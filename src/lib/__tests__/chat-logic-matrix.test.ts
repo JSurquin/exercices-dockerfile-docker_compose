@@ -46,12 +46,13 @@ describe('buildConversationWhereClause — combinaisons filtres admin', () => {
       { category: 'payment', assignedTo: 'mod-1' },
       { status: { not: 'DELETED' }, category: 'payment', assignedTo: 'mod-1' },
     ],
-  ])('admin filters=%j', (filters, expected) => {
+  ])('admin filters=%j en scope staff', (filters, expected) => {
     expect(
       buildConversationWhereClause({
         role: 'ADMIN',
         userId: 'admin',
         filters,
+        scope: 'staff',
       }),
     ).toEqual(expected);
   });
@@ -85,6 +86,7 @@ describe('buildConversationWhereClause — statut explicite modérateur', () => 
         role: 'MODERATOR',
         userId: 'mod-1',
         filters: { status: 'ACTIVE' },
+        scope: 'staff',
       }),
     ).toEqual({ status: 'ACTIVE' });
   });
@@ -95,6 +97,7 @@ describe('buildConversationWhereClause — statut explicite modérateur', () => 
         role: 'MODERATOR',
         userId: 'mod-1',
         filters: { assignedTo: 'me', status: 'CLOSED' },
+        scope: 'staff',
       }),
     ).toEqual({ assignedTo: 'mod-1', status: 'CLOSED' });
   });

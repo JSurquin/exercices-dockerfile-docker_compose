@@ -125,7 +125,7 @@ describe('GET /api/chat/conversations/[id]/messages', () => {
     });
   });
 
-  it('modérateur accède à toute conversation', async () => {
+  it('modérateur accède à toute conversation en scope staff', async () => {
     mockIdentity.mockResolvedValue({
       kind: 'user',
       role: 'MODERATOR',
@@ -141,7 +141,7 @@ describe('GET /api/chat/conversations/[id]/messages', () => {
     (prisma.chatMessage.updateMany as jest.Mock).mockResolvedValue({ count: 0 });
 
     const res = await getMessages(
-      makeRequest('http://localhost/api/chat/conversations/c1/messages'),
+      makeRequest('http://localhost/api/chat/conversations/c1/messages?scope=staff'),
       { params: Promise.resolve({ id: 'c1' }) },
     );
     expect(res.status).toBe(200);
@@ -149,6 +149,26 @@ describe('GET /api/chat/conversations/[id]/messages', () => {
       conversationId: 'c1',
       role: 'MODERATOR',
     });
+  });
+
+  it('refuse au modérateur la lecture widget d’une conversation tierce', async () => {
+    mockIdentity.mockResolvedValue({
+      kind: 'user',
+      role: 'MODERATOR',
+      session: { user: { id: 'mod-1' } },
+    });
+    (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      userId: 'u1',
+      assignedTo: null,
+      user: { email: 'user@test.com' },
+    });
+
+    const res = await getMessages(
+      makeRequest('http://localhost/api/chat/conversations/c1/messages'),
+      { params: Promise.resolve({ id: 'c1' }) },
+    );
+    expect(res.status).toBe(403);
   });
 });
 

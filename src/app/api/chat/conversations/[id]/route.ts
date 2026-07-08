@@ -15,11 +15,12 @@ import {
   redactEmailsForNonStaffViewer,
   redactEmailsInConversationForGuest,
 } from '@/lib/chat-response-redact';
-import { safeParseJson } from '@/lib/validation/helpers';
-import { patchConversationSchema } from '@/lib/validation/schemas/chat-api';
+import { safeParseJson, safeParseSearchParams } from '@/lib/validation/helpers';
+import { patchConversationSchema, chatAccessScopeQuerySchema } from '@/lib/validation/schemas/chat-api';
 import {
   canGuestAccessConversation,
   canUserAccessConversation,
+  isStaffRole,
   shouldRedactEmailsForViewer,
 } from '@/lib/chat-logic';
 
@@ -72,14 +73,23 @@ export async function GET(
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const parsedScope = safeParseSearchParams(searchParams, chatAccessScopeQuerySchema);
+    if (!parsedScope.ok) return parsedScope.response;
+    const scope = parsedScope.data.scope;
+
     if (identity.kind === 'user') {
       const session = identity.session;
+      if (scope === 'staff' && !isStaffRole(identity.role)) {
+        return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+      }
       if (
         !canUserAccessConversation({
           role: identity.role,
           userId: session.user.id,
           conversationUserId: conversation.userId,
           assignedTo: conversation.assignedTo,
+          scope,
         })
       ) {
         return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
