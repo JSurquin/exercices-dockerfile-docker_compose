@@ -58,7 +58,7 @@ beforeEach(() => {
   mockIsOllamaConfigured.mockReturnValue(true);
   mockUpdate.mockResolvedValue({});
   mockCreate.mockResolvedValue({ id: 'ai-msg' });
-  mockFindFirst.mockResolvedValue({ senderType: 'USER' });
+  mockFindFirst.mockResolvedValue(null);
 });
 
 describe('stripI18nPlaceholder', () => {
@@ -340,14 +340,47 @@ describe('maybeGenerateAiReply', () => {
       ...baseConversation,
       user: { steamUsername: 'PlayerX', name: null },
       messages: [
-        { content: 'Mon trade Steam bloqué', senderType: 'USER', createdAt: new Date() },
-        { content: 'Ticket transmis', senderType: 'SYSTEM', createdAt: new Date() },
+        { content: 'Mon trade Steam bloqué', senderType: 'USER', createdAt: new Date('2026-01-01T10:00:00Z') },
+        { content: 'Ticket transmis', senderType: 'SYSTEM', createdAt: new Date('2026-01-01T10:00:01Z') },
       ],
     });
     mockOllamaChat.mockResolvedValue({ content: 'Réponse', model: 'llama3.2', done: true });
     await maybeGenerateAiReply('conv-1');
+    expect(mockOllamaChat).toHaveBeenCalled();
     const roles = mockOllamaChat.mock.calls[0][0].messages.map((m: { role: string }) => m.role);
     expect(roles.filter((r: string) => r === 'system')).toHaveLength(1);
+  });
+
+  it('répond quand le message « ticket transmis » SYSTEM est inséré avant Ollama', async () => {
+    const userAt = new Date('2026-01-01T10:00:00Z');
+    mockFindUnique.mockResolvedValue({
+      ...baseConversation,
+      messages: [
+        { content: 'Trade en attente', senderType: 'USER', createdAt: new Date('2026-01-01T09:59:00Z') },
+        { content: 'Guide bot', senderType: 'BOT', createdAt: new Date('2026-01-01T09:59:30Z') },
+        {
+          content: 'Hello, mon trade est en attente depuis quelques heures',
+          senderType: 'USER',
+          createdAt: userAt,
+        },
+        {
+          content: '__i18n:chatWidget.responses.ticketTransmitted__',
+          senderType: 'SYSTEM',
+          createdAt: new Date('2026-01-01T10:00:01Z'),
+        },
+      ],
+    });
+    mockFindFirst.mockResolvedValue(null);
+    mockOllamaChat.mockResolvedValue({ content: 'Vérifiez Steam Guard.', model: 'llama3.2', done: true });
+
+    await maybeGenerateAiReply('conv-1');
+
+    expect(mockOllamaChat).toHaveBeenCalled();
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ senderType: 'AI' }),
+      }),
+    );
   });
 
   it('abandonne si un message staff arrive entre-temps (race)', async () => {
@@ -357,7 +390,7 @@ describe('maybeGenerateAiReply', () => {
         { content: 'Mon trade Steam bloqué', senderType: 'USER', createdAt: new Date() },
       ],
     });
-    mockFindFirst.mockResolvedValue({ senderType: 'MODERATOR' });
+    mockFindFirst.mockResolvedValue({ id: 'mod-1', senderType: 'MODERATOR' });
     mockOllamaChat.mockResolvedValue({ content: 'Réponse', model: 'llama3.2', done: true });
 
     await maybeGenerateAiReply('conv-1');

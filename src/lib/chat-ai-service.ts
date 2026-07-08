@@ -187,13 +187,21 @@ async function generateAiReply(conversationId: string): Promise<void> {
       });
     }
 
-    const latestMessage = await prisma.chatMessage.findFirst({
-      where: { conversationId },
-      orderBy: { createdAt: 'desc' },
-      select: { senderType: true },
+    const existingStaffReply = await prisma.chatMessage.findFirst({
+      where: {
+        conversationId,
+        createdAt: { gt: lastUserMessage.createdAt },
+        senderType: { in: ['AI', 'MODERATOR'] },
+      },
+      select: { id: true, senderType: true },
     });
 
-    if (latestMessage?.senderType !== 'USER') {
+    if (existingStaffReply) {
+      logger.info('[chat-ai] Skip: réponse staff déjà présente après le message user ciblé', {
+        conversationId,
+        replyId: existingStaffReply.id,
+        replyType: existingStaffReply.senderType,
+      });
       return;
     }
 
@@ -217,6 +225,11 @@ async function generateAiReply(conversationId: string): Promise<void> {
     await prisma.conversation.update({
       where: { id: conversationId },
       data: { updatedAt: new Date(), lastMessageAt: new Date() },
+    });
+
+    logger.info('[chat-ai] Réponse IA créée', {
+      conversationId,
+      contentLength: sanitizedContent.length,
     });
   } catch (error) {
     logger.error('[chat-ai] Échec génération réponse Ollama:', error);
