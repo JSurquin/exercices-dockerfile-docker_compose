@@ -16,6 +16,18 @@ export interface AuditDetailLabels {
   provider: string;
   flexifyStatus: string;
   reference: string;
+  externalId: string;
+  webhookId: string;
+  txHash: string;
+  internalStatus: string;
+  method: string;
+  currency: string;
+  errorCode: string;
+  errorReason: string;
+  userAgent: string;
+  bodyLength: string;
+  signaturePresent: string;
+  tokenConfigured: string;
   noDetails: string;
 }
 
@@ -40,6 +52,19 @@ const KEY_LABELS: Record<string, keyof AuditDetailLabels> = {
   whitepayTransactionId: 'transactionId',
   flexifyStatus: 'flexifyStatus',
   reference: 'reference',
+  externalId: 'externalId',
+  webhookId: 'webhookId',
+  txHash: 'txHash',
+  internalStatus: 'internalStatus',
+  method: 'method',
+  amount: 'amount',
+  currency: 'currency',
+  errorCode: 'errorCode',
+  errorReason: 'errorReason',
+  userAgent: 'userAgent',
+  bodyLength: 'bodyLength',
+  signaturePresent: 'signaturePresent',
+  tokenConfigured: 'tokenConfigured',
   provider: 'provider',
 };
 
@@ -49,6 +74,12 @@ function formatCents(value: unknown): string {
   return `${(cents / 100).toFixed(2)} €`;
 }
 
+function formatBoolean(value: unknown): string {
+  if (value === true) return 'oui';
+  if (value === false) return 'non';
+  return String(value);
+}
+
 function formatValue(key: string, value: unknown, labels: AuditDetailLabels): string {
   if (value === null || value === undefined || value === '') {
     return '';
@@ -56,6 +87,10 @@ function formatValue(key: string, value: unknown, labels: AuditDetailLabels): st
 
   if (key === 'amountCents' || key === 'balanceAfterCents') {
     return formatCents(value);
+  }
+
+  if (key === 'signaturePresent' || key === 'tokenConfigured') {
+    return formatBoolean(value);
   }
 
   if ((key === 'banExpires' || key === 'expiresAt') && typeof value === 'string') {

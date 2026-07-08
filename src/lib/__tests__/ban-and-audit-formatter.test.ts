@@ -48,8 +48,40 @@ describe('formatAuditLogDetails', () => {
     provider: 'Fournisseur',
     flexifyStatus: 'Statut Flexify',
     reference: 'Référence',
+    externalId: 'ID externe',
+    webhookId: 'ID webhook',
+    txHash: 'Hash blockchain',
+    internalStatus: 'Statut interne',
+    method: 'Méthode',
+    currency: 'Devise',
+    errorCode: 'Code erreur',
+    errorReason: 'Raison erreur',
+    userAgent: 'User-Agent',
+    bodyLength: 'Taille body',
+    signaturePresent: 'Signature présente',
+    tokenConfigured: 'Token configuré',
     noDetails: 'Aucun détail',
   };
+
+  it('formats webhook audit fields', () => {
+    const text = formatAuditLogDetails(
+      {
+        outcome: 'processed',
+        httpStatus: 200,
+        eventType: 'conversion_withdrawal::completed',
+        transactionId: 'tx-123',
+        payoutId: 'payout-1',
+        signaturePresent: true,
+        severity: 'low',
+      },
+      labels
+    );
+
+    expect(text).toContain('Résultat : processed');
+    expect(text).toContain('Code HTTP : 200');
+    expect(text).toContain('Transaction : tx-123');
+    expect(text).toContain('Signature présente : oui');
+  });
 
   it('formats known fields in readable French text', () => {
     const text = formatAuditLogDetails(

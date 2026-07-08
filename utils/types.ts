@@ -3125,6 +3125,18 @@ export interface Messages {
         provider: string;
         flexifyStatus: string;
         reference: string;
+        externalId: string;
+        webhookId: string;
+        txHash: string;
+        internalStatus: string;
+        method: string;
+        currency: string;
+        errorCode: string;
+        errorReason: string;
+        userAgent: string;
+        bodyLength: string;
+        signaturePresent: string;
+        tokenConfigured: string;
         noDetails: string;
       };
       severity: {
