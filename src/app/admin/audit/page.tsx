@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,13 +12,14 @@ import { AlertTriangle, Shield, Users, Activity, Clock, Filter, Download, Refres
 import { format } from 'date-fns';
 import { fr, enUS, zhCN } from 'date-fns/locale';
 import { useLocale } from '@/components/providers/locale-provider';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { formatAuditLogDetails } from '@/lib/audit-log-formatter';
 import { PageLoading } from '@/components/ui/page-loading';
 import { AdminUserLink } from '@/components/admin/admin-user-link';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { truncateAuditUserId } from '@/lib/admin/audit-log-display';
+import { cn } from '@/lib/utils';
 
 interface AuditLogUserSummary {
   userId: string;
@@ -80,26 +81,44 @@ export default function AuditPage() {
   const [filters, setFilters] = useState({
     action: 'all',
     severity: 'all',
-    userId: '',
     timeframe: '24h',
   });
+  const [userIdInput, setUserIdInput] = useState('');
+  const [debouncedUserId, setDebouncedUserId] = useState('');
 
-  const { data: dashboardData, isLoading: loading } = useQuery({
-    queryKey: [...queryKeys.adminAuditDashboard, filters],
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedUserId(userIdInput.trim()), 350);
+    return () => clearTimeout(timer);
+  }, [userIdInput]);
+
+  const queryFilters = useMemo(
+    () => ({
+      action: filters.action,
+      severity: filters.severity,
+      timeframe: filters.timeframe,
+      userId: debouncedUserId,
+    }),
+    [filters.action, filters.severity, filters.timeframe, debouncedUserId]
+  );
+
+  const { data: dashboardData, isLoading, isFetching } = useQuery({
+    queryKey: [...queryKeys.adminAuditDashboard, queryFilters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (filters.action !== 'all') params.append('action', filters.action);
-      if (filters.severity !== 'all') params.append('severity', filters.severity);
-      if (filters.userId) params.append('userId', filters.userId);
-      params.append('timeframe', filters.timeframe);
+      if (queryFilters.action !== 'all') params.append('action', queryFilters.action);
+      if (queryFilters.severity !== 'all') params.append('severity', queryFilters.severity);
+      if (queryFilters.userId) params.append('userId', queryFilters.userId);
+      params.append('timeframe', queryFilters.timeframe);
 
       const response = await fetch(`/api/admin/audit/dashboard?${params}`);
       if (!response.ok) throw new Error('Erreur lors du chargement');
       return response.json() as Promise<DashboardResponse>;
     },
+    placeholderData: keepPreviousData,
   });
   const metrics = dashboardData?.metrics ?? null;
   const logs = dashboardData?.logs ?? [];
+  const isInitialLoading = isLoading && !dashboardData;
 
   const auditMessages = messages.admin.audit;
 
@@ -137,7 +156,7 @@ export default function AuditPage() {
       const params = new URLSearchParams();
       if (filters.action && filters.action !== 'all') params.append('action', filters.action);
       if (filters.severity && filters.severity !== 'all') params.append('severity', filters.severity);
-      if (filters.userId) params.append('userId', filters.userId);
+      if (debouncedUserId) params.append('userId', debouncedUserId);
       params.append('timeframe', filters.timeframe);
       params.append('export', 'true');
 
@@ -158,7 +177,7 @@ export default function AuditPage() {
     }
   };
 
-  if (loading) {
+  if (isInitialLoading) {
     return (
       <PageLoading variant="compact" message={auditMessages.loading} className="min-h-[50vh]" />
     );
@@ -174,8 +193,8 @@ export default function AuditPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminAuditDashboard })} variant="outline" className="border-slate-600 text-white hover:bg-slate-800">
-            <RefreshCw className="h-4 w-4 sm:mr-2" />
+          <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.adminAuditDashboard })} variant="outline" className="border-slate-600 text-white hover:bg-slate-800" disabled={isFetching}>
+            <RefreshCw className={cn('h-4 w-4 sm:mr-2', isFetching && 'animate-spin')} />
             <span className="hidden sm:inline">{auditMessages.refresh}</span>
           </Button>
           <Button onClick={exportLogs} variant="outline" className="border-slate-600 text-white hover:bg-slate-800">
@@ -283,6 +302,8 @@ export default function AuditPage() {
                       <SelectItem value="payout.requested">{auditMessages.actions['payout.requested']}</SelectItem>
                       <SelectItem value="webhook.whitepay.call">{auditMessages.actions['webhook.whitepay.call']}</SelectItem>
                       <SelectItem value="webhook.flexify.call">{auditMessages.actions['webhook.flexify.call']}</SelectItem>
+                      <SelectItem value="webhook.kycaid.call">{auditMessages.actions['webhook.kycaid.call']}</SelectItem>
+                      <SelectItem value="api.kycaid.call">{auditMessages.actions['api.kycaid.call']}</SelectItem>
                       <SelectItem value="admin.action">{auditMessages.actions['admin.action']}</SelectItem>
                       <SelectItem value="security.suspicious_activity">{auditMessages.actions['security.suspicious_activity']}</SelectItem>
                     </SelectContent>
@@ -309,8 +330,8 @@ export default function AuditPage() {
                   <label className="text-sm font-medium text-slate-300">{auditMessages.filters.user}</label>
                   <Input
                     placeholder={auditMessages.filters.userIdPlaceholder}
-                    value={filters.userId}
-                    onChange={(e) => setFilters({...filters, userId: e.target.value})}
+                    value={userIdInput}
+                    onChange={(e) => setUserIdInput(e.target.value)}
                   />
                 </div>
 
@@ -333,9 +354,14 @@ export default function AuditPage() {
           </Card>
 
           {/* Table des logs */}
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className={cn('bg-slate-800/50 border-slate-700 transition-opacity', isFetching && 'opacity-70')}>
             <CardHeader>
-              <CardTitle className="text-white">{auditMessages.tabs.logs}</CardTitle>
+              <CardTitle className="text-white flex items-center gap-2">
+                {auditMessages.tabs.logs}
+                {isFetching && (
+                  <RefreshCw className="h-4 w-4 animate-spin text-slate-400" aria-hidden />
+                )}
+              </CardTitle>
               <CardDescription className="text-slate-400">
                 {logs.length} {auditMessages.table.entriesFound}
               </CardDescription>

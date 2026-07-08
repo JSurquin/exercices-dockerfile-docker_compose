@@ -2,7 +2,10 @@ import { NextRequest } from 'next/server';
 import {
   buildWebhookAuditBase,
   extractFlexifyWebhookMeta,
+  extractKycaidWebhookMeta,
+  extractKycaidPathMeta,
   extractWhitepayWebhookMeta,
+  logIntegrationApiCall,
   logIntegrationWebhookCall,
 } from '@/lib/integration-webhook-audit';
 
@@ -90,6 +93,73 @@ describe('buildWebhookAuditBase', () => {
       bodyLength: 7,
       signaturePresent: true,
       userAgent: 'Whitepay-Webhook/1.0',
+    });
+  });
+});
+
+describe('extractKycaidWebhookMeta', () => {
+  it('extracts verification webhook fields', () => {
+    expect(
+      extractKycaidWebhookMeta({
+        type: 'VERIFICATION_COMPLETED',
+        applicant_id: 'app-1',
+        verification_id: 'ver-1',
+        external_applicant_id: 'user-1',
+        status: 'completed',
+        verified: true,
+        request_id: 'req-1',
+      })
+    ).toEqual({
+      eventType: 'VERIFICATION_COMPLETED',
+      applicantId: 'app-1',
+      verificationId: 'ver-1',
+      externalApplicantId: 'user-1',
+      kycStatus: 'completed',
+      verified: true,
+      requestId: 'req-1',
+    });
+  });
+});
+
+describe('extractKycaidPathMeta', () => {
+  it('extracts ids from api paths', () => {
+    expect(extractKycaidPathMeta('/applicants/app-1/documents')).toEqual({
+      applicantId: 'app-1',
+      verificationId: undefined,
+    });
+    expect(extractKycaidPathMeta('/verifications/ver-9')).toEqual({
+      applicantId: undefined,
+      verificationId: 'ver-9',
+    });
+  });
+});
+
+describe('logIntegrationApiCall', () => {
+  beforeEach(() => {
+    auditLogCreate.mockReset();
+    auditLogCreate.mockResolvedValue({ id: 'log-api' });
+  });
+
+  it('persists outbound KYCAID api audit rows', async () => {
+    await logIntegrationApiCall('kycaid', {
+      outcome: 'success',
+      httpStatus: 200,
+      method: 'POST',
+      path: '/verifications',
+      userId: 'user-1',
+    });
+
+    expect(auditLogCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: 'user-1',
+        action: 'api.kycaid.call',
+        details: expect.objectContaining({
+          outcome: 'success',
+          httpStatus: 200,
+          method: 'POST',
+          apiPath: '/verifications',
+        }),
+      }),
     });
   });
 });

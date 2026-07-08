@@ -277,7 +277,8 @@ async function kycaidRequest<T>(
   method: string,
   path: string,
   body?: object,
-  retries: number = 3
+  retries: number = 3,
+  auditContext?: { userId?: string }
 ): Promise<T> {
   const url = `${KYCAID_CONFIG.baseUrl}${path}`;
   const headers = prepareHeaders();
@@ -304,13 +305,32 @@ async function kycaidRequest<T>(
         throw err;
       }
 
+      const { logIntegrationApiCall } = await import('@/lib/integration-webhook-audit');
+      await logIntegrationApiCall('kycaid', {
+        outcome: 'success',
+        httpStatus: response.status,
+        method,
+        path,
+        userId: auditContext?.userId,
+      });
+
       return data as T;
     } catch (error) {
       const status = (error as { status?: number }).status;
-      if (status === 422) {
+      const isFinalAttempt = attempt === retries;
+
+      if (status === 422 || isFinalAttempt) {
+        const { logIntegrationApiCall } = await import('@/lib/integration-webhook-audit');
+        await logIntegrationApiCall('kycaid', {
+          outcome: 'error',
+          httpStatus: status ?? 500,
+          method,
+          path,
+          userId: auditContext?.userId,
+          errorMessage: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
-      if (attempt === retries) throw error;
       logger.warn(`[KYCAID] Attempt ${attempt} failed on ${method} ${path}, retrying...`);
       await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
     }
@@ -344,7 +364,7 @@ export async function createApplicant(
 
   logKycTransaction('CREATE_APPLICANT', params.userId, { email: params.email });
 
-  return kycaidRequest<KycaidApplicant>('POST', '/applicants', requestBody);
+  return kycaidRequest<KycaidApplicant>('POST', '/applicants', requestBody, 3, { userId: params.userId });
 }
 
 /**
@@ -647,7 +667,9 @@ export async function createVerification(
     hasCallbackUrl: !!KYCAID_CONFIG.callbackUrl,
   });
 
-  return kycaidRequest<KycaidVerification>('POST', '/verifications', requestBody);
+  return kycaidRequest<KycaidVerification>('POST', '/verifications', requestBody, 3, {
+    userId: params.externalApplicantId,
+  });
 }
 
 /**

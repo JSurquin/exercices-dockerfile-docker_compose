@@ -3110,6 +3110,8 @@ export interface Messages {
         ADMIN_PAYOUT_CANCELLED: string;
         "webhook.whitepay.call": string;
         "webhook.flexify.call": string;
+        "webhook.kycaid.call": string;
+        "api.kycaid.call": string;
         WHITEPAY_WEBHOOK_COMPLETE: string;
         WHITEPAY_WEBHOOK_DECLINED: string;
       };
@@ -3143,6 +3145,11 @@ export interface Messages {
         bodyLength: string;
         signaturePresent: string;
         tokenConfigured: string;
+        applicantId: string;
+        verificationId: string;
+        externalApplicantId: string;
+        verified: string;
+        apiPath: string;
         noDetails: string;
       };
       severity: {

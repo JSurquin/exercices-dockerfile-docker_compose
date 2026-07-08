@@ -28,6 +28,11 @@ export interface AuditDetailLabels {
   bodyLength: string;
   signaturePresent: string;
   tokenConfigured: string;
+  applicantId: string;
+  verificationId: string;
+  externalApplicantId: string;
+  verified: string;
+  apiPath: string;
   noDetails: string;
 }
 
@@ -65,6 +70,11 @@ const KEY_LABELS: Record<string, keyof AuditDetailLabels> = {
   bodyLength: 'bodyLength',
   signaturePresent: 'signaturePresent',
   tokenConfigured: 'tokenConfigured',
+  applicantId: 'applicantId',
+  verificationId: 'verificationId',
+  externalApplicantId: 'externalApplicantId',
+  verified: 'verified',
+  apiPath: 'apiPath',
   provider: 'provider',
 };
 
@@ -89,7 +99,7 @@ function formatValue(key: string, value: unknown, labels: AuditDetailLabels): st
     return formatCents(value);
   }
 
-  if (key === 'signaturePresent' || key === 'tokenConfigured') {
+  if (key === 'signaturePresent' || key === 'tokenConfigured' || key === 'verified') {
     return formatBoolean(value);
   }
 
