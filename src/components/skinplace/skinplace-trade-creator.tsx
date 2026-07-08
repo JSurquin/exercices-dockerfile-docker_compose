@@ -23,6 +23,7 @@ import {
   Loader2,
   Plus,
   Package,
+  Mail,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/providers/auth-provider';
@@ -66,12 +67,16 @@ export function SkinplaceTradeCreator({
   selectedItems, 
   onTradeCreated 
 }: SkinplaceTradeCreatorProps) {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, refreshUser } = useAuth();
   const { messages } = useLocale();
   const { data: platformSettings } = usePlatformSettings();
   const isMerchant = user?.userTag === 'MERCHANT';
   const [tradeUrl, setTradeUrl] = useState(user?.tradeLink || '');
   const [isValidUrl, setIsValidUrl] = useState<boolean | null>(user?.tradeLink ? true : null);
+  const [emailInput, setEmailInput] = useState(user?.contactEmail || '');
+  const [isValidEmail, setIsValidEmail] = useState<boolean | null>(user?.contactEmail ? true : null);
+  const [isEditingEmail, setIsEditingEmail] = useState(!user?.contactEmail);
+  const [emailSaving, setEmailSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditingTradeLink, setIsEditingTradeLink] = useState(!user?.tradeLink);
@@ -82,6 +87,13 @@ export function SkinplaceTradeCreator({
   const [promoWillReplace, setPromoWillReplace] = useState(false);
   const [promoAffiliateName, setPromoAffiliateName] = useState<string | null>(null);
   const promoAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (user?.contactEmail && !isEditingEmail) {
+      setEmailInput(user.contactEmail);
+      setIsValidEmail(true);
+    }
+  }, [user?.contactEmail, isEditingEmail]);
 
   useEffect(() => {
     if (isMerchant) {
@@ -147,6 +159,69 @@ export function SkinplaceTradeCreator({
     return () => clearTimeout(timer);
   }, [promoInput, isMerchant]);
 
+  const validateEmail = (value: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmailInput(value);
+    setIsValidEmail(value ? validateEmail(value) : null);
+  };
+
+  const saveContactEmail = async () => {
+    const trimmed = emailInput.trim();
+    if (!trimmed || !validateEmail(trimmed)) {
+      toast.error(messages.tradeCreator.contactEmailInvalid);
+      throw new Error('invalid email');
+    }
+
+    if (user?.contactEmail === trimmed) {
+      setIsEditingEmail(false);
+      return;
+    }
+
+    setEmailSaving(true);
+    try {
+      const res = await fetch('/api/user/update-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmed }),
+      });
+      const data = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        throw new Error(data.error ?? messages.tradeCreator.contactEmailError);
+      }
+      await refreshUser();
+      setIsEditingEmail(false);
+      toast.success(messages.tradeCreator.contactEmailSaved);
+    } finally {
+      setEmailSaving(false);
+    }
+  };
+
+  const handleSaveEmail = async () => {
+    try {
+      await saveContactEmail();
+    } catch (error) {
+      if (error instanceof Error && error.message === 'invalid email') return;
+      toast.error(
+        error instanceof Error ? error.message : messages.tradeCreator.contactEmailError
+      );
+    }
+  };
+
+  const ensureContactEmail = async () => {
+    if (user?.contactEmail && !isEditingEmail) return;
+    try {
+      await saveContactEmail();
+    } catch (error) {
+      if (error instanceof Error && error.message === 'invalid email') {
+        toast.error(messages.tradeCreator.contactEmailRequired);
+      }
+      throw error;
+    }
+  };
+
   const validateTradeUrl = (url: string) => {
     // Accepte avec ou sans / après "new" (Steam peut renvoyer les deux formats)
     const steamTradeUrlRegex = /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/?\?partner=\d+&token=[a-zA-Z0-9_-]+$/;
@@ -195,6 +270,8 @@ export function SkinplaceTradeCreator({
     setError(null);
 
     try {
+      await ensureContactEmail();
+
       // Calculer la valeur brute en centimes
       const grossValueCentimes = getTotalEstimatedValueCentimes();
       
@@ -311,6 +388,11 @@ export function SkinplaceTradeCreator({
   const trimmedPromoInput = promoInput.trim();
   const promoBlocksSubmit =
     Boolean(trimmedPromoInput) && promoState !== 'valid';
+  const hasValidContactEmail = Boolean(
+    (user?.contactEmail && !isEditingEmail) ||
+      (emailInput.trim() && isValidEmail === true)
+  );
+  const emailBlocksSubmit = !hasValidContactEmail;
 
   return (
     <div className="space-y-6">
@@ -414,6 +496,99 @@ export function SkinplaceTradeCreator({
             )}
           </div>
 
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor="contact-email" className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                {messages.tradeCreator.contactEmailLabel}
+              </Label>
+              {user?.contactEmail && !isEditingEmail && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditingEmail(true)}
+                >
+                  {messages.tradeCreator.contactEmailModify}
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mb-2">
+              {messages.tradeCreator.contactEmailHelp}
+            </p>
+
+            {!isEditingEmail && user?.contactEmail ? (
+              <div className="space-y-2">
+                <div className="p-3 bg-muted/50 rounded-lg border">
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {messages.tradeCreator.contactEmailConfigured}
+                  </p>
+                  <p className="text-sm font-mono break-all">{user.contactEmail}</p>
+                </div>
+                <Alert>
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    {messages.tradeCreator.contactEmailValid}
+                  </AlertDescription>
+                </Alert>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Input
+                    id="contact-email"
+                    type="email"
+                    placeholder={messages.tradeCreator.contactEmailPlaceholder}
+                    value={emailInput}
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    className={isValidEmail === false ? 'border-red-500' : ''}
+                    autoComplete="email"
+                  />
+                  {isEditingEmail && user?.contactEmail && (
+                    <div className="flex gap-1">
+                      <Button
+                        onClick={handleSaveEmail}
+                        disabled={!isValidEmail || !emailInput.trim() || emailSaving}
+                        size="sm"
+                      >
+                        {emailSaving
+                          ? messages.tradeCreator.contactEmailSaving
+                          : messages.tradeCreator.contactEmailSave}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEmailInput(user.contactEmail || '');
+                          setIsValidEmail(user.contactEmail ? true : null);
+                          setIsEditingEmail(false);
+                        }}
+                      >
+                        {messages.tradeCreator.contactEmailCancel}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {isValidEmail === false && (
+                  <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription>
+                      {messages.tradeCreator.contactEmailInvalid}
+                    </AlertDescription>
+                  </Alert>
+                )}
+                {isValidEmail === true && (
+                  <Alert>
+                    <CheckCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      {messages.tradeCreator.contactEmailValid}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="rounded-lg border border-theme-accent/25 bg-theme-accent/5 dark:bg-theme-accent/10 p-4 space-y-3">
             <div className="flex items-start gap-2">
               <Gift className="h-5 w-5 text-theme-accent shrink-0 mt-0.5" />
@@ -482,8 +657,10 @@ export function SkinplaceTradeCreator({
                 !isValidUrl ||
                 selectedItems.length === 0 ||
                 loading ||
+                emailSaving ||
                 netValueCentimes <= 0 ||
                 isEditingTradeLink ||
+                emailBlocksSubmit ||
                 promoBlocksSubmit ||
                 grossValueCentimes < 100
               }
