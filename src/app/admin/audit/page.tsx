@@ -16,6 +16,17 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { formatAuditLogDetails } from '@/lib/audit-log-formatter';
 import { PageLoading } from '@/components/ui/page-loading';
+import { AdminUserLink } from '@/components/admin/admin-user-link';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { truncateAuditUserId } from '@/lib/admin/audit-log-display';
+
+interface AuditLogUserSummary {
+  userId: string;
+  displayName: string;
+  email: string | null;
+  steamUsername: string | null;
+  steamAvatar: string | null;
+}
 
 interface AuditLog {
   id: string;
@@ -24,6 +35,7 @@ interface AuditLog {
   details: Record<string, any>;
   ipAddress?: string;
   createdAt: string;
+  user?: AuditLogUserSummary | null;
 }
 
 interface SecurityMetrics {
@@ -36,7 +48,7 @@ interface SecurityMetrics {
   tradeActions: number;
   recentActivity: AuditLog[];
   topIPs: Array<{ ip: string; count: number }>;
-  topUsers: Array<{ userId: string; count: number }>;
+  topUsers: Array<{ userId: string; count: number; displayName?: string }>;
   activitySpikes: {
     isSpike: boolean;
     currentActivity: number;
@@ -359,13 +371,19 @@ export default function AuditPage() {
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell className="min-w-[120px]">
-                          <div className="font-medium text-sm truncate max-w-[100px]">
-                            {log.userId || auditMessages.table.system}
-                          </div>
-                          <div className="text-xs text-muted-foreground truncate max-w-[100px]">
-                            ID: {log.userId}
-                          </div>
+                        <TableCell className="min-w-[140px]">
+                          {!log.userId || log.userId === 'system' ? (
+                            <span className="text-sm text-slate-300">{auditMessages.table.system}</span>
+                          ) : (
+                            <AdminUserLink
+                              userId={log.userId}
+                              name={log.user?.displayName}
+                              avatar={log.user?.steamAvatar}
+                              email={log.user?.email}
+                              showUserId
+                              avatarSize="sm"
+                            />
+                          )}
                         </TableCell>
                         <TableCell className="min-w-[100px]">
                           <Badge variant="outline" className="text-xs">
@@ -431,11 +449,18 @@ export default function AuditPage() {
                     </CardHeader>
                     <CardContent className="space-y-2">
                       {metrics.topUsers?.slice(0, 5).map((item) => (
-                        <div key={item.userId} className="flex justify-between items-center">
-                          <span className="text-sm font-mono truncate max-w-[120px]">
-                            {item.userId.substring(0, 8)}...
-                          </span>
-                          <Badge variant="outline" className="text-xs">
+                        <div key={item.userId} className="flex justify-between items-center gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-sm truncate max-w-[120px] cursor-help">
+                                {item.displayName || truncateAuditUserId(item.userId, 12)}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="font-mono text-xs max-w-none">
+                              {item.userId}
+                            </TooltipContent>
+                          </Tooltip>
+                          <Badge variant="outline" className="text-xs shrink-0">
                             {item.count} {auditMessages.analytics.actions}
                           </Badge>
                         </div>

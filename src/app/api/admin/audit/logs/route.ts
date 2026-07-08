@@ -6,6 +6,7 @@ import {
   logUnauthorizedAccess, 
   logAdminAccess 
 } from '@/lib/security/audit-helpers';
+import { enrichAuditLogsWithUsers, resolveUserDisplayName } from '@/lib/admin/enrich-audit-log-users';
 
 export async function GET(request: NextRequest) {
   const context = getRequestContext(request);
@@ -73,10 +74,20 @@ export async function GET(request: NextRequest) {
         take: 10000 // Limite pour l'export
       });
 
+      const userIds = [...new Set(logs.map((l) => l.userId).filter((id) => id && id !== 'system'))];
+      const users = userIds.length
+        ? await prisma.user.findMany({
+            where: { id: { in: userIds } },
+            select: { id: true, steamUsername: true, name: true, email: true },
+          })
+        : [];
+      const userNames = new Map(users.map((u) => [u.id, resolveUserDisplayName(u)]));
+
       // Générer le CSV
       const csvHeaders = [
         'Date',
         'Utilisateur',
+        'ID utilisateur',
         'Action',
         'Sévérité',
         'IP',
@@ -85,6 +96,7 @@ export async function GET(request: NextRequest) {
 
       const csvRows = logs.map(log => [
         log.createdAt.toISOString(),
+        log.userId === 'system' ? 'Système' : (userNames.get(log.userId) || log.userId),
         log.userId || 'Système',
         log.action,
         (log.details as any)?.severity || 'low',
@@ -110,13 +122,15 @@ export async function GET(request: NextRequest) {
       skip: (page - 1) * limit
     });
 
+    const logsWithUsers = await enrichAuditLogsWithUsers(logs);
+
     // Petit délai avant la deuxième requête
     await new Promise(resolve => setTimeout(resolve, 50));
 
     const total = await prisma.auditLog.count({ where });
 
     return NextResponse.json({
-      logs,
+      logs: logsWithUsers,
       pagination: {
         page,
         limit,

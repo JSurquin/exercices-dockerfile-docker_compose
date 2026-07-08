@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { User } from 'lucide-react';
 import { SafeImg } from '@/components/ui/safe-image';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { truncateAuditUserId } from '@/lib/admin/audit-log-display';
 
 type AdminUserLinkProps = {
   userId: string;
@@ -28,9 +30,10 @@ export function AdminUserLink({
   avatarSize = 'md',
   className,
 }: AdminUserLinkProps) {
-  const displayName = name || email || userId.slice(0, 8);
+  const displayName = name || email || truncateAuditUserId(userId, 12);
   const avatarClass = avatarSize === 'sm' ? 'h-7 w-7' : 'h-8 w-8';
   const avatarSrc = avatar?.trim() || undefined;
+  const truncatedId = truncateAuditUserId(userId);
 
   return (
     <Link
@@ -58,9 +61,19 @@ export function AdminUserLink({
           <div className="text-xs text-slate-500 truncate">{subtitle}</div>
         )}
         {showUserId && (
-          <div className="text-xs text-slate-500 font-mono truncate" title={userId}>
-            {userId}
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className="text-xs text-slate-500 font-mono truncate max-w-[120px] cursor-help w-fit"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {truncatedId}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="font-mono text-xs max-w-none">
+              {userId}
+            </TooltipContent>
+          </Tooltip>
         )}
       </div>
     </Link>

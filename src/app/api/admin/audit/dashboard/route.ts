@@ -3,6 +3,7 @@ import { prisma } from '~/prisma/prisma';
 import { FraudDetector } from '@/lib/security/fraud-detector';
 import { logger } from '@/lib/logger';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
+import { enrichAuditLogsWithUsers, resolveUserDisplayName, truncateAuditUserId } from '@/lib/admin/enrich-audit-log-users';
 
 // Helper function pour encapsuler les requêtes Prisma avec gestion d'erreur
 async function safeQuery<T>(queryFn: () => Promise<T>, fallback: T, description: string): Promise<T> {
@@ -219,10 +220,29 @@ async function handleGetDashboard(req: NextRequest): Promise<NextResponse> {
       }
     });
 
-    const topUsers = Object.entries(userCounts)
+    const topUsersRaw = Object.entries(userCounts)
       .sort(([,a], [,b]) => b - a)
       .slice(0, 10)
       .map(([userId, count]) => ({ userId, count }));
+
+    const topUserIds = topUsersRaw.map((u) => u.userId);
+    const topUserRows = topUserIds.length
+      ? await safeQuery(
+          () => prisma.user.findMany({
+            where: { id: { in: topUserIds } },
+            select: { id: true, steamUsername: true, name: true, email: true },
+          }),
+          [],
+          'top users profiles'
+        )
+      : [];
+    const topUserNames = new Map(topUserRows.map((u) => [u.id, resolveUserDisplayName(u)]));
+
+    const topUsers = topUsersRaw.map(({ userId, count }) => ({
+      userId,
+      count,
+      displayName: topUserNames.get(userId) || truncateAuditUserId(userId, 12),
+    }));
 
     // Activités récentes suspectes
     logger.info('⚠️ Fetching recent suspicious activities...');
@@ -293,10 +313,13 @@ async function handleGetDashboard(req: NextRequest): Promise<NextResponse> {
 
     logger.info('✅ Dashboard data fetched successfully');
 
+    const logsWithUsers = await enrichAuditLogsWithUsers(auditLogs);
+    const recentActivityWithUsers = await enrichAuditLogsWithUsers(recentSuspiciousActivities);
+
     // Construire la réponse complète
     const response = {
       // Données des logs d'audit
-      logs: auditLogs,
+      logs: logsWithUsers,
       totalLogs,
       
       // Métriques de sécurité
@@ -308,7 +331,7 @@ async function handleGetDashboard(req: NextRequest): Promise<NextResponse> {
         adminActions,
         paymentActions,
         tradeActions,
-        recentActivity: recentSuspiciousActivities,
+        recentActivity: recentActivityWithUsers,
         
         // Analyses avancées
         topIPs,
