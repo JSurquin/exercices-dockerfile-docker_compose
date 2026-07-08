@@ -12,6 +12,7 @@ import {
 } from '@/lib/trade-platform-fees';
 import { AffiliateService } from '@/lib/affiliate-service';
 import { isAffiliateRewardsBlocked, isMerchantAccount } from '@/lib/user-rewards-guard';
+import { resolveUserContactEmail } from '@/lib/user-contact-email';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { skinplaceCreateTradeBodySchema } from '@/lib/validation/schemas/integrations';
 import { verifyAndPriceItems } from '@/lib/skinplace-price-verifier';
@@ -416,7 +417,10 @@ export async function POST(request: NextRequest) {
 
     await notifyAdminsNewTrade(trade.id, user.id, serverGrossCentimes);
 
-    const notificationEmail = (user as { contactEmail?: string | null }).contactEmail || user.email;
+    const notificationEmail = resolveUserContactEmail({
+      contactEmail: user.contactEmail,
+      email: user.email,
+    });
     if (notificationEmail) {
       try {
         await newsletterService.sendTradeCreatedEmail(

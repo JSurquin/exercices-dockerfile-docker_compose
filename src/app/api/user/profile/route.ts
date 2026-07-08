@@ -3,6 +3,7 @@ import type { UserRole } from '@prisma/client';
 import { auth } from '~/lib/auth';
 import type { AuthUser } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
+import { resolveUserContactEmail } from '@/lib/user-contact-email';
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
       image: string | null;
       fragments: number;
       contactEmail: string | null;
+      email: string;
       role: UserRole;
       bonusRatePercent: number;
       userTag: string | null;
@@ -44,6 +46,7 @@ export async function GET(request: NextRequest) {
           image: true,
           fragments: true,
           contactEmail: true,
+          email: true,
           role: true,
           bonusRatePercent: true,
           userTag: true,
@@ -67,13 +70,17 @@ export async function GET(request: NextRequest) {
     // Un seul indicateur fiable pour le menu : programme actif (toggle admin). Sinon un rôle AFFILIATE
     // résiduel après désactivation laissait le lien affiché.
     const canAccessAffiliateDashboard = dbRow?.affiliateStats?.isActive === true;
+    const resolvedContactEmail = resolveUserContactEmail({
+      contactEmail: dbRow?.contactEmail ?? null,
+      email: dbRow?.email ?? user.email ?? null,
+    });
 
     const responseUser = {
       id: user.id,
       steamId64: steamId,
       username: displayName,
       avatar: displayAvatar,
-      contactEmail: dbRow?.contactEmail ?? null,
+      contactEmail: resolvedContactEmail,
       role: dbRole,
       canAccessAffiliateDashboard,
       twoFactorEnabled: dbRow?.twoFactorEnabled ?? false,

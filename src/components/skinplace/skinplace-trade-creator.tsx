@@ -89,11 +89,15 @@ export function SkinplaceTradeCreator({
   const promoAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    if (user?.contactEmail && !isEditingEmail) {
-      setEmailInput(user.contactEmail);
+    if (!user || isEditingEmail) return;
+
+    const resolved = user.contactEmail?.trim() ?? '';
+    if (resolved) {
+      setEmailInput(resolved);
       setIsValidEmail(true);
+      setIsEditingEmail(false);
     }
-  }, [user?.contactEmail, isEditingEmail]);
+  }, [user?.id, user?.contactEmail, isEditingEmail]);
 
   useEffect(() => {
     if (isMerchant) {

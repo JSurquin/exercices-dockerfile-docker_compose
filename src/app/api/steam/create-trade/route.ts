@@ -11,6 +11,7 @@ import { safeParseJson } from '@/lib/validation/helpers';
 import { steamCreateTradeBodySchema } from '@/lib/validation/schemas/integrations';
 import { verifyAndPriceItems } from '@/lib/skinplace-price-verifier';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { resolveUserContactEmail } from '@/lib/user-contact-email';
 
 interface CreateTradeBody {
   steam_id: string;
@@ -214,7 +215,10 @@ export async function POST(request: NextRequest) {
 
     await TradeHooks.onTradeCreated(user.id, trade.id);
 
-    const notificationEmail = (user as { contactEmail?: string | null }).contactEmail || user.email;
+    const notificationEmail = resolveUserContactEmail({
+      contactEmail: user.contactEmail,
+      email: user.email,
+    });
     if (notificationEmail) {
       try {
         await newsletterService.sendTradeCreatedEmail(
