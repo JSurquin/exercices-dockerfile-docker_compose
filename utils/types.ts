@@ -3864,6 +3864,9 @@ export interface Messages {
     moderatorLabel: string;
     botLabel: string;
     aiLabel: string;
+    contactModerator: string;
+    escalatingModerator: string;
+    escalateError: string;
     aiTypingQueued: string;
     sendHint: string;
     historyTitle: string;

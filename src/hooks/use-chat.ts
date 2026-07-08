@@ -118,6 +118,11 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
     return latestPage?.status;
   }, [messagesData]);
 
+  const loadedAiEnabled = useMemo(() => {
+    const latestPage = messagesData?.pages?.[0];
+    return latestPage?.aiEnabled;
+  }, [messagesData]);
+
   const isClientEngagedWithChat = isViewingConversation || awaitingStaffReply;
 
   const isEngagedWithConversation = useCallback(
@@ -334,6 +339,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
     return {
       id: conversationId,
       status: meta?.status ?? loadedConversationStatus ?? 'ACTIVE',
+      aiEnabled: loadedAiEnabled ?? true,
       subject: meta?.subject,
       summary: meta?.summary,
       messages: visibleMessages,
@@ -341,7 +347,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
       updatedAt: meta?.updatedAt ?? new Date().toISOString(),
       lastMessageAt: meta?.lastMessageAt,
     };
-  }, [conversationId, conversations, visibleMessages, loadedConversationStatus]);
+  }, [conversationId, conversations, visibleMessages, loadedConversationStatus, loadedAiEnabled]);
 
   return {
     conversations,

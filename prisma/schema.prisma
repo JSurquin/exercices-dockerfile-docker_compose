@@ -814,6 +814,7 @@ model Conversation {
   category          String?
   priority          ConversationPriority @default(NORMAL)
   assignedTo        String?
+  aiEnabled         Boolean              @default(true)
   summary           String?
   lastMessageAt     DateTime?
   deletedAt         DateTime?

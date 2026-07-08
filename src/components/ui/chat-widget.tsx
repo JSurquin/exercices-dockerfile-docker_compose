@@ -231,6 +231,11 @@ interface ChatWidgetMessageListProps {
   moderatorLabel: string;
   botLabel: string;
   aiLabel: string;
+  contactModeratorLabel: string;
+  escalatingModeratorLabel: string;
+  aiEnabled: boolean;
+  escalatingModerator: boolean;
+  onContactModerator: () => void | Promise<void>;
   resolveContent: (content: string) => string;
   dateLocale: string;
   isLoadingOlderMessages: boolean;
@@ -249,6 +254,11 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
   moderatorLabel,
   botLabel,
   aiLabel,
+  contactModeratorLabel,
+  escalatingModeratorLabel,
+  aiEnabled,
+  escalatingModerator,
+  onContactModerator,
   resolveContent,
   dateLocale,
   isLoadingOlderMessages,
@@ -291,6 +301,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
         const isBot = msg.senderType === "BOT";
         const isAi = msg.senderType === "AI";
         const isModerator = msg.senderType === "MODERATOR";
+        const isSystem = msg.senderType === "SYSTEM";
         const bubbleSender: WidgetSenderType = isUser ? "USER" : (msg.senderType as WidgetSenderType);
         const isNewMessage = !seenMessageIdsRef.current.has(msg.id);
         if (isNewMessage) {
@@ -331,8 +342,27 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">
                   {resolveContent(msg.content)}
                 </p>
+              ) : isSystem ? (
+                <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                  {resolveContent(msg.content)}
+                </p>
               ) : (
                 <ChatMarkdownContent content={resolveContent(msg.content)} />
+              )}
+              {isAi && aiEnabled && (
+                <div className="mt-2 pt-2 border-t border-violet-200/70 dark:border-violet-800/70">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    data-testid="chat-contact-moderator-button"
+                    className="h-7 text-[11px] px-2.5 border-violet-300 dark:border-violet-700 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/40"
+                    disabled={escalatingModerator || isLoading}
+                    onClick={() => void onContactModerator()}
+                  >
+                    {escalatingModerator ? escalatingModeratorLabel : contactModeratorLabel}
+                  </Button>
+                </div>
               )}
               <div
                 className={`flex items-center justify-between mt-1 gap-2 ${chatWidgetTimestampClass(bubbleSender)}`}
@@ -473,6 +503,7 @@ export function ChatWidget() {
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [aiTypingBaseCount, setAiTypingBaseCount] = useState(0);
   const [aiTypingQueuedHint, setAiTypingQueuedHint] = useState<string | undefined>();
+  const [escalatingModerator, setEscalatingModerator] = useState(false);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const wasOpenBeforeMobileMenuRef = useRef(false);
@@ -493,6 +524,7 @@ export function ChatWidget() {
     setIsAiTyping(false);
     setAiTypingBaseCount(0);
     setAiTypingQueuedHint(undefined);
+    setEscalatingModerator(false);
     if (aiTypingTimeoutRef.current) {
       clearTimeout(aiTypingTimeoutRef.current);
       aiTypingTimeoutRef.current = null;
@@ -775,6 +807,39 @@ export function ChatWidget() {
     isAskQuestionFlow,
   ]);
 
+  const handleContactModerator = useCallback(async () => {
+    if (!conversationId || escalatingModerator) return;
+    setEscalatingModerator(true);
+    setIsAiTyping(false);
+    setAiTypingQueuedHint(undefined);
+    try {
+      const res = await fetch(`/api/chat/conversations/${conversationId}/escalate`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("escalate failed");
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.conversationMessages(conversationId),
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
+      setTimeout(scrollToBottom, 100);
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: messages.chatWidget.escalateError,
+        variant: "destructive",
+      });
+    } finally {
+      setEscalatingModerator(false);
+    }
+  }, [
+    conversationId,
+    escalatingModerator,
+    queryClient,
+    scrollToBottom,
+    toast,
+    messages.chatWidget.escalateError,
+  ]);
+
   const resolveContent = useCallback(
     (content: string) => resolveI18nContent(content, messages),
     [messages],
@@ -1021,6 +1086,11 @@ export function ChatWidget() {
         moderatorLabel={messages.chatWidget.moderatorLabel}
         botLabel={messages.chatWidget.botLabel}
         aiLabel={messages.chatWidget.aiLabel}
+        contactModeratorLabel={messages.chatWidget.contactModerator}
+        escalatingModeratorLabel={messages.chatWidget.escalatingModerator}
+        aiEnabled={currentConversation?.aiEnabled ?? true}
+        escalatingModerator={escalatingModerator}
+        onContactModerator={handleContactModerator}
         resolveContent={resolveContent}
         dateLocale={dateLocale}
         isLoadingOlderMessages={isLoadingOlderMessages}

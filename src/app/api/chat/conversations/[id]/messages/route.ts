@@ -8,7 +8,7 @@ import {
   conversationMessagesQuerySchema,
   createChatMessageSchema,
 } from '@/lib/validation/schemas/chat-api';
-import { getChatAiQueueHint, maybeGenerateAiReply } from '@/lib/chat-ai-service';
+import { maybeGenerateAiReply } from '@/lib/chat-ai-service';
 import {
   canGuestAccessConversation,
   canUserAccessConversation,
@@ -16,10 +16,6 @@ import {
   isStaffRole,
   resolveChatAccessScope,
   resolveOutgoingSenderType,
-  shouldInsertTicketTransmittedMessage,
-  shouldInsertFollowUpAwaitingAcknowledgment,
-  TICKET_TRANSMITTED_I18N_KEY,
-  FOLLOW_UP_AWAITING_ACK_I18N_KEY,
 } from '@/lib/chat-logic';
 import {
   applyReadStateToMessagesForViewer,
@@ -27,6 +23,7 @@ import {
   fetchConversationMessagesPage,
   markConversationMessagesAsReadForViewer,
 } from '@/lib/chat-message-service';
+import { handleUserMessageSideEffects } from '@/lib/chat-escalation';
 import {
   extractCategoryFromSubcategoryKey,
   resolveConversationRoutingWithMessage,
@@ -153,6 +150,7 @@ export async function GET(
       nextCursor: page.nextCursor,
       hasMore: page.hasMore,
       status: conversation.status,
+      aiEnabled: conversation.aiEnabled,
     });
   } catch (error) {
     if (error instanceof Error && error.message === 'INVALID_CURSOR') {
@@ -292,6 +290,7 @@ export async function POST(
     });
 
     let aiQueueHint = null;
+    let shouldRunAi = false;
 
     if (senderType === 'USER') {
       const existingMessages = await prisma.chatMessage.findMany({
@@ -300,34 +299,17 @@ export async function POST(
         select: { senderType: true, id: true },
       });
 
-      if (shouldInsertTicketTransmittedMessage(existingMessages, message.id, senderType)) {
-        await createChatMessageRecord({
-          conversationId: conversation.id,
-          userId: null,
-          content: TICKET_TRANSMITTED_I18N_KEY,
-          senderType: 'SYSTEM',
-        });
-      } else if (
-        shouldInsertFollowUpAwaitingAcknowledgment(
-          existingMessages,
-          message.id,
-          senderType,
-          conversation.assignedTo,
-        )
-      ) {
-        await createChatMessageRecord({
-          conversationId: conversation.id,
-          userId: null,
-          content: FOLLOW_UP_AWAITING_ACK_I18N_KEY,
-          senderType: 'BOT',
-        });
-      }
-
-      aiQueueHint = getChatAiQueueHint({
+      const sideEffects = await handleUserMessageSideEffects({
+        conversationId: conversation.id,
+        messageId: message.id,
+        messageContent: body.content,
         assignedTo: conversation.assignedTo,
         status: conversation.status,
-        hasModeratorMessage: existingMessages.some((m) => m.senderType === 'MODERATOR'),
+        aiEnabled: conversation.aiEnabled,
+        existingMessages,
       });
+      aiQueueHint = sideEffects.aiQueueHint;
+      shouldRunAi = !sideEffects.escalated && conversation.aiEnabled !== false;
     }
 
     if (identity.kind === 'user') {
@@ -339,7 +321,7 @@ export async function POST(
       });
     }
 
-    if (senderType === 'USER') {
+    if (senderType === 'USER' && shouldRunAi) {
       after(() => maybeGenerateAiReply(conversation!.id));
     }
 

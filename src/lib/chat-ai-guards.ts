@@ -37,8 +37,10 @@ export function shouldAiReplyToConversation(input: {
   assignedTo: string | null;
   status: string;
   hasModeratorMessage: boolean;
+  aiEnabled?: boolean;
 }): boolean {
   if (!isOllamaConfigured()) return false;
+  if (input.aiEnabled === false) return false;
   if (input.status === 'CLOSED' || input.status === 'ARCHIVED' || input.status === 'DELETED') return false;
   if (input.assignedTo) return false;
   if (input.hasModeratorMessage) return false;

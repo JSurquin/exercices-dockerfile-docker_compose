@@ -24,6 +24,7 @@ export function getChatAiQueueHint(input: {
   assignedTo: string | null;
   status: string;
   hasModeratorMessage: boolean;
+  aiEnabled?: boolean;
 }): ChatAiQueueHint | null {
   if (!shouldAiReplyToConversation(input)) return null;
 
@@ -113,6 +114,7 @@ async function generateAiReply(conversationId: string): Promise<void> {
         assignedTo: conversation.assignedTo,
         status: conversation.status,
         hasModeratorMessage,
+        aiEnabled: conversation.aiEnabled,
       })
     ) {
       return;

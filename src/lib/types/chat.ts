@@ -21,6 +21,7 @@ export interface ConversationWithMessages {
   category: string | null;
   priority: ConversationPriority;
   assignedTo: string | null;
+  aiEnabled?: boolean;
   createdAt: Date;
   updatedAt: Date;
   closedAt: Date | null;

@@ -111,6 +111,7 @@ export async function fetchMessagesPage(conversationId: string, cursor: string |
     nextCursor: string | null;
     hasMore: boolean;
     status?: string;
+    aiEnabled?: boolean;
   }>;
 }
 

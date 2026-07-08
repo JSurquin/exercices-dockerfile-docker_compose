@@ -39,6 +39,18 @@ describe('shouldAiReplyToConversation', () => {
     ).toBe(false);
   });
 
+  it('refuse si l\'IA est désactivée sur la conversation', () => {
+    process.env.CHAT_AI_ENABLED = 'true';
+    expect(
+      shouldAiReplyToConversation({
+        assignedTo: null,
+        status: 'ACTIVE',
+        hasModeratorMessage: false,
+        aiEnabled: false,
+      }),
+    ).toBe(false);
+  });
+
   it('refuse si un modérateur a déjà répondu', () => {
     process.env.CHAT_AI_ENABLED = 'true';
     expect(

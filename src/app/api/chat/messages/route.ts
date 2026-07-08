@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 import { resolveChatIdentity } from '@/lib/require-admin';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { createChatMessageSchema } from '@/lib/validation/schemas/chat-api';
-import { getChatAiQueueHint, maybeGenerateAiReply } from '@/lib/chat-ai-service';
+import { maybeGenerateAiReply } from '@/lib/chat-ai-service';
 import {
   canGuestAccessConversation,
   canUserAccessConversation,
@@ -13,12 +13,9 @@ import {
   isStaffRole,
   resolveChatAccessScope,
   resolveOutgoingSenderType,
-  shouldInsertTicketTransmittedMessage,
-  shouldInsertFollowUpAwaitingAcknowledgment,
-  TICKET_TRANSMITTED_I18N_KEY,
-  FOLLOW_UP_AWAITING_ACK_I18N_KEY,
 } from '@/lib/chat-logic';
 import { createChatMessageRecord } from '@/lib/chat-message-service';
+import { handleUserMessageSideEffects } from '@/lib/chat-escalation';
 import {
   extractCategoryFromSubcategoryKey,
   resolveConversationRoutingWithMessage,
@@ -161,6 +158,7 @@ export async function POST(request: NextRequest) {
     });
 
     let aiQueueHint = null;
+    let shouldRunAi = false;
 
     if (senderType === 'USER') {
       const existingMessages = await prisma.chatMessage.findMany({
@@ -169,34 +167,17 @@ export async function POST(request: NextRequest) {
         select: { senderType: true, id: true },
       });
 
-      if (shouldInsertTicketTransmittedMessage(existingMessages, message.id, senderType)) {
-        await createChatMessageRecord({
-          conversationId,
-          userId: null,
-          content: TICKET_TRANSMITTED_I18N_KEY,
-          senderType: 'SYSTEM',
-        });
-      } else if (
-        shouldInsertFollowUpAwaitingAcknowledgment(
-          existingMessages,
-          message.id,
-          senderType,
-          conversation.assignedTo,
-        )
-      ) {
-        await createChatMessageRecord({
-          conversationId,
-          userId: null,
-          content: FOLLOW_UP_AWAITING_ACK_I18N_KEY,
-          senderType: 'BOT',
-        });
-      }
-
-      aiQueueHint = getChatAiQueueHint({
+      const sideEffects = await handleUserMessageSideEffects({
+        conversationId,
+        messageId: message.id,
+        messageContent: body.content,
         assignedTo: conversation.assignedTo,
         status: conversation.status,
-        hasModeratorMessage: existingMessages.some((m) => m.senderType === 'MODERATOR'),
+        aiEnabled: conversation.aiEnabled,
+        existingMessages,
       });
+      aiQueueHint = sideEffects.aiQueueHint;
+      shouldRunAi = !sideEffects.escalated && conversation.aiEnabled !== false;
     }
 
     if (identity.kind === 'user') {
@@ -208,7 +189,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    if (senderType === 'USER') {
+    if (senderType === 'USER' && shouldRunAi) {
       after(() => maybeGenerateAiReply(conversationId));
     }
 
