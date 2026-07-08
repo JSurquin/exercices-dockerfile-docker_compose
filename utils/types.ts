@@ -279,7 +279,13 @@ export interface Messages {
   };
   howItWorks: {
     title: string;
+    titleLead: string;
+    titleHighlight: string;
     subtitle: string;
+    tradeFlowLabel: string;
+    tradeOfferLabel: string;
+    tradeHoldLock: string;
+    hudLabel: string;
     steps: {
       addTradeLink: {
         title: string;
