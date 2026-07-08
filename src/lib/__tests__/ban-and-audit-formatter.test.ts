@@ -46,6 +46,8 @@ describe('formatAuditLogDetails', () => {
     eventType: 'Événement',
     transactionId: 'Transaction',
     provider: 'Fournisseur',
+    flexifyStatus: 'Statut Flexify',
+    reference: 'Référence',
     noDetails: 'Aucun détail',
   };
 

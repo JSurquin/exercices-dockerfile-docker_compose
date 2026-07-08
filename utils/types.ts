@@ -3103,6 +3103,7 @@ export interface Messages {
         ADMIN_WITHDRAWAL_LIMIT_UPDATE: string;
         ADMIN_PAYOUT_CANCELLED: string;
         "webhook.whitepay.call": string;
+        "webhook.flexify.call": string;
         WHITEPAY_WEBHOOK_COMPLETE: string;
         WHITEPAY_WEBHOOK_DECLINED: string;
       };
@@ -3122,6 +3123,8 @@ export interface Messages {
         eventType: string;
         transactionId: string;
         provider: string;
+        flexifyStatus: string;
+        reference: string;
         noDetails: string;
       };
       severity: {

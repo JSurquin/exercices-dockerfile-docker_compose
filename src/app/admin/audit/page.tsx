@@ -270,6 +270,7 @@ export default function AuditPage() {
                       <SelectItem value="trade.created">{auditMessages.actions['trade.created']}</SelectItem>
                       <SelectItem value="payout.requested">{auditMessages.actions['payout.requested']}</SelectItem>
                       <SelectItem value="webhook.whitepay.call">{auditMessages.actions['webhook.whitepay.call']}</SelectItem>
+                      <SelectItem value="webhook.flexify.call">{auditMessages.actions['webhook.flexify.call']}</SelectItem>
                       <SelectItem value="admin.action">{auditMessages.actions['admin.action']}</SelectItem>
                       <SelectItem value="security.suspicious_activity">{auditMessages.actions['security.suspicious_activity']}</SelectItem>
                     </SelectContent>

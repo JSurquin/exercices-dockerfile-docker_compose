@@ -14,6 +14,8 @@ export interface AuditDetailLabels {
   eventType: string;
   transactionId: string;
   provider: string;
+  flexifyStatus: string;
+  reference: string;
   noDetails: string;
 }
 
@@ -36,6 +38,8 @@ const KEY_LABELS: Record<string, keyof AuditDetailLabels> = {
   eventType: 'eventType',
   transactionId: 'transactionId',
   whitepayTransactionId: 'transactionId',
+  flexifyStatus: 'flexifyStatus',
+  reference: 'reference',
   provider: 'provider',
 };
 

@@ -8,6 +8,7 @@ export type IntegrationWebhookOutcome =
   | 'received'
   | 'invalid_json'
   | 'invalid_signature'
+  | 'stale_date'
   | 'ignored'
   | 'unknown_event'
   | 'duplicate'
@@ -34,6 +35,7 @@ function outcomeSeverity(
 ): 'low' | 'medium' | 'high' | 'critical' {
   switch (outcome) {
     case 'invalid_signature':
+    case 'stale_date':
       return 'high';
     case 'error':
     case 'payout_not_found':

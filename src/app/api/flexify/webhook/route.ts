@@ -10,24 +10,49 @@ import {
   type FlexifyWebhookPayload,
 } from '@/lib/flexify';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
-import { 
-  ensureWebhookIdempotency, 
-  markWebhookProcessed 
+import {
+  ensureWebhookIdempotency,
+  markWebhookProcessed,
 } from '@/lib/webhook-idempotency';
+import { logIntegrationWebhookCall } from '@/lib/integration-webhook-audit';
 
 // =============================================================================
 // POST - Recevoir les webhooks Flexify
 // =============================================================================
 
+function extractFlexifyMeta(payload: unknown): {
+  reference?: string;
+  transactionId?: string;
+  flexifyStatus?: string;
+  eventType?: string;
+} {
+  if (!payload || typeof payload !== 'object') return {};
+  const pl = payload as Record<string, unknown>;
+  const reference = typeof pl.reference === 'string' ? pl.reference : undefined;
+  const transactionId =
+    typeof pl.identifier === 'string'
+      ? pl.identifier
+      : typeof pl.transaction_id === 'string'
+        ? pl.transaction_id
+        : undefined;
+  const flexifyStatus = typeof pl.status === 'string' ? pl.status : undefined;
+  const eventType = typeof pl.type === 'string' ? pl.type : undefined;
+  return { reference, transactionId, flexifyStatus, eventType };
+}
+
 export async function POST(request: NextRequest) {
   let webhookId: string | null = null;
-  
+  const baseAudit = {
+    signaturePresent: false,
+    bodyLength: 0,
+  };
+
   try {
     flexifyLog('WEBHOOK_RECEIVED', { hasBody: true });
     const rawBody = await request.text();
+    baseAudit.bodyLength = rawBody.length;
 
     // SÉCURITÉ: Ne pas logger tous les headers (risque de fuite de secrets)
-    // On ne log que les headers nécessaires à la signature
     const relevantHeaders = {
       authorization: request.headers.get('Authorization') || request.headers.get('Signature') || '',
       digest: request.headers.get('Digest') || '',
@@ -37,12 +62,13 @@ export async function POST(request: NextRequest) {
     };
     flexifyLog('WEBHOOK_HEADERS', { headers: relevantHeaders });
 
-    // Flexify peut envoyer la signature dans Authorization ou dans un header Signature dédié
     const authorizationHeader =
       request.headers.get('Authorization') ||
       request.headers.get('Signature') ||
       request.headers.get('X-Signature') ||
       '';
+    baseAudit.signaturePresent = authorizationHeader.length > 0;
+
     const digestHeader = request.headers.get('Digest') || '';
     const dateHeader = request.headers.get('Date') || '';
     const hostHeader =
@@ -55,21 +81,23 @@ export async function POST(request: NextRequest) {
     const skipVerify = process.env.FLEXIFY_WEBHOOK_SKIP_VERIFY === 'true' && !isDeployedEnv;
 
     if (isDeployedEnv && process.env.FLEXIFY_WEBHOOK_SKIP_VERIFY === 'true') {
-      // Ne jamais retourner 503 : ça bloquerait tous les webhooks si la var est accidentellement setée.
-      // On log l'avertissement et on force la vérification de signature au lieu de court-circuiter.
       flexifyLog(
         'WEBHOOK_SKIP_VERIFY_IGNORED_ON_DEPLOYED',
         { message: 'FLEXIFY_WEBHOOK_SKIP_VERIFY=true ignoré sur environnement déployé — vérification signature forcée. Supprimer cette variable d\'env sur le serveur.' },
         'error'
       );
-      // skipVerify reste false, on proceed à la vérification normale ci-dessous
     }
 
-    // Vérification de fraîcheur : rejeter les webhooks de plus de 5 minutes (anti-replay)
     if (!skipVerify && dateHeader) {
       const webhookDate = new Date(dateHeader).getTime();
       if (Number.isNaN(webhookDate) || Math.abs(Date.now() - webhookDate) > 5 * 60 * 1000) {
         flexifyLog('WEBHOOK_STALE_DATE', { dateHeader }, 'error');
+        await logIntegrationWebhookCall('flexify', request, {
+          ...baseAudit,
+          outcome: 'stale_date',
+          httpStatus: 401,
+          errorMessage: `Stale or invalid Date header: ${dateHeader}`,
+        });
         return NextResponse.json({ error: 'Webhook expired or invalid date' }, { status: 401 });
       }
     }
@@ -90,6 +118,11 @@ export async function POST(request: NextRequest) {
         dateHeader,
         hostHeader,
       }, 'error');
+      await logIntegrationWebhookCall('flexify', request, {
+        ...baseAudit,
+        outcome: 'invalid_signature',
+        httpStatus: 401,
+      });
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 401 }
@@ -97,14 +130,22 @@ export async function POST(request: NextRequest) {
     }
     flexifyLog(skipVerify ? 'WEBHOOK_SIGNATURE_SKIPPED' : 'WEBHOOK_SIGNATURE_VALID', {});
 
-    const payload: FlexifyWebhookPayload = JSON.parse(rawBody);
-    // "identifier" est le champ ID Flexify dans la doc (ex: "PT000000000000K")
-    // "transaction_id" est l'alias interne — on normalise ici pour la suite
+    let payload: FlexifyWebhookPayload;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch {
+      await logIntegrationWebhookCall('flexify', request, {
+        ...baseAudit,
+        outcome: 'invalid_json',
+        httpStatus: 400,
+      });
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    }
+
+    const eventMeta = extractFlexifyMeta(payload);
     const flexifyId = payload.identifier ?? payload.transaction_id;
     webhookId = flexifyId || payload.reference;
-    
-    // SÉCURITÉ: Vérifier l'idempotence AVANT tout traitement
-    // Empêche le double débit si le webhook est rejoué
+
     const idempotency = await ensureWebhookIdempotency(webhookId, 'flexify_payout');
     if (!idempotency.allowed) {
       flexifyLog('WEBHOOK_ALREADY_PROCESSED', {
@@ -112,12 +153,18 @@ export async function POST(request: NextRequest) {
         existingEventId: idempotency.existingEvent?.id,
         processedAt: idempotency.existingEvent?.processedAt,
       }, 'info');
-      return NextResponse.json({ 
-        received: true, 
-        message: 'Webhook already processed (idempotency)' 
+      await logIntegrationWebhookCall('flexify', request, {
+        ...baseAudit,
+        ...eventMeta,
+        outcome: 'duplicate',
+        httpStatus: 200,
+      });
+      return NextResponse.json({
+        received: true,
+        message: 'Webhook already processed (idempotency)',
       });
     }
-    
+
     flexifyLog('WEBHOOK_PAYLOAD', {
       flexifyId,
       reference: payload.reference,
@@ -127,8 +174,6 @@ export async function POST(request: NextRequest) {
       type: payload.type,
     });
 
-    // Trouver le payout : en priorité par notre référence interne (gateFiOrderId),
-    // en fallback par l'ID Flexify (identifier) déjà stocké en DB
     let payout = await prisma.payout.findFirst({
       where: { gateFiOrderId: payload.reference },
       include: {
@@ -148,11 +193,16 @@ export async function POST(request: NextRequest) {
 
     if (!payout) {
       flexifyLog('WEBHOOK_PAYOUT_NOT_FOUND', { reference: payload.reference, flexifyId }, 'warn');
-      // Marquer comme traité même si payout non trouvé (éviter rejouage infini)
       await markWebhookProcessed(webhookId, 'flexify_payout', {
         success: false,
         error: 'Payout not found',
         data: { reference: payload.reference, flexifyId },
+      });
+      await logIntegrationWebhookCall('flexify', request, {
+        ...baseAudit,
+        ...eventMeta,
+        outcome: 'payout_not_found',
+        httpStatus: 200,
       });
       return NextResponse.json({ received: true });
     }
@@ -185,6 +235,13 @@ export async function POST(request: NextRequest) {
         success: true,
         data: { payoutId: payout.id, skipped: true, reason: 'already_final' },
       });
+      await logIntegrationWebhookCall('flexify', request, {
+        ...baseAudit,
+        ...eventMeta,
+        payoutId: payout.id,
+        outcome: 'skipped',
+        httpStatus: 200,
+      }, payout.userId);
       return NextResponse.json({ received: true, processed: true });
     }
 
@@ -221,10 +278,17 @@ export async function POST(request: NextRequest) {
         error: lifecycleErr instanceof Error ? lifecycleErr.message : String(lifecycleErr),
         data: { payoutId: payout.id, flexifyStatus: payload.status },
       });
+      await logIntegrationWebhookCall('flexify', request, {
+        ...baseAudit,
+        ...eventMeta,
+        payoutId: payout.id,
+        outcome: 'error',
+        httpStatus: 500,
+        errorMessage: lifecycleErr instanceof Error ? lifecycleErr.message : String(lifecycleErr),
+      }, payout.userId);
       return NextResponse.json({ error: 'Lifecycle error' }, { status: 500 });
     }
 
-    // Logger l'événement (non-critique : ne doit pas bloquer le webhook)
     try {
       await prisma.auditLog.create({
         data: {
@@ -248,7 +312,6 @@ export async function POST(request: NextRequest) {
       console.error(`[Flexify Webhook] auditLog.create failed for payout ${payout.id}:`, auditErr);
     }
 
-    // SÉCURITÉ: Marquer le webhook comme traité avec succès (idempotence)
     await markWebhookProcessed(webhookId, 'flexify_payout', {
       success: true,
       data: {
@@ -259,25 +322,38 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    await logIntegrationWebhookCall('flexify', request, {
+      ...baseAudit,
+      ...eventMeta,
+      payoutId: payout.id,
+      outcome: 'processed',
+      httpStatus: 200,
+    }, payout.userId);
+
     flexifyLog('WEBHOOK_PROCESSED', { reference: payload.reference, newStatus });
     return NextResponse.json({ received: true, processed: true });
   } catch (error) {
     flexifyLog('WEBHOOK_ERROR', { error: String(error) }, 'error');
-    
-    // Marquer comme échec si on a un webhookId
+
     if (webhookId) {
       await markWebhookProcessed(webhookId, 'flexify_payout', {
         success: false,
         error: error instanceof Error ? error.message : String(error),
-      }).catch(err => {
+      }).catch((err) => {
         console.error('Failed to mark webhook as failed:', err);
       });
     }
-    
+
+    await logIntegrationWebhookCall('flexify', request, {
+      ...baseAudit,
+      outcome: 'error',
+      httpStatus: 500,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
+
     return NextResponse.json(
       { error: 'Webhook processing error' },
       { status: 500 }
     );
   }
 }
-
