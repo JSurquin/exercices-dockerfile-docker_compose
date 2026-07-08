@@ -15,6 +15,7 @@ import {
   ensureWebhookIdempotency,
   markWebhookProcessed,
 } from '@/lib/webhook-idempotency';
+import { logIntegrationWebhookCall } from '@/lib/integration-webhook-audit';
 
 // =============================================================================
 // POST - Webhook Whitepay (general webhooks : withdrawals & conversion_withdrawals)
@@ -25,20 +26,45 @@ import {
 //            | "order::*" | "transaction::*" | "rollback::*" → ignorés
 // =============================================================================
 
+function extractEventMeta(payload: unknown): { eventType?: string; transactionId?: string } {
+  if (!payload || typeof payload !== 'object') return {};
+  const pl = payload as Record<string, unknown>;
+  const eventType = typeof pl.event_type === 'string' ? pl.event_type : undefined;
+  const tx = pl.transaction;
+  const transactionId =
+    tx && typeof tx === 'object' && typeof (tx as Record<string, unknown>).id === 'string'
+      ? ((tx as Record<string, unknown>).id as string)
+      : undefined;
+  return { eventType, transactionId };
+}
+
 export async function POST(request: NextRequest) {
   let webhookId: string | null = null;
+  const baseAudit = {
+    signaturePresent: false,
+    bodyLength: 0,
+  };
 
   const rawBody = await request.text();
+  baseAudit.bodyLength = rawBody.length;
   // Le header s'appelle "Signature" selon la doc officielle Whitepay
   const signature = request.headers.get('Signature') || '';
+  baseAudit.signaturePresent = signature.length > 0;
 
   let payload: unknown;
   try {
     payload = JSON.parse(rawBody);
   } catch {
     console.error('[Whitepay Webhook] Invalid JSON body');
+    await logIntegrationWebhookCall('whitepay', request, {
+      ...baseAudit,
+      outcome: 'invalid_json',
+      httpStatus: 400,
+    });
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
+
+  const eventMeta = extractEventMeta(payload);
 
   // Whitepay signe : HMAC-SHA256(JSON.stringify(req.body).replace(/\//g, "\\/"), secret)
   // On tente 2 stratégies pour couvrir les différences de sérialisation :
@@ -56,6 +82,12 @@ export async function POST(request: NextRequest) {
       tokenPrefix: token ? token.slice(0, 8) + '...' : '(empty)',
       rawBodyLength: rawBody.length,
     });
+    await logIntegrationWebhookCall('whitepay', request, {
+      ...baseAudit,
+      ...eventMeta,
+      outcome: 'invalid_signature',
+      httpStatus: 401,
+    });
     return NextResponse.json(
       { error: 'Invalid signature' },
       { status: 401 }
@@ -66,7 +98,7 @@ export async function POST(request: NextRequest) {
   console.log('[Whitepay Webhook] Callback received:', {
     event_type: pl.event_type,
     keys: Object.keys(pl),
-    transactionId: pl.transaction && typeof pl.transaction === 'object' && (pl.transaction as Record<string, unknown>).id,
+    transactionId: eventMeta.transactionId,
   });
 
   try {
@@ -74,6 +106,12 @@ export async function POST(request: NextRequest) {
     if (isWhitepayTopUpEvent(payload)) {
       console.log('[Whitepay Webhook] Non-withdrawal event (audit only):', {
         event_type: payload.event_type,
+      });
+      await logIntegrationWebhookCall('whitepay', request, {
+        ...baseAudit,
+        ...eventMeta,
+        outcome: 'ignored',
+        httpStatus: 200,
       });
       return NextResponse.json({ received: true, type: 'non_withdrawal' });
     }
@@ -83,6 +121,12 @@ export async function POST(request: NextRequest) {
       console.warn('[Whitepay Webhook] Unknown event shape, acknowledging:', {
         keys: Object.keys(payload as object),
         event_type: (payload as Record<string, unknown>).event_type,
+      });
+      await logIntegrationWebhookCall('whitepay', request, {
+        ...baseAudit,
+        ...eventMeta,
+        outcome: 'unknown_event',
+        httpStatus: 200,
       });
       return NextResponse.json({ received: true });
     }
@@ -106,6 +150,14 @@ export async function POST(request: NextRequest) {
         webhookId,
         processedAt: idempotency.existingEvent?.processedAt,
       });
+      await logIntegrationWebhookCall('whitepay', request, {
+        ...baseAudit,
+        eventType: event_type,
+        transactionId: tx.id,
+        whitepayStatus: tx.status,
+        outcome: 'duplicate',
+        httpStatus: 200,
+      });
       return NextResponse.json({ received: true, message: 'Webhook already processed (idempotency)' });
     }
 
@@ -124,6 +176,14 @@ export async function POST(request: NextRequest) {
         success: false,
         error: 'Payout not found',
         data: { transactionId: tx.id },
+      });
+      await logIntegrationWebhookCall('whitepay', request, {
+        ...baseAudit,
+        eventType: event_type,
+        transactionId: tx.id,
+        whitepayStatus: tx.status,
+        outcome: 'payout_not_found',
+        httpStatus: 200,
       });
       return NextResponse.json({ received: true });
     }
@@ -158,6 +218,15 @@ export async function POST(request: NextRequest) {
         success: true,
         data: { payoutId: payout.id, skipped: true, reason: 'already_final' },
       });
+      await logIntegrationWebhookCall('whitepay', request, {
+        ...baseAudit,
+        eventType: event_type,
+        transactionId: tx.id,
+        payoutId: payout.id,
+        whitepayStatus: tx.status,
+        outcome: 'skipped',
+        httpStatus: 200,
+      }, payout.userId);
       return NextResponse.json({ received: true, processed: true });
     }
 
@@ -190,6 +259,16 @@ export async function POST(request: NextRequest) {
         error: lifecycleErr instanceof Error ? lifecycleErr.message : String(lifecycleErr),
         data: { payoutId: payout.id, txStatus: tx.status },
       });
+      await logIntegrationWebhookCall('whitepay', request, {
+        ...baseAudit,
+        eventType: event_type,
+        transactionId: tx.id,
+        payoutId: payout.id,
+        whitepayStatus: tx.status,
+        outcome: 'error',
+        httpStatus: 500,
+        errorMessage: lifecycleErr instanceof Error ? lifecycleErr.message : String(lifecycleErr),
+      }, payout.userId);
       return NextResponse.json({ error: 'Lifecycle error' }, { status: 500 });
     }
 
@@ -227,6 +306,16 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    await logIntegrationWebhookCall('whitepay', request, {
+      ...baseAudit,
+      eventType: event_type,
+      transactionId: tx.id,
+      payoutId: payout.id,
+      whitepayStatus: tx.status,
+      outcome: 'processed',
+      httpStatus: 200,
+    }, payout.userId);
+
     console.log('[Whitepay Webhook] Processed successfully:', {
       payoutId: payout.id,
       newStatus: newInternalStatus,
@@ -242,6 +331,13 @@ export async function POST(request: NextRequest) {
         error: error instanceof Error ? error.message : String(error),
       }).catch((err) => console.error('[Whitepay Webhook] Failed to mark webhook as failed:', err));
     }
+    await logIntegrationWebhookCall('whitepay', request, {
+      ...baseAudit,
+      ...eventMeta,
+      outcome: 'error',
+      httpStatus: 500,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: 'Webhook processing error' },
       { status: 500 }

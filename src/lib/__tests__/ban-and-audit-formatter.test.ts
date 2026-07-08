@@ -41,6 +41,11 @@ describe('formatAuditLogDetails', () => {
     endpoint: 'Endpoint',
     steamId: 'Steam ID',
     balanceAfter: 'Solde après',
+    outcome: 'Résultat',
+    httpStatus: 'Code HTTP',
+    eventType: 'Événement',
+    transactionId: 'Transaction',
+    provider: 'Fournisseur',
     noDetails: 'Aucun détail',
   };
 

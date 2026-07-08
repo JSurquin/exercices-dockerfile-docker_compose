@@ -3102,6 +3102,9 @@ export interface Messages {
         ADMIN_ACCOUNT_UNFREEZE: string;
         ADMIN_WITHDRAWAL_LIMIT_UPDATE: string;
         ADMIN_PAYOUT_CANCELLED: string;
+        "webhook.whitepay.call": string;
+        WHITEPAY_WEBHOOK_COMPLETE: string;
+        WHITEPAY_WEBHOOK_DECLINED: string;
       };
       detailLabels: {
         reason: string;
@@ -3114,6 +3117,11 @@ export interface Messages {
         endpoint: string;
         steamId: string;
         balanceAfter: string;
+        outcome: string;
+        httpStatus: string;
+        eventType: string;
+        transactionId: string;
+        provider: string;
         noDetails: string;
       };
       severity: {

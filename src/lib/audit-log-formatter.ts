@@ -9,6 +9,11 @@ export interface AuditDetailLabels {
   endpoint: string;
   steamId: string;
   balanceAfter: string;
+  outcome: string;
+  httpStatus: string;
+  eventType: string;
+  transactionId: string;
+  provider: string;
   noDetails: string;
 }
 
@@ -26,6 +31,12 @@ const KEY_LABELS: Record<string, keyof AuditDetailLabels> = {
   endpoint: 'endpoint',
   steamId: 'steamId',
   balanceAfterCents: 'balanceAfter',
+  outcome: 'outcome',
+  httpStatus: 'httpStatus',
+  eventType: 'eventType',
+  transactionId: 'transactionId',
+  whitepayTransactionId: 'transactionId',
+  provider: 'provider',
 };
 
 function formatCents(value: unknown): string {
