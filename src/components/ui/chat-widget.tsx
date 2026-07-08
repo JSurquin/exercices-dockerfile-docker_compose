@@ -148,7 +148,7 @@ const ChatWidgetInput = memo(function ChatWidgetInput({
       const el = textareaRef.current;
       if (el) {
         el.style.height = "auto";
-        el.style.height = Math.min(el.scrollHeight, 100) + "px";
+        el.style.height = Math.min(el.scrollHeight, 160) + "px";
       }
     }
   }, [prefillMessage]);
@@ -184,7 +184,7 @@ const ChatWidgetInput = memo(function ChatWidgetInput({
           onChange={(e) => {
             setMessage(e.target.value);
             e.target.style.height = "auto";
-            e.target.style.height = Math.min(e.target.scrollHeight, 100) + "px";
+            e.target.style.height = Math.min(e.target.scrollHeight, 160) + "px";
           }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
@@ -460,6 +460,7 @@ export function ChatWidget() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [inputPrefill, setInputPrefill] = useState<string | undefined>();
   const [isSendingBotMsg, setIsSendingBotMsg] = useState(false);
+  const [isAskQuestionFlow, setIsAskQuestionFlow] = useState(false);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [aiTypingBaseCount, setAiTypingBaseCount] = useState(0);
   const [aiTypingQueuedHint, setAiTypingQueuedHint] = useState<string | undefined>();
@@ -538,6 +539,13 @@ export function ChatWidget() {
     setMessagesStep("conversation");
   }, []);
 
+  const handleAskQuestion = useCallback(() => {
+    startNewConversation();
+    setIsAskQuestionFlow(true);
+    setActiveTab("messages");
+    setMessagesStep("conversation");
+  }, [startNewConversation]);
+
   useEffect(() => {
     if (isInConversation) {
       setTimeout(scrollToBottom, 50);
@@ -559,6 +567,8 @@ export function ChatWidget() {
   useEffect(() => {
     const handleOpenSupport = (e: Event) => {
       const detail = (e as CustomEvent<{ prefillMessage?: string }>).detail;
+      startNewConversation();
+      setIsAskQuestionFlow(true);
       openPopup();
       setActiveTab("messages");
       setMessagesStep("conversation");
@@ -568,7 +578,7 @@ export function ChatWidget() {
     };
     window.addEventListener("open-support-chat", handleOpenSupport);
     return () => window.removeEventListener("open-support-chat", handleOpenSupport);
-  }, [openPopup]);
+  }, [openPopup, startNewConversation]);
 
   useEffect(() => {
     window.dispatchEvent(
@@ -691,9 +701,16 @@ export function ChatWidget() {
   const handleSendMessage = useCallback(async (content: string) => {
     if (isLoading) return;
     const baseCount = currentConversation?.messages.length ?? 0;
+    const askFlow = isAskQuestionFlow;
     try {
-      const data = await sendMessage(content);
+      const data = await sendMessage(
+        content,
+        askFlow ? { category: "support", forceNew: true } : undefined,
+      );
       setInputPrefill(undefined);
+      if (askFlow) {
+        setIsAskQuestionFlow(false);
+      }
       if (data.createdNewConversation) {
         toast({
           title: messages.chatWidget.newConversationNotice,
@@ -724,6 +741,7 @@ export function ChatWidget() {
     messages.chatWidget.aiTypingQueued,
     messages.chatWidget.newConversationNotice,
     toast,
+    isAskQuestionFlow,
   ]);
 
   const resolveContent = useCallback(
@@ -830,7 +848,7 @@ export function ChatWidget() {
 
       <button
         type="button"
-        onClick={goToConversation}
+        onClick={handleAskQuestion}
         className={chatWidgetHomeCardClass()}
       >
         <div className="flex items-center justify-between gap-3">
@@ -926,7 +944,7 @@ export function ChatWidget() {
               size="sm"
               variant="outline"
               className="mt-3"
-              onClick={goToConversation}
+              onClick={handleAskQuestion}
             >
               {messages.chatWidget.home.startChat}
             </Button>

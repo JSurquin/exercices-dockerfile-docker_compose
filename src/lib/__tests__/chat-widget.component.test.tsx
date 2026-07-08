@@ -476,7 +476,9 @@ describe('ChatWidget', () => {
     const input = screen.getByTestId('chat-message-input');
     fireEvent.change(input, { target: { value: 'Mon problème' } });
     fireEvent.keyDown(input, { key: 'Enter' });
-    await waitFor(() => expect(mockSendMessage).toHaveBeenCalledWith('Mon problème'));
+    await waitFor(() =>
+      expect(mockSendMessage).toHaveBeenLastCalledWith('Mon problème', undefined),
+    );
     act(() => jest.advanceTimersByTime(100));
   });
 

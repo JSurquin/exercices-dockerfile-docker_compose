@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { logger, logAudit } from '@/lib/logger';
@@ -11,6 +12,7 @@ import {
   createConversationPostSchema,
 } from '@/lib/validation/schemas/chat-api';
 import { buildConversationWhereClause } from '@/lib/chat-logic';
+import { maybeGenerateAiReply } from '@/lib/chat-ai-service';
 
 const conversationListInclude = {
   user: {
@@ -217,6 +219,10 @@ export async function POST(request: NextRequest) {
         subject: body.subject,
         category: body.category,
       });
+    }
+
+    if (body.initialMessage?.trim()) {
+      after(() => maybeGenerateAiReply(conversation.id));
     }
 
     return NextResponse.json(conversation, { status: 201 });

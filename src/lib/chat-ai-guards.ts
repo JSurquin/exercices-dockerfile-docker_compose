@@ -81,12 +81,12 @@ export function evaluateUserMessageForAi(input: {
     return { allowed: true };
   }
 
-  const hasContext = hasMoonSkinContext(input);
-
   const isOffTopic = OFF_TOPIC_PATTERNS.some((pattern) => pattern.test(message));
-  if (isOffTopic && !hasContext) {
+  if (isOffTopic) {
     return { allowed: false, refusalMessage: OFF_TOPIC_REFUSAL_I18N_KEY };
   }
+
+  const hasContext = hasMoonSkinContext(input);
 
   if (MOONSKIN_KEYWORDS.test(message)) {
     return { allowed: true };
@@ -102,4 +102,32 @@ export function evaluateUserMessageForAi(input: {
   }
 
   return { allowed: false, refusalMessage: OFF_TOPIC_REFUSAL_I18N_KEY };
+}
+
+/** Supprime tout contenu parasite après un refus off-topic généré par le modèle. */
+export function sanitizeAiGeneratedContent(content: string): string {
+  const normalized = content.trim();
+  if (!normalized) return OFF_TOPIC_REFUSAL_I18N_KEY;
+
+  if (normalized.startsWith('__i18n:')) {
+    return normalized.split('\n')[0]?.trim() ?? OFF_TOPIC_REFUSAL_I18N_KEY;
+  }
+
+  const refusalMarkers = [
+    'assistant MoonSkin',
+    'MoonSkin assistant',
+    'ne peux répondre qu',
+    'can only answer',
+    'only answer questions',
+  ];
+  const firstBlock = normalized.split('\n\n')[0] ?? normalized;
+  const looksLikeRefusal = refusalMarkers.some((marker) =>
+    firstBlock.toLowerCase().includes(marker.toLowerCase()),
+  );
+
+  if (looksLikeRefusal) {
+    return OFF_TOPIC_REFUSAL_I18N_KEY;
+  }
+
+  return normalized;
 }

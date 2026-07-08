@@ -159,7 +159,13 @@ export const messages: Record<Locale, Messages> = {
     },
     howItWorks: {
       title: "COMMENT ÇA MARCHE ?",
+      titleLead: "COMMENT ÇA ",
+      titleHighlight: "MARCHE ?",
       subtitle: "Un processus simple et sécurisé pour vendre vos skins CS2 en quelques étapes",
+      tradeFlowLabel: "Flux de trade",
+      tradeOfferLabel: "Offre prête",
+      tradeHoldLock: "Hold 7j",
+      hudLabel: "Loadout",
       steps: {
         addTradeLink: {
           title: "Ajoutez votre Trade Link",
@@ -990,7 +996,7 @@ export const messages: Record<Locale, Messages> = {
       placeholder: "Tapez votre message...",
       poweredBy: "Propulsé par MoonSkin AI",
       responseTimeInfo: "Nous répondons généralement en moins de 5 minutes",
-      tooltip: "Besoin d'aide ? Chatez avec nous !",
+      tooltip: "Besoin d'aide ? Chattez avec nous !",
       categories: {
         trade: {
           label: "Problème de trade",
@@ -7844,7 +7850,13 @@ export const messages: Record<Locale, Messages> = {
     },
     howItWorks: {
       title: "HOW DOES IT WORK?",
+      titleLead: "HOW DOES IT ",
+      titleHighlight: "WORK?",
       subtitle: "A simple and secure process to sell your CS2 skins in a few steps",
+      tradeFlowLabel: "Trade flow",
+      tradeOfferLabel: "Offer ready",
+      tradeHoldLock: "7D Hold",
+      hudLabel: "Loadout",
       steps: {
         addTradeLink: {
           title: "Add your Trade Link",
@@ -15528,7 +15540,13 @@ export const messages: Record<Locale, Messages> = {
     },
     howItWorks: {
       title: "如何使用？",
+      titleLead: "如何",
+      titleHighlight: "使用？",
       subtitle: "通过几个简单步骤安全出售您的CS2皮肤",
+      tradeFlowLabel: "交易流程",
+      tradeOfferLabel: "报价就绪",
+      tradeHoldLock: "7天锁定",
+      hudLabel: "Loadout",
       steps: {
         addTradeLink: {
           title: "添加您的交易链接",

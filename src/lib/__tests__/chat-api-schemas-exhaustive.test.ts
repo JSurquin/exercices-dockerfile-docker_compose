@@ -34,6 +34,7 @@ describe('createChatMessageSchema — cas invalides', () => {
   it.each([
     { conversationId: '', content: 'hi' },
     { conversationId: 'c1', content: '' },
+    { conversationId: 'c1', content: '   ' },
     { conversationId: 'c1', content: 'hi', senderType: 'AI' },
     { conversationId: 'c1', content: 'hi', category: 'x'.repeat(65) },
   ])('rejette %j', (payload) => {

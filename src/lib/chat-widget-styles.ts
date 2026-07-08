@@ -123,7 +123,7 @@ export function chatWidgetInputAreaClass(): string {
 }
 
 export function chatWidgetTextareaClass(): string {
-  return 'flex-1 resize-none overflow-y-auto scrollbar-none rounded-xl border bg-muted/50 px-3 py-2 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 transition-all min-h-[38px] max-h-[100px] leading-relaxed';
+  return 'flex-1 resize-none overflow-y-auto scrollbar-none rounded-xl border bg-muted/50 px-3 py-2 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 transition-all min-h-[38px] max-h-[160px] leading-relaxed';
 }
 
 export function chatWidgetTabBarClass(): string {

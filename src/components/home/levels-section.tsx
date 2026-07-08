@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useLocale } from "@/components/providers/locale-provider";
 import { LevelBadge } from "@/components/ui/level-badge";
 import {
@@ -88,18 +87,15 @@ export function LevelsSection() {
   const xpPerEuro = (1 / XP_RATE).toFixed(2);
 
   return (
-    <section className="py-24 relative overflow-hidden">
+    <section className="pt-12 pb-16 md:pt-14 md:pb-20 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-theme-accent/5 pointer-events-none" />
       <SectionBottomFade to="background" />
 
       <div className="container mx-auto px-4 relative z-10">
         <div className={`text-center mb-16 ${homeReveal.upSm}`}>
-          <Badge variant="secondary" className="mb-4 bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20">
-            <span className="mr-1" aria-hidden>
-              ✦
-            </span>
+          <h1 className="text-3xl md:text-4xl font-bold mb-6 md:mb-8 bg-gradient-to-r from-purple-500 to-theme-accent bg-clip-text text-transparent">
             {t.badge}
-          </Badge>
+          </h1>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             {t.title}
             <span className="bg-gradient-to-r from-purple-500 to-theme-accent bg-clip-text text-transparent">

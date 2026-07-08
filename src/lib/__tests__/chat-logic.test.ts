@@ -78,12 +78,36 @@ describe('resolveOutgoingSenderType', () => {
     expect(resolveOutgoingSenderType({ identityKind: 'guest' })).toBe('USER');
   });
 
-  it('force MODERATOR pour staff', () => {
+  it('force USER pour staff via widget (support client)', () => {
     expect(
       resolveOutgoingSenderType({ identityKind: 'user', role: 'MODERATOR' }),
-    ).toBe('MODERATOR');
+    ).toBe('USER');
     expect(
       resolveOutgoingSenderType({ identityKind: 'user', role: 'ADMIN' }),
+    ).toBe('USER');
+    expect(
+      resolveOutgoingSenderType({
+        identityKind: 'user',
+        role: 'MODERATOR',
+        replyContext: 'widget',
+      }),
+    ).toBe('USER');
+  });
+
+  it('force MODERATOR pour staff depuis le panneau modération', () => {
+    expect(
+      resolveOutgoingSenderType({
+        identityKind: 'user',
+        role: 'MODERATOR',
+        replyContext: 'moderation',
+      }),
+    ).toBe('MODERATOR');
+    expect(
+      resolveOutgoingSenderType({
+        identityKind: 'user',
+        role: 'ADMIN',
+        replyContext: 'moderation',
+      }),
     ).toBe('MODERATOR');
   });
 
@@ -202,6 +226,21 @@ describe('shouldInsertFollowUpAwaitingAcknowledgment', () => {
         ],
         '5',
         'USER',
+      ),
+    ).toBe(true);
+  });
+
+  it('accuse réception après assignation modérateur sans réponse humaine', () => {
+    expect(
+      shouldInsertFollowUpAwaitingAcknowledgment(
+        [
+          { id: '1', senderType: 'USER' },
+          { id: '2', senderType: 'AI' },
+          { id: '3', senderType: 'SYSTEM' },
+        ],
+        '4',
+        'USER',
+        'mod-123',
       ),
     ).toBe(true);
   });

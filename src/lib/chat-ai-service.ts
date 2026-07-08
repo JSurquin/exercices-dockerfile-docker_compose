@@ -5,6 +5,7 @@ import {
   evaluateUserMessageForAi,
   OFF_TOPIC_REFUSAL_I18N_KEY,
   OFF_TOPIC_REFUSAL_MESSAGE,
+  sanitizeAiGeneratedContent,
   shouldAiReplyToConversation,
 } from '@/lib/chat-ai-guards';
 import { generateEmbedding } from '@/lib/ollama-embed';
@@ -62,7 +63,8 @@ export function buildSystemPrompt(username: string, ragContext?: string): string
 Règles :
 - Réponds en français, sauf si l'utilisateur écrit clairement en anglais.
 - Sois concis, chaleureux et professionnel. Évite les termes anxiogènes.
-- MoonSkin vend des skins CS2 : estimation, trade via bot Steam, trade hold 7 jours, puis paiement (carte, SEPA, crypto).
+- MoonSkin permet de VENDRE ses skins CS2 (l'utilisateur est vendeur, il n'achète pas de skins sur la plateforme) : estimation, trade via bot Steam, trade hold 7 jours, puis paiement (carte, SEPA, crypto).
+- Ne dis jamais que l'utilisateur « achète » ou « paie son compte Steam » pour vendre : il envoie ses skins au bot et reçoit un paiement.
 - KYC obligatoire avant tout payout.
 - Ne promets jamais un délai exact ni un remboursement sans validation humaine.
 - Si la question dépasse ton périmètre (fraude, litige, bug bloquant, changement d'IBAN), indique qu'un modérateur humain prendra le relais.
@@ -196,12 +198,13 @@ async function generateAiReply(conversationId: string): Promise<void> {
     }
 
     const result = await ollamaChat({ messages: ollamaMessages });
+    const sanitizedContent = sanitizeAiGeneratedContent(result.content);
 
     await prisma.chatMessage.create({
       data: {
         conversationId,
         userId: null,
-        content: result.content,
+        content: sanitizedContent,
         senderType: 'AI',
         isRead: false,
         metadata: {

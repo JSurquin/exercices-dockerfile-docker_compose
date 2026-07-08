@@ -40,12 +40,18 @@ export function canUserAccessConversation(params: {
   return conversationUserId === userId;
 }
 
+export type ChatReplyContext = 'widget' | 'moderation';
+
 export function resolveOutgoingSenderType(params: {
   identityKind: ChatIdentityKind;
   role?: UserRole;
+  /** widget = support client (toujours USER) ; moderation = réponse staff depuis le backoffice */
+  replyContext?: ChatReplyContext;
 }): 'USER' | 'MODERATOR' {
   if (params.identityKind !== 'user') return 'USER';
-  if (params.role && isStaffRole(params.role)) return 'MODERATOR';
+  if (params.replyContext === 'moderation' && params.role && isStaffRole(params.role)) {
+    return 'MODERATOR';
+  }
   return 'USER';
 }
 
@@ -94,6 +100,7 @@ export function shouldInsertFollowUpAwaitingAcknowledgment(
   messages: Array<{ senderType: string; id: string }>,
   newMessageId: string,
   senderType: string,
+  assignedTo?: string | null,
 ): boolean {
   if (senderType !== 'USER') return false;
   if (shouldInsertTicketTransmittedMessage(messages, newMessageId, senderType)) {
@@ -101,7 +108,33 @@ export function shouldInsertFollowUpAwaitingAcknowledgment(
   }
 
   const messagesBeforeNew = messages.filter((m) => m.id !== newMessageId);
+
+  if (assignedTo) {
+    return isConversationAwaitingModeratorReply(messagesBeforeNew);
+  }
+
   return isConversationAwaitingStaffReply(messagesBeforeNew);
+}
+
+/** True quand un modérateur humain doit encore répondre (assignation active, pas de message MODERATOR après le dernier USER). */
+export function isConversationAwaitingModeratorReply(
+  messages: Array<{ senderType: string }>,
+): boolean {
+  let lastUserIdx = -1;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].senderType === 'USER') {
+      lastUserIdx = i;
+      break;
+    }
+  }
+  if (lastUserIdx < 0) return false;
+
+  for (let i = lastUserIdx + 1; i < messages.length; i++) {
+    if (messages[i].senderType === 'MODERATOR') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function buildConversationWhereClause(params: {

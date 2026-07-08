@@ -35,6 +35,15 @@ describe('createChatMessageSchema', () => {
     ).toBe(false);
   });
 
+  it('refuse contenu whitespace-only après trim', () => {
+    expect(
+      createChatMessageSchema.safeParse({
+        conversationId: 'c1',
+        content: '   ',
+      }).success,
+    ).toBe(false);
+  });
+
   it('accepte USER/BOT/MODERATOR/SYSTEM', () => {
     for (const senderType of ['USER', 'BOT', 'MODERATOR', 'SYSTEM'] as const) {
       expect(

@@ -46,6 +46,8 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
   );
 
   const [pickedConversationId, setPickedConversationId] = useState<string | null>(null);
+  const pickedConversationIdRef = useRef<string | null>(null);
+  pickedConversationIdRef.current = pickedConversationId;
   const [isComposingNewConversation, setIsComposingNewConversation] = useState(false);
   const isComposingNewConversationRef = useRef(false);
   const [awaitingStaffReply, setAwaitingStaffReply] = useState(false);
@@ -230,12 +232,16 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
         isComposingNewConversationRef.current ||
         Boolean(activeStatus && isTerminalConversationStatus(activeStatus));
 
+      const explicitConversationId = isComposingNewConversationRef.current
+        ? undefined
+        : pickedConversationIdRef.current ?? conversationId ?? undefined;
+
       const postMessage = (forceNew: boolean) =>
         fetch('/api/chat/messages', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            conversationId: forceNew ? undefined : (conversationId ?? undefined),
+            conversationId: forceNew ? undefined : explicitConversationId,
             content: params.content,
             category: params.category,
             forceNew: forceNew || undefined,

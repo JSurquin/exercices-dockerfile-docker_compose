@@ -29,10 +29,11 @@ export const createConversationPostSchema = z
 export const createChatMessageSchema = z
   .object({
     conversationId: z.string().min(1, 'ID de conversation requis').optional(),
-    content: z.string().min(1, 'Contenu du message requis'),
+    content: z.string().trim().min(1, 'Contenu du message requis'),
     senderType: z.enum(['USER', 'BOT', 'MODERATOR', 'SYSTEM']).optional(),
     category: z.string().max(64).optional(),
     forceNew: z.boolean().optional(),
+    replyContext: z.enum(['widget', 'moderation']).optional(),
   })
   .strip();
 

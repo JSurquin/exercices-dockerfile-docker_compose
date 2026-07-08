@@ -602,7 +602,7 @@ describe('POST /api/chat/messages — modération', () => {
     const res = await postMessage(
       makeRequest('http://localhost/api/chat/messages', {
         method: 'POST',
-        body: { conversationId: 'c1', content: 'Réponse modérateur' },
+        body: { conversationId: 'c1', content: 'Réponse modérateur', replyContext: 'moderation' },
       }),
     );
     expect(res.status).toBe(201);
@@ -637,7 +637,11 @@ describe('POST /api/chat/messages — modération', () => {
     const res = await postMessage(
       makeRequest('http://localhost/api/chat/messages', {
         method: 'POST',
-        body: { conversationId: 'c1', content: 'Votre trade est en cours de vérification' },
+        body: {
+          conversationId: 'c1',
+          content: 'Votre trade est en cours de vérification',
+          replyContext: 'moderation',
+        },
       }),
     );
 

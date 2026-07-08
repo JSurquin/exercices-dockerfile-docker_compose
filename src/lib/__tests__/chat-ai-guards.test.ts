@@ -1,6 +1,7 @@
 import {
   evaluateUserMessageForAi,
   OFF_TOPIC_REFUSAL_I18N_KEY,
+  sanitizeAiGeneratedContent,
   shouldAiReplyToConversation,
 } from '@/lib/chat-ai-guards';
 
@@ -85,6 +86,16 @@ describe('evaluateUserMessageForAi', () => {
     });
 
     expect(result.allowed).toBe(true);
+  });
+
+  it('refuse une demande de recette même avec catégorie support', () => {
+    const result = evaluateUserMessageForAi({
+      message: 'Donne moi une recette de tarte aux pommes',
+      category: 'support',
+    });
+
+    expect(result.allowed).toBe(false);
+    expect(result.refusalMessage).toBe(OFF_TOPIC_REFUSAL_I18N_KEY);
   });
 
   it('accepte un message ambigu si la catégorie support est définie', () => {
@@ -176,5 +187,18 @@ describe('evaluateUserMessageForAi', () => {
       message: '  Mon   trade   Steam   bloqué  ',
     });
     expect(result.allowed).toBe(true);
+  });
+});
+
+describe('sanitizeAiGeneratedContent', () => {
+  it('retourne la clé i18n si le modèle ajoute du contenu hors sujet après un refus', () => {
+    const content =
+      "Je suis l'assistant MoonSkin et je ne peux répondre qu'aux questions liées à la plateforme.\n\nSi tu cherches une recette, consulte un site de cuisine.";
+    expect(sanitizeAiGeneratedContent(content)).toBe(OFF_TOPIC_REFUSAL_I18N_KEY);
+  });
+
+  it('conserve une réponse légitime sans refus', () => {
+    const content = 'Le trade hold Steam dure 7 jours, puis le paiement part automatiquement.';
+    expect(sanitizeAiGeneratedContent(content)).toBe(content);
   });
 });

@@ -1,6 +1,7 @@
 import type { ChatMessage, ConversationSummary } from '@/lib/chat-client-types';
 
 export const ACTIVE_CONVERSATION_KEY = 'chat_active_conversation_id';
+export const ACTIVE_CONVERSATION_SESSION_KEY = 'chat_active_conversation_session_id';
 export const GUEST_CONVERSATION_KEY = 'guest_conversation_id';
 export const GUEST_CONVERSATION_HISTORY_KEY = 'chat_guest_conversation_ids';
 export const MAX_GUEST_CONVERSATION_HISTORY = 20;
@@ -29,6 +30,7 @@ export function readGuestConversationIds(): string[] {
 export function readStoredConversationId(): string | null {
   if (typeof window === 'undefined') return null;
   return (
+    sessionStorage.getItem(ACTIVE_CONVERSATION_SESSION_KEY) ??
     localStorage.getItem(ACTIVE_CONVERSATION_KEY) ??
     localStorage.getItem(GUEST_CONVERSATION_KEY) ??
     readGuestConversationIds()[0] ??
@@ -39,9 +41,11 @@ export function readStoredConversationId(): string | null {
 export function persistConversationId(id: string | null) {
   if (typeof window === 'undefined') return;
   if (id) {
+    sessionStorage.setItem(ACTIVE_CONVERSATION_SESSION_KEY, id);
     localStorage.setItem(ACTIVE_CONVERSATION_KEY, id);
     localStorage.setItem(GUEST_CONVERSATION_KEY, id);
   } else {
+    sessionStorage.removeItem(ACTIVE_CONVERSATION_SESSION_KEY);
     localStorage.removeItem(ACTIVE_CONVERSATION_KEY);
     localStorage.removeItem(GUEST_CONVERSATION_KEY);
   }
@@ -64,6 +68,7 @@ export function subscribeStorage(onStoreChange: () => void) {
   const handler = (e: StorageEvent) => {
     if (
       e.key === ACTIVE_CONVERSATION_KEY ||
+      e.key === ACTIVE_CONVERSATION_SESSION_KEY ||
       e.key === GUEST_CONVERSATION_KEY ||
       e.key === GUEST_CONVERSATION_HISTORY_KEY ||
       e.key === null

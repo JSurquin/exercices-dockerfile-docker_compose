@@ -66,36 +66,39 @@ export async function POST(request: NextRequest) {
         take: 10,
       });
 
-      const existingMessages = await prisma.chatMessage.findMany({
-        where: { conversationId },
-        orderBy: { createdAt: 'asc' },
-        select: { senderType: true },
-        take: 50,
-      });
-
-      const newCategory = body.category ?? extractCategoryFromSubcategoryKey(body.category ?? null);
-      const routing = resolveConversationRoutingWithMessage({
-        lastMessageAt: existing.lastMessageAt,
-        currentCategory: existing.category,
-        newCategory,
-        priorUserMessages: priorUserMessages.map((m) => m.content),
-        newMessage: body.content,
-        forceNew: body.forceNew,
-        existingMessages,
-      });
-
-      if (routing === 'new') {
-        const conv = await prisma.conversation.create({
-          data: {
-            userId: identity.kind === 'user' ? identity.session.user.id : existing.userId,
-            category: newCategory ?? existing.category,
-            priority: 'NORMAL',
-            status: 'ACTIVE',
-            lastMessageAt: new Date(),
-          },
+      // Réponse staff depuis /moderation : toujours sur le ticket ciblé, jamais de fork.
+      if (body.replyContext !== 'moderation') {
+        const existingMessages = await prisma.chatMessage.findMany({
+          where: { conversationId },
+          orderBy: { createdAt: 'asc' },
+          select: { senderType: true },
+          take: 50,
         });
-        conversationId = conv.id;
-        createdNewConversation = true;
+
+        const newCategory = body.category ?? extractCategoryFromSubcategoryKey(body.category ?? null);
+        const routing = resolveConversationRoutingWithMessage({
+          lastMessageAt: existing.lastMessageAt,
+          currentCategory: existing.category,
+          newCategory,
+          priorUserMessages: priorUserMessages.map((m) => m.content),
+          newMessage: body.content,
+          forceNew: body.forceNew,
+          existingMessages,
+        });
+
+        if (routing === 'new') {
+          const conv = await prisma.conversation.create({
+            data: {
+              userId: identity.kind === 'user' ? identity.session.user.id : existing.userId,
+              category: newCategory ?? existing.category,
+              priority: 'NORMAL',
+              status: 'ACTIVE',
+              lastMessageAt: new Date(),
+            },
+          });
+          conversationId = conv.id;
+          createdNewConversation = true;
+        }
       }
     }
 
@@ -130,6 +133,7 @@ export async function POST(request: NextRequest) {
     const senderType = resolveOutgoingSenderType({
       identityKind: identity.kind,
       role: identity.kind === 'user' ? identity.role : undefined,
+      replyContext: body.replyContext ?? 'widget',
     });
 
     if (
@@ -170,6 +174,7 @@ export async function POST(request: NextRequest) {
           existingMessages,
           message.id,
           senderType,
+          conversation.assignedTo,
         )
       ) {
         await createChatMessageRecord({

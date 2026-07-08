@@ -197,17 +197,21 @@ export async function POST(
     const newCategory =
       body.category ?? extractCategoryFromSubcategoryKey(body.category ?? null);
 
-    const routing = resolveConversationRoutingWithMessage({
-      lastMessageAt: conversation.lastMessageAt,
-      currentCategory: conversation.category,
-      newCategory,
-      priorUserMessages: priorUserMessages.map((m) => m.content),
-      newMessage: body.content,
-      forceNew: body.forceNew,
-      existingMessages,
-    });
+    const skipRoutingFork = body.replyContext === 'moderation';
 
-    if (routing === 'new' && identity.kind === 'user') {
+    const routing = skipRoutingFork
+      ? ('same' as const)
+      : resolveConversationRoutingWithMessage({
+          lastMessageAt: conversation.lastMessageAt,
+          currentCategory: conversation.category,
+          newCategory,
+          priorUserMessages: priorUserMessages.map((m) => m.content),
+          newMessage: body.content,
+          forceNew: body.forceNew,
+          existingMessages,
+        });
+
+    if (!skipRoutingFork && routing === 'new' && identity.kind === 'user') {
       conversation = await prisma.conversation.create({
         data: {
           userId: identity.session.user.id,
@@ -219,7 +223,7 @@ export async function POST(
         },
         include: { user: true },
       });
-    } else if (routing === 'new' && identity.kind === 'guest') {
+    } else if (!skipRoutingFork && routing === 'new' && identity.kind === 'guest') {
       conversation = await prisma.conversation.create({
         data: {
           userId: null,
@@ -251,6 +255,7 @@ export async function POST(
     const senderType = resolveOutgoingSenderType({
       identityKind: identity.kind,
       role: identity.kind === 'user' ? identity.role : undefined,
+      replyContext: body.replyContext ?? 'widget',
     });
 
     if (
@@ -291,6 +296,7 @@ export async function POST(
           existingMessages,
           message.id,
           senderType,
+          conversation.assignedTo,
         )
       ) {
         await createChatMessageRecord({

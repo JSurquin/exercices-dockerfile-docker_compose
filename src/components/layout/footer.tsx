@@ -106,6 +106,12 @@ export function Footer({ publicStats: publicStatsProp }: { publicStats?: PublicS
 
   const socialLabels = messages.footer.socialLinks;
 
+  const footerTitleClass = showFooterImage ? "text-white" : "text-foreground";
+  const footerTextClass = showFooterImage ? "text-white/75" : "text-muted-foreground";
+  const footerTextSoftClass = showFooterImage ? "text-white/65" : "text-muted-foreground/70";
+  const footerLabelClass = showFooterImage ? "text-white/90" : "text-foreground/80";
+  const footerDividerClass = showFooterImage ? "border-white/10" : "border-border/40";
+
   return (
     <>
       <footer
@@ -125,16 +131,16 @@ export function Footer({ publicStats: publicStatsProp }: { publicStats?: PublicS
                     <div className="h-8 w-8 rounded-lg overflow-hidden shrink-0">
                       <Image src="/images/logo.webp" alt="MoonSkin" width={32} height={32} />
                     </div>
-                    <span className="font-bold text-xl text-foreground">MoonSkin</span>
+                    <span className={`font-bold text-xl ${footerTitleClass}`}>MoonSkin</span>
                   </Link>
-                  <p className="text-muted-foreground mb-4 max-w-md text-sm leading-relaxed">
+                  <p className={`${footerTextClass} mb-4 max-w-md text-sm leading-relaxed`}>
                     {messages.footer.description}
                   </p>
                   <div className="mb-4">
                     <FooterSocialIcons labels={socialLabels} />
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    <p className="font-medium text-foreground/80 mb-1">{messages.footer.securedBy}</p>
+                  <div className={`text-sm ${footerTextClass}`}>
+                    <p className={`font-medium ${footerLabelClass} mb-1`}>{messages.footer.securedBy}</p>
                     <TooltipProvider delayDuration={200}>
                       <div className="flex flex-wrap items-center gap-2">
                         <Tooltip>
@@ -181,7 +187,7 @@ export function Footer({ publicStats: publicStatsProp }: { publicStats?: PublicS
 
                 {(["company", "support", "account", "legal"] as const).map((section) => (
                   <div key={section}>
-                    <h3 className="font-semibold mb-4 text-foreground">
+                    <h3 className={`font-semibold mb-4 ${footerTitleClass}`}>
                       {messages.footer[section]}
                     </h3>
                     <ul className="space-y-2">
@@ -196,48 +202,47 @@ export function Footer({ publicStats: publicStatsProp }: { publicStats?: PublicS
                   </div>
                 ))}
               </div>
-            </div>
 
-            <div className="lunar-footer__card p-6 mb-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                {[
-                  { display: usersDisplay, label: messages.footer.stats.activeUsers },
-                  { display: volumeDisplay, label: messages.footer.stats.volumeProcessed },
-                  { display: tradesDisplay, label: messages.footer.stats.tradesCompleted },
-                  { display: skinsDisplay, label: messages.footer.stats.skinsSold },
-                ].map((stat) => (
-                  <div key={stat.label}>
-                    <div className="text-2xl font-bold lunar-footer__stat">
-                      {stat.display.prefix}
-                      {stat.display.value.toLocaleString(undefined, {
-                        minimumFractionDigits: stat.display.decimals,
-                        maximumFractionDigits: stat.display.decimals,
-                      })}
-                      {stat.display.suffix}
+              <div className={`mt-8 pt-8 border-t ${footerDividerClass}`}>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  {[
+                    { display: usersDisplay, label: messages.footer.stats.activeUsers },
+                    { display: volumeDisplay, label: messages.footer.stats.volumeProcessed },
+                    { display: tradesDisplay, label: messages.footer.stats.tradesCompleted },
+                    { display: skinsDisplay, label: messages.footer.stats.skinsSold },
+                  ].map((stat) => (
+                    <div key={stat.label}>
+                      <div className={`text-2xl font-bold ${showFooterImage ? "text-white" : "lunar-footer__stat"}`}>
+                        {stat.display.prefix}
+                        {stat.display.value.toLocaleString(undefined, {
+                          minimumFractionDigits: stat.display.decimals,
+                          maximumFractionDigits: stat.display.decimals,
+                        })}
+                        {stat.display.suffix}
+                      </div>
+                      <div className={`text-sm ${footerTextClass}`}>{stat.label}</div>
                     </div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="lunar-footer__card px-6 py-4 mb-4 flex flex-col md:flex-row justify-between items-center gap-3">
-              <div className="text-sm text-muted-foreground">{messages.footer.copyright}</div>
-              <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 max-w-full">
-                <FooterSocialIcons labels={socialLabels} />
-                <button
-                  data-tour="footer-guide"
-                  onClick={() => startTour()}
-                  className="cursor-pointer text-sm font-medium text-theme-accent hover:text-theme-highlight transition-colors flex items-center gap-1"
-                >
-                  <MapIcon className="h-4 w-4 shrink-0" aria-hidden />
-                  {messages.footer.tourButton}
-                </button>
+            <div className="lunar-footer__card px-6 py-4 flex flex-col gap-4">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-3">
+                <div className={`text-sm ${footerTextClass}`}>{messages.footer.copyright}</div>
+                <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 max-w-full">
+                  <FooterSocialIcons labels={socialLabels} />
+                  <button
+                    data-tour="footer-guide"
+                    onClick={() => startTour()}
+                    className="cursor-pointer text-sm font-medium text-theme-accent hover:text-theme-highlight transition-colors flex items-center gap-1"
+                  >
+                    <MapIcon className="h-4 w-4 shrink-0" aria-hidden />
+                    {messages.footer.tourButton}
+                  </button>
+                </div>
               </div>
-            </div>
-
-            <div className="lunar-footer__card p-4">
-              <p className="text-xs text-muted-foreground/70 leading-relaxed">
+              <p className={`text-xs ${footerTextSoftClass} leading-relaxed border-t ${footerDividerClass} pt-4`}>
                 {messages.footer.disclaimer}
               </p>
             </div>

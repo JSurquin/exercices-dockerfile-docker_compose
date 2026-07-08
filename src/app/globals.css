@@ -2102,27 +2102,18 @@ body.next-dev-overlay-present #sentry-feedback {
     transform: scaleY(1);
   }
 
-  .how-it-works-step-card,
-  .how-it-works-benefit-card,
-  .how-it-works-cta-card {
-    background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(20px) saturate(1.4);
-    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  .how-it-works-step-card.lunar-card,
+  .how-it-works-benefit-card.lunar-card {
+    border-color: rgba(200, 205, 220, 0.14);
     transition:
       transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
       box-shadow 0.35s ease,
       border-color 0.35s ease;
   }
 
-  .cs2 .how-it-works-step-card,
-  .cs2 .how-it-works-benefit-card,
-  .cs2 .how-it-works-cta-card,
-  .light .how-it-works-step-card,
-  .light .how-it-works-benefit-card,
-  .light .how-it-works-cta-card {
-    background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(20px) saturate(1.4);
-    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  .how-it-works-step-card.weapon-card-hover:hover,
+  .how-it-works-benefit-card.weapon-card-hover:hover {
+    transform: translateY(-3px);
   }
 
   .how-it-works-glow-far.lunar-card {
@@ -2147,6 +2138,37 @@ body.next-dev-overlay-present #sentry-feedback {
       0 32px 90px rgba(0, 0, 0, 0.92),
       0 0 42px color-mix(in srgb, var(--theme-accent) 30%, transparent),
       0 1px 0 rgba(255, 255, 255, 0.14) inset;
+  }
+
+  /* How it works — CS2 inventory step cards */
+  .hiw-cs2-step:hover {
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.65),
+      0 0 24px color-mix(in srgb, var(--hiw-rarity) 35%, transparent);
+  }
+
+  .hiw-cs2-step--locked {
+    border-style: dashed;
+  }
+
+  .hiw-cs2-arrow {
+    color: rgba(255, 255, 255, 0.22);
+  }
+
+  .hiw-cs2-panel {
+    overflow: hidden;
+    border-radius: 0.5rem;
+    border: 2px solid color-mix(in srgb, var(--theme-accent) 40%, transparent);
+    background: #14141a;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+  }
+
+  .hiw-cs2-offer {
+    border-color: color-mix(in srgb, var(--theme-accent) 45%, transparent);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.55),
+      0 0 28px color-mix(in srgb, var(--theme-accent) 10%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
 
   /* CS2 + Light accent */
@@ -2618,9 +2640,24 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 }
 
+@property --neon-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
 @keyframes neon-spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
   to {
-    transform: rotate(360deg);
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes neon-angle-spin {
+  to {
+    --neon-angle: 360deg;
   }
 }
 
@@ -2810,15 +2847,21 @@ body.next-dev-overlay-present #sentry-feedback {
   content: round(var(--home-count-num), var(--count-decimals, 0));
 }
 
-.home-neon-border {
+.home-neon-pill {
+  position: relative;
+  display: inline-flex;
+  border-radius: 9999px;
+  padding: 2px;
   overflow: hidden;
-  background: transparent;
+  isolation: isolate;
 }
 
-.home-neon-border::before {
-  content: "";
+.home-neon-pill__glow {
   position: absolute;
-  inset: -100%;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  aspect-ratio: 1;
   background: conic-gradient(
     from 0deg,
     #ff0080,
@@ -2829,8 +2872,88 @@ body.next-dev-overlay-present #sentry-feedback {
     #a855f7,
     #ff0080
   );
-  animation: neon-spin 6s linear infinite;
+  animation: neon-spin 4s linear infinite;
   will-change: transform;
+  pointer-events: none;
+}
+
+.home-neon-pill__inner {
+  position: relative;
+  z-index: 1;
+  border-radius: inherit;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.home-neon-pill:hover .home-neon-pill__inner {
+  box-shadow:
+    0 0 20px rgba(168, 85, 247, 0.25),
+    0 0 40px rgba(0, 207, 255, 0.15) !important;
+}
+
+.home-neon-card {
+  position: relative;
+  border-radius: 16px;
+  isolation: isolate;
+}
+
+.home-neon-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--neon-angle),
+    color-mix(in srgb, var(--theme-accent) 65%, transparent),
+    color-mix(in srgb, var(--theme-highlight) 40%, transparent),
+    color-mix(in srgb, var(--cta-from) 50%, transparent),
+    color-mix(in srgb, var(--theme-accent) 35%, transparent),
+    color-mix(in srgb, var(--theme-highlight) 45%, transparent),
+    color-mix(in srgb, var(--theme-accent) 65%, transparent)
+  );
+  animation: neon-angle-spin 8s linear infinite;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.55;
+  transition: opacity 0.35s ease;
+}
+
+.home-neon-card:hover::before {
+  opacity: 0.8;
+}
+
+.home-neon-card__inner {
+  position: relative;
+  z-index: 1;
+  border-radius: inherit;
+  border: none !important;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.45),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+
+.how-it-works-glow-far.home-neon-card::before {
+  opacity: 0.5;
+}
+
+.how-it-works-glow-near.home-neon-card::before {
+  opacity: 0.7;
+}
+
+.how-it-works-glow-active.home-neon-card::before {
+  opacity: 0.9;
 }
 
 .card-tilt {
@@ -3025,7 +3148,7 @@ body.next-dev-overlay-present #sentry-feedback {
   top: 12%;
   left: -10%;
   transform: rotate(20deg);
-  animation: cb-comet-fly-1 3.2s cubic-bezier(0.45, 0.02, 0.2, 1) infinite;
+  animation: cb-comet-fly-1 7s linear infinite;
   animation-delay: 0s;
 }
 
@@ -3033,63 +3156,82 @@ body.next-dev-overlay-present #sentry-feedback {
   top: 38%;
   left: -15%;
   transform: rotate(20deg) scale(0.85);
-  animation: cb-comet-fly-2 2.8s cubic-bezier(0.45, 0.02, 0.2, 1) infinite;
-  animation-delay: 4.2s;
+  animation: cb-comet-fly-2 9s linear infinite;
+  animation-delay: 3.5s;
 }
 
 .cb-comet-fixed--3 {
   top: 58%;
   left: -8%;
   transform: rotate(20deg) scale(1.1);
-  animation: cb-comet-fly-3 3.6s cubic-bezier(0.45, 0.02, 0.2, 1) infinite;
-  animation-delay: 8.5s;
+  animation: cb-comet-fly-3 8s linear infinite;
+  animation-delay: 6.8s;
 }
 
+/* Trajectoire unidirectionnelle : vol → reset invisible → pause (pas de retour animé) */
 @keyframes cb-comet-fly-1 {
-  0%,
-  72%,
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(20deg);
+  }
+  4% {
+    opacity: 1;
+  }
+  18% {
+    opacity: 0.7;
+    transform: translate3d(120vw, 60vh, 0) rotate(20deg);
+  }
+  19% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(20deg);
+  }
   100% {
     opacity: 0;
     transform: translate3d(0, 0, 0) rotate(20deg);
   }
-  8% {
-    opacity: 1;
-  }
-  28% {
-    opacity: 0.6;
-    transform: translate3d(120vw, 60vh, 0) rotate(20deg);
-  }
 }
 
 @keyframes cb-comet-fly-2 {
-  0%,
-  75%,
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(20deg) scale(0.85);
+  }
+  4% {
+    opacity: 1;
+  }
+  20% {
+    opacity: 0.55;
+    transform: translate3d(115vw, 55vh, 0) rotate(20deg) scale(0.85);
+  }
+  21% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(20deg) scale(0.85);
+  }
   100% {
     opacity: 0;
     transform: translate3d(0, 0, 0) rotate(20deg) scale(0.85);
   }
-  8% {
-    opacity: 1;
-  }
-  30% {
-    opacity: 0.5;
-    transform: translate3d(120vw, 60vh, 0) rotate(20deg) scale(0.85);
-  }
 }
 
 @keyframes cb-comet-fly-3 {
-  0%,
-  78%,
-  100% {
+  0% {
     opacity: 0;
     transform: translate3d(0, 0, 0) rotate(20deg) scale(1.1);
   }
-  8% {
+  4% {
     opacity: 1;
   }
-  32% {
-    opacity: 0.55;
-    transform: translate3d(120vw, 60vh, 0) rotate(20deg) scale(1.1);
+  17% {
+    opacity: 0.6;
+    transform: translate3d(125vw, 65vh, 0) rotate(20deg) scale(1.1);
+  }
+  18% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(20deg) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(20deg) scale(1.1);
   }
 }
 
@@ -3145,7 +3287,8 @@ body.next-dev-overlay-present #sentry-feedback {
   .home-reveal-scale,
   .home-reveal-fade,
   .home-count-up,
-  .home-neon-border,
+  .home-neon-pill__glow,
+  .home-neon-card::before,
   .cb-nebula,
   .cb-star-layer,
   .cb-comet-fixed,

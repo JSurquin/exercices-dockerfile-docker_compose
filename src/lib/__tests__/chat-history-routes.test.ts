@@ -19,6 +19,7 @@ jest.mock('@/lib/require-admin', () => ({
 
 jest.mock('@/lib/chat-ai-service', () => ({
   maybeGenerateAiReply: jest.fn(),
+  getChatAiQueueHint: jest.fn(() => null),
 }));
 
 jest.mock('next/server', () => {
@@ -200,7 +201,7 @@ describe('POST /api/chat/conversations/[id]/messages', () => {
     const res = await postThreadMessage(
       makeRequest('http://localhost/api/chat/conversations/c1/messages', {
         method: 'POST',
-        body: { content: 'Réponse staff' },
+        body: { content: 'Réponse staff', replyContext: 'moderation' },
       }),
       { params: Promise.resolve({ id: 'c1' }) },
     );

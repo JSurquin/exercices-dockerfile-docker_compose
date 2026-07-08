@@ -37,6 +37,10 @@ export function RootLayoutShell({
   initialLocale: Locale;
 }) {
   const pathname = usePathname();
+  const isStaffPanelRoute =
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/moderation') ||
+    pathname === '/moderator';
   const isAdminRoute = pathname?.startsWith('/admin');
 
   return (
@@ -56,13 +60,13 @@ export function RootLayoutShell({
               <TourModeProvider>
                 <ImpersonationBanner />
                 <AuthCallbackNotifier />
-                {!isAdminRoute && <CosmicBackground />}
-                {!isAdminRoute && <Header />}
+                {!isStaffPanelRoute && <CosmicBackground />}
+                {!isStaffPanelRoute && <Header />}
 
-                <main className={isAdminRoute ? '' : 'relative z-0 flex-1'}>{children}</main>
+                <main className={isAdminRoute || pathname?.startsWith('/moderation') ? '' : 'relative z-0 flex-1'}>{children}</main>
 
-                {!isAdminRoute && <Footer publicStats={initialPublicStats} />}
-                {!isAdminRoute && (
+                {!isStaffPanelRoute && <Footer publicStats={initialPublicStats} />}
+                {!isStaffPanelRoute && (
                   <FloatingUiPortal>
                     <ScrollToTopButton />
                     <ChatWidget />

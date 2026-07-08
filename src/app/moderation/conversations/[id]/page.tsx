@@ -63,16 +63,25 @@ export default function ConversationPage() {
   const prevUserMsgCountRef = useRef<number | null>(null);
   const seenMessageIdsRef = useRef<Set<string>>(new Set());
   const seenMessagesConversationRef = useRef<string | null>(null);
+  const activeConversationIdRef = useRef<string | null>(null);
 
-  if (params.id !== seenMessagesConversationRef.current) {
+  const routeConversationId = params.id as string;
+  activeConversationIdRef.current = routeConversationId;
+
+  if (routeConversationId !== seenMessagesConversationRef.current) {
     seenMessageIdsRef.current = new Set();
-    seenMessagesConversationRef.current = params.id as string;
+    seenMessagesConversationRef.current = routeConversationId;
   }
 
+  useEffect(() => {
+    setMessage('');
+    setSending(false);
+  }, [routeConversationId]);
+
   const { data: conversation, isLoading: loading, refetch: refetchConversation } = useQuery({
-    queryKey: queryKeys.moderationConversation(params.id as string),
+    queryKey: queryKeys.moderationConversation(routeConversationId),
     queryFn: async () => {
-      const response = await fetch(`/api/chat/conversations/${params.id}`);
+      const response = await fetch(`/api/chat/conversations/${routeConversationId}`);
       if (!response.ok) {
         if (response.status === 404) {
           toast.error(messages.moderation.conversation.notFound.title);
@@ -83,7 +92,7 @@ export default function ConversationPage() {
       }
       return response.json();
     },
-    enabled: !!params.id,
+    enabled: !!routeConversationId,
     refetchInterval: 10_000,
     refetchIntervalInBackground: false,
   });
@@ -104,6 +113,8 @@ export default function ConversationPage() {
 
   const sendMessage = async () => {
     if (!message.trim() || sending) return;
+    const targetConversationId = activeConversationIdRef.current;
+    if (!targetConversationId) return;
 
     setSending(true);
     try {
@@ -111,13 +122,16 @@ export default function ConversationPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          conversationId: params.id,
+          conversationId: targetConversationId,
           content: message.trim(),
+          replyContext: 'moderation',
         }),
       });
 
       if (!response.ok) throw new Error(messages.moderation.conversation.messages.sendError);
-      
+
+      if (activeConversationIdRef.current !== targetConversationId) return;
+
       setMessage('');
       await refetchConversation();
       toast.success(messages.moderation.conversation.messages.messageSent);
@@ -131,7 +145,7 @@ export default function ConversationPage() {
 
   const updateStatus = async (status: ConversationStatus) => {
     try {
-      const response = await fetch(`/api/chat/conversations/${params.id}`, {
+      const response = await fetch(`/api/chat/conversations/${routeConversationId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
@@ -149,7 +163,7 @@ export default function ConversationPage() {
 
   const assignToMe = async () => {
     try {
-      const response = await fetch(`/api/chat/conversations/${params.id}/assign`, {
+      const response = await fetch(`/api/chat/conversations/${routeConversationId}/assign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ moderatorId: session?.user?.id || user?.id || '' }),
@@ -426,7 +440,7 @@ export default function ConversationPage() {
                       sendMessage();
                     }
                   }}
-                  className={cn('flex-1 min-h-[52px] sm:min-h-[60px] max-h-[120px] resize-none text-sm', panelGlassField)}
+                  className={cn('flex-1 min-h-[52px] sm:min-h-[60px] max-h-[200px] resize-none text-sm', panelGlassField)}
                   disabled={sending}
                 />
                 <Button
