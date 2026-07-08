@@ -1,6 +1,7 @@
 import { NotificationPriority, NotificationType } from '@prisma/client';
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
+import { shouldAiReplyToConversation } from '@/lib/chat-ai-guards';
 import { getChatAiQueueHint } from '@/lib/chat-ai-service';
 import type { ChatAiQueueHint } from '@/lib/chat-ai-service';
 import {
@@ -168,12 +169,22 @@ export async function handleUserMessageSideEffects(params: {
       'USER',
     )
   ) {
-    await createChatMessageRecord({
-      conversationId: params.conversationId,
-      userId: null,
-      content: TICKET_TRANSMITTED_I18N_KEY,
-      senderType: 'SYSTEM',
+    const willAiReply = shouldAiReplyToConversation({
+      assignedTo: params.assignedTo,
+      status: params.status,
+      hasModeratorMessage: params.existingMessages.some(
+        (m) => m.senderType === 'MODERATOR',
+      ),
+      aiEnabled,
     });
+    if (!willAiReply) {
+      await createChatMessageRecord({
+        conversationId: params.conversationId,
+        userId: null,
+        content: TICKET_TRANSMITTED_I18N_KEY,
+        senderType: 'SYSTEM',
+      });
+    }
   } else if (
     shouldInsertFollowUpAwaitingAcknowledgment(
       params.existingMessages,

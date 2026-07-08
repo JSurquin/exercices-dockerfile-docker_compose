@@ -3908,6 +3908,7 @@ export interface Messages {
       thankYouMessage: string;
       ticketTransmitted: string;
       followUpAcknowledged: string;
+      aiUnavailable: string;
       offTopicRefusal: string;
     };
     botTemplates: {

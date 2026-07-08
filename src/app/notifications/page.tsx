@@ -243,7 +243,10 @@ export default function NotificationsPage() {
                   </CardContent>
                 </Card>
               ) : (
-                <>
+                <div
+                  data-notifications
+                  className="notifications-list max-h-[calc(100dvh-13rem)] sm:max-h-[calc(100dvh-15rem)] overflow-y-auto overscroll-y-contain scrollbar-thin space-y-3 pr-1"
+                >
                   {notifications.map((notification: Notification) => {
                     const { title, message } = getNotificationContent(notification);
                     const NotificationIcon = Icon(notification.type);
@@ -251,6 +254,9 @@ export default function NotificationsPage() {
                     return (
                       <motion.div
                         key={notification.id}
+                        data-notification
+                        data-read={notification.read ? 'true' : 'false'}
+                        className={notification.read ? 'notification-item' : 'notification-item unread'}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
@@ -338,7 +344,7 @@ export default function NotificationsPage() {
                   })}
 
                   {totalPages > 1 && (
-                    <div className="flex justify-center gap-2 mt-6">
+                    <div className="flex justify-center gap-2 mt-6 pb-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -360,7 +366,7 @@ export default function NotificationsPage() {
                       </Button>
                     </div>
                   )}
-                </>
+                </div>
               )}
             </TabsContent>
           </Tabs>

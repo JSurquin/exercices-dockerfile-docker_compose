@@ -306,17 +306,29 @@ describe('maybeGenerateAiReply', () => {
     expect(mockOllamaChat).toHaveBeenCalled();
   });
 
-  it('ignore les erreurs Ollama sans propager', async () => {
+  it('insère un fallback BOT si Ollama échoue', async () => {
+    const userAt = new Date('2026-01-01T10:00:00Z');
     mockFindUnique.mockResolvedValue({
       ...baseConversation,
       messages: [
-        { content: 'Mon trade Steam est bloqué', senderType: 'USER', createdAt: new Date() },
+        { content: 'Mon trade Steam est bloqué', senderType: 'USER', createdAt: userAt },
       ],
     });
     mockOllamaChat.mockRejectedValue(new Error('ollama down'));
+    mockFindFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ createdAt: userAt })
+      .mockResolvedValueOnce(null);
 
     await expect(maybeGenerateAiReply('conv-1')).resolves.toBeUndefined();
-    expect(mockCreate).not.toHaveBeenCalled();
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          senderType: 'BOT',
+          content: '__i18n:chatWidget.responses.aiUnavailable__',
+        }),
+      }),
+    );
   });
 
   it('utilise les messages user antérieurs pour le contexte guards', async () => {

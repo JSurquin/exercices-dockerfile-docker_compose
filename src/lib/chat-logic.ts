@@ -20,6 +20,22 @@ export const TICKET_TRANSMITTED_I18N_KEY =
 export const FOLLOW_UP_AWAITING_ACK_I18N_KEY =
   '__i18n:chatWidget.responses.followUpAcknowledged__';
 
+/** Fallback BOT si Ollama échoue alors que l'IA devait répondre. */
+export const AI_UNAVAILABLE_I18N_KEY =
+  '__i18n:chatWidget.responses.aiUnavailable__';
+
+export const AWAITING_STAFF_REPLY_CLEAR_SENDER_TYPES = ['AI', 'BOT', 'MODERATOR'] as const;
+
+/** True quand un message staff clôt l'attente de réponse (ignore SYSTEM ticket transmis). */
+export function shouldClearAwaitingStaffReply(
+  message: { senderType: string } | null | undefined,
+): boolean {
+  if (!message || message.senderType === 'USER') return false;
+  return (AWAITING_STAFF_REPLY_CLEAR_SENDER_TYPES as readonly string[]).includes(
+    message.senderType,
+  );
+}
+
 export function isStaffRole(role: UserRole): boolean {
   return role === 'ADMIN' || role === 'MODERATOR';
 }

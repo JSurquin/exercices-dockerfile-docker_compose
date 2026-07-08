@@ -622,6 +622,60 @@ describe('useChat', () => {
     await waitFor(() => expect(result.current.getUnreadCount()).toBe(1));
   });
 
+  it('conserve awaitingStaffReply quand seul un message SYSTEM ticket transmis arrive', async () => {
+    let convMessages: ChatMessage[] = [
+      { id: 'm1', senderType: 'USER', isRead: true, content: 'q', createdAt: '' },
+    ];
+    jest.spyOn(chatClient, 'fetchConversationsList').mockImplementation(async () => ({
+      conversations: [
+        { id: 'c1', status: 'ACTIVE', createdAt: '', updatedAt: '', messages: convMessages },
+      ],
+    }));
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockImplementation(async () => ({
+      messages: convMessages,
+      nextCursor: null,
+      hasMore: false,
+    }));
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 'm2', conversationId: 'c1' }),
+    });
+
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: 0 } },
+    });
+    const w = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+
+    const { result } = renderHook(() => useChat(true, false), { wrapper: w });
+    await waitFor(() => expect(result.current.conversationId).toBe('c1'));
+    await act(async () => {
+      await result.current.sendMessage('question');
+    });
+    await waitFor(() => expect(result.current.getUnreadCount()).toBe(0));
+
+    convMessages = [
+      { id: 'm1', senderType: 'USER', isRead: true, content: 'q', createdAt: '' },
+      { id: 'm2', senderType: 'USER', isRead: true, content: 'q2', createdAt: '' },
+      {
+        id: 'm3',
+        senderType: 'SYSTEM',
+        isRead: false,
+        content: '__i18n:chatWidget.responses.ticketTransmitted__',
+        createdAt: '',
+      },
+    ];
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: queryKeys.conversationMessages('c1') });
+      await client.invalidateQueries({ queryKey: queryKeys.conversations });
+    });
+    await waitFor(() =>
+      expect(result.current.currentConversation?.messages.at(-1)?.senderType).toBe('SYSTEM'),
+    );
+    expect(result.current.getUnreadCount()).toBe(0);
+  });
+
   it('calcule getListUnreadTotal hors conversation active', async () => {
     jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
       conversations: [

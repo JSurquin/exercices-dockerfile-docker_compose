@@ -19,6 +19,7 @@ import {
   isTerminalConversationStatus,
   markStaffMessagesReadForClientViewer,
   selectInitialConversationId,
+  shouldClearAwaitingStaffReply,
 } from '@/lib/chat-logic';
 import { formatConversationDisplayTitle } from '@/lib/chat-conversation-router';
 import {
@@ -183,7 +184,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
   useEffect(() => {
     if (!awaitingStaffReply || allMessages.length === 0) return;
     const last = allMessages[allMessages.length - 1];
-    if (last && last.senderType !== 'USER') {
+    if (shouldClearAwaitingStaffReply(last)) {
       setAwaitingStaffReply(false);
     }
   }, [allMessages, awaitingStaffReply]);

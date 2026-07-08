@@ -14,6 +14,7 @@ import {
   resolveStatusAfterMessage,
   selectInitialConversationId,
   shouldClearAiTypingIndicator,
+  shouldClearAwaitingStaffReply,
   shouldInsertTicketTransmittedMessage,
   shouldInsertFollowUpAwaitingAcknowledgment,
   shouldRedactEmailsForViewer,
@@ -509,6 +510,27 @@ describe('countStaffMessagesForNotification', () => {
         { senderType: 'MODERATOR' },
       ]),
     ).toBe(3);
+  });
+});
+
+describe('shouldClearAwaitingStaffReply', () => {
+  it('ignore le message SYSTEM ticket transmis', () => {
+    expect(
+      shouldClearAwaitingStaffReply({
+        senderType: 'SYSTEM',
+      }),
+    ).toBe(false);
+  });
+
+  it('accepte AI, BOT et MODERATOR', () => {
+    expect(shouldClearAwaitingStaffReply({ senderType: 'AI' })).toBe(true);
+    expect(shouldClearAwaitingStaffReply({ senderType: 'BOT' })).toBe(true);
+    expect(shouldClearAwaitingStaffReply({ senderType: 'MODERATOR' })).toBe(true);
+  });
+
+  it('ignore USER et messages absents', () => {
+    expect(shouldClearAwaitingStaffReply({ senderType: 'USER' })).toBe(false);
+    expect(shouldClearAwaitingStaffReply(null)).toBe(false);
   });
 });
 

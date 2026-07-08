@@ -8,6 +8,7 @@ import {
   sanitizeAiGeneratedContent,
   shouldAiReplyToConversation,
 } from '@/lib/chat-ai-guards';
+import { AI_UNAVAILABLE_I18N_KEY } from '@/lib/chat-logic';
 import { generateEmbedding } from '@/lib/ollama-embed';
 import { searchSimilarChunks } from '@/lib/rag-client';
 import { enqueueChatAiReply, peekChatAiQueueAdmission } from '@/lib/chat-ai-queue';
@@ -235,5 +236,44 @@ async function generateAiReply(conversationId: string): Promise<void> {
     });
   } catch (error) {
     logger.error('[chat-ai] Échec génération réponse Ollama:', error);
+    await insertAiFailureFallback(conversationId);
+  }
+}
+
+async function insertAiFailureFallback(conversationId: string): Promise<void> {
+  try {
+    const lastUserMessage = await prisma.chatMessage.findFirst({
+      where: { conversationId, senderType: 'USER' },
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true },
+    });
+    if (!lastUserMessage) return;
+
+    const existingReply = await prisma.chatMessage.findFirst({
+      where: {
+        conversationId,
+        createdAt: { gt: lastUserMessage.createdAt },
+        senderType: { in: ['AI', 'MODERATOR', 'BOT'] },
+      },
+      select: { id: true },
+    });
+    if (existingReply) return;
+
+    await prisma.chatMessage.create({
+      data: {
+        conversationId,
+        userId: null,
+        content: AI_UNAVAILABLE_I18N_KEY,
+        senderType: 'BOT',
+        isRead: false,
+      },
+    });
+
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date(), lastMessageAt: new Date() },
+    });
+  } catch (fallbackError) {
+    logger.error('[chat-ai] Échec fallback BOT après erreur Ollama:', fallbackError);
   }
 }
