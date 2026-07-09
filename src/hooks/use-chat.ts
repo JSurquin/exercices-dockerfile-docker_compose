@@ -35,6 +35,33 @@ import {
 
 export type { ChatMessage, ConversationSummary } from '@/lib/chat-client-types';
 
+const CHAT_BACKGROUND_CONVERSATIONS_POLL_MS = 30_000;
+const CHAT_BACKGROUND_MESSAGES_POLL_MS = 15_000;
+
+/** Polling hors widget : utilisateur connecté ou invité avec un fil stocké localement. */
+export function shouldBackgroundSyncChat(params: {
+  isOpen: boolean;
+  isGuest: boolean;
+  storedConversationId: string | null;
+}): boolean {
+  return params.isOpen || !params.isGuest || Boolean(params.storedConversationId);
+}
+
+export function resolveChatMessagesPollIntervalMs(params: {
+  isOpen: boolean;
+  conversationId: string | null;
+  shouldSync: boolean;
+  awaitingStaffReply: boolean;
+}): number | false {
+  if (!params.shouldSync || !params.conversationId) return false;
+  if (params.isOpen) {
+    return params.awaitingStaffReply
+      ? 2_000
+      : CHAT_BACKGROUND_MESSAGES_POLL_MS;
+  }
+  return CHAT_BACKGROUND_MESSAGES_POLL_MS;
+}
+
 export function useChat(isOpen = false, isViewingConversation = false, isGuest = false) {
   const queryClient = useQueryClient();
   const { messages: t } = useLocale();
@@ -53,11 +80,19 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
   const isComposingNewConversationRef = useRef(false);
   const [awaitingStaffReply, setAwaitingStaffReply] = useState(false);
 
+  const shouldSyncChat = shouldBackgroundSyncChat({
+    isOpen,
+    isGuest,
+    storedConversationId: storedId,
+  });
+
   const { data: conversationsData, isLoading: conversationsLoading } = useQuery({
     queryKey: queryKeys.conversations,
     queryFn: fetchConversationsList,
-    enabled: isOpen,
+    enabled: shouldSyncChat,
     staleTime: 30_000,
+    refetchInterval: isOpen ? false : shouldSyncChat ? CHAT_BACKGROUND_CONVERSATIONS_POLL_MS : false,
+    refetchIntervalInBackground: !isOpen && shouldSyncChat,
   });
 
   const conversations = useMemo(
@@ -99,14 +134,14 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) =>
       lastPage.hasMore ? lastPage.nextCursor : undefined,
-    enabled: !!conversationId && isOpen,
-    refetchInterval:
-      isOpen && conversationId
-        ? awaitingStaffReply
-          ? 2_000
-          : 15_000
-        : false,
-    refetchIntervalInBackground: false,
+    enabled: !!conversationId && shouldSyncChat,
+    refetchInterval: resolveChatMessagesPollIntervalMs({
+      isOpen,
+      conversationId,
+      shouldSync: shouldSyncChat,
+      awaitingStaffReply,
+    }),
+    refetchIntervalInBackground: !isOpen && shouldSyncChat,
   });
 
   const allMessages = useMemo(
@@ -202,10 +237,10 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
   }, [conversationId, allMessages]);
 
   useEffect(() => {
-    if (!conversationId || !isOpen || messagesLoading) return;
+    if (!conversationId || !shouldSyncChat || messagesLoading) return;
     if (!messageSyncToken) return;
     queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
-  }, [conversationId, isOpen, messagesLoading, messageSyncToken, queryClient]);
+  }, [conversationId, shouldSyncChat, messagesLoading, messageSyncToken, queryClient]);
 
   const staffMsgCount = countClientNotifyMessages(allMessages);
   const prevStaffMsgCountRef = useRef<number | null>(null);

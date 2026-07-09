@@ -252,11 +252,14 @@ describe('ChatWidget', () => {
   });
 
   it('affiche le badge unread quand fermé', async () => {
-    mockGetUnreadCount.mockReturnValue(3);
+    chatMock = buildChatMock({
+      getListUnreadTotal: jest.fn(() => 3),
+    });
     renderWidget();
+    expect(screen.getByTestId('chat-fab')).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument();
     await openChat();
-    expect(screen.queryByText('3')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('chat-fab')).not.toBeInTheDocument();
   });
 
   it('affiche les catégories pour une nouvelle conversation', async () => {
@@ -286,6 +289,7 @@ describe('ChatWidget', () => {
       expect(mockSendMessage).toHaveBeenCalledWith('Trade en attente', {
         category: 'trade',
         forceNew: true,
+        skipAi: true,
       }),
     );
     await waitFor(() => expect(screen.getByTestId('chat-message-input')).toBeInTheDocument());

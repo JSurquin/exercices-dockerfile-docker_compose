@@ -490,7 +490,6 @@ export function ChatWidget() {
     loadOlderMessages,
     hasOlderMessages,
     isLoadingOlderMessages,
-    getUnreadCount,
     getListUnreadTotal,
     isLoading,
   } = useChat(isOpen, isInConversation, !user);
@@ -869,7 +868,7 @@ export function ChatWidget() {
     }
   }, [effectiveIsAiTyping, isAiTyping]);
 
-  const unreadCount = getUnreadCount();
+  const unreadCount = getListUnreadTotal();
 
   if (isHiddenByMobileMenu) {
     return null;

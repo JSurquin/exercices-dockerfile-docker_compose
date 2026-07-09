@@ -5,7 +5,7 @@ import '@testing-library/jest-dom';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useChat } from '@/hooks/use-chat';
+import { useChat, shouldBackgroundSyncChat, resolveChatMessagesPollIntervalMs } from '@/hooks/use-chat';
 import * as chatClient from '@/lib/chat-client';
 import type { ChatMessage } from '@/lib/chat-client-types';
 import { queryKeys } from '@/lib/query-keys';
@@ -38,6 +38,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => {
 beforeEach(() => {
   jest.clearAllMocks();
   localStorage.clear();
+  sessionStorage.clear();
   global.fetch = jest.fn();
 });
 
@@ -196,11 +197,46 @@ describe('useChat', () => {
     }));
   });
 
-  it('ne charge pas les queries si fermé', () => {
+  it('ne charge pas les queries si fermé sans historique invité', () => {
     jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({ conversations: [] });
-    const { result } = renderHook(() => useChat(false), { wrapper });
+    const { result } = renderHook(() => useChat(false, false, true), { wrapper });
     expect(result.current.conversations).toEqual([]);
     expect(chatClient.fetchConversationsList).not.toHaveBeenCalled();
+  });
+
+  it('synchronise en arrière-plan si fermé avec historique invité', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
+      conversations: [
+        {
+          id: 'c1',
+          status: 'ACTIVE',
+          createdAt: '2026-01-01',
+          updatedAt: '2026-01-01',
+          lastMessageAt: '2026-01-02',
+          messages: [
+            { id: 'm1', senderType: 'MODERATOR', isRead: false, content: 'réponse', createdAt: '' },
+          ],
+        },
+      ],
+    });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
+      messages: [
+        { id: 'm1', senderType: 'MODERATOR', isRead: false, content: 'réponse', createdAt: '' },
+      ],
+      nextCursor: null,
+      hasMore: false,
+    });
+    localStorage.setItem('chat_active_conversation_id', 'c1');
+
+    const { result } = renderHook(() => useChat(false, false, true), { wrapper });
+    await waitFor(() => expect(chatClient.fetchConversationsList).toHaveBeenCalled());
+    await waitFor(() => expect(result.current.getListUnreadTotal()).toBe(1));
+  });
+
+  it('synchronise en arrière-plan pour utilisateur connecté même fermé', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({ conversations: [] });
+    renderHook(() => useChat(false, false, false), { wrapper });
+    await waitFor(() => expect(chatClient.fetchConversationsList).toHaveBeenCalled());
   });
 
   it('createConversation via mutation', async () => {
@@ -706,11 +742,11 @@ describe('useChat', () => {
     expect(result.current.getListUnreadTotal()).toBe(2);
   });
 
-  it('utilise les paramètres par défaut (fermé, hors conversation)', () => {
+  it('synchronise par défaut pour utilisateur connecté même fermé', async () => {
     jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({ conversations: [] });
     const { result } = renderHook(() => useChat(), { wrapper });
     expect(result.current.conversations).toEqual([]);
-    expect(chatClient.fetchConversationsList).not.toHaveBeenCalled();
+    await waitFor(() => expect(chatClient.fetchConversationsList).toHaveBeenCalled());
   });
 
   it('charge les pages de messages plus anciennes', async () => {
@@ -792,5 +828,66 @@ describe('useChat', () => {
 
     await result.current.sendMessage('Nouveau sujet', { forceNew: true });
     expect(chatClient.readGuestConversationIds()).toContain('c-new');
+  });
+});
+
+describe('shouldBackgroundSyncChat', () => {
+  it('active la sync quand le widget est ouvert', () => {
+    expect(
+      shouldBackgroundSyncChat({ isOpen: true, isGuest: true, storedConversationId: null }),
+    ).toBe(true);
+  });
+
+  it('active la sync pour utilisateur connecté même fermé', () => {
+    expect(
+      shouldBackgroundSyncChat({ isOpen: false, isGuest: false, storedConversationId: null }),
+    ).toBe(true);
+  });
+
+  it('active la sync pour invité avec fil stocké', () => {
+    expect(
+      shouldBackgroundSyncChat({ isOpen: false, isGuest: true, storedConversationId: 'c1' }),
+    ).toBe(true);
+  });
+
+  it('désactive la sync pour invité sans historique', () => {
+    expect(
+      shouldBackgroundSyncChat({ isOpen: false, isGuest: true, storedConversationId: null }),
+    ).toBe(false);
+  });
+});
+
+describe('resolveChatMessagesPollIntervalMs', () => {
+  it('retourne false sans conversation', () => {
+    expect(
+      resolveChatMessagesPollIntervalMs({
+        isOpen: false,
+        conversationId: null,
+        shouldSync: true,
+        awaitingStaffReply: false,
+      }),
+    ).toBe(false);
+  });
+
+  it('accélère le polling en attente de réponse staff', () => {
+    expect(
+      resolveChatMessagesPollIntervalMs({
+        isOpen: true,
+        conversationId: 'c1',
+        shouldSync: true,
+        awaitingStaffReply: true,
+      }),
+    ).toBe(2_000);
+  });
+
+  it('poll en arrière-plan quand le widget est fermé', () => {
+    expect(
+      resolveChatMessagesPollIntervalMs({
+        isOpen: false,
+        conversationId: 'c1',
+        shouldSync: true,
+        awaitingStaffReply: false,
+      }),
+    ).toBe(15_000);
   });
 });
