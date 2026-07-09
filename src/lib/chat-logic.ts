@@ -127,12 +127,25 @@ export function shouldInsertTicketTransmittedMessage(
   return userMessagesAfterBot.length === 0;
 }
 
-/** Accusé de réception BOT pour les relances tant qu'aucun staff n'a répondu au dernier message user. */
+function isConversationEscalatedToHuman(
+  messages: Array<{ senderType: string; content?: string }>,
+  aiEnabled?: boolean,
+): boolean {
+  if (aiEnabled === false) return true;
+  return messages.some(
+    (m) =>
+      m.senderType === 'SYSTEM' &&
+      (!m.content || m.content === TICKET_TRANSMITTED_I18N_KEY),
+  );
+}
+
+/** Accusé de réception BOT pour les relances tant qu'aucun modérateur humain n'a répondu. */
 export function shouldInsertFollowUpAwaitingAcknowledgment(
-  messages: Array<{ senderType: string; id: string }>,
+  messages: Array<{ senderType: string; id: string; content?: string }>,
   newMessageId: string,
   senderType: string,
   assignedTo?: string | null,
+  aiEnabled?: boolean,
 ): boolean {
   if (senderType !== 'USER') return false;
   if (shouldInsertTicketTransmittedMessage(messages, newMessageId, senderType)) {
@@ -145,7 +158,11 @@ export function shouldInsertFollowUpAwaitingAcknowledgment(
     return isConversationAwaitingModeratorReply(messagesBeforeNew);
   }
 
-  return isConversationAwaitingStaffReply(messagesBeforeNew);
+  if (!isConversationEscalatedToHuman(messagesBeforeNew, aiEnabled)) {
+    return false;
+  }
+
+  return isConversationAwaitingModeratorReply(messagesBeforeNew);
 }
 
 /** True quand un modérateur humain doit encore répondre (assignation active, pas de message MODERATOR après le dernier USER). */

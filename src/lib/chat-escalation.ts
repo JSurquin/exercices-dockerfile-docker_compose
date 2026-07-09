@@ -191,6 +191,7 @@ export async function handleUserMessageSideEffects(params: {
       params.messageId,
       'USER',
       params.assignedTo,
+      aiEnabled,
     )
   ) {
     await createChatMessageRecord({

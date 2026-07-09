@@ -1,6 +1,11 @@
 import {
+  collectChatEscalationNotificationIds,
+  collectModeratorAttentionKeys,
   countClientNotifyMessages,
   countUserMessagesForModerator,
+  findNewChatEscalationNotificationIds,
+  findNewModeratorAlertKeys,
+  getModeratorAttentionKey,
   shouldPlayClientNotificationSound,
   shouldPlayModeratorNotificationSound,
   CLIENT_NOTIFY_SENDER_TYPES,
@@ -130,5 +135,72 @@ describe('flux notification client ↔ modérateur', () => {
         currentCount: countClientNotifyMessages(nextThread),
       }),
     ).toBe(false);
+  });
+});
+
+describe('getModeratorAttentionKey', () => {
+  it('retourne une clé pour une conversation escaladée avec dernier message USER', () => {
+    expect(
+      getModeratorAttentionKey({
+        id: 'c1',
+        aiEnabled: false,
+        messages: [{ id: 'm1', senderType: 'USER' }],
+      }),
+    ).toBe('c1:m1');
+  });
+
+  it('ignore les conversations encore gérées par l’IA', () => {
+    expect(
+      getModeratorAttentionKey({
+        id: 'c1',
+        aiEnabled: true,
+        messages: [{ id: 'm1', senderType: 'USER' }],
+      }),
+    ).toBeNull();
+  });
+});
+
+describe('collectModeratorAttentionKeys', () => {
+  it('exclut la conversation ouverte par le modérateur', () => {
+    expect(
+      collectModeratorAttentionKeys(
+        [
+          {
+            id: 'open',
+            aiEnabled: false,
+            messages: [{ id: 'm-open', senderType: 'USER' }],
+          },
+          {
+            id: 'other',
+            aiEnabled: false,
+            messages: [{ id: 'm-other', senderType: 'USER' }],
+          },
+        ],
+        'open',
+      ),
+    ).toEqual(['other:m-other']);
+  });
+});
+
+describe('findNewModeratorAlertKeys', () => {
+  it('repère les nouvelles alertes', () => {
+    expect(findNewModeratorAlertKeys(new Set(['c1:m1']), ['c1:m1', 'c2:m2'])).toEqual(['c2:m2']);
+  });
+});
+
+describe('collectChatEscalationNotificationIds', () => {
+  it('filtre les notifications d’escalade chat', () => {
+    expect(
+      collectChatEscalationNotificationIds([
+        { id: 'n1', metadata: { event: 'chat_escalation' } },
+        { id: 'n2', metadata: { event: 'other' } },
+      ]),
+    ).toEqual(['n1']);
+  });
+});
+
+describe('findNewChatEscalationNotificationIds', () => {
+  it('repère les nouvelles notifications d’escalade', () => {
+    expect(findNewChatEscalationNotificationIds(new Set(['n1']), ['n1', 'n2'])).toEqual(['n2']);
   });
 });

@@ -37,3 +37,59 @@ export function shouldPlayModeratorNotificationSound(params: {
     params.currentUserCount > params.previousUserCount
   );
 }
+
+type ModeratorAlertConversation = {
+  id: string;
+  aiEnabled?: boolean;
+  messages?: Array<{ id: string; senderType: string }>;
+};
+
+type StaffNotification = {
+  id: string;
+  metadata?: unknown;
+};
+
+/** Clé stable « conversation + dernier message user » pour alertes modérateur. */
+export function getModeratorAttentionKey(
+  conversation: ModeratorAlertConversation,
+): string | null {
+  if (conversation.aiEnabled !== false) return null;
+  const last = conversation.messages?.[0];
+  if (!last || last.senderType !== 'USER') return null;
+  return `${conversation.id}:${last.id}`;
+}
+
+export function collectModeratorAttentionKeys(
+  conversations: ModeratorAlertConversation[],
+  excludeConversationId?: string | null,
+): string[] {
+  return conversations
+    .filter((conv) => conv.id !== excludeConversationId)
+    .map(getModeratorAttentionKey)
+    .filter((key): key is string => key !== null);
+}
+
+export function findNewModeratorAlertKeys(
+  previousKeys: Set<string>,
+  currentKeys: string[],
+): string[] {
+  return currentKeys.filter((key) => !previousKeys.has(key));
+}
+
+export function collectChatEscalationNotificationIds(
+  notifications: StaffNotification[],
+): string[] {
+  return notifications
+    .filter((notification) => {
+      const metadata = notification.metadata as { event?: string } | null | undefined;
+      return metadata?.event === 'chat_escalation';
+    })
+    .map((notification) => notification.id);
+}
+
+export function findNewChatEscalationNotificationIds(
+  previousIds: Set<string>,
+  currentIds: string[],
+): string[] {
+  return currentIds.filter((id) => !previousIds.has(id));
+}

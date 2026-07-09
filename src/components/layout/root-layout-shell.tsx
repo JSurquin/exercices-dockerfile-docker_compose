@@ -21,6 +21,7 @@ import { PayoutReconciler } from '@/components/payout-reconciler';
 import UpdateNotifier from '@/components/update-notifier';
 import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
 import { AuthCallbackNotifier } from '@/components/auth/auth-callback-notifier';
+import { ModeratorChatAlertListener } from '@/components/moderation/moderator-chat-alert-listener';
 
 const ChatWidget = dynamic(
   () => import('@/components/ui/chat-widget').then((mod) => mod.ChatWidget),
@@ -60,6 +61,7 @@ export function RootLayoutShell({
               <TourModeProvider>
                 <ImpersonationBanner />
                 <AuthCallbackNotifier />
+                <ModeratorChatAlertListener />
                 {!isStaffPanelRoute && <CosmicBackground />}
                 {!isStaffPanelRoute && <Header />}
 

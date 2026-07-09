@@ -292,6 +292,50 @@ describe('shouldInsertFollowUpAwaitingAcknowledgment', () => {
       ),
     ).toBe(false);
   });
+
+  it('ne déclenche pas tant que l’IA gère encore la conversation', () => {
+    expect(
+      shouldInsertFollowUpAwaitingAcknowledgment(
+        [
+          { id: '1', senderType: 'USER' },
+          { id: '2', senderType: 'AI' },
+          { id: '3', senderType: 'USER' },
+        ],
+        '4',
+        'USER',
+        null,
+        true,
+      ),
+    ).toBe(false);
+  });
+
+  it('ne déclenche pas sur la première relance avant réponse IA', () => {
+    expect(
+      shouldInsertFollowUpAwaitingAcknowledgment(
+        [{ id: '1', senderType: 'USER' }],
+        '2',
+        'USER',
+        null,
+        true,
+      ),
+    ).toBe(false);
+  });
+
+  it('déclenche après escalade humaine sans assignation', () => {
+    expect(
+      shouldInsertFollowUpAwaitingAcknowledgment(
+        [
+          { id: '1', senderType: 'USER' },
+          { id: '2', senderType: 'AI' },
+          { id: '3', senderType: 'SYSTEM', content: '__i18n:chatWidget.responses.ticketTransmitted__' },
+        ],
+        '4',
+        'USER',
+        null,
+        false,
+      ),
+    ).toBe(true);
+  });
 });
 
 describe('buildConversationWhereClause', () => {
