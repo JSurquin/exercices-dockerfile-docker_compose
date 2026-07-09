@@ -1,7 +1,7 @@
 import { NotificationPriority, NotificationType } from '@prisma/client';
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
-import { shouldAiReplyToConversation } from '@/lib/chat-ai-guards';
+import { shouldAiReplyToConversation, shouldTriggerAiForUserMessage } from '@/lib/chat-ai-guards';
 import { getChatAiQueueHint } from '@/lib/chat-ai-service';
 import type { ChatAiQueueHint } from '@/lib/chat-ai-service';
 import {
@@ -151,6 +151,7 @@ export async function handleUserMessageSideEffects(params: {
   status: string;
   aiEnabled: boolean;
   existingMessages: Array<{ senderType: string; id: string }>;
+  skipAi?: boolean;
 }): Promise<{ aiQueueHint: ChatAiQueueHint | null; escalated: boolean }> {
   let aiEnabled = params.aiEnabled !== false;
   let escalated = false;
@@ -202,7 +203,13 @@ export async function handleUserMessageSideEffects(params: {
     });
   }
 
-  const aiQueueHint = aiEnabled
+  const canTriggerAi =
+    aiEnabled &&
+    shouldTriggerAiForUserMessage(params.existingMessages, {
+      skipAi: params.skipAi,
+    });
+
+  const aiQueueHint = canTriggerAi
     ? getChatAiQueueHint({
         assignedTo: params.assignedTo,
         status: params.status,

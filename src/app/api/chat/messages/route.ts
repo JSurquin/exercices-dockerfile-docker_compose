@@ -6,6 +6,7 @@ import { resolveChatIdentity } from '@/lib/require-admin';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { createChatMessageSchema } from '@/lib/validation/schemas/chat-api';
 import { maybeGenerateAiReply } from '@/lib/chat-ai-service';
+import { shouldTriggerAiForUserMessage } from '@/lib/chat-ai-guards';
 import {
   canGuestAccessConversation,
   canUserAccessConversation,
@@ -175,9 +176,13 @@ export async function POST(request: NextRequest) {
         status: conversation.status,
         aiEnabled: conversation.aiEnabled,
         existingMessages,
+        skipAi: body.skipAi,
       });
       aiQueueHint = sideEffects.aiQueueHint;
-      shouldRunAi = !sideEffects.escalated && conversation.aiEnabled !== false;
+      shouldRunAi =
+        !sideEffects.escalated &&
+        conversation.aiEnabled !== false &&
+        shouldTriggerAiForUserMessage(existingMessages, { skipAi: body.skipAi });
     }
 
     if (identity.kind === 'user') {

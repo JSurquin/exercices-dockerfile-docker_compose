@@ -33,6 +33,7 @@ export const createChatMessageSchema = z
     senderType: z.enum(['USER', 'BOT', 'MODERATOR', 'SYSTEM']).optional(),
     category: z.string().max(64).optional(),
     forceNew: z.boolean().optional(),
+    skipAi: z.boolean().optional(),
     replyContext: z.enum(['widget', 'moderation']).optional(),
   })
   .strip();

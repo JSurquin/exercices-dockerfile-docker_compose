@@ -681,6 +681,7 @@ export function ChatWidget() {
       const result = await sendMessage(subcategory.label, {
         category: categoryKey,
         forceNew: true,
+        skipAi: true,
       });
       const convId = result.conversationId ?? conversationId;
 

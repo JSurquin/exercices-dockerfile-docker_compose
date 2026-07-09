@@ -33,6 +33,33 @@ const SUPPORT_CATEGORIES = new Set([
   'affiliation',
 ]);
 
+/**
+ * L'IA ne répond qu'après la description du problème par l'utilisateur.
+ * Lors de la sélection d'un fil, le bot répond d'abord : tant qu'il n'y a pas
+ * de message USER après le dernier BOT, l'IA reste en attente.
+ * `skipAi` couvre la sélection de fil avant l'arrivée du message BOT.
+ */
+export function shouldTriggerAiForUserMessage(
+  messages: Array<{ senderType: string }>,
+  options?: { skipAi?: boolean },
+): boolean {
+  if (options?.skipAi) return false;
+
+  let lastBotIdx = -1;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].senderType === 'BOT') {
+      lastBotIdx = i;
+      break;
+    }
+  }
+
+  if (lastBotIdx === -1) {
+    return messages.some((m) => m.senderType === 'USER');
+  }
+
+  return messages.slice(lastBotIdx + 1).some((m) => m.senderType === 'USER');
+}
+
 export function shouldAiReplyToConversation(input: {
   assignedTo: string | null;
   status: string;

@@ -7,6 +7,7 @@ import {
   OFF_TOPIC_REFUSAL_MESSAGE,
   sanitizeAiGeneratedContent,
   shouldAiReplyToConversation,
+  shouldTriggerAiForUserMessage,
 } from '@/lib/chat-ai-guards';
 import { AI_UNAVAILABLE_I18N_KEY } from '@/lib/chat-logic';
 import { generateEmbedding } from '@/lib/ollama-embed';
@@ -125,6 +126,13 @@ async function generateAiReply(conversationId: string): Promise<void> {
 
     const lastUserMessage = [...recentMessages].reverse().find((m) => m.senderType === 'USER');
     if (!lastUserMessage) return;
+
+    if (!shouldTriggerAiForUserMessage(recentMessages)) {
+      logger.info('[chat-ai] Skip: en attente de la description utilisateur après le BOT', {
+        conversationId,
+      });
+      return;
+    }
 
     const priorUserMessages = recentMessages
       .filter((m) => m.senderType === 'USER' && m !== lastUserMessage)

@@ -410,4 +410,19 @@ describe('maybeGenerateAiReply', () => {
     expect(mockOllamaChat).not.toHaveBeenCalled();
     expect(mockCreate).not.toHaveBeenCalled();
   });
+
+  it('n’intervient pas tant que le BOT attend la description du problème', async () => {
+    mockFindUnique.mockResolvedValue({
+      ...baseConversation,
+      messages: [
+        { content: 'Trade en attente', senderType: 'USER', createdAt: new Date() },
+        { content: 'Réponse bot fil', senderType: 'BOT', createdAt: new Date() },
+      ],
+    });
+
+    await maybeGenerateAiReply('conv-1');
+
+    expect(mockOllamaChat).not.toHaveBeenCalled();
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
 });

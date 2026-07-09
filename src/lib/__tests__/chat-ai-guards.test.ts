@@ -3,7 +3,51 @@ import {
   OFF_TOPIC_REFUSAL_I18N_KEY,
   sanitizeAiGeneratedContent,
   shouldAiReplyToConversation,
+  shouldTriggerAiForUserMessage,
 } from '@/lib/chat-ai-guards';
+
+describe('shouldTriggerAiForUserMessage', () => {
+  it('autorise l’IA sur un message direct sans BOT', () => {
+    expect(
+      shouldTriggerAiForUserMessage([{ senderType: 'USER' }]),
+    ).toBe(true);
+  });
+
+  it('bloque l’IA sur la sélection de fil (skipAi)', () => {
+    expect(
+      shouldTriggerAiForUserMessage([{ senderType: 'USER' }], { skipAi: true }),
+    ).toBe(false);
+  });
+
+  it('bloque l’IA tant qu’aucun USER n’a décrit le problème après le BOT', () => {
+    expect(
+      shouldTriggerAiForUserMessage([
+        { senderType: 'USER' },
+        { senderType: 'BOT' },
+      ]),
+    ).toBe(false);
+  });
+
+  it('autorise l’IA après la description du problème post-BOT', () => {
+    expect(
+      shouldTriggerAiForUserMessage([
+        { senderType: 'USER' },
+        { senderType: 'BOT' },
+        { senderType: 'USER' },
+      ]),
+    ).toBe(true);
+  });
+
+  it('autorise l’IA sur une relance après une réponse IA (sans BOT)', () => {
+    expect(
+      shouldTriggerAiForUserMessage([
+        { senderType: 'USER' },
+        { senderType: 'AI' },
+        { senderType: 'USER' },
+      ]),
+    ).toBe(true);
+  });
+});
 
 describe('shouldAiReplyToConversation', () => {
   it('refuse si CHAT_AI_ENABLED est absent', () => {
