@@ -240,7 +240,7 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('Comment ça marche ?', 'How does it work?', '如何运作？'),
         description: t(
-          'Vendez des skins pour gagner des fragments, puis dépensez vos fragments pour obtenir des entrées dans un concours. Le tirage est <strong>aléatoire déterministe</strong> (seed loggué) et les résultats sont publics et vérifiables.',
+          'Vendez des skins pour gagner des fragments, puis dépensez vos fragments pour obtenir des entrées dans un concours. Le tirage est <strong>aléatoire déterministe</strong> (seed enregistré) et les résultats sont publics et vérifiables.',
           'Sell skins to earn fragments, then spend your fragments to get entries in a giveaway. The draw is <strong>deterministic random</strong> (logged seed) and results are public and verifiable.',
           '出售皮肤赚取碎片，然后花费碎片获得抽奖入场资格。抽奖为<strong>确定性随机</strong>（记录种子），结果公开可验证。'
         ),

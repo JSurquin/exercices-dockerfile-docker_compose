@@ -43,7 +43,7 @@ export const messages: Record<Locale, Messages> = {
     hero: {
       title: "VENDEZ VOS SKINS CS2 FACILEMENT AVEC MOONSKIN SANS FRAIS",
       subtitle:
-        "La seule plateforme de cashtrade régulée en Europe, la plus rapide et sécurisée pour convertir vos skins Counter-Strike 2 en argent réel avec 0 % de frais de vente",
+        "La seule plateforme MoonSkin régulée en Europe, la plus rapide et sécurisée pour convertir vos skins Counter-Strike 2 en argent réel avec 0 % de frais de vente",
       cta: "Vendre maintenant",
       secondaryCta: "COMMENT ÇA MARCHE",
       badge: "Première plateforme régulée en Europe",
@@ -1954,7 +1954,7 @@ export const messages: Record<Locale, Messages> = {
           founder: {
             name: "Lucas Pallanca",
             role: "Founder & CEO",
-            bio: "Fondateur de Moonskin et de Counter-Trade France. Actif sur le marché depuis plusieurs années, spécialisé dans le business development et la structuration du trading de skins à grande échelle.",
+            bio: "Fondateur de Moonskin et de Counter-Trade France. Actif sur le marché depuis plusieurs années, spécialisé dans le développement commercial et la structuration du trading de skins à grande échelle.",
             skills: ["Vision", "Exécution", "Marché"]
           },
           operations: {
@@ -3654,7 +3654,7 @@ export const messages: Record<Locale, Messages> = {
         twoFactorUnavailable: "La 2FA n'est pas disponible pour les comptes administrateurs.",
         forgotPassword: "Mot de passe oublié ?",
         forgotPasswordTitle: "Mot de passe oublié",
-        forgotPasswordDesc: "Entrez votre adresse email pour recevoir un lien de réinitialisation",
+        forgotPasswordDesc: "Entrez votre adresse e-mail pour recevoir un lien de réinitialisation",
         emailSent: "Email envoyé !",
         checkEmailReset: "Vérifiez votre boîte mail pour réinitialiser votre mot de passe",
         errorLabel: "Erreur",
@@ -5865,14 +5865,14 @@ export const messages: Record<Locale, Messages> = {
         feature3: "Nouveaux giveaways",
         // Messages d'erreur et de succès
         errors: {
-          emailRequired: "Veuillez entrer votre adresse email",
-          emailInvalid: "Veuillez entrer une adresse email valide",
+          emailRequired: "Veuillez entrer votre adresse e-mail",
+          emailInvalid: "Veuillez entrer une adresse e-mail valide",
           subscriptionError: "Une erreur est survenue lors de l'inscription.",
           generalError: "Une erreur est survenue. Veuillez réessayer.",
         },
         messages: {
           subscriptionSuccess: "Inscription réussie ! Merci de vous être abonné à notre newsletter.",
-          alreadySubscribed: "Cette adresse email est déjà abonnée à notre newsletter.",
+          alreadySubscribed: "Cette adresse e-mail est déjà abonnée à notre newsletter.",
         },
         unsubscribe: {
           title: "MoonSkin Newsletter",
@@ -6114,7 +6114,7 @@ export const messages: Record<Locale, Messages> = {
           description: "Steam ne nous transmet pas votre email. Ajoutez-le pour ne manquer aucune notification importante.",
           label: "Adresse email",
           placeholder: "votre@email.com",
-          invalidEmail: "Veuillez saisir une adresse email valide.",
+          invalidEmail: "Veuillez saisir une adresse e-mail valide.",
           validEmail: "Adresse email valide ✓",
           tip: "Votre email reste confidentiel. Aucun spam, uniquement les notifications liées à vos activités.",
           alreadySet: "Email déjà enregistré",
@@ -6132,7 +6132,7 @@ export const messages: Record<Locale, Messages> = {
           invalidSteamId: "Veuillez entrer un Steam ID valide",
           steamIdSaveError: "Erreur lors de la sauvegarde du Steam ID",
           invalidSteamIdFormat: "Le Steam ID doit être composé de 17 chiffres et commencer par 7656119.",
-          invalidEmail: "Veuillez saisir une adresse email valide",
+          invalidEmail: "Veuillez saisir une adresse e-mail valide",
           emailSaveError: "Erreur lors de la sauvegarde de l'email"
         },
         success: {
@@ -7118,14 +7118,14 @@ export const messages: Record<Locale, Messages> = {
         contactEmailHelp: "Pour recevoir les confirmations de vente, de paiement et les alertes de sécurité. Prérempli lors de vos retraits.",
         contactEmailConfigured: "Email configuré :",
         contactEmailValid: "Adresse email valide ✓",
-        contactEmailInvalid: "Veuillez saisir une adresse email valide.",
+        contactEmailInvalid: "Veuillez saisir une adresse e-mail valide.",
         contactEmailModify: "Modifier",
         contactEmailSaving: "Sauvegarde...",
         contactEmailSave: "Sauvegarder",
         contactEmailCancel: "Annuler",
         contactEmailSaved: "Email enregistré avec succès !",
         contactEmailError: "Erreur lors de la sauvegarde de l'email",
-        contactEmailRequired: "Veuillez renseigner une adresse email valide pour continuer.",
+        contactEmailRequired: "Veuillez renseigner une adresse e-mail valide pour continuer.",
         createSaleButton: "Créer la vente",
         creatingButton: "Création en cours...",
         paymentCalcTitle: "Calcul de votre paiement",
@@ -7758,7 +7758,7 @@ export const messages: Record<Locale, Messages> = {
     hero: {
       title: "SELL YOUR CS2 SKINS EASILY WITH MOONSKIN WITH ZERO FEES",
       subtitle:
-        "The only regulated cashtrade platform in Europe, the fastest and most secure to convert your Counter-Strike 2 skins into real money with 0% selling fees",
+        "The only regulated MoonSkin platform in Europe, the fastest and most secure to convert your Counter-Strike 2 skins into real money with 0% selling fees",
       cta: "Sell now",
       secondaryCta: "HOW IT WORKS",
       badge: "Certified and secure platform",
@@ -15516,7 +15516,7 @@ export const messages: Record<Locale, Messages> = {
       },
     },
     features: {
-      title: "为什么选择CashTrade？",
+      title: "为什么选择MoonSkin？",
       subtitle: "拥有您所需全部功能的完整平台",
       items: {
         security: {
@@ -15959,13 +15959,13 @@ export const messages: Record<Locale, Messages> = {
       steamLoginError: "Steam登录错误",
       steamLoginErrorDesc: "无法使用Steam登录",
       discordLoginSuccess: "Discord登录成功！",
-      discordLoginSuccessDesc: "欢迎来到CashTrade",
+      discordLoginSuccessDesc: "欢迎来到MoonSkin",
       discordLoginInProgress: "Discord登录中...",
       discordLoginInProgressDesc: "正在跳转到Discord",
       discordLoginError: "Discord登录错误",
       discordLoginErrorDesc: "无法使用Discord登录",
       logoutSuccess: "登出成功",
-      logoutSuccessDesc: "CashTrade期待您的再次光临！",
+      logoutSuccessDesc: "MoonSkin期待您的再次光临！",
       logoutError: "登出错误",
       logoutErrorDesc: "您已被登出",
       settingsSaveError: "保存设置时出错",
@@ -16026,7 +16026,7 @@ export const messages: Record<Locale, Messages> = {
         tradesCompleted: "完成交易",
         skinsSold: "已交换皮肤",
       },
-      disclaimer: "免责声明：CashTrade与Valve Corporation或Steam无关。反恐精英和Steam是Valve Corporation的注册商标。皮肤交易存在风险，价格可能波动。请负责任地交易，永远不要投资超过您承受损失能力的资金。",
+      disclaimer: "免责声明：MoonSkin与Valve Corporation或Steam无关。反恐精英和Steam是Valve Corporation的注册商标。皮肤交易存在风险，价格可能波动。请负责任地交易，永远不要投资超过您承受损失能力的资金。",
       copyright: "© 2026 MoonSkin. 保留所有权利。| 欧盟许可证：CT-2024-001",
       socialLinks: {
         discord: "Discord",
@@ -16058,8 +16058,8 @@ export const messages: Record<Locale, Messages> = {
           trading: "交易与皮肤",
         },
         questions: {
-          howItWorks: "CashTrade如何工作？",
-          howItWorksAnswer: "CashTrade是一个允许您将CS2皮肤出售换取真钱的平台。您连接Steam账户，添加交易链接，我们通过我们的 API 实时估价您的皮肤，然后创建交易。在7天Steam交易锁定后，您会自动收到付款。",
+          howItWorks: "MoonSkin如何工作？",
+          howItWorksAnswer: "MoonSkin是一个允许您将CS2皮肤出售换取真钱的平台。您连接Steam账户，添加交易链接，我们通过我们的 API 实时估价您的皮肤，然后创建交易。在7天Steam交易锁定后，您会自动收到付款。",
           fees: "费用是多少？",
           feesAnswer: "我们仅对您出售的总金额收取0.5%的提现费。根据您的支付方式可能会产生网络费（SEPA约20€，加密货币费用可变）。无隐藏费用！",
           processTime: "整个流程需要多长时间？",
@@ -16670,7 +16670,7 @@ export const messages: Record<Locale, Messages> = {
       }
     },
     status: {
-      title: "CashTrade服务状态",
+      title: "MoonSkin服务状态",
       subtitle: "实时监控我们的服务可用性",
       overall: {
         title: "整体状态",
@@ -16750,7 +16750,7 @@ export const messages: Record<Locale, Messages> = {
       }
     },
     admin: {
-      title: "CashTrade管理",
+      title: "MoonSkin管理",
       subtitle: "平台管理和监督",
       audit: {
         title: "审计与安全",
@@ -17850,7 +17850,7 @@ export const messages: Record<Locale, Messages> = {
         sending: "发送中...",
       },
       dashboard: {
-        title: "CashTrade管理仪表板",
+        title: "MoonSkin管理仪表板",
         subtitle: "完整平台管理 • CS2皮肤交易",
         exportData: "导出数据",
         fullReport: "完整报告",
@@ -21126,7 +21126,7 @@ export const messages: Record<Locale, Messages> = {
         sellTitle: "3步出售您的皮肤",
         securityTitle: "安全和KYC",
         welcome: {
-          title: "欢迎来到CashTrade！",
+          title: "欢迎来到MoonSkin！",
           description: "安全出售CS2皮肤并获得真实货币的第一平台。",
           features: {
             secure: "100%安全",
@@ -22155,7 +22155,7 @@ export const messages: Record<Locale, Messages> = {
       discordLoginError: "Discord 连接错误",
       discordLoginErrorDesc: "无法与 Discord 连接",
       logoutSuccess: "注销成功",
-      logoutSuccessDesc: "期待您再次回到 CashTrade！",
+      logoutSuccessDesc: "期待您再次回到 MoonSkin！",
       logoutError: "注销时出错",
       logoutErrorDesc: "您已被注销",
     },
@@ -22268,7 +22268,7 @@ export const messages: Record<Locale, Messages> = {
       code: "404",
       pageNotFound: "页面未找到",
       title: "哎呀！此页面似乎已消失",
-      description: "您正在查找的页面不存在或已被移动。也许它在CashTrade上卖掉了？",
+      description: "您正在查找的页面不存在或已被移动。也许它在MoonSkin上卖掉了？",
       message: "抱歉，您查找的页面不存在或已被移动。",
       backHome: "返回首页",
       home: "返回首页",
@@ -22279,7 +22279,7 @@ export const messages: Record<Locale, Messages> = {
       myDashboard: "我的仪表板",
       giveaways: "抽奖活动",
       support: "支持",
-      randomStats: "在您访问期间，已有{count}个皮肤在CashTrade上售出！",
+      randomStats: "在您访问期间，已有{count}个皮肤在MoonSkin上售出！",
       quickLinks: {
         title: "快速链接",
         sell: "出售我的皮肤",

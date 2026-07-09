@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     if (existing) {
       // Réponse volontairement générique pour éviter l'énumération d'emails
-      return NextResponse.json({ error: 'Cette adresse email est déjà utilisée' }, { status: 409 });
+      return NextResponse.json({ error: 'Cette adresse e-mail est déjà utilisée' }, { status: 409 });
     }
 
     // On met à jour contactEmail — jamais user.email qui est la clé d'auth interne Steam

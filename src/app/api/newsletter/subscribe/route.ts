@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     if (existingSubscriber) {
       if (existingSubscriber.isActive) {
         return NextResponse.json(
-          { error: 'ALREADY_SUBSCRIBED', message: 'Cette adresse email est déjà abonnée.' },
+          { error: 'ALREADY_SUBSCRIBED', message: 'Cette adresse e-mail est déjà abonnée.' },
           { status: 400 }
         );
       } else {

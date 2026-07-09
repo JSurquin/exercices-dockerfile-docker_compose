@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
         if (existingUser && existingUser.id !== session.user.id) {
           return NextResponse.json(
-            { error: 'Cette adresse email est déjà utilisée' },
+            { error: 'Cette adresse e-mail est déjà utilisée' },
             { status: 400 }
           );
         }
