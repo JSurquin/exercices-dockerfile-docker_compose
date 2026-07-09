@@ -234,6 +234,42 @@ describe('shouldInsertTicketTransmittedMessage', () => {
       ),
     ).toBe(false);
   });
+
+  it('ne répète pas le ticket vert après un accusé de relance BOT', () => {
+    expect(
+      shouldInsertTicketTransmittedMessage(
+        [
+          { id: '1', senderType: 'USER' },
+          { id: '2', senderType: 'AI' },
+          { id: '3', senderType: 'USER' },
+          { id: '4', senderType: 'SYSTEM', content: '__i18n:chatWidget.responses.ticketTransmitted__' },
+          { id: '5', senderType: 'USER' },
+          { id: '6', senderType: 'BOT' },
+        ],
+        '7',
+        'USER',
+      ),
+    ).toBe(false);
+  });
+
+  it('ne répète pas si le ticket vert a déjà été transmis', () => {
+    expect(
+      shouldInsertTicketTransmittedMessage(
+        [
+          { id: '1', senderType: 'USER' },
+          { id: '2', senderType: 'BOT' },
+          { id: '3', senderType: 'USER' },
+          {
+            id: '4',
+            senderType: 'SYSTEM',
+            content: '__i18n:chatWidget.responses.ticketTransmitted__',
+          },
+        ],
+        '5',
+        'USER',
+      ),
+    ).toBe(false);
+  });
 });
 
 describe('shouldInsertFollowUpAwaitingAcknowledgment', () => {

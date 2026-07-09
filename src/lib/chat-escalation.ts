@@ -5,6 +5,7 @@ import { shouldAiReplyToConversation, shouldTriggerAiForUserMessage } from '@/li
 import { getChatAiQueueHint } from '@/lib/chat-ai-service';
 import type { ChatAiQueueHint } from '@/lib/chat-ai-service';
 import {
+  conversationHasTicketTransmittedMessage,
   FOLLOW_UP_AWAITING_ACK_I18N_KEY,
   shouldInsertFollowUpAwaitingAcknowledgment,
   shouldInsertTicketTransmittedMessage,
@@ -24,15 +25,6 @@ export function isUserRequestingHumanModerator(message: string): boolean {
   const normalized = message.trim().replace(/\s+/g, ' ');
   if (!normalized) return false;
   return MODERATOR_REQUEST_PATTERNS.some((pattern) => pattern.test(normalized));
-}
-
-export function conversationHasTicketTransmittedMessage(
-  messages: Array<{ senderType: string; content?: string }>,
-): boolean {
-  return messages.some(
-    (m) =>
-      m.senderType === 'SYSTEM' && m.content === TICKET_TRANSMITTED_I18N_KEY,
-  );
 }
 
 async function notifyModeratorsOfChatEscalation(params: {

@@ -1,8 +1,8 @@
+import { isUserRequestingHumanModerator } from '@/lib/chat-escalation';
 import {
   conversationHasTicketTransmittedMessage,
-  isUserRequestingHumanModerator,
-} from '@/lib/chat-escalation';
-import { TICKET_TRANSMITTED_I18N_KEY } from '@/lib/chat-logic';
+  TICKET_TRANSMITTED_I18N_KEY,
+} from '@/lib/chat-logic';
 
 describe('isUserRequestingHumanModerator', () => {
   it('détecte une demande explicite de modérateur humain', () => {

@@ -106,19 +106,39 @@ export function resolveStatusAfterMessage(
   return currentStatus;
 }
 
+export function conversationHasTicketTransmittedMessage(
+  messages: Array<{ senderType: string; content?: string }>,
+): boolean {
+  return messages.some(
+    (m) =>
+      m.senderType === 'SYSTEM' && m.content === TICKET_TRANSMITTED_I18N_KEY,
+  );
+}
+
 /** Message système « ticket transmis » après la première réponse user post-BOT. */
 export function shouldInsertTicketTransmittedMessage(
-  messages: Array<{ senderType: string; id: string }>,
+  messages: Array<{ senderType: string; id: string; content?: string }>,
   newMessageId: string,
   senderType: string,
 ): boolean {
   if (senderType !== 'USER') return false;
 
   const messagesBeforeNew = messages.filter((m) => m.id !== newMessageId);
+
+  if (conversationHasTicketTransmittedMessage(messagesBeforeNew)) {
+    return false;
+  }
+
   const lastBotIndex = messagesBeforeNew
     .map((m) => m.senderType)
     .lastIndexOf('BOT');
   if (lastBotIndex === -1) return false;
+
+  // Après escalade, les accusés de relance BOT ne doivent pas re-déclencher le ticket vert.
+  const hasSystemBeforeLastBot = messagesBeforeNew
+    .slice(0, lastBotIndex)
+    .some((m) => m.senderType === 'SYSTEM');
+  if (hasSystemBeforeLastBot) return false;
 
   const userMessagesAfterBot = messagesBeforeNew
     .slice(lastBotIndex + 1)
