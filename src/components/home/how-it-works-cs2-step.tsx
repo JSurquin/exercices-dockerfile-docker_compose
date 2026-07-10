@@ -49,7 +49,7 @@ export function HowItWorksCs2Step({
   return (
     <article
       className={cn(
-        "hiw-cs2-step group relative flex h-full w-full min-w-0 flex-col overflow-hidden rounded-lg border-2 bg-[#14141a] shadow-[0_8px_32px_rgba(0,0,0,0.55)] transition-all duration-300 hover:-translate-y-1",
+        "hiw-cs2-step group relative h-full w-full min-w-0 overflow-hidden rounded-lg border-2 bg-[#14141a] shadow-[0_8px_32px_rgba(0,0,0,0.55)]",
         locked && "hiw-cs2-step--locked",
         className,
       )}
@@ -60,9 +60,10 @@ export function HowItWorksCs2Step({
         } as CSSProperties
       }
     >
-      <div style={{ backgroundColor: rarityColor }} />
+      <div className="hiw-cs2-step__surface flex h-full w-full min-w-0 flex-col">
+        <div className="h-1 w-full shrink-0" style={{ backgroundColor: rarityColor }} />
 
-      <div className="flex items-center justify-between gap-2 px-3 pt-2.5">
+        <div className="flex items-center justify-between gap-2 px-3 pt-2.5">
         <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-white/35">
           Phase {String(step).padStart(2, "0")}/05
         </span>
@@ -121,6 +122,7 @@ export function HowItWorksCs2Step({
             </span>
           ))}
         </div>
+      </div>
       </div>
     </article>
   );

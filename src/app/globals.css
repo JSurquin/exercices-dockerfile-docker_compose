@@ -2141,10 +2141,25 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   /* How it works — CS2 inventory step cards */
-  .hiw-cs2-step:hover {
-    box-shadow:
-      0 12px 40px rgba(0, 0, 0, 0.65),
-      0 0 24px color-mix(in srgb, var(--hiw-rarity) 35%, transparent);
+  .hiw-cs2-step__surface {
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hiw-cs2-step__surface {
+      transition: transform 0.3s ease;
+    }
+
+    .hiw-cs2-step:hover .hiw-cs2-step__surface {
+      transform: translate3d(0, -4px, 0);
+    }
+
+    .hiw-cs2-step:hover {
+      box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.65),
+        0 0 24px color-mix(in srgb, var(--hiw-rarity) 35%, transparent);
+    }
   }
 
   .hiw-cs2-step--locked {
