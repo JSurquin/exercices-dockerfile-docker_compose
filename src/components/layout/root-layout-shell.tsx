@@ -19,6 +19,7 @@ import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button';
 import { Toaster } from '@/components/ui/sonner';
 import { PayoutReconciler } from '@/components/payout-reconciler';
 import UpdateNotifier from '@/components/update-notifier';
+import { HomePopupDisplay } from '@/components/home/home-popup-display';
 import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
 import { AuthCallbackNotifier } from '@/components/auth/auth-callback-notifier';
 import { ModeratorChatAlertListener } from '@/components/moderation/moderator-chat-alert-listener';
@@ -72,6 +73,7 @@ export function RootLayoutShell({
                   <FloatingUiPortal>
                     <ScrollToTopButton />
                     <ChatWidget />
+                    <HomePopupDisplay />
                   </FloatingUiPortal>
                 )}
 

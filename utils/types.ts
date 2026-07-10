@@ -2894,6 +2894,65 @@ export interface Messages {
         };
       };
     };
+    homePopups: {
+      title: string;
+      subtitle: string;
+      add: string;
+      edit: string;
+      delete: string;
+      activate: string;
+      deactivate: string;
+      archive: string;
+      save: string;
+      saving: string;
+      cancel: string;
+      createPopup: string;
+      editPopup: string;
+      listTitle: string;
+      listDescription: string;
+      empty: string;
+      createSuccess: string;
+      updateSuccess: string;
+      deleteSuccess: string;
+      deleteConfirm: string;
+      statusUpdated: string;
+      priority: string;
+      createdAt: string;
+      from: string;
+      to: string;
+      filters: {
+        all: string;
+        active: string;
+        draft: string;
+        archived: string;
+      };
+      status: {
+        draft: string;
+        active: string;
+        archived: string;
+      };
+      fields: {
+        titleFr: string;
+        titleEn: string;
+        titleCn: string;
+        messageFr: string;
+        messageEn: string;
+        messageCn: string;
+        ctaUrl: string;
+        ctaLabelFr: string;
+        ctaLabelEn: string;
+        ctaLabelCn: string;
+        status: string;
+        priority: string;
+        startsAt: string;
+        endsAt: string;
+      };
+      errors: {
+        required: string;
+        save: string;
+        delete: string;
+      };
+    };
     newsletter: {
       title: string;
       subtitle: string;
@@ -6127,6 +6186,7 @@ export interface Messages {
         points: string;
         gamificationEconomy: string;
         newsletter: string;
+        homePopups: string;
         notifications: string;
         chatSupport: string;
         partners: string;
@@ -7295,5 +7355,8 @@ export interface Messages {
   updateNotifier: {
     title: string;
     countdown: string;
+  };
+  homePopup: {
+    close: string;
   };
 }

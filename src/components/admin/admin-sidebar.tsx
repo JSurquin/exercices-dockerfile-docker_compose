@@ -39,6 +39,7 @@ import {
   Heart,
   Ban,
   UserX,
+  Megaphone,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -139,6 +140,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
         { title: t.items.gamificationEconomy, href: '/admin/gamification-economy', icon: TrendingUp },
         { title: t.items.points, href: '/admin/points', icon: Star },
         { title: t.items.newsletter, href: '/admin/newsletter', icon: Mail },
+        { title: t.items.homePopups, href: '/admin/home-popups', icon: Megaphone },
         { title: t.items.notifications, href: '/admin/notifications', icon: MessageSquare },
       ],
     },

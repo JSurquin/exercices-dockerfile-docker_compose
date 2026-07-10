@@ -1262,6 +1262,38 @@ model PartnerLogo {
   @@map("partner_logo")
 }
 
+enum HomePopupStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+/// Pop-ups affichés sur la page d'accueil (gérés depuis l'admin)
+model HomePopup {
+  id         String          @id @default(cuid())
+  titleFr    String
+  titleEn    String
+  titleCn    String?
+  messageFr  String
+  messageEn  String
+  messageCn  String?
+  ctaUrl     String?
+  ctaLabelFr String?
+  ctaLabelEn String?
+  ctaLabelCn String?
+  status     HomePopupStatus @default(DRAFT)
+  priority   Int             @default(0)
+  startsAt   DateTime?
+  endsAt     DateTime?
+  createdBy  String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@index([status, priority])
+  @@index([startsAt, endsAt])
+  @@map("home_popup")
+}
+
 /// Idempotence des webhooks (Flexify, Skinplace, etc.)
 model WebhookEvent {
   id           String    @id @default(cuid())

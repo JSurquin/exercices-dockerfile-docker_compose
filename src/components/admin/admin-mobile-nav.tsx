@@ -35,6 +35,7 @@ import {
   Heart,
   Ban,
   UserX,
+  Megaphone,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -135,6 +136,7 @@ export function AdminMobileNav() {
         { title: t.items.gamificationEconomy ?? 'Économie gamification', href: '/admin/gamification-economy', icon: TrendingUp },
         { title: t.items.points ?? 'Points & Gamification', href: '/admin/points', icon: Star },
         { title: t.items.newsletter, href: '/admin/newsletter', icon: Mail },
+        { title: t.items.homePopups, href: '/admin/home-popups', icon: Megaphone },
       ],
     },
     {

@@ -85,6 +85,7 @@ export const queryKeys = {
   // Admin - homepage partners
   adminPartnerVideos: ['admin', 'partners', 'videos'] as const,
   adminPartnerLogos: ['admin', 'partners', 'logos'] as const,
+  adminHomePopups: ['admin', 'home-popups'] as const,
 
   // Admin - settings
   adminSettings: ['admin', 'settings'] as const,
