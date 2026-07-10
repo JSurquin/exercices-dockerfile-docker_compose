@@ -99,9 +99,14 @@ export async function fetchConversationsList(): Promise<{ conversations: Convers
   return Array.isArray(data) ? { conversations: data } : data;
 }
 
-export async function fetchMessagesPage(conversationId: string, cursor: string | null) {
+export async function fetchMessagesPage(
+  conversationId: string,
+  cursor: string | null,
+  options?: { markRead?: boolean },
+) {
   const params = new URLSearchParams({ limit: '30' });
   if (cursor) params.set('cursor', cursor);
+  if (options?.markRead) params.set('markRead', 'true');
   const res = await fetch(
     `/api/chat/conversations/${conversationId}/messages?${params.toString()}`,
   );

@@ -130,7 +130,8 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
     isFetching: messagesFetching,
   } = useInfiniteQuery({
     queryKey: queryKeys.conversationMessages(conversationId),
-    queryFn: ({ pageParam }) => fetchMessagesPage(conversationId!, pageParam),
+    queryFn: ({ pageParam }) =>
+      fetchMessagesPage(conversationId!, pageParam, { markRead: isViewingConversation }),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) =>
       lastPage.hasMore ? lastPage.nextCursor : undefined,

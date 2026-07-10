@@ -233,6 +233,38 @@ describe('useChat', () => {
     await waitFor(() => expect(result.current.getListUnreadTotal()).toBe(1));
   });
 
+  it('passe markRead=true à fetchMessagesPage en consultation active', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
+      conversations: [{ id: 'c1', status: 'ACTIVE', createdAt: '', updatedAt: '', messages: [] }],
+    });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
+      messages: [],
+      nextCursor: null,
+      hasMore: false,
+    });
+
+    renderHook(() => useChat(true, true), { wrapper });
+    await waitFor(() =>
+      expect(chatClient.fetchMessagesPage).toHaveBeenCalledWith('c1', null, { markRead: true }),
+    );
+  });
+
+  it('passe markRead=false à fetchMessagesPage hors consultation', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
+      conversations: [{ id: 'c1', status: 'ACTIVE', createdAt: '', updatedAt: '', messages: [] }],
+    });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
+      messages: [],
+      nextCursor: null,
+      hasMore: false,
+    });
+
+    renderHook(() => useChat(true, false), { wrapper });
+    await waitFor(() =>
+      expect(chatClient.fetchMessagesPage).toHaveBeenCalledWith('c1', null, { markRead: false }),
+    );
+  });
+
   it('synchronise en arrière-plan pour utilisateur connecté même fermé', async () => {
     jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({ conversations: [] });
     renderHook(() => useChat(false, false, false), { wrapper });

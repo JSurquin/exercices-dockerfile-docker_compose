@@ -135,6 +135,16 @@ describe('fetchMessagesPage', () => {
     expect(url).toContain('cursor=m-old');
   });
 
+  it('inclut markRead=true quand consultation active', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ messages: [], nextCursor: null, hasMore: false }),
+    });
+    await fetchMessagesPage('c1', null, { markRead: true });
+    const url = (global.fetch as jest.Mock).mock.calls[0][0] as string;
+    expect(url).toContain('markRead=true');
+  });
+
   it('throw si échec', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({ ok: false });
     await expect(fetchMessagesPage('c1', null)).rejects.toThrow('FETCH_MESSAGES_FAILED');

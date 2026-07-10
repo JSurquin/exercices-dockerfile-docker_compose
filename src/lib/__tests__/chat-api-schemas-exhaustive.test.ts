@@ -145,6 +145,15 @@ describe('conversationMessagesQuerySchema', () => {
     expect(parsed.success).toBe(true);
     if (parsed.success) {
       expect(parsed.data.limit).toBe(30);
+      expect(parsed.data.markRead).toBe(false);
+    }
+  });
+
+  it('parse markRead=true', () => {
+    const parsed = conversationMessagesQuerySchema.safeParse({ markRead: 'true' });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.markRead).toBe(true);
     }
   });
 

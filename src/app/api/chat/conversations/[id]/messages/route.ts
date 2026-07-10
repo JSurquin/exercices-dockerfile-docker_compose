@@ -127,19 +127,19 @@ export async function GET(
       limit: parsedQ.data.limit,
     });
 
-    if (identity?.kind === 'user' || identity?.kind === 'guest') {
+    const viewerRole =
+      identity?.kind === 'user' ? identity.role : identity?.kind === 'guest' ? 'USER' : null;
+
+    if (parsedQ.data.markRead && viewerRole) {
       await markConversationMessagesAsReadForViewer({
         conversationId: resolvedParams.id,
-        role: identity.kind === 'user' ? identity.role : 'USER',
+        role: viewerRole,
       });
     }
 
     const readAdjusted =
-      identity?.kind === 'user' || identity?.kind === 'guest'
-        ? applyReadStateToMessagesForViewer(
-            page.messages,
-            identity.kind === 'user' ? identity.role : 'USER',
-          )
+      parsedQ.data.markRead && viewerRole
+        ? applyReadStateToMessagesForViewer(page.messages, viewerRole)
         : page.messages;
 
     const messages = readAdjusted.map((m) =>

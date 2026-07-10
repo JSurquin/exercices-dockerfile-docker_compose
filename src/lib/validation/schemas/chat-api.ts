@@ -42,6 +42,11 @@ export const conversationMessagesQuerySchema = z
   .object({
     scope: z.enum(['widget', 'staff']).optional().default('widget'),
     cursor: z.string().max(128).optional(),
+    /** true uniquement quand le client consulte activement le fil (évite de marquer lu en polling). */
+    markRead: z
+      .enum(['true', 'false'])
+      .optional()
+      .transform((s) => s === 'true'),
     limit: z
       .string()
       .optional()

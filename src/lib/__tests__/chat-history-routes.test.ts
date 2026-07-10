@@ -87,7 +87,7 @@ describe('GET /api/chat/conversations/[id]/messages', () => {
     expect(res.status).toBe(403);
   });
 
-  it('paginer pour le propriétaire', async () => {
+  it('paginer pour le propriétaire sans marquer lu par défaut', async () => {
     mockIdentity.mockResolvedValue({
       kind: 'user',
       role: 'USER',
@@ -114,14 +114,42 @@ describe('GET /api/chat/conversations/[id]/messages', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.messages).toHaveLength(1);
-    expect(mockMarkRead).toHaveBeenCalledWith({
-      conversationId: 'c1',
-      role: 'USER',
-    });
+    expect(mockMarkRead).not.toHaveBeenCalled();
     expect(mockFetchPage).toHaveBeenCalledWith({
       conversationId: 'c1',
       cursor: null,
       limit: 30,
+    });
+  });
+
+  it('marque lu quand markRead=true', async () => {
+    mockIdentity.mockResolvedValue({
+      kind: 'user',
+      role: 'USER',
+      session: { user: { id: 'u1' } },
+    });
+    (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      userId: 'u1',
+      assignedTo: null,
+      user: null,
+    });
+    mockFetchPage.mockResolvedValue({
+      messages: [{ id: 'm1', content: 'Hi', senderType: 'MODERATOR', isRead: false }],
+      nextCursor: null,
+      hasMore: false,
+    });
+    (prisma.chatMessage.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+
+    const res = await getMessages(
+      makeRequest('http://localhost/api/chat/conversations/c1/messages?limit=30&markRead=true'),
+      { params: Promise.resolve({ id: 'c1' }) },
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockMarkRead).toHaveBeenCalledWith({
+      conversationId: 'c1',
+      role: 'USER',
     });
   });
 
@@ -141,7 +169,7 @@ describe('GET /api/chat/conversations/[id]/messages', () => {
     (prisma.chatMessage.updateMany as jest.Mock).mockResolvedValue({ count: 0 });
 
     const res = await getMessages(
-      makeRequest('http://localhost/api/chat/conversations/c1/messages?scope=staff'),
+      makeRequest('http://localhost/api/chat/conversations/c1/messages?scope=staff&markRead=true'),
       { params: Promise.resolve({ id: 'c1' }) },
     );
     expect(res.status).toBe(200);
