@@ -357,7 +357,7 @@ export function shouldClearAiTypingIndicator(params: {
   const currentCount = params.messages.length;
   const lastMsg = params.messages[currentCount - 1];
   return (
-    currentCount > params.baseMessageCount + 1 &&
+    currentCount > params.baseMessageCount &&
     lastMsg !== undefined &&
     (AI_TYPING_CLEAR_SENDER_TYPES as readonly string[]).includes(lastMsg.senderType)
   );

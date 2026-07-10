@@ -176,24 +176,26 @@ describe('shouldShowWidgetUnreadBadge', () => {
 });
 
 describe('shouldShowWidgetAiTyping', () => {
-  it('affiche l’indicateur IA après envoi user', () => {
+  it('affiche l’indicateur dès que l’IA est en cours', () => {
     expect(
       shouldShowWidgetAiTyping({
         isAiTyping: true,
-        isLoading: false,
-        messageCount: 4,
-        baseMessageCount: 3,
+        isSending: false,
       }),
     ).toBe(true);
   });
 
-  it('masque pendant loading ou si pas de nouveau message', () => {
+  it('masque pendant l’envoi du message utilisateur', () => {
     expect(
       shouldShowWidgetAiTyping({
         isAiTyping: true,
-        isLoading: true,
-        messageCount: 4,
-        baseMessageCount: 3,
+        isSending: true,
+      }),
+    ).toBe(false);
+    expect(
+      shouldShowWidgetAiTyping({
+        isAiTyping: false,
+        isSending: false,
       }),
     ).toBe(false);
   });

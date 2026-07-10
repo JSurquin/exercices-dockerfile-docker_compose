@@ -81,6 +81,7 @@ function buildChatMock(overrides: Record<string, unknown> = {}) {
     getUnreadCount: mockGetUnreadCount,
     getListUnreadTotal: jest.fn(() => 0),
     isLoading: false,
+    isSending: false,
     ...overrides,
   };
 }

@@ -380,7 +380,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
         );
       })}
 
-      {isLoading && (
+      {isLoading && !showAiTyping && (
         <div className="flex justify-start">
           <div className="bg-muted border rounded-2xl rounded-tl-sm px-4 py-3">
             <div className="flex space-x-1.5">
@@ -492,6 +492,7 @@ export function ChatWidget() {
     isLoadingOlderMessages,
     getListUnreadTotal,
     isLoading,
+    isSending,
   } = useChat(isOpen, isInConversation, !user);
 
   const queryClient = useQueryClient();
@@ -564,9 +565,7 @@ export function ChatWidget() {
 
   const showAiTyping = shouldShowWidgetAiTyping({
     isAiTyping: effectiveIsAiTyping,
-    isLoading,
-    messageCount: currentConversation?.messages.length ?? 0,
-    baseMessageCount: aiTypingBaseCount,
+    isSending,
   });
 
   const scrollToBottom = useCallback(() => {

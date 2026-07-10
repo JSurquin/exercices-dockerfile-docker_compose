@@ -160,7 +160,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
     return latestPage?.aiEnabled;
   }, [messagesData]);
 
-  const isClientEngagedWithChat = isViewingConversation || awaitingStaffReply;
+  const isClientEngagedWithChat = isViewingConversation;
 
   const isEngagedWithConversation = useCallback(
     (convId: string | null | undefined) =>
@@ -431,6 +431,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
       conversationsLoading ||
       messagesLoading ||
       sendMessageMutation.isPending,
+    isSending: sendMessageMutation.isPending,
     isRefreshingMessages: messagesFetching && !messagesLoading,
   };
 }

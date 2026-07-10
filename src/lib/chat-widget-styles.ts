@@ -157,13 +157,7 @@ export function preserveChatLineBreaks(content: string): string {
 
 export function shouldShowWidgetAiTyping(params: {
   isAiTyping: boolean;
-  isLoading: boolean;
-  messageCount: number;
-  baseMessageCount: number;
+  isSending: boolean;
 }): boolean {
-  return (
-    params.isAiTyping &&
-    !params.isLoading &&
-    params.messageCount > params.baseMessageCount
-  );
+  return params.isAiTyping && !params.isSending;
 }
