@@ -151,6 +151,22 @@ describe('getModeratorAttentionKey', () => {
     ).toBe('c1:m1');
   });
 
+  it('retourne une clé quand le ticket transmis est le dernier message', () => {
+    expect(
+      getModeratorAttentionKey({
+        id: 'c1',
+        aiEnabled: true,
+        messages: [
+          {
+            id: 'm-ticket',
+            senderType: 'SYSTEM',
+            content: '__i18n:chatWidget.responses.ticketTransmitted__',
+          },
+        ],
+      }),
+    ).toBe('c1:m-ticket');
+  });
+
   it('ignore les conversations encore gérées par l’IA', () => {
     expect(
       getModeratorAttentionKey({
@@ -195,12 +211,49 @@ describe('conversationNeedsModeratorAttention', () => {
     ).toBe(true);
   });
 
+  it('true quand ticket transmis est le dernier message', () => {
+    expect(
+      conversationNeedsModeratorAttention({
+        id: 'c1',
+        aiEnabled: true,
+        messages: [
+          {
+            id: 'm1',
+            senderType: 'SYSTEM',
+            content: '__i18n:chatWidget.responses.ticketTransmitted__',
+          },
+        ],
+      }),
+    ).toBe(true);
+  });
+
+  it('true quand assignée avec dernier message USER', () => {
+    expect(
+      conversationNeedsModeratorAttention({
+        id: 'c1',
+        aiEnabled: true,
+        assignedTo: 'mod-1',
+        messages: [{ id: 'm1', senderType: 'USER' }],
+      }),
+    ).toBe(true);
+  });
+
   it('false quand l’IA gère encore la conversation', () => {
     expect(
       conversationNeedsModeratorAttention({
         id: 'c1',
         aiEnabled: true,
         messages: [{ id: 'm1', senderType: 'USER' }],
+      }),
+    ).toBe(false);
+  });
+
+  it('false quand le modérateur a déjà répondu', () => {
+    expect(
+      conversationNeedsModeratorAttention({
+        id: 'c1',
+        aiEnabled: false,
+        messages: [{ id: 'm1', senderType: 'MODERATOR' }],
       }),
     ).toBe(false);
   });

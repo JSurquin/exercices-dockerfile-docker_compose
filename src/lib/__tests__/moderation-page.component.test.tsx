@@ -190,10 +190,14 @@ describe('ModerationPage', () => {
     expect(screen.getByText('Dernier message utilisateur.')).toBeInTheDocument();
   });
 
-  it('affiche le badge rouge quand une réponse modérateur est requise', async () => {
+  it('affiche le compteur rouge quand une réponse modérateur est requise', async () => {
     renderPage();
 
     expect(await screen.findByText('Autre sujet')).toBeInTheDocument();
-    expect(screen.getByText('Réponse requise')).toBeInTheDocument();
+    const attentionBadges = screen.getAllByTitle('Réponse requise');
+    expect(attentionBadges).toHaveLength(2);
+    attentionBadges.forEach((badge) => {
+      expect(badge).toHaveTextContent('1');
+    });
   });
 });

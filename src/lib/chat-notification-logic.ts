@@ -1,5 +1,7 @@
 /** Compteurs pour déclencher les sons de notification chat (client vs modération). */
 
+import { TICKET_TRANSMITTED_I18N_KEY } from '@/lib/chat-logic';
+
 export const MODERATOR_ALERT_POLL_MS = 5_000;
 
 export const CLIENT_NOTIFY_SENDER_TYPES = ['MODERATOR', 'BOT', 'AI', 'SYSTEM'] as const;
@@ -43,7 +45,8 @@ export function shouldPlayModeratorNotificationSound(params: {
 type ModeratorAlertConversation = {
   id: string;
   aiEnabled?: boolean;
-  messages?: Array<{ id: string; senderType: string }>;
+  assignedTo?: string | null;
+  messages?: Array<{ id: string; senderType: string; content?: string }>;
 };
 
 type StaffNotification = {
@@ -51,13 +54,24 @@ type StaffNotification = {
   metadata?: unknown;
 };
 
-/** Clé stable « conversation + dernier message user » pour alertes modérateur. */
+function isConversationEscalatedForModerator(
+  conversation: ModeratorAlertConversation,
+): boolean {
+  if (conversation.aiEnabled === false) return true;
+  const last = conversation.messages?.[0];
+  return (
+    last?.senderType === 'SYSTEM' &&
+    last.content === TICKET_TRANSMITTED_I18N_KEY
+  );
+}
+
+/** Clé stable « conversation + dernier message pertinent » pour alertes modérateur. */
 export function getModeratorAttentionKey(
   conversation: ModeratorAlertConversation,
 ): string | null {
-  if (conversation.aiEnabled !== false) return null;
+  if (!conversationNeedsModeratorAttention(conversation)) return null;
   const last = conversation.messages?.[0];
-  if (!last || last.senderType !== 'USER') return null;
+  if (!last) return null;
   return `${conversation.id}:${last.id}`;
 }
 
@@ -74,7 +88,24 @@ export function collectModeratorAttentionKeys(
 export function conversationNeedsModeratorAttention(
   conversation: ModeratorAlertConversation,
 ): boolean {
-  return getModeratorAttentionKey(conversation) !== null;
+  const last = conversation.messages?.[0];
+  if (!last) return false;
+  if (last.senderType === 'MODERATOR') return false;
+
+  const escalated = isConversationEscalatedForModerator(conversation);
+  const assignedAwaitingUser =
+    !!conversation.assignedTo && last.senderType === 'USER';
+
+  if (!escalated && !assignedAwaitingUser) {
+    return false;
+  }
+
+  if (last.senderType === 'USER') return true;
+  if (last.senderType === 'SYSTEM') return true;
+  if (last.senderType === 'BOT') return true;
+  if (last.senderType === 'AI' && conversation.aiEnabled === false) return true;
+
+  return false;
 }
 
 export function countConversationsNeedingAttention(

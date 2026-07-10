@@ -51,6 +51,7 @@ import { isValidModeratorRole } from '@/lib/chat-logic';
 import { resolveI18nContent } from '@/lib/resolve-i18n-content';
 import {
   conversationNeedsModeratorAttention,
+  countConversationsNeedingAttention,
   MODERATOR_ALERT_POLL_MS,
 } from '@/lib/chat-notification-logic';
 import { chatWidgetUnreadBadgeClass } from '@/lib/chat-widget-styles';
@@ -86,6 +87,7 @@ export default function ModerationPage() {
   });
 
   const conversations = conversationsData?.conversations ?? [];
+  const attentionCount = countConversationsNeedingAttention(conversations);
 
   const { data: stats } = useQuery({
     queryKey: queryKeys.adminChatStats,
@@ -198,6 +200,17 @@ export default function ModerationPage() {
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 flex items-center gap-2 text-foreground">
           <ChatBubbleLeftRightIcon className="w-6 h-6 sm:w-7 sm:h-7 text-theme-accent shrink-0" />
           {messages.moderation.title}
+          {attentionCount > 0 && (
+            <span
+              className={cn(
+                chatWidgetUnreadBadgeClass(),
+                'static h-6 min-w-6 px-1.5 text-xs font-bold',
+              )}
+              title={messages.moderation.attentionNeeded}
+            >
+              {attentionCount}
+            </span>
+          )}
         </h1>
         <p className="text-muted-foreground text-sm sm:text-base">
           {messages.moderation.subtitle}
@@ -291,25 +304,31 @@ export default function ModerationPage() {
                   animate={{ opacity: 1, y: 0 }}
                   className={cn(
                     panelListRow,
-                    needsAttention && 'border-red-500/40 bg-red-500/5',
+                    needsAttention && 'border-red-500/60 bg-red-500/10 ring-1 ring-red-500/30',
                   )}
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
-                        <h3 className="font-semibold text-foreground truncate max-w-full sm:max-w-xs">
-                          {conversation.subject || messages.moderation.noSubject}
-                        </h3>
                         {needsAttention && (
-                          <Badge
+                          <span
                             className={cn(
-                              'text-[10px] sm:text-xs bg-red-500 hover:bg-red-500 text-white border-0',
+                              chatWidgetUnreadBadgeClass(),
+                              'static h-5 min-w-5 px-1 text-[11px] font-bold shrink-0',
                             )}
                             title={messages.moderation.attentionNeeded}
                           >
-                            {messages.moderation.attentionNeeded}
-                          </Badge>
+                            1
+                          </span>
                         )}
+                        <h3
+                          className={cn(
+                            'font-semibold truncate max-w-full sm:max-w-xs',
+                            needsAttention ? 'text-red-400' : 'text-foreground',
+                          )}
+                        >
+                          {conversation.subject || messages.moderation.noSubject}
+                        </h3>
                         <Badge variant="outline" className={`text-[10px] sm:text-xs ${chatPriorityBadgeClass(conversation.priority)}`}>
                           {chatPriorityLabel(conversation.priority, messages)}
                         </Badge>
@@ -386,20 +405,9 @@ export default function ModerationPage() {
                       <Button
                         size="sm"
                         variant="cta"
-                        className={cn('flex-1 sm:flex-none text-xs h-8 relative', adminBtnPrimary)}
+                        className={cn('flex-1 sm:flex-none text-xs h-8', adminBtnPrimary)}
                         onClick={() => openConversation(conversation.id)}
                       >
-                        {needsAttention && (
-                          <span
-                            className={cn(
-                              chatWidgetUnreadBadgeClass(),
-                              'absolute -top-1.5 -right-1.5 h-4 w-4 text-[10px]',
-                            )}
-                            aria-hidden
-                          >
-                            !
-                          </span>
-                        )}
                         {messages.moderation.actions.open}
                       </Button>
                     </div>
