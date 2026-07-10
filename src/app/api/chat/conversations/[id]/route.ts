@@ -20,9 +20,11 @@ import { patchConversationSchema, chatAccessScopeQuerySchema } from '@/lib/valid
 import {
   canGuestAccessConversation,
   canUserAccessConversation,
+  CONVERSATION_CLOSED_I18N_KEY,
   isStaffRole,
   shouldRedactEmailsForViewer,
 } from '@/lib/chat-logic';
+import { createChatMessageRecord } from '@/lib/chat-message-service';
 
 // GET /api/chat/conversations/[id] - Récupérer une conversation spécifique
 export async function GET(
@@ -162,7 +164,15 @@ export async function PATCH(
       return NextResponse.json({ error: 'Conversation non trouvée' }, { status: 404 });
     }
 
-    // Mettre à jour la conversation
+    if (body.status === 'CLOSED' && conversation.status !== 'CLOSED') {
+      await createChatMessageRecord({
+        conversationId: resolvedParams.id,
+        userId: null,
+        content: CONVERSATION_CLOSED_I18N_KEY,
+        senderType: 'SYSTEM',
+      });
+    }
+
     const updatedConversation = await prisma.conversation.update({
       where: { id: resolvedParams.id },
       data: {

@@ -598,8 +598,18 @@ describe('shouldClearAwaitingStaffReply', () => {
     expect(
       shouldClearAwaitingStaffReply({
         senderType: 'SYSTEM',
+        content: '__i18n:chatWidget.responses.ticketTransmitted__',
       }),
     ).toBe(false);
+  });
+
+  it('accepte le message SYSTEM de fermeture de conversation', () => {
+    expect(
+      shouldClearAwaitingStaffReply({
+        senderType: 'SYSTEM',
+        content: '__i18n:moderation.conversation.system.closed__',
+      }),
+    ).toBe(true);
   });
 
   it('accepte AI, BOT et MODERATOR', () => {

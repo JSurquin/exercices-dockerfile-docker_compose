@@ -218,6 +218,15 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
   }, [conversationId, isOpen, isViewingConversation, queryClient]);
 
   useEffect(() => {
+    if (
+      loadedConversationStatus &&
+      isTerminalConversationStatus(loadedConversationStatus)
+    ) {
+      setAwaitingStaffReply(false);
+    }
+  }, [loadedConversationStatus, conversationId]);
+
+  useEffect(() => {
     if (!awaitingStaffReply || allMessages.length === 0) return;
     const last = allMessages[allMessages.length - 1];
     if (shouldClearAwaitingStaffReply(last)) {
@@ -297,13 +306,28 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
         res = await postMessage(true);
       }
       if (!res.ok) throw new Error(chatT.sendMessageError);
-      return res.json();
+      const payload = await res.json();
+      const reopenedFromTerminal =
+        Boolean(
+          shouldForceNew &&
+            activeStatus &&
+            isTerminalConversationStatus(activeStatus),
+        );
+      const reopenedWhileAwaitingPrevious =
+        Boolean(shouldForceNew && activeStatus && !reopenedFromTerminal);
+      return {
+        ...payload,
+        reopenedFromTerminal,
+        reopenedWhileAwaitingPrevious,
+      };
     },
     onSuccess: (data: {
       conversationId: string;
       createdNewConversation?: boolean;
       senderType?: string;
       aiQueueHint?: { waiting: boolean; ahead: number } | null;
+      reopenedFromTerminal?: boolean;
+      reopenedWhileAwaitingPrevious?: boolean;
     }) => {
       isComposingNewConversationRef.current = false;
       setIsComposingNewConversation(false);

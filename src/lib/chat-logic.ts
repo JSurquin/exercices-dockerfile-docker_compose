@@ -24,13 +24,20 @@ export const FOLLOW_UP_AWAITING_ACK_I18N_KEY =
 export const AI_UNAVAILABLE_I18N_KEY =
   '__i18n:chatWidget.responses.aiUnavailable__';
 
+/** Message SYSTEM affiché quand un modérateur ferme la conversation. */
+export const CONVERSATION_CLOSED_I18N_KEY =
+  '__i18n:moderation.conversation.system.closed__';
+
 export const AWAITING_STAFF_REPLY_CLEAR_SENDER_TYPES = ['AI', 'BOT', 'MODERATOR'] as const;
 
 /** True quand un message staff clôt l'attente de réponse (ignore SYSTEM ticket transmis). */
 export function shouldClearAwaitingStaffReply(
-  message: { senderType: string } | null | undefined,
+  message: { senderType: string; content?: string } | null | undefined,
 ): boolean {
   if (!message || message.senderType === 'USER') return false;
+  if (message.senderType === 'SYSTEM') {
+    return message.content === CONVERSATION_CLOSED_I18N_KEY;
+  }
   return (AWAITING_STAFF_REPLY_CLEAR_SENDER_TYPES as readonly string[]).includes(
     message.senderType,
   );

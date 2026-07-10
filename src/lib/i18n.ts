@@ -957,6 +957,10 @@ export const messages: Record<Locale, Messages> = {
       newConversation: "Nouvelle conversation",
       newConversationNotice:
         "Une nouvelle conversation a été ouverte. Nous attendons toujours la réponse du modérateur sur votre fil précédent.",
+      newConversationFromClosed:
+        "Une nouvelle conversation a été ouverte. Votre précédente discussion était clôturée.",
+      newConversationAwaitingPrevious:
+        "Une nouvelle conversation a été ouverte. Nous attendons toujours la réponse du modérateur sur votre fil précédent.",
       tabs: {
         home: "Accueil",
         help: "Aide",
@@ -5707,6 +5711,7 @@ export const messages: Record<Locale, Messages> = {
         system: {
           assigned: "Conversation assignée à {username}",
           unassigned: "Conversation désassignée",
+          closed: "Cette conversation a été fermée par notre équipe. Vous pouvez ouvrir une nouvelle discussion si besoin.",
         },
         sendHint: "Entrée pour envoyer · Maj+Entrée pour nouvelle ligne",
       }
@@ -12021,6 +12026,10 @@ export const messages: Record<Locale, Messages> = {
       newConversation: "New conversation",
       newConversationNotice:
         "A new conversation has been opened. We are still waiting for the moderator's reply on your previous thread.",
+      newConversationFromClosed:
+        "A new conversation has been opened. Your previous discussion was closed.",
+      newConversationAwaitingPrevious:
+        "A new conversation has been opened. We are still waiting for the moderator's reply on your previous thread.",
       tabs: {
         home: "Home",
         help: "Help",
@@ -13266,6 +13275,7 @@ export const messages: Record<Locale, Messages> = {
         system: {
           assigned: "Conversation assigned to {username}",
           unassigned: "Conversation unassigned",
+          closed: "This conversation was closed by our team. You can start a new discussion if needed.",
         },
         sendHint: "Enter to send · Shift+Enter for new line",
       }
@@ -19539,6 +19549,10 @@ export const messages: Record<Locale, Messages> = {
       newConversation: "新对话",
       newConversationNotice:
         "已开启新对话。我们仍在等待版主在您之前的会话中回复。",
+      newConversationFromClosed:
+        "已开启新对话。您之前的会话已关闭。",
+      newConversationAwaitingPrevious:
+        "已开启新对话。我们仍在等待版主在您之前的会话中回复。",
       tabs: {
         home: "首页",
         help: "帮助",
@@ -20726,6 +20740,7 @@ export const messages: Record<Locale, Messages> = {
         system: {
           assigned: "对话已分配给 {username}",
           unassigned: "对话已取消分配",
+          closed: "此对话已由我们的团队关闭。如有需要，您可以开启新的对话。",
         },
         sendHint: "回车发送 · Shift+回车换行",
       }

@@ -771,9 +771,13 @@ export function ChatWidget() {
       if (askFlow) {
         setIsAskQuestionFlow(false);
       }
-      if (data.createdNewConversation) {
+      if (data.createdNewConversation && data.reopenedFromTerminal) {
         toast({
-          title: messages.chatWidget.newConversationNotice,
+          title: messages.chatWidget.newConversationFromClosed,
+        });
+      } else if (data.createdNewConversation && data.reopenedWhileAwaitingPrevious) {
+        toast({
+          title: messages.chatWidget.newConversationAwaitingPrevious,
         });
       }
       if (data.aiQueueHint != null) {
@@ -802,7 +806,8 @@ export function ChatWidget() {
     sendMessage,
     scrollToBottom,
     messages.chatWidget.aiTypingQueued,
-    messages.chatWidget.newConversationNotice,
+    messages.chatWidget.newConversationFromClosed,
+    messages.chatWidget.newConversationAwaitingPrevious,
     toast,
     isAskQuestionFlow,
   ]);

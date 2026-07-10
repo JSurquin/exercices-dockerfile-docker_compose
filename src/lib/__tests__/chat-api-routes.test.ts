@@ -352,16 +352,21 @@ describe('GET /api/chat/conversations/[id]', () => {
 });
 
 describe('PATCH /api/chat/conversations/[id]', () => {
-  it('ferme une conversation (staff)', async () => {
+  it('ferme une conversation (staff) et insère un message système', async () => {
     mockRequireStaff.mockResolvedValue({ user: { id: 'mod-1' } });
     (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
       id: 'c1',
       status: 'ACTIVE',
+      subject: null,
+    });
+    (prisma.chatMessage.create as jest.Mock).mockResolvedValue({
+      id: 'sys-1',
+      senderType: 'SYSTEM',
     });
     (prisma.conversation.update as jest.Mock).mockResolvedValue({
       id: 'c1',
       status: 'CLOSED',
-      messages: [],
+      messages: [{ id: 'sys-1', senderType: 'SYSTEM' }],
     });
 
     const res = await patchConversation(
@@ -373,9 +378,17 @@ describe('PATCH /api/chat/conversations/[id]', () => {
     );
 
     expect(res.status).toBe(200);
-    const updateArg = (prisma.conversation.update as jest.Mock).mock.calls[0][0];
-    expect(updateArg.data.status).toBe('CLOSED');
-    expect(updateArg.data.closedAt).toBeInstanceOf(Date);
+    expect(prisma.chatMessage.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          senderType: 'SYSTEM',
+          content: '__i18n:moderation.conversation.system.closed__',
+        }),
+      }),
+    );
+    const closeUpdateArg = (prisma.conversation.update as jest.Mock).mock.calls.at(-1)?.[0];
+    expect(closeUpdateArg.data.status).toBe('CLOSED');
+    expect(closeUpdateArg.data.closedAt).toBeInstanceOf(Date);
   });
 });
 

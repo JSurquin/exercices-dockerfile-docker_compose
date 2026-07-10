@@ -38,6 +38,8 @@ describe('resolveI18nContent', () => {
           system: {
             assigned: 'Assignée à {username}',
             unassigned: 'Conversation désassignée',
+            closed:
+              'Cette conversation a été fermée par notre équipe. Vous pouvez ouvrir une nouvelle discussion si besoin.',
           },
         },
       },
@@ -48,6 +50,11 @@ describe('resolveI18nContent', () => {
     expect(
       resolveI18nContent('__i18n:moderation.conversation.system.unassigned__', modMessages),
     ).toBe('Conversation désassignée');
+    expect(
+      resolveI18nContent('__i18n:moderation.conversation.system.closed__', modMessages),
+    ).toBe(
+      'Cette conversation a été fermée par notre équipe. Vous pouvez ouvrir une nouvelle discussion si besoin.',
+    );
   });
 
   it('retourne le contenu brut si ce n’est pas une clé i18n', () => {

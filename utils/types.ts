@@ -3931,6 +3931,8 @@ export interface Messages {
     historyTitle: string;
     newConversation: string;
     newConversationNotice: string;
+    newConversationFromClosed: string;
+    newConversationAwaitingPrevious: string;
     tabs: {
       home: string;
       help: string;
@@ -5198,6 +5200,7 @@ export interface Messages {
       system: {
         assigned: string;
         unassigned: string;
+        closed: string;
       };
       sendHint: string;
     };
