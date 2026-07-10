@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { useSession } from '~/lib/auth-client';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,14 +25,52 @@ import {
 } from '@heroicons/react/24/outline';
 import { adminBtnOutline, adminGlassCard } from '@/lib/admin-ui';
 import { cn } from '@/lib/utils';
+import { queryKeys } from '@/lib/query-keys';
+import {
+  countConversationsNeedingAttention,
+  MODERATOR_ALERT_POLL_MS,
+} from '@/lib/chat-notification-logic';
+import { chatWidgetUnreadBadgeClass } from '@/lib/chat-widget-styles';
+import { isValidModeratorRole } from '@/lib/chat-logic';
 
 export function ModerationHeader() {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const { logout } = useAuth();
+  const { logout, user: authUser } = useAuth();
   const { messages } = useLocale();
   const user = session?.user;
   const isConversationPage = pathname.startsWith('/moderation/conversations/');
+  const effectiveRole = authUser?.role ?? user?.role;
+  const isStaff = isValidModeratorRole(effectiveRole ?? '');
+
+  const activeConversationId =
+    pathname?.match(/^\/moderation\/conversations\/([^/]+)/)?.[1] ?? null;
+
+  const { data: staffConversations } = useQuery({
+    queryKey: queryKeys.adminChatConversations({
+      status: 'ACTIVE',
+      scope: 'staff',
+      limit: 50,
+    }),
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        scope: 'staff',
+        status: 'ACTIVE',
+        limit: '50',
+      });
+      const response = await fetch(`/api/chat/conversations?${params}`);
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: isStaff,
+    refetchInterval: MODERATOR_ALERT_POLL_MS,
+    refetchIntervalInBackground: true,
+  });
+
+  const attentionCount = countConversationsNeedingAttention(
+    staffConversations?.conversations ?? [],
+    activeConversationId,
+  );
 
   return (
     <header className="admin-glass-header sticky top-0 z-40 border-b">
@@ -38,12 +78,20 @@ export function ModerationHeader() {
         <div className="flex items-center gap-2 min-w-0">
           <Link
             href="/moderation"
-            className="flex items-center gap-2 min-w-0 text-foreground hover:text-theme-highlight transition-colors"
+            className="relative flex items-center gap-2 min-w-0 text-foreground hover:text-theme-highlight transition-colors"
           >
             <ChatBubbleLeftRightIcon className="h-5 w-5 shrink-0 text-theme-accent" />
             <span className="font-semibold text-sm sm:text-base truncate">
               {messages.moderation.title}
             </span>
+            {attentionCount > 0 && (
+              <Badge
+                className={cn(chatWidgetUnreadBadgeClass(), 'static h-5 min-w-5 px-1 text-[10px]')}
+                title={messages.moderation.attentionNeeded}
+              >
+                {attentionCount}
+              </Badge>
+            )}
           </Link>
           {isConversationPage && (
             <Link

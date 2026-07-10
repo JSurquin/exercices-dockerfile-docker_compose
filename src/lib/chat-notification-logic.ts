@@ -1,5 +1,7 @@
 /** Compteurs pour déclencher les sons de notification chat (client vs modération). */
 
+export const MODERATOR_ALERT_POLL_MS = 5_000;
+
 export const CLIENT_NOTIFY_SENDER_TYPES = ['MODERATOR', 'BOT', 'AI', 'SYSTEM'] as const;
 
 export type ChatNotifySenderType = string;
@@ -67,6 +69,19 @@ export function collectModeratorAttentionKeys(
     .filter((conv) => conv.id !== excludeConversationId)
     .map(getModeratorAttentionKey)
     .filter((key): key is string => key !== null);
+}
+
+export function conversationNeedsModeratorAttention(
+  conversation: ModeratorAlertConversation,
+): boolean {
+  return getModeratorAttentionKey(conversation) !== null;
+}
+
+export function countConversationsNeedingAttention(
+  conversations: ModeratorAlertConversation[],
+  excludeConversationId?: string | null,
+): number {
+  return collectModeratorAttentionKeys(conversations, excludeConversationId).length;
 }
 
 export function findNewModeratorAlertKeys(

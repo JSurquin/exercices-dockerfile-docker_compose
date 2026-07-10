@@ -44,6 +44,7 @@ import {
 } from '@/lib/chat-moderation-labels';
 import {
   countUserMessagesForModerator,
+  MODERATOR_ALERT_POLL_MS,
   shouldPlayModeratorNotificationSound,
 } from '@/lib/chat-notification-logic';
 import { isValidModeratorRole } from '@/lib/chat-logic';
@@ -93,8 +94,10 @@ export default function ConversationPage() {
       return response.json();
     },
     enabled: !!routeConversationId,
-    refetchInterval: 10_000,
-    refetchIntervalInBackground: false,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchInterval: MODERATOR_ALERT_POLL_MS,
+    refetchIntervalInBackground: true,
   });
 
   useEffect(() => {

@@ -56,6 +56,7 @@ jest.mock('@/components/providers/locale-provider', () => ({
         filtersTitle: 'Filtres',
         noConversations: 'Aucune conversation',
         conversationsCount: 'Conversations',
+        attentionNeeded: 'Réponse requise',
         noSubject: '(Sans sujet)',
         anonymousUser: 'Anonyme',
         createdOn: 'Créée le',
@@ -158,6 +159,7 @@ describe('ModerationPage', () => {
               subject: 'Autre sujet',
               status: 'ACTIVE',
               priority: 'NORMAL',
+              aiEnabled: false,
               createdAt: '2026-06-11T10:00:00Z',
               updatedAt: '2026-06-11T10:30:00Z',
               user: { name: 'Alice', email: 'a@test.com' },
@@ -186,5 +188,12 @@ describe('ModerationPage', () => {
     expect(screen.getAllByText('Réponse IA')).toHaveLength(1);
     expect(screen.getByText('Voici la réponse automatique.')).toBeInTheDocument();
     expect(screen.getByText('Dernier message utilisateur.')).toBeInTheDocument();
+  });
+
+  it('affiche le badge rouge quand une réponse modérateur est requise', async () => {
+    renderPage();
+
+    expect(await screen.findByText('Autre sujet')).toBeInTheDocument();
+    expect(screen.getByText('Réponse requise')).toBeInTheDocument();
   });
 });

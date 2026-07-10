@@ -12,9 +12,8 @@ import {
   collectModeratorAttentionKeys,
   findNewChatEscalationNotificationIds,
   findNewModeratorAlertKeys,
+  MODERATOR_ALERT_POLL_MS,
 } from '@/lib/chat-notification-logic';
-
-const MODERATOR_ALERT_POLL_MS = 5_000;
 
 export function ModeratorChatAlertListener() {
   const { user } = useAuth();
@@ -99,6 +98,8 @@ export function ModeratorChatAlertListener() {
     if (newAttentionKeys.length > 0 || newEscalationIds.length > 0) {
       playNotificationSound(520, 350, 0.3);
       void queryClient.invalidateQueries({ queryKey: queryKeys.userNotifications });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'chat', 'conversations'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.adminChatStats });
     }
 
     seenAttentionKeysRef.current = new Set(attentionKeys);

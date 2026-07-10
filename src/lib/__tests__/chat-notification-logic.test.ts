@@ -1,6 +1,8 @@
 import {
   collectChatEscalationNotificationIds,
   collectModeratorAttentionKeys,
+  conversationNeedsModeratorAttention,
+  countConversationsNeedingAttention,
   countClientNotifyMessages,
   countUserMessagesForModerator,
   findNewChatEscalationNotificationIds,
@@ -179,6 +181,47 @@ describe('collectModeratorAttentionKeys', () => {
         'open',
       ),
     ).toEqual(['other:m-other']);
+  });
+});
+
+describe('conversationNeedsModeratorAttention', () => {
+  it('true quand escalade avec dernier message USER', () => {
+    expect(
+      conversationNeedsModeratorAttention({
+        id: 'c1',
+        aiEnabled: false,
+        messages: [{ id: 'm1', senderType: 'USER' }],
+      }),
+    ).toBe(true);
+  });
+
+  it('false quand l’IA gère encore la conversation', () => {
+    expect(
+      conversationNeedsModeratorAttention({
+        id: 'c1',
+        aiEnabled: true,
+        messages: [{ id: 'm1', senderType: 'USER' }],
+      }),
+    ).toBe(false);
+  });
+});
+
+describe('countConversationsNeedingAttention', () => {
+  it('compte les conversations en attente de réponse', () => {
+    expect(
+      countConversationsNeedingAttention([
+        {
+          id: 'c1',
+          aiEnabled: false,
+          messages: [{ id: 'm1', senderType: 'USER' }],
+        },
+        {
+          id: 'c2',
+          aiEnabled: false,
+          messages: [{ id: 'm2', senderType: 'MODERATOR' }],
+        },
+      ]),
+    ).toBe(1);
   });
 });
 

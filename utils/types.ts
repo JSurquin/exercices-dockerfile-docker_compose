@@ -5133,6 +5133,7 @@ export interface Messages {
     loading: string;
     noConversations: string;
     conversationsCount: string;
+    attentionNeeded: string;
     filters: {
       statusPlaceholder: string;
       priorityPlaceholder: string;

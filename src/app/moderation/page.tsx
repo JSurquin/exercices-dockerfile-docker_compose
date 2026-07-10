@@ -49,6 +49,11 @@ import {
 } from '@/lib/chat-moderation-labels';
 import { isValidModeratorRole } from '@/lib/chat-logic';
 import { resolveI18nContent } from '@/lib/resolve-i18n-content';
+import {
+  conversationNeedsModeratorAttention,
+  MODERATOR_ALERT_POLL_MS,
+} from '@/lib/chat-notification-logic';
+import { chatWidgetUnreadBadgeClass } from '@/lib/chat-widget-styles';
 
 export default function ModerationPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -76,6 +81,8 @@ export default function ModerationPage() {
       if (!response.ok) throw new Error(messages.moderation.errors.loadError);
       return response.json();
     },
+    refetchInterval: MODERATOR_ALERT_POLL_MS,
+    refetchIntervalInBackground: true,
   });
 
   const conversations = conversationsData?.conversations ?? [];
@@ -87,7 +94,22 @@ export default function ModerationPage() {
       if (!response.ok) throw new Error(messages.moderation.errors.statsLoadError);
       return response.json();
     },
+    refetchInterval: MODERATOR_ALERT_POLL_MS,
+    refetchIntervalInBackground: true,
   });
+
+  const openConversation = async (conversationId: string) => {
+    await queryClient.prefetchQuery({
+      queryKey: queryKeys.moderationConversation(conversationId),
+      queryFn: async () => {
+        const response = await fetch(`/api/chat/conversations/${conversationId}?scope=staff`);
+        if (!response.ok) throw new Error(messages.moderation.errors.loadError);
+        return response.json();
+      },
+      staleTime: 0,
+    });
+    router.push(`/moderation/conversations/${conversationId}`);
+  };
 
   const assignConversation = async (conversationId: string, moderatorId: string) => {
     try {
@@ -259,12 +281,18 @@ export default function ModerationPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {conversations.map((conversation: ConversationWithMessages) => (
+              {conversations.map((conversation: ConversationWithMessages) => {
+                const needsAttention = conversationNeedsModeratorAttention(conversation);
+
+                return (
                 <motion.div
                   key={conversation.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={panelListRow}
+                  className={cn(
+                    panelListRow,
+                    needsAttention && 'border-red-500/40 bg-red-500/5',
+                  )}
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex-1 min-w-0">
@@ -272,6 +300,16 @@ export default function ModerationPage() {
                         <h3 className="font-semibold text-foreground truncate max-w-full sm:max-w-xs">
                           {conversation.subject || messages.moderation.noSubject}
                         </h3>
+                        {needsAttention && (
+                          <Badge
+                            className={cn(
+                              'text-[10px] sm:text-xs bg-red-500 hover:bg-red-500 text-white border-0',
+                            )}
+                            title={messages.moderation.attentionNeeded}
+                          >
+                            {messages.moderation.attentionNeeded}
+                          </Badge>
+                        )}
                         <Badge variant="outline" className={`text-[10px] sm:text-xs ${chatPriorityBadgeClass(conversation.priority)}`}>
                           {chatPriorityLabel(conversation.priority, messages)}
                         </Badge>
@@ -348,15 +386,27 @@ export default function ModerationPage() {
                       <Button
                         size="sm"
                         variant="cta"
-                        className={cn('flex-1 sm:flex-none text-xs h-8', adminBtnPrimary)}
-                        onClick={() => router.push(`/moderation/conversations/${conversation.id}`)}
+                        className={cn('flex-1 sm:flex-none text-xs h-8 relative', adminBtnPrimary)}
+                        onClick={() => openConversation(conversation.id)}
                       >
+                        {needsAttention && (
+                          <span
+                            className={cn(
+                              chatWidgetUnreadBadgeClass(),
+                              'absolute -top-1.5 -right-1.5 h-4 w-4 text-[10px]',
+                            )}
+                            aria-hidden
+                          >
+                            !
+                          </span>
+                        )}
                         {messages.moderation.actions.open}
                       </Button>
                     </div>
                   </div>
                 </motion.div>
-              ))}
+              );
+              })}
             </div>
           )}
         </CardContent>
