@@ -40,6 +40,7 @@
     "test:e2e:report": "playwright show-report",
     "test:e2e:install": "playwright install",
     "test:e2e:cleanup": "tsx scripts/cleanup-test-users.ts",
+    "support:clear": "tsx scripts/clear-support-conversations.ts",
     "security:owasp": "bash scripts/owasp-scan.sh"
   },
   "dependencies": {
