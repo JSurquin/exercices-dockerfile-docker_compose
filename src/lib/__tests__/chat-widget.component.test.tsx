@@ -102,7 +102,10 @@ const mockMessages = {
     sendHint: 'Entrée pour envoyer',
     conversationEnded: 'Votre conversation est terminée',
     rateConversation: 'Notez votre conversation',
-    rateThankYou: 'Merci pour votre retour !',
+    rateRatedTitle: 'Vous avez noté la conversation',
+    rateTellUsMore: 'Dites-nous en plus (facultatif)',
+    rateSendFeedback: 'Envoyer',
+    rateThankYou: "Merci de nous l'avoir indiqué",
     activeRecently: 'Actif il y a {time}',
     historyTitle: 'Historique',
     solvedSectionTitle: 'Résolus',
@@ -1145,5 +1148,59 @@ describe('ChatWidget', () => {
     expect(screen.getByText('Aucune conversation')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Démarrer une conversation'));
     expect(screen.getByTestId('chat-message-input')).toBeInTheDocument();
+  });
+
+  it('affiche le flux de notation sur une conversation fermée', async () => {
+    authUser = { id: 'u1', username: 'Me' };
+    chatMock = buildChatMock({
+      conversationListItems: [
+        {
+          id: 'c-closed',
+          title: 'Support',
+          lastMessageAt: '2026-06-12T10:00:00Z',
+          status: 'CLOSED',
+          unread: 0,
+        },
+      ],
+      conversationId: 'c-closed',
+      currentConversation: {
+        id: 'c-closed',
+        status: 'CLOSED',
+        messages: [
+          {
+            id: 'm1',
+            content: 'Bonjour',
+            senderType: 'USER',
+            createdAt: '2026-06-12T10:00:00Z',
+            isRead: true,
+            userId: 'u1',
+          },
+        ],
+      },
+    });
+    (global.fetch as jest.Mock).mockResolvedValue({ ok: true, json: async () => ({}) });
+    renderWidget();
+    await openChat();
+    fireEvent.click(screen.getByTestId('chat-tab-messages'));
+    fireEvent.click(screen.getByText('Support'));
+
+    expect(screen.getByTestId('chat-conversation-rating')).toBeInTheDocument();
+    const ratingButtons = screen.getByTestId('chat-conversation-rating').querySelectorAll('button');
+    fireEvent.click(ratingButtons[2]!);
+
+    expect(screen.getByTestId('chat-conversation-rating-feedback')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('chat-rating-send-feedback'));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/chat/conversations/c-closed/rate',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ rating: 3 }),
+        }),
+      );
+      expect(screen.getByTestId('chat-conversation-rating-done')).toBeInTheDocument();
+    });
+    expect(screen.getByText("Merci de nous l'avoir indiqué")).toBeInTheDocument();
   });
 });

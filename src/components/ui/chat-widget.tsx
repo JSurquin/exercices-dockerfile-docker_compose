@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, memo, useMemo, type ComponentType, type SVGProps } from "react";
 import { ChatMarkdownContent } from "@/lib/chat-markdown";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useLocale } from "@/components/providers/locale-provider";
@@ -238,32 +239,62 @@ interface ChatWidgetConversationRatingProps {
   conversationId: string;
   existingRating: number | null | undefined;
   title: string;
+  ratedTitle: string;
+  tellUsMore: string;
+  sendFeedbackLabel: string;
   thankYou: string;
+  onFlowStart: () => void;
   onRated: (rating: number) => void;
 }
+
+type ChatWidgetRatingStep = 'select' | 'feedback' | 'done';
 
 const ChatWidgetConversationRating = memo(function ChatWidgetConversationRating({
   conversationId,
   existingRating,
   title,
+  ratedTitle,
+  tellUsMore,
+  sendFeedbackLabel,
   thankYou,
+  onFlowStart,
   onRated,
 }: ChatWidgetConversationRatingProps) {
   const [hovered, setHovered] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [localRating, setLocalRating] = useState<number | null>(existingRating ?? null);
+  const [step, setStep] = useState<ChatWidgetRatingStep>('select');
+  const [selectedRating, setSelectedRating] = useState<number | null>(existingRating ?? null);
+  const [feedback, setFeedback] = useState('');
 
-  const handleRate = async (rating: number) => {
-    if (submitting || localRating != null) return;
+  useEffect(() => {
+    if (existingRating != null) {
+      setSelectedRating(existingRating);
+      setStep('done');
+    }
+  }, [existingRating]);
+
+  const handleSelectRating = (rating: number) => {
+    if (submitting || step !== 'select') return;
+    setSelectedRating(rating);
+    setStep('feedback');
+    onFlowStart();
+  };
+
+  const handleSendFeedback = async () => {
+    const rating = selectedRating;
+    if (rating == null || submitting || step !== 'feedback') return;
     setSubmitting(true);
     try {
+      const payload: { rating: number; feedback?: string } = { rating };
+      const trimmed = feedback.trim();
+      if (trimmed) payload.feedback = trimmed;
       const res = await fetch(`/api/chat/conversations/${conversationId}/rate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('rate failed');
-      setLocalRating(rating);
+      setStep('done');
       onRated(rating);
     } catch {
       // silent — user can retry
@@ -272,14 +303,51 @@ const ChatWidgetConversationRating = memo(function ChatWidgetConversationRating(
     }
   };
 
-  if (localRating != null) {
+  if (step === 'done' && selectedRating != null) {
     return (
-      <div className="flex justify-center py-3">
+      <div className="flex justify-center py-3" data-testid="chat-conversation-rating-done">
         <div className={chatWidgetRatingBoxClass()}>
-          <p className="text-sm text-muted-foreground">{thankYou}</p>
-          <p className="text-3xl mt-2" aria-hidden>
-            {CHAT_WIDGET_RATING_EMOJIS[localRating - 1]}
+          <p className="text-sm font-medium text-foreground">
+            {ratedTitle}{' '}
+            <span className="text-xl" aria-hidden>
+              {CHAT_WIDGET_RATING_EMOJIS[selectedRating - 1]}
+            </span>
           </p>
+          <p className="text-xs text-muted-foreground mt-2">{thankYou}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'feedback' && selectedRating != null) {
+    return (
+      <div className="flex justify-center py-3" data-testid="chat-conversation-rating-feedback">
+        <div className={chatWidgetRatingBoxClass()}>
+          <p className="text-sm font-medium text-foreground mb-1">
+            {ratedTitle}{' '}
+            <span className="text-xl" aria-hidden>
+              {CHAT_WIDGET_RATING_EMOJIS[selectedRating - 1]}
+            </span>
+          </p>
+          <p className="text-xs text-muted-foreground mb-3">{tellUsMore}</p>
+          <Textarea
+            value={feedback}
+            onChange={(event) => setFeedback(event.target.value)}
+            disabled={submitting}
+            rows={3}
+            className="mb-3 resize-none text-sm"
+            maxLength={2000}
+          />
+          <Button
+            type="button"
+            size="sm"
+            className="w-full"
+            disabled={submitting}
+            data-testid="chat-rating-send-feedback"
+            onClick={() => void handleSendFeedback()}
+          >
+            {sendFeedbackLabel}
+          </Button>
         </div>
       </div>
     );
@@ -302,7 +370,7 @@ const ChatWidgetConversationRating = memo(function ChatWidgetConversationRating(
                 className={chatWidgetRatingEmojiClass(false, isSelected)}
                 onMouseEnter={() => setHovered(value)}
                 onMouseLeave={() => setHovered(null)}
-                onClick={() => void handleRate(value)}
+                onClick={() => handleSelectRating(value)}
               >
                 {emoji}
               </button>
@@ -337,7 +405,11 @@ interface ChatWidgetMessageListProps {
   clientRating?: number | null;
   showRatingPrompt: boolean;
   rateTitle: string;
+  rateRatedTitle: string;
+  rateTellUsMore: string;
+  rateSendFeedback: string;
   rateThankYou: string;
+  onRatingFlowStart: () => void;
   onRated: (rating: number) => void;
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -367,7 +439,11 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
   clientRating,
   showRatingPrompt,
   rateTitle,
+  rateRatedTitle,
+  rateTellUsMore,
+  rateSendFeedback,
   rateThankYou,
+  onRatingFlowStart,
   onRated,
   onScroll,
   containerRef,
@@ -505,7 +581,11 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
           conversationId={conversationId}
           existingRating={clientRating}
           title={rateTitle}
+          ratedTitle={rateRatedTitle}
+          tellUsMore={rateTellUsMore}
+          sendFeedbackLabel={rateSendFeedback}
           thankYou={rateThankYou}
+          onFlowStart={onRatingFlowStart}
           onRated={onRated}
         />
       )}
@@ -635,6 +715,8 @@ export function ChatWidget() {
   const [aiTypingQueuedHint, setAiTypingQueuedHint] = useState<string | undefined>();
   const [escalatingModerator, setEscalatingModerator] = useState(false);
   const [localClientRating, setLocalClientRating] = useState<number | null>(null);
+  const [ratingFlowActive, setRatingFlowActive] = useState(false);
+  const [ratingSubmittedThisSession, setRatingSubmittedThisSession] = useState(false);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const wasOpenBeforeMobileMenuRef = useRef(false);
@@ -657,6 +739,8 @@ export function ChatWidget() {
     setAiTypingQueuedHint(undefined);
     setEscalatingModerator(false);
     setLocalClientRating(null);
+    setRatingFlowActive(false);
+    setRatingSubmittedThisSession(false);
     if (aiTypingTimeoutRef.current) {
       clearTimeout(aiTypingTimeoutRef.current);
       aiTypingTimeoutRef.current = null;
@@ -721,6 +805,8 @@ export function ChatWidget() {
 
   useEffect(() => {
     setLocalClientRating(null);
+    setRatingFlowActive(false);
+    setRatingSubmittedThisSession(false);
   }, [conversationId]);
 
   useEffect(() => {
@@ -1264,7 +1350,9 @@ export function ChatWidget() {
     const effectiveClientRating =
       localClientRating ?? currentConversation?.clientRating ?? null;
     const showRatingPrompt =
-      conversationClosed && effectiveClientRating == null && Boolean(conversationId);
+      conversationClosed &&
+      Boolean(conversationId) &&
+      (effectiveClientRating == null || ratingFlowActive || ratingSubmittedThisSession);
     const assignedModerator = currentConversation?.assignedModerator;
     const agentDisplayName =
       assignedModerator?.steamUsername ??
@@ -1298,9 +1386,15 @@ export function ChatWidget() {
         clientRating={effectiveClientRating}
         showRatingPrompt={showRatingPrompt}
         rateTitle={messages.chatWidget.rateConversation}
+        rateRatedTitle={messages.chatWidget.rateRatedTitle}
+        rateTellUsMore={messages.chatWidget.rateTellUsMore}
+        rateSendFeedback={messages.chatWidget.rateSendFeedback}
         rateThankYou={messages.chatWidget.rateThankYou}
+        onRatingFlowStart={() => setRatingFlowActive(true)}
         onRated={(rating) => {
           setLocalClientRating(rating);
+          setRatingFlowActive(false);
+          setRatingSubmittedThisSession(true);
           if (conversationId) {
             queryClient.invalidateQueries({
               queryKey: queryKeys.conversationMessages(conversationId),

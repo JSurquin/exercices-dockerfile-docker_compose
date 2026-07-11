@@ -78,11 +78,13 @@ export async function POST(
       data: {
         clientRating: parsed.data.rating,
         clientRatedAt: new Date(),
+        ...(parsed.data.feedback ? { clientFeedback: parsed.data.feedback } : {}),
       },
       select: {
         id: true,
         clientRating: true,
         clientRatedAt: true,
+        clientFeedback: true,
       },
     });
 

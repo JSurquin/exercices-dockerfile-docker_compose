@@ -823,6 +823,7 @@ model Conversation {
   closedAt          DateTime?
   clientRating      Int?
   clientRatedAt     DateTime?
+  clientFeedback    String?
   messages          ChatMessage[]
   assignedModerator User?                @relation("AssignedConversations", fields: [assignedTo], references: [id])
   user              User?                @relation(fields: [userId], references: [id])

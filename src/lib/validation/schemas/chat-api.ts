@@ -79,6 +79,7 @@ export const botSubcategoryPostSchema = z
 export const rateConversationPostSchema = z
   .object({
     rating: z.number().int().min(1).max(5),
+    feedback: z.string().trim().max(2000).optional(),
   })
   .strip();
 

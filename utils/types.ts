@@ -3932,6 +3932,9 @@ export interface Messages {
     sendHint: string;
     conversationEnded: string;
     rateConversation: string;
+    rateRatedTitle: string;
+    rateTellUsMore: string;
+    rateSendFeedback: string;
     rateThankYou: string;
     activeRecently: string;
     historyTitle: string;
