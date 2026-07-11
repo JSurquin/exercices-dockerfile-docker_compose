@@ -3,7 +3,7 @@ import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
 import { ChatStats, ModeratorStats } from '@/lib/types/chat';
 import { requireAdminOrModeratorSessionWithDbCheck, requireAdminSessionWithDbCheck } from '@/lib/require-admin';
-import { computeAverageResponseTimeMinutes } from '@/lib/chat-logic';
+import { computeAverageResponseTimeMinutes, computeAverageClientRating } from '@/lib/chat-logic';
 
 // GET /api/chat/stats - Récupérer les statistiques du chat
 export async function GET(request: NextRequest) {
@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
       unassignedConversations,
       conversationsByPriority,
       conversationsByCategory,
+      ratedConversationsData,
     ] = await Promise.all([
       // Total des conversations
       prisma.conversation.count({
@@ -71,6 +72,13 @@ export async function GET(request: NextRequest) {
           createdAt: { gte: startDate },
           category: { not: null },
         },
+      }),
+      prisma.conversation.findMany({
+        where: {
+          createdAt: { gte: startDate },
+          clientRating: { not: null },
+        },
+        select: { clientRating: true },
       }),
     ]);
 
@@ -120,6 +128,10 @@ export async function GET(request: NextRequest) {
         URGENT: priorityStats.URGENT || 0,
       },
       conversationsByCategory: categoryStats,
+      averageClientRating: computeAverageClientRating(
+        ratedConversationsData.map((c) => c.clientRating),
+      ),
+      ratedConversations: ratedConversationsData.length,
     };
 
     return NextResponse.json(stats);
@@ -162,6 +174,7 @@ export async function POST(request: NextRequest) {
           closedConversations,
           totalMessages,
           conversationsWithResponse,
+          ratedConversations,
         ] = await Promise.all([
           // Conversations assignées
           prisma.conversation.count({
@@ -207,6 +220,14 @@ export async function POST(request: NextRequest) {
               },
             },
           }),
+          prisma.conversation.findMany({
+            where: {
+              assignedTo: moderator.id,
+              createdAt: { gte: startDate },
+              clientRating: { not: null },
+            },
+            select: { clientRating: true },
+          }),
         ]);
 
         const averageResponseTime = computeAverageResponseTimeMinutes(conversationsWithResponse, {
@@ -221,6 +242,10 @@ export async function POST(request: NextRequest) {
           closedConversations,
           averageResponseTime,
           totalMessages,
+          averageClientRating: computeAverageClientRating(
+            ratedConversations.map((c) => c.clientRating),
+          ),
+          ratedConversations: ratedConversations.length,
         };
       })
     );
