@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { runAutoDrawExpiredGiveaways } from '@/lib/cron-jobs/auto-draw-expired';
+import { processDueRecurringGiveaways } from '@/lib/giveaway-recurrence';
 import { prisma } from '~/prisma/prisma';
 
 function isCronAuthorized(request: NextRequest): boolean {
@@ -18,8 +19,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const result = await runAutoDrawExpiredGiveaways();
-    return NextResponse.json(result);
+    const draw = await runAutoDrawExpiredGiveaways();
+    const recurrence = await processDueRecurringGiveaways();
+    return NextResponse.json({ ...draw, recurrence });
   } catch (error) {
     console.error('Error in auto-draw:', error);
     return NextResponse.json({ error: 'Erreur lors du tirage automatique' }, { status: 500 });

@@ -474,16 +474,18 @@ export default function AdminGiveawaysPage() {
                                 {messages.admin.giveaways.list.drawNow}
                               </Button>
                             )}
-                            
-                            <Button
-                              onClick={() => handleDeleteGiveaway(giveaway.id)}
-                              size="sm"
-                              variant="destructive"
-                              className="flex-1 sm:flex-none"
-                            >
-                              <TrashIcon className="w-4 h-4 mr-1" />
-                              {messages.admin.giveaways.list.delete}
-                            </Button>
+
+                            {!giveaway.seriesId && (
+                              <Button
+                                onClick={() => handleDeleteGiveaway(giveaway.id)}
+                                size="sm"
+                                variant="destructive"
+                                className="flex-1 sm:flex-none"
+                              >
+                                <TrashIcon className="w-4 h-4 mr-1" />
+                                {messages.admin.giveaways.list.delete}
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </CardContent>

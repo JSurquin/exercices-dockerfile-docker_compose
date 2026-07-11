@@ -33,6 +33,36 @@ export function computeNextSpawnAt(frequency: GiveawayDurationType, after: Date)
   return next;
 }
 
+/** Calcule la prochaine date de spawn après un tirage (ancrage = dernier spawn, pas la fin du tirage). */
+export function computeNextSpawnAtAfterDraw(
+  frequency: GiveawayDurationType,
+  lastSpawnAt: Date | null,
+  startDate: Date,
+  endedAt: Date
+): Date {
+  const anchor = lastSpawnAt ?? startDate;
+  let nextSpawnAt = computeNextSpawnAt(frequency, anchor);
+  if (nextSpawnAt <= endedAt) {
+    nextSpawnAt = endedAt;
+  }
+  return nextSpawnAt;
+}
+
+export function computeInstanceEndAt(startAt: Date, durationMinutes: number): Date {
+  const endAt = new Date(startAt);
+  endAt.setMinutes(endAt.getMinutes() + durationMinutes);
+  return endAt;
+}
+
+export function seriesHasCapacityForInstance(
+  series: Pick<GiveawaySeries, 'endDate' | 'durationMinutes'>,
+  startAt: Date
+): boolean {
+  if (!series.endDate) return true;
+  if (startAt >= series.endDate) return false;
+  return computeInstanceEndAt(startAt, series.durationMinutes) <= series.endDate;
+}
+
 export function seriesDataToGiveawayCreate(
   seriesId: string,
   series: Pick<
@@ -54,8 +84,7 @@ export function seriesDataToGiveawayCreate(
   >,
   startDate: Date
 ): Prisma.GiveawayCreateInput {
-  const endDate = new Date(startDate);
-  endDate.setMinutes(endDate.getMinutes() + series.durationMinutes);
+  const endDate = computeInstanceEndAt(startDate, series.durationMinutes);
 
   return {
     title: series.title,
@@ -78,6 +107,25 @@ export function seriesDataToGiveawayCreate(
   };
 }
 
+async function closeStaleSeriesInstances(seriesId: string) {
+  const now = new Date();
+  const stale = await prisma.giveaway.findMany({
+    where: {
+      seriesId,
+      status: { in: ['ACTIVE', 'PAUSED'] },
+      endDate: { lte: now },
+    },
+    include: { _count: { select: { entries: true } } },
+  });
+
+  for (const instance of stale) {
+    await prisma.giveaway.update({
+      where: { id: instance.id },
+      data: { status: instance._count.entries > 0 ? 'ENDED' : 'CANCELLED' },
+    });
+  }
+}
+
 export async function spawnGiveawayFromSeries(seriesId: string, startAt = new Date()) {
   const series = await prisma.giveawaySeries.findUnique({ where: { id: seriesId } });
   if (!series) {
@@ -97,6 +145,11 @@ export async function spawnGiveawayFromSeries(seriesId: string, startAt = new Da
   if (series.endDate && series.endDate <= now) {
     return { ok: false as const, error: 'Série terminée' };
   }
+  if (!seriesHasCapacityForInstance(series, startAt)) {
+    return { ok: false as const, error: 'Limite de la série atteinte' };
+  }
+
+  await closeStaleSeriesInstances(seriesId);
 
   const activeInstance = await prisma.giveaway.findFirst({
     where: { seriesId, status: { in: ['ACTIVE', 'PAUSED'] } },
@@ -127,8 +180,14 @@ export async function scheduleNextSpawnAfterDraw(seriesId: string, endedAt = new
   const series = await prisma.giveawaySeries.findUnique({ where: { id: seriesId } });
   if (!series || series.status !== 'ACTIVE') return null;
 
-  const nextSpawnAt = computeNextSpawnAt(series.frequency, endedAt);
-  if (series.endDate && nextSpawnAt >= series.endDate) {
+  const nextSpawnAt = computeNextSpawnAtAfterDraw(
+    series.frequency,
+    series.lastSpawnAt,
+    series.startDate,
+    endedAt
+  );
+
+  if (!seriesHasCapacityForInstance(series, nextSpawnAt)) {
     await prisma.giveawaySeries.update({
       where: { id: seriesId },
       data: { nextSpawnAt: null, status: 'DISABLED' },
@@ -140,6 +199,11 @@ export async function scheduleNextSpawnAfterDraw(seriesId: string, endedAt = new
     where: { id: seriesId },
     data: { nextSpawnAt },
   });
+
+  if (nextSpawnAt <= new Date()) {
+    await spawnGiveawayFromSeries(seriesId, nextSpawnAt);
+  }
+
   return nextSpawnAt;
 }
 
@@ -158,7 +222,8 @@ export async function processDueRecurringGiveaways() {
   const results: { seriesId: string; status: string; giveawayId?: string; error?: string }[] = [];
 
   for (const series of dueSeries) {
-    const spawn = await spawnGiveawayFromSeries(series.id, now);
+    const spawnAt = series.nextSpawnAt ?? now;
+    const spawn = await spawnGiveawayFromSeries(series.id, spawnAt);
     if (spawn.ok) {
       results.push({ seriesId: series.id, status: 'spawned', giveawayId: spawn.giveaway.id });
     } else if (spawn.error === 'Instance déjà active') {
@@ -221,9 +286,17 @@ export async function disableGiveawaySeries(seriesId: string) {
 }
 
 export async function restartGiveawaySeries(seriesId: string) {
+  const series = await prisma.giveawaySeries.findUnique({ where: { id: seriesId } });
+  if (!series) {
+    return { ok: false as const, error: 'Série introuvable' };
+  }
+
+  await closeStaleSeriesInstances(seriesId);
+
   await prisma.giveawaySeries.update({
     where: { id: seriesId },
     data: { status: 'ACTIVE', nextSpawnAt: null },
   });
+
   return spawnGiveawayFromSeries(seriesId);
 }

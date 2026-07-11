@@ -3408,7 +3408,7 @@ export const messages: Record<Locale, Messages> = {
           noActiveInstance: "Aucune",
           pause: "Pause",
           resume: "Reprendre",
-          disable: "Désactiver",
+          disable: "Rendre inactif",
           restart: "Relancer",
           frequency: {
             daily: "Journalier",
