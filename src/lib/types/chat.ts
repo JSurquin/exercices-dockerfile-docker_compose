@@ -113,3 +113,29 @@ export interface ModeratorStats {
   averageClientRating: number;
   ratedConversations: number;
 }
+
+export interface ClientFeedbackEntry {
+  id: string;
+  subject: string | null;
+  clientRating: number | null;
+  clientFeedback: string | null;
+  clientRatedAt: Date | null;
+  closedAt: Date | null;
+  user?: {
+    id: string;
+    name: string | null;
+    email: string;
+    steamUsername: string | null;
+  } | null;
+  assignedModerator?: {
+    id: string;
+    name: string | null;
+    email: string;
+  } | null;
+}
+
+export interface ClientFeedbackSummary {
+  averageRating: number;
+  ratedCount: number;
+  feedbackCount: number;
+}

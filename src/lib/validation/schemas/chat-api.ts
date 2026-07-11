@@ -125,3 +125,21 @@ export const chatConversationsQuerySchema = z
     ids: z.string().max(2000).optional(),
   })
   .strip();
+
+/** GET /api/chat/feedback — notes et commentaires clients */
+export const chatFeedbackQuerySchema = z
+  .object({
+    /** mine = uniquement les conversations assignées (défaut modérateur) ; all = tout (admin) */
+    scope: z.enum(['mine', 'all']).optional().default('all'),
+    page: z
+      .string()
+      .optional()
+      .transform((s) => (s === undefined || s === '' ? 1 : parseInt(s, 10)))
+      .pipe(z.number().int().min(1)),
+    limit: z
+      .string()
+      .optional()
+      .transform((s) => (s === undefined || s === '' ? 20 : parseInt(s, 10)))
+      .pipe(z.number().int().min(1).max(100)),
+  })
+  .strip();

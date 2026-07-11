@@ -26,6 +26,7 @@ import {
   UserIcon,
   XCircleIcon,
   ArrowPathIcon,
+  StarIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/providers/auth-provider';
@@ -40,6 +41,10 @@ import {
   chatPriorityLabel,
   chatStatusLabel,
 } from '@/lib/chat-moderation-labels';
+import {
+  ClientFeedbackList,
+  ClientFeedbackSummaryCards,
+} from '@/components/chat/client-feedback-list';
 
 interface Moderator {
   id: string;
@@ -85,6 +90,7 @@ export default function AdminChatPage() {
   const [inviteName, setInviteName] = useState('');
   const [inviting, setInviting] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [feedbackPage, setFeedbackPage] = useState(1);
 
   const { data: convData, isLoading: loading } = useQuery({
     queryKey: queryKeys.adminChatConversations({ limit: 50 }),
@@ -122,6 +128,20 @@ export default function AdminChatPage() {
       if (!res.ok) return [];
       const data = await res.json();
       return Array.isArray(data) ? data : data.moderatorStats ?? [];
+    },
+  });
+
+  const { data: feedbackData, isLoading: feedbackLoading } = useQuery({
+    queryKey: queryKeys.adminChatFeedback({ page: feedbackPage }),
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        scope: 'all',
+        page: String(feedbackPage),
+        limit: '20',
+      });
+      const res = await fetch(`/api/chat/feedback?${params}`);
+      if (!res.ok) throw new Error(chatT.feedback.loadError);
+      return res.json();
     },
   });
 
@@ -346,7 +366,7 @@ export default function AdminChatPage() {
       )}
 
       <Tabs defaultValue="conversations" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border border-slate-700 h-auto">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-slate-800/50 border border-slate-700 h-auto">
           <TabsTrigger
             value="conversations"
             className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white"
@@ -370,6 +390,14 @@ export default function AdminChatPage() {
             <ChartBarIcon className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">{chatT.tabs.stats}</span>
             <span className="sm:hidden text-[10px]">{chatT.tabs.statsShort}</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="feedback"
+            className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white"
+          >
+            <StarIcon className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">{chatT.tabs.feedback}</span>
+            <span className="sm:hidden text-[10px]">{chatT.tabs.feedbackShort}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -776,6 +804,82 @@ export default function AdminChatPage() {
                 </Card>
               </div>
             )}
+          </div>
+        </TabsContent>
+
+        {/* ─── Onglet Feedback clients ─── */}
+        <TabsContent value="feedback">
+          <div className="space-y-6">
+            {feedbackData?.summary && (
+              <ClientFeedbackSummaryCards
+                averageRating={feedbackData.summary.averageRating}
+                ratedCount={feedbackData.summary.ratedCount}
+                feedbackCount={feedbackData.summary.feedbackCount}
+                labels={{
+                  averageRating: chatT.feedback.summary.averageRating,
+                  ratedCount: chatT.feedback.summary.ratedCount,
+                  feedbackCount: chatT.feedback.summary.feedbackCount,
+                }}
+                variant="admin"
+              />
+            )}
+
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">
+                  {chatT.feedback.title} ({feedbackData?.pagination?.total ?? 0})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {feedbackLoading ? (
+                  <PageLoading variant="compact" message={messages.admin.chat.conversations.loading} />
+                ) : (
+                  <>
+                    <ClientFeedbackList
+                      items={feedbackData?.feedback ?? []}
+                      messages={{
+                        noSubject: messages.admin.chat.conversations.noSubject,
+                        anonymousUser: messages.admin.chat.conversations.anonymousUser,
+                        ratedOn: chatT.feedback.ratedOn,
+                        noFeedback: chatT.feedback.noFeedback,
+                        viewConversation: chatT.feedback.viewConversation,
+                        assignedTo: messages.admin.chat.conversations.assignedTo,
+                        noEntries: chatT.feedback.noEntries,
+                      }}
+                      locale={locale}
+                      showModerator
+                      variant="admin"
+                    />
+
+                    {feedbackData?.pagination && feedbackData.pagination.pages > 1 && (
+                      <div className="flex items-center justify-center gap-3 mt-6">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-slate-600 text-slate-300 hover:text-white text-xs"
+                          disabled={feedbackPage <= 1}
+                          onClick={() => setFeedbackPage((p) => Math.max(1, p - 1))}
+                        >
+                          {chatT.feedback.prevPage}
+                        </Button>
+                        <span className="text-sm text-slate-400 tabular-nums">
+                          {feedbackPage} / {feedbackData.pagination.pages}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-slate-600 text-slate-300 hover:text-white text-xs"
+                          disabled={feedbackPage >= feedbackData.pagination.pages}
+                          onClick={() => setFeedbackPage((p) => p + 1)}
+                        >
+                          {chatT.feedback.nextPage}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
       </Tabs>

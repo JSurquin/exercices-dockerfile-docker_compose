@@ -2439,9 +2439,11 @@ export interface Messages {
         conversations: string;
         moderators: string;
         stats: string;
+        feedback: string;
         conversationsShort: string;
         moderatorsShort: string;
         statsShort: string;
+        feedbackShort: string;
       };
       conversations: {
         title: string;
@@ -2516,6 +2518,21 @@ export interface Messages {
       };
       category: {
         title: string;
+      };
+      feedback: {
+        title: string;
+        loadError: string;
+        ratedOn: string;
+        noFeedback: string;
+        viewConversation: string;
+        noEntries: string;
+        prevPage: string;
+        nextPage: string;
+        summary: {
+          averageRating: string;
+          ratedCount: string;
+          feedbackCount: string;
+        };
       };
     };
     adminNotifications: {
@@ -5217,6 +5234,25 @@ export interface Messages {
         closed: string;
       };
       sendHint: string;
+    };
+    feedback: {
+      navLink: string;
+      title: string;
+      subtitle: string;
+      backToConversations: string;
+      listTitle: string;
+      loadError: string;
+      ratedOn: string;
+      noFeedback: string;
+      viewConversation: string;
+      noEntries: string;
+      prevPage: string;
+      nextPage: string;
+      summary: {
+        averageRating: string;
+        ratedCount: string;
+        feedbackCount: string;
+      };
     };
   };
   help: {

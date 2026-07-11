@@ -98,6 +98,10 @@ export const queryKeys = {
   adminModerators: ['admin', 'chat', 'moderators'] as const,
   adminChatStats: ['admin', 'chat', 'stats'] as const,
   adminChatModeratorStats: ['admin', 'chat', 'moderator-stats'] as const,
+  adminChatFeedback: (filters?: Record<string, unknown>) =>
+    ['admin', 'chat', 'feedback', filters ?? {}] as const,
+  moderationFeedback: (filters?: Record<string, unknown>) =>
+    ['moderation', 'feedback', filters ?? {}] as const,
   moderationConversation: (id: string) =>
     ['moderation', 'conversation', id] as const,
   moderationMessages: (conversationId: string) =>

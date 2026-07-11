@@ -22,6 +22,7 @@ import {
   ArrowLeftOnRectangleIcon,
   HomeIcon,
   ShieldCheckIcon,
+  StarIcon,
 } from '@heroicons/react/24/outline';
 import { adminBtnOutline, adminGlassCard } from '@/lib/admin-ui';
 import { cn } from '@/lib/utils';
@@ -40,6 +41,7 @@ export function ModerationHeader() {
   const { messages } = useLocale();
   const user = session?.user;
   const isConversationPage = pathname.startsWith('/moderation/conversations/');
+  const isFeedbackPage = pathname.startsWith('/moderation/feedback');
   const effectiveRole = authUser?.role ?? user?.role;
   const isStaff = isValidModeratorRole(effectiveRole ?? '');
 
@@ -104,6 +106,22 @@ export function ModerationHeader() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className={cn(
+              'hidden sm:inline-flex h-8 text-xs',
+              adminBtnOutline,
+              isFeedbackPage && 'border-theme-accent/50 text-theme-accent',
+            )}
+          >
+            <Link href="/moderation/feedback">
+              <StarIcon className="h-3.5 w-3.5 mr-1.5" />
+              {messages.moderation.feedback.navLink}
+            </Link>
+          </Button>
+
           {user?.role === 'ADMIN' && (
             <Button
               asChild
@@ -143,6 +161,12 @@ export function ModerationHeader() {
                 <Link href="/">
                   <HomeIcon className="h-4 w-4 mr-2" />
                   {messages.nav.home}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="text-foreground focus:bg-theme-accent/10 focus:text-theme-highlight sm:hidden">
+                <Link href="/moderation/feedback">
+                  <StarIcon className="h-4 w-4 mr-2" />
+                  {messages.moderation.feedback.navLink}
                 </Link>
               </DropdownMenuItem>
               {user?.role === 'ADMIN' && (

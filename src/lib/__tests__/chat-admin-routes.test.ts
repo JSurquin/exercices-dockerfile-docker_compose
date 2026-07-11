@@ -56,8 +56,10 @@ import { GET as getModerator, DELETE as deleteModerator } from '@/app/api/admin/
 import { POST as inviteModerator } from '@/app/api/admin/moderators/invite/route';
 import { GET as getModeratorStats } from '@/app/api/chat/stats/moderators/route';
 import { GET as getChatStats } from '@/app/api/chat/stats/route';
+import { GET as getChatFeedback } from '@/app/api/chat/feedback/route';
 
 const mockRequireAdmin = requireAdminSessionWithDbCheck as jest.Mock;
+const mockRequireStaff = requireAdminOrModeratorSessionWithDbCheck as jest.Mock;
 
 function makeRequest(url: string, init?: { method?: string; body?: unknown }) {
   return new NextRequest(url, {
@@ -186,8 +188,6 @@ describe('POST /api/admin/moderators/invite', () => {
   });
 });
 
-const mockRequireStaff = requireAdminOrModeratorSessionWithDbCheck as jest.Mock;
-
 describe('GET /api/chat/stats', () => {
   it('403 pour non-staff', async () => {
     mockRequireStaff.mockResolvedValue(null);
@@ -224,5 +224,51 @@ describe('GET /api/chat/stats/moderators', () => {
     const body = await res.json();
     expect(body).toHaveLength(1);
     expect(body[0].id).toBe('mod-1');
+  });
+});
+
+describe('GET /api/chat/feedback', () => {
+  it('403 pour non-staff', async () => {
+    mockRequireStaff.mockResolvedValue(null);
+    const res = await getChatFeedback(makeRequest('http://localhost/api/chat/feedback'));
+    expect(res.status).toBe(403);
+  });
+
+  it('retourne les avis pour admin (tous)', async () => {
+    mockRequireStaff.mockResolvedValue({ user: { id: 'admin-1', role: 'ADMIN' } });
+    (prisma.conversation.findMany as jest.Mock)
+      .mockResolvedValueOnce([
+        {
+          id: 'c1',
+          subject: 'Test',
+          clientRating: 5,
+          clientFeedback: 'Super',
+          clientRatedAt: new Date(),
+          closedAt: new Date(),
+          user: { id: 'u1', name: 'User', email: 'u@test.com', steamUsername: null },
+          assignedModerator: { id: 'mod-1', name: 'Mod', email: 'm@test.com' },
+        },
+      ])
+      .mockResolvedValueOnce([{ clientRating: 5, clientFeedback: 'Super' }]);
+    (prisma.conversation.count as jest.Mock).mockResolvedValue(1);
+
+    const res = await getChatFeedback(makeRequest('http://localhost/api/chat/feedback?scope=all'));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.feedback).toHaveLength(1);
+    expect(body.summary.ratedCount).toBe(1);
+    expect(body.summary.feedbackCount).toBe(1);
+  });
+
+  it('filtre aux conversations assignées pour modérateur', async () => {
+    mockRequireStaff.mockResolvedValue({ user: { id: 'mod-1', role: 'MODERATOR' } });
+    (prisma.conversation.findMany as jest.Mock).mockResolvedValue([]).mockResolvedValue([]);
+    (prisma.conversation.count as jest.Mock).mockResolvedValue(0);
+
+    const res = await getChatFeedback(makeRequest('http://localhost/api/chat/feedback?scope=all'));
+    expect(res.status).toBe(200);
+
+    const listCall = (prisma.conversation.findMany as jest.Mock).mock.calls[0][0];
+    expect(listCall.where.assignedTo).toBe('mod-1');
   });
 });

@@ -3015,9 +3015,11 @@ export const messages: Record<Locale, Messages> = {
           conversations: "Conversations",
           moderators: "Modérateurs",
           stats: "Statistiques",
+          feedback: "Avis clients",
           conversationsShort: "Convs",
           moderatorsShort: "Modos",
           statsShort: "Stats",
+          feedbackShort: "Avis",
         },
         conversations: {
           title: "Conversations récentes",
@@ -3092,6 +3094,21 @@ export const messages: Record<Locale, Messages> = {
         },
         category: {
           title: "Conversations par catégorie"
+        },
+        feedback: {
+          title: "Avis clients",
+          loadError: "Erreur lors du chargement des avis",
+          ratedOn: "Noté le",
+          noFeedback: "Aucun commentaire écrit",
+          viewConversation: "Voir la conversation",
+          noEntries: "Aucun avis client pour le moment",
+          prevPage: "Précédent",
+          nextPage: "Suivant",
+          summary: {
+            averageRating: "Note moyenne globale",
+            ratedCount: "Notes reçues",
+            feedbackCount: "Commentaires",
+          },
         }
       },
       adminNotifications: {
@@ -5728,6 +5745,25 @@ export const messages: Record<Locale, Messages> = {
           closed: "Cette conversation a été fermée par notre équipe. Vous pouvez ouvrir une nouvelle discussion si besoin.",
         },
         sendHint: "Entrée pour envoyer · Maj+Entrée pour nouvelle ligne",
+      },
+      feedback: {
+        navLink: "Mes notes & avis",
+        title: "Mes notes & avis clients",
+        subtitle: "Consultez les notes et commentaires laissés sur vos conversations",
+        backToConversations: "Retour aux conversations",
+        listTitle: "Avis reçus",
+        loadError: "Erreur lors du chargement des avis",
+        ratedOn: "Noté le",
+        noFeedback: "Aucun commentaire écrit",
+        viewConversation: "Voir la conversation",
+        noEntries: "Aucun avis client pour le moment",
+        prevPage: "Précédent",
+        nextPage: "Suivant",
+        summary: {
+          averageRating: "Note moyenne",
+          ratedCount: "Notes reçues",
+          feedbackCount: "Commentaires",
+        },
       }
     },
     help: {
@@ -9621,9 +9657,11 @@ export const messages: Record<Locale, Messages> = {
           conversations: "Conversations",
           moderators: "Moderators",
           stats: "Statistics",
+          feedback: "Client feedback",
           conversationsShort: "Convs",
           moderatorsShort: "Modos",
           statsShort: "Stats",
+          feedbackShort: "Feedback",
         },
         conversations: {
           title: "Recent conversations",
@@ -9698,6 +9736,21 @@ export const messages: Record<Locale, Messages> = {
         },
         category: {
           title: "Conversations by category"
+        },
+        feedback: {
+          title: "Client feedback",
+          loadError: "Error loading feedback",
+          ratedOn: "Rated on",
+          noFeedback: "No written comment",
+          viewConversation: "View conversation",
+          noEntries: "No client feedback yet",
+          prevPage: "Previous",
+          nextPage: "Next",
+          summary: {
+            averageRating: "Overall average rating",
+            ratedCount: "Ratings received",
+            feedbackCount: "Comments",
+          },
         }
       },
       adminNotifications: {
@@ -13306,6 +13359,25 @@ export const messages: Record<Locale, Messages> = {
           closed: "This conversation was closed by our team. You can start a new discussion if needed.",
         },
         sendHint: "Enter to send · Shift+Enter for new line",
+      },
+      feedback: {
+        navLink: "My ratings & feedback",
+        title: "My client ratings & feedback",
+        subtitle: "View ratings and comments left on your conversations",
+        backToConversations: "Back to conversations",
+        listTitle: "Received feedback",
+        loadError: "Error loading feedback",
+        ratedOn: "Rated on",
+        noFeedback: "No written comment",
+        viewConversation: "View conversation",
+        noEntries: "No client feedback yet",
+        prevPage: "Previous",
+        nextPage: "Next",
+        summary: {
+          averageRating: "Average rating",
+          ratedCount: "Ratings received",
+          feedbackCount: "Comments",
+        },
       }
     },
     settings: {
@@ -17312,9 +17384,11 @@ export const messages: Record<Locale, Messages> = {
           conversations: "对话",
           moderators: "版主",
           stats: "统计",
+          feedback: "客户反馈",
           conversationsShort: "对话",
           moderatorsShort: "版主",
           statsShort: "统计",
+          feedbackShort: "反馈",
         },
         conversations: {
           title: "最近对话",
@@ -17389,6 +17463,21 @@ export const messages: Record<Locale, Messages> = {
         },
         category: {
           title: "按类别分类的对话"
+        },
+        feedback: {
+          title: "客户反馈",
+          loadError: "加载反馈时出错",
+          ratedOn: "评分于",
+          noFeedback: "无文字评论",
+          viewConversation: "查看对话",
+          noEntries: "暂无客户反馈",
+          prevPage: "上一页",
+          nextPage: "下一页",
+          summary: {
+            averageRating: "总体平均评分",
+            ratedCount: "收到评分",
+            feedbackCount: "评论",
+          },
         }
       },
       adminNotifications: {
@@ -20785,6 +20874,25 @@ export const messages: Record<Locale, Messages> = {
           closed: "此对话已由我们的团队关闭。如有需要，您可以开启新的对话。",
         },
         sendHint: "回车发送 · Shift+回车换行",
+      },
+      feedback: {
+        navLink: "我的评分与反馈",
+        title: "我的客户评分与反馈",
+        subtitle: "查看客户对您负责对话的评分和评论",
+        backToConversations: "返回对话列表",
+        listTitle: "收到的反馈",
+        loadError: "加载反馈时出错",
+        ratedOn: "评分于",
+        noFeedback: "无文字评论",
+        viewConversation: "查看对话",
+        noEntries: "暂无客户反馈",
+        prevPage: "上一页",
+        nextPage: "下一页",
+        summary: {
+          averageRating: "平均评分",
+          ratedCount: "收到评分",
+          feedbackCount: "评论",
+        },
       }
     },
     settings: {
