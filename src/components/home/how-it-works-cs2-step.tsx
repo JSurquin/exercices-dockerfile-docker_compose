@@ -61,8 +61,6 @@ export function HowItWorksCs2Step({
       }
     >
       <div className="hiw-cs2-step__surface flex h-full w-full min-w-0 flex-col">
-        <div className="h-1 w-full shrink-0" style={{ backgroundColor: rarityColor }} />
-
         <div className="flex items-center justify-between gap-2 px-3 pt-2.5">
         <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-white/35">
           Phase {String(step).padStart(2, "0")}/05

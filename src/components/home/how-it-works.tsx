@@ -80,9 +80,6 @@ export function HowItWorks() {
 
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`mb-16 text-center ${homeReveal.upSm}`}>
-          <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.25em] text-theme-accent/80">
-            {messages.howItWorks.tradeFlowLabel}
-          </p>
           <h2 className="mb-4 text-3xl font-bold uppercase tracking-wide md:text-4xl">
             {messages.howItWorks.titleLead}
             <span className="text-chrome-gradient">{messages.howItWorks.titleHighlight}</span>
