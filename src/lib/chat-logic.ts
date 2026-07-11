@@ -12,6 +12,17 @@ export function isTerminalConversationStatus(status: string): boolean {
   return (TERMINAL_CONVERSATION_STATUSES as readonly string[]).includes(status);
 }
 
+/** Masque une conversation supprimée côté widget client (staff backoffice conserve l’accès). */
+export function isConversationHiddenFromClientViewer(params: {
+  status: string;
+  scope?: ChatAccessScope;
+  role?: UserRole;
+}): boolean {
+  if (params.status !== 'DELETED') return false;
+  const scope = params.scope ?? 'widget';
+  return !(scope === 'staff' && params.role && isStaffRole(params.role));
+}
+
 /** Contenu SYSTEM multilingue après la première réponse utilisateur post-BOT. */
 export const TICKET_TRANSMITTED_I18N_KEY =
   '__i18n:chatWidget.responses.ticketTransmitted__';

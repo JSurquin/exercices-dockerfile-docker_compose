@@ -63,6 +63,38 @@ export function appendGuestConversationId(id: string) {
   persistConversationId(id);
 }
 
+/** Aligne le stockage local avec la liste serveur (conversations supprimées retirées). */
+export function reconcileStoredConversationIds(validIds: string[]) {
+  if (typeof window === 'undefined') return;
+
+  const validSet = new Set(validIds);
+  const prunedGuestIds = readGuestConversationIds().filter((id) => validSet.has(id));
+
+  if (prunedGuestIds.length > 0) {
+    localStorage.setItem(
+      GUEST_CONVERSATION_HISTORY_KEY,
+      JSON.stringify(prunedGuestIds.slice(0, MAX_GUEST_CONVERSATION_HISTORY)),
+    );
+  } else {
+    localStorage.removeItem(GUEST_CONVERSATION_HISTORY_KEY);
+  }
+
+  const current =
+    sessionStorage.getItem(ACTIVE_CONVERSATION_SESSION_KEY) ??
+    localStorage.getItem(ACTIVE_CONVERSATION_KEY) ??
+    localStorage.getItem(GUEST_CONVERSATION_KEY);
+  if (current && !validSet.has(current)) {
+    persistConversationId(null);
+  }
+}
+
+function normalizeConversationsResponse(data: unknown): { conversations: ConversationSummary[] } {
+  const payload = Array.isArray(data) ? { conversations: data } : (data as { conversations: ConversationSummary[] });
+  const conversations = payload.conversations ?? [];
+  reconcileStoredConversationIds(conversations.map((conversation) => conversation.id));
+  return { conversations };
+}
+
 export function subscribeStorage(onStoreChange: () => void) {
   if (typeof window === 'undefined') return () => undefined;
   const handler = (e: StorageEvent) => {
@@ -84,9 +116,12 @@ export async function fetchConversationsList(): Promise<{ conversations: Convers
   const res = await fetch('/api/chat/conversations');
   if (res.ok) {
     const data = await res.json();
-    return Array.isArray(data) ? { conversations: data } : data;
+    return normalizeConversationsResponse(data);
   }
-  if (res.status !== 401) return { conversations: [] };
+  if (res.status !== 401) {
+    reconcileStoredConversationIds([]);
+    return { conversations: [] };
+  }
 
   const guestIds = readGuestConversationIds();
   if (guestIds.length === 0) return { conversations: [] };
@@ -94,9 +129,12 @@ export async function fetchConversationsList(): Promise<{ conversations: Convers
   const guestRes = await fetch(
     `/api/chat/conversations?ids=${encodeURIComponent(guestIds.join(','))}`,
   );
-  if (!guestRes.ok) return { conversations: [] };
+  if (!guestRes.ok) {
+    reconcileStoredConversationIds([]);
+    return { conversations: [] };
+  }
   const data = await guestRes.json();
-  return Array.isArray(data) ? { conversations: data } : data;
+  return normalizeConversationsResponse(data);
 }
 
 export async function fetchMessagesPage(
@@ -134,6 +172,7 @@ export function resolveActiveConversationId(params: {
   pickedId: string | null;
   storedId: string | null;
   conversations: Array<{ id: string; status: string; lastMessageAt?: string | Date | null }>;
+  listLoaded: boolean;
   selectInitial: (
     conversations: Array<{ id: string; status: string; lastMessageAt?: string | Date | null }>,
     storedId?: string | null,
@@ -142,8 +181,8 @@ export function resolveActiveConversationId(params: {
   if (params.pickedId) return params.pickedId;
   const selected = params.selectInitial(params.conversations, params.storedId);
   if (selected) return selected;
-  // Invité : l’API liste renvoie 401, restaurer l’ID local si présent
-  if (!params.conversations.length && params.storedId) {
+  // Avant le premier chargement liste (ex. invité 401), restaurer l’ID local.
+  if (!params.listLoaded && !params.conversations.length && params.storedId) {
     return params.storedId;
   }
   return null;

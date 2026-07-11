@@ -413,7 +413,19 @@ describe('useChat', () => {
   });
 
   it('getListUnreadTotal retourne 0 avec plusieurs réponses bot pendant la consultation', async () => {
-    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({ conversations: [] });
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
+      conversations: [
+        {
+          id: 'c1',
+          status: 'ACTIVE',
+          createdAt: '',
+          updatedAt: '',
+          messages: [
+            { id: 'm2', senderType: 'BOT', isRead: false, content: 'b1', createdAt: '' },
+          ],
+        },
+      ],
+    });
     jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
       messages: [
         { id: 'm1', senderType: 'USER', isRead: true, content: 'q', createdAt: '' },
@@ -631,22 +643,19 @@ describe('useChat', () => {
     });
   });
 
-  it('construit un item de liste si conversations vides mais messages chargés', async () => {
-    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({ conversations: [] });
-    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
-      messages: [
-        { id: 'm1', senderType: 'USER', isRead: true, content: 'Bonjour', createdAt: '2026-06-01' },
-      ],
-      nextCursor: null,
-      hasMore: false,
-      status: 'ACTIVE',
+  it('ne construit plus d’item fantôme après nettoyage serveur', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockImplementation(async () => {
+      chatClient.reconcileStoredConversationIds([]);
+      return { conversations: [] };
     });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockRejectedValue(new Error('FETCH_MESSAGES_FAILED'));
     localStorage.setItem('chat_active_conversation_id', 'orphan-c');
 
     const { result } = renderHook(() => useChat(true), { wrapper });
-    await waitFor(() => expect(result.current.conversationId).toBe('orphan-c'));
-    await waitFor(() => expect(result.current.conversationListItems).toHaveLength(1));
-    expect(result.current.conversationListItems[0]?.id).toBe('orphan-c');
+    await waitFor(() => expect(chatClient.fetchConversationsList).toHaveBeenCalled());
+    await waitFor(() => expect(result.current.conversationListItems).toHaveLength(0));
+    await waitFor(() => expect(result.current.conversationId).toBeNull());
+    expect(localStorage.getItem('chat_active_conversation_id')).toBeNull();
   });
 
   it('expire awaitingStaffReply après 90 secondes', async () => {

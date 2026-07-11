@@ -79,6 +79,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
   const [isComposingNewConversation, setIsComposingNewConversation] = useState(false);
   const isComposingNewConversationRef = useRef(false);
   const [awaitingStaffReply, setAwaitingStaffReply] = useState(false);
+  const pendingListSyncIdRef = useRef<string | null>(null);
 
   const shouldSyncChat = shouldBackgroundSyncChat({
     isOpen,
@@ -86,7 +87,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
     storedConversationId: storedId,
   });
 
-  const { data: conversationsData, isLoading: conversationsLoading } = useQuery({
+  const { data: conversationsData, isLoading: conversationsLoading, isFetching: conversationsFetching } = useQuery({
     queryKey: queryKeys.conversations,
     queryFn: fetchConversationsList,
     enabled: shouldSyncChat,
@@ -106,9 +107,10 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
       pickedId: pickedConversationId,
       storedId,
       conversations,
+      listLoaded: conversationsData !== undefined,
       selectInitial: selectInitialConversationId,
     });
-  }, [isComposingNewConversation, pickedConversationId, conversations, storedId]);
+  }, [isComposingNewConversation, pickedConversationId, conversations, storedId, conversationsData]);
 
   const setConversationId = useCallback((id: string | null) => {
     isComposingNewConversationRef.current = false;
@@ -216,6 +218,22 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
       queryKey: queryKeys.conversationMessages(conversationId),
     });
   }, [conversationId, isOpen, isViewingConversation, queryClient]);
+
+  useEffect(() => {
+    if (!isOpen || !shouldSyncChat) return;
+    void queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
+  }, [isOpen, shouldSyncChat, queryClient]);
+
+  useEffect(() => {
+    if (!conversationId || !loadedConversationStatus) return;
+    if (loadedConversationStatus !== 'DELETED') return;
+    setPickedConversationId(null);
+    persistConversationId(null);
+    queryClient.removeQueries({
+      queryKey: queryKeys.conversationMessages(conversationId),
+    });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
+  }, [conversationId, loadedConversationStatus, queryClient]);
 
   useEffect(() => {
     if (
@@ -331,6 +349,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
     }) => {
       isComposingNewConversationRef.current = false;
       setIsComposingNewConversation(false);
+      pendingListSyncIdRef.current = data.conversationId;
       if (data.createdNewConversation || data.conversationId !== conversationId) {
         setConversationId(data.conversationId);
       }
@@ -341,6 +360,55 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
       queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
     },
   });
+
+  useEffect(() => {
+    if (!conversationsData || isComposingNewConversation || sendMessageMutation.isPending) return;
+
+    const knownIds = new Set(conversations.map((conversation) => conversation.id));
+    if (pendingListSyncIdRef.current && knownIds.has(pendingListSyncIdRef.current)) {
+      pendingListSyncIdRef.current = null;
+    }
+
+    if (!conversationId) return;
+    if (knownIds.has(conversationId)) return;
+    if (conversationId === pendingListSyncIdRef.current) return;
+    if (conversationsLoading || conversationsFetching) return;
+
+    if (conversations.length === 0) {
+      pendingListSyncIdRef.current = null;
+      setPickedConversationId(null);
+      persistConversationId(null);
+      queryClient.removeQueries({
+        queryKey: queryKeys.conversationMessages(conversationId),
+      });
+      return;
+    }
+
+    const cachedMessages = queryClient.getQueryData<{
+      pages?: Array<{ messages: unknown[] }>;
+    }>(queryKeys.conversationMessages(conversationId));
+    const hasCachedMessages = Boolean(
+      cachedMessages?.pages?.some((page) => page.messages.length > 0),
+    );
+    if (hasCachedMessages || messagesLoading || allMessages.length > 0) return;
+
+    setPickedConversationId(null);
+    persistConversationId(null);
+    queryClient.removeQueries({
+      queryKey: queryKeys.conversationMessages(conversationId),
+    });
+  }, [
+    conversationsData,
+    conversations,
+    conversationId,
+    isComposingNewConversation,
+    queryClient,
+    sendMessageMutation.isPending,
+    conversationsLoading,
+    conversationsFetching,
+    messagesLoading,
+    allMessages.length,
+  ]);
 
   const startNewConversation = useCallback(() => {
     isComposingNewConversationRef.current = true;
@@ -366,6 +434,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
       items.length === 0 &&
       conversationId &&
       !isComposingNewConversation &&
+      (conversationsLoading || conversationsFetching || sendMessageMutation.isPending) &&
       (allMessages.length > 0 || !messagesLoading)
     ) {
       return [
@@ -394,6 +463,9 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
     allMessages,
     messagesLoading,
     loadedConversationStatus,
+    conversationsLoading,
+    conversationsFetching,
+    sendMessageMutation.isPending,
   ]);
 
   const currentConversation = useMemo(() => {

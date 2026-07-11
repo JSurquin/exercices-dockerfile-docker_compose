@@ -13,6 +13,7 @@ import { shouldTriggerAiForUserMessage } from '@/lib/chat-ai-guards';
 import {
   canGuestAccessConversation,
   canUserAccessConversation,
+  isConversationHiddenFromClientViewer,
   isConversationWriteBlockedForIdentity,
   isStaffRole,
   resolveChatAccessScope,
@@ -58,6 +59,16 @@ async function assertConversationAccess(
     explicitScope: options?.scope,
     replyContext: options?.replyContext,
   });
+
+  if (
+    isConversationHiddenFromClientViewer({
+      status: conversation.status,
+      scope,
+      role: identity.kind === 'user' ? identity.role : undefined,
+    })
+  ) {
+    return { error: NextResponse.json({ error: 'Conversation non trouvée' }, { status: 404 }) };
+  }
 
   if (identity.kind === 'user') {
     const session = identity.session;

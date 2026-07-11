@@ -21,6 +21,7 @@ import {
   canGuestAccessConversation,
   canUserAccessConversation,
   CONVERSATION_CLOSED_I18N_KEY,
+  isConversationHiddenFromClientViewer,
   isStaffRole,
   shouldRedactEmailsForViewer,
 } from '@/lib/chat-logic';
@@ -79,6 +80,16 @@ export async function GET(
     const parsedScope = safeParseSearchParams(searchParams, chatAccessScopeQuerySchema);
     if (!parsedScope.ok) return parsedScope.response;
     const scope = parsedScope.data.scope;
+
+    if (
+      isConversationHiddenFromClientViewer({
+        status: conversation.status,
+        scope,
+        role: identity.kind === 'user' ? identity.role : undefined,
+      })
+    ) {
+      return NextResponse.json({ error: 'Conversation non trouvée' }, { status: 404 });
+    }
 
     if (identity.kind === 'user') {
       const session = identity.session;

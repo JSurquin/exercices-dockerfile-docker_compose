@@ -12,6 +12,7 @@ import {
   persistConversationId,
   readGuestConversationIds,
   readStoredConversationId,
+  reconcileStoredConversationIds,
   resolveActiveConversationId,
   subscribeStorage,
 } from '@/lib/chat-client';
@@ -42,6 +43,22 @@ describe('readStoredConversationId / persistConversationId', () => {
     appendGuestConversationId('c2');
     expect(readGuestConversationIds()).toEqual(['c2', 'c1']);
     expect(readStoredConversationId()).toBe('c2');
+  });
+
+  it('retire les IDs locaux absents de la liste serveur', () => {
+    appendGuestConversationId('c1');
+    appendGuestConversationId('c2');
+    reconcileStoredConversationIds(['c2']);
+    expect(readGuestConversationIds()).toEqual(['c2']);
+    expect(readStoredConversationId()).toBe('c2');
+  });
+
+  it('efface le stockage local si aucune conversation valide', () => {
+    persistConversationId('c1');
+    localStorage.setItem(GUEST_CONVERSATION_HISTORY_KEY, JSON.stringify(['c1', 'c2']));
+    reconcileStoredConversationIds([]);
+    expect(readGuestConversationIds()).toEqual([]);
+    expect(readStoredConversationId()).toBeNull();
   });
 
   it('migre l’ancien ID invité unique vers l’historique', () => {
@@ -172,6 +189,7 @@ describe('resolveActiveConversationId', () => {
         pickedId: 'picked',
         storedId: 'stored',
         conversations: [],
+        listLoaded: false,
         selectInitial: selectInitialConversationId,
       }),
     ).toBe('picked');
@@ -183,19 +201,33 @@ describe('resolveActiveConversationId', () => {
         pickedId: null,
         storedId: null,
         conversations: [{ id: 'c1', status: 'ACTIVE' }],
+        listLoaded: true,
         selectInitial: selectInitialConversationId,
       }),
     ).toBe('c1');
   });
 
-  it('restaure storedId invité sans liste API', () => {
+  it('restaure storedId invité avant chargement liste', () => {
     expect(
       resolveActiveConversationId({
         pickedId: null,
         storedId: 'guest-c',
         conversations: [],
+        listLoaded: false,
         selectInitial: selectInitialConversationId,
       }),
     ).toBe('guest-c');
+  });
+
+  it('ignore storedId après chargement liste vide', () => {
+    expect(
+      resolveActiveConversationId({
+        pickedId: null,
+        storedId: 'guest-c',
+        conversations: [],
+        listLoaded: true,
+        selectInitial: selectInitialConversationId,
+      }),
+    ).toBeNull();
   });
 });

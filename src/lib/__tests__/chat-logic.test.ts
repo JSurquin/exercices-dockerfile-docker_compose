@@ -8,6 +8,7 @@ import {
   getConversationListUnreadTotal,
   markStaffMessagesReadForClientViewer,
   isConversationWriteBlockedForIdentity,
+  isConversationHiddenFromClientViewer,
   isStaffRole,
   isValidModeratorRole,
   resolveOutgoingSenderType,
@@ -137,6 +138,33 @@ describe('resolveOutgoingSenderType', () => {
     expect(
       resolveOutgoingSenderType({ identityKind: 'user', role: 'USER' }),
     ).toBe('USER');
+  });
+});
+
+describe('isConversationHiddenFromClientViewer', () => {
+  it('masque DELETED côté widget', () => {
+    expect(
+      isConversationHiddenFromClientViewer({ status: 'DELETED', scope: 'widget', role: 'USER' }),
+    ).toBe(true);
+    expect(
+      isConversationHiddenFromClientViewer({ status: 'DELETED', scope: 'widget' }),
+    ).toBe(true);
+  });
+
+  it('conserve DELETED visible pour le staff', () => {
+    expect(
+      isConversationHiddenFromClientViewer({
+        status: 'DELETED',
+        scope: 'staff',
+        role: 'MODERATOR',
+      }),
+    ).toBe(false);
+  });
+
+  it('laisse ACTIVE visible', () => {
+    expect(
+      isConversationHiddenFromClientViewer({ status: 'ACTIVE', scope: 'widget', role: 'USER' }),
+    ).toBe(false);
   });
 });
 
