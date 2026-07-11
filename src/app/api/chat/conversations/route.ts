@@ -29,6 +29,8 @@ const conversationListInclude = {
       id: true,
       name: true,
       email: true,
+      steamUsername: true,
+      steamAvatar: true,
     },
   },
   messages: {

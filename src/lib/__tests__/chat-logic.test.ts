@@ -2,6 +2,8 @@ import {
   buildConversationWhereClause,
   canGuestAccessConversation,
   canUserAccessConversation,
+  canClientRateConversation,
+  computeAverageClientRating,
   computeAverageResponseTimeMinutes,
   countStaffMessagesForNotification,
   getUnreadMessageCount,
@@ -824,5 +826,21 @@ describe('shouldRedactEmailsForViewer', () => {
     expect(
       shouldRedactEmailsForViewer({ identityKind: 'user', role: 'MODERATOR' }),
     ).toBe('staff');
+  });
+});
+
+describe('canClientRateConversation', () => {
+  it('autorise une note unique sur conversation clôturée ou archivée', () => {
+    expect(canClientRateConversation('CLOSED', null)).toBe(true);
+    expect(canClientRateConversation('ARCHIVED', null)).toBe(true);
+    expect(canClientRateConversation('ACTIVE', null)).toBe(false);
+    expect(canClientRateConversation('CLOSED', 4)).toBe(false);
+  });
+});
+
+describe('computeAverageClientRating', () => {
+  it('calcule la moyenne des notes valides', () => {
+    expect(computeAverageClientRating([5, 4, null, 3])).toBe(4);
+    expect(computeAverageClientRating([])).toBe(0);
   });
 });

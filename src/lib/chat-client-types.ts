@@ -18,6 +18,15 @@ export interface ConversationSummary {
   createdAt: string;
   updatedAt: string;
   lastMessageAt?: string | null;
+  assignedModerator?: {
+    id: string;
+    name: string | null;
+    email: string;
+    steamUsername?: string | null;
+    steamAvatar?: string | null;
+  } | null;
+  clientRating?: number | null;
+  clientRatedAt?: string | null;
   messages?: ChatMessage[];
   _count?: { messages: number };
 }

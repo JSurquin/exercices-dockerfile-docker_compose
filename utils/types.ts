@@ -2508,6 +2508,8 @@ export interface Messages {
         closed: string;
         messages: string;
         avgTime: string;
+        clientRating: string;
+        ratedCount: string;
       };
       priority: {
         title: string;
@@ -3928,6 +3930,10 @@ export interface Messages {
     escalateError: string;
     aiTypingQueued: string;
     sendHint: string;
+    conversationEnded: string;
+    rateConversation: string;
+    rateThankYou: string;
+    activeRecently: string;
     historyTitle: string;
     solvedSectionTitle: string;
     newConversation: string;

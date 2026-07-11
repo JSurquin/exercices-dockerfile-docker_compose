@@ -16,9 +16,12 @@ import { shouldShowBackButton,
 import { isTerminalConversationStatus, shouldClearAiTypingIndicator } from "@/lib/chat-logic";
 import {
   CHAT_WIDGET_POPUP_CLOSE_MS,
+  CHAT_WIDGET_RATING_EMOJIS,
   setChatWidgetBodyScrollLock,
   chatWidgetAiTypingBubbleClass,
   chatWidgetCategoryButtonClass,
+  chatWidgetConversationEndedClass,
+  chatWidgetConversationHeaderClass,
   chatWidgetFabButtonClass,
   chatWidgetHeaderClass,
   chatWidgetHistoryItemClass,
@@ -29,10 +32,14 @@ import {
   chatWidgetMessageAlignment,
   chatWidgetMessageBubbleClass,
   chatWidgetPopupContainerClass,
+  chatWidgetRatingBoxClass,
+  chatWidgetRatingEmojiClass,
   chatWidgetScrollAreaClass,
   chatWidgetSendButtonClass,
   chatWidgetSenderLabelClass,
   chatWidgetSubcategoryButtonClass,
+  chatWidgetSystemBannerClass,
+  chatWidgetSystemJoinClass,
   chatWidgetTabBarClass,
   chatWidgetTabButtonClass,
   chatWidgetTextareaClass,
@@ -40,6 +47,7 @@ import {
   chatWidgetUnreadBadgeClass,
   chatWidgetMessageEnterClass,
   isWidgetMessageFromViewer,
+  resolveWidgetSystemMessageVariant,
   shouldShowWidgetAiTyping,
   shouldShowWidgetUnreadBadge,
   type WidgetSenderType,
@@ -65,6 +73,7 @@ import {
   HomeIcon,
   QuestionMarkCircleIcon,
   MagnifyingGlassIcon,
+  EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
 import {
   ChatBubbleBottomCenterTextIcon as ChatBubbleBottomCenterTextIconSolid,
@@ -225,6 +234,86 @@ const ChatWidgetInput = memo(function ChatWidgetInput({
   );
 });
 
+interface ChatWidgetConversationRatingProps {
+  conversationId: string;
+  existingRating: number | null | undefined;
+  title: string;
+  thankYou: string;
+  onRated: (rating: number) => void;
+}
+
+const ChatWidgetConversationRating = memo(function ChatWidgetConversationRating({
+  conversationId,
+  existingRating,
+  title,
+  thankYou,
+  onRated,
+}: ChatWidgetConversationRatingProps) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [localRating, setLocalRating] = useState<number | null>(existingRating ?? null);
+
+  const handleRate = async (rating: number) => {
+    if (submitting || localRating != null) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/chat/conversations/${conversationId}/rate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating }),
+      });
+      if (!res.ok) throw new Error('rate failed');
+      setLocalRating(rating);
+      onRated(rating);
+    } catch {
+      // silent — user can retry
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (localRating != null) {
+    return (
+      <div className="flex justify-center py-3">
+        <div className={chatWidgetRatingBoxClass()}>
+          <p className="text-sm text-muted-foreground">{thankYou}</p>
+          <p className="text-3xl mt-2" aria-hidden>
+            {CHAT_WIDGET_RATING_EMOJIS[localRating - 1]}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex justify-center py-3" data-testid="chat-conversation-rating">
+      <div className={chatWidgetRatingBoxClass()}>
+        <p className="text-sm font-medium text-foreground mb-3">{title}</p>
+        <div className="flex items-center justify-center gap-1">
+          {CHAT_WIDGET_RATING_EMOJIS.map((emoji, index) => {
+            const value = index + 1;
+            const isSelected = hovered === value;
+            return (
+              <button
+                key={emoji}
+                type="button"
+                disabled={submitting}
+                aria-label={`${value}/5`}
+                className={chatWidgetRatingEmojiClass(false, isSelected)}
+                onMouseEnter={() => setHovered(value)}
+                onMouseLeave={() => setHovered(null)}
+                onClick={() => void handleRate(value)}
+              >
+                {emoji}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+});
+
 interface ChatWidgetMessageListProps {
   conversationId: string | null;
   messages: WidgetMessage[];
@@ -244,8 +333,15 @@ interface ChatWidgetMessageListProps {
   isLoading: boolean;
   showAiTyping: boolean;
   aiTypingQueuedHint?: string;
+  conversationStatus?: string;
+  clientRating?: number | null;
+  showRatingPrompt: boolean;
+  rateTitle: string;
+  rateThankYou: string;
+  onRated: (rating: number) => void;
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   containerRef: React.RefObject<HTMLDivElement | null>;
+  agentAvatarUrl?: string | null;
 }
 
 const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
@@ -267,8 +363,15 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
   isLoading,
   showAiTyping,
   aiTypingQueuedHint,
+  conversationStatus,
+  clientRating,
+  showRatingPrompt,
+  rateTitle,
+  rateThankYou,
+  onRated,
   onScroll,
   containerRef,
+  agentAvatarUrl,
 }: ChatWidgetMessageListProps) {
   const seenMessageIdsRef = useRef<Set<string>>(new Set());
   const seenConversationRef = useRef<string | null>(null);
@@ -300,14 +403,59 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
 
       {messages.map((msg) => {
         const isUser = isWidgetMessageFromViewer(msg.senderType, msg.userId, viewerUserId);
-        const isBot = msg.senderType === "BOT";
         const isAi = msg.senderType === "AI";
-        const isModerator = msg.senderType === "MODERATOR";
         const isSystem = msg.senderType === "SYSTEM";
+        const systemVariant = isSystem ? resolveWidgetSystemMessageVariant(msg.content) : null;
+        if (systemVariant === 'closed') return null;
+
         const bubbleSender: WidgetSenderType = isUser ? "USER" : (msg.senderType as WidgetSenderType);
         const isNewMessage = !seenMessageIdsRef.current.has(msg.id);
         if (isNewMessage) {
           seenMessageIdsRef.current.add(msg.id);
+        }
+
+        if (isSystem && systemVariant === 'join') {
+          const joinText = resolveContent(msg.content);
+          return (
+            <div
+              key={msg.id}
+              className={`${chatWidgetSystemJoinClass()} ${chatWidgetMessageEnterClass(isNewMessage)}`}
+            >
+              <Avatar className="h-5 w-5 shrink-0">
+                <AvatarImage src={agentAvatarUrl ?? '/images/support-avatar.svg'} />
+                <AvatarFallback className="text-[9px]">
+                  <UserCircleIcon className="h-3 w-3" aria-hidden />
+                </AvatarFallback>
+              </Avatar>
+              <span>{joinText}</span>
+            </div>
+          );
+        }
+
+        if (isSystem && systemVariant === 'banner') {
+          return (
+            <div
+              key={msg.id}
+              className={`flex justify-start ${chatWidgetMessageEnterClass(isNewMessage)}`}
+            >
+              <div className={chatWidgetSystemBannerClass()}>
+                {resolveContent(msg.content)}
+              </div>
+            </div>
+          );
+        }
+
+        if (isSystem) {
+          return (
+            <div
+              key={msg.id}
+              className={`flex justify-center ${chatWidgetMessageEnterClass(isNewMessage)}`}
+            >
+              <p className="text-xs text-muted-foreground px-2 py-1 text-center max-w-[90%]">
+                {resolveContent(msg.content)}
+              </p>
+            </div>
+          );
         }
 
         return (
@@ -316,49 +464,19 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
             className={`flex ${chatWidgetMessageAlignment(isUser)} ${chatWidgetMessageEnterClass(isNewMessage)}`}
           >
             <div className={chatWidgetMessageBubbleClass(bubbleSender)}>
-              {isModerator && chatWidgetSenderLabelClass("MODERATOR") && (
-                <div className="flex items-center gap-1 mb-1">
-                  <span className={chatWidgetSenderLabelClass("MODERATOR")!}>
-                    <UserCircleIcon className="h-3 w-3 shrink-0" aria-hidden />
-                    {moderatorLabel}
-                  </span>
-                </div>
-              )}
-              {isBot && chatWidgetSenderLabelClass("BOT") && (
-                <div className="flex items-center gap-1 mb-1">
-                  <span className={chatWidgetSenderLabelClass("BOT")!}>
-                    <CpuChipIcon className="h-3 w-3 shrink-0" aria-hidden />
-                    {botLabel}
-                  </span>
-                </div>
-              )}
-              {isAi && chatWidgetSenderLabelClass("AI") && (
-                <div className="flex items-center gap-1 mb-1">
-                  <span className={chatWidgetSenderLabelClass("AI")!}>
-                    <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
-                    {aiLabel}
-                  </span>
-                </div>
-              )}
               {isUser ? (
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                  {resolveContent(msg.content)}
-                </p>
-              ) : isSystem ? (
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                  {resolveContent(msg.content)}
-                </p>
+                <p className="whitespace-pre-wrap">{resolveContent(msg.content)}</p>
               ) : (
                 <ChatMarkdownContent content={resolveContent(msg.content)} />
               )}
               {isAi && aiEnabled && (
-                <div className="mt-2 pt-2 border-t border-violet-200/70 dark:border-violet-800/70">
+                <div className="mt-2 pt-2 border-t border-border/40">
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
                     data-testid="chat-contact-moderator-button"
-                    className="h-7 text-[11px] px-2.5 border-violet-300 dark:border-violet-700 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/40"
+                    className="h-7 text-[11px] px-2.5"
                     disabled={escalatingModerator || isLoading}
                     onClick={() => void onContactModerator()}
                   >
@@ -367,11 +485,11 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
                 </div>
               )}
               <div
-                className={`flex items-center justify-between mt-1 gap-2 ${chatWidgetTimestampClass(bubbleSender)}`}
+                className={`flex items-center justify-end mt-1 gap-2 ${chatWidgetTimestampClass(bubbleSender)}`}
               >
                 <span className="text-[10px]">{formatMessageTime(msg.createdAt, dateLocale)}</span>
                 {isUser && (
-                  <div className="flex text-green-300">
+                  <div className="flex text-white/50">
                     <CheckIcon className="h-3 w-3" />
                     <CheckIcon className="h-3 w-3 -ml-1" />
                   </div>
@@ -381,6 +499,16 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
           </div>
         );
       })}
+
+      {showRatingPrompt && conversationId && (
+        <ChatWidgetConversationRating
+          conversationId={conversationId}
+          existingRating={clientRating}
+          title={rateTitle}
+          thankYou={rateThankYou}
+          onRated={onRated}
+        />
+      )}
 
       {isLoading && !showAiTyping && (
         <div className="flex justify-start">
@@ -506,6 +634,7 @@ export function ChatWidget() {
   const [aiTypingBaseCount, setAiTypingBaseCount] = useState(0);
   const [aiTypingQueuedHint, setAiTypingQueuedHint] = useState<string | undefined>();
   const [escalatingModerator, setEscalatingModerator] = useState(false);
+  const [localClientRating, setLocalClientRating] = useState<number | null>(null);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const wasOpenBeforeMobileMenuRef = useRef(false);
@@ -527,6 +656,7 @@ export function ChatWidget() {
     setAiTypingBaseCount(0);
     setAiTypingQueuedHint(undefined);
     setEscalatingModerator(false);
+    setLocalClientRating(null);
     if (aiTypingTimeoutRef.current) {
       clearTimeout(aiTypingTimeoutRef.current);
       aiTypingTimeoutRef.current = null;
@@ -590,10 +720,14 @@ export function ChatWidget() {
   }, [startNewConversation]);
 
   useEffect(() => {
+    setLocalClientRating(null);
+  }, [conversationId]);
+
+  useEffect(() => {
     if (isInConversation) {
       setTimeout(scrollToBottom, 50);
     }
-  }, [currentConversation?.messages, isInConversation, scrollToBottom]);
+  }, [currentConversation?.messages, isInConversation, scrollToBottom, localClientRating]);
 
   const handleToggleChat = () => {
     openPopup();
@@ -882,6 +1016,22 @@ export function ChatWidget() {
 
   const showBack = shouldShowBackButton({ tab: activeTab, helpStep, messagesStep });
 
+  const conversationAgentName =
+    currentConversation?.assignedModerator?.steamUsername ??
+    currentConversation?.assignedModerator?.name ??
+    messages.chatWidget.support;
+  const conversationAgentAvatar =
+    currentConversation?.assignedModerator?.steamAvatar ?? '/images/support-avatar.svg';
+  const lastStaffMessage = [...(currentConversation?.messages ?? [])]
+    .reverse()
+    .find((m) => ['MODERATOR', 'BOT', 'AI'].includes(m.senderType));
+  const agentActivityLabel = lastStaffMessage
+    ? messages.chatWidget.activeRecently.replace(
+        '{time}',
+        formatRelativeTime(lastStaffMessage.createdAt, relativeTimeLabels, dateLocale),
+      )
+    : messages.chatWidget.online;
+
   const renderHomeTab = () => (
     <div className={chatWidgetScrollAreaClass("p-4 space-y-3")}>
       <div className="pb-1">
@@ -1109,7 +1259,21 @@ export function ChatWidget() {
     </div>
   );
 
-  const renderConversation = () => (
+  const renderConversation = () => {
+    const conversationClosed = isTerminalConversationStatus(currentConversation?.status ?? '');
+    const effectiveClientRating =
+      localClientRating ?? currentConversation?.clientRating ?? null;
+    const showRatingPrompt =
+      conversationClosed && effectiveClientRating == null && Boolean(conversationId);
+    const assignedModerator = currentConversation?.assignedModerator;
+    const agentDisplayName =
+      assignedModerator?.steamUsername ??
+      assignedModerator?.name ??
+      messages.chatWidget.support;
+    const agentAvatarUrl =
+      assignedModerator?.steamAvatar ?? '/images/support-avatar.svg';
+
+    return (
     <>
       <ChatWidgetMessageList
         conversationId={conversationId}
@@ -1130,18 +1294,40 @@ export function ChatWidget() {
         isLoading={isLoading}
         showAiTyping={showAiTyping}
         aiTypingQueuedHint={aiTypingQueuedHint}
+        conversationStatus={currentConversation?.status}
+        clientRating={effectiveClientRating}
+        showRatingPrompt={showRatingPrompt}
+        rateTitle={messages.chatWidget.rateConversation}
+        rateThankYou={messages.chatWidget.rateThankYou}
+        onRated={(rating) => {
+          setLocalClientRating(rating);
+          if (conversationId) {
+            queryClient.invalidateQueries({
+              queryKey: queryKeys.conversationMessages(conversationId),
+            });
+            queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
+          }
+        }}
+        agentAvatarUrl={agentAvatarUrl}
         onScroll={handleMessagesScroll}
         containerRef={messagesContainerRef}
       />
-      <ChatWidgetInput
-        onSend={handleSendMessage}
-        disabled={isLoading}
-        placeholder={messages.chatWidget.placeholder}
-        sendHint={messages.chatWidget.sendHint}
-        prefillMessage={inputPrefill}
-      />
+      {conversationClosed ? (
+        <div className={chatWidgetConversationEndedClass()} data-testid="chat-conversation-ended">
+          {messages.chatWidget.conversationEnded}
+        </div>
+      ) : (
+        <ChatWidgetInput
+          onSend={handleSendMessage}
+          disabled={isLoading}
+          placeholder={messages.chatWidget.placeholder}
+          sendHint={messages.chatWidget.sendHint}
+          prefillMessage={inputPrefill}
+        />
+      )}
     </>
-  );
+    );
+  };
 
   const renderTabBar = () => (
     <nav className={chatWidgetTabBarClass()} data-testid="chat-tab-bar">
@@ -1205,6 +1391,50 @@ export function ChatWidget() {
         data-testid="chat-popup"
         className={chatWidgetPopupContainerClass(isOpen)}
       >
+        {isInConversation ? (
+          <div className={chatWidgetConversationHeaderClass()}>
+            <div className="flex items-center gap-2 min-w-0">
+              {showBack && (
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="p-1 rounded-full hover:bg-muted transition-colors shrink-0"
+                  aria-label={messages.chatWidget.tabs.messages}
+                >
+                  <ArrowLeftIcon className="h-4 w-4" />
+                </button>
+              )}
+              <Avatar className="h-9 w-9 shrink-0 border border-border/50">
+                <AvatarImage src={conversationAgentAvatar} />
+                <AvatarFallback className="text-xs">
+                  <UserCircleIcon className="h-4 w-4" aria-hidden />
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-sm truncate">{conversationAgentName}</h3>
+                <p className="text-xs text-muted-foreground truncate">{agentActivityLabel}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-0.5 shrink-0">
+              <button
+                type="button"
+                className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground"
+                aria-hidden
+                tabIndex={-1}
+              >
+                <EllipsisHorizontalIcon className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={closePopup}
+                className="p-1.5 rounded-full hover:bg-muted transition-colors"
+                aria-label={messages.ui.close}
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        ) : (
         <div className={chatWidgetHeaderClass()}>
           <div className="flex items-center space-x-3">
             {showBack && (
@@ -1240,6 +1470,7 @@ export function ChatWidget() {
             <XMarkIcon className="h-5 w-5" />
           </button>
         </div>
+        )}
 
         <div className="flex-1 min-h-0 flex flex-col">
           {activeTab === "home" && renderHomeTab()}

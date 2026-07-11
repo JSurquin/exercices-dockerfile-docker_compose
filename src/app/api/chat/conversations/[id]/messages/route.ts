@@ -44,7 +44,18 @@ async function assertConversationAccess(
   const identity = await resolveChatIdentity(request);
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
-    include: { user: true },
+    include: {
+      user: true,
+      assignedModerator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          steamUsername: true,
+          steamAvatar: true,
+        },
+      },
+    },
   });
 
   if (!conversation) {
@@ -163,6 +174,10 @@ export async function GET(
       hasMore: page.hasMore,
       status: conversation.status,
       aiEnabled: conversation.aiEnabled,
+      clientRating: conversation.clientRating,
+      clientRatedAt: conversation.clientRatedAt,
+      closedAt: conversation.closedAt,
+      assignedModerator: conversation.assignedModerator,
     });
   } catch (error) {
     if (error instanceof Error && error.message === 'INVALID_CURSOR') {

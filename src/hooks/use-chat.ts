@@ -164,6 +164,18 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
     return latestPage?.aiEnabled;
   }, [messagesData]);
 
+  const loadedClientRating = useMemo(() => {
+    const latestPage = messagesData?.pages?.[0];
+    return latestPage?.clientRating ?? null;
+  }, [messagesData]);
+
+  const loadedAssignedModerator = useMemo(() => {
+    const latestPage = messagesData?.pages?.[0];
+    if (latestPage?.assignedModerator) return latestPage.assignedModerator;
+    const meta = conversations.find((c) => c.id === conversationId);
+    return meta?.assignedModerator ?? null;
+  }, [messagesData, conversations, conversationId]);
+
   const isClientEngagedWithChat = isViewingConversation;
 
   const isEngagedWithConversation = useCallback(
@@ -477,6 +489,8 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
       id: conversationId,
       status: meta?.status ?? loadedConversationStatus ?? 'ACTIVE',
       aiEnabled: loadedAiEnabled ?? true,
+      clientRating: meta?.clientRating ?? loadedClientRating ?? null,
+      assignedModerator: loadedAssignedModerator,
       subject: meta?.subject,
       summary: meta?.summary,
       messages: visibleMessages,
@@ -484,7 +498,15 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
       updatedAt: meta?.updatedAt ?? new Date().toISOString(),
       lastMessageAt: meta?.lastMessageAt,
     };
-  }, [conversationId, conversations, visibleMessages, loadedConversationStatus, loadedAiEnabled]);
+  }, [
+    conversationId,
+    conversations,
+    visibleMessages,
+    loadedConversationStatus,
+    loadedAiEnabled,
+    loadedClientRating,
+    loadedAssignedModerator,
+  ]);
 
   return {
     conversations,

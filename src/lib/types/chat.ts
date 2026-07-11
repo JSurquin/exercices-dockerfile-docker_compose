@@ -98,6 +98,8 @@ export interface ChatStats {
   conversationsByCategory: {
     [category: string]: number;
   };
+  averageClientRating: number;
+  ratedConversations: number;
 }
 
 export interface ModeratorStats {
@@ -108,4 +110,6 @@ export interface ModeratorStats {
   closedConversations: number;
   averageResponseTime: number;
   totalMessages: number;
+  averageClientRating: number;
+  ratedConversations: number;
 }

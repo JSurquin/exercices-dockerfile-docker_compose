@@ -42,12 +42,7 @@ describe('chatWidgetMessageAlignment — viewer vs staff', () => {
 
 describe('chatWidgetSenderLabelClass — tous les types', () => {
   it.each(SENDER_TYPES)('gère %s', (type) => {
-    const cls = chatWidgetSenderLabelClass(type);
-    if (type === 'MODERATOR' || type === 'BOT' || type === 'AI') {
-      expect(cls).toBeTruthy();
-    } else {
-      expect(cls).toBeNull();
-    }
+    expect(chatWidgetSenderLabelClass(type)).toBeNull();
   });
 });
 

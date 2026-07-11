@@ -702,7 +702,7 @@ export default function AdminChatPage() {
                           <h3 className="font-semibold text-white">{stat.name || t.noName}</h3>
                           <p className="text-sm text-slate-400 truncate">{stat.email}</p>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 text-center">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6 text-center">
                           <div>
                             <p className="text-2xl font-bold text-white">{stat.assignedConversations}</p>
                             <p className="text-xs text-slate-400">{messages.admin.chat.performance.assigned}</p>
@@ -718,6 +718,16 @@ export default function AdminChatPage() {
                           <div>
                             <p className="text-2xl font-bold text-white">{stat.averageResponseTime}{messages.admin.chat.stats.minutesShort}</p>
                             <p className="text-xs text-slate-400">{messages.admin.chat.performance.avgTime}</p>
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-white">
+                              {stat.averageClientRating > 0 ? stat.averageClientRating : '—'}
+                            </p>
+                            <p className="text-xs text-slate-400">{messages.admin.chat.performance.clientRating}</p>
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-white">{stat.ratedConversations}</p>
+                            <p className="text-xs text-slate-400">{messages.admin.chat.performance.ratedCount}</p>
                           </div>
                         </div>
                       </div>

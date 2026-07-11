@@ -953,6 +953,10 @@ export const messages: Record<Locale, Messages> = {
       aiTypingQueued:
         "Plusieurs demandes en cours. Votre réponse arrive dans un instant, merci de patienter.",
       sendHint: "Entrée pour envoyer · Maj+Entrée pour un saut de ligne",
+      conversationEnded: "Votre conversation est terminée",
+      rateConversation: "Notez votre conversation",
+      rateThankYou: "Merci pour votre retour !",
+      activeRecently: "Actif il y a {time}",
       historyTitle: "Historique",
       solvedSectionTitle: "Résolus",
       newConversation: "Nouvelle conversation",
@@ -3075,7 +3079,9 @@ export const messages: Record<Locale, Messages> = {
           assigned: "Assignées",
           closed: "Fermées",
           messages: "Messages",
-          avgTime: "Temps moyen"
+          avgTime: "Temps moyen",
+          clientRating: "Note moyenne",
+          ratedCount: "Notes reçues",
         },
         priority: {
           title: "Conversations par priorité"
@@ -5711,7 +5717,7 @@ export const messages: Record<Locale, Messages> = {
           SYSTEM: "Système",
         },
         system: {
-          assigned: "Conversation assignée à {username}",
+          assigned: "{username} a rejoint la conversation",
           unassigned: "Conversation désassignée",
           closed: "Cette conversation a été fermée par notre équipe. Vous pouvez ouvrir une nouvelle discussion si besoin.",
         },
@@ -9677,7 +9683,9 @@ export const messages: Record<Locale, Messages> = {
           assigned: "Assigned",
           closed: "Closed",
           messages: "Messages",
-          avgTime: "Avg time"
+          avgTime: "Avg time",
+          clientRating: "Avg rating",
+          ratedCount: "Ratings received",
         },
         priority: {
           title: "Conversations by priority"
@@ -12024,6 +12032,10 @@ export const messages: Record<Locale, Messages> = {
       aiTypingQueued:
         "Several requests are in progress. Your reply is on its way — thank you for your patience.",
       sendHint: "Enter to send · Shift+Enter for new line",
+      conversationEnded: "Your conversation has ended",
+      rateConversation: "Rate your conversation",
+      rateThankYou: "Thanks for your feedback!",
+      activeRecently: "Active {time} ago",
       historyTitle: "History",
       solvedSectionTitle: "Solved",
       newConversation: "New conversation",
@@ -13277,7 +13289,7 @@ export const messages: Record<Locale, Messages> = {
           SYSTEM: "System",
         },
         system: {
-          assigned: "Conversation assigned to {username}",
+          assigned: "{username} joined the conversation",
           unassigned: "Conversation unassigned",
           closed: "This conversation was closed by our team. You can start a new discussion if needed.",
         },
@@ -17356,7 +17368,9 @@ export const messages: Record<Locale, Messages> = {
           assigned: "已分配",
           closed: "已关闭",
           messages: "消息",
-          avgTime: "平均时间"
+          avgTime: "平均时间",
+          clientRating: "平均评分",
+          ratedCount: "收到评分",
         },
         priority: {
           title: "按优先级分类的对话"
@@ -19549,6 +19563,10 @@ export const messages: Record<Locale, Messages> = {
       escalateError: "暂时无法转接人工客服，请稍后再试。",
       aiTypingQueued: "当前请求较多，您的回复即将到达，请稍候。",
       sendHint: "回车发送 · Shift+回车换行",
+      conversationEnded: "您的对话已结束",
+      rateConversation: "为本次对话评分",
+      rateThankYou: "感谢您的反馈！",
+      activeRecently: "{time}前活跃",
       historyTitle: "历史记录",
       solvedSectionTitle: "已解决",
       newConversation: "新对话",
@@ -20744,7 +20762,7 @@ export const messages: Record<Locale, Messages> = {
           SYSTEM: "系统",
         },
         system: {
-          assigned: "对话已分配给 {username}",
+          assigned: "{username} 加入了对话",
           unassigned: "对话已取消分配",
           closed: "此对话已由我们的团队关闭。如有需要，您可以开启新的对话。",
         },

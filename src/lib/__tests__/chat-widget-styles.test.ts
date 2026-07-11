@@ -41,52 +41,50 @@ describe('isWidgetMessageFromViewer', () => {
 });
 
 describe('chatWidgetMessageBubbleClass — design tokens', () => {
-  it('USER : gradient CTA à droite', () => {
-    expect(chatWidgetMessageBubbleClass('USER')).toContain('bg-cta-gradient');
-    expect(chatWidgetMessageBubbleClass('USER')).toContain('rounded-tr-sm');
+  it('USER : bulle sombre à droite', () => {
+    expect(chatWidgetMessageBubbleClass('USER')).toContain('bg-neutral-900');
+    expect(chatWidgetMessageBubbleClass('USER')).toContain('text-white');
   });
 
-  it('MODERATOR : bleu', () => {
-    expect(chatWidgetMessageBubbleClass('MODERATOR')).toContain('bg-blue-500');
+  it('MODERATOR : gris clair', () => {
+    expect(chatWidgetMessageBubbleClass('MODERATOR')).toContain('bg-muted/90');
   });
 
-  it('AI : thème violet (dark mode inclus)', () => {
+  it('AI : même style que staff (gris clair)', () => {
     const cls = chatWidgetMessageBubbleClass('AI');
-    expect(cls).toContain('bg-violet-50');
-    expect(cls).toContain('dark:bg-violet-950/40');
-    expect(cls).toContain('border-violet-200');
+    expect(cls).toContain('bg-muted/90');
+    expect(cls).toContain('border-border/40');
   });
 
-  it('SYSTEM : thème emerald', () => {
+  it('SYSTEM : bandeau muted', () => {
     const cls = chatWidgetMessageBubbleClass('SYSTEM');
-    expect(cls).toContain('bg-emerald-50');
-    expect(cls).toContain('text-emerald-800');
+    expect(cls).toContain('bg-muted/70');
+    expect(cls).toContain('text-muted-foreground');
   });
 
-  it('BOT : muted neutre', () => {
-    expect(chatWidgetMessageBubbleClass('BOT')).toContain('bg-muted');
+  it('BOT : gris clair neutre', () => {
+    expect(chatWidgetMessageBubbleClass('BOT')).toContain('bg-muted/90');
   });
 
   it('fallback pour type inconnu', () => {
-    expect(chatWidgetMessageBubbleClass('UNKNOWN')).toContain('bg-muted');
+    expect(chatWidgetMessageBubbleClass('UNKNOWN')).toContain('bg-muted/90');
   });
 });
 
 describe('chatWidgetSenderLabelClass', () => {
-  it('retourne des badges pour MODERATOR, BOT, AI uniquement', () => {
-    expect(chatWidgetSenderLabelClass('MODERATOR')).toContain('bg-white/20');
-    expect(chatWidgetSenderLabelClass('BOT')).toContain('text-muted-foreground');
-    expect(chatWidgetSenderLabelClass('AI')).toContain('text-violet-600');
+  it('n’affiche plus de badges expéditeur (style Intercom)', () => {
+    expect(chatWidgetSenderLabelClass('MODERATOR')).toBeNull();
+    expect(chatWidgetSenderLabelClass('BOT')).toBeNull();
+    expect(chatWidgetSenderLabelClass('AI')).toBeNull();
     expect(chatWidgetSenderLabelClass('USER')).toBeNull();
-    expect(chatWidgetSenderLabelClass('SYSTEM')).toBeNull();
   });
 });
 
 describe('chatWidgetTimestampClass', () => {
   it('adapte la couleur au type d’expéditeur', () => {
-    expect(chatWidgetTimestampClass('USER')).toContain('text-white/70');
-    expect(chatWidgetTimestampClass('SYSTEM')).toContain('text-emerald-600');
-    expect(chatWidgetTimestampClass('AI')).toContain('text-violet-500');
+    expect(chatWidgetTimestampClass('USER')).toContain('text-white/60');
+    expect(chatWidgetTimestampClass('SYSTEM')).toContain('text-muted-foreground');
+    expect(chatWidgetTimestampClass('AI')).toContain('text-muted-foreground');
     expect(chatWidgetTimestampClass('BOT')).toContain('text-muted-foreground');
   });
 });
@@ -148,11 +146,11 @@ describe('layout & interaction classes', () => {
   it('zone saisie et bouton envoi', () => {
     expect(chatWidgetInputAreaClass()).toContain('border-t');
     expect(chatWidgetTextareaClass()).toContain('focus:ring-primary');
-    expect(chatWidgetSendButtonClass()).toContain('bg-cta-gradient');
+    expect(chatWidgetSendButtonClass()).toContain('bg-neutral-900');
   });
 
-  it('bulle AI typing cohérente avec messages AI', () => {
-    expect(chatWidgetAiTypingBubbleClass()).toContain('border-violet-200');
+  it('bulle AI typing cohérente avec messages staff', () => {
+    expect(chatWidgetAiTypingBubbleClass()).toContain('border-border/40');
   });
 
   it('barre d’onglets en ligne avec boutons de taille égale', () => {

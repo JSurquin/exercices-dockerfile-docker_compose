@@ -76,6 +76,12 @@ export const botSubcategoryPostSchema = z
   })
   .strip();
 
+export const rateConversationPostSchema = z
+  .object({
+    rating: z.number().int().min(1).max(5),
+  })
+  .strip();
+
 export const chatAccessScopeQuerySchema = z
   .object({
     /** widget = fil client (défaut) ; staff = backoffice modération */

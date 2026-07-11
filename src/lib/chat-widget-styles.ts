@@ -1,6 +1,9 @@
 import type { SenderType } from '@prisma/client';
+import { CONVERSATION_CLOSED_I18N_KEY, TICKET_TRANSMITTED_I18N_KEY } from '@/lib/chat-logic';
 
 export type WidgetSenderType = SenderType | 'UNKNOWN';
+
+export type WidgetSystemMessageVariant = 'banner' | 'join' | 'closed' | 'default';
 
 /** Bulle utilisateur connecté vs invité (userId null). */
 export function isWidgetMessageFromViewer(
@@ -15,43 +18,68 @@ export function chatWidgetMessageAlignment(isFromViewer: boolean): string {
   return isFromViewer ? 'justify-end' : 'justify-start';
 }
 
+/** Variante d’affichage pour les messages SYSTEM (style messagerie type Intercom). */
+export function resolveWidgetSystemMessageVariant(content: string): WidgetSystemMessageVariant {
+  if (content === TICKET_TRANSMITTED_I18N_KEY) return 'banner';
+  if (content === CONVERSATION_CLOSED_I18N_KEY) return 'closed';
+  if (/^__i18n:moderation\.conversation\.system\.assigned/.test(content)) return 'join';
+  return 'default';
+}
+
 /** Classes Tailwind des bulles de message (widget accueil). */
 export function chatWidgetMessageBubbleClass(senderType: WidgetSenderType): string {
-  const base = 'max-w-[85%] rounded-2xl px-4 py-2.5';
+  const base = 'max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed';
   switch (senderType) {
     case 'USER':
-      return `${base} bg-cta-gradient text-white rounded-tr-sm`;
+      return `${base} bg-neutral-900 text-white dark:bg-neutral-950 rounded-br-md shadow-sm`;
     case 'MODERATOR':
-      return `${base} bg-blue-500 text-white rounded-tl-sm`;
+      return `${base} bg-muted/90 text-foreground border border-border/40 rounded-bl-md`;
     case 'AI':
-      return `${base} bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 rounded-tl-sm`;
+      return `${base} bg-muted/90 text-foreground border border-border/40 rounded-bl-md`;
     case 'SYSTEM':
-      return `${base} bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 rounded-tl-sm text-xs`;
+      return `${base} bg-muted/70 text-muted-foreground border border-border/30 rounded-xl text-xs`;
     case 'BOT':
-      return `${base} bg-muted border rounded-tl-sm`;
+      return `${base} bg-muted/90 text-foreground border border-border/40 rounded-bl-md`;
     default:
-      return `${base} bg-muted border rounded-tl-sm`;
+      return `${base} bg-muted/90 text-foreground border border-border/40 rounded-bl-md`;
   }
 }
 
-export function chatWidgetSenderLabelClass(senderType: WidgetSenderType): string | null {
-  switch (senderType) {
-    case 'MODERATOR':
-      return 'inline-flex items-center gap-1 text-[11px] font-semibold bg-white/20 rounded-full px-2 py-0.5';
-    case 'BOT':
-      return 'inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/60 rounded-full px-2 py-0.5';
-    case 'AI':
-      return 'inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5';
-    default:
-      return null;
-  }
+export function chatWidgetSystemBannerClass(): string {
+  return 'w-full rounded-2xl bg-muted/80 border border-border/40 px-4 py-3 text-sm text-foreground leading-relaxed';
+}
+
+export function chatWidgetSystemJoinClass(): string {
+  return 'flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground';
+}
+
+export function chatWidgetRatingBoxClass(): string {
+  return 'mx-auto max-w-[280px] rounded-xl border border-border/60 bg-card px-4 py-4 text-center shadow-sm';
+}
+
+export function chatWidgetRatingEmojiClass(isSelected: boolean, isHovered: boolean): string {
+  const base =
+    'text-2xl sm:text-3xl p-1.5 rounded-full transition-transform duration-150 cursor-pointer select-none';
+  if (isSelected) return `${base} scale-110 bg-theme-accent/15 ring-2 ring-theme-accent/40`;
+  if (isHovered) return `${base} scale-105 bg-muted/80`;
+  return `${base} hover:scale-105 hover:bg-muted/60`;
+}
+
+export function chatWidgetConversationEndedClass(): string {
+  return 'flex-shrink-0 border-t bg-muted/30 px-4 py-3 text-center text-xs text-muted-foreground';
+}
+
+export function chatWidgetConversationHeaderClass(): string {
+  return 'flex items-center justify-between p-3 border-b bg-background flex-shrink-0';
+}
+
+export function chatWidgetSenderLabelClass(_senderType: WidgetSenderType): string | null {
+  return null;
 }
 
 export function chatWidgetTimestampClass(senderType: WidgetSenderType): string {
-  if (senderType === 'USER') return 'text-white/70';
-  if (senderType === 'SYSTEM') return 'text-emerald-600';
-  if (senderType === 'AI') return 'text-violet-500 dark:text-violet-400';
-  return 'text-muted-foreground';
+  if (senderType === 'USER') return 'text-white/60';
+  return 'text-muted-foreground/80';
 }
 
 /** Durée de fermeture du popup (alignée sur transition CSS + démontage React). */
@@ -71,8 +99,8 @@ export function chatWidgetScrollAreaClass(extra = ''): string {
 }
 
 export function chatWidgetPopupContainerClass(isOpen: boolean): string {
-  const mobileBottom = isOpen ? "bottom-0" : "bottom-24";
-  const desktopBottom = isOpen ? "sm:bottom-6" : "sm:bottom-24";
+  const mobileBottom = isOpen ? 'bottom-0' : 'bottom-24';
+  const desktopBottom = isOpen ? 'sm:bottom-6' : 'sm:bottom-24';
   const base = `
     fixed top-[env(safe-area-inset-top,0px)] ${mobileBottom} ${desktopBottom} left-0 right-0
     max-sm:h-[calc(100dvh-env(safe-area-inset-top,0px))]
@@ -115,7 +143,7 @@ export function chatWidgetMessageEnterClass(isNew: boolean): string {
 }
 
 export function chatWidgetAiTypingBubbleClass(): string {
-  return 'bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 rounded-2xl rounded-tl-sm px-4 py-2.5';
+  return 'bg-muted/90 border border-border/40 rounded-2xl rounded-bl-md px-4 py-2.5';
 }
 
 export function chatWidgetInputAreaClass(): string {
@@ -170,7 +198,7 @@ export function chatWidgetHistoryListClass(): string {
 }
 
 export function chatWidgetSendButtonClass(): string {
-  return 'h-[38px] w-[38px] flex-shrink-0 bg-cta-gradient hover:brightness-110 rounded-xl';
+  return 'h-[38px] w-[38px] flex-shrink-0 bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-950 dark:hover:bg-neutral-900 rounded-xl text-white';
 }
 
 export function shouldShowWidgetUnreadBadge(unreadCount: number, isOpen: boolean): boolean {
@@ -188,3 +216,5 @@ export function shouldShowWidgetAiTyping(params: {
 }): boolean {
   return params.isAiTyping && !params.isSending;
 }
+
+export const CHAT_WIDGET_RATING_EMOJIS = ['😡', '😕', '😐', '🙂', '🤩'] as const;

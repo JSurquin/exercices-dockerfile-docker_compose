@@ -87,6 +87,7 @@ function buildChatMock(overrides: Record<string, unknown> = {}) {
 }
 
 const mockMessages = {
+  ui: { close: 'Fermer' },
   chatWidget: {
     support: 'MoonSkin Support',
     online: 'En ligne',
@@ -99,6 +100,10 @@ const mockMessages = {
     aiLabel: 'Réponse IA',
     aiTypingQueued: 'Plusieurs demandes en cours. Votre réponse arrive dans un instant, merci de patienter.',
     sendHint: 'Entrée pour envoyer',
+    conversationEnded: 'Votre conversation est terminée',
+    rateConversation: 'Notez votre conversation',
+    rateThankYou: 'Merci pour votre retour !',
+    activeRecently: 'Actif il y a {time}',
     historyTitle: 'Historique',
     solvedSectionTitle: 'Résolus',
     newConversation: 'Nouvelle conversation',
@@ -430,8 +435,6 @@ describe('ChatWidget', () => {
     expect(screen.getAllByTestId('markdown').length).toBeGreaterThan(0);
     expect(screen.getByText('Modérateur ici')).toBeInTheDocument();
     expect(screen.getByText('Ticket transmis')).toBeInTheDocument();
-    expect(screen.getByText('Modérateur')).toBeInTheDocument();
-    expect(screen.getByText('Bot')).toBeInTheDocument();
   });
 
   it('message i18n placeholder résolu', async () => {
@@ -602,7 +605,11 @@ describe('ChatWidget', () => {
     fireEvent.click(screen.getByText('KYC'));
     await waitFor(() => screen.getByTestId('chat-message-input'));
     const backs = screen.getAllByRole('button');
-    const back = backs.find((b) => b.querySelector('svg') && b.className.includes('hover:bg-white'));
+    const back = backs.find(
+      (b) =>
+        b.querySelector('svg') &&
+        (b.className.includes('hover:bg-white') || b.className.includes('hover:bg-muted')),
+    );
     fireEvent.click(back!);
     await openHelpTab();
     expect(screen.getByText('Problème de trade')).toBeInTheDocument();

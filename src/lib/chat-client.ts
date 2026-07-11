@@ -155,6 +155,10 @@ export async function fetchMessagesPage(
     hasMore: boolean;
     status?: string;
     aiEnabled?: boolean;
+    clientRating?: number | null;
+    clientRatedAt?: string | null;
+    closedAt?: string | null;
+    assignedModerator?: ConversationSummary['assignedModerator'];
   }>;
 }
 

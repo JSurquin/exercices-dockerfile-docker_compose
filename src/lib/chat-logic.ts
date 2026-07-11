@@ -12,6 +12,25 @@ export function isTerminalConversationStatus(status: string): boolean {
   return (TERMINAL_CONVERSATION_STATUSES as readonly string[]).includes(status);
 }
 
+/** Conversation clôturée/archivée éligible à une notation client unique. */
+export function canClientRateConversation(
+  status: string,
+  existingRating: number | null | undefined,
+): boolean {
+  if (existingRating != null) return false;
+  return status === 'CLOSED' || status === 'ARCHIVED';
+}
+
+/** Moyenne des notes client (1–5), arrondie à une décimale. */
+export function computeAverageClientRating(
+  ratings: Array<number | null | undefined>,
+): number {
+  const valid = ratings.filter((r): r is number => typeof r === 'number' && r >= 1 && r <= 5);
+  if (valid.length === 0) return 0;
+  const sum = valid.reduce((acc, r) => acc + r, 0);
+  return Math.round((sum / valid.length) * 10) / 10;
+}
+
 /** Masque une conversation supprimée côté widget client (staff backoffice conserve l’accès). */
 export function isConversationHiddenFromClientViewer(params: {
   status: string;
