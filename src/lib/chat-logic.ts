@@ -21,6 +21,17 @@ export function canClientRateConversation(
   return status === 'CLOSED' || status === 'ARCHIVED';
 }
 
+/** Commentaire client facultatif après une note déjà enregistrée. */
+export function canClientSubmitFeedback(
+  status: string,
+  existingRating: number | null | undefined,
+  existingFeedback: string | null | undefined,
+): boolean {
+  if (existingRating == null) return false;
+  if (existingFeedback != null && existingFeedback.trim() !== '') return false;
+  return status === 'CLOSED' || status === 'ARCHIVED';
+}
+
 /** Moyenne des notes client (1–5), arrondie à une décimale. */
 export function computeAverageClientRating(
   ratings: Array<number | null | undefined>,

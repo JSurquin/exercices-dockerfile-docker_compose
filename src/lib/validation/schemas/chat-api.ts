@@ -78,10 +78,21 @@ export const botSubcategoryPostSchema = z
 
 export const rateConversationPostSchema = z
   .object({
-    rating: z.number().int().min(1).max(5),
+    rating: z.number().int().min(1).max(5).optional(),
     feedback: z.string().trim().max(2000).optional(),
   })
-  .strip();
+  .strip()
+  .superRefine((data, ctx) => {
+    const hasRating = data.rating != null;
+    const hasFeedback = data.feedback != null && data.feedback !== '';
+    if (!hasRating && !hasFeedback) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Note ou commentaire requis',
+        path: ['rating'],
+      });
+    }
+  });
 
 export const chatAccessScopeQuerySchema = z
   .object({

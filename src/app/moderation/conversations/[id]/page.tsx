@@ -49,6 +49,7 @@ import {
 } from '@/lib/chat-notification-logic';
 import { isValidModeratorRole } from '@/lib/chat-logic';
 import { playNotificationSound } from '@/lib/play-notification-sound';
+import { CHAT_WIDGET_RATING_EMOJIS } from '@/lib/chat-widget-styles';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -558,6 +559,36 @@ function SidebarContent({
           )}
         </div>
       </div>
+
+      {((conversation as any).clientRating != null || (conversation as any).clientFeedback) && (
+        <div>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+            {messages.moderation.conversation.info.clientRatingTitle}
+          </p>
+          <div className="space-y-2 text-sm">
+            {(conversation as any).clientRating != null && (
+              <p className="flex items-center gap-2">
+                <span className="text-xl" aria-hidden>
+                  {CHAT_WIDGET_RATING_EMOJIS[(conversation as any).clientRating - 1]}
+                </span>
+                <span className="text-muted-foreground tabular-nums">
+                  {(conversation as any).clientRating}/5
+                </span>
+              </p>
+            )}
+            {(conversation as any).clientFeedback && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {messages.moderation.conversation.info.clientFeedbackTitle}
+                </p>
+                <p className="text-sm whitespace-pre-wrap rounded-md border border-border/50 bg-muted/30 px-2.5 py-2">
+                  {(conversation as any).clientFeedback}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Actions */}
       <div>

@@ -3,6 +3,7 @@ import {
   canGuestAccessConversation,
   canUserAccessConversation,
   canClientRateConversation,
+  canClientSubmitFeedback,
   computeAverageClientRating,
   computeAverageResponseTimeMinutes,
   countStaffMessagesForNotification,
@@ -835,6 +836,16 @@ describe('canClientRateConversation', () => {
     expect(canClientRateConversation('ARCHIVED', null)).toBe(true);
     expect(canClientRateConversation('ACTIVE', null)).toBe(false);
     expect(canClientRateConversation('CLOSED', 4)).toBe(false);
+  });
+});
+
+describe('canClientSubmitFeedback', () => {
+  it('autorise un commentaire unique après notation sur conversation terminée', () => {
+    expect(canClientSubmitFeedback('CLOSED', 3, null)).toBe(true);
+    expect(canClientSubmitFeedback('ARCHIVED', 5, '')).toBe(true);
+    expect(canClientSubmitFeedback('ACTIVE', 3, null)).toBe(false);
+    expect(canClientSubmitFeedback('CLOSED', null, null)).toBe(false);
+    expect(canClientSubmitFeedback('CLOSED', 4, 'Déjà commenté')).toBe(false);
   });
 });
 

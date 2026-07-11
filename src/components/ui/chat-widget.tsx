@@ -245,6 +245,8 @@ interface ChatWidgetConversationRatingProps {
   thankYou: string;
   onFlowStart: () => void;
   onRated: (rating: number) => void;
+  onRatingSaved: () => void;
+  onError: () => void;
 }
 
 type ChatWidgetRatingStep = 'select' | 'feedback' | 'done';
@@ -259,6 +261,8 @@ const ChatWidgetConversationRating = memo(function ChatWidgetConversationRating(
   thankYou,
   onFlowStart,
   onRated,
+  onRatingSaved,
+  onError,
 }: ChatWidgetConversationRatingProps) {
   const [hovered, setHovered] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -269,35 +273,52 @@ const ChatWidgetConversationRating = memo(function ChatWidgetConversationRating(
   useEffect(() => {
     if (existingRating != null) {
       setSelectedRating(existingRating);
-      setStep('done');
+      setStep((current) => (current === 'feedback' ? 'feedback' : 'done'));
     }
   }, [existingRating]);
 
-  const handleSelectRating = (rating: number) => {
+  const handleSelectRating = async (rating: number) => {
     if (submitting || step !== 'select') return;
-    setSelectedRating(rating);
-    setStep('feedback');
-    onFlowStart();
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/chat/conversations/${conversationId}/rate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating }),
+      });
+      if (!res.ok) throw new Error('rate failed');
+      setSelectedRating(rating);
+      setStep('feedback');
+      onFlowStart();
+      onRatingSaved();
+    } catch {
+      onError();
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleSendFeedback = async () => {
     const rating = selectedRating;
     if (rating == null || submitting || step !== 'feedback') return;
+    const trimmed = feedback.trim();
+    if (!trimmed) {
+      setStep('done');
+      onRated(rating);
+      return;
+    }
     setSubmitting(true);
     try {
-      const payload: { rating: number; feedback?: string } = { rating };
-      const trimmed = feedback.trim();
-      if (trimmed) payload.feedback = trimmed;
       const res = await fetch(`/api/chat/conversations/${conversationId}/rate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ feedback: trimmed }),
       });
-      if (!res.ok) throw new Error('rate failed');
+      if (!res.ok) throw new Error('feedback failed');
       setStep('done');
       onRated(rating);
     } catch {
-      // silent — user can retry
+      onError();
     } finally {
       setSubmitting(false);
     }
@@ -370,7 +391,7 @@ const ChatWidgetConversationRating = memo(function ChatWidgetConversationRating(
                 className={chatWidgetRatingEmojiClass(false, isSelected)}
                 onMouseEnter={() => setHovered(value)}
                 onMouseLeave={() => setHovered(null)}
-                onClick={() => handleSelectRating(value)}
+                onClick={() => void handleSelectRating(value)}
               >
                 {emoji}
               </button>
@@ -411,6 +432,8 @@ interface ChatWidgetMessageListProps {
   rateThankYou: string;
   onRatingFlowStart: () => void;
   onRated: (rating: number) => void;
+  onRatingSaved: () => void;
+  onRatingError: () => void;
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   containerRef: React.RefObject<HTMLDivElement | null>;
   agentAvatarUrl?: string | null;
@@ -445,6 +468,8 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
   rateThankYou,
   onRatingFlowStart,
   onRated,
+  onRatingSaved,
+  onRatingError,
   onScroll,
   containerRef,
   agentAvatarUrl,
@@ -587,6 +612,8 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
           thankYou={rateThankYou}
           onFlowStart={onRatingFlowStart}
           onRated={onRated}
+          onRatingSaved={onRatingSaved}
+          onError={onRatingError}
         />
       )}
 
@@ -1391,6 +1418,14 @@ export function ChatWidget() {
         rateSendFeedback={messages.chatWidget.rateSendFeedback}
         rateThankYou={messages.chatWidget.rateThankYou}
         onRatingFlowStart={() => setRatingFlowActive(true)}
+        onRatingSaved={() => {
+          if (conversationId) {
+            queryClient.invalidateQueries({
+              queryKey: queryKeys.conversationMessages(conversationId),
+            });
+            queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
+          }
+        }}
         onRated={(rating) => {
           setLocalClientRating(rating);
           setRatingFlowActive(false);
@@ -1401,6 +1436,12 @@ export function ChatWidget() {
             });
             queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
           }
+        }}
+        onRatingError={() => {
+          toast({
+            title: messages.chatWidget.rateError,
+            variant: 'destructive',
+          });
         }}
         agentAvatarUrl={agentAvatarUrl}
         onScroll={handleMessagesScroll}

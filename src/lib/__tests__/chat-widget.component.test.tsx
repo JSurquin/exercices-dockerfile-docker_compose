@@ -106,6 +106,7 @@ const mockMessages = {
     rateTellUsMore: 'Dites-nous en plus (facultatif)',
     rateSendFeedback: 'Envoyer',
     rateThankYou: "Merci de nous l'avoir indiqué",
+    rateError: "Impossible d'enregistrer votre avis. Réessayez dans un instant.",
     activeRecently: 'Actif il y a {time}',
     historyTitle: 'Historique',
     solvedSectionTitle: 'Résolus',
@@ -1188,7 +1189,18 @@ describe('ChatWidget', () => {
     const ratingButtons = screen.getByTestId('chat-conversation-rating').querySelectorAll('button');
     fireEvent.click(ratingButtons[2]!);
 
-    expect(screen.getByTestId('chat-conversation-rating-feedback')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/chat/conversations/c-closed/rate',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ rating: 3 }),
+        }),
+      );
+      expect(screen.getByTestId('chat-conversation-rating-feedback')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'test' } });
     fireEvent.click(screen.getByTestId('chat-rating-send-feedback'));
 
     await waitFor(() => {
@@ -1196,7 +1208,7 @@ describe('ChatWidget', () => {
         '/api/chat/conversations/c-closed/rate',
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({ rating: 3 }),
+          body: JSON.stringify({ feedback: 'test' }),
         }),
       );
       expect(screen.getByTestId('chat-conversation-rating-done')).toBeInTheDocument();

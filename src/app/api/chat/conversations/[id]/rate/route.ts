@@ -6,6 +6,7 @@ import { safeParseJson } from '@/lib/validation/helpers';
 import { rateConversationPostSchema } from '@/lib/validation/schemas/chat-api';
 import {
   canClientRateConversation,
+  canClientSubmitFeedback,
   canGuestAccessConversation,
   canUserAccessConversation,
   isConversationHiddenFromClientViewer,
@@ -69,16 +70,38 @@ export async function POST(
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    if (!canClientRateConversation(conversation.status, conversation.clientRating)) {
-      return NextResponse.json({ error: 'Notation indisponible' }, { status: 400 });
+    const trimmedFeedback = parsed.data.feedback?.trim();
+    const hasRating = parsed.data.rating != null;
+    const hasFeedback = Boolean(trimmedFeedback);
+
+    if (hasRating) {
+      if (!canClientRateConversation(conversation.status, conversation.clientRating)) {
+        return NextResponse.json({ error: 'Notation indisponible' }, { status: 400 });
+      }
+    } else if (hasFeedback) {
+      if (
+        !canClientSubmitFeedback(
+          conversation.status,
+          conversation.clientRating,
+          conversation.clientFeedback,
+        )
+      ) {
+        return NextResponse.json({ error: 'Commentaire indisponible' }, { status: 400 });
+      }
+    } else {
+      return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
     }
 
     const updated = await prisma.conversation.update({
       where: { id: resolvedParams.id },
       data: {
-        clientRating: parsed.data.rating,
-        clientRatedAt: new Date(),
-        ...(parsed.data.feedback ? { clientFeedback: parsed.data.feedback } : {}),
+        ...(hasRating
+          ? {
+              clientRating: parsed.data.rating,
+              clientRatedAt: new Date(),
+            }
+          : {}),
+        ...(hasFeedback ? { clientFeedback: trimmedFeedback } : {}),
       },
       select: {
         id: true,
@@ -89,9 +112,10 @@ export async function POST(
     });
 
     if (identity.kind === 'user') {
-      await logger.info(identity.session.user.id, 'CONVERSATION_RATED', {
+      await logger.info(identity.session.user.id, hasRating ? 'CONVERSATION_RATED' : 'CONVERSATION_FEEDBACK', {
         conversationId: resolvedParams.id,
-        rating: parsed.data.rating,
+        ...(hasRating ? { rating: parsed.data.rating } : {}),
+        ...(hasFeedback ? { hasFeedback: true } : {}),
       });
     }
 

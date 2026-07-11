@@ -78,6 +78,7 @@ import {
   DELETE as deleteConversation,
 } from '@/app/api/chat/conversations/[id]/route';
 import { POST as postBotMessage } from '@/app/api/chat/conversations/[id]/bot-message/route';
+import { POST as postRate } from '@/app/api/chat/conversations/[id]/rate/route';
 import { POST as postAssign, DELETE as deleteAssign } from '@/app/api/chat/conversations/[id]/assign/route';
 import { GET as getAiHealth } from '@/app/api/chat/ai/health/route';
 
@@ -692,6 +693,102 @@ describe('POST /api/chat/messages — modération', () => {
     const body = await res.json();
     expect(body.senderType).toBe('MODERATOR');
     expect(body.content).toContain('vérification');
+  });
+});
+
+describe('POST /api/chat/conversations/[id]/rate', () => {
+  const closedConversation = {
+    id: 'c1',
+    userId: 'u1',
+    status: 'CLOSED',
+    clientRating: null,
+    clientFeedback: null,
+  };
+
+  it('enregistre une note client sur conversation fermée', async () => {
+    mockResolveChatIdentity.mockResolvedValue({
+      kind: 'user',
+      role: 'USER',
+      session: { user: { id: 'u1' } },
+    });
+    (prisma.conversation.findUnique as jest.Mock).mockResolvedValue(closedConversation);
+    (prisma.conversation.update as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      clientRating: 4,
+      clientRatedAt: new Date(),
+      clientFeedback: null,
+    });
+
+    const res = await postRate(
+      makeRequest('http://localhost/api/chat/conversations/c1/rate', {
+        method: 'POST',
+        body: { rating: 4 },
+      }),
+      { params: Promise.resolve({ id: 'c1' }) },
+    );
+
+    expect(res.status).toBe(200);
+    expect(prisma.conversation.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ clientRating: 4 }),
+      }),
+    );
+  });
+
+  it('enregistre un commentaire après notation', async () => {
+    mockResolveChatIdentity.mockResolvedValue({
+      kind: 'user',
+      role: 'USER',
+      session: { user: { id: 'u1' } },
+    });
+    (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
+      ...closedConversation,
+      clientRating: 3,
+    });
+    (prisma.conversation.update as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      clientRating: 3,
+      clientRatedAt: new Date(),
+      clientFeedback: 'Super support',
+    });
+
+    const res = await postRate(
+      makeRequest('http://localhost/api/chat/conversations/c1/rate', {
+        method: 'POST',
+        body: { feedback: 'Super support' },
+      }),
+      { params: Promise.resolve({ id: 'c1' }) },
+    );
+
+    expect(res.status).toBe(200);
+    expect(prisma.conversation.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { clientFeedback: 'Super support' },
+      }),
+    );
+  });
+
+  it('refuse une seconde notation', async () => {
+    mockResolveChatIdentity.mockResolvedValue({
+      kind: 'user',
+      role: 'USER',
+      session: { user: { id: 'u1' } },
+    });
+    (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
+      ...closedConversation,
+      clientRating: 2,
+    });
+
+    const res = await postRate(
+      makeRequest('http://localhost/api/chat/conversations/c1/rate', {
+        method: 'POST',
+        body: { rating: 5 },
+      }),
+      { params: Promise.resolve({ id: 'c1' }) },
+    );
+
+    expect(res.status).toBe(400);
+    expect(prisma.conversation.update).not.toHaveBeenCalled();
   });
 });
 

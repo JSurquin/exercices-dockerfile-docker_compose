@@ -3936,6 +3936,7 @@ export interface Messages {
     rateTellUsMore: string;
     rateSendFeedback: string;
     rateThankYou: string;
+    rateError: string;
     activeRecently: string;
     historyTitle: string;
     solvedSectionTitle: string;
@@ -5186,6 +5187,8 @@ export interface Messages {
         created: string;
         updated: string;
         closed: string;
+        clientRatingTitle: string;
+        clientFeedbackTitle: string;
         actionsTitle: string;
         closeConversation: string;
         reopenConversation: string;
