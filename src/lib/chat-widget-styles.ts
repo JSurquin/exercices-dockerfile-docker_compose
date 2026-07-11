@@ -142,6 +142,33 @@ export function chatWidgetHomeCardClass(): string {
   return 'w-full rounded-xl border bg-card p-3.5 text-left transition-colors hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 hover:border-theme-accent/30';
 }
 
+/** Ligne d’historique (liste Messages) — style plat type messagerie. */
+export function chatWidgetHistoryItemClass(params: {
+  solved: boolean;
+  isSelected: boolean;
+}): string {
+  const base =
+    'w-full text-left px-3 py-3 border-b border-border/30 last:border-b-0 transition-all duration-200 ease-out group';
+  if (params.solved) {
+    return `${base} bg-transparent hover:bg-muted/55 dark:hover:bg-muted/35 active:bg-muted/70 dark:active:bg-muted/45`;
+  }
+  const selected = params.isSelected
+    ? 'bg-theme-accent/5 dark:bg-theme-accent/10'
+    : 'bg-transparent';
+  return `${base} ${selected} hover:bg-muted/55 dark:hover:bg-muted/35 active:bg-muted/70 dark:active:bg-muted/45`;
+}
+
+export function chatWidgetHistoryItemTitleClass(solved: boolean): string {
+  const base = 'text-sm font-semibold line-clamp-2 transition-colors duration-200';
+  return solved
+    ? `${base} text-muted-foreground group-hover:text-foreground/80`
+    : `${base} text-foreground`;
+}
+
+export function chatWidgetHistoryListClass(): string {
+  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain divide-y divide-border/30';
+}
+
 export function chatWidgetSendButtonClass(): string {
   return 'h-[38px] w-[38px] flex-shrink-0 bg-cta-gradient hover:brightness-110 rounded-xl';
 }

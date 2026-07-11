@@ -16,6 +16,8 @@ import {
   chatWidgetTimestampClass,
   chatWidgetUnreadBadgeClass,
   chatWidgetInputAreaClass,
+  chatWidgetHistoryItemClass,
+  chatWidgetHistoryListClass,
 } from '@/lib/chat-widget-styles';
 
 const SENDER_TYPES = ['USER', 'BOT', 'MODERATOR', 'AI', 'SYSTEM', 'UNKNOWN'] as const;
@@ -75,6 +77,9 @@ describe('Design tokens widget — classes non vides', () => {
     ['unreadBadge', chatWidgetUnreadBadgeClass()],
     ['aiTyping', chatWidgetAiTypingBubbleClass()],
     ['inputArea', chatWidgetInputAreaClass()],
+    ['historyItem solved', chatWidgetHistoryItemClass({ solved: true, isSelected: false })],
+    ['historyItem active', chatWidgetHistoryItemClass({ solved: false, isSelected: true })],
+    ['historyList', chatWidgetHistoryListClass()],
   ] as const)('%s a des classes tailwind', (_name, cls) => {
     expect(cls.length).toBeGreaterThan(5);
   });

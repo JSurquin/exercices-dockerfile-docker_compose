@@ -16,6 +16,9 @@ import {
   chatWidgetTimestampClass,
   chatWidgetUnreadBadgeClass,
   chatWidgetInputAreaClass,
+  chatWidgetHistoryItemClass,
+  chatWidgetHistoryItemTitleClass,
+  chatWidgetHistoryListClass,
   isWidgetMessageFromViewer,
   preserveChatLineBreaks,
   shouldShowWidgetAiTyping,
@@ -157,6 +160,31 @@ describe('layout & interaction classes', () => {
     expect(chatWidgetTabBarClass()).toContain('flex-row');
     expect(chatWidgetTabButtonClass(true)).toContain('flex-1');
     expect(chatWidgetTabButtonClass(false)).toContain('min-h-[48px]');
+  });
+
+  it('ligne historique résolue : survol gris clair animé', () => {
+    const cls = chatWidgetHistoryItemClass({ solved: true, isSelected: false });
+    expect(cls).toContain('hover:bg-muted/55');
+    expect(cls).toContain('transition-all');
+    expect(cls).toContain('duration-200');
+    expect(cls).not.toContain('opacity-60');
+  });
+
+  it('ligne historique active : sélection accent + survol gris', () => {
+    const selected = chatWidgetHistoryItemClass({ solved: false, isSelected: true });
+    expect(selected).toContain('bg-theme-accent/5');
+    const idle = chatWidgetHistoryItemClass({ solved: false, isSelected: false });
+    expect(idle).toContain('hover:bg-muted/55');
+  });
+
+  it('titre historique résolu s’éclaircit au survol', () => {
+    expect(chatWidgetHistoryItemTitleClass(true)).toContain('group-hover:text-foreground/80');
+    expect(chatWidgetHistoryItemTitleClass(false)).toContain('text-foreground');
+  });
+
+  it('liste historique plate avec séparateurs', () => {
+    expect(chatWidgetHistoryListClass()).toContain('divide-y');
+    expect(chatWidgetHistoryListClass()).toContain('overflow-y-auto');
   });
 });
 
