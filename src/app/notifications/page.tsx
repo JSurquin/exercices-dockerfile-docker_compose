@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -88,6 +88,12 @@ export default function NotificationsPage() {
     },
     enabled: !!user,
   });
+
+  useEffect(() => {
+    if (user) {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.userNotifications });
+    }
+  }, [user, queryClient]);
 
   const notifications = notificationsData?.notifications ?? [];
   const unreadCount = notificationsData?.unreadCount ?? 0;

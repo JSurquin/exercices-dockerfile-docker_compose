@@ -8,13 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { useLocale } from "@/components/providers/locale-provider";
 import { resolveI18nContent } from "@/lib/resolve-i18n-content";
 import { localeToBcp47 } from "@/lib/locale-date";
-import {
-  shouldShowBackButton,
+import { shouldShowBackButton,
   type ChatWidgetHelpStep,
   type ChatWidgetMessagesStep,
   type ChatWidgetTab,
 } from "@/lib/chat-widget-config";
-import { shouldClearAiTypingIndicator } from "@/lib/chat-logic";
+import { isTerminalConversationStatus, shouldClearAiTypingIndicator } from "@/lib/chat-logic";
 import {
   CHAT_WIDGET_POPUP_CLOSE_MS,
   setChatWidgetBodyScrollLock,
@@ -1018,6 +1017,45 @@ export function ChatWidget() {
     );
   };
 
+  const renderHistoryItem = (item: (typeof conversationListItems)[number], solved = false) => (
+    <button
+      key={item.id}
+      type="button"
+      onClick={() => handleSelectHistoryItem(item.id)}
+      className={`w-full text-left rounded-xl border px-3 py-2.5 transition-colors ${
+        solved
+          ? "opacity-60 border-border/60 bg-muted/30 hover:bg-muted/50"
+          : `hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 ${
+              item.id === conversationId ? "border-theme-accent/40 bg-theme-accent/5" : "bg-card"
+            }`
+      }`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <p className={`text-sm font-medium line-clamp-2 ${solved ? "text-muted-foreground" : ""}`}>
+          {item.title}
+        </p>
+        {!solved && item.unread > 0 && (
+          <Badge className="h-5 min-w-5 px-1 text-[10px]">{item.unread}</Badge>
+        )}
+      </div>
+      <p className="text-[10px] text-muted-foreground mt-1">
+        {new Date(item.lastMessageAt).toLocaleDateString(undefined, {
+          day: "numeric",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
+      </p>
+    </button>
+  );
+
+  const activeConversationItems = conversationListItems.filter(
+    (item) => !isTerminalConversationStatus(item.status),
+  );
+  const solvedConversationItems = conversationListItems.filter((item) =>
+    isTerminalConversationStatus(item.status),
+  );
+
   const renderMessagesList = () => (
     <div className="flex-1 min-h-0 flex flex-col">
       <div className="p-3 border-b flex items-center justify-between gap-2">
@@ -1050,31 +1088,17 @@ export function ChatWidget() {
             </Button>
           </div>
         ) : (
-          conversationListItems.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => handleSelectHistoryItem(item.id)}
-              className={`w-full text-left rounded-xl border px-3 py-2.5 transition-colors hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 ${
-                item.id === conversationId ? "border-theme-accent/40 bg-theme-accent/5" : "bg-card"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-medium line-clamp-2">{item.title}</p>
-                {item.unread > 0 && (
-                  <Badge className="h-5 min-w-5 px-1 text-[10px]">{item.unread}</Badge>
-                )}
+          <>
+            {activeConversationItems.map((item) => renderHistoryItem(item))}
+            {solvedConversationItems.length > 0 && (
+              <div className="pt-3 space-y-1">
+                <p className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/80">
+                  {messages.chatWidget.solvedSectionTitle}
+                </p>
+                {solvedConversationItems.map((item) => renderHistoryItem(item, true))}
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1">
-                {new Date(item.lastMessageAt).toLocaleDateString(undefined, {
-                  day: "numeric",
-                  month: "short",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
-            </button>
-          ))
+            )}
+          </>
         )}
       </div>
     </div>

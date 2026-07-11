@@ -182,6 +182,14 @@ export async function PATCH(
         content: CONVERSATION_CLOSED_I18N_KEY,
         senderType: 'SYSTEM',
       });
+      await prisma.chatMessage.updateMany({
+        where: {
+          conversationId: resolvedParams.id,
+          isRead: false,
+          senderType: { not: 'USER' },
+        },
+        data: { isRead: true },
+      });
     }
 
     const updatedConversation = await prisma.conversation.update({

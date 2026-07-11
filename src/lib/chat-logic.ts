@@ -328,6 +328,17 @@ export function getUnreadMessageCount(
   return messages.filter((m) => !m.isRead && m.senderType !== 'USER').length;
 }
 
+/** Compteur non-lus pour la liste client : 0 si consulté ou ticket clôturé. */
+export function resolveConversationUnreadForClient(params: {
+  conversationStatus: string;
+  previewMessages: Array<{ isRead: boolean; senderType: string }>;
+  isViewingThisConversation: boolean;
+}): number {
+  if (params.isViewingThisConversation) return 0;
+  if (isTerminalConversationStatus(params.conversationStatus)) return 0;
+  return getUnreadMessageCount(params.previewMessages);
+}
+
 /** Messages staff/BOT considérés lus tant que le client consulte la conversation. */
 export function markStaffMessagesReadForClientViewer<
   T extends { isRead: boolean; senderType: string },

@@ -15,9 +15,11 @@ import {
   shouldPlayClientNotificationSound,
 } from '@/lib/chat-notification-logic';
 import {
+  getConversationListUnreadTotal,
   getUnreadMessageCount,
   isTerminalConversationStatus,
   markStaffMessagesReadForClientViewer,
+  resolveConversationUnreadForClient,
   selectInitialConversationId,
   shouldClearAwaitingStaffReply,
 } from '@/lib/chat-logic';
@@ -183,22 +185,17 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
   );
 
   const resolveConversationUnread = useCallback(
-    (convId: string, previewMessages: Array<{ isRead: boolean; senderType: string }>) => {
-      if (isEngagedWithConversation(convId)) return 0;
-      if (convId === conversationId && !messagesLoading && allMessages.length > 0) {
-        const loadedUnread = getUnreadMessageCount(messagesForUnreadCount);
-        const previewUnread = getUnreadMessageCount(previewMessages);
-        return Math.max(loadedUnread, previewUnread);
-      }
-      return getUnreadMessageCount(previewMessages);
-    },
-    [
-      conversationId,
-      isEngagedWithConversation,
-      messagesForUnreadCount,
-      messagesLoading,
-      allMessages.length,
-    ],
+    (
+      convId: string,
+      conversationStatus: string,
+      previewMessages: Array<{ isRead: boolean; senderType: string }>,
+    ) =>
+      resolveConversationUnreadForClient({
+        conversationStatus,
+        previewMessages,
+        isViewingThisConversation: isEngagedWithConversation(convId),
+      }),
+    [isEngagedWithConversation],
   );
 
   const visibleMessages = useMemo(
@@ -217,6 +214,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
     void queryClient.invalidateQueries({
       queryKey: queryKeys.conversationMessages(conversationId),
     });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
   }, [conversationId, isOpen, isViewingConversation, queryClient]);
 
   useEffect(() => {
@@ -427,7 +425,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
       }),
       lastMessageAt: conv.lastMessageAt ?? conv.updatedAt,
       status: conv.status,
-      unread: resolveConversationUnread(conv.id, conv.messages ?? []),
+      unread: resolveConversationUnread(conv.id, conv.status, conv.messages ?? []),
     }));
 
     if (
@@ -449,7 +447,11 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
             allMessages[allMessages.length - 1]?.createdAt ??
             new Date().toISOString(),
           status: loadedConversationStatus ?? 'ACTIVE',
-          unread: resolveConversationUnread(conversationId, allMessages),
+          unread: resolveConversationUnread(
+            conversationId,
+            loadedConversationStatus ?? 'ACTIVE',
+            allMessages,
+          ),
         },
       ];
     }
@@ -498,7 +500,11 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
     isLoadingOlderMessages: isFetchingNextPage,
     getUnreadCount: () => getUnreadMessageCount(messagesForUnreadCount),
     getListUnreadTotal: () =>
-      conversationListItems.reduce((sum, item) => sum + item.unread, 0),
+      getConversationListUnreadTotal(
+        conversationListItems,
+        conversationId,
+        isClientEngagedWithChat,
+      ),
     isLoading:
       conversationsLoading ||
       messagesLoading ||

@@ -7,6 +7,7 @@ import {
   getUnreadMessageCount,
   getConversationListUnreadTotal,
   markStaffMessagesReadForClientViewer,
+  resolveConversationUnreadForClient,
   isConversationWriteBlockedForIdentity,
   isConversationHiddenFromClientViewer,
   isStaffRole,
@@ -573,6 +574,41 @@ describe('getUnreadMessageCount', () => {
         { isRead: false, senderType: 'USER' },
         { isRead: false, senderType: 'MODERATOR' },
       ]),
+    ).toBe(2);
+  });
+});
+
+describe('resolveConversationUnreadForClient', () => {
+  it('retourne 0 pour un ticket clôturé même avec messages non lus', () => {
+    expect(
+      resolveConversationUnreadForClient({
+        conversationStatus: 'CLOSED',
+        previewMessages: [{ isRead: false, senderType: 'BOT' }],
+        isViewingThisConversation: false,
+      }),
+    ).toBe(0);
+  });
+
+  it('retourne 0 quand la conversation est consultée', () => {
+    expect(
+      resolveConversationUnreadForClient({
+        conversationStatus: 'ACTIVE',
+        previewMessages: [{ isRead: false, senderType: 'MODERATOR' }],
+        isViewingThisConversation: true,
+      }),
+    ).toBe(0);
+  });
+
+  it('compte les non-lus actifs hors consultation', () => {
+    expect(
+      resolveConversationUnreadForClient({
+        conversationStatus: 'ACTIVE',
+        previewMessages: [
+          { isRead: false, senderType: 'BOT' },
+          { isRead: false, senderType: 'MODERATOR' },
+        ],
+        isViewingThisConversation: false,
+      }),
     ).toBe(2);
   });
 });

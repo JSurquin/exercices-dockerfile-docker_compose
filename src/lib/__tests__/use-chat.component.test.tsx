@@ -825,6 +825,41 @@ describe('useChat', () => {
     expect(result.current.getListUnreadTotal()).toBe(2);
   });
 
+  it('ignore les tickets clôturés dans getListUnreadTotal', async () => {
+    jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({
+      conversations: [
+        {
+          id: 'c1',
+          status: 'CLOSED',
+          createdAt: '',
+          updatedAt: '',
+          messages: [
+            { id: 'm1', senderType: 'BOT', isRead: false, content: 'bot', createdAt: '' },
+            { id: 'm2', senderType: 'MODERATOR', isRead: false, content: 'mod', createdAt: '' },
+          ],
+        },
+        {
+          id: 'c2',
+          status: 'ACTIVE',
+          createdAt: '',
+          updatedAt: '',
+          messages: [{ id: 'm3', senderType: 'BOT', isRead: false, content: 'bot2', createdAt: '' }],
+        },
+      ],
+    });
+    jest.spyOn(chatClient, 'fetchMessagesPage').mockResolvedValue({
+      messages: [],
+      nextCursor: null,
+      hasMore: false,
+    });
+
+    const { result } = renderHook(() => useChat(true, false), { wrapper });
+    await waitFor(() => expect(result.current.conversationListItems).toHaveLength(2));
+    expect(result.current.conversationListItems[0]?.unread).toBe(0);
+    expect(result.current.conversationListItems[1]?.unread).toBe(1);
+    expect(result.current.getListUnreadTotal()).toBe(1);
+  });
+
   it('synchronise par défaut pour utilisateur connecté même fermé', async () => {
     jest.spyOn(chatClient, 'fetchConversationsList').mockResolvedValue({ conversations: [] });
     const { result } = renderHook(() => useChat(), { wrapper });

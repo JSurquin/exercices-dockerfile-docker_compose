@@ -100,6 +100,9 @@ export function Header() {
       return response.json();
     },
     enabled: !!user,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     refetchInterval: 30000, // Rafraîchir toutes les 30 secondes
   });
 

@@ -3929,6 +3929,7 @@ export interface Messages {
     aiTypingQueued: string;
     sendHint: string;
     historyTitle: string;
+    solvedSectionTitle: string;
     newConversation: string;
     newConversationNotice: string;
     newConversationFromClosed: string;

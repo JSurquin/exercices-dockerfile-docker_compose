@@ -100,6 +100,7 @@ const mockMessages = {
     aiTypingQueued: 'Plusieurs demandes en cours. Votre réponse arrive dans un instant, merci de patienter.',
     sendHint: 'Entrée pour envoyer',
     historyTitle: 'Historique',
+    solvedSectionTitle: 'Résolus',
     newConversation: 'Nouvelle conversation',
     tabs: { home: 'Accueil', help: 'Aide', messages: 'Messages' },
     home: {
@@ -557,6 +558,7 @@ describe('ChatWidget', () => {
     fireEvent.click(screen.getByTestId('chat-tab-messages'));
     expect(screen.getByTestId('chat-history-list')).toBeInTheDocument();
     expect(screen.getByText('Trade bloqué')).toBeInTheDocument();
+    expect(screen.getByText('Résolus')).toBeInTheDocument();
     expect(screen.getByTestId('chat-history-list').querySelector('[data-slot="badge"]')).toHaveTextContent('2');
     fireEvent.click(screen.getByText('Paiement SEPA'));
     expect(mockSetConversationId).toHaveBeenCalledWith('c2');

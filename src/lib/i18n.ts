@@ -954,6 +954,7 @@ export const messages: Record<Locale, Messages> = {
         "Plusieurs demandes en cours. Votre réponse arrive dans un instant, merci de patienter.",
       sendHint: "Entrée pour envoyer · Maj+Entrée pour un saut de ligne",
       historyTitle: "Historique",
+      solvedSectionTitle: "Résolus",
       newConversation: "Nouvelle conversation",
       newConversationNotice:
         "Une nouvelle conversation a été ouverte. Nous attendons toujours la réponse du modérateur sur votre fil précédent.",
@@ -12024,6 +12025,7 @@ export const messages: Record<Locale, Messages> = {
         "Several requests are in progress. Your reply is on its way — thank you for your patience.",
       sendHint: "Enter to send · Shift+Enter for new line",
       historyTitle: "History",
+      solvedSectionTitle: "Solved",
       newConversation: "New conversation",
       newConversationNotice:
         "A new conversation has been opened. We are still waiting for the moderator's reply on your previous thread.",
@@ -19548,6 +19550,7 @@ export const messages: Record<Locale, Messages> = {
       aiTypingQueued: "当前请求较多，您的回复即将到达，请稍候。",
       sendHint: "回车发送 · Shift+回车换行",
       historyTitle: "历史记录",
+      solvedSectionTitle: "已解决",
       newConversation: "新对话",
       newConversationNotice:
         "已开启新对话。我们仍在等待版主在您之前的会话中回复。",
