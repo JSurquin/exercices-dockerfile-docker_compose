@@ -43,6 +43,7 @@ import { queryKeys } from "@/lib/query-keys";
 import { UserRoleBadge } from "@/components/ui/user-role-badge";
 import { FragmentAmount } from "@/components/ui/level-badge";
 import { cn } from "@/lib/utils";
+import { SteamBrandIcon } from "@/components/ui/social-brand-icons";
 
 export function Header() {
   const { user, loginWithSteam, loginWithDiscord, logout, isLoading } = useAuth();
@@ -358,13 +359,7 @@ export function Header() {
                   </div>
                 ) : (
                   <div className="flex items-center space-x-2">
-                    <svg
-                      className="h-4 w-4"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121L8.427 13.97l-2.996-.935c-.65-.204-.658-.65.135-.962l11.708-4.517c.538-.196 1.006.128.82.665z" />
-                    </svg>
+                    <SteamBrandIcon className="h-4 w-4" />
                     <span>{messages.common.steamLogin}</span>
                   </div>
                 )}
