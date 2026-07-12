@@ -10,6 +10,7 @@ import {
   getUnreadMessageCount,
   getConversationListUnreadTotal,
   markStaffMessagesReadForClientViewer,
+  patchConversationListPreviewAsReadForClient,
   resolveConversationUnreadForClient,
   isConversationWriteBlockedForIdentity,
   isConversationHiddenFromClientViewer,
@@ -645,6 +646,24 @@ describe('getConversationListUnreadTotal', () => {
   });
 });
 
+describe('patchConversationListPreviewAsReadForClient', () => {
+  it('marque lu les messages staff de l aperçu consulté', () => {
+    const conversations = [
+      {
+        id: 'c1',
+        messages: [{ isRead: false, senderType: 'BOT' }],
+      },
+      {
+        id: 'c2',
+        messages: [{ isRead: false, senderType: 'MODERATOR' }],
+      },
+    ];
+    const patched = patchConversationListPreviewAsReadForClient(conversations, 'c1');
+    expect(patched[0].messages?.[0]?.isRead).toBe(true);
+    expect(patched[1].messages?.[0]?.isRead).toBe(false);
+  });
+});
+
 describe('countStaffMessagesForNotification', () => {
   it('inclut MODERATOR, BOT, SYSTEM mais pas AI', () => {
     expect(STAFF_SENDER_TYPES_FOR_NOTIFICATION).not.toContain('AI');
@@ -675,6 +694,12 @@ describe('shouldClearAwaitingStaffReply', () => {
       shouldClearAwaitingStaffReply({
         senderType: 'SYSTEM',
         content: '__i18n:moderation.conversation.system.closed__',
+      }),
+    ).toBe(true);
+    expect(
+      shouldClearAwaitingStaffReply({
+        senderType: 'SYSTEM',
+        content: '__i18n:moderation.conversation.system.autoClosed__',
       }),
     ).toBe(true);
   });

@@ -1,5 +1,9 @@
 import type { SenderType } from '@prisma/client';
-import { CONVERSATION_CLOSED_I18N_KEY, TICKET_TRANSMITTED_I18N_KEY } from '@/lib/chat-logic';
+import {
+  CONVERSATION_AUTO_CLOSED_I18N_KEY,
+  CONVERSATION_CLOSED_I18N_KEY,
+  TICKET_TRANSMITTED_I18N_KEY,
+} from '@/lib/chat-logic';
 
 export type WidgetSenderType = SenderType | 'UNKNOWN';
 
@@ -22,6 +26,7 @@ export function chatWidgetMessageAlignment(isFromViewer: boolean): string {
 export function resolveWidgetSystemMessageVariant(content: string): WidgetSystemMessageVariant {
   if (content === TICKET_TRANSMITTED_I18N_KEY) return 'banner';
   if (content === CONVERSATION_CLOSED_I18N_KEY) return 'closed';
+  if (content === CONVERSATION_AUTO_CLOSED_I18N_KEY) return 'closed';
   if (/^__i18n:moderation\.conversation\.system\.assigned/.test(content)) return 'join';
   return 'default';
 }

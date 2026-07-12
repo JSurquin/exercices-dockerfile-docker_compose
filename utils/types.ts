@@ -5232,6 +5232,7 @@ export interface Messages {
         assigned: string;
         unassigned: string;
         closed: string;
+        autoClosed: string;
       };
       sendHint: string;
     };

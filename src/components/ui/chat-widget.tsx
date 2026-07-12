@@ -1123,7 +1123,7 @@ export function ChatWidget() {
     }
   }, [effectiveIsAiTyping, isAiTyping]);
 
-  const unreadCount = getListUnreadTotal();
+  const unreadCount = isInConversation ? 0 : getListUnreadTotal();
 
   if (isHiddenByMobileMenu) {
     return null;

@@ -4,6 +4,7 @@ import { runProcessTradesJob } from '@/lib/cron-jobs/process-trades';
 import { runGiveawayDrawJob } from '@/lib/cron-jobs/giveaway-draw';
 import { runUpdateTradesStatusJob } from '@/lib/cron-jobs/update-trades-status';
 import { runSecurityMaintenanceJob } from '@/lib/cron-jobs/security-maintenance';
+import { runAutoCloseInactiveConversationsJob } from '@/lib/cron-jobs/auto-close-inactive-conversations';
 
 type JobRunner = {
   name: string;
@@ -31,6 +32,11 @@ const jobs: JobRunner[] = [
     name: 'security-maintenance',
     schedule: CRON_SCHEDULES.securityMaintenance,
     run: runSecurityMaintenanceJob,
+  },
+  {
+    name: 'auto-close-inactive-conversations',
+    schedule: CRON_SCHEDULES.autoCloseInactiveConversations,
+    run: runAutoCloseInactiveConversationsJob,
   },
 ];
 

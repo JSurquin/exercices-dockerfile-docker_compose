@@ -69,6 +69,13 @@ export const AI_UNAVAILABLE_I18N_KEY =
 export const CONVERSATION_CLOSED_I18N_KEY =
   '__i18n:moderation.conversation.system.closed__';
 
+/** Message SYSTEM affiché quand une conversation inactive est fermée automatiquement. */
+export const CONVERSATION_AUTO_CLOSED_I18N_KEY =
+  '__i18n:moderation.conversation.system.autoClosed__';
+
+/** Délai d'inactivité avant fermeture automatique d'un ticket support (6 h). */
+export const CONVERSATION_AUTO_CLOSE_INACTIVITY_MS = 6 * 60 * 60 * 1000;
+
 export const AWAITING_STAFF_REPLY_CLEAR_SENDER_TYPES = ['AI', 'BOT', 'MODERATOR'] as const;
 
 /** True quand un message staff clôt l'attente de réponse (ignore SYSTEM ticket transmis). */
@@ -77,7 +84,10 @@ export function shouldClearAwaitingStaffReply(
 ): boolean {
   if (!message || message.senderType === 'USER') return false;
   if (message.senderType === 'SYSTEM') {
-    return message.content === CONVERSATION_CLOSED_I18N_KEY;
+    return (
+      message.content === CONVERSATION_CLOSED_I18N_KEY ||
+      message.content === CONVERSATION_AUTO_CLOSED_I18N_KEY
+    );
   }
   return (AWAITING_STAFF_REPLY_CLEAR_SENDER_TYPES as readonly string[]).includes(
     message.senderType,
@@ -387,6 +397,21 @@ export function getConversationListUnreadTotal(
     if (isViewingConversation && item.id === activeConversationId) return acc;
     return acc + item.unread;
   }, 0);
+}
+
+/** Met à jour le cache liste après lecture côté client (aperçu dernier message). */
+export function patchConversationListPreviewAsReadForClient<
+  T extends { id: string; messages?: Array<{ isRead: boolean; senderType: string }> },
+>(conversations: T[], conversationId: string): T[] {
+  return conversations.map((conversation) => {
+    if (conversation.id !== conversationId) return conversation;
+    return {
+      ...conversation,
+      messages: (conversation.messages ?? []).map((message) =>
+        message.senderType !== 'USER' ? { ...message, isRead: true } : message,
+      ),
+    };
+  });
 }
 
 export function countStaffMessagesForNotification(

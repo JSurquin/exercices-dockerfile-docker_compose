@@ -19,6 +19,7 @@ import {
   getUnreadMessageCount,
   isTerminalConversationStatus,
   markStaffMessagesReadForClientViewer,
+  patchConversationListPreviewAsReadForClient,
   resolveConversationUnreadForClient,
   selectInitialConversationId,
   shouldClearAwaitingStaffReply,
@@ -221,13 +222,43 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
   const wasViewingConversationRef = useRef(false);
   useEffect(() => {
     const enteredView = isViewingConversation && !wasViewingConversationRef.current;
+    const leftView = !isViewingConversation && wasViewingConversationRef.current;
     wasViewingConversationRef.current = isViewingConversation;
-    if (!conversationId || !isOpen || !enteredView) return;
-    void queryClient.invalidateQueries({
-      queryKey: queryKeys.conversationMessages(conversationId),
-    });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
+    if (!conversationId || !isOpen) return;
+    if (enteredView) {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.conversationMessages(conversationId),
+      });
+    }
+    if (leftView) {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
+    }
   }, [conversationId, isOpen, isViewingConversation, queryClient]);
+
+  useEffect(() => {
+    if (!conversationId || !isViewingConversation || messagesLoading || allMessages.length === 0) {
+      return;
+    }
+    queryClient.setQueryData<{ conversations: Array<{ id: string; messages?: Array<{ isRead: boolean; senderType: string }> }> }>(
+      queryKeys.conversations,
+      (current) => {
+        if (!current?.conversations?.length) return current;
+        return {
+          ...current,
+          conversations: patchConversationListPreviewAsReadForClient(
+            current.conversations,
+            conversationId,
+          ),
+        };
+      },
+    );
+  }, [
+    allMessages.length,
+    conversationId,
+    isViewingConversation,
+    messagesLoading,
+    queryClient,
+  ]);
 
   useEffect(() => {
     if (!isOpen || !shouldSyncChat) return;
@@ -277,8 +308,16 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
   useEffect(() => {
     if (!conversationId || !shouldSyncChat || messagesLoading) return;
     if (!messageSyncToken) return;
+    if (!isViewingConversation) return;
     queryClient.invalidateQueries({ queryKey: queryKeys.conversations });
-  }, [conversationId, shouldSyncChat, messagesLoading, messageSyncToken, queryClient]);
+  }, [
+    conversationId,
+    shouldSyncChat,
+    messagesLoading,
+    messageSyncToken,
+    isViewingConversation,
+    queryClient,
+  ]);
 
   const staffMsgCount = countClientNotifyMessages(allMessages);
   const prevStaffMsgCountRef = useRef<number | null>(null);

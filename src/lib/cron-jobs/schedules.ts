@@ -8,6 +8,8 @@ export const CRON_SCHEDULES = {
   giveawayDraw: '*/15 * * * *',
   /** Maintenance sécurité (logs, rate limits, cooldowns) */
   securityMaintenance: '0 3 * * *',
+  /** Fermeture automatique des tickets support inactifs depuis 6 h */
+  autoCloseInactiveConversations: '*/15 * * * *',
 } as const;
 
 export type CronJobName = keyof typeof CRON_SCHEDULES;
