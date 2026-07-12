@@ -81,6 +81,8 @@ import {
   CheckIcon,
 } from "@heroicons/react/24/solid";
 
+const SUPPORT_AVATAR_SRC = "/images/logo.webp";
+
 /* ─────────────────────────────────────────────
  * Arbre de catégories / sous-catégories
  * ───────────────────────────────────────────── */
@@ -523,7 +525,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
               className={`${chatWidgetSystemJoinClass()} ${chatWidgetMessageEnterClass(isNewMessage)}`}
             >
               <Avatar className="h-5 w-5 shrink-0">
-                <AvatarImage src={agentAvatarUrl ?? '/images/support-avatar.svg'} />
+                <AvatarImage src={agentAvatarUrl ?? SUPPORT_AVATAR_SRC} />
                 <AvatarFallback className="text-[9px]">
                   <UserCircleIcon className="h-3 w-3" aria-hidden />
                 </AvatarFallback>
@@ -1134,7 +1136,7 @@ export function ChatWidget() {
     currentConversation?.assignedModerator?.name ??
     messages.chatWidget.support;
   const conversationAgentAvatar =
-    currentConversation?.assignedModerator?.steamAvatar ?? '/images/support-avatar.svg';
+    currentConversation?.assignedModerator?.steamAvatar ?? SUPPORT_AVATAR_SRC;
   const lastStaffMessage = [...(currentConversation?.messages ?? [])]
     .reverse()
     .find((m) => ['MODERATOR', 'BOT', 'AI'].includes(m.senderType));
@@ -1167,7 +1169,7 @@ export function ChatWidget() {
         >
           <div className="flex items-start gap-3">
             <Avatar className="h-9 w-9 shrink-0">
-              <AvatarImage src="/images/support-avatar.svg" />
+              <AvatarImage src={SUPPORT_AVATAR_SRC} />
               <AvatarFallback className="text-xs">
                 <CpuChipIcon className="h-4 w-4" aria-hidden />
               </AvatarFallback>
@@ -1295,7 +1297,7 @@ export function ChatWidget() {
     >
       <div className="flex items-start gap-3">
         <Avatar className={`h-9 w-9 shrink-0 ${solved ? "opacity-70 group-hover:opacity-90 transition-opacity duration-200" : ""}`}>
-          <AvatarImage src="/images/support-avatar.svg" />
+          <AvatarImage src={SUPPORT_AVATAR_SRC} />
           <AvatarFallback className="text-xs">
             <CpuChipIcon className="h-4 w-4" aria-hidden />
           </AvatarFallback>
@@ -1386,7 +1388,7 @@ export function ChatWidget() {
       assignedModerator?.name ??
       messages.chatWidget.support;
     const agentAvatarUrl =
-      assignedModerator?.steamAvatar ?? '/images/support-avatar.svg';
+      assignedModerator?.steamAvatar ?? SUPPORT_AVATAR_SRC;
 
     return (
     <>
@@ -1583,7 +1585,7 @@ export function ChatWidget() {
             )}
             <div className="relative">
               <Avatar className="h-8 w-8 border-2 border-white/20">
-                <AvatarImage src="/images/support-avatar.svg" />
+                <AvatarImage src={SUPPORT_AVATAR_SRC} />
                 <AvatarFallback className="bg-white/20 text-white text-sm">
                   <CpuChipIcon className="h-4 w-4" aria-hidden />
                 </AvatarFallback>
