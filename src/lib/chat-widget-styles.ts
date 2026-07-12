@@ -124,6 +124,43 @@ export function chatWidgetHeaderClass(): string {
   return 'flex items-center justify-between p-4 bg-cta-gradient text-white flex-shrink-0';
 }
 
+/** En-tête sombre de l’onglet Accueil (style Intercom / CSGO Empire). */
+export function chatWidgetHomeHeaderClass(): string {
+  return 'relative flex-shrink-0 overflow-hidden bg-neutral-950 text-white px-4 pt-4 pb-6';
+}
+
+export function chatWidgetHomeBodyClass(): string {
+  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain bg-neutral-100 dark:bg-neutral-900/40 px-4 py-4 space-y-3';
+}
+
+export function chatWidgetHomeCardClass(): string {
+  return 'w-full rounded-2xl border-0 bg-white dark:bg-card shadow-sm p-4 text-left transition-shadow hover:shadow-md';
+}
+
+export function chatWidgetHomeCardSectionTitleClass(): string {
+  return 'text-xs font-semibold text-foreground mb-3';
+}
+
+export function chatWidgetHomeHelpLinkClass(): string {
+  return 'w-full flex items-center justify-between py-2.5 text-left text-sm text-foreground/90 hover:text-foreground transition-colors group border-b border-border/40 last:border-b-0';
+}
+
+export function chatWidgetHomeSearchHeaderClass(): string {
+  return 'flex items-center justify-between pb-3 mb-1 border-b border-border/40';
+}
+
+export function chatWidgetStaffAvatarStackClass(): string {
+  return 'flex items-center -space-x-2.5';
+}
+
+export function chatWidgetStaffAvatarClass(borderClass = 'border-neutral-950'): string {
+  return `h-8 w-8 shrink-0 border-2 ${borderClass} ring-0`;
+}
+
+export function chatWidgetStaffAvatarLargeClass(borderClass = 'border-white'): string {
+  return `h-9 w-9 shrink-0 border-2 ${borderClass} ring-0`;
+}
+
 export function chatWidgetCategoryButtonClass(): string {
   return 'w-full flex items-center justify-between p-3.5 rounded-xl border bg-card hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 hover:border-theme-accent/30 transition-all duration-150 group text-left';
 }
@@ -169,10 +206,6 @@ export function chatWidgetTabButtonClass(isActive: boolean): string {
   return isActive
     ? `${base} text-foreground font-medium`
     : `${base} text-muted-foreground hover:text-foreground`;
-}
-
-export function chatWidgetHomeCardClass(): string {
-  return 'w-full rounded-xl border bg-card p-3.5 text-left transition-colors hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 hover:border-theme-accent/30';
 }
 
 /** Ligne d’historique (liste Messages) — style plat type messagerie. */

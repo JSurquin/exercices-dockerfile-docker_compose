@@ -171,6 +171,15 @@ const mockMessages = {
       },
     },
   },
+  about: {
+    team: {
+      members: {
+        moderator1: { name: 'Modérateur 1' },
+        moderator2: { name: 'Modérateur 2' },
+        moderator3: { name: 'Modérateur 3' },
+      },
+    },
+  },
 };
 
 let authUser: { id: string; username: string } | null = null;
@@ -918,7 +927,8 @@ describe('ChatWidget', () => {
     });
     renderWidget();
     await openChat();
-    expect(screen.getByText('Ancien ticket')).toBeInTheDocument();
+    expect(screen.getByText('Modérateur 1')).toBeInTheDocument();
+    expect(screen.getByText('Notez votre conversation')).toBeInTheDocument();
     expect(screen.getByText(expectedDate)).toBeInTheDocument();
   });
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, memo, useMemo, type ComponentType, type SVGProps } from "react";
+import Image from "next/image";
 import { ChatMarkdownContent } from "@/lib/chat-markdown";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,9 +11,11 @@ import { useLocale } from "@/components/providers/locale-provider";
 import { resolveI18nContent } from "@/lib/resolve-i18n-content";
 import { localeToBcp47 } from "@/lib/locale-date";
 import { shouldShowBackButton,
+  getChatWidgetSupportStaff,
   type ChatWidgetHelpStep,
   type ChatWidgetMessagesStep,
   type ChatWidgetTab,
+  type ChatWidgetSupportStaffMember,
 } from "@/lib/chat-widget-config";
 import { isTerminalConversationStatus, shouldClearAiTypingIndicator } from "@/lib/chat-logic";
 import {
@@ -29,6 +32,14 @@ import {
   chatWidgetHistoryItemTitleClass,
   chatWidgetHistoryListClass,
   chatWidgetHomeCardClass,
+  chatWidgetHomeHeaderClass,
+  chatWidgetHomeBodyClass,
+  chatWidgetHomeCardSectionTitleClass,
+  chatWidgetHomeHelpLinkClass,
+  chatWidgetHomeSearchHeaderClass,
+  chatWidgetStaffAvatarStackClass,
+  chatWidgetStaffAvatarClass,
+  chatWidgetStaffAvatarLargeClass,
   chatWidgetInputAreaClass,
   chatWidgetMessageAlignment,
   chatWidgetMessageBubbleClass,
@@ -82,6 +93,36 @@ import {
 } from "@heroicons/react/24/solid";
 
 const SUPPORT_AVATAR_SRC = "/images/logo.webp";
+
+interface ChatWidgetStaffAvatarsProps {
+  members: ChatWidgetSupportStaffMember[];
+  size?: "sm" | "md";
+  borderClass?: string;
+}
+
+const ChatWidgetStaffAvatars = memo(function ChatWidgetStaffAvatars({
+  members,
+  size = "sm",
+  borderClass,
+}: ChatWidgetStaffAvatarsProps) {
+  const avatarClass =
+    size === "md"
+      ? chatWidgetStaffAvatarLargeClass(borderClass)
+      : chatWidgetStaffAvatarClass(borderClass);
+
+  return (
+    <div className={chatWidgetStaffAvatarStackClass()} aria-hidden>
+      {members.map((member) => (
+        <Avatar key={member.key} className={avatarClass}>
+          <AvatarImage src={member.avatar} alt={member.name} />
+          <AvatarFallback className="bg-theme-accent/20 text-[10px] font-semibold">
+            {member.name.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+      ))}
+    </div>
+  );
+});
 
 /* ─────────────────────────────────────────────
  * Arbre de catégories / sous-catégories
@@ -1112,6 +1153,11 @@ export function ChatWidget() {
 
   const dateLocale = localeToBcp47(locale);
 
+  const supportStaff = useMemo(
+    () => getChatWidgetSupportStaff(messages.about.team.members),
+    [messages.about.team.members],
+  );
+
   useEffect(() => {
     if (!effectiveIsAiTyping && isAiTyping) {
       setIsAiTyping(false);
@@ -1148,66 +1194,62 @@ export function ChatWidget() {
     : messages.chatWidget.online;
 
   const renderHomeTab = () => (
-    <div className={chatWidgetScrollAreaClass("p-4 space-y-3")}>
-      <div className="pb-1">
-        <p className="text-lg font-semibold">
-          {messages.chatWidget.greeting}{user ? ` ${user.username}` : ""} 👋
-        </p>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          {messages.chatWidget.home.subtitle}
-        </p>
-      </div>
-
+    <div className={chatWidgetHomeBodyClass()}>
       {recentConversation ? (
-        <button
-          type="button"
-          onClick={() => {
-            setConversationId(recentConversation.id);
-            goToConversation();
-          }}
-          className={chatWidgetHomeCardClass()}
-        >
-          <div className="flex items-start gap-3">
-            <Avatar className="h-9 w-9 shrink-0">
-              <AvatarImage src={SUPPORT_AVATAR_SRC} />
-              <AvatarFallback className="text-xs">
-                <CpuChipIcon className="h-4 w-4" aria-hidden />
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-semibold truncate">{recentConversation.title}</p>
-                <span className="text-[10px] text-muted-foreground shrink-0">
-                  {formatRelativeTime(recentConversation.lastMessageAt, relativeTimeLabels, dateLocale)}
-                </span>
+        <div className={chatWidgetHomeCardClass()}>
+          <p className={chatWidgetHomeCardSectionTitleClass()}>
+            {messages.chatWidget.home.recentMessage}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setConversationId(recentConversation.id);
+              goToConversation();
+            }}
+            className="w-full text-left"
+          >
+            <div className="flex items-start gap-3">
+              <Avatar className="h-10 w-10 shrink-0">
+                <AvatarImage src={supportStaff[0]?.avatar ?? SUPPORT_AVATAR_SRC} />
+                <AvatarFallback className="text-xs">
+                  <UserCircleIcon className="h-4 w-4" aria-hidden />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-semibold truncate">
+                    {supportStaff[0]?.name ?? messages.chatWidget.support}
+                  </p>
+                  <span className="text-[11px] text-muted-foreground shrink-0 tabular-nums">
+                    {formatRelativeTime(recentConversation.lastMessageAt, relativeTimeLabels, dateLocale)}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {isTerminalConversationStatus(recentConversation.status)
+                    ? messages.chatWidget.rateConversation
+                    : recentConversation.title}
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {messages.chatWidget.home.recentMessage}
-              </p>
             </div>
-            <ChevronRightIcon className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
-          </div>
-        </button>
+          </button>
+        </div>
       ) : null}
 
       <div className={chatWidgetHomeCardClass()}>
-        <div className="flex items-center gap-2 mb-3">
-          <MagnifyingGlassIcon className="h-4 w-4 text-muted-foreground" aria-hidden />
+        <div className={chatWidgetHomeSearchHeaderClass()}>
           <p className="text-sm font-semibold">{messages.chatWidget.home.searchHelp}</p>
+          <MagnifyingGlassIcon className="h-4 w-4 text-muted-foreground" aria-hidden />
         </div>
-        <div className="space-y-0.5">
+        <div>
           {CATEGORIES.map((cat) => (
             <button
               key={cat.key}
               type="button"
               onClick={() => handleCategorySelect(cat)}
-              className="w-full flex items-center justify-between py-2 px-1 rounded-lg hover:bg-theme-accent/5 dark:hover:bg-theme-accent/10 transition-colors text-left group"
+              className={chatWidgetHomeHelpLinkClass()}
             >
-              <div className="flex items-center gap-2.5">
-                <cat.icon className="h-4 w-4 text-theme-accent shrink-0" aria-hidden />
-                <span className="text-sm">{cat.label}</span>
-              </div>
-              <ChevronRightIcon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-theme-accent transition-colors" />
+              <span>{cat.label}</span>
+              <ChevronRightIcon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
             </button>
           ))}
         </div>
@@ -1219,15 +1261,64 @@ export function ChatWidget() {
         className={chatWidgetHomeCardClass()}
       >
         <div className="flex items-center justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-semibold">{messages.chatWidget.home.askQuestion}</p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {messages.chatWidget.home.askQuestionDesc}
             </p>
           </div>
-          <ChevronRightIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+          <ChatWidgetStaffAvatars members={supportStaff} size="md" borderClass="border-white dark:border-card" />
         </div>
       </button>
+    </div>
+  );
+
+  const renderHomeHeader = () => (
+    <div className={chatWidgetHomeHeaderClass()} data-testid="chat-home-header">
+      <div
+        className="pointer-events-none absolute inset-0 flex items-end justify-center overflow-hidden"
+        aria-hidden
+      >
+        <Image
+          src="/images/logo.webp"
+          alt=""
+          width={220}
+          height={220}
+          className="opacity-[0.08] translate-y-6 scale-125 select-none"
+        />
+      </div>
+
+      <div className="relative z-10 grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-5">
+        <div className="flex items-center gap-2 min-w-0">
+          <Image
+            src="/images/logo.webp"
+            alt="MoonSkin"
+            width={28}
+            height={28}
+            className="rounded-md shrink-0"
+          />
+          <span className="text-sm font-bold tracking-wide truncate">MoonSkin</span>
+        </div>
+        <ChatWidgetStaffAvatars members={supportStaff} borderClass="border-neutral-950" />
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={closePopup}
+            className="p-1.5 rounded-full hover:bg-white/10 transition-colors shrink-0"
+            aria-label={messages.ui.close}
+          >
+            <XMarkIcon className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="relative z-10">
+        <p className="text-2xl font-bold leading-tight">
+          {messages.chatWidget.greeting}
+          {user ? ` ${user.username}` : ""} 👋
+        </p>
+        <p className="text-sm text-white/75 mt-1">{messages.chatWidget.home.subtitle}</p>
+      </div>
     </div>
   );
 
@@ -1571,6 +1662,8 @@ export function ChatWidget() {
               </button>
             </div>
           </div>
+        ) : activeTab === "home" ? (
+          renderHomeHeader()
         ) : (
         <div className={chatWidgetHeaderClass()}>
           <div className="flex items-center space-x-3">

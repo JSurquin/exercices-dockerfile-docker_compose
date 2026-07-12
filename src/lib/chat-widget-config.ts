@@ -64,3 +64,25 @@ export function shouldShowBackButtonLegacy(params: {
   if (params.step === 'subcategories') return true;
   return params.step === 'conversation' && !params.hasConversationMessages;
 }
+
+/** Clés équipe support affichées sur l’accueil du widget (avatars /team/{key}.jpg). */
+export const CHAT_WIDGET_SUPPORT_STAFF_KEYS = ['moderator1', 'moderator2', 'moderator3'] as const;
+
+export type ChatWidgetSupportStaffKey = (typeof CHAT_WIDGET_SUPPORT_STAFF_KEYS)[number];
+
+export interface ChatWidgetSupportStaffMember {
+  key: ChatWidgetSupportStaffKey;
+  name: string;
+  avatar: string;
+}
+
+/** Membres support pour l’en-tête et la carte « Poser une question ». */
+export function getChatWidgetSupportStaff(
+  teamMembers: Record<string, { name: string } | undefined>,
+): ChatWidgetSupportStaffMember[] {
+  return CHAT_WIDGET_SUPPORT_STAFF_KEYS.map((key) => ({
+    key,
+    name: teamMembers[key]?.name ?? key,
+    avatar: `/team/${key}.jpg`,
+  }));
+}
