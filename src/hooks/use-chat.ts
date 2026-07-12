@@ -477,6 +477,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
       lastMessageAt: conv.lastMessageAt ?? conv.updatedAt,
       status: conv.status,
       unread: resolveConversationUnread(conv.id, conv.status, conv.messages ?? []),
+      assignedModerator: conv.assignedModerator ?? null,
     }));
 
     if (
@@ -503,6 +504,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
             loadedConversationStatus ?? 'ACTIVE',
             allMessages,
           ),
+          assignedModerator: loadedAssignedModerator ?? null,
         },
       ];
     }
@@ -519,6 +521,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
     conversationsLoading,
     conversationsFetching,
     sendMessageMutation.isPending,
+    loadedAssignedModerator,
   ]);
 
   const currentConversation = useMemo(() => {

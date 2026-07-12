@@ -1977,22 +1977,22 @@ export const messages: Record<Locale, Messages> = {
             skills: ["Structuration", "Fiabilité", "Exécution"]
           },
           moderator1: {
-            name: "Modérateur 1",
-            role: "Modération",
-            bio: "À confirmer.",
-            skills: ["TBC"]
+            name: "プライベート",
+            role: "Modération communautaire",
+            bio: "Modérateur support : accompagne les utilisateurs sur les trades, paiements et litiges.",
+            skills: ["Support", "CS2", "Communauté"]
           },
           moderator2: {
-            name: "Modérateur 2",
-            role: "Modération",
-            bio: "À confirmer.",
-            skills: ["TBC"]
+            name: "Entuscs",
+            role: "Modération communautaire",
+            bio: "Modérateur support : répond aux demandes et assure le suivi des conversations.",
+            skills: ["Support", "CS2", "Communauté"]
           },
           moderator3: {
-            name: "Modérateur 3",
-            role: "Modération",
-            bio: "À confirmer.",
-            skills: ["TBC"]
+            name: "Johndoecodin",
+            role: "Modération communautaire",
+            bio: "Modérateur support : assistance utilisateurs et modération du chat.",
+            skills: ["Support", "CS2", "Communauté"]
           },
           contractor: {
             name: "Partenaire technique",
@@ -8838,22 +8838,22 @@ export const messages: Record<Locale, Messages> = {
             skills: ["Structure", "Reliability", "Execution"]
           },
           moderator1: {
-            name: "Moderator 1",
-            role: "Moderation",
-            bio: "To be confirmed.",
-            skills: ["TBC"]
+            name: "プライベート",
+            role: "Community moderation",
+            bio: "Support moderator: helps users with trades, payments and disputes.",
+            skills: ["Support", "CS2", "Community"]
           },
           moderator2: {
-            name: "Moderator 2",
-            role: "Moderation",
-            bio: "To be confirmed.",
-            skills: ["TBC"]
+            name: "Entuscs",
+            role: "Community moderation",
+            bio: "Support moderator: handles requests and follows up on conversations.",
+            skills: ["Support", "CS2", "Community"]
           },
           moderator3: {
-            name: "Moderator 3",
-            role: "Moderation",
-            bio: "To be confirmed.",
-            skills: ["TBC"]
+            name: "Johndoecodin",
+            role: "Community moderation",
+            bio: "Support moderator: user assistance and chat moderation.",
+            skills: ["Support", "CS2", "Community"]
           },
           contractor: {
             name: "Technical partner",
@@ -16661,9 +16661,9 @@ export const messages: Record<Locale, Messages> = {
             bio: "外包协作：运营与内部开发。关注人才与流程效率。",
             skills: ["结构化", "可靠", "执行"]
           },
-          moderator1: { name: "管理员 1", role: "社区管理", bio: "待定。", skills: ["待定"] },
-          moderator2: { name: "管理员 2", role: "社区管理", bio: "待定。", skills: ["待定"] },
-          moderator3: { name: "管理员 3", role: "社区管理", bio: "待定。", skills: ["待定"] },
+          moderator1: { name: "プライベート", role: "社区管理", bio: "客服与社区管理，协助处理交易、支付与纠纷。", skills: ["客服", "CS2", "社区"] },
+          moderator2: { name: "Entuscs", role: "社区管理", bio: "客服与社区管理，跟进用户咨询与对话。", skills: ["客服", "CS2", "社区"] },
+          moderator3: { name: "Johndoecodin", role: "社区管理", bio: "客服与社区管理，用户协助与聊天监管。", skills: ["客服", "CS2", "社区"] },
           contractor: {
             name: "技术合作方",
             role: "网站开发（外包）",

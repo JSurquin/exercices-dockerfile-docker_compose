@@ -71,6 +71,11 @@ function buildChatMock(overrides: Record<string, unknown> = {}) {
       lastMessageAt: string;
       status: string;
       unread: number;
+      assignedModerator?: {
+        steamUsername?: string | null;
+        name?: string | null;
+        steamAvatar?: string | null;
+      } | null;
     }>,
     setConversationId: mockSetConversationId,
     startNewConversation: mockStartNewConversation,
@@ -174,9 +179,9 @@ const mockMessages = {
   about: {
     team: {
       members: {
-        moderator1: { name: 'Modérateur 1' },
-        moderator2: { name: 'Modérateur 2' },
-        moderator3: { name: 'Modérateur 3' },
+        moderator1: { name: 'プライベート' },
+        moderator2: { name: 'Entuscs' },
+        moderator3: { name: 'Johndoecodin' },
       },
     },
   },
@@ -289,6 +294,14 @@ describe('ChatWidget', () => {
     expect(screen.getByText('Problème de trade')).toBeInTheDocument();
     expect(screen.getByText('Paiement')).toBeInTheDocument();
     expect(screen.getByText('Support général')).toBeInTheDocument();
+  });
+
+  it('ouvre l onglet Aide au clic sur Rechercher de l aide', async () => {
+    renderWidget();
+    await openChat();
+    fireEvent.click(screen.getByTestId('chat-search-help'));
+    expect(screen.getByTestId('chat-tab-help').querySelector('.text-theme-accent')).toBeTruthy();
+    expect(screen.getByText('Problème de trade')).toBeInTheDocument();
   });
 
   it('salutation avec username connecté', async () => {
@@ -922,12 +935,24 @@ describe('ChatWidget', () => {
     });
     chatMock = buildChatMock({
       conversationListItems: [
-        { id: 'c-old', title: 'Ancien ticket', lastMessageAt: oldDate, status: 'CLOSED', unread: 0 },
+        {
+          id: 'c-old',
+          title: 'Ancien ticket',
+          lastMessageAt: oldDate,
+          status: 'CLOSED',
+          unread: 0,
+          assignedModerator: {
+            steamUsername: 'プライベート',
+            name: 'プライベート',
+            steamAvatar:
+              'https://avatars.steamstatic.com/b41610e0a235e45c0174ab806db2e0d57225217f_full.jpg',
+          },
+        },
       ],
     });
     renderWidget();
     await openChat();
-    expect(screen.getByText('Modérateur 1')).toBeInTheDocument();
+    expect(screen.getByText('プライベート')).toBeInTheDocument();
     expect(screen.getByText('Notez votre conversation')).toBeInTheDocument();
     expect(screen.getByText(expectedDate)).toBeInTheDocument();
   });

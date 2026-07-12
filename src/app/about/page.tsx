@@ -12,6 +12,7 @@ import { usePublicStats } from "@/hooks/use-public-stats";
 import { MOONSKIN_DISCORD_URL, MOONSKIN_X_URL } from "@/lib/moonskin-social";
 import { Messages } from "~/utils/types";
 import { cn } from "@/lib/utils";
+import { getTeamMemberAvatarSrc } from "@/lib/team-avatars";
 import {
   ShieldCheckIcon,
   CurrencyDollarIcon,
@@ -51,7 +52,7 @@ const getTeam = (messages: Messages) =>
     return {
       ...m,
       key,
-      avatar: `/team/${key}.jpg`,
+      avatar: getTeamMemberAvatarSrc(key),
     };
   });
 

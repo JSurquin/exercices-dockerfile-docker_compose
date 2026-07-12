@@ -1,4 +1,5 @@
 import { CHAT_BOT_SUBCATEGORY_KEYS } from '@/lib/chat-bot-templates';
+import { getTeamMemberAvatarSrc } from '@/lib/team-avatars';
 
 /** Clés des 3 catégories principales du widget support. */
 export const CHAT_WIDGET_CATEGORY_KEYS = ['trade', 'payment', 'support'] as const;
@@ -83,6 +84,6 @@ export function getChatWidgetSupportStaff(
   return CHAT_WIDGET_SUPPORT_STAFF_KEYS.map((key) => ({
     key,
     name: teamMembers[key]?.name ?? key,
-    avatar: `/team/${key}.jpg`,
+    avatar: getTeamMemberAvatarSrc(key),
   }));
 }

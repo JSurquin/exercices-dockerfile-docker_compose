@@ -17,6 +17,7 @@ import { shouldShowBackButton,
   type ChatWidgetTab,
   type ChatWidgetSupportStaffMember,
 } from "@/lib/chat-widget-config";
+import { MOONSKIN_LOGO_AVATAR_SRC, resolveStaffAvatarSrc } from "@/lib/team-avatars";
 import { isTerminalConversationStatus, shouldClearAiTypingIndicator } from "@/lib/chat-logic";
 import {
   CHAT_WIDGET_POPUP_CLOSE_MS,
@@ -92,7 +93,7 @@ import {
   CheckIcon,
 } from "@heroicons/react/24/solid";
 
-const SUPPORT_AVATAR_SRC = "/images/logo.webp";
+const SUPPORT_AVATAR_SRC = MOONSKIN_LOGO_AVATAR_SRC;
 
 interface ChatWidgetStaffAvatarsProps {
   members: ChatWidgetSupportStaffMember[];
@@ -964,6 +965,12 @@ export function ChatWidget() {
     setActiveTab("help");
   };
 
+  const handleOpenHelpTab = () => {
+    setSelectedCategory(null);
+    setHelpStep("categories");
+    setActiveTab("help");
+  };
+
   const handleSubcategorySelect = async (subcategory: Subcategory) => {
     setIsSendingBotMsg(true);
     try {
@@ -1182,7 +1189,7 @@ export function ChatWidget() {
     currentConversation?.assignedModerator?.name ??
     messages.chatWidget.support;
   const conversationAgentAvatar =
-    currentConversation?.assignedModerator?.steamAvatar ?? SUPPORT_AVATAR_SRC;
+    resolveStaffAvatarSrc(currentConversation?.assignedModerator) ?? SUPPORT_AVATAR_SRC;
   const lastStaffMessage = [...(currentConversation?.messages ?? [])]
     .reverse()
     .find((m) => ['MODERATOR', 'BOT', 'AI'].includes(m.senderType));
@@ -1210,7 +1217,12 @@ export function ChatWidget() {
           >
             <div className="flex items-start gap-3">
               <Avatar className="h-10 w-10 shrink-0">
-                <AvatarImage src={supportStaff[0]?.avatar ?? SUPPORT_AVATAR_SRC} />
+                <AvatarImage
+                  src={
+                    resolveStaffAvatarSrc(recentConversation.assignedModerator) ??
+                    SUPPORT_AVATAR_SRC
+                  }
+                />
                 <AvatarFallback className="text-xs">
                   <UserCircleIcon className="h-4 w-4" aria-hidden />
                 </AvatarFallback>
@@ -1218,7 +1230,9 @@ export function ChatWidget() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-semibold truncate">
-                    {supportStaff[0]?.name ?? messages.chatWidget.support}
+                    {recentConversation.assignedModerator?.steamUsername ??
+                      recentConversation.assignedModerator?.name ??
+                      messages.chatWidget.support}
                   </p>
                   <span className="text-[11px] text-muted-foreground shrink-0 tabular-nums">
                     {formatRelativeTime(recentConversation.lastMessageAt, relativeTimeLabels, dateLocale)}
@@ -1236,10 +1250,15 @@ export function ChatWidget() {
       ) : null}
 
       <div className={chatWidgetHomeCardClass()}>
-        <div className={chatWidgetHomeSearchHeaderClass()}>
+        <button
+          type="button"
+          onClick={handleOpenHelpTab}
+          className={`${chatWidgetHomeSearchHeaderClass()} w-full cursor-pointer hover:opacity-90 transition-opacity`}
+          data-testid="chat-search-help"
+        >
           <p className="text-sm font-semibold">{messages.chatWidget.home.searchHelp}</p>
           <MagnifyingGlassIcon className="h-4 w-4 text-muted-foreground" aria-hidden />
-        </div>
+        </button>
         <div>
           {CATEGORIES.map((cat) => (
             <button
@@ -1479,7 +1498,7 @@ export function ChatWidget() {
       assignedModerator?.name ??
       messages.chatWidget.support;
     const agentAvatarUrl =
-      assignedModerator?.steamAvatar ?? SUPPORT_AVATAR_SRC;
+      resolveStaffAvatarSrc(assignedModerator) ?? SUPPORT_AVATAR_SRC;
 
     return (
     <>
