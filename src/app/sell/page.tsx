@@ -28,8 +28,6 @@ import { PageLoading } from '@/components/ui/page-loading';
 import { useTourMode } from '@/components/providers/tour-provider';
 import { SellTourDemo } from '@/components/tour-demos/sell-tour-demo';
 import { estimateXPGain, xpForNextLevel, XPPreviewBar } from '@/components/sell/xp-preview-bar';
-import { MOONSKIN_LOGO_AVATAR_SRC } from '@/lib/team-avatars';
-
 const getSteps = (messages: any) => [
   { id: "inventory", title: messages.sellPage.steps.inventory, icon: LinkIcon },
   { id: "trade", title: messages.sellPage.steps.trade, icon: CurrencyDollarIcon },
@@ -447,10 +445,10 @@ export default function SellPage() {
                     </h3>
                     <div className="flex items-center gap-4">
                       <SafeImg
-                        src={MOONSKIN_LOGO_AVATAR_SRC}
-                        alt="MoonSkin"
-                        className="w-14 h-14 rounded-lg border-2 border-theme-accent/40 object-contain bg-theme-accent/5 p-1"
-                        fallbackClassName="w-14 h-14 rounded-lg border-2 border-theme-accent/40"
+                        src={tradeData.bot.avatar}
+                        alt={tradeData.bot.name}
+                        className="w-14 h-14 rounded-full border-2 border-theme-accent/40 object-cover"
+                        fallbackClassName="w-14 h-14 rounded-full border-2 border-theme-accent/40"
                         fallbackIcon={<UserIcon className="w-7 h-7 text-muted-foreground" />}
                       />
                       <div className="flex-1 min-w-0">

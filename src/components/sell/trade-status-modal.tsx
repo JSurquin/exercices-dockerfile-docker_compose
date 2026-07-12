@@ -21,8 +21,6 @@ import {
 import { useLocale } from "@/components/providers/locale-provider";
 import { SafeImg } from "@/components/ui/safe-image";
 import { SkinplaceBotInfo } from "@/components/skinplace/skinplace-trade-creator";
-import { MOONSKIN_LOGO_AVATAR_SRC } from "@/lib/team-avatars";
-
 export type TradeModalStatus = "accepted" | "cancelled" | "pending" | null;
 
 interface TradeStatusModalProps {
@@ -210,10 +208,10 @@ export function TradeStatusModal({
                     </p>
                     <div className="flex items-center gap-3">
                       <SafeImg
-                        src={MOONSKIN_LOGO_AVATAR_SRC}
-                        alt="MoonSkin"
-                        className="w-11 h-11 rounded-lg border-2 border-theme-accent/40 object-contain bg-theme-accent/5 p-1"
-                        fallbackClassName="w-11 h-11 rounded-lg border-2 border-theme-accent/40"
+                        src={bot.avatar}
+                        alt={bot.name}
+                        className="w-11 h-11 rounded-full border-2 border-theme-accent/40 object-cover"
+                        fallbackClassName="w-11 h-11 rounded-full border-2 border-theme-accent/40"
                         fallbackIcon={<UserIcon className="w-6 h-6 text-muted-foreground" />}
                       />
                       <div className="flex-1 min-w-0">
