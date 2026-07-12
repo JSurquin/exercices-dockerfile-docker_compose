@@ -4,6 +4,7 @@ import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
 import { TradeStatus } from '@prisma/client';
 import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
+import { MOONSKIN_LOGO_AVATAR_SRC } from '@/lib/team-avatars';
 import { TradeHooks } from '@/lib/trade-hooks';
 import { newsletterService } from '@/lib/newsletter-service';
 import {
@@ -328,7 +329,9 @@ export async function POST(request: NextRequest) {
     const tradeOfferId = steamTrade?.tradeofferid;
     const skinplaceToken = skinplaceData.token;
     const skinplaceStatus = steamTrade?.status || skinplaceData.status || 'pending';
-    const botInfo: SkinplaceBotInfo | null = steamTrade?.bot || null;
+    const botInfo: SkinplaceBotInfo | null = steamTrade?.bot
+      ? { ...steamTrade.bot, avatar: MOONSKIN_LOGO_AVATAR_SRC }
+      : null;
     
     const tradeStatus = mapSkinplaceStatusToTradeStatus(skinplaceStatus);
 
