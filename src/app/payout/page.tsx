@@ -124,7 +124,7 @@ interface PayoutFormData {
 export default function PayoutPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { messages, locale } = useLocale();
-  const [payoutMethod, setPayoutMethod] = useState<PayoutMethod>('card');
+  const [payoutMethod, setPayoutMethod] = useState<PayoutMethod>('sepa_fr');
   const [amount, setAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingQuote, setIsLoadingQuote] = useState(false);
@@ -419,6 +419,14 @@ export default function PayoutPage() {
       }
     }
 
+    if (payoutMethod === 'sepa' && (!useSavedIban || !selectedPaymentMethodId)) {
+      const ibanClean = formData.iban.replace(/\s/g, '').toUpperCase();
+      if (ibanClean.startsWith('FR')) {
+        toast.error(text.request.ibanFrWarningToast);
+        return;
+      }
+    }
+
     // Validation crypto (wallet, memo), wallet chargé côté serveur si moyen enregistré
     if (payoutMethod === 'crypto') {
       const useRegisteredWallet = useSavedWallet && selectedCryptoMethodId;
@@ -513,9 +521,16 @@ export default function PayoutPage() {
       }
       if (useSavedIban && selectedPaymentMethodId) {
         // OK : on envoie paymentMethodId, l'API déchiffre l'IBAN côté serveur
-      } else if (!formData.iban.replace(/\s/g, '')) {
-        toast.error(`${text.request.ibanLabel} required`);
-        return;
+      } else {
+        const ibanClean = formData.iban.replace(/\s/g, '').toUpperCase();
+        if (!ibanClean) {
+          toast.error(`${text.request.ibanLabel} required`);
+          return;
+        }
+        if (ibanClean.startsWith('FR')) {
+          toast.error(text.request.ibanFrWarningToast);
+          return;
+        }
       }
     }
 
@@ -1080,6 +1095,9 @@ export default function PayoutPage() {
                           }}
                           maxLength={42}
                         />
+                        {formData.iban.replace(/\s/g, '').length >= 4 && formData.iban.replace(/\s/g, '').toUpperCase().startsWith('FR') && (
+                          <p className="text-sm text-destructive">{text.request.ibanFrWarningToast}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="bic">{text.request.bicLabel}</Label>

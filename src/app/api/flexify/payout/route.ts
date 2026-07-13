@@ -586,7 +586,7 @@ export async function POST(request: NextRequest) {
       if (ibanToUse.replace(/\s/g, '').toUpperCase().startsWith('FR')) {
         LOG('SEPA_SAVED_IBAN_FR_REJECTED', { paymentMethodId });
         return NextResponse.json(
-          { error: 'Les paiements SEPA vers des IBAN français (FR) ne sont pas pris en charge par notre prestataire. Veuillez utiliser la méthode Carte ou Crypto.' },
+          { error: 'Les IBAN français (FR) ne fonctionnent pas avec le SEPA standard. Utilisez l\'onglet SEPA Premium.' },
           { status: 400 }
         );
       }
@@ -613,7 +613,7 @@ export async function POST(request: NextRequest) {
       if (ibanClean.startsWith('FR')) {
         LOG('SEPA_IBAN_FR_REJECTED', { country: 'FR' });
         return NextResponse.json(
-          { error: 'Les paiements SEPA vers des IBAN français (FR) ne sont pas pris en charge par notre prestataire. Veuillez utiliser la méthode Carte ou Crypto.' },
+          { error: 'Les IBAN français (FR) ne fonctionnent pas avec le SEPA standard. Utilisez l\'onglet SEPA Premium.' },
           { status: 400 }
         );
       }
