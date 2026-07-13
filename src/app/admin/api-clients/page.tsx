@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Key, Trash2, Webhook, Plus } from 'lucide-react';
+import { Key, Trash2, Webhook, Plus, Activity, Save } from 'lucide-react';
 
 interface ApiClientRow {
   id: string;
@@ -32,20 +32,36 @@ interface WebhookDelivery {
   created_at: string;
 }
 
+interface ApiCallLog {
+  id: string;
+  api_client_id: string;
+  partner_name: string;
+  endpoint: string;
+  method: string;
+  status_code: number;
+  ip_address: string | null;
+  duration_ms: number | null;
+  created_at: string;
+}
+
 export default function AdminApiClientsPage() {
   const [clients, setClients] = useState<ApiClientRow[]>([]);
   const [deliveries, setDeliveries] = useState<WebhookDelivery[]>([]);
+  const [apiLogs, setApiLogs] = useState<ApiCallLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [newKey, setNewKey] = useState<{ api_key: string; webhook_secret: string } | null>(null);
   const [form, setForm] = useState({ name: '', user_id: '', rate_limit: '100' });
+  const [rateLimitEdits, setRateLimitEdits] = useState<Record<string, string>>({});
+  const [savingRateLimit, setSavingRateLimit] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [clientsRes, deliveriesRes] = await Promise.all([
+      const [clientsRes, deliveriesRes, logsRes] = await Promise.all([
         fetch('/api/admin/api-clients'),
         fetch('/api/admin/api-clients/deliveries?limit=30'),
+        fetch('/api/admin/api-clients/logs?limit=50'),
       ]);
       if (clientsRes.ok) {
         const data = await clientsRes.json();
@@ -54,6 +70,10 @@ export default function AdminApiClientsPage() {
       if (deliveriesRes.ok) {
         const data = await deliveriesRes.json();
         setDeliveries(data.deliveries ?? []);
+      }
+      if (logsRes.ok) {
+        const data = await logsRes.json();
+        setApiLogs(data.logs ?? []);
       }
     } finally {
       setLoading(false);
@@ -95,6 +115,36 @@ export default function AdminApiClientsPage() {
     if (!confirm('Révoquer cette clé API ?')) return;
     await fetch(`/api/admin/api-clients/${id}`, { method: 'DELETE' });
     await load();
+  };
+
+  const handleSaveRateLimit = async (id: string) => {
+    const value = rateLimitEdits[id];
+    const parsed = parseInt(value, 10);
+    if (!value || Number.isNaN(parsed) || parsed < 10 || parsed > 1000) {
+      alert('Limite invalide (10–1000 req/min)');
+      return;
+    }
+    setSavingRateLimit(id);
+    try {
+      const res = await fetch(`/api/admin/api-clients/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rate_limit_per_min: parsed }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || 'Erreur mise à jour');
+        return;
+      }
+      setRateLimitEdits((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      await load();
+    } finally {
+      setSavingRateLimit(null);
+    }
   };
 
   return (
@@ -185,11 +235,38 @@ export default function AdminApiClientsPage() {
                     <p className="text-sm text-muted-foreground">
                       {c.user.steam_username || c.user.email} — préfixe {c.key_prefix}…
                     </p>
-                    <div className="flex gap-2 mt-1">
+                    <div className="flex gap-2 mt-1 flex-wrap">
                       <Badge variant={c.status === 'ACTIVE' ? 'default' : 'secondary'}>{c.status}</Badge>
-                      <Badge variant="outline">{c.rate_limit_per_min}/min</Badge>
+                      {c.scopes.map((scope) => (
+                        <Badge key={scope} variant="outline">{scope}</Badge>
+                      ))}
                       <Badge variant="outline">{c.stats.api_calls} appels</Badge>
                     </div>
+                    {c.status === 'ACTIVE' && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <Label className="text-xs shrink-0">Req/min</Label>
+                        <Input
+                          type="number"
+                          className="h-8 w-24"
+                          value={rateLimitEdits[c.id] ?? String(c.rate_limit_per_min)}
+                          onChange={(e) =>
+                            setRateLimitEdits((prev) => ({ ...prev, [c.id]: e.target.value }))
+                          }
+                        />
+                        {(rateLimitEdits[c.id] !== undefined &&
+                          rateLimitEdits[c.id] !== String(c.rate_limit_per_min)) && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={savingRateLimit === c.id}
+                            onClick={() => handleSaveRateLimit(c.id)}
+                          >
+                            <Save className="h-3 w-3 mr-1" />
+                            {savingRateLimit === c.id ? '…' : 'OK'}
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                   {c.status === 'ACTIVE' && (
                     <Button variant="destructive" size="sm" onClick={() => handleRevoke(c.id)}>
@@ -199,6 +276,57 @@ export default function AdminApiClientsPage() {
                   )}
                 </div>
               ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Journal des appels API ({apiLogs.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {apiLogs.length === 0 ? (
+            <p className="text-muted-foreground">Aucun appel enregistré.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="py-2 pr-3">Partenaire</th>
+                    <th className="py-2 pr-3">Méthode</th>
+                    <th className="py-2 pr-3">Endpoint</th>
+                    <th className="py-2 pr-3">HTTP</th>
+                    <th className="py-2 pr-3">IP</th>
+                    <th className="py-2 pr-3">Durée</th>
+                    <th className="py-2">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {apiLogs.map((log) => (
+                    <tr key={log.id} className="border-b border-border/50">
+                      <td className="py-2 pr-3">{log.partner_name}</td>
+                      <td className="py-2 pr-3 font-mono text-xs">{log.method}</td>
+                      <td className="py-2 pr-3 font-mono text-xs max-w-[200px] truncate">{log.endpoint}</td>
+                      <td className="py-2 pr-3">
+                        <Badge variant={log.status_code < 400 ? 'default' : 'destructive'}>
+                          {log.status_code}
+                        </Badge>
+                      </td>
+                      <td className="py-2 pr-3 text-muted-foreground">{log.ip_address ?? '—'}</td>
+                      <td className="py-2 pr-3 text-muted-foreground">
+                        {log.duration_ms != null ? `${log.duration_ms} ms` : '—'}
+                      </td>
+                      <td className="py-2 text-muted-foreground whitespace-nowrap">
+                        {new Date(log.created_at).toLocaleString('fr-FR')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>

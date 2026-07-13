@@ -32,3 +32,8 @@ export const partnerCreateApiClientSchema = z.object({
   scopes: z.array(z.enum(['read', 'trade', 'payout'])).optional(),
   expires_at: z.string().datetime().optional().nullable(),
 });
+
+export const partnerUpdateApiClientSchema = z.object({
+  rate_limit_per_min: z.number().int().min(10).max(1000).optional(),
+  scopes: z.array(z.enum(['read', 'trade', 'payout'])).min(1).optional(),
+});

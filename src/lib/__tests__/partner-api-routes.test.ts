@@ -1,0 +1,120 @@
+import { NextRequest } from 'next/server';
+
+jest.mock('~/prisma/prisma', () => ({
+  prisma: {
+    user: { findUnique: jest.fn() },
+    trade: { findMany: jest.fn() },
+    apiClient: { findUnique: jest.fn(), update: jest.fn() },
+  },
+}));
+
+jest.mock('@/lib/partner-api/auth', () => ({
+  requireApiKey: jest.fn(),
+}));
+
+jest.mock('@/lib/partner-api/trade-service', () => ({
+  createPartnerTrade: jest.fn(),
+  estimatePartnerItems: jest.fn(),
+}));
+
+import { prisma } from '~/prisma/prisma';
+import { requireApiKey } from '@/lib/partner-api/auth';
+import { GET as getMe } from '@/app/api/v1/partner/me/route';
+import { GET as getTrades } from '@/app/api/v1/partner/trades/route';
+
+const mockedRequireApiKey = requireApiKey as jest.MockedFunction<typeof requireApiKey>;
+
+function mockAuth(scopes: string[]) {
+  const logApiCall = jest.fn().mockResolvedValue(undefined);
+  mockedRequireApiKey.mockImplementation(async (_req, options = { endpoint: 'unknown', method: 'GET' }) => {
+    const missing = (options.requiredScopes ?? []).filter((s) => !scopes.includes(s));
+    if (missing.length > 0) {
+      const { partnerError } = await import('@/lib/partner-api/response');
+      return {
+        ok: false as const,
+        response: partnerError('FORBIDDEN', `Scopes requis manquants: ${missing.join(', ')}`, 403),
+      };
+    }
+    return {
+      ok: true as const,
+      ctx: {
+        apiClientId: 'client-1',
+        userId: 'user-1',
+        scopes,
+        webhookSecret: 'whsec',
+      },
+      logApiCall,
+      startMs: Date.now(),
+    };
+  });
+  return logApiCall;
+}
+
+describe('partner API HTTP routes', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('GET /me returns profile for read scope', async () => {
+    mockAuth(['read']);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      steamId: '76561198012345678',
+      steamUsername: 'Player',
+      kycStatus: 'APPROVED',
+      acceptedTermsAt: new Date('2026-01-01'),
+      tradeLink: 'https://steamcommunity.com/tradeoffer/new/?partner=1&token=abc',
+      userTag: null,
+      role: 'USER',
+      accountFrozen: false,
+      createdAt: new Date('2025-01-01'),
+    });
+
+    const response = await getMe(new NextRequest('http://localhost/api/v1/partner/me'));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data.steam_username).toBe('Player');
+  });
+
+  it('GET /me is blocked for trade-only scope', async () => {
+    mockAuth(['trade']);
+
+    const response = await getMe(new NextRequest('http://localhost/api/v1/partner/me'));
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body.error.code).toBe('FORBIDDEN');
+    expect(body.error.message).toContain('read');
+  });
+
+  it('GET /trades lists trades for read scope', async () => {
+    mockAuth(['read']);
+    (prisma.trade.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: 'TRADE-1',
+        userId: 'user-1',
+        status: 'CREATED',
+        grossCents: 1000,
+        cashoutFees: 5,
+        networkFees: 0,
+        netCents: 995,
+        ticketId: 'T-1',
+        steamId: '76561198012345678',
+        tradeUrl: null,
+        tradeAcceptedAt: null,
+        availableAt: null,
+        createdAt: new Date(),
+        items: [],
+      },
+    ]);
+
+    const response = await getTrades(new NextRequest('http://localhost/api/v1/partner/trades'));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data.trades).toHaveLength(1);
+    expect(body.data.trades[0].statut).toBe('créé');
+  });
+});

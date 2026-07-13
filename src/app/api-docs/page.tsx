@@ -20,6 +20,13 @@ import {
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { useLocale } from "@/components/providers/locale-provider";
+import {
+  partnerCurlExamples,
+  partnerEndpointDetails,
+  partnerResponseExamples,
+  partnerScopesGuide,
+  partnerWebhookGuide,
+} from "@/lib/partner-api/docs-content";
 
 const getEndpoints = (messages: any) => [
   {
@@ -506,6 +513,111 @@ export default function ApiDocsPage() {
                     </CardContent>
                   </Card>
                 ))}
+              </div>
+            </motion.div>
+
+            {/* API Partenaires — guide détaillé */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.35 }}
+              className="mb-8"
+            >
+              <h2 className="text-2xl font-semibold mb-6">API Partenaires — guide V1</h2>
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-orange-600">Authentification partenaire</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-muted-foreground text-sm">
+                      Les routes sous <code className="text-xs">/api/v1/partner/</code> utilisent une clé API
+                      Bearer au format <code className="text-xs">msk_live_...</code>, fournie par l&apos;équipe MoonSkin.
+                    </p>
+                    <div className="bg-muted rounded-lg p-4">
+                      <code className="text-sm">Authorization: Bearer msk_live_VOTRE_CLE</code>
+                    </div>
+                    <pre className="text-sm whitespace-pre-wrap text-muted-foreground bg-muted/50 rounded-lg p-4">
+                      {partnerScopesGuide}
+                    </pre>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-orange-600">Endpoints — paramètres et réponses</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {partnerEndpointDetails.map((ep, i) => (
+                      <div key={i} className="border rounded-lg p-4 space-y-2 text-sm">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant={ep.method === 'GET' ? 'secondary' : 'default'} className="font-mono text-xs">
+                            {ep.method}
+                          </Badge>
+                          <code className="font-mono">{ep.path}</code>
+                          <Badge variant="outline">scope: {ep.scope}</Badge>
+                        </div>
+                        <p className="text-muted-foreground">{ep.description}</p>
+                        {'body' in ep && ep.body && (
+                          <p><span className="font-medium">Body :</span> <code className="text-xs">{ep.body}</code></p>
+                        )}
+                        {'query' in ep && ep.query && (
+                          <p><span className="font-medium">Query :</span> <code className="text-xs">{ep.query}</code></p>
+                        )}
+                        <p><span className="font-medium">Réponse :</span> <code className="text-xs">{ep.response}</code></p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-orange-600">Webhooks sortants</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <pre className="text-sm whitespace-pre-wrap overflow-x-auto bg-muted rounded-lg p-4">
+                      {partnerWebhookGuide}
+                    </pre>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-orange-600">Exemples cURL — API Partenaires</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-muted rounded-lg p-4">
+                      <pre className="text-sm overflow-x-auto">
+                        <code>{partnerCurlExamples}</code>
+                      </pre>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-orange-600">Exemples de réponses partenaires</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Tabs defaultValue="me" className="w-full">
+                      <TabsList className="grid w-full grid-cols-4">
+                        <TabsTrigger value="me">Profil</TabsTrigger>
+                        <TabsTrigger value="estimate">Estimation</TabsTrigger>
+                        <TabsTrigger value="webhook">Webhook</TabsTrigger>
+                        <TabsTrigger value="error">Erreur</TabsTrigger>
+                      </TabsList>
+                      {(['me', 'estimate', 'webhook', 'error'] as const).map((key) => (
+                        <TabsContent key={key} value={key} className="mt-4">
+                          <div className="bg-muted rounded-lg p-4">
+                            <pre className="text-sm overflow-x-auto">
+                              <code>{partnerResponseExamples[key]}</code>
+                            </pre>
+                          </div>
+                        </TabsContent>
+                      ))}
+                    </Tabs>
+                  </CardContent>
+                </Card>
               </div>
             </motion.div>
 

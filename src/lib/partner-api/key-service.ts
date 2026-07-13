@@ -71,6 +71,19 @@ export async function revokeApiClient(id: string): Promise<void> {
   });
 }
 
+export async function updateApiClient(
+  id: string,
+  params: { rateLimitPerMin?: number; scopes?: string[] }
+): Promise<ApiClient> {
+  return prisma.apiClient.update({
+    where: { id },
+    data: {
+      ...(params.rateLimitPerMin !== undefined ? { rateLimitPerMin: params.rateLimitPerMin } : {}),
+      ...(params.scopes !== undefined ? { scopes: params.scopes } : {}),
+    },
+  });
+}
+
 export function sanitizeApiClient(client: ApiClient) {
   return {
     id: client.id,
