@@ -45,9 +45,14 @@ export function shouldBlockVolumeSpike(
   return amountCents > userWithdrawalLimitCents;
 }
 
+export const MANUAL_VERIFICATION_REQUIRED_REASON =
+  'Unusual amount detected — manual verification required';
+
 export interface SecurityCheck {
   allowed: boolean;
   reason?: string;
+  /** Montant au-dessus du plafond utilisateur : flux manuel (ex. SEPA Premium) autorisé. */
+  requiresManualVerification?: boolean;
   cooldownUntil?: Date;
   currentUsage?: {
     tradesCount: number;
@@ -238,7 +243,8 @@ export class SecurityService {
 
         return {
           allowed: false,
-          reason: 'Unusual amount detected — manual verification required',
+          requiresManualVerification: true,
+          reason: MANUAL_VERIFICATION_REQUIRED_REASON,
         };
       }
 

@@ -120,7 +120,8 @@ export async function POST(request: NextRequest) {
     const securityService = new SecurityService();
     const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined;
     const secCheck = await securityService.checkPayoutEligibility(userId, amountCents, paymentMethod.id, ipAddress);
-    if (!secCheck.allowed) {
+    // Montant > plafond mensuel : le SEPA Premium est justement le flux de validation manuelle admin.
+    if (!secCheck.allowed && !secCheck.requiresManualVerification) {
       return NextResponse.json({ error: secCheck.reason }, { status: 403 });
     }
 
