@@ -123,6 +123,22 @@ const getEndpoints = (messages: any) => [
       },
     ]
   },
+  {
+    category: 'API Partenaires (V1)',
+    color: 'text-orange-600',
+    endpoints: [
+      { method: 'GET', path: '/api/v1/partner/me', description: 'Profil et statut du compte lié', auth: true, rateLimit: '100/min' },
+      { method: 'GET', path: '/api/v1/partner/balance', description: 'Solde détaillé en centimes', auth: true, rateLimit: '100/min' },
+      { method: 'GET', path: '/api/v1/partner/inventory', description: 'Inventaire CS2 du Steam ID lié', auth: true, rateLimit: '100/min' },
+      { method: 'POST', path: '/api/v1/partner/estimate', description: 'Estimation prix + frais + net', auth: true, rateLimit: '100/min' },
+      { method: 'POST', path: '/api/v1/partner/trades', description: 'Créer une vente', auth: true, rateLimit: '20/h' },
+      { method: 'GET', path: '/api/v1/partner/trades', description: 'Liste des ventes', auth: true, rateLimit: '100/min' },
+      { method: 'GET', path: '/api/v1/partner/trades/{id}', description: 'Détail et statut d\'une vente', auth: true, rateLimit: '100/min' },
+      { method: 'POST', path: '/api/v1/partner/payouts', description: 'Demander un retrait (KYC requis)', auth: true, rateLimit: '5/h' },
+      { method: 'PUT', path: '/api/v1/partner/webhook', description: 'Configurer l\'URL de notification', auth: true, rateLimit: '10/min' },
+      { method: 'GET', path: '/api/v1/partner/webhook', description: 'Consulter la config webhook active', auth: true, rateLimit: '100/min' },
+    ],
+  },
 ];
 
 const getSdkExamples = (messages: any) => ({

@@ -1,0 +1,41 @@
+import type { NextRequest } from 'next/server';
+import { prisma } from '~/prisma/prisma';
+import { withPartnerApi } from '@/lib/partner-api/handler';
+import { partnerSuccess, partnerError } from '@/lib/partner-api/response';
+
+export async function GET(request: NextRequest) {
+  return withPartnerApi(request, { endpoint: '/api/v1/partner/me', method: 'GET', scopes: ['read'] }, async (_req, ctx) => {
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.userId },
+      select: {
+        id: true,
+        steamId: true,
+        steamUsername: true,
+        kycStatus: true,
+        acceptedTermsAt: true,
+        tradeLink: true,
+        userTag: true,
+        role: true,
+        accountFrozen: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      return partnerError('NOT_FOUND', 'Compte non trouvé', 404);
+    }
+
+    return partnerSuccess({
+      id: user.id,
+      steam_id: user.steamId,
+      steam_username: user.steamUsername,
+      kyc_status: user.kycStatus,
+      accepted_terms_at: user.acceptedTermsAt?.toISOString() ?? null,
+      trade_link: user.tradeLink,
+      user_tag: user.userTag,
+      role: user.role,
+      account_frozen: user.accountFrozen,
+      created_at: user.createdAt.toISOString(),
+    });
+  });
+}

@@ -36,6 +36,7 @@ import {
   Ban,
   UserX,
   Megaphone,
+  Key,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -159,6 +160,7 @@ export function AdminMobileNav() {
       title: t.groups.system,
       items: [
         { title: t.items.audit, href: '/admin/audit', icon: Activity },
+        { title: 'API partenaires', href: '/admin/api-clients', icon: Key },
         { title: t.items.blockedIps, href: '/admin/blocked-ips', icon: Ban },
         { title: t.items.exports, href: '/admin/dashboard?tab=exports', icon: FileDown },
         { title: t.items.settings, href: '/admin/settings', icon: Settings },

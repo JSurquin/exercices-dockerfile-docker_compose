@@ -445,6 +445,27 @@ export class TradeHooks {
           }
         }
       });
+
+      // Webhook partenaire (non bloquant)
+      if (oldStatus !== newStatus) {
+        const tradeForWebhook = await prisma.trade.findUnique({
+          where: { id: tradeId },
+          select: {
+            userId: true,
+            id: true,
+            status: true,
+            grossCents: true,
+            cashoutFees: true,
+            networkFees: true,
+            netCents: true,
+            ticketId: true,
+          },
+        });
+        if (tradeForWebhook) {
+          const { notifyTradeStatusChange } = await import('@/lib/partner-api/webhook-service');
+          void notifyTradeStatusChange(tradeForWebhook.userId, tradeForWebhook, 'trade.status_changed');
+        }
+      }
       
     } catch (error) {
       logger.error(`[TradeHooks] Error processing status change for trade ${tradeId}`, error);

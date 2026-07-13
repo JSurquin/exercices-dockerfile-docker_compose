@@ -62,6 +62,18 @@ export async function runSecurityMaintenanceJob() {
     logger.error(errorMsg, { error });
   }
 
+  try {
+    const { processPendingWebhookDeliveries } = await import('@/lib/partner-api/webhook-service');
+    const processed = await processPendingWebhookDeliveries(30);
+    if (processed > 0) {
+      logger.info(`Partner webhook retry: ${processed} deliveries processed`);
+    }
+  } catch (error) {
+    const errorMsg = `Partner webhook retry failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    maintenanceResults.errors.push(errorMsg);
+    logger.error(errorMsg, { error });
+  }
+
   await AuditLogger.log({
     action: 'system.maintenance' as never,
     details: {

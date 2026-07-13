@@ -142,6 +142,20 @@ export class PayoutLifecycle {
       console.error(`[PayoutLifecycle] auditLog failed for ${payoutId}:`, err);
     }
 
+    const payoutRow = await prisma.payout.findUnique({
+      where: { id: payoutId },
+      select: { status: true, amountCents: true, tradeId: true },
+    });
+    if (payoutRow) {
+      const { notifyPayoutStatusChange } = await import('@/lib/partner-api/webhook-service');
+      void notifyPayoutStatusChange(userId, {
+        id: payoutId,
+        status: payoutRow.status,
+        amountCents: payoutRow.amountCents,
+        tradeId: payoutRow.tradeId,
+      });
+    }
+
     return { debited: true };
   }
 
@@ -213,6 +227,20 @@ export class PayoutLifecycle {
       });
     } catch (err) {
       console.error(`[PayoutLifecycle] auditLog failed for failed payout ${payoutId}:`, err);
+    }
+
+    const payoutRow = await prisma.payout.findUnique({
+      where: { id: payoutId },
+      select: { status: true, amountCents: true, tradeId: true },
+    });
+    if (payoutRow) {
+      const { notifyPayoutStatusChange } = await import('@/lib/partner-api/webhook-service');
+      void notifyPayoutStatusChange(userId, {
+        id: payoutId,
+        status: payoutRow.status,
+        amountCents: payoutRow.amountCents,
+        tradeId: payoutRow.tradeId,
+      });
     }
 
     return { unfrozen: true };
