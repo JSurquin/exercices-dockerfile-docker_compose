@@ -86,8 +86,83 @@ model User {
   affiliateGiveawayRequests AffiliateGiveawayRequest[] @relation("AffiliateGiveawayRequestUser")
   reviewedAffiliateGiveawayRequests AffiliateGiveawayRequest[] @relation("AffiliateGiveawayRequestReviewer")
   affiliateHistory         UserAffiliateHistory[]
+  apiClients               ApiClient[]
 
   @@map("user")
+}
+
+/// Clé API partenaire (Bearer) liée à un compte utilisateur MoonSkin
+model ApiClient {
+  id                String                   @id @default(cuid())
+  name              String
+  keyPrefix         String
+  keyHash           String
+  webhookSecret     String
+  webhookUrl        String?
+  scopes            String[]                 @default(["read", "trade", "payout"])
+  rateLimitPerMin   Int                      @default(100)
+  status            ApiClientStatus          @default(ACTIVE)
+  expiresAt         DateTime?
+  userId            String
+  createdBy         String?
+  lastUsedAt        DateTime?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  user              User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiLogs           PartnerApiLog[]
+  webhookDeliveries PartnerWebhookDelivery[]
+
+  @@unique([keyPrefix, keyHash])
+  @@index([userId])
+  @@index([status])
+  @@index([keyPrefix])
+  @@map("api_client")
+}
+
+/// Journal des appels API partenaires
+model PartnerApiLog {
+  id          String    @id @default(cuid())
+  apiClientId String
+  endpoint    String
+  method      String
+  statusCode  Int
+  ipAddress   String?
+  durationMs  Int?
+  createdAt   DateTime  @default(now())
+  apiClient   ApiClient @relation(fields: [apiClientId], references: [id], onDelete: Cascade)
+
+  @@index([apiClientId])
+  @@index([createdAt])
+  @@map("partner_api_log")
+}
+
+/// Livraisons webhook sortantes vers les partenaires
+model PartnerWebhookDelivery {
+  id            String    @id @default(cuid())
+  apiClientId   String
+  eventType     String
+  resourceId    String
+  eventId       String    @unique
+  payload       Json
+  status        String    @default("pending")
+  httpStatus    Int?
+  attempts      Int       @default(0)
+  lastAttemptAt DateTime?
+  nextRetryAt   DateTime?
+  errorMessage  String?
+  durationMs    Int?
+  createdAt     DateTime  @default(now())
+  apiClient     ApiClient @relation(fields: [apiClientId], references: [id], onDelete: Cascade)
+
+  @@index([apiClientId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("partner_webhook_delivery")
+}
+
+enum ApiClientStatus {
+  ACTIVE
+  REVOKED
 }
 
 model AuditLog {
